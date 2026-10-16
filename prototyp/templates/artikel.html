@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block content %}
+{% if kinotermine %}
+  {% set a = {'titel': kino.titel, 'slug': kino.slug, 'kat': 'kino', 'standfirst': kino.teaser, 'bild': kino.bild, 'datum': kino.stand, 'lesezeit': 3,
+              'tags': ['Jailer 2', 'Rajinikanth', 'Kinotermine', 'OmeU'], 'body': kino.inhalt_html, 'credit': 'Bild: Tamil.de-Bildkarte (automatisch erzeugt)', 'alt': 'Jailer 2 – Kinotermine'} %}
+  {% set related = sel.kategorie_seiten.kino[:3] %}
+{% else %}
+  {% set a = {'titel': p.titel, 'slug': p.slug, 'kat': p.kategorien[0], 'standfirst': p.standfirst, 'bild': p.bild, 'datum': p.datum, 'lesezeit': p.lesezeit,
+              'tags': p.tags, 'body': p.inhalt_html, 'credit': 'Foto: Tamil.de', 'alt': p.titel} %}
+  {% set related = sel.related[p.id] %}
+{% endif %}
+{% set ist_rezept = (not kinotermine) and p.id == site.rezept.id %}
+{% set url = 'https://www.tamil.de/' ~ a.slug ~ '/' %}
+<div class="container">
+  <nav class="breadcrumb" aria-label="Brotkrumen"><a href="index.html">Start</a><span>›</span><a href="kategorie-{{ a.kat }}.html">{{ kat[a.kat].label }}</a><span>›</span><span>{{ a.titel[:60] }}{% if a.titel|length > 60 %}…{% endif %}</span></nav>
+  <div class="with-sidebar">
+    <article class="artikel">
+      <header class="artikel-kopf">
+        <p style="margin:0;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="badge{% if kinotermine %} gruen{% elif ist_rezept %} gruen{% endif %}">{{ 'Kinotermine' if kinotermine else ('Rezept' if ist_rezept else kat[a.kat].label) }}</span>{% if kinotermine %}<span class="stand-badge">aktualisiert {{ kino.stand|datum }}</span>{% endif %}{% if p and p.get('kultur_fallback') %}<span class="beispiel">Kultur-Zuordnung per Stichwort</span>{% endif %}</p>
+        <h1>{{ a.titel }}</h1>
+        <p class="standfirst">{{ a.standfirst }}</p>
+        <div class="byline"><span class="avatar" aria-hidden="true">T</span><span><strong>{{ site.autorenbox.name }}</strong>{{ a.datum|datum }} · {{ a.lesezeit }} Min. Lesezeit</span></div>
+        {{ m.share(a.titel, url) }}
+      </header>
+      <figure class="hero-bild">
+        <img src="{{ a.bild.src }}" width="{{ a.bild.w }}" height="{{ a.bild.h }}" alt="{{ a.alt }}">
+        <figcaption><span>{{ a.titel }}</span><span class="leise">{{ a.credit }} <span class="beispiel">Bildnachweis fehlt im Altbestand</span></span></figcaption>
+      </figure>
+
+      {% if ist_rezept %}
+      <div class="artikel-body">
+        {{ rezept.intro|safe }}
+        <dl class="rezept-fakten">{% for f in site.rezept.fakten %}<div><dt>{{ f.label }}</dt><dd>{{ f.wert }}</dd></div>{% endfor %}</dl>
+        <p class="klein leise"><span class="beispiel">{{ site.rezept.fakten_hinweis }}</span></p>
+        {% for ab in rezept.abschnitte %}
+        <section class="rezept-abschnitt">
+          <h2>{{ ab.titel }}</h2>
+          {% if ab.get('text') %}{% for t in ab.text %}<p>{{ t }}</p>{% endfor %}{% endif %}
+          <div class="rezept-layout">
+            <div class="zutaten"><h3>Zutaten</h3><ul>{% for z in ab.zutaten %}<li>{{ z }}</li>{% endfor %}</ul><p class="klein leise" style="margin:12px 0 0">Antippen zum Abhaken.</p></div>
+            <div><h3 style="font-family:var(--font-display);font-size:20px;font-weight:600;margin-bottom:12px">Zubereitung</h3><ol class="schritte">{% for s in ab.schritte %}<li><span>{{ s }}</span></li>{% endfor %}</ol>
+            {% if ab.tipp %}<p class="tipp" style="margin-top:16px"><strong>Tipp:</strong> {{ ab.tipp|join(' ') }}</p>{% endif %}</div>
+          </div>
+          {% if loop.first %}{{ m.ad('inarticle') }}{% endif %}
+        </section>
+        {% endfor %}
+      </div>
+      {% else %}
+      {% set teile = a.body|split_body %}
+      <div class="artikel-body">
+        {{ teile[0]|safe }}
+        {% if teile[1] %}{{ m.ad('inarticle') }}{{ teile[1]|safe }}{% endif %}
+        {% if kinotermine %}
+        {{ kino.liste_html|safe }}
+        <p class="hinweis-box">{{ kino.hinweis }}</p>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      {% if kinotermine %}
+      <p class="quelle">Quelle: {% for q in kino.fakten.kinos|map(attribute='quelle')|unique %}{{ q }}{% if not loop.last %}, {% endif %}{% endfor %} · Stand Kinowoche {{ kino.woche }}</p>
+      {% else %}
+      <p class="quelle">Quelle: Redaktion Tamil.de{% if p.youtube %} · Video: YouTube (erst nach Klick geladen){% endif %} · ursprünglich veröffentlicht am {{ p.datum_original|datum }} <span class="beispiel">Prototyp: Datum verschoben</span></p>
+      {% endif %}
+      <div class="tags">{% for t in a.tags %}<a class="tag" href="#">{{ t }}</a>{% endfor %}<a class="tag" href="kategorie-{{ a.kat }}.html">{{ kat[a.kat].label }}</a></div>
+      {{ m.share(a.titel, url) }}
+      <div class="autorenbox"><span class="avatar" aria-hidden="true">T</span><div><strong>{{ site.autorenbox.name }}</strong><p>{{ site.autorenbox.text }}</p></div></div>
+      <section class="section" style="padding-bottom:0">
+        {% set gleiche = related|selectattr('kategorien.0', 'equalto', a.kat)|list|length == related|length %}
+        {{ m.kicker(a.kat, text=('Mehr aus ' ~ kat[a.kat].label) if gleiche else 'Auch interessant', mehr='kategorie-' ~ a.kat ~ '.html') }}
+        <div class="cards">{% for q in related %}{{ m.card(q, '', 'h3') }}{% endfor %}</div>
+      </section>
+    </article>
+    {{ m.sidebar() }}
+  </div>
+</div>
+<a class="fab-wa" href="https://wa.me/?text={{ (a.titel ~ ' ' ~ url)|urlencode }}" target="_blank" rel="noopener" aria-label="Per WhatsApp teilen">{{ m.icon('whatsapp') }}</a>
+{% endblock %}

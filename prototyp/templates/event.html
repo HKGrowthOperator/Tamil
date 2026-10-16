@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+{% set url = 'https://www.tamil.de/events/' ~ e.slug ~ '/' %}
+<div class="container">
+  <nav class="breadcrumb" aria-label="Brotkrumen"><a href="index.html">Start</a><span>›</span><a href="events.html">Events</a><span>›</span><span>{{ e.titel[:60] }}</span></nav>
+  <article>
+    <header class="artikel-kopf">
+      <p style="margin:0;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="badge">{{ e.kategorie_label }}</span><span class="badge soft">{{ 'DE · AT · CH' if e.land == 'DACH' else e.land }}</span></p>
+      <h1>{{ e.titel }}</h1>
+      <p class="standfirst">{{ m.icon('calendar', 'ico ico-sm') }} {{ e.datum_text }}{% if e.zeit %} · {{ e.zeit }}{% endif %}</p>
+    </header>
+    <div class="event-detail">
+      <div>
+        <figure class="hero-bild"><img src="{{ e.bild.src }}" width="{{ e.bild.w }}" height="{{ e.bild.h }}" alt=""><figcaption><span>{{ e.titel }}</span><span class="leise">{{ 'Tamil.de-Bildkarte (automatisch)' if 'ev-' in e.bild.src else 'Foto: Tamil.de' }}</span></figcaption></figure>
+        <div class="artikel-body"><p>{{ e.beschreibung }}</p></div>
+        <dl class="fakten">
+          <div><dt>Wann</dt><dd>{{ e.datum_text }}</dd></div>
+          <div><dt>Uhrzeit</dt><dd>{{ e.zeit or 'laut Veranstalter' }}</dd></div>
+          <div><dt>Wo</dt><dd>{{ e.ort }}</dd></div>
+          <div><dt>Veranstalter</dt><dd>{{ e.veranstalter }}</dd></div>
+          <div><dt>Kategorie</dt><dd>{{ e.kategorie_label }}</dd></div>
+          <div><dt>Preis</dt><dd>{{ e.preis }}</dd></div>
+        </dl>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:24px 0">
+          <a class="btn btn-primary" href="{{ e.ticket_url }}"{% if e.ticket_url.startswith('http') %} target="_blank" rel="noopener nofollow"{% endif %}>{{ m.icon('ticket', 'ico ico-sm') }} {{ e.ticket_label }}</a>
+          <a class="btn btn-wa" href="https://wa.me/?text={{ (e.titel ~ ' – ' ~ e.datum_text ~ ' ' ~ url)|urlencode }}" target="_blank" rel="noopener">{{ m.icon('whatsapp', 'ico ico-sm') }} Per WhatsApp teilen</a>
+          <a class="btn btn-ghost" href="#" title="Im Relaunch: .ics-Datei">{{ m.icon('calendar', 'ico ico-sm') }} In Kalender</a>
+        </div>
+        <div class="karte-platzhalter">Karte: {{ e.ort }}<br><span class="klein" style="font-weight:400">Im Relaunch erst nach Klick geladen (OpenStreetMap), keine externen Aufrufe ohne Zustimmung.</span></div>
+        <p class="quelle">Quelle: <a href="{{ e.quelle.url }}"{% if e.quelle.url.startswith('http') %} target="_blank" rel="noopener nofollow"{% endif %}>{{ e.quelle.name }}</a> · Angaben ohne Gewähr, bitte beim Veranstalter prüfen.</p>
+      </div>
+      <aside class="sidebar">
+        <div class="widget dunkel">
+          <h2 class="kicker"><span class="ta" lang="ta">நிகழ்வுகள்</span>Weitere Events</h2>
+          <ul class="liste">{% for o in events if o.slug != e.slug %}<li><span class="nr">{{ o.von[8:10]|int }}.</span><a href="{{ o.seite }}">{{ o.titel }}</a></li>{% endfor %}</ul>
+          <a class="btn btn-ghost hell btn-sm" href="events.html">Alle Events</a>
+        </div>
+        {{ m.ad('sidebar') }}
+      </aside>
+    </div>
+  </article>
+</div>
+{% endblock %}

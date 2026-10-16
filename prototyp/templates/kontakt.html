@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+  <nav class="breadcrumb" aria-label="Brotkrumen"><a href="index.html">Start</a><span>›</span><span>Kontakt</span></nav>
+  <header class="seitenkopf">
+    <h1>Kontakt <span class="ta" lang="ta">தொடர்பு</span></h1>
+    <p class="beschreibung">Redaktion, Werbung oder ein Event für den Kalender – hier erreicht ihr uns. Auf Deutsch, Tamil oder Englisch.</p>
+  </header>
+  <div class="kontakt-grid">
+    <div class="kontakt-karte">
+      <h2 class="kicker ohne">Redaktion &amp; Verlag</h2>
+      <div class="zeile">{{ m.icon('phone') }}<div><strong>Telefon</strong>{{ site.kontakt.telefon }}</div></div>
+      <div class="zeile">{{ m.icon('mail') }}<div><strong>E-Mail</strong>{{ site.kontakt.email }}</div></div>
+      <div class="zeile">{{ m.icon('whatsapp') }}<div><strong>WhatsApp</strong>{{ site.kontakt.whatsapp }}<br><a class="btn btn-wa btn-sm" style="margin-top:8px" href="https://wa.me/{{ site.kontakt.whatsapp|replace(' ', '')|replace('+', '') }}" target="_blank" rel="noopener">{{ m.icon('whatsapp', 'ico ico-sm') }} Nachricht schreiben</a></div></div>
+      <div class="zeile">{{ m.icon('pin') }}<div><strong>Anschrift</strong>{% for z in site.kontakt.adresse %}{{ z }}<br>{% endfor %}</div></div>
+      <div class="zeile">{{ m.icon('clock') }}<div><strong>Antwortzeit</strong>{{ site.kontakt.antwortzeit }}</div></div>
+      <p class="klein leise" style="margin:0"><span class="beispiel">Beispiel</span> {{ site.kontakt.hinweis }}</p>
+    </div>
+    <form class="kontaktformular" id="kontaktformular" data-demo>
+      <div class="felder">
+        <h2 class="kicker ohne" style="margin-bottom:16px">Nachricht an die Redaktion</h2>
+        <div class="form-grid">
+          <div class="feld"><label for="k-name">Name</label><input id="k-name" type="text" required autocomplete="name"></div>
+          <div class="feld"><label for="k-mail">E-Mail</label><input id="k-mail" type="email" required autocomplete="email"></div>
+          <div class="feld voll"><label for="betreff">Betreff</label><select id="betreff" required><option value="Redaktion">Redaktion / Themenvorschlag</option><option value="Werbung">Werbung &amp; Mediadaten</option><option value="Event">Event eintragen</option><option value="Leserreporter">Leserreporter: Text oder Foto</option><option value="Sonstiges">Sonstiges</option></select></div>
+          <div class="feld voll"><label for="k-text">Nachricht</label><textarea id="k-text" required></textarea></div>
+          <div class="feld voll"><label class="check"><input type="checkbox" required> Ich habe die <a href="#">Datenschutzerklärung</a> gelesen. Meine Angaben werden nur zur Bearbeitung der Anfrage gespeichert.</label></div>
+          <label class="honig" aria-hidden="true">Website <input type="text" tabindex="-1" autocomplete="off"></label>
+        </div>
+        <button class="btn btn-primary">{{ m.icon('arrow', 'ico ico-sm') }} Nachricht senden</button>
+        <p class="hilfe" style="margin-top:8px">Prototyp: Das Formular sendet nichts. Im Relaunch geht die Nachricht per E-Mail an die Redaktion und erscheint im Posteingang der Freigabe-App.</p>
+      </div>
+      <div class="erfolg"><strong>Danke!</strong> Deine Nachricht ist angekommen. {{ site.kontakt.antwortzeit }}</div>
+    </form>
+  </div>
+
+  <section class="section" id="werben">
+    {{ m.kicker('kontakt', text='Werben auf Tamil.de', mehr=None) }}
+    <p style="max-width:70ch">Fünf feste Werbeplätze, die auf jeder Seite denselben Platz haben – Leserinnen und Leser wissen, wo Werbung steht, und Kunden wissen, was sie buchen. Formate nach IAB-Standard, Auslieferung über Advanced Ads, monatlicher Report mit Einblendungen und Klicks.</p>
+    <div class="formate">
+      {% for w in site.werbeplaetze %}
+      <div class="format"><span class="nr">{{ w.nr }}</span><div><h3>{{ w.name }}</h3><p class="masse">{{ w.desktop }}{% if w.mobil != '–' %} · mobil {{ w.mobil }}{% endif %}</p><p>{{ w.position }}</p></div></div>
+      {% endfor %}
+      <div class="format" style="border-style:dashed;border-color:var(--gold)"><span class="nr">+</span><div><h3>Sonderformate</h3><p>Advertorial, Newsletter-Platz, Event-Partnerschaft – auf Anfrage.</p></div></div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:24px">
+      <a class="btn btn-gold" href="#kontaktformular" data-betreff="Werbung">Werbeanfrage stellen</a>
+      <a class="btn btn-ghost" href="#" title="Platzhalter – Mediadaten folgen">Mediadaten (PDF) <span class="beispiel" style="margin-left:4px">folgt</span></a>
+    </div>
+  </section>
+
+  <section class="section" id="event-einreichen">
+    {{ m.kicker('events', text='Event einreichen') }}
+    <p style="max-width:70ch">Kostenlos für Vereine, Tempel, Schulen und Veranstalter. Die Redaktion prüft jede Einreichung; freigegebene Events erscheinen im Kalender, im Newsletter und – wenn es passt – als Beitrag.</p>
+    <form data-demo style="max-width:860px">
+      <div class="felder">
+        <div class="form-grid">
+          <div class="feld voll"><label for="e-name">Name des Events</label><input id="e-name" type="text" required placeholder="z. B. Pongal-Fest 2027 in Hamm"></div>
+          <div class="feld"><label for="e-datum">Datum</label><input id="e-datum" type="date" required></div>
+          <div class="feld"><label for="e-zeit">Uhrzeit</label><input id="e-zeit" type="time"></div>
+          <div class="feld"><label for="e-stadt">Stadt</label><input id="e-stadt" type="text" required placeholder="Hamm, Zürich, Wien …"></div>
+          <div class="feld"><label for="e-ort">Veranstaltungsort</label><input id="e-ort" type="text" placeholder="Halle, Tempel, Kino …"></div>
+          <div class="feld"><label for="e-veranstalter">Veranstalter</label><input id="e-veranstalter" type="text" required></div>
+          <div class="feld"><label for="e-ticket">Ticket- oder Info-Link</label><input id="e-ticket" type="url" placeholder="https://"></div>
+          <div class="feld"><label for="e-kat">Kategorie</label><select id="e-kat"><option>Konzert / Musik</option><option>Tempelfest / Religion</option><option>Kultur / Tanz</option><option>Kino</option><option>Sport / Turnier</option><option>Community / Treffen</option></select></div>
+          <div class="feld"><label for="e-bild">Bild (JPG/PNG, optional)</label><input id="e-bild" type="file" accept="image/*" style="min-height:44px;padding:9px 0"></div>
+          <div class="feld voll"><label for="e-text">Beschreibung</label><textarea id="e-text" required placeholder="Was erwartet die Gäste? Wer tritt auf? Gibt es Essen, Parkplätze, Kinderprogramm?"></textarea><p class="hilfe">2–5 Sätze reichen. Die Redaktion kürzt und ergänzt bei Bedarf.</p></div>
+          <div class="feld"><label for="e-mail">Deine E-Mail (für Rückfragen)</label><input id="e-mail" type="email" required></div>
+          <div class="feld voll"><label class="check"><input type="checkbox" required> Ich darf das Event und das Bild veröffentlichen und habe die <a href="#">Datenschutzerklärung</a> gelesen.</label></div>
+        </div>
+        <button class="btn btn-primary">{{ m.icon('plus', 'ico ico-sm') }} Event einreichen</button>
+        <p class="hilfe" style="margin-top:8px">Im Relaunch landet die Einreichung direkt als Entwurf im News-Radar (Freigabe-App) – mit Bild, Datum und Ort.</p>
+      </div>
+      <div class="erfolg"><strong>Danke!</strong> Das Event ist eingegangen. Nach der Prüfung erscheint es im Kalender; bei Rückfragen melden wir uns per E-Mail.</div>
+    </form>
+  </section>
+
+  <section class="section" style="max-width:860px">
+    {{ m.kicker('kontakt', text='Häufige Fragen') }}
+    {% for f in site.faq %}<details{% if loop.first %} open{% endif %}><summary>{{ f.frage }}</summary><p>{{ f.antwort }}</p></details>{% endfor %}
+    <p class="klein leise" style="margin-top:16px">Impressum und Datenschutzerklärung werden aus dem Altbestand übernommen und vom Auftraggeber geprüft (Anbieter: {{ site.org }}).</p>
+  </section>
+</div>
+{% endblock %}

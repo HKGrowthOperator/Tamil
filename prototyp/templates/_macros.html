@@ -1,0 +1,103 @@
+{% macro icon(name, cls="ico") -%}
+<svg class="{{ cls }}" aria-hidden="true"><use href="#i-{{ name }}"/></svg>
+{%- endmacro %}
+
+{% macro kicker(slug, text=None, mehr=None, mehr_text=None) -%}
+<div class="section-head">
+  <h2 class="kicker"><span class="ta" lang="ta">{{ kat[slug].tamil if slug in kat else '' }}</span>{{ text or kat[slug].label }}</h2>
+  {% if mehr %}<a class="mehr" href="{{ mehr }}">{{ mehr_text or ('Alle ' ~ kat[slug].label) }} →</a>{% endif %}
+</div>
+{%- endmacro %}
+
+{% macro ad(key) -%}
+{% set w = ad_slot(key) %}
+<div class="ad ad-{{ key }}"{% if key == 'mobile' %} id="ad-mobile"{% endif %}>
+  <span class="ad-label">Werbeplatz {{ w.nr }} · {{ w.name }}</span>
+  <div class="ad-box"><span class="nr">{{ w.nr }}</span><span class="nur-desktop">{{ w.desktop }}</span><span class="nur-mobil">{{ w.mobil.split(' (')[0] }}</span></div>
+  {% if key == 'mobile' %}<button type="button" class="schliessen" aria-label="Werbung schließen">×</button>{% endif %}
+</div>
+{%- endmacro %}
+
+{% macro meta(p) -%}
+<p class="meta"><span class="kat">{{ kat[p.kategorien[0]].label }}</span><span>{{ p.datum|datum }}</span><span>{{ p.lesezeit }} Min. Lesezeit</span></p>
+{%- endmacro %}
+
+{% macro card(p, variant="", heading="h3", excerpt=True, badge=False, lazy=True) -%}
+<article class="card {{ variant }}" data-chips="{{ p.chips|join(' ') }}">
+  <a class="media" href="{{ p|link }}" tabindex="-1" aria-hidden="true">
+    <img src="{{ p.bild.src }}" width="{{ p.bild.w }}" height="{{ p.bild.h }}" alt=""{% if lazy %} loading="lazy"{% endif %}>
+    {% if badge %}<span class="badge">{{ kat[p.kategorien[0]].label }}</span>{% endif %}
+  </a>
+  <div class="text">
+    <{{ heading }}><a href="{{ p|link }}">{{ p.titel }}</a></{{ heading }}>
+    {% if excerpt %}<p class="excerpt">{{ p.excerpt }}</p>{% endif %}
+    {{ meta(p) }}
+  </div>
+</article>
+{%- endmacro %}
+
+{% macro platzhalter(titel, label) -%}
+<article class="card platzhalter">
+  <div class="media"><span>Platzhalter · {{ label }}</span></div>
+  <div class="text"><h3>{{ titel }} <span class="beispiel">Beispieltext</span></h3><p class="meta"><span class="kat">{{ label }}</span><span>Noch kein Beitrag</span></p></div>
+</article>
+{%- endmacro %}
+
+{% macro date_badge(e) -%}
+{% set d = e.von %}
+<div class="date-badge" aria-hidden="true">
+  <span class="tag-nr">{{ d[8:10]|int }}</span>
+  <span class="monat">{{ ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'][d[5:7]|int - 1] }}</span>
+  <span class="wtag">{{ fmt_date(d, weekday=True).split(',')[0][:2] }}{% if e.bis and e.bis != e.von %} – {{ e.bis[8:10]|int }}.{% endif %}</span>
+</div>
+{%- endmacro %}
+
+{% macro event_card(e, kompakt=False) -%}
+<article class="event-card{% if kompakt %} kompakt{% endif %}" data-ev="{{ (['DE','AT','CH'] if e.land == 'DACH' else [e.land])|join(' ') }} {{ e.kategorie }}">
+  {{ date_badge(e) }}
+  <div>
+    <p class="meta"><span class="kat">{{ e.kategorie_label }}</span><span>{{ e.land if e.land != 'DACH' else 'DE · AT · CH' }}</span>{% if e.zeit %}<span>{{ e.zeit }}</span>{% endif %}</p>
+    <h3><a href="{{ e.seite }}">{{ e.titel }}</a></h3>
+    <p class="ort">{{ icon('pin', 'ico ico-sm') }} {{ e.ort }}</p>
+    <div class="aktionen">
+      <a class="btn btn-primary btn-sm" href="{{ e.ticket_url }}"{% if e.ticket_url.startswith('http') %} target="_blank" rel="noopener nofollow"{% endif %}>{{ icon('ticket', 'ico ico-sm') }} {{ e.ticket_label }}</a>
+      <a class="btn btn-wa btn-sm" href="https://wa.me/?text={{ (e.titel ~ ' – ' ~ e.datum_text)|urlencode }}" target="_blank" rel="noopener">{{ icon('whatsapp', 'ico ico-sm') }} Teilen</a>
+      <a class="btn btn-ghost btn-sm" href="{{ e.seite }}">Details</a>
+    </div>
+  </div>
+</article>
+{%- endmacro %}
+
+{% macro share(titel, url) -%}
+<div class="share" aria-label="Teilen">
+  <span class="lbl">Teilen</span>
+  <a class="btn btn-wa" href="https://wa.me/?text={{ (titel ~ ' ' ~ url)|urlencode }}" target="_blank" rel="noopener">{{ icon('whatsapp', 'ico ico-sm') }} <span class="txt">WhatsApp</span></a>
+  <a class="btn btn-ghost" href="https://www.facebook.com/sharer/sharer.php?u={{ url|urlencode }}" target="_blank" rel="noopener" aria-label="Auf Facebook teilen">{{ icon('facebook', 'ico ico-sm') }} <span class="txt">Facebook</span></a>
+  <a class="btn btn-ghost" href="https://twitter.com/intent/tweet?url={{ url|urlencode }}" target="_blank" rel="noopener" aria-label="Auf X teilen">{{ icon('x', 'ico ico-sm') }} <span class="txt">X</span></a>
+  <a class="btn btn-ghost" href="https://t.me/share/url?url={{ url|urlencode }}" target="_blank" rel="noopener" aria-label="Per Telegram teilen">{{ icon('telegram', 'ico ico-sm') }} <span class="txt">Telegram</span></a>
+  <a class="btn btn-ghost" href="mailto:?subject={{ titel|urlencode }}&body={{ url|urlencode }}" aria-label="Per E-Mail teilen">{{ icon('mail', 'ico ico-sm') }} <span class="txt">E-Mail</span></a>
+  <button type="button" class="btn btn-ghost" data-copy="{{ url }}" aria-label="Link kopieren">{{ icon('link', 'ico ico-sm') }} <span class="txt">Link</span></button>
+</div>
+{%- endmacro %}
+
+{% macro sidebar(events_widget=True) -%}
+<aside class="sidebar">
+  {{ ad('sidebar') }}
+  <div class="widget">
+    <h2 class="kicker"><span class="ta" lang="ta">முக்கியம்</span>Top-Themen</h2>
+    <ol class="liste">{% for p in sel.top %}<li><span class="nr">{{ '%02d' % loop.index }}</span><a href="{{ p|link }}">{{ p.titel }}</a></li>{% endfor %}</ol>
+  </div>
+  {% if events_widget %}
+  <div class="widget dunkel">
+    <h2 class="kicker"><span class="ta" lang="ta">நிகழ்வுகள்</span>Nächste Events</h2>
+    <ul class="liste">{% for e in events[:4] %}<li><span class="nr">{{ e.von[8:10]|int }}.</span><a href="{{ e.seite }}">{{ e.titel }}</a></li>{% endfor %}</ul>
+    <a class="btn btn-ghost hell btn-sm" href="events.html">Alle Events</a>
+  </div>
+  {% endif %}
+  <div class="widget papier newsletter">
+    <h2 class="kicker ohne">Newsletter</h2>
+    <p class="klein" style="margin:0">Einmal pro Woche das Wichtigste aus Nachrichten, Kino und Events.</p>
+    <form data-demo><div class="felder"><label class="sr-only" for="nl-side">E-Mail</label><input id="nl-side" type="email" placeholder="deine@mail.de" required><button class="btn btn-primary" style="margin-top:8px;width:100%">Anmelden</button><p class="doi klein">Double-Opt-in: Du bestätigst die Anmeldung per E-Mail.</p></div><div class="erfolg">Danke! Bitte bestätige die Anmeldung in deinem Postfach.</div></form>
+  </div>
+</aside>
+{%- endmacro %}

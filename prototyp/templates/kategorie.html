@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+  <nav class="breadcrumb" aria-label="Brotkrumen"><a href="index.html">Start</a><span>›</span><span>{{ k.label }}</span></nav>
+  <header class="seitenkopf">
+    <h1>{{ k.label }} <span class="ta" lang="ta">{{ k.tamil }}</span></h1>
+    <p class="beschreibung">{{ k.beschreibung }}</p>
+    <p class="zaehler">{{ counts[slug] }} Beiträge{% if slug == 'kultur' %} (per Stichwort aus den Nachrichten zugeordnet){% endif %} · <span data-filter-count="chips">{{ sel.kategorie_seiten[slug]|length + (1 if slug == 'kino' else 0) }}</span> auf dieser Seite</p>
+    {% if k.chips %}
+    <div class="chips" data-filter-group="chips" role="group" aria-label="Filter">
+      <button type="button" class="chip" data-filter="alle" aria-pressed="true">Alle</button>
+      {% for c in k.chips %}<button type="button" class="chip" data-filter="{{ c.key }}" aria-pressed="false">{{ c.label }}</button>{% endfor %}
+    </div>
+    {% endif %}
+  </header>
+
+  <div class="with-sidebar">
+    <div>
+      {% set liste = sel.kategorie_seiten[slug] %}
+      {% if liste or slug == 'kino' %}
+      <div class="cards drei">
+        {% if slug == 'kino' %}
+        <article class="card breit" data-chips="kinotermine kinostart">
+          <a class="media karte" href="{{ kino.slug }}.html" tabindex="-1" aria-hidden="true"><img src="{{ kino.bild.src }}" width="1200" height="675" alt=""><span class="badge gruen">Kinotermine · live</span></a>
+          <div class="text">
+            <h2><a href="{{ kino.slug }}.html">{{ kino.titel }}</a></h2>
+            <p class="excerpt">{{ kino.teaser }}</p>
+            <p class="meta"><span class="kat">Kino</span><span>{{ kino.stand|datum }}</span><span>wird automatisch aktualisiert</span></p>
+          </div>
+        </article>
+        {% for p in liste[:11] %}{{ m.card(p, '', 'h3', badge=False) }}{% endfor %}
+        {% else %}
+        {% for p in liste %}{{ m.card(p, 'breit' if loop.first else '', 'h2' if loop.first else 'h3', badge=False) }}{% endfor %}
+        {% endif %}
+      </div>
+      <p class="leer" data-filter-leer="chips" hidden>Für diesen Filter gibt es auf dieser Seite keine Beiträge.</p>
+      {% set pages = ((counts[slug] + 11) // 12) %}
+      {% if pages > 1 %}
+      <nav class="pagination" aria-label="Seiten">
+        <span aria-current="page">1</span>
+        {% for n in range(2, [pages, 5]|min + 1) %}<a href="#">{{ n }}</a>{% endfor %}
+        {% if pages > 5 %}<span>…</span><a href="#">{{ pages }}</a>{% endif %}
+        <a href="#">Weiter →</a>
+      </nav>
+      {% endif %}
+      {% else %}
+      <div class="leer">
+        <h3>Hier entsteht die Rubrik {{ k.label }}</h3>
+        <p style="margin:0">Im Altbestand gibt es noch keine Beiträge in dieser Rubrik. Ab dem Relaunch sammelt der News-Radar Turniere, Ergebnisse und Vereinsnachrichten – und ihr könnt selbst melden.</p>
+        <div class="aktionen"><a class="btn btn-primary" href="kontakt.html#event-einreichen">Turnier oder Spiel melden</a><a class="btn btn-ghost" href="kontakt.html">Thema vorschlagen</a></div>
+      </div>
+      <section class="section">
+        {{ m.kicker('news', text='Aktuell auf Tamil.de', mehr='index.html', mehr_text='Zur Startseite') }}
+        <div class="cards">{% for p in sel.neueste[:3] %}{{ m.card(p, '', 'h3', badge=True) }}{% endfor %}</div>
+      </section>
+      {% endif %}
+    </div>
+    {{ m.sidebar() }}
+  </div>
+</div>
+{% endblock %}

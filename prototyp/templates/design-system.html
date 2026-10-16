@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block content %}
+{% set farben = [
+  ('Rot', '#B01E2C', 'Primär: Links, Badges, Buttons', '#FFFFFF'),
+  ('Rot tief', '#8A1722', 'Hover-Zustand', '#FFFFFF'),
+  ('Gold', '#C9A84C', 'Akzent: Ranglisten, Kicker, Werben', '#1A1A1C'),
+  ('Gold hell', '#E3C778', 'Newsletter-Band', '#1A1A1C'),
+  ('Anthrazit', '#1A1A1C', 'Topbar, Footer, Kino-Widget', '#FFFFFF'),
+  ('Anthrazit 2', '#26262A', 'Prototyp-Leiste, Flächen im Dunkeln', '#FFFFFF'),
+  ('Warmweiß', '#FAF7F2', 'Seitenhintergrund', '#2A2A2C'),
+  ('Papier', '#F3EFE8', 'Bänder, Boxen, Werbeplätze', '#2A2A2C'),
+  ('Text', '#2A2A2C', 'Fließtext', '#FAF7F2'),
+  ('Text leise', '#86827B', 'Meta, Bildunterschriften', '#FAF7F2'),
+  ('Linie', '#E2DCD1', 'Trennlinien, Rahmen', '#2A2A2C'),
+  ('Grün', '#3E7D5A', 'WhatsApp, Erfolg, Rezept', '#FFFFFF')] %}
+<div class="container">
+  <nav class="breadcrumb" aria-label="Brotkrumen"><a href="index.html">Start</a><span>›</span><span>Design-System</span></nav>
+  <header class="seitenkopf">
+    <h1>Design-System <span class="ta" lang="ta">வடிவமைப்பு</span></h1>
+    <p class="beschreibung">Die Bausteine des Prototyps als Vorgabe für das Child-Theme: Farben, Schrift, Abstände, Komponenten und die fünf Werbeplätze. Alles, was auf den Seiten vorkommt, steht hier einmal isoliert.</p>
+  </header>
+
+  <section class="ds-section" id="farben">
+    <h2>Farben</h2>
+    <p class="klein leise">Kontrast gegen die angegebene Textfarbe (WCAG). Ab 4.5:1 für Fließtext, ab 3:1 für große Schrift und Bedienelemente.</p>
+    <div class="swatches">{% for name, hexw, use, text in farben %}<div class="swatch"><div class="farbe" style="background:{{ hexw }};color:{{ text }};display:flex;align-items:flex-end;padding:8px;font-weight:700">Aa</div><div class="info"><strong>{{ name }}</strong><code>{{ hexw }}</code><span>{{ use }}</span><code>Kontrast {{ contrast(hexw, text) }}</code></div></div>{% endfor %}</div>
+  </section>
+
+  <section class="ds-section" id="schrift">
+    <h2>Schrift</h2>
+    <p class="klein leise">Fraunces (Display, variabel, opsz 9–144) für Titel und Zahlen · Inter (variabel) für alles andere · Noto Sans Tamil für die tamilischen Kicker. Fließtext max. 70 Zeichen pro Zeile.</p>
+    <div class="type-row"><span class="lbl">Display 44/30</span><span style="font-family:var(--font-display);font-size:var(--fs-display);font-weight:600;line-height:1.08">Jailer 2 läuft in 9 Kinos</span></div>
+    <div class="type-row"><span class="lbl">H1 40/28</span><h1>Von Deutschland nach Tamil Nadu</h1></div>
+    <div class="type-row"><span class="lbl">H2 28/22</span><h2>Spielorte und Termine</h2></div>
+    <div class="type-row"><span class="lbl">H3 20/18</span><h3>Kino Claudia, Kloten</h3></div>
+    <div class="type-row"><span class="lbl">Standfirst 20</span><span style="font-size:var(--fs-standfirst);line-height:1.5">Rajinikanths Fortsetzung startet in der Kinowoche vom 15. bis 22. Oktober.</span></div>
+    <div class="type-row"><span class="lbl">Text 18/17</span><span class="artikel-body" style="display:block">Für die tamilische Community im deutschsprachigen Raum ist der Kinostart ein Ereignis: Viele Kinos zeigen den Film im Original mit Untertiteln.</span></div>
+    <div class="type-row"><span class="lbl">Meta 13</span><span class="meta"><span class="kat">Kino</span><span>16. Oktober 2026</span><span>3 Min. Lesezeit</span></span></div>
+    <div class="type-row"><span class="lbl">Kicker</span><span class="kicker ohne"><span class="ta" lang="ta">சினிமா</span>Kino</span></div>
+    <div class="type-row"><span class="lbl">Wortmarke</span><span class="wordmark" style="text-align:left">tamil<span class="de">.de</span> <span class="beispiel">Logo-Datei vom AG ausstehend</span></span></div>
+  </section>
+
+  <section class="ds-section" id="abstaende">
+    <h2>Abstände, Radien, Schatten, Raster</h2>
+    <div class="ds-grid">
+      <div><p class="klein leise">Abstände --s-1 … --s-9</p><div class="spacing">{% for s in [4, 8, 12, 16, 24, 32, 48, 64, 96] %}<div style="height:{{ s }}px"><span>{{ s }}</span></div>{% endfor %}</div></div>
+      <div><p class="klein leise">Radien 4 / 8 / 12 · Schatten 1 / 2</p><div class="ds-demo"><div style="width:64px;height:48px;background:#fff;border:1px solid var(--linie);border-radius:4px"></div><div style="width:64px;height:48px;background:#fff;border:1px solid var(--linie);border-radius:8px"></div><div style="width:64px;height:48px;background:#fff;border:1px solid var(--linie);border-radius:12px"></div><div style="width:64px;height:48px;background:#fff;box-shadow:var(--shadow-1);border-radius:8px"></div><div style="width:64px;height:48px;background:#fff;box-shadow:var(--shadow-2);border-radius:8px"></div></div></div>
+    </div>
+    <table class="raster" style="margin-top:16px;max-width:720px"><thead><tr><th>Breakpoint</th><th>Navigation</th><th>Karten</th><th>Sidebar</th></tr></thead><tbody>
+      <tr><td style="height:auto">≤ 600 px</td><td style="height:auto">Drawer</td><td style="height:auto">1 Spalte</td><td style="height:auto">unter dem Inhalt, kein Half Page</td></tr>
+      <tr><td style="height:auto">601–1023 px</td><td style="height:auto">Scroll-Zeile</td><td style="height:auto">2 Spalten</td><td style="height:auto">unter dem Inhalt, 300×250</td></tr>
+      <tr><td style="height:auto">≥ 1024 px</td><td style="height:auto">volle Zeile</td><td style="height:auto">3 Spalten, Container 1200</td><td style="height:auto">300 px rechts, sticky</td></tr>
+    </tbody></table>
+  </section>
+
+  <section class="ds-section" id="buttons">
+    <h2>Buttons</h2>
+    <div class="ds-demo"><a class="btn btn-primary" href="#">Primär</a><a class="btn btn-dark" href="#">Dunkel</a><a class="btn btn-gold" href="#">Gold · Werben</a><a class="btn btn-ghost" href="#">Ghost</a><a class="btn btn-wa" href="#">{{ m.icon('whatsapp', 'ico ico-sm') }} WhatsApp</a><a class="btn btn-link" href="#">Link-Button →</a><button class="btn btn-primary" disabled>Deaktiviert</button></div>
+    <div class="ds-demo"><a class="btn btn-primary btn-sm" href="#">Klein</a><a class="btn btn-ghost btn-sm" href="#">Klein Ghost</a><span class="icon-btn">{{ m.icon('search') }}</span><span class="klein leise">Mindesthöhe 44 px (klein 36 px), sichtbarer Gold-Fokus.</span></div>
+  </section>
+
+  <section class="ds-section" id="badges">
+    <h2>Badges, Chips, Tags, Datums-Badge</h2>
+    <div class="ds-demo"><span class="badge">Nachrichten</span><span class="badge gruen">Kinotermine · live</span><span class="badge gold">Werben</span><span class="badge soft">CH</span><span class="badge dunkel">Event</span><span class="stand-badge">aktualisiert 16.10.</span><span class="beispiel">Beispiel</span></div>
+    <div class="ds-demo"><div class="chips"><span class="chip is-active">Alle</span><span class="chip">Kritik</span><span class="chip">Kinostart</span></div><a class="tag" href="#">Rajinikanth</a><a class="tag" href="#">Jailer 2</a><div class="date-badge"><span class="tag-nr">24</span><span class="monat">Okt</span><span class="wtag">Sa</span></div></div>
+  </section>
+
+  <section class="ds-section" id="karten">
+    <h2>Karten</h2>
+    <div class="cards">{{ m.card(sel.hero[0], '', 'h3', badge=True) }}{{ m.card(sel.hero[1], 'zeile', 'h3', excerpt=False) }}{{ m.platzhalter('Platzhalter-Karte', 'Sport') }}</div>
+    <div style="margin-top:24px;max-width:520px">{{ m.event_card(events[3]) }}</div>
+  </section>
+
+  <section class="ds-section" id="formulare">
+    <h2>Formulare</h2>
+    <form class="form-grid" style="max-width:720px" data-demo><div class="felder form-grid" style="grid-column:1/-1">
+      <div class="feld"><label for="ds-t">Textfeld</label><input id="ds-t" type="text" placeholder="Platzhalter"></div>
+      <div class="feld"><label for="ds-s">Auswahl</label><select id="ds-s"><option>Option A</option><option>Option B</option></select></div>
+      <div class="feld voll"><label for="ds-ta">Mehrzeilig</label><textarea id="ds-ta" style="min-height:80px"></textarea></div>
+      <div class="feld voll"><label class="check"><input type="checkbox"> Checkbox mit Text</label></div>
+      <div class="feld voll"><div class="erfolg" style="display:block">Erfolgsmeldung (grün)</div></div>
+    </div></form>
+  </section>
+
+  <section class="ds-section" id="werbeplaetze">
+    <h2>Werbeplätze in Originalgröße</h2>
+    <p class="klein leise">Gestrichelter Gold-Rahmen und Nummer markieren im Prototyp die Fläche; im Relaunch liefert Advanced Ads an derselben Stelle aus.</p>
+    <div style="display:grid;gap:24px">{{ m.ad('leaderboard') }}{{ m.ad('billboard') }}{{ m.ad('inarticle') }}{{ m.ad('footer') }}<div class="ad ad-sidebar" style="display:flex"><span class="ad-label">Werbeplatz 02 · Half Page</span><div class="ad-box" style="width:300px;height:600px"><span class="nr">02</span>300 × 600</div></div><div class="ad" style="position:static"><span class="ad-label">Werbeplatz 05 · Mobile Sticky (nur ≤ 600 px)</span><div class="ad-box" style="width:320px;height:50px"><span class="nr">05</span>320 × 50</div></div></div>
+  </section>
+
+  <section class="ds-section" id="icons" style="border-bottom:0">
+    <h2>Icons</h2>
+    <p class="klein leise">Eigenes Strich-Set (1,8 px), als SVG-Sprite eingebettet – keine Icon-Font, keine externen Aufrufe.</p>
+    <div class="icons">{% for i in ['menu','close','search','phone','mail','whatsapp','facebook','instagram','youtube','x','telegram','link','calendar','pin','ticket','share','arrow','clock','user','check','play','plus','film','utensils'] %}<div>{{ m.icon(i) }}<span>{{ i }}</span></div>{% endfor %}</div>
+  </section>
+</div>
+{% endblock %}

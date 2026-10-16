@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% macro rubrik(slug) %}
+{% set liste = sel.rubriken[slug] %}
+<section class="section" id="rubrik-{{ slug }}">
+  {{ m.kicker(slug, mehr='kategorie-' ~ slug ~ '.html') }}
+  {% if liste %}
+  <div class="rubrik">
+    <div>{{ m.card(liste[0], 'breit', 'h2', badge=False) }}</div>
+    <div class="zeilen">{% for p in liste[1:4] %}{{ m.card(p, 'zeile', 'h3', excerpt=False) }}{% endfor %}</div>
+  </div>
+  {% if slug == 'kultur' %}<p class="klein leise" style="margin-top:12px">Im Altbestand gibt es keine Kultur-Kategorie – die Beiträge hier stammen per Stichwort aus den Nachrichten. <span class="beispiel">Zuordnung prüfen</span></p>{% endif %}
+  {% else %}
+  <div class="leer">
+    <h3>Noch keine Beiträge in {{ kat[slug].label }}</h3>
+    <p style="margin:0">Im Altbestand gibt es keine Sport-Beiträge. Die Rubrik ist angelegt, damit Turniere, Cricket- und Fußballvereine ab dem Relaunch einen festen Platz haben. So sieht ein Beitrag hier später aus:</p>
+    <div class="cards" style="grid-template-columns:repeat(2,1fr)">
+      {{ m.platzhalter('Tamilisches Cricket-Turnier in Dortmund: Die Ergebnisse', kat[slug].label) }}
+      {{ m.platzhalter('FC Tamil Stars Zürich steigt in die 3. Liga auf', kat[slug].label) }}
+    </div>
+    <div class="aktionen"><a class="btn btn-primary btn-sm" href="kontakt.html#event-einreichen">Turnier melden</a><a class="btn btn-ghost btn-sm" href="kontakt.html">Thema vorschlagen</a></div>
+  </div>
+  {% endif %}
+</section>
+{% endmacro %}
+{% block content %}
+<div class="container">
+  <section class="hero" aria-label="Aufmacher">
+    {% set lead = sel.hero[0] %}
+    <article class="card lead">
+      <a class="media" href="{{ lead|link }}" tabindex="-1" aria-hidden="true"><img src="{{ lead.bild.src }}" width="{{ lead.bild.w }}" height="{{ lead.bild.h }}" alt="" fetchpriority="high"><span class="badge">{{ kat[lead.kategorien[0]].label }}</span></a>
+      <div class="text">
+        <h2><a href="{{ lead|link }}">{{ lead.titel }}</a></h2>
+        <p class="standfirst">{{ lead.standfirst }}</p>
+        {{ m.meta(lead) }}
+      </div>
+    </article>
+    <div class="neben">
+      {{ m.card(sel.hero[1], '', 'h3', excerpt=False, badge=True, lazy=False) }}
+      {{ m.card(sel.hero[2], '', 'h3', excerpt=False, badge=True, lazy=False) }}
+    </div>
+  </section>
+
+  <div class="start-grid">
+    <section class="section" style="padding-top:0">
+      {{ m.kicker('news', text='Neueste Beiträge', mehr='kategorie-news.html', mehr_text='Alle Nachrichten') }}
+      <div class="cards">{% for p in sel.neueste %}{{ m.card(p, '', 'h3', badge=True) }}{% endfor %}</div>
+    </section>
+    <aside class="top-themen section" style="padding-top:0" aria-label="Top-Themen">
+      <h2 class="kicker"><span class="ta" lang="ta">முக்கியம்</span>Top-Themen</h2>
+      <p class="klein leise" style="margin:8px 0 12px">Von der Redaktion gesetzt – Hintergründe, die länger lesenswert bleiben.</p>
+      <ol>{% for p in sel.top %}<li><span class="nr">{{ '%02d' % loop.index }}</span><div><h3><a href="{{ p|link }}">{{ p.titel }}</a></h3>{{ m.meta(p) }}</div></li>{% endfor %}</ol>
+    </aside>
+  </div>
+
+  {{ m.ad('billboard') }}
+  {{ rubrik('news') }}
+</div>
+
+<section class="section">
+  <div class="container">
+    <div class="kino-widget">
+      <h2 class="kicker"><span class="ta" lang="ta">சினிமா</span>Kinotermine · aktualisiert {{ kino.stand|datum }}</h2>
+      <div><span class="zahl">{{ kino_widget.anzahl }}</span><p style="margin:8px 0 0;font-size:14px;color:#cfcac0">Kinos zeigen diese Woche<br><strong style="color:#fff">„{{ kino.film }}“ (Tamil)</strong></p></div>
+      <div>
+        <h2 style="margin-bottom:12px">{{ kino.titel }}</h2>
+        <div class="laender">{% for l in kino_widget.laender %}<div class="land"><h4>{{ l.label }}</h4><ul>{% for k in l.kinos %}<li>{{ k }}</li>{% endfor %}</ul></div>{% endfor %}</div>
+      </div>
+      <div class="aktion" style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn btn-gold" href="{{ kino.slug }}.html">Alle Spielorte &amp; Tickets</a><a class="btn btn-ghost hell" href="kategorie-kino.html">Mehr Kino</a></div>
+      <p class="stand">Kinowoche {{ kino.woche }} · Quelle: Kinoprogramme (CineStar, kinoheld, Eventfrog, Cineplexx, megaplex.at), automatisch zusammengestellt vom News-Radar, redaktionell freigegeben.</p>
+    </div>
+  </div>
+</section>
+
+<div class="container">
+  {{ rubrik('kino') }}
+  <section class="section" id="events-teaser">
+    {{ m.kicker('events', mehr='events.html', mehr_text='Alle Events') }}
+    <div class="events-teaser">{% for e in events[1:4] %}{{ m.event_card(e, kompakt=True) }}{% endfor %}</div>
+    <p style="margin:16px 0 0;display:flex;gap:8px;flex-wrap:wrap"><a class="btn btn-ghost btn-sm" href="kontakt.html#event-einreichen">{{ m.icon('plus', 'ico ico-sm') }} Event einreichen</a><a class="btn btn-link btn-sm" href="events.html">Monatsübersicht →</a></p>
+  </section>
+  {{ rubrik('entertainment') }}
+</div>
+
+<section class="section band" id="rezept">
+  <div class="container">
+    {% set r = sel.rezept %}
+    {{ m.kicker('kueche', text=site.rezept.kicker, mehr='kategorie-kueche.html', mehr_text='Alle Rezepte') }}
+    <div class="rezept-band">
+      <a class="media" href="{{ r|link }}" tabindex="-1" aria-hidden="true"><img src="{{ r.bild.src }}" width="{{ r.bild.w }}" height="{{ r.bild.h }}" alt="" loading="lazy"></a>
+      <div>
+        <h2 style="font-size:var(--fs-h1)"><a href="{{ r|link }}" style="color:var(--anthrazit)">{{ r.titel }}</a></h2>
+        <p style="margin:12px 0 0;font-size:16px">{{ r.standfirst }}</p>
+        <dl class="rezept-fakten">{% for f in site.rezept.fakten %}<div><dt>{{ f.label }}</dt><dd>{{ f.wert }}</dd></div>{% endfor %}</dl>
+        <p class="klein leise" style="margin:0 0 16px"><span class="beispiel">{{ site.rezept.fakten_hinweis }}</span></p>
+        <a class="btn btn-primary" href="{{ r|link }}">Zum Rezept</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="container">
+  {{ rubrik('community') }}
+  {{ rubrik('kultur') }}
+  {{ rubrik('sport') }}
+</div>
+
+<section class="section band-gold">
+  <div class="container newsletter" style="max-width:720px;text-align:center">
+    <h2 class="kicker ohne" style="justify-content:center"><span class="ta" lang="ta">செய்திமடல்</span>Newsletter</h2>
+    <h2 style="font-size:var(--fs-h1)">Das Wichtigste der Woche – einmal, nicht zehnmal.</h2>
+    <p style="margin:0">Nachrichten, Kinostarts und Events für DE, AT und CH. Jeden Freitag, kostenlos, jederzeit abbestellbar.</p>
+    <form data-demo style="justify-content:center"><div class="felder" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;width:100%"><label class="sr-only" for="nl-home">E-Mail</label><input id="nl-home" type="email" placeholder="deine@mail.de" required style="flex:1 1 240px;max-width:360px"><button class="btn btn-dark">Anmelden</button><p class="doi" style="width:100%">Double-Opt-in: Du bestätigst die Anmeldung per E-Mail.</p></div><div class="erfolg" style="width:100%">Danke! Bitte bestätige die Anmeldung in deinem Postfach.</div></form>
+  </div>
+</section>
+{% endblock %}

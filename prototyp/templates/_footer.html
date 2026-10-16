@@ -1,0 +1,36 @@
+<div class="container">{{ m.ad('footer') }}</div>
+<footer class="footer">
+  <div class="container">
+    <div class="ueber">
+      <span class="wordmark">tamil<span class="de">.de</span></span>
+      <p>{{ site.ueber_uns }}</p>
+      <div class="chips">{% for s in site.social %}<a class="icon-btn" href="{{ s.url }}" aria-label="{{ s.name }}" style="background:transparent;border-color:#444;color:#fff">{{ m.icon(s.icon, 'ico ico-sm') }}</a>{% endfor %}</div>
+    </div>
+    <div>
+      <h4>Rubriken</h4>
+      <ul>{% for slug, k in kat.items() %}<li><a href="{{ 'events.html' if slug == 'events' else 'kategorie-' ~ slug ~ '.html' }}">{{ k.label }}</a></li>{% endfor %}</ul>
+    </div>
+    <div>
+      <h4>Service</h4>
+      <ul>
+        <li><a href="kontakt.html#werben">Werben auf Tamil.de</a></li>
+        <li><a href="kontakt.html#werben">Mediadaten</a></li>
+        <li><a href="kontakt.html#event-einreichen">Event einreichen</a></li>
+        <li><a href="#newsletter">Newsletter</a></li>
+        <li><a href="#">Über uns</a></li>
+        <li><a href="kontakt.html">Kontakt</a></li>
+      </ul>
+    </div>
+    <div class="newsletter" id="newsletter">
+      <h4>Newsletter</h4>
+      <p class="klein" style="margin:0 0 8px">Einmal pro Woche: Nachrichten, Kinostarts und Events – kostenlos.</p>
+      <form data-demo><div class="felder"><label class="sr-only" for="nl-foot">E-Mail</label><div style="display:flex;gap:8px;flex-wrap:wrap"><input id="nl-foot" type="email" placeholder="deine@mail.de" required style="flex:1 1 180px"><button class="btn btn-gold">Anmelden</button></div><p class="doi klein" style="margin:8px 0 0">Double-Opt-in: Anmeldung per E-Mail bestätigen. Abmeldung jederzeit.</p></div><div class="erfolg">Danke! Bitte bestätige die Anmeldung in deinem Postfach.</div></form>
+    </div>
+    <div class="legal">
+      <span>© {{ jahr }} Tamil.de · {{ site.org }}</span>
+      <a href="#">Impressum</a><a href="#">Datenschutz</a><a href="#">Cookie-Einstellungen</a>
+      <span>Prototyp: Datumsangaben um {{ shift_days }} Tage verschoben, Beispieldaten markiert.</span>
+    </div>
+  </div>
+</footer>
+{{ m.ad('mobile') }}
