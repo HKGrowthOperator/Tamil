@@ -63,7 +63,7 @@
   {% if d.bild_datei %}<img class="bild" src="/bild/{{ d.bild_datei }}" alt="{{ d.bild_alt }}"><p class="leise">{{ d.bild_credit }} · {{ d.bild_origin }}</p>{% endif %}
   <form method="post" action="/entwurf/{{ d.id }}/bild" class="zeile">
     <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="aktion" value="stock">
-    <input name="suchbegriff" value="{{ d.bild_suchbegriff }}" placeholder="Suchbegriff (englisch)">
+    <input name="suchbegriff" value="{{ d.bild_suchbegriff or '' }}" placeholder="Suchbegriff (englisch)">
     <button class="knopf" data-busy="Suche …">Anderes Stockfoto</button>
   </form>
   <form method="post" action="/entwurf/{{ d.id }}/bild" class="zeile" enctype="multipart/form-data">
@@ -102,27 +102,27 @@
   <h2>Text</h2>
   <form method="post" action="/entwurf/{{ d.id }}" id="editor">
     <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
-    <label>Überschrift <input name="titel" value="{{ d.titel }}" maxlength="120" required></label>
-    <label>Teaser <textarea name="teaser" rows="2" maxlength="300">{{ d.teaser }}</textarea></label>
+    <label>Überschrift <input name="titel" value="{{ d.titel or '' }}" maxlength="120" required></label>
+    <label>Teaser <textarea name="teaser" rows="2" maxlength="300">{{ d.teaser or '' }}</textarea></label>
     <div class="zeile">
       <label>Kategorie <select name="kategorie">{% for c in categories %}<option value="{{ c.slug }}" {{ 'selected' if c.slug == d.kategorie }}>{{ c.label }}</option>{% endfor %}</select></label>
       <label>Schlagworte (Komma) <input name="schlagworte" value="{{ d.schlagworte|join(', ') }}"></label>
     </div>
     {% if d.typ == 'event' %}
     <div class="zeile">
-      <label>Datum <input name="event_datum" type="date" value="{{ d.event_datum }}"></label>
-      <label>Ort <input name="event_ort" value="{{ d.event_ort }}"></label>
-      <label>Ticket-Link <input name="ticket_url" type="url" value="{{ d.ticket_url }}"></label>
+      <label>Datum <input name="event_datum" type="date" value="{{ d.event_datum or '' }}"></label>
+      <label>Ort <input name="event_ort" value="{{ d.event_ort or '' }}"></label>
+      <label>Ticket-Link <input name="ticket_url" type="url" value="{{ d.ticket_url or '' }}"></label>
     </div>
     {% else %}
-    <input type="hidden" name="event_datum" value="{{ d.event_datum }}"><input type="hidden" name="event_ort" value="{{ d.event_ort }}"><input type="hidden" name="ticket_url" value="{{ d.ticket_url }}">
+    <input type="hidden" name="event_datum" value="{{ d.event_datum or '' }}"><input type="hidden" name="event_ort" value="{{ d.event_ort or '' }}"><input type="hidden" name="ticket_url" value="{{ d.ticket_url or '' }}">
     {% endif %}
-    <label>Haupttext (HTML: &lt;p&gt;, &lt;h2&gt;, &lt;strong&gt;)<textarea name="inhalt_html" id="inhalt" rows="18">{{ d.inhalt_html }}</textarea></label>
+    <label>Haupttext (HTML: &lt;p&gt;, &lt;h2&gt;, &lt;strong&gt;)<textarea name="inhalt_html" id="inhalt" rows="18">{{ d.inhalt_html or '' }}</textarea></label>
     {% if d.typ == 'kino_termine' %}<p class="leise">Die Spielorte werden automatisch aus den Kinodaten unter den Text gesetzt ({{ d.fakten.kinos|length }} Kinos, Kinowoche {{ d.fakten.woche }}).</p>{% endif %}
     <div class="zeile">
-      <label>SEO-Titel <input name="seo_titel" value="{{ d.seo_titel }}" maxlength="70"></label>
-      <label>Meta-Beschreibung <input name="meta_beschreibung" value="{{ d.meta_beschreibung }}" maxlength="170"></label>
-      <label>Bild-Alt-Text <input name="bild_alt" value="{{ d.bild_alt }}"></label>
+      <label>SEO-Titel <input name="seo_titel" value="{{ d.seo_titel or '' }}" maxlength="70"></label>
+      <label>Meta-Beschreibung <input name="meta_beschreibung" value="{{ d.meta_beschreibung or '' }}" maxlength="170"></label>
+      <label>Bild-Alt-Text <input name="bild_alt" value="{{ d.bild_alt or '' }}"></label>
     </div>
     <button class="primaer">Speichern</button>
   </form>
