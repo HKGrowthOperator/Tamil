@@ -1,0 +1,109 @@
+{
+  "stand": "2026-10-16",
+  "site": {
+    "name": "Tamil.de",
+    "tagline": "Portal · Lifestyle · Entertainment",
+    "claim": "Nachrichten, Kino, Events und Community für Tamilen in Deutschland, Österreich und der Schweiz.",
+    "org": "KBS Management GmbH",
+    "version": "Designkonzept v1 · Prototyp"
+  },
+  "kontakt": {
+    "telefon": "+49 69 123 456",
+    "email": "info@tamil.de",
+    "whatsapp": "+49 170 123 4567",
+    "adresse": ["KBS Management GmbH", "Rheinstr. 78a", "51371 Leverkusen"],
+    "antwortzeit": "Wir antworten in der Regel innerhalb von zwei Werktagen.",
+    "hinweis": "Telefon, E-Mail und WhatsApp sind Beispielwerte aus dem Angebot; Anschrift laut Vertrag. Alle Angaben vom Auftraggeber zu bestätigen."
+  },
+  "social": [
+    {"name": "Facebook", "icon": "facebook", "url": "#"},
+    {"name": "Instagram", "icon": "instagram", "url": "#"},
+    {"name": "YouTube", "icon": "youtube", "url": "#"},
+    {"name": "WhatsApp-Kanal", "icon": "whatsapp", "url": "#"}
+  ],
+  "nav": [
+    {"slug": "news", "label": "Nachrichten"},
+    {"slug": "community", "label": "Community"},
+    {"slug": "entertainment", "label": "Entertainment"},
+    {"slug": "kino", "label": "Kino"},
+    {"slug": "events", "label": "Events", "seite": "events.html"},
+    {"slug": "kueche", "label": "Küche"},
+    {"slug": "sport", "label": "Sport"},
+    {"slug": "kultur", "label": "Kultur"},
+    {"slug": "kontakt", "label": "Kontakt", "seite": "kontakt.html"}
+  ],
+  "kategorien": {
+    "news": {
+      "label": "Nachrichten", "tamil": "செய்திகள்",
+      "beschreibung": "Was die tamilische Community in Deutschland, Österreich und der Schweiz bewegt: Politik, Diaspora, Sri Lanka und Tamil Nadu – eingeordnet auf Deutsch.",
+      "chips": []
+    },
+    "community": {
+      "label": "Community", "tamil": "சமூகம்",
+      "beschreibung": "Vereine, Tempel, Schulen und Menschen: Geschichten aus der tamilischen Gemeinschaft im deutschsprachigen Raum.",
+      "chips": []
+    },
+    "entertainment": {
+      "label": "Entertainment", "tamil": "பொழுதுபோக்கு",
+      "beschreibung": "Musik, Stars, Serien und Konzerte – von Kollywood bis zur Diaspora-Szene in Europa.",
+      "chips": [{"key": "konzert", "label": "Konzerte"}, {"key": "musik", "label": "Musik"}]
+    },
+    "kino": {
+      "label": "Kino", "tamil": "சினிமா",
+      "beschreibung": "Tamilische Filme im deutschsprachigen Raum: Kinostarts, Spielorte, Kritiken und Hintergründe – aktualisiert mit jedem neuen Kinoprogramm.",
+      "chips": [{"key": "kritik", "label": "Kritik"}, {"key": "kinostart", "label": "Kinostart"}, {"key": "kinotermine", "label": "Kinotermine"}, {"key": "konzert", "label": "Konzerte"}]
+    },
+    "events": {
+      "label": "Events", "tamil": "நிகழ்வுகள்",
+      "beschreibung": "Konzerte, Feste, Wettbewerbe und Kinoabende – der Veranstaltungskalender für DE, AT und CH.",
+      "chips": []
+    },
+    "kueche": {
+      "label": "Küche", "tamil": "சமையல்",
+      "beschreibung": "Rezepte aus Jaffna, Chennai und der Diaspora – mit Zutatenliste und Schritt-für-Schritt-Anleitung.",
+      "chips": []
+    },
+    "sport": {
+      "label": "Sport", "tamil": "விளையாட்டு",
+      "beschreibung": "Cricket, Fußball, Kabaddi und Turniere der tamilischen Vereine – Ergebnisse, Termine und Porträts.",
+      "chips": []
+    },
+    "kultur": {
+      "label": "Kultur", "tamil": "பண்பாடு",
+      "beschreibung": "Pongal, Parai, Tempelfeste, Tanz und Literatur: tamilische Kultur erklärt und gelebt – hier und in der Heimat.",
+      "chips": []
+    }
+  },
+  "kultur_regex": "pongal|parai|tempel|tanz|bharat|kultur|thaipusam|deepavali|diwali|literatur|dichter|sprache|fest\\b|feier",
+  "kueche_regex": "rezept|spezialit|küche|kochen|curry|gericht|kothu|rotti",
+  "hero": [9711, 9697, 9688],
+  "top_themen": [9642, 9674, 6296, 4711, 9135],
+  "rezept": {
+    "id": 4711,
+    "kicker": "Rezept der Woche",
+    "fakten": [
+      {"label": "Zubereitung", "wert": "45 Min."},
+      {"label": "Portionen", "wert": "4"},
+      {"label": "Schwierigkeit", "wert": "mittel"},
+      {"label": "Herkunft", "wert": "Jaffna / Sri Lanka"}
+    ],
+    "fakten_hinweis": "Beispielwerte – im Altbestand nicht erfasst"
+  },
+  "werbeplaetze": [
+    {"nr": "01", "key": "leaderboard", "name": "Leaderboard", "desktop": "728 × 90", "mobil": "320 × 50", "position": "Unter der Navigation, auf allen Seiten"},
+    {"nr": "02", "key": "sidebar", "name": "Half Page (Sidebar)", "desktop": "300 × 600", "mobil": "300 × 250 (Tablet), mobil ausgeblendet", "position": "Rechte Spalte, bleibt beim Scrollen stehen"},
+    {"nr": "03", "key": "inarticle", "name": "In-Article", "desktop": "728 × 90", "mobil": "300 × 250", "position": "Im Artikel nach dem zweiten Absatz; Startseite 970 × 250"},
+    {"nr": "04", "key": "footer", "name": "Footer", "desktop": "728 × 90", "mobil": "320 × 100", "position": "Über dem Footer, auf allen Seiten"},
+    {"nr": "05", "key": "mobile", "name": "Mobile Sticky", "desktop": "–", "mobil": "320 × 50", "position": "Nur mobil, fixiert am unteren Rand, schließbar"}
+  ],
+  "faq": [
+    {"frage": "Wie reiche ich eine Veranstaltung ein?", "antwort": "Über das Formular „Event einreichen“ weiter unten. Die Redaktion prüft jede Einreichung und veröffentlicht sie in der Regel innerhalb von zwei Werktagen im Kalender. (Beispieltext)"},
+    {"frage": "Was kostet Werbung auf Tamil.de?", "antwort": "Die fünf Werbeplätze werden pro Monat oder pro 1.000 Einblendungen gebucht. Die Mediadaten mit Preisen senden wir auf Anfrage. (Beispieltext)"},
+    {"frage": "Kann ich Artikel oder Fotos einsenden?", "antwort": "Ja. Leserreporter schicken Text und Bild an die Redaktion. Bitte nur eigene Fotos oder solche mit Erlaubnis des Fotografen. (Beispieltext)"}
+  ],
+  "ueber_uns": "Tamil.de ist eine Plattform für deutschsprachige Tamilen in Deutschland, der Schweiz und Österreich. Sie ist die zentrale Anlaufstelle für Nachrichten aus der tamilischen Welt, kulturelle Veranstaltungen, Feste und Feiertage sowie praktische Hinweise zu Bildung, Gesundheit und rechtlichen Fragen.",
+  "autorenbox": {
+    "name": "Redaktion Tamil.de",
+    "text": "Die Redaktion schreibt über die tamilische Community im deutschsprachigen Raum – auf Deutsch, mit Blick auf Deutschland, Österreich und die Schweiz. (Beispieltext: Autorennamen und -profile liegen im Altbestand nicht vor.)"
+  }
+}
