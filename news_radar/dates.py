@@ -12,6 +12,7 @@ MONTHS = {
     "januar": 1, "jan": 1, "februar": 2, "feb": 2, "märz": 3, "maerz": 3, "mär": 3, "mar": 3, "april": 4, "apr": 4,
     "mai": 5, "juni": 6, "jun": 6, "juli": 7, "jul": 7, "august": 8, "aug": 8, "september": 9, "sep": 9, "sept": 9,
     "oktober": 10, "okt": 10, "oct": 10, "november": 11, "nov": 11, "dezember": 12, "dez": 12, "dec": 12,
+    "january": 1, "february": 2, "march": 3, "june": 6, "july": 7, "october": 10, "december": 12,
 }
 _MONTH_RE = "|".join(sorted(MONTHS, key=len, reverse=True))
 _TIME_RE = re.compile(r"(?<!\d)(\d{1,2})[:.](\d{2})(?:\s*uhr)?", re.I)
