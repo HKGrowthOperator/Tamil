@@ -18,11 +18,12 @@ from .config import Settings
 
 log = logging.getLogger(__name__)
 
-# Farben aus dem Tamil.de-Designsystem
-ROT = (176, 30, 44)
-GOLD = (201, 168, 76)
-ANTHRAZIT = (26, 26, 28)
-WARMWEISS = (250, 247, 242)
+# Farben aus dem Tamil.de-Designsystem v2 („Radar“): Nacht, Kumkum, Manjal, Papier
+ROT = (200, 16, 46)
+GOLD = (232, 185, 35)
+ANTHRAZIT = (14, 18, 38)
+WARMWEISS = (250, 250, 248)
+RASTER = (38, 45, 82)
 
 SIZE = (1200, 675)
 _FONT_CANDIDATES = [
@@ -60,6 +61,9 @@ def _wrap(draw: ImageDraw.ImageDraw, text: str, font, max_width: int) -> list[st
 def branded_card(title: str, category_label: str, slug: str) -> FeaturedImage:
     img = Image.new("RGB", SIZE, ANTHRAZIT)
     draw = ImageDraw.Draw(img)
+    for y in range(40, SIZE[1], 26):  # Kolam-Punktraster wie auf der Radar-Bühne
+        for x in range(40 + (13 if (y // 26) % 2 else 0), SIZE[0], 26):
+            draw.ellipse([x - 2, y - 2, x + 2, y + 2], fill=RASTER)
     draw.rectangle([0, 0, SIZE[0], 14], fill=ROT)
     draw.rectangle([72, 120, 72 + 64, 126], fill=GOLD)
     draw.text((72, 142), category_label.upper(), font=_font(30), fill=GOLD)
