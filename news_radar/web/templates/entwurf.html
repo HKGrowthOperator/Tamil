@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}{{ d.titel }}{% endblock %}
+{% block content %}
+<p class="zurueck"><a href="/?status={{ 'veroeffentlicht' if d.status in ('in_wordpress', 'wird_veroeffentlicht') else d.status }}">← Feed</a></p>
+<section class="karte kopf">
+  <div class="meta">
+    <span class="badge status s-{{ d.status }}">{{ labels.get(d.status, d.status) }}</span>
+    <span class="badge kat">{{ category_label(d.kategorie) }}</span>
+    {% if d.typ != 'artikel' %}<span class="badge typ">{{ 'Kinotermine' if d.typ == 'kino_termine' else 'Event' }}</span>{% endif %}
+    {% if d.ort %}<span class="badge ort">{{ d.ort }}</span>{% endif %}
+    <span class="relevanz r{{ d.relevanz }}">Relevanz {{ d.relevanz }}</span>
+    <span class="leise">{{ fmt_dt(d.created_at) }}{% if d.bearbeitet_von %} · zuletzt {{ d.bearbeitet_von }}{% endif %}{% if d.rewrite_count %} · {{ d.rewrite_count }}× neu geschrieben{% endif %}</span>
+  </div>
+  <p class="leise">Quelle: <a href="{{ d.quelle_url }}" target="_blank" rel="noopener">{{ d.quelle_name }}</a>
+    {% for q in d.weitere_quellen %} · <a href="{{ q.url }}" target="_blank" rel="noopener">{{ q.name }}</a>{% endfor %}
+    · Einschätzung: {{ d.begruendung }}</p>
+  {% if d.hinweise %}<ul class="hinweise">{% for h in d.hinweise %}<li>{{ h }}</li>{% endfor %}</ul>{% endif %}
+  {% if d.fehler %}<p class="fehlertext">{{ d.fehler }}</p>{% endif %}
+  {% if d.wp_link %}<p><a class="knopf" href="{{ d.wp_link }}" target="_blank" rel="noopener">{{ 'Beitrag auf tamil.de öffnen' if d.status == 'veroeffentlicht' else 'In WordPress öffnen' }}</a></p>{% endif %}
+
+  <div class="aktionen gross">
+    {% if can_publish %}
+      {% if wordpress_enabled %}
+      <form method="post" action="/entwurf/{{ d.id }}/veroeffentlichen" class="inline" data-confirm="Jetzt direkt auf tamil.de veröffentlichen?">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="gold" data-busy="Wird veröffentlicht …">Direkt posten</button>
+      </form>
+      <form method="post" action="/entwurf/{{ d.id }}/wp-entwurf" class="inline">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="knopf" data-busy="Wird angelegt …">In WordPress bearbeiten</button>
+      </form>
+      {% endif %}
+      {% if d.status != 'freigegeben' %}
+      <form method="post" action="/entwurf/{{ d.id }}/status?next=/entwurf/{{ d.id }}" class="inline">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="aktion" value="freigeben">
+        <button class="primaer">Freigeben</button>
+      </form>
+      {% endif %}
+    {% endif %}
+    {% if d.status in open_states %}
+    <form method="post" action="/entwurf/{{ d.id }}/status?next=/entwurf/{{ d.id }}" class="inline">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="aktion" value="zurueckstellen">
+      <button class="leise">Zurückstellen</button>
+    </form>
+    {% endif %}
+    {% if d.status in open_states or d.status in ('freigegeben', 'fehler') %}
+    <form method="post" action="/entwurf/{{ d.id }}/status?next=/entwurf/{{ d.id }}" class="inline" data-confirm="Entwurf wirklich ablehnen?">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="aktion" value="ablehnen">
+      <button class="gefahr">Ablehnen</button>
+    </form>
+    {% endif %}
+    {% if d.status == 'abgelehnt' %}
+    <form method="post" action="/entwurf/{{ d.id }}/status?next=/entwurf/{{ d.id }}" class="inline">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="aktion" value="wiederherstellen">
+      <button class="leise">Wiederherstellen</button>
+    </form>
+    {% endif %}
+    <a class="knopf" href="/vorschau/{{ d.id }}" target="_blank">Vorschau</a>
+  </div>
+</section>
+
+<div class="zwei-spalten">
+<section class="karte">
+  <h2>Bild</h2>
+  {% if d.bild_datei %}<img class="bild" src="/bild/{{ d.bild_datei }}" alt="{{ d.bild_alt }}"><p class="leise">{{ d.bild_credit }} · {{ d.bild_origin }}</p>{% endif %}
+  <form method="post" action="/entwurf/{{ d.id }}/bild" class="zeile">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="aktion" value="stock">
+    <input name="suchbegriff" value="{{ d.bild_suchbegriff }}" placeholder="Suchbegriff (englisch)">
+    <button class="knopf" data-busy="Suche …">Anderes Stockfoto</button>
+  </form>
+  <form method="post" action="/entwurf/{{ d.id }}/bild" class="zeile" enctype="multipart/form-data">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="aktion" value="upload">
+    <input type="file" name="datei" accept="image/*" required>
+    <input name="credit" placeholder="Bildnachweis (optional)">
+    <button class="knopf">Eigenes Bild</button>
+  </form>
+  <form method="post" action="/entwurf/{{ d.id }}/bild" class="zeile">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="aktion" value="karte">
+    <button class="leise">Tamil.de-Bildkarte erzeugen</button>
+  </form>
+</section>
+
+<section class="karte">
+  <h2>Neu schreiben lassen</h2>
+  <form method="post" action="/entwurf/{{ d.id }}/neu-schreiben">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <div class="vorschlaege">
+      <button type="button" class="chip" data-anweisung="Kürzer, maximal 200 Wörter.">Kürzer</button>
+      <button type="button" class="chip" data-anweisung="Sachlicher und nüchterner Ton.">Sachlicher</button>
+      <button type="button" class="chip" data-anweisung="Mehr Bezug zur tamilischen Community in Deutschland, Österreich und der Schweiz herausarbeiten.">Mehr DACH-Bezug</button>
+      <button type="button" class="chip" data-anweisung="Lockerer, nahbarer Ton, Leser mit „ihr“ ansprechen.">Lockerer</button>
+      <button type="button" class="chip" data-anweisung="Neue, knackigere Überschrift und neuer Teaser; Text beibehalten.">Neue Überschrift</button>
+    </div>
+    <textarea name="anweisung" rows="2" placeholder="Anweisung, z. B. „Hintergrund zum Film ergänzen, Termine nach vorne“"></textarea>
+    <button class="knopf" data-busy="Claude schreibt … (bis zu 80 s)">Neu schreiben</button>
+  </form>
+  <form method="post" action="/entwurf/{{ d.id }}/zuruecksetzen" class="zeile" data-confirm="Alle Änderungen verwerfen und das Original wiederherstellen?">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="leise">Auf Original zurücksetzen</button>
+  </form>
+</section>
+</div>
+
+<section class="karte">
+  <h2>Text</h2>
+  <form method="post" action="/entwurf/{{ d.id }}" id="editor">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <label>Überschrift <input name="titel" value="{{ d.titel }}" maxlength="120" required></label>
+    <label>Teaser <textarea name="teaser" rows="2" maxlength="300">{{ d.teaser }}</textarea></label>
+    <div class="zeile">
+      <label>Kategorie <select name="kategorie">{% for c in categories %}<option value="{{ c.slug }}" {{ 'selected' if c.slug == d.kategorie }}>{{ c.label }}</option>{% endfor %}</select></label>
+      <label>Schlagworte (Komma) <input name="schlagworte" value="{{ d.schlagworte|join(', ') }}"></label>
+    </div>
+    {% if d.typ == 'event' %}
+    <div class="zeile">
+      <label>Datum <input name="event_datum" type="date" value="{{ d.event_datum }}"></label>
+      <label>Ort <input name="event_ort" value="{{ d.event_ort }}"></label>
+      <label>Ticket-Link <input name="ticket_url" type="url" value="{{ d.ticket_url }}"></label>
+    </div>
+    {% else %}
+    <input type="hidden" name="event_datum" value="{{ d.event_datum }}"><input type="hidden" name="event_ort" value="{{ d.event_ort }}"><input type="hidden" name="ticket_url" value="{{ d.ticket_url }}">
+    {% endif %}
+    <label>Haupttext (HTML: &lt;p&gt;, &lt;h2&gt;, &lt;strong&gt;)<textarea name="inhalt_html" id="inhalt" rows="18">{{ d.inhalt_html }}</textarea></label>
+    {% if d.typ == 'kino_termine' %}<p class="leise">Die Spielorte werden automatisch aus den Kinodaten unter den Text gesetzt ({{ d.fakten.kinos|length }} Kinos, Kinowoche {{ d.fakten.woche }}).</p>{% endif %}
+    <div class="zeile">
+      <label>SEO-Titel <input name="seo_titel" value="{{ d.seo_titel }}" maxlength="70"></label>
+      <label>Meta-Beschreibung <input name="meta_beschreibung" value="{{ d.meta_beschreibung }}" maxlength="170"></label>
+      <label>Bild-Alt-Text <input name="bild_alt" value="{{ d.bild_alt }}"></label>
+    </div>
+    <button class="primaer">Speichern</button>
+  </form>
+</section>
+
+<section class="karte vorschau-karte">
+  <h2>Vorschau</h2>
+  <article class="beitrag">
+    <h1 id="vorschau-titel">{{ d.titel }}</h1>
+    <p class="teaser" id="vorschau-teaser">{{ d.teaser }}</p>
+    <div id="vorschau-text">{{ preview|safe }}</div>
+  </article>
+</section>
+{% endblock %}

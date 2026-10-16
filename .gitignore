@@ -5,3 +5,6 @@ __pycache__/
 out/
 data/
 .pytest_cache/
+
+export/
+backup/

@@ -112,7 +112,7 @@ type = "html"
 url = "https://eventfrog.ch/de/events.html?searchTerm=tamil"
 kind = "event"
 country = "CH"
-min_score = 0
+min_score = 1  # Suche ist unscharf: nur Treffer mit tamilischem Stichwort
 max_items = 3
 interval_minutes = 120
 selectors = { item = "a.event-list__events__tile", title = ".event-list__events__tile__content__infos__title", link = "::attr(href)", date = ".event-list__events__tile__content__infos__time", ort = ".event-list__events__tile__content__infos__location" }
@@ -123,7 +123,7 @@ type = "html"
 url = "https://eventfrog.de/de/events.html?searchTerm=tamil"
 kind = "event"
 country = "DE"
-min_score = 0
+min_score = 1
 max_items = 3
 interval_minutes = 120
 selectors = { item = "a.event-list__events__tile", title = ".event-list__events__tile__content__infos__title", link = "::attr(href)", date = ".event-list__events__tile__content__infos__time", ort = ".event-list__events__tile__content__infos__location" }

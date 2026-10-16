@@ -72,6 +72,13 @@ def test_select_keeps_related_sources_and_respects_max_items(settings):
     assert len(filtering.select(items, settings, set(), [], now=NOW)) == 2
 
 
+def test_event_source_with_min_score_drops_unrelated_hits(settings):
+    settings.sources = [Source(name="Eventfrog", type="html", url="https://x", kind="event", min_score=1)]
+    good = item("Jailer 2 Tamil Kino Kloten", "", source="Eventfrog", kind="event")
+    bad = item("Family Halloween", "Kinderfest", source="Eventfrog", kind="event")
+    assert [p.title for p in filtering.select([good, bad], settings, set(), [], now=NOW)] == [good.title]
+
+
 def test_select_filters_old_blocked_seen_and_blocklist(settings):
     old = item("Tamilen in Berlin", hours_old=200)
     blocked = item("Tamil casino bonus Berlin", "tamil")

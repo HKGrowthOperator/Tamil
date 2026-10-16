@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Anmelden{% endblock %}
+{% block content %}
+<section class="karte login">
+  <h1>Anmelden</h1>
+  <form method="post">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <label>Benutzername <input name="user" autocomplete="username" required autofocus></label>
+    <label>Passwort <input name="password" type="password" autocomplete="current-password" required></label>
+    <button class="primaer">Anmelden</button>
+  </form>
+</section>
+{% endblock %}

@@ -48,7 +48,8 @@ def is_tamil(*texts: str) -> bool:
 
 def clean_film_title(title: str) -> str:
     """„Jailer 2 (Tamil OmeU)“, „(tamil) Jailer 2“, „*Jailer 2“ → „Jailer 2“."""
-    t = _VERSION_RE.sub(" ", title or "")
+    t = (title or "").split(" | ")[0]
+    t = _VERSION_RE.sub(" ", t)
     t = re.sub(r"^\W+|\W+$", "", t)
     return re.sub(r"\s+", " ", t).strip()
 

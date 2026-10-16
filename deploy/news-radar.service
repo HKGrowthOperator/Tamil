@@ -7,6 +7,7 @@ Wants=network-online.target
 Type=oneshot
 User=newsradar
 WorkingDirectory=/opt/tamil-news-radar
+EnvironmentFile=/opt/tamil-news-radar/.env
 ExecStart=/opt/tamil-news-radar/.venv/bin/python -m news_radar run
 TimeoutStartSec=300
 Nice=5

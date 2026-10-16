@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Freigabe-Feed{% endblock %}
+{% block content %}
+<nav class="tabs">
+  {% for slug, label in tabs %}
+  <a href="/?status={{ slug }}" class="{{ 'aktiv' if slug == status }}">{{ label }} <b>{{ counts.get(slug, 0) }}</b></a>
+  {% endfor %}
+</nav>
+{% if not drafts %}
+  <p class="leer">Keine Entwürfe mit Status „{{ labels.get(status, status) }}“.</p>
+{% endif %}
+<div class="liste">
+{% for d in drafts %}
+  {% include "_karte.html" %}
+{% endfor %}
+</div>
+{% if has_more %}<p class="mehr"><a href="/?status={{ status }}&seite={{ page + 1 }}">Weitere laden</a></p>{% endif %}
+{% endblock %}

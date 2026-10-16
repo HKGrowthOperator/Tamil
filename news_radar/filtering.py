@@ -107,12 +107,13 @@ def select(
         if source and source.country and not item.ort:
             item.ort = {"DE": "Deutschland", "CH": "Schweiz", "AT": "Österreich"}.get(source.country, source.country)
             item.dach_score = max(item.dach_score, 1)
-        if item.kind == "news":
+        needed = None
+        if source and source.min_score is not None:
+            needed = source.min_score  # 0 = vertrauenswürdige Quelle, alles durchlassen
+        elif item.kind == "news":
             needed = settings.min_score_dach if item.dach_score > 0 else settings.min_score
-            if source and source.min_score is not None:
-                needed = source.min_score
-            if item.score < needed:
-                continue
+        if needed and item.score < needed:
+            continue
         twin = next((p for p in picked if similar(item.title, p.title)), None)
         if twin is not None:
             twin.related.append(item)

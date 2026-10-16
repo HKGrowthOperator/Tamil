@@ -3,3 +3,6 @@ feedparser>=6.0
 requests>=2.31
 pillow>=10.0
 pydantic>=2.6
+flask>=3.1
+gunicorn>=23
+beautifulsoup4>=4.12

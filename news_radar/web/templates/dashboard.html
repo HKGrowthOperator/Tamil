@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h1>Dashboard <small class="leise">letzte {{ days }} Tage · <a href="/dashboard?tage={{ 30 if days == 7 else 7 }}">{{ 30 if days == 7 else 7 }} Tage</a></small></h1>
+<div class="kacheln">
+  <div class="kachel"><b>{{ dash.offen }}</b><span>offene Vorgänge</span></div>
+  <div class="kachel"><b>{{ dash.neu_seit }}</b><span>neue Entwürfe</span></div>
+  <div class="kachel"><b>{{ dash.veroeffentlicht_seit }}</b><span>veröffentlicht</span></div>
+  <div class="kachel"><b>{{ dash.status.abgelehnt }}</b><span>abgelehnt gesamt</span></div>
+  <div class="kachel"><b>{{ dash.status.fehler }}</b><span>mit Fehler</span></div>
+</div>
+<div class="zwei-spalten">
+<section class="karte"><h2>Nach Status</h2><table>{% for s, n in dash.status.items() %}<tr><td>{{ labels.get(s, s) }}</td><td class="zahl">{{ n }}</td></tr>{% endfor %}</table></section>
+<section class="karte"><h2>Nach Kategorie</h2><table>{% for r in dash.je_kategorie %}<tr><td>{{ category_label(r.name) }}</td><td class="zahl">{{ r.n }}</td></tr>{% else %}<tr><td class="leise">noch nichts</td></tr>{% endfor %}</table></section>
+<section class="karte"><h2>Nach Quelle</h2><table>{% for r in dash.je_quelle %}<tr><td>{{ r.name }}</td><td class="zahl">{{ r.n }}</td></tr>{% else %}<tr><td class="leise">noch nichts</td></tr>{% endfor %}</table></section>
+<section class="karte"><h2>Nach Typ</h2><table>{% for r in dash.je_typ %}<tr><td>{{ r.name }}</td><td class="zahl">{{ r.n }}</td></tr>{% endfor %}</table></section>
+</div>
+<section class="karte">
+  <h2>Quellen</h2>
+  <table class="voll">
+    <tr><th>Quelle</th><th>zuletzt ok</th><th>Treffer</th><th>Fehler</th></tr>
+    {% for q in dash.quellen %}
+    <tr class="{{ 'warn' if q.error_msg }}"><td>{{ q.name }}{% if q.paused_until %} <span class="badge">pausiert</span>{% endif %}</td><td>{{ fmt_dt(q.last_ok) }}</td><td class="zahl">{{ q.last_count if q.last_count is not none else '' }}</td><td class="leise">{{ q.error_msg or '' }}</td></tr>
+    {% endfor %}
+  </table>
+</section>
+<section class="karte">
+  <h2>Letzte Läufe</h2>
+  <table class="voll">
+    <tr><th>Start</th><th>gesammelt</th><th>relevant</th><th>Entwürfe</th><th>verworfen</th><th>veröffentlicht</th><th>Fehler</th></tr>
+    {% for r in dash.laeufe %}<tr><td>{{ fmt_dt(r.started_at) }}</td><td class="zahl">{{ r.gesammelt or 0 }}</td><td class="zahl">{{ r.relevant or 0 }}</td><td class="zahl">{{ r.entwuerfe or 0 }}</td><td class="zahl">{{ r.verworfen or 0 }}</td><td class="zahl">{{ r.veroeffentlicht or 0 }}</td><td class="zahl">{{ r.fehler or 0 }}</td></tr>{% endfor %}
+  </table>
+</section>
+{% if dash.fehler %}
+<section class="karte"><h2>Fehler</h2><table class="voll">{% for e in dash.fehler %}<tr><td>{{ fmt_dt(e.ts) }}</td><td>{{ e.titel }}</td><td class="leise">{{ e.fehler }}</td></tr>{% endfor %}</table></section>
+{% endif %}
+{% endblock %}

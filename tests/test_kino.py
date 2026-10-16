@@ -49,6 +49,7 @@ def test_clean_title_and_film_key():
     assert kp.clean_film_title("Jailer 2 (Tamil OmeU)") == "Jailer 2"
     assert kp.clean_film_title("(tamil) Ramayana: Rise Of A Legend") == "Ramayana: Rise Of A Legend"
     assert kp.clean_film_title("*Jailer 2") == "Jailer 2"
+    assert kp.clean_film_title("Jailer 2 | indisches Kino | with english subtitles , ab 18") == "Jailer 2"
     assert kp.film_key("Jailer 2 (Tamil OmeU)") == kp.film_key("(tamil) Jailer 2") == "jailer-2"
 
 

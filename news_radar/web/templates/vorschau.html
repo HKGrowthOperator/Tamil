@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Vorschau: {{ d.titel }}{% endblock %}
+{% block content %}
+<p class="zurueck"><a href="/entwurf/{{ d.id }}">← Bearbeiten</a></p>
+<article class="karte beitrag seite">
+  <p class="leise">{{ category_label(d.kategorie) }} · {{ fmt_dt(d.created_at, false) }}</p>
+  <h1>{{ d.titel }}</h1>
+  <p class="teaser">{{ d.teaser }}</p>
+  {% if d.bild_datei %}<figure><img src="/bild/{{ d.bild_datei }}" alt="{{ d.bild_alt }}"><figcaption>{{ d.bild_credit }}</figcaption></figure>{% endif %}
+  {{ content|safe }}
+  <p class="schlagworte">{% for t in d.schlagworte %}<span class="badge">{{ t }}</span>{% endfor %}</p>
+</article>
+{% endblock %}

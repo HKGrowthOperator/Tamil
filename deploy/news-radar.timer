@@ -3,8 +3,8 @@ Description=Tamil.de News-Radar alle 3 Minuten
 
 [Timer]
 OnBootSec=1min
-# 3 Minuten Takt + max. ~2 Minuten Bearbeitung = Entwurf spätestens ~5 Minuten
-# nachdem die Meldung im Feed erscheint
+# 3-Minuten-Takt + max. ~2 Minuten Bearbeitung = Entwurf spätestens ~5 Minuten nach Erscheinen im Feed.
+# oneshot-Service: ein neuer Lauf startet erst, wenn der vorige fertig ist.
 OnUnitActiveSec=3min
 AccuracySec=15s
 Persistent=true
