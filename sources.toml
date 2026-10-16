@@ -1,0 +1,140 @@
+# News-Radar Konfiguration (Vertrag Pos. B.1.5: bis zu zehn Quellen)
+#
+# type = "rss"     -> beliebiger RSS/Atom-Feed, kein Token nötig
+# type = "newsapi" -> newsapi.org, Token aus NEWSAPI_KEY
+# type = "gnews"   -> gnews.io, Token aus GNEWS_TOKEN
+
+[[source]]
+name = "Google News DE · Tamil"
+type = "rss"
+url = "https://news.google.com/rss/search?q=tamil+OR+tamilisch+OR+tamilen&hl=de&gl=DE&ceid=DE:de"
+
+[[source]]
+name = "Google News DE · Sri Lanka"
+type = "rss"
+url = "https://news.google.com/rss/search?q=%22Sri+Lanka%22&hl=de&gl=DE&ceid=DE:de"
+
+[[source]]
+name = "Google News EN · Kollywood"
+type = "rss"
+url = "https://news.google.com/rss/search?q=kollywood+OR+%22tamil+film%22+OR+%22tamil+cinema%22&hl=en-IN&gl=IN&ceid=IN:en"
+
+[[source]]
+name = "The Hindu · Tamil Nadu"
+type = "rss"
+url = "https://www.thehindu.com/news/national/tamil-nadu/feeder/default.rss"
+
+[[source]]
+name = "Daily Mirror Sri Lanka"
+type = "rss"
+url = "https://www.dailymirror.lk/rss/breaking-news/108"
+
+[[source]]
+name = "NewsAPI · Tamil Diaspora"
+type = "newsapi"
+query = "(tamil OR tamilen OR tamilisch OR \"sri lanka\" OR kollywood) AND (deutschland OR germany OR europa OR diaspora OR film OR kino)"
+language = "de"
+
+[[source]]
+name = "NewsAPI · Kollywood EN"
+type = "newsapi"
+query = "kollywood OR \"tamil cinema\" OR \"tamil film\" OR rajinikanth OR vijay OR anirudh"
+language = "en"
+
+[[source]]
+name = "GNews · Tamil Nadu"
+type = "gnews"
+query = "\"Tamil Nadu\" OR Chennai OR Jaffna"
+language = "en"
+
+# Stichwort-Gewichte für den Vorfilter (klein geschrieben; Treffer in Titel zählen doppelt)
+[keywords]
+"tamil" = 3
+"tamilisch" = 4
+"tamilen" = 4
+"diaspora" = 3
+"sri lanka" = 2
+"jaffna" = 3
+"eelam" = 3
+"tamil nadu" = 2
+"chennai" = 2
+"kollywood" = 4
+"rajinikanth" = 3
+"vijay" = 2
+"ajith" = 2
+"suriya" = 3
+"anirudh" = 4
+"a.r. rahman" = 3
+"ilaiyaraaja" = 3
+"pongal" = 4
+"deepavali" = 3
+"thaipusam" = 4
+"bharatanatyam" = 3
+"cricket" = 1
+"deutschland" = 2
+"germany" = 1
+"europa" = 1
+"kino" = 1
+"cinema" = 1
+"premiere" = 1
+# DACH-Bezug: Termine und Kinos vor Ort sind für Tamil.de am wertvollsten
+"cineplex" = 4
+"cinemaxx" = 4
+"uci" = 2
+"berlin" = 3
+"hamburg" = 3
+"münchen" = 3
+"köln" = 3
+"frankfurt" = 3
+"stuttgart" = 3
+"düsseldorf" = 3
+"dortmund" = 3
+"essen" = 2
+"paderborn" = 3
+"bielefeld" = 3
+"hannover" = 3
+"nürnberg" = 3
+"zürich" = 3
+"bern" = 2
+"basel" = 3
+"wien" = 3
+"konzert" = 1
+"concert" = 1
+
+# Ausschluss: Meldungen mit diesen Begriffen werden verworfen
+[blocklist]
+terms = ["horoskop", "casino", "betting", "wetten", "porn", "obituary", "todesanzeige", "sponsored", "anzeige:"]
+
+# Ziel-Kategorien (Slug in WordPress) + Stichwörter für die Zuordnung.
+# Die KI wählt final eine dieser Kategorien.
+[categories.news]
+label = "Nachrichten"
+hints = ["sri lanka", "tamil nadu", "politik", "regierung", "wahl", "jaffna", "chennai"]
+
+[categories.community]
+label = "Community"
+hints = ["diaspora", "verein", "deutschland", "germany", "tempel", "schule"]
+
+[categories.entertainment]
+label = "Entertainment"
+hints = ["anirudh", "a.r. rahman", "song", "album", "konzert", "concert", "star", "serie"]
+
+[categories.kino]
+label = "Kino"
+hints = ["kollywood", "film", "kino", "cinema", "cineplex", "cinemaxx", "trailer", "box office", "premiere", "rajinikanth", "vijay", "suriya", "ajith"]
+
+[categories.events]
+label = "Events"
+hints = ["festival", "event", "tickets", "tour", "live in"]
+
+[categories.kueche]
+label = "Küche"
+hints = ["rezept", "recipe", "küche", "food", "restaurant", "biryani", "dosa"]
+
+[categories.sport]
+label = "Sport"
+hints = ["cricket", "sport", "fußball", "football", "olympia", "turnier"]
+
+[categories.kultur]
+label = "Kultur"
+hints = ["pongal", "deepavali", "thaipusam", "bharatanatyam", "sprache", "literatur", "kultur", "tradition"]
