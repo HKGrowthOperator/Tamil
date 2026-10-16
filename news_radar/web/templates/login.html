@@ -1,13 +1,18 @@
 {% extends "base.html" %}
 {% block title %}Anmelden{% endblock %}
 {% block content %}
-<section class="karte login">
-  <h1>Anmelden</h1>
-  <form method="post">
-    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
-    <label>Benutzername <input name="user" autocomplete="username" required autofocus></label>
-    <label>Passwort <input name="password" type="password" autocomplete="current-password" required></label>
-    <button class="primaer">Anmelden</button>
-  </form>
-</section>
+<div class="login-buehne">
+  <div class="scope-deko" aria-hidden="true"></div>
+  <section class="karte login">
+    <p class="logo"><span>tamil<b>.de</b></span><em>Radar</em></p>
+    <h1>Anmelden</h1>
+    <p class="unter">Freigabe-Cockpit der Redaktion. Zugang nur für eingetragene Nutzer.</p>
+    <form method="post">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <label>Benutzername <input name="user" autocomplete="username" required autofocus></label>
+      <label>Passwort <input name="password" type="password" autocomplete="current-password" required></label>
+      <button class="primaer">Anmelden</button>
+    </form>
+  </section>
+</div>
 {% endblock %}

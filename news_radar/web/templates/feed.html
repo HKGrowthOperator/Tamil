@@ -1,18 +1,21 @@
 {% extends "base.html" %}
 {% block title %}Freigabe-Feed{% endblock %}
 {% block content %}
-<nav class="tabs">
-  {% for slug, label in tabs %}
-  <a href="/?status={{ slug }}" class="{{ 'aktiv' if slug == status }}">{{ label }} <b>{{ counts.get(slug, 0) }}</b></a>
-  {% endfor %}
-</nav>
+<header class="topline">
+  <div><h1>Freigabe</h1><p class="unter">Entwürfe des Radars prüfen, bearbeiten und mit einem Klick veröffentlichen.</p></div>
+  <nav class="tabs" aria-label="Status">
+    {% for slug, label in tabs %}
+    <a href="/?status={{ slug }}" class="{{ 'aktiv' if slug == status }}">{{ label }} <b>{{ counts.get(slug, 0) }}</b></a>
+    {% endfor %}
+  </nav>
+</header>
 {% if not drafts %}
-  <p class="leer">Keine Entwürfe mit Status „{{ labels.get(status, status) }}“.</p>
+  <div class="leer"><strong>Nichts zu tun.</strong><span>Keine Entwürfe mit Status „{{ labels.get(status, status) }}“. Der Radar meldet sich, sobald er etwas findet.</span></div>
 {% endif %}
-<div class="liste">
+<div class="liste" data-board>
 {% for d in drafts %}
   {% include "_karte.html" %}
 {% endfor %}
 </div>
-{% if has_more %}<p class="mehr"><a href="/?status={{ status }}&seite={{ page + 1 }}">Weitere laden</a></p>{% endif %}
+{% if has_more %}<p class="mehr"><a class="knopf" href="/?status={{ status }}&seite={{ page + 1 }}">Weitere laden</a></p>{% endif %}
 {% endblock %}

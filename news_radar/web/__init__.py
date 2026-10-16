@@ -75,8 +75,25 @@ def create_app(settings: Settings | None = None, testing: bool = False) -> Flask
 
     @app.context_processor
     def _globals():
+        import math
+
+        def letzter_lauf():
+            runs = get_store().recent_runs(1)
+            return runs[0] if runs else None
+
+        def offen():
+            counts = get_store().counts_by_status()
+            return sum(counts.get(s, 0) for s in ("neu", "bearbeitet", "zurueckgestellt"))
+
+        def polar(i: int, n: int, r: float) -> tuple[float, float]:
+            a = 2 * math.pi * i / max(n, 1) - math.pi / 2
+            return round(50 + r * math.cos(a), 1), round(50 + r * math.sin(a), 1)
+
         return {
             "csrf_token": csrf_token,
+            "letzter_lauf": letzter_lauf,
+            "offen": offen,
+            "polar": polar,
             "settings": settings,
             "fmt_dt": fmt_dt,
             "age": age,

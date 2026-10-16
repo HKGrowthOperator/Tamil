@@ -1,32 +1,32 @@
-<article class="karte entwurf-karte typ-{{ d.typ }}">
-  <a class="thumb" href="/entwurf/{{ d.id }}">
+<article class="karte entwurf-karte typ-{{ d.typ }}" tabindex="0" data-id="{{ d.id }}">
+  <a class="thumb" href="/entwurf/{{ d.id }}" tabindex="-1">
     {% if d.bild_datei %}<img src="/bild/{{ d.bild_datei.replace('.jpg', '-thumb.jpg') }}" alt="" loading="lazy">{% endif %}
+    <span class="badge kat">{{ category_label(d.kategorie) }}</span>
   </a>
   <div class="inhalt">
     <div class="meta">
-      <span class="badge kat">{{ category_label(d.kategorie) }}</span>
       {% if d.typ == 'kino_termine' %}<span class="badge typ">Kinotermine</span>{% elif d.typ == 'event' %}<span class="badge typ">Event</span>{% endif %}
       {% if d.ort %}<span class="badge ort">{{ d.ort }}</span>{% endif %}
-      <span class="relevanz r{{ d.relevanz }}">Relevanz {{ d.relevanz }}</span>
+      <span class="relevanz r{{ d.relevanz }}" title="Relevanz {{ d.relevanz }} von 10"><i style="--r:{{ d.relevanz }}"></i>Relevanz {{ d.relevanz }}</span>
       <span class="leise">{{ age(d.created_at) }} · {{ d.quelle_name }}</span>
       {% if d.hinweise %}<span class="badge hinweis" title="{{ d.hinweise|join(' · ') }}">aktualisiert</span>{% endif %}
     </div>
-    <h2><a href="/entwurf/{{ d.id }}">{{ d.titel }}</a></h2>
+    <h2><a href="/entwurf/{{ d.id }}" data-open>{{ d.titel }}</a></h2>
     <p class="teaser">{{ d.teaser }}</p>
     {% if d.status == 'fehler' %}<p class="fehlertext">{{ d.fehler }}</p>{% endif %}
     {% if d.wp_link %}<p class="leise"><a href="{{ d.wp_link }}" target="_blank" rel="noopener">{{ 'Beitrag öffnen' if d.status == 'veroeffentlicht' else 'In WordPress öffnen' }}</a></p>{% endif %}
     <div class="aktionen">
       {% set open = d.status in ('neu', 'bearbeitet', 'zurueckgestellt') %}
       {% if open or d.status == 'fehler' %}
-      <form method="post" action="/entwurf/{{ d.id }}/status?next=/?status={{ status }}" class="inline">
+      {% if wordpress_enabled %}
+      <form method="post" action="/entwurf/{{ d.id }}/veroeffentlichen" class="inline" data-confirm="Jetzt direkt auf tamil.de veröffentlichen?">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="gold" data-busy="Wird veröffentlicht …">Direkt posten</button>
+      </form>
+      {% endif %}
+      <form method="post" action="/entwurf/{{ d.id }}/status?next=/?status={{ status }}" class="inline" data-key="f">
         <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="aktion" value="freigeben">
         <button class="primaer">Freigeben</button>
       </form>
-      {% if wordpress_enabled %}
-      <form method="post" action="/entwurf/{{ d.id }}/veroeffentlichen" class="inline" data-confirm="Jetzt direkt auf tamil.de veröffentlichen?">
-        <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="gold">Direkt posten</button>
-      </form>
-      {% endif %}
       {% endif %}
       <a class="knopf" href="/entwurf/{{ d.id }}">Bearbeiten</a>
       {% if open %}
@@ -36,7 +36,7 @@
       </form>
       {% endif %}
       {% if open or d.status in ('freigegeben', 'fehler') %}
-      <form method="post" action="/entwurf/{{ d.id }}/status?next=/?status={{ status }}" class="inline" data-confirm="Entwurf wirklich ablehnen?">
+      <form method="post" action="/entwurf/{{ d.id }}/status?next=/?status={{ status }}" class="inline" data-confirm="Entwurf wirklich ablehnen?" data-key="a">
         <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="aktion" value="ablehnen">
         <button class="gefahr">Ablehnen</button>
       </form>

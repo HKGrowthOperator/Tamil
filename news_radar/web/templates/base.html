@@ -7,27 +7,36 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/static/icon-192.png">
 <link rel="apple-touch-icon" href="/static/icon-192.png">
-<meta name="theme-color" content="#B01E2C">
+<meta name="theme-color" content="#0E1226">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="stylesheet" href="/static/app.css">
 </head>
-<body>
-<header class="top">
-  <a class="logo" href="/">tamil<span>.de</span> <small>Radar</small></a>
-  {% if session.user %}
+<body class="{% if not session.user %}ohne-rail{% endif %}">
+{% if session.user %}
+{% set lauf = letzter_lauf() %}
+<aside class="rail">
+  <a class="logo" href="/"><svg class="kolam" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="7"/><circle cx="20" cy="50" r="5"/><circle cx="80" cy="50" r="5"/><circle cx="50" cy="20" r="5"/><circle cx="50" cy="80" r="5"/><path d="M50 35 C64 35 70 20 56 12 C44 5 36 18 50 35 C65 50 85 44 88 56 C92 70 76 72 66 60 C50 44 36 50 35 64 C33 78 48 90 56 80 C66 68 54 56 44 50 C30 44 12 50 12 60 C12 72 26 72 35 64"/></svg><span>tamil<b>.de</b></span><em>Radar</em></a>
   <nav>
-    <a href="/" class="{{ 'aktiv' if request.endpoint == 'ui.feed' }}">Feed</a>
-    <a href="/dashboard" class="{{ 'aktiv' if request.endpoint == 'ui.dashboard' }}">Dashboard</a>
-    <a href="/protokoll" class="{{ 'aktiv' if request.endpoint == 'ui.protokoll' }}">Protokoll</a>
-    <form method="post" action="/logout" class="inline"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="leise">Abmelden</button></form>
+    <a href="/" class="{{ 'aktiv' if request.endpoint == 'ui.feed' }}"><span>Feed</span><span class="count">{{ offen() }}</span></a>
+    <a href="/dashboard" class="{{ 'aktiv' if request.endpoint == 'ui.dashboard' }}"><span>Dashboard</span></a>
+    <a href="/protokoll" class="{{ 'aktiv' if request.endpoint == 'ui.protokoll' }}"><span>Protokoll</span></a>
   </nav>
-  {% endif %}
-</header>
+  <div class="status" {% if lauf %}data-lauf="{{ lauf.started_at }}"{% endif %}>
+    <span class="live">Radar läuft</span>
+    <span class="takt">alle 3 Minuten</span>
+    {% if lauf %}<span class="letzter">letzter Lauf {{ fmt_dt(lauf.started_at) }}{% if lauf.entwuerfe %}, {{ lauf.entwuerfe }} neue Entwürfe{% endif %}</span><span class="naechster" data-countdown>nächster in <b>–:––</b></span>{% else %}<span class="letzter">noch kein Lauf protokolliert</span>{% endif %}
+    <span class="shortcuts" title="Tastatur im Feed">J/K wechseln · F freigeben · A ablehnen · ↵ öffnen</span>
+  </div>
+  <form method="post" action="/logout" class="abmelden"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><span class="nutzer">{{ session.user }}</span><button class="leise">Abmelden</button></form>
+</aside>
+{% endif %}
+<main class="cockpit">
 {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}<div class="meldungen">{% for cat, m in messages %}<div class="meldung {{ cat }}">{{ m|urlize(target='_blank') }}</div>{% endfor %}</div>{% endif %}
 {% endwith %}
-<main>{% block content %}{% endblock %}</main>
+{% block content %}{% endblock %}
+</main>
 <script src="/static/app.js"></script>
 </body>
 </html>

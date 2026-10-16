@@ -2,7 +2,7 @@
 {% block title %}Vorschau: {{ d.titel }}{% endblock %}
 {% block content %}
 <p class="zurueck"><a href="/entwurf/{{ d.id }}">← Bearbeiten</a></p>
-<article class="karte beitrag seite">
+<article class="papier beitrag seite">
   <p class="leise">{{ category_label(d.kategorie) }} · {{ fmt_dt(d.created_at, false) }}</p>
   <h1>{{ d.titel }}</h1>
   <p class="teaser">{{ d.teaser }}</p>

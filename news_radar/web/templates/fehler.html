@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 {% block title %}{{ titel }}{% endblock %}
 {% block content %}
-<section class="karte">
+<section class="karte schmal">
   <h1>{{ titel }}</h1>
   <p>{{ text }}</p>
-  <p><a class="knopf" href="/entwurf/{{ draft_id }}">Entwurf neu laden</a> <a class="knopf" href="/">Zum Feed</a></p>
+  <p class="aktionen"><a class="knopf" href="/entwurf/{{ draft_id }}">Entwurf neu laden</a> <a class="knopf" href="/">Zum Feed</a></p>
 </section>
 {% endblock %}

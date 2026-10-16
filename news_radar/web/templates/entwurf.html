@@ -2,7 +2,7 @@
 {% block title %}{{ d.titel }}{% endblock %}
 {% block content %}
 <p class="zurueck"><a href="/?status={{ 'veroeffentlicht' if d.status in ('in_wordpress', 'wird_veroeffentlicht') else d.status }}">← Feed</a></p>
-<section class="karte kopf">
+<section class="karte kopf aktionsleiste">
   <div class="meta">
     <span class="badge status s-{{ d.status }}">{{ labels.get(d.status, d.status) }}</span>
     <span class="badge kat">{{ category_label(d.kategorie) }}</span>
@@ -57,6 +57,8 @@
   </div>
 </section>
 
+<div class="editor-grid">
+<div class="editor-links">
 <div class="zwei-spalten">
 <section class="karte">
   <h2>Bild</h2>
@@ -127,13 +129,16 @@
     <button class="primaer">Speichern</button>
   </form>
 </section>
+</div>
 
-<section class="karte vorschau-karte">
-  <h2>Vorschau</h2>
-  <article class="beitrag">
+<section class="vorschau-karte">
+  <h2 class="vorschau-titel-leiste">Vorschau <small class="leise">so erscheint der Beitrag auf tamil.de</small></h2>
+  <article class="papier beitrag">
+    {% if d.bild_datei %}<img class="bild" src="/bild/{{ d.bild_datei }}" alt="">{% endif %}
     <h1 id="vorschau-titel">{{ d.titel }}</h1>
     <p class="teaser" id="vorschau-teaser">{{ d.teaser }}</p>
     <div id="vorschau-text">{{ preview|safe }}</div>
   </article>
 </section>
+</div>
 {% endblock %}
