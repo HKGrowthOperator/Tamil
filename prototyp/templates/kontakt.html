@@ -8,7 +8,7 @@
   </header>
   <div class="kontakt-grid">
     <div class="kontakt-karte">
-      <h2 class="kicker ohne">Redaktion &amp; Verlag</h2>
+      <h2 class="kicker"><span class="ta" lang="ta">ஆசிரியர் குழு</span><span class="de">Redaktion und Verlag</span></h2>
       <div class="zeile">{{ m.icon('phone') }}<div><strong>Telefon</strong>{{ site.kontakt.telefon }}</div></div>
       <div class="zeile">{{ m.icon('mail') }}<div><strong>E-Mail</strong>{{ site.kontakt.email }}</div></div>
       <div class="zeile">{{ m.icon('whatsapp') }}<div><strong>WhatsApp</strong>{{ site.kontakt.whatsapp }}<br><a class="btn btn-wa btn-sm" style="margin-top:8px" href="https://wa.me/{{ site.kontakt.whatsapp|replace(' ', '')|replace('+', '') }}" target="_blank" rel="noopener">{{ m.icon('whatsapp', 'ico ico-sm') }} Nachricht schreiben</a></div></div>
@@ -18,7 +18,7 @@
     </div>
     <form class="kontaktformular" id="kontaktformular" data-demo>
       <div class="felder">
-        <h2 class="kicker ohne" style="margin-bottom:16px">Nachricht an die Redaktion</h2>
+        <h2 class="kicker" style="margin-bottom:16px"><span class="ta" lang="ta"></span><span class="de">Nachricht an die Redaktion</span></h2>
         <div class="form-grid">
           <div class="feld"><label for="k-name">Name</label><input id="k-name" type="text" required autocomplete="name"></div>
           <div class="feld"><label for="k-mail">E-Mail</label><input id="k-mail" type="email" required autocomplete="email"></div>

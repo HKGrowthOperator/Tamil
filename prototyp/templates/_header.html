@@ -25,7 +25,7 @@
         <span class="tagline">{{ site.tagline }}</span>
         <span class="datum">{{ stand_text }}</span>
       </div>
-      <a class="wordmark" href="index.html" aria-label="Tamil.de – Startseite">tamil<span class="de">.de</span></a>
+      {{ m.wordmark() }}
       <button type="button" class="icon-btn suche-btn" id="suche-btn" aria-label="Suche öffnen">{{ m.icon('search') }}</button>
       <form class="suche" id="suche" role="search" data-demo><label class="sr-only" for="q">Suche</label><input id="q" type="search" placeholder="Suchen …"><button type="submit" class="icon-btn" aria-label="Suchen">{{ m.icon('search') }}</button></form>
     </div>
@@ -40,7 +40,7 @@
   </nav>
   <div class="drawer" id="drawer" hidden>
     <div class="panel" role="dialog" aria-label="Menü">
-      <div class="kopf"><span class="wordmark" style="font-size:28px">tamil<span class="de">.de</span></span><button type="button" class="icon-btn" data-close aria-label="Menü schließen">{{ m.icon('close') }}</button></div>
+      <div class="kopf"><span class="wordmark" style="font-size:28px"><svg class="kolam" aria-hidden="true"><use href="#i-kolam"/></svg>tamil<span class="de">.de</span></span><button type="button" class="icon-btn" data-close aria-label="Menü schließen">{{ m.icon('close') }}</button></div>
       <ul>
         <li><a href="index.html">Startseite</a></li>
         {% for n in nav %}<li><a href="{{ n.get('seite') or 'kategorie-' ~ n.slug ~ '.html' }}"{% if n.slug == seite %} aria-current="page"{% endif %}>{{ n.label }}<span class="ta" lang="ta">{{ kat[n.slug].tamil if n.slug in kat else 'தொடர்பு' }}</span></a></li>{% endfor %}
@@ -50,4 +50,7 @@
     </div>
   </div>
 </header>
+<div class="ticker" aria-label="Aktuelle Schlagzeilen">
+  <div class="track">{% for t in ticker %}<a class="item" href="{{ t.href }}"><span class="k" lang="ta">{{ t.k }}</span>{{ t.text }}</a>{% endfor %}</div>
+</div>
 <div class="container">{{ m.ad('leaderboard') }}</div>

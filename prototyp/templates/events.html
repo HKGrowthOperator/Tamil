@@ -40,7 +40,7 @@
         <p class="klein leise" style="margin-top:12px">Rot = Kino, Gold = Kultur, Grün = Tanz. Weitere Monate folgen im Prototyp nicht; im Relaunch blättert die Ansicht.</p>
       </div>
       <div class="cta-band" style="margin-top:32px">
-        <h2 class="kicker ohne" style="color:var(--gold)"><span class="ta" lang="ta">பதிவு</span>Event einreichen</h2>
+        <h2 class="kicker"><span class="ta" lang="ta">பதிவு</span><span class="de">Event einreichen</span></h2>
         <h2>Du veranstaltest etwas? Trag dein Event kostenlos ein.</h2>
         <p>Konzert, Tempelfest, Turnier oder Kinoabend – die Redaktion prüft die Angaben und nimmt das Event in den Kalender und in den Newsletter auf.</p>
         <div><a class="btn btn-gold" href="kontakt.html#event-einreichen">{{ m.icon('plus', 'ico ico-sm') }} Event einreichen</a></div>
@@ -49,12 +49,12 @@
     <aside class="sidebar">
       {{ m.ad('sidebar') }}
       <div class="widget dunkel">
-        <h2 class="kicker"><span class="ta" lang="ta">சினிமா</span>Kinotermine</h2>
+        <h2 class="kicker"><span class="ta" lang="ta">சினிமா</span><span class="de">Kinotermine</span></h2>
         <p style="margin:0;font-size:14px;color:#cfcac0">„{{ kino.film }}“ läuft in <strong style="color:#fff">{{ kino_widget.anzahl }} Kinos</strong> in DE, AT und CH.</p>
         <a class="btn btn-gold btn-sm" href="{{ kino.slug }}.html">Alle Spielorte</a>
       </div>
       <div class="widget">
-        <h2 class="kicker"><span class="ta" lang="ta">முக்கியம்</span>Top-Themen</h2>
+        <h2 class="kicker"><span class="ta" lang="ta">முக்கியம்</span><span class="de">Top-Themen</span></h2>
         <ol class="liste">{% for p in sel.top %}<li><span class="nr">{{ '%02d' % loop.index }}</span><a href="{{ p|link }}">{{ p.titel }}</a></li>{% endfor %}</ol>
       </div>
     </aside>

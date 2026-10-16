@@ -1,4 +1,4 @@
-# Tamil.de – HTML-Prototypen der fünf Vorlagen (Designkonzept v1)
+# Tamil.de – HTML-Prototypen der fünf Vorlagen (Designkonzept v2 „Radar“)
 
 Vertrag HKG-2026-TML-V-001, Teil A: **A.1.1 Designkonzept**, **A.1.2 Korrekturschleifen**, **A.1.3 Responsive**,
 **A.1.4 Vorlagen** (Startseite, Kategorie, Artikel, Events, Kontakt). Die Prototypen sind statisches HTML im eigenen
@@ -34,8 +34,25 @@ python -m pytest tests/test_prototyp.py -q
 | Design-System | `design-system.html` | Farben mit Kontrast, Schrift, Abstände, Buttons, Badges, Karten, Formulare, Werbeplätze in Originalgröße, Icons |
 
 Drei Breakpoints: ≤ 600 px (Drawer, 1 Spalte, Mobile-Sticky-Werbeplatz), 601–1023 px (Scroll-Navigation, 2 Spalten),
-≥ 1024 px (volle Navigation, 3 Spalten, Sidebar 300 px sticky). Schriften (Fraunces, Inter, Noto Sans Tamil) liegen
-lokal in `static/fonts/`, keine externen Aufrufe beim Laden.
+≥ 1024 px (volle Navigation, 3 Spalten, Sidebar 300 px sticky). Schriften (Fraunces mit Kursiv und den Achsen SOFT/WONK,
+Schibsted Grotesk, Noto Serif Tamil) liegen lokal in `static/fonts/`, keine externen Aufrufe beim Laden.
+
+## Handschrift (v2)
+
+- **Farben:** Nacht-Indigo `#0E1226`, Kumkum-Rot `#C8102E`, Manjal-Gelb `#E8B923`, Blatt-Grün `#1F7A4D`, Papier `#FAFAF8`.
+  Die Triade Nacht/Kumkum/Manjal ist bewusst kein Creme-Serif-Standard: Kumkum und Manjal (Kurkuma) sind die Farben
+  tamilischer Rituale, das Indigo ist der Nachthimmel hinter dem Radar.
+- **Schrift:** Fraunces (variabel, WONK/SOFT für die leicht eigenwilligen Buchstaben, Kursiv für Akzente) für Titel und
+  Zahlen, Schibsted Grotesk (eine Zeitungsschrift) für Lauftext und Bedienelemente. Das tamilische Wort ist die
+  Überschrift jedes Abschnitts, der deutsche Begriff steht kursiv daneben („சினிமா *Kino*“).
+- **Das eine prägende Element:** die **Radar-Bühne** auf der Startseite: eine Punktkarte von Deutschland, Österreich und
+  der Schweiz (`radar_map.py` rastert die Länderumrisse aus `content/geo/`), ein rotierender Sweep und pulsierende Blips
+  an den Orten, an denen der News-Radar diese Woche etwas gefunden hat, dazu das Protokoll „zuletzt erfasst“ und drei Zahlen.
+- **Bewegung, gezielt:** die Aufmacher-Schlagzeile steigt Wort für Wort auf (einmal, beim Laden), der Schlagzeilen-Ticker
+  unter der Navigation läuft, der Kino-Radar zählt seine Kinos hoch und lässt die Spielorte als Filmstreifen durchlaufen,
+  Artikel haben einen Lesebalken. Alles stoppt bei `prefers-reduced-motion`.
+- **Kolam-Marke:** eine kleine Schleifenlinie um fünf Punkte neben der Wortmarke, als Vorschlag bis die Logo-Datei vorliegt.
+  Dasselbe Punktraster liegt hinter der Radar-Bühne, im Footer und auf den automatisch erzeugten Tamil.de-Bildkarten.
 
 ## Was echt ist, was Beispiel
 
@@ -68,5 +85,10 @@ Was der Export nicht hergibt und vor dem Relaunch geklärt werden muss:
 ## Zuordnung zum Code
 
 `build.py` nutzt aus dem News-Radar `news_radar.render` (HTML-Bereinigung, Kinoliste) und `news_radar.wordpress.slugify`;
-`cards()` erzeugt die Tamil.de-Bildkarten für Events ohne Foto mit `news_radar.images.branded_card`. Die Werbeplätze,
-Kategorien, Top-Themen und Kontaktdaten stehen in `content/site.json`, die Events und Kinotermine in `content/events.json`.
+`cards()` erzeugt die Tamil.de-Bildkarten für Events ohne Foto mit `news_radar.images.branded_card`. `radar_map.py` baut
+die DACH-Punktkarte. Die Werbeplätze, Kategorien, Top-Themen, Kontaktdaten, Städte-Koordinaten und Radar-Meldungen stehen
+in `content/site.json`, die Events und Kinotermine in `content/events.json`.
+
+Die Freigabe-App des News-Radars (`news_radar/web/`) trägt dieselbe Handschrift als dunkles Cockpit: Seitenleiste mit
+Live-Status und Countdown bis zum nächsten Lauf, Board-Feed mit Tastaturkürzeln (J/K, F, A, Enter), Quellen-Radar im
+Dashboard, Editor mit Papier-Vorschau.

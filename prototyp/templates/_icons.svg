@@ -1,4 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <defs><linearGradient id="sweepfill" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#C8102E" stop-opacity="0"/><stop offset="1" stop-color="#C8102E" stop-opacity=".7"/></linearGradient></defs>
+  <symbol id="i-kolam" viewBox="0 0 100 100"><circle cx="50" cy="50" r="7"/><circle cx="20" cy="50" r="5"/><circle cx="80" cy="50" r="5"/><circle cx="50" cy="20" r="5"/><circle cx="50" cy="80" r="5"/><path d="M50 35 C64 35 70 20 56 12 C44 5 36 18 50 35 C65 50 85 44 88 56 C92 70 76 72 66 60 C50 44 36 50 35 64 C33 78 48 90 56 80 C66 68 54 56 44 50 C30 44 12 50 12 60 C12 72 26 72 35 64"/></symbol>
   <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
   <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
   <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></symbol>

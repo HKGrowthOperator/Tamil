@@ -4,9 +4,13 @@
 
 {% macro kicker(slug, text=None, mehr=None, mehr_text=None) -%}
 <div class="section-head">
-  <h2 class="kicker"><span class="ta" lang="ta">{{ kat[slug].tamil if slug in kat else '' }}</span>{{ text or kat[slug].label }}</h2>
-  {% if mehr %}<a class="mehr" href="{{ mehr }}">{{ mehr_text or ('Alle ' ~ kat[slug].label) }} →</a>{% endif %}
+  <h2 class="kicker"><span class="ta" lang="ta">{{ kat[slug].tamil if slug in kat else '' }}</span><span class="de">{{ text or kat[slug].label }}</span></h2>
+  {% if mehr %}<a class="mehr" href="{{ mehr }}">{{ mehr_text or ('Alle ' ~ kat[slug].label) }}</a>{% endif %}
 </div>
+{%- endmacro %}
+
+{% macro wordmark(href="index.html") -%}
+<a class="wordmark" href="{{ href }}" aria-label="Tamil.de – Startseite"><svg class="kolam" aria-hidden="true"><use href="#i-kolam"/></svg>tamil<span class="de">.de</span></a>
 {%- endmacro %}
 
 {% macro ad(key) -%}
@@ -19,7 +23,7 @@
 {%- endmacro %}
 
 {% macro meta(p) -%}
-<p class="meta"><span class="kat">{{ kat[p.kategorien[0]].label }}</span><span>{{ p.datum|datum }}</span><span>{{ p.lesezeit }} Min. Lesezeit</span></p>
+<p class="meta"><span class="kat">{{ kat[p.kategorien[0]].label }}</span><span>{{ p.datum|datum }}</span><span>{{ p.lesezeit }} Min.</span></p>
 {%- endmacro %}
 
 {% macro card(p, variant="", heading="h3", excerpt=True, badge=False, lazy=True) -%}
@@ -84,18 +88,18 @@
 <aside class="sidebar">
   {{ ad('sidebar') }}
   <div class="widget">
-    <h2 class="kicker"><span class="ta" lang="ta">முக்கியம்</span>Top-Themen</h2>
+    <h2 class="kicker"><span class="ta" lang="ta">முக்கியம்</span><span class="de">Top-Themen</span></h2>
     <ol class="liste">{% for p in sel.top %}<li><span class="nr">{{ '%02d' % loop.index }}</span><a href="{{ p|link }}">{{ p.titel }}</a></li>{% endfor %}</ol>
   </div>
   {% if events_widget %}
   <div class="widget dunkel">
-    <h2 class="kicker"><span class="ta" lang="ta">நிகழ்வுகள்</span>Nächste Events</h2>
+    <h2 class="kicker"><span class="ta" lang="ta">நிகழ்வுகள்</span><span class="de">Nächste Events</span></h2>
     <ul class="liste">{% for e in events[:4] %}<li><span class="nr">{{ e.von[8:10]|int }}.</span><a href="{{ e.seite }}">{{ e.titel }}</a></li>{% endfor %}</ul>
     <a class="btn btn-ghost hell btn-sm" href="events.html">Alle Events</a>
   </div>
   {% endif %}
   <div class="widget papier newsletter">
-    <h2 class="kicker ohne">Newsletter</h2>
+    <h2 class="kicker"><span class="ta" lang="ta"></span><span class="de">Newsletter</span></h2>
     <p class="klein" style="margin:0">Einmal pro Woche das Wichtigste aus Nachrichten, Kino und Events.</p>
     <form data-demo><div class="felder"><label class="sr-only" for="nl-side">E-Mail</label><input id="nl-side" type="email" placeholder="deine@mail.de" required><button class="btn btn-primary" style="margin-top:8px;width:100%">Anmelden</button><p class="doi klein">Double-Opt-in: Du bestätigst die Anmeldung per E-Mail.</p></div><div class="erfolg">Danke! Bitte bestätige die Anmeldung in deinem Postfach.</div></form>
   </div>

@@ -1,8 +1,9 @@
 <div class="container">{{ m.ad('footer') }}</div>
 <footer class="footer">
+  <div class="karte-hinten" aria-hidden="true">{{ radar.footer_svg|safe }}</div>
   <div class="container">
     <div class="ueber">
-      <span class="wordmark">tamil<span class="de">.de</span></span>
+      <span class="wordmark"><svg class="kolam" aria-hidden="true"><use href="#i-kolam"/></svg>tamil<span class="de">.de</span></span>
       <p>{{ site.ueber_uns }}</p>
       <div class="chips">{% for s in site.social %}<a class="icon-btn" href="{{ s.url }}" aria-label="{{ s.name }}" style="background:transparent;border-color:#444;color:#fff">{{ m.icon(s.icon, 'ico ico-sm') }}</a>{% endfor %}</div>
     </div>

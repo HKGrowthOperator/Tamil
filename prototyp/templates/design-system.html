@@ -1,18 +1,18 @@
 {% extends "base.html" %}
 {% block content %}
 {% set farben = [
-  ('Rot', '#B01E2C', 'Primär: Links, Badges, Buttons', '#FFFFFF'),
-  ('Rot tief', '#8A1722', 'Hover-Zustand', '#FFFFFF'),
-  ('Gold', '#C9A84C', 'Akzent: Ranglisten, Kicker, Werben', '#1A1A1C'),
-  ('Gold hell', '#E3C778', 'Newsletter-Band', '#1A1A1C'),
-  ('Anthrazit', '#1A1A1C', 'Topbar, Footer, Kino-Widget', '#FFFFFF'),
-  ('Anthrazit 2', '#26262A', 'Prototyp-Leiste, Flächen im Dunkeln', '#FFFFFF'),
-  ('Warmweiß', '#FAF7F2', 'Seitenhintergrund', '#2A2A2C'),
-  ('Papier', '#F3EFE8', 'Bänder, Boxen, Werbeplätze', '#2A2A2C'),
-  ('Text', '#2A2A2C', 'Fließtext', '#FAF7F2'),
-  ('Text leise', '#86827B', 'Meta, Bildunterschriften', '#FAF7F2'),
-  ('Linie', '#E2DCD1', 'Trennlinien, Rahmen', '#2A2A2C'),
-  ('Grün', '#3E7D5A', 'WhatsApp, Erfolg, Rezept', '#FFFFFF')] %}
+  ('Nacht', '#0E1226', 'Radar-Bühne, Kino-Radar, Footer, Drawer', '#FFFFFF'),
+  ('Nacht 2', '#171C36', 'Flächen im Dunkeln, Prototyp-Leiste', '#C9CCE0'),
+  ('Kumkum', '#C8102E', 'Primär: Ticker, Links, Buttons, Badges', '#FFFFFF'),
+  ('Kumkum tief', '#9E0C24', 'Hover-Zustand', '#FFFFFF'),
+  ('Manjal', '#E8B923', 'Akzent: Blips, Zahlen, Rezept-Band, Werben', '#0E1226'),
+  ('Manjal tief', '#B88E0E', 'Ranglisten-Ziffern, Werbeplatz-Rahmen', '#FFFFFF'),
+  ('Blatt', '#1F7A4D', 'WhatsApp, Erfolg', '#FFFFFF'),
+  ('Papier', '#FAFAF8', 'Seitenhintergrund', '#14161F'),
+  ('Feld', '#F1F0EC', 'Bänder, Boxen, Tags', '#14161F'),
+  ('Tinte', '#14161F', 'Text, Überschriften', '#FAFAF8'),
+  ('Nebel', '#6B6F7B', 'Meta, Bildunterschriften', '#FAFAF8'),
+  ('Linie', '#E2E2E6', 'Trennlinien, Rahmen', '#14161F')] %}
 <div class="container">
   <nav class="breadcrumb" aria-label="Brotkrumen"><a href="index.html">Start</a><span>›</span><span>Design-System</span></nav>
   <header class="seitenkopf">
@@ -28,7 +28,7 @@
 
   <section class="ds-section" id="schrift">
     <h2>Schrift</h2>
-    <p class="klein leise">Fraunces (Display, variabel, opsz 9–144) für Titel und Zahlen · Inter (variabel) für alles andere · Noto Sans Tamil für die tamilischen Kicker. Fließtext max. 70 Zeichen pro Zeile.</p>
+    <p class="klein leise">Fraunces (variabel, Achsen opsz, wght, SOFT und WONK, dazu Kursiv) trägt Titel, Zahlen und die kursiven Abschnittsnamen. Schibsted Grotesk, eine Zeitungsschrift, trägt Lauftext und Bedienelemente. Noto Serif Tamil setzt die tamilischen Abschnittstitel. Fließtext bleibt unter 70 Zeichen pro Zeile.</p>
     <div class="type-row"><span class="lbl">Display 44/30</span><span style="font-family:var(--font-display);font-size:var(--fs-display);font-weight:600;line-height:1.08">Jailer 2 läuft in 9 Kinos</span></div>
     <div class="type-row"><span class="lbl">H1 40/28</span><h1>Von Deutschland nach Tamil Nadu</h1></div>
     <div class="type-row"><span class="lbl">H2 28/22</span><h2>Spielorte und Termine</h2></div>
@@ -36,8 +36,9 @@
     <div class="type-row"><span class="lbl">Standfirst 20</span><span style="font-size:var(--fs-standfirst);line-height:1.5">Rajinikanths Fortsetzung startet in der Kinowoche vom 15. bis 22. Oktober.</span></div>
     <div class="type-row"><span class="lbl">Text 18/17</span><span class="artikel-body" style="display:block">Für die tamilische Community im deutschsprachigen Raum ist der Kinostart ein Ereignis: Viele Kinos zeigen den Film im Original mit Untertiteln.</span></div>
     <div class="type-row"><span class="lbl">Meta 13</span><span class="meta"><span class="kat">Kino</span><span>16. Oktober 2026</span><span>3 Min. Lesezeit</span></span></div>
-    <div class="type-row"><span class="lbl">Kicker</span><span class="kicker ohne"><span class="ta" lang="ta">சினிமா</span>Kino</span></div>
-    <div class="type-row"><span class="lbl">Wortmarke</span><span class="wordmark" style="text-align:left">tamil<span class="de">.de</span> <span class="beispiel">Logo-Datei vom AG ausstehend</span></span></div>
+    <div class="type-row"><span class="lbl">Abschnittstitel</span><span class="kicker"><span class="ta" lang="ta">சினிமா</span><span class="de">Kino</span></span></div>
+    <div class="type-row"><span class="lbl">Kursiv-Akzent</span><span style="font-family:var(--font-display);font-style:italic;font-variation-settings:var(--wonk);font-size:28px;color:var(--kumkum)">Das Wichtigste der Woche. Einmal, nicht zehnmal.</span></div>
+    <div class="type-row"><span class="lbl">Wortmarke</span><span>{{ m.wordmark('#') }} <span class="beispiel">Kolam-Marke als Vorschlag, Logo-Datei vom AG ausstehend</span></span></div>
   </section>
 
   <section class="ds-section" id="abstaende">
@@ -62,7 +63,10 @@
   <section class="ds-section" id="badges">
     <h2>Badges, Chips, Tags, Datums-Badge</h2>
     <div class="ds-demo"><span class="badge">Nachrichten</span><span class="badge gruen">Kinotermine · live</span><span class="badge gold">Werben</span><span class="badge soft">CH</span><span class="badge dunkel">Event</span><span class="stand-badge">aktualisiert 16.10.</span><span class="beispiel">Beispiel</span></div>
-    <div class="ds-demo"><div class="chips"><span class="chip is-active">Alle</span><span class="chip">Kritik</span><span class="chip">Kinostart</span></div><a class="tag" href="#">Rajinikanth</a><a class="tag" href="#">Jailer 2</a><div class="date-badge"><span class="tag-nr">24</span><span class="monat">Okt</span><span class="wtag">Sa</span></div></div>
+    <div class="ds-demo"><div class="chips"><span class="chip is-active">Alle</span><span class="chip">Kritik</span><span class="chip">Kinostart</span></div><a class="tag" href="#">Rajinikanth</a><a class="tag" href="#">Jailer 2</a><div class="date-badge"><span class="tag-nr">24</span><span class="monat">Okt</span><span class="wtag">Sa</span></div><span class="live">Radar läuft</span></div>
+    <h3 style="margin:24px 0 8px">Radar-Karte (Leitmotiv)</h3>
+    <p class="klein leise">Punktraster aus den Länderumrissen, rotierender Sweep, Blips an Orten mit Treffern. Rot = Kino, Gelb = Event, Weiß = Nachricht. Bei reduzierter Bewegung steht die Karte still.</p>
+    <div class="ds-demo dunkel" style="display:block;max-width:520px">{{ radar.svg|safe }}</div>
   </section>
 
   <section class="ds-section" id="karten">

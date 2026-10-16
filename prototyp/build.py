@@ -33,6 +33,8 @@ sys.path.insert(0, str(REPO))
 from news_radar.render import format_date_de, render_kino_liste, sanitize_html  # noqa: E402
 from news_radar.wordpress import slugify  # noqa: E402
 
+import radar_map  # noqa: E402
+
 CONTENT, TEMPLATES, STATIC = ROOT / "content", ROOT / "templates", ROOT / "static"
 IMG, DIST, DIST_ARTIFACT, SHOTS = STATIC / "img", ROOT / "dist", ROOT / "dist-artifact", ROOT / "shots"
 CHROMIUM = Path("/opt/pw-browsers/chromium-1194/chrome-linux/chrome")
@@ -470,6 +472,64 @@ def kino_widget(fakten: dict) -> dict:
     return {"anzahl": len(fakten["kinos"]), "laender": [{"code": c, "label": l, "kinos": by_land.get(c, [])} for c, l in order if by_land.get(c)]}
 
 
+def radar_orte(site: dict, ev: dict, by_id: dict) -> list[dict]:
+    """Blips für die Radar-Bühne: ein Ort je Stadt, aus Kinoprogramm, Events und Nachrichten (jeweils mit Quelle im Label)."""
+    coords = site["staedte"]
+    orte: dict[str, dict] = {}
+
+    def add(stadt: str, label: str, art: str, href: str = "", quelle: str = ""):
+        if stadt not in coords:
+            return
+        o = orte.setdefault(stadt, {"name": stadt, "lat": coords[stadt][0], "lon": coords[stadt][1], "art": art, "labels": [], "href": href, "quelle": quelle})
+        o["labels"].append(label)
+        if art == "kino" and o["art"] != "kino":
+            o["art"] = art
+
+    kt = ev["kino_termine"]
+    for k in kt["fakten"]["kinos"]:
+        add(k["stadt"], f"{kt['film']} im {k['kino']}", "kino", f"{kt['slug']}.html", k.get("quelle", ""))
+    for e in ev["events"]:
+        if e["land"] != "DACH":
+            add(e["stadt"], e["titel"], "event" if e["kategorie"] != "kino" else "kino", e["seite"], e["quelle"]["name"])
+    for n in site.get("radar_news", []):
+        post = by_id.get(n.get("post"))
+        add(n["stadt"], n["label"], "news", article_link(post) if post else "", "Redaktion")
+    out = []
+    for o in orte.values():
+        o["label"] = o["labels"][0] if len(o["labels"]) == 1 else f"{len(o['labels'])} Meldungen"
+        out.append(o)
+    out.sort(key=lambda o: (o["art"] != "kino", o["name"]))
+    return out
+
+
+def erfasst_log(orte: list[dict]) -> list[dict]:
+    """„Gerade erfasst“: die letzten Treffer als Protokollzeilen mit Uhrzeiten (deterministisch für den Prototyp)."""
+    minute = 9 * 60 + 12
+    rows = []
+    for i, o in enumerate(orte[:9]):
+        minute -= (7 + (i * 11) % 23)
+        rows.append({"zeit": f"{minute // 60:02d}:{minute % 60:02d}", "ort": o["name"], "text": o["labels"][0], "href": o["href"], "art": o["art"]})
+    return rows
+
+
+def ticker_items(sel: dict, ev: dict, kat: dict) -> list[dict]:
+    kt = ev["kino_termine"]
+    items = [{"k": kat["kino"]["tamil"], "text": f"{kt['film']} läuft in {len(kt['fakten']['kinos'])} Kinos in DE, AT und CH", "href": f"{kt['slug']}.html"}]
+    for e in ev["events"][1:4]:
+        items.append({"k": kat["events"]["tamil"], "text": f"{e['datum_text'].split(',')[-1].strip()}: {e['titel']}", "href": e["seite"]})
+    for p in sel["neueste"][:6]:
+        items.append({"k": kat[p["kategorien"][0]]["tamil"], "text": p["titel"], "href": article_link(p)})
+    return items
+
+
+def source_count() -> int:
+    try:
+        import tomllib
+        return len(tomllib.loads((REPO / "sources.toml").read_text(encoding="utf-8")).get("source", []))
+    except Exception:  # noqa: BLE001
+        return 0
+
+
 def build_context(bare: bool = False) -> dict:
     site, ev, data = load_site(), load_events(), load_posts()
     site = {**site, **site["site"]}  # site.name/claim/tagline/org neben site.kontakt usw.
@@ -486,7 +546,14 @@ def build_context(bare: bool = False) -> dict:
         e["seite"] = f"event-{e['slug']}.html"
     rezept = split_recipe(sel["rezept"]["inhalt_html"]) if sel["rezept"] else None
     stand = date.fromisoformat(site["stand"])
+    orte = radar_orte(site, ev, sel["by_id"])
+    radar = {
+        "svg": radar_map.svg(orte), "orte": orte, "erfasst": erfasst_log(orte),
+        "stats": {"orte": len(orte), "meldungen": sum(len(o["labels"]) for o in orte), "quellen": source_count(), "kinos": len(kt["fakten"]["kinos"])},
+        "footer_svg": radar_map.svg([], sweep=False),
+    }
     return {
+        "radar": radar, "ticker": ticker_items(sel, ev, site["kategorien"]),
         "site": site, "kat": site["kategorien"], "nav": site["nav"], "sel": sel, "posts": posts, "counts": data["counts"],
         "events": ev["events"], "event_months": event_months(ev["events"]), "grid": month_grid(2026, 10, ev["events"]),
         "kino": kt, "kino_widget": kino_widget(kt["fakten"]), "rezept": rezept, "shift_days": data["shift_days"],
@@ -611,7 +678,10 @@ def shots(dist: Path = DIST, widths=SHOT_WIDTHS, only: str | None = None) -> lis
                 page.goto((dist / name).resolve().as_uri())
                 page.evaluate("document.querySelectorAll('img[loading=lazy]').forEach(i => { i.loading = 'eager'; })")
                 page.wait_for_function("[...document.images].every(i => i.complete)", timeout=15000)
-                page.wait_for_timeout(200)
+                page.evaluate("""async () => { const h = document.body.scrollHeight; for (let y = 0; y < h; y += 500) { window.scrollTo(0, y); await new Promise(r => setTimeout(r, 60)); } }""")  # Zähler auslösen
+                page.wait_for_timeout(1200)
+                page.evaluate("window.scrollTo(0, 0)")
+                page.wait_for_timeout(900)
                 target = SHOTS / f"{name.removesuffix('.html')[:40]}-{width}.png"
                 if name == "index.html" and width <= 600:
                     page.screenshot(path=str(SHOTS / f"index-{width}-viewport.png"), full_page=False)

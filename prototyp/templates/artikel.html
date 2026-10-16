@@ -11,6 +11,7 @@
 {% endif %}
 {% set ist_rezept = (not kinotermine) and p.id == site.rezept.id %}
 {% set url = 'https://www.tamil.de/' ~ a.slug ~ '/' %}
+<div class="lesebalken" aria-hidden="true"></div>
 <div class="container">
   <nav class="breadcrumb" aria-label="Brotkrumen"><a href="index.html">Start</a><span>›</span><a href="kategorie-{{ a.kat }}.html">{{ kat[a.kat].label }}</a><span>›</span><span>{{ a.titel[:60] }}{% if a.titel|length > 60 %}…{% endif %}</span></nav>
   <div class="with-sidebar">
@@ -19,7 +20,7 @@
         <p style="margin:0;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="badge{% if kinotermine %} gruen{% elif ist_rezept %} gruen{% endif %}">{{ 'Kinotermine' if kinotermine else ('Rezept' if ist_rezept else kat[a.kat].label) }}</span>{% if kinotermine %}<span class="stand-badge">aktualisiert {{ kino.stand|datum }}</span>{% endif %}{% if p and p.get('kultur_fallback') %}<span class="beispiel">Kultur-Zuordnung per Stichwort</span>{% endif %}</p>
         <h1>{{ a.titel }}</h1>
         <p class="standfirst">{{ a.standfirst }}</p>
-        <div class="byline"><span class="avatar" aria-hidden="true">T</span><span><strong>{{ site.autorenbox.name }}</strong>{{ a.datum|datum }} · {{ a.lesezeit }} Min. Lesezeit</span></div>
+        <div class="byline"><span class="avatar" aria-hidden="true">T</span><span><strong>{{ site.autorenbox.name }}</strong>{{ a.datum|datum }}, {{ a.lesezeit }} Minuten Lesezeit</span></div>
         {{ m.share(a.titel, url) }}
       </header>
       <figure class="hero-bild">
@@ -47,7 +48,7 @@
       </div>
       {% else %}
       {% set teile = a.body|split_body %}
-      <div class="artikel-body">
+      <div class="artikel-body initial">
         {{ teile[0]|safe }}
         {% if teile[1] %}{{ m.ad('inarticle') }}{{ teile[1]|safe }}{% endif %}
         {% if kinotermine %}

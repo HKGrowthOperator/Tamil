@@ -31,7 +31,7 @@
       </div>
       <aside class="sidebar">
         <div class="widget dunkel">
-          <h2 class="kicker"><span class="ta" lang="ta">நிகழ்வுகள்</span>Weitere Events</h2>
+          <h2 class="kicker"><span class="ta" lang="ta">நிகழ்வுகள்</span><span class="de">Weitere Events</span></h2>
           <ul class="liste">{% for o in events if o.slug != e.slug %}<li><span class="nr">{{ o.von[8:10]|int }}.</span><a href="{{ o.seite }}">{{ o.titel }}</a></li>{% endfor %}</ul>
           <a class="btn btn-ghost hell btn-sm" href="events.html">Alle Events</a>
         </div>
