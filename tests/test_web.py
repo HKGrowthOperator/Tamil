@@ -129,6 +129,7 @@ def test_edit_saves_and_sets_bearbeitet(client, app):
     assert d["schlagworte"] == ["Kino", "Mainz"] and d["inhalt_html"] == "<p>Hallo</p>" and d["bearbeitet_von"] == "luis"
     html = client.get("/entwurf/1").get_data(as_text=True)
     assert "Jailer 2 startet in Mainz" in html and "Bearbeitet" in html
+    assert 'value="None"' not in html and ">None<" not in html  # leere Felder nie als „None“ anzeigen
 
 
 def test_rewrite_uses_writer_and_reset_restores_original(client, app):
