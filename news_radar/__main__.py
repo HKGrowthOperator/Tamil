@@ -1,8 +1,11 @@
 """CLI: python -m news_radar <befehl>
 
-  run       Ein Lauf (für cron / systemd-Timer alle 5 Minuten)
-  loop      Dauerbetrieb, Lauf alle --interval Sekunden (Standard 300)
+  run       Ein Lauf (für den systemd-Timer alle 3 Minuten); --max-age-hours 336 für die Erstbefüllung
+  loop      Dauerbetrieb, Lauf alle --interval Sekunden (Standard 180)
   scan      Nur einsammeln + filtern, nichts schreiben (Test der Quellen)
+  publish   Alle freigegebenen Entwürfe nach WordPress veröffentlichen
+  digest    Tageszusammenfassung senden (für den Digest-Timer)
+  web       Freigabe-App lokal starten (Entwicklung; Produktion: gunicorn)
   style     Stilbeispiele aus veröffentlichten Tamil.de-Beiträgen lernen
   export    Protokoll als JSONL exportieren
 """
@@ -19,7 +22,7 @@ from pathlib import Path
 
 import requests
 
-from . import filtering, pipeline, sources
+from . import filtering, notify, pipeline, sources
 from .config import load_settings
 from .store import Store
 from .writer import STYLE_FILE
@@ -49,17 +52,23 @@ def cmd_style(site: str, count: int) -> int:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="news_radar", description="Tamil.de News-Radar")
+    parser.add_argument("-v", "--verbose", action="store_true")
     sub = parser.add_subparsers(dest="cmd", required=True)
-    sub.add_parser("run")
+    run = sub.add_parser("run")
+    run.add_argument("--max-age-hours", type=int, help="z. B. 336 für die Erstbefüllung (14 Tage)")
     loop = sub.add_parser("loop")
-    loop.add_argument("--interval", type=int, default=300)
+    loop.add_argument("--interval", type=int, default=180)
     sub.add_parser("scan")
+    sub.add_parser("publish")
+    sub.add_parser("digest")
+    web = sub.add_parser("web")
+    web.add_argument("--host", default="127.0.0.1")
+    web.add_argument("--port", type=int, default=8787)
     style = sub.add_parser("style")
     style.add_argument("--site", default="https://www.tamil.de")
     style.add_argument("--count", type=int, default=6)
     exp = sub.add_parser("export")
     exp.add_argument("--file", default="radar-protokoll.jsonl")
-    parser.add_argument("-v", "--verbose", action="store_true")
     args = parser.parse_args(argv)
 
     logging.basicConfig(
@@ -67,7 +76,7 @@ def main(argv: list[str] | None = None) -> int:
         format="%(asctime)s %(levelname)-7s %(message)s",
         datefmt="%H:%M:%S",
     )
-    for noisy in ("httpx", "urllib3", "anthropic"):
+    for noisy in ("httpx", "urllib3", "anthropic", "werkzeug"):
         logging.getLogger(noisy).setLevel(logging.WARNING)
 
     if args.cmd == "style":
@@ -76,23 +85,47 @@ def main(argv: list[str] | None = None) -> int:
     settings = load_settings()
 
     if args.cmd == "scan":
-        store = Store(settings.data_dir / "radar.sqlite")
-        items = sources.fetch_all(settings)
-        picked = filtering.select(items, settings, store.seen_uids(), store.recent_titles())
+        with Store(settings.db_path) as store:
+            items = sources.fetch_all(settings, store)
+            picked = filtering.select(items, settings, store.seen_uids(), store.recent_titles())
         print(f"\n{len(items)} gesammelt · {len(picked)} relevant\n")
-        for i in picked[:30]:
-            print(f"{i.score:3}  {i.category_hint:13} {i.published:%d.%m %H:%M}  {i.title[:90]}")
+        for i in picked[:40]:
+            print(f"{i.score:3} {i.dach_score:2} {i.kind:5} {i.category_hint:13} {i.ort[:12]:12} {i.published:%d.%m %H:%M}  {i.title[:80]}")
         return 0
 
     if args.cmd == "export":
-        n = Store(settings.data_dir / "radar.sqlite").export_log(Path(args.file))
+        with Store(settings.db_path) as store:
+            n = store.export_log(Path(args.file))
         print(f"{n} Protokolleinträge → {args.file}")
         return 0
 
+    if args.cmd == "publish":
+        if not settings.wordpress_enabled:
+            print("Keine WordPress-Zugangsdaten in .env (WP_URL, WP_USER, WP_APP_PASSWORD).")
+            return 1
+        from .publisher import publish_approved
+
+        with Store(settings.db_path) as store:
+            print(pipeline.summary(publish_approved(settings, store, limit=50)))
+        return 0
+
+    if args.cmd == "digest":
+        with Store(settings.db_path) as store:
+            print(notify.digest(settings, store))
+        return 0
+
+    if args.cmd == "web":
+        from .web import create_app
+
+        create_app(settings).run(host=args.host, port=args.port, debug=args.verbose)
+        return 0
+
     if not settings.wordpress_enabled:
-        logging.info("Keine WordPress-Zugangsdaten → Dry-Run, Entwürfe landen in %s", settings.out_dir)
+        logging.info("Keine WordPress-Zugangsdaten → Entwürfe warten in der Freigabe-App (%s)", settings.web_url)
 
     if args.cmd == "run":
+        if args.max_age_hours:
+            settings.max_age_hours = args.max_age_hours
         print(pipeline.summary(pipeline.run(settings)))
         return 0
 

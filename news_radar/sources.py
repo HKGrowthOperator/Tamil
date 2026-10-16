@@ -8,7 +8,7 @@ import html
 import logging
 import re
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
@@ -36,9 +36,18 @@ class NewsItem:
     language: str = "de"
     score: int = 0
     category_hint: str = ""
+    kind: str = "news"  # news | event | kino
+    dach_score: int = 0
+    ort: str = ""
+    facts: dict | None = None
+    fingerprint: str = ""
+    uid_override: str = ""
+    related: list["NewsItem"] = field(default_factory=list)
 
     @property
     def uid(self) -> str:
+        if self.uid_override:
+            return self.uid_override
         return hashlib.sha1(normalize_url(self.url).encode()).hexdigest()
 
 
@@ -150,7 +159,7 @@ def fetch_source(source: Source, settings: Settings) -> list[NewsItem]:
     raise ValueError(f"Unbekannter Quellentyp: {source.type}")
 
 
-def fetch_all(settings: Settings) -> list[NewsItem]:
+def fetch_all(settings: Settings, store=None) -> list[NewsItem]:
     """Alle Quellen parallel abfragen; eine fehlerhafte Quelle stoppt den Lauf nicht."""
 
     def safe(source: Source) -> list[NewsItem]:

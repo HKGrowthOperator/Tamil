@@ -30,6 +30,23 @@ class Source:
     url: str = ""
     query: str = ""
     language: str = "de"
+    provider: str = ""  # kino: cinestar | kinoheld | cineplexx
+    endpoint: str = "posts"  # wp_json: posts | mec-events | …
+    params: dict = field(default_factory=dict)
+    selectors: dict = field(default_factory=dict)  # html: item, title, link, date, summary
+    kind: str = "news"  # news | event | kino – Vorgabe für alle Treffer der Quelle
+    country: str = ""  # DE | CH | AT, wenn die Quelle eindeutig ein Land abdeckt
+    min_score: int | None = None  # Überschreibt die Stichwort-Schwelle (0 = vertrauenswürdige Quelle)
+    max_items: int = 3  # höchstens so viele Treffer je Lauf
+    interval_minutes: int = 0  # 0 = bei jedem Lauf abfragen
+
+
+@dataclass
+class Regions:
+    staedte: dict[str, str] = field(default_factory=dict)  # Stadt -> Land (DE/CH/AT)
+    laender: dict[str, str] = field(default_factory=dict)  # Begriff -> Land
+    aliases: dict[str, list[str]] = field(default_factory=dict)  # Stadt -> andere Schreibweisen
+    exakt: set[str] = field(default_factory=set)  # nur mit Großbuchstabe matchen (Essen, Hamm, Bern)
 
 
 @dataclass
@@ -45,6 +62,7 @@ class Settings:
     keywords: dict[str, int]
     blocklist: list[str]
     categories: list[Category]
+    regions: Regions = field(default_factory=Regions)
     anthropic_model: str = "claude-opus-5-5"
     newsapi_key: str = ""
     gnews_token: str = ""
@@ -54,18 +72,33 @@ class Settings:
     wp_user: str = ""
     wp_app_password: str = ""
     wp_post_status: str = "pending"
+    wp_seo_meta: str = "none"  # rankmath | yoast | none
     notify_webhook: str = ""
+    web_url: str = "http://127.0.0.1:8787"
+    web_user: str = ""
+    web_password: str = ""
+    web_secret: str = ""
     max_articles: int = 5
+    max_drafts_per_day: int = 40
     max_age_hours: int = 36
     min_score: int = 4
+    min_score_dach: int = 2
     min_relevance: int = 6
     deadline_seconds: int = 270
+    fetch_seconds: int = 60
     data_dir: Path = field(default_factory=lambda: ROOT / "data")
-    out_dir: Path = field(default_factory=lambda: ROOT / "out")
 
     @property
     def wordpress_enabled(self) -> bool:
         return bool(self.wp_url and self.wp_user and self.wp_app_password)
+
+    @property
+    def db_path(self) -> Path:
+        return self.data_dir / "radar.sqlite"
+
+    @property
+    def bilder_dir(self) -> Path:
+        return self.data_dir / "bilder"
 
     def category_slugs(self) -> list[str]:
         return [c.slug for c in self.categories]
@@ -80,6 +113,13 @@ def load_settings(sources_file: Path = ROOT / "sources.toml") -> Settings:
     load_dotenv()
     raw = tomllib.loads(sources_file.read_text(encoding="utf-8"))
     sources = [Source(**s) for s in raw.get("source", [])]
+    reg = raw.get("regions", {})
+    regions = Regions(
+        staedte={stadt: land.upper() for land, cities in reg.get("staedte", {}).items() for stadt in cities},
+        laender={term: land.upper() for land, terms in reg.get("laender", {}).items() for term in terms},
+        aliases={k: list(v) for k, v in reg.get("aliases", {}).items()},
+        exakt=set(reg.get("exakt", [])),
+    )
     categories = [
         Category(slug=slug, label=c["label"], hints=[h.lower() for h in c.get("hints", [])])
         for slug, c in raw.get("categories", {}).items()
@@ -90,6 +130,7 @@ def load_settings(sources_file: Path = ROOT / "sources.toml") -> Settings:
         keywords={k.lower(): int(v) for k, v in raw.get("keywords", {}).items()},
         blocklist=[t.lower() for t in raw.get("blocklist", {}).get("terms", [])],
         categories=categories,
+        regions=regions,
         anthropic_model=env("RADAR_MODEL", "claude-opus-5-5"),
         newsapi_key=env("NEWSAPI_KEY", ""),
         gnews_token=env("GNEWS_TOKEN", ""),
@@ -98,11 +139,19 @@ def load_settings(sources_file: Path = ROOT / "sources.toml") -> Settings:
         wp_url=env("WP_URL", "").rstrip("/"),
         wp_user=env("WP_USER", ""),
         wp_app_password=env("WP_APP_PASSWORD", ""),
-        wp_post_status=env("WP_POST_STATUS", "pending") or "pending",
+        wp_post_status=env("WP_POST_STATUS", "publish") or "publish",
+        wp_seo_meta=(env("WP_SEO_META", "none") or "none").lower(),
         notify_webhook=env("NOTIFY_WEBHOOK_URL", ""),
+        web_url=(env("RADAR_WEB_URL", "") or "http://127.0.0.1:8787").rstrip("/"),
+        web_user=env("WEB_USER", ""),
+        web_password=env("WEB_PASSWORD", ""),
+        web_secret=env("WEB_SECRET", ""),
         max_articles=_int("RADAR_MAX_ARTICLES", 5),
+        max_drafts_per_day=_int("RADAR_MAX_DRAFTS_PER_DAY", 40),
         max_age_hours=_int("RADAR_MAX_AGE_HOURS", 36),
         min_score=_int("RADAR_MIN_SCORE", 4),
+        min_score_dach=_int("RADAR_MIN_SCORE_DACH", 2),
         min_relevance=_int("RADAR_MIN_RELEVANCE", 6),
         deadline_seconds=_int("RADAR_DEADLINE_SECONDS", 270),
+        fetch_seconds=_int("RADAR_FETCH_SECONDS", 60),
     )

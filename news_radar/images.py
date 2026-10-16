@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import requests
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 from .config import Settings
 
@@ -132,3 +132,31 @@ def featured_image(settings: Settings, query: str, title: str, category_label: s
         except requests.RequestException as exc:
             log.warning("Bildsuche fehlgeschlagen (%s): %s", provider.__name__, exc)
     return branded_card(title, category_label, slug)
+
+
+def _encode(img: Image.Image, quality: int = 86) -> bytes:
+    buf = io.BytesIO()
+    img.convert("RGB").save(buf, "JPEG", quality=quality, optimize=True, progressive=True)
+    return buf.getvalue()
+
+
+def from_upload(data: bytes, slug: str, credit: str = "Foto: Tamil.de") -> FeaturedImage:
+    """Eigenes Bild der Redaktion: auf 1200×675 zuschneiden, neu kodieren (EXIF weg)."""
+    img = ImageOps.exif_transpose(Image.open(io.BytesIO(data)))
+    fitted = ImageOps.fit(img, SIZE, Image.Resampling.LANCZOS)
+    return FeaturedImage(_encode(fitted), f"{slug}.jpg", "image/jpeg", credit, "upload")
+
+
+def save_pair(image: FeaturedImage, folder: Path, stem: str) -> tuple[str, str]:
+    """Speichert Bild + Vorschaubild (400 px breit) unter data/bilder; gibt beide Dateinamen zurück."""
+    folder.mkdir(parents=True, exist_ok=True)
+    name, thumb = f"{stem}.jpg", f"{stem}-thumb.jpg"
+    (folder / name).write_bytes(image.data)
+    img = Image.open(io.BytesIO(image.data))
+    img.thumbnail((400, 400))
+    (folder / thumb).write_bytes(_encode(img, quality=80))
+    return name, thumb
+
+
+def load_image(path: Path, credit: str = "", origin: str = "datei") -> FeaturedImage:
+    return FeaturedImage(path.read_bytes(), path.name, "image/jpeg", credit, origin)

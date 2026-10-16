@@ -1,24 +1,22 @@
-"""Ein Radar-Lauf: einsammeln -> filtern -> schreiben -> Bild -> WordPress-Entwurf.
+"""Ein Radar-Lauf: einsammeln -> filtern -> schreiben -> Bild -> Entwurf in die Warteschlange.
 
-Ziel: Meldung bis fertiger Entwurf (Text + Bild) in unter 5 Minuten.
+Ziel: Meldung bis fertiger Entwurf (Text + Bild) in unter 5 Minuten. Veröffentlicht wird nur, was in
+der Freigabe-App freigegeben wurde (publisher.py).
 """
 
 from __future__ import annotations
 
-import html
-import json
 import logging
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
+from datetime import datetime, timezone
 
-import requests
-
-from . import filtering, sources
+from . import filtering, notify, sources
 from .config import Settings
-from .images import featured_image
+from .images import featured_image, save_pair
 from .store import Store
-from .wordpress import WordPress, slugify
+from .wordpress import slugify
 from .writer import Draft, Writer
 
 log = logging.getLogger(__name__)
@@ -27,124 +25,157 @@ log = logging.getLogger(__name__)
 @dataclass
 class Result:
     title: str
-    status: str  # entwurf | dry-run | verworfen | fehler
+    status: str  # entwurf | aktualisiert | verworfen | fehler | veroeffentlicht | in_wordpress
     category: str = ""
     link: str = ""
     seconds: float = 0.0
     note: str = ""
+    draft_id: int | None = None
 
 
-def render_content(draft: Draft, item: sources.NewsItem) -> str:
-    """Haupttext + verlinkte Quellenangabe."""
-    body = draft.inhalt_html.strip()
-    link = f'<p class="quelle">Quelle: <a href="{html.escape(item.url)}" rel="nofollow noopener" target="_blank">{html.escape(item.source)}</a></p>'
-    if 'class="quelle"' in body:
-        head, _, _ = body.rpartition('<p class="quelle">')
-        body = head.rstrip()
-    return f"{body}\n{link}"
+def category_label(settings: Settings, slug: str) -> str:
+    return next((c.label for c in settings.categories if c.slug == slug), slug)
 
 
-def _dry_run_save(settings: Settings, slug: str, draft: Draft, item, image, content: str) -> str:
-    folder = settings.out_dir / slug
-    folder.mkdir(parents=True, exist_ok=True)
-    (folder / image.filename).write_bytes(image.data)
-    (folder / "beitrag.json").write_text(
-        json.dumps({"entwurf": draft.model_dump(), "quelle": item.url, "bild": image.credit}, ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
-    (folder / "vorschau.html").write_text(
-        f"<!doctype html><meta charset='utf-8'><title>{html.escape(draft.titel)}</title>"
-        "<body style='max-width:760px;margin:40px auto;font-family:Georgia,serif;line-height:1.7;padding:0 16px'>"
-        f"<img src='{image.filename}' style='width:100%;border-radius:8px'><small>{html.escape(image.credit)}</small>"
-        f"<h1>{html.escape(draft.titel)}</h1><p><strong>{html.escape(draft.teaser)}</strong></p>{content}"
-        f"<hr><small>Kategorie: {draft.kategorie} · Schlagworte: {', '.join(map(html.escape, draft.schlagworte))} · "
-        f"Relevanz {draft.relevanz}/10 – {html.escape(draft.begruendung)}</small></body>",
-        encoding="utf-8",
-    )
-    return str(folder / "vorschau.html")
+def draft_row(item: sources.NewsItem, draft: Draft, bild_datei: str, image) -> dict:
+    """Ein Entwurf für die Warteschlange, zusammengesetzt aus Meldung, Claude-Ergebnis und Bild."""
+    typ = "kino_termine" if item.kind == "kino" else draft.typ
+    return {
+        "uid": item.uid,
+        "typ": typ,
+        "quelle_name": item.source,
+        "quelle_url": item.url,
+        "quelle_datum": item.published.isoformat(timespec="minutes"),
+        "quelle_sprache": item.language,
+        "weitere_quellen": [{"name": r.source, "url": r.url} for r in item.related],
+        "relevanz": draft.relevanz,
+        "begruendung": draft.begruendung,
+        "dach_bezug": draft.dach_bezug or item.dach_score > 0,
+        "ort": draft.ort or item.ort,
+        "kategorie": draft.kategorie,
+        "titel": draft.titel,
+        "teaser": draft.teaser,
+        "inhalt_html": draft.inhalt_html,
+        "schlagworte": draft.schlagworte,
+        "seo_titel": draft.seo_titel,
+        "meta_beschreibung": draft.meta_beschreibung,
+        "bild_datei": bild_datei,
+        "bild_credit": image.credit,
+        "bild_alt": draft.bild_alt,
+        "bild_suchbegriff": draft.bild_suchbegriff,
+        "bild_origin": image.origin,
+        "event_datum": draft.event_datum,
+        "event_ort": draft.event_ort,
+        "ticket_url": draft.ticket_url,
+        "fakten": item.facts or {},
+        "fingerprint": item.fingerprint,
+        "original_json": draft.model_dump(),
+    }
 
 
-def process(item, settings: Settings, writer: Writer, wp: WordPress | None, store: Store) -> Result:
+def process(item: sources.NewsItem, settings: Settings, writer: Writer, store: Store) -> Result:
     start = time.monotonic()
-    article_text = sources.fetch_article_text(item.url)
+    article_text = sources.fetch_article_text(item.url) if item.kind == "news" else ""
     draft = writer.write(item, article_text)
     if draft is None:
-        store.mark(item.uid, item.title, item.url, item.source, "abgelehnt")
+        store.mark(item.uid, item.title, item.url, item.source, "abgelehnt_modell")
         return Result(item.title, "verworfen", note="vom Modell abgelehnt", seconds=time.monotonic() - start)
     if draft.relevanz < settings.min_relevance:
         store.mark(item.uid, item.title, item.url, item.source, "irrelevant")
-        store.event("verworfen", titel=item.title, relevanz=draft.relevanz, grund=draft.begruendung)
+        store.event("verworfen", titel=item.title, quelle=item.url, relevanz=draft.relevanz, grund=draft.begruendung)
         return Result(item.title, "verworfen", draft.kategorie, note=f"Relevanz {draft.relevanz}: {draft.begruendung}",
                       seconds=time.monotonic() - start)
 
-    slug = slugify(draft.titel)
-    label = next((c.label for c in settings.categories if c.slug == draft.kategorie), draft.kategorie)
-    image = featured_image(settings, draft.bild_suchbegriff, draft.titel, label, slug)
-    content = render_content(draft, item)
+    stem = f"{item.uid[:12]}-{slugify(draft.titel, 50)}"
+    image = featured_image(settings, draft.bild_suchbegriff, draft.titel, category_label(settings, draft.kategorie), stem)
+    bild_datei, _thumb = save_pair(image, settings.bilder_dir, stem)
+    draft_id = store.insert_draft(draft_row(item, draft, bild_datei, image))
+    store.mark(item.uid, item.title, item.url, item.source, "entwurf")
+    if draft_id is None:
+        return Result(draft.titel, "verworfen", draft.kategorie, note="Entwurf existiert schon", seconds=time.monotonic() - start)
 
-    if wp:
-        media_id = wp.upload_media(image, draft.bild_alt)
-        post = wp.create_post(
-            title=draft.titel, content=content, excerpt=draft.teaser, status=settings.wp_post_status,
-            category_slug=draft.kategorie, tags=draft.schlagworte, media_id=media_id, slug=slug,
-        )
-        link, status = wp.edit_link(post), "entwurf"
-    else:
-        link, status = _dry_run_save(settings, slug, draft, item, image, content), "dry-run"
-
-    store.mark(item.uid, item.title, item.url, item.source, status)
     seconds = time.monotonic() - start
-    store.event("entwurf", titel=draft.titel, quelle=item.url, kategorie=draft.kategorie, link=link,
-                bild=image.origin, relevanz=draft.relevanz, sekunden=round(seconds, 1))
-    return Result(draft.titel, status, draft.kategorie, link, seconds, f"Relevanz {draft.relevanz}, Bild: {image.origin}")
+    link = f"{settings.web_url}/entwurf/{draft_id}"
+    store.event("entwurf", id=draft_id, titel=draft.titel, quelle=item.url, kategorie=draft.kategorie, typ=draft.typ,
+                bild=image.origin, relevanz=draft.relevanz, dach=draft.ort, sekunden=round(seconds, 1))
+    return Result(draft.titel, "entwurf", draft.kategorie, link, seconds, f"Relevanz {draft.relevanz}, Bild: {image.origin}",
+                  draft_id)
 
 
-def notify(settings: Settings, results: list[Result]) -> None:
-    fresh = [r for r in results if r.status in ("entwurf", "dry-run")]
-    if not settings.notify_webhook or not fresh:
-        return
-    lines = [f"📰 {len(fresh)} neue Tamil.de-Entwürfe warten auf Freigabe:"]
-    lines += [f"• [{r.category}] {r.title} – {r.link}" for r in fresh]
-    text = "\n".join(lines)
-    try:
-        requests.post(settings.notify_webhook, json={"text": text, "content": text}, timeout=10)
-    except requests.RequestException as exc:
-        log.warning("Benachrichtigung fehlgeschlagen: %s", exc)
+def refresh_kino(items: list[sources.NewsItem], store: Store, seen: set[str]) -> list[Result]:
+    """Neue Spielorte in offene Kino-Entwürfe übernehmen statt einen zweiten Entwurf anzulegen."""
+    results = []
+    for item in items:
+        if item.kind != "kino" or item.uid not in seen:
+            continue
+        existing = store.draft_by_uid(item.uid)
+        if not existing:
+            continue
+        old = {k.get("kino") for k in existing["fakten"].get("kinos", [])}
+        new = {k.get("kino") for k in (item.facts or {}).get("kinos", [])}
+        added, removed = sorted(new - old), sorted(old - new)
+        parts = [f"+{k}" for k in added] + [f"−{k}" for k in removed]
+        note = f"Aktualisiert {datetime.now(timezone.utc):%d.%m.}: " + (", ".join(parts) if parts else "Termine aktualisiert")
+        if store.update_kino_facts(item.uid, item.facts or {}, item.fingerprint, note):
+            store.event("kino_aktualisiert", id=existing["id"], titel=existing["titel"], hinweis=note)
+            results.append(Result(existing["titel"], "aktualisiert", existing["kategorie"], note=note, draft_id=existing["id"]))
+        elif existing["status"] not in ("neu", "bearbeitet", "zurueckgestellt") and existing.get("fingerprint") != item.fingerprint:
+            store.event("kino_update_ignoriert", id=existing["id"], titel=existing["titel"], status=existing["status"])
+    return results
 
 
-def run(settings: Settings, writer: Writer | None = None, wp: WordPress | None = None) -> list[Result]:
+def run(settings: Settings, writer: Writer | None = None, store: Store | None = None) -> list[Result]:
     t0 = time.monotonic()
-    store = Store(settings.data_dir / "radar.sqlite")
-    if wp is None and settings.wordpress_enabled:
-        wp = WordPress(settings.wp_url, settings.wp_user, settings.wp_app_password)
-    writer = writer or Writer(settings)
-
-    items = sources.fetch_all(settings)
-    candidates = filtering.select(items, settings, store.seen_uids(), store.recent_titles())
-    log.info("%d Meldungen gesammelt, %d relevant, bearbeite max. %d", len(items), len(candidates), settings.max_articles)
-    store.event("lauf", gesammelt=len(items), relevant=len(candidates), modus="wordpress" if wp else "dry-run")
-
-    batch = candidates[: settings.max_articles]
+    own_store = store is None
+    store = store or Store(settings.db_path)
+    run_id = store.start_run("wordpress" if settings.wordpress_enabled else "warteschlange")
     results: list[Result] = []
-    deadline = t0 + settings.deadline_seconds
-    pool = ThreadPoolExecutor(max_workers=min(5, max(1, len(batch))))
-    futures = {pool.submit(process, item, settings, writer, wp, store): item for item in batch}
     try:
-        for fut in as_completed(futures, timeout=max(1, deadline - time.monotonic())):
-            item = futures[fut]
-            try:
-                results.append(fut.result())
-            except Exception as exc:  # noqa: BLE001 - ein fehlerhafter Beitrag stoppt den Lauf nicht
-                log.exception("Fehler bei %s", item.title)
-                store.event("fehler", titel=item.title, fehler=str(exc))
-                results.append(Result(item.title, "fehler", note=str(exc)[:200]))
-    except TimeoutError:
-        log.warning("Zeitbudget erreicht – offene Meldungen folgen im nächsten Lauf")
-    finally:
-        pool.shutdown(wait=False, cancel_futures=True)
+        items = sources.fetch_all(settings, store)
+        seen = store.seen_uids()
+        results += refresh_kino(items, store, seen)
+        candidates = filtering.select(items, settings, seen, store.recent_titles())
 
-    notify(settings, results)
-    log.info("Lauf beendet nach %.1fs", time.monotonic() - t0)
+        today = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
+        budget = max(0, settings.max_drafts_per_day - store.drafts_created_since(today))
+        if candidates and budget == 0:
+            log.warning("Tagesbudget von %d Entwürfen erreicht – Rest morgen", settings.max_drafts_per_day)
+            store.event("tagesbudget", offen=len(candidates))
+        batch = candidates[: min(settings.max_articles, budget)]
+        log.info("%d Meldungen gesammelt, %d relevant, bearbeite %d", len(items), len(candidates), len(batch))
+
+        if batch:
+            writer = writer or Writer(settings)
+            deadline = t0 + settings.deadline_seconds
+            pool = ThreadPoolExecutor(max_workers=min(5, len(batch)))
+            futures = {pool.submit(process, item, settings, writer, store): item for item in batch}
+            try:
+                for fut in as_completed(futures, timeout=max(1, deadline - time.monotonic())):
+                    item = futures[fut]
+                    try:
+                        results.append(fut.result())
+                    except Exception as exc:  # noqa: BLE001 - ein fehlerhafter Beitrag stoppt den Lauf nicht
+                        log.exception("Fehler bei %s", item.title)
+                        store.event("fehler", titel=item.title, quelle=item.url, fehler=str(exc)[:300])
+                        results.append(Result(item.title, "fehler", note=str(exc)[:200]))
+            except TimeoutError:
+                log.warning("Zeitbudget erreicht – offene Meldungen folgen im nächsten Lauf")
+            finally:
+                pool.shutdown(wait=False, cancel_futures=True)
+
+        if settings.wordpress_enabled:
+            from .publisher import publish_approved
+
+            results += publish_approved(settings, store)
+
+        notify.notify_new(settings, results)
+        counts = {s: sum(1 for r in results if r.status == s) for s in ("entwurf", "verworfen", "fehler", "veroeffentlicht")}
+        store.finish_run(run_id, gesammelt=len(items), relevant=len(candidates), entwuerfe=counts["entwurf"],
+                         verworfen=counts["verworfen"], veroeffentlicht=counts["veroeffentlicht"], fehler=counts["fehler"])
+        log.info("Lauf beendet nach %.1fs", time.monotonic() - t0)
+    finally:
+        if own_store:
+            store.close()
     return results
 
 
@@ -152,8 +183,7 @@ def summary(results: list[Result]) -> str:
     if not results:
         return "Keine neuen relevanten Meldungen."
     return "\n".join(
-        f"[{r.status:9}] {r.seconds:5.1f}s  {r.category:13} {r.title}" + (f"\n             → {r.link}" if r.link else "")
-        + (f"\n             ({r.note})" if r.note else "")
+        f"[{r.status:14}] {r.seconds:5.1f}s  {r.category:13} {r.title}" + (f"\n                  → {r.link}" if r.link else "")
+        + (f"\n                  ({r.note})" if r.note else "")
         for r in results
     )
-
