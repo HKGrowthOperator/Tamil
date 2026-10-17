@@ -27,10 +27,11 @@ python -m pytest tests/test_prototyp.py -q
 | Vorlage | Dateien | Besonderheiten |
 | --- | --- | --- |
 | Startseite | `index.html` | Hero (3 neueste mit großem Bild), Top-Themen (Redaktion), Neueste 6, Rubrik-Zeilen je Kategorie, **Kinotermine-Widget** aus Radar-Daten, Event-Teaser, Rezept der Woche, Leerzustand Sport, Newsletter |
-| Kategorie | `kategorie-<slug>.html` (8) | Kino als Schaufenster mit Filter-Chips und Kinotermine-Karte, Sport als Leerzustand, Kultur per Stichwort aus Nachrichten |
-| Artikel | `artikel-<slug>.html` (61), `kino-jailer-2-kinotermine.html` | Standfirst, Byline, Teilen-Leiste (WhatsApp zuerst), In-Article-Werbeplatz nach dem 2. Absatz, YouTube erst nach Klick; Varianten **Rezept** (Zutaten/Schritte) und **Kinotermine** (Spielorte aus `news_radar.render.render_kino_liste`) |
+| Kategorie | `kategorie-<slug>.html` (8) | Kino als Schaufenster mit Filter-Chips und Kinotermine-Karte, Sport als Leerzustand, Kultur und Küche per Stichwort aus Nachrichten ergänzt |
+| Artikel | `artikel-<slug>.html` (71), `kino-jailer-2-kinotermine.html` | Standfirst, Byline, Teilen-Leiste (WhatsApp zuerst), In-Article-Werbeplatz nach dem 2. Absatz, YouTube erst nach Klick; Varianten **Rezept** (Zutaten/Schritte) und **Kinotermine** (Spielorte aus `news_radar.render.render_kino_liste`) |
 | Events | `events.html`, `event-<slug>.html` (6) | Liste nach Monat + Monatsraster, Filter DE/AT/CH und Kategorie, Detailseite mit Fakten, Tickets, Teilen, Karten-Platzhalter, Quelle |
-| Kontakt | `kontakt.html` | Kontaktkarte, Formular, **Werben** mit den 5 Werbeplätzen, **Event einreichen**, FAQ |
+| Kontakt | `kontakt.html` | Kontaktkarte, Formular, **Werben** mit den 5 Werbeplätzen, **Event einreichen**, **Mitmachen: Leser-Reporter** (Text der alten Seite), FAQ |
+| Sonderseiten | `production.html`, `tv.html`, `ueber-uns.html`, `impressum.html`, `datenschutz.html`, `service-fsk.html` | Aus der alten Seite übernommen (siehe unten); `seite.html` ist die Vorlage für Textseiten |
 | Design-System | `design-system.html` | Farben mit Kontrast, Schrift, Abstände, Buttons, Badges, Karten, Formulare, Werbeplätze in Originalgröße, Icons |
 
 Drei Breakpoints: ≤ 600 px (Drawer, 1 Spalte, Mobile-Sticky-Werbeplatz), 601–1023 px (Scroll-Navigation, 2 Spalten),
@@ -54,12 +55,40 @@ Schibsted Grotesk, Noto Serif Tamil) liegen lokal in `static/fonts/`, keine exte
 - **Kolam-Marke:** eine kleine Schleifenlinie um fünf Punkte neben der Wortmarke, als Vorschlag bis die Logo-Datei vorliegt.
   Dasselbe Punktraster liegt hinter der Radar-Bühne, im Footer und auf den automatisch erzeugten Tamil.de-Bildkarten.
 
+## Übernahme von tamil.de (Phase 2b)
+
+Die alte Seite (WordPress 6.2.14, Theme „Observer“) wurde am 17.10. nur lesend geprüft; `tools/export_site.py --meta-only`
+schreibt den Befund nach `export/site_meta.json` und lädt Logo und Werbebanner nach `export/brand/`. Was übernommen ist:
+
+| Element der alten Seite | Im Prototyp |
+| --- | --- |
+| Logo `kkbslogo.png` (300 × 121, dunkles Rot auf hellem Grund) | Masthead, Drawer und Footer (`img/logo.png`); Wortmarke und Kolam-Marke bleiben als Vorschlag im Design-System |
+| Claim aus dem SEO-Titel | Claim und Meta-Beschreibung |
+| Hauptmenü Home · News · Entertainment · EVENTS · Blog · Küche · KINO | Nachrichten · Entertainment · Events · Community (vorher „Blog“) · Küche · Kino · Sport · Kultur · Kontakt; 301-Regeln in `redirects.csv` |
+| Top-Menü Über · Impressum · Datenschutz | Topbar und Footer-Legal auf echte Seiten |
+| Ticker „Top-Themen“ (Tag `ticker`) | v2-Ticker, Tag `ticker` hat Vorrang vor den neuesten Beiträgen |
+| Header-Werbung 728 × 90 → Gravity Club, Sidebar 336 × 280 → Olyyn | Werbeplätze 01 und 02 zeigen die echten Banner mit Link und Kennzeichnung „Werbepartner“ (`werbung_live` in `site.json`) |
+| WhatsApp-Kanal, Instagram `@tamil_de` | Topbar und Footer; Facebook/YouTube als „ausstehend“ markiert |
+| Startseiten-Slider „POWERED BY TAMIL.DE Production“ (A.R. Rahman, Ilaiyaraaja, Anirudh „Live mit dir!“, Santhosh Narayanan 2025) | Block **Tamil.de Production** auf der Startseite + `production.html` mit Konzerten, Service-Texten der Anirudh-Tour (Saalplan, Eventim, Einlass) und Ticketmaster-Link |
+| Küche-Block mit Kottu Roti, Payasam, Biryani, Dosa | Alle Rezepte in Küche (die 120-Wörter-Regel gilt dort nicht) |
+| Seite `/tv/` mit zwei HLS-Streams (beide derzeit 404) | `tv.html` mit Player-Platzhalter je Sender, Status „Stream wird angefragt“ |
+| Seite `/fsk/` | `service-fsk.html` unter Kino |
+| Seite `/reporter/` (Leser-Reporter, bis 100 € Honorar) | Abschnitt „Mitmachen“ auf der Kontaktseite |
+| Seiten `/maya/` (M.I.A.-Film) und 2018-Rückblick | Beiträge in Kino bzw. Community mit Bildkarte |
+| `ueberuns`, `datenschutzerklaerung` (2016), `impressum` (leer) | `ueber-uns.html`, `datenschutz.html` mit Hinweis „Stand 2016“, `impressum.html` als Platzhalter mit Anschrift aus dem Vertrag |
+| Seite `/kino/` (Jailer 2, manuell) | ersetzt durch den Kinotermine-Beitrag des Radars; 301 auf die Kino-Rubrik |
+
+**Nicht übernommen:** Mitgliederbereich (Ultimate Member, 2019; 301 auf die Startseite), englische `privacy-policy`,
+leere Altlasten (`fb`, `location`, `gd-*`, `backup*`), Kopierschutz-Plugin, Theme-Schriften Ubuntu/Viga (im Design-System
+als „Vorher“ notiert). Tag `TT` (116 Beiträge) wird nicht übernommen, Bedeutung beim Auftraggeber erfragen.
+
 ## Was echt ist, was Beispiel
 
 **Echt:** alle Beiträge, Teaser und Bilder stammen aus dem Export der alten tamil.de (533 Beiträge, 1.573 Medien);
 die Kinotermine zu „Jailer 2“ (9 Kinos in DE/CH/AT) aus CineStar, kinoheld, Eventfrog, Cineplexx und megaplex.at,
-Stand 16.10.2026; die Events aus tamilswiss.ch, Eventfrog und kinoheld; der Über-uns-Text (Seite 1393); die Anschrift
-laut Vertrag.
+Stand 16.10.2026; die Events aus tamilswiss.ch, Eventfrog und kinoheld; Logo, Menüs, Ticker, Werbebanner (Gravity Club, Olyyn), Social-Links,
+die Texte der Seiten Über uns, Datenschutz, FSK, Leser-Reporter und TV sowie die Production-Plakate von der alten
+tamil.de; die Anschrift laut Vertrag.
 
 **Als Beispiel markiert** (gestrichelter Gold-Rahmen „Beispiel“): Telefon, E-Mail, WhatsApp-Nummer, Rezept-Fakten
 (Zeit, Portionen), Autorenbox, FAQ-Texte, Platzhalterkarten in Sport, Mediadaten-PDF. Datumsangaben sind um 708 Tage
@@ -71,16 +100,21 @@ Was der Export nicht hergibt und vor dem Relaunch geklärt werden muss:
 
 1. **Autoren** – alle 533 Beiträge laufen auf Benutzer 1, keine Profile. Prototyp: „Redaktion Tamil.de“. Benötigt: Namen, Kurzprofil, Foto je Autor:in.
 2. **Bildrechte und Alt-Texte** – `alt_text` ist bei allen Medien leer, Bildnachweise fehlen. Prototyp: Alt-Text = Titel, Credit „Foto: Tamil.de“. Benötigt: Nachweise oder Freigabe für die Übernahme.
-3. **Rezepte** – nur ein nutzbares Rezept (Kothu Rotti, 2017), Zeit/Portionen nicht erfasst. Benötigt: 5–10 Rezepte mit Zutaten, Schritten, Bild.
+3. **Rezepte** – fünf Rezepte aus dem Altbestand (Kottu Roti, Payasam, Biryani, Dosa, Kothu Rotti), aber ohne Zutatenlisten, Zeit und Portionen. Benötigt: strukturierte Rezepte oder Freigabe, dass die Redaktion sie nachträgt.
 4. **Sport und Kultur** – keine Beiträge im Altbestand. Prototyp: Sport leer, Kultur per Stichwort aus Nachrichten. Entscheidung: Sport zum Start zeigen oder ausblenden?
 5. **Kino-Altbestand** – rund 80 Drei-Wort-Beiträge mit YouTube-Video (unter 120 Wörter) werden nicht übernommen; 10 Kritiken stammen aus 2018–2020.
 6. **Events** – im Altbestand 6 Beiträge (Anirudh 2024). Aktuelle Events kommen aus Schweizer Quellen; für DE/AT fehlen Veranstalter-Quellen (Eventim, Vereine, Tempel).
 7. **Schlagworte** – unbrauchbar („Tamil“ 221×, „TT“ 116×, „ticker“ 26×). Beim Import wird ein neues Tag-Set angelegt.
-8. **Kontaktdaten, Impressum, Datenschutz** – Telefon/E-Mail im Angebot sind Platzhalter; Impressum-Seite ist leer, Datenschutzerklärung von 2016. Benötigt: Impressumsangaben, aktuelle Datenschutzerklärung.
-9. **Logo und Mediadaten** – keine Logo-Datei, keine Mediadaten/Preise für die Werbeplätze. Prototyp: Text-Wortmarke, Mediadaten-Button „folgt“.
-10. **Social-Media-Kanäle** – keine Kanäle bekannt; Links zeigen auf „#“.
+8. **Kontaktdaten, Impressum, Datenschutz** – Telefon/E-Mail im Angebot sind Platzhalter; Impressum-Seite der alten tamil.de ist leer, Datenschutzerklärung von 2016. Benötigt: vollständiger Impressumstext (Vertretung, Register, USt-ID, § 18 MStV), aktuelle Datenschutzerklärung.
+9. **Logo und Mediadaten** – Logo nur als 300 × 121-PNG von der alten Seite. Benötigt: Vektor oder große Datei, Variante für dunklen Grund; Mediadaten/Preise für die Werbeplätze (Button „folgt“).
+10. **Social-Media-Kanäle** – WhatsApp-Kanal und Instagram von der alten Seite übernommen; Facebook und YouTube unbekannt (im Prototyp „ausstehend“).
 11. **Versalien-Titel und Kritik-Format** – Titel in Großbuchstaben und Teaser „Pluspunkte: + …“ werden beim Import normalisiert; Redaktion prüft Stichproben.
 12. **Tote Bilder und Einbettungen** – 75 Beiträge mit `http://`-Bildern externer Seiten (entfernt), 83 iframes (YouTube erst nach Klick, Rest entfernt).
+13. **Werbeverträge** – Gravity Club (Leaderboard) und Olyyn (Sidebar) laufen auf der alten Seite. Benötigt: Laufzeit, Format, Preis, ob sie in den Relaunch übergehen.
+14. **TV-Streams** – beide HLS-Adressen (Santhora TV, Tamil Business TV) antworten mit 404. Benötigt: aktuelle Stream-Adressen oder Entscheidung, die TV-Seite abzuschalten.
+15. **Partner-Logos** – das Plugin `best-logo-slider` ist aktiv, Logos wurden nicht gefunden. Benötigt: Liste der Partner oder Streichung.
+16. **Mitgliederbereich** – Ultimate Member wird nicht übernommen. Benötigt: Freigabe, die Nutzerdaten der alten Seite zu löschen (DSGVO), und ob Mitglieder informiert werden sollen.
+17. **Tag „TT“** – 116 Beiträge, Bedeutung unklar. Benötigt: Erklärung oder Freigabe zum Verwerfen.
 
 ## Zuordnung zum Code
 
