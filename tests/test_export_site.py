@@ -76,3 +76,31 @@ def test_export_writes_inventory_redirects_and_media(tmp_path):
     assert alt_neu["https://www.tamil.de/backup/"] == "https://www.tamil.de/"
     assert "https://www.tamil.de/impressum/" not in alt_neu
     assert json.loads((tmp_path / "report.json").read_text())["inventar"]["http_bilder_posts"] == 1
+
+
+HOME = (Path(__file__).parent / "fixtures" / "tamil_home.html").read_text(encoding="utf-8")
+
+
+def test_parse_homepage_structure_and_brand():
+    menus = export_site.parse_menus(HOME)
+    assert [m["label"] for m in menus["haupt"]] == ["Home", "News", "EVENTS", "KINO"] and menus["haupt"][2]["url"].endswith("/category/anirudh/")
+    assert [m["label"] for m in menus["top"]] == ["Über Tamil.de", "Impressum"]
+    assert [t["label"] for t in export_site.parse_ticker(HOME)] == ["BAW erhebt Anklage gegen Tamilen", "Sie übersetzt auch im Gebärsaal"]
+    ads = export_site.parse_ads(HOME)
+    assert ads == [{"platz": "header", "url": "https://www.gravity-club.de", "bild": "https://www.tamil.de/wp-content/uploads/2024/10/topbanner.jpg", "masse": "728 × 90"},
+                   {"platz": "sidebar", "url": "https://www.olyyn.com", "bild": "https://www.tamil.de/wp-content/uploads/2026/07/33633363663.jpg", "masse": "336 × 280"}]
+    assert export_site.parse_blocks(HOME) == ["KÜCHE", "POWERED BY TAMIL.DE Production"]
+    assert export_site.parse_social(HOME) == ["https://whatsapp.com/channel/0029VaFIN43KWEKo3BGoE13t", "https://www.instagram.com/tamil_de/"]
+    brand = export_site.parse_brand(HOME)
+    assert brand["logo"].endswith("kkbslogo.png") and brand["theme"] == ["Observer"] and "add-to-any" in brand["plugins"]
+    assert brand["farben"][0] == "#B52224" and brand["generator"] == "WordPress 6.2.14" and "Ubuntu" in brand["fonts"]
+
+
+def test_page_map_redirects():
+    site = "https://www.tamil.de"
+    pages = [{"slug": s, "link": f"{site}/{s}/"} for s in ("ueberuns", "maya", "kino", "members", "privacy-policy", "tv", "reporter")]
+    rows = {r["alt"]: r["neu"] for r in export_site.redirect_rows(site, [], pages)}
+    assert rows[f"{site}/ueberuns/"] == f"{site}/ueber-uns/" and rows[f"{site}/reporter/"] == f"{site}/kontakt/"
+    assert f"{site}/maya/" not in rows  # bleibt unter demselben Pfad, wird Beitrag
+    assert rows[f"{site}/members/"] == f"{site}/" and rows[f"{site}/privacy-policy/"] == f"{site}/"
+    assert f"{site}/tv/" not in rows and f"{site}/kino/" not in rows
