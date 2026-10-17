@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+  <nav class="breadcrumb" aria-label="Brotkrumen"><a href="index.html">Start</a><span>›</span>{% if pg.kategorie %}<a href="kategorie-{{ pg.kategorie }}.html">{{ kat[pg.kategorie].label }}</a><span>›</span>{% endif %}<span>{{ pg.titel }}</span></nav>
+  <div class="with-sidebar">
+    <article class="artikel">
+      <header class="artikel-kopf">
+        <h1>{{ pg.titel }}{% if pg.tamil %} <span class="ta" lang="ta" style="font-size:.6em;color:var(--kumkum)">{{ pg.tamil }}</span>{% endif %}</h1>
+        {% if pg.hinweis %}<p class="hinweis-box" style="margin:0"><span class="beispiel">Hinweis</span> {{ pg.hinweis }}</p>{% endif %}
+        <p class="klein leise" style="margin:0">Übernommen von tamil.de/{{ pg.slug }}/ (Stand {{ pg.datum_original|datum }}), {{ pg.woerter }} Wörter.</p>
+      </header>
+      {% if pg.slug == 'impressum' %}
+      <div class="artikel-body">
+        <p>Angaben gemäß § 5 TMG <span class="beispiel">vom Auftraggeber zu liefern</span></p>
+        <p>{% for z in site.kontakt.adresse %}{{ z }}<br>{% endfor %}</p>
+        <p>Vertreten durch: <span class="beispiel">offen</span><br>Kontakt: {{ site.kontakt.telefon }}, {{ site.kontakt.email }} <span class="beispiel">Beispiel</span></p>
+        <p>Registereintrag, Umsatzsteuer-ID, Verantwortlich im Sinne des § 18 Abs. 2 MStV: <span class="beispiel">offen</span></p>
+        <p class="leise">Die Impressumsseite der alten tamil.de ist leer. Die Angaben oben sind Platzhalter aus Vertrag und Angebot; der Auftraggeber liefert den vollständigen Text vor dem Livegang.</p>
+      </div>
+      {% else %}
+      <div class="artikel-body">{{ pg.inhalt_html|safe }}</div>
+      {% endif %}
+      {% if pg.slug == 'fsk' %}
+      <p class="quelle">Quelle: Seite „FSK“ der alten tamil.de. Die Kennzeichen beziehen sich auf die Freiwillige Selbstkontrolle der Filmwirtschaft (FSK).</p>
+      <section class="section" style="padding-bottom:0">{{ m.kicker('kino', text='Aktuell im Kino', mehr='kategorie-kino.html') }}<div class="cards">{% for q in sel.kategorie_seiten.kino[:3] %}{{ m.card(q, '', 'h3') }}{% endfor %}</div></section>
+      {% endif %}
+    </article>
+    {{ m.sidebar() }}
+  </div>
+</div>
+{% endblock %}

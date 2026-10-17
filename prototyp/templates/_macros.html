@@ -13,11 +13,17 @@
 <a class="wordmark" href="{{ href }}" aria-label="Tamil.de – Startseite"><svg class="kolam" aria-hidden="true"><use href="#i-kolam"/></svg>tamil<span class="de">.de</span></a>
 {%- endmacro %}
 
+{% macro logo(href="index.html", cls="logo-wrap") -%}
+{% if logo %}<a class="{{ cls }}" href="{{ href }}" aria-label="Tamil.de – Startseite"><img src="img/logo.png" alt="Tamil.de – portal, lifestyle, entertainment" width="300" height="121"></a>{% else %}{{ wordmark(href) }}{% endif %}
+{%- endmacro %}
+
 {% macro ad(key) -%}
 {% set w = ad_slot(key) %}
-<div class="ad ad-{{ key }}"{% if key == 'mobile' %} id="ad-mobile"{% endif %}>
-  <span class="ad-label">Werbeplatz {{ w.nr }} · {{ w.name }}</span>
-  <div class="ad-box"><span class="nr">{{ w.nr }}</span><span class="nur-desktop">{{ w.desktop }}</span><span class="nur-mobil">{{ w.mobil.split(' (')[0] }}</span></div>
+{% set live = werbung_live.get(key) %}
+<div class="ad ad-{{ key }}{% if live %} ad-live{% endif %}"{% if key == 'mobile' %} id="ad-mobile"{% endif %}>
+  <span class="ad-label">Werbeplatz {{ w.nr }} · {{ w.name }}{% if live %} · Werbepartner {{ live.kunde }} ({{ live.masse }}){% endif %}</span>
+  {% if live %}<a class="ad-banner" href="{{ live.url }}" target="_blank" rel="noopener nofollow sponsored"><img src="{{ live.bild }}" alt="Werbung: {{ live.kunde }}" loading="lazy"></a>
+  {% else %}<div class="ad-box"><span class="nr">{{ w.nr }}</span><span class="nur-desktop">{{ w.desktop }}</span><span class="nur-mobil">{{ w.mobil.split(' (')[0] }}</span></div>{% endif %}
   {% if key == 'mobile' %}<button type="button" class="schliessen" aria-label="Werbung schließen">×</button>{% endif %}
 </div>
 {%- endmacro %}

@@ -98,6 +98,14 @@ def test_build_renders_all_pages(tmp_path):
     index = (tmp_path / "index.html").read_text(encoding="utf-8")
     assert "Jailer 2" in index and "Rezept der Woche" in index and 'href="kategorie-kino.html"' in index
     assert build.check_links(tmp_path) == []
+    for page in ("production.html", "tv.html", "impressum.html", "datenschutz.html", "ueber-uns.html", "service-fsk.html"):
+        assert page in written, page
+    assert 'src="img/logo.png"' in index and 'href="https://www.gravity-club.de' in index and "Tamil.de Production" in index
+    kueche = (tmp_path / "kategorie-kueche.html").read_text(encoding="utf-8")
+    assert kueche.count('<article class="card') >= 5 and "Bundesgericht" not in kueche
+    tv = (tmp_path / "tv.html").read_text(encoding="utf-8")
+    assert "Santhora TV" in tv and "Stream wird angefragt" in tv
+    assert "Leser-Reporter" in (tmp_path / "kontakt.html").read_text(encoding="utf-8")
     bare = build.render_all(tmp_path / "bare", bare_index=True)
     text = (tmp_path / "bare" / "index.html").read_text(encoding="utf-8")
     assert not text.lstrip().startswith("<!doctype") and "<title>" in text and 'claude:viewport-fit-sides' in text

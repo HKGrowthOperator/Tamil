@@ -3,9 +3,9 @@
   "site": {
     "name": "Tamil.de",
     "tagline": "Nachrichten, Kino und Community für Tamilen in DE, AT und CH",
-    "claim": "Nachrichten, Kino, Events und Community für Tamilen in Deutschland, Österreich und der Schweiz.",
+    "claim": "Lifestyle-Magazin für Deutschland, Schweiz und Österreich: brandheiße News, exklusive Berichte, angesagte Events.",
     "org": "KBS Management GmbH",
-    "version": "Designkonzept v2 · Radar"
+    "version": "Designkonzept v2 · Radar · Inhalte von tamil.de"
   },
   "kontakt": {
     "telefon": "+49 69 123 456",
@@ -21,24 +21,26 @@
   },
   "social": [
     {
-      "name": "Facebook",
-      "icon": "facebook",
-      "url": "#"
+      "name": "WhatsApp-Kanal",
+      "icon": "whatsapp",
+      "url": "https://whatsapp.com/channel/0029VaFIN43KWEKo3BGoE13t"
     },
     {
       "name": "Instagram",
       "icon": "instagram",
-      "url": "#"
+      "url": "https://www.instagram.com/tamil_de/"
+    },
+    {
+      "name": "Facebook",
+      "icon": "facebook",
+      "url": "#",
+      "status": "ausstehend"
     },
     {
       "name": "YouTube",
       "icon": "youtube",
-      "url": "#"
-    },
-    {
-      "name": "WhatsApp-Kanal",
-      "icon": "whatsapp",
-      "url": "#"
+      "url": "#",
+      "status": "ausstehend"
     }
   ],
   "nav": [
@@ -47,16 +49,8 @@
       "label": "Nachrichten"
     },
     {
-      "slug": "community",
-      "label": "Community"
-    },
-    {
       "slug": "entertainment",
       "label": "Entertainment"
-    },
-    {
-      "slug": "kino",
-      "label": "Kino"
     },
     {
       "slug": "events",
@@ -64,8 +58,17 @@
       "seite": "events.html"
     },
     {
+      "slug": "community",
+      "label": "Community",
+      "hinweis": "vorher „Blog“"
+    },
+    {
       "slug": "kueche",
       "label": "Küche"
+    },
+    {
+      "slug": "kino",
+      "label": "Kino"
     },
     {
       "slug": "sport",
@@ -158,7 +161,7 @@
     }
   },
   "kultur_regex": "pongal|parai|tempel|tanz|bharat|kultur|thaipusam|deepavali|diwali|literatur|dichter|sprache|fest\\b|feier",
-  "kueche_regex": "rezept|spezialit|küche|kochen|curry|gericht|kothu|rotti",
+  "kueche_regex": "rezept|spezialit|küche|kochen|curry|kothu|rotti|\\broti\\b|biryani|dosa|payasam|sambar|idli|chutney|zutaten",
   "hero": [
     9711,
     9697,
@@ -207,7 +210,7 @@
       "nr": "02",
       "key": "sidebar",
       "name": "Half Page (Sidebar)",
-      "desktop": "300 × 600",
+      "desktop": "300 × 600 oder 336 × 280",
       "mobil": "300 × 250 (Tablet), mobil ausgeblendet",
       "position": "Rechte Spalte, bleibt beim Scrollen stehen"
     },
@@ -394,5 +397,101 @@
       "stadt": "Hamm",
       "label": "Pongal-Vorbereitungen im Tempel (Beispiel)"
     }
-  ]
+  ],
+  "werbung_live": {
+    "leaderboard": {
+      "bild": "img/ad-leaderboard.jpg",
+      "url": "https://www.gravity-club.de",
+      "kunde": "Gravity Club",
+      "masse": "728 × 90",
+      "quelle": "Kopfbanner der alten Seite"
+    },
+    "sidebar": {
+      "bild": "img/ad-sidebar.jpg",
+      "url": "https://www.olyyn.com",
+      "kunde": "Olyyn",
+      "masse": "336 × 280",
+      "quelle": "Seitenleiste der alten Seite"
+    }
+  },
+  "production": {
+    "titel": "Tamil.de Production",
+    "tamil": "நிகழ்ச்சிகள்",
+    "claim": "Die Konzertreihe „Live mit dir!“: Tamil.de holt die großen Namen der tamilischen Musik nach Deutschland.",
+    "text": "A.R. Rahman, Ilaiyaraaja, Anirudh und Santhosh Narayanan standen oder stehen mit Tamil.de Production auf deutschen Bühnen. Hier stehen alle Konzerte, Tickets, Saalpläne und Antworten auf die häufigsten Fragen rund um den Konzertbesuch.",
+    "konzerte": [
+      9662,
+      9562,
+      9567,
+      9564
+    ],
+    "service": [
+      9209,
+      9198,
+      9256,
+      9191,
+      9135
+    ],
+    "ticket": {
+      "label": "Santhosh Narayanan live in Germany – Tickets",
+      "url": "https://www.ticketmaster.de/event/santhosh-narayanan-live-in-germany-tickets/939290796",
+      "quelle": "Ticketmaster-Link der alten Seite"
+    }
+  },
+  "tv": {
+    "titel": "Tamil TV",
+    "tamil": "தொலைக்காட்சி",
+    "text": "Die alte tamil.de streamt zwei Sender direkt im Browser. Die Stream-Adressen sind derzeit nicht erreichbar; der Player bleibt vorbereitet, bis der Sender neue Adressen liefert.",
+    "sender": [
+      {
+        "name": "Santhora TV",
+        "status": "Stream wird angefragt",
+        "stream": "http://rtmp.santhoratv.zecast.net/santhoratv/santhoratv/playlist.m3u8"
+      },
+      {
+        "name": "Tamil Business TV",
+        "status": "Stream wird angefragt",
+        "stream": "http://rtmp.santhoratv.zecast.net/tamilbusinesstv/tamilbusinesstv/playlist.m3u8"
+      }
+    ]
+  },
+  "seiten": {
+    "ueberuns": {
+      "datei": "ueber-uns.html",
+      "titel": "Über Tamil.de",
+      "tamil": "எங்களைப் பற்றி"
+    },
+    "datenschutzerklaerung": {
+      "datei": "datenschutz.html",
+      "titel": "Datenschutzerklärung",
+      "tamil": "",
+      "hinweis": "Stand 2016 – vom Auftraggeber zu aktualisieren"
+    },
+    "impressum": {
+      "datei": "impressum.html",
+      "titel": "Impressum",
+      "tamil": "",
+      "hinweis": "Auf der alten Seite leer – Angaben vom Auftraggeber"
+    },
+    "fsk": {
+      "datei": "service-fsk.html",
+      "titel": "Alterseinstufungen und FSK-Kennzeichen",
+      "tamil": "",
+      "kategorie": "kino"
+    },
+    "reporter": {
+      "datei": "",
+      "titel": "Leser-Reporter",
+      "tamil": ""
+    },
+    "tv": {
+      "datei": "tv.html",
+      "titel": "Tamil TV",
+      "tamil": "தொலைக்காட்சி"
+    }
+  },
+  "seiten_als_beitrag": {
+    "maya": "kino",
+    "2018-das-jahr-der-meilensteine-unser-rueckblick": "community"
+  }
 }

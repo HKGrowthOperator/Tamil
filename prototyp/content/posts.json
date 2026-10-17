@@ -3,11 +3,11 @@
  "shift_days": 708,
  "counts": {
   "news": 312,
-  "community": 21,
+  "community": 22,
   "entertainment": 97,
-  "kino": 98,
+  "kino": 99,
   "events": 6,
-  "kueche": 4,
+  "kueche": 6,
   "sport": 0,
   "kultur": 64
  },
@@ -28,6 +28,7 @@
    "standfirst": "Ab dem 14. November ist der Film Kanguva in deutschen Kinos zu sehen und wird von tamilischen wie internationalen Filmfans mit Spannung erwartet. Schon der Trailer hat viele Zuschauer begeistert, und es gibt Spekulationen, dass …",
    "woerter": 202,
    "tags": [],
+   "markierungen": [],
    "youtube": false,
    "bild": {
     "orig_w": 2190,
@@ -58,6 +59,7 @@
    "standfirst": "Mit seinem kommenden Film „Rathamaarey“ betretet der aufstrebende Regisseur Dinesha Ravichandran aus Chidambaram (Tamil Nadu) nach über zehn Jahren Erfahrung in der tamilischen Filmindustrie erstmals als Regisseur die große …",
    "woerter": 485,
    "tags": [],
+   "markierungen": [],
    "youtube": false,
    "bild": {
     "orig_w": 1648,
@@ -86,6 +88,7 @@
    "standfirst": "Sri Lanka steht an einem Wendepunkt: Wird es bei der Präsidentenwahl einen wirklichen politischen Wechsel geben? Die Wirtschaftslage hat sich unter dem Interimspräsidenten leicht verbessert, doch nicht alle sind überzeugt. …",
    "woerter": 337,
    "tags": [],
+   "markierungen": [],
    "youtube": false,
    "bild": {
     "orig_w": 1940,
@@ -114,6 +117,7 @@
    "standfirst": "Die tamilische Gemeinschaft in Deutschland und der Schweiz darf sich auf ein aufregendes neues Event freuen: “Meet Tamil Singles”. An einem noch bekanntzugebenden Datum haben tamilische Singles im Alter von 21 bis 40 Jahren die …",
    "woerter": 159,
    "tags": [],
+   "markierungen": [],
    "youtube": false,
    "bild": {
     "orig_w": 1382,
@@ -145,6 +149,9 @@
    "standfirst": "Tamil Nadu, ein Bundesstaat im Süden Indiens, ist ein Reiseziel, das Besucher mit seiner tief verwurzelten Geschichte, reichen Kultur und atemberaubenden natürlichen Landschaften fesselt. Während der kürzlich stattgefundenen ITB …",
    "woerter": 868,
    "tags": [],
+   "markierungen": [
+    "tt"
+   ],
    "youtube": false,
    "bild": {
     "orig_w": 695,
@@ -174,6 +181,9 @@
    "standfirst": "Die südindischen Wurzeln der US-Politikerin Kamala Harris stoßen in Indien auf viel Interesse, seit klar ist, dass Harris wohl die neue Präsidentschaftskandidatin der Demokraten wird. Das berichtet die Agentur Asianews. Ein …",
    "woerter": 494,
    "tags": [],
+   "markierungen": [
+    "tt"
+   ],
    "youtube": false,
    "bild": {
     "orig_w": 678,
@@ -193,7 +203,8 @@
    "datum": "2026-08-04",
    "datum_original": "2024-08-26",
    "kategorien": [
-    "kino"
+    "kino",
+    "production"
    ],
    "alt_kategorien": [
     "production"
@@ -202,6 +213,7 @@
    "standfirst": "AJ Entertainment, bekannt für ihre erfolgreichen Konzerte im Jahr 2023 mit Musikgrößen wie Anirudh, Ilaiyaraaja und A.R. Rahman, hat ein weiteres Highlight für 2025 angekündigt. Der Veranstalter bestätigte, dass der renommierte …",
    "woerter": 154,
    "tags": [],
+   "markierungen": [],
    "youtube": true,
    "bild": {
     "orig_w": 1548,
@@ -232,6 +244,7 @@
    "standfirst": "Tolle Neuigkeiten: Das schöne Sri Lanka verzichtet bald für 35 Länder auf die Visumpflicht, auch Deutschland ist dabei. Ziel dieser Entscheidung ist die Wiederbelebung des Tourismussektors und die Unterstützung der Wirtschaft. …",
    "woerter": 210,
    "tags": [],
+   "markierungen": [],
    "youtube": false,
    "bild": {
     "orig_w": 1546,
@@ -260,6 +273,7 @@
    "standfirst": "Eine 10-jährige Gitarristin aus Chennai, Tamil Nadu, brachte die Juroren von America’s Got Talent zum Staunen. Maya Neelakantan trat bei America’s Got Talent auf und erhielt eine Standing Ovation. Sie begann ihre Performance mit …",
    "woerter": 143,
    "tags": [],
+   "markierungen": [],
    "youtube": false,
    "bild": {
     "orig_w": 1382,
@@ -289,6 +303,7 @@
    "standfirst": "Parai bedeutet „Sprechen oder Kommunizieren“. Es ist auch eines der frühesten Perkussionsinstrumente, das bis in prähistorische Zeiten zurückreicht. Tholkaapiam, ein tamilisches Grammatikbuch, das vor der christlichen Ära …",
    "woerter": 967,
    "tags": [],
+   "markierungen": [],
    "youtube": false,
    "bild": {
     "orig_w": 1382,
@@ -320,6 +335,7 @@
    "standfirst": "Der Schauspieler aus Tamil Nadu, Vijay, hat eine bedeutende Geschichte der Unterstützung des Befreiungskampfes von Tamil Eelam. Sein Aktivismus in diesem Bereich war besonders bemerkenswert, insbesondere während wichtiger Momente …",
    "woerter": 326,
    "tags": [],
+   "markierungen": [],
    "youtube": false,
    "bild": {
     "orig_w": 1382,
@@ -348,6 +364,7 @@
    "standfirst": "In einem Erdrutschsieg für die Labour Party wurde Uma Kumaran zur Abgeordneten für Stratford und Bow gewählt, nachdem die Generalwahl am Donnerstag, den 4. Juli 2024, stattfand. Die britische Tamilin, die sri-lankisch-tamilischer …",
    "woerter": 287,
    "tags": [],
+   "markierungen": [],
    "youtube": false,
    "bild": {
     "orig_w": 1382,
@@ -376,6 +393,7 @@
    "standfirst": "ASOS, einer der führenden Online-Händler für Mode und Kosmetik, freut sich, die Einführung einer neuen Produktlinie bekannt zu geben: Ab sofort sind traditionelle Saris in unserem Sortiment erhältlich. Diese Erweiterung spiegelt …",
    "woerter": 186,
    "tags": [],
+   "markierungen": [],
    "youtube": false,
    "bild": {
     "orig_w": 1388,
@@ -385,6 +403,122 @@
     "h": 466
    },
    "inhalt_html": "<p>ASOS, einer der führenden Online-Händler für Mode und Kosmetik, freut sich, die Einführung einer neuen Produktlinie bekannt zu geben: Ab sofort sind traditionelle Saris in unserem Sortiment erhältlich. Diese Erweiterung spiegelt unser kontinuierliches Bestreben wider, unseren Kunden eine vielfältige und umfassende Auswahl an Modeartikeln aus aller Welt zu bieten.</p>\n\n<p>Die neuen Saris zeichnen sich durch ihre hohe Qualität, vielfältige Designs und traditionelle Handwerkskunst aus. Mit dieser Kollektion möchten wir die Schönheit und kulturelle Bedeutung des Sari zelebrieren und einem breiten Publikum zugänglich machen.</p>\n\n<p>ASOS plant, das Sortiment an Saris kontinuierlich zu erweitern und weitere traditionelle sowie moderne Designs anzubieten, um den unterschiedlichen Geschmäckern und Bedürfnissen unserer internationalen Kundschaft gerecht zu werden.</p>\n\n<p>Besuchen Sie unsere Webseite unter [www.asos.com] und entdecken Sie die neue Sari-Kollektion sowie viele weitere exklusive Mode-Highlights.</p>\n\n<figure><figure><img width=\"513\" height=\"655\" src=\"img/p9605-1.jpg\" alt=\"\"></figure></figure>\n\n<p><strong>Über ASOS:</strong> ASOS ist ein führender Online-Händler für Mode und Kosmetik mit Sitz in London. Seit seiner Gründung im Jahr 2000 hat sich das Unternehmen als eine der beliebtesten Marken für junge Erwachsene etabliert, die Wert auf stilvolle und trendbewusste Kleidung legen. ASOS bietet eine breite Palette an Produkten, darunter Bekleidung, Schuhe, Accessoires und Schönheitsprodukte, und liefert weltweit.</p>",
+   "lesezeit": 1,
+   "chips": []
+  },
+  {
+   "id": 9600,
+   "slug": "kottu-roti",
+   "titel": "Kottu Roti",
+   "datum": "2026-06-24",
+   "datum_original": "2024-07-16",
+   "kategorien": [
+    "kueche"
+   ],
+   "alt_kategorien": [
+    "kueche"
+   ],
+   "excerpt": "Kottu Roti ist ein Klassiker des sri-lankischen Street Foods. Die Übersetzung des tamilischen Begriffs lautet „gehacktes Roti“, wobei Roti wiederum ein …",
+   "standfirst": "Kottu Roti ist ein Klassiker des sri-lankischen Street Foods. Die Übersetzung des tamilischen Begriffs lautet „gehacktes Roti“, wobei Roti wiederum ein weitverbreitetes ungesäuertes Fladenbrot bezeichnet. Bei Kottu Roti handelt …",
+   "woerter": 95,
+   "tags": [],
+   "markierungen": [],
+   "youtube": false,
+   "bild": {
+    "orig_w": 1558,
+    "orig_h": 724,
+    "src": "img/p9600.jpg",
+    "w": 900,
+    "h": 418
+   },
+   "inhalt_html": "<p><strong>Kottu Roti </strong>ist ein Klassiker des sri-lankischen Street Foods. Die Übersetzung des tamilischen Begriffs lautet „gehacktes Roti“, wobei Roti wiederum ein weitverbreitetes ungesäuertes Fladenbrot bezeichnet. Bei Kottu Roti handelt es sich also um zerkleinertes Fladenbrot, das zusammen mit Gemüse, manchmal auch Fleisch oder Geflügel, Eiern und Gewürzen (insbesondere Chili) zu einem schmackhaften Salat verarbeitet wird. Absolut köstlich, finden unsere Reiseexperten für den Inselstaat im Indischen Ozean. REISEN MIT SINNEN verrät Ihnen das Rezept für den Street Food Klassiker aus Sri Lanka Kottu Roti. Probieren Sie es aus und versetzen Sie Ihre Geschmacksnerven auf die Tropeninsel.</p>",
+   "lesezeit": 1,
+   "chips": []
+  },
+  {
+   "id": 9597,
+   "slug": "payasam",
+   "titel": "Payasam",
+   "datum": "2026-06-24",
+   "datum_original": "2024-07-16",
+   "kategorien": [
+    "kueche"
+   ],
+   "alt_kategorien": [
+    "kueche"
+   ],
+   "excerpt": "Dies ist ein traditionelles Gericht, das als Nachspeise serviert wird. Es ist ein süßes Gericht, das einem feuchten Pudding ähnelt. In anderen Teilen …",
+   "standfirst": "Dies ist ein traditionelles Gericht, das als Nachspeise serviert wird. Es ist ein süßes Gericht, das einem feuchten Pudding ähnelt. In anderen Teilen Südindiens wird es oft auch Kheer genannt. Die Hauptzutaten sind Ghee, Reis …",
+   "woerter": 41,
+   "tags": [],
+   "markierungen": [],
+   "youtube": false,
+   "bild": {
+    "orig_w": 1344,
+    "orig_h": 594,
+    "src": "img/p9597.jpg",
+    "w": 900,
+    "h": 398
+   },
+   "inhalt_html": "<p>Dies ist ein traditionelles Gericht, das als Nachspeise serviert wird. Es ist ein süßes Gericht, das einem feuchten Pudding ähnelt. In anderen Teilen Südindiens wird es oft auch Kheer genannt. Die Hauptzutaten sind Ghee, Reis, Zucker, Milch, Kondensmilch, Kardamom und Nüsse.</p>",
+   "lesezeit": 1,
+   "chips": []
+  },
+  {
+   "id": 9594,
+   "slug": "biryani",
+   "titel": "Biryani",
+   "datum": "2026-06-24",
+   "datum_original": "2024-07-16",
+   "kategorien": [
+    "kueche"
+   ],
+   "alt_kategorien": [
+    "kueche"
+   ],
+   "excerpt": "Es gibt zwar mehrere Biryanis, die von den Tamilen geliebt werden, aber eines dieser Gerichte ist das Aloo Biryani. Bei diesem köstlichen Gericht werden die …",
+   "standfirst": "Es gibt zwar mehrere Biryanis, die von den Tamilen geliebt werden, aber eines dieser Gerichte ist das Aloo Biryani. Bei diesem köstlichen Gericht werden die Kartoffeln mariniert und nehmen den reichen Geschmack der Gewürze auf. …",
+   "woerter": 64,
+   "tags": [],
+   "markierungen": [],
+   "youtube": false,
+   "bild": {
+    "orig_w": 1328,
+    "orig_h": 596,
+    "src": "img/p9594.jpg",
+    "w": 900,
+    "h": 404
+   },
+   "inhalt_html": "<p>Es gibt zwar mehrere Biryanis, die von den Tamilen geliebt werden, aber eines dieser Gerichte ist das Aloo Biryani. Bei diesem köstlichen Gericht werden die Kartoffeln mariniert und nehmen den reichen Geschmack der Gewürze auf. Oft wird es mit Basmatireis und Kräutern zubereitet. Südindien ist berühmt für eine Vielzahl von vegetarischen und nicht-vegetarischen Biryanis. Aloo biryani zum Beispiel ist ein beliebtes Gericht der Tamilen.</p>",
+   "lesezeit": 1,
+   "chips": []
+  },
+  {
+   "id": 9591,
+   "slug": "dosa",
+   "titel": "Dosa",
+   "datum": "2026-06-24",
+   "datum_original": "2024-07-16",
+   "kategorien": [
+    "kueche"
+   ],
+   "alt_kategorien": [
+    "kueche"
+   ],
+   "excerpt": "Dosa ist ein größtenteils knuspriges Fladenbrot, das aus einem Teig mit einer Mischung aus Linsen (Urad Dal) und Reis hergestellt wird. Der Teig wird zunächst …",
+   "standfirst": "Dosa ist ein größtenteils knuspriges Fladenbrot, das aus einem Teig mit einer Mischung aus Linsen (Urad Dal) und Reis hergestellt wird. Der Teig wird zunächst fermentiert und dann wie ein dünner Pfannkuchen in einer heißen …",
+   "woerter": 94,
+   "tags": [],
+   "markierungen": [],
+   "youtube": false,
+   "bild": {
+    "orig_w": 1322,
+    "orig_h": 600,
+    "src": "img/p9591.jpg",
+    "w": 900,
+    "h": 409
+   },
+   "inhalt_html": "<p>Dosa ist ein größtenteils knuspriges Fladenbrot, das aus einem Teig mit einer Mischung aus Linsen (Urad Dal) und Reis hergestellt wird. Der Teig wird zunächst fermentiert und dann wie ein dünner Pfannkuchen in einer heißen flachen Pfanne gebacken. Dann wird es üblicherweise mit Sambar und Kokosnuss-Chutney serviert, einer feinen Paste aus Erdnüssen, Kokosnuss und Linsen.</p>\n\n<p>Dosa kann auch mit gebratener Kartoffelfüllung oder als Beilage serviert werden. Es gibt viele Varianten wie Masala Dosa, Paneer Dosa und so weiter. Hauptsächlich besteht es immer aus einem Teig auf Reis- und Linsenbasis mit verschiedenen Varianten und Beilagen.</p>",
    "lesezeit": 1,
    "chips": []
   },
@@ -405,6 +539,9 @@
    "standfirst": "Ein bemerkenswertes Ereignis fand kürzlich im Ukkulankulama Pillaiar Kovil in Vavuniya statt, als eine Mango bei einer Auktion für die beeindruckende Summe von 162.000 Rs, umgerechnet 500€ verkauft wurde. Die Mango wurde von …",
    "woerter": 194,
    "tags": [],
+   "markierungen": [
+    "tt"
+   ],
    "youtube": false,
    "bild": {
     "orig_w": 694,
@@ -435,6 +572,7 @@
    "standfirst": "Die tamilisch-amerikanische Studentin Shruthi Kumar kritisierte während ihrer Abschlussfeier-Rede die Harvard University, da letztere insgesamt 13 pro-palästinensischen Studenten auf unfaire Weise den Abschluss an der Universität …",
    "woerter": 134,
    "tags": [],
+   "markierungen": [],
    "youtube": false,
    "bild": {
     "orig_w": 694,
@@ -465,6 +603,7 @@
    "standfirst": "Die faszinierende Schönheit des Thiruchendur Murugan-Tempels, welcher sich in Tamil Nadu’s Küstenstadt Thiruchendur befindet, zieht jedes Jahr Millionen von Besuchern aus aller Welt an. Der Tempel soll 2000 Jahre alt sein und …",
    "woerter": 312,
    "tags": [],
+   "markierungen": [],
    "youtube": false,
    "bild": {
     "orig_w": 694,
@@ -477,6 +616,108 @@
    "lesezeit": 2,
    "chips": [],
    "kultur_fallback": true
+  },
+  {
+   "id": 9562,
+   "slug": "a-r-rahman-live-mit-dir",
+   "titel": "A.R.Rahman Live mit dir!",
+   "datum": "2025-08-23",
+   "datum_original": "2023-09-15",
+   "kategorien": [
+    "kino",
+    "production"
+   ],
+   "alt_kategorien": [
+    "production"
+   ],
+   "excerpt": "Share on: WhatsApp",
+   "standfirst": "Share on: WhatsApp",
+   "woerter": 10,
+   "tags": [
+    "live"
+   ],
+   "markierungen": [
+    "live"
+   ],
+   "youtube": true,
+   "bild": {
+    "orig_w": 694,
+    "orig_h": 359,
+    "src": "img/p9562.jpg",
+    "w": 692,
+    "h": 359
+   },
+   "inhalt_html": "<div class=\"video-embed\" data-video=\"ioA8hoTD8wo\"><button type=\"button\" class=\"video-load\">Video laden</button><p class=\"video-hint\">YouTube-Video – wird erst nach Klick geladen (Datenschutz).</p></div>",
+   "lesezeit": 1,
+   "chips": []
+  },
+  {
+   "id": 9567,
+   "slug": "ilaiyaraaja-live-mit-dir",
+   "titel": "Ilaiyaraaja Live mit dir!",
+   "datum": "2025-06-08",
+   "datum_original": "2023-07-01",
+   "kategorien": [
+    "kino",
+    "production"
+   ],
+   "alt_kategorien": [
+    "production"
+   ],
+   "excerpt": "Share on: WhatsApp",
+   "standfirst": "Share on: WhatsApp",
+   "woerter": 10,
+   "tags": [
+    "live"
+   ],
+   "markierungen": [
+    "live"
+   ],
+   "youtube": true,
+   "bild": {
+    "orig_w": 1378,
+    "orig_h": 712,
+    "src": "img/p9567.jpg",
+    "w": 900,
+    "h": 465
+   },
+   "inhalt_html": "<div class=\"video-embed\" data-video=\"YP4PBOfhaN8\"><button type=\"button\" class=\"video-load\">Video laden</button><p class=\"video-hint\">YouTube-Video – wird erst nach Klick geladen (Datenschutz).</p></div>",
+   "lesezeit": 1,
+   "chips": []
+  },
+  {
+   "id": 9564,
+   "slug": "anirudh-live-mit-dir",
+   "titel": "Anirudh Live mit dir!",
+   "datum": "2025-05-20",
+   "datum_original": "2023-06-12",
+   "kategorien": [
+    "kino",
+    "production"
+   ],
+   "alt_kategorien": [
+    "production"
+   ],
+   "excerpt": "Share on: WhatsApp",
+   "standfirst": "Share on: WhatsApp",
+   "woerter": 10,
+   "tags": [
+    "live"
+   ],
+   "markierungen": [
+    "live"
+   ],
+   "youtube": true,
+   "bild": {
+    "orig_w": 694,
+    "orig_h": 359,
+    "src": "img/p9564.jpg",
+    "w": 692,
+    "h": 359
+   },
+   "inhalt_html": "<div class=\"video-embed\" data-video=\"Yb46tIL9mLE\"><button type=\"button\" class=\"video-load\">Video laden</button><p class=\"video-hint\">YouTube-Video – wird erst nach Klick geladen (Datenschutz).</p></div>",
+   "lesezeit": 1,
+   "chips": []
   },
   {
    "id": 8936,
@@ -495,6 +736,9 @@
    "standfirst": "Was ist Arwi (Arabisch-Tamil)?Arabisch ist eine der zehn am häufigsten gesprochenen Sprachen der Welt. Es ist die vorherrschende Sprache im Nahen Osten und in Nordafrika, einschließlich Saudi-Arabien, Katar und den Vereinigten …",
    "woerter": 866,
    "tags": [],
+   "markierungen": [
+    "tt"
+   ],
    "youtube": false,
    "bild": {
     "orig_w": 743,
@@ -524,6 +768,9 @@
    "standfirst": "Wir holen 1A Musiklegende Ilaiyaraja nach Deutschland! Freunde der Tamil Evergreens – wir haben tolle Neuigkeiten für euch!Ilaiyaraja, ein Musiksegen für sage und schreibe über 1000 Tamil-Filme, wird seine Klassiker nun auch in …",
    "woerter": 186,
    "tags": [],
+   "markierungen": [
+    "tt"
+   ],
    "youtube": false,
    "bild": {
     "orig_w": 1376,
@@ -554,6 +801,7 @@
    "standfirst": "An alle Anirudh Fans! Unser größter Dank gilt all denen, die „Anirudh live in Germany“ jetzt schon zu solch einem Riesenerfolg geführt haben. Wir sind immer noch von der beispiellosen Ticket-Nachfrage überwältigt, die in …",
    "woerter": 371,
    "tags": [],
+   "markierungen": [],
    "youtube": false,
    "bild": {
     "orig_w": 1484,
@@ -582,6 +830,9 @@
    "standfirst": "Aufgrund des hohen Andrangs auf der Website am gestrigen Abend und die damit einhergehende Überbelastung, kam es bei einigen Käufern verständlicherweise zu einer wahren Herausforderung das gewünschte Ticket zu buchen. Wir …",
    "woerter": 129,
    "tags": [],
+   "markierungen": [
+    "tt"
+   ],
    "youtube": false,
    "bild": {
     "orig_w": 692,
@@ -611,6 +862,9 @@
    "standfirst": "Die Kategorien tragen folgende Titel und legen die entsprechenden Preise fest:Arabic Kuthu – 250€ (Seats)Private Party – 150€ (Seats)Dippam Dappam – 85€ (Seats)Kolaveri – 70€ (Standing / Stehplatz)Two Two Two – 73€ (Seats)Vaathi …",
    "woerter": 586,
    "tags": [],
+   "markierungen": [
+    "tt"
+   ],
    "youtube": false,
    "bild": {
     "orig_w": 692,
@@ -640,6 +894,7 @@
    "standfirst": "Die Zahlung ist je nach Veranstaltung und Bestellmodalitäten im SEPA-Lastschriftverfahren, per Kreditkarte (Visa, Mastercard, American Express, Diners oder Discover), giropay, Sofortüberweisung und/oder durch Vorkasse per …",
    "woerter": 153,
    "tags": [],
+   "markierungen": [],
    "youtube": false,
    "bild": {
     "orig_w": 680,
@@ -668,6 +923,9 @@
    "standfirst": "Anirudh Fans – nun ist es soweit! AJ Entertainment präsentiert euch die Deutschland-Premiere des heiß ersehnten Anirudh-Musical-Konzerts 2023. Er ist zweifelsohne einer DER gefragtesten jungen Komponisten und Sängern der …",
    "woerter": 158,
    "tags": [],
+   "markierungen": [
+    "tt"
+   ],
    "youtube": false,
    "bild": {
     "orig_w": 689,
@@ -699,6 +957,9 @@
    "standfirst": "Der Gummersbacher Tempel Sri-Kurinchikumaran erfreute sich über seinen gestrigen prominenten Besuch aus Süd-Indien. Der berühmte Karnatik- und Playback-Sänger P. Unnikrishnan nahm persönlich am Gottesdienst teil und bescherte so …",
    "woerter": 178,
    "tags": [],
+   "markierungen": [
+    "tt"
+   ],
    "youtube": false,
    "bild": {
     "orig_w": 1005,
@@ -730,6 +991,9 @@
    "standfirst": "Es ist die Sensations-Nachricht! Der großartige Musikkomponist und Sänger Anirudh Ravichander aus Tamil Nadu soll 2023 sein allererstes Deutschland-Konzert in einer begehrten Arena hierzulande geben. Was für eine einzigartige …",
    "woerter": 164,
    "tags": [],
+   "markierungen": [
+    "tt"
+   ],
    "youtube": false,
    "bild": {
     "orig_w": 1386,
@@ -749,6 +1013,7 @@
    "datum": "2024-08-30",
    "datum_original": "2022-09-22",
    "kategorien": [
+    "kueche",
     "community"
    ],
    "alt_kategorien": [
@@ -758,6 +1023,9 @@
    "standfirst": "Es sind sonnige 26°C in New York City und das Warten in der Schlange neigt sich dem Ende zu.Meine Sicht auf den kultigen Streetfood-Wagen NY Dosas wird immer klarer. Und da steht er, Thiru Kumar, auch bekannt als der “Dosa Man”. …",
    "woerter": 225,
    "tags": [],
+   "markierungen": [
+    "tt"
+   ],
    "youtube": false,
    "bild": {
     "orig_w": 968,
@@ -787,6 +1055,9 @@
    "standfirst": "Hochneukirch Frischer Wind weht durch den Tempel „Sri Navasakthi Vinayagar“. Die Tamilische Gemeinde in Hochneukirch hat einen neuen Vorstand gewählt – und der ist jünger und weiblicher als bisher. Mit dabei ist auch die …",
    "woerter": 330,
    "tags": [],
+   "markierungen": [
+    "tt"
+   ],
    "youtube": false,
    "bild": {
     "orig_w": 870,
@@ -817,6 +1088,9 @@
    "standfirst": "Weiterer Meilenstein für Hinduistische Gemeinde Deutschland Zehn Jahre lang gewünscht: Baustart für Hindu-Kulturzentrum in Uentrop Das lange Abwägen, Planen und Umplanen hat ein Ende: In dieser Woche war Baustart für das …",
    "woerter": 857,
    "tags": [],
+   "markierungen": [
+    "tt"
+   ],
    "youtube": false,
    "bild": {
     "orig_w": 1147,
@@ -847,6 +1121,9 @@
    "standfirst": "Die USA haben die gleichgeschlechtliche Ehe legalisiert. Diese Entscheidung wird als historischer Paukenschlag gefeiert. Andere Länder sind aber noch nicht soweit. Andere Kulturen haben noch weitaus andere Sorgen, so auch wir …",
    "woerter": 664,
    "tags": [],
+   "markierungen": [
+    "tt"
+   ],
    "youtube": false,
    "bild": {
     "orig_w": 1858,
@@ -859,35 +1136,6 @@
    "lesezeit": 4,
    "chips": [],
    "kultur_fallback": true
-  },
-  {
-   "id": 8283,
-   "slug": "mord-vor-20-jahren-schuldspruch-fuer-tamilen-von-bundesgericht-bestaet",
-   "titel": "Mord vor 20 Jahren: Schuldspruch für Tamilen von Bundesgericht bestätigt",
-   "datum": "2022-02-10",
-   "datum_original": "2020-03-04",
-   "kategorien": [
-    "kueche",
-    "news"
-   ],
-   "alt_kategorien": [
-    "news"
-   ],
-   "excerpt": "Das Bundesgericht hat die Beschwerde eines Tamilen abgewiesen. Er tötete im Jahr 2000 seine Ex-Freundin im Kleinbasel, weil sie sich von ihm trennen wollte. …",
-   "standfirst": "Das Bundesgericht hat die Beschwerde eines Tamilen abgewiesen. Er tötete im Jahr 2000 seine Ex-Freundin im Kleinbasel, weil sie sich von ihm trennen wollte. Das Bundesgericht kommt in einem am Dienstag veröffentlichten Urteil zum …",
-   "woerter": 223,
-   "tags": [],
-   "youtube": false,
-   "bild": {
-    "orig_w": 2000,
-    "orig_h": 998,
-    "src": "img/p8283.jpg",
-    "w": 900,
-    "h": 449
-   },
-   "inhalt_html": "<p>Das Bundesgericht hat die Beschwerde eines Tamilen abgewiesen. Er tötete im Jahr 2000 seine Ex-Freundin im Kleinbasel, weil sie sich von ihm trennen wollte.</p>\n\n<p>Das Bundesgericht kommt in einem am Dienstag veröffentlichten Urteil zum Schluss, das Appellationsgericht sei bei der Strafzumessung korrekt vorgegangen. Es war bereits das zweite Mal, dass sich das Basler Gericht mit dem Fall beschäftigen musste.</p>\n\n<p>Im ersten Anlauf hatte es den Mann zu einer Freiheitsstrafe von 17 Jahren verurteilt. Weil es die Strafe gemäss dem revidierten Strafrecht berechnete und nicht dem zur Tatzeit gültigen und milderen, wies das Bundesgericht die Sache zur neuen Bemessung zurück.</p>\n\n<p>Der heute 48-jährige Verurteilte hatte seine damalige Freundin im Dezember 2000 zunächst stark gewürgt und ihr dann die Kehle durchgeschnitten. Das Motiv für die Bluttat sah der Staatsanwalt in übersteigerter Eifersucht. Schon vor dem Tod der jungen Frau habe der Angeklagte diese immer wieder psychisch und physisch drangsaliert, ihr mit dem Tod gedroht und sie verletzt.</p>\n\n<p>Dem Mann gelang es danach unterzutauchen und in Neuseeland mit falschen Papieren ein neues Leben aufzubauen. Der Tamile heiratete, wurde Vater von zwei Kindern und führte in Auckland ein Lebensmittelgeschäft. 2004 erhielt er sogar die neuseeländische Staatsbürgerschaft.</p>\n\n<p>Ende 2014 wurde er jedoch enttarnt und ein Jahr später an die Schweiz ausgeliefert. An der Fahndung war neben der Polizei in der Schweiz und Neuseeland auch Interpol beteiligt.</p>\n\n<p>Quelle: kha/sda</p>",
-   "lesezeit": 2,
-   "chips": []
   },
   {
    "id": 7931,
@@ -906,6 +1154,9 @@
    "standfirst": "14 verschiedene Sprachen gab es bisher auf der Website des Kantons Aargau hallo-aargau.ch – nicht aber alle vier Landessprachen der Schweiz. Am Fehlen von Rätoromanisch hat sich SVP-Grossrat Christoph Riner gestört und hat …",
    "woerter": 158,
    "tags": [],
+   "markierungen": [
+    "tt"
+   ],
    "youtube": false,
    "bild": {
     "orig_w": 696,
@@ -935,6 +1186,10 @@
    "standfirst": "Reportage-Reihe: Sri Lanka nach dem Bürgerkrieg-10 Jahre Frieden? von Johanna Meier Jaffna ist anders als andere Städte. Es scheint, als habe sich ihre große Geschichte wie eine unsichtbare, schwere Decke auf den Ort und ihre …",
    "woerter": 1174,
    "tags": [],
+   "markierungen": [
+    "ticker",
+    "tt"
+   ],
    "youtube": false,
    "bild": {
     "orig_w": 691,
@@ -965,6 +1220,10 @@
    "standfirst": "„Das ist die Wahrheit“ von Johanna Meier Zehn Jahre nach Ende des Bürgerkriegs patrouillieren die Soldaten in Mullaitivu noch immer durch die Straßen. Die Gegend ist verlassen, von der Welt im Stich gelassen. Schüler in strahlend …",
    "woerter": 1079,
    "tags": [],
+   "markierungen": [
+    "ticker",
+    "tt"
+   ],
    "youtube": false,
    "bild": {
     "orig_w": 692,
@@ -993,6 +1252,7 @@
    "standfirst": "Als die Ankündigung kam, dass Suriya mit Regisseur Selvaraghavan (der große Bruder von Schauspieler Dhanush) einen Film dreht, sind die Erwartungen in den Himmel gestiegen. Regisseur Selvaraghavan hat mit Filmen wie Kaadhal …",
    "woerter": 171,
    "tags": [],
+   "markierungen": [],
    "youtube": false,
    "bild": {
     "orig_w": 2078,
@@ -1022,6 +1282,10 @@
    "standfirst": "Wie hat Yamuna Sangarasivam in Micheal Jackson’s damaligem „Black or White“-Video, das in 27 Ländern vor fast 500 Millionen Zuschauern Premiere hatte, die Chance bekommen mit ihm im Duett zu tanzen? Obwohl sie ein großer Fan des …",
    "woerter": 288,
    "tags": [],
+   "markierungen": [
+    "ticker",
+    "tt"
+   ],
    "youtube": true,
    "bild": {
     "orig_w": 692,
@@ -1051,6 +1315,9 @@
    "standfirst": "In Tamil Cinema ändert sich von Jahr zu Jahr immer wieder der Trend im Genre. Vor paar Jahren lief das Genre „Horror Komödie“ gut und es kamen sehr viele Filme zu diesem Genre raus. Manche davon haben auch sehr viel Geld …",
    "woerter": 311,
    "tags": [],
+   "markierungen": [
+    "tt"
+   ],
    "youtube": true,
    "bild": {
     "orig_w": 692,
@@ -1079,6 +1346,10 @@
    "standfirst": "Viele Tamilen im Norden Sri Lankas leben zehn Jahre nach dem Bürgerkrieg noch immer in absoluter Armut. Tamil.de hat eine Frau getroffen, die vom Krieg gezeichnet ist, doch trotzdem nie den Mut verloren hat. Poovathany hat im …",
    "woerter": 571,
    "tags": [],
+   "markierungen": [
+    "ticker",
+    "tt"
+   ],
    "youtube": false,
    "bild": {
     "orig_w": 692,
@@ -1108,6 +1379,9 @@
    "standfirst": "Chiyaan Vikram’s Sohn sollte mit dem Film „VARMAA“ seinen Debüt in Tamil Cinema feiern. Regisseur Bala wurde von den Produzenten E4 Entertainment und auch von Chiyaan Vikram selber ausgesucht um bei dem Remake vom Kult …",
    "woerter": 176,
    "tags": [],
+   "markierungen": [
+    "tt"
+   ],
    "youtube": false,
    "bild": {
     "orig_w": 692,
@@ -1137,6 +1411,7 @@
    "standfirst": "Pluspunkte: + tolle soziale Botschaft „Wählen zu gehen“ + nicht langweilige 1.Hälfte + erste Kampzszene + Lieder und Hintergrundkomposition von A.R.Rahman sind „OKAY“ + gute Dialoge + Varalakshmi’s Rolle als „Komalavalli“ + Radha …",
    "woerter": 334,
    "tags": [],
+   "markierungen": [],
    "youtube": false,
    "bild": {
     "orig_w": 692,
@@ -1167,6 +1442,7 @@
    "standfirst": "Dhanush’s neuer internationaler Film „Die Unglaubliche Reise des Fakirs, der in einem Kleiderschrank feststeckte“ startet ab heute in Deutschland. Der Film ist eine Verfilmung von dem gleichnamigen Roman, welcher im Jahre 2014 …",
    "woerter": 289,
    "tags": [],
+   "markierungen": [],
    "youtube": false,
    "bild": {
     "orig_w": 607,
@@ -1195,6 +1471,9 @@
    "standfirst": "Pluspunkte: + Dhanush’s Performance als „Anbu“ und seine Transformation von jung zu alt + Santhosh Narayanan’s Hintergrundmusik und Lieder + Ameer Sultan’s Rolle als „Rajan“ + Weltklasse Regieführung von Vettri Maran + sehr gute …",
    "woerter": 383,
    "tags": [],
+   "markierungen": [
+    "ticker"
+   ],
    "youtube": false,
    "bild": {
     "orig_w": 692,
@@ -1225,6 +1504,9 @@
    "standfirst": "Pluspunkte: + Vijay Sethupathi’s Performance als „Raam“ + Trisha Krishnan’s Performance als „Jaanu“ + Die jüngeren Schauspieler, welche Vijay Sethupathi und Trisha dargestellt haben + Die Lieder und die Hintergrundmusik von …",
    "woerter": 259,
    "tags": [],
+   "markierungen": [
+    "ticker"
+   ],
    "youtube": false,
    "bild": {
     "orig_w": 692,
@@ -1255,6 +1537,9 @@
    "standfirst": "Pluspunkte: + Top Kameraführung von Santosh Sivan + gute Hintergrundmusik von A.R.Rahman komponiert + STR’s Rolle als „Ethi“ + Vijay Sethupathi’s Rolle als „Rasool“ + erste Hälfte + Climax Szene + Jyothika’s Rolle als Chitra + …",
    "woerter": 597,
    "tags": [],
+   "markierungen": [
+    "ticker"
+   ],
    "youtube": false,
    "bild": {
     "orig_w": 692,
@@ -1286,6 +1571,7 @@
    "standfirst": "PLUSPUNKTE: + Sivakarthikeyan’s Performance + Unterhaltsame erste Hälte + Sivakarthikeyan’s Tanz-Skills + D.Imman’s Lieder + Sivakarhitkeyan’s und Soori’s Comedy-Szenen MINUSPUNKTE: – 2.Hälfte viel zu lang gezogen – gewohnte alte …",
    "woerter": 311,
    "tags": [],
+   "markierungen": [],
    "youtube": false,
    "bild": {
     "orig_w": 1038,
@@ -1318,6 +1604,7 @@
    "standfirst": "An alle tamilischen Serienliebhaber! Hier ist eine neue Empfehlung für euch: Ab Montag den 24. September zeigt Zee.One Deutschland die ersten 20 Folgen einer neuen Top Serie „TERE BIN – NICHT OHNE DICH„ von Montag bis Freitag um …",
    "woerter": 211,
    "tags": [],
+   "markierungen": [],
    "youtube": false,
    "bild": {
     "orig_w": 692,
@@ -1347,6 +1634,7 @@
    "standfirst": "Pluspunkte: + nicht langweiliges Drehbuch + Nayanthara’s schauspielerische Leistung als „Anjali“ + Hip Hop Tamizha’s Lieder und Hintergrundmusik + Anurag Kashyap’s schauspielerische Leistung als „Rudra“ + Vijay Sethupathi’s …",
    "woerter": 420,
    "tags": [],
+   "markierungen": [],
    "youtube": false,
    "bild": {
     "orig_w": 692,
@@ -1379,6 +1667,7 @@
    "standfirst": "Tamilische Paare können Monate und sogar Jahre damit verbringen, ihre Hochzeit zu planen aber scheinbar vernachlässigen sie die wichtigste Person des Tages – den Priester. Der wohl grundlegendste Teil der Hochzeit besteht darin …",
    "woerter": 715,
    "tags": [],
+   "markierungen": [],
    "youtube": false,
    "bild": {
     "orig_w": 1388,
@@ -1407,6 +1696,7 @@
    "standfirst": "Die Kino-Komödie „Die unglaubliche Reise des Fakirs, der in einem Kleiderschrank feststeckte“ basiert auf dem gleichnamigen Roman von Romain Puértolas: Nach dem Tod seiner Mutter, die sich immer gewünscht hatte, einmal die Stadt …",
    "woerter": 237,
    "tags": [],
+   "markierungen": [],
    "youtube": false,
    "bild": {
     "orig_w": 1388,
@@ -1439,6 +1729,9 @@
     "Filmweek",
     "IndoGerman"
    ],
+   "markierungen": [
+    "tt"
+   ],
    "youtube": false,
    "bild": {
     "orig_w": 1386,
@@ -1451,132 +1744,6 @@
    "lesezeit": 6,
    "chips": [],
    "kultur_fallback": true
-  },
-  {
-   "id": 6247,
-   "slug": "kolamaavu-kokila-kritik",
-   "titel": "Kolamaavu Kokila – Kritik",
-   "datum": "2020-07-26",
-   "datum_original": "2018-08-18",
-   "kategorien": [
-    "kino"
-   ],
-   "alt_kategorien": [
-    "kritik"
-   ],
-   "excerpt": "Pluspunkte: + Nayanthara`s schauspielerische Leistung als „Kokila“ + Yogi Babu`s Comedy mit dem anderen Jungen + Anirudhs`s BGM und Lieder + Der unbekannt …",
-   "standfirst": "Pluspunkte: + Nayanthara`s schauspielerische Leistung als „Kokila“ + Yogi Babu`s Comedy mit dem anderen Jungen + Anirudhs`s BGM und Lieder + Der unbekannt Schauspieler der den Charakter „Tony“ gespielt hat + sehr gute …",
-   "woerter": 380,
-   "tags": [
-    "KOLAMAAVU KOKILA",
-    "Nayanthara"
-   ],
-   "youtube": false,
-   "bild": {
-    "orig_w": 692,
-    "orig_h": 360,
-    "src": "img/p6247.jpg",
-    "w": 692,
-    "h": 360
-   },
-   "inhalt_html": "<p><span><strong>Pluspunkte:</strong></span><br>\n+ Nayanthara`s schauspielerische Leistung als „Kokila“<br>\n+ Yogi Babu`s Comedy mit dem anderen Jungen<br>\n+ Anirudhs`s BGM und Lieder<br>\n+ Der unbekannt Schauspieler der den Charakter „Tony“ gespielt hat<br>\n+ sehr gute Kameraführung<br>\n+ Saranya Ponvannans Rolle als Mutter von Nayanthara<br>\n+ Intermission Szene<br>\n+ nicht langweiliges Drehbuch<br>\n+ schwarzer Humor „BLACK COMEDY“ funktioniert in den meisten Szenen sehr gut<br>\n+ Alle Rollen in diesem Film haben einen Grund, warum Sie in diesem Film vorkommen und sind nicht überflüssig<br>\n+ Das Lied GUN IN KADHAL hat man vorher nicht richtig verstanden, IM FILM kommt dann der Moment, wo man das Lied versteht! (Tolle Idee!!)</p>\n<p><span><strong>Minuspunkte:</strong></span><br>\n&#8211; Hier und da zieht sich der Film ein wenig, aber das wird mit 4-5 guten Szenen wieder gutgemacht</p>\n<p>Regisseur NELSON, viele von euch kennen Ihn nicht, aber er hatte damals den Film mit Simbu angefangen zu drehen. Der Film hieß „Vettai Mannen“ und es gibt bei Youtube sogar einen Teaser Trailer davon. Der Film wurde leider aus finanziellen Gründen gecancelt. Nelson hat nicht aufgegeben und nach vielen Jahren hat er jetzt endlich durch Nayanthara seine Chance bekommen sein Talent zu beweisen und das tut er RICHTIG GUT! „KOLAMAAVU KOKILA“ ist eines der Filme, welche man von diesem Jahr 2018, an die man gerne zurückdenkt. „Kolamaavu Kokila“ gehört zu den guten Filmen die dieses Jahr rauskamen. Nayanthara spielt die Rolle von „Kokila“ super gut und bei der Intermission Szene möchte man als Zuschauer und sogar als Nicht Nayanthara Fan, nur aufstehen und klatschen und pfeifen. Anirudh`s Lieder sind sowieso Chartbusters, aber seine BGM in diesem Film hat viele Szenen zu Mass Szenen verwandelt (Intermission Szene + Climax) Szene) Nicht zu vergessen ist natürlich YOGI BABU, dieser Schauspieler ist momentan eines der gefragtesten Komödien Schauspieler in Kollywood und das nicht ohne Grund! In „Kolamaavu Kokila“ nutzt Ihn Regisseur Nelson sehr gut und all seine One-Liners funktionieren sehr gut. Das tollste an diesem Film ist, dass viele Szenen in diesem Film ziemlich NEU sind und man Sie vorher noch in keinem Film gesehen hat. Das macht diesen Film echt zu was besonderem.„KOLAMAAVU KOKILA“ IST NAYANTHARA´S ANTWORT ZU BREAKING BAD! „Kolamaavu Kokila&#8220; ist ein GEWINNER von diesem Jahr 2018, Wir freuen uns auf die kommenden Filme von Regisseur NELSON! &#8211; <strong><em>Kritik von Tivi Arj</em></strong></p>\n<h2>RATING: <span>7.5</span> GUT</h2>",
-   "lesezeit": 2,
-   "chips": [
-    "kritik"
-   ]
-  },
-  {
-   "id": 6227,
-   "slug": "vishwaroopam-2-kritik",
-   "titel": "Vishwaroopam 2 – Kritik",
-   "datum": "2020-07-26",
-   "datum_original": "2018-08-18",
-   "kategorien": [
-    "kino"
-   ],
-   "alt_kategorien": [
-    "kritik"
-   ],
-   "excerpt": "Plus Punkte: + Kameraführung (Hollywood Look) + Ghibran`s Lieder + Rahul Bose Villain Character als Omar + Kamals Hassan Szenen mit der Mutter + Offene Fragen …",
-   "standfirst": "Plus Punkte: + Kameraführung (Hollywood Look) + Ghibran`s Lieder + Rahul Bose Villain Character als Omar + Kamals Hassan Szenen mit der Mutter + Offene Fragen von Vishwaroopam 1 werden geklärt + Ideen der Action-Sequenzen + Kamal …",
-   "woerter": 438,
-   "tags": [
-    "VISHWAROOPAM",
-    "VISHWAROOPAM 2"
-   ],
-   "youtube": true,
-   "bild": {
-    "orig_w": 692,
-    "orig_h": 360,
-    "src": "img/p6227.jpg",
-    "w": 692,
-    "h": 360
-   },
-   "inhalt_html": "<div>\n<p><strong>Plus Punkte:</strong></p>\n</div>\n<div>+ Kameraführung (Hollywood Look)</div>\n<div>+ Ghibran`s Lieder</div>\n<div>+ Rahul Bose Villain Character als Omar</div>\n<div>+ Kamals Hassan Szenen mit der Mutter</div>\n<div>+ Offene Fragen von Vishwaroopam 1 werden geklärt</div>\n<div>+ Ideen der Action-Sequenzen</div>\n<div>+ Kamal Haasan`s Dialoge über den Islam und Terrorismus</div>\n<div>\n<p>+ Drehbuch (gibt einem das Gefühl einen Hollywood Thriller/Action Film zu schauen)</p>\n</div>\n<div>\n<p><strong>Minus Punkte:</strong></p>\n</div>\n<div>&#8211; Ghibran`s BGM nur durchschnittlich</div>\n<div>&#8211; Rahul Bose Villain Charakter Omar erscheint viel zu spät</div>\n<div>&#8211; zu kurze 2.Hälfte</div>\n<div>&#8211; Man merkt das Kamal Haasan älter geworden ist, obwohl der Film direkt nach Vishwaroopam 1</div>\n<div>spielt</div>\n<div>&#8211; Zu amateurhafte Umsetzung der Action-Sequenzen, obwohl sie gut gedacht sind</div>\n<div>&#8211; Gar keine WOW oder WTF Momente wie in Vishwaroopam 1<br>\n&#8211; Intermission Szene</div>\n<div>\n\n<div>\n<p><div class=\"video-embed\" data-video=\"nOBdtU1tzWk\"><button type=\"button\" class=\"video-load\">Video laden</button><p class=\"video-hint\">YouTube-Video – wird erst nach Klick geladen (Datenschutz).</p></div><span>﻿</span><span>﻿</span></p>\n<p>Als <span><strong>Vishwaroopam 1</strong></span> in den Kinos rauskam, wusste erstmal keiner was einen erwartet. Nach den</p>\n</div>\n<div>ersten Shows weltweit, hat jeder nur noch über diesen Film geredet und jedem Vishwaroopam 1</div>\n<div>empfohlen. Die Mund zu Mund Propaganda hat bei dem ersten Teil sehr gut funktioniert, weil das</div>\n<div>Publikum vom dem ersten Teil einfach fasziniert war und auch in Deutschland lief der Film circa 5-6</div>\n<div>Wochen mit Housefull Shows (Blockbuster Umsatz in Deutschland). Leider ist der 2.Teil eine</div>\n<div>Enttäuschung. Der Trailer hat schon nicht zu sehr überzeugt. Man hat gemerkt, dass die VFX Effekte</div>\n<div>nicht so überragend sind und genau das ist der Fehler. Das tamilische Publikum ist mittlerweile auch</div>\n<div>an hohe VFX gewohnt (Bahubaali, Endhiran) und man kann dem Publikum heutzutage keinen Film</div>\n<div>abliefern, wo die VFX einfach amateurhaft sind. Das zieht den ganzen Film einfach runter. Man merkt,</div>\n<div>dass Kamal Haasan einfach das Geld gefehlt hat um den Film zu beenden. Zudem besteht der Film aus</div>\n<div>vielen Szenen, welche im ersten Teil wahrscheinlich weggeschnitten wurden und nun beim 2. Teil</div>\n<div>eingefügt wurden. Zudem hat Vishwaroopam 1 mit den tollen Wendungen es geschafft beim</div>\n<div>Zuschauer diese WTF-WOW Momente zu schaffen. Hier ist leider keiner solchen Sachen dabei.</div>\n<div>Ghibran`s Lieder sind sehr gut und das Album kann zwar mit dem ersten Teil mithalten, aber bei der</div>\n<div>\n<p>Hintergrundmusik (BGM) hat er leider enttäuscht. Das einzig tolle in dem Film ist, dass wie im ersten</p>\n<div>Teil, der Zuschauer das Gefühl hat einen Hollywood Film zu sehen. Alle die sich Vishwaroopam1</div>\n<div>angeschaut haben, können den 2.Teil sich auf jeden Fall anschauen um die offenen Fragen zu klären,</div>\n<div>aber dieser Film ist leider nach dem ersten Anschauen auch ganz schnell wieder vergessen.</div>\n<div>Vishwaroopam 2 hätte eine tolle Fortsetzung werden können, hat es aber leider nicht mal</div>\n<div>ansatzweise geschafft an den ersten Teil ranzukommen. <strong><em>Kritik von Tivi Arj</em></strong></div>\n</div>\n</div>\n<div>\n<h2>RATING: <span>5.8</span> Mittelmäßig</h2>\n<div>Alle Kinotermine: <a href=\"https://www.tamil.de/kino\">https://www.tamil.de/kino</a></div>\n<h2></h2>\n</div>",
-   "lesezeit": 3,
-   "chips": [
-    "kritik"
-   ]
-  },
-  {
-   "id": 6081,
-   "slug": "junga-kritik",
-   "titel": "Junga – Kritik",
-   "datum": "2020-07-09",
-   "datum_original": "2018-08-01",
-   "kategorien": [
-    "kino"
-   ],
-   "alt_kategorien": [
-    "kritik"
-   ],
-   "excerpt": "PLUS PUNKTE: + Vijay Sethupathi’s Charakter als „KANJAL DON“ „SPARSAMER GANGSTER“ ist super witzig + Yogi Babu’s und Vijay Sethupathi’s Szenen + Saranya …",
-   "standfirst": "PLUS PUNKTE: + Vijay Sethupathi’s Charakter als „KANJAL DON“ „SPARSAMER GANGSTER“ ist super witzig + Yogi Babu’s und Vijay Sethupathi’s Szenen + Saranya Ponvannan’s Rolle und die Rolle der Oma (Schauspielerin unbekannt) sind auch …",
-   "woerter": 242,
-   "tags": [],
-   "youtube": false,
-   "bild": {
-    "orig_w": 1382,
-    "orig_h": 720,
-    "src": "img/p6081.jpg",
-    "w": 900,
-    "h": 468
-   },
-   "inhalt_html": "<p><strong>PLUS PUNKTE:</strong><br>\n+ Vijay Sethupathi’s Charakter als „KANJAL DON“ „SPARSAMER GANGSTER“ ist super witzig<br>\n+ Yogi Babu’s und Vijay Sethupathi’s Szenen<br>\n+ Saranya Ponvannan’s Rolle und die Rolle der Oma (Schauspielerin unbekannt) sind auch super witzig<br>\n+ Schwarzer Humor funktioniert in den meisten Szenen ganz gut<br>\n+ Sayyeshaa’s Tanz Choreographie ist sehr gut<br>\n+ Radha Ravi’s Rolle inspiriert von „Godfather&#8220;</p>\n<p><strong>MINUS PUNKTE:</strong><br>\n&#8211; Lieder und BGM durchschnittlich<br>\n&#8211; Story und Drehbuch verlieren in der 2.Hälfte komplett den Faden<br>\n&#8211; Action Szenen nur durchschnittlich<br>\n&#8211; Sehr langgezogene 2.Hälfte<br>\n&#8211; Yogi Babu’s Nichtanwesenheit in den letzten 30 Minuten<br>\n&#8211; Vijay Sethupathi ist schwer zu verstehen bei schnellen &amp; langen Dialogen</p>\n<p><strong>JUNGA</strong> funktioniert leider nur wegen einer Person und das ist Vijay Sethupathi. Vijay Sethupathi trägt den Film auf seinen Schultern und das ist ganz klar zu sehen. Regisseur Gokul hat bei den Comedy-Szenen alles richtig gemacht und die funktionieren auch sehr gut, jedoch hat er bei der Story und beim Drehbuch leider versagt und der Zuschauer interessiert sich garnicht mehr für die Story und verliert irgendwann den Faden. Der Film funktioniert als Komödie gut und das auch nur wegen Vijay Sethupathi und Yogi Babu,Saranya Ponvannan und der Oma. Leider gehen die ganzen Action Szenen in Frankreich total unter, welche auch wahrscheinlich mit hohen Produktionskosten verbunden waren. JUNGA kann man sich definitiv einmal ansehen und man wird viel und oft lachen, aber das wars auch schon leider. &#8211; <em><strong>Kritik von Tivi Arj</strong></em></p>\n<h2>RATING: <span>6.5</span> OKAY</h2>",
-   "lesezeit": 2,
-   "chips": [
-    "kritik"
-   ]
-  },
-  {
-   "id": 5887,
-   "slug": "kaala-kritik",
-   "titel": "Kaala – Kritik",
-   "datum": "2020-06-03",
-   "datum_original": "2018-06-26",
-   "kategorien": [
-    "kino"
-   ],
-   "alt_kategorien": [
-    "kritik"
-   ],
-   "excerpt": "Plus Punkte: +Rajinikanth ́s schauspielerische Leistung und Charisma und Style funktionieren SEHR GUT +Rajinis Mass Szenen +Interval Szene +Komödie hat sehr …",
-   "standfirst": "Plus Punkte: +Rajinikanth ́s schauspielerische Leistung und Charisma und Style funktionieren SEHR GUT +Rajinis Mass Szenen +Interval Szene +Komödie hat sehr gut funktioniert +nicht langweilige 1.Hälfte +Santhosh Narayanan’s …",
-   "woerter": 143,
-   "tags": [],
-   "youtube": false,
-   "bild": {
-    "orig_w": 1382,
-    "orig_h": 720,
-    "src": "img/p5887.jpg",
-    "w": 900,
-    "h": 468
-   },
-   "inhalt_html": "<p><strong>Plus Punkte:</strong><br>\n+Rajinikanth ́s schauspielerische Leistung und Charisma und Style funktionieren SEHR GUT<br>\n+Rajinis Mass Szenen<br>\n+Interval Szene<br>\n+Komödie hat sehr gut funktioniert<br>\n+nicht langweilige 1.Hälfte<br>\n+Santhosh Narayanan’s Hintergrundmusik ist sehr gut<br>\n+Metaphorisches Ende<br>\n+weibliche Hauptdarstellerinnen sinnvoll eingesetzt<br>\n+Nana Paterkar’s schauspielerische Leistung<br>\n+Regen-Kampf<br>\n+Gute Kameraführung (Vor allem gegen Ende)</p>\n<p><strong>Minus Punkte:</strong><br>\n&#8211; Rajinis Intro<br>\n&#8211; Endkampf hätte besser sein können<br>\n&#8211; 2.Hälfte bisschen langatmig<br>\n&#8211; nicht so viele Mass Scences in der 2.Hälfte, wie in der 1.Hälfte</p>\n<p><strong>Regisseur Pa.Ranjith hat seine 2.Chance diesmal erfolgreich umgesetzt und seine Fehler, welche er in Kabali gemacht hat, diesmal nicht wiederholt. Die erste Hälfte gehört Rajini Fans und die zweite Hälfte mehr Pa.Ranjith. Nicht viele Filme kann man sich mehr als einmal anschauen, aber Kaala kann man sich defintiv ein zweites Mal oder öfters anschauen.</strong></p>\n<p><em>KAALA IST EIN GEWINNER! &#8211; </em><strong>Kritik von Tivi Arj</strong></p>\n<h2><span>RATING: </span><strong><span>7.5 GUT</span></strong></h2>",
-   "lesezeit": 1,
-   "chips": [
-    "kritik"
-   ]
   },
   {
    "id": 5595,
@@ -1594,6 +1761,7 @@
    "standfirst": "Telugu Filme und Schauspieler werden von Zeit zu Zeit immer beliebter und bekannter. Angefangen mit „Baahubali“ sind seitdem prominente Schauspieler aus der Telugu-Filmindustrie auch für das tamilische Publikum interessant …",
    "woerter": 150,
    "tags": [],
+   "markierungen": [],
    "youtube": true,
    "bild": {
     "orig_w": 1386,
@@ -1604,35 +1772,6 @@
    },
    "inhalt_html": "<p><span><strong>Telugu Filme</strong> und Schauspieler werden von Zeit zu Zeit immer beliebter und bekannter.</span></p>\n<p>Angefangen mit „Baahubali“ sind seitdem prominente Schauspieler aus der Telugu-Filmindustrie auch für das tamilische Publikum interessant geworden. Zu den beliebtesten Darstellern gehören Prabhas (aus Baahubali), Mahesh Babu (aus Spyder), Ram Charan und Allu Arjun. Auch die Telugu Filme gewinnen immer mehr und mehr an Popularität.</p>\n<p>Allu Arjun ist bei Jugendlichen ziemlich beliebt und bekannt für seine coolen und stylischen Tanz-Skills. Am Freitag startet nun sein neuer Film „Naa Peru Suriya“ in Deutschland. Der Film wird überall mit englischen Untertiteln ausgestrahlt und vielleicht traut ihr euch ja zu eurem ersten Telugu Film ins Kino! Prominente tamilische Schauspieler (Arjun und Sarathkumar) sind auch mit dabei. Den Trailer und einige Sneak-Videos zu den Songs könnt ihr euch hier anschauen!</p>\n<p><img src=\"img/p5595-1.jpg\" alt=\"\" width=\"684\" height=\"498\"></p>\n<p><div class=\"video-embed\" data-video=\"JlchA0iRDLA\"><button type=\"button\" class=\"video-load\">Video laden</button><p class=\"video-hint\">YouTube-Video – wird erst nach Klick geladen (Datenschutz).</p></div></p>\n<p><div class=\"video-embed\" data-video=\"YziLDTeZXoQ\"><button type=\"button\" class=\"video-load\">Video laden</button><p class=\"video-hint\">YouTube-Video – wird erst nach Klick geladen (Datenschutz).</p></div><span>﻿</span></p>",
    "lesezeit": 1,
-   "chips": []
-  },
-  {
-   "id": 5542,
-   "slug": "15-tsunami-helfer-in-sri-lanka-hingerichtet",
-   "titel": "15 Tsunami-Helfer in Sri Lanka „hingerichtet“",
-   "datum": "2020-03-05",
-   "datum_original": "2018-03-28",
-   "kategorien": [
-    "kueche",
-    "news"
-   ],
-   "alt_kategorien": [
-    "news"
-   ],
-   "excerpt": "Bürgerkrieg: Tamilen und Regierungstruppen kämpfen um ein Wasserreservoir COLOMBO. Bei den Kämpfen zwischen den Tamilen-Rebellen der LTTE und der Armee im …",
-   "standfirst": "Bürgerkrieg: Tamilen und Regierungstruppen kämpfen um ein Wasserreservoir COLOMBO. Bei den Kämpfen zwischen den Tamilen-Rebellen der LTTE und der Armee im Osten Sri Lankas ist es zu einem Massaker an 15 lokalen Mitarbeitern einer …",
-   "woerter": 398,
-   "tags": [],
-   "youtube": false,
-   "bild": {
-    "orig_w": 1778,
-    "orig_h": 954,
-    "src": "img/p5542.jpg",
-    "w": 900,
-    "h": 483
-   },
-   "inhalt_html": "<p><strong>Bürgerkrieg: Tamilen und Regierungstruppen kämpfen um ein Wasserreservoir</strong></p>\n<p><span>COLOMBO. </span>Bei den Kämpfen zwischen den Tamilen-Rebellen der LTTE und der Armee im Osten Sri Lankas ist es zu einem Massaker an 15 lokalen Mitarbeitern einer französischen Hilfsorganisation gekommen. Der Vorsitzende des Konsortiums der Hilfsorganisationen in Sri Lanka (CHA), Jeevan Thiagarajah, sagte am Sonntagabend, die Tsunami-Helfer der &#8222;Action contre la faim&#8220; (Aktion gegen den Hunger, ACF) seien in der umkämpften Stadt Mutur &#8222;hingerichtet&#8220; worden. &#8222;Sie wurden in ihrem Büro gefunden, mit dem Gesicht nach unten &#8211; hingerichtet.&#8220; Alle Opfer hätten T-Shirts mit dem Zeichen von ACF getragen, die sie als Helfer ausgewiesen hätten. In der Region versorgt ACF Opfer der Tsunami-Katastrophe von 2004 mit Trinkwasser und Nahrungsmitteln.</p>\n<div>\n<p>Der LTTE-nahe Internetdienst Tamilnet bezichtigte die Armee der Tat. Das Verteidigungsministerium in Colombo wies das zurück. Der Generalsekretär von &#8222;Action contre la faim&#8220;, Benoît Miribel, bestätigte den Tod der 15 Mitarbeiter. Er sagte, die Organisation sei seit ihrer Gründung vor 25 Jahren noch nie &#8222;so getroffen worden&#8220;. Insgesamt seien Hunderte Zivilisten bei den Kämpfen zwischen LTTE und Armee in Mutur ums Leben gekommen. Beide Konfliktparteien machten sich gegenseitig für zivile Opfer verantwortlich.</p>\n</div>\n<p>Seit mehr als sieben Monaten hat sich die Auseinandersetzung zwischen den Tamilen-Rebellen und den Regierungstruppen wieder zu einem undeklarierten Kriegzustand ausgeweitet. Offiziell ist noch immer ein Waffenstillstandsabkommen von Anfang 2002 in Kraft. Faktisch steht das Land am Rande eines neuen Bürgerkrieges. Mehr als 800 Menschen starben allein in diesem Jahr. Seit 1983 kämpfen die tamilischen &#8222;Befreiungstiger&#8220; im Norden und Osten der Insel für einen unabhängigen Tamilenstaat.</p>\n<p>Die schwersten Kämpfe seit dem Abkommen von 2002 hatten begonnen, nachdem die LTTE die Schleuse eines Wasserreservoirs geschlossen hatte, von dem Tausende singhalesische Siedler abhängig sind. Trotz der Ankündigung der LTTE, die Schleuse zu öffnen, beschoss die Armee die Region nach LTTE-Angaben mit Artillerie. Die LTTE öffnete die Schleuse daraufhin am Sonntag nicht. Laut LTTE seien durch den Artilleriebeschuss der Armee auf LTTE-kontrollierte Küstendörfer im Großraum Mutur 15 tamilische Zivilisten getötet und zahlreiche verletzt worden. 40 000 Menschen seien auf der Flucht. Die LTTE hatten sich am Sonnabend nach schweren Gefechten mit der Armee aus der Stadt Mutur hinter die im Waffenstillstandsabkommen festgelegte Linie zurückgezogen.</p>\n<p>Das Verteidigungsministerium teilte am Montag mit, die Regierung schließe keine Kompromisse mit &#8222;einem Haufen Terroristen&#8220;. Die Armee werde ihre Operation zur Öffnung der Schleuse fortsetzen.</p>\n<div>\n<span>(</span> <span>AFP, dpa, ha</span> <span>) Source: <a href=\"https://www.abendblatt.de/politik/ausland/article107143021/15-Tsunami-Helfer-in-Sri-Lanka-hingerichtet.html\">https://www.abendblatt.de/politik/ausland/article107143021/15-Tsunami-Helfer-in-Sri-Lanka-hingerichtet.html<br>\n</a></span>© Hamburger Abendblatt 2018 – Alle Rechte vorbehalten.  \n</div>",
-   "lesezeit": 2,
    "chips": []
   },
   {
@@ -1651,6 +1790,7 @@
    "standfirst": "Seit 22 Jahren lässt es „Alarm für Cobra 11 – Die Autobahnpolizei“ (RTL-Erstsendung im März 1996) krachen. Unzählige Autos sind seit der Serienpremiere im März 1996 in die Luft geflogen, wurden geschrottet oder gleich ganz …",
    "woerter": 243,
    "tags": [],
+   "markierungen": [],
    "youtube": false,
    "bild": {
     "orig_w": 1536,
@@ -1680,6 +1820,9 @@
    "standfirst": "Der tamilische Schauspieler Rangaraj Subbaiah, besser bekannt als Sathyaraj, hat einen großen Anlass zum Feiern. Der bei den Tamilen schon jahrelang äußerst beliebte und nun auch in jeder Ecke Indiens durch den Film ,Baahubali‘ …",
    "woerter": 222,
    "tags": [],
+   "markierungen": [
+    "tt"
+   ],
    "youtube": true,
    "bild": {
     "orig_w": 647,
@@ -1709,6 +1852,7 @@
    "standfirst": "Ihr Tod bleibt mysteriös. Nun wurde Bollywood-Star Sridevi Kapoor (†54) in ihrer Heimat Indien bestattet. Sie war er erste weibliche Superstar des indischen Films. Laut dem indischen Sender NDTV strömten Tausende von Menschen auf …",
    "woerter": 209,
    "tags": [],
+   "markierungen": [],
    "youtube": false,
    "bild": {
     "orig_w": 863,
@@ -1720,36 +1864,6 @@
    "inhalt_html": "<p>Ihr Tod bleibt mysteriös. Nun wurde Bollywood-Star Sridevi Kapoor (†54) in ihrer Heimat Indien bestattet. Sie war er erste weibliche Superstar des indischen Films.</p>\n\n<div>\n<p>Laut dem indischen Sender NDTV strömten Tausende von Menschen auf die Strassen Mumbais. Sie alle kamen, um vom beliebten Superstar Abschied zu nehmen. Darunter auch ihr Ehemann, Bollywood-Produzent Boney Kapoor (62), der auf Twitter um seine Frau getrauert hatte: «Einen Freund, eine Frau und die Mutter deiner beiden jungen Töchter zu verlieren, ist ein Verlust, der in Worten unerklärlich ist.»</p>\n</div>\n\n<div>\n<p>Am späteren Abend wurde der Leichnam mit einer feierlichen Prozession in ein Krematorium gebracht, wo eine Einäscherung nach hinduistischer Tradition stattfand. Sridevi bekam eine Trauerfeier mit Staatsehren: Eine Polizeikapelle spielte, als sie zu einem mit weissen Blumen geschmückten Wagen gebracht wurde. Der Sarg wurde in eine indische Flagge gehüllt.</p>\n</div>\n\n<div>\n<p>Die Schauspielerin galt in der indischen Filmszene als erster grosser weiblicher Superstar. Am letzten Samstag wurde die 54-Jährige tot in ihrer Badewanne in Dubai aufgefunden. Ihre Familie hatte drei Tage auf die Herausgabe der Leiche warten müssen, während Ermittlungen zur Todesursache liefen. Dubais Staatsanwaltschaft war schliesslich zum Ergebnis gekommen, dass es sich um einen Unfall handelte. Politiker  Subramanian Swamy sprach aber Mord.</p>\n</div>\n\n<div>\n<p>Hinduistische Bestattungen finden in der Regel noch am Todestag oder dem folgenden Tag statt.</p>\n</div>",
    "lesezeit": 2,
    "chips": []
-  },
-  {
-   "id": 3466,
-   "slug": "warum-ist-das-edelmetall-gold-so-wichtig-fuer-die-tamilen",
-   "titel": "Warum ist das Edelmetall Gold so wichtig für die Tamilen?",
-   "datum": "2019-11-03",
-   "datum_original": "2017-11-25",
-   "kategorien": [
-    "community",
-    "kultur"
-   ],
-   "alt_kategorien": [
-    "blog"
-   ],
-   "excerpt": "Gold findet in vielerlei Anlässen und hinduistischen Feierlichkeiten seine Verwendung. So dient es bei Geburten als typisches Geschenk für das Neugeborene und …",
-   "standfirst": "Gold findet in vielerlei Anlässen und hinduistischen Feierlichkeiten seine Verwendung. So dient es bei Geburten als typisches Geschenk für das Neugeborene und seine Familie. Vor allem aber bei hinduistischen Hochzeiten tritt Gold …",
-   "woerter": 383,
-   "tags": [],
-   "youtube": false,
-   "bild": {
-    "orig_w": 691,
-    "orig_h": 362,
-    "src": "img/p3466.jpg",
-    "w": 691,
-    "h": 360
-   },
-   "inhalt_html": "<p><em>Gold findet in vielerlei Anlässen und hinduistischen Feierlichkeiten seine Verwendung. So dient es bei Geburten als typisches Geschenk für das Neugeborene und seine Familie. Vor allem aber bei hinduistischen Hochzeiten tritt Gold in verschiedenster Weise auf. </em></p>\n<h3>Eine hinduistische Hochzeit sei nicht vollständig, wenn die Braut kein Gold trägt</h3>\n<p>Bereits während der Vorbereitungsphase einer hinduistischen Eheschließung, spielt das Gold eine überaus signifikante Rolle und fungiert als Mitgift für die Braut in die Ehe. Aus diesem Grund beginnt die Familie der Braut bereits ab der Geburt der Tochter, Vermögen in Form von Gold anzusparen. Das Gold, das die Tochter dann mit in die Ehe bringt, garantiert eine gewisse soziale Sicherheit. Außerdem gilt das Gold als finanzielle Rücklage.</p>\n<h3>Was sagen die antiken Schriften über das Tragen von Gold?</h3>\n<p>Gold gilt als Heilig und sei ein Zeichen der Reinheit. Daher soll das Tragen von Gold negative Energien abwehren. Darüber hinaus soll es die Göttin Lakshmi symbolisieren und sei daher überaus verheißungsvoll.</p>\n<p>Den Status einer Familie sollen die goldenen Ornamente der Braut reflektieren und somit Zeichen für Wohlstand und Glück sein. In der Gesellschaft wird angenommen, dass die Braut auf ihrer Hochzeit 24 Karat Gold tragen sollte, damit die Ehe mit Glück und Freude erfüllt ist.</p>\n<h3>Wirkungen des Goldes laut Michael Gienger</h3>\n<p><i>Körperlich:</i> Gold fördert die Energieverteilung und Vitalität des Körpers. Es erwärmt und fördert die Leistungsfähigkeit des Kreislaufs. Es lindert Beschwerden und Erkrankungen der Geschlechtsorgane, fördert allgemein die Drüsentätigkeit und hilft Knochen- und Gewebsschäden zu heilen. Gold reguliert die Leitfähigkeit der Nerven.</p>\n<p><i>Seelisch/mental:</i> Gold hilft aus Depressionen, Todesangst und bei starker Selbstmordneigung. Es bringt Lebendigkeit, Geselligkeit und Freude an der Sexualität. Gold fördert das Selbstbewusstsein und das Selbstvertrauen, macht frei von destruktiver Beeinflussung.</p>\n<p><i>Spirituell:</i> Gold bringt unseren innersten Wesenkern ans Licht. Es hilft, dem Leben Sinn zu geben und große Taten und Vorhaben zu verwirklichen. Gold repräsentiert Großzügigkeit und Edelmut.</p>\n<h3>Abschließend lässt sich sagen, dass Gold ein wichtiger Bestandteil der hinduistischen Kultur ist. Laut Michael Gienger wirkt Gold sogar körperliche, spirituelle als auch seelische Wunder aber sollte es den Status einer Familie reflektieren?</h3>\n<p>Wir freuen uns über weitere Artikel zu den Aktivitäten von Tamilen in ganz Deutschland. Gerne können Sie uns die Artikel oder auch die Info über die Veranstaltung und Ereignisse an <strong>info@tamil.de</strong> schicken!</p>\n<p><em>VERANTWORTLICH<br>\n</em>für den Inhalt i.S.d. § 55 Abs. 2 RStV<br>\n<strong>Ordin Thanapalasingham </strong></p>",
-   "lesezeit": 2,
-   "chips": [],
-   "kultur_fallback": true
   },
   {
    "id": 3713,
@@ -1769,6 +1883,9 @@
    "standfirst": "Die Eltern haben einen so großen Einfluss auf ihre Kinder, wie sonst niemand. Dabei kann eine Mutter die Richtung vorgeben, nach der ihr Sohn durch das Leben gehen wird. Viele tamilische Mütter verwöhnen ihre Söhne und erziehen …",
    "woerter": 339,
    "tags": [],
+   "markierungen": [
+    "tt"
+   ],
    "youtube": false,
    "bild": {
     "orig_w": 691,
@@ -1798,6 +1915,7 @@
    "standfirst": "Kottu Roti (கொத்து றொட்டி, tamilisch für gehacktes Roti) ist ein populäres Gericht aus der Küche Sri Lankas beziehungsweise der Tamilen. Ein Roti (Godamba Roti) wird dazu in Streifen geschnitten, mit Currys oder sonstigem pikant …",
    "woerter": 365,
    "tags": [],
+   "markierungen": [],
    "youtube": false,
    "bild": {
     "orig_w": 1382,
@@ -1809,6 +1927,153 @@
    "inhalt_html": "<p><b>Kottu Roti</b> (<i>கொத்து றொட்டி</i>, tamilisch für <i>gehacktes Roti</i>) ist ein populäres Gericht aus der Küche Sri Lankas beziehungsweise der Tamilen.</p>\n<p>Ein Roti (<i>Godamba Roti</i>) wird dazu in Streifen geschnitten, mit Currys oder sonstigem pikant gewürztem, kurzgebratenem Gemüse, Eiern oder Fleischstückchen vermischt und heiß serviert.</p>\n\n<p><strong><br>\nZutaten:</strong></p>\n<ul>\n<li>500gr Weizenmehl</li>\n<li>1 Packung Hefe</li>\n<li>1 TL Salz</li>\n<li>5 TL Öl</li>\n<li>lauwarmes Wasser nach Maß</li>\n</ul>\n<h3>\nZubereitung:</h3>\n<p>Geben Sie das Weizenmehl, die Hefe, Salz, 3 EL Öl in eine Schüssel. Die Zutaten werden vermischt und ordentlich durchgeknetet. Es wird soviel Wasser dazu gegeben bis der Teig eine Konsistenz eines Pizzateiges hat.</p>\n<p>Kneten Sie den Teig lange wild (auseinander ziehen und verdrehen) durch und beträufeln ihn anschließend mit ein wenig Öl und massieren ihn gut ein.</p>\n<p>Legen Sie den Teig in eine Schüssel und bedecken diesen mit einem Küchentuch. Geben Sie den Teig 2-3 Stunden zum aufgehen. Wenn er aufgegangen ist kann man tennisballgroße Kugeln formen.</p>\n<p>Die Kugeln werden dünn ausgerollt damit sie ungefähr dem Durchmesser von ca. 15 cm haben ( Kuchenteller ).</p>\n<p>Jetzt wird eine Pfanne mit Öl eingefettet und die Rottis werden von beiden Seiten gebacken. Nach dem braten sollte das Rotti eine Blätterteig ähnliche Konsitenz haben.</p>\n<h3>Essensvorschlag:</h3>\n<p>Man reisst ein Stück vom Rotti ab und tunkt es zum Beispiel in ein ( scharfes ) Lammcurry ein und genießt es, am besten mit den bloßen Fingern.</p>\n<h3>\nKothu Rotti (geschnittenes oder gehacktes Rotti)</h3>\n<p>Kothu Rotti für 4 Personen:</p>\n<h3>\nZutaten:</h3>\n<ul>\n<li>6 – 7 Rotti</li>\n<li>ein Ei</li>\n<li>1 mittelgroße Zwiebel</li>\n<li>2 Tl. Öl</li>\n<li>eine grüne Chilischote ( wer es nicht scharf mag nimmt eine grüne Paprika )</li>\n<li>ein Curry ( Huhn, Lamm, vegetarisch… )</li>\n</ul>\n<h3>\nZubereitung:</h3>\n<p>Rotti wie oben beschrieben zubereiten und in ca. 2 – 3 cm grosse rechteckige Stücke schneiden. Die Zwiebel in kleine Rechtecke schneiden. Wie schon erwähnt bedeutet „Kothu Rotti“ geschittenes Rotti.<br>\nDie grünen Chilischoten in ganz feine Stücke schneiden, alternativ kann man auch eine grüne Paprika in kleine Rechtecke schneiden.</p>\n<p>Eine Pfanne mit Öl einfetten und die Zwiebelstücke andünsten, die Rottistücke, den Chili und das Ei dazugeben und umrühren.<br>\nSobald das Ei sich verfestigt hat kann man das Curry zu dem Kothu Rotti dazugeben, achten sie darauf das es nicht zu flüssig ist.</p>",
    "lesezeit": 2,
    "chips": []
+  },
+  {
+   "id": 7026,
+   "slug": "2018-das-jahr-der-meilensteine-unser-rueckblick",
+   "titel": "2018: Das Jahr der Meilensteine – Unser Rückblick",
+   "datum": "2020-11-28",
+   "datum_original": "2018-12-21",
+   "kategorien": [
+    "community"
+   ],
+   "alt_kategorien": [
+    "seite"
+   ],
+   "tags": [],
+   "markierungen": [],
+   "youtube": false,
+   "inhalt_html": "<p>Das Jahr neigt sich dem Ende zu, und wir blicken zurück, um die Frage zu beantworten: Welche Entwicklungen haben wir gemacht und welche Meilensteine sind gesetzt?</p>\n<p>Wir sind wirklich stolz, das am stärksten vernetzte Portal für deutschsprachige Tamilen zu sein und dafür danken wir euch! Ihr habt uns so großartig unterstützt, gefördert und einen großen Teil für unsere starke Entwicklung beigetragen. Als Sponsor haben wir in diesem Jahr verschiedene Vereine unterstützt, die Gesangswettbewerbe, Turniere und ähnliches veranstaltet haben. Zudem haben wir den Tamil.de Filmverleih gegründet, der so rasant gewachsen ist, dass wir in unseren Reihen weitere Helfer aufstocken mussten. Selbstverständlich müssen wir noch einige Prozesse verbessern aber wir sind auf dem richtigen Weg und dafür verlassen wir uns auf euch. Denn ohne eure Unterstützung können wir diesen Weg nicht gehen. Daher sind wir sehr stark auf eure Meinungen und Verbesserungsvorschläge angewiesen, die ihr uns immer gerne mitteilen könnt. Im neuen Jahr wollen wir dementsprechend den Fokus auf eure Bedürfnisse setzen und euch in allen Rubriken auf dem Laufenden halten.</p>\n<p>An dieser Stelle wollen wir noch einen wichtigen Punkt anreißen, der immer wieder von euch diskutiert und angefragt wird: Tamil.de wird voll und ganz aus privaten Mitteln finanziert und weder von einer Organisation noch von Investoren unterstützt. Wir haben es uns zum größten Ziel gemacht das Netzwerk der in Deutschland, Schweiz und Österreich lebenden Tamilen zu stärken &#8211; auf unterschiedlichsten Ebenen.</p>\n<p>Das ist auch der Grund dafür, dass unser Team um ein größeres gewachsen ist. Wir blicken auf die vergangenen 2 Jahre zurück, in denen wir verschiedene Höhen und Tiefen durchgemacht haben und dadurch gewachsen sind.</p>\n<p>Für das kommende Jahr haben wir uns vorgenommen weiterhin aus objektiver/neutraler Sicht zu berichten und euch immer auf dem aktuellsten Stand zu halten. Ihr dürft daher gespannt sein auf die neuen Projekte die bevorstehen, denn wir haben uns für 2019 viel vorgenommen.</p>\n<p><strong>In diesem Sinne wünschen wir euch allen frohe Weihnachten und einen tollen Start ins neue Jahr 2019!</strong></p>\n<p>Mit freundlichen Grüßen<br>\nOlyyn Ordin Thanapalasingham und das Tamil.de Team</p>\n\n<p><img src=\"img/p7026-1.jpg\" alt=\"\" width=\"374\" height=\"374\"></p>",
+   "excerpt": "Das Jahr neigt sich dem Ende zu, und wir blicken zurück, um die Frage zu beantworten: Welche Entwicklungen haben wir gemacht und welche Meilensteine sind …",
+   "standfirst": "Das Jahr neigt sich dem Ende zu, und wir blicken zurück, um die Frage zu beantworten: Welche Entwicklungen haben wir gemacht und welche Meilensteine sind gesetzt? Wir sind wirklich stolz, das am stärksten vernetzte Portal für …",
+   "woerter": 334,
+   "lesezeit": 2,
+   "chips": [],
+   "bild": {
+    "orig_w": 1200,
+    "orig_h": 675,
+    "src": "img/p7026.jpg",
+    "w": 300,
+    "h": 300
+   }
+  },
+  {
+   "id": 6834,
+   "slug": "maya",
+   "titel": "Matangi/Maya/M.I.A.",
+   "datum": "2020-10-21",
+   "datum_original": "2018-11-13",
+   "kategorien": [
+    "kino"
+   ],
+   "alt_kategorien": [
+    "seite"
+   ],
+   "tags": [],
+   "markierungen": [],
+   "youtube": false,
+   "inhalt_html": "<p><strong>MATANGI / MAYA / M.I.A. basiert auf einer Sammlung sehr persönlicher Videos, die Maya Arulpragasm und ihre engsten Freunde im Laufe der letzten 22 Jahre aufgezeichnet haben. Sie skizzieren Mayas bemerkenswerten Weg vom Einwandererkind in London zum international gefeierten Popstar M.I.A.</strong></p>\n<p><figure><img src=\"img/p6834-1.jpg\" alt=\"\" width=\"300\" height=\"156\"></figure></p>\n<p>Inspiriert von ihren Wurzeln sammelte M.I.A. auf ihrer Reise allerorten Versatzstücke und schuf daraus eine kunterbunte Identitätscollage, ein akustisches Skizzenbuch, in dem sich tamilische Politik, Kunsthochschulpunk, Hip-Hop-Beats und die Stimme der multikulturellen Jugend vermischen.</p>\n<p>Kompromisslos ließ Maya bei all ihren Auseinandersetzungen mit der Musikindustrie und den Mainstream-Medien stets die Kamera mitlaufen, während ihr Erfolg und ihre Berühmtheit zunahmen und sie zu einer der provokantesten und umstrittensten Künstlerinnen der aktuellen Musikszene wurde.</p>\n<p><strong>MATANGI/MAYA/M.I.A.</strong><br>\nUSA/Großbritannien/Sri Lanka 2018, 97 Minuten, Englisch &amp; Tamil mit deutschen Untertiteln</p>\n<p><strong>Regie &amp; Produktion:</strong> Steve Loveridge<br>\n<strong>Mit:</strong> Maya Arulpragasam, Diplo, Justine Frischmann<br>\n<strong>Kamera:</strong> Graham Boonzaaier, Catherine Goldsmith, Matt Wainwright<br>\n<strong>Schnitt:</strong> Marina Katz, Gabriel Rhodes<br>\n<strong>Musik:</strong> Dhani Harrison, Paul Hicks<br>\n<strong>Music Supervisor:</strong> Tracy McKnight<br>\n<strong>Sound Design</strong>: Ron Bochar<br>\n<strong>Produzenten:</strong> Lori Cheatle, Andrew Goldman, Paul Mezey<br>\n<strong>Ausführende Produzenten:</strong> Philipp Engelhorn, Michael Raisler<br>\n<strong>Ko-Produzent:</strong> Joshua Rappaport<br>\n<strong>Produktion:</strong> Hard Working Movies und Cinereach</p>\n<div>\n<div>\n<div>\n<div>\n<div>\n<div>\n<div>\n<h3><a href=\"http://rapideyemovies.de/matangimayam-i-a/\">MATANGI/MAYA/M.I.A.</a></h3>\n<table>\n<tbody>\n<tr>\n<th>Datum</th>\n<th>Kino</th>\n<th>Stadt</th>\n</tr>\n</tbody>\n<tbody>\n<tr>\n<td>13.11.2018</td>\n<td>Neues Maxim</td>\n<td>München</td>\n</tr>\n<tr>\n<td></td>\n<td><span>PREVIEW im Rahmen des Bimovie Frauenfilmfestival</span></td>\n</tr>\n</tbody>\n<tbody>\n<tr>\n<td>14.11.2018</td>\n<td><a href=\"http://griessmuehle.de/\">Griessmühle</a></td>\n<td>Berlin</td>\n</tr>\n<tr>\n<td></td>\n<td><span>PREVIEW – Mobile Kino</span></td>\n</tr>\n</tbody>\n<tbody>\n<tr>\n<td>15.11.2018</td>\n<td><a href=\"http://zebra-kino.de/\">Zebra Kino</a></td>\n<td>Konstanz</td>\n</tr>\n<tr>\n<td></td>\n<td><span>PREVIEW</span></td>\n</tr>\n</tbody>\n<tbody>\n<tr>\n<td>17.11.2018</td>\n<td><a href=\"http://www.filmladen.de/index.php?id=4&amp;uid=3\">Gloria</a></td>\n<td>Kassel</td>\n</tr>\n<tr>\n<td></td>\n<td><span>im Rahmen vom KASSELER DOKFEST</span></td>\n</tr>\n</tbody>\n<tbody>\n<tr>\n<td>17.11.2018</td>\n<td>Orfeos Erben</td>\n<td>Frankfurt</td>\n</tr>\n<tr>\n<td></td>\n<td><span>im Rahmen des 10. NEW GENERATIONS – INDEPENDENT INDIAN FILMFESTIVAL</span></td>\n</tr>\n</tbody>\n<tbody>\n<tr>\n<td>21.11.2018</td>\n<td><a href=\"http://www.filmpalette-koeln.de/\">Filmpalette</a></td>\n<td>Köln</td>\n</tr>\n<tr>\n<td></td>\n<td></td>\n</tr>\n</tbody>\n<tbody>\n<tr>\n<td>22.11.2018 &#8211; 23.11.2018 </td>\n<td><a href=\"http://www.cinema-quadrat.de/\">Cinema Quadrat</a></td>\n<td>Mannheim</td>\n</tr>\n<tr>\n<td></td>\n<td><span>MusikFilmFestival</span></td>\n</tr>\n</tbody>\n<tbody>\n<tr>\n<td>22.11.2018 &#8211; 28.11.2018 </td>\n<td><a href=\"http://www.filmpalette-koeln.de/\">Filmpalette</a></td>\n<td>Köln</td>\n</tr>\n<tr>\n<td></td>\n<td></td>\n</tr>\n</tbody>\n<tbody>\n<tr>\n<td>22.11.2018 &#8211; 28.11.2018 </td>\n<td><a href=\"http://www.kino-im-dach.de/\">Kino im Dach</a></td>\n<td>Dresden</td>\n</tr>\n<tr>\n<td></td>\n<td></td>\n</tr>\n</tbody>\n<tbody>\n<tr>\n<td>22.11.2018 &#8211; 28.11.2018 </td>\n<td><a href=\"http://www.cinema-muenster.de/\">Cinema &amp; Kurbelkiste</a></td>\n<td>Münster</td>\n</tr>\n<tr>\n<td></td>\n<td></td>\n</tr>\n</tbody>\n<tbody>\n<tr>\n<td>22.11.2018 &#8211; 28.11.2018 </td>\n<td><a href=\"http://www.weltecho.eu/\">Weltecho</a></td>\n<td>Chemnitz</td>\n</tr>\n<tr>\n<td></td>\n<td></td>\n</tr>\n</tbody>\n<tbody>\n<tr>\n<td>22.11.2018 &#8211; 28.11.2018 </td>\n<td><a href=\"http://www.cineding-leipzig.de/\">Cineding</a></td>\n<td>Leipzig</td>\n</tr>\n<tr>\n<td></td>\n<td></td>\n</tr>\n</tbody>\n<tbody>\n<tr>\n<td>22.11.2018 &#8211; 28.11.2018 </td>\n<td><a href=\"http://www.malsehnkino.de/\">Mal seh’n Kino</a></td>\n<td>Frankfurt am Main</td>\n</tr>\n<tr>\n<td></td>\n<td></td>\n</tr>\n</tbody>\n<tbody>\n<tr>\n<td>22.11.2018 &#8211; 28.11.2018 </td>\n<td><a href=\"http://www.kino-zazie.de/\">Zazie</a></td>\n<td>Halle/Saale</td>\n</tr>\n<tr>\n<td></td>\n<td></td>\n</tr>\n</tbody>\n<tbody>\n<tr>\n<td>22.11.2018 &#8211; 28.11.2018 </td>\n<td><a href=\"http://www.lichtblick-kino.org/lichtblick.php\">Lichtblick</a></td>\n<td>Berlin</td>\n</tr>\n<tr>\n<td></td>\n<td></td>\n</tr>\n</tbody>\n<tbody>\n<tr>\n<td>22.11.2018 &#8211; 28.11.2018 </td>\n<td><a href=\"http://www.3001-kino.de/\">3001 Kino</a></td>\n<td>Hamburg</td>\n</tr>\n<tr>\n<td></td>\n<td></td>\n</tr>\n</tbody>\n<tbody>\n<tr>\n<td>22.11.2018 &#8211; 28.11.2018 </td>\n<td><a href=\"http://www.ilkino.de/\">Il Kino</a></td>\n<td>Berlin</td>\n</tr>\n<tr>\n<td></td>\n<td></td>\n</tr>\n</tbody>\n<tbody>\n<tr>\n<td>22.11.2018 &#8211; 28.11.2018 </td>\n<td><a href=\"http://wolfberlin.org/\">W O L F</a></td>\n<td>Berlin</td>\n</tr>\n<tr>\n<td></td>\n<td></td>\n</tr>\n</tbody>\n<tbody>\n<tr>\n<td>22.11.2018 &#8211; 28.11.2018 </td>\n<td><a href=\"http://www.sputnik-kino.com/\">Sputnik-Kino</a></td>\n<td>Berlin</td>\n</tr>\n<tr>\n<td></td>\n<td></td>\n</tr>\n</tbody>\n<tbody>\n<tr>\n<td>22.11.2018 &#8211; 28.11.2018 </td>\n<td><a href=\"http://www.programmkinos-mainz.de/?page_id=2\">Palatin</a></td>\n<td>Mainz</td>\n</tr>\n<tr>\n<td></td>\n<td></td>\n</tr>\n</tbody>\n<tbody>\n<tr>\n<td>22.11.2018 &#8211; 28.11.2018 </td>\n<td><a href=\"http://www.kunstkulturquartier.de/filmhaus/\">Filmhaus</a></td>\n<td>Nürnberg</td>\n</tr>\n<tr>\n<td></td>\n<td></td>\n</tr>\n</tbody>\n<tbody>\n<tr>\n<td>22.11.2018 &#8211; 28.11.2018 </td>\n<td><a href=\"http://www.monopol-kino.de/\">Monopol-Kino</a></td>\n<td>München</td>\n</tr>\n<tr>\n<td></td>\n<td></td>\n</tr>\n</tbody>\n<tbody>\n<tr>\n<td>22.11.2018 &#8211; 28.11.2018 </td>\n<td><a href=\"http://www.werkstattkino.de/startseite.html\">Werkstattkino</a></td>\n<td>München</td>\n</tr>\n<tr>\n<td></td>\n<td></td>\n</tr>\n</tbody>\n<tbody>\n<tr>\n<td>22.11.2018 &#8211; 28.11.2018 </td>\n<td><a href=\"http://www.metropolkino-gera.de/\">Metropol</a></td>\n<td>Gera</td>\n</tr>\n<tr>\n<td></td>\n<td><span>voraussichtlicher Kinostart am 22.11. in Gera. Bitte Webseite vom Kino checken !!!</span></td>\n</tr>\n</tbody>\n<tbody>\n<tr>\n<td>22.11.2018 &#8211; 28.11.2018 </td>\n<td><a href=\"http://www.fsk-kino.de/\">fsk – Kino am Oranienplatz</a></td>\n<td>Berlin</td>\n</tr>\n<tr>\n<td></td>\n<td></td>\n</tr>\n</tbody>\n<tbody>\n<tr>\n<td>23.11.2018 &#8211; 25.11.2018 </td>\n<td><a href=\"http://www.51stufen.de/\">51 Stufen</a></td>\n<td>Flensburg</td>\n</tr>\n<tr>\n<td></td>\n<td><span>Kino im Deutschen Haus Flensburg</span></td>\n</tr>\n</tbody>\n<tbody>\n<tr>\n<td>25.11.2018 &#8211; 28.11.2018 </td>\n<td><a href=\"http://www.endstation-kino.de/\">Endstation Kino i. Bhf. Langend.</a></td>\n<td>Bochum</td>\n</tr>\n<tr>\n<td></td>\n<td></td>\n</tr>\n</tbody>\n<tbody>\n<tr>\n<td>28.11.2018 &#8211; 30.11.2018 </td>\n<td><a href=\"http://www.koki-freiburg.de/\">Kommunales Kino</a></td>\n<td>Freiburg</td>\n</tr>\n<tr>\n<td></td>\n<td></td>\n</tr>\n</tbody>\n<tbody>\n<tr>\n<td>28.11.2018 &#8211; 30.11.2018 </td>\n<td><a href=\"http://www.koki-freiburg.de/\">Kommunales Kino</a></td>\n<td>Freiburg</td>\n</tr>\n<tr>\n<td></td>\n<td></td>\n</tr>\n</tbody>\n<tbody>\n<tr>\n<td>30.11.2018 &#8211; 02.12.2018 </td>\n<td><a href=\"http://www.endstation-kino.de/\">Endstation Kino i. Bhf. Langend.</a></td>\n<td>Bochum</td>\n</tr>\n<tr>\n<td></td>\n<td></td>\n</tr>\n</tbody>\n<tbody>\n<tr>\n<td>30.11.2018 &#8211; 05.12.2018 </td>\n<td><a href=\"http://www.kulturzentrum-linse.de/\">Linse</a></td>\n<td>Weingarten</td>\n</tr>\n<tr>\n<td></td>\n<td></td>\n</tr>\n</tbody>\n<tbody>\n<tr>\n<td>01.12.2018 &#8211; 02.12.2018 </td>\n<td><a href=\"http://www.51stufen.de/\">51 Stufen</a></td>\n<td>Flensburg</td>\n</tr>\n<tr>\n<td></td>\n<td><span>Kino im Deutschen Haus Flensburg</span></td>\n</tr>\n</tbody>\n<tbody>\n<tr>\n<td>06.12.2018 &#8211; 12.12.2018 </td>\n<td><a href=\"http://www.cine-k.de/neu/aktuell/\">Cine k…</a></td>\n<td>Oldenburg</td>\n</tr>\n<tr>\n<td></td>\n<td></td>\n</tr>\n</tbody>\n<tbody>\n<tr>\n<td>13.12.2018 &#8211; 19.12.2018 </td>\n<td><a href=\"http://www.uferpalast.de/\">Uferpalast</a></td>\n<td>Fürth</td>\n</tr>\n<tr>\n<td></td>\n<td></td>\n</tr>\n</tbody>\n</table>\n</div>\n</div>\n</div>\n</div>\n</div>\n\n</div>\n</div>",
+   "excerpt": "MATANGI / MAYA / M.I.A. basiert auf einer Sammlung sehr persönlicher Videos, die Maya Arulpragasm und ihre engsten Freunde im Laufe der letzten 22 Jahre …",
+   "standfirst": "MATANGI / MAYA / M.I.A. basiert auf einer Sammlung sehr persönlicher Videos, die Maya Arulpragasm und ihre engsten Freunde im Laufe der letzten 22 Jahre aufgezeichnet haben. Sie skizzieren Mayas bemerkenswerten Weg vom …",
+   "woerter": 428,
+   "lesezeit": 3,
+   "chips": [],
+   "bild": {
+    "orig_w": 1200,
+    "orig_h": 675,
+    "src": "img/p6834.jpg",
+    "w": 300,
+    "h": 156
+   }
+  }
+ ],
+ "seiten": [
+  {
+   "id": 6218,
+   "slug": "fsk",
+   "datei": "service-fsk.html",
+   "titel": "Alterseinstufungen und FSK-Kennzeichen",
+   "tamil": "",
+   "hinweis": "",
+   "kategorie": "kino",
+   "datum_original": "2018-08-17",
+   "datum": "2020-07-25",
+   "woerter": 951,
+   "inhalt_html": "<p><strong><span>ALTERSEINSTUFUNGEN<br>\n</span></strong><br>\n<span><img src=\"https://www.spio-fsk.de/media_content/1281.jpg\" alt=\"FSK Kennzeichen Blu-ray Hüllen \">In den <strong><a href=\"https://www.spio-fsk.de/?SeitID=505&amp;TID=72\">Prüfverfahren der FSK</a> </strong>werden die Freigaben für fünf Altersstufen vorgenommen. Aus dem Prüfergebnis werden die jeweilige Alterskennzeichen sowie bei Kinospielfilmen eine Kurzfassungen der <strong><a href=\"https://www.spio-fsk.de/?SeitID=545&amp;TID=469\">Freigabebegründung</a></strong> veröffentlicht. </span></p>\n<p><span>Die FSK-Ausschüsse sprechen Freigaben nach der gesetzlichen Vorgabe aus, dass Filme und andere Trägermedien, die &#8222;geeignet sind, die Entwicklung von Kindern und Jugendlichen oder ihre Erziehung zu einer eigenverantwortlichen und gemeinschaftsfähigen Persönlichkeit zu beeinträchtigen&#8220;, nicht für ihre Altersstufe freigegeben werden dürfen (§ 14 Abs. 1 JuSchG). In den FSK-Grundsätzen wird dabei bewusst auf eine vermutete Wirkung abgestellt. </span></p>\n<p>Mit der Altersfreigabe ist keine pädagogische Empfehlung oder ästhetische Bewertung verbunden. Einen fest gefügten Kriterienkatalog für die Beurteilung der möglichen Wirkungen kann es nicht geben, wohl aber Maßstäbe, die der sachkundigen Auslegung bedürfen. Hierbei ist grundsätzlich das Wohl der jüngsten Jahrgänge einer Altersgruppe zu beachten. Ebenso sind nicht nur durchschnittliche, sondern auch gefährdete Kinder und Jugendliche zu berücksichtigen.</p>\n<p><span>FSK-KENNZEICHEN<br>\n</span><strong><a href=\"https://www.spio-fsk.de/?SeitID=420&amp;TID=298\">Download und Anwendungshinweise </a></strong><br>\nDie von den FSK-Prüfausschüssen vergebenen Altersfreigaben werden bei Videoveröffentlichungen wie DVDs, Blu-ray Discs etc. durch fünf FSK-Kennzeichen sichtbar gemacht. In der folgenden Übersicht informieren wir Sie über Anhaltspunkte und Problembereiche, die für die jeweiligen Freigaben eine besondere Relevanz aufweisen.</p>\n<p><strong><span>FSK ab 0 freigegeben/Freigegeben ohne Altersbeschränkung</span> </strong></p>\n<p><img src=\"https://www.spio-fsk.de/media_content/1139.jpg\" alt=\"FSK ab 0 Kennzeichen \">Das Kennzeichen &#8222;FSK ab 0 freigegeben&#8220; entspricht dem bisherigen Kennzeichen &#8222;Freigegeben ohne Altersbeschränkung&#8220;. Kleinkinder erleben filmische Darstellungen unmittelbar und spontan. Ihre Wahrnehmung ist vorwiegend episodisch ausgerichtet, kognitive und strukturierende Fähigkeiten sind noch kaum ausgebildet. Schon dunkle Szenarien, schnelle Schnittfolgen oder eine laute und bedrohliche Geräuschkulisse können Ängste mobilisieren oder zu Irritationen führen. Kinder bis zum Alter von sechs Jahren identifizieren sich vollständig mit der Spielhandlung und den Filmfiguren. Vor allem bei Bedrohungssituationen findet eine direkte Übertragung statt. Gewaltaktionen, aber auch Verfolgungen oder Beziehungskonflikte lösen Ängste aus, die nicht selbständig und alleine abgebaut werden können. Eine schnelle und positive Auflösung problematischer Situationen ist daher sehr wichtig.</p>\n\n<p><strong><span>FSK ab 6 freigegeben</span></strong></p>\n<p><img src=\"https://www.spio-fsk.de/media_content/1135.jpg\" alt=\"FSK ab 6 Logo\">Ab sechs Jahren entwickeln Kinder zunehmend die Fähigkeit zu kognitiver Verarbeitung von Sinneseindrücken. Allerdings sind bei den sechs bis elfjährigen beträchtliche Unterschiede in der Entwicklung zu berücksichtigen. Etwa mit dem neunten Lebensjahr beginnen Kinder, fiktionale und reale Geschichten unterscheiden zu können. Eine distanzierende Wahrnehmung wird damit möglich. Bei jüngeren Kindern steht hingegen noch immer die emotionale, episodische Impression im Vordergrund. Ein sechsjähriges Kind taucht noch ganz in die Filmhandlung ein, leidet und fürchtet mit den Identifikationsfiguren. Spannungs- und Bedrohungsmomente können zwar schon verkraftet werden, dürfen aber weder zu lang anhalten noch zu nachhaltig wirken. Eine positive Auflösung von Konfliktsituationen ist auch hier maßgebend.</p>\n\n<p><strong><span>FSK ab 12 freigegeben</span></strong></p>\n<p><img src=\"https://www.spio-fsk.de/media_content/1134.jpg\" alt=\"FSK ab 12 Logo\">Bei Kindern und Jugendlichen dieser Altersgruppe ist die Fähigkeit zu distanzierter Wahrnehmung und rationaler Verarbeitung bereits ausgebildet. Erste Genre-Kenntnisse sind vorhanden. Eine höhere Erregungsintensität, wie sie in Thrillern oder Science-Fiction-Filmen üblich ist, wird verkraftet. Problematisch ist dagegen zum Beispiel die Bilderflut harter, gewaltbezogener Action-Filme, die zumeist noch nicht selbständig verarbeitet werden kann. 12- bis 15-jährige befinden sich in der Pubertät, einer Phase der Selbstfindung, die mit großer Unsicherheit und Verletzbarkeit verbunden ist. Insbesondere Filme, die zur Identifikation mit einem &#8222;Helden&#8220; einladen, dessen Rollenmuster durch antisoziales, destruktives oder gewalttätiges Verhalten geprägt ist, bieten ein Gefährdungspotenzial. Die Auseinandersetzung mit Filmen, die gesellschaftliche Themen seriös problematisieren, ist dieser Altersgruppe durchaus zumutbar und für ihre Meinungs- und Bewusstseinsbildung bedeutsam.</p>\n<p><span>Parental Guidance (PG): FSK ab 12 – mit Eltern ab sechs Jahren erlaubt</span>Haben Filme die Kennzeichnung &#8222;FSK ab 12 freigegeben&#8220; erhalten, kann auch Kindern im Alter von sechs Jahren aufwärts der Einlass zur Vorstellung gewährt werden, wenn sie von einer personensorgeberechtigen Person begleitet werden. Die Personensorge steht grundsätzlich den Eltern zu. Eine erziehungsbeauftragte Person, die von den Eltern (=Personensorgeberechtigte) autorisiert ist, reicht nicht aus. Weitere Informationen finden Sie in unserer <a href=\"https://www.spio-fsk.de/media_content/1154.pdf\">Broschüre</a>.</p>\n\n<p><strong><span>FSK ab 16 freigegeben</span></strong></p>\n<p><img src=\"https://www.spio-fsk.de/media_content/1133.jpg\" alt=\"FSK ab 16 Logo\">Bei 16- bis 18-jährigen kann von einer entwickelten Medienkompetenz ausgegangen werden. Problematisch bleibt die Vermittlung sozial schädigender Botschaften. Nicht freigegeben werden Filme, die Gewalt tendenziell verherrlichen, einem partnerschaftlichen Rollenverhältnis der Geschlechter entgegenstehen, einzelne Gruppen diskriminieren oder Sexualität auf ein reines Instrumentarium der Triebbefriedigung reduzieren. Auch die Werteorientierung in Bereichen wie Drogenkonsum, politischer Radikalismus oder Ausländerfeindlichkeit wird mit besonderer Sensibilität geprüft.</p>\n\n<p><strong><span>FSK ab 18/Keine Jugendfreigabe</span></strong></p>\n<p><img src=\"https://www.spio-fsk.de/media_content/1132.jpg\" alt=\"FSK ab 18 klein\">Das Kennzeichen &#8222;FSK ab 18&#8220; entspricht dem bisherigen Kennzeichen &#8222;Keine Jugendfreigabe&#8220;. Dieses Kennzeichen wird vergeben, wenn keine einfache bzw. schwere Jugendgefährdung vorliegt. Nach § 14 Abs. 3 u. 4 des Jugendschutzgesetzes erfolgt für DVDs und Blu-ray Discs die Vergabe des Kennzeichnens &#8222;FSK ab 18&#8220;, wenn keine einfache Jugendgefährdung vorliegt, für die öffentliche Filmvorführung, wenn der Film nicht schwer jugendgefährdend ist. Gekennzeichnete Filme, DVDs und Blu-ray Discs werden von der Bundesprüfstelle für jugendgefährdende Medien (BPjM) nicht indiziert.</p>\n\n<p><span><strong><span>Keine Kennzeichnung</span></strong></span><br>\nBei einer Altersfreigabe für Kinofilme muss nach § 14 Abs. 3 Jugendschutzgesetz (JuSchG) auch bei einer Freigabe &#8222;ab 18 Jahren&#8220; auf eine &#8222;schwere Jugendgefährdung&#8220; hin geprüft werden. Hintergrund der gesetzlichen Bestimmungen ist, dass in Einzelfällen auch Jugendliche Zutritt zu den Vorstellungen erhalten könnten. Bei einer Freigabe von Filmen auf  DVD, Blu-ray oder vergleichbaren Bildträgern besteht verstärkt die Gefahr, dass bereits Jugendliche Filme sehen, die erst &#8222;ab 18 Jahren&#8220; freigegeben sind. Hier reicht daher bereits eine &#8222;einfache Jugendgefährdung&#8220; aus, damit keine Kennzeichnung ausgesprochen werden darf. Es ist daher möglich, dass ein Film, der im Kino eine Freigabe &#8222;ab 18 Jahren&#8220; erhalten hat, in der gleichen Version für eine Veröffentlichung auf DVD keine Freigabe erhält.</p>\n<p>Die gesetzlichen Bestimmungen zum Jugendschutz sind hier eindeutig und bindend für die Arbeit der FSK.</p>\n<p>&#8222;<strong>Keine Kennzeichnung</strong>&#8220; stellt aber kein Aufführungsverbot dar. Kinos können auf eigenes rechtliches Risiko den Film vorführen &#8211; allerdings nur vor Erwachsenen. Kommt ein Gericht – beispielsweise nach einer Anzeige &#8211; zur Auffassung, dass es sich um einen &#8222;schwer jugendgefährdenden Film&#8220; handelt, sind unter anderem Werbung und Ankündigung gesetzlich verboten und daher strafbar (Jugendschutzgesetz, § 15 Abs. 1). Über den Jugendschutz hinaus möglicherweise zu berücksichtigende strafrechtliche Bestände fallen ebenfalls in den Aufgabenbereich der Justiz &#8211; und nicht der FSK.</p>\n<p><strong>Beispiel: </strong><br>\n<figure><img src=\"https://www.tamil.de/wp-content/uploads/2018/08/Bildschirmfoto-2018-08-17-um-09.09.24-213x300.png\" alt=\"\" width=\"290\" height=\"408\"></figure></p>",
+   "streams": []
+  },
+  {
+   "id": 5113,
+   "slug": "tv",
+   "datei": "tv.html",
+   "titel": "Tamil TV",
+   "tamil": "தொலைக்காட்சி",
+   "hinweis": "",
+   "kategorie": "",
+   "datum_original": "2017-12-18",
+   "datum": "2019-11-26",
+   "woerter": 38,
+   "inhalt_html": "<p>\n    <div>\n\t\t\n\t\t\t\n\t\t\t\n\t\n\t\t\t<p>To view this video please enable JavaScript, and consider upgrading to a web browser that <a href=\"http://videojs.com/html5-video-support/\">supports HTML5 video</a></p>\n\t\t\n\t</div>\n    \n</p>\n<p>www.santhora.tv</p>\n<p><br>\n\n    <div>\n\t\t\n\t\t\t\n\t\t\t\n\t\n\t\t\t<p>To view this video please enable JavaScript, and consider upgrading to a web browser that <a href=\"http://videojs.com/html5-video-support/\">supports HTML5 video</a></p>\n\t\t\n\t</div>\n    \n<br>\nwww.tamilbusiness.tv</p>",
+   "streams": [
+    "http://rtmp.santhoratv.zecast.net/santhoratv/santhoratv/playlist.m3u8",
+    "http://rtmp.santhoratv.zecast.net/tamilbusinesstv/tamilbusinesstv/playlist.m3u8"
+   ]
+  },
+  {
+   "id": 4332,
+   "slug": "reporter",
+   "datei": "",
+   "titel": "Leser-Reporter",
+   "tamil": "",
+   "hinweis": "",
+   "kategorie": "",
+   "datum_original": "2017-02-17",
+   "datum": "2019-01-26",
+   "woerter": 139,
+   "inhalt_html": "<p>Haben SIE etwas fotografiert, das <strong>Tamil.de</strong> veröffentlichen soll? Egal ob lustig, spektakulär, spannend oder kurios – die TamilDE Redaktion will IHR exklusives Foto oder Video und zahlt bis zu 100 Euro.</p>\n\n<p>Bitte schildern Sie uns möglichst genau, was auf diesem Foto oder Video zu sehen ist. Sie erhöhen damit die Wahrscheinlichkeit, dass <strong>Tamil.de</strong> Ihr Material veröffentlichen und honorieren kann.</p>\n<p><strong>Bitte beschreiben Sie uns:</strong><br>\n• Was ist passiert?<br>\n• Wo ist es passiert?<br>\n• Wem ist es passiert?<br>\n• Wann ist es passiert?<br>\n• Warum ist es passiert?</p>\n<p>Bitte schicken Sie uns nur Fotos, die Sie selber gemacht haben, andernfalls nennen Sie uns bitte zusätzlich den Urheber des Fotos.</p>\n<p>Übersteigt Ihr Video eine Größe von 50 MB, nutzen Sie zur Übermittlung Ihres Videos bitte einen Filehosting-Dienst (z.B. &#8222;<a href=\"https://www.wetransfer.com/\">WeTransfer</a>&#8222;). Alternativ können Sie uns auch eine Email an <strong>info@tamil.de</strong> senden.</p>",
+   "streams": []
+  },
+  {
+   "id": 1864,
+   "slug": "datenschutzerklaerung",
+   "datei": "datenschutz.html",
+   "titel": "Datenschutzerklärung",
+   "tamil": "",
+   "hinweis": "Stand 2016 – vom Auftraggeber zu aktualisieren",
+   "kategorie": "",
+   "datum_original": "2016-05-24",
+   "datum": "2018-05-02",
+   "woerter": 1229,
+   "inhalt_html": "<p><strong>Datenschutz<br>\n</strong></p>\n<p>Die Betreiber dieser Seiten nehmen den Schutz Ihrer persönlichen Daten sehr ernst. Wir behandeln Ihre personenbezogenen Daten vertraulich und entsprechend der gesetzlichen Datenschutzvorschriften sowie dieser Datenschutzerklärung.</p>\n<p>Die Nutzung unserer Webseite ist in der Regel ohne Angabe personenbezogener Daten möglich. Soweit auf unseren Seiten personenbezogene Daten (beispielsweise Name, Anschrift oder E-Mail-Adressen) erhoben werden, erfolgt dies, soweit möglich, stets auf freiwilliger Basis. Diese Daten werden ohne Ihre ausdrückliche Zustimmung nicht an Dritte weitergegeben.</p>\n<p>Wir weisen darauf hin, dass die Datenübertragung im Internet (z.B. bei der Kommunikation per E-Mail) Sicherheitslücken aufweisen kann. Ein lückenloser Schutz der Daten vor dem Zugriff durch Dritte ist nicht möglich.</p>\n<p><strong><br>\nDatenschutzerklärung für die Nutzung von etracker</strong></p>\n<p>Unsere Webseite nutzt den Analysedienst etracker. Anbieter ist die etracker GmbH, Erste Brunnenstraße 1 20459 Hamburg Germany.<br>\nAus den Daten können unter einem Pseudonym Nutzungsprofile erstellt werden. Dazu können Cookies eingesetzt werden. Bei Cookies handelt es sich um kleine Textdateien, die lokal im Zwischenspeicher Ihres Internet-Browsers gespeichert werden. Die Cookies ermöglichen es, Ihren Browser wieder zu erkennen. Die mit den etracker-Technologien erhobenen Daten werden ohne die gesondert erteilte Zustimmung des Betroffenen nicht genutzt, Besucher unserer Website persönlich zu identifizieren und werden nicht mit personenbezogenen Daten über den Träger des Pseudonyms zusammengeführt.</p>\n<p>Der Datenerhebung und -speicherung können Sie jederzeit mit Wirkung für die Zukunft widersprechen. Um einer Datenerhebung und -speicherung Ihrer Besucherdaten für die Zukunft zu widersprechen, können Sie unter nachfolgendem Link ein Opt-Out-Cookie von etracker beziehen, dieser bewirkt, dass zukünftig keine Besucherdaten Ihres Browsers bei etracker erhoben und gespeichert werden: <a href=\"http://www.etracker.de/privacy?et=V23Jbb\">http://www.etracker.de/privacy?et=V23Jbb</a></p>\n<p>Dadurch wird ein Opt-Out-Cookie mit dem Namen &#8222;cntcookie&#8220; von etracker gesetzt. Bitte löschen Sie diesen Cookie nicht, solange Sie Ihren Widerspruch aufrecht erhalten möchten. Weitere Informationen finden Sie in den Datenschutzbestimmungen von etracker: <a href=\"http://www.etracker.com/de/datenschutz.html\">http://www.etracker.com/de/datenschutz.html</a></p>\n\n<p><strong>Datenschutzerklärung für die Nutzung von Facebook-Plugins (Like-Button)</strong></p>\n<p>Auf unseren Seiten sind Plugins des sozialen Netzwerks Facebook, Anbieter Facebook Inc., 1 Hacker Way, Menlo Park, California 94025, USA, integriert. Die Facebook-Plugins erkennen Sie an dem Facebook-Logo oder dem &#8222;Like-Button&#8220; (&#8222;Gefällt mir&#8220;) auf unserer Seite. Eine Übersicht über die Facebook-Plugins finden Sie hier: <a href=\"http://developers.facebook.com/docs/plugins/\">http://developers.facebook.com/docs/plugins/</a>.</p>\n<p>Wenn Sie unsere Seiten besuchen, wird über das Plugin eine direkte Verbindung zwischen Ihrem Browser und dem Facebook-Server hergestellt. Facebook erhält dadurch die Information, dass Sie mit Ihrer IP-Adresse unsere Seite besucht haben. Wenn Sie den Facebook &#8222;Like-Button&#8220; anklicken während Sie in Ihrem Facebook-Account eingeloggt sind, können Sie die Inhalte unserer Seiten auf Ihrem Facebook-Profil verlinken. Dadurch kann Facebook den Besuch unserer Seiten Ihrem Benutzerkonto zuordnen. Wir weisen darauf hin, dass wir als Anbieter der Seiten keine Kenntnis vom Inhalt der übermittelten Daten sowie deren Nutzung durch Facebook erhalten. Weitere Informationen hierzu finden Sie in der Datenschutzerklärung von Facebook unter <a href=\"http://de-de.facebook.com/policy.php\">http://de-de.facebook.com/policy.php</a>.</p>\n<p>Wenn Sie nicht wünschen, dass Facebook den Besuch unserer Seiten Ihrem Facebook- Nutzerkonto zuordnen kann, loggen Sie sich bitte aus Ihrem Facebook-Benutzerkonto aus.</p>\n\n<p><strong>Datenschutzerklärung für die Nutzung von Instagram</strong></p>\n<p>Auf unseren Seiten sind Funktionen des Dienstes Instagram eingebunden. Diese Funktionen werden angeboten durch die Instagram Inc., 1601 Willow Road, Menlo Park, CA, 94025, USA integriert. Wenn Sie in Ihrem Instagram &#8211; Account eingeloggt sind können Sie durch Anklicken des Instagram &#8211; Buttons die Inhalte unserer Seiten mit Ihrem Instagram &#8211; Profil verlinken. Dadurch kann Instagram den Besuch unserer Seiten Ihrem Benutzerkonto zuordnen. Wir weisen darauf hin, dass wir als Anbieter der Seiten keine Kenntnis vom Inhalt der übermittelten Daten sowie deren Nutzung durch Instagram erhalten.</p>\n<p>Weitere Informationen hierzu finden Sie in der Datenschutzerklärung von Instagram: <a href=\"http://instagram.com/about/legal/privacy/\">http://instagram.com/about/legal/privacy/</a></p>\n\n<p><strong>Datenschutzerklärung für die Nutzung von Twitter</strong></p>\n<p>Auf unseren Seiten sind Funktionen des Dienstes Twitter eingebunden. Diese Funktionen werden angeboten durch die Twitter Inc., 1355 Market Street, Suite 900, San Francisco, CA 94103, USA. Durch das Benutzen von Twitter und der Funktion &#8222;Re-Tweet&#8220; werden die von Ihnen besuchten Webseiten mit Ihrem Twitter-Account verknüpft und anderen Nutzern bekannt gegeben. Dabei werden auch Daten an Twitter übertragen. Wir weisen darauf hin, dass wir als Anbieter der Seiten keine Kenntnis vom Inhalt der übermittelten Daten sowie deren Nutzung durch Twitter erhalten. Weitere Informationen hierzu finden Sie in der Datenschutzerklärung von Twitter unter <a href=\"http://twitter.com/privacy\">http://twitter.com/privacy</a>.</p>\n<p>Ihre Datenschutzeinstellungen bei Twitter können Sie in den Konto-Einstellungen unter <a href=\"http://twitter.com/account/settings\">http://twitter.com/account/settings</a> ändern.</p>\n\n<p><strong>Datenschutzerklärung für die Nutzung von YouTube</strong></p>\n<p>Unsere Webseite nutzt Plugins der von Google betriebenen Seite YouTube. Betreiber der Seiten ist die YouTube, LLC, 901 Cherry Ave., San Bruno, CA 94066, USA. Wenn Sie eine unserer mit einem YouTube-Plugin ausgestatteten Seiten besuchen, wird eine Verbindung zu den Servern von YouTube hergestellt. Dabei wird dem Youtube-Server mitgeteilt, welche unserer Seiten Sie besucht haben.<br>\nWenn Sie in Ihrem YouTube-Account eingeloggt sind ermöglichen Sie YouTube, Ihr Surfverhalten direkt Ihrem persönlichen Profil zuzuordnen. Dies können Sie verhindern, indem Sie sich aus Ihrem YouTube-Account ausloggen.</p>\n<p>Weitere Informationen zum Umgang von Nutzerdaten finden Sie in der Datenschutzerklärung von YouTube unter <a href=\"https://www.google.de/intl/de/policies/privacy\">https://www.google.de/intl/de/policies/privacy</a></p>\n\n<p><strong>Auskunft, Löschung, Sperrung</strong></p>\n<p>Sie haben jederzeit das Recht auf unentgeltliche Auskunft über Ihre gespeicherten personenbezogenen Daten, deren Herkunft und Empfänger und den Zweck der Datenverarbeitung sowie ein Recht auf Berichtigung, Sperrung oder Löschung dieser Daten. Hierzu sowie zu weiteren Fragen zum Thema personenbezogene Daten können Sie sich jederzeit unter der im Impressum angegebenen Adresse an uns wenden.</p>\n\n<p><strong>Cookies</strong></p>\n<p>Die Internetseiten verwenden teilweise so genannte Cookies. Cookies richten auf Ihrem Rechner keinen Schaden an und enthalten keine Viren. Cookies dienen dazu, unser Angebot nutzerfreundlicher, effektiver und sicherer zu machen. Cookies sind kleine Textdateien, die auf Ihrem Rechner abgelegt werden und die Ihr Browser speichert.</p>\n<p>Die meisten der von uns verwendeten Cookies sind so genannte „Session-Cookies“. Sie werden nach Ende Ihres Besuchs automatisch gelöscht. Andere Cookies bleiben auf Ihrem Endgerät gespeichert, bis Sie diese löschen. Diese Cookies ermöglichen es uns, Ihren Browser beim nächsten Besuch wiederzuerkennen.</p>\n<p>Sie können Ihren Browser so einstellen, dass Sie über das Setzen von Cookies informiert werden und Cookies nur im Einzelfall erlauben, die Annahme von Cookies für bestimmte Fälle oder generell ausschließen sowie das automatische Löschen der Cookies beim Schließen des Browser aktivieren. Bei der Deaktivierung von Cookies kann die Funktionalität dieser Website eingeschränkt sein.</p>\n\n<p><strong>Server-Log-Files</strong></p>\n<p>Der Provider der Seiten erhebt und speichert automatisch Informationen in so genannten Server-Log Files, die Ihr Browser automatisch an uns übermittelt. Dies sind:</p>\n<ul>\n<li>Browsertyp/ Browserversion</li>\n<li>verwendetes Betriebssystem</li>\n<li>Referrer URL</li>\n<li>Hostname des zugreifenden Rechners</li>\n<li>Uhrzeit der Serveranfrage</li>\n</ul>\n<p>Diese Daten sind nicht bestimmten Personen zuordenbar. Eine Zusammenführung dieser Daten mit anderen Datenquellen wird nicht vorgenommen. Wir behalten uns vor, diese Daten nachträglich zu prüfen, wenn uns konkrete Anhaltspunkte für eine rechtswidrige Nutzung bekannt werden.</p>\n\n<p><strong>Kontaktformular</strong></p>\n<p>Wenn Sie uns per Kontaktformular Anfragen zukommen lassen, werden Ihre Angaben aus dem Anfrageformular inklusive der von Ihnen dort angegebenen Kontaktdaten zwecks Bearbeitung der Anfrage und für den Fall von Anschlussfragen bei uns gespeichert. Diese Daten geben wir nicht ohne Ihre Einwilligung weiter.</p>\n\n<p><strong>Widerspruch Werbe-Mails</strong></p>\n<p>Der Nutzung von im Rahmen der Impressumspflicht veröffentlichten Kontaktdaten zur Übersendung von nicht ausdrücklich angeforderter Werbung und Informationsmaterialien wird hiermit widersprochen. Die Betreiber der Seiten behalten sich ausdrücklich rechtliche Schritte im Falle der unverlangten Zusendung von Werbeinformationen, etwa durch Spam-E-Mails, vor.</p>\n\n<p><strong>Newsletterdaten</strong></p>\n<p>Wenn Sie den auf der Webseite angebotenen Newsletter beziehen möchten, benötigen wir von Ihnen eine E-Mail-Adresse sowie Informationen, welche uns die Überprüfung gestatten, dass Sie der Inhaber der angegebenen E-Mail-Adresse sind und mit dem Empfang des Newsletters einverstanden sind. Weitere Daten werden nicht erhoben. Diese Daten verwenden wir ausschließlich für den Versand der angeforderten Informationen und geben sie nicht an Dritte weiter.</p>\n<p>Die erteilte Einwilligung zur Speicherung der Daten, der E-Mail-Adresse sowie deren Nutzung zum Versand des Newsletters können Sie jederzeit widerrufen , etwa über den „Austragen“-Link im Newsletter.</p>",
+   "streams": []
+  },
+  {
+   "id": 1735,
+   "slug": "impressum",
+   "datei": "impressum.html",
+   "titel": "Impressum",
+   "tamil": "",
+   "hinweis": "Auf der alten Seite leer – Angaben vom Auftraggeber",
+   "kategorie": "",
+   "datum_original": "2016-05-21",
+   "datum": "2018-04-29",
+   "woerter": 0,
+   "inhalt_html": "",
+   "streams": []
+  },
+  {
+   "id": 1393,
+   "slug": "ueberuns",
+   "datei": "ueber-uns.html",
+   "titel": "Über Tamil.de",
+   "tamil": "எங்களைப் பற்றி",
+   "hinweis": "",
+   "kategorie": "",
+   "datum_original": "2015-12-13",
+   "datum": "2017-11-20",
+   "woerter": 240,
+   "inhalt_html": "<p>Tamil.de ist eine Plattform für deutschsprachige Tamilen in 🇩🇪 Deutschland, der 🇨🇭Schweiz und  🇦🇹Österreich. <br>Diese Website dient als zentrale Anlaufstelle für Tamilen, die in Deutschland leben oder Interesse an der tamilischen Kultur haben.</p>\n\n<p><strong>Information und Vernetzung</strong></p>\n\n<p>Tamil.de bietet umfangreiche Informationen über verschiedene Aspekte des Lebens in Deutschland aus tamilischer Perspektive. Dazu gehören Nachrichten aus der tamilischen Welt, Informationen über kulturelle Veranstaltungen, Feste und Feiertage, sowie praktische Hinweise zu Bildung, Gesundheit und rechtlichen Fragen.</p>\n\n<p>Ein wichtiges Merkmal der Plattform ist die Förderung der Vernetzung innerhalb der tamilischen Gemeinschaft. Durch Foren, soziale Netzwerke und Veranstaltungskalender ermöglicht Tamil.de es den Nutzern, miteinander in Kontakt zu treten, sich auszutauschen und Unterstützung zu finden.</p>\n\n<p><strong>Kulturelle Förderung und Bildung</strong></p>\n\n<p>Die Website widmet sich auch der Förderung und Bewahrung der tamilischen Kultur und Sprache. Hier finden Nutzer Informationen über tamilische Literatur, Musik, Tanz und Kunst. Bildungsangebote wie Sprachkurse und kulturelle Workshops tragen dazu bei, das kulturelle Erbe an jüngere Generationen weiterzugeben und ein Bewusstsein für die tamilische Identität zu schaffen.</p>\n\n<p><strong>Dienstleistungen und Unterstützung</strong></p>\n\n<p>Tamil.de bietet zudem eine Vielzahl von Dienstleistungen, die speziell auf die Bedürfnisse der tamilischen Gemeinschaft zugeschnitten sind. Dazu gehören Übersetzungsdienste, Rechtsberatung, Unterstützung bei der Integration in die deutsche Gesellschaft und Hilfestellungen für Neuankömmlinge.</p>\n\n<p><strong>Engagement und Gemeinschaft</strong></p>\n\n<p>Die Plattform fördert das soziale und kulturelle Engagement der tamilischen Gemeinschaft in Deutschland. Durch die Organisation und Bewerbung von gemeinnützigen Projekten, Spendenaktionen und sozialen Initiativen trägt Tamil.de dazu bei, das Gemeinschaftsgefühl zu stärken und die Integration zu unterstützen.</p>",
+   "streams": []
   }
  ]
 }

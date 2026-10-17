@@ -5,7 +5,7 @@
   <header class="seitenkopf">
     <h1>{{ k.label }} <span class="ta" lang="ta">{{ k.tamil }}</span></h1>
     <p class="beschreibung">{{ k.beschreibung }}</p>
-    <p class="zaehler">{{ counts[slug] }} Beiträge{% if slug == 'kultur' %} (per Stichwort aus den Nachrichten zugeordnet){% endif %} · <span data-filter-count="chips">{{ sel.kategorie_seiten[slug]|length + (1 if slug == 'kino' else 0) }}</span> auf dieser Seite</p>
+    <p class="zaehler">{{ counts[slug] }} Beiträge{% if slug in ('kultur', 'kueche') %} (Rubrik der alten Seite plus Stichwort-Zuordnung){% endif %} · <span data-filter-count="chips">{{ sel.kategorie_seiten[slug]|length + (1 if slug == 'kino' else 0) }}</span> auf dieser Seite</p>
     {% if k.chips %}
     <div class="chips" data-filter-group="chips" role="group" aria-label="Filter">
       <button type="button" class="chip" data-filter="alle" aria-pressed="true">Alle</button>

@@ -3,9 +3,10 @@
   <div class="karte-hinten" aria-hidden="true">{{ radar.footer_svg|safe }}</div>
   <div class="container">
     <div class="ueber">
-      <span class="wordmark"><svg class="kolam" aria-hidden="true"><use href="#i-kolam"/></svg>tamil<span class="de">.de</span></span>
+      {% if logo %}<a class="logo-wrap footer-logo" href="index.html"><img src="img/logo.png" alt="Tamil.de" width="300" height="121"></a>{% else %}<span class="wordmark"><svg class="kolam" aria-hidden="true"><use href="#i-kolam"/></svg>tamil<span class="de">.de</span></span>{% endif %}
       <p>{{ site.ueber_uns }}</p>
-      <div class="chips">{% for s in site.social %}<a class="icon-btn" href="{{ s.url }}" aria-label="{{ s.name }}" style="background:transparent;border-color:#444;color:#fff">{{ m.icon(s.icon, 'ico ico-sm') }}</a>{% endfor %}</div>
+      <div class="chips">{% for s in site.social %}<a class="icon-btn{% if s.get('status') %} ausstehend{% endif %}" href="{{ s.url }}" aria-label="{{ s.name }}" title="{{ s.name }}{% if s.get('status') %} – {{ s.status }}{% endif %}" style="background:transparent;border-color:#444;color:#fff"{% if s.url != '#' %} target="_blank" rel="noopener"{% endif %}>{{ m.icon(s.icon, 'ico ico-sm') }}</a>{% endfor %}</div>
+      <p class="klein" style="color:#8d92ad;margin:8px 0 0">WhatsApp-Kanal und Instagram von der alten Seite übernommen; Facebook und YouTube <span class="beispiel">ausstehend</span></p>
     </div>
     <div>
       <h4>Rubriken</h4>
@@ -14,11 +15,13 @@
     <div>
       <h4>Service</h4>
       <ul>
+        <li><a href="production.html">{{ production.titel }}</a></li>
+        <li><a href="tv.html">{{ tv.titel }}</a></li>
+        <li><a href="service-fsk.html">FSK-Kennzeichen</a></li>
         <li><a href="kontakt.html#werben">Werben auf Tamil.de</a></li>
-        <li><a href="kontakt.html#werben">Mediadaten</a></li>
         <li><a href="kontakt.html#event-einreichen">Event einreichen</a></li>
-        <li><a href="#newsletter">Newsletter</a></li>
-        <li><a href="#">Über uns</a></li>
+        <li><a href="kontakt.html#mitmachen">Leser-Reporter</a></li>
+        <li><a href="ueber-uns.html">Über Tamil.de</a></li>
         <li><a href="kontakt.html">Kontakt</a></li>
       </ul>
     </div>
@@ -29,7 +32,7 @@
     </div>
     <div class="legal">
       <span>© {{ jahr }} Tamil.de · {{ site.org }}</span>
-      <a href="#">Impressum</a><a href="#">Datenschutz</a><a href="#">Cookie-Einstellungen</a>
+      <a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutzerklärung</a><a href="#">Cookie-Einstellungen</a>
       <span>Prototyp: Datumsangaben um {{ shift_days }} Tage verschoben, Beispieldaten markiert.</span>
     </div>
   </div>

@@ -98,6 +98,21 @@
 </section>
 
 <div class="container">
+  <section class="section" id="production">
+    {{ m.kicker('events', text=production.titel, mehr='production.html', mehr_text='Alle Konzerte und Service') }}
+    <div class="production-grid">
+      <div class="production-text">
+        <h2 style="font-size:var(--fs-h1)">{{ production.claim }}</h2>
+        <p style="margin:12px 0 0;max-width:48ch">{{ production.text }}</p>
+        <p style="margin:16px 0 0;display:flex;gap:8px;flex-wrap:wrap"><a class="btn btn-primary" href="production.html">Zur Konzertreihe</a><a class="btn btn-ghost" href="{{ production.ticket.url }}" target="_blank" rel="noopener nofollow">{{ m.icon('ticket', 'ico ico-sm') }} Tickets</a></p>
+      </div>
+      <div class="plakate klein">
+        {% for p in production.konzerte %}
+        <article class="plakat"><a class="media" href="{{ p|link }}" tabindex="-1" aria-hidden="true"><img src="{{ p.bild.src }}" width="{{ p.bild.w }}" height="{{ p.bild.h }}" alt="" loading="lazy"></a><h3><a href="{{ p|link }}">{{ p.titel }}</a></h3></article>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
   {{ rubrik('kino') }}
   <section class="section" id="events-teaser">
     {{ m.kicker('events', mehr='events.html', mehr_text='Alle Events') }}

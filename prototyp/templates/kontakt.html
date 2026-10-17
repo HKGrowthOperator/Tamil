@@ -75,6 +75,14 @@
     </form>
   </section>
 
+  {% if seiten.get('reporter') %}
+  <section class="section" id="mitmachen" style="max-width:860px">
+    {{ m.kicker('community', text='Mitmachen: Leser-Reporter') }}
+    <div class="artikel-body" style="font-size:16px">{{ seiten.reporter.inhalt_html|safe }}</div>
+    <p style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn btn-primary btn-sm" href="#kontaktformular" data-betreff="Leserreporter">Foto oder Video einsenden</a><a class="btn btn-wa btn-sm" href="https://wa.me/{{ site.kontakt.whatsapp|replace(' ', '')|replace('+', '') }}" target="_blank" rel="noopener">{{ m.icon('whatsapp', 'ico ico-sm') }} Per WhatsApp schicken</a></p>
+    <p class="klein leise">Text von der Seite „Leser-Reporter“ der alten tamil.de übernommen (Honorar bis 100 € laut Altbestand – vom Auftraggeber zu bestätigen).</p>
+  </section>
+  {% endif %}
   <section class="section" style="max-width:860px">
     {{ m.kicker('kontakt', text='Häufige Fragen') }}
     {% for f in site.faq %}<details{% if loop.first %} open{% endif %}><summary>{{ f.frage }}</summary><p>{{ f.antwort }}</p></details>{% endfor %}

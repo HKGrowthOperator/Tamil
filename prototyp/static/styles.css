@@ -576,3 +576,32 @@ details p { padding-bottom: var(--s-4); color: #3b3e49; font-size: 15px; }
   .drawer .panel { animation: none; } .btn, .card .media img, .mainnav li a::after { transition: none; }
 }
 @media print { .proto-bar, .ad, .mainnav, .topbar, .drawer, .fab-wa, .share, .ticker { display: none !important; } .site { padding-top: 0; } }
+
+/* ---------- Übernahme von tamil.de: Logo, Live-Werbung, Production, TV ---------- */
+.logo-wrap { display: inline-flex; align-items: center; justify-content: center; line-height: 0; }
+.logo-wrap img { height: 64px; width: auto; }
+.footer-logo { background: #fff; border-radius: 8px; padding: 8px 12px; }
+.footer-logo img { height: 48px; }
+.drawer .logo-wrap { background: #fff; border-radius: 8px; padding: 6px 10px; } .drawer .logo-wrap img { height: 36px; }
+.ad-live .ad-banner { display: block; max-width: 100%; border-radius: 4px; overflow: hidden; }
+.ad-live .ad-banner img { width: 100%; height: auto; }
+.ad-leaderboard.ad-live .ad-banner { width: 728px; max-width: 100%; }
+.ad-sidebar.ad-live .ad-banner { width: 300px; }
+.topbar a.ausstehend, .footer .icon-btn.ausstehend { opacity: .45; }
+.production-grid { display: grid; gap: var(--s-5); }
+.plakate { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--s-4); }
+.plakat { display: grid; gap: 8px; }
+.plakat .media { display: block; aspect-ratio: 3 / 4; border-radius: 6px; overflow: hidden; background: var(--nacht); }
+.plakat .media img { width: 100%; height: 100%; object-fit: cover; transition: transform .6s var(--ease); }
+.plakat:hover .media img { transform: scale(1.03); }
+.plakat h3 { font-size: 17px; } .plakat h3 a { color: var(--tinte); } .plakat h3 a:hover { color: var(--kumkum); text-decoration: none; }
+.plakate.klein .plakat h3 { font-size: 15px; }
+.card .media.player, .player { background: var(--nacht); display: grid; place-items: center; position: relative; }
+.buehne > .container > .kicker .ta { color: #fff; } .buehne > .container > .kicker .de { color: var(--manjal); }
+.ad { max-width: 100%; min-width: 0; } .ad .ad-box { max-width: calc(100vw - var(--gutter) - var(--gutter-r)); }
+.player .play { width: 64px; height: 64px; border-radius: 50%; background: var(--kumkum); color: #fff; display: inline-flex; align-items: center; justify-content: center; }
+.player .play .ico { width: 28px; height: 28px; fill: #fff; stroke: none; }
+.player .status { position: absolute; left: 12px; bottom: 12px; }
+code.klein { font-size: 12px; word-break: break-all; background: var(--feld); padding: 1px 6px; border-radius: 4px; }
+@media (min-width: 601px) { .plakate { grid-template-columns: repeat(4, 1fr); } .production-grid { grid-template-columns: 1fr 1.4fr; align-items: center; } .plakate.klein { grid-template-columns: repeat(4, 1fr); } }
+@media (max-width: 600px) { .plakate.klein { grid-template-columns: repeat(2, 1fr); } .masthead .logo-wrap img { height: 44px; } }

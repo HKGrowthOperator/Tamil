@@ -253,7 +253,12 @@ def select(posts: list[dict], site: dict) -> dict:
             p["kultur_fallback"] = True
         if kueche_re.search(p["titel"]) and "kueche" not in p["kategorien"]:
             p["kategorien"] = ["kueche"] + p["kategorien"]
-    long_enough = [p for p in newest(posts) if p["woerter"] >= MIN_WORDS]
+    for p in posts:
+        if "production" in p.get("alt_kategorien", []) and "production" not in p["kategorien"]:
+            p["kategorien"] = p["kategorien"] + ["production"]
+        if not p.get("excerpt"):
+            p["excerpt"] = p["standfirst"] = f"{p['titel']} – ein Konzert von Tamil.de Production." if "production" in p["kategorien"] else p["titel"]
+    long_enough = [p for p in newest(posts) if p["woerter"] >= MIN_WORDS or set(p["kategorien"]) & {"kueche", "production"}]
     used: set[int] = set()
 
     def take(cands: list[dict], n: int) -> list[dict]:
@@ -277,8 +282,11 @@ def select(posts: list[dict], site: dict) -> dict:
     related = {p["id"]: [q for q in long_enough if q["id"] != p["id"] and set(q["kategorien"]) & set(p["kategorien"])][:RELATED]
                for p in long_enough}
     rezept = by_id.get(site["rezept"]["id"])
+    prod = site.get("production", {})
+    production = {"konzerte": [by_id[i] for i in prod.get("konzerte", []) if i in by_id], "service": [by_id[i] for i in prod.get("service", []) if i in by_id]}
     return {"hero": hero, "top": top, "neueste": neueste, "rubriken": rubriken, "kategorie_seiten": kategorie_seiten,
-            "related": related, "rezept": rezept, "by_id": by_id, "kueche": [p for p in long_enough if "kueche" in p["kategorien"]]}
+            "related": related, "rezept": rezept, "by_id": by_id, "kueche": [p for p in long_enough if "kueche" in p["kategorien"]],
+            "production": production}
 
 
 def used_ids(sel: dict) -> set[int]:
@@ -287,6 +295,7 @@ def used_ids(sel: dict) -> set[int]:
         ids.update(p["id"] for p in lst)
     if sel["rezept"]:
         ids.add(sel["rezept"]["id"])
+    ids.update(p["id"] for p in sel["production"]["konzerte"] + sel["production"]["service"])
     for pid in list(ids):
         ids.update(q["id"] for q in sel["related"].get(pid, []))
     return ids
@@ -340,13 +349,14 @@ def post_record(p: dict, inv: dict, media_by_id: dict, cat_by_id: dict, tag_by_i
     body = clean_body(p["content"]["rendered"])
     titel = fix_caps(html_mod.unescape(_STRIP_RE.sub("", p["title"]["rendered"])).strip())
     tags = [tag_by_id[t] for t in p.get("tags", []) if t in tag_by_id and tag_by_id[t].lower() not in TAG_IGNORE]
+    markierungen = [tag_by_id[t].lower() for t in p.get("tags", []) if t in tag_by_id and tag_by_id[t].lower() in ("ticker", "live", "tt", "sticker")]
     alt = [cat_by_id.get(c, "") for c in p.get("categories", [])]
     rec = {
         "id": p["id"], "slug": slugify(p["slug"]), "titel": titel, "datum": datum.strftime("%Y-%m-%d"),
         "datum_original": p["date"][:10], "kategorien": kategorien, "alt_kategorien": alt,
         "excerpt": excerpt(p["excerpt"]["rendered"] if isinstance(p.get("excerpt"), dict) else body, 160),
         "standfirst": excerpt(p["excerpt"]["rendered"] if isinstance(p.get("excerpt"), dict) else body, 230),
-        "woerter": words(body), "tags": tags, "youtube": bool(re.search(r'data-video="', body)),
+        "woerter": words(body), "tags": tags, "markierungen": markierungen, "youtube": bool(re.search(r'data-video="', body)),
         "bild": {"url": img[0], "orig_w": img[1], "orig_h": img[2]}, "inhalt_html": body,
     }
     rec["lesezeit"] = reading_time(rec["woerter"])
@@ -354,9 +364,47 @@ def post_record(p: dict, inv: dict, media_by_id: dict, cat_by_id: dict, tag_by_i
     return rec
 
 
+def page_record(p: dict, conf: dict, shift: timedelta) -> dict:
+    raw = p["content"]["rendered"]
+    body = clean_body(raw)
+    return {"id": p["id"], "slug": p["slug"], "datei": conf.get("datei", ""), "titel": conf.get("titel") or html_mod.unescape(_STRIP_RE.sub("", p["title"]["rendered"])).strip(),
+            "tamil": conf.get("tamil", ""), "hinweis": conf.get("hinweis", ""), "kategorie": conf.get("kategorie", ""), "datum_original": p["date"][:10],
+            "datum": (datetime.fromisoformat(p["date"]) + shift).strftime("%Y-%m-%d"), "woerter": words(body), "inhalt_html": body,
+            "streams": sorted(set(re.findall(r"https?://[^\"' ]+\.m3u8[^\"' ]*", raw)))}
+
+
+def page_as_post(p: dict, kategorie: str, shift: timedelta) -> dict:
+    """Seiten, die eigentlich Beiträge sind (M.I.A., Jahresrückblick): Bild aus dem Inhalt, sonst Bildkarte."""
+    rec = {"id": p["id"], "slug": slugify(p["slug"]), "titel": fix_caps(html_mod.unescape(_STRIP_RE.sub("", p["title"]["rendered"])).strip()),
+           "datum": (datetime.fromisoformat(p["date"]) + shift).strftime("%Y-%m-%d"), "datum_original": p["date"][:10],
+           "kategorien": [kategorie], "alt_kategorien": ["seite"], "tags": [], "markierungen": [], "youtube": False, "inhalt_html": clean_body(p["content"]["rendered"])}
+    rec["excerpt"], rec["standfirst"] = excerpt(rec["inhalt_html"], 160), excerpt(rec["inhalt_html"], 230)
+    rec["woerter"], rec["lesezeit"], rec["chips"] = words(rec["inhalt_html"]), reading_time(words(rec["inhalt_html"])), []
+    imgs = inline_images(rec["inhalt_html"])
+    rec["bild"] = {"url": imgs[0], "orig_w": 1200, "orig_h": 675} if imgs else {"url": "", "orig_w": 1200, "orig_h": 675}
+    return rec
+
+
+def brand_assets(export: Path) -> None:
+    """Logo und Werbebanner der alten Seite (export/brand/ aus tools/export_site.py --meta-only) nach static/img/."""
+    brand = export / "brand"
+    for name, target in (("logo.png", "logo.png"), ("ad-leaderboard.jpg", "ad-leaderboard.jpg"), ("ad-sidebar.jpg", "ad-sidebar.jpg")):
+        src = brand / name
+        if src.exists():
+            if name.endswith(".jpg"):
+                from PIL import Image
+                with Image.open(src) as im:
+                    im.convert("RGB").save(IMG / target, "JPEG", quality=80, optimize=True)
+            else:
+                shutil.copy(src, IMG / target)
+        else:
+            print(f"  Markendatei fehlt: {src}", file=sys.stderr)
+
+
 def snapshot(export: Path, shift_dates: bool = True) -> dict:
     site = load_site()
     posts = load_json(export / "posts.json")
+    pages = load_json(export / "pages.json") if (export / "pages.json").exists() else []
     media_by_id = {m["id"]: m for m in load_json(export / "media.json")}
     cat_by_id = {c["id"]: c["slug"] for c in load_json(export / "categories.json")}
     tag_by_id = {t["id"]: t["name"] for t in load_json(export / "tags.json")}
@@ -366,9 +414,15 @@ def snapshot(export: Path, shift_dates: bool = True) -> dict:
     shift = (stand - timedelta(days=1)) - newest_date if shift_dates else timedelta(0)
 
     records = [r for r in (post_record(p, inventory.get(p["id"], {}), media_by_id, cat_by_id, tag_by_id, shift) for p in posts) if r]
+    for pg in pages:
+        if pg["slug"] in site.get("seiten_als_beitrag", {}):
+            records.append(page_as_post(pg, site["seiten_als_beitrag"][pg["slug"]], shift))
+    seiten = [page_record(pg, site["seiten"][pg["slug"]], shift) for pg in pages if pg["slug"] in site.get("seiten", {})]
+    brand_assets(export)
     counts = {slug: sum(1 for r in records if slug in r["kategorien"]) for slug in site["kategorien"]}
     sel = select(records, site)
-    counts["kultur"] = sum(1 for r in records if "kultur" in r["kategorien"])
+    for slug in ("kultur", "kueche"):
+        counts[slug] = sum(1 for r in records if slug in r["kategorien"])
     ids = used_ids(sel)
     chosen = [r for r in records if r["id"] in ids]
     print(f"Beiträge im Export: {len(posts)}, verwendbar: {len(records)}, im Prototyp: {len(chosen)}; Datumsverschiebung {shift.days} Tage")
@@ -378,7 +432,13 @@ def snapshot(export: Path, shift_dates: bool = True) -> dict:
     hero_ids = {p["id"] for p in sel["hero"]}
     for r in chosen:
         max_w = 1400 if r["id"] in hero_ids or r["id"] == site["rezept"]["id"] else 900
-        info = fetch_image(r["bild"]["url"], IMG / f"p{r['id']}.jpg", max_w, 74, session)
+        info = fetch_image(r["bild"]["url"], IMG / f"p{r['id']}.jpg", max_w, 74, session) if r["bild"].get("url") else None
+        if not info and r.get("alt_kategorien") == ["seite"]:
+            from news_radar.images import branded_card
+            from PIL import Image
+            with Image.open(io.BytesIO(branded_card(r["titel"], site["kategorien"][r["kategorien"][0]]["label"], r["slug"]).data)) as im:
+                im.convert("RGB").save(IMG / f"p{r['id']}.jpg", "JPEG", quality=76, optimize=True)
+            info = {"w": 1200, "h": 675}
         if not info:
             r["bild"]["src"] = None
             continue
@@ -396,7 +456,7 @@ def snapshot(export: Path, shift_dates: bool = True) -> dict:
 
     ev = load_events()
     cards(ev, site)
-    out = {"stand": site["stand"], "shift_days": shift.days, "counts": counts, "posts": chosen}
+    out = {"stand": site["stand"], "shift_days": shift.days, "counts": counts, "posts": chosen, "seiten": seiten}
     (CONTENT / "posts.json").write_text(json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
     print(f"content/posts.json: {len(chosen)} Beiträge, {sum(1 for _ in IMG.glob('*.jpg'))} Bilder")
     return out
@@ -552,8 +612,13 @@ def build_context(bare: bool = False) -> dict:
         "stats": {"orte": len(orte), "meldungen": sum(len(o["labels"]) for o in orte), "quellen": source_count(), "kinos": len(kt["fakten"]["kinos"])},
         "footer_svg": radar_map.svg([], sweep=False),
     }
+    seiten = {pg["slug"]: pg for pg in data.get("seiten", [])}
+    tv = dict(site.get("tv", {}))
+    if "tv" in seiten:
+        tv["seite"] = seiten["tv"]
     return {
-        "radar": radar, "ticker": ticker_items(sel, ev, site["kategorien"]),
+        "radar": radar, "ticker": ticker_items(sel, ev, site["kategorien"]), "seiten": seiten, "production": {**site.get("production", {}), **sel["production"]},
+        "tv": tv, "werbung_live": site.get("werbung_live", {}), "logo": (IMG / "logo.png").exists(),
         "site": site, "kat": site["kategorien"], "nav": site["nav"], "sel": sel, "posts": posts, "counts": data["counts"],
         "events": ev["events"], "event_months": event_months(ev["events"]), "grid": month_grid(2026, 10, ev["events"]),
         "kino": kt, "kino_widget": kino_widget(kt["fakten"]), "rezept": rezept, "shift_days": data["shift_days"],
@@ -606,6 +671,11 @@ def render_all(out: Path, bare_index: bool = False) -> list[str]:
     for e in ctx["events"]:
         pages.append((e["seite"], "event.html", {"seite": "events", "e": e, "titel": f"{e['titel']} – Tamil.de"}))
     pages.append(("kontakt.html", "kontakt.html", {"seite": "kontakt", "titel": "Kontakt & Werben – Tamil.de"}))
+    pages.append(("production.html", "production.html", {"seite": "production", "titel": f"{ctx['production']['titel']} – Tamil.de"}))
+    pages.append(("tv.html", "tv.html", {"seite": "tv", "titel": "Tamil TV – Tamil.de"}))
+    for slug, pg in ctx["seiten"].items():
+        if pg["datei"] and slug != "tv":
+            pages.append((pg["datei"], "seite.html", {"seite": pg.get("kategorie") or "seite", "pg": pg, "titel": f"{pg['titel']} – Tamil.de"}))
     pages.append(("design-system.html", "design-system.html", {"seite": "design", "titel": "Design-System – Tamil.de Prototyp"}))
     written = []
     for filename, template, extra in pages:
@@ -652,8 +722,8 @@ def build(out: Path = DIST, bare_index: bool = False) -> list[str]:
     return written
 
 
-SHOT_PAGES = ["index.html", "kategorie-kino.html", "kategorie-sport.html", "artikel-{hero}", "artikel-{rezept}",
-              "{kino}", "events.html", "{event}", "kontakt.html", "design-system.html"]
+SHOT_PAGES = ["index.html", "kategorie-kino.html", "kategorie-kueche.html", "artikel-{hero}", "artikel-{rezept}",
+              "{kino}", "events.html", "{event}", "kontakt.html", "production.html", "tv.html", "impressum.html", "design-system.html"]
 SHOT_WIDTHS = (390, 820, 1280)
 
 

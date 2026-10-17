@@ -1,4 +1,4 @@
-{% set proto_links = [('Start', 'index.html', 'start'), ('Kino', 'kategorie-kino.html', 'kino'), ('Artikel', sel.hero[1]|link, 'artikel'), ('Rezept', sel.rezept|link, 'rezept'), ('Kinotermine', kino.slug ~ '.html', 'kinotermine'), ('Events', 'events.html', 'events'), ('Kontakt', 'kontakt.html', 'kontakt'), ('Design-System', 'design-system.html', 'design')] %}
+{% set proto_links = [('Start', 'index.html', 'start'), ('Kino', 'kategorie-kino.html', 'kino'), ('Artikel', sel.hero[1]|link, 'artikel'), ('Rezept', sel.rezept|link, 'rezept'), ('Kinotermine', kino.slug ~ '.html', 'kinotermine'), ('Events', 'events.html', 'events'), ('Production', 'production.html', 'production'), ('TV', 'tv.html', 'tv'), ('Kontakt', 'kontakt.html', 'kontakt'), ('Impressum', 'impressum.html', 'impressum'), ('Design-System', 'design-system.html', 'design')] %}
 <div class="proto-bar" role="navigation" aria-label="Prototyp-Seiten">
   <strong>Prototyp · Designkonzept v1</strong>
   <nav>{% for label, href, key in proto_links %}<a href="{{ href }}"{% if (key == 'artikel' and p is defined and p and p.id == sel.hero[1].id) or (key == 'rezept' and p is defined and p and p.id == site.rezept.id) or (key == 'kinotermine' and kinotermine) or (key == seite and key not in ('artikel','rezept')) %} aria-current="page"{% endif %}>{{ label }}</a>{% endfor %}</nav>
@@ -13,7 +13,7 @@
         <a class="wa" href="https://wa.me/{{ site.kontakt.whatsapp|replace(' ', '')|replace('+', '') }}" target="_blank" rel="noopener">{{ m.icon('whatsapp', 'ico ico-sm') }}<span class="label">WhatsApp</span></a>
       </div>
       <div class="social">
-        {% for s in site.social %}<a href="{{ s.url }}" aria-label="{{ s.name }}">{{ m.icon(s.icon, 'ico ico-sm') }}</a>{% endfor %}
+        {% for s in site.social %}<a href="{{ s.url }}" aria-label="{{ s.name }}{% if s.get('status') %} ({{ s.status }}){% endif %}"{% if s.url != '#' %} target="_blank" rel="noopener"{% endif %}{% if s.get('status') %} class="ausstehend" title="{{ s.name }}: {{ s.status }}"{% endif %}>{{ m.icon(s.icon, 'ico ico-sm') }}</a>{% endfor %}
         <a class="werben" href="kontakt.html#werben">Werben</a>
       </div>
     </div>
@@ -25,7 +25,7 @@
         <span class="tagline">{{ site.tagline }}</span>
         <span class="datum">{{ stand_text }}</span>
       </div>
-      {{ m.wordmark() }}
+      {{ m.logo() }}
       <button type="button" class="icon-btn suche-btn" id="suche-btn" aria-label="Suche öffnen">{{ m.icon('search') }}</button>
       <form class="suche" id="suche" role="search" data-demo><label class="sr-only" for="q">Suche</label><input id="q" type="search" placeholder="Suchen …"><button type="submit" class="icon-btn" aria-label="Suchen">{{ m.icon('search') }}</button></form>
     </div>
@@ -40,10 +40,12 @@
   </nav>
   <div class="drawer" id="drawer" hidden>
     <div class="panel" role="dialog" aria-label="Menü">
-      <div class="kopf"><span class="wordmark" style="font-size:28px"><svg class="kolam" aria-hidden="true"><use href="#i-kolam"/></svg>tamil<span class="de">.de</span></span><button type="button" class="icon-btn" data-close aria-label="Menü schließen">{{ m.icon('close') }}</button></div>
+      <div class="kopf">{{ m.logo('index.html') }}<button type="button" class="icon-btn" data-close aria-label="Menü schließen">{{ m.icon('close') }}</button></div>
       <ul>
         <li><a href="index.html">Startseite</a></li>
         {% for n in nav %}<li><a href="{{ n.get('seite') or 'kategorie-' ~ n.slug ~ '.html' }}"{% if n.slug == seite %} aria-current="page"{% endif %}>{{ n.label }}<span class="ta" lang="ta">{{ kat[n.slug].tamil if n.slug in kat else 'தொடர்பு' }}</span></a></li>{% endfor %}
+        <li><a href="production.html"{% if seite == 'production' %} aria-current="page"{% endif %}>{{ production.titel }}<span class="ta" lang="ta">{{ production.tamil }}</span></a></li>
+        <li><a href="tv.html"{% if seite == 'tv' %} aria-current="page"{% endif %}>{{ tv.titel }}<span class="ta" lang="ta">{{ tv.tamil }}</span></a></li>
         <li><a href="kontakt.html#werben">Werben auf Tamil.de<span class="ta" lang="ta">விளம்பரம்</span></a></li>
       </ul>
       <div class="kontakt-zeile"><span>{{ site.kontakt.telefon }}</span><span>{{ site.kontakt.email }}</span><a class="btn btn-wa btn-sm" href="https://wa.me/{{ site.kontakt.whatsapp|replace(' ', '')|replace('+', '') }}">{{ m.icon('whatsapp', 'ico ico-sm') }} WhatsApp</a></div>
