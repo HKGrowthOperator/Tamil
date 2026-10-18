@@ -74,6 +74,10 @@ if ! "${WP[@]}" core is-installed >/dev/null 2>&1; then
     --admin_password="$ADMIN_PW" --admin_email=admin@example.test --skip-email
   setenv WP_ADMIN_USER admin
   setenv WP_ADMIN_PASSWORD "$ADMIN_PW"
+  # Beispielinhalte von WordPress („Hallo Welt!“, Beispiel-Seite) und Standard-Widgets entfernen
+  "${WP[@]}" post delete 1 2 --force >/dev/null 2>&1 || true
+  "${WP[@]}" comment delete 1 --force >/dev/null 2>&1 || true
+  "${WP[@]}" widget reset --all >/dev/null 2>&1 || true
 fi
 "${WP[@]}" option update timezone_string Europe/Berlin >/dev/null
 "${WP[@]}" option update blogdescription "Nachrichten, Kino und Community" >/dev/null

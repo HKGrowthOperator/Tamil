@@ -1,7 +1,8 @@
 """Integrationstest gegen ein laufendes WordPress mit dem Plugin tamil-radar (wordpress/dev/setup.sh + serve.sh).
 
 Läuft nur, wenn WP_TEST_URL, WP_TEST_USER und WP_TEST_APP_PASSWORD gesetzt sind (stehen in $WP_DIR/.env.local).
-Aufräumen über die Core-REST mit demselben Benutzer (eigene Beiträge darf die Rolle „radar“ löschen).
+Aufräumen über die Core-REST mit dem Admin-Anwendungspasswort (WP_ADMIN_USER/WP_ADMIN_APP_PASSWORD, ebenfalls in
+.env.local); ohne Admin-Zugang versucht es der Radar-Benutzer, dessen Rolle veröffentlichte Beiträge nicht löschen darf.
 """
 
 import base64
@@ -36,8 +37,11 @@ def client():
     c = TamilRadarClient(URL, USER, PW)
     created: list[int] = []
     yield c, created
+    # Die Rolle „radar“ darf veröffentlichte Beiträge nicht löschen – aufräumen mit dem Admin-Zugang, falls vorhanden
+    auth = (os.environ["WP_ADMIN_USER"], os.environ["WP_ADMIN_APP_PASSWORD"]) if os.environ.get("WP_ADMIN_APP_PASSWORD") else (USER, PW)
     for post_id in created:
-        requests.delete(f"{URL}/wp-json/wp/v2/posts/{post_id}", params={"force": "true"}, auth=(USER, PW), timeout=30)
+        r = requests.delete(f"{URL}/wp-json/wp/v2/posts/{post_id}", params={"force": "true"}, auth=auth, timeout=30)
+        assert r.status_code == 200 or auth == (USER, PW), f"Aufräumen von Post {post_id} fehlgeschlagen: {r.status_code}"
 
 
 def test_status_reports_plugin_and_categories(client):
