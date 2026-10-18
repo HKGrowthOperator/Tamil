@@ -89,8 +89,13 @@
 
   <section class="ds-section" id="werbeplaetze">
     <h2>Werbeplätze in Originalgröße</h2>
-    <p class="klein leise">Gestrichelter Gold-Rahmen und Nummer markieren im Prototyp die Fläche; im Relaunch liefert Advanced Ads an derselben Stelle aus.</p>
-    <div style="display:grid;gap:24px">{{ m.ad('leaderboard') }}{{ m.ad('billboard') }}{{ m.ad('inarticle') }}{{ m.ad('footer') }}<div class="ad ad-sidebar" style="display:flex"><span class="ad-label">Werbeplatz 02 · Half Page</span><div class="ad-box" style="width:300px;height:600px"><span class="nr">02</span>300 × 600</div></div><div class="ad" style="position:static"><span class="ad-label">Werbeplatz 05 · Mobile Sticky (nur ≤ 600 px)</span><div class="ad-box" style="width:320px;height:50px"><span class="nr">05</span>320 × 50</div></div></div>
+    <p class="klein leise">Provisorisch belegt mit Eigenanzeigen von Tamil.de und zwei fiktiven Musterkunden (Label „Anzeige“ wie im Betrieb). Im Relaunch liefert Advanced Ads an derselben Stelle aus; die Fremdbanner der alten Seite (Gravity Club, Olyyn) werden nicht übernommen, bis die Verträge geklärt sind.</p>
+    <div class="ds-ads">
+      {% for key in ['leaderboard', 'billboard', 'inarticle', 'footer', 'sidebar', 'mobile'] %}{% set w = ad_slot(key) %}
+      <div class="type-row"><span class="lbl">Werbeplatz {{ w.nr }}<br>{{ w.name }}<br>{{ w.desktop if key != 'mobile' else w.mobil }}</span><div>{{ m.ad(key, zeigen=True) }}</div></div>
+      {% endfor %}
+      <div class="type-row"><span class="lbl">Rohformat<br>ohne Buchung</span><div>{{ m.ad('leaderboard', zeigen=True, roh=True) }}</div></div>
+    </div>
   </section>
 
   <section class="ds-section" id="icons" style="border-bottom:0">

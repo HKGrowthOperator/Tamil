@@ -17,19 +17,19 @@
 {% if logo %}<a class="{{ cls }}" href="{{ href }}" aria-label="Tamil.de – Startseite"><img src="img/logo.png" alt="Tamil.de – portal, lifestyle, entertainment" width="300" height="121"></a>{% else %}{{ wordmark(href) }}{% endif %}
 {%- endmacro %}
 
-{% macro ad(key) -%}
+{% import "_anzeigen.html" as anz with context %}
+{% macro ad(key, zeigen=False, roh=False) -%}
 {% set w = ad_slot(key) %}
-{% set live = werbung_live.get(key) %}
-<div class="ad ad-{{ key }}{% if live %} ad-live{% endif %}"{% if key == 'mobile' %} id="ad-mobile"{% endif %}>
-  <span class="ad-label">Werbeplatz {{ w.nr }} · {{ w.name }}{% if live %} · Werbepartner {{ live.kunde }} ({{ live.masse }}){% endif %}</span>
-  {% if live %}<a class="ad-banner" href="{{ live.url }}" target="_blank" rel="noopener nofollow sponsored"><img src="{{ live.bild }}" alt="Werbung: {{ live.kunde }}" loading="lazy"></a>
-  {% else %}<div class="ad-box"><span class="nr">{{ w.nr }}</span><span class="nur-desktop">{{ w.desktop }}</span><span class="nur-mobil">{{ w.mobil.split(' (')[0] }}</span></div>{% endif %}
-  {% if key == 'mobile' %}<button type="button" class="schliessen" aria-label="Werbung schließen">×</button>{% endif %}
+{% set a = none if roh else werbung.get(key) %}
+<div class="ad ad-{{ key }}{% if a %} ad-anzeige{% endif %}"{% if key == 'mobile' and not zeigen %} id="ad-mobile"{% endif %}{% if zeigen %} style="display:flex;position:static"{% endif %} title="Werbeplatz {{ w.nr }} · {{ w.name }}">
+  <span class="ad-label">Anzeige{% if a and a.vorlage == 'muster' %} · Musterkunde (fiktiv){% endif %}</span>
+  {% if a %}{{ anz.render(a, key) }}{% else %}<div class="flaeche ad-box"><span class="nr">{{ w.nr }}</span><span class="nur-desktop">{{ w.desktop }}</span><span class="nur-mobil">{{ w.mobil.split(' (')[0] }}</span></div>{% endif %}
+  {% if key == 'mobile' and not zeigen %}<button type="button" class="schliessen" aria-label="Werbung schließen">×</button>{% endif %}
 </div>
 {%- endmacro %}
 
-{% macro meta(p) -%}
-<p class="meta"><span class="kat">{{ kat[p.kategorien[0]].label }}</span><span>{{ p.datum|datum }}</span><span>{{ p.lesezeit }} Min.</span></p>
+{% macro meta(p, kat_zeigen=True) -%}
+<p class="meta">{% if kat_zeigen %}<span class="kat">{{ kat[p.kategorien[0]].label }}</span>{% endif %}{% if p.radar and p.ort %}<span class="ort">{{ icon('pin', 'ico ico-xs') }}{{ p.ort }}</span>{% endif %}<span>{% if p.radar %}{{ p.datum|datum }}, {{ p.zeit }}{% else %}{{ p.datum|datum }}{% endif %}</span><span>{{ p.lesezeit }} Min.</span></p>
 {%- endmacro %}
 
 {% macro card(p, variant="", heading="h3", excerpt=True, badge=False, lazy=True) -%}
@@ -39,11 +39,33 @@
     {% if badge %}<span class="badge">{{ kat[p.kategorien[0]].label }}</span>{% endif %}
   </a>
   <div class="text">
-    <{{ heading }}><a href="{{ p|link }}">{{ p.titel }}</a></{{ heading }}>
-    {% if excerpt %}<p class="excerpt">{{ p.excerpt }}</p>{% endif %}
-    {{ meta(p) }}
+    <{{ heading }}><a href="{{ p|link }}"{% if p.sprache == 'ta' %} lang="ta"{% endif %}>{{ p.titel }}</a></{{ heading }}>
+    {% if excerpt and p.excerpt %}<p class="excerpt">{{ p.excerpt }}</p>{% endif %}
+    {{ meta(p, kat_zeigen=not badge) }}
   </div>
 </article>
+{%- endmacro %}
+
+{% macro card_lead(p) -%}
+<article class="card lead" data-chips="{{ p.chips|join(' ') }}">
+  <a class="media" href="{{ p|link }}" tabindex="-1" aria-hidden="true"><img src="{{ p.bild.src }}" width="{{ p.bild.w }}" height="{{ p.bild.h }}" alt="" fetchpriority="high"><span class="badge gold">{{ kat[p.kategorien[0]].label }}</span></a>
+  <div class="text">
+    <h2><a href="{{ p|link }}"{% if p.sprache == 'ta' %} lang="ta"{% endif %}>{{ p.titel }}</a></h2>
+    <p class="standfirst">{{ p.standfirst }}</p>
+    {{ meta(p, kat_zeigen=False) }}
+  </div>
+</article>
+{%- endmacro %}
+
+{% macro feed_item(r) -%}
+<li class="feed-item {{ r.art }}"><time{% if r.iso %} datetime="{{ r.iso }}"{% endif %}>{{ r.zeit }}</time><span class="ort">{{ r.ort or '–' }}</span><a href="{{ r.href }}"{% if r.sprache == 'ta' %} lang="ta"{% endif %}>{{ r.text }}</a><span class="quelle">{{ r.quelle }}{% if r.tag and r.tag != 'heute' %} · {{ r.tag }}{% endif %}{% if r.sprache == 'ta' %} · tamilisch{% elif r.sprache == 'en' %} · englisch{% endif %}</span></li>
+{%- endmacro %}
+
+{% macro top_strip(items) -%}
+<div class="top-strip-wrap">
+  <h2 class="kicker"><span class="ta" lang="ta">முக்கியம்</span><span class="de">Top-Themen</span><span class="klein leise">von der Redaktion gesetzt</span></h2>
+  <ol class="top-strip">{% for p in items %}<li><span class="nr" aria-hidden="true">{{ '%02d' % loop.index }}</span><div><h3><a href="{{ p|link }}">{{ p.titel }}</a></h3>{{ meta(p) }}</div></li>{% endfor %}</ol>
+</div>
 {%- endmacro %}
 
 {% macro platzhalter(titel, label) -%}

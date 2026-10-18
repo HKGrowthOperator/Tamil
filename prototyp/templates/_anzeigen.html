@@ -1,0 +1,93 @@
+{# Provisorische Anzeigen für die Werbeplätze: Eigenanzeigen von Tamil.de und fiktive Musterkunden.
+   Jede Vorlage füllt die Fläche des Platzes (Größe kommt per CSS je Platz); Container-Queries schalten
+   zwischen Querformat (728 × 90, 320 × 50) und Hochformat (300 × 250, 300 × 600, 970 × 250) um. #}
+{% macro ico(name, cls="ico ico-sm") -%}
+<svg class="{{ cls }}" aria-hidden="true"><use href="#i-{{ name }}"/></svg>
+{%- endmacro %}
+
+{% macro wm() -%}
+<span class="wm">tamil<span class="de">.de</span></span>
+{%- endmacro %}
+
+{% macro production(a, key) -%}
+<a class="flaeche anzeige-wrap" href="production.html" aria-label="Tamil.de Production: Live mit dir! – Tickets">
+  <div class="anzeige a-production">
+    <span class="marke">{{ wm() }}<span class="eyebrow">Production</span></span>
+    <span class="rule"></span>
+    <span class="text"><span class="claim">Live mit dir!</span><span class="sub">A.R. Rahman · Ilaiyaraaja · Anirudh · Santhosh Narayanan – die Konzertreihe für DE, AT und CH</span></span>
+    <span class="cta">{{ ico('ticket') }} Tickets</span>
+  </div>
+</a>
+{%- endmacro %}
+
+{% macro production_bild(a, key) -%}
+<a class="flaeche anzeige-wrap" href="production.html" aria-label="Tamil.de Production präsentiert: Konzerte, die die Community zusammenbringen">
+  <div class="anzeige a-production-bild mit-bild">
+    <img class="bild" src="{{ a.bild }}" alt="" loading="lazy">
+    <span class="text"><span class="eyebrow">Tamil.de Production präsentiert</span><span class="claim">Konzerte, die die Community zusammenbringen.</span><span class="sub">Die großen Namen der tamilischen Musik auf deutschen Bühnen – Tickets, Saalpläne, Anreise.</span></span>
+    <span class="ctas"><span class="cta">Konzertreihe</span><span class="cta ghost">{{ ico('ticket') }} Tickets</span></span>
+  </div>
+</a>
+{%- endmacro %}
+
+{% macro newsletter(a, key) -%}
+<a class="flaeche anzeige-wrap" href="index.html#newsletter" aria-label="Tamil.de Newsletter: Das Wichtigste der Woche">
+  <div class="anzeige a-newsletter">
+    <svg class="kolam kolam-gross" aria-hidden="true"><use href="#i-kolam"/></svg>
+    <span class="text"><span class="eyebrow">Newsletter</span><span class="claim">Das Wichtigste der Woche. Einmal, nicht zehnmal.</span><span class="sub">Nachrichten · Kinostarts · Events – jeden Freitag, kostenlos</span></span>
+    <span class="cta">Anmelden</span>
+  </div>
+</a>
+{%- endmacro %}
+
+{% macro newsletter_klein(a, key) -%}
+<a class="flaeche anzeige-wrap" href="index.html#newsletter" aria-label="Newsletter: freitags das Wichtigste">
+  <div class="anzeige a-newsletter-klein">
+    {{ wm() }}
+    <span class="rule"></span>
+    <span class="text"><span class="claim">Freitags das Wichtigste.</span></span>
+    <span class="cta">Anmelden</span>
+  </div>
+</a>
+{%- endmacro %}
+
+{% macro werben(a, key) -%}
+<a class="flaeche anzeige-wrap" href="kontakt.html#werben" aria-label="Werben auf Tamil.de – Mediadaten">
+  <div class="anzeige a-werben hell">
+    <span class="text"><span class="eyebrow">Werben auf Tamil.de</span><span class="claim">Eine Community. Drei Länder. Fünf Formate.</span><span class="sub">Leaderboard, Half Page, In-Article, Footer, Mobile Sticky – Mediadaten auf Anfrage</span></span>
+    <span class="cta">Mediadaten</span>
+  </div>
+</a>
+{%- endmacro %}
+
+{% macro whatsapp(a, key) -%}
+<a class="flaeche anzeige-wrap" href="{{ site.social[0].url }}" target="_blank" rel="noopener" aria-label="Tamil.de WhatsApp-Kanal öffnen">
+  <div class="anzeige a-whatsapp">
+    {{ ico('whatsapp', 'ico ico-lg') }}
+    <span class="text"><span class="claim">Kinostarts und Events direkt aufs Handy.</span><span class="sub">Der Tamil.de-Kanal auf WhatsApp – keine Gruppe, keine Nummern sichtbar</span></span>
+    <span class="cta weiss">Kanal öffnen</span>
+  </div>
+</a>
+{%- endmacro %}
+
+{% macro muster(a, key) -%}
+<a class="flaeche anzeige-wrap" href="#" aria-label="Musteranzeige {{ a.kunde }} (fiktiv)" data-muster>
+  <div class="anzeige a-muster f-{{ a.farbe }}">
+    <span class="marke"><span class="kunde">{{ a.kunde }}</span>{% if a.zusatz %}<span class="eyebrow">{{ a.zusatz }}</span>{% endif %}</span>
+    <span class="rule"></span>
+    <span class="text"><span class="claim">{{ a.claim }}</span>{% if a.sub %}<span class="sub">{{ a.sub }}</span>{% endif %}</span>
+    <span class="cta{% if a.farbe == 'meer' %} weiss{% endif %}">{{ a.cta }}</span>
+  </div>
+</a>
+{%- endmacro %}
+
+{% macro render(a, key) -%}
+{% if a.vorlage == 'production' %}{{ production(a, key) }}
+{% elif a.vorlage == 'production-bild' %}{{ production_bild(a, key) }}
+{% elif a.vorlage == 'newsletter' %}{{ newsletter(a, key) }}
+{% elif a.vorlage == 'newsletter-klein' %}{{ newsletter_klein(a, key) }}
+{% elif a.vorlage == 'werben' %}{{ werben(a, key) }}
+{% elif a.vorlage == 'whatsapp' %}{{ whatsapp(a, key) }}
+{% elif a.vorlage == 'muster' %}{{ muster(a, key) }}
+{% endif %}
+{%- endmacro %}

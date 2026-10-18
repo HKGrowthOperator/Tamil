@@ -24,12 +24,14 @@
 {% endmacro %}
 {% block content %}
 {% set lead = sel.hero[0] %}
-<section class="buehne" aria-label="Aufmacher und Radar">
+<section class="buehne" aria-label="Aufmacher und Radar" style="--lead:url('{{ lead.bild.src }}')">
+  <div class="buehne-hintergrund" aria-hidden="true"></div>
   <div class="container">
+    <p class="live-zeile"><span class="live">Radar läuft</span><span>{{ stand_text }}</span><span><b>{{ radar.stats.meldungen }}</b> Meldungen</span><span><b>{{ radar.stats.orte }}</b> Orte in DE, AT, CH</span>{% if radar.stand %}<span>zuletzt <b>{{ radar.stand }} Uhr</b></span>{% endif %}</p>
     <article class="buehne-lead">
       <a class="media" href="{{ lead|link }}" tabindex="-1" aria-hidden="true"><img src="{{ lead.bild.src }}" width="{{ lead.bild.w }}" height="{{ lead.bild.h }}" alt="" fetchpriority="high"><span class="badge gold">{{ kat[lead.kategorien[0]].label }}</span></a>
       <div class="text">
-        <h1><a href="{{ lead|link }}">{% for w in lead.titel.split() %}<span class="w" style="--w:{{ loop.index0 }}"><i>{{ w }}</i></span> {% endfor %}</a></h1>
+        <h1{% if lead.titel|length > 58 %} class="lang"{% endif %}><a href="{{ lead|link }}">{% for w in lead.titel.split() %}<span class="w" style="--w:{{ loop.index0 }}"><i>{{ w }}</i></span> {% endfor %}</a></h1>
         <p class="standfirst">{{ lead.standfirst }}</p>
         {{ m.meta(lead) }}
       </div>
@@ -43,37 +45,46 @@
           <div><b>{{ events|length }}</b><span>Events im Kalender</span></div>
           <div><b>{{ radar.stats.quellen }}</b><span>Quellen in DE, AT, CH</span></div>
         </div>
-        <ul class="erfasst" style="margin-top:14px" aria-label="Zuletzt erfasst">
-          {% for r in radar.erfasst[:6] %}<li style="--i:{{ loop.index0 }}"><time>{{ r.zeit }}</time><span><b>{{ r.ort }}</b> {% if r.href %}<a href="{{ r.href }}">{{ r.text }}</a>{% else %}{{ r.text }}{% endif %}</span></li>{% endfor %}
-        </ul>
+        <p class="fuss" style="margin-top:14px">Der News-Radar liest Kinoprogramme, Veranstaltungskalender und Nachrichtenquellen in drei Ländern und legt der Redaktion Entwürfe vor. Jeder Punkt ist ein Ort mit einem Treffer dieser Woche.</p>
       </div>
-      <p class="fuss">Der News-Radar liest Kinoprogramme, Veranstaltungskalender und Nachrichtenquellen und legt Entwürfe für die Redaktion an. Jeder Punkt ist ein Ort mit einem Treffer dieser Woche.</p>
     </aside>
   </div>
 </section>
 
-<div class="container">
-  <div class="start-grid">
-    <section class="section">
-      {{ m.kicker('news', text='Neueste Beiträge', mehr='kategorie-news.html', mehr_text='Alle Nachrichten') }}
-      <div class="cards">
-        {{ m.card(sel.hero[1], '', 'h3', badge=True, lazy=False) }}
-        {{ m.card(sel.hero[2], '', 'h3', badge=True, lazy=False) }}
-        {% for p in sel.neueste[:4] %}{{ m.card(p, '', 'h3', badge=True) }}{% endfor %}
-      </div>
-    </section>
-    <aside class="top-themen section" aria-label="Top-Themen">
-      <h2 class="kicker"><span class="ta" lang="ta">முக்கியம்</span><span class="de">Top-Themen</span></h2>
-      <p class="klein leise" style="margin:10px 0 14px">Von der Redaktion gesetzt: Hintergründe, die länger lesenswert bleiben.</p>
-      <ol>{% for p in sel.top %}<li><span class="nr">{{ loop.index }}</span><div><h3><a href="{{ p|link }}">{{ p.titel }}</a></h3>{{ m.meta(p) }}</div></li>{% endfor %}</ol>
-    </aside>
-  </div>
+<nav class="mininav" aria-label="Sektionen der Startseite"><div class="container"><a href="#aktuell">Aktuell</a><a href="#rubrik-news">Nachrichten</a><a href="#kino-radar">Kino</a><a href="#production">Production</a><a href="#events-teaser">Events</a><a href="#rezept">Küche</a><a href="#community">Community</a></div></nav>
 
+<div class="container">
+  <section class="section aktuell" id="aktuell">
+    {{ m.kicker('news', text='Jetzt auf dem Radar', mehr='kategorie-news.html', mehr_text='Alle Nachrichten') }}
+    {% set karten = sel.aktuell + [sel.hero[1], sel.hero[2]] %}
+    <div class="aktuell-grid">
+      <div class="aktuell-haupt">
+        {{ m.card_lead(karten[0]) }}
+        {{ m.card(karten[1], 'mittel', 'h3', badge=True, lazy=False) }}
+        {{ m.card(karten[2], 'mittel', 'h3', badge=True, lazy=False) }}
+        <ul class="ausserdem" aria-label="Außerdem">
+          {% for p in sel.neueste[:4] %}<li><span class="kat">{{ kat[p.kategorien[0]].label }}</span><a href="{{ p|link }}"{% if p.sprache == 'ta' %} lang="ta"{% endif %}>{{ p.titel }}</a><span class="wann">{% if p.radar %}{{ p.datum|datum }}, {{ p.zeit }}{% else %}{{ p.datum|datum }}{% endif %}</span></li>{% endfor %}
+        </ul>
+      </div>
+      <aside class="feed" aria-label="Zuletzt gefunden">
+        <div class="kopf"><span class="live">Zuletzt gefunden</span>{% if radar.stand %}<span class="klein">Stand {{ radar.stand_datum }}, {{ radar.stand }} Uhr</span>{% endif %}</div>
+        <ol>{% for r in radar.feed %}{{ m.feed_item(r) }}{% endfor %}</ol>
+        <p class="radar-bilanz">Letzter Lauf: <b>{{ radar.stats.gesammelt }}</b> Meldungen gelesen · <b>{{ radar.stats.relevant }}</b> relevant · <b>{{ radar.stats.entwuerfe }}</b> Entwürfe in der Freigabe-App</p>
+      </aside>
+    </div>
+  </section>
+</div>
+
+<section class="band top-band" aria-label="Top-Themen">
+  <div class="container">{{ m.top_strip(sel.top) }}</div>
+</section>
+
+<div class="container">
   {{ m.ad('billboard') }}
   {{ rubrik('news') }}
 </div>
 
-<section class="section" style="padding-top:0">
+<section class="section" id="kino-radar" style="padding-top:0">
   <div class="container">
     <div class="kino-widget">
       <div class="kopf">
@@ -97,22 +108,27 @@
   </div>
 </section>
 
+<section class="band" id="production">
+  <div class="container">
+    <section class="section">
+      {{ m.kicker('events', text=production.titel, mehr='production.html', mehr_text='Alle Konzerte und Service') }}
+      <div class="production-grid">
+        <div class="production-text">
+          <h2 style="font-size:var(--fs-h1)">{{ production.claim }}</h2>
+          <p style="margin:12px 0 0;max-width:48ch">{{ production.text }}</p>
+          <p style="margin:16px 0 0;display:flex;gap:8px;flex-wrap:wrap"><a class="btn btn-primary" href="production.html">Zur Konzertreihe</a><a class="btn btn-ghost" href="{{ production.ticket.url }}" target="_blank" rel="noopener nofollow">{{ m.icon('ticket', 'ico ico-sm') }} Tickets</a></p>
+        </div>
+        <div class="plakate klein">
+          {% for p in production.konzerte %}
+          <article class="plakat"><a class="media" href="{{ p|link }}" tabindex="-1" aria-hidden="true"><img src="{{ p.bild.src }}" width="{{ p.bild.w }}" height="{{ p.bild.h }}" alt="" loading="lazy"></a><h3><a href="{{ p|link }}">{{ p.titel }}</a></h3></article>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+  </div>
+</section>
+
 <div class="container">
-  <section class="section" id="production">
-    {{ m.kicker('events', text=production.titel, mehr='production.html', mehr_text='Alle Konzerte und Service') }}
-    <div class="production-grid">
-      <div class="production-text">
-        <h2 style="font-size:var(--fs-h1)">{{ production.claim }}</h2>
-        <p style="margin:12px 0 0;max-width:48ch">{{ production.text }}</p>
-        <p style="margin:16px 0 0;display:flex;gap:8px;flex-wrap:wrap"><a class="btn btn-primary" href="production.html">Zur Konzertreihe</a><a class="btn btn-ghost" href="{{ production.ticket.url }}" target="_blank" rel="noopener nofollow">{{ m.icon('ticket', 'ico ico-sm') }} Tickets</a></p>
-      </div>
-      <div class="plakate klein">
-        {% for p in production.konzerte %}
-        <article class="plakat"><a class="media" href="{{ p|link }}" tabindex="-1" aria-hidden="true"><img src="{{ p.bild.src }}" width="{{ p.bild.w }}" height="{{ p.bild.h }}" alt="" loading="lazy"></a><h3><a href="{{ p|link }}">{{ p.titel }}</a></h3></article>
-        {% endfor %}
-      </div>
-    </div>
-  </section>
   {{ rubrik('kino') }}
   <section class="section" id="events-teaser">
     {{ m.kicker('events', mehr='events.html', mehr_text='Alle Events') }}
@@ -139,13 +155,27 @@
   </div>
 </section>
 
+<section class="section band-dunkel community-band" id="community">
+  <div class="container">
+    {{ m.kicker('community', text='Aus der Community', mehr='kategorie-community.html') }}
+    <div class="community-grid">
+      <div class="community-liste">{% for p in sel.rubriken.community[:4] %}{{ m.card(p, 'zeile', 'h3', excerpt=False) }}{% endfor %}</div>
+      <div class="community-cta">
+        <h3>Melde uns dein Fest.</h3>
+        <p>Tempelfest, Kulturabend, Turnier, Konzert: Schick uns Datum, Ort und ein Foto – die Redaktion trägt es in den Kalender ein und der Radar nimmt es auf.</p>
+        <div class="aktionen"><a class="btn btn-wa" href="https://wa.me/{{ site.kontakt.whatsapp|replace(' ', '')|replace('+', '') }}?text={{ 'Hallo Tamil.de, ich möchte ein Event melden: '|urlencode }}" target="_blank" rel="noopener">{{ m.icon('whatsapp', 'ico ico-sm') }} Per WhatsApp melden</a><a class="btn btn-ghost hell" href="kontakt.html#event-einreichen">Formular</a></div>
+        <p class="klein" style="margin:12px 0 0;color:#8d92ad">Leser-Reporter: bis zu 100 € Honorar für exklusive Fotos und Videos. <a href="kontakt.html#mitmachen" style="color:var(--manjal)">So geht’s</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
 <div class="container">
-  {{ rubrik('community') }}
   {{ rubrik('kultur') }}
   {{ rubrik('sport') }}
 </div>
 
-<section class="section nl-band">
+<section class="section nl-band" id="newsletter">
   <div class="container newsletter" style="max-width:760px">
     <h2 class="kicker"><span class="ta" lang="ta">செய்திமடல்</span><span class="de">Newsletter</span></h2>
     <h2 style="font-size:var(--fs-h1)">Das Wichtigste der Woche. Einmal, nicht zehnmal.</h2>

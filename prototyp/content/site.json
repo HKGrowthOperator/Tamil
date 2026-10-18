@@ -1,497 +1,763 @@
 {
-  "stand": "2026-10-16",
-  "site": {
-    "name": "Tamil.de",
-    "tagline": "Nachrichten, Kino und Community für Tamilen in DE, AT und CH",
-    "claim": "Lifestyle-Magazin für Deutschland, Schweiz und Österreich: brandheiße News, exklusive Berichte, angesagte Events.",
-    "org": "KBS Management GmbH",
-    "version": "Designkonzept v2 · Radar · Inhalte von tamil.de"
-  },
-  "kontakt": {
-    "telefon": "+49 69 123 456",
-    "email": "info@tamil.de",
-    "whatsapp": "+49 170 123 4567",
-    "adresse": [
-      "KBS Management GmbH",
-      "Rheinstr. 78a",
-      "51371 Leverkusen"
-    ],
-    "antwortzeit": "Wir antworten in der Regel innerhalb von zwei Werktagen.",
-    "hinweis": "Telefon, E-Mail und WhatsApp sind Beispielwerte aus dem Angebot; Anschrift laut Vertrag. Alle Angaben vom Auftraggeber zu bestätigen."
-  },
-  "social": [
-    {
-      "name": "WhatsApp-Kanal",
-      "icon": "whatsapp",
-      "url": "https://whatsapp.com/channel/0029VaFIN43KWEKo3BGoE13t"
-    },
-    {
-      "name": "Instagram",
-      "icon": "instagram",
-      "url": "https://www.instagram.com/tamil_de/"
-    },
-    {
-      "name": "Facebook",
-      "icon": "facebook",
-      "url": "#",
-      "status": "ausstehend"
-    },
-    {
-      "name": "YouTube",
-      "icon": "youtube",
-      "url": "#",
-      "status": "ausstehend"
-    }
+ "stand": "2026-10-18",
+ "site": {
+  "name": "Tamil.de",
+  "tagline": "Nachrichten, Kino und Community für Tamilen in DE, AT und CH",
+  "claim": "Lifestyle-Magazin für Deutschland, Schweiz und Österreich: brandheiße News, exklusive Berichte, angesagte Events.",
+  "org": "KBS Management GmbH",
+  "version": "Designkonzept v3 · Radar · Inhalte von tamil.de und dem News-Radar"
+ },
+ "kontakt": {
+  "telefon": "+49 69 123 456",
+  "email": "info@tamil.de",
+  "whatsapp": "+49 170 123 4567",
+  "adresse": [
+   "KBS Management GmbH",
+   "Rheinstr. 78a",
+   "51371 Leverkusen"
   ],
-  "nav": [
-    {
-      "slug": "news",
-      "label": "Nachrichten"
-    },
-    {
-      "slug": "entertainment",
-      "label": "Entertainment"
-    },
-    {
-      "slug": "events",
-      "label": "Events",
-      "seite": "events.html"
-    },
-    {
-      "slug": "community",
-      "label": "Community",
-      "hinweis": "vorher „Blog“"
-    },
-    {
-      "slug": "kueche",
-      "label": "Küche"
-    },
-    {
-      "slug": "kino",
-      "label": "Kino"
-    },
-    {
-      "slug": "sport",
-      "label": "Sport"
-    },
-    {
-      "slug": "kultur",
-      "label": "Kultur"
-    },
-    {
-      "slug": "kontakt",
-      "label": "Kontakt",
-      "seite": "kontakt.html"
-    }
-  ],
-  "kategorien": {
-    "news": {
-      "label": "Nachrichten",
-      "tamil": "செய்திகள்",
-      "beschreibung": "Was die tamilische Community in Deutschland, Österreich und der Schweiz bewegt: Politik, Diaspora, Sri Lanka und Tamil Nadu – eingeordnet auf Deutsch.",
-      "chips": []
-    },
-    "community": {
-      "label": "Community",
-      "tamil": "சமூகம்",
-      "beschreibung": "Vereine, Tempel, Schulen und Menschen: Geschichten aus der tamilischen Gemeinschaft im deutschsprachigen Raum.",
-      "chips": []
-    },
-    "entertainment": {
-      "label": "Entertainment",
-      "tamil": "பொழுதுபோக்கு",
-      "beschreibung": "Musik, Stars, Serien und Konzerte – von Kollywood bis zur Diaspora-Szene in Europa.",
-      "chips": [
-        {
-          "key": "konzert",
-          "label": "Konzerte"
-        },
-        {
-          "key": "musik",
-          "label": "Musik"
-        }
-      ]
-    },
-    "kino": {
-      "label": "Kino",
-      "tamil": "சினிமா",
-      "beschreibung": "Tamilische Filme im deutschsprachigen Raum: Kinostarts, Spielorte, Kritiken und Hintergründe – aktualisiert mit jedem neuen Kinoprogramm.",
-      "chips": [
-        {
-          "key": "kritik",
-          "label": "Kritik"
-        },
-        {
-          "key": "kinostart",
-          "label": "Kinostart"
-        },
-        {
-          "key": "kinotermine",
-          "label": "Kinotermine"
-        },
-        {
-          "key": "konzert",
-          "label": "Konzerte"
-        }
-      ]
-    },
-    "events": {
-      "label": "Events",
-      "tamil": "நிகழ்வுகள்",
-      "beschreibung": "Konzerte, Feste, Wettbewerbe und Kinoabende – der Veranstaltungskalender für DE, AT und CH.",
-      "chips": []
-    },
-    "kueche": {
-      "label": "Küche",
-      "tamil": "சமையல்",
-      "beschreibung": "Rezepte aus Jaffna, Chennai und der Diaspora – mit Zutatenliste und Schritt-für-Schritt-Anleitung.",
-      "chips": []
-    },
-    "sport": {
-      "label": "Sport",
-      "tamil": "விளையாட்டு",
-      "beschreibung": "Cricket, Fußball, Kabaddi und Turniere der tamilischen Vereine – Ergebnisse, Termine und Porträts.",
-      "chips": []
-    },
-    "kultur": {
-      "label": "Kultur",
-      "tamil": "பண்பாடு",
-      "beschreibung": "Pongal, Parai, Tempelfeste, Tanz und Literatur: tamilische Kultur erklärt und gelebt – hier und in der Heimat.",
-      "chips": []
-    }
+  "antwortzeit": "Wir antworten in der Regel innerhalb von zwei Werktagen.",
+  "hinweis": "Telefon, E-Mail und WhatsApp sind Beispielwerte aus dem Angebot; Anschrift laut Vertrag. Alle Angaben vom Auftraggeber zu bestätigen."
+ },
+ "social": [
+  {
+   "name": "WhatsApp-Kanal",
+   "icon": "whatsapp",
+   "url": "https://whatsapp.com/channel/0029VaFIN43KWEKo3BGoE13t"
   },
-  "kultur_regex": "pongal|parai|tempel|tanz|bharat|kultur|thaipusam|deepavali|diwali|literatur|dichter|sprache|fest\\b|feier",
-  "kueche_regex": "rezept|spezialit|küche|kochen|curry|kothu|rotti|\\broti\\b|biryani|dosa|payasam|sambar|idli|chutney|zutaten",
-  "hero": [
-    9711,
-    9697,
-    9688
-  ],
-  "top_themen": [
-    9642,
-    9674,
-    6296,
-    4711,
-    9135
-  ],
-  "rezept": {
-    "id": 4711,
-    "kicker": "Rezept der Woche",
-    "fakten": [
-      {
-        "label": "Zubereitung",
-        "wert": "45 Min."
-      },
-      {
-        "label": "Portionen",
-        "wert": "4"
-      },
-      {
-        "label": "Schwierigkeit",
-        "wert": "mittel"
-      },
-      {
-        "label": "Herkunft",
-        "wert": "Jaffna / Sri Lanka"
-      }
-    ],
-    "fakten_hinweis": "Beispielwerte – im Altbestand nicht erfasst"
+  {
+   "name": "Instagram",
+   "icon": "instagram",
+   "url": "https://www.instagram.com/tamil_de/"
   },
-  "werbeplaetze": [
-    {
-      "nr": "01",
-      "key": "leaderboard",
-      "name": "Leaderboard",
-      "desktop": "728 × 90",
-      "mobil": "320 × 50",
-      "position": "Unter der Navigation, auf allen Seiten"
-    },
-    {
-      "nr": "02",
-      "key": "sidebar",
-      "name": "Half Page (Sidebar)",
-      "desktop": "300 × 600 oder 336 × 280",
-      "mobil": "300 × 250 (Tablet), mobil ausgeblendet",
-      "position": "Rechte Spalte, bleibt beim Scrollen stehen"
-    },
-    {
-      "nr": "03",
-      "key": "inarticle",
-      "name": "In-Article",
-      "desktop": "728 × 90",
-      "mobil": "300 × 250",
-      "position": "Im Artikel nach dem zweiten Absatz; Startseite 970 × 250"
-    },
-    {
-      "nr": "04",
-      "key": "footer",
-      "name": "Footer",
-      "desktop": "728 × 90",
-      "mobil": "320 × 100",
-      "position": "Über dem Footer, auf allen Seiten"
-    },
-    {
-      "nr": "05",
-      "key": "mobile",
-      "name": "Mobile Sticky",
-      "desktop": "–",
-      "mobil": "320 × 50",
-      "position": "Nur mobil, fixiert am unteren Rand, schließbar"
-    }
-  ],
-  "faq": [
-    {
-      "frage": "Wie reiche ich eine Veranstaltung ein?",
-      "antwort": "Über das Formular „Event einreichen“ weiter unten. Die Redaktion prüft jede Einreichung und veröffentlicht sie in der Regel innerhalb von zwei Werktagen im Kalender. (Beispieltext)"
-    },
-    {
-      "frage": "Was kostet Werbung auf Tamil.de?",
-      "antwort": "Die fünf Werbeplätze werden pro Monat oder pro 1.000 Einblendungen gebucht. Die Mediadaten mit Preisen senden wir auf Anfrage. (Beispieltext)"
-    },
-    {
-      "frage": "Kann ich Artikel oder Fotos einsenden?",
-      "antwort": "Ja. Leserreporter schicken Text und Bild an die Redaktion. Bitte nur eigene Fotos oder solche mit Erlaubnis des Fotografen. (Beispieltext)"
-    }
-  ],
-  "ueber_uns": "Tamil.de ist eine Plattform für deutschsprachige Tamilen in Deutschland, der Schweiz und Österreich. Sie ist die zentrale Anlaufstelle für Nachrichten aus der tamilischen Welt, kulturelle Veranstaltungen, Feste und Feiertage sowie praktische Hinweise zu Bildung, Gesundheit und rechtlichen Fragen.",
-  "autorenbox": {
-    "name": "Redaktion Tamil.de",
-    "text": "Die Redaktion schreibt über die tamilische Community im deutschsprachigen Raum – auf Deutsch, mit Blick auf Deutschland, Österreich und die Schweiz. (Beispieltext: Autorennamen und -profile liegen im Altbestand nicht vor.)"
+  {
+   "name": "Facebook",
+   "icon": "facebook",
+   "url": "#",
+   "status": "ausstehend"
   },
-  "staedte": {
-    "Berlin": [
-      52.52,
-      13.405
-    ],
-    "Hamburg": [
-      53.55,
-      9.99
-    ],
-    "Bremen": [
-      53.08,
-      8.8
-    ],
-    "Dortmund": [
-      51.51,
-      7.47
-    ],
-    "Karlsruhe": [
-      49.01,
-      8.4
-    ],
-    "Pforzheim": [
-      48.89,
-      8.7
-    ],
-    "Frankfurt": [
-      50.11,
-      8.68
-    ],
-    "Stuttgart": [
-      48.78,
-      9.18
-    ],
-    "München": [
-      48.14,
-      11.58
-    ],
-    "Köln": [
-      50.94,
-      6.96
-    ],
-    "Düsseldorf": [
-      51.23,
-      6.78
-    ],
-    "Hamm": [
-      51.68,
-      7.82
-    ],
-    "Gummersbach": [
-      51.03,
-      7.56
-    ],
-    "Leverkusen": [
-      51.03,
-      6.98
-    ],
-    "Neuss": [
-      51.2,
-      6.69
-    ],
-    "Zürich": [
-      47.37,
-      8.54
-    ],
-    "Basel": [
-      47.56,
-      7.59
-    ],
-    "Bern": [
-      46.95,
-      7.45
-    ],
-    "Kloten": [
-      47.45,
-      8.58
-    ],
-    "Uzwil": [
-      47.44,
-      9.13
-    ],
-    "Kanton Solothurn": [
-      47.21,
-      7.53
-    ],
-    "Luzern": [
-      47.05,
-      8.31
-    ],
-    "Aarau": [
-      47.39,
-      8.04
-    ],
-    "Wien": [
-      48.21,
-      16.37
-    ],
-    "Graz": [
-      47.07,
-      15.44
-    ],
-    "Linz": [
-      48.31,
-      14.29
-    ]
+  {
+   "name": "YouTube",
+   "icon": "youtube",
+   "url": "#",
+   "status": "ausstehend"
+  }
+ ],
+ "nav": [
+  {
+   "slug": "news",
+   "label": "Nachrichten"
   },
-  "radar_news": [
+  {
+   "slug": "entertainment",
+   "label": "Entertainment"
+  },
+  {
+   "slug": "events",
+   "label": "Events",
+   "seite": "events.html"
+  },
+  {
+   "slug": "community",
+   "label": "Community",
+   "hinweis": "vorher „Blog“"
+  },
+  {
+   "slug": "kueche",
+   "label": "Küche"
+  },
+  {
+   "slug": "kino",
+   "label": "Kino"
+  },
+  {
+   "slug": "sport",
+   "label": "Sport"
+  },
+  {
+   "slug": "kultur",
+   "label": "Kultur"
+  },
+  {
+   "slug": "kontakt",
+   "label": "Kontakt",
+   "seite": "kontakt.html"
+  }
+ ],
+ "kategorien": {
+  "news": {
+   "label": "Nachrichten",
+   "tamil": "செய்திகள்",
+   "beschreibung": "Was die tamilische Community in Deutschland, Österreich und der Schweiz bewegt: Politik, Diaspora, Sri Lanka und Tamil Nadu – eingeordnet auf Deutsch.",
+   "chips": []
+  },
+  "community": {
+   "label": "Community",
+   "tamil": "சமூகம்",
+   "beschreibung": "Vereine, Tempel, Schulen und Menschen: Geschichten aus der tamilischen Gemeinschaft im deutschsprachigen Raum.",
+   "chips": []
+  },
+  "entertainment": {
+   "label": "Entertainment",
+   "tamil": "பொழுதுபோக்கு",
+   "beschreibung": "Musik, Stars, Serien und Konzerte – von Kollywood bis zur Diaspora-Szene in Europa.",
+   "chips": [
     {
-      "stadt": "Neuss",
-      "label": "Rathamaarey: Hauptdarsteller aus Neuss",
-      "post": 9697
+     "key": "konzert",
+     "label": "Konzerte"
     },
     {
-      "stadt": "Gummersbach",
-      "label": "Mango-Auktion im Sri Kurinchikumaran Tempel",
-      "post": 9556
-    },
-    {
-      "stadt": "Berlin",
-      "label": "IndoGerman Filmweek",
-      "post": 6296
-    },
-    {
-      "stadt": "Aarau",
-      "label": "Kanton Aargau: Tamilisch im Sprachangebot",
-      "post": 7931
-    },
-    {
-      "stadt": "Zürich",
-      "label": "Tamil Dream Night 2026 – Nachbericht (swisstamilmedia)"
-    },
-    {
-      "stadt": "Luzern",
-      "label": "Gedenkfeier in Luzern (swisstamilmedia)"
-    },
-    {
-      "stadt": "Hamm",
-      "label": "Pongal-Vorbereitungen im Tempel (Beispiel)"
+     "key": "musik",
+     "label": "Musik"
     }
+   ]
+  },
+  "kino": {
+   "label": "Kino",
+   "tamil": "சினிமா",
+   "beschreibung": "Tamilische Filme im deutschsprachigen Raum: Kinostarts, Spielorte, Kritiken und Hintergründe – aktualisiert mit jedem neuen Kinoprogramm.",
+   "chips": [
+    {
+     "key": "kritik",
+     "label": "Kritik"
+    },
+    {
+     "key": "kinostart",
+     "label": "Kinostart"
+    },
+    {
+     "key": "kinotermine",
+     "label": "Kinotermine"
+    },
+    {
+     "key": "konzert",
+     "label": "Konzerte"
+    }
+   ]
+  },
+  "events": {
+   "label": "Events",
+   "tamil": "நிகழ்வுகள்",
+   "beschreibung": "Konzerte, Feste, Wettbewerbe und Kinoabende – der Veranstaltungskalender für DE, AT und CH.",
+   "chips": []
+  },
+  "kueche": {
+   "label": "Küche",
+   "tamil": "சமையல்",
+   "beschreibung": "Rezepte aus Jaffna, Chennai und der Diaspora – mit Zutatenliste und Schritt-für-Schritt-Anleitung.",
+   "chips": []
+  },
+  "sport": {
+   "label": "Sport",
+   "tamil": "விளையாட்டு",
+   "beschreibung": "Cricket, Fußball, Kabaddi und Turniere der tamilischen Vereine – Ergebnisse, Termine und Porträts.",
+   "chips": []
+  },
+  "kultur": {
+   "label": "Kultur",
+   "tamil": "பண்பாடு",
+   "beschreibung": "Pongal, Parai, Tempelfeste, Tanz und Literatur: tamilische Kultur erklärt und gelebt – hier und in der Heimat.",
+   "chips": []
+  }
+ },
+ "kultur_regex": "pongal|parai|tempel|tanz|bharat|kultur|thaipusam|deepavali|diwali|literatur|dichter|sprache|fest\\b|feier",
+ "kueche_regex": "rezept|spezialit|küche|kochen|curry|kothu|rotti|\\broti\\b|biryani|dosa|payasam|sambar|idli|chutney|zutaten",
+ "hero": [
+  9711,
+  9697,
+  9688
+ ],
+ "top_themen": [
+  9642,
+  9674,
+  6296,
+  4711,
+  9135
+ ],
+ "rezept": {
+  "id": 4711,
+  "kicker": "Rezept der Woche",
+  "fakten": [
+   {
+    "label": "Zubereitung",
+    "wert": "45 Min."
+   },
+   {
+    "label": "Portionen",
+    "wert": "4"
+   },
+   {
+    "label": "Schwierigkeit",
+    "wert": "mittel"
+   },
+   {
+    "label": "Herkunft",
+    "wert": "Jaffna / Sri Lanka"
+   }
   ],
-  "werbung_live": {
-    "leaderboard": {
-      "bild": "img/ad-leaderboard.jpg",
-      "url": "https://www.gravity-club.de",
-      "kunde": "Gravity Club",
-      "masse": "728 × 90",
-      "quelle": "Kopfbanner der alten Seite"
-    },
-    "sidebar": {
-      "bild": "img/ad-sidebar.jpg",
-      "url": "https://www.olyyn.com",
-      "kunde": "Olyyn",
-      "masse": "336 × 280",
-      "quelle": "Seitenleiste der alten Seite"
-    }
+  "fakten_hinweis": "Beispielwerte – im Altbestand nicht erfasst"
+ },
+ "werbeplaetze": [
+  {
+   "nr": "01",
+   "key": "leaderboard",
+   "name": "Leaderboard",
+   "desktop": "728 × 90",
+   "mobil": "320 × 50",
+   "position": "Unter der Navigation, auf allen Seiten"
   },
-  "production": {
-    "titel": "Tamil.de Production",
-    "tamil": "நிகழ்ச்சிகள்",
-    "claim": "Die Konzertreihe „Live mit dir!“: Tamil.de holt die großen Namen der tamilischen Musik nach Deutschland.",
-    "text": "A.R. Rahman, Ilaiyaraaja, Anirudh und Santhosh Narayanan standen oder stehen mit Tamil.de Production auf deutschen Bühnen. Hier stehen alle Konzerte, Tickets, Saalpläne und Antworten auf die häufigsten Fragen rund um den Konzertbesuch.",
-    "konzerte": [
-      9662,
-      9562,
-      9567,
-      9564
-    ],
-    "service": [
-      9209,
-      9198,
-      9256,
-      9191,
-      9135
-    ],
-    "ticket": {
-      "label": "Santhosh Narayanan live in Germany – Tickets",
-      "url": "https://www.ticketmaster.de/event/santhosh-narayanan-live-in-germany-tickets/939290796",
-      "quelle": "Ticketmaster-Link der alten Seite"
-    }
+  {
+   "nr": "02",
+   "key": "sidebar",
+   "name": "Half Page (Sidebar)",
+   "desktop": "300 × 600 oder 336 × 280",
+   "mobil": "300 × 250 (Tablet), mobil ausgeblendet",
+   "position": "Rechte Spalte, bleibt beim Scrollen stehen"
+  },
+  {
+   "nr": "03",
+   "key": "inarticle",
+   "name": "In-Article",
+   "desktop": "728 × 90",
+   "mobil": "300 × 250",
+   "position": "Im Artikel nach dem zweiten Absatz; Startseite 970 × 250"
+  },
+  {
+   "nr": "04",
+   "key": "footer",
+   "name": "Footer",
+   "desktop": "728 × 90",
+   "mobil": "320 × 100",
+   "position": "Über dem Footer, auf allen Seiten"
+  },
+  {
+   "nr": "05",
+   "key": "mobile",
+   "name": "Mobile Sticky",
+   "desktop": "–",
+   "mobil": "320 × 50",
+   "position": "Nur mobil, fixiert am unteren Rand, schließbar"
+  }
+ ],
+ "faq": [
+  {
+   "frage": "Wie reiche ich eine Veranstaltung ein?",
+   "antwort": "Über das Formular „Event einreichen“ weiter unten. Die Redaktion prüft jede Einreichung und veröffentlicht sie in der Regel innerhalb von zwei Werktagen im Kalender. (Beispieltext)"
+  },
+  {
+   "frage": "Was kostet Werbung auf Tamil.de?",
+   "antwort": "Die fünf Werbeplätze werden pro Monat oder pro 1.000 Einblendungen gebucht. Die Mediadaten mit Preisen senden wir auf Anfrage. (Beispieltext)"
+  },
+  {
+   "frage": "Kann ich Artikel oder Fotos einsenden?",
+   "antwort": "Ja. Leserreporter schicken Text und Bild an die Redaktion. Bitte nur eigene Fotos oder solche mit Erlaubnis des Fotografen. (Beispieltext)"
+  }
+ ],
+ "ueber_uns": "Tamil.de ist eine Plattform für deutschsprachige Tamilen in Deutschland, der Schweiz und Österreich. Sie ist die zentrale Anlaufstelle für Nachrichten aus der tamilischen Welt, kulturelle Veranstaltungen, Feste und Feiertage sowie praktische Hinweise zu Bildung, Gesundheit und rechtlichen Fragen.",
+ "autorenbox": {
+  "name": "Redaktion Tamil.de",
+  "text": "Die Redaktion schreibt über die tamilische Community im deutschsprachigen Raum – auf Deutsch, mit Blick auf Deutschland, Österreich und die Schweiz. (Beispieltext: Autorennamen und -profile liegen im Altbestand nicht vor.)"
+ },
+ "staedte": {
+  "Berlin": [
+   52.52,
+   13.405
+  ],
+  "Hamburg": [
+   53.55,
+   9.99
+  ],
+  "Bremen": [
+   53.08,
+   8.8
+  ],
+  "Dortmund": [
+   51.51,
+   7.47
+  ],
+  "Karlsruhe": [
+   49.01,
+   8.4
+  ],
+  "Pforzheim": [
+   48.89,
+   8.7
+  ],
+  "Frankfurt": [
+   50.11,
+   8.68
+  ],
+  "Stuttgart": [
+   48.78,
+   9.18
+  ],
+  "München": [
+   48.14,
+   11.58
+  ],
+  "Köln": [
+   50.94,
+   6.96
+  ],
+  "Düsseldorf": [
+   51.23,
+   6.78
+  ],
+  "Hamm": [
+   51.68,
+   7.82
+  ],
+  "Gummersbach": [
+   51.03,
+   7.56
+  ],
+  "Leverkusen": [
+   51.03,
+   6.98
+  ],
+  "Neuss": [
+   51.2,
+   6.69
+  ],
+  "Zürich": [
+   47.37,
+   8.54
+  ],
+  "Basel": [
+   47.56,
+   7.59
+  ],
+  "Bern": [
+   46.95,
+   7.45
+  ],
+  "Kloten": [
+   47.45,
+   8.58
+  ],
+  "Uzwil": [
+   47.44,
+   9.13
+  ],
+  "Kanton Solothurn": [
+   47.21,
+   7.53
+  ],
+  "Luzern": [
+   47.05,
+   8.31
+  ],
+  "Aarau": [
+   47.39,
+   8.04
+  ],
+  "Wien": [
+   48.21,
+   16.37
+  ],
+  "Graz": [
+   47.07,
+   15.44
+  ],
+  "Linz": [
+   48.31,
+   14.29
+  ],
+  "Essen": [
+   51.46,
+   7.01
+  ],
+  "Nürnberg": [
+   49.45,
+   11.08
+  ],
+  "Hannover": [
+   52.37,
+   9.74
+  ],
+  "Bielefeld": [
+   52.02,
+   8.53
+  ],
+  "Paderborn": [
+   51.72,
+   8.75
+  ],
+  "Leipzig": [
+   51.34,
+   12.37
+  ],
+  "Dresden": [
+   51.05,
+   13.74
+  ],
+  "St. Gallen": [
+   47.42,
+   9.37
+  ],
+  "Winterthur": [
+   47.5,
+   8.72
+  ],
+  "Aargau": [
+   47.39,
+   8.05
+  ],
+  "Salzburg": [
+   47.81,
+   13.05
+  ],
+  "Bonn": [
+   50.73,
+   7.1
+  ],
+  "Braunschweig": [
+   52.27,
+   10.52
+  ],
+  "Chemnitz": [
+   50.83,
+   12.92
+  ],
+  "Erfurt": [
+   50.98,
+   11.03
+  ],
+  "Erlangen": [
+   49.6,
+   11.0
+  ],
+  "Ingolstadt": [
+   48.77,
+   11.42
+  ],
+  "Jena": [
+   50.93,
+   11.59
+  ],
+  "Mainz": [
+   50.0,
+   8.27
+  ],
+  "Oberhausen": [
+   51.47,
+   6.85
+  ],
+  "Rostock": [
+   54.09,
+   12.14
+  ],
+  "Saarbrücken": [
+   49.24,
+   7.0
+  ],
+  "Siegen": [
+   50.87,
+   8.02
+  ],
+  "Villingen-Schwenningen": [
+   48.06,
+   8.49
+  ],
+  "Kiel": [
+   54.32,
+   10.14
+  ],
+  "Münster": [
+   51.96,
+   7.63
+  ],
+  "Augsburg": [
+   48.37,
+   10.9
+  ],
+  "Wiesbaden": [
+   50.08,
+   8.24
+  ],
+  "Freiburg": [
+   47.99,
+   7.85
+  ],
+  "Heidelberg": [
+   49.4,
+   8.69
+  ],
+  "Mannheim": [
+   49.49,
+   8.47
+  ],
+  "Bochum": [
+   51.48,
+   7.22
+  ],
+  "Wuppertal": [
+   51.26,
+   7.15
+  ],
+  "Duisburg": [
+   51.43,
+   6.76
+  ],
+  "Lugano": [
+   46.0,
+   8.95
+  ],
+  "Genf": [
+   46.2,
+   6.14
+  ],
+  "Lausanne": [
+   46.52,
+   6.63
+  ],
+  "Innsbruck": [
+   47.27,
+   11.4
+  ],
+  "Klagenfurt": [
+   46.62,
+   14.31
+  ],
+  "Regensburg": [
+   49.01,
+   12.1
+  ],
+  "Würzburg": [
+   49.79,
+   9.94
+  ],
+  "Kassel": [
+   51.31,
+   9.49
+  ],
+  "Lübeck": [
+   53.87,
+   10.69
+  ],
+  "Magdeburg": [
+   52.13,
+   11.63
+  ],
+  "Potsdam": [
+   52.4,
+   13.06
+  ],
+  "Darmstadt": [
+   49.87,
+   8.65
+  ],
+  "Göttingen": [
+   51.53,
+   9.94
+  ],
+  "Osnabrück": [
+   52.28,
+   8.05
+  ],
+  "Krefeld": [
+   51.33,
+   6.56
+  ],
+  "Mönchengladbach": [
+   51.19,
+   6.44
+  ],
+  "Aachen": [
+   50.78,
+   6.08
+  ],
+  "Ulm": [
+   48.4,
+   9.99
+  ],
+  "Konstanz": [
+   47.66,
+   9.18
+  ],
+  "Schaffhausen": [
+   47.7,
+   8.63
+  ],
+  "Thun": [
+   46.76,
+   7.63
+  ],
+  "Biel": [
+   47.14,
+   7.25
+  ],
+  "Fribourg": [
+   46.8,
+   7.15
+  ],
+  "Chur": [
+   46.85,
+   9.53
+  ],
+  "Zug": [
+   47.17,
+   8.52
+  ],
+  "Baden": [
+   47.47,
+   8.31
+  ]
+ },
+ "radar_news": [
+  {
+   "stadt": "Neuss",
+   "label": "Rathamaarey: Hauptdarsteller aus Neuss",
+   "post": 9697
+  },
+  {
+   "stadt": "Gummersbach",
+   "label": "Mango-Auktion im Sri Kurinchikumaran Tempel",
+   "post": 9556
+  },
+  {
+   "stadt": "Berlin",
+   "label": "IndoGerman Filmweek",
+   "post": 6296
+  },
+  {
+   "stadt": "Aarau",
+   "label": "Kanton Aargau: Tamilisch im Sprachangebot",
+   "post": 7931
+  },
+  {
+   "stadt": "Zürich",
+   "label": "Tamil Dream Night 2026 – Nachbericht (swisstamilmedia)"
+  },
+  {
+   "stadt": "Luzern",
+   "label": "Gedenkfeier in Luzern (swisstamilmedia)"
+  },
+  {
+   "stadt": "Hamm",
+   "label": "Pongal-Vorbereitungen im Tempel (Beispiel)"
+  }
+ ],
+ "production": {
+  "titel": "Tamil.de Production",
+  "tamil": "நிகழ்ச்சிகள்",
+  "claim": "Die Konzertreihe „Live mit dir!“: Tamil.de holt die großen Namen der tamilischen Musik nach Deutschland.",
+  "text": "A.R. Rahman, Ilaiyaraaja, Anirudh und Santhosh Narayanan standen oder stehen mit Tamil.de Production auf deutschen Bühnen. Hier stehen alle Konzerte, Tickets, Saalpläne und Antworten auf die häufigsten Fragen rund um den Konzertbesuch.",
+  "konzerte": [
+   9662,
+   9562,
+   9567,
+   9564
+  ],
+  "service": [
+   9209,
+   9198,
+   9256,
+   9191,
+   9135
+  ],
+  "ticket": {
+   "label": "Santhosh Narayanan live in Germany – Tickets",
+   "url": "https://www.ticketmaster.de/event/santhosh-narayanan-live-in-germany-tickets/939290796",
+   "quelle": "Ticketmaster-Link der alten Seite"
+  }
+ },
+ "tv": {
+  "titel": "Tamil TV",
+  "tamil": "தொலைக்காட்சி",
+  "text": "Die alte tamil.de streamt zwei Sender direkt im Browser. Die Stream-Adressen sind derzeit nicht erreichbar; der Player bleibt vorbereitet, bis der Sender neue Adressen liefert.",
+  "sender": [
+   {
+    "name": "Santhora TV",
+    "status": "Stream wird angefragt",
+    "stream": "http://rtmp.santhoratv.zecast.net/santhoratv/santhoratv/playlist.m3u8"
+   },
+   {
+    "name": "Tamil Business TV",
+    "status": "Stream wird angefragt",
+    "stream": "http://rtmp.santhoratv.zecast.net/tamilbusinesstv/tamilbusinesstv/playlist.m3u8"
+   }
+  ]
+ },
+ "seiten": {
+  "ueberuns": {
+   "datei": "ueber-uns.html",
+   "titel": "Über Tamil.de",
+   "tamil": "எங்களைப் பற்றி"
+  },
+  "datenschutzerklaerung": {
+   "datei": "datenschutz.html",
+   "titel": "Datenschutzerklärung",
+   "tamil": "",
+   "hinweis": "Stand 2016 – vom Auftraggeber zu aktualisieren"
+  },
+  "impressum": {
+   "datei": "impressum.html",
+   "titel": "Impressum",
+   "tamil": "",
+   "hinweis": "Auf der alten Seite leer – Angaben vom Auftraggeber"
+  },
+  "fsk": {
+   "datei": "service-fsk.html",
+   "titel": "Alterseinstufungen und FSK-Kennzeichen",
+   "tamil": "",
+   "kategorie": "kino"
+  },
+  "reporter": {
+   "datei": "",
+   "titel": "Leser-Reporter",
+   "tamil": ""
   },
   "tv": {
-    "titel": "Tamil TV",
-    "tamil": "தொலைக்காட்சி",
-    "text": "Die alte tamil.de streamt zwei Sender direkt im Browser. Die Stream-Adressen sind derzeit nicht erreichbar; der Player bleibt vorbereitet, bis der Sender neue Adressen liefert.",
-    "sender": [
-      {
-        "name": "Santhora TV",
-        "status": "Stream wird angefragt",
-        "stream": "http://rtmp.santhoratv.zecast.net/santhoratv/santhoratv/playlist.m3u8"
-      },
-      {
-        "name": "Tamil Business TV",
-        "status": "Stream wird angefragt",
-        "stream": "http://rtmp.santhoratv.zecast.net/tamilbusinesstv/tamilbusinesstv/playlist.m3u8"
-      }
-    ]
-  },
-  "seiten": {
-    "ueberuns": {
-      "datei": "ueber-uns.html",
-      "titel": "Über Tamil.de",
-      "tamil": "எங்களைப் பற்றி"
-    },
-    "datenschutzerklaerung": {
-      "datei": "datenschutz.html",
-      "titel": "Datenschutzerklärung",
-      "tamil": "",
-      "hinweis": "Stand 2016 – vom Auftraggeber zu aktualisieren"
-    },
-    "impressum": {
-      "datei": "impressum.html",
-      "titel": "Impressum",
-      "tamil": "",
-      "hinweis": "Auf der alten Seite leer – Angaben vom Auftraggeber"
-    },
-    "fsk": {
-      "datei": "service-fsk.html",
-      "titel": "Alterseinstufungen und FSK-Kennzeichen",
-      "tamil": "",
-      "kategorie": "kino"
-    },
-    "reporter": {
-      "datei": "",
-      "titel": "Leser-Reporter",
-      "tamil": ""
-    },
-    "tv": {
-      "datei": "tv.html",
-      "titel": "Tamil TV",
-      "tamil": "தொலைக்காட்சி"
-    }
-  },
-  "seiten_als_beitrag": {
-    "maya": "kino",
-    "2018-das-jahr-der-meilensteine-unser-rueckblick": "community"
+   "datei": "tv.html",
+   "titel": "Tamil TV",
+   "tamil": "தொலைக்காட்சி"
   }
+ },
+ "seiten_als_beitrag": {
+  "maya": "kino",
+  "2018-das-jahr-der-meilensteine-unser-rueckblick": "community"
+ },
+ "laender": [
+  "Deutschland",
+  "Schweiz",
+  "Österreich",
+  "DACH",
+  "Europa"
+ ],
+ "radar_lead": 32,
+ "werbung": {
+  "_hinweis": "Provisorisch: Eigenanzeigen von Tamil.de plus zwei fiktive Musterkunden. Die Banner der alten Seite (Gravity Club, Olyyn) liegen im Export; echte Buchungen laufen im Relaunch über Advanced Ads.",
+  "leaderboard": {
+   "vorlage": "production"
+  },
+  "billboard": {
+   "vorlage": "production-bild",
+   "bild": "img/p9562.jpg"
+  },
+  "inarticle": {
+   "vorlage": "muster",
+   "kunde": "Nila Gold & Diamonds",
+   "zusatz": "Hamm · Zürich",
+   "claim": "Hochzeitsschmuck in 22 Karat.",
+   "sub": "Thali-Ketten, Armreifen, Ohrringe – Beratung auf Tamil und Deutsch",
+   "cta": "Kollektion",
+   "farbe": "gold"
+  },
+  "sidebar": {
+   "vorlage": "muster",
+   "kunde": "Ceylon Reisen",
+   "zusatz": "Frankfurt · Zürich",
+   "claim": "Jaffna ab 649 €.",
+   "sub": "Direktflüge nach Colombo, Transfer bis Jaffna, Hotels in Nallur und Trincomalee",
+   "cta": "Angebote",
+   "farbe": "meer"
+  },
+  "footer": {
+   "vorlage": "whatsapp"
+  },
+  "mobile": {
+   "vorlage": "newsletter-klein"
+  }
+ }
 }

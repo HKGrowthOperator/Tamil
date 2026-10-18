@@ -1,6 +1,6 @@
 {
- "stand": "2026-10-16",
- "shift_days": 708,
+ "stand": "2026-10-18",
+ "shift_days": 710,
  "counts": {
   "news": 312,
   "community": 22,
@@ -16,7 +16,7 @@
    "id": 9711,
    "slug": "kanguva-ein-tamilisches-kino-highlight-ab-14-november-in-deutschland",
    "titel": "Kanguva – Ein tamilisches Kino-Highlight ab 14. November in Deutschland",
-   "datum": "2026-10-15",
+   "datum": "2026-10-17",
    "datum_original": "2024-11-06",
    "kategorien": [
     "news"
@@ -41,13 +41,18 @@
    "lesezeit": 2,
    "chips": [
     "kinostart"
-   ]
+   ],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 9697,
    "slug": "von-deutschland-nach-tamil-nadu-prashath-lokeshwarans-debuet-in-ratham",
    "titel": "Von Deutschland nach Tamil Nadu: Prashath Lokeshwarans Debüt in Rathamaarey",
-   "datum": "2026-09-21",
+   "datum": "2026-09-23",
    "datum_original": "2024-10-13",
    "kategorien": [
     "news"
@@ -70,13 +75,18 @@
    },
    "inhalt_html": "<p>Mit seinem kommenden Film „Rathamaarey“ betretet der aufstrebende Regisseur Dinesha Ravichandran aus Chidambaram (Tamil Nadu) nach über zehn Jahren Erfahrung in der tamilischen Filmindustrie erstmals als Regisseur die große Bühne. Dieses außergewöhnliche Filmprojekt, dessen Titel vom Hit-Song aus Rajinikanths Blockbuster Jailer inspiriert wurde, ist durch eine einzigartige Crowdfunding-Initiative ermöglicht worden, an der sich 13 Produzenten, darunter Eelam- als auch indische Tamilen, beteiligt haben. Unter der Leitung von Sarangan Sundralingam, der die deutsche Produktionsfirma TSS Germany Films leitet, konnte dieses ambitionierte Vorhaben realisiert werden. Es ist ein eindrucksvolles Beispiel dafür, wie engagiert die tamilische Diaspora in Deutschland und Europa ist, um neue künstlerische Projekte zu schaffen und zu fördern.</p>\n\n<p>Der Film thematisiert die Herausforderungen des Lebens und den Kampf vieler Menschen die Hürden des Alltags zu überwinden. Was bedeutet dabei Ehre, was bedeutet Gnade und was sind moralischeWerte – Fragen die durch Geschichten dreier Familien eindrucksvoll vermittelt werden und universelle Resonanz finden. Mit einem fesselnden Drehbuch verspricht der Film ein emotionales Erlebnis zu werden, das das Publikum tief berühren wird.</p>\n\n<p>Besonders hervorzuheben ist die Leistung des in Neuss, Deutschland, lebenden Darstellers Prashath Lokeshwaran (Prash). An der Seite der talentierten Ammu Abirami, bekannt aus Filmen wie Ratsasan und Asuran, spielt er eine zentrale Rolle. Für Prash, der sich in Deutschland bereits als Schauspieler und Model einen Namen gemacht hat, markiert Rathamaarey eine besondere Premiere: Es ist sein Debüt in einem tamilischen Spielfilm. Seine Reise von der deutschen Theaterbühne auf die große Leinwand in Indien zeigt, dass harte Arbeit sich bezahlt macht. Bereits im Alter von neun Jahren begann Prash mit der Schauspielerei und hat seitdem in verschiedenen deutschen TV-Serien mitgewirkt. Nun strebt er danach, sowohl in der deutschen als auch in der tamilischen Filmindustrie Fuß zu fassen. „Das ist erst der Anfang“, sagt er, „der Weg ist noch lang.“</p>\n\n<p>Große Aufmerksamkeit erlangte der Film, als Schauspieler Vijay Sethupathi den Titel Rathamaarey am 14. September über seine Social-Media-Kanäle enthüllte. Ein weiterer großer Moment folgte als Superstar Rajinikanth den Regisseur und die Hauptdarsteller persönlich empfing und ihnen seinen Segen für das Projekt gab. Auch Kamal Haasan begrüßte das Team am Set seines aktuellen Films Thug Life, was die Bedeutung und den Einfluss von Rathamaarey zusätzlich unterstrich. Überraschend erhielt Prash zudem ein besonderes Angebot von Regisseur Mani Ratnam, der ihm einen Auftritt in seinem Film neben Kamal Haasan ermöglichte – ein Moment, der für den jungen Schauspieler eine besondere Ehre darstellt.</p>\n\n<p>Rathamaarey vereint die Vision eines ehrgeizigen Regisseurs, die Hingabe eines talentierten Schauspielers und die Unterstützung einer begeisterten Produktionsgemeinschaft. Mit einer Besetzung, die neben Prashath und Ammu Abirami auch Größen wie Livingston und Vayapuri umfasst, sowie einer tiefgründigen Story, verspricht der Film nicht nur ein emotionales Erlebnis, sondern auch eine Reflexion über das Leben und die Gesellschaft um uns herum zu werden. Dieser Meilenstein markiert nicht nur den Beginn einer vielversprechenden Karriere für Prash, sondern zeigt auch die zunehmende Vernetzung der Filmwelt in Indien mit der tamilischen Diaspora.</p>\n\n<figure>\n<figure><figure><img width=\"864\" height=\"774\" src=\"img/p9697-1.jpg\" alt=\"\"></figure></figure>\n</figure>\n\n<figure>\n<figure><figure><img width=\"586\" height=\"1024\" src=\"img/p9697-2.jpg\" alt=\"\"></figure></figure>\n</figure>\n\n<p>Text: @Pras_2309</p>",
    "lesezeit": 3,
-   "chips": []
+   "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 9688,
    "slug": "ist-sri-lanka-bereit-fuer-einen-neuanfang",
    "titel": "Ist Sri Lanka bereit für einen Neuanfang?",
-   "datum": "2026-08-30",
+   "datum": "2026-09-01",
    "datum_original": "2024-09-21",
    "kategorien": [
     "news"
@@ -99,13 +109,18 @@
    },
    "inhalt_html": "<p><strong>Sri Lanka steht an einem Wendepunkt: Wird es bei der Präsidentenwahl einen wirklichen politischen Wechsel geben? Die Wirtschaftslage hat sich unter dem Interimspräsidenten leicht verbessert, doch nicht alle sind überzeugt.</strong><br><br>Hunderte Menschen haben sich am späten Mittwochabend auf dem Platz in einem Wohnviertel in Colombo versammelt und schauen zur Bühne. Einige halten Plakate mit ihrem Kandidaten in die Luft: Ranil Wickremesinghe. Der 75-Jährige war viele Jahre Mitglied der liberal-konservativen United National Party. Nach den Protesten vor zwei Jahren hat er Sri Lanka bis jetzt als Interimspräsident geführt. Nun tritt Wickremesinghe als unabhängiger Kandidat an.</p>\n\n<p>Bis Mittwoch um Mitternacht durften die Wahlveranstaltungen noch laufen. Auch Isuru Hewage war es wichtig, an diesem Abend noch einmal seine Unterstützung zu zeigen. Der 31-Jährige hat studiert, doch er findet keine Arbeit und hält sich mit Nachhilfeunterricht über Wasser.</p>\n\n<p>Er hofft, dass Wickremesinghe die Wahl gewinnt: &#8222;Wir müssen eine Führungspersönlichkeit finden, die die derzeitigen wirtschaftlichen Probleme des Landes lösen kann.&#8220;<br><br></p>\n\n<h2>Proteste vor zwei Jahren</h2>\n\n<p>Er selbst ist vor zwei Jahren zusammen mit Tausenden Menschen auf die Straße gegangen. Sri Lanka hatte Jahre von Misswirtschaft hinter sich, war hoch verschuldet und stand kurz vor dem wirtschaftlichen Kollaps. Die Inflation schoss auf bis zu 70 Prozent in die Höhe.</p>\n\n<p>Viele mussten ihr Erspartes aufbrauchen und ihren Schmuck verkaufen, um über die Runden zu kommen. Lebensmittel waren plötzlich extrem teuer, Menschen mussten tagelang für Benzin und Gas zum Kochen anstehen. Medikamente wurden knapp. Es kam ständig zu Stromausfällen.</p>\n\n<p>Am Ende stürmten die Demonstranten die Residenz des damaligen Präsidenten Gotabaya Rajapaksa und sprangen in den Pool &#8211; die Bilder gingen um die Welt. Der Präsident floh ins Exil.</p>\n\n<h2>Internationales&nbsp;Rettungspaket</h2>\n\n<p>Inzwischen hat sich die wirtschaftliche Lage etwas verbessert &#8211; ermöglicht durch ein Hilfspaket des Internationalen Währungsfonds (IWF) in Höhe von knapp drei Milliarden US-Dollar. Die Preise sind zwar gesunken, bleiben aber immer noch hoch. Wickremesinghe habe die richtigen Maßnahmen getroffen, meint Isuru Hewage: &#8222;In den letzten zwei Jahren blieb die Lage stabil. Das wurde durch das richtige Management erreicht, dadurch hat sich auch mein Leben verbessert.&#8220;</p>",
    "lesezeit": 2,
-   "chips": []
+   "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 9678,
    "slug": "meet-tamil-singles-ein-neues-dating-event-fuer-die-tamilische-gemeinsc",
    "titel": "Meet Tamil Singles – Ein neues Dating-Event für die tamilische Gemeinschaft",
-   "datum": "2026-08-22",
+   "datum": "2026-08-24",
    "datum_original": "2024-09-13",
    "kategorien": [
     "news"
@@ -130,13 +145,18 @@
    "lesezeit": 1,
    "chips": [
     "musik"
-   ]
+   ],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 9674,
    "slug": "tamil-nadu-ein-mosaik-aus-kultur-kulturerbe-und-natuerlicher-schoenhei",
    "titel": "Tamil Nadu: Ein Mosaik aus Kultur, Kulturerbe und natürlicher Schönheit",
-   "datum": "2026-08-22",
+   "datum": "2026-08-24",
    "datum_original": "2024-09-13",
    "kategorien": [
     "news",
@@ -163,13 +183,18 @@
    "inhalt_html": "<p>Tamil Nadu, ein Bundesstaat im&nbsp;<a href=\"https://www.indienaktuell.de/bundesstaaten-von-indien/suedindien\">Süden Indiens</a>, ist ein Reiseziel, das Besucher mit seiner tief verwurzelten Geschichte, reichen Kultur und atemberaubenden natürlichen Landschaften fesselt. Während der kürzlich stattgefundenen ITB Berlin, einer führenden Veranstaltung für die globale Reisebranche, hatte unser Team bei INDIEN aktuell die Gelegenheit, die vielfältigen Angebote von Tamil Nadu zu erkunden. In diesem Jahr bestätigte Tamil Nadu sein Engagement für den globalen Tourismussektor, wobei insbesondere seine Anziehungskraft für kulturell und historisch interessierte Reisende betont wurde.</p>\n\n<p>Ein Höhepunkt unseres Besuchs war das offene Gespräch mit Dr. K.Manivasan IAS, dem Staatssekretär für Tourismus und Kultur. Dieses Gespräch bot tiefgreifende Einblicke in die Tourismusstrategien des Bundesstaates, seinen kulturellen Reichtum und die konzertierten Bemühungen, Tamil Nadu auf internationaler Ebene zu fördern. Der Sekretär hob die einzigartigen Aspekte hervor, die&nbsp;<a href=\"https://www.indienaktuell.de/bundesstaaten-von-indien/suedindien/tamil-nadu\">Tamil Nadu</a>&nbsp;zu einem überzeugenden Ziel für den weiterentwickelten Reisenden machen, insbesondere für diejenigen, die an Kultur und Kulturerbe interessiert sind.</p>\n\n<p>Das Gespräch unterstrich den Status von Tamil Nadu als Land alter Zivilisationen und lebendiger Traditionen, Heimat der ältesten Sprache der Welt, Tamil, die durch zahlreiche archäologische Funde bestätigt wurde. Mit einer atemberaubenden Vielfalt von über 700 Tempeln, von denen einige weltweite Berühmtheit genießen, während viele noch unentdeckte Juwelen sind, bietet Tamil Nadu eine unvergleichliche spirituelle und architektonische Reise.</p>\n\n<p>Die Sicherheit der Region, insbesondere hervorgehoben durch ihre hohen Alphabetisierungsraten und vor allem bei Frauen, wurde als wesentlicher Faktor für ihren Status als eines der sichersten Reiseziele in Indien diskutiert. Dieser Aspekt gewährleistet eine willkommene und sichere Umgebung für alle Touristen.</p>\n\n<p>Darüber hinaus war das einzigartige kulturelle Erbe von Tamil Nadu ein wichtiges Gesprächsthema, wobei insbesondere auf&nbsp;<a href=\"https://www.tamilnadutourism.tn.gov.in/events/jallikattu-bull-festival\">Jallikattu</a>&nbsp;eingegangen wurde, die traditionelle Stierkampfveranstaltung, die den Stolz und die Widerstandsfähigkeit der tamilischen Kultur symbolisiert. Diese Veranstaltung, unter anderem, zeigt das reiche Mosaik an Festivals und Traditionen, die der Bundesstaat feiert.</p>\n\n<h2>Wiege der Zivilisation</h2>\n\n<p>Tamil Nadu steht als Zeugnis für eine der ältesten noch lebenden Zivilisationen der Welt, eine Tatsache, die in jedem Aspekt des Lebens hier zum Ausdruck kommt, von seiner Sprache bis zu seinen architektonischen Wundern. Die Geschichte des Bundesstaates spiegelt sich in den Farben seiner majestätischen Tempel wider, von denen einige weltberühmt sind, während über 700 andere still darauf warten, dass Entdecker ihre Geschichten aufdecken. Tamil, das als älteste Sprache der Welt gilt, bildet das Rückgrat des reichen literarischen und kulturellen Erbes von Tamil Nadu. Dieser sprachliche Stolz wird in den vielen archäologischen Stätten widergespiegelt, die den Bundesstaat durchziehen, von den Küstenruinen von Adichanallur, die bis ins Jahr 950 v. Chr. zurückreichen, bis hin zu den geschäftigen antiken Handelszentren wie Keezhadi.</p>\n\n<h2>Die Tempel: Das spirituelle Herzstück</h2>\n\n<p>Das spirituelle Wesen von Tamil Nadu wird am besten durch seine Tempel erlebt, die Epitome der dravidischen Architektur und lebende Symbole der spirituellen Hingabe des Bundesstaates. Der Meenakshi Amman Tempel in Madurai, mit seinen majestätischen Gopurams und den detaillierten Skulpturen, und der&nbsp;<a href=\"https://www.tamilnadutourism.tn.gov.in/destinations/brihadeeswara-temple\">Brihadeeswarar Tempel</a>&nbsp;in Thanjavur, ein UNESCO-Weltkulturerbe, sind nicht nur Orte der Anbetung, sondern auch Repositorien von Geschichte und Kunst. Die Hingabe des Bundesstaates spiegelt sich auch in seinen lebhaften Festivals wie Pongal und Jallikattu wider, die die reichen Traditionen und den Gemeinschaftsgeist des tamilischen Volkes zeigen.</p>\n\n<h2>Kulturelle Lebendigkeit und kulinarische Genüsse</h2>\n\n<p>Das kulturelle Mosaik von Tamil Nadu ist mit Fäden klassischer Künste, Handwerkskünste und einer kulinarischen Tradition verwoben, die sich über Jahrhunderte erstreckt. Bharatanatyam, eine der ältesten klassischen Tanzformen, stammt aus dieser Region und fasziniert das Publikum weiterhin mit seiner Grazie und Erzählkunst. Die Handwerkskünste des Bundesstaates, von den exquisiten Tanjore-Gemälden bis hin zu den detaillierten Bronzeskulpturen von Swamimalai, spiegeln die künstlerische Meisterschaft seines Volkes wider. Kulinarische Enthusiasten können sich an einer Vielzahl von Aromen erfreuen, von der scharfen Chettinad-Küche bis hin zu den süßen Leckereien von Tirunelveli Halwa, jedes Gericht erzählt eine Geschichte regionaler Einflüsse und kulinarischer Innovation.</p>\n\n<h2>Die Umarmung der Moderne mit Tradition</h2>\n\n<p>Während Tamil Nadu tief in der Tradition verwurzelt ist, scheut es sich nicht, die Moderne anzunehmen. Der Bundesstaat steht an der Spitze technologischer und bildungspolitischer Fortschritte in Indien und trägt maßgeblich zu den IT- und Automobilindustrien des Landes bei. Diese Mischung aus altem Erbe und moderner Dynamik macht Tamil Nadu zu einem einzigartigen Reiseziel, das für jeden Reisetyp etwas zu bieten hat.</p>\n\n<h2>Ein Land unendlicher Geschichten</h2>\n\n<p>Wie auf der ITB Berlin präsentiert und im engagierten Gespräch mit dem Staatssekretär deutlich wurde, ist Tamil Nadu nicht nur ein Reiseziel, sondern ein Erlebnis, das einen tiefen Einblick in Indiens kulturelle, spirituelle und natürliche Wunder bietet. Mit seiner unübertroffenen Vielfalt, von seinen antiken Tempeln und reichen Festivals bis hin zu seiner atemberaubenden natürlichen Schönheit und seinen gastfreundlichen Menschen, lädt Tamil Nadu Reisende ein, seine vielen Geschichten zu erkunden und ihre eigenen zu schreiben. Ob es darum geht, die verborgenen Juwelen seiner vielen Tempel zu entdecken, sich an der Schönheit seiner Landschaften zu erfreuen oder sich in sein reiches kulturelles Mosaik zu vertiefen, Tamil Nadu verspricht eine unvergessliche Reise für den weiterentwickelten Reisenden, der Kultur und Kulturerbe sucht.</p>\n\n<p>Für INDIEN aktuell war der Besuch der ITB Berlin und die Interaktion mit den Vertretern des Tourismus von Tamil Nadu sehr aufschlussreich und hat die vielseitige Anziehungskraft des Bundesstaates aufgedeckt. Es ist klar, dass Tamil Nadu, mit seiner Mischung aus Moderne und Tradition, Sicherheit und Gastfreundschaft, bereit ist, Reisende aus der ganzen Welt willkommen zu heißen, um seine zeitlosen Geschichten zu erleben. (NH)</p>",
    "lesezeit": 5,
    "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de",
    "kultur_fallback": true
   },
   {
    "id": 9670,
    "slug": "indien-viel-interesse-fuer-tamilische-wurzeln-von-kamala-harris",
    "titel": "Indien: Viel Interesse für tamilische Wurzeln von Kamala Harris",
-   "datum": "2026-08-22",
+   "datum": "2026-08-24",
    "datum_original": "2024-09-13",
    "kategorien": [
     "news"
@@ -194,13 +219,18 @@
    },
    "inhalt_html": "<p>Die südindischen Wurzeln der US-Politikerin Kamala Harris stoßen in Indien auf viel Interesse, seit klar ist, dass Harris wohl die neue Präsidentschaftskandidatin der Demokraten wird. Das berichtet die Agentur Asianews. Ein indischer Jesuit hebt besonders das langjährige Engagement von Kamala Harris&#8216; Familie gegen Kasten- und ethnische Diskriminierung hervor.</p>\n\n<p>Die 2009 verstorbene Mutter von Kamala Harris, Shyamala Gopalan, stammte aus dem südostindischen Bundesstaat Tamil Nadu, studierte ab 1958 in den USA und wurde dort Krebsforscherin. Sie gehörte einer Brahmanenfamilie und damit der höchsten der vier Hauptkasten Indiens an, sei aber eine fortschrittliche Frau gewesen, „die Vorurteile über Kaste und Hautfarbe ablehnte“, zitiert Asianews den in Chennai wirkenden Jesuiten A.J. Bosco, der sich für die Rechte der niedersten Kaste der Dalit einsetzt. „Trotz ihrer hinduistischen Herkunft war sie aufgeschlossen genug, das Christentum zu akzeptieren und ihre Tochter Kamala in die Kirche zu begleiten“, hob der tamilische Ordensmann hervor.</p>\n\n<p>Shyamala Gopalan sorgte dafür, dass ihre Kinder sowohl die baptistische Kirche besuchten als auch über den Hinduismus Bescheid wussten und stolz auf ihre Herkunft waren. „Unsere klassischen indischen Namen erinnerten an unser Erbe, und wir wurden mit einem starken Bewusstsein und einer Wertschätzung für die indische Kultur erzogen“, schrieb die derzeitige US-Vizepräsidentin, deren Vater aus Jamaika stammt, in ihrer Autobiografie.</p>\n\n<h2>Großvater weckte Interesse für Demokratie</h2>\n\n<p>Ebenfalls breit erörtert wird in Indien Asianews zufolge das Treffen von Kamala Harris mit Premierminister Narendra Modi im vergangenen Jahr. In der Begegnung habe die US-Vizepräsidentin dem indischen Regierungschef anvertraut, sie habe ihre Leidenschaft für Demokratie von ihrem Großvater in Chennai geerbt. „Ich erinnere mich daran, wie sie darüber sprachen, wie wichtig es ist, die Korruption zu bekämpfen und für Gleichberechtigung zu kämpfen, unabhängig vom Glauben oder der Kaste“, sagte Harris vor Modi. Ihr Großvater habe ihr nicht nur beigebracht, „was es bedeutet, eine Demokratie zu haben, sondern auch, eine Demokratie zu erhalten“. Dies habe ihr Interesse am öffentlichen Dienst geweckt.</p>\n\n<p>Der Großvater, P.V. Gopalan, war ein indischer Beamter, der sich im Ruhestand für die Rehabilitation von Flüchtlingen aus Ostpakistan, dem heutigen Bangladesch, engagierte. „Ich erinnere mich, wie sie über die Unabhängigkeitskämpfer und die Gründungshelden der Nation sowie über die Bedeutung des Kampfes gegen Korruption und für Gleichheit sprachen, unabhängig von Glaube oder Kaste“, wird Harris zitiert.</p>\n\n<p>Ebenfalls indischer Herkunft ist Usha Chilukuri Vance, die Ehefrau des „Running Mate“ von Donald Trump, J.D. Vance. Sie stammt aus dem Bundesstaat Andhra Pradesh, der nördlich an Tamil Nadu grenzt. Asianews zitiert den Bischof von Vijayawada, Joseph Raja Rao, mit den Worten, es sei „eine große Ehre zu wissen, dass eine Person aus Andhra Pradesh die Ehefrau des Kandidaten für die Vizepräsidentschaft der Vereinigten Staaten ist“.</p>\n\n<h2>4,4 Millionen Menschen in USA haben rein indische Wurzeln</h2>\n\n<p>Laut der letzten US-Volkszählung leben in den Vereinigten Staaten etwa 4,4 Millionen Menschen ausschließlich indischer Herkunft, eine Gruppe, die zwischen 2010 und 2020 um 50 Prozent gewachsen ist. Unter den asiatischen Amerikanern sind jene mit indischen Wurzeln die zweitgrößte Gruppe nach jenen mit chinesischen Wurzeln, die 5,2 Millionen zählen.<br><br>Quelle: https://www.vaticannews.va/de/welt/news/2024-07/indien-viel-interesse-fur-tamilische-wurzeln-von-kamala-harris.html</p>",
    "lesezeit": 3,
-   "chips": []
+   "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 9662,
    "slug": "spektakulaeres-konzert-2025-santhosh-narayanan-und-dhee-in-nrw",
    "titel": "Spektakuläres Konzert 2025: Santhosh Narayanan und Dhee in NRW",
-   "datum": "2026-08-04",
+   "datum": "2026-08-06",
    "datum_original": "2024-08-26",
    "kategorien": [
     "kino",
@@ -226,13 +256,18 @@
    "lesezeit": 1,
    "chips": [
     "konzert"
-   ]
+   ],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 9655,
    "slug": "sri-lanka-schafft-visum-fuer-deutsche-ab",
    "titel": "Sri Lanka schafft Visum für Deutsche ab",
-   "datum": "2026-08-04",
+   "datum": "2026-08-06",
    "datum_original": "2024-08-26",
    "kategorien": [
     "news"
@@ -255,13 +290,18 @@
    },
    "inhalt_html": "<p>Tolle Neuigkeiten: Das schöne Sri Lanka verzichtet bald für 35 Länder auf die Visumpflicht, auch Deutschland ist dabei. Ziel dieser Entscheidung ist die Wiederbelebung des Tourismussektors und die Unterstützung der Wirtschaft.<br><br>Die srilankische Regierung hat die visafreie Einreise für 35 Länder genehmigt, darunter u.a.:</p>\n\n<ul>\n<li><strong>Deutschland</strong></li>\n\n<li>Großbritannien</li>\n\n<li>Polen</li>\n\n<li>Niederlande</li>\n\n<li>Belgien</li>\n\n<li>Spanien</li>\n\n<li>Australien</li>\n\n<li>Dänemark</li>\n\n<li>Kasachstan</li>\n\n<li>Saudi-Arabien</li>\n</ul>\n\n<ul>\n<li>Vereinigte Arabische Emirate</li>\n\n<li>Nepal</li>\n\n<li>Indonesien</li>\n\n<li>Thailand</li>\n\n<li>Malaysia</li>\n\n<li>Japan</li>\n\n<li>Frankreich</li>\n\n<li>China</li>\n\n<li>Indien</li>\n\n<li>Russland</li>\n</ul>\n\n<h3>Sri Lanka ab 1. Oktober 2024 visumfrei</h3>\n\n<p>Reisende erhalten im Rahmen eines sechsmonatigen Pilotprogramms, das am 1. Oktober startet, eine visafreie Einreise von 30 Tagen, sagte Regierungssprecher und Verkehrsminister Bandula Gunawardana.</p>\n\n<p>„Ziel der Regierung ist es, Sri Lanka in ein visumfreies Land wie Singapur, Thailand und Vietnam zu verwandeln, um die Vorteile der schnell wachsenden Tourismusbranche zu nutzen“, sagte Gunawardana während der wöchentlichen Pressekonferenz der Regierung.</p>\n\n<p>Das Land mit 22 Millionen Einwohnenden, berühmt für seine Strände, antiken Tempel und aromatischen Tee, erlebte einen Zusammenbruch der Tourismusbranche, zunächst aufgrund der COVID-19-Pandemie und dann durch eine große Finanzkrise im Jahr 2022, die zu Massenprotesten und Engpässen von Grundprodukten wie Treibstoff führte.</p>\n\n<p>Allerdings erholt sich die Tourismusbranche Sri Lankas seit letztem Jahr: bis Mitte August verzeichnete das Land zum ersten Mal seit 2019 fast 2 Millionen Ankünfte. Das Jahr soll voraussichtlich mit 2,3 Millionen Besuchenden abgeschlossen werden.</p>",
    "lesezeit": 2,
-   "chips": []
+   "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 9650,
    "slug": "maya-neelakantan-ich-vertrete-ganz-indien-auf-der-buehne-von-americas",
    "titel": "Maya Neelakantan: Ich vertrete ganz Indien auf der Bühne von America’s Got Talent",
-   "datum": "2026-06-27",
+   "datum": "2026-06-29",
    "datum_original": "2024-07-19",
    "kategorien": [
     "news"
@@ -284,13 +324,18 @@
    },
    "inhalt_html": "<p>Eine 10-jährige Gitarristin aus Chennai, Tamil Nadu, brachte die Juroren von America’s Got Talent zum Staunen. Maya Neelakantan trat bei America’s Got Talent auf und erhielt eine Standing Ovation. Sie begann ihre Performance mit einer Carnatic-Raga, gefolgt von einer Interpretation von Papa Roachs’ “Last Resort”.</p>\n\n<p>Inspiriert von ihrem Vater, begann Maya im Alter von 6 Jahren Gitarre zu lernen. In den letzten zwei Jahren hat Maya Carnatic-Musik vom wegweisenden Musiker Ramaswamy Prasanna, auch bekannt als Guitar Prasanna, gelernt.</p>\n\n<p>“Mein größter Traum ist es, meine eigene Musik zu kreieren”, sagte Neelakantan den AGT-Zuschauern hinter der Bühne. “Also werde ich einfach hingehen und es spielen.”</p>\n\n<p>Gekleidet in eine Ghagra gewann die junge Rock-Göttin, ein von Simon Cowell verliehener Name, die Herzen der Juroren und Millionen von Zuschauern weltweit durch die internationale Show.</p>\n\n<blockquote><div> <a href=\"https://www.instagram.com/reel/C9m4W9EtJn7/?utm_source=ig_embed&amp;utm_campaign=loading\">  <div> <div>Sieh dir diesen Beitrag auf Instagram an</div></div>  </a><p><a href=\"https://www.instagram.com/reel/C9m4W9EtJn7/?utm_source=ig_embed&amp;utm_campaign=loading\">Ein Beitrag geteilt von Tamil.de (@tamil_de)</a></p></div></blockquote>",
    "lesezeit": 1,
-   "chips": []
+   "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 9642,
    "slug": "parai-das-urspruengliche-perkussionsinstrument-und-musik-zur-vereinigu",
    "titel": "Parai: Das ursprüngliche Musik zur Vereinigung der tamilischen Gemeinschaft",
-   "datum": "2026-06-26",
+   "datum": "2026-06-28",
    "datum_original": "2024-07-18",
    "kategorien": [
     "news",
@@ -317,13 +362,18 @@
    "chips": [
     "musik"
    ],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de",
    "kultur_fallback": true
   },
   {
    "id": 9635,
    "slug": "vijay-unterstuetzt-sri-lanka-tamilen",
    "titel": "Vijay unterstützt Sri-Lanka-Tamilen",
-   "datum": "2026-06-25",
+   "datum": "2026-06-27",
    "datum_original": "2024-07-17",
    "kategorien": [
     "news"
@@ -346,13 +396,18 @@
    },
    "inhalt_html": "<p>Der Schauspieler aus Tamil Nadu, Vijay, hat eine bedeutende Geschichte der Unterstützung des Befreiungskampfes von Tamil Eelam. Sein Aktivismus in diesem Bereich war besonders bemerkenswert, insbesondere während wichtiger Momente des Konflikts. Im November 2008, als die Offensive der sri-lankischen Regierung ihren Höhepunkt im Mullivaikkal-Genozid erreichte, nahm Vijay an einem eintägigen Hungerstreik teil. Dies war eine eindringliche Geste, um Solidarität mit der leidenden Bevölkerung von Tamil Eelam zu zeigen.</p>\n\n<p>Während des Hungerstreiks sprach Vijay zu den Anwesenden und betonte die schlimme Lage der Eelam-Tamilen. Er beschrieb eindringlich ihren Mangel an Grundbedürfnissen wie Nahrung, Kleidung und Unterkunft. Er stellte den Hungerstreik als symbolische Handlung dar und ermutigte seine Unterstützer und Fans, einen Tag ohne Nahrung auszukommen, um sich mit den Leidenden zu solidarisieren.</p>\n\n<p>Vijay forderte seine Fans auch auf, direkte Maßnahmen zu ergreifen und Briefe an den indischen Premierminister zu schreiben. Er appellierte an sie, ihren Wunsch nach einem Ende des Krieges und der Schaffung eines sicheren Raums für das tamilische Volk auszudrücken. Er war optimistisch, dass diese kollektive Aktion Wirkung zeigen würde, in der Hoffnung, dass innerhalb von 24 Stunden eine große Anzahl von Briefen – mit einem Ziel von 1 Crore (10 Millionen) – an den Premierminister gesendet würde, um den Ruf nach Frieden und Sicherheit für die Eelam-Tamilen zu verstärken.</p>\n\n<p>Sein Appell richtete sich nicht nur an seine unmittelbare Fangemeinde; er sprach alle Menschen an, die sich mit dem tamilischen Erbe identifizieren, und betonte eine kollektive Verantwortung, die Sache von Tamil Eelam zu unterstützen. Vijays Engagement in solchem Aktivismus unterstreicht nicht nur sein Engagement für die tamilische Identität und ihre Kämpfe, sondern zeigt auch seine Bemühungen, seinen Einfluss für politische und humanitäre Zwecke zu nutzen.</p>\n\n<p>Dieser historische Kontext ist besonders relevant, da Vijay nun die Gründung einer neuen politischen Partei in Tamil Nadu ankündigt. Seine fest etablierte Haltung zu tamilischen Themen und sein aktives Engagement für die Sache von Tamil Eelam könnten seine politische Plattform und die von ihm vertretenen Politiken in der Zukunft beeinflussen.</p>",
    "lesezeit": 2,
-   "chips": []
+   "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 9631,
    "slug": "uma-kumaran-londons-erste-tamilische-abgeordnete",
    "titel": "Uma Kumaran, Londons erste tamilische Abgeordnete",
-   "datum": "2026-06-25",
+   "datum": "2026-06-27",
    "datum_original": "2024-07-17",
    "kategorien": [
     "news"
@@ -375,13 +430,18 @@
    },
    "inhalt_html": "<p>In einem Erdrutschsieg für die Labour Party wurde Uma Kumaran zur Abgeordneten für Stratford und Bow gewählt, nachdem die Generalwahl am Donnerstag, den 4. Juli 2024, stattfand.</p>\n\n<p>Die britische Tamilin, die sri-lankisch-tamilischer Herkunft ist, ist die erste tamilische Parlamentarierin in London. Geboren in Ost-London, kam Uma&#8217;s Familie als Flüchtlinge nach Großbritannien, um dem Krieg und der Verfolgung in Sri Lanka zu entkommen. Sie studierte an der Queen Mary University und hat in Stratford, Maryland und Bow gelebt.</p>\n\n<p>Ihre frühen Jahre verbrachte sie in Harrow, wo sie die Bentley Wood High School und das St. Dominic’s Sixth Form College besuchte. Uma kandidierte zweimal in Harrow, erstmals 2010 für den Pinner South Ward, wo sie 1535 Stimmen erhielt. Ein weiterer Versuch folgte 2015 in Harrow East, einer Heimat vieler tamilischer und südasiatischer Gemeinschaften, wo sie 19.911 Stimmen erhielt.</p>\n\n<p>Den Großteil ihres Arbeitslebens verbrachte sie im öffentlichen Dienst, vom NHS bis hin zur Arbeit mit den Vereinten Nationen und globalen Befürwortern im Kampf gegen den Klimawandel. Sie wird weiterhin dem Bürgermeister von London helfen, lebensverändernde Politiken wie kostenlose Schulmahlzeiten und neue Sozialwohnungen umzusetzen. Zuletzt war sie als Direktorin für diplomatische Beziehungen für eine globale Klimaschutzorganisation tätig.</p>\n\n<p>Uma Kumaran von der Labour Party erhielt insgesamt 19.145 Stimmen, gefolgt von Joe Hudson-small von der Green Party, der insgesamt 7.511 Stimmen erhielt.</p>\n\n<p>Halima Khan von der Workers Party erhielt 3.274 Stimmen, Kane Blackwell von der Conservative Party erhielt 3.114 Stimmen; Nizam Ali, unabhängig, erhielt 2.380 Stimmen; Jeff Evans von Reform UK erhielt 2.093 Stimmen; Janey Little von den Liberal Democrats erhielt 1.926 Stimmen; Fiona Lali, unabhängig, erhielt 1.791 Stimmen; Omar Faruk, unabhängig, erhielt 1.826 Stimmen; Steve Hedley, unabhängig, erhielt 375 Stimmen. Es gab 287 ungültige Stimmzettel. Die Wahlbeteiligung im Wahlkreis betrug 54,18 %.</p>",
    "lesezeit": 2,
-   "chips": []
+   "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 9605,
    "slug": "asos-erweitert-sortiment-um-traditionelle-saris",
    "titel": "ASOS erweitert Sortiment um traditionelle Saris",
-   "datum": "2026-06-24",
+   "datum": "2026-06-26",
    "datum_original": "2024-07-16",
    "kategorien": [
     "news"
@@ -404,13 +464,18 @@
    },
    "inhalt_html": "<p>ASOS, einer der führenden Online-Händler für Mode und Kosmetik, freut sich, die Einführung einer neuen Produktlinie bekannt zu geben: Ab sofort sind traditionelle Saris in unserem Sortiment erhältlich. Diese Erweiterung spiegelt unser kontinuierliches Bestreben wider, unseren Kunden eine vielfältige und umfassende Auswahl an Modeartikeln aus aller Welt zu bieten.</p>\n\n<p>Die neuen Saris zeichnen sich durch ihre hohe Qualität, vielfältige Designs und traditionelle Handwerkskunst aus. Mit dieser Kollektion möchten wir die Schönheit und kulturelle Bedeutung des Sari zelebrieren und einem breiten Publikum zugänglich machen.</p>\n\n<p>ASOS plant, das Sortiment an Saris kontinuierlich zu erweitern und weitere traditionelle sowie moderne Designs anzubieten, um den unterschiedlichen Geschmäckern und Bedürfnissen unserer internationalen Kundschaft gerecht zu werden.</p>\n\n<p>Besuchen Sie unsere Webseite unter [www.asos.com] und entdecken Sie die neue Sari-Kollektion sowie viele weitere exklusive Mode-Highlights.</p>\n\n<figure><figure><img width=\"513\" height=\"655\" src=\"img/p9605-1.jpg\" alt=\"\"></figure></figure>\n\n<p><strong>Über ASOS:</strong> ASOS ist ein führender Online-Händler für Mode und Kosmetik mit Sitz in London. Seit seiner Gründung im Jahr 2000 hat sich das Unternehmen als eine der beliebtesten Marken für junge Erwachsene etabliert, die Wert auf stilvolle und trendbewusste Kleidung legen. ASOS bietet eine breite Palette an Produkten, darunter Bekleidung, Schuhe, Accessoires und Schönheitsprodukte, und liefert weltweit.</p>",
    "lesezeit": 1,
-   "chips": []
+   "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 9600,
    "slug": "kottu-roti",
    "titel": "Kottu Roti",
-   "datum": "2026-06-24",
+   "datum": "2026-06-26",
    "datum_original": "2024-07-16",
    "kategorien": [
     "kueche"
@@ -433,13 +498,18 @@
    },
    "inhalt_html": "<p><strong>Kottu Roti </strong>ist ein Klassiker des sri-lankischen Street Foods. Die Übersetzung des tamilischen Begriffs lautet „gehacktes Roti“, wobei Roti wiederum ein weitverbreitetes ungesäuertes Fladenbrot bezeichnet. Bei Kottu Roti handelt es sich also um zerkleinertes Fladenbrot, das zusammen mit Gemüse, manchmal auch Fleisch oder Geflügel, Eiern und Gewürzen (insbesondere Chili) zu einem schmackhaften Salat verarbeitet wird. Absolut köstlich, finden unsere Reiseexperten für den Inselstaat im Indischen Ozean. REISEN MIT SINNEN verrät Ihnen das Rezept für den Street Food Klassiker aus Sri Lanka Kottu Roti. Probieren Sie es aus und versetzen Sie Ihre Geschmacksnerven auf die Tropeninsel.</p>",
    "lesezeit": 1,
-   "chips": []
+   "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 9597,
    "slug": "payasam",
    "titel": "Payasam",
-   "datum": "2026-06-24",
+   "datum": "2026-06-26",
    "datum_original": "2024-07-16",
    "kategorien": [
     "kueche"
@@ -462,13 +532,18 @@
    },
    "inhalt_html": "<p>Dies ist ein traditionelles Gericht, das als Nachspeise serviert wird. Es ist ein süßes Gericht, das einem feuchten Pudding ähnelt. In anderen Teilen Südindiens wird es oft auch Kheer genannt. Die Hauptzutaten sind Ghee, Reis, Zucker, Milch, Kondensmilch, Kardamom und Nüsse.</p>",
    "lesezeit": 1,
-   "chips": []
+   "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 9594,
    "slug": "biryani",
    "titel": "Biryani",
-   "datum": "2026-06-24",
+   "datum": "2026-06-26",
    "datum_original": "2024-07-16",
    "kategorien": [
     "kueche"
@@ -491,13 +566,18 @@
    },
    "inhalt_html": "<p>Es gibt zwar mehrere Biryanis, die von den Tamilen geliebt werden, aber eines dieser Gerichte ist das Aloo Biryani. Bei diesem köstlichen Gericht werden die Kartoffeln mariniert und nehmen den reichen Geschmack der Gewürze auf. Oft wird es mit Basmatireis und Kräutern zubereitet. Südindien ist berühmt für eine Vielzahl von vegetarischen und nicht-vegetarischen Biryanis. Aloo biryani zum Beispiel ist ein beliebtes Gericht der Tamilen.</p>",
    "lesezeit": 1,
-   "chips": []
+   "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 9591,
    "slug": "dosa",
    "titel": "Dosa",
-   "datum": "2026-06-24",
+   "datum": "2026-06-26",
    "datum_original": "2024-07-16",
    "kategorien": [
     "kueche"
@@ -520,13 +600,18 @@
    },
    "inhalt_html": "<p>Dosa ist ein größtenteils knuspriges Fladenbrot, das aus einem Teig mit einer Mischung aus Linsen (Urad Dal) und Reis hergestellt wird. Der Teig wird zunächst fermentiert und dann wie ein dünner Pfannkuchen in einer heißen flachen Pfanne gebacken. Dann wird es üblicherweise mit Sambar und Kokosnuss-Chutney serviert, einer feinen Paste aus Erdnüssen, Kokosnuss und Linsen.</p>\n\n<p>Dosa kann auch mit gebratener Kartoffelfüllung oder als Beilage serviert werden. Es gibt viele Varianten wie Masala Dosa, Paneer Dosa und so weiter. Hauptsächlich besteht es immer aus einem Teig auf Reis- und Linsenbasis mit verschiedenen Varianten und Beilagen.</p>",
    "lesezeit": 1,
-   "chips": []
+   "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 9556,
    "slug": "mango-erzielt-rekordpreis-bei-auktion-im-sri-kurinchikumaran-tempel-in",
    "titel": "Mango erzielt Rekordpreis bei Auktion im Sri Kurinchikumaran Tempel in Gummersbach",
-   "datum": "2026-06-05",
+   "datum": "2026-06-07",
    "datum_original": "2024-06-27",
    "kategorien": [
     "community",
@@ -553,13 +638,18 @@
    "inhalt_html": "<p>Ein bemerkenswertes Ereignis fand kürzlich im Ukkulankulama Pillaiar Kovil in Vavuniya statt, als eine Mango bei einer Auktion für die beeindruckende Summe von 162.000 Rs, umgerechnet 500€ verkauft wurde. Die Mango wurde von einer Frau aus der Region Ukkulankulam gespendet, und der gesamte Erlös ist für die Entwicklungsprojekte des Tempels bestimmt.</p>\n\n<p>Solche Auktionen sind eine fest verwurzelte Tradition in der Nordprovinz Sri Lankas, bei denen oft erhebliche Beiträge von Dorfbewohnern und der im Ausland lebenden Gemeinschaft geleistet werden. Bei einer ähnlichen Auktion in einem anderen Tempel derselben Gegend erzielte eine Mango kürzlich 95.000 Rs, umgerechnet 300€, was die Großzügigkeit und das Engagement der Gemeinschaft unterstreicht.</p>\n\n<p>Diese inspirierende Tradition hat nun auch der Sri Kurinchikumaran Tempel in Gummersbach aufgegriffen. In der gestern veranstalteten Auktion wurde dort ebenfalls eine Mango versteigert. Der Startbetrag lag bei 25€, und letztendlich wurde die Mango für die beeindruckende Summe von 1050€ verkauft. Die Erlöse werden für den Aufbau und die Entwicklungsprojekte des Tempels verwendet.</p>\n\n<p>Diese Auktionen zeigen nicht nur die tiefe Verbundenheit der Gemeinschaften mit ihren religiösen Institutionen, sondern auch ihre Bereitschaft, durch solche symbolischen Handlungen einen bedeutenden Beitrag zur Weiterentwicklung und Erhaltung ihrer kulturellen und spirituellen Zentren zu leisten. </p>",
    "lesezeit": 1,
    "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de",
    "kultur_fallback": true
   },
   {
    "id": 9572,
    "slug": "shruthi-kumar-eine-mutige-rede",
    "titel": "Shruthi Kumar: Eine mutige Rede!",
-   "datum": "2026-05-10",
+   "datum": "2026-05-12",
    "datum_original": "2024-06-01",
    "kategorien": [
     "news",
@@ -584,13 +674,18 @@
    "inhalt_html": "<p>Die tamilisch-amerikanische Studentin Shruthi Kumar kritisierte während ihrer Abschlussfeier-Rede die Harvard University, da letztere insgesamt 13 pro-palästinensischen Studenten auf unfaire Weise den Abschluss an der Universität verweigerte. Grund dafür war die Beteiligung jener Studenten an den Campus-Protesten.</p>\n\n<p>Shruti Kumar war eine der drei Studenten, die die Ehre hatten, bei der Abschlussfeier eine Rede zu halten. Dabei wich Shruthi von ihrer vorbereiteten Rede „die Macht des Nichtwissens“ entschlossen ab und sprach die absolute Intoleranz gegenüber der Redefreiheit und dem Recht auf zivilem Ungehorsam auf dem Campus an.</p>\n\n<p>Mehr als 1.000 Studenten verließen die Zeremonie im Rahmen eines inszenierten Protests, viele schwenkten palästinensische Flaggen oder Demo-Banner, auf denen ein Ende des Völkermords gefordert wurde.</p>\n\n<p>Shruthi Kumar ist eine Diana-Preisträgerin und die Gründerin von @go_yogi, einer gemeinnützigen Organisation, die sich auf die Notwendigkeit zur geistigen Gesundheitserziehung konzentriert.</p>",
    "lesezeit": 1,
    "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de",
    "kultur_fallback": true
   },
   {
    "id": 9583,
    "slug": "die-faszinierende-schoenheit",
    "titel": "Die faszinierende Schönheit",
-   "datum": "2026-05-07",
+   "datum": "2026-05-09",
    "datum_original": "2024-05-29",
    "kategorien": [
     "community",
@@ -615,13 +710,18 @@
    "inhalt_html": "<p>Die faszinierende Schönheit des Thiruchendur Murugan-Tempels, welcher sich in Tamil Nadu’s Küstenstadt Thiruchendur befindet, zieht jedes Jahr Millionen von Besuchern aus aller Welt an.</p>\n\n<p>Der Tempel soll 2000 Jahre alt sein und alle Widrigkeiten der Zeit überstanden haben.</p>\n\n<p>Wie die meisten antiken Bauwerke Indiens, die mit einer Reihe von scheinbar unglaublichen Geschichten und Wundern gespickt sind, hat auch der Thiruchendur Murugan-Tempel seine Erzählungen.</p>\n\n<p>Eine dieser Erzählungen geht auf die Zeit zurück, als Machtstreben und Habgier die Europäer auf den asiatischen Subkontinent lockten. Das alte Indien wurde als “Goldener Vogel der Welt” gepriesen, darum wurden die meisten Eroberungen mit der alleinigen Absicht der gierigen Ausplünderung angetreten.</p>\n\n<p>Als eine Gruppe holländischer Söldner im 17. Jahrhundert n. Chr. auf den Tempel in Thiruchendur stieß, nahmen sie nach einer regelrechten Plünderung sogar die Skulptur der Gottheit Lord Murugan mit, da sie dummerweise annahmen, sie sei ganz aus Gold.</p>\n\n<p>Doch das Schicksal hielt etwas anderes bereit:<br>Nachdem sie nur wenige Seemeilen zurückgelegt hatten, gerieten sie in einen Sturm, der so gewaltig war, dass die Seeleute zu glauben begannen, es sei der Zorn des Lord Murugan aus dem Tempel, den sie zuvor geplündert hatten. Und dieser Zorn habe das Unwetter ausgelöst. Vor lauter Angst warfen sie die Skulptur der Gottheit in den Ozean.</p>\n\n<p>Den Einheimischen zufolge war die bedrohliche Stimmung, die sich über den Himmel gelegt hatte, in dem Moment auf mysteriöse Weise verschwunden, als die Spitze der Statue die Oberfläche berührte, sehr zur Erleichterung der Soldaten.</p>\n\n<p>Es heißt, Lord Murugan habe einen der Priester, die in dem Schrein die sakralen Aufgaben wahrnahmen, im Traum aufgefordert, die Statue aus den Fängen des Ozeans zurückzuholen. Die Skulptur der Gottheit wurde glücklicherweise geborgen und zum Tempel zurückgebracht.</p>\n\n<p>Während die Kolonisatoren nur den materiellen Wert der Staue sahen, ist ihre Bedeutung für einen Gläubigen weitaus größer. Da fragt man sich, wie viele unserer Schöpfungen noch irgendwo herumschwimmen und achtlos weggeworfen werden.</p>",
    "lesezeit": 2,
    "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de",
    "kultur_fallback": true
   },
   {
    "id": 9562,
    "slug": "a-r-rahman-live-mit-dir",
    "titel": "A.R.Rahman Live mit dir!",
-   "datum": "2025-08-23",
+   "datum": "2025-08-25",
    "datum_original": "2023-09-15",
    "kategorien": [
     "kino",
@@ -649,13 +749,18 @@
    },
    "inhalt_html": "<div class=\"video-embed\" data-video=\"ioA8hoTD8wo\"><button type=\"button\" class=\"video-load\">Video laden</button><p class=\"video-hint\">YouTube-Video – wird erst nach Klick geladen (Datenschutz).</p></div>",
    "lesezeit": 1,
-   "chips": []
+   "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 9567,
    "slug": "ilaiyaraaja-live-mit-dir",
    "titel": "Ilaiyaraaja Live mit dir!",
-   "datum": "2025-06-08",
+   "datum": "2025-06-10",
    "datum_original": "2023-07-01",
    "kategorien": [
     "kino",
@@ -683,13 +788,18 @@
    },
    "inhalt_html": "<div class=\"video-embed\" data-video=\"YP4PBOfhaN8\"><button type=\"button\" class=\"video-load\">Video laden</button><p class=\"video-hint\">YouTube-Video – wird erst nach Klick geladen (Datenschutz).</p></div>",
    "lesezeit": 1,
-   "chips": []
+   "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 9564,
    "slug": "anirudh-live-mit-dir",
    "titel": "Anirudh Live mit dir!",
-   "datum": "2025-05-20",
+   "datum": "2025-05-22",
    "datum_original": "2023-06-12",
    "kategorien": [
     "kino",
@@ -717,13 +827,18 @@
    },
    "inhalt_html": "<div class=\"video-embed\" data-video=\"Yb46tIL9mLE\"><button type=\"button\" class=\"video-load\">Video laden</button><p class=\"video-hint\">YouTube-Video – wird erst nach Klick geladen (Datenschutz).</p></div>",
    "lesezeit": 1,
-   "chips": []
+   "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 8936,
    "slug": "was-ist-arwi-arabisch-tamil",
    "titel": "Was ist Arwi (Arabisch-Tamil)?",
-   "datum": "2025-04-16",
+   "datum": "2025-04-18",
    "datum_original": "2023-05-09",
    "kategorien": [
     "community",
@@ -750,13 +865,18 @@
    "inhalt_html": "<p>Was ist Arwi (Arabisch-Tamil)?<br>Arabisch ist eine der zehn am häufigsten gesprochenen Sprachen der Welt. Es ist die vorherrschende Sprache im Nahen Osten und in Nordafrika, einschließlich Saudi-Arabien, Katar und den Vereinigten Arabischen Emiraten &#8211; Länder mit einer bedeutenden tamilischen Bevölkerung. Da von den Muslimen erwartet wird, dass sie die Werke des Korans lesen und interpretieren, wird von ihnen erwartet, dass sie das Arabische in diesem religiösen Text lesen können.</p>\n\n<figure><figure><img width=\"743\" height=\"338\" src=\"img/p8936-1.jpg\" alt=\"\"></figure></figure>\n\n<p>Arabisch ist eine der zehn meistgesprochenen Sprachen der Welt. Es ist die vorherrschende Sprache im Nahen Osten und in Nordafrika, einschließlich Saudi-Arabien, Katar und den Vereinigten Arabischen Emiraten &#8211; Länder mit einer bedeutenden tamilischen Bevölkerung. Da von den Muslimen erwartet wird, dass sie die Werke des Korans lesen und interpretieren, wird von ihnen erwartet, dass sie das Arabische in diesem religiösen Text lesen können.</p>\n\n<p>Durch die Ausbreitung des Islam und der arabischen Kultur nach Indien, Malaysia und Indonesien hat das Arabische einen großen Einfluss auf viele andere Sprachen gehabt. Es ist nicht schwer, den arabischen Einfluss in diesen Regionen zu erkennen, insbesondere in den heute muslimisch geprägten Ländern. Sprachen wie Kurdisch, Persisch, Paschtu, Punjabi, Sindhi, Urdu und Malaiisch sind in Bezug auf Wortschatz und Schrift stark mit dem Arabischen verwandt.<br></p>\n\n<figure><figure><img width=\"380\" height=\"506\" src=\"img/p8936-2.jpg\" alt=\"\"></figure></figure>\n\n<p><br>Punjabi ist ein deutliches Beispiel dafür. Nach der Teilung Indiens im Zuge der Unabhängigkeit wurde der Bundesstaat Punjab in zwei Teile geteilt: Der östliche Teil wurde zum indischen Bundesstaat Punjab, während der westliche Teil zum pakistanischen Bundesstaat Punjab wurde. Diese Teilung führte zu einer gewissen Divergenz in der Kultur und Religion der beiden Seiten. Am bemerkenswertesten ist jedoch die Schrift der beiden Punjabs. Die Schrift des westlichen Punjab ist eine arabisch anmutende Schrift, während der östliche Punjab eine völlig andere Schrift verwendet. Obwohl die Schriften größtenteils dieselben Sätze bilden, verwenden sie dafür völlig unterschiedliche Alphabete.</p>\n\n<p>Die arabische Kultur hat sich auch auf die tamilische Welt ausgewirkt. Städte wie Colombo und Trincomalee verfügten über Häfen, die einen effektiven Handel zwischen dem Nahen Osten und Südostasien ermöglichten. Tamil war auch die vorherrschende Sprache in Südindien und im Norden Sri Lankas, und es liegt nahe, dass die Araber mit den Tamilen in Kontakt treten mussten, um einen effektiven Handel zu gewährleisten. Der Islam wird von vielen Tamilen praktiziert, und eine bedeutende Anzahl von Muslimen hat zur tamilischen Kultur beigetragen. Und genau wie bei Punjabi und anderen Sprachen findet sich dieser Einfluss auch in einer arabisierten Schrift, die in die tamilische Sprache übernommen wurde, bekannt als &#8222;Arwi&#8220;.</p>\n\n<p>Arwi (لسانالأروي orlisān al-arwi) ist eine Schriftsprache, die das tamilische Alphabet in arabischer Schrift darstellt. In tamilischer Schrift ist Arwi அர்வி oder allgemeiner bekannt als அரபுத்தமிழ் oder Arabu-Tamil. Arwiis soll als Brückensprache für tamilische Muslime dienen, die Arabisch lernen wollen, um ihre Fähigkeiten beim Lesen des Korans und anderer arabischer Literatur zu verbessern.</p>\n\n<p>Das Arwi-Alphabet entspricht dem arabischen Alphabet, enthält aber dreizehn zusätzliche Buchstaben, um tamilische Konsonanten darzustellen, deren Laute im arabischen Alphabet nicht vorkommen. Während das gesprochene Arwi in der heutigen tamilischen Welt so gut wie ausgestorben ist, wird die Schriftsprache in Südindien noch gelehrt.<br></p>\n\n<p><br>In der Literatur wird Arwi verwendet, um Themen wie Sufismus (eine Sekte des Islam), Recht und Medizin zu behandeln. Es gibt sogar Aufzeichnungen über religiöse Schriften, die in Arwi übersetzt wurden, darunter die Bibel und die Hadithe (Schriften, in denen die Werke des Propheten Mohammed erwähnt werden). Muslimische Gelehrte in den tamilischen Regionen betonten die Bedeutung der Verwendung von Arwi, weil sie als Schutz für die Menschen diente, um potenziell schwerwiegende sprachliche Fehler durch die tamilische Transliteration arabischer Begriffe zu vermeiden. Eine ähnliche Analogie wäre die Angst, tamilische Wörter und Namen falsch auszusprechen, weil sie mit dem englischen Alphabet transliteriert werden. Ein Shaikhuna (akademischer Arzt) beschrieb Arwi wie folgt:</p>\n\n\"... Arwi schützte die Interessen der Muslime. Es war über Jahrhunderte ein Allheilmittel für verschiedene soziale Krankheiten. Es wurde von selbstlosen sozialen Krankheiten jahrhundertelang liebevoll und inbrünstig gepflegt. Es wurde liebevoll und inbrünstig von selbstlosen Gelehrten und heiligen Heiligen gepflegt. Seine Notwendigkeit wurde von allen edlen Gemütern der Gemeinschaft intensiv empfunden. Und es erhielt die Unterstützung und Hilfe sowohl der Massen als auch der Intellektuellen. Dies zeigt die Bedeutung und Unentbehrlichkeit dieser edlen Sprache für das religiöse Leben und die Einheit der Arwi sprechenden Muslime. Wenn die heutige Generation das Geheimnis der Bedeutung erkennt, die diese vorausschauenden Männer dem Lisanu-l Arwi beigemessen haben, hat die Gemeinschaft eine große Zukunft.\"\n\n<p>Die tamilische Bevölkerung ist nicht nur durch die Art der Diaspora vielfältig, sondern auch durch die Vielfalt der Abstammung der Menschen selbst. Obwohl der Hinduismus die vorherrschende Religion der Tamilen ist, gibt es viele Tamilen, die den Lehren des Islam folgen. Arwi ist eine einzigartige Ergänzung der Kultur. Und auch wenn es keine so große Rolle spielt wie eine arabisch basierte Schrift für die Punjabi-Sprache, so dient es doch als Portal zu einer anderen einzigartigen Dimension der tamilischen Kultur, die vielleicht mehr übersehen wird, als sie sollte.</p>\n\n<p>Auch die Versuche, die Brückensprache wiederzubeleben, sind in den letzten Jahren deutlicher geworden. In dem Maße, wie die Bemühungen um die Wiederbelebung des geschriebenen Arwi zunehmen, hoffe ich, dass es den tamilischen Muslimen weiterhin als Hilfsmittel dient, um die arabische Sprache und auch die Lehren des Islam besser zu verstehen. Wie A.R. Rahman sagt: எல்லாபுகழும் இறைவனுக்கே!</p>\n\n<p>Quellen: taqwa.sg/v/articles/arwi-the-tamil-muslim-vernacular sailanmuslim.com/news/arwi-language-arabic-tamil<br><br>Übersetzt von olyynt</p>",
    "lesezeit": 5,
    "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de",
    "kultur_fallback": true
   },
   {
    "id": 9344,
    "slug": "wir-holen-1a-musiklegende-ilaiyaraja-nach-deutschland",
    "titel": "Wir holen 1A Musiklegende Ilaiyaraja nach Deutschland!",
-   "datum": "2025-01-21",
+   "datum": "2025-01-23",
    "datum_original": "2023-02-13",
    "kategorien": [
     "entertainment"
@@ -783,13 +903,18 @@
    "lesezeit": 1,
    "chips": [
     "musik"
-   ]
+   ],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 9256,
    "slug": "wichtige-informationen",
    "titel": "Wichtige Informationen",
-   "datum": "2024-10-23",
+   "datum": "2024-10-25",
    "datum_original": "2022-11-15",
    "kategorien": [
     "events"
@@ -812,13 +937,18 @@
    },
    "inhalt_html": "<p>An alle Anirudh Fans!</p>\n\n<p>Unser größter Dank gilt all denen, die &#8222;Anirudh live in Germany&#8220; jetzt schon zu solch einem Riesenerfolg geführt haben. Wir sind immer noch von der beispiellosen Ticket-Nachfrage überwältigt, die in Zusammenarbeit mit der führenden, europäischen Ticketing-Plattform Eventim.de einhergeht.</p>\n\n<p>Trotz unserer großen Freude mit den glücklichen Ticketinhabern, sind wir darüber traurig gestimmt, dass viele Fans keine Karten mehr erwerben konnten, aufgrund des 100% Ausverkaufs. Ferner wurden einige Tickets automatisch vom Ticketverkaufsnetz storniert, da es aufgrund des überlasteten Systems zu Doppelbuchungen kam.</p>\n\n<p>Als Reaktion auf die Anfragen und die zahlreichen emotionalen Bitten der Fans war wohlwollend zunächst die Gestaltung eines weiteren, zeitnahen Konzerttermins in Planung. Sehr zum Bedauern von vielen Anirudh Fans, war es uns leider nicht möglich, ein weiteres Konzert an einem zweiten Tag zu realisieren. Dieses ist dem engen Zeitplan von Rockstar Anirudh geschuldet.</p>\n\n<p>Um es kurz zu fassen, die Fans sind unsere oberste Priorität. Dabei bleibt es! Demzufolge mussten wir folgende Änderungen beschließen:</p>\n\n<p>Den teuersten und bereits ausverkauften Sitzplatzblock, das “ARABIC KUTHU“, wird in einen reinen Stehplatzbereich namens &#8222;THAAI KELAVI“ mit reduzierten Preisen umgewandelt.</p>\n\n<p>Wer bereits Karten für “ARABIC KUTHU“ gekauft hat, erhält von Eventim eine volle Preis-Rückerstattung für jedes erworbene Ticket, sowie einen PromotionsCode für eine neue Reservierung bzw. Umbuchung. Eine zweite Priorität wird denjenigen eingeräumt, die ihre Karten bei uns per E-Mail reservieren lassen. Die danach verbleibenden Karten werden dann zeitnah für die Öffentlichkeit zugänglich gemacht.</p>\n\n<p>Außerdem werden wir einen neuen Bereich namens &#8222;SELFIE PULLA&#8220; einrichten, von dem aus die hintere Bühne nur eingeschränkt, die vordere aber vollständig zu sehen sein wird.<br>Nach zahlreichen Anfragen werden wir in naher Zukunft euch zusätzlich die Details der Afterparty-Feierlichkeiten bekannt geben.</p>\n\n<p>Nicht zuletzt ein wichtiger Hinweis: Alle, die Tickets über inoffiziellen Plattformen wie eBay oder anderen ähnliche Online-Marktplätzen erwerben möchten, seid euch eines möglichen Ticketbetruges bewusst. Überteuerte Tickets, sowie ungültige Eintrittskarten können die Folgen sein. Wir empfehlen euch daher nur bei offiziellen Ticketing-Partner zu kaufen oder weiterzuverkaufen.</p>\n\n<p>Liebe Fans, nochmals danken wir euch für eure vorbildliche Geduld und hoffen auf euer Verständnis für diese finale Platz-Kategorisierung auch im Hinblick auf die enorme Nachfrage.</p>\n\n<p>Selbstverständlich stehen wir euch für weitere Informationen zur Verfügung. Auch im Hinblick auf Klarstellungen zu den oben genannten Änderungen wendet euch an folgenden Kontakt:</p>",
    "lesezeit": 2,
-   "chips": []
+   "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 9246,
    "slug": "eventim-anirudh-live-mit-dir-anirudh-live-in-germany",
    "titel": "Eventim: Anirudh Live Mit Dir",
-   "datum": "2024-10-16",
+   "datum": "2024-10-18",
    "datum_original": "2022-11-08",
    "kategorien": [
     "events"
@@ -843,13 +973,18 @@
    },
    "inhalt_html": "<p>Aufgrund des hohen Andrangs auf der Website am gestrigen Abend und die damit einhergehende Überbelastung, kam es bei einigen Käufern verständlicherweise zu einer wahren Herausforderung das gewünschte Ticket zu buchen.&nbsp;</p>\n\n<p>Wir erwarten erstmalig in Deutschland bis zu 10.000 Besucher für ein Konzert eines Tamil-Rockstars. Diese enorme Personenkapazität beinhaltet eine hohe Ticketnachfrage und den unvermeidbaren hohen Traffic.</p>\n\n<p>Die Plattform Eventim.de ist europäischer Marktführer für Konzert- und Veranstaltungstickets. Wir sind bereits in Gesprächen mit CTS Eventim und klären die entstandenen Unannehmlichkeiten schnellstmöglich. Der Kundenservice von Eventim setzt momentan alles in Bewegung, sodass alle Käufer ihre gebuchten Tickets erhalten.</p>\n\n<p>Wir bitten euch, bewahrt Ruhe, auch im Hinblick auf Stornierungen die in der Buchungszeit verursacht wurden, hier werden selbstverständlich euch die Kosten zurückerstattet.&nbsp;</p>\n\n<p>(AGB’s https://www.eventim.de/help/cancellation/).</p>\n\n<p>Wir schätzen euer Verständnis und die entgegengebrachte Geduld.</p>",
    "lesezeit": 1,
-   "chips": []
+   "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 9209,
    "slug": "9209-2",
    "titel": "Rudolf Weber-Arena: Saalplan",
-   "datum": "2024-10-09",
+   "datum": "2024-10-11",
    "datum_original": "2022-11-01",
    "kategorien": [
     "events",
@@ -876,13 +1011,18 @@
    "inhalt_html": "<figure><figure><img width=\"1024\" height=\"987\" src=\"img/p9209-1.jpg\" alt=\"\"></figure></figure>\n\n<p><strong>Die Kategorien tragen folgende Titel und legen die entsprechenden Preise fest:<br></strong><strong>Arabic Kuthu &#8211; 250€ (Seats)<br></strong><strong>Private Party &#8211; 150€ (Seats)<br></strong><strong>Dippam Dappam &#8211; 85€ (Seats)<br></strong><strong>Kolaveri &#8211; 70€ (Standing / Stehplatz)<br></strong><strong>Two Two Two &#8211; 73€ (Seats)<br></strong><strong>Vaathi Coming &#8211; 65€ (Seats)</strong><br><br><br><strong>Anirudh’s Show-Platzkategorien</strong></p>\n\n<p>Wie ihr bereits aus vorherigen Posts entnehmen konntet, werden in absehbarer Zeit die Konzertkarten in den jeweiligen Platzkategorien buchbar sein.</p>\n\n<p>Eine Anmerkung am Rande &#8211; anfänglich schwebten auch uns geläufige Begriffe VIP-Tickets, VVIP-Ticket etc. vor. Bewusst distanzieren wir uns von diesen Bezeichnungen, es soll keine Klassifizierung unter den Fans entstehen. Sinnbildlich soll mit der Titel-Kategorisierung ALLEN Anirudh Fans ein grandioses Konzerterlebnis geboten werden, gleichgültig aus welchem Blickwinkel. Jeder Besucher soll mit gleichwertigen “Vibes“ die Show genießen!<br><br>&#8211;<br><strong>Bestplatzbuchung</strong></p>\n\n<p>Bei der Bestplatzbuchung entscheiden Sie sich für eine Platzkategorie und wählen die Anzahl der gewünschten Tickets aus. Innerhalb der gewählten Kategorie findet eine automatische Vergabe der Plätze statt, Sie erhalten die besten verfügbaren Plätze. Nummerierte Sitzplätze befinden sich in der Regel nebeneinander.</p>\n\n<h3>Saalplanbuchung</h3>\n\n<p>Bei der Saalplanbuchung wählen Sie Ihre Plätze persönlich und präzise im grafischen Saalplan aus. Starten Sie die Saalplanbuchung und entscheiden Sie sich für einen Bereich. Dort können Sie die Plätze per Mausklick auswählen. Bei einigen Events wird die Saalplanbuchung nicht angeboten.</p>\n\n<h3>Freie Platzwahl</h3>\n\n<p>bedeutet, dass Sie mit Ihrem Ticket entsprechend den örtlichen Gegebenheiten Ihren Platz frei auswählen können. Es kann sich dabei um Sitzplätze, Stehplätze oder eine Teilbestuhlung ohne Sitzplatzanspruch handeln.</p>\n\n<h3>Sitz- oder Stehplatz je nach Verfügbarkeit</h3>\n\n<p>In der so bezeichneten Preiskategorie werden überwiegend (jedoch nicht garantiert) Sitzplätze angeboten. Unter Umständen werden auch Stehplatzkarten zum gleichen Preis zugeschickt. Einen bestimmten Wunsch bezüglich Steh- oder Sitzplatz können wir leider in diesem Zusammenhang nicht erfüllen. Ein späterer Umtausch der gelieferten Eintrittskarten ist nicht möglich.</p>\n\n<h3>Zurzeit nicht verfügbar</h3>\n\n<p>bedeutet, dass die uns zur Verfügung stehenden Ticketkontingente zur Zeit erschöpft sind. Wir bemühen uns, neue Kontingente zu erhalten und bitten Sie, unsere Webseite regelmäßig wieder aufzusuchen.</p>\n\n<h3>Nicht mehr zustellbar</h3>\n\n<p>bedeutet, dass die Veranstaltung zeitnah stattfindet und eine Lieferung der Tickets nicht mehr möglich ist. Je nach Event können Sie eventuell mit ticketdirect die Tickets selbst ausdrucken, die Versandart Mobile Ticket wählen oder die Tickets vor Ort an der Kasse abholen.</p>\n\n<h3>Nur 1 Ticket auswählbar / Einzelsitzplatz</h3>\n\n<p>bedeutet, dass über die Bestplatzbuchung nur noch einzelne Plätze (keine zusammenhängende Plätze) in der entsprechenden Kategorie buchbar sind. Einzelsitzplätze sind vereinzelte Restplätze. Auch wenn eine größere Anzahl verfügbar ist, sind diese Plätze nicht zusammenhängend. Möglicherweise stehen über die Saalplanbuchung noch zusammenhängende Plätze zur Verfügung.</p>\n\n<h3>Ermäßigte Karten</h3>\n\n<p>Häufig sind ermäßigte Tickets, z.B. für Kinder, Studenten und Senioren, buchbar. Diese werden Ihnen an den Platzkategorien angezeigt. Bitte halten Sie Ihren Ermäßigungsnachweis am Einlass zur Veranstaltung bereit. Bitte erkundigen Sie sich ggf. bei unserem Call-Center unter der Telefonnummer: 01806 &#8211; 570 070 (0,20 €/Anruf inkl. MwSt aus allen dt. Netzen).</p>\n\n<h3>Rollstuhlfahrer und Schwerbehinderte</h3>\n\n<p>Zur Buchung von Tickets für Rollstuhlfahrer und Schwerbehinderte kontaktieren Sie bitte unser Call-Center unter der Telefonnummer 0421 353 638. Aus technischen Gründen können unter dieser Rufnummer nur Anfragen und Buchungen zu Rollstuhl- und Schwerbehinderten-Tickets aufgenommen werden! Bitte beachten Sie, dass es nicht bei jeder Veranstaltung möglich ist, Rollstuhlfahrerplätze anbieten zu können.<br>Sind Sie beim Besuch des Events auf eine Begleitperson angewiesen (Merkzeichen B im Schwerbehindertenausweis) und das Begleiter Ticket unterliegt einer Rabattierung oder Freikarte, halten Sie bitte am Einlass zur Veranstaltung Ihren Schwerbehindertenausweis als Nachweis für das Begleiter-Ticket bereit.<br><br>&#8211;<br><strong>Versandmöglichkeiten</strong></p>\n\n<ul><li>Expressversand (Deutschland)&nbsp;Zustellung am nächsten Werktag bei Bestellungen bis 14 Uhr (Montag &#8211; Freitag)</li><li>ticketdirectDrucken Sie sich Ihr ticketdirect einfach und bequem unmittelbar nach Vertragsschluss selber aus.<br></li></ul>\n\n<figure><a href=\"#\"><img width=\"1024\" height=\"257\" src=\"img/p9209-2.jpg\" alt=\"\"></a></figure>\n\n<figure><a href=\"#\"></a></figure>",
    "lesezeit": 3,
    "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de",
    "kultur_fallback": true
   },
   {
    "id": 9198,
    "slug": "wie-bezahle-ich-bei-eventim-de",
    "titel": "Wie bezahle ich bei eventim.de?",
-   "datum": "2024-10-09",
+   "datum": "2024-10-11",
    "datum_original": "2022-11-01",
    "kategorien": [
     "events"
@@ -905,13 +1045,18 @@
    },
    "inhalt_html": "<p>Die Zahlung ist je nach Veranstaltung und Bestellmodalitäten im SEPA-Lastschriftverfahren, per Kreditkarte (Visa, Mastercard, American Express, Diners oder Discover), giropay, Sofortüberweisung und/oder durch Vorkasse per Überweisung sowie durch Rechnungs- oder Ratenkauf möglich.<br><br>So könnt ihr bei Eventim bezahlen:</p>\n\n<ul><li>Per <strong>Bankeinzug:</strong> dafür braucht ihr ein Bankkonto, das natürlich auch gedeckt sein muss. Eventim bekommt dann eine einmal gültige Einzugsermächtigung und bucht das Geld ab.</li><li>Auf <strong>Rechnung:</strong> Dabei bekommt ihr eine Rechnung zugeschickt und müsst den Betrag innerhalb eines bestimmten Zeitraums überweisen, bevor die Karten kommen.</li><li><strong><a href=\"https://www.giga.de/extra/ratenzahlung/tipps/eventim-tickets-auf-raten-bestellen-so-funktioniert-es/\">Ratenkauf</a>:</strong> Nur möglich ab einem Bestellwert von 50,00 Euro.</li><li>Über <strong>giropay:</strong> Damit können viele Bankkunden sofort den Betrag an Eventim überweisen.</li><li>Mit einer <strong>Kreditkarte:</strong> Akzeptiert werden Kreditkarten von MasterCard, Visa sowie von American Express.</li><li><strong>Vorkasse:</strong> Hier habt ihr drei Tage Zeit, das Geld zu überweisen. Das lohnt sich natürlich nicht einen Tag vor dem Konzert.</li><li>Mit <strong>MasterPass:</strong> das ist eine Art digitaler Geldbörse für die Inhaber von MasterCard-Kreditkarten.</li></ul>\n\n<figure><figure><img width=\"378\" height=\"128\" src=\"img/p9198-1.jpg\" alt=\"\"></figure></figure>",
    "lesezeit": 1,
-   "chips": []
+   "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 9191,
    "slug": "anirudh-hat-die-show-nun-offiziell-auf-seinem-instagram-bestaetigt",
    "titel": "Anirudh hat die Show nun offiziell auf seinem Instagram bestätigt!",
-   "datum": "2024-10-07",
+   "datum": "2024-10-09",
    "datum_original": "2022-10-30",
    "kategorien": [
     "events"
@@ -938,13 +1083,18 @@
    "lesezeit": 1,
    "chips": [
     "konzert"
-   ]
+   ],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 9146,
    "slug": "unnikrishnan-der-ehrengast-im-sri-kurinchikumaran-tempel-gummersbach",
    "titel": "Unnikrishnan der Ehrengast im Sri-Kurinchikumaran-Tempel Gummersbach",
-   "datum": "2024-09-23",
+   "datum": "2024-09-25",
    "datum_original": "2022-10-16",
    "kategorien": [
     "community",
@@ -971,13 +1121,18 @@
    "inhalt_html": "<p>Der Gummersbacher Tempel Sri-Kurinchikumaran erfreute sich über seinen gestrigen prominenten Besuch aus Süd-Indien. Der berühmte Karnatik- und Playback-Sänger P. Unnikrishnan nahm persönlich am Gottesdienst teil und bescherte so den anwesenden Tempel-Gästen einen besonderen Abend während der Puja-Zeremonie.&nbsp;</p>\n\n<p>Evergreen-Hits des großartigen Künstlers wie “Poovukkul“, “Narumugaye“ und “Ennavale Adi Ennavale“, um nur einige zu nennen, sind aus der tamilischen Musikwelt längst nicht mehr wegzudenken.&nbsp;<br>Unnikrishnan selbst konnte seine Begeisterung für den Gummersbacher Tempel kaum zurückhalten. Wiederholt bewunderte er dessen Größe und Baukunst und lobte, dass solches auch im europäischen Raum seinen beachtlichen Stellenwert gefunden hat.&nbsp;</p>\n\n<p>Der Sri-Kurinchikumaran-Tempel existiert seit 1993 in Gummersbach. Anfänglich besuchten die Gläubigen seine heiligen Räume am Singerbrink. Später im Jahr 2005 zog das Gotteshaus in die Industriestraße, dort wo der Tempel auch heute steht. Der 2008 fertiggestellte Sri-Kurinchikumaran-Tempel ist nach dem Hindu Shankarar Sri-Kamadchi-Ampal-Tempel in Hamm, der flächenmäßig größte Tempel Deutschlands. Namensgebend ist die Gottheit Murugan.</p>\n\n<p>Nach dem zweistündigen Gottesdienst folgte eine wertschätzenden Rede Unnikrishnans. Der sympathische Sänger verabschiedete sich herzlich von allen Tempel-Besuchern.</p>\n\n<p>Wir danken Unnikrishnan für diese besondere Zeit und wünschen ihm alles Gute.</p>",
    "lesezeit": 1,
    "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de",
    "kultur_fallback": true
   },
   {
    "id": 9135,
    "slug": "anirudh",
    "titel": "Anirudh kommt nach Deutschland",
-   "datum": "2024-09-12",
+   "datum": "2024-09-14",
    "datum_original": "2022-10-05",
    "kategorien": [
     "events",
@@ -1004,13 +1159,18 @@
    },
    "inhalt_html": "<p>Es ist die Sensations-Nachricht!<br><br>Der großartige Musikkomponist und Sänger Anirudh Ravichander aus Tamil Nadu soll 2023 sein allererstes Deutschland-Konzert in einer begehrten Arena hierzulande geben.</p>\n\n<p>Was für eine einzigartige Premiere für Deutschland und gleichzeitig auch für ganz Europa! Anirudh soll höchstpersönlich diese News in den kommenden Tagen publik machen.<br>Mit seinen viralen, millionenfach aufgerufenen Songs hat der vielfach preisgekrönte Künstler längst die Herzen der Filmindustrie erobert.<br>Dafür feiern ihn seine Fans weltweit &#8211; und nun endlich auch hier bei uns, ganz nah.</p>\n\n<p>Anirudh’s Mega-Konzert soll in Nordrhein-Westfalen (NRW) stattfinden und den Meilenstein seiner imponierenden 10-jährigen Filmmusik-Geschichte feiern. Es dürfte sich wohl um ein einmaliges Event handeln, in dessen Präsentation eine stolze Summe investiert werde. Bis zu 10.000 Besucher werden erwartet, u.a. auch aus unseren Nachbarländern Frankreich, Holland und der Schweiz.</p>\n\n<p>Alle wichtigen Daten zur Anirudh´s Sensationsshow werden folgen, die Tickets sollen in Kürze online über #eventim gebucht werden können.</p>\n\n<p>Seid bereit für ein noch nie Dagewesenes, rockiges Musikerlebnis mit dem Star Anirudh!</p>\n\n<p><a href=\"https://www.instagram.com/a.j.entertainments/\">@a.j.entertainments</a></p>\n\n<h2>#anirudhliveingermany</h2>",
    "lesezeit": 1,
-   "chips": []
+   "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 9149,
    "slug": "der-legendaere-dosa-man-aus-nyc",
    "titel": "Der legendäre Dosa Man aus NYC",
-   "datum": "2024-08-30",
+   "datum": "2024-09-01",
    "datum_original": "2022-09-22",
    "kategorien": [
     "kueche",
@@ -1036,13 +1196,18 @@
    },
    "inhalt_html": "<p>Es sind sonnige 26°C in New York City und das Warten in der Schlange neigt sich dem Ende zu.<br>Meine Sicht auf den kultigen Streetfood-Wagen NY Dosas wird immer klarer.&nbsp;<br>Und da steht er, Thiru Kumar, auch bekannt als der “Dosa Man”. Hier im Washington Square Park serviert er seine weltberühmten, frischen Dosas mit Sambar und Kokosnuss-Chutney, sowie andere vegane, südindische Köstlichkeiten.&nbsp;</p>\n\n<p>Es ist mir eine Ehre, den in Jaffna geborenen Thiru Kumar persönlich kennenzulernen. Sichtlich stolz zeigt sich der charismatische Tamile, wenn er über die Entstehungsgeschichte seines Geschäftes berichtet.&nbsp;<br>Thiru Kumar kam als Einwanderer aus Sri Lanka in die Vereinigten Staaten von Amerika und eröffnete im Jahr 2001 den ersten vegetarischen/veganen Streetfood-Wagen in der Gegend um die New York University. Er gibt mir zu verstehen, welch positive Resonanz seine Idee erfuhr, in der es ihm darum ging, den internationalen Studenten nahrhaftes und sättigendes Essen anzubieten.</p>\n\n<p>Seitdem hat er sich zu einer wahren New Yorker Feinschmecker-Größe entwickelt und wird in Reiseführern von 42 Ländern aufgeführt, des Weiteren hat er Fanclubs in Japan. Thiru Kumar möchte auf diese Weise insbesondere seine Herkunft Sri Lanka/Jaffna in vollem Umfang mit Stolz erfüllen.&nbsp;</p>\n\n<p>Ganz klar &#8211; unvergesslich bleibt für mich dieses NY Highlight mit dem “Special Pondicherry“-Dosa , die einzigartigen Gewürz-Aromen und die positive Atmosphäre durch Herrn Thiru Kumar.</p>\n\n<p>Danke lieber Dosa Man für die unglaublich beeindruckende Unterhaltung!&nbsp;<a href=\"https://www.instagram.com/olyyn/\">@olyyn</a><br><br><img width=\"947\" height=\"954\" src=\"img/p9149-1.jpg\" alt=\"\"></p>\n\n<p><img width=\"976\" height=\"972\" src=\"img/p9149-2.jpg\" alt=\"\"><br><br></p>",
    "lesezeit": 2,
-   "chips": []
+   "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 8527,
    "slug": "raveena-babu-bunter-tempel-wird-zu-herzensangelegenheit",
    "titel": "Raveena Babu: Bunter Tempel wird zu Herzensangelegenheit",
-   "datum": "2023-07-31",
+   "datum": "2023-08-02",
    "datum_original": "2021-08-22",
    "kategorien": [
     "news",
@@ -1069,13 +1234,18 @@
    "inhalt_html": "<p><em>Hochneukirch</em>&nbsp;Frischer Wind weht durch den Tempel „Sri Navasakthi Vinayagar“. Die Tamilische Gemeinde in Hochneukirch hat einen neuen Vorstand gewählt – und der ist jünger und weiblicher als bisher. Mit dabei ist auch die 19-jährige Raveena Babu.<br><br>Gemälde an den Wänden und Decken, Blumen, Statuen: Wer den Tempel an der Hochstraße betritt, hat automatisch ein Lächeln im Gesicht. Denn bei der tamilischen Gemeinschaft ist alles fröhlich bunt. „Das musst Du erleben, wenn wir hier Feiern haben. Dann wird Musik gespielt, wir tragen alle bunte Sari und haben eine tolle, fröhliche Gemeinschaft. Wir arbeiten viel mit Gewürzen, mit Feuer, mit Blumen“, verrät Raveena Babu. Die junge Studentin ist mit der Tempel-Gemeinschaft aufgewachsen: „Mein Papa hat mich immer mitgenommen. Als wir vor ein paar Jahren den Tempel hier gebaut und gestaltet haben, habe ich zum Beispiel bei den Malereien geholfen. Da fühlt man sich automatisch auch für den Tempel und die Gemeinschaft verantwortlich.“ Aus diesem Grund hat sich die Jüchenerin jetzt auch in den Vorstand wählen lassen: „Es ist an der Zeit, dass in der Vorstandsarbeit verschiedene Generationen aktiv sind. Natürlich sehen wir Jüngeren viele Dinge anders als die Älteren. Das ist nun unsere Aufgabe, dass wir gemeinsam das Gemeindeleben gestalten.“ Auch dass Frauen im Vorstand aktiv sind, ist ein Novum: „Das wird man sicherlich merken, denn mit mir sind noch drei weitere Frauen aktiv.“<br><br>Offen ist der Tempel für jeden, der sich für die tamilische Kultur interessiert. „Bei unseren Gottesdiensten ist immer viel los. Dienstags und freitags wird sogar gekocht, weil so viele Besucher kommen und nach dem Gottesdienst noch Zeit zusammen verbringen.“<br><br>Die Tamilen glauben an verschiedene Götter, die untereinander verbunden sind und die für unterschiedliche Dinge stehen. „Der Tempel ist ein Ort des Rückzugs, der mich an meine Wurzeln erinnert. Dieser Ort des Betens gibt mir Ruhe, hat mir durch die Schulzeit geholfen. Ich habe mich mehr zu meiner Religion bekannt. Deshalb ist es mir jetzt auch eine Herzensangelegenheit, dass ich mich engagiere“, erklärt Babu.&nbsp;&nbsp;<br><strong>Julia Schäfer</strong><br><br>Quelle: https://www.erft-kurier.de/juechen/bunter-tempel-wird-zu-herzensangelegenheit_aid-62285025<br><br></p>",
    "lesezeit": 2,
    "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de",
    "kultur_fallback": true
   },
   {
    "id": 8468,
    "slug": "gemeinde-investiert-drei-millionen-euro",
    "titel": "Gemeinde investiert Drei Millionen Euro",
-   "datum": "2023-01-22",
+   "datum": "2023-01-24",
    "datum_original": "2021-02-13",
    "kategorien": [
     "news",
@@ -1102,13 +1272,18 @@
    "inhalt_html": "<p>Weiterer Meilenstein für Hinduistische Gemeinde Deutschland</p>\n\n<h2>Zehn Jahre lang gewünscht: Baustart für Hindu-Kulturzentrum in Uentrop</h2>\n\n<p>Das lange Abwägen, Planen und Umplanen hat ein Ende: In dieser Woche war Baustart für das Hindu-Kulturzentrum in Uentrop. Nach dem Tempel-Bau vor 20 Jahren könnte das neue Haus ein weiterer sichtbarer Meilenstein der Hinduistischen Gemeinde Deutschlands werden.&nbsp;</p>\n\n<p>Uentrop – Eine lange Zeit des Planens, Verwerfens und Umgestaltens, des Bangens und Hoffens sowie zweier Grundsteinlegungen ist überstanden. Ein Weg voller Symbolkraft liegt hinter dem Obersten Priester Siva Sri Arumugam Paskarakurukkal. Ein steiniger Weg und vor allem eine Zeit des langen Atems: etwa zehn Jahre lang vom festen Willen zur Umsetzung bis zum tatsächlichen Baustart für das Hindu-Kulturzentrum in Uentrop. Am Montag war der Moment, auf den der Priester so lange hingearbeitet hat. „Für mich der glücklichste Tag“, sagte er. „Ein zehnjähriger Wunsch geht in Erfüllung.“ Das machte sich unüberhörbar bemerkbar.</p>\n\n<p>Während der Priester den göttlichen Segen für die Menschen und das Vorhaben an der Siegenbeckstraße erbat, begleitete eine Gruppe von Handwerkern im Hintergrund die Zeremonie mit den unüberhörbar weltlichen Klängen ihrer Maschine.</p>\n\n<h3>Ritueller Baustart in Uentrop bereits Tage zuvor</h3>\n\n<p>Rituell sind die Bauarbeiter aber nicht so entscheidend. Ein wichtiges Ereignis wie ein Baustart ist an ein bestimmtes Datum gebunden. Das entnimmt der Priester religiösen Tabellen. So feierte er den Baustart bereits am 3. Januar und das, wegen der Corona-Beschränkungen, im kleinen Kreis. Der war am Montag beim Auftakt der Bautätigkeiten bei der Zeremonie nicht viel größer.</p>\n\n<figure><img src=\"img/p8468-1.jpg\" alt=\"Hindu-Kulturzentrum in Hamm Uentrop: Plan von Architekt Heinz-Rainer Eichhorst für die Hinduistische Gemeinde Deutschland \"></figure>\n\n<p>Sie fand vor der rund vier Meter hohen Krishna-Figur und damit vor dem Bauplatz des Kulturzentrums statt. Mit der Zeremonie erbat der Priester die Gottheit, die Bauzeit zu begleiten und das Gelingen zu unterstützen. Mit einer zerteilten Zitrone brachte er eine Opfergabe, durch die die Arbeiter auf der Baustelle unversehrt bleiben mögen. Eine auf den Boden zerschlagene Kokosnuss soll Hindernisse verhindern und dafür sorgen, dass die Bauzeit reibungslos verläuft. Krishna selbst gab er Süßspeisen. „Um ihn glücklich zu machen“, sagte der Priester. „Und für den Erfolg.“</p>\n\n<h3>Ort der Tradition sowie der interreligiösen und -kulturellen Begegnung</h3>\n\n<p>Dass es bei eisigem Wind nicht auf Anhieb gelang, die Flamme für die Feuerzeremonie zu erzeugen, könnte ein Sinnbild sein für den teils mühevollen Weg bis zum Baustart, aber vor allem für die Unbeirrtheit und den Durchhaltewillen des Priesters und sein Vertrauen in Gott. Denn letztlich hatte er das Feuer entzündet. Rituell ging es allerdings um die aus allen Himmelsrichtungen fließende Energie. Sie verdichtet sich an dem besonderen Ort des Glaubens.</p>\n\n<p>Das Kulturzentrum ist ein großes Vorhaben. Es wird ein Ort der hinduistischen Tradition, für Veranstaltungen, interreligiöse und -kulturelle Begegnung und Bildung. Die Dimensionen lassen sich anhand der Markierungen auf dem Grundstück schon erahnen. Immerhin: 72 Meter lang wird das eingeschossige Gebäude. „Es ist mir fast zu groß“, sagte Architekt Heinz-Rainer Eichhorst. Er hatte schon vor rund 20 Jahren den Tempel für die Gemeinde im Gewerbegebiet Uentrop gebaut. Die spendenbasierte Finanzierung war damals nicht einfach.&nbsp;<a href=\"https://www.wa.de/hamm/meilenstein-fuer-hindus-baugenehmigung-fuer-kulturzentrum-in-uentrop-90097250.html\">Die Ausgangslage ist heute eine andere.</a>&nbsp;„Die Finanzierung ist gesichert“, sagte der Architekt. „Ich bin zuversichtlich. In einem Jahr wird es hier schon ganz anders aussehen.“ Drei Millionen Euro sind für den Bau kalkuliert.</p>\n\n<h3>Uentroper Kulturzentrum könnte im Frühjahr 2022 eingeweiht werden<br><br></h3>\n\n<p>Es wird in großen Schritten vorangehen. Bereits heute wird der Mutterboden abgeschoben. Es folgt die Anlage einer Baustraße. Dass Baugrundstück wird aufgeschottert. Ist die Bodenplatte erst einmal fertig, geht es sichtbar schnell weiter. „Das Gebäude besteht aus vorgefertigten Holzkonstruktionen“, sagte Eichhorst. „Es wird relativ schnell stehen. Dann kann es sofort mit den Innenausbau weitergehen.“ Im Laufe des Frühjahrs 2022 könnte das Kulturzentrum schon fertig werden.</p>\n\n<p>Bis dahin sollte die Pandemie nach Möglichkeit soweit abgeklungen sein, dass Veranstaltungen wieder möglich werden. Darauf hofft die Gemeinde. „Wir müssen dann immer ein volles Haus haben, sonst können wir es nicht finanzieren“, sagte Eichhorst.</p>\n\n<h3>Hinduistische Kultur „mittlerweile in Hamm zu Hause“</h3>\n\n<p>Die Hinduistische Gemeinde Deutschland baut das Kulturzentrum neben dem Sri-Kamadchi-Ampal-Tempel als ein offenes Haus. Es werde auch für die Menschen eine Bedeutung gewinnen, die nicht zur Gemeinde gehören, sagte Ulrich Kroker vom Hindubeirat. „Der Bau zeigt eine fremde und ferne Kultur, die aber mittlerweile hier zu Hause ist. Die Menschen werden nach der Coronazeit die Chance haben, hineinzuschauen und die Kultur kennenzulernen.“</p>\n\n<p>Dann steht auch das Pfauenhaus an einem neuen Platz. Es sollte zunächst die <a href=\"https://www.wa.de/hamm/pfauenhaus-hindu-kulturzentrum-uentrop-3328468.html\">Kuppel des Kulturzentrums</a> krönen und war <a href=\"https://www.wa.de/hamm/uentrop-ort370525/tempelfest-hindu-gemeinde-hamm-uentrop-begonnen-pfauenhaus-aufgerichtet-5084143.html\">im Sommer 2015 aufgestellt worden</a>. Das Bauelement hätte aber das Zentrum zu sehr verteuert. Die Pläne wurden geändert. Das Pfauenhaus muss also weichen. Gestern begann der Abbau. Es erhält später einen neuen Platz an der Pfauen-Voliere. Der neun Meter hohe Stamm soll halbiert werden. Vielleicht wird das Haus dann besser von den göttlichen Reittieren angenommen.<br><br>Von den rund 1400 Quadratmetern Nutzfläche des Hindu-Kulturzentrums nimmt der Zeremonie- und Veranstaltungssaal mit seinen 485 Quadratmetern rund ein Drittel ein. Der Hochzeitssaal, wie er auch bezeichnet wird, bietet künftig 400 Sitzplätze und eine große Bühne. Im Zentrum des länglichen Gebäudes sind diverse Funktionsräume, wie Umkleiden (für Hochzeitpaare), eine Küche samt Spülraum, ein Büro, ein Lager und Sanitäranlagen. Daneben befindet sich auf rund 184 Quadratmetern ein großer Speisesaal. Weitere Räume werden für eine Bibliothek eingerichtet, für ein kleines Museum und zum Musizieren. Ein Meditations- und ein Konferenzraum komplettieren das Kulturzentrum.</p>",
    "lesezeit": 5,
    "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de",
    "kultur_fallback": true
   },
   {
    "id": 8360,
    "slug": "tamilen-und-die-gleichberechtigung",
    "titel": "Tamilen und die Gleichberechtigung",
-   "datum": "2022-11-14",
+   "datum": "2022-11-16",
    "datum_original": "2020-12-06",
    "kategorien": [
     "community",
@@ -1135,13 +1310,18 @@
    "inhalt_html": "<p>Die USA haben die gleichgeschlechtliche Ehe legalisiert. Diese Entscheidung wird als historischer Paukenschlag gefeiert. Andere Länder sind aber noch nicht soweit. Andere Kulturen haben noch weitaus andere Sorgen, so auch wir Tamilen.</p>\n\n<p>Das oberste US-Gericht hat — zwar nur mit einer knappen Mehrheit — Schwulen und Lesben in ganz Amerika erlaubt zu heiraten. Die Freude über diese Entscheidung ist groß und überall auf der Welt wird darüber diskutiert und die USA als Vorbild dargestellt. Andere Länder, so auch Deutschland, ist da noch lange nicht so weit. Doch während es in Deutschland wohl größtenteils an der Bürokratie scheitert, liegen wir Tamilen bei solchen Themen noch weiter zurück.</p>\n\n<h2>Tamilen und Homosexualität</h2>\n\n<p>Das Thema wird bei Tamilen gar nicht erst angesprochen, sondern bewusst verschwiegen. Tamilische Schwule und Lesben trauen sich gar nicht erst sich zu outen. Und selbst wenn diese sich outen, dann haben diese in der Regel so wenig mit der Tamil Gemeinschaft zu tun, dass andere&nbsp;Tamilen gar nichts von der Homosexualität dieser Person wissen. Wenn irgendwann mal die Homosexualität eines Tamilen ans Tageslicht kommt, dann&nbsp;brodelt die Gerüchteküche hoch. Die ganze Familie steht schlecht dar, sodass sogar gerne mal die Familie ihr eigenes Kind ausstößt.</p>\n\n<p>Warum ist das so? Warum kommen Tamilen mit&nbsp;dem Thema &#8222;Homosexualität&#8220; nicht klar? Selbst Tamilen aus der Diaspora, Tamilen der &#8222;neuen Generation&#8220;, sind meist dem Thema nicht gewachsen. Und das hat einen entscheidenden Grund: Die tamilische Gesellschaft hat sich mit dem Thema &#8222;Homosexualität&#8220; nie richtig auseinandergesetzt. Die Gesellschaft hat sich mit dem Thema bisher noch gar nicht auseinandersetzen können. Es gibt in der Gesellschaft einfach viel zu viele andere Fragen und Themen, die vorher geklärt werden müssen, bevor man überhaupt so weit ist, sich mit der Homo-Ehe oder Homosexualität an sich zu beschäftigen.</p>\n\n<h2>Tamilen und Gleichberechtigung</h2>\n\n<p>In der Gesellschaft der Tamilen ist das Thema Gleichberechtigung im Allgemeinen ein Thema, was noch viel Aufklärungsarbeit und Umdenken erfordert. Gleichberechtigung zwischen Mann und Frau und auch die Abschaffung des Kastensystems sind Themen, die in unserer Gesellschaft&nbsp;immer noch nicht durch sind.</p>\n\n<p>Erst wenn man die Frau nicht als minderwertig gegenüber dem Mann sieht, erst dann kann man sich mit dem Thema &#8222;Gender-Equality&#8220; beschäftigen, wie es hier in den westlichen Staaten der Fall ist. Probleme wie Ablehnung von &#8222;Love Marriage&#8220; oder &#8222;Dowry&#8220; bei der Ehe müssen einfach vorher behandelt werden. Probleme des Kastensystems müssen behoben werden, damit es generell&nbsp;Gleichberechtigung untereinander gibt. Erst dann, wenn man Menschen wie Menschen respektiert und gleichberechtigt, kann man auch Probleme wie Homosexualität angehen. Vorher wird&nbsp;das zu wenig hilfreichen Ergebnissen führen. Was bringt es die Homo-Ehe gesetzlich zu legalisieren, wenn diese von der Gesellschaft als Unberührbare abgestuft werden? Oder sogar von den Unberührbaren als unberührbare abgestempelt werden?</p>\n\n<h2>Appell an die &#8222;neue Generation&#8220;</h2>\n\n<p>Man sagt oft, dass sich mit der neuen Generation vieles ändern wird. Ich gehöre ja auch zu dieser &#8222;neuen Generation&#8220;, aber sehe trotzdem einige Probleme für die Zukunft. Diese neue Generation spaltet sich in zwei Gruppen: Die eine öffnet sich, aber werden aber von der westlichen Kultur assimiliert und vergessen so ihre Wurzeln. Die andere Gruppe bleibt starr bei&nbsp;ihrer traditionellen Denkweise und meint dabei so&nbsp;Kultur zu bewahren.</p>\n\n<p>Das muss sich ändern. Wir müssen lernen unser Weltbild zu öffnen, vieles von den anderen Kulturen zu lernen, einzuschätzen und das Positive daraus benutzen, um unsere eigene Gesellschaft zu verändern und zu entwickeln. Klar, deiner Oma ein neues Weltbild einzutrichtern wird schwierig, das schaffen die in den USA bestimmt auch nicht. Vielleicht ist es auch schwierig deiner Mutter ein neues Weltbild einzutrichtern, aber du selbst, du kannst es schaffen. Du kannst in der neuen Welt hier viele neue Erfahrungen mitnehmen und diese in unsere Gesellschaft bringen. Dabei solltest du keine Angst haben deine Meinung zu vertreten, nur weil andere dich auslachen oder abstoßen könnten. Würde nämlich jeder Angst vor jedem haben, bleiben wir nur auf einem Fleck. Mindestens einer muss aber vorangehen, wieso nicht du? Du wirst nicht alleine sein! Setze dich also ein! Für Gleichberechtigung aller Tamilen, für Gleichberechtigung aller Menschen!<br><br>Text: Anto Sutharsan Jesuthasan </p>",
    "lesezeit": 4,
    "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de",
    "kultur_fallback": true
   },
   {
    "id": 7931,
    "slug": "nach-farsi-tamilisch-und-co-der-kanton-aargau-sagt-jetzt-auch-allegra",
    "titel": "Nach Farsi, Tamilisch und Co.: Der Kanton Aargau sagt jetzt auch «Allegra!»",
-   "datum": "2021-09-03",
+   "datum": "2021-09-05",
    "datum_original": "2019-09-26",
    "kategorien": [
     "news",
@@ -1168,13 +1348,18 @@
    "inhalt_html": "<p>14 verschiedene Sprachen gab es bisher auf der Website des Kantons Aargau hallo-aargau.ch – nicht aber alle vier Landessprachen der Schweiz. Am Fehlen von Rätoromanisch hat sich SVP-Grossrat Christoph Riner gestört und hat erfolgreich beim zuständigen Regierungsrat, Landammann Urs Hofmann, interveniert.</p>\n\n<p>Bislang sind Besucherinnen und Besucher auf der Website des Kantons Aargau <a href=\"https://www.hallo-aargau.ch/\">hallo-aargau.ch</a> in 14 verschiedenen Sprachen begrüsst worden. Von Deutsch über Französisch und Farsi bis Tamilisch. Die Website versorgt Neuzuzügerinnen mit wichtigen Informationen über den Kanton. Eine Sprache aber fehlte bisher und daran hat sich SVP-Grossrat Christoph Riner gestört: Rätoromanisch, die vierte Landessprache der Schweiz, kam im Aargau nicht vor.<br><br>Riner hat erfolgreich beim zuständigen Regierungsrat, Landammann Urs Hofmann, interveniert. Jetzt heisst es auf der Website auch «Allegra», was auf Romanisch etwa «Grüezi» bedeutet. Allerdings gibt es keine Übersetzung des gesamten Inhalts. Wer die entsprechende Kachel auf der Website anklickt, findet zwar einen Beschrieb des Kantons in Romanisch, der Rest ist aber auf Deutsch.<br><br>Mehr auf: <a href=\"https://www.aargauerzeitung.ch/aargau/kanton-aargau/nach-farsi-tamilisch-und-co-der-kanton-aargau-sagt-jetzt-auch-allegra-135681835\">Quelle</a></p>",
    "lesezeit": 1,
    "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de",
    "kultur_fallback": true
   },
   {
    "id": 7392,
    "slug": "auf-bootstour-mit-einem-ehemaligen-tamil-tiger",
    "titel": "Auf Bootstour mit einem ehemaligen Tamil Tiger",
-   "datum": "2021-04-22",
+   "datum": "2021-04-24",
    "datum_original": "2019-05-15",
    "kategorien": [
     "community"
@@ -1202,13 +1387,18 @@
    "lesezeit": 6,
    "chips": [
     "konzert"
-   ]
+   ],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 7384,
    "slug": "reportage-reihe-sri-lanka-nach-dem-buergerkrieg-10-jahre-frieden",
    "titel": "Reportage-Reihe: Sri Lanka nach dem Bürgerkrieg- 10 Jahre Frieden?",
-   "datum": "2021-04-20",
+   "datum": "2021-04-22",
    "datum_original": "2019-05-13",
    "kategorien": [
     "community"
@@ -1234,13 +1424,18 @@
    },
    "inhalt_html": "<h2>„<strong>Das ist die Wahrheit</strong>“</h2>\n<p><em>von <a href=\"https://www.johannameier.de\">Johanna Meier</a></em></p>\n<p>Zehn Jahre nach Ende des Bürgerkriegs patrouillieren die Soldaten in Mullaitivu noch immer durch die Straßen. Die Gegend ist verlassen, von der Welt im Stich gelassen. Schüler in strahlend weißen Uniformen winken uns lächelnd zu. Sie wirken wie Fremdkörper an diesem traurigen Ort. „Die Regierung ist dumm, sie gehen respektlos mit den Menschen hier um“, sagt ein tamilischer Anwohner aufgebracht, als wir ihn im Januar 2019 in den Security Force Headquarters von Mullaitivu treffen. Vivakanthan lebt mit seiner Frau Hina* und anderen Vertriebenen in einem abgesperrten, vom Militär okkupierten Bereich, Tür an Tür mit den Regierungssoldaten.</p>\n<p><figure><img src=\"img/p7384-1.jpg\" alt=\"\" width=\"428\" height=\"321\"></figure></p>\n<p>Vor den Anschlägen am Ostersonntag war Mullaitivu eines der am stärksten militarisierten Gebiete des Landes. Ein Soldat traf hier auf zwei Zivilisten. Auf einem Schild soll die Bevölkerung an die heldenhaften Taten der Armee erinnert werden. Offiziell befreite die Armee die Zivilbevölkerung aus den Fängen der Rebellen. Tatsächlich kamen hier aber alleine in den letzten Tagen des Kriegs Tausende Zivilisten ums Leben, getötet von Regierungssoldaten. Wer zu den Tamil Tigers gehörte und wer nicht, war schwer auszumachen. Teilweise missbrauchte die LTTE die Zivilisten als Schutzschilde, teilweise kleideten sich die Kämpfer wie Zivilisten. So oder so, der Regierung war es schlichtweg egal. Sie wollten den jahrzehntelangen Aufstand endlich niederschlagen. Koste es, was es wolle.</p>\n<p>„Einige haben vor langer Zeit ihren Arsch gerettet, die sind ins Ausland gegangen“, sagt Vivakanthan. „Alle sagen uns: ‚Geht ins Ausland.‘ Aber das will ich nicht, ich will hier bleiben.“ Er schluckt und kämpft mit den Tränen. „Auf der ganzen Welt sind wir Tamilen zerstreut. Aber keiner kümmert sich wirklich um uns.“<br>\nDer Tamile sitzt auf Getreide, das er auf der Veranda zum Trocknen verteilt hat. Das Haus, das sich seine Familie mit vielen anderen Menschen teilen muss, ist nicht ihr eigenes Haus. Es wurde als eine Art Ersatz für sie angemietet, erzählen sie mir. Ihr eigenes Grundstück liegt direkt gegenüber, gerade mal zwanzig Meter Luftlinie entfernt. Seit zehn Jahren dürfen sie es nicht mehr betreten.</p>\n<p><figure><img src=\"img/p7384-2.jpg\" alt=\"\" width=\"438\" height=\"584\"></figure></p>\n<p>„Der Krieg ist vorbei, warum verdammt nochmal soll ich so leben, als ob immer noch Krieg wäre? Ich will zu Hause leben“, sagt Hina nach Luft ringend. Nach Kriegsende wird die tamilische Familie in einem Flüchtlingscamp untergebracht. Als sie nach drei Jahren auf ihr Grundstück zurückwollen, ist es von der Armee besetzt, bis heute. Wir schauen auf einen Zaun, hinter dem die Soldaten Kasernen zwischen Kokosnusspalmen gebaut haben. Die über vierzig Palmen bildeten die Lebensgrundlage des Ehepaars. Seit etlichen Jahren müssen sie ohne die Erträge klarkommen. Auch ein Brunnen steht auf ihrem Grundstück, zu dem sie seither keinen Zugang mehr haben. Das Land auf dem sie jetzt leben, ist unfruchtbar. Die beiden können die Ungerechtigkeit, die ihnen widerfährt nicht begreifen. „Das was sie uns als Ersatz gegeben haben, das ist ein Ort, mit dem wir gar nicht leben können, da bekommt man Depressionen. Es kann sein, dass der ein oder andere nicht meiner Meinung ist, dass andere sagen: ‚Du hast doch ein Grundstück.‘ Aber das ist nicht mein Zuhause und ich hatte ein großes Grundstück, auf dem ich viel erwirtschaftet habe, warum soll ich mich damit jetzt zufriedengeben?“, sagt Hina.</p>\n<p>Seit Jahren mobilisiert sie die enteigneten Tamilen, organisiert Demonstrationen vor den Militärcamps und in Jaffna, vor allem wenn politische oder diplomatische Vertreter aus dem Ausland kommen, „damit die Informationen in die Welt hinaus getragen werden.“ Das ist mutig. Auch wenn ein Gericht ihr kürzlich erst bestätigt hat, dass die Demonstrationen rechtens sind, solange sie keine Straßen sperren oder Gewalt einsetzen, ist sie doch vorsichtig. „Ich organisiere das Ganze zwar, aber ich will nicht zu sehr in den Vordergrund.“ Zu groß sei ihre Angst vor dem ‚weißen Van‘, die Art von Transporter, mit dem der ehemalige Präsident Rajapaksa angeblich seine Kritiker abholen und für immer verschwinden ließ.</p>\n<p>Etwas konnten Hina und die anderen Einwohner mit ihren Demonstrationen schon erreichen: „69 Familien wurden 2017 die Grundstücke zurückgegeben. Aber 58 Familien warten immer noch darauf, ihr Land zurückzubekommen.“ Präsident Sirisena hatte im letzten Jahr versprochen, alle Grundstücke im Nordosten bis Ende Dezember 2018 an die Besitzer zurückzugegeben. Als wir sprechen, ist es Ende Januar 2019, bis heute ist nichts dergleichen passiert. Denn auch wenn die Waffen längst ruhen, hat die aktuelle Situation nicht viel mit Frieden zu tun. Die Armee kümmert sich nicht um die Belange der Tamilen. Sie haben zum Sterben zu viel und zum Leben zu wenig. „Wenn wir unser Eigentum so lange wir noch leben nicht zurückbekommen, wie sollen es unsere Kinder dann schaffen, das Grundstück wieder zurückzubekommen und alles wiederaufzubauen? Wir werden ja nicht für immer leben, ich muss es irgendwie schaffen, so lange ich lebe. Man kann seine Ziele nur erreichen, solange die Kraft noch da ist.“</p>\n<p>Mullaitivu ist auch der Ort, an dem der damalige Anführer der LTTE, Velupillai Prabhakaran, im Mai 2009 vom Militär gestellt und ermordete wurde. Die Regierung selbst veröffentlichte kurz danach ein Video seines Leichnams. Die Geschichte um seinen Tod bleibt ein Mysterium. Nach wie vor gibt es unter den Tamilen Zweifel an der Authentizität des Videos, was Spekulationen nährt. Nicht zuletzt deshalb, weil Prabhakaran als äußerst vorsichtig galt, mehrere Doppelgänger hatte, sich nur sehr selten in der Öffentlichkeit zeigte und ein Leben im Untergrund führte. Alternative Theorien zur offiziellen Version um seinen Verbleib kursieren nach wie vor.<br>\nHat die Regierung auch deshalb solch großes Interesse, dieses Gebiet ganz besonders im Auge zu behalten?</p>\n<p>Mit Tränen in den Augen kommt es plötzlich auch aus Vivakanthan heraus: „Die Regierung kümmert sich nicht um die Tamilen. Die Tamilen haben immer noch keine Lösung. Damals hat Prabhakaran gesagt, dass die Regierung für uns Tamilen nichts machen wird, das hat er immer schon gesagt. Alle Tamilen haben damals zu Prabhakaran gesagt, bitte fange keinen Krieg an, er solle diplomatisch handeln, aber jetzt kann ich verstehen, was Prabhakaran damals meinte.“</p>\n\n<p>Seine Emotionen sind von solch überwältigender Aufrichtigkeit, dass mir ein Schauer über den Rücken fährt. Seine Stimme bebt. Ich schaue immer wieder zum Zaun hinüber, ob wir nicht zu viel Aufmerksamkeit erregen. Doch Vivakanthan scheint das nicht zu interessieren, er schreit fast vor Verzweiflung. „Mir ist es egal, wenn das jetzt veröffentlicht wird mit meinem Namen. Das ist die Wahrheit“, sagt er zum Schluss. Ich sehe, wie sein Herz durch sein rosafarbenes Hemd pocht. Er atmet schnell, zu schnell. Sein Gesicht ist von tiefen Furchen durchzogen. Seinen glasigen Blick hat er fest auf den Armeezaun gerichtet. „Bis zu meinem Tod werde ich demonstrieren und für mein Grundstück kämpfen.“</p>\n<p>*Name von der Redaktion geändert</p>",
    "lesezeit": 6,
-   "chips": []
+   "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 7158,
    "slug": "suriyas-ngk-teaser-trailer-nach-leak-frueher-veroeffentlicht",
    "titel": "Suriya’s NGK Teaser Trailer nach Leak früher veröffentlicht!",
-   "datum": "2021-01-22",
+   "datum": "2021-01-24",
    "datum_original": "2019-02-14",
    "kategorien": [
     "entertainment"
@@ -1263,13 +1458,18 @@
    },
    "inhalt_html": "<p>Als die Ankündigung kam, dass Suriya mit Regisseur Selvaraghavan (der große Bruder von Schauspieler Dhanush) einen Film dreht, sind die Erwartungen in den Himmel gestiegen. Regisseur Selvaraghavan hat mit Filmen wie Kaadhal Kondein, 7G Rainbow Colony, Pudhupettai, Aayirathil Oruvan und Mayakkam Enna die Messlatte für seine Filme sehr hoch gesetzt und hat mit seinen Filmen eine eigene Fankultur für sich geschaffen. Zudem ist die Kombination von Selvaraghavan und Yuvan Shankar Raja sehr beliebt, da die 2 Genies immer Chartbuster Albums zusammen rausgebracht haben. Auch bei NGK komponiert Yuvan Shankar Raja die Musik für den Film. Für Suriya Fans ist der heutige Tag ein ganz besonderer, weil der Teaser Trailer von NGK eigentlich heute Nachmittag rauskommen sollte. Die Produzenten haben den Teaser Trailer schon 1-2 Tage vorher an die Kinos rausgeschickt, damit sie den Teaser Trailer von dem Film &#8222;DEV&#8220; von Suriya&#8217;s jüngerem Bruder Karthi zeigen können. Jedoch hat diese Aktion dazu geführt, dass der Teaser Trailer schon gestern geleaked wurde.</p>\n<p>Deshalb haben die Produzenten den Teaser Trailer schon heute morgen veröffentlicht.</p>",
    "lesezeit": 1,
-   "chips": []
+   "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 7152,
    "slug": "1991-wie-gelang-es-der-tamilin-yamuna-sangarasivam-im-duett-mit-michae",
    "titel": "1991: Wie gelang es der Tamilin Yamuna Sangarasivam im Duett mit Michael Jackson zu tanzen?",
-   "datum": "2021-01-22",
+   "datum": "2021-01-24",
    "datum_original": "2019-02-14",
    "kategorien": [
     "entertainment",
@@ -1297,13 +1497,18 @@
    "inhalt_html": "<p><strong>Wie hat Yamuna Sangarasivam in Micheal Jackson’s damaligem „Black or White“-Video, das in 27 Ländern vor fast 500 Millionen Zuschauern Premiere hatte, die Chance bekommen mit ihm im Duett zu tanzen?</strong></p>\n<p>Obwohl sie ein großer Fan des King of Pop war, hätte sie nie gedacht, dass sie ihn treffen, geschweige denn ein Duett mit ihm in einem seiner Musikvideos tanzen würde! Sie hörte von Jacksons Aufruf nach ethnischen und modernen Tänzern und tanzte zusammen mit mehr als 3.000 anderen vor, da ihre Leidenschaft Anthropologie, Musik und Tanz war. Als sie den Anruf erhielt, dass sie ausgewählt wurde, akzeptierte sie glücklich und versprach sofort einen Agenten zu suchen. Danach hat sie ruhig aufgelegt, und &#8222;dann habe ich nur geschrien!&#8220;</p>\n<p>Ihr Duett mit Micheal Jackson wurde während einer etwa 14-stündigen Session vor Ort gedreht. Das war 1991, als sie ihren Master in Anthropologie des Tanzens an der „University of California“ in Los Angeles machte. Es war auch die Ära von Los Angeles-Rassenaufständen und der brutalen Gewalttat von vier weißen Polizisten gegen Rodney King, einem unbewaffneten schwarzen Mann.</p>\n<p>Micheal Jackson‘s Video war und ist ein Aufruf, verschiedene Kulturen zu feiern und sich gleichzeitig mit der Geschichte des Rassismus auseinanderzusetzen.</p>\n<p><strong>Yamuna Sangarasivam</strong> ist heute Professorin für Soziologische Anthropologie am Nazareth College in Rochester, New York. Sie wuchs im Norden Sri Lankas auf und studierte westlich klassische Musik mit Schwerpunkt Klavier, Tamil Carnatic und Bharatanatyam (indische klassische Tanztradition aus Tamil Nadu). Mit ihrem Vater aus Singapur und ihrer Mutter aus Kuala Lumpur, Malaysia, wuchs Yamuna Sangarasivam dreisprachig auf und lebte in Sri Lanka und Nord-Borneo, bevor sie im Alter von 9 Jahren mit ihrer Familie in die USA auswanderte.</p>\n<p><div class=\"video-embed\" data-video=\"wXoA6jajTJY\"><button type=\"button\" class=\"video-load\">Video laden</button><p class=\"video-hint\">YouTube-Video – wird erst nach Klick geladen (Datenschutz).</p></div><span>﻿</span></p>\n<p>Quelle: <a href=\"https://www2.naz.edu/dept/sociology-anthropology/faculty-and-staff/yamuna-sangarasivam/\">Nazareth College</a></p>",
    "lesezeit": 2,
    "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de",
    "kultur_fallback": true
   },
   {
    "id": 7136,
    "slug": "sind-filme-fuer-erwachsene-das-neue-hit-genre-in-tamil-cinema",
    "titel": "Sind Filme Für Erwachsene Das Neue Hit Genre In Tamil Cinema?",
-   "datum": "2021-01-20",
+   "datum": "2021-01-22",
    "datum_original": "2019-02-12",
    "kategorien": [
     "entertainment"
@@ -1328,13 +1533,18 @@
    },
    "inhalt_html": "<p>In Tamil Cinema ändert sich von Jahr zu Jahr immer wieder der Trend im Genre. Vor paar Jahren lief das Genre <strong>&#8222;Horror Komödie&#8220;</strong> gut und es kamen sehr viele Filme zu diesem Genre raus. Manche davon haben auch sehr viel Geld eingespielt wie zum Beispiel &#8222;Darling&#8220;, &#8222;Aranmanai 1 und 2&#8220;, &#8222;Devi&#8220;. Momentan favorisieren die Kinozuschauer das Thriller Genre. Ein Genre, welches auch immer mehr und mehr an Beliebtheit in den letzten Jahren gewonnen hat, ist das <strong>&#8222;ADULT MOVIE&#8220;</strong> Genre. Die Zielgruppe dieser Filme sind Jugendliche ab 18 Jahren und bisher kamen nur einige Filme hierzu raus. Das ganze hat im Jahr 2015 mit <strong>&#8222;Trisha Illana Nayanthara&#8220;</strong> angefangen. Der Film hat nur ein sehr kleines Budget gehabt, hat aber an den Kinokassen sehr gute Umsätze erzielt. Das neue Genre <strong>&#8222;Adult Movie &#8211; Only for youth&#8220;</strong>kam sehr gut bei den Jugendlichen an.</p>\n<p>In Hollywood gibt es schon viel länger solche Filme, aber in Tamil CInema hat sich dieser lansgam entwickelnde Trend erst vor kurzem angefangen. Das Problem hierbei ist, dass viele Prominente und Politiker sowas nicht unterstützen und auch der Ruf von Schauspielern,Regisseuren und Produzenten geschädigt werden könnte. So ein Genre wird in Süd Indien nicht gern gesehen, aber es gibt dennoch Produzenten, die solche Filme unterstützen. Letztes Jahr kam <strong>&#8222;Iruttu Arayil Murattu Kuthu&#8220;</strong> raus und auch dieser Film hat seht gute Umsätze an den Kinokassen erzielt. Nun geht das ganze weiter mit dem neuen Film von Schauspielerin <strong>Oviya</strong>. Sie wurde durch die erste Staffel von <strong>Big Boss</strong> sehr berühmt und hat dadurch auch sehr viele Fans gewonnen. Ihr neuer Film <strong>&#8222;90 ml&#8220;</strong> gehört auch zu diesem neuen Genre <strong>&#8222;ADULT MOVIE &#8211; ONLY FOR YOUTH&#8220;</strong>.</p>\n<p>Den Trailer zum neuen Film von Oviya könnt ihr euch bei uns anschauen<br>\n<strong>(Bitte nur schauen, wenn ihr über 18 Jahre alt seid)</strong>.</p>\n<p><div class=\"video-embed\" data-video=\"Jl14barRz84\"><button type=\"button\" class=\"video-load\">Video laden</button><p class=\"video-hint\">YouTube-Video – wird erst nach Klick geladen (Datenschutz).</p></div><span>﻿</span></p>",
    "lesezeit": 2,
-   "chips": []
+   "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 7102,
    "slug": "wasser-fuer-poovathany",
    "titel": "Wasser für Poovathany",
-   "datum": "2021-01-19",
+   "datum": "2021-01-21",
    "datum_original": "2019-02-11",
    "kategorien": [
     "community"
@@ -1360,13 +1570,18 @@
    },
    "inhalt_html": "<p><strong>Viele Tamilen im Norden Sri Lankas leben zehn Jahre nach dem Bürgerkrieg noch immer in absoluter Armut. Tamil.de hat eine Frau getroffen, die vom Krieg gezeichnet ist, doch trotzdem nie den Mut verloren hat.</strong></p>\n<p><figure><img src=\"img/p7102-1.jpg\" alt=\"\" width=\"408\" height=\"227\"></figure></p>\n<p>Poovathany hat im Bürgerkrieg alles verloren. Ihren Vater, ihr Zuhause und ihre Beine. Ans Aufgeben hat sie trotzdem nie gedacht. Auch wenn es schwerfiel. Als wir sie diesen Januar in ihrem neuen Zuhause in Chunnakam auf der Jaffna-Halbinsel im Norden Sri Lankas besuchen, fällt uns zuerst ihr Strahlen auf. Ihre schwarzen Haare hat sie zu einem Knoten zusammengebunden. Unterhalb des roten Pottus auf ihrer Stirn, verbindet eine Narbe ihre funkelnden Augen. Das Haus ist nicht wirklich ein Haus. Eher eine stabilere Hütte mit Wellblechdach. Staubig und würdelos. Die Wände sind in einem saftigen Grün gestrichen, die Farbe der Hoffnung, als würden sie sagen wollen: „Uns kriegt ihr nicht unter“. Ein Rosenkranz aus Plastikperlen baumelt über der Türe im Wind. Auf rund 25 Quadratmetern lebt Poovathany hier mit ihrer ganzen Familie. Die 34-jährige Tamilin hat drei Kinder. Zusammen mit ihrem Mann teilen sich alle eine Abstellkammer als Schlafzimmer. Wir sind fassungslos. Kaum vorstellbar, wie hier zwischen Klamottenbergen noch fünf Menschen schlafen sollen. Doch das ist nicht das Schlimmste, erzählt sie uns: „Oft regnet es rein, weil das Wellblechdach nicht dicht ist.“</p>\n<p><figure><img src=\"img/p7102-2.jpg\" alt=\"\" width=\"408\" height=\"544\"></figure></p>\n<p>Auf einer Feuerstelle steht eine kleine, runde Pfanne, daneben ein Mahlstein. Der ganze Raum ist von Rauch durchzogen. Es wäre falsch diesen tristen Ort als Küche zu bezeichnen. „Geld für Essen hatte ich heute keins“, sagt sie. „Ab und an bekommen wir ein paar Lebensmittel von meiner Schwiegermutter, das muss oft reichen.“ Einen Job hat Poovathany nicht. Die 3000 Rupien, rund 15 Euro, die sie im Monat von der Regierung bekommt, reichen vorne und hinten nicht. Gerne würde sie einen Laden eröffnen, um die Dorfbewohner mit Essen zu versorgen und sich etwas dazuzuverdienen. Einen Kredit dafür hat sie von der Regierung aber nicht bekommen. „Es ist besser als Krieg, wenigstens ist kein Krieg mehr“, sagt Poovathany immer wieder. Sie blickt nervös auf den Boden, überlegt und fügt dann hinzu: „Wir haben zwar jetzt Frieden, aber dieser Frieden ist nicht Frieden genug.“ Wir nicken. Wir haben verstanden.</p>\n<p>Im Vorgarten steht ein Brunnen. „Er hat am meisten Wasser im ganzen Dorf“, erzählt uns Poovathany. Deshalb versorgt sie neben ihrer gesamten Familie auch die kranken Nachbarn mit Trinkwasser, die wie wir mit eigenen Augen sehen, teilweise in noch katastrophaleren Zuständen leben müssen. Das Wasser-Pumpen ist für Poovathany immer ein Kraftakt. Lange stehen kann die 34-jährige Tamilin nämlich nicht, seit sie 1997 auf eine Landmine getreten ist. Ihre Prothesen sehen provisorisch aus, bereiten ihr große Schmerzen. Ihr rechtes Bein wurde bei der Explosion in Fetzen gerissen. Sie verlor den Fuß ihres linken Beins und Teile des Unterschenkels. „Eine automatische Brunnen-Pumpe würde so viel erleichtern“, sagt sie. Doch die kostet zu viel. 20.000 Rupien. Das sind gerade mal 100 Euro! Aber für Poovathany ist das ein Vermögen.</p>\n\n<p>Kurzerhand beschließen wir ihr die elektrische Pumpe zu finanzieren. Manchmal können es kleine Dinge sein, die eine große Wirkung haben. Poovathany kann ihr Glück nicht fassen. Eine Woche später bekommen wir ein Bild geschickt, wie die neue Pumpe Wasser spuckt. Für Poovathany bedeutet das weniger Schmerzen und damit eine große Erleichterung in ihrem schwierigen Alltag. Was für die Tamilin aber das Schönste an unserer Spende ist: Ab jetzt kann sie auch problemlos ihre kranken Nachbarn mit Wasser versorgen.</p>\n\n<p><strong>Text: <a href=\"https://johannameier.de\">Johanna Meier</a><br>\nBrunnen-Pumpe finanziert von: <a href=\"https://tamil.de\">Tamil.de</a></strong></p>",
    "lesezeit": 3,
-   "chips": []
+   "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 7077,
    "slug": "zum-ersten-mal-in-tamil-cinema-der-debuet-film-varmaa-von-vikrams-sohn",
    "titel": "ZUM Ersten MAL IN Tamil Cinema! Der Debüt-Film „Varmaa“ von Vikram’s Sohn Dhruv wird nochmal neu gedreht!",
-   "datum": "2021-01-15",
+   "datum": "2021-01-17",
    "datum_original": "2019-02-07",
    "kategorien": [
     "entertainment",
@@ -1393,13 +1608,18 @@
    "inhalt_html": "<p>Chiyaan Vikram&#8217;s Sohn sollte mit dem Film &#8222;VARMAA&#8220; seinen Debüt in Tamil Cinema feiern. Regisseur Bala wurde von den Produzenten E4 Entertainment und auch von Chiyaan Vikram selber ausgesucht um bei dem Remake vom Kult Telugu-Film aus dem letzten Jahr &#8222;ARJUN REDDY&#8220; die Regie zu führen. Regisseur Bala verhalf Chiyaan Vikram zum Durchbruch mit dem Film &#8222;Seethu&#8220;. Zudem hat Regisseur Bala auch bei bemerkenswerten Filmen wie Pitha Magan, Naan Kadavul, Nandha und Paradesi die Regie geführt. Der Trailer wurde auch schon veröffentlicht und Dhruv hat fleißig bei vielen Youtube Channels Interviews gegeben um den Film zu promoten. Nun kam der Schock! Der Produzent E4 Entertainment hat heute ein offizielles Statement abgegeben. Darin steht, dass sie mit dem Film unzufrieden seien und der Film nicht das geworden ist, was sie erwartet haben. Nun wird das komplette Casting und die technische Crew, bis auf Dhruv Vikram, ersetzt und der Film nochmal neu gedreht! Was denkt ihr? Wollt ihr Regisseurs Bala Version sehen oder die neue Version von &#8222;Arjun Reddy&#8220;? Das Statement könnt ihr natürlich auch weiter unten sehen.</p>\n<p><figure><img src=\"img/p7077-1.jpg\" alt=\"\" width=\"297\" height=\"300\"></figure></p>",
    "lesezeit": 1,
    "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de",
    "kultur_fallback": true
   },
   {
    "id": 6986,
    "slug": "sarkar-kritik",
    "titel": "Sarkar – Kritik",
-   "datum": "2020-11-09",
+   "datum": "2020-11-11",
    "datum_original": "2018-12-02",
    "kategorien": [
     "kino"
@@ -1424,13 +1644,18 @@
    "lesezeit": 2,
    "chips": [
     "kritik"
-   ]
+   ],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 6982,
    "slug": "dhanushs-internationaler-film-ab-heute-in-den-deutschen-kinos",
    "titel": "Dhanush’S Internationaler Film Ab Heute In Den Deutschen Kinos!",
-   "datum": "2020-11-06",
+   "datum": "2020-11-08",
    "datum_original": "2018-11-29",
    "kategorien": [
     "entertainment"
@@ -1453,13 +1678,18 @@
    },
    "inhalt_html": "<p>Dhanush’s neuer internationaler Film &#8222;Die Unglaubliche Reise des Fakirs, der in einem Kleiderschrank feststeckte&#8220; startet ab heute in Deutschland. Der Film ist eine Verfilmung von dem gleichnamigen Roman, welcher im Jahre 2014 veröffentlicht wurde.</p>\n<p><strong>WORUM GEHT ES IN &#8222;DIE UNGLAUBLICHE REISE DES FAKIRS, DER IN EINEM KLEIDERSCHRANK FESTSTECKTE&#8220; ?</strong></p>\n<p>Der junge Straßenkünstler Aja verdient sich seinen Lebensunterhalt in den quirligen Gassen Mumbais. Doch eine Frage beschäftigt ihn seit frühester Kindheit: Wer war sein Vater? Erst nach dem Tod seiner Mutter entdeckt er eine Spur, die nach Paris führt. Kurzentschlossen macht Aja sich auf die Reise in die „Stadt der Liebe“, wo er gleich am ersten Tag die bezaubernde Amerikanerin Marie kennenlernt. Bevor Aja jedoch die Chance bekommt, ihr Herz zu erobern, verschlägt es ihn auf eine spektakuläre Reise quer durch Europa, die ihren kuriosen Anfang in einem unscheinbaren Kleiderschrank eines Möbelhauses nimmt. Ajas abenteuerlicher Trip folgt völlig unvorhersehbaren Pfaden, auf denen der optimistische junge Mann die Eigentümlichkeiten des europäischen Kontinents kennenlernt: Er stößt auf Widerstände und Konflikte, erlebt aber auch tiefe Freundschaft und große Herzlichkeit. In der farbenfrohen Feelgood-Komödie und Verfilmung des internationalen Roman- Bestsellers von Romain Puértolas erzählt Regisseur Ken Scott (STARBUCK) mit überbordender Energie und viel augenzwinkerndem Humor die fesselnde Geschichte von Ajas unglaublicher Reise zu sich selbst – und zur Liebe seines Lebens. In der Hauptrolle verzaubert Indiens Superstar Dhanush, die Nebenrollen sind hochkarätig besetzt mit den Oscar®-Nominierten Bérénice Bejo (THE ARTIST) und Barkhad Abdi (CAPTAIN PHILLIPS) sowie Frankreichs Publikumsliebling Gérard Jugnot (DIE KINDER DES MONSIEUR MATHIEU). DIE UNGLAUBLICHE REISE DES FAKIRS, DER IN EINEM KLEIDERSCHRANK FESTSTECKTE entführt das Publikum in einen magischen Strudel der Zufälle und Möglichkeiten, der so bewegend, schillernd und witzig ist wie das Leben selbst!</p>\n<p>Hier könnt Ihr eure Tickets buchen: <a href=\"https://tickets.dieunglaublichereisedesfakirs.de/\">https://tickets.dieunglaublichereisedesfakirs.de/</a></p>",
    "lesezeit": 2,
-   "chips": []
+   "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 6708,
    "slug": "vada-chenani-kritik",
    "titel": "Vada Chennai – Kritik",
-   "datum": "2020-10-01",
+   "datum": "2020-10-03",
    "datum_original": "2018-10-24",
    "kategorien": [
     "kino"
@@ -1486,13 +1716,18 @@
    "lesezeit": 2,
    "chips": [
     "kritik"
-   ]
+   ],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 6694,
    "slug": "96-kritik",
    "titel": "96 – Kritik",
-   "datum": "2020-09-26",
+   "datum": "2020-09-28",
    "datum_original": "2018-10-19",
    "kategorien": [
     "kino"
@@ -1519,13 +1754,18 @@
    "lesezeit": 2,
    "chips": [
     "kritik"
-   ]
+   ],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 6573,
    "slug": "chekka-chivantha-vaanam-kritik",
    "titel": "Chekka Chivantha Vaanam –  Kritik",
-   "datum": "2020-09-09",
+   "datum": "2020-09-11",
    "datum_original": "2018-10-02",
    "kategorien": [
     "kino"
@@ -1552,13 +1792,18 @@
    "lesezeit": 3,
    "chips": [
     "kritik"
-   ]
+   ],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 6533,
    "slug": "seema-raja-kritik",
    "titel": "Seema Raja – Kritik",
-   "datum": "2020-09-04",
+   "datum": "2020-09-06",
    "datum_original": "2018-09-27",
    "kategorien": [
     "kino",
@@ -1585,13 +1830,18 @@
    "chips": [
     "kritik"
    ],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de",
    "kultur_fallback": true
   },
   {
    "id": 6482,
    "slug": "neue-top-serie-tere-bin-nicht-ohne-dich-feiert-premiere-auf-zee-one-in",
    "titel": "Neue Top Serie „Tere Bin – Nicht Ohne Dich“ Feiert Premiere Auf  Zee.One In Deutschland!",
-   "datum": "2020-08-29",
+   "datum": "2020-08-31",
    "datum_original": "2018-09-21",
    "kategorien": [
     "entertainment",
@@ -1616,13 +1866,18 @@
    "inhalt_html": "<p>An alle tamilischen Serienliebhaber! Hier ist eine neue Empfehlung für euch: Ab Montag den 24. September zeigt Zee.One Deutschland die ersten 20 Folgen einer neuen Top Serie <strong><span>&#8222;TERE BIN &#8211; NICHT OHNE DICH</span>&#8222;</strong> von Montag bis Freitag um 19:50 Uhr!</p>\n<p><strong><span>WORUM GEHT ES IN &#8222;TERE BIN &#8211; NICHT OHNE DICH&#8220; ?</span> </strong></p>\n<p>Eine brisante Ménage-à-trois im Krankenhaus zwischen Chefarzt Dr. Akshay Shina (TV-Held Gaurav Khanna), seiner Frau Vijaya (Newcomerin Shefali Sharma) und seiner Verflossenen Nandrin (Kushboo Tawde) steht im Zentrum des neuen Serienjuwels auf Zee.One, das am Montag den 24.09.2018 um 19:50 Uhr mit den ersten zwanzig Folgen bei Zee.One Deutschlandpremiere feiert. Drama und Romantik garantiert. Übersetzt bedeutet der Titel ‚Ohne Dich‘ – passend zur zentralen Frage, ohne welche Frau Akshay nicht mehr leben kann und will. Nandrins überraschende Rückkehr nach acht Jahren Stille bringt das Leben des Chirurgie-Gottes so sehr durcheinander, dass Vijaya schnell merkt: Etwas stimmt mit ihrem Mann nicht. Vor der Kulisse des spannenden Krankenhaus-Alltags entspinnt sich ein ebenso gefühlvoller wie packender Kampf um die ganz große Liebe. Doch wenn zwei sich streiten, freut sich nicht immer die Dritte: Einschalten und herausfinden, welche Überraschungen zwischen Trauer, Träumen und Tränen das Schicksaal für Akshay, Vijaya und Nandrin bereithält.</p>\n<p><span><strong>WIE EMPFANGE ICH DEN SENDER ZEE.ONE. IN DEUTSCHLAND?</strong></span><br>\nMehr hierzu: http://www.zeeone.de/empfang</p>",
    "lesezeit": 2,
    "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de",
    "kultur_fallback": true
   },
   {
    "id": 6370,
    "slug": "imaikkaa-nodigal-kritik",
    "titel": "Imaikkaa Nodigal – Kritik",
-   "datum": "2020-08-18",
+   "datum": "2020-08-20",
    "datum_original": "2018-09-10",
    "kategorien": [
     "kino"
@@ -1647,13 +1902,18 @@
    "lesezeit": 3,
    "chips": [
     "kritik"
-   ]
+   ],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 6343,
    "slug": "warum-das-kennenlernen-des-priesters-genauso-wichtig-ist-wie-die-kleid",
    "titel": "Warum das Kennenlernen des Priesters genauso wichtig ist, wie die Kleiderauswahl für den Hochzeitstag",
-   "datum": "2020-08-17",
+   "datum": "2020-08-19",
    "datum_original": "2018-09-09",
    "kategorien": [
     "community",
@@ -1678,13 +1938,18 @@
    },
    "inhalt_html": "<p>Tamilische Paare können Monate und sogar Jahre damit verbringen, ihre Hochzeit zu planen aber scheinbar vernachlässigen sie die wichtigste Person des Tages &#8211; den Priester. Der wohl grundlegendste Teil der Hochzeit besteht darin, dass der Priester das Paar letztendlich als Ehemann und Ehefrau ankündigt. Es scheint jedoch, dass die meisten tamilischen Paare weder das Ritual einer Hochzeit verstehen noch die Wichtigkeit sehen, sich vor dem großen Tag mit ihrem Priester zu treffen.</p>\n<p>Ich komme aus einer großen tamilischen Familie und habe schon einige Hochzeiten mit erlebt. Aus meinen Erfahrungen scheint es mir, als ob die Mehrheit der Paare ihre volle Aufmerksamkeit auf das Kleid, der Location, dem Essen, der Musik und der Party gerichtet haben.</p>\n<p>Als mein jetziger Ehemann und ich beschlossen zu heiraten, waren wir uns einig, dass der wichtigste Teil der Hochzeit die eigentliche Zeremonie sein sollte. Wir haben viel über tamilische Hindu-Hochzeiten recherchiert und uns für eine Zeremonie entschieden, die sich auf die Gleichstellung der Geschlechter konzentriert. Als wir mit Familie und Freunden darüber sprachen, wurde uns gesagt, dass es einfach nicht möglich wäre, eine hinduistische Zeremonie zu haben, die alte Traditionen verändert. Aber erst nachdem wir unseren Priester getroffen hatten, erfuhren wir, dass die Gleichberechtigung der Geschlechter bereits ein fester Bestandteil der hinduistischen Hochzeitszeremonie war.</p>\n<p>In Zusammenarbeit mit unserem Priester haben wir beschlossen, bestimmte Teile der traditionellen Hindu-Zeremonie zu verändern, während die zentralen Aspekte des Rituals erhalten blieben. Zum Beispiel, während die Braut traditionell einen Hochzeits-Saree (Koorai) vom Bräutigam als Symbol dafür akzeptiert, dass sie ein Teil der Familie ihres Mannes wird, waren wir uns einig, dass Akzeptanz von beiden Familien wichtig sein sollte. So erhielt mein Mann während der Zeremonie auch ein Outfit von meiner Familie.</p>\n<p>Eine der schönsten Botschaften der Hochzeit war das Versprechen, dass ein Paar nicht nur gut zueinander sein sollte, sondern auch zu der Gesellschaft als Ganzes. In Übereinstimmung mit diesem Konzept haben wir verschiedene Wohltätigkeitsinitiativen in unsere Hochzeit mit einbezogen, darunter eine Online-Spendenaktion, eine Wohltätigkeitsparty und eine Bitte an unsere Gäste nicht verderbliche Lebensmittel zum Spenden mitzubringen. Nachdem wir nun seit drei Jahren verheiratet sind, feiern wir weiterhin jedes Jubiläum, indem wir uns an irgendeiner Art von karitativer Arbeit beteiligen.</p>\n<p>Bei unserer Hochzeit hatten wir die Idee, dass ein Freund uns das Ritual der Hindu-Mantras auf Englisch erklärt, während der Priester sie in Tamil rezitiert. Nach unserer Hochzeit war eine Freundin so berührt davon, dass sie darum bat, dass ich die Praxis bei ihrer Hochzeit fortsetze. Dort kam ein Event-Veranstalter auf mich zu und fragte, ob ich bereit wäre, dasselbe für eine Reihe von Hochzeiten zu tun, die sie ausgerichtet hatte. Nach jeder dieser Hochzeiten überreichte eine überwältigende Anzahl von Gästen, jung und alt, ihre Wertschätzung für meine Übersetzungen.</p>\n<p>Es ist verständlich, dass viele Tamilen der zweiten Generation die Sprache nicht fließend sprechen und/oder keinen Zugang zu den richtigen Ressourcen haben, wenn es um eine authentisch Tamil-Hinduistische Hochzeit geht. Ich denke aber, dass die tamilische Hochzeitsindustrie hier viel Spielraum zur Verbesserung hat.</p>\n<p>Als ich die Online-Konversation las, die letztes Jahr über das umstrittene Cover des Jodi-Magazins ausbrach, fiel mir auf, wie mächtig die tamilische Hochzeitsindustrie in Kanada und auf der ganzen Welt ist. Die Leute, die hinter diesen großen Hochzeitsgesellschaften stehen, haben ein großes Gefolge und ein Publikum, das jeden ihrer Schritte beobachtet. Ich glaube, diese Unternehmen können ihren Einfluss darauf verwenden, tamilische Jugendliche über hinduistische Rituale und Traditionen aufzuklären. Hochzeitsshows könnten möglicherweise Lernabschnitte beinhalten, die sich auf hinduistische Kultur und Traditionen beziehen, und Fotografen könnten möglicherweise davon profitieren, die Bedeutung von Ritualen zu verstehen, um Momente in der Zeremonie besser festzuhalten.</p>\n<p>Der Priester, der meine Hochzeit einmal geleitet hat, fragte mich, warum ich mich für hinduistische Hochzeitsrituale interessiere. Erst nachdem ich mein eigenes geplant hatte, wurde die Zeremonie für mich persönlich und damit wichtig für mich zu verstehen. Während des gesamten Hochzeitsprozesses recherchierte ich intensiv über die verschiedenen religiösen Aktivitäten, an denen mein Mann und ich teilnahmen. Erst als ich die Bedeutung jedes Teils der Hochzeitszeremonie verstand, schätzte ich die Schönheit der tamilischen Hochzeiten.</p>\n<p>Mein Rat an tamilische Paare auf dem Weg zur Ehe? Personalisieren Sie Ihre Hochzeit, indem Sie sich nicht nur auf Kleidung und Dekoration konzentrieren, sondern sich die Zeit nehmen, die Rituale der Hochzeitszeremonie mit Ihrem Priester zu verstehen.</p>\n\n<p><strong>Supanki Kalanadan</strong><br>\n<em>(Rechtsanwältin in Kanada)</em></p>\n<p>Quelle: TamilCulture Canada<br>\nÜbersetzt von Ordin Thanapalasingham</p>",
    "lesezeit": 4,
-   "chips": []
+   "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 6337,
    "slug": "die-unglaubliche-reise-des-fakirs",
    "titel": "Die Unglaubliche Reise Des Fakirs",
-   "datum": "2020-08-16",
+   "datum": "2020-08-18",
    "datum_original": "2018-09-08",
    "kategorien": [
     "kino"
@@ -1707,13 +1972,18 @@
    },
    "inhalt_html": "<p>Die Kino-Komödie „<strong>Die unglaubliche Reise des Fakirs</strong>, der in einem Kleiderschrank feststeckte“ basiert auf dem gleichnamigen Roman von Romain Puértolas: Nach dem Tod seiner Mutter, die sich immer gewünscht hatte, einmal die Stadt der Liebe zu sehen, beschließt der junge Fakir Aja (Dhanush), ihre Asche in Paris zu verstreuen. Bei einem IKEA-Besuch verliebt er sich in die Amerikanerin Marie (Erin Moriarty), mit der er sich am nächsten Tag am Eifelturm treffen will. Die Nacht verbringt er mangels Alternativen einfach in einem IKEA-Schank – der allerdings just in dieser Nacht nach London verschifft wird. Mit allen Mitteln versucht Aja, rechtzeitig wieder zurück in die französische Hauptstadt zu kommen, bevor er Marie ein für alle Mal verloren hat…</p>\n<p>Regisseur Ken Scott ist bisher vor allem für die kanadische Erfolgs-Komödie „Starbuck“ und die zum Großteil in Deutschland spielende Vince-Vaughn-Comedy „Big Business &#8211; Außer Spesen nichts gewesen“ bekannt. Hauptdarsteller Danush hat bereits in einer ganzen Reihe Bollywood-Produktionen mitgewirkt (am bekanntesten: „Raanjhanaa“) und ist in seiner Heimat zudem als Sänger erfolgreich. Eine größere Nebenrolle bekleidet zudem die für „The Artist“ oscarnominierte französische Schauspielerin Bérénice Bejo. Der Trailer verspricht – wie das Buch – einen märchenhaften Ton mit sozialrealistischen Einsprengseln, eben eine Wohlfühl-Komödie mit buntem Bollywood-Touch.</p>\n<p>„Die unglaubliche Reise des Fakirs, der in einem Kleiderschrank feststeckte“ läuft am 29. November 2018 in den deutschen Kinos an – und kann dann an den Kinokassen zeigen, ob er das Zeug zum Feel-Good-Weihnachts-Hit hat.</p>",
    "lesezeit": 2,
-   "chips": []
+   "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 6296,
    "slug": "indogerman-filmweek-berlin-frauen-im-indischen-kino",
    "titel": "IndoGerman Filmweek Berlin – Frauen im indischen Kino",
-   "datum": "2020-08-04",
+   "datum": "2020-08-06",
    "datum_original": "2018-08-27",
    "kategorien": [
     "entertainment",
@@ -1743,13 +2013,18 @@
    "inhalt_html": "<p>Frauen im indischen Kino (Women in Indian Cinema) – die 6. Ausgabe der IndoGerman Filmweek im Kino Babylon in Berlin feiert vom 16. bis 26. August 2018 mit über 40 Filmen, davon 20 Deutschland- und acht Berlin-Premieren, die weltweit größte Kinonation Indien. Dabei spielen Frauen eine tragende Rolle, die insbesondere für das europäische Publikum, spannende Facetten bereithält.</p>\n<h2>Stars und Prominente</h2>\n<figure><figcaption>Gold. © IndoGerman Filmweek Berlin</figcaption></figure>\n<p>Zur feierlichen Eröffnung am 16. August um 19.30 Uhr durch ihre Excellenz, die indische Botschafterin  Mukta Dutta Tomar werden unter anderem die Schauspielerin Tannishtha Chatterjee (Dr. Rakmabhai), die Regisseurin Vandana Kataria (Noblemen) und die Regisseure Arjun Mukerjee (3 Storeys) und Anup Singh (Song of Scorpions) erwartet. Nach dem Tanz-Eröffnungsprogramm feiert „Gold“ seine Deutschland-Premiere im Babylon. 1948, nach der Unabhängigkeit Indiens, gewann das Land seine erste Goldmedaille – mit seiner Hockeymannschaft.</p>\n<h2>Filmhighlights für Bollywood-Fans</h2>\n<figure><figcaption>Padmaavat. © IndoGerman Filmweek Berlin</figcaption></figure>\n<p>Deutsche Bollywood-Fans werden nicht nur durch die Filme mit Ajay Devgn („RAID“), Akshay Kumar („Gold“, „Padman“), Dhanush („The extraordinary Journey oft he Fakir“), Ranbir Kapoor („Sanju“), Salman Khan („Tiger Zinda Hai“) und Shah Rukh Khan („Jab Harry met Sejal“) oder die zahlreichen romantischen Komödien (wie z. B. „Geetha Govindam“) im Festival auf ihre Kosten kommen: Die Filme „Padmavaat“ und „Hotel Salvation“ werden erstmals in der deutschen Synchronfassung gezeigt.</p>\n<h2>Starke Frauen, Mütter im Zentrum</h2>\n<figure><figcaption>Shubh Mangal Saavdhan. © IndoGerman Filmweek Berlin</figcaption></figure>\n<p>In zahlreichen Filmen sind starke Frauen im Zentrum der Geschichten, wie in „Tumhari Sulu“, „Hichki“, „Song of Scorpions“ oder „3 Storeys“ in „Aruvi“ (in tamilischer Sprache) oder „Chuskit“ (in Ladakhi).</p>\n<p>Überraschende, bewegende Kinomomente werden die Festivalbesucher erleben mit “Nude”, “My Son Is Gay” und “Love and Shukla”. Alle drei Filme zeigen die Mutter als zentrale, gewichtige Figur. Die Untreue ihres Ehemanns kann Yamuna in dem kontrovers diskutierten „Nude“ nicht akzeptieren und verlässt mit ihrem Sohn das Dorf. Durch eine Verwandte erhält sie eine Arbeit, die unbedingt geheim bleiben muss: Als Aktmodell in einer Kunstschule in Mumbai verdient Yamuna das Geld für die Ausbildung ihres Sohnes. Nach anfänglichen, immensen Widerständen, sich derart zu exponieren, gewinnt Yamuna im Laufe der Zeit Verständnis für die Kunst, ganz im Gegensatz zu einigen Menschen, welche die für sie unmoralische Kunstfreiheit gewaltsam bekämpfen wollen. Yamunas Hoffnung ist jedoch, dass ihr Sohn durch sein Studium lernt frei zu denken. Ein Skype-Interview mit dem Regisseur Ravi Jadhav findet am 18.08.2018 ab 17.15 Uhr statt.</p>\n<p>„She gave him unconditional love, with some exceptions” – Lakshmi in “My Son is Gay” ist eine taffe Schulleiterin, ihr Sohn Varun ist ihr Ein und Alles. Als dieser für sich erkennt, dass er Männer liebt, vertraut er sich einem Arzt an und findet in ihm wohltuende Unterstützung. Doch Varun hat Angst, sich seiner Mutter zu offenbaren. Zu Recht, denn diese bricht schockiert und angeekelt den Kontakt zu ihm ab. Zumindest seine Freunde versuchen Varun zu unterstützen. Weitere LGBT-Filme, die gezeigt werden, sind: „Shab“ von Onir und „Nobelman“ von Vandana Kataria.</p>\n<p>Insbesondere die junge, indische Generation konnte sich mit „Love and Shukla“ identifizieren. Sex zu haben, wenn die Eltern sich im gleichen Raum hinter einer „Mauer“ aus Koffern befinden, ist quasi unmöglich, eine alles managende (Schwieger-)Mutter die beste Verhütung. Deshalb will der junge Rikshafahrer Shukla mit seiner Braut in einem Hotelzimmer übernachten und trifft dort auf die nächste Herausforderung.</p>\n<p>Ungewöhnlich ist auch das Thema des Filmhits und Comedy-Dramas „Shubh Mangal Saavdhan“: Erektionsstörungen. Das junge Paar Mudit und Sugandha will die Chance nutzen, als die Eltern des Mädchens verreisen. Doch statt Erotik pur zu erleben, begeben sich die beiden nun auf die hürdenvolle Suche nach der Lösung des Problems. Regisseur R.S. Prasanna landete mit dem Hindi-Remake seines tamilischen Films einen so großen Erfolg, dass ein Sequel geplant ist.</p>\n<h2>Dokumentarfilme</h2>\n<figure><figcaption>Der indische Sexexperte Dr. Mahinda Watsa. © IndoGerman Filmweek Berlin</figcaption></figure>\n<p>Am 17.08.2018, 19.30 Uhr, zur Deutschlandpremiere des Biopics „Dr. Rakmabai“ über die erste praktizierende Ärztin Indiens (1864–1955), die sich als 20-Jährige erfolgreich gerichtlich gegen ihre Kinderehe zur Wehr setzte, gibt es ein Meet and Greet mit der preisgekrönten Hauptdarstellerin Tannishtha Chatterjee („Schatten der Zeit“, „Brick Lane“, „Anna Karenina“, „7 Göttinnen“). Das Selbstbewusstsein der historischen Figur spiegelt sich in ihrer Begegnung mit dem Prince of Wales wider: „I always thought that women in England are treated equally. But sadly it’s not any different from my country.”</p>\n<p>Auf keinen Fall verpassen, sollte man den Dokumentarfilm „Ask the Sexexpert“ über den indischen Dr. Sommer, den über 90-jährigen Dr. Mahinder Watsa, der mit seiner täglichen Sexkolumne eine Legende ist und viele Sorgen und Fragen seiner Leser sachlich, aber mit Humor beantwortet. So trifft er nicht nur auf der Straße und während Lesungen auf Fans verschiedenen Alters.</p>\n<h2>Top 1 laut IMDB-Liste 2017</h2>\n<p>Top 1 der IMDB-Liste der besten indischen Filme des Jahres 2017 ist der Film Noir und Action-Thriller „Vikram Veda“, den das Festival als Deutschland-Premiere zeigt. Dass der Film auf Platz 1 landete, war eine Sensation, denn das Fantasy-Drama „Baahubali 2: The Conclusion“ war der an Besucherzahlen erfolgreichste, indische Film aller Zeiten. Inspiriert von der Legendensammlung Baital Pachisi versucht in „Vikram Veda“ der Gangster Veda mit drei Geschichten die eindeutige Einteilung in Gut und Böse, die Kommissar Vikram für unumstößlich hält, ins Wanken zu bringen.</p>\n<h2>Ausstellung parallel zum Festival</h2>\n<p>Parallel zum Festival läuft die Ausstellung „Women in Indian Cinema“ des in Berlin lebenden Künstlers Allen Shaw und des indischen Fotografen Siddharth Kaneria. Die handgemalte indische Plakatkunst mit Einflüssen des sowjetischen Konstruktivismus und die Argyrotype-Prints von Fotografien feiern den Beitrag von Frauen in der indischen Filmindustrie. Zu sehen ist z. B. ein Porträt des Festivalgasts Tannishtha Chatterjee.</p>\n<h2>Rahmenprogramm</h2>\n<p>Eintritt frei heißt es wieder für alle Veranstaltungen des Rahmenprogramms, das AMIKAL e.V. durchführt, das viele Facetten des Subkontinents präsentiert und authentische Momente verspricht. Dazu gehören z. B. am 18.08. der Vortrag „Die Schätze unserer Natur- Gewürze als natürliches Heilmittel“, am 19.08. der Workshop „Raksha Bandhan – die Bindung zwischen Geschwistern, gemeinsames Rakhi basteln“ oder am 24.08. der Vortrag „Sound – The hidden picture“.</p>\n<p>Festivalorganisator Stephan Ottenbruch: „2017 und 2018 konnte das regionale, indische Kino wie Kollywood und Tollywood bisher große Erfolge gegenüber dem in Europa bekannten Hindi-Bollywood-Kino verbuchen. Die IndoGerman Filmweek präsentiert deshalb wichtige Filme aus dem tamilischen Sprachgebiet, aber auch Produktionen in Malayalam, Kannada und Telugu. Angetrieben durch die Bedürfnisse der wohlhabenden Mittelschicht erobern immer mehr junge Talente auch mit kleineren Filmbudgets die Kinos der Großstädte. Unsere Festivalbesucher erwartet eine spannende Filmreise auf den Subkontinent.“</p>\n<h2>Weitere Infos:</h2>\n<p>Festivalticket: 50 Euro / jedes Ticket 4 Euro (ggf. Längenzuschlag) / Babylon-T-Shirt einmalig 20 Euro</p>",
    "lesezeit": 6,
    "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de",
    "kultur_fallback": true
   },
   {
    "id": 5595,
    "slug": "stylish-star-allu-arjuns-naa-peru-suriya-in-deutschland",
    "titel": "Stylish Star Allu Arjun’s „Naa Peru Suriya“ in Deutschland!",
-   "datum": "2020-04-11",
+   "datum": "2020-04-13",
    "datum_original": "2018-05-04",
    "kategorien": [
     "entertainment"
@@ -1772,13 +2047,18 @@
    },
    "inhalt_html": "<p><span><strong>Telugu Filme</strong> und Schauspieler werden von Zeit zu Zeit immer beliebter und bekannter.</span></p>\n<p>Angefangen mit „Baahubali“ sind seitdem prominente Schauspieler aus der Telugu-Filmindustrie auch für das tamilische Publikum interessant geworden. Zu den beliebtesten Darstellern gehören Prabhas (aus Baahubali), Mahesh Babu (aus Spyder), Ram Charan und Allu Arjun. Auch die Telugu Filme gewinnen immer mehr und mehr an Popularität.</p>\n<p>Allu Arjun ist bei Jugendlichen ziemlich beliebt und bekannt für seine coolen und stylischen Tanz-Skills. Am Freitag startet nun sein neuer Film „Naa Peru Suriya“ in Deutschland. Der Film wird überall mit englischen Untertiteln ausgestrahlt und vielleicht traut ihr euch ja zu eurem ersten Telugu Film ins Kino! Prominente tamilische Schauspieler (Arjun und Sarathkumar) sind auch mit dabei. Den Trailer und einige Sneak-Videos zu den Songs könnt ihr euch hier anschauen!</p>\n<p><img src=\"img/p5595-1.jpg\" alt=\"\" width=\"684\" height=\"498\"></p>\n<p><div class=\"video-embed\" data-video=\"JlchA0iRDLA\"><button type=\"button\" class=\"video-load\">Video laden</button><p class=\"video-hint\">YouTube-Video – wird erst nach Klick geladen (Datenschutz).</p></div></p>\n<p><div class=\"video-embed\" data-video=\"YziLDTeZXoQ\"><button type=\"button\" class=\"video-load\">Video laden</button><p class=\"video-hint\">YouTube-Video – wird erst nach Klick geladen (Datenschutz).</p></div><span>﻿</span></p>",
    "lesezeit": 1,
-   "chips": []
+   "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 5538,
    "slug": "bollywood-bei-alarm-fuercobra-11-ueberraschung-auf-der-autobahn-2",
    "titel": "Bollywood bei „Alarm für Cobra 11“: Überraschung auf der Autobahn",
-   "datum": "2020-03-05",
+   "datum": "2020-03-07",
    "datum_original": "2018-03-28",
    "kategorien": [
     "entertainment"
@@ -1801,13 +2081,18 @@
    },
    "inhalt_html": "<p>Seit 22 Jahren lässt es &#8222;Alarm für Cobra 11 &#8211; Die Autobahnpolizei&#8220; (RTL-Erstsendung im März 1996) krachen. Unzählige Autos sind seit der Serienpremiere im März 1996 in die Luft geflogen, wurden geschrottet oder gleich ganz zerlegt. Allerlei skurrile Einfälle gab es auch. So kunterbunt wie nun sind die Polizisten Semir Gerkhan (Erdogan Atalay) und Paul Renner (Daniel Roesner) bislang aber wohl kaum in eine Staffel-Fortsetzung (mit sechs neuen Folgen) gestartet.</p>\n<p>Die beiden rasenden Cobra-Cops crashen mit ihrem Dienstwagen mitten auf der Autobahn in eine Tanzkulisse. Bitte was? Zur Auflösung: Dort wird gerade ein internationaler Bollywood-Film gedreht. Kurz darauf wird am Set dann auch noch die indische Hauptdarstellerin Priya Shetty (Stefania Kavas) entführt. Semir und Paul haben also wieder einen krachenden Fall.</p>\n<p>So unwahrscheinlich das Szenario der Folge &#8222;Hooray for Bollywood&#8220; mit ungeschützten Dreharbeiten auf einer deutschen Autobahn auch klingen mag, so begeistert bleiben die Fans der anscheinend ewig fahrenden &#8222;Autobahnpolizei&#8220; treu. Die erfolgreichste Serieneigenproduktion von RTL erhielt auch im vergangenen Herbst wieder überzeugenden Zuspruch. Sie erreichte bis zu 16,3 Marktanteil in der &#8222;jungen&#8220; Zielgruppe (Zuschauer zwischen 14 und 49 Jahren). Verschleißerscheinungen sehen anders aus.</p>\n<table>\n<tbody>\n<tr>\n<td><strong>Name der Sendung</strong></td>\n<td><strong>Alarm für Cobra 11 &#8211; Die Autobahnpolizei</strong></td>\n</tr>\n<tr>\n<td>Hinweis</td>\n<td>Neue Folgen:</td>\n</tr>\n<tr>\n<td>Sendedatum</td>\n<td>29.03.2018</td>\n</tr>\n<tr>\n<td>Sender</td>\n<td>RTL</td>\n</tr>\n<tr>\n<td>Sendezeit</td>\n<td>20:15:00</td>\n</tr>\n<tr>\n<td>Genre</td>\n<td>Serie</td>\n</tr>\n</tbody>\n</table>\n\n<p><a title=\"So sieht es also aus, wenn eine Bollywood-Produktion auf einer Autobahn tanzt. Foto: MG RTL D / Guido Engels\" href=\"http://static2.heilbronnerstimme.de/storage/image/7/5/7/1/3101757_default_1qCoRN_mSl0GU.jpg\"><br>\n<br>\n</a><strong>So sieht es also aus, wenn eine Bollywood-Produktion auf einer Autobahn tanzt.   </strong></p>\n<p><a title=\"Eine Autobahn scheint für Indien kein gutes Pflaster: Der Bollywood-Star Priya Shetty (Stefania Kavas) wird flugs entführt. Foto: MG RTL D / Guido Engels\" href=\"http://static1.heilbronnerstimme.de/storage/image/9/5/7/1/3101759_default_1qCoRO_c67hP4.jpg\"><br>\n</a><strong>Eine Autobahn scheint für Indien kein gutes Pflaster: Der Bollywood-Star Priya Shetty (Stefania Kavas) wird flugs entführt.   </strong><br>\n<strong>Foto: MG RTL D / Guido </strong></p>\n<p>Source:<br>\nhttp://www.stimme.de/deutschland-welt/panorama/tlsch/television/tv_dienst/Benzin-und-Bollywood;art136642,3994222<br>\nhttps://www.rtl.de/cms/alarm-fuer-cobra-11-am-29-maerz-2018-startet-die-brandneue-staffel-4144522.html</p>",
    "lesezeit": 2,
-   "chips": []
+   "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 5451,
    "slug": "5451-2",
    "titel": "Der erste tamilische Schauspieler im Madame Tussauds!",
-   "datum": "2020-02-19",
+   "datum": "2020-02-21",
    "datum_original": "2018-03-13",
    "kategorien": [
     "entertainment",
@@ -1834,13 +2119,18 @@
    "inhalt_html": "<p>Der tamilische Schauspieler <strong>Rangaraj Subbaiah</strong>, besser bekannt als Sathyaraj, hat einen großen Anlass zum Feiern. Der bei den Tamilen schon jahrelang äußerst beliebte und nun auch in jeder Ecke Indiens durch den Film ,Baahubali&#8216; sehr angesehene Schauspieler wird eine Wachsfigur im weltweit bekannten Madame Tussauds Wachs Museum erlangen. Sathyaraj ist somit der erste tamilische Schauspieler, welcher eine Wachsfigur im Madame Tussauds Museum erhält. Der Look der Wachsfigur wird, wie man den 63-Jährigen aus ,Baahubali&#8216; kennt, natürlich im ‚Kattappa‘ Avatar sein. Diese Filmfigur ist mittlerweile genauso beliebt und bekannt wie der Protagonist ‚Baahubali&#8216; selbst. Die Frage, warum Kattappa Baahubali getötet hat, war eines DER SOCIAL MEDIA Trends der letzten 3 Jahre! ,Baahubali&#8216;-Schauspieler Prabhas hat bereits seine Wachsfigur als ‚Amarendra Baahubali‘ im Madame Tussauds Wachs Museum in Bangkok seit 2017. Noch ist es unklar in welchem Madame Tussauds Wachs Museum Sathyaraj’s Wachsfigur stehen wird &#8211; vielleicht London? Die Information ist leider noch nicht bestätigt.</p>\n<p>Sathyaraj hat mittlerweile schon in über 200 Filmen in diversen Sprachen wie Tamil, Hindi, Malayalam und Telugu sein Talent als exzellenter Schauspieler unter Beweis gestellt. Zudem wird er bei den Tamilen aus Srilanka enorm geschätzt. Immer wieder macht der sympathische Sathyaraj bei zahlreichen Events und Veranstaltungen auf die Probleme in Srilanka aufmerksam und unterstützt die Tamilen dort!</p>\n<p><div class=\"video-embed\" data-video=\"UqBBi-fhL8w\"><button type=\"button\" class=\"video-load\">Video laden</button><p class=\"video-hint\">YouTube-Video – wird erst nach Klick geladen (Datenschutz).</p></div><span>﻿</span></p>\n<p>-3DotsMedia-</p>",
    "lesezeit": 2,
    "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de",
    "kultur_fallback": true
   },
   {
    "id": 5443,
    "slug": "bollywood-star-sridevi-kapoor-in-mumbai-beerdigt",
    "titel": "Bollywood Star Sridevi Kapoor in Mumbai beerdigt",
-   "datum": "2020-02-13",
+   "datum": "2020-02-15",
    "datum_original": "2018-03-07",
    "kategorien": [
     "entertainment"
@@ -1863,13 +2153,18 @@
    },
    "inhalt_html": "<p>Ihr Tod bleibt mysteriös. Nun wurde Bollywood-Star Sridevi Kapoor (†54) in ihrer Heimat Indien bestattet. Sie war er erste weibliche Superstar des indischen Films.</p>\n\n<div>\n<p>Laut dem indischen Sender NDTV strömten Tausende von Menschen auf die Strassen Mumbais. Sie alle kamen, um vom beliebten Superstar Abschied zu nehmen. Darunter auch ihr Ehemann, Bollywood-Produzent Boney Kapoor (62), der auf Twitter um seine Frau getrauert hatte: «Einen Freund, eine Frau und die Mutter deiner beiden jungen Töchter zu verlieren, ist ein Verlust, der in Worten unerklärlich ist.»</p>\n</div>\n\n<div>\n<p>Am späteren Abend wurde der Leichnam mit einer feierlichen Prozession in ein Krematorium gebracht, wo eine Einäscherung nach hinduistischer Tradition stattfand. Sridevi bekam eine Trauerfeier mit Staatsehren: Eine Polizeikapelle spielte, als sie zu einem mit weissen Blumen geschmückten Wagen gebracht wurde. Der Sarg wurde in eine indische Flagge gehüllt.</p>\n</div>\n\n<div>\n<p>Die Schauspielerin galt in der indischen Filmszene als erster grosser weiblicher Superstar. Am letzten Samstag wurde die 54-Jährige tot in ihrer Badewanne in Dubai aufgefunden. Ihre Familie hatte drei Tage auf die Herausgabe der Leiche warten müssen, während Ermittlungen zur Todesursache liefen. Dubais Staatsanwaltschaft war schliesslich zum Ergebnis gekommen, dass es sich um einen Unfall handelte. Politiker  Subramanian Swamy sprach aber Mord.</p>\n</div>\n\n<div>\n<p>Hinduistische Bestattungen finden in der Regel noch am Todestag oder dem folgenden Tag statt.</p>\n</div>",
    "lesezeit": 2,
-   "chips": []
+   "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 3713,
    "slug": "10-dinge-die-eine-tamilische-mutter-ihrem-sohn-sagen-sollte",
    "titel": "10 Dinge, die eine tamilische Mutter ihrem Sohn sagen sollte",
-   "datum": "2019-11-03",
+   "datum": "2019-11-05",
    "datum_original": "2017-11-25",
    "kategorien": [
     "community",
@@ -1896,13 +2191,18 @@
    },
    "inhalt_html": "<p><em>Die Eltern haben einen so großen Einfluss auf ihre Kinder, wie sonst niemand. Dabei kann eine Mutter die Richtung vorgeben, nach der ihr Sohn durch das Leben gehen wird. </em></p>\n<p>Viele tamilische Mütter verwöhnen ihre Söhne und erziehen sie so, wie sie es aus ihrer Erziehung kennen. Mittlerweile hat sich das verändert und wir haben Mütter gefragt, wie sie ihre Söhne versuchen zu erziehen und welche Werte sie ihnen mitgeben möchten. Einige wichtige Punkte aus dieser Umfrage, die durchaus auch für Töchter zutreffend sind, haben wir für euch in 10 Punkten festgehalten.</p>\n<p><b>1.</b> Mach Sport. Das wird dir helfen zu lernen, wie man ehrlich gewinnt, mit Würde verliert, Autoritäten respektiert und in einem Team arbeitet. Du lernst auch deine Zeit richtig einzuteilen und dich von Ärger fernzuhalten.</p>\n<p><b>2.</b> Erlaube mir, dir den Geschirrspüler, den Ofen, die Waschmaschine, das Bügeleisen, den Staubsauger sowie Wischer und Besen vorzustellen. Und nutze sie bitte auch. &#8211; Es gibt den generellen Gedanken in der tamilischen Gesellschaft, dass die Söhne diese Dinge nicht wissen müssen aber die Zeiten ändern sich und es ist beruhigend zu wissen, dass zunehmend Mütter ihre Söhne im Haushalt mit einbeziehen.</p>\n<p><b>3.</b> Spare Geld, wenn du jung bist. Du wirst es einmal brauchen.</p>\n<p><b>4.</b> Fang nie einen Streit an und sei kein Schläger. Wenn dich aber mal ein Idiot aufhält, dann verteidige dich.</p>\n<p><b>5.</b> Respektiere Frauen und behandele sie immer freundlich. Gegenseitiger Respekt ist nämlich der Schlüssel für eine gute Beziehung. Merke dir immer, dass die wahre Schönheit von innen kommt und daher spielt es keine Rolle ob jemand dunkel oder hell ist.</p>\n<p><b>6.</b> Versuche gleichzeitig stark und sanft zu sein.</p>\n<p><b>7. </b>Dein Wissen und deine Ausbildung sind etwas, was dir niemand wegnehmen kann.</p>\n<p><b>8. </b>Umgebe dich mit Menschen, die dir gut tun. Sie werden dir Halt geben und zu dir stehen.</p>\n<p><b>9. </b>Bitte entscheide sorgfältig wer deine Ehefrau werden soll. Meine Schwiegertochter wird einen großen Einfluss darauf haben, wie viel Zeit ich mit dir und deinen Kindern verbringen werde.</p>\n<p><b>10.</b> Erinnere dich daran, deine Mutter anzurufen, weil ich dich vermissen werde.</p>",
    "lesezeit": 2,
-   "chips": []
+   "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 4711,
    "slug": "tamilische-spezialitaet-kothu-rotti",
    "titel": "Tamilische Spezialität: Kothu Rotti",
-   "datum": "2019-07-03",
+   "datum": "2019-07-05",
    "datum_original": "2017-07-25",
    "kategorien": [
     "kueche",
@@ -1926,13 +2226,18 @@
    },
    "inhalt_html": "<p><b>Kottu Roti</b> (<i>கொத்து றொட்டி</i>, tamilisch für <i>gehacktes Roti</i>) ist ein populäres Gericht aus der Küche Sri Lankas beziehungsweise der Tamilen.</p>\n<p>Ein Roti (<i>Godamba Roti</i>) wird dazu in Streifen geschnitten, mit Currys oder sonstigem pikant gewürztem, kurzgebratenem Gemüse, Eiern oder Fleischstückchen vermischt und heiß serviert.</p>\n\n<p><strong><br>\nZutaten:</strong></p>\n<ul>\n<li>500gr Weizenmehl</li>\n<li>1 Packung Hefe</li>\n<li>1 TL Salz</li>\n<li>5 TL Öl</li>\n<li>lauwarmes Wasser nach Maß</li>\n</ul>\n<h3>\nZubereitung:</h3>\n<p>Geben Sie das Weizenmehl, die Hefe, Salz, 3 EL Öl in eine Schüssel. Die Zutaten werden vermischt und ordentlich durchgeknetet. Es wird soviel Wasser dazu gegeben bis der Teig eine Konsistenz eines Pizzateiges hat.</p>\n<p>Kneten Sie den Teig lange wild (auseinander ziehen und verdrehen) durch und beträufeln ihn anschließend mit ein wenig Öl und massieren ihn gut ein.</p>\n<p>Legen Sie den Teig in eine Schüssel und bedecken diesen mit einem Küchentuch. Geben Sie den Teig 2-3 Stunden zum aufgehen. Wenn er aufgegangen ist kann man tennisballgroße Kugeln formen.</p>\n<p>Die Kugeln werden dünn ausgerollt damit sie ungefähr dem Durchmesser von ca. 15 cm haben ( Kuchenteller ).</p>\n<p>Jetzt wird eine Pfanne mit Öl eingefettet und die Rottis werden von beiden Seiten gebacken. Nach dem braten sollte das Rotti eine Blätterteig ähnliche Konsitenz haben.</p>\n<h3>Essensvorschlag:</h3>\n<p>Man reisst ein Stück vom Rotti ab und tunkt es zum Beispiel in ein ( scharfes ) Lammcurry ein und genießt es, am besten mit den bloßen Fingern.</p>\n<h3>\nKothu Rotti (geschnittenes oder gehacktes Rotti)</h3>\n<p>Kothu Rotti für 4 Personen:</p>\n<h3>\nZutaten:</h3>\n<ul>\n<li>6 – 7 Rotti</li>\n<li>ein Ei</li>\n<li>1 mittelgroße Zwiebel</li>\n<li>2 Tl. Öl</li>\n<li>eine grüne Chilischote ( wer es nicht scharf mag nimmt eine grüne Paprika )</li>\n<li>ein Curry ( Huhn, Lamm, vegetarisch… )</li>\n</ul>\n<h3>\nZubereitung:</h3>\n<p>Rotti wie oben beschrieben zubereiten und in ca. 2 – 3 cm grosse rechteckige Stücke schneiden. Die Zwiebel in kleine Rechtecke schneiden. Wie schon erwähnt bedeutet „Kothu Rotti“ geschittenes Rotti.<br>\nDie grünen Chilischoten in ganz feine Stücke schneiden, alternativ kann man auch eine grüne Paprika in kleine Rechtecke schneiden.</p>\n<p>Eine Pfanne mit Öl einfetten und die Zwiebelstücke andünsten, die Rottistücke, den Chili und das Ei dazugeben und umrühren.<br>\nSobald das Ei sich verfestigt hat kann man das Curry zu dem Kothu Rotti dazugeben, achten sie darauf das es nicht zu flüssig ist.</p>",
    "lesezeit": 2,
-   "chips": []
+   "chips": [],
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 7026,
    "slug": "2018-das-jahr-der-meilensteine-unser-rueckblick",
    "titel": "2018: Das Jahr der Meilensteine – Unser Rückblick",
-   "datum": "2020-11-28",
+   "datum": "2020-11-30",
    "datum_original": "2018-12-21",
    "kategorien": [
     "community"
@@ -1955,13 +2260,18 @@
     "src": "img/p7026.jpg",
     "w": 300,
     "h": 300
-   }
+   },
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   },
   {
    "id": 6834,
    "slug": "maya",
    "titel": "Matangi/Maya/M.I.A.",
-   "datum": "2020-10-21",
+   "datum": "2020-10-23",
    "datum_original": "2018-11-13",
    "kategorien": [
     "kino"
@@ -1984,7 +2294,12 @@
     "src": "img/p6834.jpg",
     "w": 300,
     "h": 156
-   }
+   },
+   "radar": false,
+   "ort": "",
+   "rohfassung": false,
+   "dublette": false,
+   "sprache": "de"
   }
  ],
  "seiten": [
@@ -1997,7 +2312,7 @@
    "hinweis": "",
    "kategorie": "kino",
    "datum_original": "2018-08-17",
-   "datum": "2020-07-25",
+   "datum": "2020-07-27",
    "woerter": 951,
    "inhalt_html": "<p><strong><span>ALTERSEINSTUFUNGEN<br>\n</span></strong><br>\n<span><img src=\"https://www.spio-fsk.de/media_content/1281.jpg\" alt=\"FSK Kennzeichen Blu-ray Hüllen \">In den <strong><a href=\"https://www.spio-fsk.de/?SeitID=505&amp;TID=72\">Prüfverfahren der FSK</a> </strong>werden die Freigaben für fünf Altersstufen vorgenommen. Aus dem Prüfergebnis werden die jeweilige Alterskennzeichen sowie bei Kinospielfilmen eine Kurzfassungen der <strong><a href=\"https://www.spio-fsk.de/?SeitID=545&amp;TID=469\">Freigabebegründung</a></strong> veröffentlicht. </span></p>\n<p><span>Die FSK-Ausschüsse sprechen Freigaben nach der gesetzlichen Vorgabe aus, dass Filme und andere Trägermedien, die &#8222;geeignet sind, die Entwicklung von Kindern und Jugendlichen oder ihre Erziehung zu einer eigenverantwortlichen und gemeinschaftsfähigen Persönlichkeit zu beeinträchtigen&#8220;, nicht für ihre Altersstufe freigegeben werden dürfen (§ 14 Abs. 1 JuSchG). In den FSK-Grundsätzen wird dabei bewusst auf eine vermutete Wirkung abgestellt. </span></p>\n<p>Mit der Altersfreigabe ist keine pädagogische Empfehlung oder ästhetische Bewertung verbunden. Einen fest gefügten Kriterienkatalog für die Beurteilung der möglichen Wirkungen kann es nicht geben, wohl aber Maßstäbe, die der sachkundigen Auslegung bedürfen. Hierbei ist grundsätzlich das Wohl der jüngsten Jahrgänge einer Altersgruppe zu beachten. Ebenso sind nicht nur durchschnittliche, sondern auch gefährdete Kinder und Jugendliche zu berücksichtigen.</p>\n<p><span>FSK-KENNZEICHEN<br>\n</span><strong><a href=\"https://www.spio-fsk.de/?SeitID=420&amp;TID=298\">Download und Anwendungshinweise </a></strong><br>\nDie von den FSK-Prüfausschüssen vergebenen Altersfreigaben werden bei Videoveröffentlichungen wie DVDs, Blu-ray Discs etc. durch fünf FSK-Kennzeichen sichtbar gemacht. In der folgenden Übersicht informieren wir Sie über Anhaltspunkte und Problembereiche, die für die jeweiligen Freigaben eine besondere Relevanz aufweisen.</p>\n<p><strong><span>FSK ab 0 freigegeben/Freigegeben ohne Altersbeschränkung</span> </strong></p>\n<p><img src=\"https://www.spio-fsk.de/media_content/1139.jpg\" alt=\"FSK ab 0 Kennzeichen \">Das Kennzeichen &#8222;FSK ab 0 freigegeben&#8220; entspricht dem bisherigen Kennzeichen &#8222;Freigegeben ohne Altersbeschränkung&#8220;. Kleinkinder erleben filmische Darstellungen unmittelbar und spontan. Ihre Wahrnehmung ist vorwiegend episodisch ausgerichtet, kognitive und strukturierende Fähigkeiten sind noch kaum ausgebildet. Schon dunkle Szenarien, schnelle Schnittfolgen oder eine laute und bedrohliche Geräuschkulisse können Ängste mobilisieren oder zu Irritationen führen. Kinder bis zum Alter von sechs Jahren identifizieren sich vollständig mit der Spielhandlung und den Filmfiguren. Vor allem bei Bedrohungssituationen findet eine direkte Übertragung statt. Gewaltaktionen, aber auch Verfolgungen oder Beziehungskonflikte lösen Ängste aus, die nicht selbständig und alleine abgebaut werden können. Eine schnelle und positive Auflösung problematischer Situationen ist daher sehr wichtig.</p>\n\n<p><strong><span>FSK ab 6 freigegeben</span></strong></p>\n<p><img src=\"https://www.spio-fsk.de/media_content/1135.jpg\" alt=\"FSK ab 6 Logo\">Ab sechs Jahren entwickeln Kinder zunehmend die Fähigkeit zu kognitiver Verarbeitung von Sinneseindrücken. Allerdings sind bei den sechs bis elfjährigen beträchtliche Unterschiede in der Entwicklung zu berücksichtigen. Etwa mit dem neunten Lebensjahr beginnen Kinder, fiktionale und reale Geschichten unterscheiden zu können. Eine distanzierende Wahrnehmung wird damit möglich. Bei jüngeren Kindern steht hingegen noch immer die emotionale, episodische Impression im Vordergrund. Ein sechsjähriges Kind taucht noch ganz in die Filmhandlung ein, leidet und fürchtet mit den Identifikationsfiguren. Spannungs- und Bedrohungsmomente können zwar schon verkraftet werden, dürfen aber weder zu lang anhalten noch zu nachhaltig wirken. Eine positive Auflösung von Konfliktsituationen ist auch hier maßgebend.</p>\n\n<p><strong><span>FSK ab 12 freigegeben</span></strong></p>\n<p><img src=\"https://www.spio-fsk.de/media_content/1134.jpg\" alt=\"FSK ab 12 Logo\">Bei Kindern und Jugendlichen dieser Altersgruppe ist die Fähigkeit zu distanzierter Wahrnehmung und rationaler Verarbeitung bereits ausgebildet. Erste Genre-Kenntnisse sind vorhanden. Eine höhere Erregungsintensität, wie sie in Thrillern oder Science-Fiction-Filmen üblich ist, wird verkraftet. Problematisch ist dagegen zum Beispiel die Bilderflut harter, gewaltbezogener Action-Filme, die zumeist noch nicht selbständig verarbeitet werden kann. 12- bis 15-jährige befinden sich in der Pubertät, einer Phase der Selbstfindung, die mit großer Unsicherheit und Verletzbarkeit verbunden ist. Insbesondere Filme, die zur Identifikation mit einem &#8222;Helden&#8220; einladen, dessen Rollenmuster durch antisoziales, destruktives oder gewalttätiges Verhalten geprägt ist, bieten ein Gefährdungspotenzial. Die Auseinandersetzung mit Filmen, die gesellschaftliche Themen seriös problematisieren, ist dieser Altersgruppe durchaus zumutbar und für ihre Meinungs- und Bewusstseinsbildung bedeutsam.</p>\n<p><span>Parental Guidance (PG): FSK ab 12 – mit Eltern ab sechs Jahren erlaubt</span>Haben Filme die Kennzeichnung &#8222;FSK ab 12 freigegeben&#8220; erhalten, kann auch Kindern im Alter von sechs Jahren aufwärts der Einlass zur Vorstellung gewährt werden, wenn sie von einer personensorgeberechtigen Person begleitet werden. Die Personensorge steht grundsätzlich den Eltern zu. Eine erziehungsbeauftragte Person, die von den Eltern (=Personensorgeberechtigte) autorisiert ist, reicht nicht aus. Weitere Informationen finden Sie in unserer <a href=\"https://www.spio-fsk.de/media_content/1154.pdf\">Broschüre</a>.</p>\n\n<p><strong><span>FSK ab 16 freigegeben</span></strong></p>\n<p><img src=\"https://www.spio-fsk.de/media_content/1133.jpg\" alt=\"FSK ab 16 Logo\">Bei 16- bis 18-jährigen kann von einer entwickelten Medienkompetenz ausgegangen werden. Problematisch bleibt die Vermittlung sozial schädigender Botschaften. Nicht freigegeben werden Filme, die Gewalt tendenziell verherrlichen, einem partnerschaftlichen Rollenverhältnis der Geschlechter entgegenstehen, einzelne Gruppen diskriminieren oder Sexualität auf ein reines Instrumentarium der Triebbefriedigung reduzieren. Auch die Werteorientierung in Bereichen wie Drogenkonsum, politischer Radikalismus oder Ausländerfeindlichkeit wird mit besonderer Sensibilität geprüft.</p>\n\n<p><strong><span>FSK ab 18/Keine Jugendfreigabe</span></strong></p>\n<p><img src=\"https://www.spio-fsk.de/media_content/1132.jpg\" alt=\"FSK ab 18 klein\">Das Kennzeichen &#8222;FSK ab 18&#8220; entspricht dem bisherigen Kennzeichen &#8222;Keine Jugendfreigabe&#8220;. Dieses Kennzeichen wird vergeben, wenn keine einfache bzw. schwere Jugendgefährdung vorliegt. Nach § 14 Abs. 3 u. 4 des Jugendschutzgesetzes erfolgt für DVDs und Blu-ray Discs die Vergabe des Kennzeichnens &#8222;FSK ab 18&#8220;, wenn keine einfache Jugendgefährdung vorliegt, für die öffentliche Filmvorführung, wenn der Film nicht schwer jugendgefährdend ist. Gekennzeichnete Filme, DVDs und Blu-ray Discs werden von der Bundesprüfstelle für jugendgefährdende Medien (BPjM) nicht indiziert.</p>\n\n<p><span><strong><span>Keine Kennzeichnung</span></strong></span><br>\nBei einer Altersfreigabe für Kinofilme muss nach § 14 Abs. 3 Jugendschutzgesetz (JuSchG) auch bei einer Freigabe &#8222;ab 18 Jahren&#8220; auf eine &#8222;schwere Jugendgefährdung&#8220; hin geprüft werden. Hintergrund der gesetzlichen Bestimmungen ist, dass in Einzelfällen auch Jugendliche Zutritt zu den Vorstellungen erhalten könnten. Bei einer Freigabe von Filmen auf  DVD, Blu-ray oder vergleichbaren Bildträgern besteht verstärkt die Gefahr, dass bereits Jugendliche Filme sehen, die erst &#8222;ab 18 Jahren&#8220; freigegeben sind. Hier reicht daher bereits eine &#8222;einfache Jugendgefährdung&#8220; aus, damit keine Kennzeichnung ausgesprochen werden darf. Es ist daher möglich, dass ein Film, der im Kino eine Freigabe &#8222;ab 18 Jahren&#8220; erhalten hat, in der gleichen Version für eine Veröffentlichung auf DVD keine Freigabe erhält.</p>\n<p>Die gesetzlichen Bestimmungen zum Jugendschutz sind hier eindeutig und bindend für die Arbeit der FSK.</p>\n<p>&#8222;<strong>Keine Kennzeichnung</strong>&#8220; stellt aber kein Aufführungsverbot dar. Kinos können auf eigenes rechtliches Risiko den Film vorführen &#8211; allerdings nur vor Erwachsenen. Kommt ein Gericht – beispielsweise nach einer Anzeige &#8211; zur Auffassung, dass es sich um einen &#8222;schwer jugendgefährdenden Film&#8220; handelt, sind unter anderem Werbung und Ankündigung gesetzlich verboten und daher strafbar (Jugendschutzgesetz, § 15 Abs. 1). Über den Jugendschutz hinaus möglicherweise zu berücksichtigende strafrechtliche Bestände fallen ebenfalls in den Aufgabenbereich der Justiz &#8211; und nicht der FSK.</p>\n<p><strong>Beispiel: </strong><br>\n<figure><img src=\"https://www.tamil.de/wp-content/uploads/2018/08/Bildschirmfoto-2018-08-17-um-09.09.24-213x300.png\" alt=\"\" width=\"290\" height=\"408\"></figure></p>",
    "streams": []
@@ -2011,7 +2326,7 @@
    "hinweis": "",
    "kategorie": "",
    "datum_original": "2017-12-18",
-   "datum": "2019-11-26",
+   "datum": "2019-11-28",
    "woerter": 38,
    "inhalt_html": "<p>\n    <div>\n\t\t\n\t\t\t\n\t\t\t\n\t\n\t\t\t<p>To view this video please enable JavaScript, and consider upgrading to a web browser that <a href=\"http://videojs.com/html5-video-support/\">supports HTML5 video</a></p>\n\t\t\n\t</div>\n    \n</p>\n<p>www.santhora.tv</p>\n<p><br>\n\n    <div>\n\t\t\n\t\t\t\n\t\t\t\n\t\n\t\t\t<p>To view this video please enable JavaScript, and consider upgrading to a web browser that <a href=\"http://videojs.com/html5-video-support/\">supports HTML5 video</a></p>\n\t\t\n\t</div>\n    \n<br>\nwww.tamilbusiness.tv</p>",
    "streams": [
@@ -2028,7 +2343,7 @@
    "hinweis": "",
    "kategorie": "",
    "datum_original": "2017-02-17",
-   "datum": "2019-01-26",
+   "datum": "2019-01-28",
    "woerter": 139,
    "inhalt_html": "<p>Haben SIE etwas fotografiert, das <strong>Tamil.de</strong> veröffentlichen soll? Egal ob lustig, spektakulär, spannend oder kurios – die TamilDE Redaktion will IHR exklusives Foto oder Video und zahlt bis zu 100 Euro.</p>\n\n<p>Bitte schildern Sie uns möglichst genau, was auf diesem Foto oder Video zu sehen ist. Sie erhöhen damit die Wahrscheinlichkeit, dass <strong>Tamil.de</strong> Ihr Material veröffentlichen und honorieren kann.</p>\n<p><strong>Bitte beschreiben Sie uns:</strong><br>\n• Was ist passiert?<br>\n• Wo ist es passiert?<br>\n• Wem ist es passiert?<br>\n• Wann ist es passiert?<br>\n• Warum ist es passiert?</p>\n<p>Bitte schicken Sie uns nur Fotos, die Sie selber gemacht haben, andernfalls nennen Sie uns bitte zusätzlich den Urheber des Fotos.</p>\n<p>Übersteigt Ihr Video eine Größe von 50 MB, nutzen Sie zur Übermittlung Ihres Videos bitte einen Filehosting-Dienst (z.B. &#8222;<a href=\"https://www.wetransfer.com/\">WeTransfer</a>&#8222;). Alternativ können Sie uns auch eine Email an <strong>info@tamil.de</strong> senden.</p>",
    "streams": []
@@ -2042,7 +2357,7 @@
    "hinweis": "Stand 2016 – vom Auftraggeber zu aktualisieren",
    "kategorie": "",
    "datum_original": "2016-05-24",
-   "datum": "2018-05-02",
+   "datum": "2018-05-04",
    "woerter": 1229,
    "inhalt_html": "<p><strong>Datenschutz<br>\n</strong></p>\n<p>Die Betreiber dieser Seiten nehmen den Schutz Ihrer persönlichen Daten sehr ernst. Wir behandeln Ihre personenbezogenen Daten vertraulich und entsprechend der gesetzlichen Datenschutzvorschriften sowie dieser Datenschutzerklärung.</p>\n<p>Die Nutzung unserer Webseite ist in der Regel ohne Angabe personenbezogener Daten möglich. Soweit auf unseren Seiten personenbezogene Daten (beispielsweise Name, Anschrift oder E-Mail-Adressen) erhoben werden, erfolgt dies, soweit möglich, stets auf freiwilliger Basis. Diese Daten werden ohne Ihre ausdrückliche Zustimmung nicht an Dritte weitergegeben.</p>\n<p>Wir weisen darauf hin, dass die Datenübertragung im Internet (z.B. bei der Kommunikation per E-Mail) Sicherheitslücken aufweisen kann. Ein lückenloser Schutz der Daten vor dem Zugriff durch Dritte ist nicht möglich.</p>\n<p><strong><br>\nDatenschutzerklärung für die Nutzung von etracker</strong></p>\n<p>Unsere Webseite nutzt den Analysedienst etracker. Anbieter ist die etracker GmbH, Erste Brunnenstraße 1 20459 Hamburg Germany.<br>\nAus den Daten können unter einem Pseudonym Nutzungsprofile erstellt werden. Dazu können Cookies eingesetzt werden. Bei Cookies handelt es sich um kleine Textdateien, die lokal im Zwischenspeicher Ihres Internet-Browsers gespeichert werden. Die Cookies ermöglichen es, Ihren Browser wieder zu erkennen. Die mit den etracker-Technologien erhobenen Daten werden ohne die gesondert erteilte Zustimmung des Betroffenen nicht genutzt, Besucher unserer Website persönlich zu identifizieren und werden nicht mit personenbezogenen Daten über den Träger des Pseudonyms zusammengeführt.</p>\n<p>Der Datenerhebung und -speicherung können Sie jederzeit mit Wirkung für die Zukunft widersprechen. Um einer Datenerhebung und -speicherung Ihrer Besucherdaten für die Zukunft zu widersprechen, können Sie unter nachfolgendem Link ein Opt-Out-Cookie von etracker beziehen, dieser bewirkt, dass zukünftig keine Besucherdaten Ihres Browsers bei etracker erhoben und gespeichert werden: <a href=\"http://www.etracker.de/privacy?et=V23Jbb\">http://www.etracker.de/privacy?et=V23Jbb</a></p>\n<p>Dadurch wird ein Opt-Out-Cookie mit dem Namen &#8222;cntcookie&#8220; von etracker gesetzt. Bitte löschen Sie diesen Cookie nicht, solange Sie Ihren Widerspruch aufrecht erhalten möchten. Weitere Informationen finden Sie in den Datenschutzbestimmungen von etracker: <a href=\"http://www.etracker.com/de/datenschutz.html\">http://www.etracker.com/de/datenschutz.html</a></p>\n\n<p><strong>Datenschutzerklärung für die Nutzung von Facebook-Plugins (Like-Button)</strong></p>\n<p>Auf unseren Seiten sind Plugins des sozialen Netzwerks Facebook, Anbieter Facebook Inc., 1 Hacker Way, Menlo Park, California 94025, USA, integriert. Die Facebook-Plugins erkennen Sie an dem Facebook-Logo oder dem &#8222;Like-Button&#8220; (&#8222;Gefällt mir&#8220;) auf unserer Seite. Eine Übersicht über die Facebook-Plugins finden Sie hier: <a href=\"http://developers.facebook.com/docs/plugins/\">http://developers.facebook.com/docs/plugins/</a>.</p>\n<p>Wenn Sie unsere Seiten besuchen, wird über das Plugin eine direkte Verbindung zwischen Ihrem Browser und dem Facebook-Server hergestellt. Facebook erhält dadurch die Information, dass Sie mit Ihrer IP-Adresse unsere Seite besucht haben. Wenn Sie den Facebook &#8222;Like-Button&#8220; anklicken während Sie in Ihrem Facebook-Account eingeloggt sind, können Sie die Inhalte unserer Seiten auf Ihrem Facebook-Profil verlinken. Dadurch kann Facebook den Besuch unserer Seiten Ihrem Benutzerkonto zuordnen. Wir weisen darauf hin, dass wir als Anbieter der Seiten keine Kenntnis vom Inhalt der übermittelten Daten sowie deren Nutzung durch Facebook erhalten. Weitere Informationen hierzu finden Sie in der Datenschutzerklärung von Facebook unter <a href=\"http://de-de.facebook.com/policy.php\">http://de-de.facebook.com/policy.php</a>.</p>\n<p>Wenn Sie nicht wünschen, dass Facebook den Besuch unserer Seiten Ihrem Facebook- Nutzerkonto zuordnen kann, loggen Sie sich bitte aus Ihrem Facebook-Benutzerkonto aus.</p>\n\n<p><strong>Datenschutzerklärung für die Nutzung von Instagram</strong></p>\n<p>Auf unseren Seiten sind Funktionen des Dienstes Instagram eingebunden. Diese Funktionen werden angeboten durch die Instagram Inc., 1601 Willow Road, Menlo Park, CA, 94025, USA integriert. Wenn Sie in Ihrem Instagram &#8211; Account eingeloggt sind können Sie durch Anklicken des Instagram &#8211; Buttons die Inhalte unserer Seiten mit Ihrem Instagram &#8211; Profil verlinken. Dadurch kann Instagram den Besuch unserer Seiten Ihrem Benutzerkonto zuordnen. Wir weisen darauf hin, dass wir als Anbieter der Seiten keine Kenntnis vom Inhalt der übermittelten Daten sowie deren Nutzung durch Instagram erhalten.</p>\n<p>Weitere Informationen hierzu finden Sie in der Datenschutzerklärung von Instagram: <a href=\"http://instagram.com/about/legal/privacy/\">http://instagram.com/about/legal/privacy/</a></p>\n\n<p><strong>Datenschutzerklärung für die Nutzung von Twitter</strong></p>\n<p>Auf unseren Seiten sind Funktionen des Dienstes Twitter eingebunden. Diese Funktionen werden angeboten durch die Twitter Inc., 1355 Market Street, Suite 900, San Francisco, CA 94103, USA. Durch das Benutzen von Twitter und der Funktion &#8222;Re-Tweet&#8220; werden die von Ihnen besuchten Webseiten mit Ihrem Twitter-Account verknüpft und anderen Nutzern bekannt gegeben. Dabei werden auch Daten an Twitter übertragen. Wir weisen darauf hin, dass wir als Anbieter der Seiten keine Kenntnis vom Inhalt der übermittelten Daten sowie deren Nutzung durch Twitter erhalten. Weitere Informationen hierzu finden Sie in der Datenschutzerklärung von Twitter unter <a href=\"http://twitter.com/privacy\">http://twitter.com/privacy</a>.</p>\n<p>Ihre Datenschutzeinstellungen bei Twitter können Sie in den Konto-Einstellungen unter <a href=\"http://twitter.com/account/settings\">http://twitter.com/account/settings</a> ändern.</p>\n\n<p><strong>Datenschutzerklärung für die Nutzung von YouTube</strong></p>\n<p>Unsere Webseite nutzt Plugins der von Google betriebenen Seite YouTube. Betreiber der Seiten ist die YouTube, LLC, 901 Cherry Ave., San Bruno, CA 94066, USA. Wenn Sie eine unserer mit einem YouTube-Plugin ausgestatteten Seiten besuchen, wird eine Verbindung zu den Servern von YouTube hergestellt. Dabei wird dem Youtube-Server mitgeteilt, welche unserer Seiten Sie besucht haben.<br>\nWenn Sie in Ihrem YouTube-Account eingeloggt sind ermöglichen Sie YouTube, Ihr Surfverhalten direkt Ihrem persönlichen Profil zuzuordnen. Dies können Sie verhindern, indem Sie sich aus Ihrem YouTube-Account ausloggen.</p>\n<p>Weitere Informationen zum Umgang von Nutzerdaten finden Sie in der Datenschutzerklärung von YouTube unter <a href=\"https://www.google.de/intl/de/policies/privacy\">https://www.google.de/intl/de/policies/privacy</a></p>\n\n<p><strong>Auskunft, Löschung, Sperrung</strong></p>\n<p>Sie haben jederzeit das Recht auf unentgeltliche Auskunft über Ihre gespeicherten personenbezogenen Daten, deren Herkunft und Empfänger und den Zweck der Datenverarbeitung sowie ein Recht auf Berichtigung, Sperrung oder Löschung dieser Daten. Hierzu sowie zu weiteren Fragen zum Thema personenbezogene Daten können Sie sich jederzeit unter der im Impressum angegebenen Adresse an uns wenden.</p>\n\n<p><strong>Cookies</strong></p>\n<p>Die Internetseiten verwenden teilweise so genannte Cookies. Cookies richten auf Ihrem Rechner keinen Schaden an und enthalten keine Viren. Cookies dienen dazu, unser Angebot nutzerfreundlicher, effektiver und sicherer zu machen. Cookies sind kleine Textdateien, die auf Ihrem Rechner abgelegt werden und die Ihr Browser speichert.</p>\n<p>Die meisten der von uns verwendeten Cookies sind so genannte „Session-Cookies“. Sie werden nach Ende Ihres Besuchs automatisch gelöscht. Andere Cookies bleiben auf Ihrem Endgerät gespeichert, bis Sie diese löschen. Diese Cookies ermöglichen es uns, Ihren Browser beim nächsten Besuch wiederzuerkennen.</p>\n<p>Sie können Ihren Browser so einstellen, dass Sie über das Setzen von Cookies informiert werden und Cookies nur im Einzelfall erlauben, die Annahme von Cookies für bestimmte Fälle oder generell ausschließen sowie das automatische Löschen der Cookies beim Schließen des Browser aktivieren. Bei der Deaktivierung von Cookies kann die Funktionalität dieser Website eingeschränkt sein.</p>\n\n<p><strong>Server-Log-Files</strong></p>\n<p>Der Provider der Seiten erhebt und speichert automatisch Informationen in so genannten Server-Log Files, die Ihr Browser automatisch an uns übermittelt. Dies sind:</p>\n<ul>\n<li>Browsertyp/ Browserversion</li>\n<li>verwendetes Betriebssystem</li>\n<li>Referrer URL</li>\n<li>Hostname des zugreifenden Rechners</li>\n<li>Uhrzeit der Serveranfrage</li>\n</ul>\n<p>Diese Daten sind nicht bestimmten Personen zuordenbar. Eine Zusammenführung dieser Daten mit anderen Datenquellen wird nicht vorgenommen. Wir behalten uns vor, diese Daten nachträglich zu prüfen, wenn uns konkrete Anhaltspunkte für eine rechtswidrige Nutzung bekannt werden.</p>\n\n<p><strong>Kontaktformular</strong></p>\n<p>Wenn Sie uns per Kontaktformular Anfragen zukommen lassen, werden Ihre Angaben aus dem Anfrageformular inklusive der von Ihnen dort angegebenen Kontaktdaten zwecks Bearbeitung der Anfrage und für den Fall von Anschlussfragen bei uns gespeichert. Diese Daten geben wir nicht ohne Ihre Einwilligung weiter.</p>\n\n<p><strong>Widerspruch Werbe-Mails</strong></p>\n<p>Der Nutzung von im Rahmen der Impressumspflicht veröffentlichten Kontaktdaten zur Übersendung von nicht ausdrücklich angeforderter Werbung und Informationsmaterialien wird hiermit widersprochen. Die Betreiber der Seiten behalten sich ausdrücklich rechtliche Schritte im Falle der unverlangten Zusendung von Werbeinformationen, etwa durch Spam-E-Mails, vor.</p>\n\n<p><strong>Newsletterdaten</strong></p>\n<p>Wenn Sie den auf der Webseite angebotenen Newsletter beziehen möchten, benötigen wir von Ihnen eine E-Mail-Adresse sowie Informationen, welche uns die Überprüfung gestatten, dass Sie der Inhaber der angegebenen E-Mail-Adresse sind und mit dem Empfang des Newsletters einverstanden sind. Weitere Daten werden nicht erhoben. Diese Daten verwenden wir ausschließlich für den Versand der angeforderten Informationen und geben sie nicht an Dritte weiter.</p>\n<p>Die erteilte Einwilligung zur Speicherung der Daten, der E-Mail-Adresse sowie deren Nutzung zum Versand des Newsletters können Sie jederzeit widerrufen , etwa über den „Austragen“-Link im Newsletter.</p>",
    "streams": []
@@ -2056,7 +2371,7 @@
    "hinweis": "Auf der alten Seite leer – Angaben vom Auftraggeber",
    "kategorie": "",
    "datum_original": "2016-05-21",
-   "datum": "2018-04-29",
+   "datum": "2018-05-01",
    "woerter": 0,
    "inhalt_html": "",
    "streams": []
@@ -2070,7 +2385,7 @@
    "hinweis": "",
    "kategorie": "",
    "datum_original": "2015-12-13",
-   "datum": "2017-11-20",
+   "datum": "2017-11-22",
    "woerter": 240,
    "inhalt_html": "<p>Tamil.de ist eine Plattform für deutschsprachige Tamilen in 🇩🇪 Deutschland, der 🇨🇭Schweiz und  🇦🇹Österreich. <br>Diese Website dient als zentrale Anlaufstelle für Tamilen, die in Deutschland leben oder Interesse an der tamilischen Kultur haben.</p>\n\n<p><strong>Information und Vernetzung</strong></p>\n\n<p>Tamil.de bietet umfangreiche Informationen über verschiedene Aspekte des Lebens in Deutschland aus tamilischer Perspektive. Dazu gehören Nachrichten aus der tamilischen Welt, Informationen über kulturelle Veranstaltungen, Feste und Feiertage, sowie praktische Hinweise zu Bildung, Gesundheit und rechtlichen Fragen.</p>\n\n<p>Ein wichtiges Merkmal der Plattform ist die Förderung der Vernetzung innerhalb der tamilischen Gemeinschaft. Durch Foren, soziale Netzwerke und Veranstaltungskalender ermöglicht Tamil.de es den Nutzern, miteinander in Kontakt zu treten, sich auszutauschen und Unterstützung zu finden.</p>\n\n<p><strong>Kulturelle Förderung und Bildung</strong></p>\n\n<p>Die Website widmet sich auch der Förderung und Bewahrung der tamilischen Kultur und Sprache. Hier finden Nutzer Informationen über tamilische Literatur, Musik, Tanz und Kunst. Bildungsangebote wie Sprachkurse und kulturelle Workshops tragen dazu bei, das kulturelle Erbe an jüngere Generationen weiterzugeben und ein Bewusstsein für die tamilische Identität zu schaffen.</p>\n\n<p><strong>Dienstleistungen und Unterstützung</strong></p>\n\n<p>Tamil.de bietet zudem eine Vielzahl von Dienstleistungen, die speziell auf die Bedürfnisse der tamilischen Gemeinschaft zugeschnitten sind. Dazu gehören Übersetzungsdienste, Rechtsberatung, Unterstützung bei der Integration in die deutsche Gesellschaft und Hilfestellungen für Neuankömmlinge.</p>\n\n<p><strong>Engagement und Gemeinschaft</strong></p>\n\n<p>Die Plattform fördert das soziale und kulturelle Engagement der tamilischen Gemeinschaft in Deutschland. Durch die Organisation und Bewerbung von gemeinnützigen Projekten, Spendenaktionen und sozialen Initiativen trägt Tamil.de dazu bei, das Gemeinschaftsgefühl zu stärken und die Integration zu unterstützen.</p>",
    "streams": []

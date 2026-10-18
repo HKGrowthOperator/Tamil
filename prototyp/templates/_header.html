@@ -1,8 +1,8 @@
 {% set proto_links = [('Start', 'index.html', 'start'), ('Kino', 'kategorie-kino.html', 'kino'), ('Artikel', sel.hero[1]|link, 'artikel'), ('Rezept', sel.rezept|link, 'rezept'), ('Kinotermine', kino.slug ~ '.html', 'kinotermine'), ('Events', 'events.html', 'events'), ('Production', 'production.html', 'production'), ('TV', 'tv.html', 'tv'), ('Kontakt', 'kontakt.html', 'kontakt'), ('Impressum', 'impressum.html', 'impressum'), ('Design-System', 'design-system.html', 'design')] %}
 <div class="proto-bar" role="navigation" aria-label="Prototyp-Seiten">
-  <strong>Prototyp · Designkonzept v1</strong>
+  <strong>Prototyp · Designkonzept v3 „Radar“</strong>
   <nav>{% for label, href, key in proto_links %}<a href="{{ href }}"{% if (key == 'artikel' and p is defined and p and p.id == sel.hero[1].id) or (key == 'rezept' and p is defined and p and p.id == site.rezept.id) or (key == 'kinotermine' and kinotermine) or (key == seite and key not in ('artikel','rezept')) %} aria-current="page"{% endif %}>{{ label }}</a>{% endfor %}</nav>
-  <span class="hinweis">Datumsangaben um {{ shift_days }} Tage verschoben · Beispieldaten sind markiert</span>
+  <span class="hinweis">Altbestand um {{ shift_days }} Tage verschoben · Radar-Meldungen mit echtem Datum · Beispieldaten sind markiert</span>
 </div>
 <header>
   <div class="topbar">

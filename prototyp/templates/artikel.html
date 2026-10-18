@@ -6,7 +6,7 @@
   {% set related = sel.kategorie_seiten.kino[:3] %}
 {% else %}
   {% set a = {'titel': p.titel, 'slug': p.slug, 'kat': p.kategorien[0], 'standfirst': p.standfirst, 'bild': p.bild, 'datum': p.datum, 'lesezeit': p.lesezeit,
-              'tags': p.tags, 'body': p.inhalt_html, 'credit': 'Foto: Tamil.de', 'alt': p.titel} %}
+              'tags': p.tags, 'body': p.inhalt_html, 'credit': p.bild.credit if p.radar else 'Foto: Tamil.de', 'alt': p.bild.alt if p.radar else p.titel} %}
   {% set related = sel.related[p.id] %}
 {% endif %}
 {% set ist_rezept = (not kinotermine) and p.id == site.rezept.id %}
@@ -17,15 +17,15 @@
   <div class="with-sidebar">
     <article class="artikel">
       <header class="artikel-kopf">
-        <p style="margin:0;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="badge{% if kinotermine %} gruen{% elif ist_rezept %} gruen{% endif %}">{{ 'Kinotermine' if kinotermine else ('Rezept' if ist_rezept else kat[a.kat].label) }}</span>{% if kinotermine %}<span class="stand-badge">aktualisiert {{ kino.stand|datum }}</span>{% endif %}{% if p and p.get('kultur_fallback') %}<span class="beispiel">Kultur-Zuordnung per Stichwort</span>{% endif %}</p>
-        <h1>{{ a.titel }}</h1>
-        <p class="standfirst">{{ a.standfirst }}</p>
-        <div class="byline"><span class="avatar" aria-hidden="true">T</span><span><strong>{{ site.autorenbox.name }}</strong>{{ a.datum|datum }}, {{ a.lesezeit }} Minuten Lesezeit</span></div>
+        <p style="margin:0;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="badge{% if kinotermine %} gruen{% elif ist_rezept %} gruen{% endif %}">{{ 'Kinotermine' if kinotermine else ('Rezept' if ist_rezept else kat[a.kat].label) }}</span>{% if kinotermine %}<span class="stand-badge">aktualisiert {{ kino.stand|datum }}</span>{% endif %}{% if p and p.get('kultur_fallback') %}<span class="beispiel">Kultur-Zuordnung per Stichwort</span>{% endif %}{% if p and p.radar %}<span class="badge radar-badge">{{ m.icon('radar', 'ico ico-sm') }} Vom News-Radar gefunden{% if p.ort %} · {{ p.ort }}{% endif %}</span>{% if p.rohfassung %}<span class="beispiel">Rohfassung ohne KI – wird vor der Veröffentlichung neu geschrieben</span>{% endif %}{% endif %}</p>
+        <h1{% if p and p.sprache == 'ta' %} lang="ta"{% endif %}>{{ a.titel }}</h1>
+        <p class="standfirst"{% if p and p.sprache == 'ta' %} lang="ta"{% endif %}>{{ a.standfirst }}</p>
+        <div class="byline"><span class="avatar" aria-hidden="true">T</span><span><strong>{{ site.autorenbox.name }}</strong>{% if p and p.radar %}gefunden am {{ p.erfasst|datum }} um {{ p.erfasst_zeit }} Uhr · Quelle vom {{ a.datum|datum }}, {{ a.lesezeit }} Minute{% if a.lesezeit != 1 %}n{% endif %} Lesezeit{% else %}{{ a.datum|datum }}, {{ a.lesezeit }} Minute{% if a.lesezeit != 1 %}n{% endif %} Lesezeit{% endif %}</span></div>
         {{ m.share(a.titel, url) }}
       </header>
       <figure class="hero-bild">
         <img src="{{ a.bild.src }}" width="{{ a.bild.w }}" height="{{ a.bild.h }}" alt="{{ a.alt }}">
-        <figcaption><span>{{ a.titel }}</span><span class="leise">{{ a.credit }} <span class="beispiel">Bildnachweis fehlt im Altbestand</span></span></figcaption>
+        <figcaption><span>{{ a.titel }}</span><span class="leise">{{ a.credit }}{% if p and p.radar %}{% if p.bild.origin == 'quelle' %} <span class="beispiel">Quellbild nur im Prototyp – Rechte klären</span>{% endif %}{% elif not kinotermine %} <span class="beispiel">Bildnachweis fehlt im Altbestand</span>{% endif %}</span></figcaption>
       </figure>
 
       {% if ist_rezept %}
@@ -60,6 +60,8 @@
 
       {% if kinotermine %}
       <p class="quelle">Quelle: {% for q in kino.fakten.kinos|map(attribute='quelle')|unique %}{{ q }}{% if not loop.last %}, {% endif %}{% endfor %} · Stand Kinowoche {{ kino.woche }}</p>
+      {% elif p.radar %}
+      <p class="quelle">Quelle: <a href="{{ p.quelle.url }}" rel="nofollow noopener" target="_blank">{{ p.quelle.name }}</a>{% for w in p.quelle.weitere %} · <a href="{{ w.url }}" rel="nofollow noopener" target="_blank">{{ w.name }}</a>{% endfor %} · Original vom {{ p.datum|datum }}, {{ p.zeit }} Uhr · vom News-Radar am {{ p.erfasst|datum }} um {{ p.erfasst_zeit }} Uhr gefunden</p>
       {% else %}
       <p class="quelle">Quelle: Redaktion Tamil.de{% if p.youtube %} · Video: YouTube (erst nach Klick geladen){% endif %} · ursprünglich veröffentlicht am {{ p.datum_original|datum }} <span class="beispiel">Prototyp: Datum verschoben</span></p>
       {% endif %}

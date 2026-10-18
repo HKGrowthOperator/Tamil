@@ -1,4 +1,4 @@
-/* Tamil.de Prototyp v2 – Zustandswechsel und drei Bewegungen (Lesebalken, Zähler, Ticker-Dopplung). Formulare sind Attrappen. */
+/* Tamil.de Prototyp v3 – Zustandswechsel und drei Bewegungen (Lesebalken, Zähler, Ticker-Dopplung). Formulare sind Attrappen. */
 (function () {
   "use strict";
   var $ = function (s, root) { return (root || document).querySelector(s); };
@@ -100,6 +100,26 @@
       if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done, done); else done();
     });
   });
+
+
+  // Mininav (Startseite): aktiver Abschnitt beim Scrollen, sanftes Springen
+  var mini = $(".mininav");
+  if (mini && "IntersectionObserver" in window) {
+    var links = $$("a[href^='#']", mini), ziele = links.map(function (a) { return $(a.getAttribute("href")); }).filter(Boolean);
+    var setActive = function (id) { links.forEach(function (a) { a.classList.toggle("is-active", a.getAttribute("href") === "#" + id); }); };
+    var mio = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { if (en.isIntersecting) setActive(en.target.id); });
+    }, { rootMargin: "-45% 0px -50% 0px", threshold: 0 });
+    ziele.forEach(function (z) { mio.observe(z); });
+    links.forEach(function (a) {
+      a.addEventListener("click", function (e) {
+        var z = $(a.getAttribute("href")); if (!z) return;
+        e.preventDefault(); setActive(z.id);
+        z.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
+        history.replaceState(null, "", a.getAttribute("href"));
+      });
+    });
+  }
 
   // Zutaten abhaken
   $$(".zutaten li").forEach(function (li) { li.addEventListener("click", function () { var an = li.style.opacity === "0.45"; li.style.opacity = an ? "" : "0.45"; li.style.textDecoration = an ? "" : "line-through"; }); });

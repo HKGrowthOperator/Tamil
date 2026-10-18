@@ -100,7 +100,9 @@ def test_build_renders_all_pages(tmp_path):
     assert build.check_links(tmp_path) == []
     for page in ("production.html", "tv.html", "impressum.html", "datenschutz.html", "ueber-uns.html", "service-fsk.html"):
         assert page in written, page
-    assert 'src="img/logo.png"' in index and 'href="https://www.gravity-club.de' in index and "Tamil.de Production" in index
+    assert 'src="img/logo.png"' in index and "Tamil.de Production" in index
+    assert "gravity-club" not in index and "ad-sidebar.jpg" not in index and ">Anzeige<" in index and 'class="ad ad-leaderboard ad-anzeige"' in index
+    assert "Musterkunde (fiktiv)" in (tmp_path / "design-system.html").read_text(encoding="utf-8")
     kueche = (tmp_path / "kategorie-kueche.html").read_text(encoding="utf-8")
     assert kueche.count('<article class="card') >= 5 and "Bundesgericht" not in kueche
     tv = (tmp_path / "tv.html").read_text(encoding="utf-8")
@@ -110,3 +112,59 @@ def test_build_renders_all_pages(tmp_path):
     text = (tmp_path / "bare" / "index.html").read_text(encoding="utf-8")
     assert not text.lstrip().startswith("<!doctype") and "<title>" in text and 'claude:viewport-fit-sides' in text
     assert (tmp_path / "bare" / "kontakt.html").read_text(encoding="utf-8").lstrip().startswith("<!doctype html>")
+
+
+def _draft(i, titel, **kw):
+    base = {"id": i, "uid": f"u{i}", "typ": "artikel", "status": "neu", "quelle_name": "WA Hamm (via Google News)", "quelle_url": f"https://q/{i}",
+            "quelle_datum": "2026-10-17T16:08+00:00", "quelle_sprache": "de", "weitere_quellen": [], "relevanz": 8, "dach_bezug": True, "ort": "Hamm",
+            "kategorie": "news", "titel": titel, "teaser": titel, "inhalt_html": "<p>Text der Quelle.</p>", "schlagworte": ["Hamm"], "hinweise": ["Rohfassung ohne KI: …"],
+            "created_at": "2026-10-18T09:27:40+00:00", "fakten": {}, "event_datum": "", "event_ort": "", "ticket_url": "",
+            "bild": {"datei": "r.jpg", "origin": "quelle", "credit": "Foto: WA Hamm", "alt": "alt", "w": 1200, "h": 675}}
+    base.update(kw)
+    return base
+
+
+def test_radar_record_select_feed_and_kino_merge(tmp_path, monkeypatch):
+    from PIL import Image
+    monkeypatch.setattr(build, "RADAR_IMG", tmp_path)
+    Image.new("RGB", (1200, 675), (10, 10, 10)).save(tmp_path / "r.jpg")
+    site = dict(build.load_site(), hero=[1, 2, 3], top_themen=[1], rezept={"id": 999}, radar_lead=None)
+    drafts = [
+        _draft(1, "Pongal-Fest in Hamm lockt Hunderte Besucher"),
+        _draft(2, "Pongal-Fest in Hamm: Hunderte Besucher gekommen", created_at="2026-10-18T09:26:00+00:00"),  # Dublette
+        _draft(3, "சுவிஸில் பொங்கல் விழா", quelle_sprache="ta", ort="Schweiz", quelle_name="SwissNews7"),
+        _draft(4, "Jailer 2 Box Office Day 3", dach_bezug=False, ort="", relevanz=6, quelle_sprache="en", bild={"datei": "r.jpg", "origin": "karte", "credit": "Grafik: Tamil.de", "alt": "a", "w": 1200, "h": 675}),
+        _draft(5, "„Jailer 2“ (Tamil) läuft in 2 Kinos", typ="kino_termine", kategorie="kino",
+               fakten={"film": "Jailer 2", "woche": "2026-W42", "kinos": [{"kino": "CineStar Kristall-Palast - Bremen", "stadt": "Bremen", "land": "DE", "termine": [], "url": "https://www.cinestar.de/x", "von": "2026-10-18"},
+                                                                        {"kino": "Cineplexx Millennium City", "stadt": "Wien", "land": "AT", "termine": [], "url": "https://www.cineplexx.at/x", "von": "2026-10-16"}]}),
+    ]
+    radar = {"entwuerfe": drafts, "lauf": {"gesammelt": 480, "relevant": 77, "entwuerfe": 25}}
+    rposts = build.radar_posts(radar, site, {"p1"})
+    assert [p["id"] for p in rposts] == [100001, 100002, 100003, 100004]  # kino_termine wird kein Beitrag
+    a = rposts[0]
+    assert a["radar"] and a["datum"] == "2026-10-17" and a["zeit"] == "18:08" and a["erfasst_zeit"] == "11:27"  # Europe/Berlin
+    assert a["slug"] == "pongal-fest-in-hamm-lockt-hunderte-besucher" and a["bild"]["src"] == "img/radar/r.jpg" and a["bild"]["credit"] == "Foto: WA Hamm"
+    assert a["quelle"]["name"] == "WA Hamm (via Google News)" and a["rohfassung"] and a["excerpt"] == "" and a["standfirst"].startswith("Gefunden bei WA Hamm")
+    assert "<p>Text der Quelle.</p>" in a["inhalt_html"] and 'class="quelle"' not in a["inhalt_html"]
+    assert rposts[2]["slug"] == "radar-3" and rposts[2]["sprache"] == "ta"
+    assert [p["dublette"] for p in rposts] == [True, False, False, False]  # die neuere (2) bleibt, 1 ist Dublette
+
+    posts = [_post(i, "news", f"2026-09-{i:02d}") for i in range(1, 8)] + rposts
+    sel = build.select(posts, site)
+    assert sel["hero"][0]["id"] == 100002 and [p["id"] for p in sel["hero"][1:]] == [1, 2]  # Radar-Aufmacher: DACH, deutsch, Quellbild
+    assert sel["aktuell"] == [] and {p["id"] for p in sel["radar"]} == {100002, 100003, 100004}
+    assert 100003 not in {p["id"] for p in sel["neueste"]} and 100004 in {p["id"] for p in sel["neueste"]}  # tamilisch nur im Feed
+    assert 100003 in {p["id"] for p in sel["kategorie_seiten"]["news"]}
+
+    ev = build.load_events()
+    kt = build.merge_kino_fakten(ev["kino_termine"], radar)
+    namen = [k["kino"] for k in kt["fakten"]["kinos"]]
+    assert kt["radar"] and kt["titel"] == f"„Jailer 2“ (Tamil) läuft in {len(namen)} Kinos in Deutschland, der Schweiz und Österreich – alle Spielorte"
+    assert {"CineStar Kristall-Palast - Bremen", "Cineplexx Millennium City"} <= set(namen) and "CineStar Kristall-Palast" not in namen  # Dublette zusammengeführt
+    assert len(namen) >= len(ev["kino_termine"]["fakten"]["kinos"]) and kt["stand"] == "2026-10-18"
+    assert next(k for k in kt["fakten"]["kinos"] if k["stadt"] == "Bremen")["quelle"] == "CineStar" and namen[-1] != namen[0]
+    rows = build.erfasst_log([], radar, rposts, kt, heute=__import__("datetime").date(2026, 10, 18))
+    assert [r["art"] for r in rows][:2] == ["kino", "news"] and rows[0]["text"].startswith("Jailer 2 läuft in")
+    assert [r["sprache"] for r in rows] == ["de", "en", "ta", "de"]  # gleiche Minute: Kino, dann deutsch/englisch, dann tamilisch; Dublette fehlt
+    assert all(r["tag"] == "heute" for r in rows) and not any(r["href"] == "artikel-pongal-fest-in-hamm-lockt-hunderte-besucher.html" for r in rows)
+    assert build.tag_label(__import__("datetime").date(2026, 10, 17), __import__("datetime").date(2026, 10, 18)) == "gestern"

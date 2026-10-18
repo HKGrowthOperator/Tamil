@@ -23,21 +23,25 @@ import math
 import re
 import shutil
 import sys
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 ROOT = Path(__file__).resolve().parent
 REPO = ROOT.parent
 sys.path.insert(0, str(REPO))
 
-from news_radar.render import format_date_de, render_kino_liste, sanitize_html  # noqa: E402
+from news_radar import render as radar_render  # noqa: E402
+from news_radar.render import format_date_de, render_content, render_kino_liste, sanitize_html  # noqa: E402
 from news_radar.wordpress import slugify  # noqa: E402
 
 import radar_map  # noqa: E402
 
 CONTENT, TEMPLATES, STATIC = ROOT / "content", ROOT / "templates", ROOT / "static"
 IMG, DIST, DIST_ARTIFACT, SHOTS = STATIC / "img", ROOT / "dist", ROOT / "dist-artifact", ROOT / "shots"
+RADAR_IMG = IMG / "radar"
 CHROMIUM = Path("/opt/pw-browsers/chromium-1194/chrome-linux/chrome")
+BERLIN = ZoneInfo("Europe/Berlin")
 
 SIZE_PRIORITY = ("large", "medium_large", "slider-img", "full")
 TAG_IGNORE = {"tamil", "tt", "ticker", "sticker", "dfgfsd", "test", "slider-sidebar", "tamil.de"}
@@ -45,6 +49,9 @@ MIN_WORDS = 120
 HERO_MIN_WIDTH, HERO_MIN_WORDS = 1024, 150
 PER_CATEGORY_PAGE, PER_RUBRIK, NEUESTE, RELATED = 12, 4, 6, 3
 INLINE_IMAGES_MAX = 2
+RADAR_ID_BASE = 100000  # Radar-Entwürfe bekommen IDs oberhalb des Altbestands
+RADAR_FEED, RADAR_LEAD_MIN_RELEVANZ = 8, 7
+_STOPWORDS = {"tamil", "kino", "film", "2026", "with", "from", "that", "this", "nach", "sich", "über", "über", "eine", "einer", "zum", "zur", "des", "der", "die", "das", "und", "for", "the", "rajinikanth"}
 MONATE = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"]
 WOCHENTAGE = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"]
 WOCHENTAGE_KURZ = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]
@@ -239,12 +246,142 @@ def kino_chips(post: dict) -> list[str]:
 
 
 def newest(posts: list[dict]) -> list[dict]:
-    return sorted(posts, key=lambda p: (p["datum"], p["id"]), reverse=True)
+    return sorted(posts, key=lambda p: (p["datum"], p.get("zeit", ""), p["id"]), reverse=True)
+
+
+# ---------------------------------------------------------------- Radar-Meldungen (content/radar.json → Beiträge)
+
+def load_radar() -> dict:
+    path = CONTENT / "radar.json"
+    if not path.exists():
+        return {"stand": None, "lauf": None, "quellen": [], "entwuerfe": []}
+    return load_json(path)
+
+
+def berlin_time(iso: str | None) -> datetime | None:
+    if not iso:
+        return None
+    try:
+        dt = datetime.fromisoformat(iso.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(BERLIN)
+
+
+def title_words(titel: str) -> set[str]:
+    return {w for w in re.sub(r"[^\w ]", " ", titel.lower()).split() if len(w) >= 4 and w not in _STOPWORDS}
+
+
+def mark_duplicates(records: list[dict]) -> None:
+    """Meldungen zum selben Thema (z. B. fünf „Jailer 2 Box Office“-Artikel): nur die neueste bleibt auf der Startseite."""
+    kept: list[set[str]] = []
+    for r in sorted(records, key=lambda r: (r["datum"], r.get("zeit", ""), r["id"]), reverse=True):
+        ws = title_words(r["titel"])
+        dup = any(ws and k and len(ws & k) / min(len(ws), len(k)) >= 0.5 for k in kept)
+        r["dublette"] = dup
+        if not dup:
+            kept.append(ws)
+
+
+def radar_record(d: dict, site: dict, slugs: set[str]) -> dict | None:
+    """Ein Entwurf aus dem Radar-Store als Beitrag für den Prototyp – mit echtem Datum, Quelle und Bildnachweis."""
+    bild = d.get("bild") or {}
+    if d.get("typ") == "kino_termine" or not bild.get("datei") or not (RADAR_IMG / bild["datei"]).exists():
+        return None
+    t = berlin_time(d.get("quelle_datum")) or berlin_time(d.get("created_at")) or datetime.now(BERLIN)
+    erfasst = berlin_time(d.get("created_at")) or t
+    kategorie = d.get("kategorie") if d.get("kategorie") in site["kategorien"] else "news"
+    kategorien = [kategorie]
+    if d.get("typ") == "event" and "events" not in kategorien:
+        kategorien.append("events")
+    titel = fix_caps(d["titel"].strip())
+    slug = slugify(titel, 80)
+    if slug in ("", "beitrag") or not re.search(r"[a-z]{3,}", slug):  # tamilische Titel ergeben keinen brauchbaren Slug
+        slug = f"radar-{d['id']}"
+    if slug in slugs:
+        slug = f"{slug}-r{d['id']}"
+    slugs.add(slug)
+    body = radar_render._QUELLE_RE.sub("", render_content(d)).rstrip()  # Quelle setzt die Vorlage selbst
+    wc = words(body)
+    teaser = (d.get("teaser") or "").strip()
+    if not teaser or teaser.lower() == titel.lower():
+        standfirst = f"Gefunden bei {(d.get('quelle_name') or 'der Quelle').split(' (via ')[0]}. Die Redaktion schreibt den Text aus der Originalmeldung – im Prototyp noch Rohfassung."
+        teaser = ""
+    else:
+        standfirst = excerpt(teaser, 230)
+    rec = {
+        "id": RADAR_ID_BASE + d["id"], "slug": slug, "titel": titel, "datum": t.strftime("%Y-%m-%d"), "datum_original": t.strftime("%Y-%m-%d"),
+        "zeit": t.strftime("%H:%M"), "erfasst": erfasst.strftime("%Y-%m-%d"), "erfasst_zeit": erfasst.strftime("%H:%M"), "erfasst_iso": erfasst.isoformat(),
+        "kategorien": kategorien, "alt_kategorien": [], "excerpt": excerpt(teaser, 160) if teaser else "", "standfirst": standfirst,
+        "woerter": wc, "lesezeit": reading_time(wc), "tags": list(d.get("schlagworte") or []), "markierungen": [], "youtube": False, "inhalt_html": body,
+        "bild": {"src": f"img/radar/{bild['datei']}", "w": bild.get("w") or 1200, "h": bild.get("h") or 675, "orig_w": bild.get("w") or 1200,
+                 "orig_h": bild.get("h") or 675, "credit": bild.get("credit") or "Grafik: Tamil.de", "origin": bild.get("origin") or "karte",
+                 "alt": bild.get("alt") or titel, "balken": bool(bild.get("balken"))},
+        "radar": True, "quelle": {"name": d.get("quelle_name") or "Quelle", "url": d.get("quelle_url") or "", "sprache": d.get("quelle_sprache") or "de",
+                                   "weitere": list(d.get("weitere_quellen") or [])},
+        "ort": d.get("ort") or "", "relevanz": int(d.get("relevanz") or 0), "typ": d.get("typ") or "artikel", "sprache": d.get("quelle_sprache") or "de",
+        "dach": bool(d.get("dach_bezug")), "rohfassung": any(str(h).startswith("Rohfassung") for h in d.get("hinweise") or []),
+        "event": {"datum": d.get("event_datum") or "", "ort": d.get("event_ort") or "", "ticket_url": d.get("ticket_url") or ""} if d.get("typ") == "event" else None,
+    }
+    rec["chips"] = kino_chips(rec)
+    return rec
+
+
+def radar_posts(radar: dict, site: dict, slugs: set[str]) -> list[dict]:
+    recs = [r for r in (radar_record(d, site, slugs) for d in radar.get("entwuerfe", [])) if r]
+    mark_duplicates(recs)
+    return recs
+
+
+def lead_rank(p: dict) -> tuple:
+    """Je höher, desto besser als Aufmacher: DACH, deutsch, Quellbild, Relevanz, tamilischer Bezug im Titel, Aktualität."""
+    tamil = bool(re.search(r"tamil|jailer|rajini|sri lanka|jaffna|pongal|kollywood|anirudh|rahman|ilaiyaraaja|vijay", p["titel"], re.I))
+    quer = p["bild"]["w"] >= p["bild"]["h"] * 1.25 and not p["bild"].get("balken")  # Querformat ohne schwarze Ränder füllt Bühne und Lead-Karte
+    return (p["dach"], p["sprache"] == "de", p["bild"]["origin"] == "quelle", quer, p["relevanz"], tamil, p["datum"], p.get("zeit", ""), p["id"])
+
+
+def merge_kino_fakten(kt: dict, radar: dict) -> dict:
+    """Spielorte des Radar-Laufs (CineStar, kinoheld, Cineplexx) mit der kuratierten Liste zusammenführen."""
+    drafts = [d for d in radar.get("entwuerfe", []) if d.get("typ") == "kino_termine" and (d.get("fakten") or {}).get("film") == kt["film"]]
+    if not drafts:
+        return kt
+    best = max(drafts, key=lambda d: len((d.get("fakten") or {}).get("kinos") or []))
+
+    def key(k: dict) -> str:
+        return re.sub(r"[^a-z0-9]", "", k.get("kino", "").lower().replace(k.get("stadt", "").lower(), ""))
+
+    def quelle(k: dict) -> str:
+        url = k.get("url", "")
+        return "CineStar" if "cinestar" in url else "Cineplexx" if "cineplexx" in url else "kinoheld" if "kinoheld" in url else "Kinoprogramm"
+
+    kinos = [{**k, "quelle": k.get("quelle") or quelle(k)} for k in best["fakten"]["kinos"]]
+    seen = {key(k) for k in kinos}
+    for k in kt["fakten"]["kinos"]:
+        if key(k) not in seen:
+            kinos.append(k)
+            seen.add(key(k))
+    kinos.sort(key=lambda k: (k.get("land", "DE") != "DE", k.get("stadt", "")))
+    stand = berlin_time(best.get("created_at"))
+    merged = {**kt, "fakten": {**kt["fakten"], "kinos": kinos}, "radar": True}
+    merged["titel"] = re.sub(r"\d+ Kinos", f"{len(kinos)} Kinos", kt["titel"])
+    if stand:
+        merged["stand"] = stand.strftime("%Y-%m-%d")
+    merged["hinweis"] = (f"Automatisch aus CineStar, kinoheld, Cineplexx, Eventfrog und megaplex.at zusammengestellt (News-Radar, Lauf vom "
+                         f"{fmt_date(merged['stand'])}), redaktionell freigegeben. Beispieltext der Redaktion.")
+    return merged
 
 
 def select(posts: list[dict], site: dict) -> dict:
     """Welche Beiträge wohin kommen – deterministisch, ohne Dubletten auf der Startseite."""
     by_id = {p["id"]: p for p in posts}
+    for p in posts:
+        p.setdefault("radar", False)
+        p.setdefault("ort", "")
+        p.setdefault("rohfassung", False)
+        p.setdefault("dublette", False)
+        p.setdefault("sprache", "de")
     kultur_re = re.compile(site["kultur_regex"], re.I)
     kueche_re = re.compile(site["kueche_regex"], re.I)
     for p in posts:
@@ -256,9 +393,12 @@ def select(posts: list[dict], site: dict) -> dict:
     for p in posts:
         if "production" in p.get("alt_kategorien", []) and "production" not in p["kategorien"]:
             p["kategorien"] = p["kategorien"] + ["production"]
-        if not p.get("excerpt"):
+        if not p.get("excerpt") and not p.get("radar"):
             p["excerpt"] = p["standfirst"] = f"{p['titel']} – ein Konzert von Tamil.de Production." if "production" in p["kategorien"] else p["titel"]
-    long_enough = [p for p in newest(posts) if p["woerter"] >= MIN_WORDS or set(p["kategorien"]) & {"kueche", "production"}]
+    long_enough = [p for p in newest(posts) if p["woerter"] >= MIN_WORDS or set(p["kategorien"]) & {"kueche", "production"} or p["radar"]]
+    radar = [p for p in long_enough if p["radar"] and not p["dublette"]]
+    # Tamilischsprachige Rohfassungen bleiben in Feed und Rubrikseiten, aber nicht in den deutschen Aufmacher-Karten
+    front = [p for p in long_enough if not (p["radar"] and (p["sprache"] == "ta" or p["dublette"]))]
     used: set[int] = set()
 
     def take(cands: list[dict], n: int) -> list[dict]:
@@ -274,23 +414,38 @@ def select(posts: list[dict], site: dict) -> dict:
     hero = [by_id[i] for i in site["hero"] if i in by_id]
     if len(hero) < 3:
         hero = take([p for p in long_enough if p["bild"]["orig_w"] >= HERO_MIN_WIDTH and p["woerter"] >= HERO_MIN_WORDS], 3)
+    # Aufmacher aus dem Radar: Redaktion setzt ihn (site.radar_lead), sonst die beste frische DACH-Meldung mit Quellbild
+    lead_cands = sorted((p for p in radar if p["sprache"] != "ta" and p["relevanz"] >= RADAR_LEAD_MIN_RELEVANZ), key=lead_rank, reverse=True)
+    chosen = by_id.get(RADAR_ID_BASE + int(site.get("radar_lead") or 0))
+    if chosen is None and lead_cands and lead_cands[0]["dach"] and lead_cands[0]["bild"]["origin"] == "quelle":
+        chosen = lead_cands[0]
+    if chosen is not None:
+        hero = [chosen] + [p for p in hero if p["id"] != chosen["id"]][:2]
     used.update(p["id"] for p in hero)
+    # Die zwei nächsten Radar-Karten („Jetzt auf dem Radar“): möglichst aus verschiedenen Rubriken
+    aktuell: list[dict] = []
+    for p in lead_cands:
+        if p["id"] not in used and p["kategorien"][0] not in {q["kategorien"][0] for q in aktuell}:
+            aktuell.append(p)
+            used.add(p["id"])
+        if len(aktuell) >= 2:
+            break
     top = [by_id[i] for i in site["top_themen"] if i in by_id]
-    neueste = take(long_enough, NEUESTE)
-    rubriken = {slug: take([p for p in long_enough if slug in p["kategorien"]], PER_RUBRIK) for slug in site["kategorien"]}
+    neueste = take(front, NEUESTE)
+    rubriken = {slug: take([p for p in front if slug in p["kategorien"]], PER_RUBRIK) for slug in site["kategorien"]}
     kategorie_seiten = {slug: [p for p in long_enough if slug in p["kategorien"]][:PER_CATEGORY_PAGE] for slug in site["kategorien"]}
     related = {p["id"]: [q for q in long_enough if q["id"] != p["id"] and set(q["kategorien"]) & set(p["kategorien"])][:RELATED]
                for p in long_enough}
     rezept = by_id.get(site["rezept"]["id"])
     prod = site.get("production", {})
     production = {"konzerte": [by_id[i] for i in prod.get("konzerte", []) if i in by_id], "service": [by_id[i] for i in prod.get("service", []) if i in by_id]}
-    return {"hero": hero, "top": top, "neueste": neueste, "rubriken": rubriken, "kategorie_seiten": kategorie_seiten,
-            "related": related, "rezept": rezept, "by_id": by_id, "kueche": [p for p in long_enough if "kueche" in p["kategorien"]],
-            "production": production}
+    return {"hero": hero, "top": top, "neueste": neueste, "aktuell": aktuell, "radar": radar, "rubriken": rubriken,
+            "kategorie_seiten": kategorie_seiten, "related": related, "rezept": rezept, "by_id": by_id,
+            "kueche": [p for p in long_enough if "kueche" in p["kategorien"]], "production": production}
 
 
 def used_ids(sel: dict) -> set[int]:
-    ids = {p["id"] for p in sel["hero"] + sel["top"] + sel["neueste"]}
+    ids = {p["id"] for p in sel["hero"] + sel["top"] + sel["neueste"] + sel.get("aktuell", [])}
     for lst in list(sel["rubriken"].values()) + list(sel["kategorie_seiten"].values()):
         ids.update(p["id"] for p in lst)
     if sel["rezept"]:
@@ -386,19 +541,15 @@ def page_as_post(p: dict, kategorie: str, shift: timedelta) -> dict:
 
 
 def brand_assets(export: Path) -> None:
-    """Logo und Werbebanner der alten Seite (export/brand/ aus tools/export_site.py --meta-only) nach static/img/."""
-    brand = export / "brand"
-    for name, target in (("logo.png", "logo.png"), ("ad-leaderboard.jpg", "ad-leaderboard.jpg"), ("ad-sidebar.jpg", "ad-sidebar.jpg")):
-        src = brand / name
-        if src.exists():
-            if name.endswith(".jpg"):
-                from PIL import Image
-                with Image.open(src) as im:
-                    im.convert("RGB").save(IMG / target, "JPEG", quality=80, optimize=True)
-            else:
-                shutil.copy(src, IMG / target)
-        else:
-            print(f"  Markendatei fehlt: {src}", file=sys.stderr)
+    """Logo der alten Seite (export/brand/ aus tools/export_site.py --meta-only) nach static/img/.
+
+    Die Fremdbanner (Gravity Club, Olyyn) bleiben im Export liegen – der Prototyp zeigt Eigenanzeigen (content/site.json → werbung).
+    """
+    src = export / "brand" / "logo.png"
+    if src.exists():
+        shutil.copy(src, IMG / "logo.png")
+    else:
+        print(f"  Markendatei fehlt: {src}", file=sys.stderr)
 
 
 def snapshot(export: Path, shift_dates: bool = True) -> dict:
@@ -532,13 +683,16 @@ def kino_widget(fakten: dict) -> dict:
     return {"anzahl": len(fakten["kinos"]), "laender": [{"code": c, "label": l, "kinos": by_land.get(c, [])} for c, l in order if by_land.get(c)]}
 
 
-def radar_orte(site: dict, ev: dict, by_id: dict) -> list[dict]:
-    """Blips für die Radar-Bühne: ein Ort je Stadt, aus Kinoprogramm, Events und Nachrichten (jeweils mit Quelle im Label)."""
+def radar_orte(site: dict, ev: dict, by_id: dict, rposts: list[dict] | None = None) -> list[dict]:
+    """Blips für die Radar-Bühne: ein Ort je Stadt, aus Kinoprogramm, Events und Radar-Meldungen (jeweils mit Quelle im Label)."""
     coords = site["staedte"]
     orte: dict[str, dict] = {}
+    unbekannt: set[str] = set()
 
     def add(stadt: str, label: str, art: str, href: str = "", quelle: str = ""):
         if stadt not in coords:
+            if stadt and stadt not in site.get("laender", ["Deutschland", "Schweiz", "Österreich"]):
+                unbekannt.add(stadt)
             return
         o = orte.setdefault(stadt, {"name": stadt, "lat": coords[stadt][0], "lon": coords[stadt][1], "art": art, "labels": [], "href": href, "quelle": quelle})
         o["labels"].append(label)
@@ -551,9 +705,16 @@ def radar_orte(site: dict, ev: dict, by_id: dict) -> list[dict]:
     for e in ev["events"]:
         if e["land"] != "DACH":
             add(e["stadt"], e["titel"], "event" if e["kategorie"] != "kino" else "kino", e["seite"], e["quelle"]["name"])
-    for n in site.get("radar_news", []):
-        post = by_id.get(n.get("post"))
-        add(n["stadt"], n["label"], "news", article_link(post) if post else "", "Redaktion")
+    rposts = rposts or []
+    for p in rposts:
+        if not p["dublette"]:
+            add(p["ort"], p["titel"], "event" if p["typ"] == "event" else "news", article_link(p), p["quelle"]["name"])
+    if not rposts:  # ohne Radar-Export: die handgepflegten Beispiele
+        for n in site.get("radar_news", []):
+            post = by_id.get(n.get("post"))
+            add(n["stadt"], n["label"], "news", article_link(post) if post else "", "Redaktion")
+    if unbekannt:
+        print(f"  Orte ohne Koordinaten in site.staedte (kein Blip): {', '.join(sorted(unbekannt))}", file=sys.stderr)
     out = []
     for o in orte.values():
         o["label"] = o["labels"][0] if len(o["labels"]) == 1 else f"{len(o['labels'])} Meldungen"
@@ -562,22 +723,49 @@ def radar_orte(site: dict, ev: dict, by_id: dict) -> list[dict]:
     return out
 
 
-def erfasst_log(orte: list[dict]) -> list[dict]:
-    """„Gerade erfasst“: die letzten Treffer als Protokollzeilen mit Uhrzeiten (deterministisch für den Prototyp)."""
-    minute = 9 * 60 + 12
+def tag_label(d: date, heute: date) -> str:
+    delta = (heute - d).days
+    return "heute" if delta == 0 else "gestern" if delta == 1 else WOCHENTAGE_KURZ[d.weekday()] if delta < 7 else fmt_date(d.isoformat())
+
+
+def erfasst_log(orte: list[dict], radar: dict | None = None, rposts: list[dict] | None = None, kt: dict | None = None, heute: date | None = None) -> list[dict]:
+    """„Zuletzt gefunden“: echte Radar-Treffer mit Uhrzeit (Europe/Berlin); ohne Radar-Export ein deterministisches Protokoll."""
     rows = []
+    if rposts:
+        by_draft = {p["id"] - RADAR_ID_BASE: p for p in rposts}
+        heute = heute or max(date.fromisoformat(p["erfasst"]) for p in rposts)
+        for d in sorted((radar or {}).get("entwuerfe", []), key=lambda d: d.get("created_at") or "", reverse=True):
+            p = by_draft.get(d["id"])
+            if p is not None:
+                if p["dublette"]:
+                    continue
+                rows.append({"zeit": p["erfasst_zeit"], "tag": tag_label(date.fromisoformat(p["erfasst"]), heute), "ort": p["ort"], "text": p["titel"],
+                             "href": article_link(p), "art": "event" if p["typ"] == "event" else "news", "quelle": p["quelle"]["name"].split(" (via ")[0],
+                             "sprache": p["sprache"], "iso": p["erfasst_iso"]})
+            elif d.get("typ") == "kino_termine" and kt and (d.get("fakten") or {}).get("film") == kt["film"] and not any(r["art"] == "kino" for r in rows):
+                t = berlin_time(d.get("created_at"))
+                rows.append({"zeit": t.strftime("%H:%M") if t else "", "tag": tag_label(t.date(), heute) if t else "", "ort": "DE · AT · CH",
+                             "text": f"{kt['film']} läuft in {len(kt['fakten']['kinos'])} Kinos", "href": f"{kt['slug']}.html", "art": "kino",
+                             "quelle": "Kinoprogramm", "sprache": "de", "iso": t.isoformat() if t else ""})
+        # gleiche Minute: Kinoprogramm zuerst, dann deutsch/englisch, dann tamilisch
+        rows.sort(key=lambda r: (r["iso"][:16], r["art"] == "kino", r["sprache"] != "ta", r["iso"]), reverse=True)
+        return rows
+    minute = 9 * 60 + 12
     for i, o in enumerate(orte[:9]):
         minute -= (7 + (i * 11) % 23)
-        rows.append({"zeit": f"{minute // 60:02d}:{minute % 60:02d}", "ort": o["name"], "text": o["labels"][0], "href": o["href"], "art": o["art"]})
+        rows.append({"zeit": f"{minute // 60:02d}:{minute % 60:02d}", "tag": "heute", "ort": o["name"], "text": o["labels"][0], "href": o["href"],
+                     "art": o["art"], "quelle": o.get("quelle", ""), "sprache": "de", "iso": ""})
     return rows
 
 
 def ticker_items(sel: dict, ev: dict, kat: dict) -> list[dict]:
     kt = ev["kino_termine"]
     items = [{"k": kat["kino"]["tamil"], "text": f"{kt['film']} läuft in {len(kt['fakten']['kinos'])} Kinos in DE, AT und CH", "href": f"{kt['slug']}.html"}]
+    for p in [q for q in sel.get("radar", []) if q["sprache"] != "ta"][:4]:
+        items.append({"k": kat[p["kategorien"][0]]["tamil"], "text": p["titel"], "href": article_link(p)})
     for e in ev["events"][1:4]:
         items.append({"k": kat["events"]["tamil"], "text": f"{e['datum_text'].split(',')[-1].strip()}: {e['titel']}", "href": e["seite"]})
-    for p in sel["neueste"][:6]:
+    for p in [q for q in sel["neueste"] if not q["radar"]][:4]:
         items.append({"k": kat[p["kategorien"][0]]["tamil"], "text": p["titel"], "href": article_link(p)})
     return items
 
@@ -591,11 +779,17 @@ def source_count() -> int:
 
 
 def build_context(bare: bool = False) -> dict:
-    site, ev, data = load_site(), load_events(), load_posts()
+    site, ev, data, radar_data = load_site(), load_events(), load_posts(), load_radar()
     site = {**site, **site["site"]}  # site.name/claim/tagline/org neben site.kontakt usw.
-    posts = data["posts"]
+    rposts = radar_posts(radar_data, site, {p["slug"] for p in data["posts"]})
+    posts = data["posts"] + rposts
+    counts = dict(data["counts"])
+    for p in rposts:
+        for slug in p["kategorien"]:
+            counts[slug] = counts.get(slug, 0) + 1
     sel = select(posts, site)
-    kt = ev["kino_termine"]
+    kt = merge_kino_fakten(ev["kino_termine"], radar_data)
+    ev["kino_termine"] = kt
     kt["liste_html"] = render_kino_liste(kt["fakten"])
     kt["bild"] = {"src": f"img/ev-{kt['slug']}.jpg", "w": 1200, "h": 675}
     for e in ev["events"]:
@@ -606,10 +800,16 @@ def build_context(bare: bool = False) -> dict:
         e["seite"] = f"event-{e['slug']}.html"
     rezept = split_recipe(sel["rezept"]["inhalt_html"]) if sel["rezept"] else None
     stand = date.fromisoformat(site["stand"])
-    orte = radar_orte(site, ev, sel["by_id"])
+    orte = radar_orte(site, ev, sel["by_id"], rposts)
+    erfasst = erfasst_log(orte, radar_data, rposts, kt, heute=stand)
+    letzter = max((berlin_time(d.get("created_at")) for d in radar_data.get("entwuerfe", []) if d.get("created_at")), default=None)
+    lauf = radar_data.get("lauf") or {}
     radar = {
-        "svg": radar_map.svg(orte), "orte": orte, "erfasst": erfasst_log(orte),
-        "stats": {"orte": len(orte), "meldungen": sum(len(o["labels"]) for o in orte), "quellen": source_count(), "kinos": len(kt["fakten"]["kinos"])},
+        "svg": radar_map.svg(orte), "orte": orte, "erfasst": erfasst, "feed": erfasst[:RADAR_FEED], "live": bool(rposts),
+        "stats": {"orte": len(orte), "meldungen": sum(len(o["labels"]) for o in orte) + sum(1 for r in erfasst if not r["ort"] or r["ort"] not in site["staedte"]),
+                  "quellen": source_count(), "kinos": len(kt["fakten"]["kinos"]), "entwuerfe": len(radar_data.get("entwuerfe", [])),
+                  "gesammelt": lauf.get("gesammelt") or 0, "relevant": lauf.get("relevant") or 0},
+        "stand": letzter.strftime("%H:%M") if letzter else "", "stand_datum": fmt_date(letzter.strftime("%Y-%m-%d")) if letzter else "",
         "footer_svg": radar_map.svg([], sweep=False),
     }
     seiten = {pg["slug"]: pg for pg in data.get("seiten", [])}
@@ -618,8 +818,8 @@ def build_context(bare: bool = False) -> dict:
         tv["seite"] = seiten["tv"]
     return {
         "radar": radar, "ticker": ticker_items(sel, ev, site["kategorien"]), "seiten": seiten, "production": {**site.get("production", {}), **sel["production"]},
-        "tv": tv, "werbung_live": site.get("werbung_live", {}), "logo": (IMG / "logo.png").exists(),
-        "site": site, "kat": site["kategorien"], "nav": site["nav"], "sel": sel, "posts": posts, "counts": data["counts"],
+        "tv": tv, "werbung": site.get("werbung", {}), "logo": (IMG / "logo.png").exists(),
+        "site": site, "kat": site["kategorien"], "nav": site["nav"], "sel": sel, "posts": posts, "counts": counts,
         "events": ev["events"], "event_months": event_months(ev["events"]), "grid": month_grid(2026, 10, ev["events"]),
         "kino": kt, "kino_widget": kino_widget(kt["fakten"]), "rezept": rezept, "shift_days": data["shift_days"],
         "stand": site["stand"], "stand_text": fmt_date(site["stand"], weekday=True), "jahr": stand.year,
@@ -713,6 +913,9 @@ def check_links(out: Path) -> list[str]:
 
 def build(out: Path = DIST, bare_index: bool = False) -> list[str]:
     written = render_all(out, bare_index=bare_index)
+    for stale in out.glob("*.html"):  # Seiten früherer Builds (umbenannte Slugs) nicht liegen lassen
+        if stale.name not in written:
+            stale.unlink()
     problems = check_links(out)
     if problems:
         for p in problems[:40]:
