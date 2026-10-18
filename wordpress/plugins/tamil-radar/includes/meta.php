@@ -1,6 +1,10 @@
 <?php
 /**
- * Beitrags-Meta des Radars: Quelle, Bildnachweis, Ort, Event- und Kinodaten – alles per REST sichtbar und schreibbar.
+ * Beitrags-Meta, die der Radar schreibt: Herkunft (radar_uid, Quelle, Relevanz), Bildnachweis, Ort, Termin, Kinoliste.
+ *
+ * Die Website-Felder (Vorspann, Termin, Kinoliste) registriert das Plugin „Tamil.de Website“ mit Eingabemaske; ist es
+ * aktiv, überspringt dieses Plugin die schon registrierten Schlüssel. Die REST-Routen des Radars säubern alle Felder
+ * selbst (tamil_radar_sanitize_meta), damit der Radar auch ohne das Website-Plugin vollständig schreibt.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -12,23 +16,26 @@ defined( 'ABSPATH' ) || exit;
  */
 function tamil_radar_meta_keys(): array {
 	return array(
-		'radar_uid'      => 'text',
-		'radar_relevanz' => 'int',
-		'quelle_name'    => 'text',
-		'quelle_url'     => 'url',
-		'quelle_datum'   => 'datetime',
-		'quelle_sprache' => 'text',
-		'bild_credit'    => 'text',
-		'bild_origin'    => 'text',
-		'ort'            => 'text',
-		'standfirst'     => 'text',
-		'event_datum'    => 'datetime',
-		'event_ende'     => 'datetime',
-		'event_ort'      => 'text',
-		'event_land'     => 'land',
-		'ticket_url'     => 'url',
-		'kino_fakten'    => 'json',
-		'rezept'         => 'json',
+		'radar_uid'          => 'text',
+		'radar_relevanz'     => 'int',
+		'quelle_name'        => 'text',
+		'quelle_url'         => 'url',
+		'quelle_datum'       => 'datetime',
+		'quelle_sprache'     => 'text',
+		'bild_credit'        => 'text',
+		'bild_origin'        => 'text',
+		'ort'                => 'text',
+		'standfirst'         => 'text',
+		'event_datum'        => 'datetime',
+		'event_ende'         => 'datetime',
+		'event_ort'          => 'text',
+		'event_land'         => 'land',
+		'event_veranstalter' => 'text',
+		'event_preis'        => 'text',
+		'ticket_url'         => 'url',
+		'ticket_label'       => 'text',
+		'kino_fakten'        => 'json',
+		'rezept'             => 'json',
 	);
 }
 
@@ -76,10 +83,14 @@ function tamil_radar_sanitize_meta( $value, string $type ) {
 }
 
 /**
- * register_post_meta für alle Radar-Felder (single, REST-sichtbar, nur für Redakteure schreibbar).
+ * register_post_meta für die Radar-Felder (single, REST-sichtbar, nur für Redakteure schreibbar); Schlüssel, die
+ * das Website-Plugin schon registriert hat, bleiben bei dessen Definition.
  */
 function tamil_radar_register_meta(): void {
 	foreach ( tamil_radar_meta_keys() as $key => $type ) {
+		if ( registered_meta_key_exists( 'post', $key, 'post' ) ) {
+			continue;
+		}
 		register_post_meta(
 			'post',
 			$key,
@@ -134,4 +145,26 @@ function tamil_radar_post_id_by_uid( string $uid ): int {
 		)
 	);
 	return $ids ? (int) $ids[0] : 0;
+}
+
+/**
+ * Anzahl der Beiträge, die der Radar angelegt hat (radar_uid gesetzt).
+ */
+function tamil_radar_count_posts( string $status = 'any' ): int {
+	$query = new WP_Query(
+		array(
+			'post_type'      => 'post',
+			'post_status'    => $status,
+			'posts_per_page' => 1,
+			'fields'         => 'ids',
+			'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+				array(
+					'key'     => 'radar_uid',
+					'value'   => '',
+					'compare' => '!=',
+				),
+			),
+		)
+	);
+	return (int) $query->found_posts;
 }

@@ -85,10 +85,12 @@ fi
   || echo "   (deutsche Sprachdateien nicht geladen – Backend bleibt Englisch)"
 
 echo "== Plugin und Theme aus dem Repo"
-if [ -d "$REPO/wordpress/plugins/tamil-radar" ]; then
-  ln -sfn "$REPO/wordpress/plugins/tamil-radar" "$WP_DIR/wp-content/plugins/tamil-radar"
-  "${WP[@]}" plugin activate tamil-radar
-fi
+for plugin in tamil-site tamil-radar; do
+  if [ -d "$REPO/wordpress/plugins/$plugin" ]; then
+    ln -sfn "$REPO/wordpress/plugins/$plugin" "$WP_DIR/wp-content/plugins/$plugin"
+    "${WP[@]}" plugin activate "$plugin"
+  fi
+done
 if [ -d "$REPO/wordpress/themes/tamil" ]; then
   ln -sfn "$REPO/wordpress/themes/tamil" "$WP_DIR/wp-content/themes/tamil"
   "${WP[@]}" theme activate tamil
@@ -107,11 +109,13 @@ EOF
 done
 "${WP[@]}" option update default_category "$("${WP[@]}" term get category news --by=slug --field=term_id)" >/dev/null
 
-echo "== Testdaten fürs Plugin (nur lokal: Weiterleitung, Werbeplatz)"
+echo "== Testdaten (nur lokal: Weiterleitungen, Cockpit-Adresse)"
+if "${WP[@]}" plugin is-active tamil-site >/dev/null 2>&1; then
+  "${WP[@]}" option update tamil_site_redirects "{\"/category/anirudh/\":\"$URL/category/events/\",\"/category/blog/\":\"$URL/category/community/\"}" --format=json >/dev/null
+fi
 if "${WP[@]}" plugin is-active tamil-radar >/dev/null 2>&1; then
-  "${WP[@]}" option update tamil_radar_redirects "{\"/category/anirudh/\":\"$URL/category/events/\",\"/category/blog/\":\"$URL/category/community/\"}" --format=json >/dev/null
-  "${WP[@]}" option get tamil_radar_settings >/dev/null 2>&1 || "${WP[@]}" option update tamil_radar_settings \
-    '{"cockpit_url":"http://127.0.0.1:8787","anzeigen":{"leaderboard":"<div class=\"ad-test\" style=\"background:#0e1226;color:#fff;padding:24px;text-align:center\">Testbanner Leaderboard</div>"},"advanced_ads":{}}' --format=json >/dev/null
+  "${WP[@]}" option get tamil_radar_settings >/dev/null 2>&1 \
+    || "${WP[@]}" option update tamil_radar_settings '{"cockpit_url":"http://127.0.0.1:8787"}' --format=json >/dev/null
 fi
 
 echo "== Benutzer und Anwendungspasswörter"

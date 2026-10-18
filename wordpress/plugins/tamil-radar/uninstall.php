@@ -6,8 +6,6 @@
 defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 
 delete_option( 'tamil_radar_settings' );
-delete_option( 'tamil_radar_redirects' );
-delete_option( 'tamil_radar_redirects_csv' );
 delete_option( 'tamil_radar_version' );
 delete_transient( 'tamil_radar_cockpit_status' );
 
