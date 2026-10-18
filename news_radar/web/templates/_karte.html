@@ -9,7 +9,7 @@
       {% if d.ort %}<span class="badge ort">{{ d.ort }}</span>{% endif %}
       <span class="relevanz r{{ d.relevanz }}" title="Relevanz {{ d.relevanz }} von 10"><i style="--r:{{ d.relevanz }}"></i>Relevanz {{ d.relevanz }}</span>
       <span class="leise">{{ age(d.created_at) }} · {{ d.quelle_name }}</span>
-      {% if d.hinweise %}<span class="badge hinweis" title="{{ d.hinweise|join(' · ') }}">aktualisiert</span>{% endif %}
+      {% if d.hinweise %}{% set roh = d.hinweise[0].startswith('Rohfassung') %}<span class="badge hinweis{% if roh %} roh{% endif %}" title="{{ d.hinweise|join(' · ') }}">{{ 'Rohfassung' if roh else 'aktualisiert' }}</span>{% endif %}
     </div>
     <h2><a href="/entwurf/{{ d.id }}" data-open>{{ d.titel }}</a></h2>
     <p class="teaser">{{ d.teaser }}</p>

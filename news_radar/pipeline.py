@@ -17,7 +17,7 @@ from .config import Settings
 from .images import featured_image, save_pair
 from .store import Store
 from .wordpress import slugify
-from .writer import Draft, Writer
+from .writer import Draft, Writer, split_source_suffix
 
 log = logging.getLogger(__name__)
 
@@ -37,14 +37,25 @@ def category_label(settings: Settings, slug: str) -> str:
     return next((c.label for c in settings.categories if c.slug == slug), slug)
 
 
-def draft_row(item: sources.NewsItem, draft: Draft, bild_datei: str, image) -> dict:
-    """Ein Entwurf für die Warteschlange, zusammengesetzt aus Meldung, Claude-Ergebnis und Bild."""
+def quelle_name(item: sources.NewsItem) -> str:
+    """Bei Google-News-Treffern steht der Verlag nur im Titel-Suffix – den zeigen wir statt „Google News“."""
+    if item.source.lower().startswith("google news"):
+        _, verlag = split_source_suffix(sources.clean_text(item.title))
+        if verlag:
+            return f"{verlag} (via Google News)"
+    return item.source
+
+
+def draft_row(item: sources.NewsItem, draft: Draft, bild_datei: str, image, hinweise: tuple | list = ()) -> dict:
+    """Ein Entwurf für die Warteschlange, zusammengesetzt aus Meldung, Schreib-Ergebnis und Bild."""
     typ = "kino_termine" if item.kind == "kino" else draft.typ
     return {
         "uid": item.uid,
         "typ": typ,
-        "quelle_name": item.source,
+        "quelle_name": quelle_name(item),
         "quelle_url": item.url,
+        "quelle_bild": item.image_url or "",
+        "hinweise": list(hinweise),
         "quelle_datum": item.published.isoformat(timespec="minutes"),
         "quelle_sprache": item.language,
         "weitere_quellen": [{"name": r.source, "url": r.url} for r in item.related],
@@ -75,6 +86,7 @@ def draft_row(item: sources.NewsItem, draft: Draft, bild_datei: str, image) -> d
 
 def process(item: sources.NewsItem, settings: Settings, writer: Writer, store: Store) -> Result:
     start = time.monotonic()
+    hinweise = [writer.hinweis] if getattr(writer, "hinweis", "") else []  # RawWriter: Rohfassung ohne KI
     article_text = sources.fetch_article_text(item.url) if item.kind == "news" else ""
     draft = writer.write(item, article_text)
     if draft is None:
@@ -89,7 +101,7 @@ def process(item: sources.NewsItem, settings: Settings, writer: Writer, store: S
     stem = f"{item.uid[:12]}-{slugify(draft.titel, 50)}"
     image = featured_image(settings, draft.bild_suchbegriff, draft.titel, category_label(settings, draft.kategorie), stem)
     bild_datei, _thumb = save_pair(image, settings.bilder_dir, stem)
-    draft_id = store.insert_draft(draft_row(item, draft, bild_datei, image))
+    draft_id = store.insert_draft(draft_row(item, draft, bild_datei, image, hinweise))
     store.mark(item.uid, item.title, item.url, item.source, "entwurf")
     if draft_id is None:
         return Result(draft.titel, "verworfen", draft.kategorie, note="Entwurf existiert schon", seconds=time.monotonic() - start)
@@ -97,9 +109,12 @@ def process(item: sources.NewsItem, settings: Settings, writer: Writer, store: S
     seconds = time.monotonic() - start
     link = f"{settings.web_url}/entwurf/{draft_id}"
     store.event("entwurf", id=draft_id, titel=draft.titel, quelle=item.url, kategorie=draft.kategorie, typ=draft.typ,
-                bild=image.origin, relevanz=draft.relevanz, dach=draft.ort, sekunden=round(seconds, 1))
-    return Result(draft.titel, "entwurf", draft.kategorie, link, seconds, f"Relevanz {draft.relevanz}, Bild: {image.origin}",
-                  draft_id)
+                bild=image.origin, relevanz=draft.relevanz, dach=draft.ort, sekunden=round(seconds, 1),
+                modus="roh" if hinweise else "ki")
+    note = f"Relevanz {draft.relevanz}, Bild: {image.origin}"
+    if hinweise:
+        note = "Rohfassung · " + note
+    return Result(draft.titel, "entwurf", draft.kategorie, link, seconds, note, draft_id)
 
 
 def refresh_kino(items: list[sources.NewsItem], store: Store, seen: set[str]) -> list[Result]:
@@ -128,7 +143,10 @@ def run(settings: Settings, writer: Writer | None = None, store: Store | None = 
     t0 = time.monotonic()
     own_store = store is None
     store = store or Store(settings.db_path)
-    run_id = store.start_run("wordpress" if settings.wordpress_enabled else "warteschlange")
+    modus = "wordpress" if settings.wordpress_enabled else "warteschlange"
+    if getattr(writer, "hinweis", ""):
+        modus += " · ohne KI"
+    run_id = store.start_run(modus)
     results: list[Result] = []
     try:
         items = sources.fetch_all(settings, store)

@@ -208,3 +208,22 @@ def test_create_app_requires_secret(app):
     settings.web_secret = ""
     with pytest.raises(RuntimeError):
         create_app(settings)
+
+
+def test_feed_marks_rohfassung_and_rewrite_clears_it(app, client):
+    from news_radar.writer import ROH_HINWEIS
+
+    settings = app.extensions["settings"]
+    with Store(settings.db_path) as store:
+        name, _ = save_pair(branded_card("Roh", "Kino", "u9"), settings.bilder_dir, "u9-x")
+        store.insert_draft(dict(uid="u9", typ="artikel", titel="Rohe Meldung aus Hamm", teaser="T", inhalt_html="<p>Text</p>", kategorie="community",
+                                relevanz=7, dach_bezug=True, ort="Hamm", schlagworte=[], bild_datei=name, bild_alt="alt", quelle_url="https://q.de/9",
+                                quelle_name="WA Hamm", hinweise=[ROH_HINWEIS], original_json={"titel": "Rohe Meldung aus Hamm"}))
+    token = login(client)
+    html = client.get("/?status=neu").get_data(as_text=True)
+    assert 'class="badge hinweis roh"' in html and ">Rohfassung<" in html
+    assert "Rohfassung ohne KI" in client.get("/entwurf/4").get_data(as_text=True)
+    resp = client.post("/entwurf/4/neu-schreiben", data={"anweisung": "kürzer", "_csrf": token})
+    assert resp.status_code == 302
+    with Store(settings.db_path) as store:
+        assert store.get_draft(4)["hinweise"] == [] and store.get_draft(4)["titel"] == "Neu geschrieben"

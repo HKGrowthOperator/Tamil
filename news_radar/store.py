@@ -31,12 +31,16 @@ PUBLISHABLE = frozenset({"neu", "bearbeitet", "zurueckgestellt", "freigegeben", 
 JSON_COLUMNS = ("schlagworte", "weitere_quellen", "fakten_json", "hinweise")
 DRAFT_COLUMNS = (
     "uid", "typ", "status", "quelle_name", "quelle_url", "quelle_datum", "quelle_sprache", "weitere_quellen",
-    "relevanz", "begruendung", "dach_bezug", "ort", "kategorie", "titel", "teaser", "inhalt_html",
+    "quelle_bild", "relevanz", "begruendung", "dach_bezug", "ort", "kategorie", "titel", "teaser", "inhalt_html",
     "schlagworte", "seo_titel", "meta_beschreibung", "bild_datei", "bild_credit", "bild_alt",
     "bild_suchbegriff", "bild_origin", "event_datum", "event_ort", "ticket_url", "fakten_json",
     "fingerprint", "hinweise", "original_json", "rewrite_count", "wp_post_id", "wp_link", "fehler",
     "bearbeitet_von", "freigegeben_at", "veroeffentlicht_at",
 )
+# Spalten, die nach der ersten Version dazukamen (ALTER TABLE für bestehende Datenbanken)
+ADDED_COLUMNS = (("quelle_bild", "TEXT"),)
+# Nicht in den Prototyp-Export (intern bzw. WordPress-spezifisch)
+EXPORT_SKIP = ("original_json", "fingerprint", "fakten_json", "wp_post_id", "wp_link", "bearbeitet_von", "fehler")
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS seen (
@@ -51,6 +55,7 @@ CREATE TABLE IF NOT EXISTS drafts (
     typ TEXT NOT NULL DEFAULT 'artikel',
     status TEXT NOT NULL DEFAULT 'neu',
     quelle_name TEXT, quelle_url TEXT, quelle_datum TEXT, quelle_sprache TEXT, weitere_quellen TEXT,
+    quelle_bild TEXT,
     relevanz INTEGER, begruendung TEXT, dach_bezug INTEGER NOT NULL DEFAULT 0, ort TEXT,
     kategorie TEXT, titel TEXT, teaser TEXT, inhalt_html TEXT, schlagworte TEXT,
     seo_titel TEXT, meta_beschreibung TEXT,
@@ -124,6 +129,11 @@ class Store:
 
     def migrate(self) -> None:
         self.db.executescript(SCHEMA)
+        present = {row[1] for row in self.db.execute("PRAGMA table_info(drafts)")}
+        for column, ddl in ADDED_COLUMNS:
+            if column not in present:
+                self.db.execute(f"ALTER TABLE drafts ADD COLUMN {column} {ddl}")
+        self.db.commit()
 
     def close(self) -> None:
         self.db.close()
@@ -181,6 +191,29 @@ class Store:
         rows.reverse()
         path.write_text("\n".join(_dumps(r) for r in rows), encoding="utf-8")
         return len(rows)
+
+    EXPORT_STATES = ("neu", "bearbeitet", "zurueckgestellt", "freigegeben", "veroeffentlicht", "in_wordpress")
+
+    def export_drafts(self, statuses: tuple[str, ...] = EXPORT_STATES, limit: int = 60) -> dict:
+        """Entwürfe samt letztem Lauf und Quellen-Status als JSON-taugliches dict (für den Prototyp)."""
+        marks = ",".join("?" for _ in statuses)
+        rows = self.db.execute(
+            f"SELECT * FROM drafts WHERE status IN ({marks}) ORDER BY quelle_datum DESC, id DESC LIMIT ?",
+            (*statuses, limit),
+        )
+        entwuerfe = []
+        for row in rows:
+            d = row_to_draft(row)
+            for key in EXPORT_SKIP:
+                d.pop(key, None)
+            entwuerfe.append(d)
+        runs = self.recent_runs(1)
+        return {
+            "stand": now_iso(),
+            "lauf": runs[0] if runs else None,
+            "quellen": [{"name": s["name"], "last_ok": s["last_ok"], "last_count": s["last_count"]} for s in self.source_status_all()],
+            "entwuerfe": entwuerfe,
+        }
 
     # ---- Entwürfe ----------------------------------------------------------
     def insert_draft(self, row: dict) -> int | None:

@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import html
 import json
 import logging
+import re
+from datetime import date
 from pathlib import Path
 from typing import Literal
 
@@ -11,7 +14,7 @@ import anthropic
 from pydantic import BaseModel, Field
 
 from .config import Settings
-from .sources import NewsItem
+from .sources import NewsItem, clean_text
 
 log = logging.getLogger(__name__)
 
@@ -192,3 +195,134 @@ class Writer:
         """Umschreiben nach Anweisung – ohne Retries, damit ein Web-Request nie minutenlang hängt."""
         client = self.client.with_options(timeout=timeout, max_retries=0)
         return self._create(client, build_rewrite_message(row, anweisung))
+
+
+# ---- Rohfassung ohne Sprachmodell ----------------------------------------------------------------
+
+ROH_HINWEIS = (
+    "Rohfassung ohne KI: Titel und Zusammenfassung stammen aus der Quelle, der Auszug ist ein Zitat – "
+    "vor der Freigabe neu schreiben."
+)
+# „ - Verlag“ am Ende; der Verlagsname darf Bindestriche enthalten (Weser-Kurier), aber keinen weiteren Trenner
+_SUFFIX_RE = re.compile(r"\s+[-–—|]\s+((?:(?!\s[-–—|]\s).){2,60})$")
+
+
+def split_source_suffix(title: str) -> tuple[str, str]:
+    """„Überschrift - Verlag“ (so liefert Google News die Titel) → (Überschrift, Verlag)."""
+    m = _SUFFIX_RE.search(title)
+    if not m or len(title[: m.start()].strip()) < 20:
+        return title.strip(), ""
+    return title[: m.start()].strip(), m.group(1).strip()
+
+
+def _first_sentence(text: str, limit: int = 220) -> str:
+    text = clean_text(text)
+    m = re.match(r"(.{40,}?[.!?])(\s|$)", text)
+    return (m.group(1) if m else text)[:limit].strip()
+
+
+_WOCHENTAGE = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"]
+_MONATE = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"]
+_KALENDER_FLOSKEL_RE = re.compile(r"[\U0001F000-\U0001FAFF\u2600-\u27BF]|\b(Not specified|All Day)\b", re.I)
+
+
+def event_teaser(summary: str, facts: dict | None) -> str:
+    """Veranstaltungskalender liefern oft nur Floskeln („Not specified, All Day“) – Datum und Ort sind der bessere Anreißer."""
+    facts = facts or {}
+    parts = []
+    datum = str(facts.get("event_datum") or "")[:10]
+    if datum:
+        try:
+            d = date.fromisoformat(datum)
+            parts.append(f"{_WOCHENTAGE[d.weekday()]}, {d.day}. {_MONATE[d.month - 1]} {d.year}")
+        except ValueError:
+            pass
+    if facts.get("event_ort"):
+        parts.append(str(facts["event_ort"]))
+    rest = re.sub(r"\s*,\s*(,\s*)+", ", ", _KALENDER_FLOSKEL_RE.sub("", clean_text(summary))).strip(" ,·")
+    if parts:
+        return " · ".join(parts)
+    return rest
+
+
+def _cut(text: str, limit: int) -> str:
+    if len(text) <= limit:
+        return text
+    return text[:limit].rsplit(" ", 1)[0] + " …"
+
+
+class RawWriter:
+    """Entwürfe ohne Sprachmodell: Titel und Zusammenfassung der Quelle plus ein markiertes Zitat.
+
+    Nur für `run --ohne-ki` (Erstbefüllung, Quellentest, Ausfall des Modells). Jeder Entwurf trägt
+    ROH_HINWEIS, die Freigabe-App zeigt ihn als „Rohfassung“; vor der Freigabe wird er neu geschrieben.
+    """
+
+    hinweis = ROH_HINWEIS
+
+    def __init__(self, settings: Settings):
+        self.settings = settings
+        self.slugs = settings.category_slugs()
+        self.keywords = sorted(settings.keywords, key=len, reverse=True)
+
+    def write(self, item: NewsItem, article_text: str) -> Draft:
+        titel = clean_text(item.title)
+        if item.source.lower().startswith("google news"):  # nur dort hängt der Verlag am Titel
+            titel, _verlag = split_source_suffix(titel)
+        voll = titel
+        titel = _cut(titel, 90)
+        summary = clean_text(item.summary)
+        if item.kind == "event":
+            summary = event_teaser(summary, item.facts)
+        if summary.lower() == voll.lower() or (summary.lower().startswith(voll.lower()) and len(summary) - len(voll) < 40):
+            summary = ""  # viele Feeds wiederholen nur die Überschrift (Google News: Überschrift + Verlag)
+        if not summary and article_text:
+            summary = _first_sentence(article_text)
+        teaser = _cut(summary or titel, 220)
+
+        parts = [f"<p>{html.escape(summary)}</p>"] if summary else []
+        excerpt = clean_text(article_text)
+        if excerpt:
+            parts.append(f"<h2>Auszug aus der Quelle</h2>\n<blockquote>{html.escape(_cut(excerpt, 600))}</blockquote>")
+        parts.append(f'<p class="quelle">Quelle: {html.escape(item.source)}</p>')
+
+        if item.dach_score >= 2:
+            relevanz = 8
+        elif item.dach_score > 0:
+            relevanz = 7
+        elif item.score >= self.settings.min_score + 2:
+            relevanz = 6
+        else:
+            relevanz = 4
+        kategorie = item.category_hint if item.category_hint in self.slugs else ("news" if "news" in self.slugs else self.slugs[0])
+        typ = {"kino": "kino_termine", "event": "event"}.get(item.kind, "artikel")
+
+        haystack = f"{titel} {summary}".lower()
+        worte: list[str] = []
+        for term in self.keywords:
+            if term in haystack and term.title() not in worte:
+                worte.append(term.title())
+            if len(worte) >= 5:
+                break
+        if item.ort and item.ort not in worte:
+            worte.append(item.ort)
+        facts = item.facts or {}
+        return Draft(
+            relevanz=relevanz,
+            begruendung=f"Vorfilter: {item.score} Punkte, DACH {item.dach_score}, Ort {item.ort or '–'} (ohne KI bewertet)",
+            kategorie=kategorie,
+            typ=typ,
+            dach_bezug=item.dach_score > 0,
+            ort=item.ort,
+            titel=titel,
+            teaser=teaser,
+            inhalt_html="\n".join(parts),
+            schlagworte=worte[:6],
+            seo_titel=_cut(titel, 60),
+            meta_beschreibung=_cut(teaser, 155),
+            bild_suchbegriff=f"{kategorie} tamil community",
+            bild_alt=titel,
+            event_datum=str(facts.get("event_datum", "") or "")[:10],
+            event_ort=str(facts.get("event_ort", "") or ""),
+            ticket_url=str(facts.get("ticket_url", "") or ""),
+        )

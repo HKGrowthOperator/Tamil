@@ -84,3 +84,23 @@ def test_render_kino_list_and_event_box():
 def test_sanitize_strips_scripts_and_handlers():
     dirty = '<p onclick="x()">Hi</p><script>alert(1)</script><a href="javascript:bad()">l</a><iframe src="x"></iframe><marquee>no</marquee>'
     assert render.sanitize_html(dirty) == '<p>Hi</p><a href="#">l</a>no'
+
+
+def test_raw_writer_draft_matches_schema(settings):
+    from news_radar.writer import RawWriter, split_source_suffix
+
+    writer = RawWriter(settings)
+    it = NewsItem(title="Jailer 2 startet in Bremen - Weser-Kurier", url="https://example.com/a", summary="",
+                  source="Google News DACH", published=datetime(2026, 10, 17, tzinfo=timezone.utc), kind="news",
+                  score=8, dach_score=2, ort="Bremen", category_hint="kino")
+    d = writer.write(it, "Der Film läuft ab Donnerstag im CineStar. Tickets gibt es online.")
+    assert d.relevanz == 8 and d.kategorie == "kino" and d.typ == "artikel" and d.titel == "Jailer 2 startet in Bremen"
+    assert d.kategorie in _schema(settings.category_slugs())["properties"]["kategorie"]["enum"]
+    assert d.teaser.startswith("Der Film läuft") and "Auszug aus der Quelle" in d.inhalt_html and d.dach_bezug
+    assert "Bremen" in d.schlagworte and d.inhalt_html.endswith('<p class="quelle">Quelle: Google News DACH</p>')
+    unknown = NewsItem(title="Kurz - X", url="https://example.com/b", summary="s", source="S",
+                       published=datetime(2026, 10, 17, tzinfo=timezone.utc), kind="event", category_hint="quatsch", score=1)
+    weak = writer.write(unknown, "")
+    assert weak.relevanz == 4 and weak.kategorie == "news" and weak.typ == "event"
+    assert split_source_suffix("Kurz - X") == ("Kurz - X", "")
+    assert split_source_suffix("Eine lange Überschrift über Tamilen in Hamm | WA Hamm") == ("Eine lange Überschrift über Tamilen in Hamm", "WA Hamm")

@@ -144,3 +144,24 @@ def test_export_log_roundtrip(store, tmp_path):
     assert store.export_log(out) == 2
     lines = out.read_text(encoding="utf-8").splitlines()
     assert '"event": "lauf"' in lines[0] and '"titel": "A"' in lines[1]
+
+
+def test_export_drafts_shape_and_column_migration(tmp_path):
+    path = tmp_path / "alt.sqlite"
+    with Store(path) as s:
+        s.db.execute("ALTER TABLE drafts DROP COLUMN quelle_bild")  # Datenbank aus der Zeit vor der Spalte
+        s.db.commit()
+    with Store(path) as s:  # migrate() legt die Spalte wieder an
+        s.insert_draft(draft("a", quelle_datum="2026-10-17T10:00", quelle_bild="https://img/a.jpg", hinweise=["Rohfassung ohne KI: …"]))
+        s.insert_draft(draft("b", quelle_datum="2026-10-18T10:00"))
+        s.insert_draft(draft("c", quelle_datum="2026-10-19T10:00"))
+        s.set_status(3, "ablehnen")
+        run_id = s.start_run("warteschlange · ohne KI")
+        s.finish_run(run_id, gesammelt=5, relevant=2, entwuerfe=2)
+        s.source_ok("Test", 5)
+        data = s.export_drafts()
+    assert [d["uid"] for d in data["entwuerfe"]] == ["b", "a"]
+    a = data["entwuerfe"][1]
+    assert a["quelle_bild"] == "https://img/a.jpg" and a["hinweise"] == ["Rohfassung ohne KI: …"] and a["fakten"] == {"kinos": []}
+    assert "original_json" not in a and "fingerprint" not in a
+    assert data["lauf"]["modus"] == "warteschlange · ohne KI" and data["quellen"][0]["name"] == "Test"

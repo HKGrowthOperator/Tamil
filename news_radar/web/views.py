@@ -161,6 +161,7 @@ def neu_schreiben(draft_id: int):
         return redirect(url_for("ui.entwurf", draft_id=draft_id))
     fields = draft.model_dump()
     fields.pop("typ", None)
+    fields["hinweise"] = [h for h in row["hinweise"] if not h.startswith("Rohfassung")]  # neu geschrieben = keine Rohfassung mehr
     store.update_draft(draft_id, von=_user(), rewrite_count=row["rewrite_count"] + 1, **fields)
     if row["status"] in ("neu", "zurueckgestellt"):
         try:

@@ -45,7 +45,7 @@ h1{font-size:2rem}h2{font-size:1.15rem;margin-bottom:.7rem}h2 small,h1 small{fon
 .entwurf-karte .teaser{margin:0 0 10px;color:#c3c7dc;font-size:.95rem}
 .meta{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:.8rem}
 .badge{display:inline-block;padding:3px 9px;border-radius:999px;background:var(--nacht-3);color:var(--text);font-size:.74rem;font-weight:700}
-.badge.kat{background:var(--manjal);color:var(--nacht)}.badge.typ{background:var(--kumkum);color:#fff}.badge.ort{background:rgba(46,154,99,.2);color:#8fe0b2}.badge.hinweis{background:rgba(232,185,35,.18);color:var(--manjal)}
+.badge.kat{background:var(--manjal);color:var(--nacht)}.badge.typ{background:var(--kumkum);color:#fff}.badge.ort{background:rgba(46,154,99,.2);color:#8fe0b2}.badge.hinweis{background:rgba(232,185,35,.18);color:var(--manjal)}.badge.roh{background:transparent;border:1px solid var(--manjal);color:var(--manjal)}
 .badge.status{background:var(--nacht-3)}.badge.s-freigegeben{background:rgba(46,154,99,.25);color:#8fe0b2}.badge.s-veroeffentlicht,.badge.s-in_wordpress{background:var(--blatt);color:#fff}.badge.s-abgelehnt,.badge.s-fehler{background:rgba(200,16,46,.25);color:#ff8b9f}
 .relevanz{display:inline-flex;align-items:center;gap:7px;font-weight:700;font-size:.78rem;color:var(--leise)}
 .relevanz i{width:56px;height:6px;border-radius:999px;background:var(--nacht-3);position:relative;overflow:hidden}

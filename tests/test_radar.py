@@ -144,3 +144,26 @@ def test_run_stops_at_daily_cap(settings, monkeypatch):
     with Store(settings.db_path) as store:
         assert store.counts_by_status()["neu"] == 1
         assert any(e["event"] == "tagesbudget" for e in store.iter_log())
+
+
+def test_run_ohne_ki_writes_marked_raw_drafts(settings, monkeypatch):
+    from news_radar.writer import ROH_HINWEIS, RawWriter
+
+    relevant = item("Pongal-Fest in Hamm lockt Hunderte Besucher - WA Hamm", "Der Hindu-Tempel Hamm feiert.", hours_old=2,
+                    dach_score=3, ort="Hamm", category_hint="community", score=9, image_url="https://img.example/p.jpg")
+    relevant.source = "Google News DACH"
+    weak = item("Tamil Nadu Milchpreis steigt", "tamil nadu", hours_old=1, score=2)
+    monkeypatch.setattr(sources, "fetch_all", lambda s, store=None: [relevant, weak])
+    monkeypatch.setattr(sources, "fetch_article_text", lambda url: "Hunderte Besucher kamen am Samstag zum Tempelfest in Hamm-Uentrop. " * 3)
+    monkeypatch.setattr(filtering, "select", lambda items, s, seen, titles: [i for i in items if i.uid not in seen])
+
+    results = pipeline.run(settings, writer=RawWriter(settings))
+    by_status = {r.status: r for r in results}
+    assert set(by_status) == {"entwurf", "verworfen"} and by_status["entwurf"].note.startswith("Rohfassung")
+    with Store(settings.db_path) as store:
+        row = store.get_draft(1)
+        assert row["hinweise"] == [ROH_HINWEIS] and row["kategorie"] == "community" and row["dach_bezug"] is True
+        assert row["titel"] == "Pongal-Fest in Hamm lockt Hunderte Besucher" and row["quelle_name"] == "WA Hamm (via Google News)"
+        assert "<blockquote>" in row["inhalt_html"] and row["quelle_bild"] == "https://img.example/p.jpg"
+        assert store.recent_runs()[0]["modus"].endswith("ohne KI")
+        assert [e["modus"] for e in store.iter_log(event="entwurf")] == ["roh"]

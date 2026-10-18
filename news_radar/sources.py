@@ -419,3 +419,27 @@ def fetch_article_text(url: str, limit: int = 6000) -> str:
     paragraphs = re.findall(r"<p[^>]*>(.*?)</p>", resp.text, flags=re.S | re.I)
     text = "\n".join(p for p in (clean_text(x) for x in paragraphs) if len(p) > 60)
     return text[:limit]
+
+
+_OG_RES = (
+    re.compile(r'<meta[^>]+property=["\']og:image(?::secure_url)?["\'][^>]+content=["\']([^"\']+)["\']', re.I),
+    re.compile(r'<meta[^>]+content=["\']([^"\']+)["\'][^>]+property=["\']og:image(?::secure_url)?["\']', re.I),
+    re.compile(r'<meta[^>]+name=["\']twitter:image["\'][^>]+content=["\']([^"\']+)["\']', re.I),
+)
+
+
+def fetch_og_image(url: str, timeout: int = 8) -> str:
+    """Vorschaubild (og:image) einer Artikelseite – nur für den Prototyp-Export, nie im Betrieb."""
+    if not url or "news.google.com" in url:
+        return ""
+    try:
+        resp = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=timeout)
+        resp.raise_for_status()
+    except requests.RequestException:
+        return ""
+    head = resp.text[:300_000]
+    for rx in _OG_RES:
+        m = rx.search(head)
+        if m:
+            return html.unescape(urljoin(url, m.group(1).strip()))
+    return ""

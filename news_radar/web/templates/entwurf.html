@@ -8,6 +8,7 @@
     <span class="badge kat">{{ category_label(d.kategorie) }}</span>
     {% if d.typ != 'artikel' %}<span class="badge typ">{{ 'Kinotermine' if d.typ == 'kino_termine' else 'Event' }}</span>{% endif %}
     {% if d.ort %}<span class="badge ort">{{ d.ort }}</span>{% endif %}
+    {% if d.hinweise and d.hinweise[0].startswith('Rohfassung') %}<span class="badge hinweis roh" title="{{ d.hinweise[0] }}">Rohfassung ohne KI</span>{% endif %}
     <span class="relevanz r{{ d.relevanz }}">Relevanz {{ d.relevanz }}</span>
     <span class="leise">{{ fmt_dt(d.created_at) }}{% if d.bearbeitet_von %} · zuletzt {{ d.bearbeitet_von }}{% endif %}{% if d.rewrite_count %} · {{ d.rewrite_count }}× neu geschrieben{% endif %}</span>
   </div>

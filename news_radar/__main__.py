@@ -1,6 +1,7 @@
 """CLI: python -m news_radar <befehl>
 
-  run       Ein Lauf (für den systemd-Timer alle 3 Minuten); --max-age-hours 336 für die Erstbefüllung
+  run       Ein Lauf (für den systemd-Timer alle 3 Minuten); --max-age-hours 336 für die Erstbefüllung;
+            --ohne-ki legt Rohfassungen ohne Claude an (Titel + Quellentext, klar markiert)
   loop      Dauerbetrieb, Lauf alle --interval Sekunden (Standard 180)
   scan      Nur einsammeln + filtern, nichts schreiben (Test der Quellen)
   publish   Alle freigegebenen Entwürfe nach WordPress veröffentlichen
@@ -8,6 +9,7 @@
   web       Freigabe-App lokal starten (Entwicklung; Produktion: gunicorn)
   style     Stilbeispiele aus veröffentlichten Tamil.de-Beiträgen lernen
   export    Protokoll als JSONL exportieren
+  export-drafts  Entwürfe + Bilder für den HTML-Prototyp exportieren (--quellbilder lädt Vorschaubilder der Quellen)
 """
 
 from __future__ import annotations
@@ -15,6 +17,7 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import os
 import re
 import sys
 import time
@@ -25,7 +28,23 @@ import requests
 from . import filtering, notify, pipeline, sources
 from .config import load_settings
 from .store import Store
-from .writer import STYLE_FILE
+from .writer import STYLE_FILE, RawWriter
+
+KEY_HINT = ("ANTHROPIC_API_KEY fehlt – Schlüssel in .env oder als Secret setzen, "
+            "oder `run --ohne-ki` für Rohfassungen ohne KI.")
+
+
+def pick_writer(ohne_ki: bool, settings):
+    """None = Standard-Writer (Claude) wird im Lauf gebaut; RawWriter bei --ohne-ki.
+
+    Ohne Schlüssel und ohne --ohne-ki brechen wir mit Hinweis ab – ein stiller Fallback würde die
+    Warteschlange im Betrieb unbemerkt mit Rohfassungen füllen.
+    """
+    if ohne_ki:
+        return RawWriter(settings)
+    if not os.environ.get("ANTHROPIC_API_KEY"):
+        raise SystemExit(KEY_HINT)
+    return None
 
 
 def cmd_style(site: str, count: int) -> int:
@@ -56,8 +75,15 @@ def main(argv: list[str] | None = None) -> int:
     sub = parser.add_subparsers(dest="cmd", required=True)
     run = sub.add_parser("run")
     run.add_argument("--max-age-hours", type=int, help="z. B. 336 für die Erstbefüllung (14 Tage)")
+    run.add_argument("--ohne-ki", action="store_true", help="Rohfassungen ohne Claude (Titel + Quellentext, markiert)")
     loop = sub.add_parser("loop")
     loop.add_argument("--interval", type=int, default=180)
+    loop.add_argument("--ohne-ki", action="store_true", help=argparse.SUPPRESS)
+    expd = sub.add_parser("export-drafts")
+    expd.add_argument("--file", default="prototyp/content/radar.json")
+    expd.add_argument("--bilder", help="Zielordner für die Beitragsbilder (z. B. prototyp/static/img/radar)")
+    expd.add_argument("--quellbilder", action="store_true", help="Vorschaubilder der Quellen laden (nur Prototyp)")
+    expd.add_argument("--limit", type=int, default=60)
     sub.add_parser("scan")
     sub.add_parser("publish")
     sub.add_parser("digest")
@@ -99,6 +125,16 @@ def main(argv: list[str] | None = None) -> int:
         print(f"{n} Protokolleinträge → {args.file}")
         return 0
 
+    if args.cmd == "export-drafts":
+        from .export import export_drafts
+
+        with Store(settings.db_path) as store:
+            stats = export_drafts(store, Path(args.file), Path(args.bilder) if args.bilder else None,
+                                  quellbilder=args.quellbilder, limit=args.limit, bilder_quelle=settings.bilder_dir)
+        print(f"{stats['entwuerfe']} Entwürfe → {args.file} · {stats['quellbilder']} Quellbilder, "
+              f"{stats['bildkarten']} Bildkarten, {stats['ohne_bild']} ohne Bild")
+        return 0
+
     if args.cmd == "publish":
         if not settings.wordpress_enabled:
             print("Keine WordPress-Zugangsdaten in .env (WP_URL, WP_USER, WP_APP_PASSWORD).")
@@ -123,16 +159,20 @@ def main(argv: list[str] | None = None) -> int:
     if not settings.wordpress_enabled:
         logging.info("Keine WordPress-Zugangsdaten → Entwürfe warten in der Freigabe-App (%s)", settings.web_url)
 
+    writer = pick_writer(args.ohne_ki, settings)
+    if writer is not None:
+        logging.info("Rohfassungen ohne KI – jeder Entwurf wird als „Rohfassung“ markiert")
+
     if args.cmd == "run":
         if args.max_age_hours:
             settings.max_age_hours = args.max_age_hours
-        print(pipeline.summary(pipeline.run(settings)))
+        print(pipeline.summary(pipeline.run(settings, writer=writer)))
         return 0
 
     while True:  # loop
         started = time.monotonic()
         try:
-            print(pipeline.summary(pipeline.run(settings)), flush=True)
+            print(pipeline.summary(pipeline.run(settings, writer=writer)), flush=True)
         except Exception:  # noqa: BLE001 - Dauerbetrieb nicht abbrechen
             logging.exception("Lauf fehlgeschlagen")
         time.sleep(max(5, args.interval - (time.monotonic() - started)))
