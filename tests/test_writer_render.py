@@ -29,6 +29,26 @@ def test_system_prompt_is_cached_and_mentions_rules(settings):
     text = system[0]["text"]
     assert system[0]["cache_control"] == {"type": "ephemeral"}
     assert "IMMER auf Deutsch" in text and "KEINE Kinos im Text" in text and "kino: Kino" in text
+    # Stilprofil kommt aus prompts/redaktion.md, die Bildthemen aus prompts/bildpool.md
+    assert "# Redaktionsprofil Tamil.de" in text and "Anrede „ihr/euch“" in text
+    assert "Bildthemen (bild_thema): tempelfest," in text and "kino-saal" in text
+
+
+def test_prompts_helpers_parse_markdown():
+    from news_radar import prompts
+
+    themen = prompts.bildpool_themen()
+    assert len(themen) >= 25 and themen[0] == {"thema": "tempelfest", "rubrik": "community",
+                                                "motiv": themen[0]["motiv"]}
+    assert prompts.thema_fuer("kino", "Jailer 2 läuft im Kino") == "kino-saal"
+    assert prompts.thema_fuer("community", "Pongal-Fest im Tempel Hamm") == "pongal"
+    assert prompts.thema_fuer("sport", "") == "cricket"
+    assert prompts.thema_fuer("unbekannt", "") == "diaspora-stadt"
+    vorlage = prompts.bild_vorlage()
+    assert "{motiv}" in vorlage and "no text" in vorlage
+    prompt = prompts.bild_prompt_bauen("", "kolam")
+    assert "rice-flour kolam" in prompt and "{motiv}" not in prompt
+    assert prompts.bild_prompt_bauen("A quiet cinema foyer").startswith("Editorial photograph")
 
 
 def test_user_message_contains_language_region_and_facts():

@@ -95,6 +95,10 @@ def main(argv: list[str] | None = None) -> int:
     style.add_argument("--count", type=int, default=6)
     exp = sub.add_parser("export")
     exp.add_argument("--file", default="radar-protokoll.jsonl")
+    pool = sub.add_parser("bildpool", help="Reserve-Bilder je Thema (prompts/bildpool.md)")
+    pool.add_argument("aktion", choices=("status", "fuellen"))
+    pool.add_argument("--thema", help="nur dieses Thema füllen")
+    pool.add_argument("--anzahl", type=int, default=3, help="Zielbestand je Thema")
     args = parser.parse_args(argv)
 
     logging.basicConfig(
@@ -123,6 +127,21 @@ def main(argv: list[str] | None = None) -> int:
         with Store(settings.db_path) as store:
             n = store.export_log(Path(args.file))
         print(f"{n} Protokolleinträge → {args.file}")
+        return 0
+
+    if args.cmd == "bildpool":
+        from .bilder import BildPool
+
+        pool = BildPool(settings.bildpool_dir)
+        if args.aktion == "fuellen":
+            if not settings.gemini_key:
+                raise SystemExit("GEMINI_API_KEY fehlt – ohne Bild-KI lässt sich der Pool nicht füllen.")
+            erzeugt = pool.fuellen(settings, thema=args.thema, anzahl=args.anzahl)
+            print(f"{sum(erzeugt.values())} Bilder erzeugt: " + (", ".join(f"{t} +{n}" for t, n in erzeugt.items()) or "nichts fehlte"))
+        status = pool.status()
+        print(f"Bildpool {settings.bildpool_dir}: {sum(s['anzahl'] for s in status.values())} Bilder in {len(status)} Themen")
+        for thema, s in status.items():
+            print(f"  {thema:20} {s['anzahl']:3} Bilder · {s['genutzt']:3}× genutzt")
         return 0
 
     if args.cmd == "export-drafts":

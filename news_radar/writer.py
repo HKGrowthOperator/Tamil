@@ -14,12 +14,14 @@ import anthropic
 from pydantic import BaseModel, Field
 
 from .config import Settings
+from .prompts import redaktion as redaktion_prompt, thema_fuer, thema_slugs
 from .sources import NewsItem, clean_text
 
 log = logging.getLogger(__name__)
 
 STYLE_FILE = Path(__file__).with_name("style_examples.json")
 
+# Fallback, falls prompts/redaktion.md fehlt – im Normalfall kommt das Stilprofil aus der Datei
 STYLE_GUIDE = """\
 Du bist Redakteur:in von Tamil.de, dem deutschsprachigen Portal für die tamilische Community \
 in Deutschland, Österreich und der Schweiz (Nachrichten, Community, Entertainment, Kino, Events, \
@@ -54,6 +56,24 @@ Allgemeine Weltnachrichten ohne tamilischen Bezug bekommen höchstens 3; Relevan
 erkennbarem Nutzen für die Community (Termin vor Ort, Betroffenheit, Kultur, Sport, Kino, Küche).
 """
 
+# Technische Regeln, die am JSON-Schema hängen – gelten immer, zusätzlich zum Stilprofil
+SCHEMA_RULES = """\
+Technische Regeln für die Antwort (JSON nach Schema):
+- Du schreibst IMMER auf Deutsch, auch wenn die Quelle Englisch oder Tamil ist.
+- Schreibe einen EIGENEN Text; übernimm keine Sätze aus der Quelle, nur Fakten. Was unklar ist, lässt du weg.
+- Länge: 180-350 Wörter in 3-6 <p>-Absätzen, optional eine <h2>. Bei typ=kino_termine nur 120-200 Wörter über Film \
+und Kinostart – die Kinoliste wird automatisch angehängt, also KEINE Kinos im Text aufzählen.
+- Der letzte Absatz nennt die Quelle: <p class="quelle">Quelle: NAME</p>.
+- typ: "event" nur für eine konkrete Veranstaltung mit Datum; "kino_termine" nur, wenn das Quellmaterial ein \
+Kinoprogramm ist; sonst "artikel". event_datum/event_ort/ticket_url nur, wenn sie in der Quelle stehen.
+- dach_bezug=true nur bei ausdrücklichem Ort, Verein oder Person in Deutschland, Österreich oder der Schweiz; \
+ort = dieser Ort (Stadt, sonst Land), sonst leer.
+- relevanz 1-10 ehrlich nach dem Redaktionsprofil bewerten; ab 6 nur bei erkennbarem Nutzen für die Community.
+- bild_prompt: englisches Motiv für ein KI-Symbolbild (30-60 Wörter): Ort, Stimmung, Licht, Perspektive – keine \
+realen Personen, kein Text, keine Logos, keine Nachstellung des konkreten Ereignisses. bild_thema: ein Slug aus der \
+Themenliste unten (Reserve, falls kein KI-Bild entsteht). bild_suchbegriff: 2-4 englische Begriffe für ein Stockfoto.
+"""
+
 REWRITE_RULES = """\
 Du bekommst einen bestehenden Entwurf und eine Anweisung der Redaktion. Schreibe den Entwurf \
 entsprechend um und liefere das vollständige Ergebnis in derselben Struktur. Behalte alle Fakten, \
@@ -76,6 +96,8 @@ class Draft(BaseModel):
     meta_beschreibung: str = Field(description="max. 155 Zeichen")
     bild_suchbegriff: str = Field(description="2-4 englische Begriffe für ein passendes Stockfoto, ohne Personennamen")
     bild_alt: str = Field(description="Deutscher Alt-Text für das Beitragsbild")
+    bild_thema: str = Field(default="", description="Thema-Slug aus der Bildpool-Liste (Reserve-Bild)")
+    bild_prompt: str = Field(default="", description="Englisches Motiv für das KI-Symbolbild, 30-60 Wörter, keine realen Personen, kein Text")
     event_datum: str = Field(description="Nur typ=event: YYYY-MM-DD, sonst leer")
     event_ort: str = Field(description="Nur typ=event: Veranstaltungsort, sonst leer")
     ticket_url: str = Field(description="Nur wenn in der Quelle genannt, sonst leer")
@@ -100,7 +122,9 @@ def load_style_examples(path: Path = STYLE_FILE, limit: int = 4) -> list[dict]:
 
 def build_system(settings: Settings) -> list[dict]:
     cats = "\n".join(f"- {c.slug}: {c.label}" for c in settings.categories)
-    text = f"{STYLE_GUIDE}\nKategorien (Slug: Name):\n{cats}\n"
+    profil = redaktion_prompt(fallback=STYLE_GUIDE).strip()
+    themen = ", ".join(thema_slugs()) or "diaspora-stadt"
+    text = f"{profil}\n\n{SCHEMA_RULES}\nKategorien (Slug: Name):\n{cats}\n\nBildthemen (bild_thema): {themen}\n"
     examples = load_style_examples()
     if examples:
         text += "\nSo klingen veröffentlichte Tamil.de-Beiträge (Stilbeispiele, nicht inhaltlich übernehmen):\n"
@@ -146,8 +170,8 @@ def build_rewrite_message(row: dict, anweisung: str) -> str:
         k: row.get(k)
         for k in (
             "relevanz", "begruendung", "kategorie", "typ", "dach_bezug", "ort", "titel", "teaser", "inhalt_html",
-            "schlagworte", "seo_titel", "meta_beschreibung", "bild_suchbegriff", "bild_alt", "event_datum",
-            "event_ort", "ticket_url",
+            "schlagworte", "seo_titel", "meta_beschreibung", "bild_suchbegriff", "bild_alt", "bild_thema",
+            "bild_prompt", "event_datum", "event_ort", "ticket_url",
         )
     }
     facts = row.get("fakten") or {}
@@ -322,6 +346,8 @@ class RawWriter:
             meta_beschreibung=_cut(teaser, 155),
             bild_suchbegriff=f"{kategorie} tamil community",
             bild_alt=titel,
+            bild_thema=thema_fuer(kategorie, f"{titel} {summary}"),
+            bild_prompt="",  # Rohfassung: Reserve-Bild aus dem Pool, das KI-Bild entsteht mit dem fertigen Text
             event_datum=str(facts.get("event_datum", "") or "")[:10],
             event_ort=str(facts.get("event_ort", "") or ""),
             ticket_url=str(facts.get("ticket_url", "") or ""),

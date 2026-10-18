@@ -14,7 +14,8 @@ from datetime import datetime, timezone
 
 from . import filtering, notify, sources
 from .config import Settings
-from .images import featured_image, save_pair
+from .bilder import beitragsbild
+from .images import save_pair
 from .store import Store
 from .wordpress import slugify
 from .writer import Draft, Writer, split_source_suffix
@@ -75,6 +76,8 @@ def draft_row(item: sources.NewsItem, draft: Draft, bild_datei: str, image, hinw
         "bild_alt": draft.bild_alt,
         "bild_suchbegriff": draft.bild_suchbegriff,
         "bild_origin": image.origin,
+        "bild_thema": draft.bild_thema,
+        "bild_prompt": draft.bild_prompt,
         "event_datum": draft.event_datum,
         "event_ort": draft.event_ort,
         "ticket_url": draft.ticket_url,
@@ -99,7 +102,10 @@ def process(item: sources.NewsItem, settings: Settings, writer: Writer, store: S
                       seconds=time.monotonic() - start)
 
     stem = f"{item.uid[:12]}-{slugify(draft.titel, 50)}"
-    image = featured_image(settings, draft.bild_suchbegriff, draft.titel, category_label(settings, draft.kategorie), stem)
+    image = beitragsbild(
+        settings, titel=draft.titel, kategorie=draft.kategorie, kategorie_label=category_label(settings, draft.kategorie),
+        slug=stem, bild_prompt=draft.bild_prompt, bild_thema=draft.bild_thema, bild_suchbegriff=draft.bild_suchbegriff,
+    )
     bild_datei, _thumb = save_pair(image, settings.bilder_dir, stem)
     draft_id = store.insert_draft(draft_row(item, draft, bild_datei, image, hinweise))
     store.mark(item.uid, item.title, item.url, item.source, "entwurf")

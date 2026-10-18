@@ -33,12 +33,12 @@ DRAFT_COLUMNS = (
     "uid", "typ", "status", "quelle_name", "quelle_url", "quelle_datum", "quelle_sprache", "weitere_quellen",
     "quelle_bild", "relevanz", "begruendung", "dach_bezug", "ort", "kategorie", "titel", "teaser", "inhalt_html",
     "schlagworte", "seo_titel", "meta_beschreibung", "bild_datei", "bild_credit", "bild_alt",
-    "bild_suchbegriff", "bild_origin", "event_datum", "event_ort", "ticket_url", "fakten_json",
-    "fingerprint", "hinweise", "original_json", "rewrite_count", "wp_post_id", "wp_link", "fehler",
+    "bild_suchbegriff", "bild_origin", "bild_thema", "bild_prompt", "event_datum", "event_ort", "ticket_url",
+    "fakten_json", "fingerprint", "hinweise", "original_json", "rewrite_count", "wp_post_id", "wp_link", "fehler",
     "bearbeitet_von", "freigegeben_at", "veroeffentlicht_at",
 )
 # Spalten, die nach der ersten Version dazukamen (ALTER TABLE für bestehende Datenbanken)
-ADDED_COLUMNS = (("quelle_bild", "TEXT"),)
+ADDED_COLUMNS = (("quelle_bild", "TEXT"), ("bild_thema", "TEXT"), ("bild_prompt", "TEXT"))
 # Nicht in den Prototyp-Export (intern bzw. WordPress-spezifisch)
 EXPORT_SKIP = ("original_json", "fingerprint", "fakten_json", "wp_post_id", "wp_link", "bearbeitet_von", "fehler")
 
@@ -60,6 +60,7 @@ CREATE TABLE IF NOT EXISTS drafts (
     kategorie TEXT, titel TEXT, teaser TEXT, inhalt_html TEXT, schlagworte TEXT,
     seo_titel TEXT, meta_beschreibung TEXT,
     bild_datei TEXT, bild_credit TEXT, bild_alt TEXT, bild_suchbegriff TEXT, bild_origin TEXT,
+    bild_thema TEXT, bild_prompt TEXT,
     event_datum TEXT, event_ort TEXT, ticket_url TEXT,
     fakten_json TEXT, fingerprint TEXT, hinweise TEXT,
     original_json TEXT NOT NULL DEFAULT '{}',

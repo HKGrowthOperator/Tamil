@@ -68,6 +68,11 @@ class Settings:
     gnews_token: str = ""
     unsplash_key: str = ""
     pexels_key: str = ""
+    gemini_key: str = ""  # Bild-KI (Gemini Nano Banana); leer = Pool/Stock/Karte
+    bild_modell: str = "gemini-nano-banana-2.1"
+    bild_groesse: str = "1K"  # 1K | 2K | 4K (Großschreibung Pflicht)
+    bild_modus: str = "ki"  # ki | pool | stock | karte – wo die Bildkette beginnt
+    bild_retry_pause: float = 2.0
     wp_url: str = ""
     wp_user: str = ""
     wp_app_password: str = ""
@@ -99,6 +104,11 @@ class Settings:
     @property
     def bilder_dir(self) -> Path:
         return self.data_dir / "bilder"
+
+    @property
+    def bildpool_dir(self) -> Path:
+        raw = os.environ.get("BILD_POOL_DIR", "").strip()
+        return Path(raw) if raw else self.data_dir / "bildpool"
 
     def category_slugs(self) -> list[str]:
         return [c.slug for c in self.categories]
@@ -136,6 +146,10 @@ def load_settings(sources_file: Path = ROOT / "sources.toml") -> Settings:
         gnews_token=env("GNEWS_TOKEN", ""),
         unsplash_key=env("UNSPLASH_ACCESS_KEY", ""),
         pexels_key=env("PEXELS_API_KEY", ""),
+        gemini_key=env("GEMINI_API_KEY", ""),
+        bild_modell=env("BILD_MODELL", "") or "gemini-nano-banana-2.1",
+        bild_groesse=(env("BILD_GROESSE", "") or "1K").upper(),
+        bild_modus=(env("BILD_MODUS", "") or "ki").lower(),
         wp_url=env("WP_URL", "").rstrip("/"),
         wp_user=env("WP_USER", ""),
         wp_app_password=env("WP_APP_PASSWORD", ""),
