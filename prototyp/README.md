@@ -1,4 +1,4 @@
-# Tamil.de – HTML-Prototypen der fünf Vorlagen (Designkonzept v2 „Radar“)
+# Tamil.de – HTML-Prototypen der fünf Vorlagen (Designkonzept v3 „Radar“)
 
 Vertrag HKG-2026-TML-V-001, Teil A: **A.1.1 Designkonzept**, **A.1.2 Korrekturschleifen**, **A.1.3 Responsive**,
 **A.1.4 Vorlagen** (Startseite, Kategorie, Artikel, Events, Kontakt). Die Prototypen sind statisches HTML im eigenen
@@ -13,30 +13,49 @@ Zum Durchklicken (Handy und Desktop): **privater Artifact-Link im Pull Request /
 ```bash
 python tools/export_site.py --no-media                      # einmalig: Export der alten Seite nach export/
 python prototyp/build.py snapshot                           # Beiträge bereinigen, auswählen, Bilder laden (→ content/posts.json, static/img/)
-python prototyp/build.py build                              # dist/  (80 Seiten)
+python -m news_radar scan                                   # Quellen live prüfen (kein Schlüssel nötig)
+RADAR_MAX_ARTICLES=25 python -m news_radar run --ohne-ki --max-age-hours 336   # Rohfassungen ohne KI in die Warteschlange (mit ANTHROPIC_API_KEY: `run`)
+python -m news_radar export-drafts --file prototyp/content/radar.json --bilder prototyp/static/img/radar --quellbilder   # Radar-Meldungen für den Prototyp
+python prototyp/build.py build                              # dist/  (135 Seiten)
 python prototyp/build.py shots                              # shots/ (390 / 820 / 1280 px, Playwright)
 python prototyp/build.py artifact                           # dist-artifact/ (Startseite ohne Dokumentgerüst, für claude.ai-Artifact)
 python -m pytest tests/test_prototyp.py -q
 ```
 
-`build` und `shots` brauchen kein Netz; `snapshot` lädt die verwendeten Bilder einmalig von tamil.de.
-`content/posts.json` und `static/img/` sind eingecheckt, damit der Build ohne Export reproduzierbar ist.
+`build` und `shots` brauchen kein Netz; `snapshot` lädt die verwendeten Bilder einmalig von tamil.de, `export-drafts` holt die
+Radar-Meldungen aus `data/radar.sqlite` (nicht eingecheckt). `content/posts.json`, `content/radar.json` und `static/img/` sind
+eingecheckt, damit der Build ohne Export und ohne Radar-Lauf reproduzierbar ist. Fehlt `content/radar.json`, baut die
+Startseite mit dem Altbestand und den handgepflegten Beispielen aus `site.json`.
 
 ## Seiten (dist/)
 
 | Vorlage | Dateien | Besonderheiten |
 | --- | --- | --- |
-| Startseite | `index.html` | Hero (3 neueste mit großem Bild), Top-Themen (Redaktion), Neueste 6, Rubrik-Zeilen je Kategorie, **Kinotermine-Widget** aus Radar-Daten, Event-Teaser, Rezept der Woche, Leerzustand Sport, Newsletter |
+| Startseite | `index.html` | Bühne mit Radar-Aufmacher und Bildhintergrund, Live-Zeile mit echten Zahlen, DACH-Karte mit Blips, Sektions-Mininav, **Jetzt auf dem Radar** (Lead-Karte, zwei Karten, Außerdem-Liste, Feed „Zuletzt gefunden“ mit Uhrzeiten und Quellen, Radar-Bilanz), Top-Themen-Strip, Rubrik-Zeilen je Kategorie, **Kino-Radar** (26 Spielorte aus dem Lauf), Production, Events, Rezept der Woche, Community-Band mit WhatsApp-Aufruf, Leerzustand Sport, Newsletter |
 | Kategorie | `kategorie-<slug>.html` (8) | Kino als Schaufenster mit Filter-Chips und Kinotermine-Karte, Sport als Leerzustand, Kultur und Küche per Stichwort aus Nachrichten ergänzt |
-| Artikel | `artikel-<slug>.html` (71), `kino-jailer-2-kinotermine.html` | Standfirst, Byline, Teilen-Leiste (WhatsApp zuerst), In-Article-Werbeplatz nach dem 2. Absatz, YouTube erst nach Klick; Varianten **Rezept** (Zutaten/Schritte) und **Kinotermine** (Spielorte aus `news_radar.render.render_kino_liste`) |
+| Artikel | `artikel-<slug>.html` (118, davon 37 Radar-Meldungen), `kino-jailer-2-kinotermine.html` | Standfirst, Byline, Teilen-Leiste (WhatsApp zuerst), In-Article-Werbeplatz nach dem 2. Absatz, YouTube erst nach Klick; Varianten **Rezept** (Zutaten/Schritte) und **Kinotermine** (Spielorte aus `news_radar.render.render_kino_liste`) |
 | Events | `events.html`, `event-<slug>.html` (6) | Liste nach Monat + Monatsraster, Filter DE/AT/CH und Kategorie, Detailseite mit Fakten, Tickets, Teilen, Karten-Platzhalter, Quelle |
 | Kontakt | `kontakt.html` | Kontaktkarte, Formular, **Werben** mit den 5 Werbeplätzen, **Event einreichen**, **Mitmachen: Leser-Reporter** (Text der alten Seite), FAQ |
 | Sonderseiten | `production.html`, `tv.html`, `ueber-uns.html`, `impressum.html`, `datenschutz.html`, `service-fsk.html` | Aus der alten Seite übernommen (siehe unten); `seite.html` ist die Vorlage für Textseiten |
-| Design-System | `design-system.html` | Farben mit Kontrast, Schrift, Abstände, Buttons, Badges, Karten, Formulare, Werbeplätze in Originalgröße, Icons |
+| Design-System | `design-system.html` | Farben mit Kontrast, Schrift, Abstände, Buttons, Badges, Karten, Formulare, Werbeplätze in Originalgröße (Eigenanzeigen, Musterkunden, Rohformat), Icons |
 
 Drei Breakpoints: ≤ 600 px (Drawer, 1 Spalte, Mobile-Sticky-Werbeplatz), 601–1023 px (Scroll-Navigation, 2 Spalten),
 ≥ 1024 px (volle Navigation, 3 Spalten, Sidebar 300 px sticky). Schriften (Fraunces mit Kursiv und den Achsen SOFT/WONK,
 Schibsted Grotesk, Noto Serif Tamil) liegen lokal in `static/fonts/`, keine externen Aufrufe beim Laden.
+
+## Was v3 gegenüber v2 ändert
+
+- **Frische Inhalte:** 49 Meldungen aus zwei Live-Läufen des News-Radars (18.10.2026, 480 Meldungen gelesen, 77 relevant) sind
+  Beiträge mit echtem Datum, Uhrzeit, Ort, Quelle und Bildnachweis; der Aufmacher, die Sektion „Jetzt auf dem Radar“, der
+  Feed, die Karte, der Ticker und der Kino-Radar (26 Spielorte) speisen sich daraus. Tamilischsprachige Meldungen stehen im
+  Feed und auf den Rubrikseiten, nicht in den deutschen Aufmacher-Karten. Im Betrieb schreibt Claude die Texte; ohne
+  Schlüssel liefert `run --ohne-ki` Rohfassungen (Titel, Zusammenfassung, markiertes Zitat), die so gekennzeichnet sind.
+- **Werbung:** Die Fremdbanner der alten Seite sind raus. Die fünf Werbeplätze zeigen Eigenanzeigen (Production, Newsletter,
+  WhatsApp-Kanal, Mediadaten) und zwei fiktive Musterkunden, gesetzt in der Hausschrift mit Label „Anzeige“; eine Vorlage
+  je Motiv passt sich per Container-Query an jede Platzgröße an (`templates/_anzeigen.html`, `site.json → werbung`).
+- **Startseite:** Bühne mit dem Aufmacherfoto als Hintergrund, Live-Zeile, größere Typo-Skala (Display bis 80 px),
+  Sektions-Mininav, „Jetzt auf dem Radar“ statt „Neueste Beiträge“, Top-Themen als Ziffern-Strip, Sektionsrhythmus
+  hell/dunkel mit neuem Community-Band.
 
 ## Handschrift (v2)
 
@@ -86,13 +105,14 @@ als „Vorher“ notiert). Tag `TT` (116 Beiträge) wird nicht übernommen, Bede
 
 **Echt:** alle Beiträge, Teaser und Bilder stammen aus dem Export der alten tamil.de (533 Beiträge, 1.573 Medien);
 die Kinotermine zu „Jailer 2“ (9 Kinos in DE/CH/AT) aus CineStar, kinoheld, Eventfrog, Cineplexx und megaplex.at,
-Stand 16.10.2026; die Events aus tamilswiss.ch, Eventfrog und kinoheld; Logo, Menüs, Ticker, Werbebanner (Gravity Club, Olyyn), Social-Links,
-die Texte der Seiten Über uns, Datenschutz, FSK, Leser-Reporter und TV sowie die Production-Plakate von der alten
-tamil.de; die Anschrift laut Vertrag.
+Stand 16.10.2026; die Events aus tamilswiss.ch, Eventfrog und kinoheld; Logo, Menüs, Ticker, Social-Links, die Texte der Seiten Über uns,
+Datenschutz, FSK, Leser-Reporter und TV sowie die Production-Plakate von der alten tamil.de; die Anschrift laut Vertrag;
+die Radar-Meldungen vom 18.10.2026 mit echten Zeitstempeln, Quellen-Links und (im Prototyp) Vorschaubildern der Quellen.
 
 **Als Beispiel markiert** (gestrichelter Gold-Rahmen „Beispiel“): Telefon, E-Mail, WhatsApp-Nummer, Rezept-Fakten
-(Zeit, Portionen), Autorenbox, FAQ-Texte, Platzhalterkarten in Sport, Mediadaten-PDF. Datumsangaben sind um 708 Tage
-in die Gegenwart verschoben (neuester echter Beitrag: 06.11.2024), jede Seite sagt das in der Fußzeile.
+(Zeit, Portionen), Autorenbox, FAQ-Texte, Platzhalterkarten in Sport, Mediadaten-PDF, Musterkunden in der Werbung,
+Rohfassungen des Radars. Der Altbestand ist um 710 Tage in die Gegenwart verschoben (neuester echter Beitrag: 06.11.2024),
+Radar-Meldungen tragen ihr echtes Datum; jede Seite sagt das in der Fußzeile.
 
 ## Lückenliste für den Auftraggeber
 
@@ -110,18 +130,24 @@ Was der Export nicht hergibt und vor dem Relaunch geklärt werden muss:
 10. **Social-Media-Kanäle** – WhatsApp-Kanal und Instagram von der alten Seite übernommen; Facebook und YouTube unbekannt (im Prototyp „ausstehend“).
 11. **Versalien-Titel und Kritik-Format** – Titel in Großbuchstaben und Teaser „Pluspunkte: + …“ werden beim Import normalisiert; Redaktion prüft Stichproben.
 12. **Tote Bilder und Einbettungen** – 75 Beiträge mit `http://`-Bildern externer Seiten (entfernt), 83 iframes (YouTube erst nach Klick, Rest entfernt).
-13. **Werbeverträge** – Gravity Club (Leaderboard) und Olyyn (Sidebar) laufen auf der alten Seite. Benötigt: Laufzeit, Format, Preis, ob sie in den Relaunch übergehen.
+13. **Werbeverträge** – Gravity Club (Leaderboard) und Olyyn (Sidebar) laufen auf der alten Seite; der Prototyp zeigt provisorische Eigenanzeigen. Benötigt: Laufzeit, Format, Preis, ob die Verträge in den Relaunch übergehen.
 14. **TV-Streams** – beide HLS-Adressen (Santhora TV, Tamil Business TV) antworten mit 404. Benötigt: aktuelle Stream-Adressen oder Entscheidung, die TV-Seite abzuschalten.
 15. **Partner-Logos** – das Plugin `best-logo-slider` ist aktiv, Logos wurden nicht gefunden. Benötigt: Liste der Partner oder Streichung.
 16. **Mitgliederbereich** – Ultimate Member wird nicht übernommen. Benötigt: Freigabe, die Nutzerdaten der alten Seite zu löschen (DSGVO), und ob Mitglieder informiert werden sollen.
 17. **Tag „TT“** – 116 Beiträge, Bedeutung unklar. Benötigt: Erklärung oder Freigabe zum Verwerfen.
+18. **Bildquellen für Radar-Meldungen** – im Prototyp zeigen 30 Meldungen das Vorschaubild ihrer Quelle (Nachweis „Foto: Quelle“), im Betrieb nutzt der Radar Bildkarten oder Stockfotos. Benötigt: Entscheidung Stockfoto-Schlüssel (Unsplash/Pexels) oder Bildkarten; Quellbilder werden nicht veröffentlicht.
+19. **Anthropic-Schlüssel für den Betrieb** – ohne `ANTHROPIC_API_KEY` schreibt der Radar keine Texte; `run` bricht mit Hinweis ab, `run --ohne-ki` legt nur markierte Rohfassungen an. Google-News-Treffer liefern ohne KI nur die Überschrift. Benötigt: Schlüssel in den Umgebungs-Secrets des Servers.
+20. **Orte auf der Karte** – der Radar erkennt Städte aus `sources.toml`; Orte ohne Koordinaten in `site.json → staedte` bekommen keinen Blip (der Build warnt). Benötigt: Pflege der Städteliste, wenn neue Quellen dazukommen.
 
 ## Zuordnung zum Code
 
 `build.py` nutzt aus dem News-Radar `news_radar.render` (HTML-Bereinigung, Kinoliste) und `news_radar.wordpress.slugify`;
 `cards()` erzeugt die Tamil.de-Bildkarten für Events ohne Foto mit `news_radar.images.branded_card`. `radar_map.py` baut
-die DACH-Punktkarte. Die Werbeplätze, Kategorien, Top-Themen, Kontaktdaten, Städte-Koordinaten und Radar-Meldungen stehen
-in `content/site.json`, die Events und Kinotermine in `content/events.json`.
+die DACH-Punktkarte. Die Werbeplätze und Anzeigen-Vorlagen, Kategorien, Top-Themen, Kontaktdaten und Städte-Koordinaten stehen
+in `content/site.json`, die Events und Kinotermine in `content/events.json`, die Radar-Meldungen in `content/radar.json`
+(aus `python -m news_radar export-drafts`): `radar_record()` macht aus einem Entwurf einen Beitrag, `mark_duplicates()`
+hält Themen-Dubletten von der Startseite fern, `merge_kino_fakten()` führt die Spielorte des Laufs mit der kuratierten
+Kinoliste zusammen, `erfasst_log()` baut den Feed „Zuletzt gefunden“ mit Berliner Uhrzeit.
 
 Die Freigabe-App des News-Radars (`news_radar/web/`) trägt dieselbe Handschrift als dunkles Cockpit: Seitenleiste mit
 Live-Status und Countdown bis zum nächsten Lauf, Board-Feed mit Tastaturkürzeln (J/K, F, A, Enter), Quellen-Radar im
