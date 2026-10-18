@@ -155,7 +155,9 @@ def redirect_rows(site: str, categories: list[dict], pages: list[dict]) -> list[
     rows = []
     for c in categories:
         new, note = CATEGORY_MAP.get(c["slug"], (c["slug"], "neu anlegen/prüfen"))
-        rows.append({"alt": f"{site}/category/{c['slug']}/", "neu": f"{site}/{new}/" if new else f"{site}/", "typ": "kategorie",
+        if new == c["slug"]:
+            continue  # gleicher Slug, gleiche Adresse (WordPress-Standard /category/<slug>/) – keine Weiterleitung nötig
+        rows.append({"alt": f"{site}/category/{c['slug']}/", "neu": f"{site}/category/{new}/" if new else f"{site}/", "typ": "kategorie",
                      "beitraege": c.get("count", 0), "hinweis": note})
     for p in pages:
         slug = p.get("slug")

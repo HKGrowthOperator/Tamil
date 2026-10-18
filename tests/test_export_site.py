@@ -104,3 +104,12 @@ def test_page_map_redirects():
     assert f"{site}/maya/" not in rows  # bleibt unter demselben Pfad, wird Beitrag
     assert rows[f"{site}/members/"] == f"{site}/" and rows[f"{site}/privacy-policy/"] == f"{site}/"
     assert f"{site}/tv/" not in rows and f"{site}/kino/" not in rows
+
+
+def test_category_redirects_target_wordpress_category_base():
+    site = "https://www.tamil.de"
+    cats = [{"slug": "blog", "count": 3}, {"slug": "news", "count": 9}, {"slug": "test", "count": 1}]
+    rows = {r["alt"]: r["neu"] for r in export_site.redirect_rows(site, cats, [])}
+    assert rows[f"{site}/category/blog/"] == f"{site}/category/community/"
+    assert f"{site}/category/news/" not in rows  # gleicher Slug, keine Weiterleitung
+    assert rows[f"{site}/category/test/"] == f"{site}/"
