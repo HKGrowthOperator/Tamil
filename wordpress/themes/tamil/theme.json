@@ -1,0 +1,362 @@
+{
+	"$schema": "https://schemas.wp.org/wp/6.6/theme.json",
+	"version": 3,
+	"settings": {
+		"appearanceTools": true,
+		"useRootPaddingAwareAlignments": false,
+		"color": {
+			"defaultPalette": false,
+			"defaultGradients": false,
+			"defaultDuotone": false,
+			"custom": false,
+			"customGradient": false,
+			"palette": [
+				{
+					"slug": "nacht",
+					"name": "Nacht",
+					"color": "#0E1226"
+				},
+				{
+					"slug": "nacht-2",
+					"name": "Nacht 2",
+					"color": "#171C36"
+				},
+				{
+					"slug": "nacht-3",
+					"name": "Nacht 3",
+					"color": "#262D52"
+				},
+				{
+					"slug": "nacht-text",
+					"name": "Nacht-Text",
+					"color": "#C9CCE0"
+				},
+				{
+					"slug": "kumkum",
+					"name": "Kumkum",
+					"color": "#C8102E"
+				},
+				{
+					"slug": "kumkum-tief",
+					"name": "Kumkum tief",
+					"color": "#9E0C24"
+				},
+				{
+					"slug": "kumkum-hell",
+					"name": "Kumkum hell",
+					"color": "#FBE6EA"
+				},
+				{
+					"slug": "manjal",
+					"name": "Manjal",
+					"color": "#E8B923"
+				},
+				{
+					"slug": "manjal-tief",
+					"name": "Manjal tief",
+					"color": "#B88E0E"
+				},
+				{
+					"slug": "manjal-hell",
+					"name": "Manjal hell",
+					"color": "#FFF3C7"
+				},
+				{
+					"slug": "blatt",
+					"name": "Blatt",
+					"color": "#1F7A4D"
+				},
+				{
+					"slug": "blatt-hell",
+					"name": "Blatt hell",
+					"color": "#E3F1E8"
+				},
+				{
+					"slug": "papier",
+					"name": "Papier",
+					"color": "#FAFAF8"
+				},
+				{
+					"slug": "feld",
+					"name": "Feld",
+					"color": "#F1F0EC"
+				},
+				{
+					"slug": "weiss",
+					"name": "Weiß",
+					"color": "#FFFFFF"
+				},
+				{
+					"slug": "tinte",
+					"name": "Tinte",
+					"color": "#14161F"
+				},
+				{
+					"slug": "nebel",
+					"name": "Nebel",
+					"color": "#6B6F7B"
+				},
+				{
+					"slug": "linie",
+					"name": "Linie",
+					"color": "#E2E2E6"
+				}
+			]
+		},
+		"layout": {
+			"contentSize": "720px",
+			"wideSize": "1240px"
+		},
+		"spacing": {
+			"units": [
+				"px",
+				"em",
+				"rem",
+				"%",
+				"vw"
+			],
+			"defaultSpacingSizes": false,
+			"spacingSizes": [
+				{
+					"slug": "1",
+					"name": "XS",
+					"size": "8px"
+				},
+				{
+					"slug": "2",
+					"name": "S",
+					"size": "16px"
+				},
+				{
+					"slug": "3",
+					"name": "M",
+					"size": "24px"
+				},
+				{
+					"slug": "4",
+					"name": "L",
+					"size": "32px"
+				},
+				{
+					"slug": "5",
+					"name": "XL",
+					"size": "48px"
+				},
+				{
+					"slug": "6",
+					"name": "XXL",
+					"size": "64px"
+				}
+			]
+		},
+		"typography": {
+			"defaultFontSizes": false,
+			"fluid": true,
+			"dropCap": true,
+			"fontFamilies": [
+				{
+					"slug": "display",
+					"name": "Fraunces",
+					"fontFamily": "Fraunces, \"Iowan Old Style\", Georgia, serif",
+					"fontFace": [
+						{
+							"fontFamily": "Fraunces",
+							"fontWeight": "100 900",
+							"fontStyle": "normal",
+							"fontDisplay": "swap",
+							"src": [
+								"file:./assets/fonts/fraunces-latin.woff2"
+							]
+						},
+						{
+							"fontFamily": "Fraunces",
+							"fontWeight": "100 900",
+							"fontStyle": "italic",
+							"fontDisplay": "swap",
+							"src": [
+								"file:./assets/fonts/fraunces-italic-latin.woff2"
+							]
+						}
+					]
+				},
+				{
+					"slug": "text",
+					"name": "Schibsted Grotesk",
+					"fontFamily": "\"Schibsted Grotesk\", \"Helvetica Neue\", Arial, sans-serif",
+					"fontFace": [
+						{
+							"fontFamily": "Schibsted Grotesk",
+							"fontWeight": "400 900",
+							"fontStyle": "normal",
+							"fontDisplay": "swap",
+							"src": [
+								"file:./assets/fonts/schibsted-latin.woff2"
+							]
+						},
+						{
+							"fontFamily": "Schibsted Grotesk",
+							"fontWeight": "400 900",
+							"fontStyle": "italic",
+							"fontDisplay": "swap",
+							"src": [
+								"file:./assets/fonts/schibsted-italic-latin.woff2"
+							]
+						}
+					]
+				},
+				{
+					"slug": "tamil",
+					"name": "Noto Serif Tamil",
+					"fontFamily": "\"Noto Serif Tamil\", \"Tamil Sangam MN\", Latha, \"Nirmala UI\", serif",
+					"fontFace": [
+						{
+							"fontFamily": "Noto Serif Tamil",
+							"fontWeight": "400 700",
+							"fontStyle": "normal",
+							"fontDisplay": "swap",
+							"src": [
+								"file:./assets/fonts/notoseriftamil-tamil.woff2"
+							],
+							"unicodeRange": "U+0964-0965, U+0B82-0BFA, U+200C-200D, U+20B9, U+25CC"
+						}
+					]
+				}
+			],
+			"fontSizes": [
+				{
+					"slug": "meta",
+					"name": "Meta",
+					"size": "13px",
+					"fluid": false
+				},
+				{
+					"slug": "klein",
+					"name": "Klein",
+					"size": "15px",
+					"fluid": false
+				},
+				{
+					"slug": "text",
+					"name": "Text",
+					"size": "17px",
+					"fluid": false
+				},
+				{
+					"slug": "vorspann",
+					"name": "Vorspann",
+					"size": "clamp(18px, 1.3vw, 21px)",
+					"fluid": false
+				},
+				{
+					"slug": "h3",
+					"name": "Zwischentitel",
+					"size": "21px",
+					"fluid": false
+				},
+				{
+					"slug": "h2",
+					"name": "Überschrift",
+					"size": "clamp(24px, 2vw, 32px)",
+					"fluid": false
+				},
+				{
+					"slug": "h1",
+					"name": "Titel",
+					"size": "clamp(30px, 3.8vw, 56px)",
+					"fluid": false
+				},
+				{
+					"slug": "display",
+					"name": "Bühne",
+					"size": "clamp(36px, 5.6vw, 80px)",
+					"fluid": false
+				}
+			]
+		}
+	},
+	"styles": {
+		"color": {
+			"background": "var:preset|color|papier",
+			"text": "var:preset|color|tinte"
+		},
+		"typography": {
+			"fontFamily": "var:preset|font-family|text",
+			"fontSize": "var:preset|font-size|text",
+			"lineHeight": "1.55"
+		},
+		"elements": {
+			"link": {
+				"color": {
+					"text": "var:preset|color|kumkum"
+				}
+			},
+			"heading": {
+				"typography": {
+					"fontFamily": "var:preset|font-family|display",
+					"fontWeight": "600",
+					"lineHeight": "1.1"
+				}
+			},
+			"h1": {
+				"typography": {
+					"fontSize": "var:preset|font-size|h1"
+				}
+			},
+			"h2": {
+				"typography": {
+					"fontSize": "var:preset|font-size|h2"
+				}
+			},
+			"h3": {
+				"typography": {
+					"fontSize": "var:preset|font-size|h3"
+				}
+			},
+			"button": {
+				"color": {
+					"background": "var:preset|color|kumkum",
+					"text": "var:preset|color|weiss"
+				},
+				"border": {
+					"radius": "999px"
+				},
+				"typography": {
+					"fontWeight": "700"
+				}
+			}
+		},
+		"blocks": {
+			"core/quote": {
+				"border": {
+					"left": {
+						"color": "var:preset|color|manjal",
+						"width": "4px"
+					}
+				},
+				"typography": {
+					"fontFamily": "var:preset|font-family|display",
+					"fontStyle": "italic"
+				}
+			},
+			"core/pullquote": {
+				"border": {
+					"top": {
+						"color": "var:preset|color|manjal",
+						"width": "4px"
+					},
+					"bottom": {
+						"color": "var:preset|color|manjal",
+						"width": "4px"
+					}
+				}
+			},
+			"core/separator": {
+				"color": {
+					"text": "var:preset|color|linie"
+				}
+			}
+		}
+	},
+	"customTemplates": [],
+	"templateParts": []
+}
