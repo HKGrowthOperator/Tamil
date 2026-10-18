@@ -10,8 +10,13 @@ delete_option( 'tamil_radar_version' );
 delete_transient( 'tamil_radar_cockpit_status' );
 
 // Benutzer der Rolle „Radar“ werden Autoren, damit niemand ohne Rolle zurückbleibt.
-foreach ( get_users( array( 'role' => 'radar', 'fields' => 'ID' ) ) as $user_id ) {
-	$user = new WP_User( (int) $user_id );
-	$user->set_role( 'author' );
+$tamil_radar_users = get_users(
+	array(
+		'role'   => 'radar',
+		'fields' => 'ID',
+	)
+);
+foreach ( $tamil_radar_users as $tamil_radar_user_id ) {
+	( new WP_User( (int) $tamil_radar_user_id ) )->set_role( 'author' );
 }
 remove_role( 'radar' );

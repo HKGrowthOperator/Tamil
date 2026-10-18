@@ -7,12 +7,12 @@ defined( 'ABSPATH' ) || exit;
 
 function tamil_radar_role_caps(): array {
 	return array(
-		'read'                   => true,
-		'edit_posts'             => true,
-		'publish_posts'          => true,
-		'edit_published_posts'   => true,
-		'delete_posts'           => true,
-		'upload_files'           => true,
+		'read'                 => true,
+		'edit_posts'           => true,
+		'publish_posts'        => true,
+		'edit_published_posts' => true,
+		'delete_posts'         => true,
+		'upload_files'         => true,
 	);
 }
 

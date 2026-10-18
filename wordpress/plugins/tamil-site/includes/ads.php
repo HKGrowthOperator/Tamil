@@ -51,13 +51,13 @@ function tamil_site_settings(): array {
 			'leaderboard' => 'production',
 			'sidebar'     => 'werben',
 			'inarticle'   => 'newsletter',
-			'billboard'   => 'production',
+			'billboard'   => 'newsletter',
 			'footer'      => 'whatsapp',
 			'mobile'      => 'newsletter-klein',
 		),
 		'whatsapp_url' => 'https://whatsapp.com/channel/0029VaFIN43KWEKo3BGoE13t',
 	);
-	$stored = get_option( 'tamil_site_settings', array() );
+	$stored   = get_option( 'tamil_site_settings', array() );
 	return array_merge( $defaults, is_array( $stored ) ? $stored : array() );
 }
 
@@ -149,7 +149,7 @@ function tamil_site_anzeige_inhalt( string $platz ): array {
 /**
  * Fertiger Werbeplatz mit Label „Anzeige“; leer, wenn der Platz nichts zeigt.
  */
-function tamil_site_anzeige( string $platz, bool $echo = true ): string {
+function tamil_site_anzeige( string $platz, bool $ausgeben = true ): string {
 	$platz = sanitize_key( $platz );
 	if ( ! array_key_exists( $platz, tamil_site_werbeplaetze() ) ) {
 		return '';
@@ -175,7 +175,7 @@ function tamil_site_anzeige( string $platz, bool $echo = true ): string {
 		$inhalt, // Banner-Code aus den Einstellungen (nur Administratoren), Advanced Ads oder die Vorlagen oben.
 		$mobil ? '<button type="button" class="schliessen" aria-label="' . esc_attr__( 'Werbung schließen', 'tamil-site' ) . '">×</button>' : ''
 	);
-	if ( $echo ) {
+	if ( $ausgeben ) {
 		echo $out; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 	return $out;

@@ -27,7 +27,7 @@ function tamil_site_normalize_path( string $value ): string {
  */
 function tamil_site_parse_redirect_csv( string $csv ): array {
 	$table = array();
-	$lines = preg_split( '/\r\n|\r|\n/', trim( $csv ) ) ?: array();
+	$lines = (array) preg_split( '/\r\n|\r|\n/', trim( $csv ) );
 	$alt   = 0;
 	$neu   = 1;
 	foreach ( $lines as $i => $line ) {

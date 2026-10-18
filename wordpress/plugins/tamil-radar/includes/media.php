@@ -21,7 +21,7 @@ function tamil_radar_sideload_base64( string $b64, string $filename, string $alt
 	if ( strlen( $bytes ) > 15 * MB_IN_BYTES ) {
 		return new WP_Error( 'tamil_radar_bild', __( 'Bild größer als 15 MB.', 'tamil-radar' ), array( 'status' => 413 ) );
 	}
-	$filename = sanitize_file_name( $filename ?: 'radar-' . $post_id . '.jpg' );
+	$filename = sanitize_file_name( '' !== $filename ? $filename : 'radar-' . $post_id . '.jpg' );
 	$upload   = wp_upload_bits( $filename, null, $bytes );
 	if ( ! empty( $upload['error'] ) ) {
 		return new WP_Error( 'tamil_radar_bild', (string) $upload['error'], array( 'status' => 500 ) );

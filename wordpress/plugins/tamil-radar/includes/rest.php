@@ -99,7 +99,7 @@ function tamil_radar_beitrag_args( bool $create ): array {
 		'slug'        => array(
 			'type'              => 'string',
 			'default'           => '',
-			'sanitize_callback' => 'sanitize_title',
+			'sanitize_callback' => 'tamil_radar_sanitize_slug',
 		),
 		'datum'       => array(
 			'type'    => 'string',
@@ -108,7 +108,7 @@ function tamil_radar_beitrag_args( bool $create ): array {
 		'kategorie'   => array(
 			'type'              => 'string',
 			'default'           => '',
-			'sanitize_callback' => 'sanitize_title',
+			'sanitize_callback' => 'tamil_radar_sanitize_slug',
 		),
 		'kategorien'  => array(
 			'type'    => 'array',
@@ -142,7 +142,31 @@ function tamil_radar_beitrag_args( bool $create ): array {
 	return $args;
 }
 
-function tamil_radar_rest_status( WP_REST_Request $request ): WP_REST_Response {
+/**
+ * sanitize_title als REST-Sanitizer: WordPress übergibt das Request-Objekt als zweites Argument, das sanitize_title
+ * sonst als Rückfallwert zurückgäbe.
+ */
+function tamil_radar_sanitize_slug( $value ): string {
+	return sanitize_title( (string) $value );
+}
+
+/**
+ * Datum des Beitrags: ohne Zeitzonenangabe gilt die Zeitzone der Website (Europe/Berlin), mit Angabe die angegebene.
+ */
+function tamil_radar_parse_datum( string $raw ): ?DateTimeImmutable {
+	$raw = trim( $raw );
+	if ( '' === $raw ) {
+		return null;
+	}
+	try {
+		$dt = new DateTimeImmutable( $raw, wp_timezone() );
+	} catch ( Exception $e ) {
+		return null;
+	}
+	return $dt->setTimezone( wp_timezone() );
+}
+
+function tamil_radar_rest_status(): WP_REST_Response {
 	$kategorien = array();
 	foreach ( get_categories( array( 'hide_empty' => false ) ) as $cat ) {
 		$kategorien[ $cat->slug ] = (int) $cat->term_id;
@@ -162,7 +186,7 @@ function tamil_radar_rest_status( WP_REST_Request $request ): WP_REST_Response {
 			),
 		)
 	);
-	$last = $letzter ? array(
+	$last    = $letzter ? array(
 		'id'     => $letzter[0]->ID,
 		'titel'  => $letzter[0]->post_title,
 		'status' => $letzter[0]->post_status,
@@ -251,7 +275,7 @@ function tamil_radar_allowed_status( string $wanted ): string {
 	if ( in_array( $wanted, array( 'publish', 'future' ), true ) && ! current_user_can( 'publish_posts' ) ) {
 		return 'pending';
 	}
-	return $wanted ?: 'pending';
+	return '' !== $wanted ? $wanted : 'pending';
 }
 
 /**
@@ -326,17 +350,14 @@ function tamil_radar_rest_create( WP_REST_Request $request ) {
 		'post_author'   => get_current_user_id(),
 		'post_category' => tamil_radar_resolve_categories( array_merge( array( (string) $request->get_param( 'kategorie' ) ), (array) $request->get_param( 'kategorien' ) ) ),
 	);
-	$slug = (string) $request->get_param( 'slug' );
+	$slug   = (string) $request->get_param( 'slug' );
 	if ( $slug ) {
 		$data['post_name'] = $slug;
 	}
-	$datum = (string) $request->get_param( 'datum' );
+	$datum = tamil_radar_parse_datum( (string) $request->get_param( 'datum' ) );
 	if ( $datum ) {
-		$ts = strtotime( $datum );
-		if ( $ts ) {
-			$data['post_date']     = wp_date( 'Y-m-d H:i:s', $ts );
-			$data['post_date_gmt'] = gmdate( 'Y-m-d H:i:s', $ts );
-		}
+		$data['post_date']     = $datum->format( 'Y-m-d H:i:s' );
+		$data['post_date_gmt'] = $datum->setTimezone( new DateTimeZone( 'UTC' ) )->format( 'Y-m-d H:i:s' );
 	}
 	$post_id = wp_insert_post( wp_slash( $data ), true );
 	if ( is_wp_error( $post_id ) ) {
@@ -361,7 +382,7 @@ function tamil_radar_rest_create( WP_REST_Request $request ) {
 		)
 	);
 	$response = new WP_REST_Response( tamil_radar_beitrag_response( (int) $post_id ), 201 );
-	$response->header( 'Location', rest_url( TAMIL_RADAR_NS . '/beitrag/' . rawurlencode( $uid ?: (string) $post_id ) ) );
+	$response->header( 'Location', rest_url( TAMIL_RADAR_NS . '/beitrag/' . rawurlencode( '' !== $uid ? $uid : (string) $post_id ) ) );
 	return $response;
 }
 
@@ -382,7 +403,11 @@ function tamil_radar_rest_update( WP_REST_Request $request ) {
 		return new WP_Error( 'tamil_radar_forbidden', __( 'Dieser Beitrag darf nicht bearbeitet werden.', 'tamil-radar' ), array( 'status' => 403 ) );
 	}
 	$data = array( 'ID' => $post_id );
-	foreach ( array( 'titel' => 'post_title', 'inhalt' => 'post_content', 'teaser' => 'post_excerpt' ) as $param => $field ) {
+	foreach ( array(
+		'titel'  => 'post_title',
+		'inhalt' => 'post_content',
+		'teaser' => 'post_excerpt',
+	) as $param => $field ) {
 		$value = $request->get_param( $param );
 		if ( null !== $value && '' !== $value ) {
 			$data[ $field ] = 'post_content' === $field ? wp_kses_post( (string) $value ) : (string) $value;
@@ -442,7 +467,7 @@ function tamil_radar_rest_stil( WP_REST_Request $request ): WP_REST_Response {
 			),
 		)
 	);
-	$out = array();
+	$out   = array();
 	foreach ( $posts as $post ) {
 		$text  = wp_strip_all_tags( strip_shortcodes( $post->post_content ), true );
 		$out[] = array(

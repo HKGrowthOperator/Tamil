@@ -72,7 +72,15 @@ function tamil_site_event( int $post_id ): array {
 		return array();
 	}
 	$out = array( 'datum' => $datum );
-	foreach ( array( 'event_ende' => 'ende', 'event_ort' => 'ort', 'event_land' => 'land', 'event_veranstalter' => 'veranstalter', 'event_preis' => 'preis', 'ticket_url' => 'ticket_url', 'ticket_label' => 'ticket_label' ) as $key => $name ) {
+	foreach ( array(
+		'event_ende'         => 'ende',
+		'event_ort'          => 'ort',
+		'event_land'         => 'land',
+		'event_veranstalter' => 'veranstalter',
+		'event_preis'        => 'preis',
+		'ticket_url'         => 'ticket_url',
+		'ticket_label'       => 'ticket_label',
+	) as $key => $name ) {
 		$out[ $name ] = (string) get_post_meta( $post_id, $key, true );
 	}
 	return $out;

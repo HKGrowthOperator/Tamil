@@ -7,7 +7,7 @@ defined( 'ABSPATH' ) || exit;
 
 function tamil_radar_dashboard_setup(): void {
 	if ( current_user_can( 'edit_posts' ) ) {
-		wp_add_dashboard_widget( 'tamil_radar_widget', __( 'News-Radar', 'tamil-radar' ), 'tamil_radar_dashboard_widget' );
+		wp_add_dashboard_widget( 'tamil_radar_widget', __( 'News-Radar', 'tamil-radar' ), 'tamil_radar_dashboard_widget', null, null, 'normal', 'high' );
 	}
 }
 add_action( 'wp_dashboard_setup', 'tamil_radar_dashboard_setup' );
