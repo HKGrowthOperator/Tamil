@@ -97,3 +97,65 @@ class WordPress:
     def edit_link(self, post: dict) -> str:
         base = self.api.removesuffix("/wp-json/wp/v2")
         return f"{base}/wp-admin/post.php?post={post['id']}&action=edit"
+
+
+class TamilRadarClient:
+    """Plugin-Pfad (tamil-radar/v1): ein Aufruf legt Beitrag, Bild, Kategorie, Schlagworte, Meta und SEO an.
+
+    Dubletten erkennt das Plugin an `meta.radar_uid` (409) – `create()` liefert dann {"duplikat": True, "id", "link",
+    "edit_link"}, statt zu werfen. Alles andere ≥ 400 wirft RuntimeError wie der Core-Client.
+    """
+
+    def __init__(self, base_url: str, user: str, app_password: str, session: requests.Session | None = None):
+        self.base = base_url.rstrip("/")
+        self.api = f"{self.base}/wp-json/tamil-radar/v1"
+        self.http = session or requests.Session()
+        self.http.auth = (user, app_password)
+        self.http.headers["User-Agent"] = "TamilDE-NewsRadar/1.0"
+
+    def _req(self, method: str, path: str, **kwargs) -> tuple[int, dict]:
+        resp = self.http.request(method, f"{self.api}/{path}", timeout=60, **kwargs)
+        try:
+            data = resp.json()
+        except ValueError:
+            data = {"text": resp.text[:300]}
+        return resp.status_code, data if isinstance(data, dict) else {"data": data}
+
+    def status(self) -> dict | None:
+        """None, wenn das Plugin nicht antwortet (dann greift der Core-Client)."""
+        try:
+            code, data = self._req("GET", "status")
+        except requests.RequestException as exc:
+            log.info("tamil-radar/v1/status nicht erreichbar: %s", exc)
+            return None
+        return data if code == 200 and "plugin" in data else None
+
+    def create(self, payload: dict) -> dict:
+        code, data = self._req("POST", "beitrag", json=payload)
+        if code == 409:
+            extra = data.get("data") if isinstance(data.get("data"), dict) else {}
+            return {"duplikat": True, "id": extra.get("id"), "link": extra.get("link"), "edit_link": extra.get("edit_link")}
+        if code >= 400:
+            raise RuntimeError(f"WordPress POST beitrag -> {code}: {str(data)[:300]}")
+        return data
+
+    def get(self, uid: str) -> dict | None:
+        code, data = self._req("GET", f"beitrag/{uid}")
+        return data if code == 200 else None
+
+    def update(self, uid: str, payload: dict) -> dict:
+        code, data = self._req("PUT", f"beitrag/{uid}", json=payload)
+        if code >= 400:
+            raise RuntimeError(f"WordPress PUT beitrag/{uid} -> {code}: {str(data)[:300]}")
+        return data
+
+    def edit_link(self, post: dict) -> str:
+        return post.get("edit_link") or f"{self.base}/wp-admin/post.php?post={post.get('id')}&action=edit"
+
+
+def make_client(base_url: str, user: str, app_password: str, session: requests.Session | None = None):
+    """Plugin-Client, wenn das Tamil.de-Plugin antwortet, sonst der Core-REST-Client."""
+    client = TamilRadarClient(base_url, user, app_password, session)
+    if client.status() is not None:
+        return client
+    return WordPress(base_url, user, app_password, session)

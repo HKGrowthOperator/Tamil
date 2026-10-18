@@ -87,6 +87,58 @@ def test_publish_draft_as_wordpress_draft(env):
     assert store.get_draft(draft_id)["status"] == "in_wordpress"
 
 
+class FakePlugin(publisher.TamilRadarClient):
+    """Plugin-Client ohne HTTP: merkt sich Aufrufe, meldet auf Wunsch eine Dublette."""
+
+    def __init__(self, duplikat=False):
+        super().__init__("https://www.tamil.de", "ki-agent", "xxxx")
+        self.created, self.updated, self.duplikat = [], [], duplikat
+
+    def status(self):
+        return {"plugin": "1.0.0"}
+
+    def create(self, payload):
+        self.created.append(payload)
+        if self.duplikat:
+            return {"duplikat": True, "id": 7, "link": "https://www.tamil.de/alt/", "edit_link": "https://www.tamil.de/wp-admin/post.php?post=7&action=edit"}
+        return {"id": 200 + len(self.created), "status": payload["status"], "link": f"https://www.tamil.de/{payload['slug']}/",
+                "edit_link": f"https://www.tamil.de/wp-admin/post.php?post={200 + len(self.created)}&action=edit"}
+
+    def update(self, uid, payload):
+        self.updated.append((uid, payload))
+        return {"id": 7, "status": "publish", "link": "https://www.tamil.de/alt/", "edit_link": "https://www.tamil.de/wp-admin/post.php?post=7&action=edit"}
+
+
+def test_publish_via_plugin_sends_everything_in_one_call(env):
+    settings, store = env
+    draft_id = seed(settings, store, "p1", "Plugin-Pfad", "freigegeben")
+    store.update_draft(draft_id, typ="event", event_datum="2026-11-05", event_ort="Kinopark Aalen", ticket_url="https://t.de", relevanz=8, ort="Aalen")
+    wp = FakePlugin()
+    results = publisher.publish_approved(settings, store, wp)
+    assert results[0].status == "veroeffentlicht" and store.get_draft(draft_id)["wp_link"] == "https://www.tamil.de/plugin-pfad/"
+    payload = wp.created[0]
+    assert payload["status"] == "publish" and payload["kategorie"] == "kino" and payload["schlagworte"] == ["Kino"]
+    assert payload["seo"] == {"title": "SEO", "description": "Meta", "focus": "Kino"}
+    assert payload["bild"]["dateiname"] == "p1.jpg" and payload["bild"]["credit"] == "Grafik: Tamil.de" and len(payload["bild"]["daten"]) > 1000
+    meta = payload["meta"]
+    assert meta["radar_uid"] == "p1" and meta["radar_relevanz"] == 8 and meta["event_datum"] == "2026-11-05"
+    assert meta["event_ort"] == "Kinopark Aalen" and meta["ticket_url"] == "https://t.de" and meta["quelle_name"] == "Q"
+    assert "kino_fakten" not in meta and 'class="quelle"' in payload["inhalt"]
+
+
+def test_publish_via_plugin_duplicate_updates_kino_list(env):
+    settings, store = env
+    a = seed(settings, store, "k1", "Jailer 2 läuft in 23 Kinos", "freigegeben")
+    store.update_draft(a, typ="kino_termine", fakten={"film": "Jailer 2", "woche": "2026-W43", "kinos": []})
+    b = seed(settings, store, "a1", "Normaler Artikel", "freigegeben")
+    wp = FakePlugin(duplikat=True)
+    results = {r.title: r for r in publisher.publish_approved(settings, store, wp)}
+    assert results["Jailer 2 läuft in 23 Kinos"].status == "veroeffentlicht" and results["Normaler Artikel"].status == "veroeffentlicht"
+    assert len(wp.updated) == 1 and wp.updated[0][0] == "k1" and wp.updated[0][1]["meta"]["kino_fakten"]["woche"] == "2026-W43"
+    assert store.get_draft(a)["wp_post_id"] == 7 and store.get_draft(b)["wp_post_id"] == 7
+    assert [e["grund"] for e in store.iter_log(event="aktualisiert")] == ["Kinoliste"]
+
+
 def test_seo_meta_variants(env):
     settings, _ = env
     row = {"seo_titel": "", "titel": "T", "meta_beschreibung": "", "teaser": "Tz"}
