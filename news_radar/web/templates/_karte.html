@@ -2,6 +2,7 @@
   <a class="thumb" href="/entwurf/{{ d.id }}" tabindex="-1">
     {% if d.bild_datei %}<img src="/bild/{{ d.bild_datei.replace('.jpg', '-thumb.jpg') }}" alt="" loading="lazy">{% endif %}
     <span class="badge kat">{{ category_label(d.kategorie) }}</span>
+    {% if d.bild_origin == 'ki' %}<span class="badge ki" title="Symbolbild: KI-generiert">KI-Bild</span>{% endif %}
   </a>
   <div class="inhalt">
     <div class="meta">

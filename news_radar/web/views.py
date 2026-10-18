@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 from flask import (Blueprint, Response, abort, current_app, flash, g, jsonify, redirect, render_template, request,
                    send_from_directory, session, url_for)
 
-from .. import images
+from .. import bilder, images, prompts
 from ..render import render_content, sanitize_html
 from ..store import OPEN_STATES, PUBLISHABLE, STATUSES, TRANSITIONS, ConflictError
 from ..wordpress import slugify
@@ -140,9 +140,14 @@ def entwurf(draft_id: int):
         store.event("bearbeitet", id=draft_id, von=_user())
         flash("Gespeichert.", "ok")
         return redirect(url_for("ui.entwurf", draft_id=draft_id))
-    return render_template("entwurf.html", d=row, labels=STATUS_LABELS, categories=_settings().categories,
+    settings = _settings()
+    pool = bilder.BildPool(settings.bildpool_dir).status()
+    themen = [{"slug": t["thema"], "rubrik": t.get("rubrik", ""), "anzahl": pool.get(t["thema"], {}).get("anzahl", 0)}
+              for t in prompts.bildpool_themen()]
+    return render_template("entwurf.html", d=row, labels=STATUS_LABELS, categories=settings.categories,
                            can_publish=row["status"] in PUBLISHABLE, open_states=OPEN_STATES,
-                           preview=render_content(row))
+                           preview=render_content(row), bildthemen=themen, ki_bereit=bool(settings.gemini_key),
+                           bild_thema=row.get("bild_thema") or prompts.thema_fuer(row["kategorie"], row["titel"]))
 
 
 @ui.post("/entwurf/<int:draft_id>/neu-schreiben")
@@ -209,6 +214,27 @@ def bild(draft_id: int):
                 flash("Keine Datei ausgewählt.", "fehler")
                 return redirect(url_for("ui.entwurf", draft_id=draft_id))
             image = images.from_upload(file.read(), stem, request.form.get("credit", "").strip() or "Foto: Tamil.de")
+        elif aktion == "ki":
+            thema = request.form.get("bild_thema", "").strip() or row.get("bild_thema") or ""
+            motiv = request.form.get("bild_prompt", "").strip()
+            if not settings.gemini_key:
+                flash("Für KI-Bilder fehlt GEMINI_API_KEY in der .env – Bild unverändert.", "fehler")
+                return redirect(url_for("ui.entwurf", draft_id=draft_id))
+            prompt = prompts.bild_prompt_bauen(motiv, thema)
+            image = bilder.from_gemini(prompt, settings, stem, current_app.extensions.get("bild_transport"))
+            store.update_draft(draft_id, bild_prompt=motiv, bild_thema=thema)
+            if image is None:
+                flash("Die Bild-KI hat kein Bild geliefert (Protokoll prüfen) – Bild unverändert.", "fehler")
+                return redirect(url_for("ui.entwurf", draft_id=draft_id))
+            if thema:
+                bilder.BildPool(settings.bildpool_dir).add(thema, image, prompt)
+        elif aktion == "pool":
+            thema = request.form.get("bild_thema", "").strip()
+            image = bilder.BildPool(settings.bildpool_dir).pick(thema, stem) if thema else None
+            if image is None:
+                flash(f"Im Bildpool „{thema or '–'}“ liegt noch kein Bild – Bild unverändert.", "fehler")
+                return redirect(url_for("ui.entwurf", draft_id=draft_id))
+            store.update_draft(draft_id, bild_thema=thema)
         elif aktion == "stock":
             query = request.form.get("suchbegriff", "").strip() or row.get("bild_suchbegriff") or row["titel"]
             image = images.featured_image(settings, query, row["titel"], label, stem)

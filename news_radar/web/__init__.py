@@ -11,6 +11,7 @@ import secrets
 import time
 from datetime import datetime, timezone
 from pathlib import Path
+from urllib.parse import urlsplit
 
 from flask import Flask, abort, g, redirect, request, session, url_for
 
@@ -26,6 +27,17 @@ def get_store() -> Store:
     return g.store
 
 
+def _origin(url: str) -> str:
+    """Schema + Host (+ Port) einer Adresse, wie CSP sie erwartet."""
+    parts = urlsplit(url)
+    return f"{parts.scheme}://{parts.netloc}" if parts.scheme and parts.netloc else ""
+
+
+def _embedded(settings: Settings) -> bool:
+    """Wird das Cockpit unter HTTPS von einem anderen Host (WordPress-Backend) eingebettet?"""
+    return bool(settings.wp_url) and settings.web_url.startswith("https") and _origin(settings.wp_url) != _origin(settings.web_url)
+
+
 def create_app(settings: Settings | None = None, testing: bool = False) -> Flask:
     settings = settings or load_settings()
     if not settings.web_secret and not testing:
@@ -33,7 +45,9 @@ def create_app(settings: Settings | None = None, testing: bool = False) -> Flask
     app = Flask(__name__, template_folder="templates", static_folder="static", static_url_path="/static")
     app.config.update(
         SECRET_KEY=settings.web_secret or secrets.token_urlsafe(32),
-        SESSION_COOKIE_SAMESITE="Lax",
+        # Im WordPress-Backend eingebettet (iframe, anderer Host) braucht das Cookie SameSite=None – das geht nur mit
+        # Secure, also nur unter HTTPS. Lokal (http) bleibt es bei Lax; dort öffnet das Backend das Cockpit im Tab.
+        SESSION_COOKIE_SAMESITE="None" if _embedded(settings) else "Lax",
         SESSION_COOKIE_SECURE=settings.web_url.startswith("https"),
         SESSION_COOKIE_HTTPONLY=True,
         PERMANENT_SESSION_LIFETIME=60 * 60 * 24 * 30,
@@ -61,10 +75,16 @@ def create_app(settings: Settings | None = None, testing: bool = False) -> Flask
                 abort(400, "Formular abgelaufen – bitte Seite neu laden.")
         return None
 
+    frame_ancestors = "frame-ancestors 'self'" + (f" {_origin(settings.wp_url)}" if settings.wp_url else "")
+
     @app.after_request
-    def _no_cache(resp):
+    def _headers(resp):
         if resp.mimetype == "text/html":
             resp.headers["Cache-Control"] = "private, no-store"
+        # Einbetten nur durch die eigene Seite und das WordPress-Backend (WP_URL) – sonst Clickjacking-Schutz
+        resp.headers["Content-Security-Policy"] = frame_ancestors
+        resp.headers["X-Content-Type-Options"] = "nosniff"
+        resp.headers["Referrer-Policy"] = "same-origin"
         return resp
 
     @app.teardown_appcontext

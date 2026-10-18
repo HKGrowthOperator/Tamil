@@ -63,7 +63,18 @@
 <div class="zwei-spalten">
 <section class="karte">
   <h2>Bild</h2>
-  {% if d.bild_datei %}<img class="bild" src="/bild/{{ d.bild_datei }}" alt="{{ d.bild_alt }}"><p class="leise">{{ d.bild_credit }} · {{ d.bild_origin }}</p>{% endif %}
+  {% if d.bild_datei %}<img class="bild" src="/bild/{{ d.bild_datei }}" alt="{{ d.bild_alt }}"><p class="leise">{% if d.bild_origin in ('ki', 'pool') and 'KI' in (d.bild_credit or '') %}<span class="badge ki">KI-Symbolbild</span> {% endif %}{{ d.bild_credit }} · {{ d.bild_origin }}</p>{% endif %}
+  <form method="post" action="/entwurf/{{ d.id }}/bild" class="bild-ki">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="aktion" value="ki">
+    <label>Motiv für die Bild-KI (englisch, keine realen Personen, kein Text)
+      <textarea name="bild_prompt" rows="3" placeholder="z. B. Evening view of a Swiss station square with people gathering, flags in the distance">{{ d.bild_prompt or '' }}</textarea></label>
+    <div class="zeile">
+      <select name="bild_thema" aria-label="Bildthema">{% for t in bildthemen %}<option value="{{ t.slug }}"{% if t.slug == bild_thema %} selected{% endif %}>{{ t.slug }}{% if t.anzahl %} ({{ t.anzahl }} im Pool){% endif %}</option>{% endfor %}</select>
+      <button class="knopf" data-busy="Bild entsteht …"{% if not ki_bereit %} disabled title="GEMINI_API_KEY fehlt"{% endif %}>Neu generieren</button>
+      <button class="knopf" formaction="/entwurf/{{ d.id }}/bild" name="aktion" value="pool">Aus dem Pool</button>
+    </div>
+    {% if not ki_bereit %}<p class="leise">KI-Bilder sind aus: GEMINI_API_KEY fehlt in der .env. „Aus dem Pool“ und die Bildkarte gehen trotzdem.</p>{% endif %}
+  </form>
   <form method="post" action="/entwurf/{{ d.id }}/bild" class="zeile">
     <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="aktion" value="stock">
     <input name="suchbegriff" value="{{ d.bild_suchbegriff or '' }}" placeholder="Suchbegriff (englisch)">

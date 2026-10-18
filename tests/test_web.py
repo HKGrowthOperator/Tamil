@@ -41,7 +41,7 @@ class FakeWP:
 
 @pytest.fixture
 def app(tmp_path, monkeypatch):
-    for var in ("WP_URL", "WP_USER", "WP_APP_PASSWORD", "UNSPLASH_ACCESS_KEY", "PEXELS_API_KEY"):
+    for var in ("WP_URL", "WP_USER", "WP_APP_PASSWORD", "UNSPLASH_ACCESS_KEY", "PEXELS_API_KEY", "GEMINI_API_KEY", "BILD_POOL_DIR"):
         monkeypatch.setenv(var, "")
     settings = load_settings()
     settings.data_dir = tmp_path
@@ -227,3 +227,73 @@ def test_feed_marks_rohfassung_and_rewrite_clears_it(app, client):
     assert resp.status_code == 302
     with Store(settings.db_path) as store:
         assert store.get_draft(4)["hinweise"] == [] and store.get_draft(4)["titel"] == "Neu geschrieben"
+
+
+def _ki_antwort() -> tuple[int, dict]:
+    buf = io.BytesIO()
+    Image.new("RGB", (1024, 576), (120, 60, 200)).save(buf, "PNG")
+    import base64
+    block = {"type": "image", "data": base64.b64encode(buf.getvalue()).decode(), "mime_type": "image/png"}
+    return 200, {"status": "completed", "steps": [{"type": "model_output", "content": [block]}]}
+
+
+def test_image_ki_regenerate_and_pool(client, app):
+    token = login(client)
+    settings = app.extensions["settings"]
+    settings.gemini_key, settings.bild_retry_pause = "test-key", 0
+    gesendet = []
+    app.extensions["bild_transport"] = lambda headers, body: (gesendet.append(body), _ki_antwort())[1]
+    page = client.get("/entwurf/1").get_data(as_text=True)
+    assert "Neu generieren" in page and "Aus dem Pool" in page and "GEMINI_API_KEY fehlt" not in page
+
+    client.post("/entwurf/1/bild", data={"_csrf": token, "aktion": "ki", "bild_thema": "kino-saal",
+                                         "bild_prompt": "Empty cinema hall with red seats before a premiere"})
+    with Store(settings.db_path) as store:
+        d = store.get_draft(1)
+    assert d["bild_origin"] == "ki" and "KI-generiert" in d["bild_credit"] and d["bild_thema"] == "kino-saal"
+    assert d["bild_prompt"].startswith("Empty cinema hall") and "Empty cinema hall" in gesendet[0]["input"]
+    assert "KI-Symbolbild" in client.get("/entwurf/1").get_data(as_text=True)
+    assert "KI-Bild" in client.get("/").get_data(as_text=True)
+
+    # Das KI-Bild liegt jetzt im Pool des Themas – „Aus dem Pool“ nimmt es für Entwurf 2
+    client.post("/entwurf/2/bild", data={"_csrf": token, "aktion": "pool", "bild_thema": "kino-saal"})
+    with Store(settings.db_path) as store:
+        d2 = store.get_draft(2)
+    assert d2["bild_origin"] == "pool" and d2["bild_thema"] == "kino-saal"
+
+    # Leerer Pool: Bild bleibt, Meldung erscheint
+    before = d2["bild_datei"]
+    resp = client.post("/entwurf/2/bild", data={"_csrf": token, "aktion": "pool", "bild_thema": "cricket"}, follow_redirects=True)
+    assert "noch kein Bild" in resp.get_data(as_text=True)
+    with Store(settings.db_path) as store:
+        assert store.get_draft(2)["bild_datei"] == before
+
+
+def test_image_ki_without_key_keeps_image(client, app):
+    token = login(client)
+    settings = app.extensions["settings"]
+    with Store(settings.db_path) as store:
+        before = store.get_draft(1)["bild_datei"]
+    assert "GEMINI_API_KEY fehlt" in client.get("/entwurf/1").get_data(as_text=True)
+    resp = client.post("/entwurf/1/bild", data={"_csrf": token, "aktion": "ki", "bild_prompt": "x"}, follow_redirects=True)
+    assert "GEMINI_API_KEY" in resp.get_data(as_text=True)
+    with Store(settings.db_path) as store:
+        assert store.get_draft(1)["bild_datei"] == before
+
+
+def test_embedding_headers_allow_only_wordpress(tmp_path, monkeypatch):
+    for var in ("WP_URL", "WP_USER", "WP_APP_PASSWORD"):
+        monkeypatch.setenv(var, "")
+    settings = load_settings()
+    settings.data_dir = tmp_path
+    settings.web_secret = "s"
+    settings.web_url = "https://radar.tamil.de"
+    settings.wp_url = "https://www.tamil.de"
+    app = create_app(settings, testing=True)
+    resp = app.test_client().get("/login")
+    assert resp.headers["Content-Security-Policy"] == "frame-ancestors 'self' https://www.tamil.de"
+    assert app.config["SESSION_COOKIE_SAMESITE"] == "None" and app.config["SESSION_COOKIE_SECURE"] is True
+    settings.web_url, settings.wp_url = "http://127.0.0.1:8787", ""
+    lokal = create_app(settings, testing=True)
+    assert lokal.config["SESSION_COOKIE_SAMESITE"] == "Lax"
+    assert lokal.test_client().get("/login").headers["Content-Security-Policy"] == "frame-ancestors 'self'"

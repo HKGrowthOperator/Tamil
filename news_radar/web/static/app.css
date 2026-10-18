@@ -119,3 +119,5 @@ table{border-collapse:collapse;font-size:.9rem}table.voll{width:100%}td,th{paddi
   h1{font-size:1.6rem}.papier{padding:20px}
 }
 @media(prefers-reduced-motion:reduce){.scope .sweep,.scope .blip .ring2,.scope-deko,.live::before{animation:none}.scope .blip .ring2{opacity:.5;transform:none}button,.knopf{transition:none}}
+.badge.ki{background:rgba(124,92,255,.22);color:#c9b8ff}.entwurf-karte .thumb .badge.ki{left:auto;right:8px}
+.bild-ki{display:grid;gap:8px;margin:10px 0}.bild-ki textarea{width:100%}.bild-ki select{max-width:100%}
