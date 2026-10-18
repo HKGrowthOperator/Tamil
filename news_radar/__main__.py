@@ -10,6 +10,8 @@
   style     Stilbeispiele aus veröffentlichten Tamil.de-Beiträgen lernen
   export    Protokoll als JSONL exportieren
   export-drafts  Entwürfe + Bilder für den HTML-Prototyp exportieren (--quellbilder lädt Vorschaubilder der Quellen)
+  agent     export: Aufgabenmappe für einen schreibenden Agenten · import: fertige Beiträge übernehmen (mit Bild)
+  bildpool  status | fuellen – Reserve-Bilder je Thema über die Bild-KI anlegen
 """
 
 from __future__ import annotations
@@ -95,6 +97,14 @@ def main(argv: list[str] | None = None) -> int:
     style.add_argument("--count", type=int, default=6)
     exp = sub.add_parser("export")
     exp.add_argument("--file", default="radar-protokoll.jsonl")
+    agent = sub.add_parser("agent", help="Agent-Modus: Aufgabenmappe exportieren / fertige Beiträge importieren")
+    agent.add_argument("aktion", choices=("export", "import"))
+    agent.add_argument("--file", required=True, help="Aufgabenmappe (export) bzw. Ergebnis-JSON (import)")
+    agent.add_argument("--limit", type=int, default=20, help="export: höchstens so viele Entwürfe")
+    agent.add_argument("--alle", action="store_true", help="export: auch Entwürfe, die keine Rohfassung sind")
+    agent.add_argument("--status", default="neu", help="export: Status der Entwürfe (kommagetrennt)")
+    agent.add_argument("--ohne-text", action="store_true", help="export: Quelltexte nicht nachladen")
+    agent.add_argument("--von", default="agent", help="import: Name für Protokoll und bearbeitet_von")
     pool = sub.add_parser("bildpool", help="Reserve-Bilder je Thema (prompts/bildpool.md)")
     pool.add_argument("aktion", choices=("status", "fuellen"))
     pool.add_argument("--thema", help="nur dieses Thema füllen")
@@ -128,6 +138,25 @@ def main(argv: list[str] | None = None) -> int:
             n = store.export_log(Path(args.file))
         print(f"{n} Protokolleinträge → {args.file}")
         return 0
+
+    if args.cmd == "agent":
+        from .agent import export_tasks, import_results
+
+        with Store(settings.db_path) as store:
+            if args.aktion == "export":
+                data = export_tasks(store, settings, Path(args.file), statuses=tuple(s.strip() for s in args.status.split(",")),
+                                    nur_roh=not args.alle, limit=args.limit, mit_text=not args.ohne_text)
+                mit_text = sum(1 for e in data["entwuerfe"] if e["quelltext"])
+                print(f"{len(data['entwuerfe'])} Entwürfe → {args.file} ({mit_text} mit Quelltext, "
+                      f"{len(data['bildthemen'])} Bildthemen, Pool: {sum(s['anzahl'] for s in data['bildpool'].values())} Bilder)")
+                return 0
+            stats = import_results(store, settings, Path(args.file), von=args.von)
+        bilder = ", ".join(f"{k} {v}" for k, v in stats["bilder"].items()) or "–"
+        print(f"{stats['uebernommen']} übernommen (Bilder: {bilder}), {stats['verworfen']} verworfen, "
+              f"{len(stats['fehler'])} Fehler")
+        for f in stats["fehler"]:
+            print(f"  ! {f}")
+        return 1 if stats["fehler"] and not stats["uebernommen"] else 0
 
     if args.cmd == "bildpool":
         from .bilder import BildPool
