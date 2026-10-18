@@ -146,6 +146,42 @@ def test_run_stops_at_daily_cap(settings, monkeypatch):
         assert any(e["event"] == "tagesbudget" for e in store.iter_log())
 
 
+def test_stale_event_date_uses_event_date_not_fetch_time(settings):
+    now = datetime(2026, 10, 18, 10, tzinfo=timezone.utc)
+    settings.max_age_hours = 72
+    alt = item("Vaikasi Visakam im Tempel Bern", "Fest zu Ehren Murugans", kind="event")
+    assert pipeline.stale_event_date(alt, "Wann: Freitag, 29.05.2026 ab 18.00 Uhr im Hindutempel", settings, now) == "2026-05-29"
+    bericht = item("Vaahaikuyil 2026", "கடந்த 19.09.2026 சனிக்கிழமை", kind="event")
+    assert pipeline.stale_event_date(bericht, "", settings, now) == "2026-09-19"
+    kommend = item("Vaango Pazhagalam", "Samstag, 24. Oktober 2026 · Basel", kind="event", facts={"event_datum": "2026-10-24"})
+    assert pipeline.stale_event_date(kommend, "", settings, now) == ""
+    gestern = item("Jailer 2 Weinfelden", "", kind="event", facts={"event_datum": "2026-10-17"})
+    assert pipeline.stale_event_date(gestern, "", settings, now) == ""  # innerhalb max_age_hours
+    ohne = item("Beat Your Heart", "Broadcast poojas across all 26 cantons", kind="event")
+    assert pipeline.stale_event_date(ohne, "", settings, now) == ""
+
+
+def test_run_drops_past_events_before_writing(settings, monkeypatch):
+    from news_radar.writer import RawWriter
+
+    heute = datetime.now(timezone.utc).date()
+    alt = item("Chithrapowrnami im Haus der Religionen", "Vollmondfest", hours_old=1, dach_score=3, ort="Bern",
+               category_hint="community", score=9, kind="event",
+               facts={"event_datum": (heute - timedelta(days=120)).isoformat(), "event_ort": "Bern"})
+    neu = item("Pongal-Fest Hamm", "Fest im Tempel", hours_old=1, dach_score=3, ort="Hamm", category_hint="community",
+               score=9, kind="event", facts={"event_datum": (heute + timedelta(days=30)).isoformat(), "event_ort": "Hamm"})
+    monkeypatch.setattr(sources, "fetch_all", lambda s, store=None: [alt, neu])
+    monkeypatch.setattr(sources, "fetch_article_text", lambda url: "")
+    monkeypatch.setattr(filtering, "select", lambda items, s, seen, titles: [i for i in items if i.uid not in seen])
+    results = {r.title: r for r in pipeline.run(settings, writer=RawWriter(settings))}
+    assert results["Chithrapowrnami im Haus der Religionen"].status == "verworfen"
+    assert results["Chithrapowrnami im Haus der Religionen"].note.startswith("veraltet")
+    assert results["Pongal-Fest Hamm"].status == "entwurf"
+    with Store(settings.db_path) as store:
+        assert store.list_drafts(status="neu")[0]["titel"] == "Pongal-Fest Hamm"
+        assert [e["grund"] for e in store.iter_log(event="verworfen")][0].startswith("Veranstaltung vom")
+
+
 def test_run_ohne_ki_writes_marked_raw_drafts(settings, monkeypatch):
     from news_radar.writer import ROH_HINWEIS, RawWriter
 

@@ -10,9 +10,9 @@ import logging
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
-from . import filtering, notify, sources
+from . import dates, filtering, notify, sources
 from .config import Settings
 from .bilder import beitragsbild
 from .images import save_pair
@@ -87,10 +87,38 @@ def draft_row(item: sources.NewsItem, draft: Draft, bild_datei: str, image, hinw
     }
 
 
+def stale_event_date(item: sources.NewsItem, article_text: str, settings: Settings, now: datetime | None = None) -> str:
+    """ISO-Datum, wenn die Veranstaltung länger als max_age_hours zurückliegt – sonst leer.
+
+    Veranstaltungskalender und Vereinsseiten listen monatelang alte Termine ohne Veröffentlichungsdatum; das
+    Veranstaltungsdatum (aus den Fakten, sonst aus Titel/Zusammenfassung/Text) entscheidet, nicht die Abrufzeit.
+    """
+    now = now or datetime.now(timezone.utc)
+    raw = str((item.facts or {}).get("event_datum") or "")[:10]
+    when = None
+    if raw:
+        try:
+            when = datetime.fromisoformat(raw).date()
+        except ValueError:
+            when = None
+    if when is None:
+        when = dates.parse_de_date(f"{item.title}\n{item.summary}\n{article_text[:1500]}", now=now)
+    if when is None:
+        return ""
+    cutoff = (now - timedelta(hours=settings.max_age_hours)).date()
+    return when.isoformat() if when < cutoff else ""
+
+
 def process(item: sources.NewsItem, settings: Settings, writer: Writer, store: Store) -> Result:
     start = time.monotonic()
     hinweise = [writer.hinweis] if getattr(writer, "hinweis", "") else []  # RawWriter: Rohfassung ohne KI
-    article_text = sources.fetch_article_text(item.url) if item.kind == "news" else ""
+    article_text = sources.fetch_article_text(item.url) if item.kind in ("news", "event") else ""
+    if item.kind == "event":
+        vergangen = stale_event_date(item, article_text, settings)
+        if vergangen:
+            store.mark(item.uid, item.title, item.url, item.source, "veraltet")
+            store.event("verworfen", titel=item.title, quelle=item.url, grund=f"Veranstaltung vom {vergangen} liegt zurück")
+            return Result(item.title, "verworfen", note=f"veraltet: Termin {vergangen}", seconds=time.monotonic() - start)
     draft = writer.write(item, article_text)
     if draft is None:
         store.mark(item.uid, item.title, item.url, item.source, "abgelehnt_modell")

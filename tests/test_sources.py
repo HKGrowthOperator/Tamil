@@ -35,6 +35,23 @@ def settings(monkeypatch):
     return load_settings()
 
 
+def test_extract_paragraphs_drops_theme_code_and_navigation():
+    html = """
+    <html><head><style>.tdi_9{vertical-align:baseline}</style><script>var x = {a: 1};</script></head>
+    <body><nav><p>Menu Startseite Nachrichten Schweiz Events Suche Suche nach: Suche Swiss Tamil Events Weiter</p></nav>
+    <p>.tdb_header_logo{margin-bottom:0;clear:none}.tdb_header_logo .tdb-logo-a{display:flex;pointer-events:auto}</p>
+    <p>{"@context":"http://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1}]}</p>
+    <article><p>Die tamilische Gemeinschaft in Basel lädt am 24. Oktober 2026 zu Workshops, Kulturständen und Bühnenbeiträgen ein.</p>
+    <p>kurz</p>
+    <p>Das Event richtet sich an Menschen aller Nationalitäten und Altersgruppen, der Eintritt ist frei und Essen gibt es auch.</p></article>
+    <footer><p>Als Nonprofit-Organisation sind wir weiterhin auf Spenden angewiesen und danken allen Helferinnen und Helfern.</p></footer>
+    </body></html>"""
+    text = sources.extract_paragraphs(html)
+    assert text.startswith("Die tamilische Gemeinschaft in Basel")
+    assert "Eintritt ist frei" in text and "tdb_header_logo" not in text and "@context" not in text
+    assert "Spenden" not in text and "Menu" not in text and "kurz" not in text
+
+
 def test_registry_contains_all_types():
     assert set(sources.FETCHERS) == {"rss", "newsapi", "gnews", "gnews_region", "wp_json", "html", "kino"}
 

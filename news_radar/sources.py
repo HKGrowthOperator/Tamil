@@ -416,9 +416,34 @@ def fetch_article_text(url: str, limit: int = 6000) -> str:
         resp.raise_for_status()
     except requests.RequestException:
         return ""
-    paragraphs = re.findall(r"<p[^>]*>(.*?)</p>", resp.text, flags=re.S | re.I)
-    text = "\n".join(p for p in (clean_text(x) for x in paragraphs) if len(p) > 60)
-    return text[:limit]
+    return extract_paragraphs(resp.text, limit)
+
+
+_NOISE_BLOCK_RE = re.compile(
+    r"<(script|style|noscript|template|svg|nav|header|footer|aside|form)\b[^>]*>.*?</\1\s*>", re.S | re.I
+)
+_CODE_HINT_RE = re.compile(r"[{};]\s*[a-z#.@-]|\bfunction\s*\(|document\.|window\.|@context|@media|\.tdi_", re.I)
+
+
+def extract_paragraphs(html_text: str, limit: int = 6000) -> str:
+    """Lesbare Absätze einer Artikelseite: Skripte, Styles, Navigation und Code-Reste werden entfernt.
+
+    Bevorzugt den <article>-Block; Absätze mit CSS/JS-Mustern (viele Klammern, Semikolons, JSON-LD) fliegen raus,
+    damit die Faktenbasis für Writer und Agent nicht mit Theme-Code vollläuft.
+    """
+    body = _NOISE_BLOCK_RE.sub(" ", html_text)
+    m = re.search(r"<article\b[^>]*>(.*?)</article\s*>", body, flags=re.S | re.I)
+    if m and len(m.group(1)) > 400:
+        body = m.group(1)
+    out: list[str] = []
+    for raw in re.findall(r"<p[^>]*>(.*?)</p>", body, flags=re.S | re.I):
+        p = clean_text(raw)
+        if len(p) <= 60 or len(p) > 3000:
+            continue
+        if len(_CODE_HINT_RE.findall(p)) >= 2 or p.count("{") + p.count("}") >= 4:
+            continue
+        out.append(p)
+    return "\n".join(out)[:limit]
 
 
 _OG_RES = (
