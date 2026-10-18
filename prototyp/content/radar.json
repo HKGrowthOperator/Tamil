@@ -1,5 +1,5 @@
 {
- "stand": "2026-10-18T11:01:23+00:00",
+ "stand": "2026-10-18T11:10:05+00:00",
  "lauf": {
   "id": 3,
   "started_at": "2026-10-18T10:45:59+00:00",
@@ -331,7 +331,7 @@
     "alt": "Festhalle mit Kulturständen und Besuchern",
     "w": 784,
     "h": 479,
-    "balken": false
+    "balken": true
    }
   },
   {

@@ -56,12 +56,14 @@ def quellbild(url: str, dest: Path, fetch: Downloader = download) -> dict | None
 
 
 def has_black_bars(im: Image.Image, anteil: float = 0.12, schwelle: int = 24) -> bool:
-    """Hochkant-Plakate werden von Kalendern oft mit schwarzen Rändern auf Querformat gebracht – als Aufmacher ungeeignet."""
+    """Hochkant-Plakate und Logos kommen oft mit schwarzen oder weißen Rändern auf Querformat – als Aufmacher ungeeignet."""
     g = im.convert("L")
     w = max(1, int(im.width * anteil))
     links = g.crop((0, 0, w, im.height)).resize((1, 1)).getpixel((0, 0))
     rechts = g.crop((im.width - w, 0, im.width, im.height)).resize((1, 1)).getpixel((0, 0))
-    return links < schwelle and rechts < schwelle
+    dunkel = links < schwelle and rechts < schwelle
+    hell = links > 255 - schwelle and rechts > 255 - schwelle
+    return dunkel or hell
 
 
 def _credit_name(quelle_name: str) -> str:
