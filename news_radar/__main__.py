@@ -4,7 +4,7 @@
             --ohne-ki legt Rohfassungen ohne Claude an (Titel + Quellentext, klar markiert)
   loop      Dauerbetrieb, Lauf alle --interval Sekunden (Standard 180)
   scan      Nur einsammeln + filtern, nichts schreiben (Test der Quellen)
-  publish   Alle freigegebenen Entwürfe nach WordPress veröffentlichen
+  publish   Alle freigegebenen Entwürfe nach WordPress veröffentlichen (--pruefen: nur Verbindung testen)
   digest    Tageszusammenfassung senden (für den Digest-Timer)
   web       Freigabe-App lokal starten (Entwicklung; Produktion: gunicorn)
   style     Stilbeispiele aus veröffentlichten Tamil.de-Beiträgen lernen
@@ -87,7 +87,8 @@ def main(argv: list[str] | None = None) -> int:
     expd.add_argument("--quellbilder", action="store_true", help="Vorschaubilder der Quellen laden (nur Prototyp)")
     expd.add_argument("--limit", type=int, default=60)
     sub.add_parser("scan")
-    sub.add_parser("publish")
+    pub = sub.add_parser("publish")
+    pub.add_argument("--pruefen", action="store_true", help="nur die Verbindung zu WordPress prüfen, nichts veröffentlichen")
     sub.add_parser("digest")
     web = sub.add_parser("web")
     web.add_argument("--host", default="127.0.0.1")
@@ -187,8 +188,20 @@ def main(argv: list[str] | None = None) -> int:
         if not settings.wordpress_enabled:
             print("Keine WordPress-Zugangsdaten in .env (WP_URL, WP_USER, WP_APP_PASSWORD).")
             return 1
-        from .publisher import publish_approved
+        from .publisher import make_wordpress, publish_approved
 
+        if args.pruefen:
+            from .wordpress import TamilRadarClient
+
+            wp = make_wordpress(settings)
+            if isinstance(wp, TamilRadarClient):
+                status = wp.status() or {}
+                print(f"Plugin tamil-radar {status.get('plugin')} · WordPress {status.get('wordpress')} · SEO {status.get('seo')}"
+                      f" · darf veröffentlichen: {'ja' if status.get('kann_publish') else 'nein (Beiträge gehen als „ausstehend“)'}")
+                print("Kategorien: " + ", ".join(sorted(status.get("kategorien") or {})))
+            else:
+                print("Plugin tamil-radar antwortet nicht – der Radar nutzt die Core-REST (ohne Meta, Termine und Kinoliste).")
+            return 0
         with Store(settings.db_path) as store:
             print(pipeline.summary(publish_approved(settings, store, limit=50)))
         return 0
