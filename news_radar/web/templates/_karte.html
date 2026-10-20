@@ -1,11 +1,11 @@
 <article class="karte entwurf-karte typ-{{ d.typ }}" tabindex="0" data-id="{{ d.id }}">
   <a class="thumb" href="/entwurf/{{ d.id }}" tabindex="-1">
     {% if d.bild_datei %}<img src="/bild/{{ d.bild_datei.replace('.jpg', '-thumb.jpg') }}" alt="" loading="lazy">{% endif %}
-    <span class="badge kat">{{ category_label(d.kategorie) }}</span>
     {% if d.bild_origin == 'ki' %}<span class="badge ki" title="Symbolbild: KI-generiert">KI-Bild</span>{% endif %}
   </a>
   <div class="inhalt">
     <div class="meta">
+      <span class="rubrik r-{{ d.kategorie }}">{{ category_label(d.kategorie) }}</span>
       {% if d.typ == 'kino_termine' %}<span class="badge typ">Kinotermine</span>{% elif d.typ == 'event' %}<span class="badge typ">Event</span>{% endif %}
       {% if d.ort %}<span class="badge ort">{{ d.ort }}</span>{% endif %}
       <span class="relevanz r{{ d.relevanz }}" title="Relevanz {{ d.relevanz }} von 10"><i style="--r:{{ d.relevanz }}"></i>Relevanz {{ d.relevanz }}</span>

@@ -44,7 +44,7 @@
 <section class="karte"><h2>Nach Status</h2><table>{% for s, n in dash.status.items() %}<tr><td>{{ labels.get(s, s) }}</td><td class="zahl">{{ n }}</td></tr>{% endfor %}</table></section>
 <section class="karte"><h2>Nach Kategorie</h2><table>{% for r in dash.je_kategorie %}<tr><td>{{ category_label(r.name) }}</td><td class="zahl">{{ r.n }}</td></tr>{% else %}<tr><td class="leise">noch nichts</td></tr>{% endfor %}</table></section>
 <section class="karte"><h2>Nach Quelle</h2><table>{% for r in dash.je_quelle %}<tr><td>{{ r.name }}</td><td class="zahl">{{ r.n }}</td></tr>{% else %}<tr><td class="leise">noch nichts</td></tr>{% endfor %}</table></section>
-<section class="karte"><h2>Nach Typ</h2><table>{% for r in dash.je_typ %}<tr><td>{{ r.name }}</td><td class="zahl">{{ r.n }}</td></tr>{% endfor %}</table></section>
+<section class="karte"><h2>Nach Typ</h2><table>{% for r in dash.je_typ %}<tr><td>{{ {'artikel': 'Artikel', 'event': 'Event', 'kino_termine': 'Kinotermine'}.get(r.name, r.name) }}</td><td class="zahl">{{ r.n }}</td></tr>{% endfor %}</table></section>
 </div>
 <section class="karte">
   <h2>Quellen im Detail</h2>

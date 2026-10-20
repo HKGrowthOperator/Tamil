@@ -242,7 +242,7 @@ def bild(draft_id: int):
                 flash("Kein Stockfoto gefunden (oder kein Unsplash/Pexels-Schlüssel) – Bildkarte erzeugt.", "fehler")
             store.update_draft(draft_id, bild_suchbegriff=query)
         else:
-            image = images.branded_card(row["titel"], label, stem)
+            image = images.branded_card(row["titel"], label, stem, row.get("kategorie") or "")
     except Exception as exc:  # noqa: BLE001
         log.exception("Bild fehlgeschlagen")
         flash(f"Bild fehlgeschlagen: {str(exc)[:200]}", "fehler")
@@ -357,7 +357,7 @@ def gesund():
 def manifest():
     data = {
         "name": "Tamil.de Radar", "short_name": "Radar", "start_url": "/", "display": "standalone",
-        "background_color": "#1A1A1C", "theme_color": "#B01E2C", "lang": "de",
+        "background_color": "#FDF9F5", "theme_color": "#B5282A", "lang": "de",
         "icons": [{"src": "/static/icon-192.png", "sizes": "192x192", "type": "image/png"},
                   {"src": "/static/icon-512.png", "sizes": "512x512", "type": "image/png"}],
     }

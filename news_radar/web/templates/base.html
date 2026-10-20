@@ -7,16 +7,16 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/static/icon-192.png">
 <link rel="apple-touch-icon" href="/static/icon-192.png">
-<meta name="theme-color" content="#0E1226">
+<meta name="theme-color" content="#FDF9F5">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="stylesheet" href="/static/app.css">
 </head>
 <body class="{% if not session.user %}ohne-rail{% endif %}">
 {% if session.user %}
 {% set lauf = letzter_lauf() %}
 <aside class="rail">
-  <a class="logo" href="/"><svg class="kolam" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="7"/><circle cx="20" cy="50" r="5"/><circle cx="80" cy="50" r="5"/><circle cx="50" cy="20" r="5"/><circle cx="50" cy="80" r="5"/><path d="M50 35 C64 35 70 20 56 12 C44 5 36 18 50 35 C65 50 85 44 88 56 C92 70 76 72 66 60 C50 44 36 50 35 64 C33 78 48 90 56 80 C66 68 54 56 44 50 C30 44 12 50 12 60 C12 72 26 72 35 64"/></svg><span>tamil<b>.de</b></span><em>Radar</em></a>
+  <a class="logo" href="/"><span>tamil<b>.de</b></span><em>Redaktion</em></a>
   <nav>
     <a href="/" class="{{ 'aktiv' if request.endpoint == 'ui.feed' }}"><span>Feed</span><span class="count">{{ offen() }}</span></a>
     <a href="/dashboard" class="{{ 'aktiv' if request.endpoint == 'ui.dashboard' }}"><span>Dashboard</span></a>

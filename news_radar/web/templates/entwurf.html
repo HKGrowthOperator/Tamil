@@ -5,7 +5,7 @@
 <section class="karte kopf aktionsleiste">
   <div class="meta">
     <span class="badge status s-{{ d.status }}">{{ labels.get(d.status, d.status) }}</span>
-    <span class="badge kat">{{ category_label(d.kategorie) }}</span>
+    <span class="rubrik r-{{ d.kategorie }}">{{ category_label(d.kategorie) }}</span>
     {% if d.typ != 'artikel' %}<span class="badge typ">{{ 'Kinotermine' if d.typ == 'kino_termine' else 'Event' }}</span>{% endif %}
     {% if d.ort %}<span class="badge ort">{{ d.ort }}</span>{% endif %}
     {% if d.hinweise and d.hinweise[0].startswith('Rohfassung') %}<span class="badge hinweis roh" title="{{ d.hinweise[0] }}">Rohfassung ohne KI</span>{% endif %}
@@ -59,11 +59,52 @@
 </section>
 
 <div class="editor-grid">
-<div class="editor-links">
-<div class="zwei-spalten">
+<div class="editor-haupt">
+<section class="karte vorschau-karte">
+  <h2 class="vorschau-titel-leiste">Vorschau <small class="leise">so erscheint der Beitrag auf tamil.de</small></h2>
+  <article class="papier beitrag">
+    {% if d.bild_datei %}<img class="bild" src="/bild/{{ d.bild_datei }}" alt="">{% endif %}
+    <h1 id="vorschau-titel">{{ d.titel }}</h1>
+    <p class="teaser" id="vorschau-teaser">{{ d.teaser }}</p>
+    <div id="vorschau-text">{{ preview|safe }}</div>
+  </article>
+</section>
+
+<section class="karte">
+  <h2>Text</h2>
+  <form method="post" action="/entwurf/{{ d.id }}" id="editor">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <label>Überschrift <input name="titel" value="{{ d.titel or '' }}" maxlength="120" required></label>
+    <label>Teaser <textarea name="teaser" rows="2" maxlength="300">{{ d.teaser or '' }}</textarea></label>
+    <div class="zeile">
+      <label>Kategorie <select name="kategorie">{% for c in categories %}<option value="{{ c.slug }}" {{ 'selected' if c.slug == d.kategorie }}>{{ c.label }}</option>{% endfor %}</select></label>
+      <label>Schlagworte (Komma) <input name="schlagworte" value="{{ d.schlagworte|join(', ') }}"></label>
+    </div>
+    {% if d.typ == 'event' %}
+    <div class="zeile">
+      <label>Datum <input name="event_datum" type="date" value="{{ d.event_datum or '' }}"></label>
+      <label>Ort <input name="event_ort" value="{{ d.event_ort or '' }}"></label>
+      <label>Ticket-Link <input name="ticket_url" type="url" value="{{ d.ticket_url or '' }}"></label>
+    </div>
+    {% else %}
+    <input type="hidden" name="event_datum" value="{{ d.event_datum or '' }}"><input type="hidden" name="event_ort" value="{{ d.event_ort or '' }}"><input type="hidden" name="ticket_url" value="{{ d.ticket_url or '' }}">
+    {% endif %}
+    <label>Haupttext (HTML: &lt;p&gt;, &lt;h2&gt;, &lt;strong&gt;)<textarea name="inhalt_html" id="inhalt" rows="18">{{ d.inhalt_html or '' }}</textarea></label>
+    {% if d.typ == 'kino_termine' %}<p class="leise">Die Spielorte werden automatisch aus den Kinodaten unter den Text gesetzt ({{ d.fakten.kinos|length }} Kinos, Kinowoche {{ d.fakten.woche }}).</p>{% endif %}
+    <div class="zeile">
+      <label>SEO-Titel <input name="seo_titel" value="{{ d.seo_titel or '' }}" maxlength="70"></label>
+      <label>Meta-Beschreibung <input name="meta_beschreibung" value="{{ d.meta_beschreibung or '' }}" maxlength="170"></label>
+      <label>Bild-Alt-Text <input name="bild_alt" value="{{ d.bild_alt or '' }}"></label>
+    </div>
+    <button class="primaer">Speichern</button>
+  </form>
+</section>
+</div>
+
+<aside class="editor-seite">
 <section class="karte">
   <h2>Bild</h2>
-  {% if d.bild_datei %}<img class="bild" src="/bild/{{ d.bild_datei }}" alt="{{ d.bild_alt }}"><p class="leise">{% if d.bild_origin in ('ki', 'pool') and 'KI' in (d.bild_credit or '') %}<span class="badge ki">KI-Symbolbild</span> {% endif %}{{ d.bild_credit }} · {{ d.bild_origin }}</p>{% endif %}
+  {% if d.bild_datei %}<img class="bild" src="/bild/{{ d.bild_datei }}" alt="{{ d.bild_alt }}"><p class="leise">{% if d.bild_origin in ('ki', 'pool') and 'KI' in (d.bild_credit or '') %}<span class="badge ki">KI-Symbolbild</span> {% endif %}{{ d.bild_credit }} · {{ {'karte': 'Bildkarte', 'ki': 'KI-Bild', 'pool': 'Bildpool', 'upload': 'eigenes Bild', 'quelle': 'Bild der Quelle', 'unsplash': 'Unsplash', 'pexels': 'Pexels'}.get(d.bild_origin, d.bild_origin) }}</p>{% endif %}
   <form method="post" action="/entwurf/{{ d.id }}/bild" class="bild-ki">
     <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="aktion" value="ki">
     <label>Motiv für die Bild-KI (englisch, keine realen Personen, kein Text)
@@ -110,47 +151,6 @@
     <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="leise">Auf Original zurücksetzen</button>
   </form>
 </section>
-</div>
-
-<section class="karte">
-  <h2>Text</h2>
-  <form method="post" action="/entwurf/{{ d.id }}" id="editor">
-    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
-    <label>Überschrift <input name="titel" value="{{ d.titel or '' }}" maxlength="120" required></label>
-    <label>Teaser <textarea name="teaser" rows="2" maxlength="300">{{ d.teaser or '' }}</textarea></label>
-    <div class="zeile">
-      <label>Kategorie <select name="kategorie">{% for c in categories %}<option value="{{ c.slug }}" {{ 'selected' if c.slug == d.kategorie }}>{{ c.label }}</option>{% endfor %}</select></label>
-      <label>Schlagworte (Komma) <input name="schlagworte" value="{{ d.schlagworte|join(', ') }}"></label>
-    </div>
-    {% if d.typ == 'event' %}
-    <div class="zeile">
-      <label>Datum <input name="event_datum" type="date" value="{{ d.event_datum or '' }}"></label>
-      <label>Ort <input name="event_ort" value="{{ d.event_ort or '' }}"></label>
-      <label>Ticket-Link <input name="ticket_url" type="url" value="{{ d.ticket_url or '' }}"></label>
-    </div>
-    {% else %}
-    <input type="hidden" name="event_datum" value="{{ d.event_datum or '' }}"><input type="hidden" name="event_ort" value="{{ d.event_ort or '' }}"><input type="hidden" name="ticket_url" value="{{ d.ticket_url or '' }}">
-    {% endif %}
-    <label>Haupttext (HTML: &lt;p&gt;, &lt;h2&gt;, &lt;strong&gt;)<textarea name="inhalt_html" id="inhalt" rows="18">{{ d.inhalt_html or '' }}</textarea></label>
-    {% if d.typ == 'kino_termine' %}<p class="leise">Die Spielorte werden automatisch aus den Kinodaten unter den Text gesetzt ({{ d.fakten.kinos|length }} Kinos, Kinowoche {{ d.fakten.woche }}).</p>{% endif %}
-    <div class="zeile">
-      <label>SEO-Titel <input name="seo_titel" value="{{ d.seo_titel or '' }}" maxlength="70"></label>
-      <label>Meta-Beschreibung <input name="meta_beschreibung" value="{{ d.meta_beschreibung or '' }}" maxlength="170"></label>
-      <label>Bild-Alt-Text <input name="bild_alt" value="{{ d.bild_alt or '' }}"></label>
-    </div>
-    <button class="primaer">Speichern</button>
-  </form>
-</section>
-</div>
-
-<section class="vorschau-karte">
-  <h2 class="vorschau-titel-leiste">Vorschau <small class="leise">so erscheint der Beitrag auf tamil.de</small></h2>
-  <article class="papier beitrag">
-    {% if d.bild_datei %}<img class="bild" src="/bild/{{ d.bild_datei }}" alt="">{% endif %}
-    <h1 id="vorschau-titel">{{ d.titel }}</h1>
-    <p class="teaser" id="vorschau-teaser">{{ d.teaser }}</p>
-    <div id="vorschau-text">{{ preview|safe }}</div>
-  </article>
-</section>
+</aside>
 </div>
 {% endblock %}
