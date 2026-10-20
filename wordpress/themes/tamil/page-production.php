@@ -20,31 +20,30 @@ $ids    = '' !== $tag ? tamil_ids(
 $ticket = tamil_opt( 'production_ticket_url' );
 $events = function_exists( 'tamil_site_upcoming_events' ) ? tamil_site_upcoming_events( 3, array( 'fields' => 'ids' ) )->posts : array();
 ?>
-<section class="buehne buehne-seite-kopf" aria-label="<?php echo esc_attr( tamil_opt( 'production_titel' ) ); ?>">
-	<div class="container">
-		<h2 class="kicker"><span class="ta" lang="ta">நிகழ்ச்சிகள்</span><span class="de"><?php echo esc_html( tamil_opt( 'production_titel' ) ); ?></span></h2>
+<section class="seitenband" aria-label="<?php echo esc_attr( tamil_opt( 'production_titel' ) ); ?>">
+	<div class="wrap">
+		<p class="rubrik r-entertainment"><?php echo esc_html( tamil_opt( 'production_titel' ) ); ?></p>
 		<h1><?php echo esc_html( tamil_opt( 'production_claim' ) ); ?></h1>
-		<p class="standfirst"><?php echo esc_html( tamil_opt( 'production_text' ) ); ?></p>
-		<p class="aktionen">
+		<p class="vorspann"><?php echo esc_html( tamil_opt( 'production_text' ) ); ?></p>
+		<div class="aktionen">
 			<?php
 			if ( $ticket ) :
 				?>
-				<a class="btn btn-gold" href="<?php echo esc_url( $ticket ); ?>" target="_blank" rel="noopener nofollow"><?php tamil_icon( 'ticket', 'ico ico-sm' ); ?> <?php echo esc_html( tamil_opt( 'production_ticket_label' ) ); ?></a><?php endif; ?>
-			<a class="btn btn-ghost hell" href="<?php echo esc_url( tamil_seiten_url( 'kontakt' ) ); ?>"><?php esc_html_e( 'Als Veranstalter anfragen', 'tamil' ); ?></a>
-		</p>
+				<a class="knopf knopf-rot" href="<?php echo esc_url( $ticket ); ?>" target="_blank" rel="noopener nofollow"><?php tamil_icon( 'ticket', 'ico ico-sm' ); ?> <?php echo esc_html( tamil_opt( 'production_ticket_label' ) ); ?></a><?php endif; ?>
+			<a class="knopf knopf-leise" href="<?php echo esc_url( tamil_seiten_url( 'kontakt' ) ); ?>"><?php esc_html_e( 'Als Veranstalter anfragen', 'tamil' ); ?></a>
+		</div>
 	</div>
 </section>
-<div class="container">
+<div class="wrap">
 	<?php if ( $ids ) : ?>
-		<section class="section">
+		<section class="abschnitt">
 			<?php tamil_kicker( 'events', __( 'Die Konzerte', 'tamil' ) ); ?>
 			<div class="plakate">
 				<?php foreach ( $ids as $id ) : ?>
-					<article class="plakat">
-						<a class="media" href="<?php echo esc_url( get_permalink( $id ) ); ?>" tabindex="-1" aria-hidden="true"><?php echo tamil_bild( $id, 'tamil-card', array( 'loading' => 'lazy' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></a>
-						<h3><a href="<?php echo esc_url( get_permalink( $id ) ); ?>"><?php echo esc_html( get_the_title( $id ) ); ?></a></h3>
-						<?php tamil_meta( $id, false ); ?>
-					</article>
+					<a class="plakat" href="<?php echo esc_url( get_permalink( $id ) ); ?>">
+						<span class="bild"><?php echo tamil_bild( $id, 'tamil-zeile', array( 'loading' => 'lazy' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+						<span class="plakat-titel"><?php echo esc_html( get_the_title( $id ) ); ?></span>
+					</a>
 				<?php endforeach; ?>
 			</div>
 		</section>
@@ -54,13 +53,13 @@ $events = function_exists( 'tamil_site_upcoming_events' ) ? tamil_site_upcoming_
 		the_post();
 		?>
 		<?php if ( '' !== trim( (string) get_the_content() ) ) : ?>
-			<section class="section"><div class="artikel-body lesebreite"><?php the_content(); ?></div></section>
+			<section class="abschnitt"><div class="artikel-text lesebreite"><?php the_content(); ?></div></section>
 		<?php endif; ?>
 	<?php endwhile; ?>
 	<?php if ( $events ) : ?>
-		<section class="section">
+		<section class="abschnitt">
 			<?php tamil_kicker( 'events', __( 'Nächste Termine', 'tamil' ), tamil_rubrik( 'events' )['url'], __( 'Alle Events', 'tamil' ) ); ?>
-			<div class="events-teaser">
+			<div class="termine">
 				<?php foreach ( $events as $id ) : ?>
 					<?php
 					get_template_part(

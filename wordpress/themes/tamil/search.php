@@ -8,7 +8,7 @@ defined( 'ABSPATH' ) || exit;
 get_header();
 global $wp_query;
 ?>
-<div class="container">
+<div class="wrap">
 	<?php tamil_breadcrumb( array( array( __( 'Suche', 'tamil' ), '' ) ) ); ?>
 	<header class="seitenkopf">
 		<?php /* translators: %s: Suchbegriff */ ?>
@@ -17,10 +17,10 @@ global $wp_query;
 		<p class="zaehler"><?php echo esc_html( sprintf( _n( '%d Treffer', '%d Treffer', (int) $wp_query->found_posts, 'tamil' ), (int) $wp_query->found_posts ) ); ?></p>
 		<?php get_search_form(); ?>
 	</header>
-	<div class="with-sidebar">
+	<div class="mit-spalte">
 		<div>
 			<?php if ( have_posts() ) : ?>
-				<div class="cards drei">
+				<div class="kartenraster">
 					<?php
 					while ( have_posts() ) {
 						the_post();

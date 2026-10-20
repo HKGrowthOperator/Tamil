@@ -35,10 +35,10 @@ $filter = array(
 	'tanz'    => __( 'Tanz', 'tamil' ),
 );
 ?>
-<div class="container">
+<div class="wrap">
 	<?php tamil_breadcrumb( array( array( get_the_title(), '' ) ) ); ?>
 	<header class="seitenkopf">
-		<h1><?php the_title(); ?> <span class="ta" lang="ta"><?php echo esc_html( $rubrik['tamil'] ); ?></span></h1>
+		<h1><?php the_title(); ?></h1>
 		<p class="beschreibung"><?php echo esc_html( $rubrik['beschreibung'] ); ?></p>
 		<div class="events-werkzeuge">
 			<div class="toggle" role="group" aria-label="<?php esc_attr_e( 'Ansicht', 'tamil' ); ?>"><button type="button" data-view="liste" aria-pressed="true"><?php esc_html_e( 'Liste', 'tamil' ); ?></button><button type="button" data-view="monat" aria-pressed="false"><?php esc_html_e( 'Monat', 'tamil' ); ?></button></div>
@@ -50,7 +50,7 @@ $filter = array(
 			</div>
 		</div>
 	</header>
-	<div class="with-sidebar">
+	<div class="mit-spalte">
 		<div>
 			<?php
 			while ( have_posts() ) :
@@ -59,7 +59,7 @@ $filter = array(
 				<?php
 				if ( '' !== trim( (string) get_the_content() ) ) :
 					?>
-					<div class="artikel-body"><?php the_content(); ?></div><?php endif; ?>
+					<div class="artikel-text"><?php the_content(); ?></div><?php endif; ?>
 			<?php endwhile; ?>
 			<div data-view-panel="liste">
 				<?php foreach ( $monate as $monat => $liste ) : ?>
@@ -75,7 +75,7 @@ $filter = array(
 			</div>
 			<div data-view-panel="monat" hidden>
 				<h2 class="monat-kopf"><?php echo esc_html( wp_date( 'F Y', $erster->getTimestamp() ) ); ?> <span class="n"><?php esc_html_e( 'Monatsansicht', 'tamil' ); ?></span></h2>
-				<table class="raster">
+				<table class="monatsraster">
 					<thead><tr>
 					<?php
 					foreach ( array( 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So' ) as $d ) :
@@ -112,12 +112,12 @@ $filter = array(
 					</tr></tbody>
 				</table>
 			</div>
-			<div class="cta-band">
-				<h2 class="kicker"><span class="ta" lang="ta">பதிவு</span><span class="de"><?php esc_html_e( 'Event einreichen', 'tamil' ); ?></span></h2>
+			<div class="mitmachen mitmachen-schmal"><div class="mitmachen-text">
+				<p class="rubrik r-safran"><?php esc_html_e( 'Event einreichen', 'tamil' ); ?></p>
 				<h2><?php esc_html_e( 'Du veranstaltest etwas? Trag dein Event kostenlos ein.', 'tamil' ); ?></h2>
-				<p><?php esc_html_e( 'Konzert, Tempelfest, Turnier oder Kinoabend – die Redaktion prüft die Angaben und nimmt das Event in den Kalender und in den Newsletter auf.', 'tamil' ); ?></p>
-				<div><a class="btn btn-dark" href="<?php echo esc_url( tamil_seiten_url( 'kontakt', 'event-einreichen' ) ); ?>"><?php tamil_icon( 'plus', 'ico ico-sm' ); ?> <?php esc_html_e( 'Event einreichen', 'tamil' ); ?></a></div>
-			</div>
+				<p><?php esc_html_e( 'Konzert, Tempelfest, Turnier oder Kinoabend – die Redaktion prüft die Angaben und nimmt das Event in den Kalender auf.', 'tamil' ); ?></p>
+				<div class="aktionen"><a class="knopf knopf-hell" href="<?php echo esc_url( tamil_seiten_url( 'kontakt', 'event-einreichen' ) ); ?>"><?php tamil_icon( 'plus', 'ico ico-sm' ); ?> <?php esc_html_e( 'Event einreichen', 'tamil' ); ?></a></div>
+			</div></div>
 		</div>
 		<?php get_sidebar( null, array( 'events' => false ) ); ?>
 	</div>

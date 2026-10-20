@@ -12,94 +12,64 @@
 			"customGradient": false,
 			"palette": [
 				{
-					"slug": "nacht",
-					"name": "Nacht",
-					"color": "#0E1226"
-				},
-				{
-					"slug": "nacht-2",
-					"name": "Nacht 2",
-					"color": "#171C36"
-				},
-				{
-					"slug": "nacht-3",
-					"name": "Nacht 3",
-					"color": "#262D52"
-				},
-				{
-					"slug": "nacht-text",
-					"name": "Nacht-Text",
-					"color": "#C9CCE0"
-				},
-				{
-					"slug": "kumkum",
-					"name": "Kumkum",
-					"color": "#C8102E"
-				},
-				{
-					"slug": "kumkum-tief",
-					"name": "Kumkum tief",
-					"color": "#9E0C24"
-				},
-				{
-					"slug": "kumkum-hell",
-					"name": "Kumkum hell",
-					"color": "#FBE6EA"
-				},
-				{
-					"slug": "manjal",
-					"name": "Manjal",
-					"color": "#E8B923"
-				},
-				{
-					"slug": "manjal-tief",
-					"name": "Manjal tief",
-					"color": "#B88E0E"
-				},
-				{
-					"slug": "manjal-hell",
-					"name": "Manjal hell",
-					"color": "#FFF3C7"
-				},
-				{
-					"slug": "blatt",
-					"name": "Blatt",
-					"color": "#1F7A4D"
-				},
-				{
-					"slug": "blatt-hell",
-					"name": "Blatt hell",
-					"color": "#E3F1E8"
-				},
-				{
 					"slug": "papier",
 					"name": "Papier",
-					"color": "#FAFAF8"
-				},
-				{
-					"slug": "feld",
-					"name": "Feld",
-					"color": "#F1F0EC"
+					"color": "#FDF9F5"
 				},
 				{
 					"slug": "weiss",
 					"name": "Weiß",
-					"color": "#FFFFFF"
+					"color": "#FFFDFB"
 				},
 				{
-					"slug": "tinte",
-					"name": "Tinte",
-					"color": "#14161F"
+					"slug": "sand",
+					"name": "Sand",
+					"color": "#F8EFE4"
 				},
 				{
-					"slug": "nebel",
-					"name": "Nebel",
-					"color": "#6B6F7B"
+					"slug": "sand-2",
+					"name": "Sand 2",
+					"color": "#F2E6D9"
 				},
 				{
 					"slug": "linie",
 					"name": "Linie",
-					"color": "#E2E2E6"
+					"color": "#E5DCD5"
+				},
+				{
+					"slug": "tinte",
+					"name": "Tinte",
+					"color": "#332924"
+				},
+				{
+					"slug": "tinte-2",
+					"name": "Tinte 2",
+					"color": "#655851"
+				},
+				{
+					"slug": "tinte-3",
+					"name": "Tinte 3",
+					"color": "#72665F"
+				},
+				{
+					"slug": "rot",
+					"name": "Rot",
+					"color": "#B5282A"
+				},
+				{
+					"slug": "rot-tief",
+					"name": "Rot tief",
+					"color": "#921A1D"
+				},
+				{
+					"slug": "rot-hell",
+					"name": "Rot hell",
+					"color": "#FFEAE8"
+				},
+				{
+					"slug": "safran",
+					"name": "Safran",
+					"color": "#F8AC3D"
 				}
 			]
 		},
@@ -152,72 +122,79 @@
 		"typography": {
 			"defaultFontSizes": false,
 			"fluid": true,
-			"dropCap": true,
+			"dropCap": false,
 			"fontFamilies": [
 				{
-					"slug": "display",
-					"name": "Fraunces",
-					"fontFamily": "Fraunces, \"Iowan Old Style\", Georgia, serif",
+					"slug": "titel",
+					"name": "Catamaran",
+					"fontFamily": "Catamaran, \"Segoe UI\", system-ui, sans-serif",
 					"fontFace": [
 						{
-							"fontFamily": "Fraunces",
+							"fontFamily": "Catamaran",
 							"fontWeight": "100 900",
 							"fontStyle": "normal",
 							"fontDisplay": "swap",
 							"src": [
-								"file:./assets/fonts/fraunces-latin.woff2"
-							]
+								"file:./assets/fonts/catamaran-latin.woff2"
+							],
+							"unicodeRange": "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD"
 						},
 						{
-							"fontFamily": "Fraunces",
+							"fontFamily": "Catamaran",
 							"fontWeight": "100 900",
-							"fontStyle": "italic",
+							"fontStyle": "normal",
 							"fontDisplay": "swap",
 							"src": [
-								"file:./assets/fonts/fraunces-italic-latin.woff2"
-							]
+								"file:./assets/fonts/catamaran-latin-ext.woff2"
+							],
+							"unicodeRange": "U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1E9F, U+2C60-2C7F, U+A720-A7FF"
+						},
+						{
+							"fontFamily": "Catamaran",
+							"fontWeight": "100 900",
+							"fontStyle": "normal",
+							"fontDisplay": "swap",
+							"src": [
+								"file:./assets/fonts/catamaran-tamil.woff2"
+							],
+							"unicodeRange": "U+0964-0965, U+0B82-0BFA, U+200C-200D, U+20B9, U+25CC"
 						}
 					]
 				},
 				{
 					"slug": "text",
-					"name": "Schibsted Grotesk",
-					"fontFamily": "\"Schibsted Grotesk\", \"Helvetica Neue\", Arial, sans-serif",
+					"name": "Literata",
+					"fontFamily": "Literata, Catamaran, Georgia, serif",
 					"fontFace": [
 						{
-							"fontFamily": "Schibsted Grotesk",
-							"fontWeight": "400 900",
+							"fontFamily": "Literata",
+							"fontWeight": "200 900",
 							"fontStyle": "normal",
 							"fontDisplay": "swap",
 							"src": [
-								"file:./assets/fonts/schibsted-latin.woff2"
-							]
+								"file:./assets/fonts/literata-latin.woff2"
+							],
+							"unicodeRange": "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD"
 						},
 						{
-							"fontFamily": "Schibsted Grotesk",
-							"fontWeight": "400 900",
+							"fontFamily": "Literata",
+							"fontWeight": "200 900",
+							"fontStyle": "normal",
+							"fontDisplay": "swap",
+							"src": [
+								"file:./assets/fonts/literata-latin-ext.woff2"
+							],
+							"unicodeRange": "U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1E9F, U+2C60-2C7F, U+A720-A7FF"
+						},
+						{
+							"fontFamily": "Literata",
+							"fontWeight": "200 900",
 							"fontStyle": "italic",
 							"fontDisplay": "swap",
 							"src": [
-								"file:./assets/fonts/schibsted-italic-latin.woff2"
-							]
-						}
-					]
-				},
-				{
-					"slug": "tamil",
-					"name": "Noto Serif Tamil",
-					"fontFamily": "\"Noto Serif Tamil\", \"Tamil Sangam MN\", Latha, \"Nirmala UI\", serif",
-					"fontFace": [
-						{
-							"fontFamily": "Noto Serif Tamil",
-							"fontWeight": "400 700",
-							"fontStyle": "normal",
-							"fontDisplay": "swap",
-							"src": [
-								"file:./assets/fonts/notoseriftamil-tamil.woff2"
+								"file:./assets/fonts/literata-italic-latin.woff2"
 							],
-							"unicodeRange": "U+0964-0965, U+0B82-0BFA, U+200C-200D, U+20B9, U+25CC"
+							"unicodeRange": "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD"
 						}
 					]
 				}
@@ -226,49 +203,43 @@
 				{
 					"slug": "meta",
 					"name": "Meta",
-					"size": "13px",
+					"size": "14px",
 					"fluid": false
 				},
 				{
 					"slug": "klein",
 					"name": "Klein",
-					"size": "15px",
+					"size": "16px",
 					"fluid": false
 				},
 				{
 					"slug": "text",
 					"name": "Text",
-					"size": "17px",
+					"size": "clamp(18px, 1.1vw + 13px, 20px)",
 					"fluid": false
 				},
 				{
 					"slug": "vorspann",
 					"name": "Vorspann",
-					"size": "clamp(18px, 1.3vw, 21px)",
+					"size": "clamp(20px, 1.3vw + 14px, 23px)",
 					"fluid": false
 				},
 				{
 					"slug": "h3",
 					"name": "Zwischentitel",
-					"size": "21px",
+					"size": "clamp(21px, 1vw + 15px, 24px)",
 					"fluid": false
 				},
 				{
 					"slug": "h2",
 					"name": "Überschrift",
-					"size": "clamp(24px, 2vw, 32px)",
+					"size": "clamp(26px, 2vw + 16px, 34px)",
 					"fluid": false
 				},
 				{
 					"slug": "h1",
 					"name": "Titel",
-					"size": "clamp(30px, 3.8vw, 56px)",
-					"fluid": false
-				},
-				{
-					"slug": "display",
-					"name": "Bühne",
-					"size": "clamp(36px, 5.6vw, 80px)",
+					"size": "clamp(34px, 3.6vw + 14px, 58px)",
 					"fluid": false
 				}
 			]
@@ -282,19 +253,20 @@
 		"typography": {
 			"fontFamily": "var:preset|font-family|text",
 			"fontSize": "var:preset|font-size|text",
-			"lineHeight": "1.55"
+			"lineHeight": "1.65"
 		},
 		"elements": {
 			"link": {
 				"color": {
-					"text": "var:preset|color|kumkum"
+					"text": "var:preset|color|rot"
 				}
 			},
 			"heading": {
 				"typography": {
-					"fontFamily": "var:preset|font-family|display",
-					"fontWeight": "600",
-					"lineHeight": "1.1"
+					"fontFamily": "var:preset|font-family|titel",
+					"fontWeight": "800",
+					"lineHeight": "1.12",
+					"letterSpacing": "-0.015em"
 				}
 			},
 			"h1": {
@@ -314,13 +286,14 @@
 			},
 			"button": {
 				"color": {
-					"background": "var:preset|color|kumkum",
+					"background": "var:preset|color|rot",
 					"text": "var:preset|color|weiss"
 				},
 				"border": {
 					"radius": "999px"
 				},
 				"typography": {
+					"fontFamily": "var:preset|font-family|titel",
 					"fontWeight": "700"
 				}
 			}
@@ -329,25 +302,28 @@
 			"core/quote": {
 				"border": {
 					"left": {
-						"color": "var:preset|color|manjal",
-						"width": "4px"
+						"color": "var:preset|color|rot",
+						"width": "3px"
 					}
 				},
 				"typography": {
-					"fontFamily": "var:preset|font-family|display",
 					"fontStyle": "italic"
 				}
 			},
 			"core/pullquote": {
 				"border": {
 					"top": {
-						"color": "var:preset|color|manjal",
-						"width": "4px"
+						"color": "var:preset|color|linie",
+						"width": "1px"
 					},
 					"bottom": {
-						"color": "var:preset|color|manjal",
-						"width": "4px"
+						"color": "var:preset|color|linie",
+						"width": "1px"
 					}
+				},
+				"typography": {
+					"fontFamily": "var:preset|font-family|titel",
+					"fontWeight": "700"
 				}
 			},
 			"core/separator": {

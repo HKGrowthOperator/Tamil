@@ -1,6 +1,6 @@
 <?php
 /**
- * Bausteine für die Vorlagen: Icons, Kicker, Meta-Zeile, Bilder (nie ohne), Vorspann, Teilen, Brotkrumen.
+ * Bausteine für die Vorlagen: Icons, Abschnittskopf, Meta-Zeile, Bilder (nie ohne), Vorspann, Teilen, Brotkrumen.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -17,18 +17,33 @@ function tamil_icon( string $name, string $cls = 'ico', bool $ausgeben = true ):
 }
 
 /**
- * Abschnittstitel: tamilisches Wort als Überschrift, deutsches Label, optional „Alle …“.
+ * Abschnittskopf: Punkt in der Rubrikfarbe, Titel, optional „Alle …“.
  */
-function tamil_kicker( string $slug, string $text = '', string $mehr = '', string $mehr_text = '', string $tamil = '' ): void {
+function tamil_kicker( string $slug, string $text = '', string $mehr = '', string $mehr_text = '', string $ebene = 'h2' ): void {
 	$rubrik = tamil_rubrik( $slug );
-	$tamil  = '' !== $tamil ? $tamil : $rubrik['tamil'];
-	echo '<div class="section-head"><h2 class="kicker"><span class="ta" lang="ta">' . esc_html( $tamil ) . '</span><span class="de">' . esc_html( '' !== $text ? $text : $rubrik['label'] ) . '</span></h2>';
+	$ebene  = in_array( $ebene, array( 'h1', 'h2', 'h3' ), true ) ? $ebene : 'h2';
+	printf( '<div class="abschnitt-kopf r-%1$s"><%2$s>%3$s</%2$s>', esc_attr( $slug ), $ebene, esc_html( '' !== $text ? $text : $rubrik['label'] ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $ebene ist geprüft
 	if ( '' !== $mehr ) {
 		/* translators: %s: Rubrik */
 		$label = '' !== $mehr_text ? $mehr_text : sprintf( __( 'Alle %s', 'tamil' ), $rubrik['label'] );
-		echo '<a class="mehr" href="' . esc_url( $mehr ) . '">' . esc_html( $label ) . '</a>';
+		echo '<a class="mehr" href="' . esc_url( $mehr ) . '">' . esc_html( $label ) . tamil_icon( 'arrow', 'ico ico-sm', false ) . '</a>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 	echo '</div>';
+}
+
+/**
+ * Rubrik als Punkt mit Namen (verlinkt, wenn $link gesetzt ist).
+ */
+function tamil_rubrik_punkt( ?WP_Term $kat, bool $link = false, string $text = '' ): string {
+	if ( ! $kat && '' === $text ) {
+		return '';
+	}
+	$slug  = $kat ? $kat->slug : 'news';
+	$label = '' !== $text ? $text : $kat->name;
+	if ( $link && $kat ) {
+		return sprintf( '<a class="rubrik r-%1$s" href="%2$s">%3$s</a>', esc_attr( $slug ), esc_url( get_category_link( $kat ) ), esc_html( $label ) );
+	}
+	return sprintf( '<span class="rubrik r-%1$s">%2$s</span>', esc_attr( $slug ), esc_html( $label ) );
 }
 
 /**
@@ -40,19 +55,22 @@ function tamil_lesezeit( int $post_id ): int {
 }
 
 /**
- * Meta-Zeile: Rubrik · Datum · Lesezeit.
+ * Meta-Zeile: Rubrik (Punkt) · Ort · Datum · Lesezeit.
  */
-function tamil_meta( int $post_id, bool $kat_zeigen = true ): void {
+function tamil_meta( int $post_id, bool $kat_zeigen = true, bool $lesezeit = true ): void {
 	echo '<p class="meta">';
 	if ( $kat_zeigen ) {
-		$kat = tamil_hauptkategorie( $post_id );
-		if ( $kat ) {
-			echo '<span class="kat">' . esc_html( $kat->name ) . '</span>';
-		}
+		echo tamil_rubrik_punkt( tamil_hauptkategorie( $post_id ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_rubrik_punkt()
+	}
+	$ort = trim( (string) get_post_meta( $post_id, 'ort', true ) );
+	if ( '' !== $ort ) {
+		echo '<span>' . esc_html( $ort ) . '</span>';
 	}
 	echo '<span><time datetime="' . esc_attr( get_the_date( 'c', $post_id ) ) . '">' . esc_html( get_the_date( 'j. F Y', $post_id ) ) . '</time></span>';
-	/* translators: %d: Minuten */
-	echo '<span>' . esc_html( sprintf( __( '%d Min.', 'tamil' ), tamil_lesezeit( $post_id ) ) ) . '</span>';
+	if ( $lesezeit ) {
+		/* translators: %d: Minuten */
+		echo '<span>' . esc_html( sprintf( __( '%d Min.', 'tamil' ), tamil_lesezeit( $post_id ) ) ) . '</span>';
+	}
 	echo '</p>';
 }
 
@@ -77,22 +95,11 @@ function tamil_bild( int $post_id, string $size = 'tamil-card', array $attr = ar
 	if ( has_post_thumbnail( $post_id ) ) {
 		return (string) get_the_post_thumbnail( $post_id, $size, $attr );
 	}
-	$kat   = tamil_hauptkategorie( $post_id );
-	$label = $kat ? $kat->name : get_bloginfo( 'name' );
-	$src   = TAMIL_THEME_URI . '/assets/img/bildkarte.svg';
-	$extra = '';
-	foreach ( $attr as $name => $value ) {
-		if ( 'alt' !== $name && 'class' !== $name ) {
-			$extra .= sprintf( ' %s="%s"', esc_attr( $name ), esc_attr( $value ) );
-		}
-	}
+	$kat = tamil_hauptkategorie( $post_id );
 	return sprintf(
-		'<span class="bildkarte" data-rubrik="%1$s"><img src="%2$s" width="1200" height="675" alt="%3$s"%4$s><span class="bildkarte-label">%5$s</span></span>',
-		esc_attr( $kat ? $kat->slug : '' ),
-		esc_url( $src ),
-		esc_attr( $attr['alt'] ),
-		$extra,
-		esc_html( $label )
+		'<span class="bildkarte r-%1$s"><svg class="kolam" aria-hidden="true"><use href="#i-kolam"/></svg><span class="bildkarte-rubrik">%2$s</span><span class="bildkarte-marke">tamil<b>.de</b></span></span>',
+		esc_attr( $kat ? $kat->slug : 'news' ),
+		esc_html( $kat ? $kat->name : get_bloginfo( 'name' ) )
 	);
 }
 
@@ -120,8 +127,8 @@ function tamil_bildnachweis( int $post_id ): string {
  */
 function tamil_share( string $titel, string $url ): void {
 	$wa = 'https://wa.me/?text=' . rawurlencode( $titel . ' ' . $url );
-	echo '<div class="share" aria-label="' . esc_attr__( 'Teilen', 'tamil' ) . '"><span class="lbl">' . esc_html__( 'Teilen', 'tamil' ) . '</span>';
-	echo '<a class="btn btn-wa" href="' . esc_url( $wa ) . '" target="_blank" rel="noopener">' . tamil_icon( 'whatsapp', 'ico ico-sm', false ) . ' <span class="txt">WhatsApp</span></a>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	echo '<div class="teilen" aria-label="' . esc_attr__( 'Teilen', 'tamil' ) . '">';
+	echo '<a class="knopf knopf-wa" href="' . esc_url( $wa ) . '" target="_blank" rel="noopener">' . tamil_icon( 'whatsapp', 'ico ico-sm', false ) . ' <span class="txt">WhatsApp</span></a>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	$ziele = array(
 		array( 'facebook', 'Facebook', 'https://www.facebook.com/sharer/sharer.php?u=' . rawurlencode( $url ) ),
 		array( 'x', 'X', 'https://twitter.com/intent/tweet?url=' . rawurlencode( $url ) . '&text=' . rawurlencode( $titel ) ),
@@ -131,9 +138,9 @@ function tamil_share( string $titel, string $url ): void {
 	foreach ( $ziele as [ $icon, $name, $href ] ) {
 		$target = str_starts_with( $href, 'mailto:' ) ? '' : ' target="_blank" rel="noopener"';
 		/* translators: %s: Netzwerk */
-		echo '<a class="btn btn-ghost" href="' . esc_url( $href, array( 'https', 'mailto' ) ) . '"' . $target . ' aria-label="' . esc_attr( sprintf( __( 'Teilen über %s', 'tamil' ), $name ) ) . '">' . tamil_icon( $icon, 'ico ico-sm', false ) . ' <span class="txt">' . esc_html( $name ) . '</span></a>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo '<a class="rund" href="' . esc_url( $href, array( 'https', 'mailto' ) ) . '"' . $target . ' aria-label="' . esc_attr( sprintf( __( 'Teilen über %s', 'tamil' ), $name ) ) . '">' . tamil_icon( $icon, 'ico ico-sm', false ) . '</a>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
-	echo '<button type="button" class="btn btn-ghost" data-copy="' . esc_attr( $url ) . '" aria-label="' . esc_attr__( 'Link kopieren', 'tamil' ) . '">' . tamil_icon( 'link', 'ico ico-sm', false ) . ' <span class="txt">' . esc_html__( 'Link', 'tamil' ) . '</span></button>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	echo '<button type="button" class="rund" data-copy="' . esc_attr( $url ) . '" aria-label="' . esc_attr__( 'Link kopieren', 'tamil' ) . '">' . tamil_icon( 'link', 'ico ico-sm', false ) . '</button>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	echo '</div>';
 }
 
@@ -143,7 +150,7 @@ function tamil_share( string $titel, string $url ): void {
  * @param array<int,array{0:string,1:string}> $kette Paare aus Label und URL (letztes Element ohne URL).
  */
 function tamil_breadcrumb( array $kette ): void {
-	echo '<nav class="breadcrumb" aria-label="' . esc_attr__( 'Brotkrumen', 'tamil' ) . '"><a href="' . esc_url( home_url( '/' ) ) . '">' . esc_html__( 'Start', 'tamil' ) . '</a>';
+	echo '<nav class="brotkrumen" aria-label="' . esc_attr__( 'Brotkrumen', 'tamil' ) . '"><a href="' . esc_url( home_url( '/' ) ) . '">' . esc_html__( 'Start', 'tamil' ) . '</a>';
 	foreach ( $kette as [ $label, $url ] ) {
 		echo '<span aria-hidden="true">›</span>';
 		echo '' !== $url ? '<a href="' . esc_url( $url ) . '">' . esc_html( $label ) . '</a>' : '<span>' . esc_html( wp_html_excerpt( $label, 60, '…' ) ) . '</span>';

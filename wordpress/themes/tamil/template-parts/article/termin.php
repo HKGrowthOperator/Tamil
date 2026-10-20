@@ -36,9 +36,9 @@ $fakten  = array_filter(
 	</dl>
 	<p class="aktionen">
 		<?php if ( $e['ticket_url'] ) : ?>
-			<a class="btn btn-primary" href="<?php echo esc_url( $e['ticket_url'] ); ?>" target="_blank" rel="noopener nofollow"><?php tamil_icon( 'ticket', 'ico ico-sm' ); ?> <?php echo esc_html( ( '' !== $e['ticket_label'] ? $e['ticket_label'] : __( 'Tickets', 'tamil' ) ) ); ?></a>
+			<a class="knopf" href="<?php echo esc_url( $e['ticket_url'] ); ?>" target="_blank" rel="noopener nofollow"><?php tamil_icon( 'ticket', 'ico ico-sm' ); ?> <?php echo esc_html( ( '' !== $e['ticket_label'] ? $e['ticket_label'] : __( 'Tickets', 'tamil' ) ) ); ?></a>
 		<?php endif; ?>
-		<a class="btn btn-wa" href="<?php echo esc_url( 'https://wa.me/?text=' . rawurlencode( get_the_title( $post_id ) . ' – ' . tamil_termin_text( $e['datum'], $e['ende'] ) . ' ' . get_permalink( $post_id ) ) ); ?>" target="_blank" rel="noopener"><?php tamil_icon( 'whatsapp', 'ico ico-sm' ); ?> <?php esc_html_e( 'Per WhatsApp teilen', 'tamil' ); ?></a>
+		<a class="knopf knopf-wa" href="<?php echo esc_url( 'https://wa.me/?text=' . rawurlencode( get_the_title( $post_id ) . ' – ' . tamil_termin_text( $e['datum'], $e['ende'] ) . ' ' . get_permalink( $post_id ) ) ); ?>" target="_blank" rel="noopener"><?php tamil_icon( 'whatsapp', 'ico ico-sm' ); ?> <?php esc_html_e( 'Per WhatsApp teilen', 'tamil' ); ?></a>
 	</p>
 	<p class="klein leise"><?php esc_html_e( 'Angaben ohne Gewähr, bitte beim Veranstalter prüfen.', 'tamil' ); ?></p>
 </section>

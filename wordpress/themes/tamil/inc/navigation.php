@@ -1,13 +1,13 @@
 <?php
 /**
- * Navigation: Einträge aus dem Menü „Hauptnavigation“, sonst aus den Rubriken. Hauptleiste und mobiles Menü
- * nutzen dieselbe Liste; Rubriken bekommen im mobilen Menü ihr tamilisches Wort.
+ * Navigation: Einträge aus dem Menü „Hauptnavigation“, sonst aus den Rubriken. Kopfleiste, Rubrik-Leiste (mobil)
+ * und Menü nutzen dieselbe Liste.
  */
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * @return array<int,array{label:string,url:string,aktiv:bool,tamil:string}>
+ * @return array<int,array{label:string,url:string,aktiv:bool,slug:string}>
  */
 function tamil_nav_items(): array {
 	$items     = array();
@@ -17,21 +17,21 @@ function tamil_nav_items(): array {
 			if ( (int) $item->menu_item_parent ) {
 				continue;
 			}
-			$tamil = '';
+			$slug = '';
 			if ( 'taxonomy' === $item->type && 'category' === $item->object ) {
-				$term  = get_term( (int) $item->object_id, 'category' );
-				$tamil = $term instanceof WP_Term ? tamil_rubrik( $term->slug )['tamil'] : '';
+				$term = get_term( (int) $item->object_id, 'category' );
+				$slug = $term instanceof WP_Term ? $term->slug : '';
 			}
 			$items[] = array(
 				'label' => $item->title,
 				'url'   => $item->url,
 				'aktiv' => tamil_nav_aktiv( $item->url ),
-				'tamil' => $tamil,
+				'slug'  => $slug,
 			);
 		}
 		return $items;
 	}
-	foreach ( array( 'news', 'entertainment', 'events', 'community', 'kueche', 'kino', 'sport', 'kultur' ) as $slug ) {
+	foreach ( array( 'news', 'kino', 'events', 'community', 'entertainment', 'kueche', 'kultur', 'sport' ) as $slug ) {
 		$rubrik = tamil_rubrik( $slug );
 		if ( ! $rubrik['term'] && 'events' !== $slug ) {
 			continue;
@@ -40,16 +40,7 @@ function tamil_nav_items(): array {
 			'label' => $rubrik['label'],
 			'url'   => $rubrik['url'],
 			'aktiv' => tamil_nav_aktiv( $rubrik['url'] ) || ( is_category( $slug ) ),
-			'tamil' => $rubrik['tamil'],
-		);
-	}
-	$kontakt = tamil_seite( 'kontakt' );
-	if ( $kontakt ) {
-		$items[] = array(
-			'label' => get_the_title( $kontakt ),
-			'url'   => (string) get_permalink( $kontakt ),
-			'aktiv' => is_page( $kontakt->ID ),
-			'tamil' => 'தொடர்பு',
+			'slug'  => $slug,
 		);
 	}
 	return $items;

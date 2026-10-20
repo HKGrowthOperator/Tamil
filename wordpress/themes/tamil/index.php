@@ -9,7 +9,7 @@ get_header();
 
 $titel = is_home() ? __( 'Neueste Beiträge', 'tamil' ) : wp_strip_all_tags( get_the_archive_title() );
 ?>
-<div class="container">
+<div class="wrap">
 	<?php tamil_breadcrumb( array( array( $titel, '' ) ) ); ?>
 	<header class="seitenkopf">
 		<h1><?php echo esc_html( $titel ); ?></h1>
@@ -18,10 +18,10 @@ $titel = is_home() ? __( 'Neueste Beiträge', 'tamil' ) : wp_strip_all_tags( get
 			?>
 			<div class="beschreibung"><?php echo wp_kses_post( get_the_archive_description() ); ?></div><?php endif; ?>
 	</header>
-	<div class="with-sidebar">
+	<div class="mit-spalte">
 		<div>
 			<?php if ( have_posts() ) : ?>
-				<div class="cards drei">
+				<div class="kartenraster">
 					<?php
 					while ( have_posts() ) {
 						the_post();

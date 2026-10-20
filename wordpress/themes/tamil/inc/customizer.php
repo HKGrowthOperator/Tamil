@@ -1,6 +1,6 @@
 <?php
 /**
- * Customizer-Abschnitt „Tamil.de“: Kontakt, Social, Texte, Startseite, Production, TV, Newsletter.
+ * Customizer-Abschnitt „Tamil.de“: Kontakt, Social, Texte, Startseite, Production, TV.
  *
  * Kontaktdaten sind standardmäßig leer und erscheinen erst, wenn sie eingetragen sind – keine Beispielnummern live.
  */
@@ -41,9 +41,6 @@ function tamil_customizer_felder(): array {
 		'production_ticket_url'   => array( 'production', __( 'Ticket-Knopf: Link', 'tamil' ), 'url', '' ),
 		'tv_text'                 => array( 'tv', __( 'Einleitung', 'tamil' ), 'textarea', 'Tamilisches Fernsehen im Browser. Die Streams starten erst nach Klick.' ),
 		'tv_sender'               => array( 'tv', __( 'Sender (eine Zeile pro Sender: Name | Stream-Adresse .m3u8)', 'tamil' ), 'textarea', '' ),
-		'newsletter_shortcode'    => array( 'newsletter', __( 'Newsletter-Formular (Shortcode, z. B. MailPoet oder Brevo)', 'tamil' ), 'text', '' ),
-		'newsletter_action'       => array( 'newsletter', __( 'oder: Formular-Adresse (action) eines Anbieters', 'tamil' ), 'url', '' ),
-		'newsletter_feld'         => array( 'newsletter', __( 'Name des E-Mail-Felds beim Anbieter', 'tamil' ), 'text', 'email' ),
 	);
 }
 
@@ -71,7 +68,6 @@ function tamil_customize_register( WP_Customize_Manager $wp_customize ): void {
 		'start'      => __( 'Startseite', 'tamil' ),
 		'production' => __( 'Production', 'tamil' ),
 		'tv'         => __( 'Tamil TV', 'tamil' ),
-		'newsletter' => __( 'Newsletter', 'tamil' ),
 	);
 	foreach ( $bereiche as $id => $titel ) {
 		$wp_customize->add_section(

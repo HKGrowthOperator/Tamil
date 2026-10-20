@@ -1,7 +1,7 @@
 <?php
 /**
- * Rubriken: deutsches Label, tamilisches Wort, Beschreibung, Filter-Chips. Label und Beschreibung lassen sich in
- * WordPress (Kategorie bearbeiten) überschreiben, das tamilische Wort per Term-Meta „tamil“.
+ * Rubriken: deutsches Label, tamilisches Wort (für Meta-Angaben, nicht als Schmuck), Beschreibung, Filter-Chips.
+ * Label und Beschreibung lassen sich in WordPress (Kategorie bearbeiten) überschreiben.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -138,28 +138,3 @@ function tamil_hauptkategorie( int $post_id ): ?WP_Term {
 	}
 	return $terms[0] ?? null;
 }
-
-/**
- * Tamilisches Wort bearbeitbar machen (Kategorie bearbeiten → „Tamilisches Wort“).
- */
-function tamil_category_field_edit( WP_Term $term ): void {
-	$value = (string) get_term_meta( $term->term_id, 'tamil', true );
-	echo '<tr class="form-field"><th scope="row"><label for="tamil-wort">' . esc_html__( 'Tamilisches Wort', 'tamil' ) . '</label></th>';
-	echo '<td><input type="text" id="tamil-wort" name="tamil_wort" value="' . esc_attr( $value ) . '" lang="ta">';
-	echo '<p class="description">' . esc_html__( 'Erscheint als Überschrift der Rubrik (z. B. சினிமா). Leer = Standard des Themes.', 'tamil' ) . '</p></td></tr>';
-	wp_nonce_field( 'tamil_wort', 'tamil_wort_nonce' );
-}
-add_action( 'category_edit_form_fields', 'tamil_category_field_edit' );
-
-function tamil_category_field_save( int $term_id ): void {
-	if ( ! isset( $_POST['tamil_wort_nonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['tamil_wort_nonce'] ) ), 'tamil_wort' ) || ! current_user_can( 'manage_categories' ) ) {
-		return;
-	}
-	$value = isset( $_POST['tamil_wort'] ) ? sanitize_text_field( wp_unslash( $_POST['tamil_wort'] ) ) : '';
-	if ( '' === $value ) {
-		delete_term_meta( $term_id, 'tamil' );
-	} else {
-		update_term_meta( $term_id, 'tamil', $value );
-	}
-}
-add_action( 'edited_category', 'tamil_category_field_save' );

@@ -26,11 +26,12 @@ function tamil_setup(): void {
 	);
 	add_editor_style( 'assets/css/editor.css' );
 
-	// 16:9 für Aufmacher und Karten, 4:3 für Zeilen-Karten (wie im Design).
-	add_image_size( 'tamil-lead', 1200, 675, true );
-	add_image_size( 'tamil-card', 800, 450, true );
-	add_image_size( 'tamil-zeile', 480, 360, true );
-	set_post_thumbnail_size( 800, 450, true );
+	// 16:10 für Aufmacher und Artikelbild, 4:3 für Karten, quadratisch für Zeilen (wie im Design). Nach einem
+	// Wechsel der Größen die Vorschaubilder neu erzeugen (z. B. „wp media regenerate“ oder ein Regenerate-Plugin).
+	add_image_size( 'tamil-lead', 1600, 1000, true );
+	add_image_size( 'tamil-card', 960, 720, true );
+	add_image_size( 'tamil-zeile', 480, 480, true );
+	set_post_thumbnail_size( 960, 720, true );
 
 	register_nav_menus(
 		array(
@@ -57,8 +58,8 @@ function tamil_image_size_names( array $sizes ): array {
 	return array_merge(
 		$sizes,
 		array(
-			'tamil-lead' => __( 'Aufmacher (16:9)', 'tamil' ),
-			'tamil-card' => __( 'Karte (16:9)', 'tamil' ),
+			'tamil-lead' => __( 'Aufmacher (16:10)', 'tamil' ),
+			'tamil-card' => __( 'Karte (4:3)', 'tamil' ),
 		)
 	);
 }

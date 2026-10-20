@@ -1,6 +1,6 @@
 <?php
 /**
- * Auswahl für Startseite, Ticker und „Mehr aus …“. Ergebnisse sind ID-Listen im Transient (10 Minuten) und werden
+ * Auswahl für Startseite und „Mehr aus …“. Ergebnisse sind ID-Listen im Transient (10 Minuten) und werden
  * bei jeder Statusänderung eines Beitrags verworfen – die Startseite kostet so wenige Abfragen.
  */
 
@@ -164,7 +164,6 @@ function tamil_home_auswahl(): array {
  */
 function tamil_flush_auswahl(): void {
 	delete_transient( 'tamil_home_auswahl' );
-	delete_transient( 'tamil_ticker' );
 }
 add_action( 'transition_post_status', 'tamil_flush_auswahl' );
 add_action( 'deleted_post', 'tamil_flush_auswahl' );
@@ -196,35 +195,4 @@ function tamil_related( int $post_id, int $anzahl = 3 ): array {
 		$ids = array_merge( $ids, tamil_ids( array( 'posts_per_page' => $anzahl - count( $ids ) ), array_merge( $ids, array( $post_id ) ) ) );
 	}
 	return $ids;
-}
-
-/**
- * Laufband: neueste Kinoliste, drei kommende Termine, sechs neueste Beiträge.
- *
- * @return array<int,array{k:string,text:string,href:string}>
- */
-function tamil_ticker(): array {
-	$cached = get_transient( 'tamil_ticker' );
-	if ( is_array( $cached ) ) {
-		return $cached;
-	}
-	$ids = array();
-	if ( function_exists( 'tamil_site_kino_posts' ) ) {
-		$ids = array_merge( $ids, array_map( 'intval', tamil_site_kino_posts( 1, array( 'fields' => 'ids' ) )->posts ) );
-	}
-	if ( function_exists( 'tamil_site_upcoming_events' ) ) {
-		$ids = array_merge( $ids, array_map( 'intval', tamil_site_upcoming_events( 3, array( 'fields' => 'ids' ) )->posts ) );
-	}
-	$ids   = array_merge( $ids, tamil_ids( array( 'posts_per_page' => 6 ), $ids ) );
-	$items = array();
-	foreach ( array_unique( $ids ) as $id ) {
-		$kat     = tamil_hauptkategorie( $id );
-		$items[] = array(
-			'k'    => $kat ? tamil_rubrik( $kat->slug )['tamil'] : '',
-			'text' => html_entity_decode( get_the_title( $id ), ENT_QUOTES, 'UTF-8' ),
-			'href' => (string) get_permalink( $id ),
-		);
-	}
-	set_transient( 'tamil_ticker', $items, 10 * MINUTE_IN_SECONDS );
-	return $items;
 }

@@ -28,10 +28,10 @@ function tamil_enqueue(): void {
 add_action( 'wp_enqueue_scripts', 'tamil_enqueue' );
 
 /**
- * Schriften für den Kopf vorladen (die Flächenschrift und die Textschrift).
+ * Schriften vorladen (Titelschrift und Textschrift, jeweils der lateinische Teil).
  */
 function tamil_preload_fonts(): void {
-	foreach ( array( 'fraunces-latin.woff2', 'schibsted-latin.woff2' ) as $font ) {
+	foreach ( array( 'catamaran-latin.woff2', 'literata-latin.woff2' ) as $font ) {
 		printf( '<link rel="preload" href="%s" as="font" type="font/woff2" crossorigin>' . "\n", esc_url( TAMIL_THEME_URI . '/assets/fonts/' . $font ) );
 	}
 }

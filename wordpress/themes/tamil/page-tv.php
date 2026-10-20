@@ -18,16 +18,16 @@ foreach ( (array) preg_split( '/\r\n|\r|\n/', tamil_opt( 'tv_sender' ) ) as $zei
 	}
 }
 ?>
-<div class="container">
+<div class="wrap">
 	<?php tamil_breadcrumb( array( array( get_the_title(), '' ) ) ); ?>
 	<header class="seitenkopf">
-		<h1><?php the_title(); ?> <span class="ta" lang="ta">தொலைக்காட்சி</span></h1>
+		<h1><?php the_title(); ?></h1>
 		<p class="beschreibung"><?php echo esc_html( tamil_opt( 'tv_text' ) ); ?></p>
 	</header>
-	<div class="with-sidebar">
+	<div class="mit-spalte">
 		<div>
 			<?php if ( $sender ) : ?>
-				<div class="cards zwei">
+				<div class="kartenraster zwei">
 					<?php foreach ( $sender as [ $name, $stream ] ) : ?>
 						<article class="card">
 							<div class="media player" data-stream="<?php echo esc_url( $stream ); ?>">
@@ -47,7 +47,7 @@ foreach ( (array) preg_split( '/\r\n|\r|\n/', tamil_opt( 'tv_sender' ) ) as $zei
 				<?php
 				if ( '' !== trim( (string) get_the_content() ) ) :
 					?>
-					<div class="artikel-body section"><?php the_content(); ?></div><?php endif; ?>
+					<div class="artikel-text section"><?php the_content(); ?></div><?php endif; ?>
 			<?php endwhile; ?>
 		</div>
 		<?php get_sidebar(); ?>

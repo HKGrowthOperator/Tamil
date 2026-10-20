@@ -1,6 +1,6 @@
 <?php
 /**
- * Rubrik: Kopf mit tamilischem Wort, Beschreibung, Zähler und Filter-Chips; erste Karte breit, dann 3er-Raster.
+ * Rubrik: Kopf mit Rubrikpunkt, Beschreibung, Zähler und Filter-Chips; erste Geschichte groß, dann ein Raster.
  * In „Kino“ steht die aktuelle Kinoliste vorn.
  */
 
@@ -14,14 +14,10 @@ $rubrik = tamil_rubrik( $slug );
 $paged  = max( 1, (int) get_query_var( 'paged' ) );
 $kino   = 'kino' === $slug && 1 === $paged && function_exists( 'tamil_site_kino_posts' ) ? ( array_map( 'intval', tamil_site_kino_posts( 1, array( 'fields' => 'ids' ) )->posts )[0] ?? 0 ) : 0;
 ?>
-<div class="container">
+<div class="wrap">
 	<?php tamil_breadcrumb( array( array( $rubrik['label'], '' ) ) ); ?>
-	<header class="seitenkopf">
-		<h1><?php echo esc_html( $rubrik['label'] ); ?>
-		<?php
-		if ( $rubrik['tamil'] ) :
-			?>
-			<span class="ta" lang="ta"><?php echo esc_html( $rubrik['tamil'] ); ?></span><?php endif; ?></h1>
+	<header class="seitenkopf r-<?php echo esc_attr( $slug ); ?>">
+		<h1><?php echo esc_html( $rubrik['label'] ); ?></h1>
 		<?php
 		if ( $rubrik['beschreibung'] ) :
 			?>
@@ -37,25 +33,17 @@ $kino   = 'kino' === $slug && 1 === $paged && function_exists( 'tamil_site_kino_
 			</div>
 		<?php endif; ?>
 	</header>
-	<div class="with-sidebar">
+	<?php
+	if ( $kino ) {
+		get_template_part( 'template-parts/home/kino', null, array( 'post' => $kino ) );
+	}
+	?>
+	<div class="mit-spalte">
 		<div>
-			<?php if ( have_posts() || $kino ) : ?>
-				<div class="cards drei">
+			<?php if ( have_posts() ) : ?>
+				<div class="kartenraster">
 					<?php
 					$erste = 1 === $paged;
-					if ( $kino ) {
-						get_template_part(
-							'template-parts/card',
-							null,
-							array(
-								'post'    => $kino,
-								'variant' => 'breit',
-								'heading' => 'h2',
-								'lazy'    => false,
-							)
-						);
-						$erste = false;
-					}
 					while ( have_posts() ) {
 						the_post();
 						if ( get_the_ID() === $kino ) {
@@ -65,10 +53,11 @@ $kino   = 'kino' === $slug && 1 === $paged && function_exists( 'tamil_site_kino_
 							'template-parts/card',
 							null,
 							$erste ? array(
-								'variant' => 'breit',
+								'variant' => 'gross',
 								'heading' => 'h2',
+								'rubrik'  => false,
 								'lazy'    => false,
-							) : array()
+							) : array( 'rubrik' => false )
 						);
 						$erste = false;
 					}
@@ -76,12 +65,12 @@ $kino   = 'kino' === $slug && 1 === $paged && function_exists( 'tamil_site_kino_
 				</div>
 				<p class="leer" data-filter-leer="chips" hidden><?php esc_html_e( 'Für diesen Filter gibt es auf dieser Seite keine Beiträge.', 'tamil' ); ?></p>
 				<?php get_template_part( 'template-parts/pagination' ); ?>
-			<?php else : ?>
+			<?php elseif ( ! $kino ) : ?>
 				<div class="leer">
 					<?php /* translators: %s: Rubrik */ ?>
 					<h2><?php echo esc_html( sprintf( __( 'Hier entsteht die Rubrik %s', 'tamil' ), $rubrik['label'] ) ); ?></h2>
 					<p><?php esc_html_e( 'Noch keine Beiträge. Ihr habt ein Thema, ein Turnier oder ein Fest? Meldet es der Redaktion.', 'tamil' ); ?></p>
-					<div class="aktionen"><a class="btn btn-primary" href="<?php echo esc_url( tamil_seiten_url( 'kontakt' ) ); ?>"><?php esc_html_e( 'Thema vorschlagen', 'tamil' ); ?></a></div>
+					<a class="knopf" href="<?php echo esc_url( tamil_seiten_url( 'kontakt' ) ); ?>"><?php esc_html_e( 'Thema vorschlagen', 'tamil' ); ?></a>
 				</div>
 			<?php endif; ?>
 		</div>
