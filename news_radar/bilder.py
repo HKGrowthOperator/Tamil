@@ -201,7 +201,7 @@ def beitragsbild(
     modus = settings.bild_modus if settings.bild_modus in MODI else "ki"
     thema = bild_thema or prompts.thema_fuer(kategorie, titel)
     if modus == "karte":
-        return images.branded_card(titel, kategorie_label, slug)
+        return images.branded_card(titel, kategorie_label, slug, kategorie)
     pool = pool or BildPool(settings.bildpool_dir)
     if modus == "ki" and bild_prompt.strip() and settings.gemini_key:
         prompt = prompts.bild_prompt_bauen(bild_prompt, thema)

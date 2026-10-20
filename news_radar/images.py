@@ -18,14 +18,19 @@ from .config import Settings
 
 log = logging.getLogger(__name__)
 
-# Farben aus dem Tamil.de-Designsystem v2 („Radar“): Nacht, Kumkum, Manjal, Papier
-ROT = (200, 16, 46)
-GOLD = (232, 185, 35)
-ANTHRAZIT = (14, 18, 38)
-WARMWEISS = (250, 250, 248)
-RASTER = (38, 45, 82)
+# Farben aus DESIGN.md („modernes Community-Magazin“): Sand, Tinte, Rot aus dem Logo, Rubrikpunkte
+ROT = (181, 40, 42)
+SAND = (248, 239, 228)
+SAND_2 = (242, 230, 217)
+TINTE = (51, 41, 36)
+TINTE_2 = (101, 88, 81)
+RUBRIK_FARBEN = {
+    "news": ROT, "kino": (138, 87, 174), "events": (218, 138, 17), "community": (61, 142, 83),
+    "kueche": (201, 103, 54), "kultur": (52, 106, 172), "sport": (13, 146, 152), "entertainment": (198, 80, 133),
+}
 
 SIZE = (1200, 675)
+_FONT_DIR = Path(__file__).with_name("fonts")
 _FONT_CANDIDATES = [
     "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
     "/usr/share/fonts/dejavu/DejaVuSans-Bold.ttf",
@@ -43,8 +48,8 @@ class FeaturedImage:
     origin: str  # unsplash | pexels | karte
 
 
-def _font(size: int) -> ImageFont.ImageFont:
-    for path in _FONT_CANDIDATES:
+def _font(size: int, schnitt: str = "ExtraBold") -> ImageFont.ImageFont:
+    for path in [str(_FONT_DIR / f"Catamaran-{schnitt}.ttf"), *_FONT_CANDIDATES]:
         if Path(path).exists():
             return ImageFont.truetype(path, size)
     return ImageFont.load_default(size)
@@ -58,26 +63,56 @@ def _wrap(draw: ImageDraw.ImageDraw, text: str, font, max_width: int) -> list[st
     return textwrap.wrap(text, width=12)
 
 
-def branded_card(title: str, category_label: str, slug: str) -> FeaturedImage:
-    img = Image.new("RGB", SIZE, ANTHRAZIT)
+def _kolam(draw: ImageDraw.ImageDraw, cx: float, cy: float, r: float, farbe: tuple[int, int, int], breite: int) -> None:
+    """Kolam wie im Theme (assets/icons.svg): vier Blätter aus einer Linie, acht Punkte."""
+    def p(x: float, y: float) -> tuple[float, float]:
+        return cx + (x - 50) / 50 * r, cy + (y - 50) / 50 * r
+
+    def bezier(a, b, c, d, n=24):
+        return [
+            (
+                (1 - t) ** 3 * a[0] + 3 * (1 - t) ** 2 * t * b[0] + 3 * (1 - t) * t * t * c[0] + t**3 * d[0],
+                (1 - t) ** 3 * a[1] + 3 * (1 - t) ** 2 * t * b[1] + 3 * (1 - t) * t * t * c[1] + t**3 * d[1],
+            )
+            for t in (i / n for i in range(n + 1))
+        ]
+
+    kurven = [
+        ((50, 50), (38, 38), (38, 20), (50, 10)), ((50, 10), (62, 20), (62, 38), (50, 50)),
+        ((50, 50), (62, 38), (80, 38), (90, 50)), ((90, 50), (80, 62), (62, 62), (50, 50)),
+        ((50, 50), (62, 62), (62, 80), (50, 90)), ((50, 90), (38, 80), (38, 62), (50, 50)),
+        ((50, 50), (38, 62), (20, 62), (10, 50)), ((10, 50), (20, 38), (38, 38), (50, 50)),
+    ]
+    for k in kurven:
+        draw.line(bezier(*[p(*q) for q in k]), fill=farbe, width=breite, joint="curve")
+    for x, y in ((50, 30), (70, 50), (50, 70), (30, 50), (24, 24), (76, 24), (24, 76), (76, 76)):
+        px, py = p(x, y)
+        d = r * 0.07
+        draw.ellipse([px - d, py - d, px + d, py + d], fill=farbe)
+
+
+def branded_card(title: str, category_label: str, slug: str, rubrik: str = "") -> FeaturedImage:
+    """Tamil.de-Bildkarte für Beiträge ohne Foto: Sand, Rubrikpunkt, Titel, Kolam in der Rubrikfarbe, Wortmarke."""
+    schluessel = rubrik or {"nachrichten": "news", "küche": "kueche"}.get(category_label.lower(), category_label.lower())
+    farbe = RUBRIK_FARBEN.get(schluessel, ROT)
+    img = Image.new("RGB", SIZE, SAND)
     draw = ImageDraw.Draw(img)
-    for y in range(40, SIZE[1], 26):  # Kolam-Punktraster wie auf der Radar-Bühne
-        for x in range(40 + (13 if (y // 26) % 2 else 0), SIZE[0], 26):
-            draw.ellipse([x - 2, y - 2, x + 2, y + 2], fill=RASTER)
-    draw.rectangle([0, 0, SIZE[0], 14], fill=ROT)
-    draw.rectangle([72, 120, 72 + 64, 126], fill=GOLD)
-    draw.text((72, 142), category_label.upper(), font=_font(30), fill=GOLD)
+    hell = tuple(int(c + (s - c) * 0.72) for c, s in zip(farbe, SAND))
+    _kolam(draw, SIZE[0] - 120, SIZE[1] - 80, 290, hell, 14)
 
-    font = _font(58)
-    lines = _wrap(draw, title, font, SIZE[0] - 144)[:5]
-    y = 210
+    draw.ellipse([72, 92, 72 + 22, 92 + 22], fill=farbe)
+    draw.text((108, 80), category_label, font=_font(36, "Bold"), fill=TINTE)
+
+    font = _font(66)
+    lines = _wrap(draw, title, font, SIZE[0] - 340)[:4]
+    y = 168
     for line in lines:
-        draw.text((72, y), line, font=font, fill=WARMWEISS)
-        y += 72
+        draw.text((72, y), line, font=font, fill=TINTE)
+        y += 76
 
-    logo = _font(40)
-    draw.text((72, SIZE[1] - 92), "tamil", font=logo, fill=WARMWEISS)
-    draw.text((72 + draw.textlength("tamil", font=logo), SIZE[1] - 92), ".de", font=logo, fill=ROT)
+    logo = _font(42)
+    draw.text((72, SIZE[1] - 104), "tamil", font=logo, fill=TINTE)
+    draw.text((72 + draw.textlength("tamil", font=logo), SIZE[1] - 104), ".de", font=logo, fill=ROT)
 
     buf = io.BytesIO()
     img.save(buf, "JPEG", quality=88, optimize=True, progressive=True)
