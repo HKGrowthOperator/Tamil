@@ -1,0 +1,54 @@
+[
+ {
+  "id": 1,
+  "cinemaNumber": 37094,
+  "name": "CineStar Augsburg",
+  "shortName": "Augsburg",
+  "city": "Augsburg",
+  "ticketing": "vista",
+  "ticketingLink": "https://webticketing3.cinestar.de/?cinemaId=37094&movieSessionId=%SYSTEM_SESSION_ID%",
+  "lat": 48.22,
+  "lng": 10.531,
+  "discountDay": 1,
+  "slug": "kino-augsburg"
+ },
+ {
+  "id": 12,
+  "cinemaNumber": 38716,
+  "name": "CineStar Kristall-Palast - Bremen",
+  "shortName": "Bremen",
+  "city": "Bremen",
+  "ticketing": "vista",
+  "ticketingLink": "https://webticketing3.cinestar.de/?cinemaId=38716&movieSessionId=%SYSTEM_SESSION_ID%",
+  "lat": 53.052,
+  "lng": 8.96,
+  "discountDay": 1,
+  "slug": "kino-bremen-kristall-palast"
+ },
+ {
+  "id": 15,
+  "cinemaNumber": 33931,
+  "name": "CineStar Dortmund",
+  "shortName": "Dortmund",
+  "city": "Dortmund",
+  "ticketing": "vista",
+  "ticketingLink": "https://webticketing3.cinestar.de/?cinemaId=33931&movieSessionId=%SYSTEM_SESSION_ID%",
+  "lat": 51.519,
+  "lng": 7.461,
+  "discountDay": 1,
+  "slug": "kino-dortmund"
+ },
+ {
+  "id": 30,
+  "cinemaNumber": 39796,
+  "name": "Filmpalast am ZKM - Karlsruhe",
+  "shortName": "Karlsruhe",
+  "city": "Karlsruhe",
+  "ticketing": "compeso",
+  "ticketingLink": "https://filmpalast.net/programmuebersicht/",
+  "lat": 49,
+  "lng": 8.386,
+  "discountDay": 1,
+  "slug": "kino-karlsruhe-filmpalast-am-zkm"
+ }
+]

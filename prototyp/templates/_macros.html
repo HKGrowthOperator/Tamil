@@ -1,0 +1,135 @@
+{% macro icon(name, cls="ico") -%}
+<svg class="{{ cls }}" aria-hidden="true"><use href="#i-{{ name }}"/></svg>
+{%- endmacro %}
+
+{% macro kicker(slug, text=None, mehr=None, mehr_text=None) -%}
+<div class="section-head">
+  <h2 class="kicker"><span class="ta" lang="ta">{{ kat[slug].tamil if slug in kat else '' }}</span><span class="de">{{ text or kat[slug].label }}</span></h2>
+  {% if mehr %}<a class="mehr" href="{{ mehr }}">{{ mehr_text or ('Alle ' ~ kat[slug].label) }}</a>{% endif %}
+</div>
+{%- endmacro %}
+
+{% macro wordmark(href="index.html") -%}
+<a class="wordmark" href="{{ href }}" aria-label="Tamil.de – Startseite"><svg class="kolam" aria-hidden="true"><use href="#i-kolam"/></svg>tamil<span class="de">.de</span></a>
+{%- endmacro %}
+
+{% macro logo(href="index.html", cls="logo-wrap") -%}
+{% if logo %}<a class="{{ cls }}" href="{{ href }}" aria-label="Tamil.de – Startseite"><img src="img/logo.png" alt="Tamil.de – portal, lifestyle, entertainment" width="300" height="121"></a>{% else %}{{ wordmark(href) }}{% endif %}
+{%- endmacro %}
+
+{% import "_anzeigen.html" as anz with context %}
+{% macro ad(key, zeigen=False, roh=False) -%}
+{% set w = ad_slot(key) %}
+{% set a = none if roh else werbung.get(key) %}
+<div class="ad ad-{{ key }}{% if a %} ad-anzeige{% endif %}"{% if key == 'mobile' and not zeigen %} id="ad-mobile"{% endif %}{% if zeigen %} style="display:flex;position:static"{% endif %} title="Werbeplatz {{ w.nr }} · {{ w.name }}">
+  <span class="ad-label">Anzeige{% if a and a.vorlage == 'muster' %} · Musterkunde (fiktiv){% endif %}</span>
+  {% if a %}{{ anz.render(a, key) }}{% else %}<div class="flaeche ad-box"><span class="nr">{{ w.nr }}</span><span class="nur-desktop">{{ w.desktop }}</span><span class="nur-mobil">{{ w.mobil.split(' (')[0] }}</span></div>{% endif %}
+  {% if key == 'mobile' and not zeigen %}<button type="button" class="schliessen" aria-label="Werbung schließen">×</button>{% endif %}
+</div>
+{%- endmacro %}
+
+{% macro meta(p, kat_zeigen=True) -%}
+<p class="meta">{% if kat_zeigen %}<span class="kat">{{ kat[p.kategorien[0]].label }}</span>{% endif %}{% if p.radar and p.ort %}<span class="ort">{{ icon('pin', 'ico ico-xs') }}{{ p.ort }}</span>{% endif %}<span>{% if p.radar %}{{ p.datum|datum }}, {{ p.zeit }}{% else %}{{ p.datum|datum }}{% endif %}</span><span>{{ p.lesezeit }} Min.</span></p>
+{%- endmacro %}
+
+{% macro card(p, variant="", heading="h3", excerpt=True, badge=False, lazy=True) -%}
+<article class="card {{ variant }}" data-chips="{{ p.chips|join(' ') }}">
+  <a class="media" href="{{ p|link }}" tabindex="-1" aria-hidden="true">
+    <img src="{{ p.bild.src }}" width="{{ p.bild.w }}" height="{{ p.bild.h }}" alt=""{% if lazy %} loading="lazy"{% endif %}>
+    {% if badge %}<span class="badge">{{ kat[p.kategorien[0]].label }}</span>{% endif %}
+  </a>
+  <div class="text">
+    <{{ heading }}><a href="{{ p|link }}"{% if p.sprache == 'ta' %} lang="ta"{% endif %}>{{ p.titel }}</a></{{ heading }}>
+    {% if excerpt and p.excerpt %}<p class="excerpt">{{ p.excerpt }}</p>{% endif %}
+    {{ meta(p, kat_zeigen=not badge) }}
+  </div>
+</article>
+{%- endmacro %}
+
+{% macro card_lead(p) -%}
+<article class="card lead" data-chips="{{ p.chips|join(' ') }}">
+  <a class="media" href="{{ p|link }}" tabindex="-1" aria-hidden="true"><img src="{{ p.bild.src }}" width="{{ p.bild.w }}" height="{{ p.bild.h }}" alt="" fetchpriority="high"><span class="badge gold">{{ kat[p.kategorien[0]].label }}</span></a>
+  <div class="text">
+    <h2><a href="{{ p|link }}"{% if p.sprache == 'ta' %} lang="ta"{% endif %}>{{ p.titel }}</a></h2>
+    <p class="standfirst">{{ p.standfirst }}</p>
+    {{ meta(p, kat_zeigen=False) }}
+  </div>
+</article>
+{%- endmacro %}
+
+{% macro feed_item(r) -%}
+<li class="feed-item {{ r.art }}"><time{% if r.iso %} datetime="{{ r.iso }}"{% endif %}>{{ r.zeit }}</time><span class="ort">{{ r.ort or '–' }}</span><a href="{{ r.href }}"{% if r.sprache == 'ta' %} lang="ta"{% endif %}>{{ r.text }}</a><span class="quelle">{{ r.quelle }}{% if r.tag and r.tag != 'heute' %} · {{ r.tag }}{% endif %}{% if r.sprache == 'ta' %} · tamilisch{% elif r.sprache == 'en' %} · englisch{% endif %}</span></li>
+{%- endmacro %}
+
+{% macro top_strip(items) -%}
+<div class="top-strip-wrap">
+  <h2 class="kicker"><span class="ta" lang="ta">முக்கியம்</span><span class="de">Top-Themen</span><span class="klein leise">von der Redaktion gesetzt</span></h2>
+  <ol class="top-strip">{% for p in items %}<li><span class="nr" aria-hidden="true">{{ '%02d' % loop.index }}</span><div><h3><a href="{{ p|link }}">{{ p.titel }}</a></h3>{{ meta(p) }}</div></li>{% endfor %}</ol>
+</div>
+{%- endmacro %}
+
+{% macro platzhalter(titel, label) -%}
+<article class="card platzhalter">
+  <div class="media"><span>Platzhalter · {{ label }}</span></div>
+  <div class="text"><h3>{{ titel }} <span class="beispiel">Beispieltext</span></h3><p class="meta"><span class="kat">{{ label }}</span><span>Noch kein Beitrag</span></p></div>
+</article>
+{%- endmacro %}
+
+{% macro date_badge(e) -%}
+{% set d = e.von %}
+<div class="date-badge" aria-hidden="true">
+  <span class="tag-nr">{{ d[8:10]|int }}</span>
+  <span class="monat">{{ ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'][d[5:7]|int - 1] }}</span>
+  <span class="wtag">{{ fmt_date(d, weekday=True).split(',')[0][:2] }}{% if e.bis and e.bis != e.von %} – {{ e.bis[8:10]|int }}.{% endif %}</span>
+</div>
+{%- endmacro %}
+
+{% macro event_card(e, kompakt=False) -%}
+<article class="event-card{% if kompakt %} kompakt{% endif %}" data-ev="{{ (['DE','AT','CH'] if e.land == 'DACH' else [e.land])|join(' ') }} {{ e.kategorie }}">
+  {{ date_badge(e) }}
+  <div>
+    <p class="meta"><span class="kat">{{ e.kategorie_label }}</span><span>{{ e.land if e.land != 'DACH' else 'DE · AT · CH' }}</span>{% if e.zeit %}<span>{{ e.zeit }}</span>{% endif %}</p>
+    <h3><a href="{{ e.seite }}">{{ e.titel }}</a></h3>
+    <p class="ort">{{ icon('pin', 'ico ico-sm') }} {{ e.ort }}</p>
+    <div class="aktionen">
+      <a class="btn btn-primary btn-sm" href="{{ e.ticket_url }}"{% if e.ticket_url.startswith('http') %} target="_blank" rel="noopener nofollow"{% endif %}>{{ icon('ticket', 'ico ico-sm') }} {{ e.ticket_label }}</a>
+      <a class="btn btn-wa btn-sm" href="https://wa.me/?text={{ (e.titel ~ ' – ' ~ e.datum_text)|urlencode }}" target="_blank" rel="noopener">{{ icon('whatsapp', 'ico ico-sm') }} Teilen</a>
+      <a class="btn btn-ghost btn-sm" href="{{ e.seite }}">Details</a>
+    </div>
+  </div>
+</article>
+{%- endmacro %}
+
+{% macro share(titel, url) -%}
+<div class="share" aria-label="Teilen">
+  <span class="lbl">Teilen</span>
+  <a class="btn btn-wa" href="https://wa.me/?text={{ (titel ~ ' ' ~ url)|urlencode }}" target="_blank" rel="noopener">{{ icon('whatsapp', 'ico ico-sm') }} <span class="txt">WhatsApp</span></a>
+  <a class="btn btn-ghost" href="https://www.facebook.com/sharer/sharer.php?u={{ url|urlencode }}" target="_blank" rel="noopener" aria-label="Auf Facebook teilen">{{ icon('facebook', 'ico ico-sm') }} <span class="txt">Facebook</span></a>
+  <a class="btn btn-ghost" href="https://twitter.com/intent/tweet?url={{ url|urlencode }}" target="_blank" rel="noopener" aria-label="Auf X teilen">{{ icon('x', 'ico ico-sm') }} <span class="txt">X</span></a>
+  <a class="btn btn-ghost" href="https://t.me/share/url?url={{ url|urlencode }}" target="_blank" rel="noopener" aria-label="Per Telegram teilen">{{ icon('telegram', 'ico ico-sm') }} <span class="txt">Telegram</span></a>
+  <a class="btn btn-ghost" href="mailto:?subject={{ titel|urlencode }}&body={{ url|urlencode }}" aria-label="Per E-Mail teilen">{{ icon('mail', 'ico ico-sm') }} <span class="txt">E-Mail</span></a>
+  <button type="button" class="btn btn-ghost" data-copy="{{ url }}" aria-label="Link kopieren">{{ icon('link', 'ico ico-sm') }} <span class="txt">Link</span></button>
+</div>
+{%- endmacro %}
+
+{% macro sidebar(events_widget=True) -%}
+<aside class="sidebar">
+  {{ ad('sidebar') }}
+  <div class="widget">
+    <h2 class="kicker"><span class="ta" lang="ta">முக்கியம்</span><span class="de">Top-Themen</span></h2>
+    <ol class="liste">{% for p in sel.top %}<li><span class="nr">{{ '%02d' % loop.index }}</span><a href="{{ p|link }}">{{ p.titel }}</a></li>{% endfor %}</ol>
+  </div>
+  {% if events_widget %}
+  <div class="widget dunkel">
+    <h2 class="kicker"><span class="ta" lang="ta">நிகழ்வுகள்</span><span class="de">Nächste Events</span></h2>
+    <ul class="liste">{% for e in events[:4] %}<li><span class="nr">{{ e.von[8:10]|int }}.</span><a href="{{ e.seite }}">{{ e.titel }}</a></li>{% endfor %}</ul>
+    <a class="btn btn-ghost hell btn-sm" href="events.html">Alle Events</a>
+  </div>
+  {% endif %}
+  <div class="widget papier newsletter">
+    <h2 class="kicker"><span class="ta" lang="ta"></span><span class="de">Newsletter</span></h2>
+    <p class="klein" style="margin:0">Einmal pro Woche das Wichtigste aus Nachrichten, Kino und Events.</p>
+    <form data-demo><div class="felder"><label class="sr-only" for="nl-side">E-Mail</label><input id="nl-side" type="email" placeholder="deine@mail.de" required><button class="btn btn-primary" style="margin-top:8px;width:100%">Anmelden</button><p class="doi klein">Double-Opt-in: Du bestätigst die Anmeldung per E-Mail.</p></div><div class="erfolg">Danke! Bitte bestätige die Anmeldung in deinem Postfach.</div></form>
+  </div>
+</aside>
+{%- endmacro %}

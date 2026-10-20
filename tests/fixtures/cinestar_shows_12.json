@@ -1,0 +1,68 @@
+[
+ {
+  "_type": "event",
+  "id": 227896,
+  "cinema": 12,
+  "title": "Jailer 2 (Tamil OmeU)",
+  "subtitle": "Sondervorstellung",
+  "attributes": [],
+  "showtimes": [],
+  "date": "2026-10-18 00:00 CEST",
+  "movie": 31167,
+  "detailLink": "/kino-bremen-kristall-palast/veranstaltung-jailer-2-tamil-omeu",
+  "startDate": "2026-10-18 00:00 CEST",
+  "endDate": "2026-10-25 00:00 CEST"
+ },
+ {
+  "_type": "event",
+  "id": 218901,
+  "cinema": 12,
+  "title": "Live aus der MET: Wagner: Parsifal",
+  "subtitle": "Sondervorstellung",
+  "attributes": [
+   "2D",
+   "Alt ConEFF",
+   "AUDIO_OmU",
+   "LANG_DE",
+   "SoVo",
+   "OV",
+   "OMU",
+   "SUBS",
+   "LANG_ALL",
+   "FSK_6",
+   "BarrierFree",
+   "Wheelchair",
+   "Recliner",
+   "ET_SONDERVORSTELLUNG"
+  ],
+  "showtimes": [
+   {
+    "id": 3906785,
+    "name": "MET: Wagner: Parsifal (2027)(LIVE) - 05.06.2027 | 18:00 Uhr",
+    "cinema": 12,
+    "datetime": "2027-06-05 18:00 CEST",
+    "attributes": [
+     "2D",
+     "Alt ConEFF",
+     "AUDIO_OmU",
+     "LANG_DE",
+     "SoVo",
+     "OV",
+     "OMU",
+     "SUBS",
+     "LANG_ALL",
+     "FSK_6",
+     "BarrierFree",
+     "Wheelchair",
+     "Recliner",
+     "ET_SONDERVORSTELLUNG"
+    ]
+   }
+  ],
+  "date": "2027-06-05 18:00 CEST",
+  "movie": 30635,
+  "detailLink": "/kino-bremen-kristall-palast/veranstaltung-live-aus-der-met-wagner-parsifal",
+  "startDate": "2027-06-05 00:00 CEST",
+  "endDate": null
+ }
+]

@@ -1,0 +1,23 @@
+[
+ {
+  "id": "1001",
+  "name": "Apollo - Das Kino",
+  "cinemaUrlName": "Apollo-Das-Kino",
+  "address2": "1060 Wien",
+  "city": null
+ },
+ {
+  "id": "1004",
+  "name": "Cineplexx Millennium City",
+  "cinemaUrlName": "Cineplexx-Millennium-City",
+  "address2": "Wehlistraße 66",
+  "city": "1200 Wien"
+ },
+ {
+  "id": "1011",
+  "name": "Annenhof Kino",
+  "cinemaUrlName": "Annenhof-Kino",
+  "address2": "8020 Graz",
+  "city": null
+ }
+]

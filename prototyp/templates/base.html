@@ -1,0 +1,27 @@
+{% import "_macros.html" as m with context %}
+{% if not bare %}<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+{% endif %}
+<title>{{ titel }}</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="{{ site.claim }}">
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+{% if not bare %}</head>
+<body>
+{% endif %}
+<div class="site page-{{ seite }} has-sticky-ad">
+{% include "_icons.svg" %}
+{% include "_header.html" %}
+<main id="inhalt">
+{% block content %}{% endblock %}
+</main>
+{% include "_footer.html" %}
+</div>
+<script src="app.js"></script>
+{% if not bare %}</body>
+</html>
+{% endif %}

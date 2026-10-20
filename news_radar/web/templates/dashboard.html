@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<header class="topline">
+  <div><h1>Dashboard</h1><p class="unter">Letzte {{ days }} Tage. <a href="/dashboard?tage={{ 30 if days == 7 else 7 }}">{{ 30 if days == 7 else 7 }} Tage anzeigen</a></p></div>
+</header>
+<div class="kacheln">
+  <div class="kachel"><b>{{ dash.offen }}</b><span>offene Vorgänge</span></div>
+  <div class="kachel"><b>{{ dash.neu_seit }}</b><span>neue Entwürfe</span></div>
+  <div class="kachel gruen"><b>{{ dash.veroeffentlicht_seit }}</b><span>veröffentlicht</span></div>
+  <div class="kachel"><b>{{ dash.status.abgelehnt }}</b><span>abgelehnt gesamt</span></div>
+  <div class="kachel {{ 'rot' if dash.status.fehler }}"><b>{{ dash.status.fehler }}</b><span>mit Fehler</span></div>
+</div>
+<div class="zwei-spalten radar-reihe">
+  <section class="karte quellen-radar">
+    <h2>Quellen-Radar <small class="leise">{{ dash.quellen|length }} Quellen, ein Punkt je Quelle</small></h2>
+    {% set n = dash.quellen|length %}
+    <div class="scope-wrap">
+      <svg class="scope" viewBox="0 0 100 100" role="img" aria-label="Quellen als Punkte auf einem Radar">
+        <circle class="ring" cx="50" cy="50" r="46"/><circle class="ring" cx="50" cy="50" r="31"/><circle class="ring" cx="50" cy="50" r="16"/>
+        <line class="ring" x1="50" y1="4" x2="50" y2="96"/><line class="ring" x1="4" y1="50" x2="96" y2="50"/>
+        <g class="sweep"><path d="M50 50 L50 4 A46 46 0 0 1 90 28 Z"/></g>
+        {% for q in dash.quellen %}
+        {% set r = 44 if q.error_msg else (38 if q.paused_until else (18 + (loop.index0 * 7) % 16)) %}
+        {% set xy = polar(loop.index0, n, r) %}
+        <g class="blip {{ 'fehler' if q.error_msg else ('pause' if q.paused_until else 'ok') }}" style="--i:{{ loop.index0 }}"><title>{{ q.name }}{% if q.last_count is not none %}: {{ q.last_count }} Treffer{% endif %}{% if q.error_msg %} – {{ q.error_msg }}{% endif %}</title><circle class="ring2" cx="{{ xy[0] }}" cy="{{ xy[1] }}" r="4"/><circle cx="{{ xy[0] }}" cy="{{ xy[1] }}" r="1.9"/></g>
+        {% endfor %}
+      </svg>
+      <ul class="legende"><li><i class="ok"></i>liefert</li><li><i class="pause"></i>pausiert</li><li><i class="fehler"></i>Fehler, außen</li></ul>
+    </div>
+  </section>
+  <section class="karte">
+    <h2>Läufe <small class="leise">gesammelt je Lauf, neueste rechts</small></h2>
+    {% set werte = dash.laeufe|map(attribute='gesammelt')|reject('none')|list %}
+    {% set mx = (werte|max) if werte else 1 %}
+    <div class="balken" aria-hidden="true">{% for r in dash.laeufe|reverse %}<i style="--h:{{ ((r.gesammelt or 0) / (mx or 1) * 100)|round|int }}%" title="{{ fmt_dt(r.started_at) }}: {{ r.gesammelt or 0 }} gesammelt, {{ r.entwuerfe or 0 }} Entwürfe"></i>{% endfor %}</div>
+    <table class="voll kompakt">
+      <tr><th>Start</th><th>gesammelt</th><th>relevant</th><th>Entwürfe</th><th>verworfen</th><th>veröffentlicht</th><th>Fehler</th></tr>
+      {% for r in dash.laeufe[:8] %}<tr><td>{{ fmt_dt(r.started_at) }}</td><td class="zahl">{{ r.gesammelt or 0 }}</td><td class="zahl">{{ r.relevant or 0 }}</td><td class="zahl">{{ r.entwuerfe or 0 }}</td><td class="zahl">{{ r.verworfen or 0 }}</td><td class="zahl">{{ r.veroeffentlicht or 0 }}</td><td class="zahl">{{ r.fehler or 0 }}</td></tr>{% else %}<tr><td colspan="7" class="leise">Noch kein Lauf.</td></tr>{% endfor %}
+    </table>
+  </section>
+</div>
+<div class="zwei-spalten vier">
+<section class="karte"><h2>Nach Status</h2><table>{% for s, n in dash.status.items() %}<tr><td>{{ labels.get(s, s) }}</td><td class="zahl">{{ n }}</td></tr>{% endfor %}</table></section>
+<section class="karte"><h2>Nach Kategorie</h2><table>{% for r in dash.je_kategorie %}<tr><td>{{ category_label(r.name) }}</td><td class="zahl">{{ r.n }}</td></tr>{% else %}<tr><td class="leise">noch nichts</td></tr>{% endfor %}</table></section>
+<section class="karte"><h2>Nach Quelle</h2><table>{% for r in dash.je_quelle %}<tr><td>{{ r.name }}</td><td class="zahl">{{ r.n }}</td></tr>{% else %}<tr><td class="leise">noch nichts</td></tr>{% endfor %}</table></section>
+<section class="karte"><h2>Nach Typ</h2><table>{% for r in dash.je_typ %}<tr><td>{{ {'artikel': 'Artikel', 'event': 'Event', 'kino_termine': 'Kinotermine'}.get(r.name, r.name) }}</td><td class="zahl">{{ r.n }}</td></tr>{% endfor %}</table></section>
+</div>
+<section class="karte">
+  <h2>Quellen im Detail</h2>
+  <table class="voll">
+    <tr><th>Quelle</th><th>zuletzt ok</th><th>Treffer</th><th>Fehler</th></tr>
+    {% for q in dash.quellen %}
+    <tr class="{{ 'warn' if q.error_msg }}"><td><i class="punkt {{ 'fehler' if q.error_msg else ('pause' if q.paused_until else 'ok') }}"></i>{{ q.name }}{% if q.paused_until %} <span class="badge">pausiert</span>{% endif %}</td><td>{{ fmt_dt(q.last_ok) }}</td><td class="zahl">{{ q.last_count if q.last_count is not none else '' }}</td><td class="leise">{{ q.error_msg or '' }}</td></tr>
+    {% endfor %}
+  </table>
+</section>
+{% if dash.fehler %}
+<section class="karte"><h2>Fehler</h2><table class="voll">{% for e in dash.fehler %}<tr><td>{{ fmt_dt(e.ts) }}</td><td>{{ e.titel }}</td><td class="leise">{{ e.fehler }}</td></tr>{% endfor %}</table></section>
+{% endif %}
+{% endblock %}

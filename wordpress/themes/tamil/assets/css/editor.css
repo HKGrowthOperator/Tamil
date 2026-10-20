@@ -1,0 +1,22 @@
+/* Editor: gleiche Schrift und Textbausteine wie im Artikel (WordPress setzt .editor-styles-wrapper davor). */
+:root {
+  --nacht: var(--wp--preset--color--nacht, #0E1226); --kumkum: var(--wp--preset--color--kumkum, #C8102E);
+  --manjal: var(--wp--preset--color--manjal, #E8B923); --manjal-tief: var(--wp--preset--color--manjal-tief, #B88E0E);
+  --manjal-hell: var(--wp--preset--color--manjal-hell, #FFF3C7); --feld: var(--wp--preset--color--feld, #F1F0EC);
+  --tinte: var(--wp--preset--color--tinte, #14161F); --nebel: var(--wp--preset--color--nebel, #6B6F7B);
+}
+body { font-family: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif; font-size: 18px; line-height: 1.7; color: var(--tinte); }
+h1, h2, h3, h4 { font-family: Fraunces, Georgia, serif; font-variation-settings: "SOFT" 100, "WONK" 1; font-weight: 600; line-height: 1.12; letter-spacing: -.012em; }
+.editor-post-title__input, .wp-block-post-title { font-family: Fraunces, Georgia, serif; font-size: clamp(30px, 3.8vw, 52px); }
+a { color: var(--kumkum); text-decoration-color: var(--manjal); text-decoration-thickness: 2px; text-underline-offset: 3px; }
+blockquote, .wp-block-quote { border-left: 4px solid var(--manjal); padding-left: 20px; font-family: Fraunces, Georgia, serif; font-style: italic; }
+[lang="ta"] { font-family: "Noto Serif Tamil", "Tamil Sangam MN", Latha, serif; }
+.hinweis-box { background: var(--manjal-hell); border-left: 3px solid var(--manjal-tief); padding: 10px 14px; border-radius: 0 6px 6px 0; }
+.event-box { background: var(--feld); border-left: 4px solid var(--kumkum); border-radius: 0 6px 6px 0; padding: 12px 16px; }
+.event-box p { margin: 0 0 .4em; }
+.rezept-layout { display: grid; gap: 24px; grid-template-columns: 1fr 1.4fr; align-items: start; }
+.zutaten { background: var(--manjal-hell); border-radius: 6px; padding: 16px; }
+.zutaten ul { list-style: none; padding: 0; }
+.schritte { padding-left: 1.2em; }
+.schritte li::marker { color: var(--kumkum); font-weight: 700; }
+.tipp { background: var(--feld); border-radius: 6px; padding: 12px 14px; font-size: 16px; }

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+  <nav class="breadcrumb" aria-label="Brotkrumen"><a href="index.html">Start</a><span>›</span><span>Events</span></nav>
+  <header class="seitenkopf">
+    <h1>Events <span class="ta" lang="ta">{{ kat.events.tamil }}</span></h1>
+    <p class="beschreibung">{{ kat.events.beschreibung }}</p>
+    <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between">
+      <div class="toggle" role="group" aria-label="Ansicht"><button type="button" data-view="liste" aria-pressed="true">Liste</button><button type="button" data-view="monat" aria-pressed="false">Monat</button></div>
+      <div class="chips" data-filter-group="ev" role="group" aria-label="Filter">
+        <button type="button" class="chip" data-filter="alle" aria-pressed="true">Alle</button>
+        <button type="button" class="chip" data-filter="DE" aria-pressed="false">Deutschland</button>
+        <button type="button" class="chip" data-filter="AT" aria-pressed="false">Österreich</button>
+        <button type="button" class="chip" data-filter="CH" aria-pressed="false">Schweiz</button>
+        <button type="button" class="chip" data-filter="kino" aria-pressed="false">Kino</button>
+        <button type="button" class="chip" data-filter="kultur" aria-pressed="false">Kultur</button>
+        <button type="button" class="chip" data-filter="tanz" aria-pressed="false">Tanz</button>
+      </div>
+    </div>
+  </header>
+  <div class="with-sidebar">
+    <div>
+      <div data-view-panel="liste">
+        {% for monat in event_months %}
+        <h2 class="monat-kopf">{{ monat.label }} <span class="n">{{ monat.events|length }} Events</span></h2>
+        <div class="event-liste">{% for e in monat.events %}{{ m.event_card(e) }}{% endfor %}</div>
+        {% endfor %}
+        <p class="leer" data-filter-leer="ev" hidden>Für diesen Filter sind aktuell keine Events eingetragen. <a href="kontakt.html#event-einreichen">Event einreichen</a></p>
+      </div>
+      <div data-view-panel="monat" hidden>
+        <h2 class="monat-kopf">{{ grid.label }} <span class="n">Monatsansicht</span></h2>
+        <table class="raster">
+          <thead><tr>{% for d in ['Mo','Di','Mi','Do','Fr','Sa','So'] %}<th scope="col">{{ d }}</th>{% endfor %}</tr></thead>
+          <tbody>
+          {% for week in grid.weeks %}<tr>
+            {% for c in week %}{% if c %}<td class="{{ 'wochenende' if c.weekend }}"><span class="tag-nr">{{ c.day }}</span>{% for e in c.events[:2] %}<a class="pill {{ e.kategorie }}" href="{{ e.seite }}" title="{{ e.titel }}">{{ e.titel }}</a>{% endfor %}{% if c.events|length > 2 %}<span class="mehr">+{{ c.events|length - 2 }} weitere</span>{% endif %}</td>{% else %}<td class="leer"></td>{% endif %}{% endfor %}
+          </tr>{% endfor %}
+          </tbody>
+        </table>
+        <p class="klein leise" style="margin-top:12px">Rot = Kino, Gold = Kultur, Grün = Tanz. Weitere Monate folgen im Prototyp nicht; im Relaunch blättert die Ansicht.</p>
+      </div>
+      <div class="cta-band" style="margin-top:32px">
+        <h2 class="kicker"><span class="ta" lang="ta">பதிவு</span><span class="de">Event einreichen</span></h2>
+        <h2>Du veranstaltest etwas? Trag dein Event kostenlos ein.</h2>
+        <p>Konzert, Tempelfest, Turnier oder Kinoabend – die Redaktion prüft die Angaben und nimmt das Event in den Kalender und in den Newsletter auf.</p>
+        <div><a class="btn btn-gold" href="kontakt.html#event-einreichen">{{ m.icon('plus', 'ico ico-sm') }} Event einreichen</a></div>
+      </div>
+    </div>
+    <aside class="sidebar">
+      {{ m.ad('sidebar') }}
+      <div class="widget dunkel">
+        <h2 class="kicker"><span class="ta" lang="ta">சினிமா</span><span class="de">Kinotermine</span></h2>
+        <p style="margin:0;font-size:14px;color:#cfcac0">„{{ kino.film }}“ läuft in <strong style="color:#fff">{{ kino_widget.anzahl }} Kinos</strong> in DE, AT und CH.</p>
+        <a class="btn btn-gold btn-sm" href="{{ kino.slug }}.html">Alle Spielorte</a>
+      </div>
+      <div class="widget">
+        <h2 class="kicker"><span class="ta" lang="ta">முக்கியம்</span><span class="de">Top-Themen</span></h2>
+        <ol class="liste">{% for p in sel.top %}<li><span class="nr">{{ '%02d' % loop.index }}</span><a href="{{ p|link }}">{{ p.titel }}</a></li>{% endfor %}</ol>
+      </div>
+    </aside>
+  </div>
+</div>
+{% endblock %}

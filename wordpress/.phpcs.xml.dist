@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<ruleset name="Tamil.de">
+	<description>WordPress-Standard für Theme und Plugins von Tamil.de (deutsche Texte, kurze Array-Syntax nicht erlaubt).</description>
+	<arg name="extensions" value="php"/>
+	<arg value="sp"/>
+	<config name="minimum_wp_version" value="6.6"/>
+	<config name="testVersion" value="8.1-"/>
+	<rule ref="WordPress-Extra">
+		<!-- Dateinamen wie im Theme-Handbuch (page-events.php, template-parts/…), keine class-*-Dateien -->
+		<exclude name="WordPress.Files.FileName"/>
+		<!-- Texte und Kommentare sind deutsch; Satzzeichen-Regeln für Inline-Kommentare greifen hier nicht sinnvoll -->
+		<exclude name="Squiz.Commenting.InlineComment.InvalidEndChar"/>
+		<exclude name="Generic.Commenting.DocComment.MissingShort"/>
+		<exclude name="Squiz.Commenting.FunctionComment.Missing"/>
+		<exclude name="Squiz.Commenting.FunctionComment.MissingParamTag"/>
+		<exclude name="Squiz.Commenting.FileComment.MissingPackageTag"/>
+	</rule>
+	<rule ref="PHPCompatibilityWP"/>
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="tamil"/>
+				<element value="tamil-site"/>
+				<element value="tamil-radar"/>
+			</property>
+		</properties>
+	</rule>
+	<!-- Vorlagen laufen über load_template() bzw. get_template_part() in Funktionsscope; ihre Variablen sind nicht global. -->
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound">
+		<exclude-pattern>/themes/[^/]+/[^/]+\.php$</exclude-pattern>
+		<exclude-pattern>/themes/[^/]+/template-parts/</exclude-pattern>
+	</rule>
+	<rule ref="WordPress.WP.GlobalVariablesOverride.Prohibited">
+		<exclude-pattern>/themes/[^/]+/[^/]+\.php$</exclude-pattern>
+		<exclude-pattern>/themes/[^/]+/template-parts/</exclude-pattern>
+	</rule>
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<properties>
+			<property name="prefixes" type="array">
+				<element value="tamil"/>
+			</property>
+		</properties>
+	</rule>
+</ruleset>

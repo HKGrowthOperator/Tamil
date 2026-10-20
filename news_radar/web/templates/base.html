@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{% block title %}Radar{% endblock %} · Tamil.de</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/static/icon-192.png">
+<link rel="apple-touch-icon" href="/static/icon-192.png">
+<meta name="theme-color" content="#FDF9F5">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="stylesheet" href="/static/app.css">
+</head>
+<body class="{% if not session.user %}ohne-rail{% endif %}">
+{% if session.user %}
+{% set lauf = letzter_lauf() %}
+<aside class="rail">
+  <a class="logo" href="/"><span>tamil<b>.de</b></span><em>Redaktion</em></a>
+  <nav>
+    <a href="/" class="{{ 'aktiv' if request.endpoint == 'ui.feed' }}"><span>Feed</span><span class="count">{{ offen() }}</span></a>
+    <a href="/dashboard" class="{{ 'aktiv' if request.endpoint == 'ui.dashboard' }}"><span>Dashboard</span></a>
+    <a href="/protokoll" class="{{ 'aktiv' if request.endpoint == 'ui.protokoll' }}"><span>Protokoll</span></a>
+  </nav>
+  <div class="status" {% if lauf %}data-lauf="{{ lauf.started_at }}"{% endif %}>
+    <span class="live">Radar läuft</span>
+    <span class="takt">alle 3 Minuten</span>
+    {% if lauf %}<span class="letzter">letzter Lauf {{ fmt_dt(lauf.started_at) }}{% if lauf.entwuerfe %}, {{ lauf.entwuerfe }} neue Entwürfe{% endif %}</span><span class="naechster" data-countdown>nächster in <b>–:––</b></span>{% else %}<span class="letzter">noch kein Lauf protokolliert</span>{% endif %}
+    <span class="shortcuts" title="Tastatur im Feed">J/K wechseln · F freigeben · A ablehnen · ↵ öffnen</span>
+  </div>
+  <form method="post" action="/logout" class="abmelden"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><span class="nutzer">{{ session.user }}</span><button class="leise">Abmelden</button></form>
+</aside>
+{% endif %}
+<main class="cockpit">
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}<div class="meldungen">{% for cat, m in messages %}<div class="meldung {{ cat }}">{{ m|urlize(target='_blank') }}</div>{% endfor %}</div>{% endif %}
+{% endwith %}
+{% block content %}{% endblock %}
+</main>
+<script src="/static/app.js"></script>
+</body>
+</html>

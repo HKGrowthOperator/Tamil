@@ -1,0 +1,803 @@
+{
+ "stand": "2026-10-18T11:10:05+00:00",
+ "lauf": {
+  "id": 3,
+  "started_at": "2026-10-18T10:45:59+00:00",
+  "finished_at": "2026-10-18T10:46:13+00:00",
+  "modus": "warteschlange · ohne KI",
+  "gesammelt": 373,
+  "relevant": 61,
+  "entwuerfe": 25,
+  "verworfen": 0,
+  "veroeffentlicht": 0,
+  "fehler": 0,
+  "notiz": null
+ },
+ "quellen": [
+  {
+   "name": "CineStar",
+   "last_ok": "2026-10-18T10:46:08+00:00",
+   "last_count": 2
+  },
+  {
+   "name": "Cineplexx AT",
+   "last_ok": "2026-10-18T10:46:03+00:00",
+   "last_count": 1
+  },
+  {
+   "name": "Eventfrog CH",
+   "last_ok": "2026-10-18T09:27:39+00:00",
+   "last_count": 48
+  },
+  {
+   "name": "Eventfrog DE",
+   "last_ok": "2026-10-18T09:27:39+00:00",
+   "last_count": 48
+  },
+  {
+   "name": "GNews · Tamil",
+   "last_ok": "2026-10-18T10:46:02+00:00",
+   "last_count": 0
+  },
+  {
+   "name": "Google News AT · Sri Lanka",
+   "last_ok": "2026-10-18T10:46:00+00:00",
+   "last_count": 33
+  },
+  {
+   "name": "Google News CH · Tamilen",
+   "last_ok": "2026-10-18T10:46:00+00:00",
+   "last_count": 2
+  },
+  {
+   "name": "Google News DACH",
+   "last_ok": "2026-10-18T10:46:06+00:00",
+   "last_count": 8
+  },
+  {
+   "name": "Google News EN · Kollywood",
+   "last_ok": "2026-10-18T10:46:02+00:00",
+   "last_count": 58
+  },
+  {
+   "name": "Google News · Tempel & Kino",
+   "last_ok": "2026-10-18T10:46:00+00:00",
+   "last_count": 0
+  },
+  {
+   "name": "Haus der Religionen Bern",
+   "last_ok": "2026-10-18T09:27:39+00:00",
+   "last_count": 10
+  },
+  {
+   "name": "Hindu-Tempel Hamm",
+   "last_ok": "2026-10-18T09:27:39+00:00",
+   "last_count": 0
+  },
+  {
+   "name": "Lankasri",
+   "last_ok": "2026-10-18T10:46:02+00:00",
+   "last_count": 9
+  },
+  {
+   "name": "NewsAPI · Tamil DACH",
+   "last_ok": "2026-10-18T10:46:02+00:00",
+   "last_count": 0
+  },
+  {
+   "name": "ORF",
+   "last_ok": "2026-10-18T10:46:03+00:00",
+   "last_count": 29
+  },
+  {
+   "name": "Ruhr Nachrichten",
+   "last_ok": "2026-10-18T10:46:03+00:00",
+   "last_count": 12
+  },
+  {
+   "name": "SRF Schweiz",
+   "last_ok": "2026-10-18T10:46:03+00:00",
+   "last_count": 60
+  },
+  {
+   "name": "Swiss Tamil Info · Events",
+   "last_ok": "2026-10-18T10:46:02+00:00",
+   "last_count": 10
+  },
+  {
+   "name": "Swiss Tamil Info · Schweiz",
+   "last_ok": "2026-10-18T10:46:01+00:00",
+   "last_count": 10
+  },
+  {
+   "name": "SwissNews7",
+   "last_ok": "2026-10-18T10:46:01+00:00",
+   "last_count": 10
+  },
+  {
+   "name": "SwissTamilMedia · Community",
+   "last_ok": "2026-10-18T10:46:00+00:00",
+   "last_count": 10
+  },
+  {
+   "name": "SwissTamilMedia · Events",
+   "last_ok": "2026-10-18T10:46:00+00:00",
+   "last_count": 10
+  },
+  {
+   "name": "Tamil Guardian",
+   "last_ok": "2026-10-18T10:46:01+00:00",
+   "last_count": 9
+  },
+  {
+   "name": "Tamilschule Schweiz (TESS)",
+   "last_ok": "2026-10-18T09:27:39+00:00",
+   "last_count": 10
+  },
+  {
+   "name": "The Hindu · Tamil Nadu",
+   "last_ok": "2026-10-18T10:46:02+00:00",
+   "last_count": 60
+  },
+  {
+   "name": "WA Hamm",
+   "last_ok": "2026-10-18T10:46:03+00:00",
+   "last_count": 40
+  },
+  {
+   "name": "kinoheld",
+   "last_ok": "2026-10-18T10:46:02+00:00",
+   "last_count": 3
+  },
+  {
+   "name": "tamilswiss.ch Events",
+   "last_ok": "2026-10-18T09:27:39+00:00",
+   "last_count": 3
+  }
+ ],
+ "entwuerfe": [
+  {
+   "id": 36,
+   "uid": "29aaa775814573f68030805ed911908967638d99",
+   "typ": "artikel",
+   "status": "bearbeitet",
+   "quelle_name": "SwissTamilMedia · Events",
+   "quelle_url": "https://swisstamilmedia.com/66887/swiss-tamil-events/",
+   "quelle_datum": "2026-10-18T09:27+00:00",
+   "quelle_sprache": "ta",
+   "weitere_quellen": [],
+   "relevanz": 7,
+   "begruendung": "Protest der tamilischen Community in Bern, Nachricht mit Diaspora-Bezug",
+   "dach_bezug": true,
+   "ort": "Bern",
+   "kategorie": "news",
+   "titel": "Protest in Bern gegen den Abriss der Thileepan-Statue in Jaffna",
+   "teaser": "Tamilinnen und Tamilen demonstrierten vor dem Berner Hauptbahnhof, nachdem die Polizei in Sri Lanka die Statue des 1987 bei einem Hungerstreik gestorbenen Thileepan entfernt hatte.",
+   "inhalt_html": "<p>Vor dem Hauptbahnhof in Bern haben Tamilinnen und Tamilen am Freitag, 2. Oktober, gegen die Entfernung der Thileepan-Statue in Jaffna protestiert. Laut dem Bericht von SwissTamilMedia hatte die Polizei Sri Lankas die Statue im Stadtteil Nallur abgebaut; die Demonstrierenden fordern, dass sie an derselben Stelle wieder aufgestellt wird.</p><p>Thileepan, ein Mitglied der tamilischen Befreiungsbewegung LTTE, starb 1987 nach einem Hungerstreik in Nallur und wird von vielen Tamil:innen bis heute als Symbol des gewaltlosen Widerstands verehrt. Sein Gedenktag im September wird auch in der Diaspora begangen.</p><p>Die Teilnehmenden in Bern trugen Transparente auf Deutsch und warfen den Behörden in Sri Lanka vor, das Erinnern der Tamil:innen gezielt zu unterbinden. Sie verwiesen darauf, dass gegen aus ihrer Sicht illegal errichtete buddhistische Tempel im tamilischen Norden nicht vorgegangen werde. Das Recht, der eigenen Geschichte zu gedenken, sei ein Grundrecht, erklärten sie. Die Kundgebung endete mit dem Satz: „Erinnerungen lassen sich nicht auslöschen, das Recht auf Gedenken nicht verweigern.“</p><p>Eine Stellungnahme der sri-lankischen Behörden zur Entfernung der Statue lag dem Bericht nicht bei.</p><p class=\"quelle\">Quelle: SwissTamilMedia</p>",
+   "schlagworte": [
+    "Bern",
+    "Jaffna",
+    "Thileepan",
+    "Sri Lanka",
+    "Protest",
+    "Schweiz"
+   ],
+   "seo_titel": "Bern: Protest gegen Abriss der Thileepan-Statue in Jaffna",
+   "meta_beschreibung": "Tamilinnen und Tamilen demonstrierten in Bern gegen die Entfernung der Thileepan-Statue in Nallur, Jaffna. Was die Teilnehmenden fordern.",
+   "bild_datei": "29aaa7758145-protest-in-bern-gegen-den-abriss-der-thileepan-sta-a1.jpg",
+   "bild_credit": "Grafik: Tamil.de",
+   "bild_alt": "Bahnhofplatz in Bern am Abend",
+   "bild_suchbegriff": "Bern railway station square evening",
+   "bild_origin": "karte",
+   "event_datum": "",
+   "event_ort": "",
+   "ticket_url": "",
+   "hinweise": [],
+   "rewrite_count": 1,
+   "created_at": "2026-10-18T09:27:49+00:00",
+   "updated_at": "2026-10-18T11:01:02+00:00",
+   "freigegeben_at": null,
+   "veroeffentlicht_at": null,
+   "quelle_bild": "",
+   "bild_thema": "bahnhof-ankunft",
+   "bild_prompt": "Wide evening view of the square in front of a Swiss main railway station with tram tracks and a glass canopy, a small crowd standing together seen from behind holding blank banners, overcast autumn light, no readable text or flags",
+   "fakten": {},
+   "bild": {
+    "datei": "r36.jpg",
+    "origin": "quelle",
+    "credit": "Foto: SwissTamilMedia · Events",
+    "alt": "Bahnhofplatz in Bern am Abend",
+    "w": 1024,
+    "h": 576,
+    "balken": false
+   }
+  },
+  {
+   "id": 34,
+   "uid": "fba5f9604d691ac11cb0562feb04b99ce43abaaf",
+   "typ": "event",
+   "status": "bearbeitet",
+   "quelle_name": "Eventfrog DE",
+   "quelle_url": "https://eventfrog.de/de/p/kino/kino/ramayana-rise-of-a-legend-3d-tamil-aalen-7516804629994146317.html",
+   "quelle_datum": "2026-10-18T09:27+00:00",
+   "quelle_sprache": "de",
+   "weitere_quellen": [
+    {
+     "name": "Eventfrog DE",
+     "url": "https://eventfrog.de/de/p/kino/kino/ramayana-rise-of-a-legend-3d-tamil-aalen-7516805323425902675.html"
+    }
+   ],
+   "relevanz": 8,
+   "begruendung": "Sondervorstellung auf Tamil in Baden-Württemberg mit Datum und Tickets",
+   "dach_bezug": true,
+   "ort": "Aalen",
+   "kategorie": "kino",
+   "titel": "„Ramayana: Rise of a Legend“ in 3D auf Tamil: Sondervorstellung in Aalen am 5. November",
+   "teaser": "Das indische Nationalepos als Kinofilm: Am Donnerstag, 5. November, zeigt der Kinopark Aalen die tamilische Fassung von „Ramayana: Rise of a Legend“ in 3D. Tickets gibt es über Eventfrog.",
+   "inhalt_html": "<p>Das Ramayana kommt als großes Kino nach Baden-Württemberg: Am Donnerstag, 5. November, läuft im Kinopark Aalen „Ramayana: Rise of a Legend“ in 3D und in der tamilischen Fassung, als Sondervorstellung mit Tickets über Eventfrog.</p><p>Der Film erzählt den ersten Teil des Epos: Rama (Ranbir Kapoor), ältester Sohn von König Dasharatha von Ayodhya, wird der Thron verwehrt, stattdessen muss er für 14 Jahre in die Verbannung. Mit seiner Frau Sita (Sai Pallavi) und seinem Bruder Lakshmana (Ravi Dubey) zieht er in den Wald, wo Sita vom zehnköpfigen Dämonenkönig Ravana (Yash) entführt wird. Rama macht sich auf die Reise, um sie zu befreien, unterstützt vom Affengott Hanuman (Sunny Deol) und göttlichen Armeen.</p><p>Es ist der erste von zwei Teilen der Verfilmung. Für Familien aus der Region Ostwürttemberg ist die Vorstellung eine seltene Gelegenheit, die Geschichte, die viele aus Tempel und Erzählungen kennen, auf Tamil und auf der großen Leinwand zu sehen. Datum, Ort und Ticketlink stehen in der Event-Box.</p><p class=\"quelle\">Quelle: Eventfrog</p>",
+   "schlagworte": [
+    "Ramayana",
+    "Aalen",
+    "3D",
+    "Kino",
+    "Ranbir Kapoor",
+    "Sai Pallavi"
+   ],
+   "seo_titel": "Ramayana: Rise of a Legend auf Tamil in 3D in Aalen",
+   "meta_beschreibung": "Am 5. November zeigt der Kinopark Aalen „Ramayana: Rise of a Legend“ in 3D auf Tamil. Handlung, Besetzung und Tickets.",
+   "bild_datei": "fba5f9604d69-ramayana-rise-of-a-legend-in-3d-auf-tamil-sondervo-a1.jpg",
+   "bild_credit": "Grafik: Tamil.de",
+   "bild_alt": "Kinopublikum mit 3D-Brillen vor der Leinwand",
+   "bild_suchbegriff": "3D cinema glasses audience",
+   "bild_origin": "karte",
+   "event_datum": "2026-11-05",
+   "event_ort": "Kinopark Aalen, Aalen",
+   "ticket_url": "https://eventfrog.de/de/p/kino/kino/ramayana-rise-of-a-legend-3d-tamil-aalen-7516804629994146317.html",
+   "hinweise": [],
+   "rewrite_count": 1,
+   "created_at": "2026-10-18T09:27:49+00:00",
+   "updated_at": "2026-10-18T11:01:02+00:00",
+   "freigegeben_at": null,
+   "veroeffentlicht_at": null,
+   "quelle_bild": "",
+   "bild_thema": "kino-abend",
+   "bild_prompt": "Cinema audience wearing 3D glasses seen from behind, faces hidden, the screen a blur of golden and deep blue epic light, dust in the projector beam, no readable text",
+   "fakten": {
+    "event_datum": "2026-11-05",
+    "event_ort": "Kinopark Aalen, Aalen (DE)"
+   },
+   "bild": {
+    "datei": "r34.jpg",
+    "origin": "quelle",
+    "credit": "Foto: Eventfrog DE",
+    "alt": "Kinopublikum mit 3D-Brillen vor der Leinwand",
+    "w": 784,
+    "h": 479,
+    "balken": true
+   }
+  },
+  {
+   "id": 33,
+   "uid": "343573c7a601b53ddd7c23d938cd9b6cd3cfe3f8",
+   "typ": "event",
+   "status": "bearbeitet",
+   "quelle_name": "Eventfrog CH",
+   "quelle_url": "https://eventfrog.ch/de/p/diverses/vaango-pazhagalam-2-0-erlebe-die-tamilische-kultur-basel-7459312345824687926.html",
+   "quelle_datum": "2026-10-18T09:27+00:00",
+   "quelle_sprache": "de",
+   "weitere_quellen": [],
+   "relevanz": 9,
+   "begruendung": "Offenes Kulturfest in Basel am 24. Oktober mit Programm und Anmeldung",
+   "dach_bezug": true,
+   "ort": "Basel",
+   "kategorie": "events",
+   "titel": "„Vaango Pazhagalam 2.0“: Basel lädt am 24. Oktober zum Mitmach-Fest der tamilischen Kultur",
+   "teaser": "Workshops, Kulturstände, Bühnenprogramm und tamilisches Essen: Am Samstag, 24. Oktober, öffnet die Primarschule Lysbüchel in Basel ihre Türen für alle, die die tamilische Kultur kennenlernen wollen.",
+   "inhalt_html": "<p>„Vaango Pazhagalam“ heißt übersetzt „Kommt, lernen wir uns kennen“, und genau darum geht es am Samstag, 24. Oktober, in Basel: Die zweite Ausgabe des Kulturfests lädt Menschen aller Nationalitäten und Altersgruppen ein, die tamilische Kultur selbst auszuprobieren.</p><p>Auf dem Programm stehen interaktive Workshops, Kulturstände, Bühnenbeiträge, traditionelle Spiele und kreative Aktivitäten. Im Mittelpunkt steht der Austausch: mitmachen statt zuschauen, so beschreiben es die Veranstalter. Für den Hunger zwischendurch gibt es tamilische Spezialitäten.</p><p>Veranstaltungsort ist die Primarschule Lysbüchel am Lysbüchelplatz 1 im Basler St. Johann-Quartier. Infos und Anmeldung laufen über Eventfrog; den Link findet ihr in der Event-Box. Wer aus Deutschland kommt: Basel liegt direkt an der Grenze, mit dem Zug seid ihr von Freiburg in unter einer Stunde da.</p><p class=\"quelle\">Quelle: Eventfrog, tamilswiss.ch</p>",
+   "schlagworte": [
+    "Basel",
+    "Kulturfest",
+    "Vaango Pazhagalam",
+    "Workshops",
+    "Schweiz"
+   ],
+   "seo_titel": "Vaango Pazhagalam 2.0: Tamilisches Kulturfest in Basel",
+   "meta_beschreibung": "Am 24. Oktober lädt „Vaango Pazhagalam 2.0“ in Basel zu Workshops, Kulturständen, Bühnenprogramm und tamilischem Essen – offen für alle.",
+   "bild_datei": "343573c7a601-vaango-pazhagalam-2-0-basel-laedt-am-24-oktober-zu-a1.jpg",
+   "bild_credit": "Grafik: Tamil.de",
+   "bild_alt": "Festhalle mit Kulturständen und Besuchern",
+   "bild_suchbegriff": "community festival workshop hall",
+   "bild_origin": "karte",
+   "event_datum": "2026-10-24",
+   "event_ort": "Primarschule Lysbüchel, Lysbüchelplatz 1, 4056 Basel",
+   "ticket_url": "https://eventfrog.ch/de/p/diverses/vaango-pazhagalam-2-0-erlebe-die-tamilische-kultur-basel-745931234582468792",
+   "hinweise": [],
+   "rewrite_count": 1,
+   "created_at": "2026-10-18T09:27:49+00:00",
+   "updated_at": "2026-10-18T11:01:02+00:00",
+   "freigegeben_at": null,
+   "veroeffentlicht_at": null,
+   "quelle_bild": "",
+   "bild_thema": "gemeindefest",
+   "bild_prompt": "A school gym hall in Switzerland set up for a community culture fair: colorful cloth-covered stalls, marigold garlands, a small stage with warm lights, families seen from behind browsing, daylight from high windows, no readable text",
+   "fakten": {
+    "event_datum": "2026-10-24",
+    "event_ort": "4056, Basel (CH)"
+   },
+   "bild": {
+    "datei": "r33.jpg",
+    "origin": "quelle",
+    "credit": "Foto: Eventfrog CH",
+    "alt": "Festhalle mit Kulturständen und Besuchern",
+    "w": 784,
+    "h": 479,
+    "balken": true
+   }
+  },
+  {
+   "id": 29,
+   "uid": "kino:7f89ed74e4c64bd085c0d53a960a79ded3b4f4f3",
+   "typ": "kino_termine",
+   "status": "bearbeitet",
+   "quelle_name": "Kinoprogramm",
+   "quelle_url": "https://www.kinoheld.de/",
+   "quelle_datum": "2026-10-18T09:27+00:00",
+   "quelle_sprache": "de",
+   "weitere_quellen": [],
+   "relevanz": 9,
+   "begruendung": "Kinowoche im DACH-Raum mit 16 Spielorten, dazu Schweizer Vorstellungen",
+   "dach_bezug": true,
+   "ort": "Deutschland",
+   "kategorie": "kino",
+   "titel": "„Jailer 2“: Rajinikanths Fortsetzung läuft auch in der neuen Woche in deutschen Kinos",
+   "teaser": "Ab Montag zeigen 16 Kinos zwischen Berlin und Erfurt „Jailer 2“ im tamilischen Original. In der Schweiz laufen Vorstellungen in Kloten und Weinfelden.",
+   "inhalt_html": "<p>Der große Kinostart der Saison geht in die zweite Woche: „Jailer 2“ mit Superstar Rajinikanth läuft vom 19. bis 25. Oktober weiter in deutschen Kinos, im tamilischen Original. Die Spielorte und Termine findet ihr unter diesem Text.</p><p>Regie führt wie beim ersten Teil Nelson Dilipkumar, produziert hat Sun Pictures. Der Film startete am Donnerstag, 15. Oktober, und spielte nach Angaben des Branchendienstes Sacnilk schon am ersten Tag rund 125 Crore Rupien weltweit ein, umgerechnet etwa 13 Millionen Euro. Fast die Hälfte davon kam aus dem Ausland, also auch aus Kinos wie euren.</p><p>Auch in der Schweiz könnt ihr den Film sehen: Das Kino Claudia in Kloten bei Zürich und das Liberty Cinema in Weinfelden im Thurgau zeigen „Jailer 2“ auf Tamil, die Tickets gibt es über Eventfrog. In Saarbrücken laufen in den UT-Kinos Vorstellungen mit englischen Untertiteln.</p><p>Die Termine ändern sich von Woche zu Woche. Schaut vor dem Kinobesuch noch einmal auf die Seite eures Kinos und reserviert lieber vorab, wenn ihr am Wochenende gehen wollt.</p><p class=\"quelle\">Quelle: Kinoprogramme von CineStar und kinoheld, Eventfrog, Sacnilk</p>",
+   "schlagworte": [
+    "Jailer 2",
+    "Rajinikanth",
+    "Kinotermine",
+    "Kloten",
+    "Weinfelden",
+    "Saarbrücken"
+   ],
+   "seo_titel": "Jailer 2: Kinotermine in Deutschland und der Schweiz",
+   "meta_beschreibung": "„Jailer 2“ mit Rajinikanth läuft vom 19. bis 25. Oktober in 16 deutschen Kinos, dazu Kloten und Weinfelden. Alle Spielorte und Termine.",
+   "bild_datei": "kino:7f89ed7-jailer-2-rajinikanths-fortsetzung-laeuft-auch-in-d-a1.jpg",
+   "bild_credit": "Grafik: Tamil.de",
+   "bild_alt": "Kinosaal mit leuchtender Leinwand und Publikum",
+   "bild_suchbegriff": "cinema audience glowing screen",
+   "bild_origin": "karte",
+   "event_datum": "",
+   "event_ort": "",
+   "ticket_url": "",
+   "hinweise": [],
+   "rewrite_count": 1,
+   "created_at": "2026-10-18T09:27:49+00:00",
+   "updated_at": "2026-10-18T11:01:02+00:00",
+   "freigegeben_at": null,
+   "veroeffentlicht_at": null,
+   "quelle_bild": "",
+   "bild_thema": "kino-saal",
+   "bild_prompt": "Red-seated cinema auditorium at night, the big screen glowing warm amber with an abstract blur, a few viewers seen from behind in silhouette, light haze in the projector beam, no readable text anywhere",
+   "fakten": {
+    "film": "Jailer 2",
+    "woche": "2026-W43",
+    "kinos": [
+     {
+      "kino": "CineStar Berlin - Hellersdorf",
+      "stadt": "Berlin",
+      "land": "DE",
+      "termine": [],
+      "url": "https://www.cinestar.de/kino-berlin-hellersdorf/veranstaltung-jailer-2-tamil-omeu",
+      "von": "2026-10-18"
+     },
+     {
+      "kino": "Bonn Sternlichtspiele",
+      "stadt": "Bonn",
+      "land": "DE",
+      "termine": [],
+      "url": "https://www.cinestar.de/kino-bonn-sternlichtspiele/veranstaltung-jailer-2-tamil-omeu",
+      "von": "2026-10-18"
+     },
+     {
+      "kino": "CineStar Kristall-Palast - Bremen",
+      "stadt": "Bremen",
+      "land": "DE",
+      "termine": [],
+      "url": "https://www.cinestar.de/kino-bremen-kristall-palast/veranstaltung-jailer-2-tamil-omeu",
+      "von": "2026-10-18"
+     },
+     {
+      "kino": "CineStar Dortmund",
+      "stadt": "Dortmund",
+      "land": "DE",
+      "termine": [],
+      "url": "https://www.cinestar.de/kino-dortmund/veranstaltung-jailer-2-tamil-omeu",
+      "von": "2026-10-18"
+     },
+     {
+      "kino": "CineStar Düsseldorf",
+      "stadt": "Düsseldorf",
+      "land": "DE",
+      "termine": [],
+      "url": "https://www.cinestar.de/kino-duesseldorf/veranstaltung-jailer-2-tamil-omeu",
+      "von": "2026-10-18"
+     },
+     {
+      "kino": "CineStar Emden",
+      "stadt": "Emden",
+      "land": "DE",
+      "termine": [
+       "2026-10-25T19:30+01:00"
+      ],
+      "url": "https://www.cinestar.de/kino-emden/veranstaltung-jailer-2-tamil-omeu"
+     },
+     {
+      "kino": "CineStar Erfurt",
+      "stadt": "Erfurt",
+      "land": "DE",
+      "termine": [],
+      "url": "https://www.cinestar.de/kino-erfurt/veranstaltung-jailer-2-tamil-omeu",
+      "von": "2026-10-18"
+     },
+     {
+      "kino": "Savoy Kino",
+      "stadt": "Hamburg",
+      "land": "DE",
+      "termine": [
+       "2026-10-24T15:00+02:00"
+      ],
+      "url": "https://www.kinoheld.de/"
+     },
+     {
+      "kino": "CineStar Jena",
+      "stadt": "Jena",
+      "land": "DE",
+      "termine": [],
+      "url": "https://www.cinestar.de/kino-jena/veranstaltung-jailer-2-tamil-omeu",
+      "von": "2026-10-18"
+     },
+     {
+      "kino": "Filmpalast am ZKM - Karlsruhe",
+      "stadt": "Karlsruhe",
+      "land": "DE",
+      "termine": [],
+      "url": "https://www.cinestar.de/kino-karlsruhe-filmpalast-am-zkm/veranstaltung-jailer-2-tamil-omeu",
+      "von": "2026-10-18"
+     },
+     {
+      "kino": "CineStar Konstanz",
+      "stadt": "Konstanz",
+      "land": "DE",
+      "termine": [
+       "2026-10-25T19:30+01:00"
+      ],
+      "url": "https://www.cinestar.de/kino-konstanz/veranstaltung-jailer-2-tamil-omeu"
+     },
+     {
+      "kino": "CineStar Mainz",
+      "stadt": "Mainz",
+      "land": "DE",
+      "termine": [],
+      "url": "https://www.cinestar.de/kino-mainz/veranstaltung-jailer-2-tamil-omeu",
+      "von": "2026-10-18"
+     },
+     {
+      "kino": "CineStar Oberhausen",
+      "stadt": "Oberhausen",
+      "land": "DE",
+      "termine": [],
+      "url": "https://www.cinestar.de/kino-oberhausen-filmpalast-im-centro/veranstaltung-jailer-2-tamil-omeu",
+      "von": "2026-10-18"
+     },
+     {
+      "kino": "CineStar Rostock (Lütten Klein)",
+      "stadt": "Rostock",
+      "land": "DE",
+      "termine": [],
+      "url": "https://www.cinestar.de/kino-rostock/veranstaltung-jailer-2-tamil-omeu",
+      "von": "2026-10-18"
+     },
+     {
+      "kino": "CineStar Saarbrücken",
+      "stadt": "Saarbrücken",
+      "land": "DE",
+      "termine": [],
+      "url": "https://www.cinestar.de/kino-saarbruecken/veranstaltung-jailer-2-tamil-omeu",
+      "von": "2026-10-18"
+     },
+     {
+      "kino": "CineStar Villingen-Schwenningen",
+      "stadt": "Villingen-Schwenningen",
+      "land": "DE",
+      "termine": [],
+      "url": "https://www.cinestar.de/kino-villingen-schwenningen/veranstaltung-jailer-2-tamil-omeu",
+      "von": "2026-10-18"
+     }
+    ]
+   },
+   "bild": {
+    "datei": "r29.jpg",
+    "origin": "quelle",
+    "credit": "Foto: Kinoprogramm",
+    "alt": "Kinosaal mit leuchtender Leinwand und Publikum",
+    "w": 1200,
+    "h": 369,
+    "balken": false
+   }
+  },
+  {
+   "id": 3,
+   "uid": "2794257c425db0134aed4c5418fc5a01e43dfebc",
+   "typ": "artikel",
+   "status": "bearbeitet",
+   "quelle_name": "SwissTamilMedia · Events",
+   "quelle_url": "https://swisstamilmedia.com/67071/swiss-tamil-events/",
+   "quelle_datum": "2026-10-18T09:25+00:00",
+   "quelle_sprache": "ta",
+   "weitere_quellen": [],
+   "relevanz": 7,
+   "begruendung": "Bericht von einem Community-Konzert in der Schweiz mit lokalen Talenten",
+   "dach_bezug": true,
+   "ort": "Aarburg",
+   "kategorie": "entertainment",
+   "titel": "„Tamil Dream Night 2026“ in Aarburg: Super-Singer-Stars und Schweizer Talente",
+   "teaser": "Sridhar Sena, Haripriya und Pooja Venkat sangen am 11. Oktober im MZA Paradiesli, daneben Thanika, Shrila und Shrijan Sivathas aus der Schweiz. Bandleader Karthik Devaraj lobte die lokalen Talente.",
+   "inhalt_html": "<p>Volle Halle in Aarburg: Die „Tamil Dream Night 2026“ hat am Samstag, 11. Oktober, im MZA Paradiesli im Kanton Aargau viele tamilische Musikfans zusammengebracht. Veranstalter AGP Presents hatte den Abend nach eigenen Angaben in kurzer Zeit auf die Beine gestellt.</p><p>Auf der Bühne standen die aus der Castingshow „Super Singer“ bekannten Sängerinnen und Sänger Sridhar Sena, Haripriya und Pooja Venkat, dazu drei Stimmen aus der Schweiz: Thanika, Shrila Sivathas und Shrijan Sivathas. Die Band um Karthik Devaraj spielte mit Vetri und Nikhil live, das Programm reichte von Retro-Hits über Melodien bis zu schnellen Beat-Nummern. Durch den Abend führten Nigitha Reegan und Kavitharan.</p><p>Zum Auftakt gab es eine Schweigeminute für die Toten des Bürgerkriegs in Sri Lanka, danach eröffnete Ashmika Rajanikanth den Abend mit einem Begrüßungstanz. Besonders freuten sich die Veranstalter über das Lob von Karthik Devaraj für die Schweizer Nachwuchssängerinnen und -sänger. Dass viele Gäste auch nach dem letzten Lied sitzen blieben, werteten sie als bestes Zeichen für die Stimmung.</p><p>Für den Ton sorgte SS Sound Swiss, Medienpartner war SwissTamilMedia.</p><p class=\"quelle\">Quelle: SwissTamilMedia</p>",
+   "schlagworte": [
+    "Aarburg",
+    "Konzert",
+    "Super Singer",
+    "Karthik Devaraj",
+    "Schweiz"
+   ],
+   "seo_titel": "Tamil Dream Night 2026 in Aarburg: der Konzertabend",
+   "meta_beschreibung": "Super-Singer-Stars und Schweizer Talente bei der „Tamil Dream Night 2026“ in Aarburg: Wer sang, wer moderierte, wie der Abend lief.",
+   "bild_datei": "2794257c425d-tamil-dream-night-2026-in-aarburg-super-singer-sta-a1.jpg",
+   "bild_credit": "Grafik: Tamil.de",
+   "bild_alt": "Konzertbühne mit buntem Licht und Publikum",
+   "bild_suchbegriff": "concert stage crowd colorful lights",
+   "bild_origin": "karte",
+   "event_datum": "",
+   "event_ort": "",
+   "ticket_url": "",
+   "hinweise": [],
+   "rewrite_count": 1,
+   "created_at": "2026-10-18T09:25:47+00:00",
+   "updated_at": "2026-10-18T11:01:02+00:00",
+   "freigegeben_at": null,
+   "veroeffentlicht_at": null,
+   "quelle_bild": "",
+   "bild_thema": "konzert-buehne",
+   "bild_prompt": "Mid-sized concert hall seen from the back of the crowd, hands raised, stage bathed in purple and gold light with a live band in silhouette, confetti in the air, no readable screens or text",
+   "fakten": {},
+   "bild": {
+    "datei": "r3.jpg",
+    "origin": "quelle",
+    "credit": "Foto: SwissTamilMedia · Events",
+    "alt": "Konzertbühne mit buntem Licht und Publikum",
+    "w": 1024,
+    "h": 768,
+    "balken": false
+   }
+  },
+  {
+   "id": 64,
+   "uid": "1e7be2ff824a8aa2f31ef38f2c4d54eac93d7739",
+   "typ": "artikel",
+   "status": "bearbeitet",
+   "quelle_name": "The Hindu (via Google News)",
+   "quelle_url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxNeXloeDBEdlRfQXJmYXotRE1DLVdyUkpCMGFjVjNhcTNhaWp1a0h1QVlrVVBjb2dVVFdlc1FReGlfMzZEZnVjS0RuS2RMWVdYY3BXMTlGZlNERGxSTEMtVU9vaW9SczB0U2ZHMG04b0JxSTI3Y212OFFOcVUxODNLZ215MFowckd0dm5BUGlYbzNWa0lfZFd2akRVTkVZV3FLWVNhdE9nVVhXemdZRXFwT9IBtwFBVV95cUxOeTg5R1dtdGZYQnVfSVZuS0dSc3puYjFROTFlLWpUclg5RkozaUVZLW5ZbVhyaXp6YkN4UlhkZDZVMzBPZEN5aHBzdUhUaTJNdnQyckY1cUljMWc5ZVRPY05HYkZlRWUtTFp1WlhBcDdVZ2NUSmNTTDcwQmdSampHQVVBZ3RjSVluUEMteGx6UmlVNGNqU1VXdFNLa2toWDV6RWY3eklIbGNsSDhWQ0ktek1rbHFhRE0?oc=5",
+   "quelle_datum": "2026-10-17T11:35+00:00",
+   "quelle_sprache": "en",
+   "weitere_quellen": [],
+   "relevanz": 7,
+   "begruendung": "Tod einer prägenden Figur des tamilischen Kinos, Trauer in der ganzen Diaspora",
+   "dach_bezug": false,
+   "ort": "",
+   "kategorie": "entertainment",
+   "titel": "Komponist Deva ist tot: Die Musik von „Baasha“ und Rajinikanths Auftrittsthema",
+   "teaser": "Der „Thenisai Thendral“ starb am Samstag in Chennai im Alter von 75 Jahren. Rajinikanth, Kamal Haasan und Ministerpräsident Vijay nahmen Abschied.",
+   "inhalt_html": "<p>Das tamilische Kino trauert um einen seiner prägendsten Komponisten: Deva ist am Samstag, 17. Oktober, in Chennai gestorben. Er wurde 75 Jahre alt. Nach übereinstimmenden Berichten erlitt er in einem Krankenhaus im Stadtteil Kodambakkam einen Herzstillstand.</p><p>Devanesan Chokkalingam, 1950 in Mylapore geboren, schrieb die Musik zu mehr als 400 Filmen auf Tamil, Telugu, Kannada und Malayalam. Den Ehrentitel „Thenisai Thendral“, die Brise der süßen Musik, gab ihm 1985 der große M. S. Viswanathan. Wer in den Neunzigern mit tamilischem Kino aufgewachsen ist, kennt seine Melodien: „Annamalai“ (1992), „Baasha“ (1995), „Aasai“, „Kadhal Kottai“, „Vaalee“ und „Kushi“ tragen seine Handschrift. Das Auftrittsthema, mit dem Rajinikanth bis heute auf der Leinwand erscheint, stammt von ihm.</p><h2>Er brachte Gaana ins Kino</h2><p>Deva gilt als derjenige, der den Gaana-Stil aus den Straßen von Chennai in den Mainstream-Film holte, mit schnellen Rhythmen und Texten aus dem Alltag. Der Bundesstaat Tamil Nadu zeichnete ihn 1990 und 1995 als besten Musikdirektor aus, 1992 erhielt er den Kalaimamani-Preis. Sein Sohn Srikanth Deva ist ebenfalls Komponist, seine Brüder bildeten das Duo Sabesh–Murali.</p><p>Rajinikanth kam am Samstag persönlich in das Haus der Familie im Stadtteil T. Nagar, wo der Leichnam aufgebahrt wurde. Kamal Haasan, Ministerpräsident Vijay, der frühere Ministerpräsident M. K. Stalin und Schauspieler Vijay Sethupathi sprachen der Familie ihr Beileid aus; Vijay nannte den Tod einen unersetzlichen Verlust für das tamilische Kino.</p><p class=\"quelle\">Quelle: The Hindu, Outlook India, ANI</p>",
+   "schlagworte": [
+    "Deva",
+    "Kollywood",
+    "Filmmusik",
+    "Rajinikanth",
+    "Chennai"
+   ],
+   "seo_titel": "Komponist Deva gestorben: Abschied vom Thenisai Thendral",
+   "meta_beschreibung": "Der tamilische Filmkomponist Deva („Baasha“, „Annamalai“) ist mit 75 Jahren in Chennai gestorben. Rajinikanth und Ministerpräsident Vijay nahmen Abschied.",
+   "bild_datei": "1e7be2ff824a-komponist-deva-ist-tot-die-musik-von-baasha-und-ra-a1.jpg",
+   "bild_credit": "Grafik: Tamil.de",
+   "bild_alt": "Leeres Musikstudio mit Keyboard und Mikrofon im warmen Licht",
+   "bild_suchbegriff": "music studio keyboard microphone",
+   "bild_origin": "karte",
+   "event_datum": "",
+   "event_ort": "",
+   "ticket_url": "",
+   "hinweise": [],
+   "rewrite_count": 1,
+   "created_at": "2026-10-18T10:46:12+00:00",
+   "updated_at": "2026-10-18T11:01:02+00:00",
+   "freigegeben_at": null,
+   "veroeffentlicht_at": null,
+   "quelle_bild": "",
+   "bild_thema": "musik-studio",
+   "bild_prompt": "Quiet recording studio at dusk, a vintage keyboard and a condenser microphone under a single warm lamp, a chair left empty, soft dust in the light, melancholic mood, no people, no text",
+   "fakten": {},
+   "bild": {
+    "datei": "r64.jpg",
+    "origin": "karte",
+    "credit": "Grafik: Tamil.de",
+    "alt": "Leeres Musikstudio mit Keyboard und Mikrofon im warmen Licht",
+    "w": 1200,
+    "h": 675
+   }
+  },
+  {
+   "id": 11,
+   "uid": "603075332f6a83931dc244fe52b3d5cc24703e1e",
+   "typ": "artikel",
+   "status": "bearbeitet",
+   "quelle_name": "Sacnilk (via Google News)",
+   "quelle_url": "https://news.google.com/rss/articles/CBMi3gFBVV95cUxPNkxJeWhqV1I5VktKOUE0c1J2U2pMWklLSm9hWno4enZzenlQLVBtVkkxd2MtNmRIeWFvZnFIRkhsT2hvN2xIS2NNY0VwXzB1OFZpa21SU0FfRzdaLXlxbTRkS1VrcXRLRWd1VFJkR3REVThmMkx6S2hJQm9rdG9FOXZzTjFvLUFyVWpwODlFc2RLc0I2a2hCeEFzbjBieGpac3pMOEpUdk1oMU5abndFdTRvQktYSjUyWnFTUVFtX2NVdXlRTHRRYkJEVVh4dlJTRFhDZEEwenlESzhXN3c?oc=5",
+   "quelle_datum": "2026-10-16T17:52+00:00",
+   "quelle_sprache": "en",
+   "weitere_quellen": [],
+   "relevanz": 6,
+   "begruendung": "Kollywood-Rekord ohne DACH-Termin, aber hoher Auslandsanteil – Diaspora-Thema",
+   "dach_bezug": false,
+   "ort": "",
+   "kategorie": "kino",
+   "titel": "„Jailer 2“ knackt in zwei Tagen die 200-Crore-Marke",
+   "teaser": "Rajinikanths Fortsetzung spielte laut Sacnilk in zwei Tagen weltweit gut 210 Crore Rupien ein. Fast die Hälfte davon kam aus Kinos außerhalb Indiens, also auch aus der Diaspora.",
+   "inhalt_html": "<p>„Jailer 2“ hat die 200-Crore-Marke schneller erreicht als jeder andere tamilische Film in diesem Jahr. Nach Zahlen des Branchendienstes Sacnilk kam die Fortsetzung mit Superstar Rajinikanth bis Freitagabend auf 210,65 Crore Rupien weltweit, umgerechnet rund 22 Millionen Euro, und das nach nur zwei Tagen im Kino.</p><p>Den Grundstein legte der Donnerstag: Mit 59,70 Crore Rupien netto in Indien aus 16.599 Vorstellungen und rund 55 Crore aus dem Ausland war es der stärkste Start eines tamilischen Films 2026. Am Freitag gingen die Einnahmen in Indien um 38 Prozent zurück, was nach einem Feiertagsstart üblich ist. Bemerkenswert ist der Auslandsanteil: Fast die Hälfte des Geldes kam aus Kinos außerhalb Indiens, also aus Städten wie Toronto, London, Paris oder Frankfurt, wo die Diaspora den Film trägt.</p><p>Damit ist „Jailer 2“ der vierte tamilische Film des Jahres über 200 Crore, nach „Jana Nayagan“ (324,70 Crore), „Karuppu“ (310,10 Crore) und „Vishwanath and Sons“ (209,50 Crore), der für dieselbe Marke 19 Tage brauchte. Der erste „Jailer“ hatte 2023 am Starttag 96,36 Crore weltweit eingespielt, die Fortsetzung liegt also rund 30 Prozent darüber. Rajinikanths größten Start bleibt aber „Coolie“ aus dem Vorjahr mit 151,10 Crore am ersten Tag.</p><p>Regie führte erneut Nelson Dilipkumar, produziert hat Sun Pictures. In Nordindien lief der Film schwächer: Ein Streit zwischen Verleih und Multiplex-Ketten wie PVR INOX über das Streaming-Fenster soll die Hindi-Fassung ausgebremst haben. Wo „Jailer 2“ bei uns läuft, steht in unserer Kinowoche.</p><p class=\"quelle\">Quelle: Sacnilk, The Week</p>",
+   "schlagworte": [
+    "Jailer 2",
+    "Rajinikanth",
+    "Box Office",
+    "Kollywood",
+    "Nelson Dilipkumar"
+   ],
+   "seo_titel": "Jailer 2: 200 Crore in zwei Tagen – die Zahlen",
+   "meta_beschreibung": "„Jailer 2“ spielte in zwei Tagen 210 Crore Rupien weltweit ein, fast die Hälfte im Ausland. Die Zahlen und der Vergleich mit „Jailer“ und „Coolie“.",
+   "bild_datei": "603075332f6a-jailer-2-knackt-in-zwei-tagen-die-200-crore-marke-a1.jpg",
+   "bild_credit": "Grafik: Tamil.de",
+   "bild_alt": "Beleuchtetes Kinofoyer mit Plakatwänden",
+   "bild_suchbegriff": "cinema box office ticket counter",
+   "bild_origin": "karte",
+   "event_datum": "",
+   "event_ort": "",
+   "ticket_url": "",
+   "hinweise": [],
+   "rewrite_count": 1,
+   "created_at": "2026-10-18T09:25:48+00:00",
+   "updated_at": "2026-10-18T11:01:02+00:00",
+   "freigegeben_at": null,
+   "veroeffentlicht_at": null,
+   "quelle_bild": "",
+   "bild_thema": "filmplakat-wand",
+   "bild_prompt": "Bright cinema foyer at night with a row of blank glowing poster frames and a ticket counter, people passing in motion blur, warm neon reflections on the floor, no readable text or logos",
+   "fakten": {},
+   "bild": {
+    "datei": "r11.jpg",
+    "origin": "karte",
+    "credit": "Grafik: Tamil.de",
+    "alt": "Beleuchtetes Kinofoyer mit Plakatwänden",
+    "w": 1200,
+    "h": 675
+   }
+  },
+  {
+   "id": 10,
+   "uid": "0ddca958f614cf81b53935a9a2e77c73b65fc120",
+   "typ": "artikel",
+   "status": "bearbeitet",
+   "quelle_name": "SwissTamilMedia · Community",
+   "quelle_url": "https://swisstamilmedia.com/67076/swiss-tamilar-news/",
+   "quelle_datum": "2026-10-12T09:15+00:00",
+   "quelle_sprache": "ta",
+   "weitere_quellen": [],
+   "relevanz": 8,
+   "begruendung": "Über 1.000 Kinder aus Deutschland, der Schweiz, Frankreich und Italien – Community-Nachricht",
+   "dach_bezug": true,
+   "ort": "Schweiz",
+   "kategorie": "community",
+   "titel": "Tamil-Kunstprüfung: Über 1.000 Kinder in Deutschland, der Schweiz, Frankreich und Italien",
+   "teaser": "Tanz, Gesang, Violine, Veena und Mridangam: Am 11. Oktober legten mehr als tausend Schülerinnen und Schüler in zehn Zentren die Einstiegsprüfung des Internationalen Tamil-Kunstinstituts ab.",
+   "inhalt_html": "<p>Mehr als tausend Kinder und Jugendliche haben am Sonntag, 11. Oktober, die Einstiegsprüfung der Tamil-Kunstprüfung abgelegt, gleichzeitig in Deutschland, der Schweiz, Frankreich und Italien. Es war die 25. Ausgabe der Prüfung, die das Internationale Tamil-Kunstinstitut mit Sitz in der Schweiz in Europa ausrichtet.</p><p>Geprüft wurde in zehn Zentren nach einem gemeinsamen Lehrplan, von der zweiten Stufe bis zur Aufführungsstufe. Die Fächer reichen von Tanz und Bharatanatyam über Gesang, Violine, Veena, Shruti-Box und Flöte bis zum Mridangam. Als Prüferinnen und Prüfer waren junge wie erfahrene Tamil-Kunstlehrkräfte im Einsatz; junge Lehrkräfte, die selbst die Aufführungsstufe abgeschlossen haben, leiteten erstmals Prüfungszentren mit.</p><p>Organisiert wurde die Prüfung gemeinsam mit dem Schweizer Tamil-Bildungsdienst, dem Tamilcholai-Hauptbüro in Frankreich, dem Kunst- und Kulturverband in Deutschland und Tamilcholai Italien. Die praktischen Prüfungen für alle, die den schriftlichen Teil bestanden haben, laufen ab Ende Oktober bis Juni 2027 in den jeweiligen Ländern.</p><p>Das Institut dankte Lehrkräften, Schulen und Freiwilligen und gratulierte den Kindern, besonders aber den Eltern, die ihre Kinder Woche für Woche zum Unterricht bringen. Wer wissen will, wo in seiner Nähe unterrichtet wird, fragt am besten bei der Tamilschule vor Ort nach.</p><p class=\"quelle\">Quelle: SwissTamilMedia</p>",
+   "schlagworte": [
+    "Tamilschule",
+    "Bharatanatyam",
+    "Musik",
+    "Prüfung",
+    "Europa"
+   ],
+   "seo_titel": "Tamil-Kunstprüfung: Über 1.000 Kinder in vier Ländern",
+   "meta_beschreibung": "Mehr als tausend Kinder legten am 11. Oktober die Tamil-Kunstprüfung in vier Ländern ab: Tanz, Gesang, Violine, Veena und Mridangam.",
+   "bild_datei": "0ddca958f614-tamil-kunstpruefung-ueber-1-000-kinder-in-deutschl-a1.jpg",
+   "bild_credit": "Grafik: Tamil.de",
+   "bild_alt": "Kinder mit Violinen in einem Prüfungsraum",
+   "bild_suchbegriff": "children music exam violin classroom",
+   "bild_origin": "karte",
+   "event_datum": "",
+   "event_ort": "",
+   "ticket_url": "",
+   "hinweise": [],
+   "rewrite_count": 1,
+   "created_at": "2026-10-18T09:25:48+00:00",
+   "updated_at": "2026-10-18T11:01:02+00:00",
+   "freigegeben_at": null,
+   "veroeffentlicht_at": null,
+   "quelle_bild": "",
+   "bild_thema": "tamilschule",
+   "bild_prompt": "Weekend classroom in a European community center used for a music exam: children seen from behind holding violins and a small veena, a mridangam drum on the floor, morning light through tall windows, no faces, no text",
+   "fakten": {},
+   "bild": {
+    "datei": "r10.jpg",
+    "origin": "quelle",
+    "credit": "Foto: SwissTamilMedia · Community",
+    "alt": "Kinder mit Violinen in einem Prüfungsraum",
+    "w": 1024,
+    "h": 576,
+    "balken": false
+   }
+  },
+  {
+   "id": 9,
+   "uid": "3930ef880f89d26ffec5fc704474e9eefd54829d",
+   "typ": "event",
+   "status": "bearbeitet",
+   "quelle_name": "SwissTamilMedia · Community",
+   "quelle_url": "https://swisstamilmedia.com/67067/swiss-tamilar-news/",
+   "quelle_datum": "2026-10-11T10:44+00:00",
+   "quelle_sprache": "ta",
+   "weitere_quellen": [],
+   "relevanz": 8,
+   "begruendung": "Kinovorstellung in der Schweiz mit Datum und Ort",
+   "dach_bezug": true,
+   "ort": "Luzern",
+   "kategorie": "kino",
+   "titel": "Tamilischer Film „Porattam“ kommt am 25. Oktober zurück ins Kino Ebikon bei Luzern",
+   "teaser": "Auf Wunsch des Publikums zeigt das Pathé Ebikon am Sonntag, 25. Oktober, noch einmal „Porattam“, den Film von Raj Sivaraj mit Musik von Poovan Matheesan. Plätze sollten vorab reserviert werden.",
+   "inhalt_html": "<p>Wer „Porattam“ in der Schweiz verpasst hat, bekommt eine zweite Chance: Am Sonntag, 25. Oktober, läuft der tamilische Film noch einmal im Pathé Ebikon bei Luzern. Die Veranstalter reagieren damit nach eigenen Angaben auf viele Anfragen aus dem Publikum.</p><p>Produziert hat den Film Baskaran Kandaiah, Regie führte Raj Sivaraj, die Musik stammt von Poovan Matheesan. „Porattam“, auf Deutsch „Kampf“, lief bereits in Schweizer Kinos und kam dort nach Angaben der Veranstalter gut an; auch bei tamilischen Zuschauerinnen und Zuschauern in anderen Ländern sei der Film auf Zuspruch gestoßen. Weitere Vorstellungen in anderen Regionen der Schweiz sind auf Nachfrage geplant, Termine dafür nennt die Quelle noch nicht.</p><p>Die Organisatoren bitten darum, Plätze vorab zu reservieren. Datum und Kino stehen in der Event-Box; die genaue Uhrzeit nennt die Quelle nicht, fragt dafür direkt im Pathé Ebikon nach.</p><p class=\"quelle\">Quelle: SwissTamilMedia</p>",
+   "schlagworte": [
+    "Porattam",
+    "Luzern",
+    "Ebikon",
+    "Kino",
+    "Schweiz"
+   ],
+   "seo_titel": "Porattam: Tamilischer Film erneut im Pathé Ebikon",
+   "meta_beschreibung": "Am 25. Oktober zeigt das Pathé Ebikon bei Luzern erneut den tamilischen Film „Porattam“ (Regie Raj Sivaraj). Plätze vorab reservieren.",
+   "bild_datei": "3930ef880f89-tamilischer-film-porattam-kommt-am-25-oktober-zuru-a1.jpg",
+   "bild_credit": "Grafik: Tamil.de",
+   "bild_alt": "Kinoeingang am Abend mit Besuchern",
+   "bild_suchbegriff": "cinema entrance night Switzerland",
+   "bild_origin": "karte",
+   "event_datum": "2026-10-25",
+   "event_ort": "Pathé Ebikon, Ebikon bei Luzern",
+   "ticket_url": "",
+   "hinweise": [],
+   "rewrite_count": 1,
+   "created_at": "2026-10-18T09:25:47+00:00",
+   "updated_at": "2026-10-18T11:01:02+00:00",
+   "freigegeben_at": null,
+   "veroeffentlicht_at": null,
+   "quelle_bild": "",
+   "bild_thema": "kino-abend",
+   "bild_prompt": "Entrance of a modern multiplex cinema in a Swiss town at dusk, a small group of friends walking in seen from behind, warm lobby light spilling onto wet pavement, autumn evening, no readable signs",
+   "fakten": {},
+   "bild": {
+    "datei": "r9.jpg",
+    "origin": "quelle",
+    "credit": "Foto: SwissTamilMedia · Community",
+    "alt": "Kinoeingang am Abend mit Besuchern",
+    "w": 1200,
+    "h": 675,
+    "balken": false
+   }
+  }
+ ]
+}
