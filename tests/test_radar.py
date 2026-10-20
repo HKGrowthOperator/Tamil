@@ -81,6 +81,9 @@ def test_branded_card_and_upload_and_save_pair(tmp_path):
     assert (tmp_path / "bilder" / name).exists()
     assert Image.open(tmp_path / "bilder" / thumb).size[0] == 400
 
+    name, thumb = save_pair(up, tmp_path / "bilder", "kino:7f89ed7-jailer-2")
+    assert (name, thumb) == ("kino-7f89ed7-jailer-2.jpg", "kino-7f89ed7-jailer-2-thumb.jpg")
+
 
 def test_slugify_german():
     assert slugify("Küche: Dosa & Sambar für Groß und Klein!") == "kueche-dosa-sambar-fuer-gross-und-klein"

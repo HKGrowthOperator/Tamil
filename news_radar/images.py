@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import io
 import logging
+import re
 import textwrap
 from dataclasses import dataclass
 from pathlib import Path
@@ -187,7 +188,11 @@ def from_upload(data: bytes, slug: str, credit: str = "Foto: Tamil.de") -> Featu
 
 
 def save_pair(image: FeaturedImage, folder: Path, stem: str) -> tuple[str, str]:
-    """Speichert Bild + Vorschaubild (400 px breit) unter data/bilder; gibt beide Dateinamen zurück."""
+    """Speichert Bild + Vorschaubild (400 px breit) unter data/bilder; gibt beide Dateinamen zurück.
+
+    Der Name wird auf die Zeichen beschränkt, die das Cockpit unter /bild/ ausliefert
+    (Kino-UIDs beginnen z. B. mit „kino:“)."""
+    stem = re.sub(r"[^A-Za-z0-9._-]+", "-", stem).strip("-.") or "bild"
     folder.mkdir(parents=True, exist_ok=True)
     name, thumb = f"{stem}.jpg", f"{stem}-thumb.jpg"
     (folder / name).write_bytes(image.data)
