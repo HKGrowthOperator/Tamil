@@ -4,7 +4,7 @@ Tags: events, kino, werbung, weiterleitungen
 Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: MIT
 
 Website-Funktionen für Tamil.de – unabhängig vom Theme und vom News-Radar.
@@ -15,7 +15,7 @@ Website-Funktionen für Tamil.de – unabhängig vom Theme und vom News-Radar.
   Veranstalter, Preis, Ticket-Link). Die Kinoliste `kino_fakten` (JSON) schreibt der News-Radar; die Maske zeigt sie an.
   Alle Felder sind im REST-Schema sichtbar.
 * Werbeplätze `tamil_site_anzeige( 'leaderboard' )` bzw. `[tamil_anzeige platz="…"]`: Advanced-Ads-Platzierung, sonst
-  Banner-HTML, sonst eine Eigenanzeige von Tamil.de (Production, Newsletter, Werben, WhatsApp-Kanal).
+  Banner-HTML, sonst eine Eigenanzeige von Tamil.de (Production, Event melden, Werben, WhatsApp-Kanal).
 * 301-Weiterleitungen aus einer CSV (Spalten „alt“, „neu“) für den Relaunch.
 * Abfragen fürs Theme: `tamil_site_upcoming_events()`, `tamil_site_kino_posts()`, `tamil_site_event()`,
   `tamil_site_kino_fakten()`.
@@ -29,6 +29,9 @@ und Terminlisten). Der News-Radar ist ein eigenes Plugin („Tamil.de News-Radar
 2. Einstellungen → Tamil.de Website: Werbeplätze und die Weiterleitungs-CSV hinterlegen.
 
 == Changelog ==
+
+= 1.1.0 =
+* Eigenanzeigen im neuen Look; „Event melden“ und „WhatsApp-Kanal (kurz)“ statt Newsletter. Gespeicherte Werbeplätze mit einer entfernten Vorlage fallen auf den Standard zurück.
 
 = 1.0.0 =
 * Erste Fassung.

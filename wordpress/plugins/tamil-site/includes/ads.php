@@ -1,7 +1,7 @@
 <?php
 /**
  * Werbeplätze. Reihenfolge je Platz: Advanced-Ads-Platzierung → eigenes Banner-HTML → Eigenanzeige von Tamil.de
- * (Production, Newsletter, Werben, WhatsApp-Kanal) → nichts. Ein Platz ohne Inhalt bleibt unsichtbar.
+ * (Production, Event melden, Werben, WhatsApp-Kanal) → nichts. Ein Platz ohne Inhalt bleibt unsichtbar.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -29,12 +29,12 @@ function tamil_site_werbeplaetze(): array {
  */
 function tamil_site_eigenanzeigen(): array {
 	return array(
-		''                 => __( '– keine –', 'tamil-site' ),
-		'production'       => __( 'Tamil.de Production: Live mit dir!', 'tamil-site' ),
-		'newsletter'       => __( 'Newsletter: Das Wichtigste der Woche', 'tamil-site' ),
-		'newsletter-klein' => __( 'Newsletter, kurz (für 320×50)', 'tamil-site' ),
-		'werben'           => __( 'Werben auf Tamil.de', 'tamil-site' ),
-		'whatsapp'         => __( 'WhatsApp-Kanal', 'tamil-site' ),
+		''               => __( '– keine –', 'tamil-site' ),
+		'production'     => __( 'Tamil.de Production: Live mit dir!', 'tamil-site' ),
+		'event'          => __( 'Event melden: Dein Fest im Kalender', 'tamil-site' ),
+		'werben'         => __( 'Werben auf Tamil.de', 'tamil-site' ),
+		'whatsapp'       => __( 'WhatsApp-Kanal', 'tamil-site' ),
+		'whatsapp-klein' => __( 'WhatsApp-Kanal, kurz (für 320×50)', 'tamil-site' ),
 	);
 }
 
@@ -49,16 +49,23 @@ function tamil_site_settings(): array {
 		'advanced_ads' => array(),
 		'eigen'        => array(
 			'leaderboard' => 'production',
-			'sidebar'     => 'werben',
-			'inarticle'   => 'newsletter',
-			'billboard'   => 'newsletter',
-			'footer'      => 'whatsapp',
-			'mobile'      => 'newsletter-klein',
+			'sidebar'     => 'event',
+			'inarticle'   => 'whatsapp',
+			'billboard'   => 'event',
+			'footer'      => 'werben',
+			'mobile'      => 'whatsapp-klein',
 		),
 		'whatsapp_url' => 'https://whatsapp.com/channel/0029VaFIN43KWEKo3BGoE13t',
 	);
 	$stored   = get_option( 'tamil_site_settings', array() );
-	return array_merge( $defaults, is_array( $stored ) ? $stored : array() );
+	$settings = array_merge( $defaults, is_array( $stored ) ? $stored : array() );
+	// Eigenanzeigen, die es nicht mehr gibt (etwa nach einer Umbenennung), fallen auf den Standard zurück.
+	foreach ( (array) $settings['eigen'] as $platz => $vorlage ) {
+		if ( '' !== $vorlage && ! array_key_exists( (string) $vorlage, tamil_site_eigenanzeigen() ) ) {
+			$settings['eigen'][ $platz ] = $defaults['eigen'][ $platz ] ?? '';
+		}
+	}
+	return $settings;
 }
 
 function tamil_site_ico( string $name, string $cls = 'ico ico-sm' ): string {
@@ -82,23 +89,15 @@ function tamil_site_eigenanzeige_html( string $vorlage ): string {
 				tamil_site_ico( 'ticket' ),
 				esc_html__( 'Tickets', 'tamil-site' )
 			);
-		case 'newsletter':
+		case 'event':
 			return sprintf(
-				'<a class="flaeche anzeige-wrap" href="%1$s" aria-label="%2$s"><div class="anzeige a-newsletter"><svg class="kolam kolam-gross" aria-hidden="true"><use href="#i-kolam"/></svg><span class="text"><span class="eyebrow">Newsletter</span><span class="claim">%3$s</span><span class="sub">%4$s</span></span><span class="cta">%5$s</span></div></a>',
-				esc_url( home_url( '/#newsletter' ) ),
-				esc_attr__( 'Tamil.de Newsletter: Das Wichtigste der Woche', 'tamil-site' ),
-				esc_html__( 'Das Wichtigste der Woche. Einmal, nicht zehnmal.', 'tamil-site' ),
-				esc_html__( 'Nachrichten · Kinostarts · Events – jeden Freitag, kostenlos', 'tamil-site' ),
-				esc_html__( 'Anmelden', 'tamil-site' )
-			);
-		case 'newsletter-klein':
-			return sprintf(
-				'<a class="flaeche anzeige-wrap" href="%1$s" aria-label="%2$s"><div class="anzeige a-newsletter-klein">%3$s<span class="rule"></span><span class="text"><span class="claim">%4$s</span></span><span class="cta">%5$s</span></div></a>',
-				esc_url( home_url( '/#newsletter' ) ),
-				esc_attr__( 'Newsletter: freitags das Wichtigste', 'tamil-site' ),
-				$wm,
-				esc_html__( 'Freitags das Wichtigste.', 'tamil-site' ),
-				esc_html__( 'Anmelden', 'tamil-site' )
+				'<a class="flaeche anzeige-wrap" href="%1$s" aria-label="%2$s"><div class="anzeige a-event"><svg class="kolam kolam-gross" aria-hidden="true"><use href="#i-kolam"/></svg><span class="text"><span class="eyebrow">%3$s</span><span class="claim">%4$s</span><span class="sub">%5$s</span></span><span class="cta">%6$s</span></div></a>',
+				esc_url( home_url( '/kontakt/#event-einreichen' ) ),
+				esc_attr__( 'Event bei Tamil.de melden', 'tamil-site' ),
+				esc_html__( 'Veranstaltungskalender', 'tamil-site' ),
+				esc_html__( 'Dein Fest im Kalender.', 'tamil-site' ),
+				esc_html__( 'Tempelfest, Konzert, Turnier: kostenlos melden, die Redaktion trägt es ein.', 'tamil-site' ),
+				esc_html__( 'Event melden', 'tamil-site' )
 			);
 		case 'werben':
 			return sprintf(
@@ -110,9 +109,18 @@ function tamil_site_eigenanzeige_html( string $vorlage ): string {
 				esc_html__( 'Leaderboard, Half Page, In-Article, Footer, Mobile Sticky – Mediadaten auf Anfrage', 'tamil-site' ),
 				esc_html__( 'Mediadaten', 'tamil-site' )
 			);
+		case 'whatsapp-klein':
+			return sprintf(
+				'<a class="flaeche anzeige-wrap" href="%1$s" target="_blank" rel="noopener" aria-label="%2$s"><div class="anzeige a-whatsapp-klein">%3$s<span class="text"><span class="claim">%4$s</span></span><span class="cta">%5$s</span></div></a>',
+				esc_url( tamil_site_settings()['whatsapp_url'] ),
+				esc_attr__( 'Tamil.de WhatsApp-Kanal öffnen', 'tamil-site' ),
+				tamil_site_ico( 'whatsapp', 'ico' ),
+				esc_html__( 'Tamil.de auf WhatsApp', 'tamil-site' ),
+				esc_html__( 'Abonnieren', 'tamil-site' )
+			);
 		case 'whatsapp':
 			return sprintf(
-				'<a class="flaeche anzeige-wrap" href="%1$s" target="_blank" rel="noopener" aria-label="%2$s"><div class="anzeige a-whatsapp">%3$s<span class="text"><span class="claim">%4$s</span><span class="sub">%5$s</span></span><span class="cta weiss">%6$s</span></div></a>',
+				'<a class="flaeche anzeige-wrap" href="%1$s" target="_blank" rel="noopener" aria-label="%2$s"><div class="anzeige a-whatsapp">%3$s<span class="text"><span class="claim">%4$s</span><span class="sub">%5$s</span></span><span class="cta">%6$s</span></div></a>',
 				esc_url( tamil_site_settings()['whatsapp_url'] ),
 				esc_attr__( 'Tamil.de WhatsApp-Kanal öffnen', 'tamil-site' ),
 				tamil_site_ico( 'whatsapp', 'ico ico-lg' ),
