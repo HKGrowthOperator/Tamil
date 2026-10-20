@@ -24,15 +24,15 @@ und Felder erhalten.
    `production`, `tv`, außerdem `impressum`, `datenschutz`, `ueber-uns`.
 5. **Permalinks:** Einstellungen → Permalinks → „Beitragsname“ (`/%postname%/`). Rubriken liegen unter
    `/category/<slug>/`.
-6. **Customizer → Tamil.de:** Kontakt (Telefon, E-Mail, WhatsApp, Anschrift), Social-Profile, Startseite
-   (Aufmacher- und Rezept-ID, sonst automatisch), Production, TV-Sender, Newsletter (Shortcode oder Formular-Adresse
-   des Anbieters), Formulare (Shortcode eines Formular-Plugins für Kontakt und „Event einreichen“).
+6. **Customizer → Tamil.de:** Kontakt (Telefon, E-Mail, WhatsApp, Anschrift), Social-Profile (der WhatsApp-Kanal
+   erscheint in Seitenspalte und Footer), Startseite (Aufmacher- und Rezept-ID, sonst automatisch), Production,
+   TV-Sender, Formulare (Shortcode eines Formular-Plugins für Kontakt und „Event einreichen“).
    Kontaktdaten sind leer, bis sie eingetragen sind – es erscheinen keine Beispielnummern.
 7. **Menüs (optional):** „Hauptnavigation“, „Footer: Service“, „Footer: Rechtliches“. Ohne Menü baut das Theme die
    Navigation aus den Rubriken.
 8. **Einstellungen → Tamil.de Website:**
    - Werbeplätze 01–05 (+ Startseite): Advanced-Ads-Platzierung (Slug) **oder** Banner-HTML **oder** Eigenanzeige.
-     Ohne Buchung zeigt jeder Platz eine Eigenanzeige (Production, Newsletter, Werben, WhatsApp-Kanal).
+     Ohne Buchung zeigt jeder Platz eine Eigenanzeige (Production, Event melden, Werben, WhatsApp-Kanal).
    - Weiterleitungen: `export/redirects.csv` aus `tools/export_site.py` einfügen (Spalten `alt`, `neu`).
 9. **Radar anbinden** (nur mit Teil B):
    - Benutzer `ki-agent` mit Rolle **Radar** anlegen → Profil → Anwendungspasswort erzeugen.
@@ -76,17 +76,18 @@ bash wordpress/dev/package.sh                       # ZIPs nach wordpress/dist/
 
 Zurücksetzen: `rm "$WP_DIR"/wp-content/database/tamil.sqlite && bash wordpress/dev/setup.sh`.
 
-## Nach dem Design-Brainstorm
+## Gestaltung
 
-Die Gestaltung ist bewusst austauschbar gebaut:
+Der Look „modernes Community-Magazin“ ist in [`DESIGN.md`](../DESIGN.md) beschrieben (Farben, Schriften, Bausteine),
+die Haltung dahinter in [`PRODUCT.md`](../PRODUCT.md).
 
-- **Farben und Schriften** stehen in `themes/tamil/theme.json` (Palette `nacht`, `kumkum`, `manjal`, `blatt`,
-  `papier` …; Schriften Fraunces, Schibsted Grotesk, Noto Serif Tamil). `assets/css/theme.css` liest sie als
-  Variablen – eine neue Palette wirkt überall, auch im Editor.
+- **Farben und Schriften** stehen in `themes/tamil/theme.json` (Palette `papier`, `sand`, `tinte`, `rot` …; Schriften
+  Catamaran für Titel, Literata für Text). `assets/css/theme.css` liest sie als Variablen – eine geänderte Palette
+  wirkt überall, auch im Editor.
 - **Layout** liegt in den Vorlagen (`front-page.php`, `template-parts/home/*`, `single.php` …) und in `theme.css`.
   Die Daten (Auswahl der Startseite, Termine, Kinoliste, Werbeplätze) kommen aus Funktionen, die bleiben.
-- Der Prototyp (`prototyp/`) ist die Vorlage dieser ersten Fassung; die Radar-Elemente (Karte, Live-Feed,
-  „Zuletzt gefunden“) sind im Theme nicht enthalten.
+- **Bildgrößen:** Aufmacher 16:10, Karten 4:3, Zeilen quadratisch. Nach dem Wechsel auf dieses Theme die
+  Vorschaubilder einmal neu erzeugen (Plugin „Regenerate Thumbnails“ oder `wp media regenerate`).
 
 ## Secrets
 

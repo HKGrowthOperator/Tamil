@@ -1,5 +1,9 @@
 # Tamil.de – HTML-Prototypen der fünf Vorlagen (Designkonzept v3 „Radar“)
 
+> **Abgelöst (20.10.2026):** Dieser Entwurf v3 ist durch den Look „modernes Community-Magazin“ im WordPress-Theme
+> ersetzt (`wordpress/themes/tamil`, [`DESIGN.md`](../DESIGN.md)). Der Prototyp bleibt als Archiv und Datenquelle für
+> den Importer erhalten; seine Optik (Nachtblau, Gold, Newsletter, Radar-Bühne) gilt nicht mehr.
+
 Vertrag HKG-2026-TML-V-001, Teil A: **A.1.1 Designkonzept**, **A.1.2 Korrekturschleifen**, **A.1.3 Responsive**,
 **A.1.4 Vorlagen** (Startseite, Kategorie, Artikel, Events, Kontakt). Die Prototypen sind statisches HTML im eigenen
 Tamil.de-Design, gebaut aus den echten Inhalten der alten Seite und aus echten Radar-Daten. Sie sind die Vorlage für
