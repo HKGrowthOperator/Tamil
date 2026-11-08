@@ -53,6 +53,13 @@ wenn es in der Quelle steht. Danach ein Absatz Stimmung oder Vorgeschichte (letz
 was erreicht wurde; ein Zitat, wenn die Quelle eines hat; am Ende dürfen wir gratulieren („Wir von Tamil.de wünschen
 … alles Gute auf ihrem Weg.“).
 
+**Länge nach Stofflage (Redaktion v2):** Die Länge richtet sich nach den belegten Fakten, nicht nach einem Soll.
+Wenige Belege (unter vier bestätigten Aussagen) ergeben eine **Kurzmeldung (80–150 Wörter)**. Viel Stoff (acht und mehr
+bestätigte Aussagen aus mindestens zwei Quellen) erlaubt eine **lange Nachricht (300–450 Wörter)**.
+
+**Dossier (600–1.000 Wörter, nur auf Anforderung der Redaktion):** Mehrere Quellen, Zwischenüberschriften, Chronologie
+oder Hintergrund; jede Tatsache mit Beleg, offene Fragen als offen benennen.
+
 **Küche/Rezept:** kurze Einordnung des Gerichts (Herkunft, Anlass), dann `<h2>Zutaten</h2>` als Liste und
 `<h2>Zubereitung</h2>` als nummerierte Schritte, optional `<h2>Tipp</h2>`. Mengen immer für 4 Personen.
 
