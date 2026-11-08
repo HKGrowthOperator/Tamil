@@ -165,3 +165,31 @@ def test_export_drafts_shape_and_column_migration(tmp_path):
     assert a["quelle_bild"] == "https://img/a.jpg" and a["hinweise"] == ["Rohfassung ohne KI: …"] and a["fakten"] == {"kinos": []}
     assert "original_json" not in a and "fingerprint" not in a
     assert data["lauf"]["modus"] == "warteschlange · ohne KI" and data["quellen"][0]["name"] == "Test"
+
+
+def test_migration_v2_on_fresh_and_existing_database(tmp_path):
+    import sqlite3
+
+    from news_radar.workflow import schema
+
+    old = tmp_path / "alt.sqlite"
+    con = sqlite3.connect(old)  # Datenbank im Stand von Phase 3: ohne user_version und ohne neue Tabellen
+    con.executescript("CREATE TABLE source_status (name TEXT PRIMARY KEY, last_ok TEXT, last_error TEXT, "
+                      "last_count INTEGER, error_msg TEXT, paused_until TEXT);")
+    con.execute("INSERT INTO source_status (name, last_ok) VALUES ('Alt', '2026-10-01')")
+    con.commit()
+    con.close()
+    with Store(old) as store:
+        version = store.db.execute("PRAGMA user_version").fetchone()[0]
+        tables = {r[0] for r in store.db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+        store.source_ok("Alt", 3)
+        store.source_failed("Alt", "kaputt")
+        row = next(r for r in store.source_status_all() if r["name"] == "Alt")
+    assert version == schema.LATEST
+    assert {"stories", "source_documents", "claims", "workflow_jobs", "article_versions", "assets", "agent_usage",
+            "editorial_actions", "users", "http_cache", "budget_reservierungen"} <= tables
+    assert row["ok_count"] == 1 and row["err_count"] == 1 and row["ausfallquote"] == 0.5
+    with Store(old) as store:  # zweites Öffnen: nichts doppelt, Version bleibt
+        assert store.db.execute("PRAGMA user_version").fetchone()[0] == schema.LATEST
+        store.http_cache_save({"https://x/feed": ('"e1"', "Mon")})
+        assert store.http_cache_load() == {"https://x/feed": ('"e1"', "Mon")}

@@ -35,7 +35,7 @@ DRAFT_COLUMNS = (
     "schlagworte", "seo_titel", "meta_beschreibung", "bild_datei", "bild_credit", "bild_alt",
     "bild_suchbegriff", "bild_origin", "bild_thema", "bild_prompt", "event_datum", "event_ort", "ticket_url",
     "fakten_json", "fingerprint", "hinweise", "original_json", "rewrite_count", "wp_post_id", "wp_link", "fehler",
-    "bearbeitet_von", "freigegeben_at", "veroeffentlicht_at",
+    "bearbeitet_von", "freigegeben_at", "veroeffentlicht_at", "story_id",
 )
 # Spalten, die nach der ersten Version dazukamen (ALTER TABLE für bestehende Datenbanken)
 ADDED_COLUMNS = (("quelle_bild", "TEXT"), ("bild_thema", "TEXT"), ("bild_prompt", "TEXT"))
@@ -135,6 +135,10 @@ class Store:
             if column not in present:
                 self.db.execute(f"ALTER TABLE drafts ADD COLUMN {column} {ddl}")
         self.db.commit()
+        from .workflow import schema  # v2: Storys, Belege, Jobs, Kosten, Benutzer (PRAGMA user_version)
+
+        with self.lock:
+            schema.apply(self.db)
 
     def close(self) -> None:
         self.db.close()
@@ -383,18 +387,19 @@ class Store:
 
     def source_ok(self, name: str, count: int) -> None:
         self._write(
-            "INSERT INTO source_status (name, last_ok, last_count, error_msg, paused_until) VALUES (?,?,?,NULL,NULL) "
+            "INSERT INTO source_status (name, last_ok, last_count, error_msg, paused_until, ok_count) "
+            "VALUES (?,?,?,NULL,NULL,1) "
             "ON CONFLICT(name) DO UPDATE SET last_ok = excluded.last_ok, last_count = excluded.last_count, "
-            "error_msg = NULL, paused_until = NULL",
+            "error_msg = NULL, paused_until = NULL, ok_count = ok_count + 1",
             (name, now_iso(), count),
         )
 
     def source_failed(self, name: str, message: str, pause_minutes: int = 0) -> None:
         paused = (datetime.now(timezone.utc) + timedelta(minutes=pause_minutes)).isoformat(timespec="seconds") if pause_minutes else None
         self._write(
-            "INSERT INTO source_status (name, last_error, error_msg, paused_until) VALUES (?,?,?,?) "
+            "INSERT INTO source_status (name, last_error, error_msg, paused_until, err_count) VALUES (?,?,?,?,1) "
             "ON CONFLICT(name) DO UPDATE SET last_error = excluded.last_error, error_msg = excluded.error_msg, "
-            "paused_until = excluded.paused_until",
+            "paused_until = excluded.paused_until, err_count = err_count + 1",
             (name, now_iso(), message[:300], paused),
         )
 
@@ -409,7 +414,28 @@ class Store:
         return {r["name"] for r in self.db.execute("SELECT name FROM source_status WHERE paused_until > ?", (now,))}
 
     def source_status_all(self) -> list[dict]:
-        return [dict(r) for r in self.db.execute("SELECT * FROM source_status ORDER BY name")]
+        rows = [dict(r) for r in self.db.execute("SELECT * FROM source_status ORDER BY name")]
+        for r in rows:
+            total = (r.get("ok_count") or 0) + (r.get("err_count") or 0)
+            r["ausfallquote"] = round((r.get("err_count") or 0) / total, 2) if total else None
+        return rows
+
+    # ---- bedingte Abrufe (ETag/Last-Modified je Feed-URL) ----------------------
+    def http_cache_load(self) -> dict[str, tuple[str, str]]:
+        return {r["url"]: (r["etag"] or "", r["last_modified"] or "") for r in self.db.execute("SELECT * FROM http_cache")}
+
+    def http_cache_save(self, entries: dict[str, tuple[str, str]]) -> None:
+        if not entries:
+            return
+        ts = now_iso()
+        with self.lock:
+            self.db.executemany(
+                "INSERT INTO http_cache (url, etag, last_modified, updated_at) VALUES (?,?,?,?) "
+                "ON CONFLICT(url) DO UPDATE SET etag = excluded.etag, last_modified = excluded.last_modified, "
+                "updated_at = excluded.updated_at",
+                [(url, et, lm, ts) for url, (et, lm) in entries.items()],
+            )
+            self.db.commit()
 
     # ---- Dashboard (Vertrag B.3.3) ------------------------------------------
     def dashboard(self, days: int = 7) -> dict:
