@@ -12,6 +12,7 @@
   export-drafts  Entwürfe + Bilder für den HTML-Prototyp exportieren (--quellbilder lädt Vorschaubilder der Quellen)
   agent     export: Aufgabenmappe für einen schreibenden Agenten · import: fertige Beiträge übernehmen (mit Bild)
   bildpool  status | fuellen – Reserve-Bilder je Thema über die Bild-KI anlegen
+  quellen   pruefen – jede Quelle live abfragen und bewerten (data/quellen-pruefung.csv) · liste – Register zeigen
 """
 
 from __future__ import annotations
@@ -110,6 +111,10 @@ def main(argv: list[str] | None = None) -> int:
     pool.add_argument("aktion", choices=("status", "fuellen"))
     pool.add_argument("--thema", help="nur dieses Thema füllen")
     pool.add_argument("--anzahl", type=int, default=3, help="Zielbestand je Thema")
+    quellen = sub.add_parser("quellen", help="Quellen-Register prüfen bzw. anzeigen")
+    quellen.add_argument("aktion", choices=("pruefen", "liste"))
+    quellen.add_argument("--file", default="data/quellen-pruefung.csv")
+    quellen.add_argument("--aktiv", type=int, default=20, help="pruefen: so viele Quellen empfehlen")
     args = parser.parse_args(argv)
 
     logging.basicConfig(
@@ -132,6 +137,23 @@ def main(argv: list[str] | None = None) -> int:
         print(f"\n{len(items)} gesammelt · {len(picked)} relevant\n")
         for i in picked[:40]:
             print(f"{i.score:3} {i.dach_score:2} {i.kind:5} {i.category_hint:13} {i.ort[:12]:12} {i.published:%d.%m %H:%M}  {i.title[:80]}")
+        return 0
+
+    if args.cmd == "quellen":
+        if args.aktion == "liste":
+            for q in settings.alle_quellen:
+                print(f"{'an ' if q.enabled else 'aus'}  {q.prioritaet}  {q.type:12} {q.kind:5} {q.country or '–':4} {q.name}")
+            print(f"\n{len(settings.sources)} von {len(settings.alle_quellen)} Quellen aktiv")
+            return 0
+        from .quellencheck import pruefen
+
+        with Store(settings.db_path) as store:
+            ranking = pruefen(settings, store, Path(args.file), aktiv=args.aktiv)
+        print(f"\n{'Punkte':>6}  {'jetzt':>5} {'14 T.':>5} {'Entw.':>5}  robots    Empfehlung  Quelle")
+        for p in ranking:
+            print(f"{p.punkte:6.1f}  {p.treffer_jetzt:5} {p.treffer_14_tage:5} {p.entwuerfe_db:5}  {p.robots:9} "
+                  f"{p.empfehlung:11} {p.name}{'  (' + p.fehler + ')' if p.fehler else ''}")
+        print(f"\n→ {args.file}")
         return 0
 
     if args.cmd == "export":

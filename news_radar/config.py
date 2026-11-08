@@ -39,6 +39,16 @@ class Source:
     min_score: int | None = None  # Überschreibt die Stichwort-Schwelle (0 = vertrauenswürdige Quelle)
     max_items: int = 3  # höchstens so viele Treffer je Lauf
     interval_minutes: int = 0  # 0 = bei jedem Lauf abfragen
+    # Register (Blueprint): Status, Rechte, Betreiber – `quellen pruefen` schreibt die Messwerte dazu
+    enabled: bool = True
+    prioritaet: str = "B"  # A = Kernquelle, B = ergänzend, C = nur Hinweise
+    betreiber: str = ""
+    vertrag: str = ""  # z. B. „Kooperation per Mail 10/2026“; leer = keine Vereinbarung
+    rechtlich_geprueft: str = ""  # Datum der Prüfung (YYYY-MM-DD), leer = offen
+    robots: str = ""  # erlaubt | verboten | unbekannt (aus der letzten Prüfung)
+    paywall: bool = False
+    bild_nutzen: bool = False  # Pressebilder der Quelle dürfen übernommen werden (nur mit dokumentierter Erlaubnis)
+    notiz: str = ""
 
 
 @dataclass
@@ -63,6 +73,7 @@ class Settings:
     blocklist: list[str]
     categories: list[Category]
     regions: Regions = field(default_factory=Regions)
+    alle_quellen: list[Source] = field(default_factory=list)  # inkl. abgeschalteter (enabled = false)
     anthropic_model: str = "claude-opus-5-5"
     newsapi_key: str = ""
     gnews_token: str = ""
@@ -122,7 +133,8 @@ def _int(name: str, default: int) -> int:
 def load_settings(sources_file: Path = ROOT / "sources.toml") -> Settings:
     load_dotenv()
     raw = tomllib.loads(sources_file.read_text(encoding="utf-8"))
-    sources = [Source(**s) for s in raw.get("source", [])]
+    alle_quellen = [Source(**s) for s in raw.get("source", [])]
+    sources = [s for s in alle_quellen if s.enabled]
     reg = raw.get("regions", {})
     regions = Regions(
         staedte={stadt: land.upper() for land, cities in reg.get("staedte", {}).items() for stadt in cities},
@@ -141,6 +153,7 @@ def load_settings(sources_file: Path = ROOT / "sources.toml") -> Settings:
         blocklist=[t.lower() for t in raw.get("blocklist", {}).get("terms", [])],
         categories=categories,
         regions=regions,
+        alle_quellen=alle_quellen,
         anthropic_model=env("RADAR_MODEL", "claude-opus-5-5"),
         newsapi_key=env("NEWSAPI_KEY", ""),
         gnews_token=env("GNEWS_TOKEN", ""),

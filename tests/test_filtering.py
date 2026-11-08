@@ -52,12 +52,12 @@ def test_select_two_tier_threshold(settings):
 
 def test_select_bypasses_keywords_for_kino_and_event_kind(settings):
     kino = item("„Jailer 2“ läuft in 3 Kinos", "CineStar Mainz", source="CineStar", kind="kino", hours_old=0)
-    event = item("Vaango Pazhagalam", "Basel", source="tamilswiss.ch Events", kind="event", hours_old=100)
+    event = item("Vaango Pazhagalam", "Basel", source="Swiss Tamil Info · Events", kind="event", hours_old=100)
     picked = filtering.select([kino, event], settings, set(), [], now=NOW)
     assert {p.title for p in picked} == {kino.title, event.title}
     assert next(p for p in picked if p.kind == "kino").category_hint == "kino"
     assert next(p for p in picked if p.kind == "event").ort == "Basel"  # Stadt aus dem Text schlägt die Länder-Vorgabe
-    only_country = item("Tamil Dream Night", "irgendwo", source="tamilswiss.ch Events", kind="event")
+    only_country = item("Tamil Dream Night", "irgendwo", source="Swiss Tamil Info · Events", kind="event")
     assert filtering.select([only_country], settings, set(), [], now=NOW)[0].ort == "Schweiz"
 
 

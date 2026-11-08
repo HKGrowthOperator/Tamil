@@ -10,27 +10,54 @@
 #
 # Je Quelle: kind = news|event|kino, country = DE|CH|AT, min_score (0 = vertrauenswürdig, immer prüfen),
 # max_items je Lauf, interval_minutes (0 = jeder Lauf).
+#
+# Register (Blueprint 19.10.): enabled (false = abgeschaltet, bleibt im Register), prioritaet A/B/C, betreiber,
+# robots (Ergebnis von `quellen pruefen`), paywall, bild_nutzen (Pressebilder nur mit dokumentierter Erlaubnis),
+# vertrag, rechtlich_geprueft (Datum), notiz. Auswahl 20 von 28 am 08.11.2026 nach `quellen pruefen`.
 
 # ---- Presse DACH über Google News (rotierend) ----
 [[source]]
 name = "Google News DACH"
+prioritaet = "C"
+betreiber = "Google"
+robots = "verboten"
+notiz = "Google-News-RSS widerspricht robots.txt (Disallow: /rss) – nur Hinweisquelle, Artikeltext immer von der Verlagsseite; Entscheidung Luis offen"
+rechtlich_geprueft = ""
 type = "gnews_region"
 query = "(Tamil OR tamilisch OR Tamilen)"
 params = { when = "2d", max_queries = 32, per_run = 6 }
 
 [[source]]
 name = "Google News · Tempel & Kino"
+enabled = false
+prioritaet = "C"
+betreiber = "Google"
+robots = "verboten"
+notiz = "aus: robots.txt verbietet /rss, nur 1 Treffer in 14 Tagen, deckt Google News DACH mit ab"
+rechtlich_geprueft = ""
 type = "rss"
 url = "https://news.google.com/rss/search?q=(Sri-Kamadchi-Ampal+OR+%22Hindu+Tempelfest%22+OR+%22tamilischer+Film%22+OR+Kollywood)+when:3d&hl=de&gl=DE&ceid=DE:de"
 
 [[source]]
 name = "Google News CH · Tamilen"
+enabled = false
+prioritaet = "C"
+betreiber = "Google"
+robots = "verboten"
+notiz = "aus: robots.txt verbietet /rss, doppelt zu Google News DACH (Schweiz-Abfragen)"
+rechtlich_geprueft = ""
 type = "rss"
 url = "https://news.google.com/rss/search?q=(Tamilen+OR+tamilisch)+when:3d&hl=de&gl=CH&ceid=CH:de"
 country = "CH"
 
 [[source]]
 name = "Google News AT · Sri Lanka"
+enabled = false
+prioritaet = "C"
+betreiber = "Google"
+robots = "verboten"
+notiz = "aus: robots.txt verbietet /rss, meist Sri-Lanka-Weltnachrichten ohne DACH-Bezug"
+rechtlich_geprueft = ""
 type = "rss"
 url = "https://news.google.com/rss/search?q=(Tamilen+OR+tamilisch+OR+%22Sri+Lanka%22)+when:3d&hl=de&gl=AT&ceid=AT:de"
 country = "AT"
@@ -38,6 +65,10 @@ country = "AT"
 # ---- Schweizer Tamil-Portale (tamilisch, vertrauenswürdig) ----
 [[source]]
 name = "SwissTamilMedia · Events"
+prioritaet = "A"
+betreiber = "Swiss Tamil Media"
+robots = "erlaubt"
+rechtlich_geprueft = ""
 type = "rss"
 url = "https://swisstamilmedia.com/category/swiss-tamil-events/feed/"
 language = "ta"
@@ -48,6 +79,10 @@ max_items = 3
 
 [[source]]
 name = "SwissTamilMedia · Community"
+prioritaet = "A"
+betreiber = "Swiss Tamil Media"
+robots = "erlaubt"
+rechtlich_geprueft = ""
 type = "rss"
 url = "https://swisstamilmedia.com/category/swiss-tamilar-news/feed/"
 language = "ta"
@@ -57,6 +92,10 @@ max_items = 2
 
 [[source]]
 name = "Swiss Tamil Info · Events"
+prioritaet = "A"
+betreiber = "Swiss Tamil Info"
+robots = "erlaubt"
+rechtlich_geprueft = ""
 type = "rss"
 url = "https://swisstamilinfo.ch/?cat=54&feed=rss2"
 language = "ta"
@@ -67,6 +106,10 @@ max_items = 3
 
 [[source]]
 name = "Swiss Tamil Info · Schweiz"
+prioritaet = "A"
+betreiber = "Swiss Tamil Info"
+robots = "erlaubt"
+rechtlich_geprueft = ""
 type = "rss"
 url = "https://swisstamilinfo.ch/category/swiss/feed/"
 language = "ta"
@@ -76,6 +119,10 @@ max_items = 2
 
 [[source]]
 name = "SwissNews7"
+prioritaet = "A"
+betreiber = "SwissNews7"
+robots = "erlaubt"
+rechtlich_geprueft = ""
 type = "rss"
 url = "https://swissnews7.com/?cat=26&feed=rss2"
 language = "ta"
@@ -85,6 +132,10 @@ max_items = 2
 
 [[source]]
 name = "Tamilschule Schweiz (TESS)"
+prioritaet = "B"
+betreiber = "Tamilschule Schweiz"
+robots = "erlaubt"
+rechtlich_geprueft = ""
 type = "rss"
 url = "https://www.tamilschool.ch/feed/"
 language = "ta"
@@ -96,6 +147,10 @@ interval_minutes = 180
 # ---- Events DACH ----
 [[source]]
 name = "Haus der Religionen Bern"
+prioritaet = "B"
+betreiber = "Haus der Religionen – Dialog der Kulturen"
+robots = "erlaubt"
+rechtlich_geprueft = ""
 type = "wp_json"
 url = "https://www.haus-der-religionen.ch"
 endpoint = "mec-events"
@@ -108,6 +163,10 @@ interval_minutes = 120
 
 [[source]]
 name = "Eventfrog CH"
+prioritaet = "A"
+betreiber = "Eventfrog AG"
+robots = "erlaubt"
+rechtlich_geprueft = ""
 type = "html"
 url = "https://eventfrog.ch/de/events.html?searchTerm=tamil"
 kind = "event"
@@ -119,6 +178,10 @@ selectors = { item = "a.event-list__events__tile", title = ".event-list__events_
 
 [[source]]
 name = "Eventfrog DE"
+prioritaet = "A"
+betreiber = "Eventfrog AG"
+robots = "erlaubt"
+rechtlich_geprueft = ""
 type = "html"
 url = "https://eventfrog.de/de/events.html?searchTerm=tamil"
 kind = "event"
@@ -130,6 +193,12 @@ selectors = { item = "a.event-list__events__tile", title = ".event-list__events_
 
 [[source]]
 name = "tamilswiss.ch Events"
+enabled = false
+prioritaet = "B"
+betreiber = "tamilswiss.ch"
+robots = "unbekannt"
+notiz = "aus: TLS-Zertifikat der Seite ungültig (11/2026), wieder einschalten, sobald es repariert ist"
+rechtlich_geprueft = ""
 type = "html"
 url = "https://tamilswiss.ch/events"
 kind = "event"
@@ -142,6 +211,11 @@ params = { json_pattern = 'openEventDetailsModal\((\{.*?\})\)', json_attr = "onc
 
 [[source]]
 name = "Hindu-Tempel Hamm"
+prioritaet = "B"
+betreiber = "Hinduistische Gemeinde Deutschland"
+robots = "erlaubt"
+notiz = "wenige, aber sehr relevante Termine"
+rechtlich_geprueft = ""
 type = "html"
 url = "https://www.hinduistische-gemeinde-deutschland.de/aktuelles/"
 kind = "event"
@@ -154,6 +228,11 @@ selectors = { item = "article, .entry, .post", title = "h2, h3, .entry-title", l
 # ---- Kinoprogramme (ein Beitrag je Film und Kinowoche) ----
 [[source]]
 name = "CineStar"
+prioritaet = "A"
+betreiber = "CineStar"
+robots = "unbekannt"
+notiz = "öffentliche Programm-API der Website"
+rechtlich_geprueft = ""
 type = "kino"
 provider = "cinestar"
 interval_minutes = 60
@@ -161,6 +240,11 @@ max_items = 3
 
 [[source]]
 name = "kinoheld"
+prioritaet = "A"
+betreiber = "kinoheld"
+robots = "unbekannt"
+notiz = "öffentliche Programm-API der Website"
+rechtlich_geprueft = ""
 type = "kino"
 provider = "kinoheld"
 interval_minutes = 60
@@ -168,6 +252,12 @@ max_items = 3
 
 [[source]]
 name = "Cineplexx AT"
+enabled = false
+prioritaet = "B"
+betreiber = "Cineplexx"
+robots = "unbekannt"
+notiz = "aus: in 14 Tagen kein tamilischer Film in Österreich; bei Bedarf einschalten"
+rechtlich_geprueft = ""
 type = "kino"
 provider = "cineplexx"
 interval_minutes = 60
@@ -176,6 +266,10 @@ max_items = 3
 # ---- Diaspora-Medien (Stichwortfilter DACH) ----
 [[source]]
 name = "Tamil Guardian"
+prioritaet = "B"
+betreiber = "Tamil Guardian"
+robots = "erlaubt"
+rechtlich_geprueft = ""
 type = "rss"
 url = "https://www.tamilguardian.com/rss.xml"
 language = "en"
@@ -183,6 +277,10 @@ max_items = 2
 
 [[source]]
 name = "Lankasri"
+prioritaet = "C"
+betreiber = "Lankasri"
+robots = "erlaubt"
+rechtlich_geprueft = ""
 type = "rss"
 url = "https://news.lankasri.com/googlesitemap.xml"
 language = "ta"
@@ -191,6 +289,11 @@ max_items = 2
 # ---- Überregional (Kollywood, Sri Lanka) – nur mit DACH-Bezug oder hoher Punktzahl ----
 [[source]]
 name = "Google News EN · Kollywood"
+prioritaet = "C"
+betreiber = "Google"
+robots = "verboten"
+notiz = "Google-News-RSS widerspricht robots.txt (Disallow: /rss) – nur Hinweisquelle, Artikeltext immer von der Verlagsseite; Entscheidung Luis offen; bisher ergiebigste Quelle für Kino/Entertainment"
+rechtlich_geprueft = ""
 type = "rss"
 url = "https://news.google.com/rss/search?q=(kollywood+OR+%22tamil+cinema%22)+when:2d&hl=en-IN&gl=IN&ceid=IN:en"
 language = "en"
@@ -198,6 +301,10 @@ max_items = 2
 
 [[source]]
 name = "The Hindu · Tamil Nadu"
+prioritaet = "C"
+betreiber = "The Hindu"
+robots = "erlaubt"
+rechtlich_geprueft = ""
 type = "rss"
 url = "https://www.thehindu.com/news/national/tamil-nadu/feeder/default.rss"
 language = "en"
@@ -206,6 +313,10 @@ max_items = 1
 # ---- Regionalpresse als Backup (nur per Stichwortfilter) ----
 [[source]]
 name = "Ruhr Nachrichten"
+prioritaet = "C"
+betreiber = "Lensing Media"
+robots = "erlaubt"
+rechtlich_geprueft = ""
 type = "rss"
 url = "https://www.ruhrnachrichten.de/feed/"
 country = "DE"
@@ -214,6 +325,12 @@ interval_minutes = 30
 
 [[source]]
 name = "WA Hamm"
+enabled = false
+prioritaet = "C"
+betreiber = "Westfälischer Anzeiger"
+robots = "verboten"
+notiz = "aus: robots.txt verbietet Abrufe durch Bots"
+rechtlich_geprueft = ""
 type = "rss"
 url = "https://www.wa.de/hamm/rssfeed.rdf"
 country = "DE"
@@ -222,6 +339,10 @@ interval_minutes = 30
 
 [[source]]
 name = "SRF Schweiz"
+prioritaet = "C"
+betreiber = "SRF"
+robots = "erlaubt"
+rechtlich_geprueft = ""
 type = "rss"
 url = "https://www.srf.ch/news/bnf/rss/1890"
 country = "CH"
@@ -230,6 +351,10 @@ interval_minutes = 30
 
 [[source]]
 name = "ORF"
+prioritaet = "C"
+betreiber = "ORF"
+robots = "erlaubt"
+rechtlich_geprueft = ""
 type = "rss"
 url = "https://rss.orf.at/news.xml"
 country = "AT"
@@ -239,6 +364,12 @@ interval_minutes = 30
 # ---- Token-APIs (optional) ----
 [[source]]
 name = "NewsAPI · Tamil DACH"
+enabled = false
+prioritaet = "C"
+betreiber = "NewsAPI.org"
+robots = "erlaubt"
+notiz = "aus: kein NEWSAPI_KEY; Alternative zu Google News, falls Luis einen Schlüssel bucht"
+rechtlich_geprueft = ""
 type = "newsapi"
 query = "(tamil OR tamilen OR tamilisch OR \"sri lanka\") AND (deutschland OR schweiz OR österreich OR diaspora OR kino)"
 language = "de"
@@ -246,6 +377,12 @@ max_items = 3
 
 [[source]]
 name = "GNews · Tamil"
+enabled = false
+prioritaet = "C"
+betreiber = "GNews.io"
+robots = "erlaubt"
+notiz = "aus: kein GNEWS_TOKEN; Alternative zu Google News, falls Luis einen Schlüssel bucht"
+rechtlich_geprueft = ""
 type = "gnews"
 query = "Tamilen OR tamilisch OR \"Tamil Germany\" OR \"Tamil Switzerland\""
 language = "de"
