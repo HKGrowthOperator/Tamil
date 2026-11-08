@@ -1,0 +1,163 @@
+"""Warteschlange der Arbeitsschritte (workflow_jobs) in der Radar-Datenbank.
+
+- einreihen: idempotent über idempotenz_key (derselbe Schritt derselben Story landet nur einmal in der Schlange)
+- naechster: atomarer Claim (UPDATE … WHERE status = 'offen'), höchste Priorität zuerst
+- fehlgeschlagen: Wiederholung nach 1, 5, 30 Minuten; nach 3 Versuchen „tot“ (Dead Letter, im Cockpit „Erneut“)
+- budget: Jobs, die am Budget scheitern, warten („wartet_budget“) und gehen am nächsten Budget-Tag wieder los
+- aufraeumen: Jobs, deren Deadline abgelaufen ist (Worker abgestürzt), kommen zurück in die Schlange
+"""
+
+from __future__ import annotations
+
+import json
+from datetime import datetime, timedelta, timezone
+from typing import Any
+
+BACKOFF_SEKUNDEN = (60, 300, 1800)
+MAX_VERSUCHE = 3
+DEADLINE_SEKUNDEN = {"recherche": 300, "schreiben": 300, "faktencheck": 300, "dossier": 900}
+
+# Priorität: Termin in den nächsten Tagen > Nachricht > Rest > Dossier
+PRIO_EVENT_BALD, PRIO_NEWS, PRIO_NORMAL, PRIO_DOSSIER = 30, 20, 10, 0
+
+
+def _iso(dt: datetime) -> str:
+    return dt.astimezone(timezone.utc).isoformat(timespec="seconds")
+
+
+def _now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def einreihen(store, story_id: int | None, schritt: str, *, prio: int = PRIO_NORMAL, key: str | None = None,
+              payload: dict | None = None, verzoegerung: float = 0) -> int | None:
+    """Neuer Job; None, wenn es den Schlüssel schon gibt (idempotent)."""
+    now = _now()
+    key = key or f"{story_id}:{schritt}"
+    with store.lock:
+        cur = store.db.execute(
+            "INSERT OR IGNORE INTO workflow_jobs (story_id, schritt, status, prio, versuche, naechster_versuch, "
+            "idempotenz_key, payload, erstellt, aktualisiert) VALUES (?,?, 'offen', ?, 0, ?, ?, ?, ?, ?)",
+            (story_id, schritt, prio, _iso(now + timedelta(seconds=verzoegerung)), key,
+             json.dumps(payload or {}, ensure_ascii=False), _iso(now), _iso(now)),
+        )
+        store.db.commit()
+        return cur.lastrowid if cur.rowcount == 1 else None
+
+
+def _job(row) -> dict:
+    d = dict(row)
+    try:
+        d["payload"] = json.loads(d.get("payload") or "{}")
+    except ValueError:
+        d["payload"] = {}
+    return d
+
+
+def naechster(store, worker: str = "worker", schritte: tuple[str, ...] | None = None) -> dict | None:
+    """Reserviert den dringendsten fälligen Job für diesen Worker (oder None)."""
+    now = _now()
+    filt, params = "", []
+    if schritte:
+        filt = f" AND schritt IN ({','.join('?' for _ in schritte)})"
+        params = list(schritte)
+    with store.lock:
+        for _ in range(5):  # bei Gleichzeitigkeit nächsten Kandidaten versuchen
+            row = store.db.execute(
+                "SELECT id, schritt FROM workflow_jobs WHERE status = 'offen' AND naechster_versuch <= ?" + filt +
+                " ORDER BY prio DESC, id LIMIT 1", (_iso(now), *params),
+            ).fetchone()
+            if row is None:
+                return None
+            deadline = _iso(now + timedelta(seconds=DEADLINE_SEKUNDEN.get(row["schritt"], 180)))
+            cur = store.db.execute(
+                "UPDATE workflow_jobs SET status = 'laeuft', worker = ?, deadline = ?, versuche = versuche + 1, "
+                "aktualisiert = ? WHERE id = ? AND status = 'offen'",
+                (worker, deadline, _iso(now), row["id"]),
+            )
+            store.db.commit()
+            if cur.rowcount == 1:
+                return _job(store.db.execute("SELECT * FROM workflow_jobs WHERE id = ?", (row["id"],)).fetchone())
+    return None
+
+
+def erledigt(store, job_id: int) -> None:
+    store._write("UPDATE workflow_jobs SET status = 'fertig', fehler = NULL, aktualisiert = ? WHERE id = ?",
+                 (_iso(_now()), job_id))
+
+
+def fehlgeschlagen(store, job_id: int, fehler: str) -> str:
+    """Wiederholung mit Backoff; nach MAX_VERSUCHE „tot“. Gibt den neuen Status zurück."""
+    row = store.db.execute("SELECT versuche FROM workflow_jobs WHERE id = ?", (job_id,)).fetchone()
+    versuche = row["versuche"] if row else MAX_VERSUCHE
+    now = _now()
+    if versuche >= MAX_VERSUCHE:
+        store._write("UPDATE workflow_jobs SET status = 'tot', fehler = ?, aktualisiert = ? WHERE id = ?",
+                     (fehler[:500], _iso(now), job_id))
+        return "tot"
+    pause = BACKOFF_SEKUNDEN[min(versuche, len(BACKOFF_SEKUNDEN)) - 1]
+    store._write(
+        "UPDATE workflow_jobs SET status = 'offen', fehler = ?, naechster_versuch = ?, aktualisiert = ? WHERE id = ?",
+        (fehler[:500], _iso(now + timedelta(seconds=pause)), _iso(now), job_id),
+    )
+    return "offen"
+
+
+def wartet_budget(store, job_id: int, grund: str) -> None:
+    """Budget erreicht: Job zurückstellen, der Versuch zählt nicht."""
+    store._write(
+        "UPDATE workflow_jobs SET status = 'wartet_budget', versuche = MAX(0, versuche - 1), fehler = ?, "
+        "aktualisiert = ? WHERE id = ?", (grund[:300], _iso(_now()), job_id),
+    )
+
+
+def budget_wieder_frei(store) -> int:
+    """Wartende Jobs zurück in die Schlange (wenn das Budget wieder reicht, z. B. am nächsten Tag)."""
+    cur = store._write("UPDATE workflow_jobs SET status = 'offen', aktualisiert = ? WHERE status = 'wartet_budget'",
+                       (_iso(_now()),))
+    return cur.rowcount
+
+
+def aufraeumen(store) -> int:
+    """Hängende Jobs (Deadline vorbei) zurück in die Schlange bzw. auf „tot“, wenn die Versuche aufgebraucht sind."""
+    now = _iso(_now())
+    with store.lock:
+        cur = store.db.execute(
+            "UPDATE workflow_jobs SET status = CASE WHEN versuche >= ? THEN 'tot' ELSE 'offen' END, "
+            "fehler = 'Deadline überschritten', aktualisiert = ? WHERE status = 'laeuft' AND deadline < ?",
+            (MAX_VERSUCHE, now, now),
+        )
+        store.db.commit()
+        return cur.rowcount
+
+
+def erneut(store, job_id: int) -> bool:
+    cur = store._write(
+        "UPDATE workflow_jobs SET status = 'offen', versuche = 0, fehler = NULL, naechster_versuch = ?, aktualisiert = ? "
+        "WHERE id = ? AND status IN ('tot', 'wartet_budget')", (_iso(_now()), _iso(_now()), job_id),
+    )
+    return cur.rowcount == 1
+
+
+def liste(store, status: str | None = None, limit: int = 100) -> list[dict]:
+    if status:
+        rows = store.db.execute(
+            "SELECT j.*, s.titel AS story_titel FROM workflow_jobs j LEFT JOIN stories s ON s.id = j.story_id "
+            "WHERE j.status = ? ORDER BY j.prio DESC, j.id DESC LIMIT ?", (status, limit))
+    else:
+        rows = store.db.execute(
+            "SELECT j.*, s.titel AS story_titel FROM workflow_jobs j LEFT JOIN stories s ON s.id = j.story_id "
+            "ORDER BY j.id DESC LIMIT ?", (limit,))
+    return [_job(r) for r in rows]
+
+
+def zaehlen(store) -> dict[str, int]:
+    out = {s: 0 for s in ("offen", "laeuft", "fertig", "tot", "wartet_budget")}
+    for row in store.db.execute("SELECT status, COUNT(*) FROM workflow_jobs GROUP BY status"):
+        out[row[0]] = row[1]
+    return out
+
+
+def offen_fuer_story(store, story_id: int) -> list[dict[str, Any]]:
+    return [_job(r) for r in store.db.execute(
+        "SELECT * FROM workflow_jobs WHERE story_id = ? AND status IN ('offen', 'laeuft', 'wartet_budget')", (story_id,))]
