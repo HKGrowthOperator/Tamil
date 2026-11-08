@@ -186,13 +186,39 @@ def build_rewrite_message(row: dict, anweisung: str) -> str:
 
 
 class Writer:
-    def __init__(self, settings: Settings, client: anthropic.Anthropic | None = None):
+    """v1: ein Aufruf je Beitrag. Mit `store` (oder `messen=True`) läuft der Aufruf über workflow.providers.Claude:
+    Kosten je Aufruf in agent_usage und Budget-Reservierung; ohne Messung direkt über das SDK (nur für Altfälle)."""
+
+    def __init__(self, settings: Settings, client: anthropic.Anthropic | None = None, store=None, budget=None,
+                 messen: bool = True):
         self.settings = settings
         self.client = client or anthropic.Anthropic(max_retries=2, timeout=120)
         self.system = build_system(settings)
         self.schema = _schema(settings.category_slugs())
+        self.store = store
+        self.budget = budget
+        self.messen = messen
 
-    def _create(self, client: anthropic.Anthropic, user_message: str) -> Draft | None:
+    def _gemessen(self, user_message: str, timeout: float | None, retries: int | None) -> Draft | None:
+        from .store import Store
+        from .workflow.providers import Claude, budget_fuer
+
+        def aufruf(store, budget) -> Draft | None:
+            antwort = Claude(self.settings, store, client=self.client, budget=budget).call(
+                "text", self.system[0]["text"], user_message, Draft, modell=self.settings.anthropic_model,
+                max_tokens=16000, effort="medium", schema=self.schema, timeout=timeout, retries=retries,
+            )
+            return antwort.daten if antwort.ok else None
+
+        if self.store is not None:
+            return aufruf(self.store, self.budget)
+        with Store(self.settings.db_path) as store:  # z. B. „Neu schreiben“ aus der Freigabe-App
+            return aufruf(store, budget_fuer(self.settings, store))
+
+    def _create(self, client: anthropic.Anthropic, user_message: str, timeout: float | None = None,
+                retries: int | None = None) -> Draft | None:
+        if self.messen:
+            return self._gemessen(user_message, timeout, retries)
         response = client.beta.messages.create(
             model=self.settings.anthropic_model,
             max_tokens=16000,
@@ -218,7 +244,7 @@ class Writer:
     def rewrite(self, row: dict, anweisung: str, timeout: float = 80.0) -> Draft | None:
         """Umschreiben nach Anweisung – ohne Retries, damit ein Web-Request nie minutenlang hängt."""
         client = self.client.with_options(timeout=timeout, max_retries=0)
-        return self._create(client, build_rewrite_message(row, anweisung))
+        return self._create(client, build_rewrite_message(row, anweisung), timeout=timeout, retries=0)
 
 
 # ---- Rohfassung ohne Sprachmodell ----------------------------------------------------------------

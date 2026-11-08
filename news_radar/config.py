@@ -66,6 +66,21 @@ class Category:
     hints: list[str]
 
 
+# Modell je Rolle (Blueprint): günstige Rollen auf Haiku, Recherche/Faktencheck/Text auf Sonnet, Dossier auf Opus.
+# Jede Rolle per .env überschreibbar: RADAR_MODELL_<ROLLE>; RADAR_MODEL bleibt Alias für die Text-Rolle.
+ROLLEN_MODELLE = {
+    "signal": "claude-haiku-5-5",
+    "cluster": "claude-haiku-5-5",
+    "recherche": "claude-sonnet-5-5",
+    "faktencheck": "claude-sonnet-5-5",
+    "text": "claude-sonnet-5-5",
+    "lektorat": "claude-haiku-5-5",
+    "seo": "claude-haiku-5-5",
+    "dossier": "claude-opus-5-5",
+}
+BILD_REIHENFOLGE = ("archiv", "quelle", "stock", "pool", "ki", "karte")
+
+
 @dataclass
 class Settings:
     sources: list[Source]
@@ -103,6 +118,20 @@ class Settings:
     deadline_seconds: int = 270
     fetch_seconds: int = 60
     data_dir: Path = field(default_factory=lambda: ROOT / "data")
+    # ---- Redaktion v2 (Multi-Agent) ----
+    workflow: str = "v1"  # v1 = ein Aufruf je Beitrag (bisher) · v2 = Rollen, Belege, Jobs
+    modelle: dict[str, str] = field(default_factory=lambda: dict(ROLLEN_MODELLE))
+    budget_tag_usd: float = 5.0
+    budget_monat_usd: float = 150.0
+    budget_warnung: float = 0.8
+    parallel_jobs: int = 2
+    entwuerfe_tag: int = 5  # Pilot: höchstens so viele neue bezahlte Storys je Tag
+    bild_reihenfolge: tuple[str, ...] = BILD_REIHENFOLGE
+    ki_bilder_je_artikel: int = 1
+    recherche_google_news: bool = True  # zweite Quelle über Google-News-RSS suchen (siehe robots-Hinweis im Register)
+
+    def modell_fuer(self, rolle: str) -> str:
+        return self.modelle.get(rolle) or ROLLEN_MODELLE.get(rolle) or ROLLEN_MODELLE["text"]
 
     @property
     def wordpress_enabled(self) -> bool:
@@ -128,6 +157,26 @@ class Settings:
 def _int(name: str, default: int) -> int:
     raw = os.environ.get(name, "").strip()
     return int(raw) if raw else default
+
+
+def _float(name: str, default: float) -> float:
+    raw = os.environ.get(name, "").strip().replace(",", ".")
+    return float(raw) if raw else default
+
+
+def _modelle() -> dict[str, str]:
+    modelle = {}
+    for rolle, standard in ROLLEN_MODELLE.items():
+        wert = os.environ.get(f"RADAR_MODELL_{rolle.upper()}", "").strip()
+        if not wert and rolle == "text":
+            wert = os.environ.get("RADAR_MODEL", "").strip()
+        modelle[rolle] = wert or standard
+    return modelle
+
+
+def _reihenfolge(raw: str) -> tuple[str, ...]:
+    teile = tuple(t.strip().lower() for t in raw.split(",") if t.strip() in BILD_REIHENFOLGE)
+    return teile if teile else BILD_REIHENFOLGE
 
 
 def load_settings(sources_file: Path = ROOT / "sources.toml") -> Settings:
@@ -181,4 +230,14 @@ def load_settings(sources_file: Path = ROOT / "sources.toml") -> Settings:
         min_relevance=_int("RADAR_MIN_RELEVANCE", 6),
         deadline_seconds=_int("RADAR_DEADLINE_SECONDS", 270),
         fetch_seconds=_int("RADAR_FETCH_SECONDS", 60),
+        workflow=(env("RADAR_WORKFLOW", "") or "v1").lower(),
+        modelle=_modelle(),
+        budget_tag_usd=_float("RADAR_BUDGET_TAG_USD", 5.0),
+        budget_monat_usd=_float("RADAR_BUDGET_MONAT_USD", 150.0),
+        budget_warnung=_float("RADAR_BUDGET_WARNUNG", 0.8),
+        parallel_jobs=max(1, _int("RADAR_PARALLEL_JOBS", 2)),
+        entwuerfe_tag=_int("RADAR_ENTWUERFE_TAG", 5),
+        bild_reihenfolge=_reihenfolge(env("BILD_REIHENFOLGE", "")),
+        ki_bilder_je_artikel=_int("RADAR_KI_BILDER_JE_ARTIKEL", 1),
+        recherche_google_news=(env("RADAR_RECHERCHE_GOOGLE_NEWS", "1") or "1") not in ("0", "nein", "false"),
     )

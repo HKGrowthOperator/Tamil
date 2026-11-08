@@ -119,7 +119,13 @@ def process(item: sources.NewsItem, settings: Settings, writer: Writer, store: S
             store.mark(item.uid, item.title, item.url, item.source, "veraltet")
             store.event("verworfen", titel=item.title, quelle=item.url, grund=f"Veranstaltung vom {vergangen} liegt zurück")
             return Result(item.title, "verworfen", note=f"veraltet: Termin {vergangen}", seconds=time.monotonic() - start)
-    draft = writer.write(item, article_text)
+    from .workflow.costs import BudgetErschoepft
+
+    try:
+        draft = writer.write(item, article_text)
+    except BudgetErschoepft as exc:  # nicht als gesehen markieren: kommt dran, wenn wieder Budget da ist
+        store.event("budget", titel=item.title, quelle=item.url, grund=str(exc))
+        return Result(item.title, "verworfen", note=f"Budget: {exc}", seconds=time.monotonic() - start)
     if draft is None:
         store.mark(item.uid, item.title, item.url, item.source, "abgelehnt_modell")
         return Result(item.title, "verworfen", note="vom Modell abgelehnt", seconds=time.monotonic() - start)
@@ -197,7 +203,10 @@ def run(settings: Settings, writer: Writer | None = None, store: Store | None = 
         log.info("%d Meldungen gesammelt, %d relevant, bearbeite %d", len(items), len(candidates), len(batch))
 
         if batch:
-            writer = writer or Writer(settings)
+            if writer is None:
+                from .workflow.providers import budget_fuer
+
+                writer = Writer(settings, store=store, budget=budget_fuer(settings, store))
             deadline = t0 + settings.deadline_seconds
             pool = ThreadPoolExecutor(max_workers=min(5, len(batch)))
             futures = {pool.submit(process, item, settings, writer, store): item for item in batch}

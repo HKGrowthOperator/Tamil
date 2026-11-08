@@ -13,6 +13,7 @@
   agent     export: Aufgabenmappe für einen schreibenden Agenten · import: fertige Beiträge übernehmen (mit Bild)
   bildpool  status | fuellen – Reserve-Bilder je Thema über die Bild-KI anlegen
   quellen   pruefen – jede Quelle live abfragen und bewerten (data/quellen-pruefung.csv) · liste – Register zeigen
+  kosten    Kosten je Rolle, Modell und Tag, Budgetstand; --csv für die Fremdkostenabrechnung
 """
 
 from __future__ import annotations
@@ -115,6 +116,9 @@ def main(argv: list[str] | None = None) -> int:
     quellen.add_argument("aktion", choices=("pruefen", "liste"))
     quellen.add_argument("--file", default="data/quellen-pruefung.csv")
     quellen.add_argument("--aktiv", type=int, default=20, help="pruefen: so viele Quellen empfehlen")
+    kosten = sub.add_parser("kosten", help="Kosten je Rolle/Modell/Tag und Budgetstand")
+    kosten.add_argument("--tage", type=int, default=30)
+    kosten.add_argument("--csv", help="alle Aufrufe des Zeitraums als CSV (Fremdkostenabrechnung)")
     args = parser.parse_args(argv)
 
     logging.basicConfig(
@@ -154,6 +158,30 @@ def main(argv: list[str] | None = None) -> int:
             print(f"{p.punkte:6.1f}  {p.treffer_jetzt:5} {p.treffer_14_tage:5} {p.entwuerfe_db:5}  {p.robots:9} "
                   f"{p.empfehlung:11} {p.name}{'  (' + p.fehler + ')' if p.fehler else ''}")
         print(f"\n→ {args.file}")
+        return 0
+
+    if args.cmd == "kosten":
+        from .workflow import repo
+        from .workflow.providers import budget_fuer
+
+        with Store(settings.db_path) as store:
+            bericht = repo.kosten_bericht(store, args.tage)
+            stand = budget_fuer(settings, store).stand()
+            if args.csv:
+                import csv
+
+                zeilen = repo.usage_zeilen(store, args.tage)
+                with open(args.csv, "w", newline="", encoding="utf-8") as fh:
+                    w = csv.DictWriter(fh, fieldnames=list(zeilen[0]) if zeilen else ["id"])
+                    w.writeheader()
+                    w.writerows(zeilen)
+                print(f"{len(zeilen)} Aufrufe → {args.csv}")
+        print(f"Budget heute ${stand['tag_usd']:.2f} von ${stand['tag_limit']:.2f} · Monat ${stand['monat_usd']:.2f} "
+              f"von ${stand['monat_limit']:.2f}{' · STOPP' if stand['stopp'] else (' · Warnung' if stand['warnung'] else '')}")
+        print(f"Letzte {bericht['tage']} Tage: ${bericht['gesamt_usd']:.2f} für {bericht['entwuerfe']} Entwürfe"
+              + (f" (${bericht['je_entwurf_usd']:.3f} je Entwurf)" if bericht["je_entwurf_usd"] else ""))
+        for r in bericht["je_rolle"]:
+            print(f"  {r['rolle']:12} {r['aufrufe']:5} Aufrufe  ${r['usd'] or 0:8.4f}  Fehlversuche {r['fehlversuche']}")
         return 0
 
     if args.cmd == "export":
