@@ -23,11 +23,12 @@ from urllib.parse import parse_qsl, quote_plus, urlencode, urljoin, urlsplit, ur
 import feedparser
 import requests
 
+from . import net
 from .config import Settings, Source
 
 log = logging.getLogger(__name__)
 
-USER_AGENT = "TamilDE-NewsRadar/2.0 (+https://www.tamil.de)"
+USER_AGENT = net.USER_AGENT
 TIMEOUT = 12
 _TAG_RE = re.compile(r"<[^>]+>")
 _TRACKING = {"utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content", "fbclid", "gclid", "ref"}
@@ -85,13 +86,36 @@ def _parse_iso(value: str | None) -> datetime:
         return datetime.now(timezone.utc)
 
 
-def _get(url: str, **kw) -> requests.Response:
+class Conditional:
+    """ETag/Last-Modified je Feed-URL für bedingte Abrufe (304 = unverändert, nichts Neues)."""
+
+    def __init__(self, data: dict[str, tuple[str, str]] | None = None):
+        self.data = dict(data or {})
+        self.changed: dict[str, tuple[str, str]] = {}
+
+    def get(self, url: str) -> tuple[str, str]:
+        return self.data.get(url, ("", ""))
+
+    def put(self, url: str, etag: str, last_modified: str) -> None:
+        if (etag or last_modified) and self.data.get(url) != (etag, last_modified):
+            self.data[url] = self.changed[url] = (etag, last_modified)
+
+
+CONDITIONAL = Conditional()
+
+
+def _get(url: str, conditional: bool = False, **kw) -> net.Fetched:
+    """Abruf über net.safe_get (SSRF-Schutz, Größenlimit); 429 → RateLimited, sonst HTTPError bei 4xx/5xx."""
     kw.setdefault("timeout", TIMEOUT)
-    headers = {"User-Agent": USER_AGENT, **kw.pop("headers", {})}
-    resp = requests.get(url, headers=headers, **kw)
-    if resp.status_code == 429:
-        raise RateLimited(url)
-    resp.raise_for_status()
+    etag, modified = CONDITIONAL.get(url) if conditional else ("", "")
+    try:
+        resp = net.safe_get(url, etag=etag, last_modified=modified, **kw)
+    except net.HTTPError as exc:
+        if exc.status == 429:
+            raise RateLimited(url) from exc
+        raise
+    if conditional:
+        CONDITIONAL.put(url, resp.etag, resp.last_modified)
     return resp
 
 
@@ -142,7 +166,10 @@ def _feed_items(content: bytes, source: Source, now: datetime | None = None) -> 
 
 @fetcher("rss")
 def fetch_rss(source: Source, settings: Settings) -> list[NewsItem]:
-    return _feed_items(_get(source.url).content, source)
+    resp = _get(source.url, conditional=True)
+    if resp.not_modified:
+        return []
+    return _feed_items(resp.content, source)
 
 
 # ---- Token-APIs -------------------------------------------------------------------
@@ -364,9 +391,11 @@ def fetch_all(settings: Settings, store=None) -> list[NewsItem]:
     """Alle fälligen Quellen parallel abfragen; Zeitbudget, Pausen und Status je Quelle."""
     from .kino_providers import merge_kino_items
 
+    global CONDITIONAL
     now = datetime.now(timezone.utc)
     paused = store.sources_paused() if store is not None else set()
     due = [s for s in settings.sources if _due(s, store, now, paused)]
+    CONDITIONAL = Conditional(store.http_cache_load() if store is not None else None)
 
     def record(fn, *args, **kw) -> None:
         if store is None:
@@ -403,6 +432,7 @@ def fetch_all(settings: Settings, store=None) -> list[NewsItem]:
         log.warning("Sammel-Zeitbudget (%ss) erreicht, ausstehend: %s", settings.fetch_seconds, ", ".join(late))
     finally:
         pool.shutdown(wait=False, cancel_futures=True)
+    record(store.http_cache_save, dict(CONDITIONAL.changed))
     items = [it for it in items if it.title and it.url]
     return merge_kino_items(items)
 
@@ -412,11 +442,10 @@ def fetch_article_text(url: str, limit: int = 6000) -> str:
     if "news.google.com" in url:
         return ""  # JS-Weiterleitung, kein Artikeltext erreichbar
     try:
-        resp = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=8)
-        resp.raise_for_status()
-    except requests.RequestException:
+        page = net.safe_get_text(url, timeout=8, max_bytes=3_000_000)
+    except (requests.RequestException, ValueError):  # Netz, gesperrte Adresse, Größe, Content-Type
         return ""
-    return extract_paragraphs(resp.text, limit)
+    return extract_paragraphs(page, limit)
 
 
 _NOISE_BLOCK_RE = re.compile(
@@ -458,11 +487,9 @@ def fetch_og_image(url: str, timeout: int = 8) -> str:
     if not url or "news.google.com" in url:
         return ""
     try:
-        resp = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=timeout)
-        resp.raise_for_status()
-    except requests.RequestException:
+        head = net.safe_get_text(url, timeout=timeout, max_bytes=3_000_000)[:300_000]
+    except (requests.RequestException, ValueError):
         return ""
-    head = resp.text[:300_000]
     for rx in _OG_RES:
         m = rx.search(head)
         if m:

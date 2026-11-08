@@ -27,6 +27,14 @@ class FakeResponse:
         if self.status_code >= 400:
             raise RuntimeError(f"HTTP {self.status_code}")
 
+    headers: dict = {}
+
+    def iter_content(self, size):
+        yield self.content
+
+    def close(self):
+        pass
+
 
 @pytest.fixture
 def settings(monkeypatch):
@@ -84,7 +92,7 @@ def test_fetch_html_with_selectors(monkeypatch, settings):
 
 def test_fetch_html_json_attribute(monkeypatch, settings):
     monkeypatch.setattr(sources.requests, "get", lambda url, **kw: FakeResponse(FIX / "tamilswiss_events.html"))
-    src = next(s for s in settings.sources if s.name == "tamilswiss.ch Events")
+    src = next(s for s in settings.alle_quellen if s.name == "tamilswiss.ch Events")
     items = sources.fetch_html(src, settings)
     assert [i.title for i in items] == ["Vaango Pazhagalam 2.0", "Beat Your Heart 2026"]
     assert items[0].url == "https://tamilswiss.ch/event/vaango-pazhagalam-2-0-bs-f9c6"
