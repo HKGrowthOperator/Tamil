@@ -14,6 +14,11 @@
   bildpool  status | fuellen – Reserve-Bilder je Thema über die Bild-KI anlegen
   quellen   pruefen – jede Quelle live abfragen und bewerten (data/quellen-pruefung.csv) · liste – Register zeigen
   kosten    Kosten je Rolle, Modell und Tag, Budgetstand; --csv für die Fremdkostenabrechnung
+  worker    Redaktion v2: Jobs abarbeiten (Dienst; --einmal leert die Schlange und beendet)
+  dossier   Entwurf als Dossier recherchieren lassen (--entwurf ID)
+  nutzer    anlegen | sperren | liste – Benutzer der Freigabe-App (Rollen redaktion, admin)
+
+Mit RADAR_WORKFLOW=v2 legt `run` Storys und Jobs an (Redaktion v2); `run --mit-jobs` arbeitet sie bis zur Deadline ab.
 """
 
 from __future__ import annotations
@@ -80,6 +85,8 @@ def main(argv: list[str] | None = None) -> int:
     run = sub.add_parser("run")
     run.add_argument("--max-age-hours", type=int, help="z. B. 336 für die Erstbefüllung (14 Tage)")
     run.add_argument("--ohne-ki", action="store_true", help="Rohfassungen ohne Claude (Titel + Quellentext, markiert)")
+    run.add_argument("--mit-jobs", action="store_true", help="v2: Jobs im selben Lauf bis zur Deadline abarbeiten")
+    run.add_argument("--v1", action="store_true", help="bisherigen Ablauf erzwingen, auch wenn RADAR_WORKFLOW=v2")
     loop = sub.add_parser("loop")
     loop.add_argument("--interval", type=int, default=180)
     loop.add_argument("--ohne-ki", action="store_true", help=argparse.SUPPRESS)
@@ -108,6 +115,7 @@ def main(argv: list[str] | None = None) -> int:
     agent.add_argument("--status", default="neu", help="export: Status der Entwürfe (kommagetrennt)")
     agent.add_argument("--ohne-text", action="store_true", help="export: Quelltexte nicht nachladen")
     agent.add_argument("--von", default="agent", help="import: Name für Protokoll und bearbeitet_von")
+    agent.add_argument("--v2", action="store_true", help="Redaktion v2: Evidenzpakete statt Rohfassungen")
     pool = sub.add_parser("bildpool", help="Reserve-Bilder je Thema (prompts/bildpool.md)")
     pool.add_argument("aktion", choices=("status", "fuellen"))
     pool.add_argument("--thema", help="nur dieses Thema füllen")
@@ -116,6 +124,15 @@ def main(argv: list[str] | None = None) -> int:
     quellen.add_argument("aktion", choices=("pruefen", "liste"))
     quellen.add_argument("--file", default="data/quellen-pruefung.csv")
     quellen.add_argument("--aktiv", type=int, default=20, help="pruefen: so viele Quellen empfehlen")
+    wk = sub.add_parser("worker", help="Redaktion v2: Jobs abarbeiten")
+    wk.add_argument("--parallel", type=int, help="Anzahl paralleler Jobs (Standard RADAR_PARALLEL_JOBS)")
+    wk.add_argument("--einmal", action="store_true", help="Schlange leeren und beenden")
+    ds = sub.add_parser("dossier", help="Entwurf als Dossier recherchieren lassen")
+    ds.add_argument("--entwurf", type=int, required=True)
+    nu = sub.add_parser("nutzer", help="Benutzer der Freigabe-App")
+    nu.add_argument("aktion", choices=("anlegen", "sperren", "liste"))
+    nu.add_argument("name", nargs="?")
+    nu.add_argument("--rolle", default="redaktion", choices=("redaktion", "admin"))
     kosten = sub.add_parser("kosten", help="Kosten je Rolle/Modell/Tag und Budgetstand")
     kosten.add_argument("--tage", type=int, default=30)
     kosten.add_argument("--csv", help="alle Aufrufe des Zeitraums als CSV (Fremdkostenabrechnung)")
@@ -188,6 +205,60 @@ def main(argv: list[str] | None = None) -> int:
         with Store(settings.db_path) as store:
             n = store.export_log(Path(args.file))
         print(f"{n} Protokolleinträge → {args.file}")
+        return 0
+
+    if args.cmd == "agent" and args.v2:
+        from .agent_v2 import export_v2, import_v2
+
+        with Store(settings.db_path) as store:
+            if args.aktion == "export":
+                data = export_v2(store, settings, Path(args.file), limit=args.limit)
+                print(f"{len(data['storys'])} Storys → {args.file} "
+                      f"({sum(len(p['dokumente']) for p in data['storys'])} Dokumente)")
+                return 0
+            stats = import_v2(store, settings, Path(args.file), von=args.von)
+        print(f"{stats['entwuerfe']} Entwürfe, {stats['recherche_noetig']} „Recherche nötig“, {stats['verworfen']} verworfen, "
+              f"{len(stats['fehler'])} Fehler")
+        for f in stats["fehler"]:
+            print(f"  ! {f}")
+        return 1 if stats["fehler"] and not stats["entwuerfe"] else 0
+
+    if args.cmd == "nutzer":
+        from getpass import getpass
+
+        from .workflow import repo
+
+        with Store(settings.db_path) as store:
+            if args.aktion == "liste":
+                for n in repo.nutzer_liste(store):
+                    print(f"{n['name']:20} {n['rolle']:10} {'aktiv' if n['aktiv'] else 'gesperrt':9} letzter Login {n['letzter_login'] or '–'}")
+                return 0
+            if not args.name:
+                raise SystemExit("Name fehlt: nutzer anlegen NAME [--rolle admin]")
+            if args.aktion == "sperren":
+                print("gesperrt" if repo.nutzer_sperren(store, args.name) else "unbekannt")
+                return 0
+            passwort = os.environ.get("RADAR_NEUES_PASSWORT") or getpass(f"Passwort für {args.name} (mind. 10 Zeichen): ")
+            repo.nutzer_anlegen(store, args.name, passwort, args.rolle)
+        print(f"{args.name} angelegt ({args.rolle})")
+        return 0
+
+    if args.cmd == "dossier":
+        from .workflow.orchestrator import dossier_anlegen
+
+        with Store(settings.db_path) as store:
+            sid = dossier_anlegen(store, args.entwurf, von="cli")
+        print(f"Dossier-Story {sid} angelegt – der Worker recherchiert sie (Opus schreibt)")
+        return 0
+
+    if args.cmd == "worker":
+        from .workflow import orchestrator
+
+        if not os.environ.get("ANTHROPIC_API_KEY"):
+            raise SystemExit(KEY_HINT.replace("`run --ohne-ki` für Rohfassungen ohne KI",
+                                              "`agent export --v2` für Research per Zuruf"))
+        stats = orchestrator.worker(settings, parallel=args.parallel, einmal=args.einmal)
+        print(", ".join(f"{k} {v}" for k, v in stats.items()) or "keine Jobs")
         return 0
 
     if args.cmd == "agent":
@@ -269,6 +340,15 @@ def main(argv: list[str] | None = None) -> int:
 
     if not settings.wordpress_enabled:
         logging.info("Keine WordPress-Zugangsdaten → Entwürfe warten in der Freigabe-App (%s)", settings.web_url)
+
+    if args.cmd == "run" and settings.workflow == "v2" and not args.v1 and not args.ohne_ki:
+        from .workflow import orchestrator
+
+        if args.max_age_hours:
+            settings.max_age_hours = args.max_age_hours
+        stats = orchestrator.lauf(settings, mit_jobs=args.mit_jobs)
+        print(", ".join(f"{k} {v}" for k, v in stats.items() if v))
+        return 0
 
     writer = pick_writer(args.ohne_ki, settings)
     if writer is not None:

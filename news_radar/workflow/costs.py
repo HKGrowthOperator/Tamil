@@ -218,18 +218,25 @@ class Budget:
         """Reserviert `betrag` atomar; BudgetErschoepft, wenn Tag oder Monat dadurch überschritten würden."""
         now = self.uhr()
         with self.store.lock:
-            tag, monat, reserviert = self._summen(now)
-            if tag + reserviert + betrag > self.tag_usd or monat + reserviert + betrag > self.monat_usd:
-                raise BudgetErschoepft(
-                    f"Budget erreicht: heute ${tag:.2f} von ${self.tag_usd:.2f}, Monat ${monat:.2f} von ${self.monat_usd:.2f}"
-                    f" (reserviert ${reserviert:.2f}, benötigt ${betrag:.2f})"
+            db = self.store.db
+            db.commit()
+            db.execute("BEGIN IMMEDIATE")  # Schreibsperre über alle Verbindungen: Lesen + Reservieren ist atomar
+            try:
+                tag, monat, reserviert = self._summen(now)
+                if tag + reserviert + betrag > self.tag_usd or monat + reserviert + betrag > self.monat_usd:
+                    raise BudgetErschoepft(
+                        f"Budget erreicht: heute ${tag:.2f} von ${self.tag_usd:.2f}, Monat ${monat:.2f} von "
+                        f"${self.monat_usd:.2f} (reserviert ${reserviert:.2f}, benötigt ${betrag:.2f})"
+                    )
+                cur = db.execute(
+                    "INSERT INTO budget_reservierungen (ts, rolle, betrag, story_id) VALUES (?,?,?,?)",
+                    (_iso(now), rolle, betrag, story_id),
                 )
-            cur = self.store.db.execute(
-                "INSERT INTO budget_reservierungen (ts, rolle, betrag, story_id) VALUES (?,?,?,?)",
-                (_iso(now), rolle, betrag, story_id),
-            )
-            self.store.db.commit()
-            return cur.lastrowid
+                db.commit()
+                return cur.lastrowid
+            except BaseException:
+                db.rollback()
+                raise
 
     def freigeben(self, reservierung_id: int) -> None:
         with self.store.lock:
