@@ -157,6 +157,7 @@ Tageszusammenfassung um 8 Uhr und eine tägliche Sicherung nach `/app/data/backu
 | `RADAR_ENTWUERFE_TAG` | `5` | neue bezahlte Storys je Tag |
 | `RADAR_KI_BILDER_JE_ARTIKEL` | Pilot: `0` | keine KI-Bilder (dann auch kein `GEMINI_API_KEY` nötig) |
 | `RADAR_LESE_TOKEN` | zufällig, 32+ Zeichen | optional: `GET /api/bericht` (nur lesen) für Auswertungen |
+| `RADAR_AGENT_TOKEN` | zufällig, 32+ Zeichen | optional: Research per Zuruf übers Netz – `GET /api/agent/export`, `POST /api/agent/import` (dieselben Gates wie `agent --v2`) |
 
 WordPress-Variablen (`WP_*`) leer lassen, solange nur getestet wird: Dann veröffentlicht der Radar nichts.
 `/gesund` zeigt Warteschlange und Budget. Einzelbefehle laufen über „Execute command“ im Container, z. B.

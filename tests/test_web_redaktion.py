@@ -299,3 +299,32 @@ def test_behind_proxy_rate_limit_uses_real_client_ip(tmp_path, monkeypatch):
     redaktion = client.post("/login", data={"user": "luis", "password": "geheim", "_csrf": token},
                             headers={"X-Forwarded-For": "198.51.100.20", "X-Forwarded-Proto": "https"})
     assert angreifer.status_code == 429 and redaktion.status_code == 302
+
+
+def test_agent_api_export_and_import_need_their_own_token(app, monkeypatch):
+    from news_radar.agents import research
+
+    monkeypatch.setattr(research, "belege_sammeln", lambda ctx, story: [])  # kein Netz im Test
+    client = app.test_client()
+    assert client.get("/api/agent/export").status_code == 404  # ohne RADAR_AGENT_TOKEN aus
+    settings = app.extensions["settings"]
+    settings.agent_token, settings.lese_token = "agent-token-mit-genug-zeichen", "lese-token-mit-genug-zeichen"
+    agent = {"Authorization": "Bearer agent-token-mit-genug-zeichen"}
+    assert client.get("/api/agent/export", headers={"Authorization": "Bearer lese-token-mit-genug-zeichen"}).status_code == 401
+    resp = client.get("/api/agent/export?limit=3", headers=agent)
+    data = resp.get_json()
+    assert resp.status_code == 200 and data["version"] == 2 and "regeln_recherche" in data
+    sid = next(p["story_id"] for p in data["storys"] if p["titel"] == "Kaputte Story")
+    with _store(app) as store:
+        fertig = repo.stories(store, "fertig")[0]["id"]
+    abgelehnt = client.post("/api/agent/import", json={"ergebnisse": [{"story_id": fertig, "verwerfen": "alt"}]},
+                            headers=agent).get_json()
+    ok = client.post("/api/agent/import?von=test", json={"ergebnisse": [{"story_id": sid, "verwerfen": "Test"}]},
+                     headers=agent).get_json()
+    assert abgelehnt["verworfen"] == 0 and "nicht aus dem Export" in abgelehnt["fehler"][0]
+    assert ok["verworfen"] == 1
+    with _store(app) as store:
+        assert repo.story(store, fertig)["status"] == "fertig" and repo.story(store, sid)["status"] == "verworfen"
+    assert client.post("/api/agent/import", data="kein json", headers=agent, content_type="text/plain").status_code == 400
+    assert client.post("/api/agent/import", json={"ergebnisse": None}, headers=agent).status_code == 400
+    assert client.post("/api/agent/import", json={"ergebnisse": []}).status_code == 401

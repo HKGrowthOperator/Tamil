@@ -109,6 +109,7 @@ class Settings:
     web_url: str = "http://127.0.0.1:8787"
     proxy_hops: int = 0  # Reverse-Proxys vor dem Cockpit (Coolify/Traefik: 1) – echte Client-IP und HTTPS erkennen
     lese_token: str = ""  # GET /api/bericht mit Authorization: Bearer – leer = Endpunkt aus
+    agent_token: str = ""  # /api/agent/export|import (Agent-Modus übers Netz) – leer = Endpunkte aus
     web_user: str = ""
     web_password: str = ""
     web_secret: str = ""
@@ -235,6 +236,7 @@ def load_settings(sources_file: Path = ROOT / "sources.toml") -> Settings:
         web_url=(env("RADAR_WEB_URL", "") or "http://127.0.0.1:8787").rstrip("/"),
         proxy_hops=max(0, _int("RADAR_PROXY_HOPS", 0)),
         lese_token=env("RADAR_LESE_TOKEN", "").strip(),
+        agent_token=env("RADAR_AGENT_TOKEN", "").strip(),
         web_user=env("WEB_USER", ""),
         web_password=env("WEB_PASSWORD", ""),
         web_secret=env("WEB_SECRET", ""),

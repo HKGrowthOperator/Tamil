@@ -80,6 +80,14 @@ def absaetze_ohne_beleg(inhalt_html: str, belege, bestaetigt: set[str]) -> list[
 
 
 def export_v2(store: Store, settings: Settings, file: Path, *, limit: int = 10, ctx: Kontext | None = None) -> dict:
+    data = paket_v2(store, settings, limit=limit, ctx=ctx)
+    file.parent.mkdir(parents=True, exist_ok=True)
+    file.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
+    return data
+
+
+def paket_v2(store: Store, settings: Settings, *, limit: int = 10, ctx: Kontext | None = None) -> dict:
+    """Die Aufgabenmappe als dict: offene Storys mit Dokumenten (Volltext), Längenregel und allen Regeln."""
     ctx = ctx or Kontext(settings=settings, store=store)
     pakete = []
     from .workflow.orchestrator import termin_vorbei
@@ -113,8 +121,6 @@ def export_v2(store: Store, settings: Settings, file: Path, *, limit: int = 10, 
         "kategorien": [{"slug": c.slug, "label": c.label} for c in settings.categories],
         "storys": pakete,
     }
-    file.parent.mkdir(parents=True, exist_ok=True)
-    file.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
     return data
 
 
@@ -125,8 +131,12 @@ def _jobs_schliessen(store: Store, story_id: int) -> None:
 
 
 def import_v2(store: Store, settings: Settings, file: Path, *, von: str = "agent", ctx: Kontext | None = None) -> dict:
+    return import_daten(store, settings, json.loads(file.read_text(encoding="utf-8")), von=von, ctx=ctx)
+
+
+def import_daten(store: Store, settings: Settings, raw, *, von: str = "agent", ctx: Kontext | None = None) -> dict:
+    """Ergebnisse der Cloud-Sitzung übernehmen ({"ergebnisse": [...]} oder Liste) – mit Gate und allen Regeln."""
     ctx = ctx or Kontext(settings=settings, store=store)
-    raw = json.loads(file.read_text(encoding="utf-8"))
     items = raw.get("ergebnisse") if isinstance(raw, dict) else raw
     if not isinstance(items, list):
         raise ValueError('Ergebnis-Datei: erwartet {"ergebnisse": [...]} oder eine Liste')

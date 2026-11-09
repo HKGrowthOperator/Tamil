@@ -1,4 +1,6 @@
 """Lesezugang für Auswertungen (Pilot): GET /api/bericht mit `Authorization: Bearer <RADAR_LESE_TOKEN>`.
+Agent-Modus übers Netz: GET /api/agent/export und POST /api/agent/import mit `Bearer <RADAR_AGENT_TOKEN>` – dieselbe
+Aufgabenmappe und derselbe Import wie `agent export/import --v2`, mit allen Gates.
 
 Nur lesen, kein Login, keine Änderungen. Ohne RADAR_LESE_TOKEN gibt es den Endpunkt nicht (404). Er liefert Storys,
 Quellen-Dokumente, Claims, Entwürfe, Fassungen mit Belegen, Kosten je Aufruf, Warteschlange und Budget – nie Benutzer,
@@ -19,21 +21,57 @@ api = Blueprint("api", __name__)
 TEXT_MAX = 8000  # Zeichen je Quellen-Dokument
 
 
-def _berechtigt() -> bool:
-    token = g.settings.lese_token
+def _berechtigt(token: str | None = None) -> bool:
+    token = g.settings.lese_token if token is None else token
     if not token:
         abort(404)
     kopf = request.headers.get("Authorization", "")
     return kopf.startswith("Bearer ") and gleich(kopf[7:].strip(), token)
 
 
+def _abgewiesen():
+    resp = jsonify({"fehler": "nicht berechtigt"})
+    resp.status_code = 401
+    resp.headers["WWW-Authenticate"] = 'Bearer realm="radar"'
+    return resp
+
+
+@api.get("/api/agent/export")
+def agent_export():
+    if not _berechtigt(g.settings.agent_token):
+        return _abgewiesen()
+    from ..agent_v2 import paket_v2
+
+    try:
+        limit = min(20, max(1, int(request.args.get("limit", 5))))
+    except ValueError:
+        limit = 5
+    return jsonify(paket_v2(get_store(), g.settings, limit=limit))
+
+
+@api.post("/api/agent/import")
+def agent_import():
+    if not _berechtigt(g.settings.agent_token):
+        return _abgewiesen()
+    from ..agent_v2 import import_daten
+
+    raw = request.get_json(silent=True)
+    if raw is None:
+        return jsonify({"fehler": "JSON erwartet"}), 400
+    von = str(request.args.get("von") or "claude-code")[:60]
+    try:
+        stats = import_daten(get_store(), g.settings, raw, von=von)
+    except ValueError as exc:
+        return jsonify({"fehler": str(exc)}), 400
+    get_store().event("agent_api", von=von, **{k: v for k, v in stats.items() if k != "fehler"},
+                      fehler=len(stats["fehler"]))
+    return jsonify(stats)
+
+
 @api.get("/api/bericht")
 def bericht():
     if not _berechtigt():
-        resp = jsonify({"fehler": "nicht berechtigt"})
-        resp.status_code = 401
-        resp.headers["WWW-Authenticate"] = 'Bearer realm="radar"'
-        return resp
+        return _abgewiesen()
     try:
         tage = min(60, max(1, int(request.args.get("tage", 7))))
     except ValueError:
