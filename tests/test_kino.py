@@ -109,3 +109,12 @@ def test_next_week_item_and_old_shows_ignored():
              kp.Show("Alt", "Kino", "Köln", "DE", start=datetime(2026, 9, 1, 19, 0, tzinfo=kp.TZ))]
     items = kp.aggregate_shows(shows, NOW)
     assert [i.facts["woche"] for i in items] == ["2026-W43"]
+
+
+def test_film_title_notes_do_not_split_one_film_into_several_posts():
+    from news_radar.kino_providers import clean_film_title, film_key
+
+    assert film_key("SCENE , FSK folgt") == film_key("Scene") == "scene" and clean_film_title("SCENE , FSK folgt") == "Scene"
+    assert film_key("Ramayana: Rise of a Legend /engl. Untertitel") == film_key("Ramayana: Rise Of A Legend")
+    assert clean_film_title("Coolie - mit engl. Untertiteln") == "Coolie" and clean_film_title("Kanguva (3D)") == "Kanguva"
+    assert clean_film_title("Leo (FSK 16)") == "Leo"

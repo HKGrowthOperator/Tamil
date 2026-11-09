@@ -107,7 +107,12 @@ def dokument_hinzufuegen(store, story_id: int, *, url: str = "", uid: str = "", 
                          published_at: str = "", language: str = "de", rights: str = "unbekannt", primaer: bool = False,
                          art: str = "zusammenfassung", titel: str = "", text: str = "") -> str | None:
     """Neues Dokument zur Story; None, wenn die URL schon dabei ist. Gibt den doc_key (Q1, Q2 …) zurück."""
-    url_norm = normalize_url(url) if url else f"text:{hashlib.sha256((titel + text).encode()).hexdigest()[:16]}"
+    if url:
+        # normalize_url wirft das Fragment weg; „…#daten“ (strukturierte Angaben derselben Seite) ist ein eigenes Dokument
+        fragment = url.split("#", 1)[1] if "#" in url else ""
+        url_norm = normalize_url(url) + (f"#{fragment}" if fragment else "")
+    else:
+        url_norm = f"text:{hashlib.sha256((titel + text).encode()).hexdigest()[:16]}"
     sha = hashlib.sha256(text.encode("utf-8")).hexdigest() if text else ""
     with store.lock:
         if store.db.execute("SELECT 1 FROM source_documents WHERE story_id = ? AND url_norm = ?",

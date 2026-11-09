@@ -331,3 +331,15 @@ def test_claim_with_invented_citation_is_not_confirmed():
     erfunden = echt.model_copy(update={"id": "C2", "fundstelle": "der Eintritt kostet 500 Euro pro Person"})
     assert factcheck.support(echt, {"Q1": doc}, set()) == "bestaetigt"
     assert factcheck.support(erfunden, {"Q1": doc}, set()) == "einzelquelle"
+
+
+def test_past_event_date_found_in_full_text_is_dropped_before_any_paid_call(settings):
+    item = meldung("Verein Saivanerikoodam: Fest zu Ehren des Gottes Murugan", "Fest im Haus der Religionen",
+                   url="https://haus-der-religionen.ch/events/visakam", source="Haus der Religionen Bern", kind="event")
+    text = ("Vaikasi Visakam ist ein hinduistisches Fest, das den Geburtstag von Gott Murugan markiert. "
+            "An diesem Tag werden im Hindutempel besondere Gebete abgehalten und Prozessionen organisiert. "
+            "Wann: Freitag, 29.05.2026 ab 18.00 Uhr im Hindutempel im Haus der Religionen. " * 2)
+    stats, fake = lauf(settings, [item], texte={item.url: text})
+    with Store(settings.db_path) as store:
+        story = repo.stories(store)[0]
+    assert story["status"] == "verworfen" and "liegt zurück" in story["notiz"] and fake.requests == []

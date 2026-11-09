@@ -59,8 +59,15 @@ def _offene_storys(store: Store, limit: int) -> list[dict]:
 def export_v2(store: Store, settings: Settings, file: Path, *, limit: int = 10, ctx: Kontext | None = None) -> dict:
     ctx = ctx or Kontext(settings=settings, store=store)
     pakete = []
+    from .workflow.orchestrator import termin_vorbei
+
     for story in _offene_storys(store, limit):
         docs = research.belege_sammeln(ctx, story)
+        vorbei = termin_vorbei(ctx, story, docs)
+        if vorbei:
+            repo.story_setzen(store, story["id"], status="verworfen", notiz=f"Termin vom {vorbei} liegt zurück")
+            _jobs_schliessen(store, story["id"])
+            continue
         bestaetigt_moeglich = any(d.primaer or d.art == "volltext" for d in docs)
         pakete.append({
             "story_id": story["id"], "typ": story["typ"], "titel": story["titel"], "kategorie": story["kategorie"],

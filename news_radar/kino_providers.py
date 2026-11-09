@@ -46,16 +46,28 @@ def is_tamil(*texts: str) -> bool:
     return any(TAMIL_RE.search(t or "") for t in texts)
 
 
+# Zusätze der Kinoprogramme, die keinen eigenen Film bezeichnen: „SCENE , FSK folgt“, „… /engl. Untertitel“, „(3D)“
+_ZUSATZ_RE = re.compile(
+    r"\s*[,/\-–(\[]*\s*(?:fsk\s*(?:folgt|ab\s*\d+|\d+)|(?:mit\s+)?(?:engl(?:isch(?:en?)?)?\.?|dt\.?|deutsch(?:en?)?)\s*"
+    r"(?:untertitel\w*|ut|subtitles?)|untertitelt|engl\.?\s*subs?|[23]d)\s*[)\]]?",
+    re.I,
+)
+
+
 def clean_film_title(title: str) -> str:
-    """„Jailer 2 (Tamil OmeU)“, „(tamil) Jailer 2“, „*Jailer 2“ → „Jailer 2“."""
+    """„Jailer 2 (Tamil OmeU)“, „(tamil) Jailer 2“, „*Jailer 2“, „SCENE , FSK folgt“ → „Jailer 2“ bzw. „Scene“."""
     t = (title or "").split(" | ")[0]
     t = _VERSION_RE.sub(" ", t)
+    t = _ZUSATZ_RE.sub(" ", t)
     t = re.sub(r"^\W+|\W+$", "", t)
-    return re.sub(r"\s+", " ", t).strip()
+    t = re.sub(r"\s+", " ", t).strip()
+    if t.isupper() and len(t) > 3:  # „SCENE“ → „Scene“ (Kinos schreiben Titel oft in Großbuchstaben)
+        t = t.title()
+    return t
 
 
 def film_key(title: str) -> str:
-    return slugify(clean_film_title(title), 60)
+    return slugify(clean_film_title(title).lower(), 60)
 
 
 def kino_week(d: date) -> tuple[int, int]:

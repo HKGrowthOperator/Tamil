@@ -179,10 +179,45 @@ def _weiter(payload: dict, **neu) -> dict:
     return out
 
 
+def termin_vorbei(ctx: Kontext, story: dict, docs) -> str:
+    """Datum eines Termins, wenn er schon vorbei ist („“ sonst). Erst die strukturierten Daten der Quelle, sonst das
+    erste Datum im Volltext – Veranstaltungsseiten nennen das Datum oft nur im Text, nicht im Feed."""
+    if story["typ"] != "event":
+        return ""
+    from .. import dates
+
+    now = ctx.uhr()
+    when = None
+    for d in docs:
+        if d.art == "daten":
+            try:
+                raw = str(json.loads(d.text or "{}").get("event_datum") or "")[:10]
+                when = date.fromisoformat(raw) if raw else None
+            except (ValueError, AttributeError):
+                when = None
+            if when:
+                break
+    if when is None:
+        for d in docs:
+            if d.art in ("volltext", "zusammenfassung"):
+                when = dates.parse_de_date(f"{d.titel}\n{d.text[:2000]}", now=now)
+                if when:
+                    break
+    if when is None:
+        return ""
+    cutoff = (now - timedelta(hours=ctx.settings.max_age_hours)).date()
+    return when.isoformat() if when < cutoff else ""
+
+
 def schritt_recherche(ctx: Kontext, job: dict) -> list[tuple[str, dict]]:
     story = _story(ctx, job)
     repo.story_setzen(ctx.store, story["id"], status="recherche")
     docs = research.belege_sammeln(ctx, story)
+    vorbei = termin_vorbei(ctx, story, docs)
+    if vorbei:  # vor jedem bezahlten Aufruf: ein vergangener Termin wird kein Beitrag
+        repo.story_setzen(ctx.store, story["id"], status="verworfen", notiz=f"Termin vom {vorbei} liegt zurück")
+        ctx.store.event("verworfen", story=story["id"], titel=story["titel"], grund=f"Termin vom {vorbei} liegt zurück")
+        return []
     claims, widersprueche, fehlend, verworfen = research.claims_ziehen(ctx, story, docs, job["id"])
     repo.claims_setzen(ctx.store, story["id"], claims)
     hinweise = [f"Recherche: Claim verworfen – {v}" for v in verworfen]
