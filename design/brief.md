@@ -1,133 +1,139 @@
-# Design-Brief: tamil.de, Richtungsskizzen Runde 1
+# Design-Brief: tamil.de, Runde 2 – wie eine große Nachrichtenmarke
 
-- **Status:** bestätigt von Luis am 09.11.2026 (Tor G1, `docs/abnahme/2026-11-09-G1.md`), alle vier Richtungen.
-- **Vorläufig:** Die Auswahl des Auftraggebers von der Referenztafel steht aus. Bis dahin gelten die Empfehlungen
-  des Scouts aus `design/referenzen/README.md`. Die Auswahl fließt spätestens bei Tor G2 ein.
-- **Grundlage:** `PRODUCT.md`, Skill `tamil-marke` mit `references/abgelehnt.md`, Antworten von Luis vom 09.11.2026.
-- **Gilt für:** alle vier Richtungen dieser Runde und für den Kritiker als Maßstab.
+- **Status:** Arbeitsfassung 2 vom 09.11.2026. Bestätigt wird sie zusammen mit Luis' Wahl einer Schnellprobe
+  (`docs/abnahme/<datum>-G1-runde2.md`). Fassung 1 (eine Geschichte als Cover, „Rot trägt“, vier Richtungen) ist
+  abgelöst und steht in der Git-Historie (`6195fe5`).
+- **Grundlage:** Urteil von Luis vom 09.11.2026 (`docs/abnahme/2026-11-09-G2.md`), Skill `tamil-marke` mit
+  `references/abgelehnt.md`, die vermessenen Vorbilder in `design/referenzen/news-marken.md`.
+- **Gilt für:** alle Proben dieser Runde und für die Prüfung. Der Brief geht jeder anderen Anleitung vor.
 
 ## 1. Zusammenfassung
 
 tamil.de ist das deutschsprachige Magazin der tamilischen Diaspora in Deutschland, Österreich und der Schweiz. Die
-Seite soll sich für die junge, hier aufgewachsene Generation eigenständig und hochwertig anfühlen, ohne Eltern und
-Großeltern beim Lesen zu verlieren. Drei Entwürfe sind abgelehnt worden, zuletzt als „komplett generisch“; diese
-Runde sucht deshalb zuerst eine Idee, die nur zu tamil.de passt, und baut noch keine ganzen Seiten.
+Seite soll aussehen wie eine große, ruhige Nachrichtenmarke: klar, seriös, aufgeräumt, viele Geschichten auf einen
+Blick. Vier Entwürfe sind abgelehnt, zuletzt als zu rot, zu laut, wie aus dem Baukasten, mit hässlicher Schrift und
+nicht hochwertig. Diese Runde sucht keine Idee. Sie sucht Ordnung und Wertigkeit und zeigt Luis früh drei kleine
+Proben.
 
 ## 2. Wichtigste Handlung
 
-Wer die Startseite am Handy öffnet, sieht in den ersten fünf Sekunden **die eine große Geschichte des Tages** und
-tippt sie an. Sie füllt den ersten Bildschirm wie ein Magazin-Cover. Alles andere (Kino, Events, weitere Meldungen)
-beginnt erst darunter.
+Wer die Startseite öffnet, erfasst in fünf Sekunden, was wichtig ist: ein klarer Aufmacher, daneben oder darunter
+weitere Geschichten. Eine davon wird angetippt.
 
-## 3. Gestaltungsrichtung
+## 3. Gestaltung, für alle Varianten gleich
 
-- **Farbstrategie: Committed.** Das Logo-Rot (#B5282A, in OKLCH umgerechnet) trägt die Seite, auf hellem Grund.
-  Kein dunkler Grund, kein Gold oder Gelb, kein Creme mit Braungrau. Neutrale Töne sind leicht zum Rot getönt.
-- **Szene:** Eine 19-Jährige fährt nach der Berufsschule mit der S-Bahn nach Hause, das Handy in einer Hand, bei
-  Tageslicht, zwischen WhatsApp und Instagram. Abends zeigt sie ihrer Mutter auf demselben Handy, wann der Film
-  läuft. Daraus folgt: heller Grund, große Schrift, klare Tippflächen, nichts, was man erst erklären muss.
-- **Lautstärke: laut im Kopf, ruhig im Text.** Startseite und Rubrikköpfe dürfen plakativ sein (große Schrift, viel
-  Rot, starke Bilder). Artikelseiten bleiben ruhig und großzügig lesbar.
-- **Sprache: nur Deutsch.** Keine tamilische Schrift als Gestaltungsmittel, auch nicht in Rubriken, Überschriften
-  oder als großes Schriftbild. Das geht über die Verbotsliste („Tamil-Wörter als Deko“) hinaus und ersetzt für
-  diese Arbeit den Satz „Tamil-Schrift, wo sie Inhalt ist“ aus `PRODUCT.md`. Kommt Tamil im Inhalt selbst vor
-  (Namen, Zitate im Altbestand), wird es mit `lang="ta"` ausgezeichnet und von einer Ersatzschrift im Schriftstapel
-  sauber gesetzt. Auszeichnungsschriften müssen Tamil nicht abdecken.
-- **Zwei Tonlagen** (`PRODUCT.md`): Nachrichten ruhig und seriös, Kino und Kultur lebendig. Der Wechsel ist bewusst.
+- **Szene:** Eine 19-Jährige liest in der S-Bahn am Handy, bei Tageslicht. Abends liest ihr Vater dieselbe Seite am
+  Küchentisch. Beide sollen denken: Das ist eine richtige Nachrichtenseite, und sie ist für uns.
+- **Farbe (feste Werte, nicht ändern):**
 
-### Die vier Richtungen
+  | Rolle | Wert | Verwendung |
+  |---|---|---|
+  | Grund | `oklch(0.985 0.002 250)` | Seite; kein Creme, kein Sand |
+  | Fläche | `oklch(0.962 0.003 250)` | höchstens für einen abgesetzten Block (Dienstblock) |
+  | Tinte | `oklch(0.21 0.012 255)` | Schlagzeilen und Text |
+  | Leise | `oklch(0.45 0.012 255)` | Datum, Bildzeilen, Nebeninfos (Kontrast ≥ 4,5:1) |
+  | Linie | `oklch(0.88 0.004 250)` | feine Trennlinien, 1 Pixel |
+  | Rot | `oklch(0.508 0.177 25.6)` (Logo-Rot #B5282A) | nur Logo, Dachzeilen oder kleine Marken, aktive Rubrik, Links beim Überfahren |
 
-Jede Richtung bekommt ihren Kern und ihr Vorbild. Die Idee, die Schriftwahl und das Signatur-Element findet der
-Gestalter selbst und begründet sie in `begruendung.md`.
+  Kein zweiter Buntton, keine Vollfarbflächen, kein Verlauf. Rot nie als Schlagzeile und nie als Fläche.
+- **Schrift:** je Variante aus der Kandidatenliste in Abschnitt 4, normale Breite, höchstens zwei Familien.
+  Tamil im Inhalt setzt eine Ersatzschrift im Schriftstapel (`lang="ta"`); auf den Proben kommt kein Tamil vor.
 
-| Slug | Kern | Vorbild (Screenshots in `design/referenzen/img/`) |
-|---|---|---|
-| `plakatwand` | Die Seite denkt wie eine Kinoplakatwand: ein Bild, ein Moment, überlebensgroß und angeschnitten. Ein Look, kein Filter über Fotos. | DT Next, Reportage über handgemalte Banner (`dtnext-flex.png`); ergänzend The News Minute (`tnm-posters.png`) |
-| `zine` | Der Einstieg ist jede Woche ein neues Cover mit Haltung, gebaut wie ein selbst gemachtes Heft. | Burnt Roti (`burntroti.png`); ergänzend WEIRDO zine (`weirdo.png`) |
-| `raster` | **Raster + große Schrift:** strenges Linienraster, große lateinische Typografie, Rot als einziger Farbfleck. Ersetzt „Raster + Tamil-Schrift“, weil die Seite nur Deutsch zeigt. | Highsnobiety (`highsnobiety.png`), Hypebeast (`hypebeast.png`) |
-| `feed` | Ein vertikaler Fluss fürs Handy: zwei Hälften im Gegensatz, Logo als Form, Navigation in Daumenreichweite. | i-D (`idmag.png`); ergänzend The Pudding (`thepudding.png`) |
+  | Stufe | Handy | Desktop |
+  |---|---|---|
+  | Schlagzeile Aufmacher | 26–32 px | 36–48 px |
+  | Schlagzeile Nebenstück | 19–22 px | 20–24 px |
+  | Schlagzeile Meldung | 17–18 px | 17–19 px |
+  | Vorspann und Anreißertext | 16–17 px | 16–18 px |
+  | Dachzeile, Datum | 12–14 px | 12–14 px |
 
-Die Vorbilder liefern Haltung und Mittel, keine Vorlage zum Nachbauen. Wo ein Vorbild selbst nah an der Verbotsliste
-liegt (Etiketten bei Brut., rote Fläche bei gal-dem), gilt die Verbotsliste.
+  Zwischen den drei Schlagzeilenstufen liegt jeweils mindestens der Faktor 1,25. Versalien nur in Dachzeilen bis
+  14 px. Keine Worttrennung in Schlagzeilen; jede Schlagzeile hat höchstens drei Zeilen, auch der längste Titel der
+  Inhaltsliste (81 Zeichen).
+- **Ordnung:** drei Stufen von Anreißern (Aufmacher, Nebenstück mit Bild, Meldung ohne Bild). Jeder Anreißer hat
+  eine Dachzeile (Rubrik) und ein Datum in einem einzigen Format („17. Juli 2024“). Getrennt wird nur mit feinen
+  Linien und Abstand: kein Kasten, kein Schatten, keine Pille, kein Icon, kein Knopf „Weiterlesen“. Der ganze
+  Anreißer ist das Tippziel.
+- **Bilder:** rechteckig, Radius höchstens 4 px, höchstens zwei Seitenverhältnisse auf der Seite, nie über ihrer
+  natürlichen Breite gezeigt (bei doppelter Pixeldichte also höchstens halbe Dateibreite).
+- **Kopf:** Logo unverändert, darunter oder daneben die neun Rubriken als schlichte Textzeile. Am Handy ist der Kopf
+  höchstens 120 px hoch; die Rubrikzeile darf in ihrem eigenen Behälter seitlich laufen, die Seite selbst nie.
+- **Dienstblock „Diese Woche“:** Kino (Titel, Zahl der Kinos, Städte) und Termine (Datum, Ort, Veranstalter) als
+  nüchterne Liste. Das ist das Eigene von tamil.de; es braucht keinen Effekt. Am Handy beginnt der Block spätestens
+  im dritten Bildschirm.
+- **Keine Effekte:** keine Drehung, kein Stempel, kein Halbton, keine Bewegung, kein Laufband, keine feste Leiste am
+  unteren Rand.
 
-## 4. Umfang
+## 4. Die drei Varianten
 
-- **Skizze**, keine fertige Seite. Je Richtung zwei Dateien: `index.html` (erster Bildschirm mit dem Aufmacher plus
-  der Abschnitt „Diese Woche“) und `artikel.html` (Kopf bis zum ersten Absatz).
-- **Handy und Desktop gleich ernst**: geprüft bei 390, 820 und 1280 Pixeln.
-- Statisches HTML mit eigener CSS-Datei, kein Framework, JavaScript nur, wenn die Idee es braucht.
-- Keine weiteren Seitentypen, keine Menü-Unterseiten, kein Cockpit. Das kommt nach Tor G2.
+Gleiches Inhaltsgerüst, gleiche Farben. Der Unterschied liegt auf zwei Reglern, damit Luis auch mischen kann.
 
-## 5. Aufbau
+| Slug | Schlagzeile | Aufmacher | Dichte | Familie der Vorbilder | Schriftkandidaten |
+|---|---|---|---|---|---|
+| `klar` | Grotesk, halbfett (600–700) | Bild halbe Breite neben dem Text (am Handy Bild über dem Text) | am höchsten: lange Meldungsliste direkt neben oder unter dem Aufmacher | Tagesschau, BBC | Libre Franklin **oder** Source Sans 3 |
+| `blatt` | Serife nur in den Schlagzeilen (600–700), alles andere Grotesk | Bild über dem Text | mittel, mehr Luft, klare Spalten mit Linien | Zeit, Guardian, NZZ | Source Serif 4 **oder** Frank Ruhl Libre, dazu Source Sans 3 |
+| `bild` | Grotesk, fett (700–800) | Bild über die volle Breite der Inhaltsspalte, Schlagzeile darunter | darunter ein vierspaltiger Block (am Handy einspaltig) | Spiegel | Hanken Grotesk **oder** Radio Canada Big |
 
-- **Startseite, erster Bildschirm:** Marke und eine knappe Navigation, dann der Aufmacher als Cover. Überschrift,
-  Bild und Rubrik sind eine Einheit; nichts daneben konkurriert. Am Handy ist die Überschrift ohne Scrollen
-  vollständig lesbar.
-- **Darunter „Diese Woche“:** Kino und Events als zweiter Abschnitt mit eigenem Rhythmus, erkennbar anders gebaut
-  als das Cover. Termine sind nach Datum und Ort lesbar, nicht als gleichförmiges Kartenraster.
-- **Artikel:** Rubrik, Überschrift, Vorspann, Bild, erster Absatz. Ruhig, eine Spalte, höchstens 70 Zeichen je
-  Zeile, Fließtext mindestens 18 Pixel am Handy. Die Lautstärke der Startseite klingt im Kopf nach, der Text
-  bleibt still.
-- Abstände wechseln bewusst; gleiche Polsterung überall ist Monotonie.
+- Alle Schriften sind frei lizenziert (OFL) und stehen nicht auf den Verbotslisten. Selbst hosten in
+  `design/richtungen/<slug>/schriften/` mit Lizenzdatei.
+- **Für `blatt` gilt eine ausdrückliche Ausnahme:** Eine Serife in den Schlagzeilen ist erlaubt. Verboten bleibt die
+  Kombination aus Runde 2: Creme oder Sand, braungraue Tinte, Serife im Fließtext.
+- **Für `bild`:** Das Aufmacherbild hat 1382 Pixel Breite. Es wird am Desktop höchstens 690 px breit gezeigt.
 
-## 6. Zustände
+## 5. Umfang der Schnellprobe
 
-Die Skizze zeigt den Normalfall. Diese Fälle müssen in ihr vorkommen oder in `begruendung.md` beantwortet sein:
+Nur `index.html`, ernsthaft bei 390 und 1280 Pixeln; bei 820 nur kein seitlicher Überlauf. Von oben nach unten:
 
-- **Aufmacher mit kleinem Bild.** Viele Beitragsbilder im Bestand sind nur 692 bis 900 Pixel breit. Das Cover muss
-  mit Schrift und Farbe tragen und darf kein Bild über seine Größe strecken.
-- **Eintrag ohne Foto.** Die Kino-Termine haben kein Pressefoto. Sie brauchen eine Form, die ohne Bild gut aussieht.
-- **Lange und kurze Überschrift.** Von „Dosa“ bis zu 78 Zeichen.
-- **Viele und wenige Spielorte.** 11 Kinos und 2 Kinos im selben Abschnitt.
-- **Fokus** sichtbar auf jedem Link und Knopf; **`prefers-reduced-motion`** beachtet.
+1. Kopf mit Logo und den neun Rubriken.
+2. Aufmacher.
+3. Vier Nebenstücke mit Bild.
+4. Meldungsliste ohne Bild (sechs Titel).
+5. Rubrikblock „Küche“ (vier Beiträge mit Bild).
+6. Dienstblock „Diese Woche“ (zwei Kino-Einträge, ein Termin).
 
-## 7. Bedienung
+Kein Fuß, kein Artikel, keine Zustände, kein Werbeplatz, kein JavaScript. Die Begründung hat höchstens zehn Zeilen.
 
-- Antippen des Covers öffnet den Artikel; die ganze Fläche ist das Ziel.
-- Navigation zu den Rubriken ist mit dem Daumen erreichbar; Tippflächen mindestens 44 × 44 Pixel.
-- Teilen über WhatsApp ist im Artikel sichtbar (einfacher Link, kein Skript von Dritten).
-- Kein Laufband, kein Autoplay, keine automatische Bewegung. Fremdinhalte erst nach Klick.
-- Kein seitliches Scrollen der Seite bei 390, 820 und 1280 Pixeln.
+## 6. Inhalte
 
-## 8. Inhalte
+Fest für alle Varianten: `design/inhalte/inhalte.json`, Bilder in `design/inhalte/bilder/`, Logo
+`design/inhalte/logo.png`. Genau diese Inhalte in genau dieser Reihenfolge; nichts weglassen, nichts erfinden. Der
+Vorspann darf an einem Satzende gekürzt werden. Das Datum ist das Originaldatum und wird mit Jahr gezeigt (der
+Bestand endet im November 2024). Alt-Texte nur, nachdem das Bild angesehen wurde. Die Rubrik „Kontakt“ und alle
+Links führen in der Probe auf `#`.
 
-Alle vier Richtungen zeigen **dieselben echten Inhalte**, damit der Vergleich die Gestaltung zeigt und nicht die
-Themen. Texte unverändert aus `prototyp/content/posts.json`; Bilder relativ aus `prototyp/static/img/`.
+## 7. Harte Kriterien (werden gemessen)
 
-| Platz | Inhalt | Quelle |
-|---|---|---|
-| Aufmacher (Cover) | „Kanguva – Ein tamilisches Kino-Highlight ab 14. November in Deutschland“ | Beitrag 9711, Bild `p9711.jpg` (1024 × 538) |
-| Artikel | „Sri Lanka schafft Visum für Deutsche ab“, Vorspann und erster Absatz | Beitrag 9655, Bild `p9655.jpg` (900 × 458) |
-| Diese Woche, Kino | „Scene“ im Kino: 11 Spielorte in Deutschland (Berlin, Bremen, Chemnitz, Dortmund, Düsseldorf und 6 weitere Städte) | Radar-Entwurf, freigegeben |
-| Diese Woche, Kino | „Ramayana: Rise of a Legend“ im Kino: 2 Spielorte in Deutschland (Gütersloh, Ravensburg) | Radar-Entwurf, freigegeben |
-| Diese Woche, Event | Diwali in Basel: Basel Tamil Sangam feiert am 21. November 2026, Aula Lysbüchel | Radar-Entwurf, freigegeben |
+Gemessen wird der sichtbare erste Bildschirm bei 390 × 844 und 1280 × 800 mit `node design/vergleich/aufnahmen.mjs
+<slug>`. Die Zahlen sind an den Vorbildern geeicht (`design/referenzen/news-marken.md`, Zeile „Spanne der Marken“).
 
-- **Rubriken** (echte Namen): Nachrichten, Entertainment, Events, Community, Küche, Kino, Sport, Kultur, Kontakt.
-- **Logo:** `prototyp/static/img/logo.png`, unverändert (Rot und Grau).
-- **Datum**, falls gezeigt: das Originaldatum des Beitrags (`datum_original`).
-- **Nichts erfinden:** keine weiteren Titel, Zahlen, Uhrzeiten, Preise, Bildnachweise oder Kontakte. Die Kino- und
-  Event-Einträge haben keine Fotos; kein Platzhalterbild und kein erfundener Nachweis. Telefon, E-Mail und
-  WhatsApp-Nummer in `prototyp/content/site.json` sind Beispielwerte und werden nicht verwendet.
-- **Bilder:** In `prototyp/static/img/` liegen verkleinerte Kopien (höchstens 1024 Pixel breit). Auf der echten
-  Seite sind die Originale größer; in der Skizze wird trotzdem nichts hochskaliert.
-- **Werbung:** Wenn ein Werbeplatz gezeigt wird, trägt er das Wort „Anzeige“ und ordnet sich dem Inhalt unter.
+1. **Viele Geschichten:** am Handy die Schlagzeile des Aufmachers vollständig und mindestens eine weitere
+   Schlagzeile vollständig sichtbar; am Desktop mindestens fünf. Jede Schlagzeile ist ein `h2` oder `h3` mit Link.
+2. **Kopf** am Handy höchstens 120 px bis zur ersten Schlagzeile.
+3. **Drei Stufen** von Anreißern, Faktor mindestens 1,25; höchstens zwei Schriftfamilien.
+4. **Größte Schrift** im ersten Bildschirm höchstens 32 px am Handy und 48 px am Desktop; höchstens drei Zeilen je
+   Schlagzeile; keine Versalien über 14 px.
+5. **Rot** höchstens 3 % der Fläche (Bilder ausgeblendet); keine rote Schrift über 20 px; kein zweiter Buntton.
+6. **Keine Effekte:** Radius höchstens 4 px, kein weicher Schatten, nichts gedreht, normale Schriftbreite.
+7. **Anreißer ohne Kasten**, ohne Icon, ohne Knopf.
+8. **Ein Format** für Dachzeile und Datum; höchstens zwei Bildformate.
+9. **Kein Bild** über seiner natürlichen Breite bei doppelter Pixeldichte.
+10. **Kein seitlicher Überlauf** bei 390, 820 und 1280; keine Konsolenfehler.
+11. **Dienstblock** beginnt am Handy spätestens im dritten Bildschirm.
+12. **Paarvergleich:** Die Probe liegt neben zwei Vorbildern und neben Runde 2. Ein Messwert außerhalb der Spanne
+    der Marken ist ein P1.
 
-## 9. Hilfreiche Nachschlagedateien
+Zum Vergleich die abgelehnten Skizzen der Runde 4 (`design/vergleich/kennzahlen/`): eine bis zwei Schlagzeilen im
+ersten Bildschirm, größte Schrift 98 bis 335 px, Rotanteil 6 bis 54 %.
 
-Aus `.claude/skills/impeccable/reference/`: `brand.md` (Register und abgegriffene Stile), `typography.md` und
-`typeset.md` (Schriftwahl und Hierarchie), `color-and-contrast.md`, `spatial-design.md` und `layout.md`,
-`responsive-design.md`. Barrierefreiheit prüft später `audit.md`; die Pflichten oben gelten trotzdem ab der Skizze.
+## 8. Pflichten
 
-## 10. Offen
+WCAG 2.2 AA (Kontrast Text ≥ 4,5:1), Tippflächen mindestens 44 × 44 px, sichtbarer Fokus auf jedem Link,
+`prefers-reduced-motion` beachtet, Fließtext im Artikel später mindestens 18 px am Handy, nur Deutsch.
 
-- Die Auswahl des Auftraggebers von der Referenztafel (3 bis 5 Vorbilder, die er mag, 2, die er nicht mag).
-- Schriftlizenzen: nur Google Fonts oder selbst gehostete Schriften mit Lizenzdatei im Richtungsordner; nichts von
-  der impeccable-Ausschlussliste und keine der verbrannten Schriften aus `abgelehnt.md`.
-- Bildsprache für Beiträge ohne Foto (Kino-Termine, Küche): Die Richtung schlägt eine Lösung vor; ob sie sich mit
-  dem Bestand halten lässt, zeigt erst die Probeseite.
+## 9. Offen
 
-## Maßstab für die Kritik
-
-Eine Richtung wird dem Auftraggeber nur gezeigt, wenn sie mindestens 28 von 40 Punkten erreicht, den Slop-Test
-besteht und kein offenes P0 oder P1 hat. Zusätzlich aus diesem Brief: Die eine Geschichte steht am Handy im ersten
-Bildschirm, die Seite zeigt nur Deutsch, der Artikel ist ruhig, und nichts von der Verbotsliste kommt vor.
+- **Logo:** Es liegt nur als kleines Bild vor (300 × 121 px) mit der Unterzeile „portal • lifestyle •
+  entertainment“. In Kopfgröße wird die Unterzeile unlesbar. Luis ist nach einer Vektordatei gefragt; bis dahin
+  bleibt das Bild unverändert.
+- **Zustände, Artikel, weitere Seitentypen** kommen nach der Wahl (Skizze) und im Ausbau (Probeseite).
+- **Die Auswahl des Auftraggebers** von der früheren Referenztafel ist mit der neuen Richtung überholt.

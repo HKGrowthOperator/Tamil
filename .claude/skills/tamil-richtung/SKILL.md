@@ -38,9 +38,10 @@ Kurz halten (Schnellprobe: höchstens zehn Zeilen):
 | Skizze (`/design-runde`, nach der Wahl) | dazu `artikel.html` (Kopf bis erster Absatz) und die Anmerkungen von Luis | Handy und Desktop gleich ernst |
 | Probeseite (`/design-ausbau`) | Start, Artikel, Rubrik, Events, Kinoliste, Kontakt | alle Zustände, die das Theme braucht |
 
-- Inhalte, Bilder und Schriften liegen fertig in `design/inhalte/` (`inhalte.json`, `bilder/`, `schriften/`). Nimm
-  genau diese Inhalte in genau dieser Reihenfolge; nichts erfinden, nichts weglassen. Einbinden relativ
+- Inhalte, Bilder und Logo liegen fertig in `design/inhalte/` (`inhalte.json`, `bilder/`, `logo.png`). Nimm genau
+  diese Inhalte in genau dieser Reihenfolge; nichts erfinden, nichts weglassen. Einbinden relativ
   (`../../inhalte/…`).
+- Schrift selbst hosten in `design/richtungen/<slug>/schriften/`, mit Lizenzdatei.
 - Eigene CSS-Datei `<slug>.css`, kein Framework, kein JavaScript.
 - Pflichten aus `tamil-marke` gelten ab der ersten Probe (18 px Fließtext, 44 px Tippflächen, Kontrast, `lang="ta"`).
 
