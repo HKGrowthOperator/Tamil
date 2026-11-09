@@ -1,0 +1,19 @@
+# Kontext für wordpress/Dockerfile (Build-Kontext = Repo-Wurzel). BuildKit nimmt diese Datei statt der
+# .dockerignore an der Wurzel. Erst alles ausschließen, dann nur das zulassen, was ins WordPress-Image gehört –
+# kein .git, kein data/, keine .env, kein Radar-Code.
+*
+!wordpress/themes/tamil
+!wordpress/plugins/tamil-site
+!wordpress/plugins/tamil-radar
+!wordpress/docker/start.sh
+!wordpress/docker/wp-helfer.php
+
+# Reste aus der Entwicklung, auch innerhalb der zugelassenen Ordner
+**/__pycache__
+**/*.pyc
+**/.DS_Store
+**/node_modules
+**/*.sqlite
+**/*.sqlite-*
+**/.env
+**/.env.*
