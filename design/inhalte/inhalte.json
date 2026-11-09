@@ -1,0 +1,248 @@
+{
+  "stand": "2026-11-09",
+  "hinweis": "Feste Inhalte für alle Proben der Runde 2. Reihenfolge und Zuordnung nicht ändern, nichts weglassen, nichts erfinden. Titel und Vorspann stammen unverändert aus prototyp/content/posts.json; der Vorspann darf für die Anzeige an einem Satzende gekürzt werden. Das Datum ist das Originaldatum und wird immer mit Jahr gezeigt. Dachzeilen sind echte Rubriknamen. Bilder sind die Originale der alten Seite, verkleinert; nie über die angegebene Breite hinaus zeigen (auch nicht bei doppelter Pixeldichte: gezeigte Breite höchstens w/2). Alt-Texte nur schreiben, nachdem das Bild angesehen wurde. Meldungen haben bewusst kein Bild.",
+  "logo": {
+    "datei": "logo.png",
+    "w": 300,
+    "h": 121,
+    "hinweis": "unverändert verwenden; nicht einfärben, nicht beschneiden"
+  },
+  "rubriken": [
+    "Nachrichten",
+    "Entertainment",
+    "Events",
+    "Community",
+    "Küche",
+    "Kino",
+    "Sport",
+    "Kultur",
+    "Kontakt"
+  ],
+  "aufmacher": {
+    "id": 9631,
+    "dachzeile": "Nachrichten",
+    "titel": "Uma Kumaran, Londons erste tamilische Abgeordnete",
+    "vorspann": "In einem Erdrutschsieg für die Labour Party wurde Uma Kumaran zur Abgeordneten für Stratford und Bow gewählt, nachdem die Generalwahl am Donnerstag, den 4. Juli 2024, stattfand. Die britische Tamilin, die sri-lankisch-tamilischer …",
+    "datum": "17. Juli 2024",
+    "datum_iso": "2024-07-17",
+    "lesezeit_min": 2,
+    "bild": {
+      "datei": "bilder/p9631.jpg",
+      "w": 1382,
+      "h": 716
+    }
+  },
+  "nebenstuecke": [
+    {
+      "id": 9655,
+      "dachzeile": "Nachrichten",
+      "titel": "Sri Lanka schafft Visum für Deutsche ab",
+      "vorspann": "Tolle Neuigkeiten: Das schöne Sri Lanka verzichtet bald für 35 Länder auf die Visumpflicht, auch Deutschland ist dabei. Ziel dieser Entscheidung ist die Wiederbelebung des Tourismussektors und die Unterstützung der Wirtschaft. …",
+      "datum": "26. August 2024",
+      "datum_iso": "2024-08-26",
+      "lesezeit_min": 2,
+      "bild": {
+        "datei": "bilder/p9655.jpg",
+        "w": 1200,
+        "h": 610
+      }
+    },
+    {
+      "id": 9642,
+      "dachzeile": "Kultur",
+      "titel": "Parai: Das ursprüngliche Musik zur Vereinigung der tamilischen Gemeinschaft",
+      "vorspann": "Parai bedeutet „Sprechen oder Kommunizieren“. Es ist auch eines der frühesten Perkussionsinstrumente, das bis in prähistorische Zeiten zurückreicht. Tholkaapiam, ein tamilisches Grammatikbuch, das vor der christlichen Ära …",
+      "datum": "18. Juli 2024",
+      "datum_iso": "2024-07-18",
+      "lesezeit_min": 5,
+      "bild": {
+        "datei": "bilder/p9642.jpg",
+        "w": 1200,
+        "h": 622
+      }
+    },
+    {
+      "id": 9662,
+      "dachzeile": "Entertainment",
+      "titel": "Spektakuläres Konzert 2025: Santhosh Narayanan und Dhee in NRW",
+      "vorspann": "AJ Entertainment, bekannt für ihre erfolgreichen Konzerte im Jahr 2023 mit Musikgrößen wie Anirudh, Ilaiyaraaja und A.R. Rahman, hat ein weiteres Highlight für 2025 angekündigt. Der Veranstalter bestätigte, dass der renommierte …",
+      "datum": "26. August 2024",
+      "datum_iso": "2024-08-26",
+      "lesezeit_min": 1,
+      "bild": {
+        "datei": "bilder/p9662.jpg",
+        "w": 1200,
+        "h": 609
+      }
+    },
+    {
+      "id": 9711,
+      "dachzeile": "Kino",
+      "titel": "Kanguva – Ein tamilisches Kino-Highlight ab 14. November in Deutschland",
+      "vorspann": "Ab dem 14. November ist der Film Kanguva in deutschen Kinos zu sehen und wird von tamilischen wie internationalen Filmfans mit Spannung erwartet. Schon der Trailer hat viele Zuschauer begeistert, und es gibt Spekulationen, dass …",
+      "datum": "6. November 2024",
+      "datum_iso": "2024-11-06",
+      "lesezeit_min": 2,
+      "bild": {
+        "datei": "bilder/p9711.jpg",
+        "w": 1200,
+        "h": 630
+      }
+    }
+  ],
+  "meldungen": [
+    {
+      "id": 9697,
+      "dachzeile": "Kino",
+      "titel": "Von Deutschland nach Tamil Nadu: Prashath Lokeshwarans Debüt in Rathamaarey",
+      "vorspann": "Mit seinem kommenden Film „Rathamaarey“ betretet der aufstrebende Regisseur Dinesha Ravichandran aus Chidambaram (Tamil Nadu) nach über zehn Jahren Erfahrung in der tamilischen Filmindustrie erstmals als Regisseur die große …",
+      "datum": "13. Oktober 2024",
+      "datum_iso": "2024-10-13",
+      "lesezeit_min": 3
+    },
+    {
+      "id": 9688,
+      "dachzeile": "Nachrichten",
+      "titel": "Ist Sri Lanka bereit für einen Neuanfang?",
+      "vorspann": "Sri Lanka steht an einem Wendepunkt: Wird es bei der Präsidentenwahl einen wirklichen politischen Wechsel geben? Die Wirtschaftslage hat sich unter dem Interimspräsidenten leicht verbessert, doch nicht alle sind überzeugt. …",
+      "datum": "21. September 2024",
+      "datum_iso": "2024-09-21",
+      "lesezeit_min": 2
+    },
+    {
+      "id": 9678,
+      "dachzeile": "Community",
+      "titel": "Meet Tamil Singles – Ein neues Dating-Event für die tamilische Gemeinschaft",
+      "vorspann": "Die tamilische Gemeinschaft in Deutschland und der Schweiz darf sich auf ein aufregendes neues Event freuen: “Meet Tamil Singles”. An einem noch bekanntzugebenden Datum haben tamilische Singles im Alter von 21 bis 40 Jahren die …",
+      "datum": "13. September 2024",
+      "datum_iso": "2024-09-13",
+      "lesezeit_min": 1
+    },
+    {
+      "id": 9670,
+      "dachzeile": "Nachrichten",
+      "titel": "Indien: Viel Interesse für tamilische Wurzeln von Kamala Harris",
+      "vorspann": "Die südindischen Wurzeln der US-Politikerin Kamala Harris stoßen in Indien auf viel Interesse, seit klar ist, dass Harris wohl die neue Präsidentschaftskandidatin der Demokraten wird. Das berichtet die Agentur Asianews. Ein …",
+      "datum": "13. September 2024",
+      "datum_iso": "2024-09-13",
+      "lesezeit_min": 3
+    },
+    {
+      "id": 9650,
+      "dachzeile": "Entertainment",
+      "titel": "Maya Neelakantan: Ich vertrete ganz Indien auf der Bühne von America’s Got Talent",
+      "vorspann": "Eine 10-jährige Gitarristin aus Chennai, Tamil Nadu, brachte die Juroren von America’s Got Talent zum Staunen. Maya Neelakantan trat bei America’s Got Talent auf und erhielt eine Standing Ovation. Sie begann ihre Performance mit …",
+      "datum": "19. Juli 2024",
+      "datum_iso": "2024-07-19",
+      "lesezeit_min": 1
+    },
+    {
+      "id": 9635,
+      "dachzeile": "Nachrichten",
+      "titel": "Vijay unterstützt Sri-Lanka-Tamilen",
+      "vorspann": "Der Schauspieler aus Tamil Nadu, Vijay, hat eine bedeutende Geschichte der Unterstützung des Befreiungskampfes von Tamil Eelam. Sein Aktivismus in diesem Bereich war besonders bemerkenswert, insbesondere während wichtiger Momente …",
+      "datum": "17. Juli 2024",
+      "datum_iso": "2024-07-17",
+      "lesezeit_min": 2
+    }
+  ],
+  "rubrikblock": {
+    "rubrik": "Küche",
+    "beitraege": [
+      {
+        "id": 9600,
+        "dachzeile": "Küche",
+        "titel": "Kottu Roti",
+        "vorspann": "Kottu Roti ist ein Klassiker des sri-lankischen Street Foods. Die Übersetzung des tamilischen Begriffs lautet „gehacktes Roti“, wobei Roti wiederum ein weitverbreitetes ungesäuertes Fladenbrot bezeichnet. Bei Kottu Roti handelt …",
+        "datum": "16. Juli 2024",
+        "datum_iso": "2024-07-16",
+        "lesezeit_min": 1,
+        "bild": {
+          "datei": "bilder/p9600.jpg",
+          "w": 1200,
+          "h": 558
+        }
+      },
+      {
+        "id": 9597,
+        "dachzeile": "Küche",
+        "titel": "Payasam",
+        "vorspann": "Dies ist ein traditionelles Gericht, das als Nachspeise serviert wird. Es ist ein süßes Gericht, das einem feuchten Pudding ähnelt. In anderen Teilen Südindiens wird es oft auch Kheer genannt. Die Hauptzutaten sind Ghee, Reis …",
+        "datum": "16. Juli 2024",
+        "datum_iso": "2024-07-16",
+        "lesezeit_min": 1,
+        "bild": {
+          "datei": "bilder/p9597.jpg",
+          "w": 1200,
+          "h": 530
+        }
+      },
+      {
+        "id": 9594,
+        "dachzeile": "Küche",
+        "titel": "Biryani",
+        "vorspann": "Es gibt zwar mehrere Biryanis, die von den Tamilen geliebt werden, aber eines dieser Gerichte ist das Aloo Biryani. Bei diesem köstlichen Gericht werden die Kartoffeln mariniert und nehmen den reichen Geschmack der Gewürze auf. …",
+        "datum": "16. Juli 2024",
+        "datum_iso": "2024-07-16",
+        "lesezeit_min": 1,
+        "bild": {
+          "datei": "bilder/p9594.jpg",
+          "w": 1200,
+          "h": 539
+        }
+      },
+      {
+        "id": 9591,
+        "dachzeile": "Küche",
+        "titel": "Dosa",
+        "vorspann": "Dosa ist ein größtenteils knuspriges Fladenbrot, das aus einem Teig mit einer Mischung aus Linsen (Urad Dal) und Reis hergestellt wird. Der Teig wird zunächst fermentiert und dann wie ein dünner Pfannkuchen in einer heißen …",
+        "datum": "16. Juli 2024",
+        "datum_iso": "2024-07-16",
+        "lesezeit_min": 1,
+        "bild": {
+          "datei": "bilder/p9591.jpg",
+          "w": 1200,
+          "h": 545
+        }
+      }
+    ]
+  },
+  "diese_woche": {
+    "hinweis": "Aus dem News-Radar, freigegeben am 09.11.2026. Keine Uhrzeiten, Preise oder weiteren Orte ergänzen.",
+    "kino": [
+      {
+        "titel": "Scene",
+        "kinos": 11,
+        "land": "Deutschland",
+        "orte": [
+          "Berlin",
+          "Bremen",
+          "Chemnitz",
+          "Dortmund",
+          "Düsseldorf"
+        ],
+        "weitere_staedte": 6
+      },
+      {
+        "titel": "Ramayana: Rise of a Legend",
+        "kinos": 2,
+        "land": "Deutschland",
+        "orte": [
+          "Gütersloh",
+          "Ravensburg"
+        ],
+        "weitere_staedte": 0
+      }
+    ],
+    "termine": [
+      {
+        "titel": "Diwali in Basel",
+        "veranstalter": "Basel Tamil Sangam",
+        "datum": "Samstag, 21. November 2026",
+        "datum_iso": "2026-11-21",
+        "ort": "Aula Lysbüchel, Basel",
+        "text": "Der Basel Tamil Sangam lädt Familien zur Diwali-Feier in die Aula Lysbüchel ein. Mitglieder erhalten Tickets günstiger."
+      }
+    ]
+  }
+}

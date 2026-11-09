@@ -1,0 +1,72 @@
+{
+  "slug": "zine",
+  "stand": "2026-11-09T22:14",
+  "handy": {
+    "kopf_hoehe": 418,
+    "schlagzeilen_ganz_sichtbar": 1,
+    "schlagzeilen_seite": 4,
+    "max_zeilen_schlagzeile": 3,
+    "groesste_schrift": {
+      "px": 125.603,
+      "text": "Kanguva"
+    },
+    "groesste_rote_schrift": {
+      "px": 56,
+      "text": "Heft KW 45"
+    },
+    "versalien_ueber_14px": 9,
+    "schriftfamilien": [
+      "Atkinson Hyperlegible Next",
+      "Anybody"
+    ],
+    "groesster_radius": {
+      "px": 0,
+      "element": ""
+    },
+    "schatten": 0,
+    "gedreht": 2,
+    "schriftbreite_verstellt": 50,
+    "bilder_ueber_natuerlicher_breite": [],
+    "ueberlauf": 0,
+    "farbanteil_ohne_bilder": {
+      "bunt": 0.2446,
+      "rot": 0.2446
+    },
+    "seitenfehler": []
+  },
+  "desktop": {
+    "kopf_hoehe": 1072,
+    "schlagzeilen_ganz_sichtbar": 0,
+    "schlagzeilen_seite": 3,
+    "max_zeilen_schlagzeile": 3,
+    "groesste_schrift": {
+      "px": 183.323,
+      "text": "Kanguva"
+    },
+    "groesste_rote_schrift": {
+      "px": 130.945,
+      "text": "KW 45"
+    },
+    "versalien_ueber_14px": 14,
+    "schriftfamilien": [
+      "Atkinson Hyperlegible Next",
+      "Anybody"
+    ],
+    "groesster_radius": {
+      "px": 0,
+      "element": ""
+    },
+    "schatten": 0,
+    "gedreht": 2,
+    "schriftbreite_verstellt": 54,
+    "bilder_ueber_natuerlicher_breite": [
+      "../../../prototyp/static/img/p9711.jpg (797 px gezeigt, 1024 px vorhanden)"
+    ],
+    "ueberlauf": 0,
+    "farbanteil_ohne_bilder": {
+      "bunt": 0.2994,
+      "rot": 0.2994
+    },
+    "seitenfehler": []
+  }
+}
