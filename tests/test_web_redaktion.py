@@ -258,3 +258,44 @@ def test_add_source_to_finished_story_is_refused(app):
     assert resp.status_code == 409 and "Recherche nötig" in resp.get_data(as_text=True)
     with _store(app) as store:
         assert jobs.offen_fuer_story(store, fertig) == []
+
+
+# ---- Coolify: Lesezugang und Proxy ---------------------------------------------------------------------------
+
+def test_report_api_needs_token_and_returns_pilot_data(app):
+    client = app.test_client()
+    assert client.get("/api/bericht").status_code == 404  # ohne RADAR_LESE_TOKEN gibt es den Endpunkt nicht
+    app.extensions["settings"].lese_token = "lese-token-mit-genug-zeichen"
+    assert client.get("/api/bericht").status_code == 401
+    assert client.get("/api/bericht", headers={"Authorization": "Bearer falsch"}).status_code == 401
+    assert client.get("/api/bericht", headers={"Authorization": "Bearer tökén"}).status_code == 401
+    resp = client.get("/api/bericht?tage=3", headers={"Authorization": "Bearer lese-token-mit-genug-zeichen"})
+    data = resp.get_json()
+    assert resp.status_code == 200 and data["tage"] == 3
+    assert data["entwuerfe"] and data["storys"] and {"budget", "warteschlange", "kosten", "aufrufe"} <= set(data)
+    story = next(s for s in data["storys"] if s["dokumente"])
+    assert story["claims"] and story["fassungen"] and "kosten" in story
+    roh = resp.get_data(as_text=True)
+    assert "passwort_hash" not in roh and "lese-token" not in roh and "s3cret" not in roh
+    assert client.post("/api/bericht", headers={"Authorization": "Bearer lese-token-mit-genug-zeichen"}).status_code != 200
+
+
+def test_behind_proxy_rate_limit_uses_real_client_ip(tmp_path, monkeypatch):
+    for var in ("WP_URL", "WP_USER", "WP_APP_PASSWORD", "NOTIFY_WEBHOOK_URL"):
+        monkeypatch.setenv(var, "")
+    settings = load_settings()
+    settings.data_dir = tmp_path
+    settings.web_user, settings.web_password, settings.web_secret = "luis", "geheim", "s3cret"
+    settings.proxy_hops = 1
+    client = create_app(settings, testing=True).test_client()
+    client.get("/login")
+    with client.session_transaction() as s:
+        token = s["csrf"]
+    for _ in range(10):
+        client.post("/login", data={"user": "luis", "password": "falsch", "_csrf": token},
+                    headers={"X-Forwarded-For": "203.0.113.7"})
+    angreifer = client.post("/login", data={"user": "luis", "password": "geheim", "_csrf": token},
+                            headers={"X-Forwarded-For": "203.0.113.7"})
+    redaktion = client.post("/login", data={"user": "luis", "password": "geheim", "_csrf": token},
+                            headers={"X-Forwarded-For": "198.51.100.20", "X-Forwarded-Proto": "https"})
+    assert angreifer.status_code == 429 and redaktion.status_code == 302

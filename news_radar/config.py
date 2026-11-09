@@ -107,6 +107,8 @@ class Settings:
     wp_seo_meta: str = "none"  # rankmath | yoast | none
     notify_webhook: str = ""
     web_url: str = "http://127.0.0.1:8787"
+    proxy_hops: int = 0  # Reverse-Proxys vor dem Cockpit (Coolify/Traefik: 1) – echte Client-IP und HTTPS erkennen
+    lese_token: str = ""  # GET /api/bericht mit Authorization: Bearer – leer = Endpunkt aus
     web_user: str = ""
     web_password: str = ""
     web_secret: str = ""
@@ -231,6 +233,8 @@ def load_settings(sources_file: Path = ROOT / "sources.toml") -> Settings:
         wp_seo_meta=(env("WP_SEO_META", "none") or "none").lower(),
         notify_webhook=env("NOTIFY_WEBHOOK_URL", ""),
         web_url=(env("RADAR_WEB_URL", "") or "http://127.0.0.1:8787").rstrip("/"),
+        proxy_hops=max(0, _int("RADAR_PROXY_HOPS", 0)),
+        lese_token=env("RADAR_LESE_TOKEN", "").strip(),
         web_user=env("WEB_USER", ""),
         web_password=env("WEB_PASSWORD", ""),
         web_secret=env("WEB_SECRET", ""),

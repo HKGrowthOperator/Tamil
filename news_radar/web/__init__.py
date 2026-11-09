@@ -20,7 +20,8 @@ from ..config import Settings, load_settings
 from ..render import safe_url
 from ..store import Store
 
-PUBLIC_ENDPOINTS = {"ui.login", "ui.gesund", "ui.manifest", "ui.service_worker", "static"}
+PUBLIC_ENDPOINTS = {"ui.login", "ui.gesund", "ui.manifest", "ui.service_worker", "static",
+                    "api.bericht"}  # /api/bericht prüft sein eigenes Bearer-Token (RADAR_LESE_TOKEN)
 MIN_PASSWORT = 12
 
 
@@ -115,11 +116,19 @@ def create_app(settings: Settings | None = None, testing: bool = False) -> Flask
     app.extensions["drossel"] = Drossel()
     app.jinja_env.filters["safe_url"] = safe_url
 
+    from .api import api
     from .redaktion import red
     from .views import ui
 
     app.register_blueprint(ui)
     app.register_blueprint(red)
+    app.register_blueprint(api)
+    if settings.proxy_hops:
+        # Hinter Coolify/Traefik: echte Client-IP (Login-Drossel) und HTTPS aus den X-Forwarded-Kopfzeilen
+        from werkzeug.middleware.proxy_fix import ProxyFix
+
+        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=settings.proxy_hops, x_proto=settings.proxy_hops,
+                                x_host=settings.proxy_hops)
 
     @app.before_request
     def _auth():
