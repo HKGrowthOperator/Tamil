@@ -11,12 +11,10 @@
 
 <header class="kopf">
   <h1><a class="kopf-logo" href="index.html"><img src="../../../prototyp/static/img/logo.png" width="300" height="121" alt="tamil.de"></a></h1>
-  <ul class="laender" aria-label="Für Deutschland, Österreich und die Schweiz">
-    <li>.de</li><li>.at</li><li>.ch</li>
-  </ul>
 </header>
 
 <main>
+<div class="erster">
   <article class="cover">
     <a class="cover-link" href="#kanguva">
       <div class="cover-text">
@@ -24,7 +22,7 @@
         <h2 class="cover-titel">
           <span class="kopfwort">Kanguva</span><span class="vh"> – </span>Ein tamilisches Kino-Highlight ab 14.&nbsp;November in Deutschland
         </h2>
-        <p class="zeichen"><span class="tld" aria-hidden="true">.de</span><span>ab 14. November im Kino</span></p>
+        <p class="zeichen"><span class="tld" aria-hidden="true">.de</span><span>in Deutschland ab 14. November</span></p>
       </div>
       <div class="cover-bild auf-rot">
         <img src="../../../prototyp/static/img/p9711.jpg" width="1024" height="538"
@@ -37,13 +35,40 @@
     </a>
   </article>
 
-  <section class="woche auf-rot" aria-labelledby="woche-titel">
+<nav class="leiste" aria-label="Rubriken">
+  <ul>
+    <li><a href="#kino">Kino</a></li>
+    <li><a href="#events">Events</a></li>
+    <li><a href="#community">Community</a></li>
+    <li><a href="#nachrichten">Nachrichten</a></li>
+    <li class="mehr">
+      <details>
+        <summary>Mehr</summary>
+        <ul class="alle" aria-label="Weitere Rubriken">
+          <li><a href="#entertainment">Entertainment</a></li>
+          <li><a href="#kueche">Küche</a></li>
+          <li><a href="#sport">Sport</a></li>
+          <li><a href="#kultur">Kultur</a></li>
+          <li><a href="#kontakt">Kontakt</a></li>
+        </ul>
+      </details>
+    </li>
+  </ul>
+</nav>
+</div>
+
+  <section class="woche" aria-labelledby="woche-titel">
     <div class="woche-kopf">
       <h2 id="woche-titel">Diese Woche</h2>
-      <p>Kino und Events in Deutschland, Österreich und der Schweiz.</p>
+      <div class="legende">
+        <p>Kino und Events hier bei uns. Das Zeichen aus unserem Logo sagt, in welchem Land:</p>
+        <p class="paare"><span class="paar"><span class="tld" aria-hidden="true">.de</span> Deutschland</span>
+          <span class="paar"><span class="tld" aria-hidden="true">.at</span> Österreich</span>
+          <span class="paar"><span class="tld" aria-hidden="true">.ch</span> Schweiz</span></p>
+      </div>
     </div>
 
-    <ul class="aushang">
+    <ul class="aushang auf-rot">
       <li class="termin">
         <div class="termin-titel">
           <p class="termin-art">Im Kino</p>
@@ -79,36 +104,12 @@
       </li>
     </ul>
 
-    <div class="woche-fuss">
+    <div class="woche-fuss auf-rot">
       <a href="#events">Alle Termine</a>
     </div>
   </section>
 </main>
 
-<nav class="leiste" aria-label="Rubriken">
-  <ul>
-    <li><a href="#kino">Kino</a></li>
-    <li><a href="#events">Events</a></li>
-    <li><a href="#community">Community</a></li>
-    <li><a href="#nachrichten">Nachrichten</a></li>
-    <li class="mehr">
-      <details>
-        <summary>Mehr</summary>
-        <ul class="alle" aria-label="Alle Rubriken">
-          <li><a href="#nachrichten">Nachrichten</a></li>
-          <li><a href="#entertainment">Entertainment</a></li>
-          <li><a href="#events">Events</a></li>
-          <li><a href="#community">Community</a></li>
-          <li><a href="#kueche">Küche</a></li>
-          <li><a href="#kino">Kino</a></li>
-          <li><a href="#sport">Sport</a></li>
-          <li><a href="#kultur">Kultur</a></li>
-          <li><a href="#kontakt">Kontakt</a></li>
-        </ul>
-      </details>
-    </li>
-  </ul>
-</nav>
 
 </body>
 </html>

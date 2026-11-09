@@ -31,33 +31,43 @@
     </header>
 
     <main id="inhalt">
-      <!-- Aufmacher als Cover: die ganze Fläche führt zum Artikel -->
+      <!-- Aufmacher als Cover, gebaut wie eine Zeile des Aushangs: Zeit, Ort, dann das Wort.
+           Die ganze Fläche führt zum Artikel. -->
       <article class="cover">
-        <ul class="cover__meta zeile" aria-label="Angaben zum Beitrag">
-          <li class="feld feld--rubrik">Kino</li>
-          <li class="feld"><time datetime="2024-11-06">6. November 2024</time></li>
-          <li class="feld">2 Min. Lesezeit</li>
-          <li class="feld feld--rest" aria-hidden="true"></li>
-        </ul>
+        <div class="cover__zeile">
+          <p class="cover__wann">
+            <time datetime="2024-11-14"><span class="zeit__gross">14.11.</span><span class="zeit__klein">ab Do, 14. Nov. 2024</span></time>
+          </p>
+          <p class="cover__was">
+            <span class="cover__rubrik">Kino · Kinostart</span>
+            <span class="cover__zeilentext">Mit Suriya und Bobby Deol</span>
+          </p>
+          <p class="cover__ort">
+            <span class="cover__rubrik cover__rubrik--handy">Kino · Kinostart</span>
+            <span class="cover__zeilentext">In deutschen Kinos</span>
+            <span class="cover__zusatz">auch in 3D</span>
+          </p>
+        </div>
 
-        <p class="cover__wort" aria-hidden="true">Kanguva</p>
+        <p class="cover__wort" aria-hidden="true" style="--zeichen: 7">Kanguva</p>
 
         <h1 class="cover__titel">
           <a class="cover__link" href="artikel.html"><span class="nur-sr">Kanguva: </span>Ein tamilisches Kino-Highlight ab 14.&nbsp;November in Deutschland</a>
         </h1>
 
         <figure class="cover__bild">
-          <img src="../../../prototyp/static/img/p9711.jpg" width="1024" height="538"
+          <img src="../../../prototyp/static/img/p9711.jpg" width="1024" height="538" style="--bild-b: 1024px; --bild-h: 538px"
                alt="Suriya als Kanguva, mit gekreuzten Narben auf der Stirn und Fellumhang, vor Fackeln und erhobenen Hörnern">
         </figure>
 
         <div class="cover__vorspann">
           <p>Ab dem 14. November ist der Film Kanguva in deutschen Kinos zu sehen und wird von tamilischen wie internationalen Filmfans mit Spannung erwartet.</p>
+          <p class="cover__meta"><time datetime="2024-11-06">6. November 2024</time> · 2 Min. Lesezeit</p>
           <p class="cover__weiter" aria-hidden="true">Artikel lesen <span class="pfeil">→</span></p>
         </div>
       </article>
 
-      <!-- Diese Woche: ein Fahrplan, kein Kartenraster. Einträge ohne Foto. -->
+      <!-- Diese Woche: derselbe Aushang. Links groß Datum oder Zahl der Kinos, rechts ein Feld pro Ort. Keine Fotos. -->
       <section class="woche" aria-labelledby="woche-titel">
         <div class="woche__kopf">
           <h2 id="woche-titel">Diese Woche</h2>
@@ -66,30 +76,28 @@
 
         <ul class="fahrplan">
           <li class="termin">
-            <p class="termin__wann"><span class="termin__gross">Im Kino</span></p>
+            <p class="termin__wann"><span class="zeit__gross">11</span><span class="zeit__klein">Kinos</span></p>
             <div class="termin__was">
-              <p class="termin__art">Film</p>
+              <p class="termin__art">Film · im Kino</p>
               <h3 class="termin__titel">„Scene“</h3>
-              <p class="termin__info">11 Spielorte in Deutschland</p>
             </div>
-            <ul class="ortsraster" aria-label="Spielorte von „Scene“">
+            <ul class="ortsraster" aria-label="Spielorte von „Scene“, 11 Städte">
               <li>Berlin</li>
               <li>Bremen</li>
               <li>Chemnitz</li>
               <li>Dortmund</li>
               <li>Düsseldorf</li>
-              <li class="ortsraster__mehr">und 6 weitere Städte</li>
+              <li class="ortsraster__mehr"><span class="ortsraster__plus">+6</span> weitere Städte</li>
             </ul>
           </li>
 
           <li class="termin">
-            <p class="termin__wann"><span class="termin__gross">Im Kino</span></p>
+            <p class="termin__wann"><span class="zeit__gross">2</span><span class="zeit__klein">Kinos</span></p>
             <div class="termin__was">
-              <p class="termin__art">Film</p>
+              <p class="termin__art">Film · im Kino</p>
               <h3 class="termin__titel">„Ramayana: Rise of a Legend“</h3>
-              <p class="termin__info">2 Spielorte in Deutschland</p>
             </div>
-            <ul class="ortsraster" aria-label="Spielorte von „Ramayana: Rise of a Legend“">
+            <ul class="ortsraster" aria-label="Spielorte von „Ramayana: Rise of a Legend“, 2 Städte">
               <li>Gütersloh</li>
               <li>Ravensburg</li>
             </ul>
@@ -97,12 +105,12 @@
 
           <li class="termin">
             <p class="termin__wann">
-              <time datetime="2026-11-21"><span class="termin__gross">21.11.</span><span class="termin__klein">Samstag, 2026</span></time>
+              <time datetime="2026-11-21"><span class="zeit__gross">21.11.</span><span class="zeit__klein">Sa, 21. Nov. 2026</span></time>
             </p>
             <div class="termin__was">
               <p class="termin__art">Event</p>
               <h3 class="termin__titel">Diwali in Basel</h3>
-              <p class="termin__info">Basel Tamil Sangam feiert am 21.&nbsp;November 2026.</p>
+              <p class="termin__info">Basel Tamil Sangam</p>
             </div>
             <ul class="ortsraster" aria-label="Ort">
               <li><span class="ortsraster__stadt">Basel</span> <span class="ortsraster__haus">Aula Lysbüchel</span></li>

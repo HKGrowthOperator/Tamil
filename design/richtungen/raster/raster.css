@@ -108,30 +108,22 @@ a { color: inherit; }
   background: var(--rot);
 }
 
-/* Etiketten: Text in einem Rasterfeld, kein Kasten */
-.feld,
+/* Etiketten: Versalien-Text, kein Kasten */
 .termin__art,
+.cover__rubrik,
 .kopf__nav a,
 .rubriken a,
 .daumen a,
-.artikel__meta li {
+.artikel__meta,
+.cover__meta {
   font-family: var(--anzeige);
   font-stretch: 85%;
   font-weight: 600;
   font-size: 0.9375rem;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  line-height: 1.2;
+  line-height: 1.25;
 }
-
-.feld {
-  background: var(--grund);
-  padding: 0.85rem var(--fuge);
-  color: var(--tinte-2);
-  flex: 0 0 auto;
-}
-.feld--rubrik { color: var(--rot); }
-.feld--rest { flex: 1 1 0; padding: 0; min-width: 0; }
 
 /* ---------- Kopf ---------- */
 
@@ -172,28 +164,58 @@ a { color: inherit; }
   }
   .kopf__nav a:hover { color: var(--rot); }
 }
+/* Aktuelle Rubrik: rot mit Unterkante */
+.kopf__nav a[aria-current],
+.daumen a[aria-current] { color: var(--rot); box-shadow: inset 0 -3px 0 var(--rot); }
 
-/* ---------- Cover ---------- */
+/* ---------- Cover: eine Zeile des Aushangs ---------- */
 
 .cover {
   position: relative;
   container-type: inline-size;
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  /* dieselben Spalten wie der Fahrplan darunter: links die Zeit */
+  grid-template-columns: minmax(6.5rem, 2fr) minmax(0, 5fr);
   grid-template-areas:
-    "meta"
-    "wort"
-    "titel"
-    "bild"
-    "vorspann";
+    "wann     ort"
+    "wort     wort"
+    "titel    titel"
+    "bild     bild"
+    "vorspann vorspann";
   gap: var(--linie);
   background: var(--rot);
 }
-.cover > * { background: var(--grund); }
+.cover__zeile { display: contents; }
+.cover > *:not(.cover__zeile), .cover__zeile > * { background: var(--grund); }
 
-.cover__meta { grid-area: meta; }
+.cover__wann {
+  grid-area: wann;
+  padding: var(--fuge-klein) var(--fuge-klein) var(--fuge-klein) var(--fuge);
+}
+.cover__wann time { display: block; }
 
-/* Das Stichwort: Steckbuchstaben, füllt die volle Breite des Feldes */
+.cover__was { display: none; }
+.cover__ort {
+  grid-area: ort;
+  padding: var(--fuge-klein) var(--fuge) var(--fuge-klein) var(--fuge-klein);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 0.35rem;
+}
+.cover__rubrik { color: var(--rot); }
+.cover__zusatz { color: var(--tinte-2); font-size: 1.0625rem; line-height: 1.3; }
+.cover__zeilentext {
+  font-family: var(--anzeige);
+  font-stretch: 85%;
+  font-weight: 700;
+  font-size: clamp(1.25rem, 1.05rem + 0.9vw, 1.75rem);
+  line-height: 1.1;
+}
+
+/* Das Stichwort: Steckbuchstaben, füllt die Feldbreite.
+   Archivo wdth 62 / 850 setzt Versalien im Mittel mit rund 0,5 em; das Theme schreibt die Zeichenzahl als --zeichen
+   in den Stil (Titel vor dem Gedankenstrich, bis 12 Zeichen). Obergrenze 22rem, damit „DOSA“ nicht den Bildschirm füllt. */
 .cover__wort {
   grid-area: wort;
   padding: 0.35rem var(--fuge) 0;
@@ -202,15 +224,15 @@ a { color: inherit; }
   font-stretch: 62%;
   font-weight: 850;
   text-transform: uppercase;
-  font-size: min(27vw, 22rem);
+  white-space: nowrap;
+  font-size: min(calc(100vw / (var(--zeichen, 7) * 0.53)), 22rem);
   line-height: 0.8;
   letter-spacing: -0.005em;
   padding-bottom: 0.06em;
   overflow: hidden;
 }
-/* „KANGUVA“ ist in Archivo wdth 62 / 850 rund 3,47 em breit: so groß, dass es die Feldbreite füllt */
 @supports (font-size: 1cqi) {
-  .cover__wort { font-size: calc((100cqi - 2 * var(--fuge)) / 3.5); }
+  .cover__wort { font-size: min(calc((100cqi - 2 * var(--fuge)) / (var(--zeichen, 7) * 0.5)), 22rem); }
 }
 
 .cover__titel {
@@ -241,6 +263,7 @@ a { color: inherit; }
 .cover__link:focus-visible { outline: none; }
 .cover__link:focus-visible::after { outline: 3px solid var(--tinte); outline-offset: -6px; }
 
+/* Bild: nie größer als das Original (--bild-b / --bild-h schreibt das Theme aus den Bilddaten) */
 .cover__bild {
   grid-area: bild;
   display: flex;
@@ -248,7 +271,13 @@ a { color: inherit; }
 }
 .cover__bild img {
   width: 100%;
-  max-width: 1024px;           /* Originalbreite, nie hochskaliert */
+  max-width: var(--bild-b, 100%);
+  max-height: var(--bild-h, none);
+  object-fit: cover;
+  object-position: 50% 35%;
+}
+@media (max-width: 33rem) {            /* Handy: quadratischer Ausschnitt, Gesicht groß, kein Hochskalieren */
+  .cover__bild img { aspect-ratio: 1; height: auto; }
 }
 
 .cover__vorspann {
@@ -256,14 +285,14 @@ a { color: inherit; }
   padding: var(--fuge);
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  justify-content: space-between;
+  gap: 0.9rem;
   font-size: 1.1875rem;
   line-height: 1.5;
-  max-width: none;
 }
 .cover__vorspann p:first-child { max-width: 36ch; }
+.cover__meta { color: var(--tinte-2); font-weight: 500; letter-spacing: 0.04em; }
 .cover__weiter {
+  margin-top: auto;
   font-family: var(--anzeige);
   font-stretch: 85%;
   font-weight: 700;
@@ -274,19 +303,39 @@ a { color: inherit; }
 }
 .pfeil { display: inline-block; }
 
-@media (min-width: 64rem) {             /* ab 1024 px: Text links, Bild rechts */
+@media (min-width: 51.25rem) {          /* ab 820 px: die Cover-Zeile ist eine Fahrplanzeile (3 | 4 | 5 von 12) */
   .cover {
-    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    grid-template-columns: minmax(0, 3fr) minmax(0, 4fr) minmax(0, 5fr);
+    grid-template-areas:
+      "wann     was      ort"
+      "wort     wort     wort"
+      "titel    titel    titel"
+      "bild     bild     bild"
+      "vorspann vorspann vorspann";
+  }
+  .cover__was {
+    grid-area: was;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 0.35rem;
+    padding: var(--fuge-klein) var(--fuge);
+  }
+  .cover__rubrik--handy { display: none; }
+  .cover__wann, .cover__ort { padding-inline: var(--fuge); }
+}
+@media (min-width: 64rem) {             /* ab 1024 px: Text unter Zeit und Titel, Bild unter den Orten */
+  .cover {
     grid-template-rows: auto auto auto 1fr;
     grid-template-areas:
-      "meta     meta"
-      "wort     wort"
-      "titel    bild"
-      "vorspann bild";
+      "wann     was      ort"
+      "wort     wort     wort"
+      "titel    titel    bild"
+      "vorspann vorspann bild";
   }
   .cover__titel { padding-top: var(--fuge); }
-  /* Bild füllt sein Feld durch Beschnitt, nie über die Originalgröße (538 px hoch) hinaus */
-  .cover__bild img { height: 100%; max-height: 538px; object-fit: cover; object-position: 50% 30%; }
+  /* füllt das Feld durch Beschnitt; die Höchstmaße verhindern jedes Hochskalieren */
+  .cover__bild img { height: 100%; }
 }
 
 /* ---------- Diese Woche: der Fahrplan ---------- */
@@ -328,6 +377,7 @@ a { color: inherit; }
 }
 
 .termin {
+  overflow: hidden;              /* schneidet die äußeren Linien des Ortsrasters ab */
   display: grid;
   grid-template-columns: minmax(6.5rem, 2fr) minmax(0, 5fr);
   grid-template-areas:
@@ -343,7 +393,8 @@ a { color: inherit; }
   padding: var(--fuge) var(--fuge-klein) var(--fuge) var(--fuge);
 }
 .termin__wann time { display: block; }
-.termin__gross {
+.zeit__gross { white-space: nowrap; }
+.zeit__gross {
   display: block;
   color: var(--rot);
   font-family: var(--anzeige);
@@ -354,7 +405,7 @@ a { color: inherit; }
   line-height: 0.85;
   hyphens: manual;
 }
-.termin__klein {
+.zeit__klein {
   display: block;
   margin-top: 0.5rem;
   color: var(--tinte-2);
@@ -385,17 +436,17 @@ a { color: inherit; }
 }
 .termin__info { color: var(--tinte-2); font-size: 1.0625rem; line-height: 1.45; }
 
-/* Ortsraster: ein Feld pro Stadt; Felder wachsen, keine leeren roten Lücken */
+/* Ortsraster: ein Feld pro Stadt, feste Feldbreite. 11 Kinos füllen Zeilen, 2 Kinos lassen den Rest hell.
+   Linien rechts und unten je Feld; die äußeren schneidet .termin ab. */
 .ortsraster {
   grid-area: orte;
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--linie);
-  background: var(--rot);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
+  align-content: start;
+  margin: 0 -1px -1px 0;
 }
 .ortsraster li {
-  flex: 1 1 9rem;
-  background: var(--grund);
+  box-shadow: inset -1px -1px 0 var(--rot);
   padding: 0.9rem var(--fuge-klein);
   min-height: 3.5rem;
   display: flex;
@@ -408,7 +459,15 @@ a { color: inherit; }
   line-height: 1.15;
 }
 .ortsraster li:first-child { padding-left: var(--fuge); }
-.ortsraster__mehr { color: var(--tinte-2); font-weight: 500 !important; }
+.ortsraster__mehr { color: var(--tinte-2); font-weight: 500 !important; font-size: 1rem !important; }
+.ortsraster__plus {
+  display: block;
+  color: var(--tinte);
+  font-stretch: 62%;
+  font-weight: 850;
+  font-size: 2rem;
+  line-height: 0.9;
+}
 .ortsraster__haus {
   display: block;
   font-weight: 500;
@@ -421,8 +480,8 @@ a { color: inherit; }
     grid-template-columns: minmax(0, 3fr) minmax(0, 4fr) minmax(0, 5fr);
     grid-template-areas: "wann was orte";
   }
-  .ortsraster { align-content: stretch; }
-  .ortsraster li { flex-basis: 10rem; min-height: 4.5rem; }
+  .ortsraster { grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr)); }
+  .ortsraster li { min-height: 4.5rem; }
   .ortsraster li:first-child { padding-left: var(--fuge-klein); }
 }
 
@@ -454,6 +513,9 @@ a { color: inherit; }
   text-decoration: none;
 }
 .rubriken a:hover { color: var(--rot); }
+@media (min-width: 56.25rem) {          /* Desktop: Rubriken stehen schon im Kopf */
+  .rubriken { display: none; }
+}
 
 /* ---------- Daumenleiste (bis 899 px) ---------- */
 
@@ -475,10 +537,10 @@ a { color: inherit; }
   background: var(--grund);
   text-decoration: none;
   font-size: 0.875rem;
+  font-stretch: 75%;
   letter-spacing: 0.03em;
   text-align: center;
 }
-.daumen a:last-child { color: var(--rot); }
 .daumen a:focus-visible { outline-offset: -4px; }
 
 @media (min-width: 56.25rem) {
@@ -486,45 +548,30 @@ a { color: inherit; }
   body { padding-bottom: 0; }
 }
 
-/* ---------- Artikel: ruhig ---------- */
+/* ---------- Artikel: ruhig, ein Feld ---------- */
 
-.artikel {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--linie);
-  background: var(--rot);
-}
-.artikel > * { background: var(--grund); }
+.artikel { background: var(--grund); }
 
-.artikel__meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--linie);
-  background: var(--rot);
-}
-.artikel__meta li {
-  flex: 1 1 auto;
-  background: var(--grund);
-  padding: 0.85rem var(--fuge);
-  color: var(--tinte-2);
-  display: flex;
-  align-items: center;
-}
-.artikel__meta .meta__rubrik { color: var(--rot); }
-.artikel__meta .meta__teilen { flex-basis: 100%; padding: 0; }
-.artikel__meta .meta__rest { display: none; }
-.meta__teilen a {
-  flex: 1;
-  display: flex; align-items: center; gap: 0.6rem;
-  min-height: 3rem;
-  padding: 0.6rem var(--fuge);
-  color: var(--tinte);
+.artikel__meta { color: var(--tinte-2); margin-bottom: 1rem; }
+.meta__rubrik { color: var(--rot); }
+.ohne-umbruch { white-space: nowrap; }
+
+.artikel__teilen { margin-top: 1rem; }
+.artikel__teilen a {
+  display: inline-flex; align-items: center;
+  min-height: 2.75rem;
+  font-family: var(--anzeige);
+  font-stretch: 85%;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   text-decoration: underline;
   text-decoration-color: var(--rot);
   text-decoration-thickness: 2px;
-  text-underline-offset: 0.25em;
+  text-underline-offset: 0.3em;
 }
-.meta__teilen a:hover { color: var(--rot); }
+.artikel__teilen a:hover { color: var(--rot); }
 
 .artikel__text {
   padding: clamp(1.75rem, 1rem + 3vw, 4rem) var(--fuge) clamp(3rem, 2rem + 4vw, 6rem);
@@ -548,10 +595,10 @@ a { color: inherit; }
   font-weight: 500;
 }
 .artikel__bild {
-  margin-block: clamp(1.75rem, 1rem + 2.5vw, 3rem);
-  max-width: 900px !important;     /* Originalbreite p9655 */
+  margin-block: clamp(1.5rem, 1rem + 2vw, 2.5rem) clamp(1.75rem, 1rem + 2.5vw, 3rem);
+  max-width: none !important;
 }
-.artikel__bild img { width: 100%; }
+.artikel__bild img { width: 100%; max-width: var(--bild-b, 100%); }     /* nie hochskaliert */
 
 .artikel__text p.absatz {
   font-size: 1.1875rem;
@@ -582,22 +629,15 @@ a { color: inherit; }
 
 @media (min-width: 51.25rem) {
   body { font-size: 1.25rem; }
-  .artikel { grid-template-columns: minmax(13rem, 3fr) minmax(0, 9fr); }
-  .artikel__meta {
-    flex-direction: column;
-    flex-wrap: nowrap;
-  }
-  .artikel__meta li { flex: 0 0 auto; padding-block: 1rem; }
-  .artikel__meta .meta__teilen { flex-basis: auto; }
-  .artikel__meta .meta__rest { display: block; flex: 1 1 auto; padding: 0; }
-  .artikel__text { padding-left: clamp(2rem, 1rem + 3vw, 4.5rem); }
+  /* Text beginnt an der Linie, an der im Fahrplan die Titel stehen (3 von 12) */
+  .artikel__text { padding-left: calc(25% + var(--fuge)); }
   .artikel__text p.absatz, .laenderliste { font-size: 1.25rem; }
 }
 
 /* ---------- Bewegung ---------- */
 
 @media (prefers-reduced-motion: no-preference) {
-  .cover__link, .kopf__nav a, .rubriken a, .meta__teilen a {
+  .cover__link, .kopf__nav a, .rubriken a, .artikel__teilen a {
     transition: color 160ms cubic-bezier(0.25, 1, 0.5, 1), text-decoration-color 160ms cubic-bezier(0.25, 1, 0.5, 1);
   }
 }

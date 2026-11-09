@@ -110,7 +110,7 @@ ul { padding: 0; list-style: none; }
 
 .heftzeile {
   font-family: var(--display);
-  font-stretch: 62%;
+  font-stretch: 75%;
   line-height: 1.05;
   text-align: right;
 }
@@ -122,7 +122,20 @@ ul { padding: 0; list-style: none; }
   letter-spacing: 0.02em;
   color: var(--rot-tief);
 }
-.heftzeile-datum { display: block; font-weight: 600; font-size: 1rem; color: var(--grau); }
+.heftzeile-datum { display: block; font-weight: 600; font-size: 1.125rem; color: var(--grau); }
+
+/* Startseite am Handy: Kopf wird zum Heftkopf des Covers (Marke + Ausgabe als Einheit) */
+.seite-start .kopf { border-bottom: 0; align-items: flex-end; padding-top: 0.75rem; }
+.seite-start .marke img { height: 2.75rem; }
+.seite-start .heftzeile { line-height: 0.95; }
+.seite-start .heftzeile-nr {
+  font-stretch: 50%;
+  font-weight: 900;
+  font-size: 3.5rem;
+  letter-spacing: -0.01em;
+  color: var(--rot);
+}
+.seite-start .heftzeile-datum { margin-top: 0.2rem; color: var(--tinte); }
 
 .rubriken { display: none; }
 
@@ -145,7 +158,7 @@ ul { padding: 0; list-style: none; }
 
 /* ---------- Cover ---------- */
 .cover {
-  padding: 1.75rem var(--rand) 3rem;
+  padding: 0 var(--rand) 3rem;
   container-type: inline-size;
 }
 .cover-flaeche {
@@ -157,6 +170,21 @@ ul { padding: 0; list-style: none; }
 .cover-flaeche:focus-visible { outline-offset: 8px; }
 
 .heft { display: none; }
+
+/* Coverzeile der Redaktion: die Stimme der Woche, eigenes Feld */
+.cover-ruf {
+  display: block;
+  padding: 0.7rem 0 1.1rem;
+  border-top: var(--linie);
+  font-family: var(--display);
+  font-stretch: 75%;
+  font-weight: 800;
+  font-size: clamp(1.75rem, 1.3rem + 1.8vw, 2.75rem);
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+.cover-ruf-zeichen { color: var(--rot); }
 
 /* Das Foto, einfarbig in Logo-Rot gedruckt und schief eingeklebt */
 .druck {
@@ -171,11 +199,15 @@ ul { padding: 0; list-style: none; }
 }
 .druck img {
   width: 100%;
-  filter: grayscale(1) contrast(1.4) brightness(1.55);
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  object-position: 48% 30%;
+  filter: grayscale(1) contrast(1.55) brightness(1.95);
   mix-blend-mode: screen;
 }
-/* feines Kopierraster */
+/* feines Kopierraster, erst wo das Bild groß genug dafür ist */
 .druck::after {
+  display: none;
   content: "";
   position: absolute;
   inset: 0;
@@ -187,9 +219,9 @@ ul { padding: 0; list-style: none; }
 .druck .stempel {
   position: absolute;
   z-index: 2;
-  left: -0.25rem;
+  right: -0.25rem;
   top: -0.9rem;
-  rotate: -5deg;
+  rotate: 5deg;
 }
 
 .cover-titel {
@@ -197,10 +229,11 @@ ul { padding: 0; list-style: none; }
   z-index: 1;
   font-family: var(--display);
   font-weight: 900;
+  mix-blend-mode: multiply;   /* Überdruck: Tinte über dem Rotdruck */
 }
 .coverwort {
   display: block;
-  margin-top: -0.3em;
+  margin-top: -0.52em;
   font-stretch: 50%;
   font-size: 35.5cqi;
   line-height: 0.8;
@@ -238,6 +271,11 @@ ul { padding: 0; list-style: none; }
   .cover-flaeche:hover .druck { rotate: -0.6deg; }
   .cover-flaeche:hover .weiter { border-bottom-color: var(--tinte); }
 }
+
+/* Zweite Tonlage für Nachrichten-Cover: Foto in Graustufen, Rot nur im Stempel */
+.cover--nachricht .druck { background: var(--papier); rotate: 0deg; }
+.cover--nachricht .druck img { filter: grayscale(1); mix-blend-mode: normal; }
+.cover--nachricht .druck::after { display: none; }
 
 /* Titel ohne Trenner und über 60 Zeichen: kein Coverwort, alles in Coverzeilen-Größe */
 .cover--lang .coverwort {
@@ -279,10 +317,9 @@ ul { padding: 0; list-style: none; }
   background: var(--papier);
   color: var(--tinte);
   padding: 1.25rem 1.25rem 0;
-  rotate: -0.8deg;
 }
-.aushang:nth-child(2) { rotate: 1deg; margin-inline: 1.25rem 0; }
-.aushang:nth-child(3) { rotate: -0.4deg; margin-inline: 0 1.75rem; }
+.aushang:nth-child(2) { margin-inline: 1.25rem 0; }
+.aushang:nth-child(3) { margin-inline: 0 1.75rem; }
 .aushang :focus-visible { outline-color: var(--tinte); }
 
 .aushang-art {
@@ -320,8 +357,7 @@ ul { padding: 0; list-style: none; }
 /* Datum als roter Stempel (nur wo es ein Datum gibt) */
 .datumstempel {
   display: inline-block;
-  margin-top: 0.8rem;
-  rotate: -4deg;
+  margin-top: 1rem;
   padding: 0.35rem 0.6rem 0.4rem;
   font-family: var(--display);
   font-stretch: 62%;
@@ -336,6 +372,21 @@ ul { padding: 0; list-style: none; }
 .datumstempel-tag { font-weight: 700; font-size: 0.9375rem; letter-spacing: 0.06em; }
 .datumstempel-zahl { font-weight: 900; font-size: 1.75rem; }
 .datumstempel-jahr { font-weight: 700; font-size: 0.9375rem; letter-spacing: 0.1em; }
+.absender {
+  display: inline-block;
+  margin-top: 0.35rem;
+  padding: 0.45rem 0.7rem 0.4rem;
+  font-family: var(--display);
+  font-stretch: 75%;
+  font-weight: 850;
+  font-size: 1.25rem;
+  line-height: 1.05;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--tinte);
+  border: 3px solid var(--tinte);
+  box-shadow: inset 0 0 0 3px var(--papier), inset 0 0 0 4.5px var(--tinte);
+}
 .aushang--fest .aushang-titel { margin-top: 0.9rem; font-stretch: 62%; font-size: clamp(2.6rem, 1.8rem + 4vw, 4rem); }
 
 /* Abreißzettel: je Spielort ein Streifen */
@@ -359,7 +410,25 @@ ul { padding: 0; list-style: none; }
   border-bottom: 2px dashed var(--tinte);
   margin-right: -2px;
 }
-.zettel .zettel-mehr { color: var(--rot-tief); font-weight: 850; background: var(--papier-tief); }
+.zettel .zettel-mehr { font-weight: 600; font-stretch: 75%; }
+
+/* Weiterschicken: der Abreißzettel von heute */
+.weiterschicken {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 3rem;
+  margin: 0 -1.25rem;
+  padding: 0.6rem 1.25rem;
+  font-weight: 700;
+  font-size: 1.0625rem;
+  text-decoration: underline 2px;
+  text-underline-offset: 0.2em;
+  background: var(--papier-tief);
+}
+.weiterschicken:hover { background: var(--tinte); color: var(--papier); }
 .aushang--wenige .zettel { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .aushang--fest .zettel { grid-template-columns: 1fr; }
 
@@ -514,6 +583,8 @@ body { padding-bottom: 3.5rem; }
 
 /* ---------- ab Tablet ---------- */
 @media (min-width: 560px) {
+  .druck img { aspect-ratio: auto; filter: grayscale(1) contrast(1.45) brightness(1.7); }
+  .druck::after { display: block; }
   .coverwort { font-stretch: 75%; font-size: 24cqi; }
   .aushaenge { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
   .aushang--viele { grid-column: 1 / -1; }
@@ -564,22 +635,31 @@ body { padding-bottom: 3.5rem; }
     line-height: 1.2;
   }
   .seite-start .heftzeile { display: none; }
-  .druck { grid-column: 5 / 13; grid-row: 1; justify-self: end; }
-  .druck .stempel { left: -1.5rem; top: 1.25rem; font-size: 1.5rem; }
+  .seite-start .kopf { border-bottom: var(--linie); align-items: center; padding-top: 0.5rem; }
+  .cover { padding-top: 2rem; }
+  .cover-ruf {
+    grid-column: 1 / 5; grid-row: 2; align-self: end;
+    padding: 0.8rem 0 0; margin-bottom: 0.4em;
+    font-size: clamp(1.75rem, 0.6rem + 2.2vw, 2.6rem);
+  }
+  .druck { grid-column: 5 / 13; grid-row: 1 / 3; justify-self: end; }
+  .druck .stempel { left: -1.5rem; right: auto; top: 1.25rem; rotate: -5deg; font-size: 1.5rem; }
+  .cover-titel { mix-blend-mode: normal; }
   .cover-titel { display: contents; }
   .coverwort {
-    grid-column: 1 / -1; grid-row: 2;
+    grid-column: 1 / -1; grid-row: 3;
     position: relative; z-index: 1;
-    font-stretch: 100%; font-size: 18.4cqi; margin-top: -0.36em;
+    mix-blend-mode: multiply;
+    font-stretch: 120%; font-size: 15.4cqi; margin-top: -0.45em;
   }
   .coverzeile {
-    grid-column: 1 / 8; grid-row: 3; align-self: start;
+    grid-column: 1 / 8; grid-row: 4; align-self: start;
     max-width: 20ch; margin-top: 1.1rem;
     font-size: clamp(2rem, 0.9rem + 2.4vw, 3.1rem);
   }
   .cover-unten {
     grid-column: 8 / -1;
-    grid-row: 3;
+    grid-row: 4;
     align-self: start;
     margin-top: 1.3rem;
     padding-left: 1.25rem;
