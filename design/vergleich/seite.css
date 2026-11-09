@@ -1,0 +1,85 @@
+/* Rahmen der Vergleichsseite: ruhig, kühl, ohne Rot und in Systemschrift, damit nur die Proben Gestaltung tragen.
+   Je Probe eine Reihe Handy-Bildschirme, darunter Desktop, darunter die Messwerte. */
+:root {
+  --grund: oklch(0.965 0.005 250);
+  --flaeche: oklch(0.995 0.002 250);
+  --tinte: oklch(0.25 0.02 256);
+  --leise: oklch(0.47 0.02 256);
+  --linie: oklch(0.87 0.008 250);
+  --akzent: oklch(0.44 0.13 256);
+  --gut: oklch(0.42 0.1 155);
+  --schlecht: oklch(0.47 0.16 40);
+  --schrift: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --grund: oklch(0.2 0.012 256);
+    --flaeche: oklch(0.245 0.014 256);
+    --tinte: oklch(0.94 0.006 250);
+    --leise: oklch(0.73 0.012 250);
+    --linie: oklch(0.36 0.014 256);
+    --akzent: oklch(0.8 0.09 250);
+    --gut: oklch(0.8 0.12 155);
+    --schlecht: oklch(0.78 0.13 50);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --grund: oklch(0.2 0.012 256);
+  --flaeche: oklch(0.245 0.014 256);
+  --tinte: oklch(0.94 0.006 250);
+  --leise: oklch(0.73 0.012 250);
+  --linie: oklch(0.36 0.014 256);
+  --akzent: oklch(0.8 0.09 250);
+  --gut: oklch(0.8 0.12 155);
+  --schlecht: oklch(0.78 0.13 50);
+  color-scheme: dark;
+}
+body { background: var(--grund); color: var(--tinte); font-family: var(--schrift); font-size: 1.0625rem; line-height: 1.55; }
+.rahmen {
+  max-width: 76rem; margin-inline: auto; padding-block: 2.5rem 4rem;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 3.5rem;
+}
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+p, ul, figure { margin: 0; }
+a { color: var(--akzent); text-underline-offset: 0.18em; }
+a:focus-visible { outline: 2px solid var(--akzent); outline-offset: 3px; border-radius: 2px; }
+.etikett { font-weight: 700; font-size: 0.8125rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--leise); }
+.vermerk {
+  justify-self: start; font-weight: 700; font-size: 0.875rem; padding: 0.4rem 0.75rem;
+  border: 1px solid var(--schlecht); color: var(--schlecht); border-radius: 0.25rem;
+}
+.kopf { display: grid; gap: 1rem; }
+.kopf h1 { font-weight: 800; font-size: clamp(1.9rem, 1.2rem + 3vw, 3.25rem); line-height: 1.06; letter-spacing: -0.02em; max-width: 22ch; }
+.vorspann { font-size: 1.1875rem; max-width: 66ch; }
+.sprung { display: flex; flex-wrap: wrap; gap: 0.25rem 1.5rem; font-weight: 700; padding-top: 0.5rem; border-top: 1px solid var(--linie); }
+.sprung a, .oeffnen a { display: inline-block; padding-block: 0.6rem; }
+.probe { display: grid; gap: 1.5rem; scroll-margin-top: 1rem; }
+.probe-kopf { display: grid; gap: 0.5rem; }
+.probe-kopf h2 { font-weight: 800; font-size: clamp(1.6rem, 1.25rem + 1.6vw, 2.35rem); line-height: 1.1; letter-spacing: -0.015em; }
+.probe h3 { font-size: 1.0625rem; font-weight: 700; }
+.idee { font-size: 1.125rem; max-width: 64ch; }
+.reihe { display: grid; gap: 1.25rem; align-items: start; }
+.reihe.handys { grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); }
+.reihe.desktops { grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr)); }
+.aufnahme { display: grid; gap: 0.5rem; min-width: 0; }
+.aufnahme img { display: block; width: 100%; height: auto; background: var(--flaeche); border: 1px solid var(--linie); }
+.aufnahme.handy { max-width: 22rem; }
+.aufnahme.handy img { border-radius: 1.1rem; aspect-ratio: 390 / 844; object-fit: cover; object-position: top; }
+.aufnahme.desktop img { border-radius: 0.5rem; aspect-ratio: 1280 / 800; object-fit: cover; object-position: top; }
+.aufnahme figcaption { font-size: 0.9375rem; color: var(--leise); }
+.aufnahme.vergleich img { opacity: 0.92; }
+.aufnahme.vergleich figcaption { font-style: italic; }
+.tabellenrahmen { overflow-x: auto; border: 1px solid var(--linie); border-radius: 0.375rem; background: var(--flaeche); }
+table { border-collapse: collapse; width: 100%; min-width: 44rem; font-size: 0.9375rem; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 0.55rem 0.8rem; border-bottom: 1px solid var(--linie); vertical-align: top; }
+tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
+thead th { font-size: 0.8125rem; color: var(--leise); font-weight: 700; }
+tbody th { font-weight: 600; }
+td.gut { color: var(--gut); font-weight: 700; }
+td.schlecht { color: var(--schlecht); font-weight: 700; }
+.leise, .fuss { color: var(--leise); }
+.fuss { font-size: 0.9375rem; max-width: 72ch; }
+.oeffnen { font-weight: 700; }
+.trenner { border: 0; border-top: 1px solid var(--linie); margin: 0; }
