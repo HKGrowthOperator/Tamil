@@ -65,8 +65,8 @@ ul { padding: 0; list-style: none; }
 a { color: inherit; }
 
 :focus-visible { outline: 3px solid var(--tinte); outline-offset: 3px; }
-.wand :focus-visible, .bogen-fest :focus-visible,
-.wand-flaeche:focus-visible, .bogen-fest .bogen-flaeche:focus-visible { outline-color: var(--papier); }
+.wand :focus-visible, .wand-flaeche:focus-visible { outline-color: var(--papier); }
+@media (min-width: 760px) { .bogen-fest .bogen-flaeche:focus-visible { outline-color: var(--papier); outline-offset: -6px; } }
 .wand-flaeche:focus-visible { outline-offset: -6px; }
 
 .vh {
@@ -142,61 +142,71 @@ a { color: inherit; }
 
 /* =========================================================
    STARTSEITE · Die Wand
+   Der Bildbogen steht immer in Originalgröße (object-fit: none): eng auf das Gesicht beschnitten, nie gestreckt.
+   Die Titelzeile liegt mit ihrer unteren Hälfte über der Unterkante des Bildbogens: Bild und Schrift sind eine Form.
    ========================================================= */
 .wand {
-  --r-titel: 3.4;      /* Breite der Titelzeile in em (je Beitrag gemessen) */
-  --zusatz-hoehe: 0.8; /* Höhe der Zusatzzeilen als Anteil der Wandbreite (je Beitrag gemessen) */
+  --r-titel: 3.4;          /* Breite der Titelzeile in em (je Beitrag gemessen) */
+  --zusatz-hoehe: 0.8;     /* Höhe der Zusatzzeilen als Anteil der Satzbreite (je Beitrag gemessen) */
+  --bild-h: 538px;         /* Pixelhöhe des Bildes: Obergrenze des Bildbogens */
+  --fokus: 50% 25%;        /* Fokuspunkt (Gesicht) je Bild */
+  --titel-breite: 1;       /* Anteil der Wandbreite, den die Titelzeile füllt */
   container-type: inline-size;
   background: var(--rot);
   color: var(--papier);
   overflow: clip;
 }
 .wand-flaeche {
-  --titel-h: calc((100cqi - 2 * var(--rand)) / var(--r-titel) * 0.8);
+  --titel-h: calc((100cqi - 2 * var(--rand)) * var(--titel-breite) / var(--r-titel) * 0.8);
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  padding: 0 var(--rand) 20px;
+  padding: 0 var(--rand) 16px;
   text-decoration: none;
   color: inherit;
 }
 
-/* Handy: Bildbogen oben randlos, Titel greift über die Bildkante */
-.wand-bild {
+/* Rubrik als kleine Plakatzeile an der Wand, vor dem Titel */
+.wand-rubrik {
   grid-row: 1;
+  padding: 8px 0 8px;
+  font-family: var(--plakat); font-weight: 800; font-stretch: 75%;
+  font-size: 1.625rem; line-height: 1; text-transform: uppercase; letter-spacing: 0.02em;
+}
+
+/* Handy: Bildbogen randlos, eng aufs Gesicht, so hoch wie der Platz es erlaubt */
+.wand-bild {
+  grid-row: 2;
   margin-inline: calc(-1 * var(--rand));
   /* Das Bild gibt nach, nicht die Schrift: die ganze Überschrift bleibt im ersten Bildschirm */
-  height: clamp(180px, calc(100svh - var(--kopf-h) - var(--daumen-h) - 0.58 * var(--titel-h) - var(--zusatz-hoehe) * (100cqi - 2 * var(--rand)) - 112px), 340px);
+  height: clamp(96px, calc(100svh - var(--kopf-h) - var(--daumen-h) - 0.5 * var(--titel-h) - var(--zusatz-hoehe) * (100cqi - 2 * var(--rand)) - 132px), min(380px, var(--bild-h)));
   overflow: hidden;
   background: var(--tinte);
 }
 .wand-bild img {
   width: 100%; height: 100%;
-  max-width: 1024px; max-height: 538px;   /* nie über die Originalgröße */
-  object-fit: cover;
-  object-position: 48% 24%;
+  max-width: none;
+  object-fit: none;               /* Originalgröße: beschneiden, nie skalieren */
+  object-position: var(--fokus);
 }
 .wand-titel {
-  grid-row: 2;
+  grid-row: 3;
   position: relative; z-index: 1;
-  margin-top: calc(-0.42 * var(--titel-h));
+  margin-top: calc(-0.5 * var(--titel-h));
   font-weight: inherit;
 }
 .satz-titel .z { font-size: calc(100cqi / var(--r-titel)); }
 .satz-zusatz { margin-top: 0.35rem; }
 
 .wand-fuss {
-  grid-row: 3;
+  grid-row: 4;
   display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px;
-  margin-top: 14px;
-  padding-top: 10px;
+  margin-top: 12px;
+  padding-top: 8px;
   border-top: 2px solid var(--papier);
   font-size: 1.0625rem;
   line-height: 1.35;
 }
-.wand-rubrik {
-  font-family: var(--plakat); font-weight: 800; font-stretch: 75%;
-  font-size: 1.25rem; text-transform: uppercase; letter-spacing: 0.02em;
-}
+.nur-breit { display: none; }
 .wand-lesen {
   margin-left: auto;
   font-weight: 700;
@@ -205,32 +215,52 @@ a { color: inherit; }
 .wand-lesen::after { content: " \2192"; }
 .wand-flaeche:hover .wand-lesen { text-decoration-thickness: 4px; }
 
-/* Tablet und Desktop: Titel quer über die Wand, Bildbogen rechts angeschnitten */
+/* Niedrige Handys (z. B. 390 × 667): Kopf, Rubrik und Abstände rücken zusammen */
+@media (max-width: 759px) and (max-height: 720px) {
+  :root { --kopf-h: 52px; }
+  .marke img { height: 38px; }
+  .wand-rubrik { padding: 6px 0 4px; font-size: 1.375rem; }
+  /* Titel greift hier nur mit einem Drittel ins Bild, damit die Augen frei bleiben */
+  .wand-bild { height: clamp(96px, calc(100svh - var(--kopf-h) - var(--daumen-h) - 0.7 * var(--titel-h) - var(--zusatz-hoehe) * (100cqi - 2 * var(--rand)) - 86px), 380px); }
+  .wand-titel { margin-top: calc(-0.3 * var(--titel-h)); }
+  .wand-fuss { margin-top: 8px; padding-top: 6px; }
+}
+
+/* Tablet und Desktop: Rubrik und Datum oben links, darunter die Zusatzzeilen; der Bildbogen steht hochkant in der
+   rechten unteren Ecke und wird von rechter und unterer Wandkante angeschnitten; die Titelzeile läuft unten quer
+   über die ganze Wand und über den Körper im Bild (das Gesicht bleibt frei). */
 @media (min-width: 760px) {
+  /* Höchstgröße: kurze Titel und kleine Bilder bekommen eine schmalere Titelzeile, damit sie das Gesicht nicht verdecken */
+  .wand { --titel-breite: var(--titel-breite-gross, 0.9); }
   .wand-flaeche {
-    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-    grid-template-rows: var(--titel-h) auto auto;
+    --bildspalte: min(400px, 40%);
+    --unten: 24px;
+    grid-template-columns: minmax(0, 1fr) var(--bildspalte);
+    grid-template-rows: auto auto 1fr;
     column-gap: var(--spalt);
-    padding: clamp(20px, 3vw, 36px) var(--rand) clamp(24px, 3vw, 40px);
+    min-height: calc(100svh - var(--kopf-h) - var(--daumen-h));
+    padding: clamp(18px, 2.4vw, 28px) var(--rand) var(--unten);
   }
-  .wand-titel {
-    grid-column: 1 / -1; grid-row: 1 / 3;
-    margin-top: 0;
-    pointer-events: none;
-  }
-  .satz-zusatz {
-    width: calc((100% - var(--spalt)) * 5 / 12);
-    margin-top: clamp(16px, 2.2vw, 30px);
-  }
-  .wand-bild {
-    grid-column: 2; grid-row: 2 / 4;
-    margin: calc(-0.14 * var(--titel-h)) calc(-1 * var(--rand)) 0 0;
-    height: clamp(300px, 36cqi, 538px);
-  }
+  .wand-rubrik { grid-column: 1; grid-row: 1; padding: 0; font-size: clamp(1.75rem, 1rem + 1.6vw, 2.5rem); }
   .wand-fuss {
-    grid-column: 1; grid-row: 3;
+    grid-column: 1; grid-row: 2;
+    margin: 12px 0 0; padding: 0 0 12px;
+    border-top: 0; border-bottom: 2px solid var(--papier);
+    max-width: 440px;
+  }
+  .nur-breit { display: inline; }
+  .wand-titel {
+    grid-column: 1 / -1; grid-row: 3;
+    margin-top: 0;
+    display: flex; flex-direction: column;
+  }
+  .satz-zusatz { order: -1; margin: clamp(18px, 2.4vw, 28px) 0 24px; width: min(440px, 100% - var(--bildspalte) - var(--spalt)); }
+  .satz-titel { width: calc(100% * var(--titel-breite)); margin-top: auto; }
+  .wand-bild {
+    grid-column: 2; grid-row: 1 / -1;
     align-self: end;
-    margin-top: 18px;
+    height: min(538px, var(--bild-h));
+    margin: 0 calc(-1 * var(--rand)) calc(-1 * var(--unten)) 0;
   }
 }
 
@@ -259,7 +289,7 @@ a { color: inherit; }
   color: var(--rot);
 }
 .bogen-satz { margin: 12px 0 18px; }
-.bogen-gross .bogen-satz { color: var(--rot); }
+.bogen-gross .bogen-satz, .bogen-gross .kasse-n, .bogen-fest .bogen-satz { color: var(--rot); }
 .bogen-name {
   font-family: var(--plakat); font-weight: 800; font-stretch: 75%;
   font-size: clamp(1.75rem, 1.4rem + 1.4vw, 2.25rem); line-height: 1.02;
@@ -268,19 +298,17 @@ a { color: inherit; }
 .kasse { display: block; max-width: 34em; }
 .kasse-zahl { display: block; font-weight: 700; font-size: 1.1875rem; line-height: 1.3; }
 .kasse-orte { display: block; font-size: 1.125rem; line-height: 1.45; }
+.kasse-n {
+  font-family: var(--plakat); font-weight: 800; font-stretch: 75%;
+  font-size: 2.25rem; line-height: 1; margin-right: 4px;
+}
 
 .bogen-flaeche:hover .bogen-satz,
 .bogen-flaeche:hover .bogen-name { text-decoration: underline; text-decoration-thickness: 0.06em; text-underline-offset: 0.08em; }
 
-/* Der Fest-Bogen ist rot: das eine laute Blatt im Aushang */
-.bogen-fest {
-  border-top: 0;
-  background: var(--rot);
-  color: var(--papier);
-  margin-inline: calc(-1 * var(--rand));
-}
-.bogen-fest .bogen-flaeche { padding: 20px var(--rand) 30px; }
-.bogen-fest .bogen-art { color: var(--papier); }
+/* Der Fest-Bogen: am Handy Papier mit rotem Datum (die Wand oben bleibt die einzige rote Fläche),
+   ab 760 px klebt er rot und quer unter den Kino-Bögen. */
+.bogen-fest .bogen-art { color: var(--rot); }
 
 .woche-weiter {
   display: flex; flex-wrap: wrap; gap: 0 28px;
@@ -295,14 +323,32 @@ a { color: inherit; }
 .woche-weiter a:hover { color: var(--rot); }
 
 @media (min-width: 760px) {
+  /* Bogenbreite aus dem Titel: kurzer Titel = schmaler, hoher Bogen; langer Titel = breiter, querer Bogen */
   .aushang {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    column-gap: var(--spalt);
+    align-items: start;
+  }
+}
+@media (min-width: 1100px) {
+  .bogen-quer .bogen-flaeche {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    grid-template-rows: auto 1fr;
     column-gap: var(--spalt);
   }
-  .bogen-gross .kasse, .bogen-schmal .kasse { margin-top: auto; }
-  /* Der Fest-Bogen klebt quer unter beiden: Datum links auf Bogenbreite, Angaben rechts */
-  .bogen-fest { grid-column: 1 / -1; margin: 12px 0 0; }
+  .bogen-quer .bogen-art { grid-column: 1 / -1; }
+  .bogen-quer .bogen-satz { grid-column: 1; margin-bottom: 0; }
+  .bogen-quer .kasse { grid-column: 2; align-self: end; }
+}
+@media (min-width: 760px) {
+
+  .bogen-fest {
+    grid-column: 1 / -1; margin-top: 20px;
+    border-top: 0; background: var(--rot); color: var(--papier);
+  }
+  .bogen-fest .bogen-art, .bogen-fest .bogen-satz { color: var(--papier); }
   .bogen-fest .bogen-flaeche {
     display: grid;
     grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
@@ -315,6 +361,15 @@ a { color: inherit; }
   .bogen-fest .bogen-name { grid-column: 2; grid-row: 2; margin: 12px 0 10px; font-size: clamp(2rem, 1.2rem + 2vw, 3rem); }
   .bogen-fest .kasse { grid-column: 2; grid-row: 3; }
 }
+
+/* ---------- Zustandsseite (nur Skizze) ---------- */
+.zustand-titel {
+  padding: 20px var(--rand) 4px;
+  font-family: var(--plakat); font-weight: 800; font-stretch: 75%;
+  font-size: clamp(1.75rem, 1.3rem + 2vw, 2.75rem); line-height: 1.05;
+}
+.zustand-notiz { padding: 12px var(--rand) 14px; color: var(--grau); font-size: 1rem; }
+.wand + .zustand-notiz { padding-top: 40px; }
 
 /* ---------- Fuß ---------- */
 .fuss {

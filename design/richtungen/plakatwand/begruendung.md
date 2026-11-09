@@ -69,7 +69,7 @@ Am Handy ist der erste Bildschirm zu gut der Hälfte rot; der Rest der Seite ist
 ## 6. Signatur-Element: der Plakatsatz
 
 Jede Plakatzeile wird **auf die volle Breite ihrer Wand gezogen**. „KANGUVA“ füllt am Handy 358 px, am Desktop
-1184 px; die Zeilen darunter sind kleiner, weil sie länger sind, und füllen trotzdem die Breite. So entsteht ein
+90 % der Wand (Runde 2); die Zeilen darunter sind kleiner, weil sie länger sind, und füllen trotzdem die Breite. So entsteht ein
 Block mit wechselnden Größen, wie ein gemalter Bannertitel, ohne Effekt und ohne Bildfilter. Das Bild darunter ist
 angeschnitten (Wandkante, Bildschirmrand), nie hochskaliert.
 
@@ -94,10 +94,9 @@ derselben Schrift, aber normal umbrochen und ruhig.
 
 ## Zustände aus dem Brief (Abschnitt 6)
 
-- **Aufmacher mit kleinem Bild (692 bis 900 px):** Das Bild ist ein Bogen auf der Wand, nicht die Wand. Es wird nur
-  verkleinert oder angeschnitten (`object-fit: cover`, Höchstmaß = Originalgröße); die Wirkung tragen Rot und
-  Plakatsatz. Am Desktop zeigt der Bildbogen höchstens 1024 × 538 px; ein 692 px breites Bild wird schmaler
-  angeschnitten, die Wand bleibt gleich.
+- **Aufmacher mit kleinem Bild (692 bis 900 px):** Das Bild ist ein Bogen auf der Wand, nicht die Wand. Es wird nie
+  skaliert, nur in Originalgröße angeschnitten (seit Runde 2 `object-fit: none`); die Wirkung tragen Rot und
+  Plakatsatz. Gezeigt in `zustaende.html` mit einem Bild von 692 × 359 px.
 - **Eintrag ohne Foto:** Kino und Events sind **Schriftplakate**. Der Filmtitel im Plakatsatz ist das Bild; darunter
   ein Kassenblock mit Spielorten bzw. Datum, Ort und Veranstalter. Kein Platzhalterbild.
 - **Lange und kurze Überschrift:** Kurz („Scene“, „Dosa“) wird eine einzige, sehr große Zeile; lang (bis 78 Zeichen)
@@ -105,8 +104,7 @@ derselben Schrift, aber normal umbrochen und ruhig.
   der Rest wird in Zeilen von etwa 12 bis 18 Zeichen geteilt. Am Handy bleibt die Überschrift so im ersten Bildschirm;
   wird sie zu hoch, wird der Bildbogen niedriger, nie die Schrift kleiner als 40 px.
 - **Viele und wenige Spielorte:** gezeigt mit „Scene“ (11) und „Ramayana“ (2). Der Kassenblock wächst, der
-  Plakatsatz bleibt. Am Desktop stehen die beiden Kino-Bogen nebeneinander, die Kassenblöcke unten bündig; der
-  Fest-Bogen klebt rot und quer darunter (Datum links auf Bogenbreite, Angaben rechts).
+  Plakatsatz bleibt. Aufbau der Bögen: siehe Runde 2.
 - **Fokus und Bewegung:** Jeder Link hat einen sichtbaren Fokusrahmen (Tinte auf Papier, Papier auf Rot). Es gibt
   keine automatische Bewegung; die einzige Überblendung beim Zeigen ist unter `prefers-reduced-motion` abgeschaltet.
 
@@ -117,3 +115,37 @@ derselben Schrift, aber normal umbrochen und ruhig.
 - Von den 11 Spielorten von „Scene“ sind im Brief nur fünf genannt; die anderen sechs sind nicht erfunden, sondern
   als „und 6 weitere Städte“ stehen gelassen.
 - Bildnachweise sind im Bestand nicht belegt und werden daher nicht gezeigt.
+
+## Runde 2 (Überarbeitung nach `design/kritik/plakatwand-r1.md`)
+
+Die Abschnitte oben gelten weiter. Wo sie dem Folgenden widersprechen, gilt das Folgende.
+
+- **P1, Aufmacher (Abstand zu Runde 3, Gesicht angeschnitten):** Der Bildbogen steht jetzt immer in
+  **Originalgröße** (`object-fit: none`) und wird über einen Fokuspunkt je Bild (`--fokus`) eng auf das Gesicht
+  beschnitten, statt das ganze Querformat einzupassen. Am Handy läuft er randlos über beide Bildschirmkanten,
+  „KANGUVA“ liegt mit der unteren Hälfte auf dem Bild (Brust, Kette), das Gesicht steht darüber. Ab 760 px steht der
+  Bogen **hochkant in der rechten unteren Ecke** (448 × 538 px bei 1280) und wird von der rechten und der unteren
+  Wandkante angeschnitten. „KANGUVA“ läuft unten quer über 90 % der Wand und über den Körper im Bild. Oben links stehen
+  Rubrik, Datum und Zusatzzeilen. Es gibt keine Spalte „Text links, Foto rechts“ mehr, sondern eine Form aus Wand,
+  angeschnittenem Bogen und Titelzeile.
+- **Grenze des Bildes, ehrlich:** Mit `p9711.jpg` (1024 × 538) ist das Gesicht in Originalgröße etwa 190 px hoch. Am
+  Handy (390 px) ist das groß, am Desktop nicht überlebensgroß, sondern nur eng gefasst. Echt überlebensgroß wird es erst
+  mit dem Original (2190 × 1150 px laut `posts.json`), das die Live-Seite hat und die Skizze nicht. Auf kleinen Handys
+  (390 × 667) wird der Bildbogen ein Streifen von etwa 125 px. Dort greift der Titel nur mit einem Drittel ins Bild,
+  damit die Augen sichtbar bleiben.
+- **Höchstgröße der Titelzeile:** Die Titelzeile darf das Gesicht nicht verdecken. Darum füllt sie am Desktop 90 % der
+  Wand und bei kleinem Bild oder sehr kurzem Wort weniger (`--titel-breite-gross`: „Mango“ 0,5, „Dosa“ 0,45). Im
+  Theme wird das aus Bildhöhe und Fokuspunkt berechnet. Benachbarte Zusatzzeilen springen höchstens um etwa 1,4× in
+  der Größe; der Umbruch wird danach gewählt (bei „Mango“ 1,41× statt 1,72× in der Alternative).
+- **Zustände gezeigt statt beschrieben:** `zustaende.html` zeigt denselben Aufmacher mit zwei echten Beiträgen: einem
+  langen Titel (82 Zeichen) mit kleinem Bild (692 × 359, Beitrag 9556) und einem Titel mit 4 Zeichen („Dosa“,
+  Beitrag 9591), dessen Bild kein Gesicht hat.
+- **Rubrik:** „KINO“ ist jetzt eine eigene Plakatzeile an der Wand über dem Titel (Handy 26 px, Desktop bis 40 px),
+  nicht mehr ein kleines Wort im Fuß.
+- **Kleine Handys:** Unter 720 px Höhe rücken Kopf, Rubrik und Abstände zusammen. Gemessen: Bei 390 × 667 endet
+  „Lesen“ 8 px über der Daumenleiste, bei 360 × 640 ebenso. Aufnahme: `shots/index-erster-bildschirm-390x667.png`.
+- **Fest-Bogen:** Am Handy steht er auf Papier mit rotem Datum; die Wand oben ist dort die einzige rote Fläche. Erst ab
+  760 px klebt er rot und quer unter den Kino-Bögen.
+- **Kino-Bögen:** Die Bogenbreite folgt dem Titel. „Scene“ (kurz) steht in einem schmalen, hohen Bogen (5/12),
+  „Ramayana: Rise of a Legend“ (lang) in einem breiten, queren Bogen (7/12): Titel links, Kassenblock rechts unten.
+  Die Zahl der Spielorte steht als Plakatziffer vorn („11“ gegen „2“).
