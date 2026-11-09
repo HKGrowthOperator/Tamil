@@ -2,6 +2,7 @@
 
 import os
 import subprocess
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -110,3 +111,74 @@ def test_blind_comparison_sheet_hides_models_and_evaluates(settings, tmp_path):
         w.writerows(zeilen)
     werte = bewertung.auswerten(tmp_path / "bw" / "bogen.csv", tmp_path / "bw" / "schluessel.json")
     assert sorted(w["richtigkeit"] for w in werte.values()) == [2.0, 4.0]
+
+
+# ---- Review 2: WAL-sichere Kopie, nur bilder/ aus dem Archiv, Stand prüfen ---------------------------------------
+
+def test_restore_keeps_wal_data_in_safety_copy_and_only_extracts_images(settings, tmp_path):
+    import io
+    import sqlite3
+    import tarfile
+
+    with Store(settings.db_path) as store:
+        store.insert_draft(dict(uid="a", titel="Gesichert"))
+    sicherung.erstellen(settings.data_dir, tmp_path / "backup", stamp="2026-11-08")
+    offen = sqlite3.connect(settings.db_path)  # Schreiber, dessen Daten noch im WAL stehen
+    offen.execute("PRAGMA wal_autocheckpoint = 0")
+    offen.execute("INSERT INTO drafts (uid, titel, status, typ, created_at, updated_at) VALUES ('w', 'Nur im WAL', 'neu', "
+                  "'artikel', '2026-11-09', '2026-11-09')")
+    offen.commit()
+    try:
+        tgz = tmp_path / "backup" / "bilder-2026-11-08.tgz"  # manipuliertes Archiv: will radar.sqlite überschreiben
+        with tarfile.open(tgz, "w:gz") as tar:
+            for name, daten in (("bilder/ok.jpg", b"jpg"), ("radar.sqlite", b"boese"), ("../../ausbruch.txt", b"x")):
+                info = tarfile.TarInfo(name)
+                info.size = len(daten)
+                tar.addfile(info, io.BytesIO(daten))
+        sicherung.wiederherstellen(settings.data_dir, tmp_path / "backup", "2026-11-08")
+    finally:
+        offen.close()
+    vorher = next(settings.data_dir.glob("radar.sqlite.vor-restore-*"))
+    titel = {r[0] for r in sqlite3.connect(vorher).execute("SELECT titel FROM drafts")}
+    assert "Nur im WAL" in titel  # früher: nur die Hauptdatei kopiert, WAL-Inhalt verloren
+    with Store(settings.db_path) as store:
+        assert [d["titel"] for d in store.list_drafts()] == ["Gesichert"]
+    assert (settings.bilder_dir / "ok.jpg").read_bytes() == b"jpg"
+    assert not (tmp_path / "ausbruch.txt").exists() and not list(settings.data_dir.glob("bilder.restore-*"))
+
+
+def test_broken_image_archive_changes_nothing(settings, tmp_path):
+    with Store(settings.db_path) as store:
+        store.insert_draft(dict(uid="a", titel="Gesichert"))
+    save_pair(branded_card("Bild", "Kino", "x"), settings.bilder_dir, "x")
+    sicherung.erstellen(settings.data_dir, tmp_path / "backup", stamp="2026-11-08")
+    with Store(settings.db_path) as store:
+        store.insert_draft(dict(uid="b", titel="Danach"))
+    (tmp_path / "backup" / "bilder-2026-11-08.tgz").write_bytes(b"kein archiv")
+    with pytest.raises(Exception):
+        sicherung.wiederherstellen(settings.data_dir, tmp_path / "backup", "2026-11-08")
+    with Store(settings.db_path) as store:
+        assert len(store.list_drafts()) == 2  # Datenbank unverändert
+    assert (settings.bilder_dir / "x.jpg").exists() and not list(settings.data_dir.glob("bilder.restore-*"))
+
+
+def test_stand_is_validated_and_cleanup_keeps_foreign_files(settings, tmp_path):
+    for falsch in ("../2026-11-08", "2026-11-08/../x", "*", "2026-13-01", ""):
+        with pytest.raises(ValueError):
+            sicherung.stand(falsch)
+    ziel = tmp_path / "backup"
+    ziel.mkdir()
+    fremd = ziel / "notizen.txt"
+    fremd.write_text("bleibt")
+    alt = ziel / "radar-2026-10-01.sqlite"
+    alt.write_bytes(b"x")
+    zeit = (datetime.now(timezone.utc) - timedelta(days=30)).timestamp()
+    os.utime(fremd, (zeit, zeit))
+    os.utime(alt, (zeit, zeit))
+    with Store(settings.db_path):
+        pass
+    sicherung.erstellen(settings.data_dir, ziel, stamp="2026-11-08")
+    assert fremd.exists() and not alt.exists()
+    bad = subprocess.run(["bash", str(ROOT / "deploy" / "restore.sh"), "../etc"], env={**os.environ, "OHNE_SYSTEMCTL": "1"},
+                         capture_output=True, text=True)
+    assert bad.returncode == 2 and "YYYY-MM-DD" in bad.stderr

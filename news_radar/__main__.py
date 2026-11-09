@@ -221,7 +221,7 @@ def main(argv: list[str] | None = None) -> int:
         if not args.datum:
             raise SystemExit("--datum YYYY-MM-DD fehlt")
         if args.aktion == "pruefen":
-            print(sicherung.pruefen(ziel / f"radar-{args.datum}.sqlite"))
+            print(sicherung.pruefen(ziel / f"radar-{sicherung.stand(args.datum)}.sqlite"))
             return 0
         print(f"Wiederhergestellt: {sicherung.wiederherstellen(settings.data_dir, ziel, args.datum)}")
         return 0

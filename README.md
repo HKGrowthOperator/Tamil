@@ -142,6 +142,10 @@ sudo ./deploy/install.sh     # /opt/tamil-news-radar: venv, Timer (3 Min.), Web-
 sudo /opt/tamil-news-radar/restore.sh 2026-11-08   # Backup-Stand zurückspielen (prüft vorher die Integrität)
 ```
 
+Code, venv und Skripte unter `/opt/tamil-news-radar` gehören root, das Dienstkonto `newsradar` schreibt nur in `data/`
+und `backup/`. `restore.sh` stoppt alle Radar-Timer und -Dienste (bricht ab, wenn einer weiterläuft) und lässt Python als
+`newsradar` laufen. Stilbeispiele (`style`) deshalb im Repo aktualisieren und neu installieren.
+
 Mit `RADAR_WORKFLOW=v2` in der `.env` aktiviert `install.sh` zusätzlich den Worker-Dienst und den wöchentlichen
 Bildpool-Timer (nur fehlende Bilder, mit Budget). `/gesund` zeigt Warteschlange und Budget; die Tageszusammenfassung
 nennt Kosten und Probleme.

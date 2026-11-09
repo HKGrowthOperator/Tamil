@@ -13,8 +13,14 @@ cp sources.toml requirements.txt "$APP/"
 "$APP/.venv/bin/pip" install -q -r "$APP/requirements.txt"
 cp deploy/backup.sh "$APP/backup.sh"
 cp deploy/restore.sh "$APP/restore.sh"
-chown -R newsradar: "$APP"
-chmod 600 "$APP/.env"
+# Code, venv und Skripte gehören root (restore.sh läuft als root – das Dienstkonto darf es nicht ändern können);
+# newsradar schreibt nur in data/ und backup/ und liest die .env
+chown -R root:root "$APP"
+chmod -R go-w "$APP"
+chmod 755 "$APP/backup.sh" "$APP/restore.sh"
+chown -R newsradar: "$APP/data" "$APP/backup"
+chown root:newsradar "$APP/.env"
+chmod 640 "$APP/.env"
 cp deploy/news-radar.service deploy/news-radar.timer deploy/news-radar-web.service \
    deploy/news-radar-digest.service deploy/news-radar-digest.timer \
    deploy/news-radar-worker.service deploy/news-radar-bildpool.service deploy/news-radar-bildpool.timer /etc/systemd/system/
