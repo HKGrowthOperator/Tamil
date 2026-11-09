@@ -116,3 +116,10 @@ def test_budget_banner_when_stopped(app):
     client = app.test_client()
     login(client)
     assert "Budget erreicht" in client.get("/").get_data(as_text=True)
+
+
+def test_approved_version_hash_matches_queued_draft(app):
+    with Store(app.extensions["settings"].db_path) as store:
+        row = store.get_draft(1)
+        entwurf = [v for v in repo.fassungen(store, draft_id=1) if v["rolle"] == "entwurf"][-1]
+    assert entwurf["hash"] == repo.fassung_hash(row)

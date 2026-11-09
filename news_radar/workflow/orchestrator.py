@@ -351,7 +351,9 @@ def entwurf_anlegen(ctx: Kontext, story: dict, felder: dict, payload: dict, *, t
             repo.story_setzen(ctx.store, story["id"], status="verworfen", notiz="Entwurf zu dieser Meldung existiert schon")
             return None
     repo.asset_draft_setzen(ctx.store, asset_id, draft_id)
-    repo.fassung_speichern(ctx.store, story["id"], "entwurf", felder, von="radar", draft_id=draft_id)
+    # Fassung „entwurf“ = genau das, was in der Warteschlange liegt (inkl. Bild) – derselbe Hash wie bei der Freigabe
+    endfassung = {**felder, **{k: row[k] for k in repo.FASSUNG_FELDER if k in row}}
+    repo.fassung_speichern(ctx.store, story["id"], "entwurf", endfassung, von="radar", draft_id=draft_id)
     repo.story_setzen(ctx.store, story["id"], status="fertig")
     kosten = repo.kosten_story(ctx.store, story["id"])
     ctx.store.event("entwurf", id=draft_id, story=story["id"], titel=row["titel"], kategorie=row["kategorie"], typ=typ,
