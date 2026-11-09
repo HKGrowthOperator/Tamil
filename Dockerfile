@@ -13,7 +13,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     TZ=Europe/Berlin
 
 WORKDIR /app
-RUN useradd --system --uid 1000 --create-home --home-dir /home/radar radar
+# curl braucht der Healthcheck von Coolify (ohne curl/wget rollt Coolify jeden Deploy zurück)
+RUN apt-get update && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && useradd --system --uid 1000 --create-home --home-dir /home/radar radar
 
 COPY requirements.txt .
 RUN pip install -r requirements.txt tzdata
@@ -27,6 +30,6 @@ RUN mkdir -p /app/data && chown radar:radar /app/data
 VOLUME /app/data
 EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
-  CMD python -c "import os, urllib.request; urllib.request.urlopen('http://127.0.0.1:%s/gesund' % os.environ.get('PORT', '3000'), timeout=4)" || exit 1
+  CMD curl -fsS "http://127.0.0.1:${PORT:-3000}/gesund" > /dev/null || exit 1
 
 CMD ["python", "-m", "news_radar", "dienst"]
