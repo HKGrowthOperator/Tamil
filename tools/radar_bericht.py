@@ -62,11 +62,13 @@ def main(argv=None) -> int:
         print("RADAR_LESE_TOKEN fehlt (oder --token-datei).", file=sys.stderr)
         return 2
     basis = a.url.rstrip("/")
+    # Mit --json geht die Gesundheitszeile nach stderr, damit die Standardausgabe reines JSON bleibt.
+    kanal = sys.stderr if a.json else sys.stdout
     try:
         gesund = holen(f"{basis}/gesund")
-        print(f"Gesundheit: {json.dumps(gesund, ensure_ascii=False)[:300]}")
+        print(f"Gesundheit: {json.dumps(gesund, ensure_ascii=False)[:300]}", file=kanal)
     except Exception as e:  # noqa: BLE001 – Übersicht soll trotzdem weiterlaufen
-        print(f"Gesundheit: nicht erreichbar ({e})")
+        print(f"Gesundheit: nicht erreichbar ({e})", file=kanal)
     bericht = holen(f"{basis}/api/bericht?tage={a.tage}", token)
     print(json.dumps(bericht, ensure_ascii=False, indent=2) if a.json else zusammenfassen(bericht))
     return 0
