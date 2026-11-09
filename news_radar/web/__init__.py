@@ -58,9 +58,11 @@ def create_app(settings: Settings | None = None, testing: bool = False) -> Flask
     app.extensions.setdefault("writer", None)  # lazily: Writer(settings); Tests setzen einen Fake
     app.extensions.setdefault("wordpress", None)
 
+    from .redaktion import red
     from .views import ui
 
     app.register_blueprint(ui)
+    app.register_blueprint(red)
 
     @app.before_request
     def _auth():
@@ -109,7 +111,20 @@ def create_app(settings: Settings | None = None, testing: bool = False) -> Flask
             a = 2 * math.pi * i / max(n, 1) - math.pi / 2
             return round(50 + r * math.cos(a), 1), round(50 + r * math.sin(a), 1)
 
+        def budget():
+            if "budget_stand" not in g:
+                from .redaktion import budget_stand
+
+                g.budget_stand = budget_stand(get_store())
+            return g.budget_stand
+
+        def recherche_offen():
+            return get_store().db.execute("SELECT COUNT(*) FROM stories WHERE status = 'recherche_erforderlich'").fetchone()[0]
+
         return {
+            "budget": budget,
+            "recherche_offen": recherche_offen,
+            "ist_admin": session.get("rolle") == "admin",
             "csrf_token": csrf_token,
             "letzter_lauf": letzter_lauf,
             "offen": offen,
@@ -130,11 +145,20 @@ def csrf_token() -> str:
     return session["csrf"]
 
 
-def check_login(settings: Settings, user: str, password: str) -> bool:
+def check_login(settings: Settings, user: str, password: str, store: Store | None = None) -> str | None:
+    """Rolle des Benutzers (redaktion | admin) oder None. Zuerst die Benutzer-Tabelle, dann WEB_USER aus der .env
+    (der .env-Zugang ist immer admin – er bleibt als Notzugang, wenn niemand mehr in der Tabelle steht)."""
+    if store is not None:
+        from ..workflow import repo
+
+        nutzer = repo.nutzer_pruefen(store, user, password)
+        if nutzer:
+            return nutzer["rolle"]
     ok = bool(settings.web_user) and hmac.compare_digest(user, settings.web_user) and hmac.compare_digest(password, settings.web_password)
     if not ok:
         time.sleep(0.7)
-    return ok
+        return None
+    return "admin"
 
 
 def fmt_dt(value: str | None, with_time: bool = True) -> str:

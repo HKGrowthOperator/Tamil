@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Warteschlange{% endblock %}
+{% block content %}
+<h1>Warteschlange</h1>
+<p class="leise">Arbeitsschritte der Redaktion. Gescheiterte Jobs werden nach 1, 5 und 30 Minuten wiederholt; nach drei Versuchen landen sie unter „Abgebrochen“.{% if stand.stopp %} <b>Budget erreicht: bezahlte Schritte warten bis morgen.</b>{% endif %}</p>
+<div class="reiter">
+  <a href="/warteschlange" class="{{ 'aktiv' if not filt }}">Alle</a>
+  {% for key, label in (('offen', 'Offen'), ('laeuft', 'Läuft'), ('wartet_budget', 'Wartet aufs Budget'), ('tot', 'Abgebrochen'), ('fertig', 'Fertig')) %}
+  <a href="/warteschlange?status={{ key }}" class="{{ 'aktiv' if filt == key }}">{{ label }} <span class="count">{{ zaehler.get(key, 0) }}</span></a>
+  {% endfor %}
+</div>
+<section class="karte">
+<table class="voll kompakt">
+  <tr><th>Job</th><th>Story</th><th>Schritt</th><th>Status</th><th>Versuche</th><th>Fehler</th><th></th></tr>
+  {% for j in jobs %}
+  <tr><td>{{ j.id }}</td><td>{{ j.story_titel or j.story_id }}</td><td>{{ j.schritt }}</td><td>{{ j.status }}</td><td class="zahl">{{ j.versuche }}</td>
+    <td class="leise">{{ (j.fehler or '')[:120] }}</td>
+    <td>{% if j.status in ('tot', 'wartet_budget') and ist_admin %}<form method="post" action="/job/{{ j.id }}/erneut" class="inline"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="knopf">Erneut</button></form>{% endif %}</td></tr>
+  {% else %}<tr><td colspan="7" class="leise">Keine Jobs.</td></tr>{% endfor %}
+</table>
+</section>
+{% endblock %}

@@ -55,6 +55,11 @@
     </form>
     {% endif %}
     <a class="knopf" href="/vorschau/{{ d.id }}" target="_blank">Vorschau</a>
+    {% if d.typ != 'kino_termine' %}
+    <form method="post" action="/entwurf/{{ d.id }}/dossier" class="inline" data-confirm="Als Dossier recherchieren lassen? Das kostet mehr (Opus) und dauert länger.">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="leise">Als Dossier recherchieren</button>
+    </form>
+    {% endif %}
   </div>
 </section>
 
@@ -99,9 +104,18 @@
     <button class="primaer">Speichern</button>
   </form>
 </section>
+{% if belege %}{% include "_belege.html" %}{% endif %}
 </div>
 
 <aside class="editor-seite">
+{% if belege %}
+<section class="karte">
+  <h2>Kosten und Rechte</h2>
+  <p>Diese Story: <b>${{ '%.3f'|format(belege.kosten.usd) }}</b> <span class="leise">· {{ belege.kosten.aufrufe }} Aufrufe{% if belege.kosten.fehlversuche %} · {{ belege.kosten.fehlversuche }} Fehlversuche{% endif %}</span></p>
+  {% if belege.kosten.je_rolle %}<table class="voll kompakt">{% for r in belege.kosten.je_rolle %}<tr><td>{{ r.rolle }}</td><td class="leise">{{ r.modell or '' }}</td><td class="zahl">${{ '%.4f'|format(r.usd or 0) }}</td></tr>{% endfor %}</table>{% endif %}
+  {% if belege.asset %}<p class="leise">Bild: {{ belege.asset.herkunft }} · {{ belege.asset.rechteinhaber }} · Lizenz: {{ belege.asset.lizenz }}{% if belege.asset.ablauf %} · bis {{ belege.asset.ablauf }}{% endif %}{% if belege.asset.ki %} · <span class="badge ki">KI-Symbolbild</span>{% endif %}</p>{% endif %}
+</section>
+{% endif %}
 <section class="karte">
   <h2>Bild</h2>
   {% if d.bild_datei %}<img class="bild" src="/bild/{{ d.bild_datei }}" alt="{{ d.bild_alt }}"><p class="leise">{% if d.bild_origin in ('ki', 'pool') and 'KI' in (d.bild_credit or '') %}<span class="badge ki">KI-Symbolbild</span> {% endif %}{{ d.bild_credit }} · {{ {'karte': 'Bildkarte', 'ki': 'KI-Bild', 'pool': 'Bildpool', 'upload': 'eigenes Bild', 'quelle': 'Bild der Quelle', 'unsplash': 'Unsplash', 'pexels': 'Pexels'}.get(d.bild_origin, d.bild_origin) }}</p>{% endif %}

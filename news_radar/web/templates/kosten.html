@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Kosten{% endblock %}
+{% block content %}
+<h1>Kosten</h1>
+<p class="leise">Jeder Modellaufruf und jedes KI-Bild, gemessen aus den Antworten der API (Preisstand {{ preis_version }}). <a href="/kosten?tage=7">7 Tage</a> · <a href="/kosten?tage=30">30 Tage</a> · <a href="/kosten.csv?tage={{ tage }}">CSV für die Abrechnung</a></p>
+<div class="kacheln">
+  <div class="karte kachel"><b>${{ '%.2f'|format(stand.tag_usd) }}</b><span>heute von ${{ '%.2f'|format(stand.tag_limit) }}</span></div>
+  <div class="karte kachel"><b>${{ '%.2f'|format(stand.monat_usd) }}</b><span>diesen Monat von ${{ '%.2f'|format(stand.monat_limit) }}</span></div>
+  <div class="karte kachel"><b>${{ '%.2f'|format(bericht.gesamt_usd) }}</b><span>letzte {{ tage }} Tage</span></div>
+  <div class="karte kachel"><b>{{ '$%.3f'|format(bericht.je_entwurf_usd) if bericht.je_entwurf_usd else '–' }}</b><span>je Entwurf ({{ bericht.entwuerfe }} Entwürfe)</span></div>
+</div>
+<div class="zwei-spalten">
+<section class="karte"><h2>Nach Rolle</h2>
+  <table class="voll kompakt"><tr><th>Rolle</th><th>Aufrufe</th><th>Fehlversuche</th><th>Input</th><th>Output</th><th>Kosten</th></tr>
+  {% for r in bericht.je_rolle %}<tr><td>{{ r.rolle }}</td><td class="zahl">{{ r.aufrufe }}</td><td class="zahl">{{ r.fehlversuche }}</td><td class="zahl">{{ r.input or 0 }}</td><td class="zahl">{{ r.output or 0 }}</td><td class="zahl">${{ '%.4f'|format(r.usd or 0) }}</td></tr>{% else %}<tr><td colspan="6" class="leise">Noch keine Aufrufe.</td></tr>{% endfor %}</table>
+</section>
+<section class="karte"><h2>Nach Modell</h2>
+  <table class="voll kompakt"><tr><th>Modell</th><th>Aufrufe</th><th>Cache gelesen</th><th>Bilder</th><th>Kosten</th></tr>
+  {% for r in bericht.je_modell %}<tr><td>{{ r.modell or '–' }}</td><td class="zahl">{{ r.aufrufe }}</td><td class="zahl">{{ r.cache_read or 0 }}</td><td class="zahl">{{ r.bilder or 0 }}</td><td class="zahl">${{ '%.4f'|format(r.usd or 0) }}</td></tr>{% else %}<tr><td colspan="5" class="leise">–</td></tr>{% endfor %}</table>
+</section>
+</div>
+<section class="karte"><h2>Nach Tag</h2>
+  <table class="voll kompakt"><tr><th>Tag (UTC)</th><th>Aufrufe</th><th>Kosten</th></tr>
+  {% for r in bericht.je_tag %}<tr><td>{{ r.tag }}</td><td class="zahl">{{ r.aufrufe }}</td><td class="zahl">${{ '%.4f'|format(r.usd or 0) }}</td></tr>{% endfor %}</table>
+</section>
+{% if bericht.fehler %}
+<section class="karte"><h2>Fehlversuche</h2>
+  <table class="voll kompakt"><tr><th>Zeit</th><th>Rolle</th><th>Modell</th><th>Status</th><th>Grund</th></tr>
+  {% for f in bericht.fehler %}<tr><td>{{ fmt_dt(f.ts) }}</td><td>{{ f.rolle }}</td><td>{{ f.modell_angefragt }}</td><td>{{ f.status }}</td><td class="leise">{{ (f.fehler or '')[:140] }}</td></tr>{% endfor %}</table>
+</section>
+{% endif %}
+{% endblock %}

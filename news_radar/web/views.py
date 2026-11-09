@@ -11,6 +11,7 @@ from flask import (Blueprint, Response, abort, current_app, flash, g, jsonify, r
                    send_from_directory, session, url_for)
 
 from .. import bilder, images, prompts
+from ..workflow import repo
 from ..render import render_content, sanitize_html
 from ..store import OPEN_STATES, PUBLISHABLE, STATUSES, TRANSITIONS, ConflictError
 from ..wordpress import slugify
@@ -67,9 +68,11 @@ def _user() -> str:
 @ui.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        if check_login(_settings(), request.form.get("user", ""), request.form.get("password", "")):
+        rolle = check_login(_settings(), request.form.get("user", ""), request.form.get("password", ""), get_store())
+        if rolle:
             session.permanent = True
             session["user"] = request.form["user"]
+            session["rolle"] = rolle
             target = request.args.get("next") or "/"
             return redirect(target if target.startswith("/") else "/")
         flash("Benutzername oder Passwort falsch.", "fehler")
@@ -114,6 +117,9 @@ def set_status(draft_id: int):
     except ConflictError as exc:
         return render_template("fehler.html", titel="Zustand hat sich geändert", text=str(exc), draft_id=draft_id), 409
     store.event("aktion", id=draft_id, aktion=aktion, status=neu, von=_user())
+    row = store.get_draft(draft_id)
+    repo.aktion(store, wer=_user(), aktion=aktion, draft_id=draft_id, story_id=row.get("story_id"),
+                fassung=repo.fassung_hash(row))
     flash(f"{STATUS_LABELS.get(neu, neu)}.", "ok")
     target = request.form.get("next") or request.args.get("next") or url_for("ui.feed")
     return redirect(target if target.startswith("/") else url_for("ui.feed"))
@@ -144,7 +150,10 @@ def entwurf(draft_id: int):
     pool = bilder.BildPool(settings.bildpool_dir).status()
     themen = [{"slug": t["thema"], "rubrik": t.get("rubrik", ""), "anzahl": pool.get(t["thema"], {}).get("anzahl", 0)}
               for t in prompts.bildpool_themen()]
+    from .redaktion import belege_fuer
+
     return render_template("entwurf.html", d=row, labels=STATUS_LABELS, categories=settings.categories,
+                           belege=belege_fuer(store, row),
                            can_publish=row["status"] in PUBLISHABLE, open_states=OPEN_STATES,
                            preview=render_content(row), bildthemen=themen, ki_bereit=bool(settings.gemini_key),
                            bild_thema=row.get("bild_thema") or prompts.thema_fuer(row["kategorie"], row["titel"]))
@@ -284,6 +293,8 @@ def _publish(draft_id: int, status: str):
         store.event("fehler", id=draft_id, titel=row["titel"], fehler=str(exc)[:300], schritt="veroeffentlichen", von=_user())
         flash(f"WordPress-Fehler: {str(exc)[:200]} – Status „Fehler“, später erneut versuchen.", "fehler")
         return redirect(url_for("ui.entwurf", draft_id=draft_id))
+    repo.aktion(store, wer=_user(), aktion="veroeffentlicht" if status == "publish" else "wp_entwurf", draft_id=draft_id,
+                story_id=row.get("story_id"), fassung=repo.fassung_hash(row), wp_post_id=info.get("post_id"))
     if status == "publish":
         flash(f"Live auf tamil.de: {info['link']}", "ok")
     else:
@@ -347,10 +358,18 @@ def bild_datei(name: str):
 
 @ui.get("/gesund")
 def gesund():
+    from ..workflow import jobs
+    from .redaktion import budget_stand
+
     store = get_store()
     runs = store.recent_runs(1)
+    warteschlange = jobs.zaehlen(store)
+    stand = budget_stand(store)
     return jsonify({"ok": True, "letzter_lauf": runs[0]["started_at"] if runs else None,
-                    "offen": sum(store.counts_by_status()[s] for s in OPEN_STATES), "zeit": datetime.now(timezone.utc).isoformat()})
+                    "offen": sum(store.counts_by_status()[s] for s in OPEN_STATES),
+                    "warteschlange": {k: warteschlange[k] for k in ("offen", "laeuft", "tot", "wartet_budget")},
+                    "budget": {k: stand[k] for k in ("tag_usd", "monat_usd", "tag_limit", "monat_limit", "warnung", "stopp")},
+                    "zeit": datetime.now(timezone.utc).isoformat()})
 
 
 @ui.get("/manifest.webmanifest")

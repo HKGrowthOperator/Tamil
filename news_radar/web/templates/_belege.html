@@ -1,0 +1,41 @@
+{# Belege einer Story (Redaktion v2): Quellen mit Rechten, Claim-Matrix, Faktencheck, Fassungen #}
+<section class="karte belege" id="belege">
+  <h2>Belege <small class="leise">Story {{ belege.story.id }} · {{ belege.story.typ }} · Länge „{{ belege.story.laenge or '–' }}“{% if belege.story.sensibel %} · <span class="badge hinweis">sensibel</span>{% endif %}</small></h2>
+  <h3>Quellen</h3>
+  <ol class="quellen-liste">
+    {% for q in belege.dokumente %}
+    <li><b>{{ q.doc_key }}</b> {% if q.url and not q.url.endswith('#daten') %}<a href="{{ q.url }}" target="_blank" rel="noopener">{{ q.publisher or q.quelle or q.url }}</a>{% else %}{{ q.publisher or q.quelle }}{% endif %}
+      <span class="leise">· {{ belege.labels.art.get(q.art, q.art) }}{% if q.primaer %} · Primärquelle{% endif %} · Rechte: {{ q.rights }}{% if q.published_at %} · {{ q.published_at[:10] }}{% endif %}</span></li>
+    {% endfor %}
+  </ol>
+  <h3>Faktenmatrix</h3>
+  {% if belege.claims %}
+  <table class="voll kompakt claims">
+    <tr><th></th><th>Aussage</th><th>Art</th><th>Quellen</th></tr>
+    {% for c in belege.claims %}
+    <tr class="s-{{ c.support }}"><td><span class="ampel a-{{ c.support }}" title="{{ belege.labels.support.get(c.support, c.support) }}"></span></td>
+      <td>{% if c.kern %}<b>{{ c.aussage }}</b>{% else %}{{ c.aussage }}{% endif %}<br><span class="leise">{{ c.id }} · {{ belege.labels.support.get(c.support, c.support) }}{% if c.fundstelle %} · „{{ c.fundstelle[:140] }}“{% endif %}</span></td>
+      <td>{{ c.art }}{% if c.kern %} · Kern{% endif %}</td><td>{{ c.quellen|join(', ') }}</td></tr>
+    {% endfor %}
+  </table>
+  {% else %}<p class="leise">Keine Claims (Kino-Vorlage oder Agent-Modus ohne Matrix).</p>{% endif %}
+  {% if belege.faktencheck %}
+  <h3>Faktencheck</h3>
+  <ul class="urteile">
+    {% for u in belege.faktencheck %}<li class="u-{{ u.urteil }}"><span class="ampel a-{{ 'bestaetigt' if u.urteil == 'gedeckt' else ('offen' if u.urteil == 'kein_fakt' else 'widerspruch') }}"></span> {{ u.satz }} <span class="leise">· {{ belege.labels.urteil.get(u.urteil, u.urteil) }}{% if u.claim_ids %} · {{ u.claim_ids|join(', ') }}{% endif %}</span></li>{% endfor %}
+  </ul>
+  {% endif %}
+  <h3>Fassungen</h3>
+  <ul class="fassungen">
+    {% for v in belege.versionen %}<li>{{ fmt_dt(v.erstellt) }} · <b>{{ v.rolle }}</b>{% if v.von %} · {{ v.von }}{% endif %} · <code>{{ v.hash }}</code></li>{% endfor %}
+    <li>jetzt · <b>aktuelle Fassung</b> · <code>{{ belege.fassung }}</code></li>
+  </ul>
+  {% for d in belege.diffs if d.diff %}
+  <details class="diff"><summary>Änderungen durch {{ d.rolle }}</summary><pre>{% for z in d.diff %}<span class="{{ 'plus' if z.startswith('+') else ('minus' if z.startswith('-') else '') }}">{{ z }}</span>
+{% endfor %}</pre></details>
+  {% endfor %}
+  {% if belege.aktionen %}
+  <h3>Freigaben und Aktionen</h3>
+  <ul class="fassungen">{% for a in belege.aktionen %}<li>{{ fmt_dt(a.ts) }} · <b>{{ a.aktion }}</b> · {{ a.wer }} · Fassung <code>{{ a.fassung_hash }}</code>{% if a.wp_post_id %} · WP {{ a.wp_post_id }}{% endif %}</li>{% endfor %}</ul>
+  {% endif %}
+</section>

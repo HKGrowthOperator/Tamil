@@ -223,6 +223,30 @@ table.kompakt td, table.kompakt th { padding: 6px; font-size: 14px; }
 .login button { width: 100%; margin-top: 12px; min-height: 46px; }
 
 /* ---- Brüche ---- */
+/* ---- Redaktion v2: Belege, Kosten, Warteschlange ---- */
+.banner { border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; font-size: 15px; }
+.banner.warnung { background: var(--gelb-hell); color: #6B4100; }
+.banner.stopp { background: var(--rot-hell); color: var(--rot-tief); }
+.belege h3 { font-size: 16px; margin: 18px 0 8px; }
+.quellen-liste { margin: 0; padding-left: 0; list-style: none; display: grid; gap: 6px; font-size: 15px; }
+.ampel { display: inline-block; width: 11px; height: 11px; border-radius: 50%; background: var(--linie); vertical-align: middle; }
+.a-bestaetigt { background: var(--gruen); } .a-einzelquelle { background: var(--safran); }
+.a-unbestaetigt, .a-offen { background: var(--linie); } .a-widerspruch { background: var(--rot); }
+table.claims td { vertical-align: top; }
+.urteile { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; font-size: 15px; font-family: var(--text); }
+.urteile .u-ungedeckt, .urteile .u-widerspruch { background: var(--rot-hell); border-radius: 8px; padding: 4px 8px; }
+.fassungen { list-style: none; padding: 0; margin: 0; font-size: 14px; display: grid; gap: 4px; }
+details.diff { margin-top: 8px; } details.diff summary { cursor: pointer; font-weight: 700; font-size: 14px; }
+details.diff pre { white-space: pre-wrap; font-size: 13px; background: var(--sand); border-radius: 10px; padding: 10px; overflow-x: auto; }
+details.diff .plus { color: #164E2F; } details.diff .minus { color: var(--rot-tief); text-decoration: line-through; }
+.kacheln { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 4px; }
+.kachel { display: grid; gap: 2px; margin: 0; } .kachel b { font-size: 26px; font-weight: 800; } .kachel span { color: var(--tinte-3); font-size: 14px; }
+.reiter { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.reiter a { padding: 6px 14px; border-radius: 999px; background: var(--sand); color: var(--tinte-2); text-decoration: none; font-weight: 700; font-size: 14px; }
+.reiter a.aktiv { background: var(--weiss); color: var(--tinte); box-shadow: inset 0 0 0 1.5px var(--linie); }
+tr.aus td { color: var(--tinte-3); }
+.leise-count { background: var(--sand-2); color: var(--tinte); }
+
 @media (min-width: 1100px) {
   .editor-grid { grid-template-columns: minmax(0, 1.25fr) minmax(360px, .75fr); }
 }

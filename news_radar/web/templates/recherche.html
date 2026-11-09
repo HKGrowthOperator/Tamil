@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Recherche nötig{% endblock %}
+{% block content %}
+<h1>Recherche nötig</h1>
+<p class="leise">Diese Storys hat der Radar nicht geschrieben: eine Kernaussage ist nicht belegt oder Quellen widersprechen sich. Gebt eine Quelle dazu (z. B. die Seite des Veranstalters), dann läuft die Story erneut durch Recherche und Prüfung.</p>
+{% for s in storys %}
+<section class="karte">
+  <div class="meta"><span class="rubrik r-{{ s.kategorie }}">{{ category_label(s.kategorie) }}</span><span class="badge typ">{{ s.typ }}</span>{% if s.ort %}<span class="badge ort">{{ s.ort }}</span>{% endif %}<span class="leise">{{ age(s.aktualisiert) }}</span></div>
+  <h2>{{ s.titel }}</h2>
+  {% if s.notiz %}<ul class="hinweise">{% for g in s.notiz.split('; ') %}<li>{{ g }}</li>{% endfor %}</ul>{% endif %}
+  <p class="leise">Quellen: {% for q in s.dokumente %}<a href="{{ q.url }}" target="_blank" rel="noopener">{{ q.doc_key }} {{ q.publisher or q.quelle }}</a> ({{ arten.get(q.art, q.art) }}){{ ', ' if not loop.last }}{% endfor %}</p>
+  {% if s.claims %}<p class="leise">{{ s.claims|selectattr('support', 'equalto', 'bestaetigt')|list|length }} von {{ s.claims|length }} Aussagen bestätigt.</p>{% endif %}
+  <form method="post" action="/story/{{ s.id }}/quelle" class="zeile">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <input type="url" name="url" placeholder="https://… (Quelle mit dem vollständigen Bericht)" required>
+    <button class="primaer">Quelle ergänzen</button>
+  </form>
+  <form method="post" action="/story/{{ s.id }}/verwerfen" class="inline" data-confirm="Story verwerfen?">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="leise">Verwerfen</button>
+  </form>
+</section>
+{% else %}
+<section class="karte"><p>Nichts offen. Jede Story hatte genug Belege.</p></section>
+{% endfor %}
+{% if laufend %}
+<section class="karte">
+  <h2>In Arbeit <small class="leise">{{ laufend|length }} Storys zwischen Scan und Entwurf</small></h2>
+  <table class="voll kompakt">{% for s in laufend %}<tr><td>{{ s.titel }}</td><td>{{ s.typ }}</td><td>{{ s.status }}</td><td class="leise">{{ age(s.aktualisiert) }}</td></tr>{% endfor %}</table>
+</section>
+{% endif %}
+{% endblock %}
