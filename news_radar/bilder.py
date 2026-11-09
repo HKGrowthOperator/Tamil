@@ -15,6 +15,7 @@ import base64
 import io
 import json
 import logging
+import re
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -114,6 +115,13 @@ def from_gemini(prompt: str, settings: Settings, slug: str, transport: Transport
     return FeaturedImage(images._encode(fitted), f"{slug}.jpg", "image/jpeg", KI_CREDIT, "ki")
 
 
+def gueltiges_thema(thema: str, kategorie: str = "", titel: str = "") -> str:
+    """Nur Themen aus bildpool.md (das Thema kommt aus der Modellantwort und wird Teil eines Dateipfads)."""
+    if thema in prompts.thema_slugs():
+        return thema
+    return prompts.thema_fuer(kategorie, titel)
+
+
 class BildPool:
     """Reserve-Bilder je Thema mit Nutzungszähler (pool.json)."""
 
@@ -142,6 +150,8 @@ class BildPool:
         return len(self._data.get(thema, []))
 
     def add(self, thema: str, image: FeaturedImage, prompt: str = "") -> Path:
+        if not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,40}", thema or ""):
+            raise ValueError(f"Ungültiges Bildthema: {thema!r}")
         entries = self._data.setdefault(thema, [])
         name = f"{thema}-{len(entries) + 1:03d}.jpg"
         (self.folder / thema).mkdir(parents=True, exist_ok=True)
@@ -224,7 +234,7 @@ def beitragsbild(
 ) -> FeaturedImage:
     """Immer ein Bild: KI (nur mit Prompt und Schlüssel) → Pool → Stock (nur mit Schlüssel) → Karte."""
     modus = settings.bild_modus if settings.bild_modus in MODI else "ki"
-    thema = bild_thema or prompts.thema_fuer(kategorie, titel)
+    thema = gueltiges_thema(bild_thema, kategorie, titel)
     if modus == "karte":
         return images.branded_card(titel, kategorie_label, slug, kategorie)
     pool = pool or BildPool(settings.bildpool_dir)
@@ -235,7 +245,7 @@ def beitragsbild(
             if thema:
                 try:
                     pool.add(thema, image, prompt)
-                except OSError as exc:
+                except (OSError, ValueError) as exc:
                     log.warning("Pool nicht beschreibbar: %s", exc)
             return image
     if modus in ("ki", "pool") and thema:

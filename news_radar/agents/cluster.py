@@ -78,7 +78,7 @@ def zuordnen(ctx: Kontext, items: list[NewsItem], tage: int = 7) -> list[Zuordnu
             continue
         best, wert = None, 0.0
         for s in bestehend:
-            if s["typ"] == "kino" or s["status"] == "verworfen":
+            if s["typ"] in ("kino", "dossier") or s["status"] == "verworfen":
                 continue
             w = aehnlichkeit(item.title, s.get("titel") or "")
             if w > wert:
@@ -102,6 +102,9 @@ def _grenzfaelle_entscheiden(ctx: Kontext, faelle: list[tuple[int, NewsItem, dic
         antwort = ctx.claude.call("cluster", prompts.load_prompt("cluster"), json_block("paare", paare), ClusterErgebnis)
     except BudgetErschoepft:
         return  # im Zweifel neue Story
+    except Exception as exc:  # noqa: BLE001 – Ausfall des Modells: im Zweifel neue Story, Scan läuft weiter
+        log.warning("Cluster-Prüfung fehlgeschlagen (%s) – Grenzfälle werden neue Storys", exc)
+        return
     if not antwort.ok:
         return
     for e in antwort.daten.entscheidungen:

@@ -4,6 +4,8 @@ import pytest
 
 from news_radar import net
 
+ECHTE_SAFE_SESSION = net._safe_session  # vor dem Test-Fixture, das sie durch requests ersetzt
+
 
 class Resp:
     def __init__(self, status=200, body=b"ok", headers=None):
@@ -96,3 +98,31 @@ def test_http_errors_and_conditional_requests():
     assert got.not_modified and got.etag == '"abc"'
     sent = cond.calls[0][1]["headers"]
     assert sent["If-None-Match"] == '"abc"' and sent["If-Modified-Since"] == "Mon"
+
+
+def test_idna_host_is_checked_as_requests_connects_to_it():
+    gesehen = []
+    net.check_url("https://evilß.com/", lambda host: gesehen.append(host) or ["93.184.216.34"])
+    assert gesehen == ["xn--evil-yna.com"]
+
+
+def test_peer_address_is_checked_after_connect(monkeypatch):
+    """DNS-Rebinding: die Vorabprüfung sieht eine öffentliche Adresse, die Verbindung landet auf 127.0.0.1."""
+    import http.server
+    import socket
+    import threading
+
+    for k in ("HTTP_PROXY", "HTTPS_PROXY", "http_proxy", "https_proxy", "ALL_PROXY", "all_proxy"):
+        monkeypatch.delenv(k, raising=False)
+    monkeypatch.setattr(net, "_SAFE_SESSION", None)
+    monkeypatch.setattr(net, "_safe_session", ECHTE_SAFE_SESSION)
+    srv = http.server.HTTPServer(("127.0.0.1", 0), http.server.SimpleHTTPRequestHandler)
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    orig = socket.getaddrinfo
+    monkeypatch.setattr(socket, "getaddrinfo", lambda host, *a, **kw: orig("127.0.0.1" if host == "rebind.test" else host, *a, **kw))
+    try:
+        with pytest.raises(net.UnsafeURL):
+            net.safe_get(f"http://rebind.test:{srv.server_address[1]}/", resolve=PUBLIC)
+    finally:
+        srv.shutdown()
+

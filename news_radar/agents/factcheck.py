@@ -42,11 +42,27 @@ def _verlag(doc: SourceDocument) -> str:
     return (doc.publisher or doc.quelle or doc.url).lower().strip()
 
 
+def _norm(text: str) -> str:
+    text = re.sub(r"[„“”\"'‚‘’«»]", "", (text or "").lower())
+    return re.sub(r"\s+", " ", text).strip(" .…")
+
+
+def fundstelle_belegt(claim: Claim, doc: SourceDocument) -> bool:
+    """Steht die angegebene Fundstelle (normalisiert) wirklich im Dokument? Schützt vor erfundenen Belegen."""
+    stelle = _norm(claim.fundstelle)
+    if len(stelle) < 12:
+        return False
+    return stelle in _norm(f"{doc.titel}. {doc.text}") or stelle in _norm(doc.text) or stelle in _norm(doc.titel)
+
+
 def support(claim: Claim, docs: dict[str, SourceDocument], widerspruch_ids: set[str]) -> str:
     if claim.id in widerspruch_ids:
         return "widerspruch"
     belegt = [docs[q] for q in claim.quellen if q in docs]
-    inhalt = [d for d in belegt if d.art != "hinweis"]
+    # Ein Dokument zählt nur, wenn die Fundstelle wörtlich darin steht (sonst bloß behauptet)
+    inhalt = [d for d in belegt if d.art != "hinweis" and fundstelle_belegt(claim, d)]
+    if not inhalt and any(d.art != "hinweis" for d in belegt):
+        return "einzelquelle"
     if any(d.primaer for d in inhalt):
         return "bestaetigt"
     if len({_verlag(d) for d in inhalt}) >= 2:

@@ -16,7 +16,11 @@ from dataclasses import dataclass
 from typing import Callable
 from urllib.parse import urljoin, urlsplit
 
+import idna
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.connection import HTTPConnection, HTTPSConnection
+from urllib3.connectionpool import HTTPConnectionPool, HTTPSConnectionPool
 
 USER_AGENT = "TamilDE-NewsRadar/2.0 (+https://www.tamil.de)"
 MAX_BYTES = 5_000_000
@@ -55,6 +59,17 @@ def _blocked(address: str) -> bool:
     return not ip.is_global or ip.is_multicast or ip.is_reserved or ip.is_loopback or ip.is_link_local
 
 
+def _ascii_host(host: str) -> str:
+    """Hostname so kodieren, wie requests/urllib3 es tun (IDNA/UTS46) – sonst prüfen wir einen anderen Host als den,
+    zu dem verbunden wird (z. B. „evilß.com“: IDNA2003 → evilss.com, UTS46 → xn--evil-yna.com)."""
+    if host.isascii():
+        return host
+    try:
+        return idna.encode(host, uts46=True).decode("ascii")
+    except idna.IDNAError as exc:
+        raise UnsafeURL(f"Ungültiger Hostname: {host}") from exc
+
+
 def check_url(url: str, resolve: Resolver | None = None) -> str:
     """Prüft eine URL und gibt sie zurück; UnsafeURL, wenn sie gesperrt ist."""
     parts = urlsplit(url.strip())
@@ -62,7 +77,7 @@ def check_url(url: str, resolve: Resolver | None = None) -> str:
         raise UnsafeURL(f"Schema nicht erlaubt: {parts.scheme or '(leer)'}")
     if parts.username or parts.password:
         raise UnsafeURL("Zugangsdaten in der URL")
-    host = parts.hostname or ""
+    host = _ascii_host(parts.hostname or "")
     if not host:
         raise UnsafeURL("Kein Host")
     try:
@@ -76,6 +91,67 @@ def check_url(url: str, resolve: Resolver | None = None) -> str:
     if bad:
         raise UnsafeURL(f"Interne Adresse gesperrt: {host} → {bad[0]}")
     return url
+
+
+# ---- Prüfung beim Verbindungsaufbau (gegen DNS-Rebinding) ---------------------------------------------
+# check_url löst den Host vorher auf; requests löst ihn beim Verbinden noch einmal auf. Ein Angreifer-DNS mit TTL 0
+# könnte beim zweiten Mal eine interne Adresse liefern. Deshalb prüfen diese Verbindungsklassen die Gegenstelle des
+# tatsächlich geöffneten Sockets. Über einen Proxy (Entwicklungsumgebung) verbindet requests zum Proxy; dort greift
+# nur die Vorabprüfung.
+
+class _PeerCheck:
+    def _new_conn(self):  # type: ignore[override]
+        sock = super()._new_conn()  # type: ignore[misc]
+        try:
+            peer = sock.getpeername()[0]
+        except OSError:
+            peer = ""
+        if peer and _blocked(peer):
+            sock.close()
+            raise UnsafeURL(f"Verbindung zu interner Adresse gesperrt: {peer}")
+        return sock
+
+
+class _SafeHTTPConnection(_PeerCheck, HTTPConnection):
+    pass
+
+
+class _SafeHTTPSConnection(_PeerCheck, HTTPSConnection):
+    pass
+
+
+class _SafeHTTPPool(HTTPConnectionPool):
+    ConnectionCls = _SafeHTTPConnection
+
+
+class _SafeHTTPSPool(HTTPSConnectionPool):
+    ConnectionCls = _SafeHTTPSConnection
+
+
+class SafeAdapter(HTTPAdapter):
+    def init_poolmanager(self, *args, **kwargs):
+        super().init_poolmanager(*args, **kwargs)
+        self.poolmanager.pool_classes_by_scheme = {"http": _SafeHTTPPool, "https": _SafeHTTPSPool}
+
+
+_SAFE_SESSION: requests.Session | None = None
+
+
+def _safe_session() -> requests.Session:
+    global _SAFE_SESSION
+    if _SAFE_SESSION is None:
+        s = requests.Session()
+        s.mount("http://", SafeAdapter())
+        s.mount("https://", SafeAdapter())
+        _SAFE_SESSION = s
+    return _SAFE_SESSION
+
+
+def _ohne_proxy(url: str) -> bool:
+    """True, wenn requests für diese URL direkt verbindet (kein HTTP(S)-Proxy oder Host in NO_PROXY)."""
+    if requests.utils.should_bypass_proxies(url, no_proxy=None):
+        return True
+    return requests.utils.select_proxy(url, requests.utils.get_environ_proxies(url)) is None
 
 
 @dataclass
@@ -143,7 +219,8 @@ def safe_get(
     current = url
     for _hop in range(max_redirects + 1):
         check_url(current, resolve)
-        resp = http.get(current, params=params, headers=hdrs, timeout=timeout, stream=True, allow_redirects=False)
+        client = http if session is not None or not _ohne_proxy(current) else _safe_session()
+        resp = client.get(current, params=params, headers=hdrs, timeout=timeout, stream=True, allow_redirects=False)
         params = None  # Parameter gehören nur zur ersten Anfrage
         try:
             if resp.status_code in (301, 302, 303, 307, 308) and resp.headers.get("Location"):

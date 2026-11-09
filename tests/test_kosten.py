@@ -39,7 +39,7 @@ def test_prices_per_model_with_cache_and_haiku_long_context_tier():
     lang = costs.Tokens(input=150_000, output=10_000)  # Haiku über 100K Prompt-Tokens: höherer Satz für alles
     assert costs.kosten_tokens("claude-haiku-5-5", lang) == pytest.approx((150_000 * 0.50 + 10_000 * 2.50) / 1e6)
     with pytest.raises(costs.UnbekanntesModell):
-        costs.kosten_tokens("gpt-irgendwas", t)
+        costs.kosten_tokens("gpt-irgendwas", t, streng=True)
 
 
 def test_fallback_iterations_are_billed_per_model():
@@ -144,7 +144,7 @@ def test_provider_budget_stop_prevents_call(store, settings):
     with pytest.raises(costs.BudgetErschoepft):
         claude.call("text", "s", "u", Mini)
     assert fake.requests == []
-    assert store.db.execute("SELECT status FROM agent_usage").fetchone()[0] == "budget"
+    assert store.db.execute("SELECT COUNT(*) FROM agent_usage").fetchone()[0] == 0  # kein Aufruf, keine Zeile
 
 
 def test_schema_is_strict_and_nested():
@@ -176,7 +176,10 @@ def test_jobs_idempotent_priority_backoff_dead_letter_and_budget(store):
     assert jobs.erneut(store, eilig) and jobs.zaehlen(store)["offen"] == 1
     j = jobs.naechster(store, "w1")
     jobs.wartet_budget(store, j["id"], "Budget")
-    assert jobs.naechster(store, "w1") is None and jobs.budget_wieder_frei(store) == 1
+    assert jobs.naechster(store, "w1") is None and jobs.budget_wieder_frei(store) == 0  # 15 Minuten Pause
+    store.db.execute("UPDATE workflow_jobs SET naechster_versuch = '2000-01-01' WHERE id = ?", (j["id"],))
+    store.db.commit()
+    assert jobs.budget_wieder_frei(store) == 1
     j = jobs.naechster(store, "w1")
     assert j["versuche"] == 1  # der Budget-Versuch zählt nicht
     store.db.execute("UPDATE workflow_jobs SET deadline = '2000-01-01' WHERE id = ?", (j["id"],))
@@ -203,3 +206,40 @@ def test_v1_writer_is_measured_and_respects_budget(store, settings):
     leer = Writer(settings, client=FakeAnthropic({"text": antwort}), store=store, budget=costs.Budget(store, 0.0, 150))
     with pytest.raises(costs.BudgetErschoepft):
         leer.write(item, "")
+
+
+
+def test_unknown_fallback_model_is_billed_at_highest_price_and_recorded(store, settings):
+    fake = FakeAnthropic({"text": {"ja": True}}, fallback_modell={"text": "claude-neu-9"})
+    a = Claude(settings, store, client=fake).call("text", "s", "u", Mini)
+    row = dict(store.db.execute("SELECT * FROM agent_usage").fetchone())
+    assert a.ok and row["modell"] == "claude-neu-9" and row["kosten_usd"] > 0
+    assert costs.kosten_tokens("claude-opus-4-8", costs.Tokens(input=1_000_000)) == pytest.approx(5.0)
+
+
+def test_job_finished_by_other_worker_after_deadline_is_not_overwritten(store):
+    sid = repo.story_anlegen(store, typ="news", titel="A")
+    jobs.einreihen(store, sid, "recherche")
+    j = jobs.naechster(store, "w1")
+    store.db.execute("UPDATE workflow_jobs SET deadline = '2000-01-01' WHERE id = ?", (j["id"],))
+    store.db.commit()
+    jobs.aufraeumen(store)
+    j2 = jobs.naechster(store, "w2")
+    assert j2["id"] == j["id"]
+    assert jobs.erledigt(store, j["id"], worker="w1") is False  # w1 kam zu spät
+    assert jobs.erledigt(store, j["id"], worker="w2") is True
+
+
+def test_budget_wait_does_not_spin(store, settings, monkeypatch):
+    from news_radar.agents import Kontext
+    from news_radar.workflow import orchestrator
+
+    sid = repo.story_anlegen(store, typ="news", titel="A")
+    jobs.einreihen(store, sid, "recherche")
+    budget = costs.Budget(store, 0.0001, 150)
+    ctx = Kontext(settings=settings, store=store, claude=Claude(settings, store, client=FakeAnthropic(), budget=budget),
+                  budget=budget, fetch_text=lambda u: "", suche=lambda q: [])
+    for _ in range(5):
+        orchestrator.abarbeiten(ctx)
+    assert jobs.zaehlen(store)["wartet_budget"] == 1
+    assert store.db.execute("SELECT COUNT(*) FROM log WHERE event = 'budget'").fetchone()[0] == 1

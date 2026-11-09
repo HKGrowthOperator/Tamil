@@ -128,7 +128,8 @@ class Claude:
             else:
                 import anthropic
 
-                self._client = anthropic.Anthropic(max_retries=2, timeout=120)
+                # 600 s je Versuch: Texte mit Thinking (Sonnet/Opus) brauchen Zeit; die Job-Deadline liegt darüber
+                self._client = anthropic.Anthropic(max_retries=1, timeout=600)
         return self._client
 
     def call(
@@ -162,10 +163,8 @@ class Claude:
             betrag = costs.schaetzung(modell, len(system) + len(user), max_tokens)
             try:
                 reservierung = self.budget.reservieren(betrag, rolle, story_id)
-            except costs.BudgetErschoepft as exc:
-                usage_protokollieren(self.store, rolle=rolle, modell_angefragt=modell, version=version, status="budget",
-                                     story_id=story_id, job_id=job_id, fehler=str(exc))
-                raise
+            except costs.BudgetErschoepft:
+                raise  # kein Aufruf, keine Kosten – protokolliert wird beim Job (wartet_budget), nicht je Versuch
         kwargs: dict[str, Any] = dict(
             model=modell,
             max_tokens=max_tokens,
@@ -234,4 +233,7 @@ def budget_fuer(settings: Settings, store) -> costs.Budget:
 
 
 def json_block(name: str, daten: Any) -> str:
-    return f"<{name}>\n{json.dumps(daten, ensure_ascii=False, indent=1)}\n</{name}>"
+    """Daten als JSON in einem benannten Block. < und > werden als \\u003c/\\u003e geschrieben (gültiges JSON),
+    damit Text aus dem Netz den Block nicht mit „</dokumente>“ vorzeitig schließen kann."""
+    text = json.dumps(daten, ensure_ascii=False, indent=1).replace("<", "\\u003c").replace(">", "\\u003e")
+    return f"<{name}>\n{text}\n</{name}>"

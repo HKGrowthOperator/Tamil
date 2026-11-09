@@ -204,9 +204,9 @@ def run(settings: Settings, writer: Writer | None = None, store: Store | None = 
 
         if batch:
             if writer is None:
-                from .workflow.providers import budget_fuer
-
-                writer = Writer(settings, store=store, budget=budget_fuer(settings, store))
+                # eigene Datenbankverbindung je Aufruf: läuft ein Aufruf über die Deadline hinaus, wird er trotzdem
+                # verbucht (der Lauf-Store ist dann schon geschlossen)
+                writer = Writer(settings)
             deadline = t0 + settings.deadline_seconds
             pool = ThreadPoolExecutor(max_workers=min(5, len(batch)))
             futures = {pool.submit(process, item, settings, writer, store): item for item in batch}

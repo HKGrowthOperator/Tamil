@@ -15,7 +15,11 @@ from typing import Any
 
 BACKOFF_SEKUNDEN = (60, 300, 1800)
 MAX_VERSUCHE = 3
-DEADLINE_SEKUNDEN = {"recherche": 300, "schreiben": 300, "faktencheck": 300, "dossier": 900}
+# Deadline je Schritt: länger als Client-Timeout × Versuche (600 s × 2) plus Abrufzeit, damit aufraeumen() keinen
+# noch laufenden Job ein zweites Mal startet
+DEADLINE_SEKUNDEN = {"recherche": 1500, "schreiben": 1500, "faktencheck": 1500, "lektorat": 900, "seo": 900,
+                     "bild": 600, "gate": 120, "kino": 300}
+DEADLINE_STANDARD = 900
 
 # Priorität: Termin in den nächsten Tagen > Nachricht > Rest > Dossier
 PRIO_EVENT_BALD, PRIO_NEWS, PRIO_NORMAL, PRIO_DOSSIER = 30, 20, 10, 0
@@ -69,7 +73,7 @@ def naechster(store, worker: str = "worker", schritte: tuple[str, ...] | None = 
             ).fetchone()
             if row is None:
                 return None
-            deadline = _iso(now + timedelta(seconds=DEADLINE_SEKUNDEN.get(row["schritt"], 180)))
+            deadline = _iso(now + timedelta(seconds=DEADLINE_SEKUNDEN.get(row["schritt"], DEADLINE_STANDARD)))
             cur = store.db.execute(
                 "UPDATE workflow_jobs SET status = 'laeuft', worker = ?, deadline = ?, versuche = versuche + 1, "
                 "aktualisiert = ? WHERE id = ? AND status = 'offen'",
@@ -81,40 +85,55 @@ def naechster(store, worker: str = "worker", schritte: tuple[str, ...] | None = 
     return None
 
 
-def erledigt(store, job_id: int) -> None:
-    store._write("UPDATE workflow_jobs SET status = 'fertig', fehler = NULL, aktualisiert = ? WHERE id = ?",
-                 (_iso(_now()), job_id))
+def _besitz(worker: str | None) -> tuple[str, tuple]:
+    """Bedingung „dieser Worker hält den Job noch“ – ein von aufraeumen() neu vergebener Job wird nicht überschrieben."""
+    return (" AND status = 'laeuft' AND worker = ?", (worker,)) if worker else ("", ())
 
 
-def fehlgeschlagen(store, job_id: int, fehler: str) -> str:
-    """Wiederholung mit Backoff; nach MAX_VERSUCHE „tot“. Gibt den neuen Status zurück."""
+def erledigt(store, job_id: int, worker: str | None = None) -> bool:
+    filt, extra = _besitz(worker)
+    cur = store._write(f"UPDATE workflow_jobs SET status = 'fertig', fehler = NULL, aktualisiert = ? WHERE id = ?{filt}",
+                       (_iso(_now()), job_id, *extra))
+    return cur.rowcount == 1
+
+
+def fehlgeschlagen(store, job_id: int, fehler: str, worker: str | None = None) -> str:
+    """Wiederholung mit Backoff; nach MAX_VERSUCHE „tot“. Gibt den neuen Status zurück („verloren“, wenn ein anderer
+    Worker den Job inzwischen hält)."""
     row = store.db.execute("SELECT versuche FROM workflow_jobs WHERE id = ?", (job_id,)).fetchone()
     versuche = row["versuche"] if row else MAX_VERSUCHE
     now = _now()
+    filt, extra = _besitz(worker)
     if versuche >= MAX_VERSUCHE:
-        store._write("UPDATE workflow_jobs SET status = 'tot', fehler = ?, aktualisiert = ? WHERE id = ?",
-                     (fehler[:500], _iso(now), job_id))
-        return "tot"
+        cur = store._write(f"UPDATE workflow_jobs SET status = 'tot', fehler = ?, aktualisiert = ? WHERE id = ?{filt}",
+                           (fehler[:500], _iso(now), job_id, *extra))
+        return "tot" if cur.rowcount == 1 else "verloren"
     pause = BACKOFF_SEKUNDEN[min(versuche, len(BACKOFF_SEKUNDEN)) - 1]
-    store._write(
-        "UPDATE workflow_jobs SET status = 'offen', fehler = ?, naechster_versuch = ?, aktualisiert = ? WHERE id = ?",
-        (fehler[:500], _iso(now + timedelta(seconds=pause)), _iso(now), job_id),
+    cur = store._write(
+        f"UPDATE workflow_jobs SET status = 'offen', fehler = ?, naechster_versuch = ?, aktualisiert = ? WHERE id = ?{filt}",
+        (fehler[:500], _iso(now + timedelta(seconds=pause)), _iso(now), job_id, *extra),
     )
-    return "offen"
+    return "offen" if cur.rowcount == 1 else "verloren"
+
+
+BUDGET_PAUSE_SEKUNDEN = 900  # wartende Jobs frühestens nach 15 Minuten erneut versuchen (kein Leerlauf-Kreisel)
 
 
 def wartet_budget(store, job_id: int, grund: str) -> None:
-    """Budget erreicht: Job zurückstellen, der Versuch zählt nicht."""
+    """Budget erreicht: Job zurückstellen, der Versuch zählt nicht; frühestens in 15 Minuten wieder."""
+    now = _now()
     store._write(
         "UPDATE workflow_jobs SET status = 'wartet_budget', versuche = MAX(0, versuche - 1), fehler = ?, "
-        "aktualisiert = ? WHERE id = ?", (grund[:300], _iso(_now()), job_id),
+        "naechster_versuch = ?, aktualisiert = ? WHERE id = ?",
+        (grund[:300], _iso(now + timedelta(seconds=BUDGET_PAUSE_SEKUNDEN)), _iso(now), job_id),
     )
 
 
 def budget_wieder_frei(store) -> int:
-    """Wartende Jobs zurück in die Schlange (wenn das Budget wieder reicht, z. B. am nächsten Tag)."""
-    cur = store._write("UPDATE workflow_jobs SET status = 'offen', aktualisiert = ? WHERE status = 'wartet_budget'",
-                       (_iso(_now()),))
+    """Wartende Jobs, deren Pause vorbei ist, zurück in die Schlange."""
+    now = _iso(_now())
+    cur = store._write("UPDATE workflow_jobs SET status = 'offen', aktualisiert = ? "
+                       "WHERE status = 'wartet_budget' AND naechster_versuch <= ?", (now, now))
     return cur.rowcount
 
 

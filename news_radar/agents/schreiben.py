@@ -107,15 +107,22 @@ def schreiben(ctx: Kontext, story: dict, claims: list[Claim], docs: list[SourceD
                                        "typ": typ_hint if story["typ"] in ("event", "kino") else ergebnis.typ})
 
 
-_A_RE = re.compile(r'<a\s[^>]*href=["\']([^"\']+)["\'][^>]*>(.*?)</a>', re.I | re.S)
-
-
 def links_bereinigen(html_text: str, erlaubt: set[str]) -> str:
-    """Links, deren Ziel nicht in den Quellen der Story steht, werden zu reinem Text."""
-    def ersetzen(m: re.Match) -> str:
-        return m.group(0) if m.group(1) in erlaubt else m.group(2)
+    """Links, deren Ziel nicht in den Quellen der Story steht, werden zu reinem Text.
 
-    return _A_RE.sub(ersetzen, html_text)
+    Mit einem HTML-Parser statt Regex: auch <a href=x>, <a href = "x"> und nicht geschlossene <a> werden erkannt.
+    Erlaubte Links behalten nur href (keine Event-Handler, kein style).
+    """
+    from bs4 import BeautifulSoup
+
+    soup = BeautifulSoup(html_text or "", "html.parser")
+    for a in soup.find_all("a"):
+        href = (a.get("href") or "").strip()
+        if href in erlaubt and href.startswith(("http://", "https://")):
+            a.attrs = {"href": href, "target": "_blank", "rel": "noopener"}
+        else:
+            a.unwrap()
+    return str(soup)
 
 
 def woerter(html_text: str) -> int:

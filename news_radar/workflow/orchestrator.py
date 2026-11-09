@@ -11,6 +11,7 @@ Veröffentlichung laufen weiter.
 
 from __future__ import annotations
 
+import json
 import logging
 import threading
 import time
@@ -83,17 +84,18 @@ def scan(ctx: Kontext, items: list[sources.NewsItem] | None = None) -> dict:
     stats["kino_aktualisiert"] = len(refresh_kino(items, store, seen))
     # Ähnliche Titel nicht verwerfen (wie v1), sondern dem Clustering geben: sie reichern bestehende Storys an
     picked = filtering.select(items, s, seen, [], now=now)
-    grau = relevance.grauzone(items, s, seen, {i.uid for i in picked}, now)
+    bezahlt = repo.bezahlte_storys_heute(store, costs.tag_start(now).astimezone(timezone.utc).isoformat(timespec="seconds"))
+    grau = relevance.grauzone(items, s, seen, {i.uid for i in picked}, now) if bezahlt < s.entwuerfe_tag else []
     stats["grauzone"] = len(grau)
     if grau:
-        aus_grauzone = relevance.pruefen(ctx, grau)
+        aus_grauzone, beurteilt = relevance.pruefen(ctx, grau)
         stats["grauzone_angenommen"] = len(aus_grauzone)
         picked += aus_grauzone
-        for item in grau:
-            if item not in aus_grauzone:
+        angenommen = {i.uid for i in aus_grauzone}
+        for item in grau:  # nur, was Haiku wirklich beurteilt und abgelehnt hat, gilt als gesehen
+            if item.uid in beurteilt and item.uid not in angenommen:
                 store.mark(item.uid, item.title, item.url, item.source, "irrelevant")
     stats["relevant"] = len(picked)
-    bezahlt = repo.bezahlte_storys_heute(store, costs.tag_start(now).astimezone(timezone.utc).isoformat(timespec="seconds"))
     limit_gemeldet = False
     for z in cluster.zuordnen(ctx, picked):
         item = z.item
@@ -110,6 +112,8 @@ def scan(ctx: Kontext, items: list[sources.NewsItem] | None = None) -> dict:
             if neu:
                 stats["angereichert"] += 1
                 store.event("story_angereichert", story=z.story_id, titel=item.title, quelle=item.url, grund=z.grund)
+                if neu_starten(store, z.story_id, f"Neue Quelle: {publisher}"):
+                    stats["neu_gestartet"] += 1
                 offen = _offener_entwurf(store, z.story_id)
                 if offen:
                     store.update_draft(offen["id"], hinweise=offen["hinweise"] + [f"Neue Quelle: {publisher} – {item.url}"],
@@ -393,16 +397,19 @@ def job_ausfuehren(ctx: Kontext, job: dict) -> str:
         return "wartet_budget"
     except Exception as exc:  # noqa: BLE001 – ein Fehler betrifft nur diesen Job
         log.exception("Job %s (%s) fehlgeschlagen", job["id"], job["schritt"])
-        status = jobs.fehlgeschlagen(store, job["id"], f"{type(exc).__name__}: {exc}")
+        status = jobs.fehlgeschlagen(store, job["id"], f"{type(exc).__name__}: {exc}", worker=job.get("worker"))
         if status == "tot" and job["story_id"]:
             repo.story_setzen(store, job["story_id"], status="fehler", notiz=f"{job['schritt']}: {exc}"[:500])
             store.event("fehler", story=job["story_id"], schritt=job["schritt"], fehler=str(exc)[:300])
         return status
+    if not jobs.erledigt(store, job["id"], worker=job.get("worker")):
+        # Deadline überschritten und neu vergeben: der andere Worker übernimmt, hier keine Folgeschritte
+        log.warning("Job %s gehört nicht mehr %s – Ergebnis verworfen", job["id"], job.get("worker"))
+        return "verloren"
     for schritt, payload in naechste:
         runde = payload.get("runde", 1)
         jobs.einreihen(store, job["story_id"], schritt, prio=job["prio"],
                        key=f"{job['story_id']}:{schritt}:{runde}:{job['id']}", payload=payload)
-    jobs.erledigt(store, job["id"])
     return "fertig"
 
 
@@ -410,8 +417,7 @@ def abarbeiten(ctx: Kontext, *, bis: float | None = None, max_jobs: int | None =
     """Jobs nacheinander abarbeiten, bis die Schlange leer ist, die Zeit (monotonic) abläuft oder max_jobs erreicht ist."""
     stats: Counter = Counter()
     jobs.aufraeumen(ctx.store)
-    if ctx.budget is not None and not ctx.budget.stand()["stopp"]:
-        jobs.budget_wieder_frei(ctx.store)
+    jobs.budget_wieder_frei(ctx.store)  # nur Jobs, deren Pause (15 Minuten) abgelaufen ist
     nur = None if ctx.claude is not None else OHNE_MODELL
     while (bis is None or time.monotonic() < bis) and (max_jobs is None or sum(stats.values()) < max_jobs):
         job = jobs.naechster(ctx.store, worker, schritte=nur)
@@ -437,7 +443,7 @@ def worker(settings: Settings, *, parallel: int | None = None, einmal: bool = Fa
                 stats = abarbeiten(ctx, max_jobs=20, worker=f"worker-{nr}")
                 with lock:
                     gesamt.update(stats)
-                if not stats:
+                if not stats or set(stats) <= {"wartet_budget", "verloren"}:  # nichts geschafft: kurz ruhen
                     if einmal:
                         return
                     stop.wait(pause)
@@ -478,6 +484,27 @@ def lauf(settings: Settings, *, mit_jobs: bool = False, client=None, items=None,
 
 # ---- Eingriffe der Redaktion -------------------------------------------------------------------
 
+def _recherche_neu(store: Store, story_id: int, notiz: str) -> None:
+    """Recherche erneut einreihen; die Nutzdaten (uid, Quelle, Pressebild, Fakten) des ersten Laufs bleiben erhalten."""
+    erste = store.db.execute("SELECT payload, prio FROM workflow_jobs WHERE story_id = ? AND schritt = 'recherche' "
+                             "ORDER BY id LIMIT 1", (story_id,)).fetchone()
+    payload = json.loads(erste["payload"]) if erste else {}
+    n = store.db.execute("SELECT COUNT(*) FROM workflow_jobs WHERE story_id = ? AND schritt = 'recherche'",
+                         (story_id,)).fetchone()[0]
+    repo.story_setzen(store, story_id, status="neu", notiz=notiz[:500])
+    jobs.einreihen(store, story_id, "recherche", prio=erste["prio"] if erste else jobs.PRIO_NEWS,
+                   key=f"{story_id}:recherche:neu{n + 1}", payload=payload)
+
+
+def neu_starten(store: Store, story_id: int, notiz: str) -> bool:
+    """Eine Story, die wegen fehlender Belege oder eines Fehlers hängt, mit der neuen Quelle noch einmal prüfen."""
+    story = repo.story(store, story_id)
+    if story is None or story["status"] not in ("recherche_erforderlich", "fehler") or story["typ"] == "kino":
+        return False
+    _recherche_neu(store, story_id, notiz)
+    return True
+
+
 def quelle_ergaenzen(store: Store, story_id: int, url: str, von: str = "") -> str | None:
     """„Recherche nötig“: die Redaktion gibt eine Quelle dazu, die Story läuft erneut durch Recherche und Gate."""
     from .. import net
@@ -485,10 +512,7 @@ def quelle_ergaenzen(store: Store, story_id: int, url: str, von: str = "") -> st
     net.check_url(url)
     key = repo.dokument_hinzufuegen(store, story_id, url=url, publisher="Redaktion", quelle="Redaktion", rights="zitat",
                                     art="zusammenfassung", titel=f"Quelle ergänzt von {von or 'Redaktion'}")
-    n = store.db.execute("SELECT COUNT(*) FROM workflow_jobs WHERE story_id = ? AND schritt = 'recherche'",
-                         (story_id,)).fetchone()[0]
-    repo.story_setzen(store, story_id, status="neu", notiz=f"Quelle ergänzt: {url}")
-    jobs.einreihen(store, story_id, "recherche", prio=jobs.PRIO_NEWS, key=f"{story_id}:recherche:neu{n + 1}")
+    _recherche_neu(store, story_id, f"Quelle ergänzt: {url}")
     store.event("quelle_ergaenzt", story=story_id, url=url, von=von)
     return key
 

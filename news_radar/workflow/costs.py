@@ -41,7 +41,15 @@ PREISE: dict[str, Preis] = {
     "claude-fable-5-1": Preis(10.00, 50.00, 0.25),
     "claude-sonnet-5": Preis(2.00, 10.00, 0.20),
     "claude-opus-5": Preis(5.00, 25.00, 0.50),
+    # mögliche Ziele des serverseitigen Fallbacks (fallbacks="default") und ältere Modelle
+    "claude-opus-4-8": Preis(5.00, 25.00, 0.50),
+    "claude-opus-4-7": Preis(5.00, 25.00, 0.50),
+    "claude-opus-4-6": Preis(5.00, 25.00, 0.50),
+    "claude-sonnet-4-6": Preis(3.00, 15.00, 0.30),
+    "claude-sonnet-4-5": Preis(3.00, 15.00, 0.30),
+    "claude-haiku-4-5": Preis(1.00, 5.00, 0.10),
 }
+TEUERSTER = max(PREISE.values(), key=lambda p: p.input + p.output)
 CACHE_5M, CACHE_1H = 1.25, 2.0  # Aufschlag auf den Input-Preis beim Schreiben in den Cache
 
 # Bild-KI: Preis je erzeugtem Bild nach Auflösung
@@ -111,8 +119,16 @@ def tokens_aus(usage: Any) -> Tokens:
     )
 
 
-def kosten_tokens(modell: str, t: Tokens) -> float:
-    p = preis(modell)
+def kosten_tokens(modell: str, t: Tokens, streng: bool = False) -> float:
+    """Kosten in US-Dollar. Ein unbekanntes Modell (z. B. ein neues Fallback-Ziel) wird zum teuersten bekannten Preis
+    abgerechnet – lieber zu hoch als ein bezahlter Aufruf ohne Buchung. Mit `streng` wirft es UnbekanntesModell."""
+    try:
+        p = preis(modell)
+    except UnbekanntesModell:
+        if streng:
+            raise
+        log.warning("Kein Preis für %s – abgerechnet zum teuersten bekannten Preis", modell)
+        p = TEUERSTER
     inp, out = p.input, p.output
     cache_read = p.cache_read
     if p.schwelle and t.prompt > p.schwelle:

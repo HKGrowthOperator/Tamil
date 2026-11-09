@@ -59,11 +59,16 @@ def grauzone(items: list[NewsItem], settings: Settings, seen: set[str], ausgewae
     return out[:BUENDEL * 2]
 
 
-def pruefen(ctx: Kontext, kandidaten: list[NewsItem]) -> list[NewsItem]:
-    """Grauzone an Haiku; zurück kommen die Meldungen mit Relevanz ≥ min_relevance (mit item.signal)."""
-    if not kandidaten or ctx.claude is None:
-        return []
+def pruefen(ctx: Kontext, kandidaten: list[NewsItem]) -> tuple[list[NewsItem], set[str]]:
+    """Grauzone an Haiku. Rückgabe: (angenommene Meldungen mit item.signal, UIDs, die tatsächlich beurteilt wurden).
+
+    Ohne Modell, ohne Budget oder bei einem API-Fehler bleiben die Meldungen unbeurteilt (nicht „gesehen“) und kommen
+    beim nächsten Scan wieder dran – ein Ausfall von Haiku stoppt den Scan nie.
+    """
     angenommen: list[NewsItem] = []
+    beurteilt: set[str] = set()
+    if not kandidaten or ctx.claude is None:
+        return angenommen, beurteilt
     system = prompts.load_prompt("signal")
     for start in range(0, len(kandidaten), BUENDEL):
         buendel = kandidaten[start:start + BUENDEL]
@@ -74,12 +79,18 @@ def pruefen(ctx: Kontext, kandidaten: list[NewsItem]) -> list[NewsItem]:
         except BudgetErschoepft:
             log.info("Signal: Budget erreicht, Grauzone bleibt liegen")
             break
+        except Exception as exc:  # noqa: BLE001 – Ausfall des Modells: Grauzone bleibt liegen, Scan läuft weiter
+            log.warning("Signal fehlgeschlagen (%s) – Grauzone bleibt liegen", exc)
+            break
         if not antwort.ok:
             continue
         for b in antwort.daten.bewertungen:
-            if 1 <= b.nr <= len(buendel) and b.relevanz >= ctx.settings.min_relevance:
-                item = buendel[b.nr - 1]
+            if not 1 <= b.nr <= len(buendel):
+                continue
+            item = buendel[b.nr - 1]
+            beurteilt.add(item.uid)
+            if b.relevanz >= ctx.settings.min_relevance:
                 item.signal = {"relevanz": b.relevanz, "grund": b.grund, "risiko": b.risiko, "land": b.land}
                 item.category_hint = filtering.guess_category(item, ctx.settings)
                 angenommen.append(item)
-    return angenommen
+    return angenommen, beurteilt

@@ -113,9 +113,8 @@ def _ki(ctx: Kontext, story_id: int, bild_prompt: str, thema: str, slug: str, po
     if ctx.budget is not None:
         try:
             reservierung = ctx.budget.reservieren(betrag, "bild", story_id)
-        except costs.BudgetErschoepft as exc:
-            usage_protokollieren(ctx.store, rolle="bild", provider="gemini", modell_angefragt=s.bild_modell,
-                                 status="budget", story_id=story_id, fehler=str(exc))
+        except costs.BudgetErschoepft:
+            log.info("KI-Bild übersprungen: Budget erreicht")
             return None
     try:
         prompt = prompts.bild_prompt_bauen(bild_prompt, thema)
@@ -131,7 +130,7 @@ def _ki(ctx: Kontext, story_id: int, bild_prompt: str, thema: str, slug: str, po
     if thema:
         try:
             pool.add(thema, img, prompt)
-        except OSError as exc:
+        except (OSError, ValueError) as exc:
             log.warning("Pool nicht beschreibbar: %s", exc)
     return Bild(img, "Tamil.de (KI-generiert)", "KI-generiert – Symbolbild, keine Abbildung des Ereignisses",
                 attribution=bilder.KI_CREDIT, ki=True)
@@ -141,7 +140,7 @@ def besorgen(ctx: Kontext, story: dict, felder: dict, slug: str, *, kategorie_la
              quelle: Source | None = None, quelle_bild: str = "") -> tuple[Bild, list[str]]:
     """Das erste verfügbare Bild in der eingestellten Reihenfolge; die Bildkarte fällt nie aus."""
     s = ctx.settings
-    thema = felder.get("bild_thema") or prompts.thema_fuer(felder.get("kategorie") or "", felder.get("titel") or "")
+    thema = bilder.gueltiges_thema(felder.get("bild_thema") or "", felder.get("kategorie") or "", felder.get("titel") or "")
     pool = bilder.BildPool(s.bildpool_dir)
     versucht = []
     for stufe in s.bild_reihenfolge:
