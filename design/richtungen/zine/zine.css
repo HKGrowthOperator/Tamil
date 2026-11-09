@@ -239,6 +239,16 @@ ul { padding: 0; list-style: none; }
   .cover-flaeche:hover .weiter { border-bottom-color: var(--tinte); }
 }
 
+/* Titel ohne Trenner und über 60 Zeichen: kein Coverwort, alles in Coverzeilen-Größe */
+.cover--lang .coverwort {
+  font-stretch: 80%;
+  font-weight: 760;
+  font-size: clamp(1.75rem, 1.2rem + 2.4vw, 3rem);
+  line-height: 1.04;
+  text-transform: none;
+  margin-top: 0.85rem;
+}
+
 /* ---------- Diese Woche: das Schwarze Brett ---------- */
 .brett {
   background: var(--rot);

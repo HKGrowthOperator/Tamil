@@ -89,18 +89,21 @@ ist. 11 Kinos ergeben eine lange gestrichelte Reihe, 2 Kinos eine kurze.
 ## 8. Zustände aus dem Brief
 
 - **Kleines Bild:** Das Cover trägt über das Coverwort und die Heftzeile. Das Foto wird nie größer als seine
-  Pixelbreite gezeigt (`max-width` auf die natürliche Breite, am Desktop belegt es rund 680 von 1024 px). Bei
-  Bildern unter 700 px rückt es kleiner ein und das Coverwort bekommt mehr Fläche; das Zweifarbraster kaschiert
-  leichte Unschärfe besser als ein Farbfoto.
+  Pixelbreite gezeigt (`.druck` ist höchstens so breit wie das Bild; am Desktop belegt Kanguva rund 760 von 1024
+  px). Ein Bild mit 692 px bleibt 692 px breit, das Coverwort darunter füllt die Breite trotzdem; das
+  Zweifarbraster kaschiert leichte Unschärfe besser als ein Farbfoto. Im Theme setzt die Vorlage die Bildbreite
+  als Obergrenze.
 - **Eintrag ohne Foto:** Die Aushänge sind gebaut, um ohne Foto zu bestehen: Titel, Art (Im Kino, Fest), Ort als
   Abreißzettel, Datum als roter Stempel, wenn es eines gibt. Kein Platzhalterbild.
 - **Lange und kurze Überschrift:** Das Coverwort ist der Teil vor Gedankenstrich oder Doppelpunkt („Kanguva“), der
   Rest steht als Coverzeile darunter. Ein kurzer Titel wie „Dosa“ ist komplett Coverwort. Ein Titel mit 78 Zeichen
   ohne Trenner bekommt die Coverzeilen-Größe als Ganzes (Klasse `cover--lang`), damit er am Handy im ersten
   Bildschirm bleibt. Auf dem Brett zeigen „Scene“ (5 Zeichen) und „Ramayana: Rise of a Legend“ den Unterschied.
-- **Viele und wenige Spielorte:** Abreißzettel brechen um. „Scene“: fünf benannte Städte und ein roter Zettel
+- **Viele und wenige Spielorte:** Die Zahl der Abreißzettel folgt der Zahl der Orte: ab drei Orten drei Spalten
+  in mehreren Reihen, bei zwei Orten zwei, bei einem einer. „Scene“: fünf benannte Städte und ein roter Zettel
   „+ 6 weitere Städte“ (die anderen sechs sind im Entwurf nicht benannt, also werden sie nicht erfunden).
-  „Ramayana“: zwei Zettel.
+  „Ramayana“: zwei Zettel. Die Ortsnamen stehen waagerecht, nicht hochkant wie auf echten Zetteln, weil Eltern
+  den Ort ohne Kopfdrehen lesen sollen.
 - **Fokus:** 3 px Tintenrahmen mit Abstand auf Papier, Papierrahmen auf Rot. **Bewegung:** nur das Zurechtrücken
   des Covers beim Zeigen; bei `prefers-reduced-motion` ausgeschaltet.
 
