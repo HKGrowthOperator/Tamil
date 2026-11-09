@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Protokoll{% endblock %}
+{% block content %}
+<header class="topline">
+  <div><h1>Protokoll</h1><p class="unter">Jeder Lauf, jede Aktion, jeder Fehler. <a href="/protokoll.jsonl">Als JSONL exportieren</a></p></div>
+  <form method="get" class="zeile">
+    <select name="ereignis" onchange="this.form.submit()" aria-label="Ereignis">
+      <option value="">alle Ereignisse</option>
+      {% for e in ['lauf', 'entwurf', 'aktion', 'bearbeitet', 'neu_geschrieben', 'bild', 'veroeffentlicht', 'in_wordpress', 'verworfen', 'kino_aktualisiert', 'fehler', 'tagesbudget'] %}
+      <option value="{{ e }}" {{ 'selected' if e == event }}>{{ e }}</option>
+      {% endfor %}
+    </select>
+  </form>
+</header>
+<section class="karte">
+<table class="voll protokoll">
+  <tr><th>Zeit</th><th>Ereignis</th><th>Details</th></tr>
+  {% for r in rows %}
+  <tr><td class="zeit">{{ fmt_dt(r.ts) }}</td><td><span class="badge ereignis e-{{ r.event }}">{{ r.event }}</span></td>
+    <td class="leise">{% for k, v in r.items() if k not in ('id', 'ts', 'event') %}<b>{{ k }}</b>: {% if k == 'link' or k == 'quelle' %}<a href="{{ v }}" target="_blank" rel="noopener">{{ v|truncate(60) }}</a>{% else %}{{ v|string|truncate(120) }}{% endif %} {% endfor %}
+    {% if r.id %}· <a href="/entwurf/{{ r.id }}">#{{ r.id }}</a>{% endif %}</td></tr>
+  {% else %}<tr><td colspan="3" class="leise">Noch keine Einträge.</td></tr>{% endfor %}
+</table>
+</section>
+{% endblock %}

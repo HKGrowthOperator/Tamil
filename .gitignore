@@ -5,3 +5,11 @@ __pycache__/
 out/
 data/
 .pytest_cache/
+
+export/
+backup/
+prototyp/dist/
+prototyp/dist-artifact/
+prototyp/shots/
+
+wordpress/dist/

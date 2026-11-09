@@ -1,0 +1,13 @@
+# Cloudflare Tunnel: Freigabe-App ohne offenen Port erreichbar machen.
+#   cloudflared tunnel create tamil-radar
+#   cloudflared tunnel route dns tamil-radar radar.hkgrowth-operator.de
+#   cloudflared tunnel --config /etc/cloudflared/config.yml run   (als Dienst: cloudflared service install)
+# Optional zusätzlich Cloudflare Access (Zero Trust) als zweite Login-Schicht vor der App.
+tunnel: tamil-radar
+credentials-file: /etc/cloudflared/tamil-radar.json
+ingress:
+  - hostname: radar.hkgrowth-operator.de
+    service: http://127.0.0.1:8787
+    originRequest:
+      connectTimeout: 30s
+  - service: http_status:404

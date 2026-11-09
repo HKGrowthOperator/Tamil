@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block content %}
+{% set farben = [
+  ('Nacht', '#0E1226', 'Radar-Bühne, Kino-Radar, Footer, Drawer', '#FFFFFF'),
+  ('Nacht 2', '#171C36', 'Flächen im Dunkeln, Prototyp-Leiste', '#C9CCE0'),
+  ('Kumkum', '#C8102E', 'Primär: Ticker, Links, Buttons, Badges', '#FFFFFF'),
+  ('Kumkum tief', '#9E0C24', 'Hover-Zustand', '#FFFFFF'),
+  ('Manjal', '#E8B923', 'Akzent: Blips, Zahlen, Rezept-Band, Werben', '#0E1226'),
+  ('Manjal tief', '#B88E0E', 'Ranglisten-Ziffern, Werbeplatz-Rahmen', '#FFFFFF'),
+  ('Blatt', '#1F7A4D', 'WhatsApp, Erfolg', '#FFFFFF'),
+  ('Papier', '#FAFAF8', 'Seitenhintergrund', '#14161F'),
+  ('Feld', '#F1F0EC', 'Bänder, Boxen, Tags', '#14161F'),
+  ('Tinte', '#14161F', 'Text, Überschriften', '#FAFAF8'),
+  ('Nebel', '#6B6F7B', 'Meta, Bildunterschriften', '#FAFAF8'),
+  ('Linie', '#E2E2E6', 'Trennlinien, Rahmen', '#14161F')] %}
+<div class="container">
+  <nav class="breadcrumb" aria-label="Brotkrumen"><a href="index.html">Start</a><span>›</span><span>Design-System</span></nav>
+  <header class="seitenkopf">
+    <h1>Design-System <span class="ta" lang="ta">வடிவமைப்பு</span></h1>
+    <p class="beschreibung">Die Bausteine des Prototyps als Vorgabe für das Child-Theme: Farben, Schrift, Abstände, Komponenten und die fünf Werbeplätze. Alles, was auf den Seiten vorkommt, steht hier einmal isoliert.</p>
+  </header>
+
+  <section class="ds-section" id="farben">
+    <h2>Farben</h2>
+    <p class="klein leise">Kontrast gegen die angegebene Textfarbe (WCAG). Ab 4.5:1 für Fließtext, ab 3:1 für große Schrift und Bedienelemente.</p>
+    <div class="swatches">{% for name, hexw, use, text in farben %}<div class="swatch"><div class="farbe" style="background:{{ hexw }};color:{{ text }};display:flex;align-items:flex-end;padding:8px;font-weight:700">Aa</div><div class="info"><strong>{{ name }}</strong><code>{{ hexw }}</code><span>{{ use }}</span><code>Kontrast {{ contrast(hexw, text) }}</code></div></div>{% endfor %}</div>
+  </section>
+
+  <section class="ds-section" id="schrift">
+    <h2>Schrift</h2>
+    <p class="klein leise">Fraunces (variabel, Achsen opsz, wght, SOFT und WONK, dazu Kursiv) trägt Titel, Zahlen und die kursiven Abschnittsnamen. Schibsted Grotesk, eine Zeitungsschrift, trägt Lauftext und Bedienelemente. Noto Serif Tamil setzt die tamilischen Abschnittstitel. Fließtext bleibt unter 70 Zeichen pro Zeile.</p>
+    <div class="type-row"><span class="lbl">Display 44/30</span><span style="font-family:var(--font-display);font-size:var(--fs-display);font-weight:600;line-height:1.08">Jailer 2 läuft in 9 Kinos</span></div>
+    <div class="type-row"><span class="lbl">H1 40/28</span><h1>Von Deutschland nach Tamil Nadu</h1></div>
+    <div class="type-row"><span class="lbl">H2 28/22</span><h2>Spielorte und Termine</h2></div>
+    <div class="type-row"><span class="lbl">H3 20/18</span><h3>Kino Claudia, Kloten</h3></div>
+    <div class="type-row"><span class="lbl">Standfirst 20</span><span style="font-size:var(--fs-standfirst);line-height:1.5">Rajinikanths Fortsetzung startet in der Kinowoche vom 15. bis 22. Oktober.</span></div>
+    <div class="type-row"><span class="lbl">Text 18/17</span><span class="artikel-body" style="display:block">Für die tamilische Community im deutschsprachigen Raum ist der Kinostart ein Ereignis: Viele Kinos zeigen den Film im Original mit Untertiteln.</span></div>
+    <div class="type-row"><span class="lbl">Meta 13</span><span class="meta"><span class="kat">Kino</span><span>16. Oktober 2026</span><span>3 Min. Lesezeit</span></span></div>
+    <div class="type-row"><span class="lbl">Abschnittstitel</span><span class="kicker"><span class="ta" lang="ta">சினிமா</span><span class="de">Kino</span></span></div>
+    <div class="type-row"><span class="lbl">Kursiv-Akzent</span><span style="font-family:var(--font-display);font-style:italic;font-variation-settings:var(--wonk);font-size:28px;color:var(--kumkum)">Das Wichtigste der Woche. Einmal, nicht zehnmal.</span></div>
+    <div class="type-row"><span class="lbl">Logo (alt)</span><span style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">{{ m.logo('#') }}<span class="klein leise">Logo der alten Seite (kkbslogo.png, 110 × 40 px) – Vektor oder große Datei vom Auftraggeber</span></span></div>
+    <div class="type-row"><span class="lbl">Wortmarke (neu)</span><span>{{ m.wordmark('#') }} <span class="beispiel">Kolam-Marke als Vorschlag</span></span></div>
+  </section>
+
+  <section class="ds-section" id="abstaende">
+    <h2>Abstände, Radien, Schatten, Raster</h2>
+    <div class="ds-grid">
+      <div><p class="klein leise">Abstände --s-1 … --s-9</p><div class="spacing">{% for s in [4, 8, 12, 16, 24, 32, 48, 64, 96] %}<div style="height:{{ s }}px"><span>{{ s }}</span></div>{% endfor %}</div></div>
+      <div><p class="klein leise">Radien 4 / 8 / 12 · Schatten 1 / 2</p><div class="ds-demo"><div style="width:64px;height:48px;background:#fff;border:1px solid var(--linie);border-radius:4px"></div><div style="width:64px;height:48px;background:#fff;border:1px solid var(--linie);border-radius:8px"></div><div style="width:64px;height:48px;background:#fff;border:1px solid var(--linie);border-radius:12px"></div><div style="width:64px;height:48px;background:#fff;box-shadow:var(--shadow-1);border-radius:8px"></div><div style="width:64px;height:48px;background:#fff;box-shadow:var(--shadow-2);border-radius:8px"></div></div></div>
+    </div>
+    <table class="raster" style="margin-top:16px;max-width:720px"><thead><tr><th>Breakpoint</th><th>Navigation</th><th>Karten</th><th>Sidebar</th></tr></thead><tbody>
+      <tr><td style="height:auto">≤ 600 px</td><td style="height:auto">Drawer</td><td style="height:auto">1 Spalte</td><td style="height:auto">unter dem Inhalt, kein Half Page</td></tr>
+      <tr><td style="height:auto">601–1023 px</td><td style="height:auto">Scroll-Zeile</td><td style="height:auto">2 Spalten</td><td style="height:auto">unter dem Inhalt, 300×250</td></tr>
+      <tr><td style="height:auto">≥ 1024 px</td><td style="height:auto">volle Zeile</td><td style="height:auto">3 Spalten, Container 1200</td><td style="height:auto">300 px rechts, sticky</td></tr>
+    </tbody></table>
+  </section>
+
+  <section class="ds-section" id="buttons">
+    <h2>Buttons</h2>
+    <div class="ds-demo"><a class="btn btn-primary" href="#">Primär</a><a class="btn btn-dark" href="#">Dunkel</a><a class="btn btn-gold" href="#">Gold · Werben</a><a class="btn btn-ghost" href="#">Ghost</a><a class="btn btn-wa" href="#">{{ m.icon('whatsapp', 'ico ico-sm') }} WhatsApp</a><a class="btn btn-link" href="#">Link-Button →</a><button class="btn btn-primary" disabled>Deaktiviert</button></div>
+    <div class="ds-demo"><a class="btn btn-primary btn-sm" href="#">Klein</a><a class="btn btn-ghost btn-sm" href="#">Klein Ghost</a><span class="icon-btn">{{ m.icon('search') }}</span><span class="klein leise">Mindesthöhe 44 px (klein 36 px), sichtbarer Gold-Fokus.</span></div>
+  </section>
+
+  <section class="ds-section" id="badges">
+    <h2>Badges, Chips, Tags, Datums-Badge</h2>
+    <div class="ds-demo"><span class="badge">Nachrichten</span><span class="badge gruen">Kinotermine · live</span><span class="badge gold">Werben</span><span class="badge soft">CH</span><span class="badge dunkel">Event</span><span class="stand-badge">aktualisiert 16.10.</span><span class="beispiel">Beispiel</span></div>
+    <div class="ds-demo"><div class="chips"><span class="chip is-active">Alle</span><span class="chip">Kritik</span><span class="chip">Kinostart</span></div><a class="tag" href="#">Rajinikanth</a><a class="tag" href="#">Jailer 2</a><div class="date-badge"><span class="tag-nr">24</span><span class="monat">Okt</span><span class="wtag">Sa</span></div><span class="live">Radar läuft</span></div>
+    <h3 style="margin:24px 0 8px">Radar-Karte (Leitmotiv)</h3>
+    <p class="klein leise">Punktraster aus den Länderumrissen, rotierender Sweep, Blips an Orten mit Treffern. Rot = Kino, Gelb = Event, Weiß = Nachricht. Bei reduzierter Bewegung steht die Karte still.</p>
+    <div class="ds-demo dunkel" style="display:block;max-width:520px">{{ radar.svg|safe }}</div>
+  </section>
+
+  <section class="ds-section" id="karten">
+    <h2>Karten</h2>
+    <div class="cards">{{ m.card(sel.hero[0], '', 'h3', badge=True) }}{{ m.card(sel.hero[1], 'zeile', 'h3', excerpt=False) }}{{ m.platzhalter('Platzhalter-Karte', 'Sport') }}</div>
+    <div style="margin-top:24px;max-width:520px">{{ m.event_card(events[3]) }}</div>
+  </section>
+
+  <section class="ds-section" id="formulare">
+    <h2>Formulare</h2>
+    <form class="form-grid" style="max-width:720px" data-demo><div class="felder form-grid" style="grid-column:1/-1">
+      <div class="feld"><label for="ds-t">Textfeld</label><input id="ds-t" type="text" placeholder="Platzhalter"></div>
+      <div class="feld"><label for="ds-s">Auswahl</label><select id="ds-s"><option>Option A</option><option>Option B</option></select></div>
+      <div class="feld voll"><label for="ds-ta">Mehrzeilig</label><textarea id="ds-ta" style="min-height:80px"></textarea></div>
+      <div class="feld voll"><label class="check"><input type="checkbox"> Checkbox mit Text</label></div>
+      <div class="feld voll"><div class="erfolg" style="display:block">Erfolgsmeldung (grün)</div></div>
+    </div></form>
+  </section>
+
+  <section class="ds-section" id="werbeplaetze">
+    <h2>Werbeplätze in Originalgröße</h2>
+    <p class="klein leise">Provisorisch belegt mit Eigenanzeigen von Tamil.de und zwei fiktiven Musterkunden (Label „Anzeige“ wie im Betrieb). Im Relaunch liefert Advanced Ads an derselben Stelle aus; die Fremdbanner der alten Seite (Gravity Club, Olyyn) werden nicht übernommen, bis die Verträge geklärt sind.</p>
+    <div class="ds-ads">
+      {% for key in ['leaderboard', 'billboard', 'inarticle', 'footer', 'sidebar', 'mobile'] %}{% set w = ad_slot(key) %}
+      <div class="type-row"><span class="lbl">Werbeplatz {{ w.nr }}<br>{{ w.name }}<br>{{ w.desktop if key != 'mobile' else w.mobil }}</span><div>{{ m.ad(key, zeigen=True) }}</div></div>
+      {% endfor %}
+      <div class="type-row"><span class="lbl">Rohformat<br>ohne Buchung</span><div>{{ m.ad('leaderboard', zeigen=True, roh=True) }}</div></div>
+    </div>
+  </section>
+
+  <section class="ds-section" id="icons" style="border-bottom:0">
+    <h2>Icons</h2>
+    <p class="klein leise">Eigenes Strich-Set (1,8 px), als SVG-Sprite eingebettet – keine Icon-Font, keine externen Aufrufe.</p>
+    <div class="icons">{% for i in ['menu','close','search','phone','mail','whatsapp','facebook','instagram','youtube','x','telegram','link','calendar','pin','ticket','share','arrow','clock','user','check','play','plus','film','utensils'] %}<div>{{ m.icon(i) }}<span>{{ i }}</span></div>{% endfor %}</div>
+  </section>
+</div>
+{% endblock %}

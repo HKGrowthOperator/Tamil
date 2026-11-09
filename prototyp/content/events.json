@@ -1,0 +1,108 @@
+{
+  "kino_termine": {
+    "slug": "kino-jailer-2-kinotermine",
+    "film": "Jailer 2",
+    "titel": "„Jailer 2“ (Tamil) läuft in 9 Kinos in Deutschland, der Schweiz und Österreich – alle Spielorte",
+    "teaser": "Rajinikanths Fortsetzung startet in der Kinowoche vom 15. bis 22. Oktober in neun Kinos zwischen Bremen, Kloten und Wien. Hier stehen alle Spielorte, Termine und Ticketlinks – die Liste wird mit jedem neuen Kinoprogramm aktualisiert.",
+    "kategorie": "kino",
+    "stand": "2026-10-16",
+    "woche": "15.–22. Oktober 2026",
+    "hinweis": "Automatisch aus CineStar, kinoheld, Eventfrog, Cineplexx und megaplex.at zusammengestellt (News-Radar), redaktionell freigegeben. Beispieltext der Redaktion.",
+    "inhalt_html": "<p>Mehr als drei Jahre nach dem Überraschungserfolg „Jailer“ kehrt Superstar Rajinikanth als Muthuvel Pandian zurück. Regisseur Nelson Dilipkumar und Komponist Anirudh Ravichander sind wieder an Bord, produziert hat erneut Sun Pictures. Für die tamilische Community im deutschsprachigen Raum ist der Kinostart ein Ereignis: Viele Kinos zeigen den Film als Sondervorstellung im tamilischen Original mit englischen Untertiteln (OmeU).</p><p>Die Vorstellungen sind erfahrungsgemäß schnell ausverkauft – besonders die Abendtermine am Wochenende. Wer sicher gehen will, bucht über die verlinkten Ticketseiten. Bei Sondervorstellungen in Multiplexen lohnt ein Blick auf die Uhrzeit: Einige Häuser zeigen den Film nur an einzelnen Tagen.</p><p>Die Liste unten wird aus den Programmen der Kinos zusammengestellt und so lange aktualisiert, wie der Film läuft. Fehlt ein Kino? Schreibt der Redaktion.</p>",
+    "fakten": {
+      "film": "Jailer 2",
+      "woche": "2026-W42",
+      "kinos": [
+        {"kino": "CineStar Kristall-Palast", "stadt": "Bremen", "land": "DE", "von": "2026-10-18", "url": "https://www.cinestar.de/kino-bremen-kristall-palast/veranstaltung-jailer-2-tamil-omeu", "quelle": "CineStar"},
+        {"kino": "CineStar Dortmund", "stadt": "Dortmund", "land": "DE", "von": "2026-10-18", "url": "https://www.cinestar.de/kino-dortmund/veranstaltung-jailer-2-tamil-omeu", "quelle": "CineStar"},
+        {"kino": "Filmpalast am ZKM", "stadt": "Karlsruhe", "land": "DE", "von": "2026-10-18", "url": "https://www.cinestar.de/kino-karlsruhe-filmpalast-am-zkm/veranstaltung-jailer-2-tamil-omeu", "quelle": "CineStar"},
+        {"kino": "Cinemoon", "stadt": "Pforzheim", "land": "DE", "termine": ["2026-10-16T19:30", "2026-10-17T19:30", "2026-10-18T16:00", "2026-10-19T19:30"], "url": "https://www.kinoheld.de/kino-pforzheim/cinemoon", "quelle": "kinoheld"},
+        {"kino": "Kino Claudia", "stadt": "Kloten", "land": "CH", "von": "2026-10-16", "bis": "2026-10-19", "url": "https://eventfrog.ch/de/p/gruppen/jailer-2-tamil-kino-claudia-kloten-7514344975053661926.html", "quelle": "Eventfrog"},
+        {"kino": "Kino City", "stadt": "Uzwil", "land": "CH", "termine": ["2026-10-17T23:15"], "url": "https://eventfrog.ch/de/p/kino/kino/jeiler-2-tamil-st-gallen-kino-city-uzwil-7514370127019639557.html", "quelle": "Eventfrog"},
+        {"kino": "Cineplexx Millennium City", "stadt": "Wien", "land": "AT", "von": "2026-10-16", "url": "https://www.cineplexx.at/film/jailer-2", "quelle": "Cineplexx"},
+        {"kino": "Megaplex Gasometer", "stadt": "Wien", "land": "AT", "termine": ["2026-10-15T19:00", "2026-10-16T19:00", "2026-10-17T19:00", "2026-10-18T19:00", "2026-10-19T19:00", "2026-10-20T19:00", "2026-10-21T19:00", "2026-10-22T19:00"], "url": "https://www.megaplex.at/", "quelle": "megaplex.at"},
+        {"kino": "Annenhof Kino", "stadt": "Graz", "land": "AT", "von": "2026-10-16", "url": "https://www.cineplexx.at/film/jailer-2", "quelle": "Cineplexx"}
+      ]
+    }
+  },
+  "events": [
+    {
+      "slug": "jailer-2-kinowoche",
+      "titel": "Jailer 2 (Tamil, OmeU) – Kinowoche in DE, AT und CH",
+      "kategorie": "kino", "kategorie_label": "Kino",
+      "land": "DACH", "stadt": "9 Kinos", "ort": "Bremen, Dortmund, Karlsruhe, Pforzheim, Kloten, Uzwil, Wien, Graz",
+      "von": "2026-10-15", "bis": "2026-10-22", "zeit": "je nach Kino",
+      "veranstalter": "CineStar, Cinemoon, Kino Claudia, Kino City, Cineplexx, Megaplex",
+      "preis": "laut Kino",
+      "ticket_url": "kino-jailer-2-kinotermine.html", "ticket_label": "Alle Spielorte",
+      "beschreibung": "Die Fortsetzung des Rajinikanth-Hits läuft als Sondervorstellung im tamilischen Original mit englischen Untertiteln. Alle Spielorte, Uhrzeiten und Ticketlinks stehen im Kinotermine-Beitrag, der mit jedem neuen Programm aktualisiert wird.",
+      "quelle": {"name": "News-Radar (CineStar, kinoheld, Eventfrog, Cineplexx, megaplex.at)", "url": "kino-jailer-2-kinotermine.html"},
+      "bild_post": 9711
+    },
+    {
+      "slug": "jailer-2-kino-claudia-kloten",
+      "titel": "Jailer 2 (Tamil) im Kino Claudia Kloten",
+      "kategorie": "kino", "kategorie_label": "Kino",
+      "land": "CH", "stadt": "Kloten", "ort": "Kino Claudia, Kloten",
+      "von": "2026-10-16", "bis": "2026-10-19", "zeit": "9 Vorstellungen, Zeiten laut Eventfrog",
+      "veranstalter": "Kino Claudia",
+      "preis": "laut Veranstalter",
+      "ticket_url": "https://eventfrog.ch/de/p/gruppen/jailer-2-tamil-kino-claudia-kloten-7514344975053661926.html", "ticket_label": "Tickets",
+      "beschreibung": "Vier Tage, neun Vorstellungen: Das Kino Claudia in Kloten zeigt „Jailer 2“ im tamilischen Original. Tickets gibt es über Eventfrog – die Abendvorstellungen sind erfahrungsgemäß zuerst ausverkauft.",
+      "quelle": {"name": "eventfrog.ch", "url": "https://eventfrog.ch/de/p/gruppen/jailer-2-tamil-kino-claudia-kloten-7514344975053661926.html"},
+      "bild_karte": "Jailer 2 · Kino Claudia Kloten"
+    },
+    {
+      "slug": "jailer-2-kino-city-uzwil",
+      "titel": "Jailer 2 (Tamil) – Spätvorstellung im Kino City Uzwil",
+      "kategorie": "kino", "kategorie_label": "Kino",
+      "land": "CH", "stadt": "Uzwil", "ort": "Kino City Uzwil, Uzwil SG",
+      "von": "2026-10-17", "bis": "2026-10-17", "zeit": "23:15 Uhr",
+      "veranstalter": "Kino City Uzwil",
+      "preis": "laut Veranstalter",
+      "ticket_url": "https://eventfrog.ch/de/p/kino/kino/jeiler-2-tamil-st-gallen-kino-city-uzwil-7514370127019639557.html", "ticket_label": "Tickets",
+      "beschreibung": "Samstagnacht in der Ostschweiz: Das Kino City Uzwil zeigt „Jailer 2“ als Spätvorstellung um 23:15 Uhr im tamilischen Original.",
+      "quelle": {"name": "eventfrog.ch", "url": "https://eventfrog.ch/de/p/kino/kino/jeiler-2-tamil-st-gallen-kino-city-uzwil-7514370127019639557.html"},
+      "bild_karte": "Jailer 2 · Kino City Uzwil"
+    },
+    {
+      "slug": "vaango-pazhagalam-2-0-basel",
+      "titel": "Vaango Pazhagalam 2.0 – Workshops und Stände in Basel",
+      "kategorie": "kultur", "kategorie_label": "Kultur",
+      "land": "CH", "stadt": "Basel", "ort": "Primarstufe Lysbüchel, Lysbüchelplatz 1, 4056 Basel",
+      "von": "2026-10-24", "bis": "2026-10-24", "zeit": "ganztägig",
+      "veranstalter": "PMS Basel",
+      "preis": "laut Veranstalter",
+      "ticket_url": "https://www.instagram.com/pms_basel/", "ticket_label": "Zum Veranstalter",
+      "beschreibung": "„Vaango Pazhagalam“ heißt „Kommt, lernen wir uns kennen“: Ein Tag mit Workshops und Ständen rund um tamilische Sprache, Kultur und Gemeinschaft – organisiert von PMS Basel. Die zweite Auflage findet in der Primarstufe Lysbüchel statt.",
+      "quelle": {"name": "tamilswiss.ch", "url": "https://tamilswiss.ch/event/vaango-pazhagalam-2-0-bs-f9c6"},
+      "bild_karte": "Vaango Pazhagalam 2.0 · Basel"
+    },
+    {
+      "slug": "beat-your-heart-2026",
+      "titel": "Beat Your Heart 2026 – Tanzwettbewerb (Solo, Duo, Gruppe, Bharatham Fusion)",
+      "kategorie": "tanz", "kategorie_label": "Tanz",
+      "land": "CH", "stadt": "Kanton Solothurn", "ort": "Veranstaltungsort wird vom Veranstalter bekannt gegeben",
+      "von": "2026-10-31", "bis": "2026-10-31", "zeit": "ganztägig",
+      "veranstalter": "SOE · Tel. +41 78 880 90 02",
+      "preis": "laut Veranstalter",
+      "ticket_url": "https://www.beatyourheart.ch/event/beat-your-heart-2026", "ticket_label": "Anmeldung & Infos",
+      "beschreibung": "Einer der größten Tanzwettbewerbe der Schweiz: Solo, Duo, Gruppe und Bharatham Fusion – von klassischem tamilischem Tanz bis zu modernen Fusion-Stilen. Tänzerinnen und Tänzer können sich online bewerben.",
+      "quelle": {"name": "tamilswiss.ch", "url": "https://tamilswiss.ch/event/beat-your-heart-2026-zh-25fe"},
+      "bild_karte": "Beat Your Heart 2026"
+    },
+    {
+      "slug": "ramayana-rise-of-a-legend-pforzheim",
+      "titel": "Ramayana: Rise of a Legend (Tamil) im Cinemoon Pforzheim",
+      "kategorie": "kino", "kategorie_label": "Kino",
+      "land": "DE", "stadt": "Pforzheim", "ort": "Cinemoon, Pforzheim",
+      "von": "2026-11-05", "bis": "2026-11-05", "zeit": "19:30 Uhr",
+      "veranstalter": "Cinemoon Pforzheim",
+      "preis": "laut Kino",
+      "ticket_url": "https://www.kinoheld.de/kino-pforzheim/cinemoon", "ticket_label": "Tickets",
+      "beschreibung": "Das Cinemoon in Pforzheim zeigt das Epos „Ramayana: Rise of a Legend“ in der tamilischen Fassung – ein Termin, am Donnerstagabend.",
+      "quelle": {"name": "kinoheld.de", "url": "https://www.kinoheld.de/kino-pforzheim/cinemoon"},
+      "bild_karte": "Ramayana: Rise of a Legend · Pforzheim"
+    }
+  ]
+}

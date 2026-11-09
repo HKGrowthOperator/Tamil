@@ -1,0 +1,10 @@
+.tamil-radar-frame{width:100%;height:calc(100vh - 220px);min-height:600px;border:1px solid #c3c4c7;border-radius:4px;background:#0e1226}
+.tamil-radar-toolbar{display:flex;align-items:center;gap:12px;margin:8px 0 12px}
+.tamil-radar-tag{display:inline-block;padding:1px 7px;border-radius:999px;background:#c8102e;color:#fff;font-size:11px;font-weight:600;letter-spacing:.02em}
+.tamil-radar-dash{color:#a7aaad}
+.tamil-radar-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#1f7a4d;vertical-align:middle;margin-right:4px}
+.tamil-radar-dot.fehler{background:#c8102e}
+.tamil-radar-list{margin:0 0 8px}
+.tamil-radar-list li{margin:0 0 8px;padding:0 0 8px;border-bottom:1px solid #f0f0f1}
+.tamil-radar-status{display:inline-block;margin-left:6px;padding:0 6px;border-radius:3px;background:#f0f0f1;font-size:11px}
+.tamil-radar-links{margin:0}

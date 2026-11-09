@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+{% set pr = production %}
+<section class="buehne" aria-label="Tamil.de Production">
+  <div class="container" style="display:block">
+    <h2 class="kicker"><span class="ta" lang="ta">{{ pr.tamil }}</span><span class="de">{{ pr.titel }}</span></h2>
+    <h1 style="font-size:var(--fs-display);max-width:20ch;margin-top:12px;color:#fff">{{ pr.claim }}</h1>
+    <p class="standfirst" style="color:var(--nacht-text);max-width:60ch;margin-top:12px">{{ pr.text }}</p>
+    <p style="display:flex;gap:8px;flex-wrap:wrap;margin:20px 0 0"><a class="btn btn-gold" href="{{ pr.ticket.url }}" target="_blank" rel="noopener nofollow">{{ m.icon('ticket', 'ico ico-sm') }} {{ pr.ticket.label }}</a><a class="btn btn-ghost hell" href="kontakt.html#kontaktformular" data-betreff="Event">Als Veranstalter anfragen</a></p>
+    <p class="klein" style="color:#8d92ad;margin:12px 0 0">Ticket-Link: {{ pr.ticket.quelle }}.</p>
+  </div>
+</section>
+<div class="container">
+  <section class="section">
+    {{ m.kicker('events', text='Die Konzerte') }}
+    <div class="plakate">
+      {% for p in pr.konzerte %}
+      <article class="plakat">
+        <a class="media" href="{{ p|link }}" tabindex="-1" aria-hidden="true"><img src="{{ p.bild.src }}" width="{{ p.bild.w }}" height="{{ p.bild.h }}" alt="" loading="lazy"></a>
+        <h3><a href="{{ p|link }}">{{ p.titel }}</a></h3>
+        <p class="meta"><span class="kat">Production</span><span>{{ p.datum|datum }}</span></p>
+      </article>
+      {% endfor %}
+    </div>
+    <p class="klein leise" style="margin-top:12px">Die Plakate stammen aus der Kategorie „Production“ der alten Seite (Tag „live“). Datumsangaben im Prototyp verschoben.</p>
+  </section>
+  <section class="section band" style="border-radius:6px;padding:var(--s-5)">
+    {{ m.kicker('kontakt', text='Service für Konzertbesucher') }}
+    <div class="cards">{% for p in pr.service %}{{ m.card(p, '', 'h3', badge=False) }}{% endfor %}</div>
+    <p class="klein leise" style="margin-top:12px">Saalplan, Ticketkauf bei Eventim, Einlass und Anreise: die Beiträge der Anirudh-Tour 2022 (Kategorie „anirudh“ auf der alten Seite) bleiben als Service-Texte erhalten und werden je Konzert aktualisiert.</p>
+  </section>
+  <section class="section">
+    {{ m.kicker('events', text='Nächste Termine', mehr='events.html', mehr_text='Alle Events') }}
+    <div class="events-teaser">{% for e in events[:3] %}{{ m.event_card(e, kompakt=True) }}{% endfor %}</div>
+  </section>
+</div>
+{% endblock %}

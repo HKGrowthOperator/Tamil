@@ -1,0 +1,361 @@
+# News-Radar Konfiguration – DACH-Radar für die tamilische Community
+#
+# Quellentypen:
+#   rss           RSS/Atom-Feed, kein Token
+#   gnews_region  Google-News-RSS, automatisch je Stadt/Land aus [regions] (rotierend, ~6 Abfragen je Lauf)
+#   wp_json       WordPress-REST (/wp-json/wp/v2/<endpoint>)
+#   html          HTML-Seite mit CSS-Selektoren
+#   kino          Kinoprogramm-API (provider = cinestar | kinoheld | cineplexx)
+#   newsapi/gnews Token-APIs (NEWSAPI_KEY / GNEWS_TOKEN)
+#
+# Je Quelle: kind = news|event|kino, country = DE|CH|AT, min_score (0 = vertrauenswürdig, immer prüfen),
+# max_items je Lauf, interval_minutes (0 = jeder Lauf).
+
+# ---- Presse DACH über Google News (rotierend) ----
+[[source]]
+name = "Google News DACH"
+type = "gnews_region"
+query = "(Tamil OR tamilisch OR Tamilen)"
+params = { when = "2d", max_queries = 32, per_run = 6 }
+
+[[source]]
+name = "Google News · Tempel & Kino"
+type = "rss"
+url = "https://news.google.com/rss/search?q=(Sri-Kamadchi-Ampal+OR+%22Hindu+Tempelfest%22+OR+%22tamilischer+Film%22+OR+Kollywood)+when:3d&hl=de&gl=DE&ceid=DE:de"
+
+[[source]]
+name = "Google News CH · Tamilen"
+type = "rss"
+url = "https://news.google.com/rss/search?q=(Tamilen+OR+tamilisch)+when:3d&hl=de&gl=CH&ceid=CH:de"
+country = "CH"
+
+[[source]]
+name = "Google News AT · Sri Lanka"
+type = "rss"
+url = "https://news.google.com/rss/search?q=(Tamilen+OR+tamilisch+OR+%22Sri+Lanka%22)+when:3d&hl=de&gl=AT&ceid=AT:de"
+country = "AT"
+
+# ---- Schweizer Tamil-Portale (tamilisch, vertrauenswürdig) ----
+[[source]]
+name = "SwissTamilMedia · Events"
+type = "rss"
+url = "https://swisstamilmedia.com/category/swiss-tamil-events/feed/"
+language = "ta"
+kind = "event"
+country = "CH"
+min_score = 0
+max_items = 3
+
+[[source]]
+name = "SwissTamilMedia · Community"
+type = "rss"
+url = "https://swisstamilmedia.com/category/swiss-tamilar-news/feed/"
+language = "ta"
+country = "CH"
+min_score = 0
+max_items = 2
+
+[[source]]
+name = "Swiss Tamil Info · Events"
+type = "rss"
+url = "https://swisstamilinfo.ch/?cat=54&feed=rss2"
+language = "ta"
+kind = "event"
+country = "CH"
+min_score = 0
+max_items = 3
+
+[[source]]
+name = "Swiss Tamil Info · Schweiz"
+type = "rss"
+url = "https://swisstamilinfo.ch/category/swiss/feed/"
+language = "ta"
+country = "CH"
+min_score = 0
+max_items = 2
+
+[[source]]
+name = "SwissNews7"
+type = "rss"
+url = "https://swissnews7.com/?cat=26&feed=rss2"
+language = "ta"
+country = "CH"
+min_score = 0
+max_items = 2
+
+[[source]]
+name = "Tamilschule Schweiz (TESS)"
+type = "rss"
+url = "https://www.tamilschool.ch/feed/"
+language = "ta"
+country = "CH"
+min_score = 0
+max_items = 1
+interval_minutes = 180
+
+# ---- Events DACH ----
+[[source]]
+name = "Haus der Religionen Bern"
+type = "wp_json"
+url = "https://www.haus-der-religionen.ch"
+endpoint = "mec-events"
+params = { search = "Saivanerikoodam", per_page = 10, _fields = "id,date_gmt,link,title,excerpt" }
+kind = "event"
+country = "CH"
+min_score = 0
+max_items = 2
+interval_minutes = 120
+
+[[source]]
+name = "Eventfrog CH"
+type = "html"
+url = "https://eventfrog.ch/de/events.html?searchTerm=tamil"
+kind = "event"
+country = "CH"
+min_score = 1  # Suche ist unscharf: nur Treffer mit tamilischem Stichwort
+max_items = 3
+interval_minutes = 120
+selectors = { item = "a.event-list__events__tile", title = ".event-list__events__tile__content__infos__title", link = "::attr(href)", date = ".event-list__events__tile__content__infos__time", ort = ".event-list__events__tile__content__infos__location" }
+
+[[source]]
+name = "Eventfrog DE"
+type = "html"
+url = "https://eventfrog.de/de/events.html?searchTerm=tamil"
+kind = "event"
+country = "DE"
+min_score = 1
+max_items = 3
+interval_minutes = 120
+selectors = { item = "a.event-list__events__tile", title = ".event-list__events__tile__content__infos__title", link = "::attr(href)", date = ".event-list__events__tile__content__infos__time", ort = ".event-list__events__tile__content__infos__location" }
+
+[[source]]
+name = "tamilswiss.ch Events"
+type = "html"
+url = "https://tamilswiss.ch/events"
+kind = "event"
+country = "CH"
+min_score = 0
+max_items = 2
+interval_minutes = 180
+selectors = { item = "[onclick*='openEventDetailsModal']" }
+params = { json_pattern = 'openEventDetailsModal\((\{.*?\})\)', json_attr = "onclick", json_fields = { title = "title", url = "url", date = "date", ort = "city", summary = ["category", "location_name", "date", "time"] } }
+
+[[source]]
+name = "Hindu-Tempel Hamm"
+type = "html"
+url = "https://www.hinduistische-gemeinde-deutschland.de/aktuelles/"
+kind = "event"
+country = "DE"
+min_score = 0
+max_items = 2
+interval_minutes = 360
+selectors = { item = "article, .entry, .post", title = "h2, h3, .entry-title", link = "a::attr(href)", date = "time, .date" }
+
+# ---- Kinoprogramme (ein Beitrag je Film und Kinowoche) ----
+[[source]]
+name = "CineStar"
+type = "kino"
+provider = "cinestar"
+interval_minutes = 60
+max_items = 3
+
+[[source]]
+name = "kinoheld"
+type = "kino"
+provider = "kinoheld"
+interval_minutes = 60
+max_items = 3
+
+[[source]]
+name = "Cineplexx AT"
+type = "kino"
+provider = "cineplexx"
+interval_minutes = 60
+max_items = 3
+
+# ---- Diaspora-Medien (Stichwortfilter DACH) ----
+[[source]]
+name = "Tamil Guardian"
+type = "rss"
+url = "https://www.tamilguardian.com/rss.xml"
+language = "en"
+max_items = 2
+
+[[source]]
+name = "Lankasri"
+type = "rss"
+url = "https://news.lankasri.com/googlesitemap.xml"
+language = "ta"
+max_items = 2
+
+# ---- Überregional (Kollywood, Sri Lanka) – nur mit DACH-Bezug oder hoher Punktzahl ----
+[[source]]
+name = "Google News EN · Kollywood"
+type = "rss"
+url = "https://news.google.com/rss/search?q=(kollywood+OR+%22tamil+cinema%22)+when:2d&hl=en-IN&gl=IN&ceid=IN:en"
+language = "en"
+max_items = 2
+
+[[source]]
+name = "The Hindu · Tamil Nadu"
+type = "rss"
+url = "https://www.thehindu.com/news/national/tamil-nadu/feeder/default.rss"
+language = "en"
+max_items = 1
+
+# ---- Regionalpresse als Backup (nur per Stichwortfilter) ----
+[[source]]
+name = "Ruhr Nachrichten"
+type = "rss"
+url = "https://www.ruhrnachrichten.de/feed/"
+country = "DE"
+max_items = 1
+interval_minutes = 30
+
+[[source]]
+name = "WA Hamm"
+type = "rss"
+url = "https://www.wa.de/hamm/rssfeed.rdf"
+country = "DE"
+max_items = 1
+interval_minutes = 30
+
+[[source]]
+name = "SRF Schweiz"
+type = "rss"
+url = "https://www.srf.ch/news/bnf/rss/1890"
+country = "CH"
+max_items = 1
+interval_minutes = 30
+
+[[source]]
+name = "ORF"
+type = "rss"
+url = "https://rss.orf.at/news.xml"
+country = "AT"
+max_items = 1
+interval_minutes = 30
+
+# ---- Token-APIs (optional) ----
+[[source]]
+name = "NewsAPI · Tamil DACH"
+type = "newsapi"
+query = "(tamil OR tamilen OR tamilisch OR \"sri lanka\") AND (deutschland OR schweiz OR österreich OR diaspora OR kino)"
+language = "de"
+max_items = 3
+
+[[source]]
+name = "GNews · Tamil"
+type = "gnews"
+query = "Tamilen OR tamilisch OR \"Tamil Germany\" OR \"Tamil Switzerland\""
+language = "de"
+max_items = 3
+
+# ---- Regionen: DACH-Bezug und Orte (Reihenfolge = Priorität für Google-News-Abfragen) ----
+[regions.staedte]
+de = ["Berlin", "Hamburg", "Köln", "Düsseldorf", "Dortmund", "Essen", "Frankfurt", "Stuttgart", "München", "Nürnberg", "Hannover", "Bielefeld", "Paderborn", "Hamm", "Bremen", "Leipzig", "Dresden", "Gummersbach"]
+ch = ["Zürich", "Bern", "Basel", "Luzern", "St. Gallen", "Winterthur", "Aargau"]
+at = ["Wien", "Graz", "Linz", "Salzburg"]
+
+[regions.laender]
+de = ["Deutschland", "Germany", "NRW", "Nordrhein-Westfalen", "Hessen", "Bayern", "Baden-Württemberg", "ஜெர்மனி"]
+ch = ["Schweiz", "Switzerland", "Swiss", "சுவிஸ்", "சுவிட்சர்லாந்து"]
+at = ["Österreich", "Austria", "ஆஸ்திரியா"]
+
+[regions.aliases]
+"Köln" = ["Cologne", "கொலோன்"]
+"Zürich" = ["Zurich", "Zuerich", "சூரிச்"]
+"München" = ["Munich", "Muenchen"]
+"Wien" = ["Vienna", "வியன்னா"]
+"Düsseldorf" = ["Duesseldorf"]
+"Nürnberg" = ["Nuremberg", "Nuernberg"]
+"Basel" = ["பாசல்"]
+"Bern" = ["பேர்ன்"]
+"Frankfurt" = ["Frankfurt am Main"]
+
+[regions]
+exakt = ["Essen", "Hamm", "Bern", "Linz"]
+
+# ---- Stichwort-Gewichte (klein geschrieben; Treffer im Titel zählen doppelt) ----
+[keywords]
+"tamil" = 3
+"tamilisch" = 4
+"tamilen" = 4
+"tamilin" = 4
+"tamilischen" = 4
+"diaspora" = 3
+"sri lanka" = 2
+"jaffna" = 3
+"eelam" = 3
+"tamil nadu" = 2
+"chennai" = 2
+"kollywood" = 4
+"rajinikanth" = 3
+"vijay" = 2
+"ajith" = 2
+"suriya" = 3
+"anirudh" = 4
+"a.r. rahman" = 3
+"ilaiyaraaja" = 3
+"pongal" = 4
+"deepavali" = 3
+"diwali" = 2
+"thaipusam" = 4
+"bharatanatyam" = 3
+"kamadchi" = 4
+"murugan" = 3
+"hindu" = 1
+"tempel" = 2
+"temple" = 1
+"cricket" = 1
+"kino" = 1
+"cinema" = 1
+"premiere" = 1
+"konzert" = 1
+"concert" = 1
+"cineplex" = 3
+"cinemaxx" = 3
+"cinestar" = 3
+# Tamil-Schrift (Teilstring-Treffer)
+"தமிழ்" = 3
+"ஈழம்" = 3
+"யாழ்ப்பாணம்" = 3
+"சுவிஸ்" = 3
+"ஜெர்மனி" = 3
+
+# Ausschluss: Meldungen mit diesen Begriffen werden verworfen
+[blocklist]
+terms = ["horoskop", "casino", "betting", "wetten", "porn", "obituary", "todesanzeige", "sponsored", "anzeige:"]
+
+# Ziel-Kategorien (Slug in WordPress) + Stichwörter für die Zuordnung. Die KI wählt final eine davon.
+[categories.news]
+label = "Nachrichten"
+hints = ["sri lanka", "tamil nadu", "politik", "regierung", "wahl", "jaffna", "chennai", "gericht", "protest"]
+
+[categories.community]
+label = "Community"
+hints = ["diaspora", "verein", "tempel", "schule", "gemeinde", "integration", "tamilschule"]
+
+[categories.entertainment]
+label = "Entertainment"
+hints = ["anirudh", "a.r. rahman", "song", "album", "konzert", "concert", "star", "serie", "musik"]
+
+[categories.kino]
+label = "Kino"
+hints = ["kollywood", "film", "kino", "cinema", "cineplex", "cinemaxx", "cinestar", "trailer", "box office", "premiere", "rajinikanth", "vijay", "suriya", "ajith"]
+
+[categories.events]
+label = "Events"
+hints = ["festival", "event", "tickets", "tour", "live in", "veranstaltung", "fest", "night"]
+
+[categories.kueche]
+label = "Küche"
+hints = ["rezept", "recipe", "küche", "food", "restaurant", "biryani", "dosa", "kottu"]
+
+[categories.sport]
+label = "Sport"
+hints = ["cricket", "sport", "fußball", "football", "olympia", "turnier", "liga"]
+
+[categories.kultur]
+label = "Kultur"
+hints = ["pongal", "deepavali", "diwali", "thaipusam", "bharatanatyam", "sprache", "literatur", "kultur", "tradition", "murugan"]

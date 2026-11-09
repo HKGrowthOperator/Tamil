@@ -1,0 +1,59 @@
+[
+ {
+  "id": "HO00021677",
+  "title": "*Jailer 2",
+  "titleCalculated": "Jailer 2",
+  "titleOriginalCalculated": "Jailer 2",
+  "originLangCMS": "Tamil",
+  "availableVersCMS": [
+   {
+    "id": "145",
+    "Description": "<p>OmeU</p>\n",
+    "DescriptionEN": "<p>OmeU</p>\n"
+   }
+  ],
+  "startDate": "2026-10-16",
+  "openingDate": "2026-10-16T00:00:00+02:00",
+  "cinemaIds": [
+   "1011",
+   "1004"
+  ],
+  "isScheduledAtCinema": null,
+  "shortURL": "jailer-2"
+ },
+ {
+  "id": "HO00021135",
+  "title": "*Hana rokushô ga akeru hi ni",
+  "titleCalculated": "A New Dawn",
+  "titleOriginalCalculated": "Hana rokushô ga akeru hi ni / 花緑青が明ける日に",
+  "originLangCMS": "Japanese",
+  "availableVersCMS": [
+   {
+    "id": "63",
+    "Description": "<p>OmU</p>\n",
+    "DescriptionEN": "<p>OmU</p>\n"
+   },
+   {
+    "id": "297",
+    "Description": "<p>DF</p>\n",
+    "DescriptionEN": "<p>DF (german)</p>\n"
+   }
+  ],
+  "startDate": "2026-10-15",
+  "openingDate": "2026-10-15T00:00:00+02:00",
+  "cinemaIds": [
+   "1012",
+   "1017",
+   "1020",
+   "1004",
+   "1005",
+   "1016",
+   "1001",
+   "1007",
+   "1011",
+   "1014"
+  ],
+  "isScheduledAtCinema": null,
+  "shortURL": "a-new-dawn-2026"
+ }
+]

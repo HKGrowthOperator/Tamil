@@ -1,0 +1,108 @@
+{
+ "data": {
+  "search": [
+   {
+    "__typename": "Show",
+    "id": "130028713",
+    "name": "(tamil) Jailer 2",
+    "beginning": "2026-10-16T19:30:00+02:00",
+    "cinema": {
+     "id": "292",
+     "name": "Cinemoon Pforzheim",
+     "city": {
+      "name": "Pforzheim"
+     }
+    },
+    "movie": {
+     "id": "95151",
+     "title": "Mortal Kombat II"
+    }
+   },
+   {
+    "__typename": "Show",
+    "id": "130028715",
+    "name": "(tamil) Jailer 2",
+    "beginning": "2026-10-17T19:30:00+02:00",
+    "cinema": {
+     "id": "292",
+     "name": "Cinemoon Pforzheim",
+     "city": {
+      "name": "Pforzheim"
+     }
+    },
+    "movie": {
+     "id": "95151",
+     "title": "Mortal Kombat II"
+    }
+   },
+   {
+    "__typename": "Show",
+    "id": "130509013",
+    "name": "(tamil) Jailer 2",
+    "beginning": "2026-10-18T16:00:00+02:00",
+    "cinema": {
+     "id": "292",
+     "name": "Cinemoon Pforzheim",
+     "city": {
+      "name": "Pforzheim"
+     }
+    },
+    "movie": {
+     "id": "95151",
+     "title": "Mortal Kombat II"
+    }
+   },
+   {
+    "__typename": "Show",
+    "id": "130509015",
+    "name": "(tamil) Jailer 2",
+    "beginning": "2026-10-19T19:30:00+02:00",
+    "cinema": {
+     "id": "292",
+     "name": "Cinemoon Pforzheim",
+     "city": {
+      "name": "Pforzheim"
+     }
+    },
+    "movie": {
+     "id": "95151",
+     "title": "Mortal Kombat II"
+    }
+   },
+   {
+    "__typename": "Show",
+    "id": "130759865",
+    "name": "(tamil) Ramayana: Rise Of A Legend",
+    "beginning": "2026-11-05T19:30:00+01:00",
+    "cinema": {
+     "id": "292",
+     "name": "Cinemoon Pforzheim",
+     "city": {
+      "name": "Pforzheim"
+     }
+    },
+    "movie": {
+     "id": "111803",
+     "title": "Ramayana: Rise of a Legend"
+    }
+   },
+   {
+    "__typename": "Show",
+    "id": "130758067",
+    "name": "(Tamil) Ramayana: Rise Of A Legend",
+    "beginning": "2026-11-06T19:00:00+01:00",
+    "cinema": {
+     "id": "3717",
+     "name": "Prisma Cinema Halle-Neustadt",
+     "city": {
+      "name": "Halle (Saale)"
+     }
+    },
+    "movie": {
+     "id": "111803",
+     "title": "Ramayana: Rise of a Legend"
+    }
+   }
+  ]
+ }
+}

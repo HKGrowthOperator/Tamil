@@ -1,0 +1,15 @@
+/*
+Theme Name:        Tamil.de
+Theme URI:         https://www.tamil.de
+Description:       Magazin-Theme für Tamil.de: Nachrichten, Kino, Events und Community für Tamilen in Deutschland, Österreich und der Schweiz. Klassisches Theme mit theme.json; Werbeplätze, Termine und Weiterleitungen kommen aus dem Plugin „Tamil.de Website“.
+Author:            HK Growth Operator
+Version:           1.1.0
+Requires at least: 6.6
+Tested up to:      7.1
+Requires PHP:      8.1
+License:           MIT
+Text Domain:       tamil
+Tags:              news, blog, magazine, custom-menu, featured-images, translation-ready, wide-blocks
+*/
+
+/* Die Gestaltung liegt in assets/css/theme.css (Frontend) und assets/css/editor.css (Editor). */

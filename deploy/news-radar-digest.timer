@@ -1,0 +1,9 @@
+[Unit]
+Description=Tamil.de News-Radar – Tageszusammenfassung um 8 Uhr
+
+[Timer]
+OnCalendar=*-*-* 08:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

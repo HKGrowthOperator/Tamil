@@ -1,0 +1,338 @@
+{
+	"$schema": "https://schemas.wp.org/wp/6.6/theme.json",
+	"version": 3,
+	"settings": {
+		"appearanceTools": true,
+		"useRootPaddingAwareAlignments": false,
+		"color": {
+			"defaultPalette": false,
+			"defaultGradients": false,
+			"defaultDuotone": false,
+			"custom": false,
+			"customGradient": false,
+			"palette": [
+				{
+					"slug": "papier",
+					"name": "Papier",
+					"color": "#FDF9F5"
+				},
+				{
+					"slug": "weiss",
+					"name": "Weiß",
+					"color": "#FFFDFB"
+				},
+				{
+					"slug": "sand",
+					"name": "Sand",
+					"color": "#F8EFE4"
+				},
+				{
+					"slug": "sand-2",
+					"name": "Sand 2",
+					"color": "#F2E6D9"
+				},
+				{
+					"slug": "linie",
+					"name": "Linie",
+					"color": "#E5DCD5"
+				},
+				{
+					"slug": "tinte",
+					"name": "Tinte",
+					"color": "#332924"
+				},
+				{
+					"slug": "tinte-2",
+					"name": "Tinte 2",
+					"color": "#655851"
+				},
+				{
+					"slug": "tinte-3",
+					"name": "Tinte 3",
+					"color": "#72665F"
+				},
+				{
+					"slug": "rot",
+					"name": "Rot",
+					"color": "#B5282A"
+				},
+				{
+					"slug": "rot-tief",
+					"name": "Rot tief",
+					"color": "#921A1D"
+				},
+				{
+					"slug": "rot-hell",
+					"name": "Rot hell",
+					"color": "#FFEAE8"
+				},
+				{
+					"slug": "safran",
+					"name": "Safran",
+					"color": "#F8AC3D"
+				}
+			]
+		},
+		"layout": {
+			"contentSize": "720px",
+			"wideSize": "1240px"
+		},
+		"spacing": {
+			"units": [
+				"px",
+				"em",
+				"rem",
+				"%",
+				"vw"
+			],
+			"defaultSpacingSizes": false,
+			"spacingSizes": [
+				{
+					"slug": "1",
+					"name": "XS",
+					"size": "8px"
+				},
+				{
+					"slug": "2",
+					"name": "S",
+					"size": "16px"
+				},
+				{
+					"slug": "3",
+					"name": "M",
+					"size": "24px"
+				},
+				{
+					"slug": "4",
+					"name": "L",
+					"size": "32px"
+				},
+				{
+					"slug": "5",
+					"name": "XL",
+					"size": "48px"
+				},
+				{
+					"slug": "6",
+					"name": "XXL",
+					"size": "64px"
+				}
+			]
+		},
+		"typography": {
+			"defaultFontSizes": false,
+			"fluid": true,
+			"dropCap": false,
+			"fontFamilies": [
+				{
+					"slug": "titel",
+					"name": "Catamaran",
+					"fontFamily": "Catamaran, \"Segoe UI\", system-ui, sans-serif",
+					"fontFace": [
+						{
+							"fontFamily": "Catamaran",
+							"fontWeight": "100 900",
+							"fontStyle": "normal",
+							"fontDisplay": "swap",
+							"src": [
+								"file:./assets/fonts/catamaran-latin.woff2"
+							],
+							"unicodeRange": "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD"
+						},
+						{
+							"fontFamily": "Catamaran",
+							"fontWeight": "100 900",
+							"fontStyle": "normal",
+							"fontDisplay": "swap",
+							"src": [
+								"file:./assets/fonts/catamaran-latin-ext.woff2"
+							],
+							"unicodeRange": "U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1E9F, U+2C60-2C7F, U+A720-A7FF"
+						},
+						{
+							"fontFamily": "Catamaran",
+							"fontWeight": "100 900",
+							"fontStyle": "normal",
+							"fontDisplay": "swap",
+							"src": [
+								"file:./assets/fonts/catamaran-tamil.woff2"
+							],
+							"unicodeRange": "U+0964-0965, U+0B82-0BFA, U+200C-200D, U+20B9, U+25CC"
+						}
+					]
+				},
+				{
+					"slug": "text",
+					"name": "Literata",
+					"fontFamily": "Literata, Catamaran, Georgia, serif",
+					"fontFace": [
+						{
+							"fontFamily": "Literata",
+							"fontWeight": "200 900",
+							"fontStyle": "normal",
+							"fontDisplay": "swap",
+							"src": [
+								"file:./assets/fonts/literata-latin.woff2"
+							],
+							"unicodeRange": "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD"
+						},
+						{
+							"fontFamily": "Literata",
+							"fontWeight": "200 900",
+							"fontStyle": "normal",
+							"fontDisplay": "swap",
+							"src": [
+								"file:./assets/fonts/literata-latin-ext.woff2"
+							],
+							"unicodeRange": "U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1E9F, U+2C60-2C7F, U+A720-A7FF"
+						},
+						{
+							"fontFamily": "Literata",
+							"fontWeight": "200 900",
+							"fontStyle": "italic",
+							"fontDisplay": "swap",
+							"src": [
+								"file:./assets/fonts/literata-italic-latin.woff2"
+							],
+							"unicodeRange": "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD"
+						}
+					]
+				}
+			],
+			"fontSizes": [
+				{
+					"slug": "meta",
+					"name": "Meta",
+					"size": "14px",
+					"fluid": false
+				},
+				{
+					"slug": "klein",
+					"name": "Klein",
+					"size": "16px",
+					"fluid": false
+				},
+				{
+					"slug": "text",
+					"name": "Text",
+					"size": "clamp(18px, 1.1vw + 13px, 20px)",
+					"fluid": false
+				},
+				{
+					"slug": "vorspann",
+					"name": "Vorspann",
+					"size": "clamp(20px, 1.3vw + 14px, 23px)",
+					"fluid": false
+				},
+				{
+					"slug": "h3",
+					"name": "Zwischentitel",
+					"size": "clamp(21px, 1vw + 15px, 24px)",
+					"fluid": false
+				},
+				{
+					"slug": "h2",
+					"name": "Überschrift",
+					"size": "clamp(26px, 2vw + 16px, 34px)",
+					"fluid": false
+				},
+				{
+					"slug": "h1",
+					"name": "Titel",
+					"size": "clamp(34px, 3.6vw + 14px, 58px)",
+					"fluid": false
+				}
+			]
+		}
+	},
+	"styles": {
+		"color": {
+			"background": "var:preset|color|papier",
+			"text": "var:preset|color|tinte"
+		},
+		"typography": {
+			"fontFamily": "var:preset|font-family|text",
+			"fontSize": "var:preset|font-size|text",
+			"lineHeight": "1.65"
+		},
+		"elements": {
+			"link": {
+				"color": {
+					"text": "var:preset|color|rot"
+				}
+			},
+			"heading": {
+				"typography": {
+					"fontFamily": "var:preset|font-family|titel",
+					"fontWeight": "800",
+					"lineHeight": "1.12",
+					"letterSpacing": "-0.015em"
+				}
+			},
+			"h1": {
+				"typography": {
+					"fontSize": "var:preset|font-size|h1"
+				}
+			},
+			"h2": {
+				"typography": {
+					"fontSize": "var:preset|font-size|h2"
+				}
+			},
+			"h3": {
+				"typography": {
+					"fontSize": "var:preset|font-size|h3"
+				}
+			},
+			"button": {
+				"color": {
+					"background": "var:preset|color|rot",
+					"text": "var:preset|color|weiss"
+				},
+				"border": {
+					"radius": "999px"
+				},
+				"typography": {
+					"fontFamily": "var:preset|font-family|titel",
+					"fontWeight": "700"
+				}
+			}
+		},
+		"blocks": {
+			"core/quote": {
+				"border": {
+					"left": {
+						"color": "var:preset|color|rot",
+						"width": "3px"
+					}
+				},
+				"typography": {
+					"fontStyle": "italic"
+				}
+			},
+			"core/pullquote": {
+				"border": {
+					"top": {
+						"color": "var:preset|color|linie",
+						"width": "1px"
+					},
+					"bottom": {
+						"color": "var:preset|color|linie",
+						"width": "1px"
+					}
+				},
+				"typography": {
+					"fontFamily": "var:preset|font-family|titel",
+					"fontWeight": "700"
+				}
+			},
+			"core/separator": {
+				"color": {
+					"text": "var:preset|color|linie"
+				}
+			}
+		}
+	},
+	"customTemplates": [],
+	"templateParts": []
+}
