@@ -1,0 +1,606 @@
+/* tamil.de – Richtung „raster“: rotes Linienraster, große lateinische Schrift, Rot als einzige Farbe.
+   Linien entstehen aus Abständen von 1 px über rotem Grund (gap-Linien), nie aus Schatten oder Rundungen. */
+
+@font-face {
+  font-family: "Archivo";
+  src: url("fonts/archivo-latin.woff2") format("woff2");
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible Next";
+  src: url("fonts/atkinson-next-latin.woff2") format("woff2");
+  font-weight: 200 800;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  /* Farbe: Logo-Rot #B5282A ist die einzige bunte Farbe */
+  --rot: oklch(0.508 0.177 25.6);
+  --grund: oklch(0.985 0.004 25);
+  --tinte: oklch(0.2 0.012 25);
+  --tinte-2: oklch(0.42 0.015 25);
+
+  /* Schrift */
+  --anzeige: "Archivo", "Arial Narrow", "Helvetica Neue", sans-serif;
+  --text: "Atkinson Hyperlegible Next", "Segoe UI", "Helvetica Neue", sans-serif;
+  --tamil: "Noto Sans Tamil", "Tamil Sangam MN", "Latha", "Nirmala UI", sans-serif;
+
+  /* Raster */
+  --linie: 1px;
+  --fuge: clamp(1rem, 0.6rem + 1.6vw, 2rem);        /* Innenabstand der Felder */
+  --fuge-klein: clamp(0.75rem, 0.6rem + 0.6vw, 1rem);
+  --rahmen-max: 85rem;
+  --daumen-hoehe: 3.5rem;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--grund);
+  color: var(--tinte);
+  font-family: var(--text);
+  font-size: 1.1875rem;          /* 19 px am Handy */
+  line-height: 1.55;
+  font-kerning: normal;
+  /* Platz für die Daumenleiste */
+  padding-bottom: calc(var(--daumen-hoehe) + var(--linie) + env(safe-area-inset-bottom, 0px));
+}
+
+img { display: block; max-width: 100%; height: auto; }
+ul { list-style: none; margin: 0; padding: 0; }
+h1, h2, h3, p, figure { margin: 0; }
+
+:lang(ta) { font-family: var(--tamil); line-height: 1.75; }
+
+a { color: inherit; }
+
+:focus-visible {
+  outline: 3px solid var(--tinte);
+  outline-offset: 3px;
+}
+
+.nur-sr {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap;
+}
+
+.sprung {
+  position: absolute; left: 0.5rem; top: -4rem; z-index: 20;
+  min-height: 2.75rem; display: flex; align-items: center;
+  padding: 0.75rem 1rem; background: var(--grund); color: var(--tinte);
+  font: 600 1rem/1.2 var(--anzeige);
+  outline: 1px solid var(--rot);
+}
+.sprung:focus { top: 0.5rem; }
+
+/* ---------- Rahmen und Linien ---------- */
+
+.rahmen {
+  max-width: var(--rahmen-max);
+  margin-inline: auto;
+  background: var(--rot);          /* scheint durch die Fugen: die Linien */
+  display: grid;
+  gap: var(--linie);
+  border-bottom: var(--linie) solid var(--rot);
+}
+@media (min-width: 86rem) {
+  .rahmen { border-inline: var(--linie) solid var(--rot); }
+}
+
+/* Eine Zeile aus Feldern; Felder wachsen, damit keine Lücke rot bleibt */
+.zeile {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--linie);
+  background: var(--rot);
+}
+
+/* Etiketten: Text in einem Rasterfeld, kein Kasten */
+.feld,
+.termin__art,
+.kopf__nav a,
+.rubriken a,
+.daumen a,
+.artikel__meta li {
+  font-family: var(--anzeige);
+  font-stretch: 85%;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.feld {
+  background: var(--grund);
+  padding: 0.85rem var(--fuge);
+  color: var(--tinte-2);
+  flex: 0 0 auto;
+}
+.feld--rubrik { color: var(--rot); }
+.feld--rest { flex: 1 1 0; padding: 0; min-width: 0; }
+
+/* ---------- Kopf ---------- */
+
+.kopf {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--linie);
+  background: var(--rot);
+}
+.kopf__marke {
+  display: flex;
+  align-items: center;
+  background: var(--grund);
+  padding: 0.75rem var(--fuge);
+  min-height: 4rem;
+}
+.kopf__marke img { width: 7.5rem; }
+
+.kopf__nav { display: none; }
+
+@media (min-width: 56.25rem) {           /* ab 900 px: Navigation im Kopf */
+  .kopf { grid-template-columns: auto 1fr; }
+  .kopf__marke { padding-block: 1rem; }
+  .kopf__marke img { width: 8.75rem; }
+  .kopf__nav { display: block; background: var(--grund); }
+  .kopf__nav ul {
+    display: flex; flex-wrap: wrap; height: 100%;
+    gap: var(--linie); background: var(--rot);
+  }
+  .kopf__nav li { flex: 1 1 auto; display: flex; }
+  .kopf__nav a {
+    flex: 1;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 2.75rem;
+    padding: 0.5rem 0.9rem;
+    background: var(--grund);
+    text-decoration: none;
+  }
+  .kopf__nav a:hover { color: var(--rot); }
+}
+
+/* ---------- Cover ---------- */
+
+.cover {
+  position: relative;
+  container-type: inline-size;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "meta"
+    "wort"
+    "titel"
+    "bild"
+    "vorspann";
+  gap: var(--linie);
+  background: var(--rot);
+}
+.cover > * { background: var(--grund); }
+
+.cover__meta { grid-area: meta; }
+
+/* Das Stichwort: Steckbuchstaben, füllt die volle Breite des Feldes */
+.cover__wort {
+  grid-area: wort;
+  padding: 0.35rem var(--fuge) 0;
+  color: var(--rot);
+  font-family: var(--anzeige);
+  font-stretch: 62%;
+  font-weight: 850;
+  text-transform: uppercase;
+  font-size: min(27vw, 22rem);
+  line-height: 0.8;
+  letter-spacing: -0.005em;
+  padding-bottom: 0.06em;
+  overflow: hidden;
+}
+/* „KANGUVA“ ist in Archivo wdth 62 / 850 rund 3,47 em breit: so groß, dass es die Feldbreite füllt */
+@supports (font-size: 1cqi) {
+  .cover__wort { font-size: calc((100cqi - 2 * var(--fuge)) / 3.5); }
+}
+
+.cover__titel {
+  grid-area: titel;
+  padding: var(--fuge-klein) var(--fuge) var(--fuge);
+  font-family: var(--anzeige);
+  font-stretch: 75%;
+  font-weight: 700;
+  font-size: clamp(1.875rem, 1.35rem + 2.2vw, 3.25rem);
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+.cover__link {
+  text-decoration: none;
+  text-decoration-thickness: 0.06em;
+  text-underline-offset: 0.12em;
+}
+/* Die ganze Cover-Fläche ist das Ziel */
+.cover__link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+.cover__link:hover,
+.cover:hover .cover__link { text-decoration-line: underline; text-decoration-color: var(--rot); }
+.cover__link:focus-visible { outline: none; }
+.cover__link:focus-visible::after { outline: 3px solid var(--tinte); outline-offset: -6px; }
+
+.cover__bild {
+  grid-area: bild;
+  display: flex;
+  align-items: flex-start;
+}
+.cover__bild img {
+  width: 100%;
+  max-width: 1024px;           /* Originalbreite, nie hochskaliert */
+}
+
+.cover__vorspann {
+  grid-area: vorspann;
+  padding: var(--fuge);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  justify-content: space-between;
+  font-size: 1.1875rem;
+  line-height: 1.5;
+  max-width: none;
+}
+.cover__vorspann p:first-child { max-width: 36ch; }
+.cover__weiter {
+  font-family: var(--anzeige);
+  font-stretch: 85%;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--rot);
+}
+.pfeil { display: inline-block; }
+
+@media (min-width: 64rem) {             /* ab 1024 px: Text links, Bild rechts */
+  .cover {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    grid-template-rows: auto auto auto 1fr;
+    grid-template-areas:
+      "meta     meta"
+      "wort     wort"
+      "titel    bild"
+      "vorspann bild";
+  }
+  .cover__titel { padding-top: var(--fuge); }
+  /* Bild füllt sein Feld durch Beschnitt, nie über die Originalgröße (538 px hoch) hinaus */
+  .cover__bild img { height: 100%; max-height: 538px; object-fit: cover; object-position: 50% 30%; }
+}
+
+/* ---------- Diese Woche: der Fahrplan ---------- */
+
+.woche {
+  display: grid;
+  gap: var(--linie);
+  background: var(--rot);
+  border-top: 3px solid var(--rot);   /* Abschnittsgrenze, waagrecht */
+}
+.woche__kopf {
+  background: var(--grund);
+  padding: clamp(2.5rem, 1.5rem + 4vw, 5rem) var(--fuge) var(--fuge);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 0.5rem 2rem;
+}
+.woche__kopf h2 {
+  font-family: var(--anzeige);
+  font-stretch: 62%;
+  font-weight: 850;
+  text-transform: uppercase;
+  font-size: clamp(3.5rem, 2rem + 7vw, 8.5rem);
+  line-height: 0.85;
+  letter-spacing: -0.005em;
+}
+.woche__kopf p {
+  color: var(--tinte-2);
+  font-size: 1.0625rem;
+  max-width: 28ch;
+}
+
+.fahrplan {
+  display: grid;
+  gap: var(--linie);
+  background: var(--rot);
+}
+
+.termin {
+  display: grid;
+  grid-template-columns: minmax(6.5rem, 2fr) minmax(0, 5fr);
+  grid-template-areas:
+    "wann was"
+    "orte orte";
+  gap: var(--linie);
+  background: var(--rot);
+}
+.termin > * { background: var(--grund); }
+
+.termin__wann {
+  grid-area: wann;
+  padding: var(--fuge) var(--fuge-klein) var(--fuge) var(--fuge);
+}
+.termin__wann time { display: block; }
+.termin__gross {
+  display: block;
+  color: var(--rot);
+  font-family: var(--anzeige);
+  font-stretch: 62%;
+  font-weight: 850;
+  text-transform: uppercase;
+  font-size: clamp(2.25rem, 1.5rem + 3.2vw, 4.75rem);
+  line-height: 0.85;
+  hyphens: manual;
+}
+.termin__klein {
+  display: block;
+  margin-top: 0.5rem;
+  color: var(--tinte-2);
+  font-family: var(--anzeige);
+  font-stretch: 85%;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.termin__was {
+  grid-area: was;
+  padding: var(--fuge);
+  display: grid;
+  align-content: start;
+  gap: 0.4rem;
+}
+.termin__art { color: var(--rot); }
+.termin__titel {
+  font-family: var(--anzeige);
+  font-stretch: 75%;
+  font-weight: 700;
+  font-size: clamp(1.5rem, 1.2rem + 1.4vw, 2.375rem);
+  line-height: 1.05;
+  text-wrap: balance;
+  hyphens: auto;
+}
+.termin__info { color: var(--tinte-2); font-size: 1.0625rem; line-height: 1.45; }
+
+/* Ortsraster: ein Feld pro Stadt; Felder wachsen, keine leeren roten Lücken */
+.ortsraster {
+  grid-area: orte;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--linie);
+  background: var(--rot);
+}
+.ortsraster li {
+  flex: 1 1 9rem;
+  background: var(--grund);
+  padding: 0.9rem var(--fuge-klein);
+  min-height: 3.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  font-family: var(--anzeige);
+  font-stretch: 85%;
+  font-weight: 650;
+  font-size: 1.125rem;
+  line-height: 1.15;
+}
+.ortsraster li:first-child { padding-left: var(--fuge); }
+.ortsraster__mehr { color: var(--tinte-2); font-weight: 500 !important; }
+.ortsraster__haus {
+  display: block;
+  font-weight: 500;
+  color: var(--tinte-2);
+  font-size: 1rem;
+}
+
+@media (min-width: 51.25rem) {
+  .termin {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 4fr) minmax(0, 5fr);
+    grid-template-areas: "wann was orte";
+  }
+  .ortsraster { align-content: stretch; }
+  .ortsraster li { flex-basis: 10rem; min-height: 4.5rem; }
+  .ortsraster li:first-child { padding-left: var(--fuge-klein); }
+}
+
+/* ---------- Rubriken am Seitenende ---------- */
+
+.rubriken {
+  display: grid;
+  gap: var(--linie);
+  background: var(--rot);
+  border-top: 3px solid var(--rot);
+}
+.rubriken h2 {
+  background: var(--grund);
+  padding: clamp(2rem, 1.5rem + 2vw, 3.5rem) var(--fuge) var(--fuge-klein);
+  font-family: var(--anzeige);
+  font-stretch: 62%;
+  font-weight: 850;
+  text-transform: uppercase;
+  font-size: clamp(2rem, 1.5rem + 2vw, 3rem);
+  line-height: 0.9;
+}
+.rubriken li { flex: 1 1 10rem; display: flex; }
+.rubriken a {
+  flex: 1;
+  display: flex; align-items: center;
+  min-height: 3.5rem;
+  padding: 0.75rem var(--fuge);
+  background: var(--grund);
+  text-decoration: none;
+}
+.rubriken a:hover { color: var(--rot); }
+
+/* ---------- Daumenleiste (bis 899 px) ---------- */
+
+.daumen {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--linie);
+  background: var(--rot);
+  padding-top: var(--linie);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.daumen a {
+  display: flex; align-items: center; justify-content: center;
+  min-height: var(--daumen-hoehe);
+  padding: 0 0.25rem;
+  background: var(--grund);
+  text-decoration: none;
+  font-size: 0.875rem;
+  letter-spacing: 0.03em;
+  text-align: center;
+}
+.daumen a:last-child { color: var(--rot); }
+.daumen a:focus-visible { outline-offset: -4px; }
+
+@media (min-width: 56.25rem) {
+  .daumen { display: none; }
+  body { padding-bottom: 0; }
+}
+
+/* ---------- Artikel: ruhig ---------- */
+
+.artikel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--linie);
+  background: var(--rot);
+}
+.artikel > * { background: var(--grund); }
+
+.artikel__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--linie);
+  background: var(--rot);
+}
+.artikel__meta li {
+  flex: 1 1 auto;
+  background: var(--grund);
+  padding: 0.85rem var(--fuge);
+  color: var(--tinte-2);
+  display: flex;
+  align-items: center;
+}
+.artikel__meta .meta__rubrik { color: var(--rot); }
+.artikel__meta .meta__teilen { flex-basis: 100%; padding: 0; }
+.artikel__meta .meta__rest { display: none; }
+.meta__teilen a {
+  flex: 1;
+  display: flex; align-items: center; gap: 0.6rem;
+  min-height: 3rem;
+  padding: 0.6rem var(--fuge);
+  color: var(--tinte);
+  text-decoration: underline;
+  text-decoration-color: var(--rot);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.25em;
+}
+.meta__teilen a:hover { color: var(--rot); }
+
+.artikel__text {
+  padding: clamp(1.75rem, 1rem + 3vw, 4rem) var(--fuge) clamp(3rem, 2rem + 4vw, 6rem);
+}
+.artikel__text > * { max-width: 40rem; }
+
+.artikel__titel {
+  font-family: var(--anzeige);
+  font-stretch: 78%;
+  font-weight: 700;
+  font-size: clamp(2.125rem, 1.5rem + 2.6vw, 3.75rem);
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+  max-width: 18ch !important;
+}
+.artikel__vorspann {
+  margin-top: clamp(1rem, 0.8rem + 1vw, 1.75rem);
+  font-size: clamp(1.25rem, 1.15rem + 0.4vw, 1.4375rem);
+  line-height: 1.45;
+  font-weight: 500;
+}
+.artikel__bild {
+  margin-block: clamp(1.75rem, 1rem + 2.5vw, 3rem);
+  max-width: 900px !important;     /* Originalbreite p9655 */
+}
+.artikel__bild img { width: 100%; }
+
+.artikel__text p.absatz {
+  font-size: 1.1875rem;
+  line-height: 1.65;
+}
+.artikel__text p + p, .artikel__text p + ul, .artikel__text ul + p { margin-top: 1.1em; }
+
+.laenderliste {
+  margin-top: 0.9rem;
+  columns: 2 12rem;
+  column-gap: 2rem;
+  font-size: 1.1875rem;
+  line-height: 1.5;
+}
+.laenderliste li {
+  break-inside: avoid;
+  padding: 0.3rem 0 0.3rem 1.1rem;
+  position: relative;
+  border-bottom: var(--linie) solid oklch(0.508 0.177 25.6 / 0.28);
+}
+.laenderliste li::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0.95em;
+  width: 0.4rem; height: 0.4rem;
+  background: var(--rot);
+}
+
+@media (min-width: 51.25rem) {
+  body { font-size: 1.25rem; }
+  .artikel { grid-template-columns: minmax(13rem, 3fr) minmax(0, 9fr); }
+  .artikel__meta {
+    flex-direction: column;
+    flex-wrap: nowrap;
+  }
+  .artikel__meta li { flex: 0 0 auto; padding-block: 1rem; }
+  .artikel__meta .meta__teilen { flex-basis: auto; }
+  .artikel__meta .meta__rest { display: block; flex: 1 1 auto; padding: 0; }
+  .artikel__text { padding-left: clamp(2rem, 1rem + 3vw, 4.5rem); }
+  .artikel__text p.absatz, .laenderliste { font-size: 1.25rem; }
+}
+
+/* ---------- Bewegung ---------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  .cover__link, .kopf__nav a, .rubriken a, .meta__teilen a {
+    transition: color 160ms cubic-bezier(0.25, 1, 0.5, 1), text-decoration-color 160ms cubic-bezier(0.25, 1, 0.5, 1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
