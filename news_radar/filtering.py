@@ -104,7 +104,10 @@ def select(
             item.kind = source.kind
         item.score = score_item(item, settings.keywords)
         item.dach_score, item.ort = dach_score(item, settings.regions)
-        if source and source.country and not item.ort:
+        ausland = item.dach_score == 0 and any(_contains(text, t) for t in settings.regions.ausland)
+        if ausland and item.kind == "event":
+            continue  # Termin im Ausland, auch wenn die Quelle aus DACH berichtet
+        if source and source.country and not item.ort and not ausland:
             item.ort = {"DE": "Deutschland", "CH": "Schweiz", "AT": "Österreich"}.get(source.country, source.country)
             item.dach_score = max(item.dach_score, 1)
         needed = None

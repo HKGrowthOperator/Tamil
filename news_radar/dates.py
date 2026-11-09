@@ -13,6 +13,10 @@ MONTHS = {
     "mai": 5, "juni": 6, "jun": 6, "juli": 7, "jul": 7, "august": 8, "aug": 8, "september": 9, "sep": 9, "sept": 9,
     "oktober": 10, "okt": 10, "oct": 10, "november": 11, "nov": 11, "dezember": 12, "dez": 12, "dec": 12,
     "january": 1, "february": 2, "march": 3, "june": 6, "july": 7, "october": 10, "december": 12,
+    # tamilische Monatsnamen (Schreibweisen aus Sri Lanka und Indien), wie sie Swiss Tamil Info & Co. verwenden
+    "ஜனவரி": 1, "பெப்ரவரி": 2, "பிப்ரவரி": 2, "மார்ச்": 3, "ஏப்ரல்": 4, "மே": 5, "ஜூன்": 6, "ஜூலை": 7,
+    "ஆகஸ்ட்": 8, "ஓகஸ்ட்": 8, "ஆகஸ்டு": 8, "செப்டம்பர்": 9, "ஒக்டோபர்": 10, "அக்டோபர்": 10, "நவம்பர்": 11,
+    "டிசம்பர்": 12,
 }
 _MONTH_RE = "|".join(sorted(MONTHS, key=len, reverse=True))
 _TIME_RE = re.compile(r"(?<!\d)(\d{1,2})[:.](\d{2})(?:\s*uhr)?", re.I)

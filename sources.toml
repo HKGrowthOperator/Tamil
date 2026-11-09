@@ -412,6 +412,13 @@ at = ["Österreich", "Austria", "ஆஸ்திரியா"]
 
 [regions]
 exakt = ["Essen", "Hamm", "Bern", "Linz"]
+# Orte außerhalb von DACH: Nennt eine Meldung einen davon und keinen DACH-Ort, gilt das Land der Quelle nicht als
+# DACH-Bezug, und Termine fallen ganz heraus (z. B. Swiss Tamil Info über ein Fest in Markham, Kanada).
+ausland = ["Kanada", "Canada", "Canadian", "கனடா", "கனடிய", "Toronto", "டொரண்டோ", "ரொறன்ரோ", "Markham", "மார்க்கம்",
+           "Scarborough", "Montreal", "London", "லண்டன்", "England", "Frankreich", "France", "Paris", "பாரிஸ்",
+           "Norwegen", "Norway", "Oslo", "Dänemark", "Denmark", "Niederlande", "Netherlands", "Australien",
+           "Australia", "Sydney", "Melbourne", "Malaysia", "Singapur", "Singapore", "USA", "Jaffna", "யாழ்ப்பாணம்",
+           "Chennai", "சென்னை", "Colombo", "கொழும்பு"]
 
 # ---- Stichwort-Gewichte (klein geschrieben; Treffer im Titel zählen doppelt) ----
 [keywords]

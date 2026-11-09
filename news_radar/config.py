@@ -57,6 +57,7 @@ class Regions:
     laender: dict[str, str] = field(default_factory=dict)  # Begriff -> Land
     aliases: dict[str, list[str]] = field(default_factory=dict)  # Stadt -> andere Schreibweisen
     exakt: set[str] = field(default_factory=set)  # nur mit Großbuchstabe matchen (Essen, Hamm, Bern)
+    ausland: list[str] = field(default_factory=list)  # Orte außerhalb von DACH (gegen das Land der Quelle)
 
 
 @dataclass
@@ -199,6 +200,7 @@ def load_settings(sources_file: Path = ROOT / "sources.toml") -> Settings:
         laender={term: land.upper() for land, terms in reg.get("laender", {}).items() for term in terms},
         aliases={k: list(v) for k, v in reg.get("aliases", {}).items()},
         exakt=set(reg.get("exakt", [])),
+        ausland=list(reg.get("ausland", [])),
     )
     categories = [
         Category(slug=slug, label=c["label"], hints=[h.lower() for h in c.get("hints", [])])

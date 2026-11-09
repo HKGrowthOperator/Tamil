@@ -85,3 +85,26 @@ def test_select_filters_old_blocked_seen_and_blocklist(settings):
     seen = item("Tamilen in Hamburg")
     picked = filtering.select([old, blocked, seen], settings, {seen.uid}, [], now=NOW)
     assert picked == []
+
+
+def test_event_abroad_from_dach_source_is_dropped(settings):
+    """Pilot 09.11.: Swiss Tamil Info berichtete über das Tamil Fest in Markham (Kanada) – das ist kein DACH-Termin."""
+    markham = item("“தமிழ் தெருவிழா 2026” அறிமுக விழா!",
+                   "கனடியத் தமிழர் பேரவையினால் (Canadian Tamil Congress) … City of Markham இல் நடைபெறவுள்ள Tamil Fest 2026",
+                   source="Swiss Tamil Info · Events", kind="event")
+    zuerich = item("Tamil Fest Zürich", "wie in London, jetzt auch in Zürich", source="Swiss Tamil Info · Events",
+                   kind="event")
+    schweiz = item("Tamil Dream Night", "irgendwo", source="Swiss Tamil Info · Events", kind="event")
+    picked = filtering.select([markham, zuerich, schweiz], settings, set(), [], now=NOW)
+    titel = {p.title for p in picked}
+    assert markham.title not in titel and {zuerich.title, schweiz.title} <= titel
+
+
+def test_tamil_month_names_are_dates():
+    from news_radar import dates
+
+    now = datetime(2026, 11, 9, tzinfo=dates.TZ)
+    assert dates.parse_de_date("ஜூலை 13, 2026 அன்று", now).isoformat() == "2026-07-13"
+    assert dates.parse_de_date("21 நவம்பர் 2026", now).isoformat() == "2026-11-21"
+    assert [d.isoformat() for d in dates.alle_daten("ஓகஸ்ட் 22, 2026 முதல் செப்டம்பர் 3, 2026 வரை", now)] == \
+        ["2026-08-22", "2026-09-03"]
