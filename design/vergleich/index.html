@@ -1,0 +1,347 @@
+<!--
+  Vergleichsseite für Tor G2 (Richtungsskizzen Runde 1).
+  Diese Datei wird als Artifact veröffentlicht; die Hülle (doctype, head, body) setzt die Veröffentlichung.
+  Pfade gelten ab der Wurzel des Artifacts: Bilder unter img/, Skizzen unter design/richtungen/<slug>/.
+  Aufnahmen neu erzeugen: node design/vergleich/aufnahmen.mjs zine raster feed
+-->
+<title>Richtungsvergleich tamil.de</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500;700;800&family=Source+Sans+3:wght@400;600&display=swap">
+<style>
+  /* Aufbau: ruhiger, kühler Rahmen ohne Rot, damit nur die Skizzen Farbe tragen.
+     Je Richtung: die zwei Handy-Bildschirme groß, daneben Desktop und die Einordnung. */
+  :root {
+    --grund: oklch(0.965 0.005 250);
+    --flaeche: oklch(0.995 0.002 250);
+    --tinte: oklch(0.25 0.02 256);
+    --leise: oklch(0.47 0.02 256);
+    --linie: oklch(0.87 0.008 250);
+    --akzent: oklch(0.44 0.13 256);
+    --marke: oklch(0.52 0.03 256);
+    --schrift-kopf: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+    --schrift-text: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --grund: oklch(0.2 0.012 256);
+      --flaeche: oklch(0.245 0.014 256);
+      --tinte: oklch(0.94 0.006 250);
+      --leise: oklch(0.73 0.012 250);
+      --linie: oklch(0.36 0.014 256);
+      --akzent: oklch(0.8 0.09 250);
+      --marke: oklch(0.7 0.02 250);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --grund: oklch(0.2 0.012 256);
+    --flaeche: oklch(0.245 0.014 256);
+    --tinte: oklch(0.94 0.006 250);
+    --leise: oklch(0.73 0.012 250);
+    --linie: oklch(0.36 0.014 256);
+    --akzent: oklch(0.8 0.09 250);
+    --marke: oklch(0.7 0.02 250);
+    color-scheme: dark;
+  }
+
+  body {
+    background: var(--grund);
+    color: var(--tinte);
+    font-family: var(--schrift-text);
+    font-size: 1.0625rem;
+    line-height: 1.55;
+  }
+  .rahmen {
+    max-width: 73rem;
+    margin-inline: auto;
+    padding-block: 2.5rem 4rem;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    display: grid;
+    gap: 3.5rem;
+  }
+  h1, h2, h3 { font-family: var(--schrift-kopf); text-wrap: balance; margin: 0; }
+  p, ul, figure { margin: 0; }
+  a { color: var(--akzent); text-underline-offset: 0.18em; }
+  a:focus-visible { outline: 2px solid var(--akzent); outline-offset: 3px; border-radius: 2px; }
+
+  .etikett {
+    font-family: var(--schrift-kopf);
+    font-weight: 700;
+    font-size: 0.8125rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--marke);
+  }
+
+  /* Kopf */
+  .kopf { display: grid; gap: 1rem; }
+  .kopf h1 { font-weight: 800; font-size: clamp(2rem, 1.2rem + 3.4vw, 3.5rem); line-height: 1.04; letter-spacing: -0.02em; max-width: 18ch; }
+  .kopf .vorspann { font-size: 1.1875rem; max-width: 62ch; color: var(--tinte); }
+  .hinweise {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 1.25rem 2rem;
+    padding-block: 1.25rem;
+    border-block: 1px solid var(--linie);
+  }
+  .hinweise h2 { font-size: 1rem; font-weight: 700; margin-bottom: 0.25rem; }
+  .hinweise p { color: var(--leise); font-size: 1rem; }
+  .sprung { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; font-family: var(--schrift-kopf); font-weight: 700; }
+  .sprung a { display: inline-block; padding-block: 0.6rem; }
+
+  /* Richtung */
+  .richtung { display: grid; gap: 1.5rem; scroll-margin-top: 1rem; }
+  .richtung-kopf { display: grid; gap: 0.5rem; }
+  .richtung-kopf h2 { font-weight: 800; font-size: clamp(1.75rem, 1.3rem + 1.8vw, 2.5rem); line-height: 1.08; letter-spacing: -0.015em; }
+  .richtung-kopf .idee { font-size: 1.1875rem; max-width: 60ch; }
+  .buehne {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas: "handy artikel" "seite seite";
+    align-items: start;
+  }
+  .aufnahme { display: grid; gap: 0.5rem; min-width: 0; }
+  .aufnahme img {
+    display: block;
+    width: 100%;
+    height: auto;
+    background: var(--flaeche);
+    border: 1px solid var(--linie);
+  }
+  .aufnahme figcaption { font-size: 0.9375rem; color: var(--leise); }
+  .aufnahme.handy { grid-area: handy; max-width: 19rem; }
+  .aufnahme.artikel { grid-area: artikel; max-width: 19rem; }
+  .aufnahme.handy img, .aufnahme.artikel img { border-radius: 1.25rem; aspect-ratio: 390 / 844; }
+  .seite { grid-area: seite; display: grid; gap: 1.5rem; min-width: 0; }
+  .aufnahme.desktop img { border-radius: 0.5rem; aspect-ratio: 1280 / 800; }
+
+  .einordnung { display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
+  .einordnung h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.4rem; }
+  .einordnung ul { padding-left: 1.1rem; display: grid; gap: 0.35rem; }
+  .fakten { display: grid; gap: 0.3rem; color: var(--leise); font-size: 1rem; }
+  .fakten strong { color: var(--tinte); font-weight: 600; }
+  .wertung { font-variant-numeric: tabular-nums; }
+  .oeffnen { display: flex; flex-wrap: wrap; gap: 0.25rem 1.5rem; font-family: var(--schrift-kopf); font-weight: 700; }
+  .oeffnen a { display: inline-block; padding-block: 0.6rem; }
+  .trenner { border: 0; border-top: 1px solid var(--linie); margin: 0; }
+
+  @media (min-width: 72rem) {
+    .buehne {
+      grid-template-columns: 18.5rem 18.5rem minmax(0, 1fr);
+      grid-template-areas: "handy artikel seite";
+    }
+  }
+
+  /* Abschluss */
+  .abschluss { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); }
+  .abschluss h2 { font-size: 1.375rem; font-weight: 800; margin-bottom: 0.5rem; }
+  .abschluss ol, .abschluss ul { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.4rem; max-width: 52ch; }
+  .fuss { color: var(--leise); font-size: 0.9375rem; max-width: 70ch; }
+</style>
+
+<div class="rahmen">
+  <header class="kopf">
+    <p class="etikett">Redesign tamil.de · Abnahme der Richtung</p>
+    <h1>Welche Richtung fühlt sich nach tamil.de an?</h1>
+    <p class="vorspann">Vier Richtungen wurden skizziert und unabhängig geprüft. Diese Seite zeigt die drei, die die Prüfung bestanden haben. Gesucht ist die eine Richtung, die als Nächstes zur vollständigen Probeseite ausgebaut wird.</p>
+    <div class="hinweise">
+      <div>
+        <h2>Gleiche Inhalte</h2>
+        <p>Alle Richtungen zeigen dieselben echten Beiträge. So fällt der Blick auf die Gestaltung und nicht auf das Thema. Der Aufmacher „Kanguva“ stammt aus dem Archiv (November 2024), der Diwali-Termin aus dem News-Radar (November 2026).</p>
+      </div>
+      <div>
+        <h2>Skizzen, keine fertigen Seiten</h2>
+        <p>Je Richtung gibt es den ersten Bildschirm der Startseite, den Abschnitt „Diese Woche“ und den Kopf eines Artikels. Menüs und weitere Seiten folgen erst mit der Probeseite.</p>
+      </div>
+      <div>
+        <h2>Knapp bestanden</h2>
+        <p>Jede Richtung brauchte eine Überarbeitung und hat die Schwelle von 28 Punkten danach genau erreicht. Was noch offen ist, steht bei jeder Richtung dabei.</p>
+      </div>
+    </div>
+    <nav class="sprung" aria-label="Richtungen">
+      <a href="#zine">Zine</a>
+      <a href="#raster">Raster</a>
+      <a href="#feed">Feed</a>
+      <a href="#entscheidung">Entscheidung</a>
+    </nav>
+  </header>
+
+  <section class="richtung" id="zine" aria-labelledby="zine-titel">
+    <div class="richtung-kopf">
+      <p class="etikett">Richtung Zine</p>
+      <h2 id="zine-titel">Das Wochenheft</h2>
+      <p class="idee">Jede Woche ein neues Cover: Über der Geschichte steht ein Heftkopf, das Titelwort ist groß über ein rot gedrucktes Foto gesetzt.</p>
+    </div>
+    <div class="buehne">
+      <figure class="aufnahme handy">
+        <img src="img/zine-start-handy.jpg" width="780" height="1688" alt="Richtung Zine, Startseite am Handy: Heftkopf „Heft KW 45“, darunter das Titelwort Kanguva über einem rot gedruckten Foto.">
+        <figcaption>Startseite am Handy, erster Bildschirm</figcaption>
+      </figure>
+      <figure class="aufnahme artikel">
+        <img src="img/zine-artikel-handy.jpg" width="780" height="1688" alt="Richtung Zine, Artikel am Handy: Rubrik, Überschrift „Sri Lanka schafft Visum für Deutsche ab“, Vorspann und Foto.">
+        <figcaption>Artikel am Handy</figcaption>
+      </figure>
+      <div class="seite">
+        <figure class="aufnahme desktop">
+          <img src="img/zine-start-desktop.jpg" width="2560" height="1600" alt="Richtung Zine, Startseite am Desktop: links Heftkennung und Coverzeile, das Titelwort läuft breit über das Foto.">
+          <figcaption>Startseite am Desktop, erster Bildschirm</figcaption>
+        </figure>
+        <div class="fakten">
+          <p><strong>Vorbild:</strong> Burnt Roti, ergänzend WEIRDO zine</p>
+          <p class="wertung"><strong>Prüfung:</strong> 28 von 40 Punkten, Schwelle 28</p>
+        </div>
+        <div class="einordnung">
+          <div>
+            <h3>Trägt schon</h3>
+            <ul>
+              <li>Das Titelwort: am Handy schmal und hoch, am Desktop breit über die ganze Seite.</li>
+              <li>Der Artikel bleibt ruhig und ist auch für Ältere gut lesbar.</li>
+              <li>Spielorte als Streifen: 11 Kinos und 2 Kinos funktionieren ohne Foto.</li>
+            </ul>
+          </div>
+          <div>
+            <h3>Vor dem Ausbau zu klären</h3>
+            <ul>
+              <li>„Diese Woche“ soll deutlicher als Schwarzes Brett lesbar sein.</li>
+              <li>Der rote Druck ist bisher nur an einem dunklen Filmbild gezeigt; ein helles Foto fehlt als Gegenprobe.</li>
+              <li>Heftdatum und Termine müssen aus demselben Jahr stammen.</li>
+            </ul>
+          </div>
+        </div>
+        <p class="oeffnen">
+          <a href="design/richtungen/zine/index.html">Skizze öffnen: Startseite</a>
+          <a href="design/richtungen/zine/artikel.html">Skizze öffnen: Artikel</a>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="trenner">
+
+  <section class="richtung" id="raster" aria-labelledby="raster-titel">
+    <div class="richtung-kopf">
+      <p class="etikett">Richtung Raster</p>
+      <h2 id="raster-titel">Der Aushang</h2>
+      <p class="idee">Ein rotes Linienraster gibt jeder Geschichte und jeder Stadt ein eigenes Feld. Das Stichwort füllt die ganze Breite, darüber steht wie im Fahrplan, wann und wo.</p>
+    </div>
+    <div class="buehne">
+      <figure class="aufnahme handy">
+        <img src="img/raster-start-handy.jpg" width="780" height="1688" alt="Richtung Raster, Startseite am Handy: Zeile mit Datum 14.11. und Ort, darunter das Wort Kanguva in Rot über die volle Breite, Überschrift und Foto.">
+        <figcaption>Startseite am Handy, erster Bildschirm</figcaption>
+      </figure>
+      <figure class="aufnahme artikel">
+        <img src="img/raster-artikel-handy.jpg" width="780" height="1688" alt="Richtung Raster, Artikel am Handy: Rubrik, Überschrift „Sri Lanka schafft Visum für Deutsche ab“, Vorspann und Foto.">
+        <figcaption>Artikel am Handy</figcaption>
+      </figure>
+      <div class="seite">
+        <figure class="aufnahme desktop">
+          <img src="img/raster-start-desktop.jpg" width="2560" height="1600" alt="Richtung Raster, Startseite am Desktop: Fahrplanzeile in drei Spalten, das Wort Kanguva über die volle Breite, Foto rechts.">
+          <figcaption>Startseite am Desktop, erster Bildschirm</figcaption>
+        </figure>
+        <div class="fakten">
+          <p><strong>Vorbild:</strong> Highsnobiety und Hypebeast</p>
+          <p class="wertung"><strong>Prüfung:</strong> 28 von 40 Punkten, Schwelle 28</p>
+        </div>
+        <div class="einordnung">
+          <div>
+            <h3>Trägt schon</h3>
+            <ul>
+              <li>Das Cover am Desktop: Stichwort über die volle Breite, die Linien laufen bis in „Diese Woche“ weiter.</li>
+              <li>Das Ortsraster: 11 Kinos, 2 Kinos und eine Aula in Basel sind sofort ablesbar.</li>
+              <li>Der Artikel ist wirklich ruhig, eine Spalte, große Schrift.</li>
+            </ul>
+          </div>
+          <div>
+            <h3>Vor dem Ausbau zu klären</h3>
+            <ul>
+              <li>Die Zeile über dem Cover braucht eine Regel für Nachrichten ohne Termin.</li>
+              <li>Leere Felder im Ortsraster wirken unfertig.</li>
+              <li>Die Leiste unten ist für Ältere zu klein, und Kino darf lebendiger klingen als Nachrichten.</li>
+            </ul>
+          </div>
+        </div>
+        <p class="oeffnen">
+          <a href="design/richtungen/raster/index.html">Skizze öffnen: Startseite</a>
+          <a href="design/richtungen/raster/artikel.html">Skizze öffnen: Artikel</a>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="trenner">
+
+  <section class="richtung" id="feed" aria-labelledby="feed-titel">
+    <div class="richtung-kopf">
+      <p class="etikett">Richtung Feed</p>
+      <h2 id="feed-titel">Zwei Hälften</h2>
+      <p class="idee">Die Seite ist aus den zwei Hälften des Logos gebaut: das rote „tamil“ als große Schrift, das schiefe graue „.de“ als Zeichen dafür, in welchem Land eine Geschichte ankommt.</p>
+    </div>
+    <div class="buehne">
+      <figure class="aufnahme handy">
+        <img src="img/feed-start-handy.jpg" width="780" height="1688" alt="Richtung Feed, Startseite am Handy: das Wort Kanguva groß in Rot, darunter die Überschrift, das Zeichen „.de“ mit „in Deutschland ab 14. November“, das Foto und die graue Rubrikleiste unten.">
+        <figcaption>Startseite am Handy, erster Bildschirm</figcaption>
+      </figure>
+      <figure class="aufnahme artikel">
+        <img src="img/feed-artikel-handy.jpg" width="780" height="1688" alt="Richtung Feed, Artikel am Handy: Rubrik, Überschrift „Sri Lanka schafft Visum für Deutsche ab“ in Grau, Vorspann und Foto.">
+        <figcaption>Artikel am Handy</figcaption>
+      </figure>
+      <div class="seite">
+        <figure class="aufnahme desktop">
+          <img src="img/feed-start-desktop.jpg" width="2560" height="1600" alt="Richtung Feed, Startseite am Desktop: links Schrift auf hellem Grund, rechts das Foto über die volle Höhe.">
+          <figcaption>Startseite am Desktop, erster Bildschirm</figcaption>
+        </figure>
+        <div class="fakten">
+          <p><strong>Vorbild:</strong> i-D, ergänzend The Pudding</p>
+          <p class="wertung"><strong>Prüfung:</strong> 28 von 40 Punkten, Schwelle 28</p>
+        </div>
+        <div class="einordnung">
+          <div>
+            <h3>Trägt schon</h3>
+            <ul>
+              <li>Laut auf der Startseite, still im Artikel: genau der gewünschte Wechsel.</li>
+              <li>„Diese Woche“ als Aushang: große Titel, Ort und Tag daneben, keine Bilder nötig.</li>
+              <li>Die graue Rubrikleiste sitzt am Handy in Daumenreichweite.</li>
+            </ul>
+          </div>
+          <div>
+            <h3>Vor dem Ausbau zu klären</h3>
+            <ul>
+              <li>Am Desktop fehlt die Navigation im ersten Bildschirm.</li>
+              <li>Das Länderzeichen muss sich ohne Erklärung erschließen, sonst bleibt es Schmuck.</li>
+              <li>Am Handy liest sich das Cover noch eher wie ein Artikelkopf.</li>
+            </ul>
+          </div>
+        </div>
+        <p class="oeffnen">
+          <a href="design/richtungen/feed/index.html">Skizze öffnen: Startseite</a>
+          <a href="design/richtungen/feed/artikel.html">Skizze öffnen: Artikel</a>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="trenner">
+
+  <section class="abschluss" id="entscheidung" aria-label="Entscheidung">
+    <div>
+      <h2>Was für die Entscheidung gebraucht wird</h2>
+      <ol>
+        <li>Eine Richtung, die weiterverfolgt wird. „Keine davon“ ist auch eine Antwort.</li>
+        <li>Was an ihr gefällt und was stört, gern in Stichworten.</li>
+        <li>Wenn etwas aus einer anderen Richtung übernommen werden soll: welches Element.</li>
+      </ol>
+    </div>
+    <div>
+      <h2>Wie es danach weitergeht</h2>
+      <ul>
+        <li>Die gewählte Richtung wird zur Probeseite mit allen Seitentypen: Start, Artikel, Rubrik, Events, Kinoliste, Kontakt.</li>
+        <li>Die offenen Punkte oben werden dabei behoben und erneut unabhängig geprüft.</li>
+        <li>Erst nach der Abnahme der Probeseite wird die echte Website umgebaut.</li>
+      </ul>
+    </div>
+  </section>
+
+  <p class="fuss">Die Bilder zeigen den geprüften Stand vom 9. November 2026. Die klickbaren Skizzen öffnen sich im selben Fenster; zurück geht es mit der Zurück-Taste. Noch offen ist die Auswahl von der <a href="https://claude.ai/artifact/QP5N91zVKKMfz5LM5grwM1">Referenztafel</a>: drei bis fünf Vorbilder, die gefallen, und zwei, die nicht gefallen.</p>
+</div>
