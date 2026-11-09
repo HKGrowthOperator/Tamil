@@ -343,3 +343,12 @@ def test_past_event_date_found_in_full_text_is_dropped_before_any_paid_call(sett
     with Store(settings.db_path) as store:
         story = repo.stories(store)[0]
     assert story["status"] == "verworfen" and "liegt zurück" in story["notiz"] and fake.requests == []
+
+
+def test_sensitive_topics_without_false_positives():
+    from news_radar.agents.factcheck import _SENSIBEL_RE
+
+    for harmlos in ("Fragen werden an den Veranstalter gerichtet", "Die Prozession beginnt um 10 Uhr", "total schön"):
+        assert not _SENSIBEL_RE.search(harmlos), harmlos
+    for sensibel in ("Das Verwaltungsgericht stoppt die Abschiebung", "Polizei nimmt Mann fest", "Sänger verstorben"):
+        assert _SENSIBEL_RE.search(sensibel), sensibel

@@ -36,7 +36,7 @@ nur aus Claims, die nach den Gate-Regeln bestätigt sind (Primärquelle: Volltex
 oder zwei verschiedene Verlage). Länge nach "laenge". Zu jedem Absatz die Claim-IDs in "belege".
 Antwort: {"ergebnisse": [{"story_id": …, "claims": [...], "widersprueche": [...], "beitrag": {...}} oder
 {"story_id": …, "verwerfen": "Grund"}]}. Fehlen belastbare Belege für die Kernaussagen, schreibe keinen Beitrag,
-sondern liefere nur die Claims: der Radar setzt die Story dann auf „Recherche nötig“.
+sondern liefere nur die Claims und unter "fehlend" was fehlt: der Radar setzt die Story dann auf „Recherche nötig“.
 """
 
 
@@ -45,6 +45,7 @@ class AgentErgebnis(BaseModel):
     verwerfen: str = ""
     claims: list[Claim] = Field(default_factory=list)
     widersprueche: list[Widerspruch] = Field(default_factory=list)
+    fehlend: list[str] = Field(default_factory=list)  # was für einen Beitrag fehlt (ohne Beitrag: Grund für „Recherche nötig“)
     beitrag: TextErgebnis | None = None
 
 
@@ -72,8 +73,9 @@ def export_v2(store: Store, settings: Settings, file: Path, *, limit: int = 10, 
         pakete.append({
             "story_id": story["id"], "typ": story["typ"], "titel": story["titel"], "kategorie": story["kategorie"],
             "ort": story["ort"], "relevanz": story["relevanz"],
-            "laenge": schreiben.laenge_text(story.get("laenge") or ("kurz" if not bestaetigt_moeglich else "normal"),
-                                            story["typ"]),
+            "laenge": schreiben.laenge_text(
+                story.get("laenge") or {"event": "event", "kino": "kino", "dossier": "dossier"}.get(
+                    story["typ"], "normal" if bestaetigt_moeglich else "kurz"), story["typ"]),
             "dokumente": [d.model_dump() for d in docs],
             "quellen": schreiben.quellen_liste(docs),
         })
@@ -128,7 +130,7 @@ def import_v2(store: Store, settings: Settings, file: Path, *, von: str = "agent
         repo.claims_setzen(store, e.story_id, g.claims)
         repo.story_setzen(store, e.story_id, laenge=g.laenge, sensibel=g.sensibel)
         if not g.ok or e.beitrag is None:
-            gruende = g.gruende or ["Agent hat keinen Beitrag geliefert"]
+            gruende = g.gruende + [f"Fehlt: {f}" for f in e.fehlend] or ["Agent hat keinen Beitrag geliefert"]
             repo.story_setzen(store, e.story_id, status="recherche_erforderlich", notiz="; ".join(gruende)[:900])
             stats["recherche_noetig"] += 1
             continue

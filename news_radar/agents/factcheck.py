@@ -20,10 +20,12 @@ from ..workflow.models import Claim, FaktencheckErgebnis, SatzUrteil, SourceDocu
 from ..workflow.providers import json_block
 from . import Kontext
 
-_SENSIBEL_RE = re.compile(
-    r"\b(wahl|partei|regierung|minister|parlament|gericht|urteil|anklage|angeklagt|prozess|polizei|festnahme|"
-    r"festgenommen|abschiebung|abgeschoben|asyl|krieg|anschlag|tot|tod|gestorben|verstorben|getötet|krebs|"
-    r"krankheit|suizid|missbrauch|kinder|minderjährig|vergewaltig|election|court|arrest|killed|died)\w*",
+_SENSIBEL_RE = re.compile(  # feste Wortformen statt Stamm + \w* („gerichtet“, „Prozession“, „total“ sind nicht sensibel)
+    r"\b(?:wahl(?:en|kampf)?|partei(?:en)?|regierung|minister(?:in|ium)?|parlament|\w*gericht(?:e|s|en|shof|sverfahren)?|"
+    r"urteil|anklage|angeklagt|prozess(?:e|beginn)?|strafprozess|polizei|festnahme|festgenommen|abschiebung(?:en)?|"
+    r"abgeschoben|asyl(?:antrag|verfahren|bewerber\w*)?|krieg(?:e|s)?|bürgerkrieg|anschlag|tot|tote[nr]?|tod(?:es)?|"
+    r"gestorben|verstorben|getötet|krebs|krankheit|suizid|missbrauch|minderjährig\w*|vergewaltig\w*|election|court|"
+    r"arrest(?:ed)?|killed|died)\b",
     re.I,
 )
 
