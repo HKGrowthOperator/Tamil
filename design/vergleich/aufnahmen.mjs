@@ -102,8 +102,10 @@ function messen() {
   }
   const gestreckt = [...document.images].filter((b) => sichtbar(b) && b.naturalWidth && b.getBoundingClientRect().width * 2 > b.naturalWidth + 2)
     .map((b) => `${b.getAttribute('src')} (${Math.round(b.getBoundingClientRect().width)} px gezeigt, ${b.naturalWidth} px vorhanden)`);
+  const kopf = document.querySelector('header');
   return {
-    kopf_hoehe: erste === undefined ? null : Math.round(erste),
+    kopfleiste_hoehe: kopf ? Math.round(kopf.getBoundingClientRect().bottom) : null,
+    erste_schlagzeile_ab: erste === undefined ? null : Math.round(erste),
     schlagzeilen_ganz_sichtbar: schlagzeilen.filter(ganzImBild).length,
     schlagzeilen_seite: schlagzeilen.length,
     max_zeilen_schlagzeile: Math.max(0, ...schlagzeilen.map(zeilen)),
@@ -154,7 +156,7 @@ for (const slug of slugs) {
       m.seitenfehler = meldungen;
       ergebnis[a.messen] = m;
       if (m.ueberlauf > 0 || meldungen.length) fehler += 1;
-      console.log(`${slug} ${a.messen}: Schlagzeilen ganz sichtbar ${m.schlagzeilen_ganz_sichtbar}, Kopf ${m.kopf_hoehe} px, größte Schrift ${m.groesste_schrift.px} px, ` +
+      console.log(`${slug} ${a.messen}: Schlagzeilen ganz sichtbar ${m.schlagzeilen_ganz_sichtbar}, Kopf ${m.kopfleiste_hoehe} px, erste Schlagzeile ab ${m.erste_schlagzeile_ab} px, größte Schrift ${m.groesste_schrift.px} px, ` +
         `größte rote ${m.groesste_rote_schrift.px} px, Rot ${(m.farbanteil_ohne_bilder.rot * 100).toFixed(1)} %, Radius ${m.groesster_radius.px} px, Schatten ${m.schatten}, ` +
         `gedreht ${m.gedreht}, Überlauf ${m.ueberlauf} px`);
     }

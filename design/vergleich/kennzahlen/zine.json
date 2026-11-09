@@ -1,8 +1,9 @@
 {
   "slug": "zine",
-  "stand": "2026-11-09T22:14",
+  "stand": "2026-11-09T22:47",
   "handy": {
-    "kopf_hoehe": 418,
+    "kopfleiste_hoehe": 93,
+    "erste_schlagzeile_ab": 418,
     "schlagzeilen_ganz_sichtbar": 1,
     "schlagzeilen_seite": 4,
     "max_zeilen_schlagzeile": 3,
@@ -35,7 +36,8 @@
     "seitenfehler": []
   },
   "desktop": {
-    "kopf_hoehe": 1072,
+    "kopfleiste_hoehe": 74,
+    "erste_schlagzeile_ab": 1072,
     "schlagzeilen_ganz_sichtbar": 0,
     "schlagzeilen_seite": 3,
     "max_zeilen_schlagzeile": 3,

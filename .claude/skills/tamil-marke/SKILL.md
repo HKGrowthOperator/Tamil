@@ -59,7 +59,7 @@ Vier Entwürfe wurden abgelehnt. Bilder, Urteile und Gründe: [references/abgele
 - App-Vorlagen-Look: Pillen-Labels überall, runde Karten im Raster, Instagram-Story-Kreise, abgerundete
   Knopf-Reihen, rosa Hinterlegungskästen, „rote Platte über dem Bild“ als Aufmacher.
 - Identische Kartenraster, Icons über Überschriften, nummerierte 01/02/03 ohne echte Reihenfolge.
-- Laut und Baukasten (Runde 4): riesige rote Titelwörter; Schlagzeilen über 32 px am Handy oder 48 px am Desktop;
+- Laut und Baukasten (Runde 4): riesige rote Titelwörter; Schlagzeilen über 32 px am Handy oder 38 px am Desktop;
   verzerrte, extraschmale oder extrabreite Schriften; Schlagzeilen in Versalien; Stempel, Halbton, Schräglage;
   Rot als Fläche oder andere Vollfarbflächen; ein Cover mit nur einer Geschichte; „Signatur-Elemente“ als Effekt.
 - Schriften aus der impeccable-Ausschlussliste (Inter, DM Sans, Space Grotesk, Fraunces, Playfair …) und die schon

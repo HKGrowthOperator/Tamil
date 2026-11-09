@@ -41,23 +41,24 @@ weitere Geschichten. Eine davon wird angetippt.
 
   | Stufe | Handy | Desktop |
   |---|---|---|
-  | Schlagzeile Aufmacher | 26–32 px | 36–48 px |
+  | Schlagzeile Aufmacher | 26–32 px | 30–38 px |
   | Schlagzeile Nebenstück | 19–22 px | 20–24 px |
   | Schlagzeile Meldung | 17–18 px | 17–19 px |
   | Vorspann und Anreißertext | 16–17 px | 16–18 px |
   | Dachzeile, Datum | 12–14 px | 12–14 px |
 
-  Zwischen den drei Schlagzeilenstufen liegt jeweils mindestens der Faktor 1,25. Versalien nur in Dachzeilen bis
-  14 px. Keine Worttrennung in Schlagzeilen; jede Schlagzeile hat höchstens drei Zeilen, auch der längste Titel der
+  Der Aufmacher ist mindestens 1,25-mal so groß wie ein Nebenstück; Nebenstück und Meldung unterscheiden sich
+  sichtbar in Größe oder Gewicht. Versalien nur in Dachzeilen bis 14 px. Keine Worttrennung in Schlagzeilen; jede Schlagzeile hat höchstens drei Zeilen, auch der längste Titel der
   Inhaltsliste (81 Zeichen).
 - **Ordnung:** drei Stufen von Anreißern (Aufmacher, Nebenstück mit Bild, Meldung ohne Bild). Jeder Anreißer hat
   eine Dachzeile (Rubrik) und ein Datum in einem einzigen Format („17. Juli 2024“). Getrennt wird nur mit feinen
   Linien und Abstand: kein Kasten, kein Schatten, keine Pille, kein Icon, kein Knopf „Weiterlesen“. Der ganze
   Anreißer ist das Tippziel.
-- **Bilder:** rechteckig, Radius höchstens 4 px, höchstens zwei Seitenverhältnisse auf der Seite, nie über ihrer
+- **Bilder:** rechteckig, Radius höchstens 2 px, höchstens zwei Seitenverhältnisse auf der Seite, nie über ihrer
   natürlichen Breite gezeigt (bei doppelter Pixeldichte also höchstens halbe Dateibreite).
-- **Kopf:** Logo unverändert, darunter oder daneben die neun Rubriken als schlichte Textzeile. Am Handy ist der Kopf
-  höchstens 120 px hoch; die Rubrikzeile darf in ihrem eigenen Behälter seitlich laufen, die Seite selbst nie.
+- **Kopf:** Logo unverändert, darunter oder daneben die neun Rubriken als schlichte Textzeile, in einem
+  `<header>`. Am Handy sind Logo und Rubrikzeile zusammen höchstens 120 px hoch; die Rubrikzeile darf in ihrem
+  eigenen Behälter seitlich laufen, die Seite selbst nie.
 - **Dienstblock „Diese Woche“:** Kino (Titel, Zahl der Kinos, Städte) und Termine (Datum, Ort, Veranstalter) als
   nüchterne Liste. Das ist das Eigene von tamil.de; es braucht keinen Effekt. Am Handy beginnt der Block spätestens
   im dritten Bildschirm.
@@ -104,16 +105,22 @@ Links führen in der Probe auf `#`.
 ## 7. Harte Kriterien (werden gemessen)
 
 Gemessen wird der sichtbare erste Bildschirm bei 390 × 844 und 1280 × 800 mit `node design/vergleich/aufnahmen.mjs
-<slug>`. Die Zahlen sind an den Vorbildern geeicht (`design/referenzen/news-marken.md`, Zeile „Spanne der Marken“).
+<slug>`. Die Zahlen sind an sechs echten Marken geeicht (`design/referenzen/news-marken.md`, „Spanne der Marken“):
+größte Schlagzeile 18 bis 32 px am Handy und 18 bis 36 px am Desktop; eine bis drei Schlagzeilen im ersten
+Handy-Bildschirm, am Desktop bis zu vier (dort verdrängen Anzeigen oft die Inhalte); Radius 0 bis 1,5 px; keine
+Schatten; Farbanteil ohne Bilder meist unter 8 %; die Schlagzeile des Aufmachers beginnt am Handy zwischen 332 und
+588 px, weil das Bild davor steht.
 
 1. **Viele Geschichten:** am Handy die Schlagzeile des Aufmachers vollständig und mindestens eine weitere
-   Schlagzeile vollständig sichtbar; am Desktop mindestens fünf. Jede Schlagzeile ist ein `h2` oder `h3` mit Link.
-2. **Kopf** am Handy höchstens 120 px bis zur ersten Schlagzeile.
-3. **Drei Stufen** von Anreißern, Faktor mindestens 1,25; höchstens zwei Schriftfamilien.
-4. **Größte Schrift** im ersten Bildschirm höchstens 32 px am Handy und 48 px am Desktop; höchstens drei Zeilen je
+   Schlagzeile vollständig sichtbar; am Desktop mindestens vier. Jede Schlagzeile ist ein `h2` oder `h3` mit Link.
+2. **Kopf** (Logo und Rubrikzeile) am Handy höchstens 120 px; die Schlagzeile des Aufmachers beginnt spätestens bei
+   480 px.
+3. **Drei Stufen** von Anreißern, der Aufmacher mindestens 1,25-mal so groß wie ein Nebenstück; höchstens zwei
+   Schriftfamilien.
+4. **Größte Schrift** im ersten Bildschirm höchstens 32 px am Handy und 38 px am Desktop; höchstens drei Zeilen je
    Schlagzeile; keine Versalien über 14 px.
 5. **Rot** höchstens 3 % der Fläche (Bilder ausgeblendet); keine rote Schrift über 20 px; kein zweiter Buntton.
-6. **Keine Effekte:** Radius höchstens 4 px, kein weicher Schatten, nichts gedreht, normale Schriftbreite.
+6. **Keine Effekte:** Radius höchstens 2 px, kein weicher Schatten, nichts gedreht, normale Schriftbreite.
 7. **Anreißer ohne Kasten**, ohne Icon, ohne Knopf.
 8. **Ein Format** für Dachzeile und Datum; höchstens zwei Bildformate.
 9. **Kein Bild** über seiner natürlichen Breite bei doppelter Pixeldichte.
