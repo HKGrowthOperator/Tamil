@@ -1,62 +1,78 @@
 ---
 name: tamil-kritik
-description: Bewertungsbogen für die unabhängige Designkritik an tamil.de – Heuristiken /40, KI-Slop-Test, Kategorie-Reflex, Verbotsliste, Template-Geruch, Lesbarkeit für Ältere, Tamil-Satz. Vorgeladen im design-kritiker.
+description: Prüfbogen für die unabhängige Prüfung einer Gestaltungsprobe für tamil.de – harte Kriterien aus dem Brief messen, Paarvergleich gegen echte Nachrichtenmarken und gegen die abgelehnten Runden, Verbotsliste, Lesbarkeit, Technik. Vorgeladen im design-kritiker.
 user-invocable: false
 ---
 
-# Unabhängige Kritik
+# Unabhängige Prüfung
 
-Du bewertest eine Richtung, die jemand anderes gebaut hat. Du bekommst nur die Dateien und `design/brief.md` – nicht
-die Begründung des Gestalters. Lies `begruendung.md` **nicht**, bevor deine Bewertung fertig ist (danach nur, um zu
-prüfen, ob die behauptete Idee sichtbar ist).
+Du prüfst eine Probe, die jemand anderes gebaut hat. Du bekommst nur die Seiten und `design/brief.md`, nicht die
+Begründung des Gestalters und keine früheren Kritiken. Lies `begruendung.md` nicht.
+
+Du lieferst **Messwerte und Befunde, kein Gesamturteil.** Ob eine Probe gezeigt wird, entscheidet die Hauptsitzung
+anhand deiner Befunde.
+
+Ziel der Gestaltung ist die Ruhe, Ordnung und Wertigkeit einer großen Nachrichtenmarke. Eine Nachrichtenseite soll
+wie eine aussehen; Vertrautheit ist kein Mangel. Mangel ist, was laut, verspielt, billig oder alt wirkt.
 
 ## Vorgehen
 
-1. `node tools/shots.mjs <seiten> --out design/kritik/<slug>-r<n>-shots --kacheln` und die Kacheln `-k0`/`-k1` bei 390
-   und 1280 ansehen. Wie ein Leser: 5 Sekunden erster Eindruck, dann genau.
-2. Deterministischer Detektor (wenn Node/npm verfügbar):
-   `npx --yes impeccable detect --fast --json design/richtungen/<slug>/` – Treffer übernehmen.
-3. Bogen ausfüllen (unten), Ergebnis nach `design/kritik/<slug>-r<n>.md`.
+1. **Messen.** `node design/vergleich/aufnahmen.mjs <slug>` nimmt den sichtbaren ersten Bildschirm auf (Handy
+   390 × 844, zweiter Handy-Bildschirm, Desktop 1280 × 800, nach `design/vergleich/img/`) und schreibt die Kennzahlen
+   nach `design/vergleich/kennzahlen/<slug>.json`. Für die ganze Seite und die Technik:
+   `node tools/shots.mjs design/richtungen/<slug>/index.html --out <dein Scratch-Ordner> --kacheln`.
+2. **Ansehen.** Jeden ersten Bildschirm wie ein Leser: fünf Sekunden, dann genau.
+3. **Paarvergleich.** Lege den ersten Bildschirm der Probe bei gleicher Breite neben
+   - zwei Vorbilder aus `design/referenzen/news-marken.md` (Bilder `design/referenzen/img/news-*-handy-1.jpg` und
+     `-desktop-1.jpg`),
+   - Runde 2 (`.claude/skills/tamil-marke/references/abgelehnt/r2-community-magazin-390.jpg` und `-1280.jpg`),
+   - eine Skizze aus Runde 4 (`…/abgelehnt/r4-raster-390.jpg` und `-1280.jpg`).
+
+   Frage je Paar: Welche Seite wirkt wertiger, und woran genau sieht man es (Abstände, Linien, Hierarchie, Satz,
+   Bildausschnitt, Farbe)? Benenne beobachtbare Unterschiede, keine Adjektive.
+4. **Bogen ausfüllen**, Ergebnis nach `design/kritik/<slug>-r<n>.md`.
 
 ## Bogen
 
-**A. Heuristiken (je 0–4, Summe /40)** – Maßstab: `.claude/skills/impeccable/reference/heuristics-scoring.md`
-(36–40 Excellent, 28–35 Good, 20–27 Acceptable, 12–19 Poor, 0–11 Critical; die meisten echten Seiten liegen bei 20–32).
-Nielsen 1–10: Systemstatus, Sprache der Nutzer, Kontrolle, Konsistenz, Fehlervermeidung, Wiedererkennen,
-Flexibilität, Ästhetik/Minimalismus, Fehlerhilfe, Hilfe.
+**A. Harte Kriterien** (Brief, Abschnitt 7): jedes Kriterium einzeln mit Messwert für Handy und Desktop und
+„erfüllt“ oder „verletzt“. Jede Verletzung ist **P1**. Passt eine Kennzahl nicht zum Bild, miss von Hand nach und
+kennzeichne den Wert so.
 
-**B. KI-Slop-Test (bestanden / nicht bestanden)** – würde jemand ohne Zögern sagen „das hat eine KI gemacht“? Prüfe
-die Bans aus impeccable (Seitenstreifen-Ränder, Verlaufstext, Glas als Deko, Hero-Metrik, identische Kartenraster,
-Modal zuerst) und Kategorie-Reflex 1. und 2. Ordnung (`impeccable/SKILL.md`).
+**B. Wertigkeit im Paarvergleich:** je Paar zwei bis drei beobachtbare Unterschiede. Dazu die vier Punkte, an denen
+Runde 4 gescheitert ist, und ihr Gegenteil:
 
-**C. Template-Geruch (0–4)** – wie stark erinnert es an eine Theme-/App-Vorlage? 4 = unverwechselbar.
+| Punkt | Woran es sich zeigt | Stufe |
+|---|---|---|
+| zu viel Rot, zu laut | Rotanteil, größte Schrift, Versalien und Effekte laut Kennzahlen; dazu der Eindruck im Bild | P1 |
+| Baukasten | Kästen, Pillen, Icons, gleichförmige Kartenraster, Knöpfe „Weiterlesen“, weiche Schatten, große Rundungen; oder die Probe steht im Paarvergleich näher an Runde 2 als an den Vorbildern | P1 |
+| Schrift | verzerrte, extraschmale oder extrabreite Schnitte; unruhiger Satz (Zeilenfall, Löcher, zu enge oder zu weite Zeilen); mehr als zwei Familien | P1 |
+| nicht hochwertig | ungleiche Abstände, verrutschte Kanten, uneinheitliche Bildformate, schlecht gewählte Bildausschnitte, Dachzeilen und Daten in wechselnder Form | P1 im ersten Bildschirm, sonst P2 |
+| alt oder langweilig | wie Runde 2: Creme oder Sand, Serife im Fließtext, braungraue Tinte, runde Bilder, bunte Rubrikpunkte, Mosaik | P1 |
 
-**D. Verbotsliste** – jede Übereinstimmung mit `tamil-marke` (Pillen überall, runde Kartenraster, Story-Kreise,
-Nachtblau/Gold, Creme+Serife, Tamil-Wörter als Deko, verbrannte Schriften) ist **P1**.
+**C. Verbotsliste:** jede Übereinstimmung mit `tamil-marke` ist P1. Ausdrücklich erlaubt sind eine Serife in den
+Schlagzeilen auf kühlem Weiß (Variante `blatt`), ein vertrauter Nachrichtenaufbau und Meldungslisten.
 
-**E. Marke und Leser**
-- Ist die behauptete Idee im ersten Bildschirm erkennbar? Passt sie nur zu tamil.de?
-- Gen Z: Würde eine 19-Jährige das teilen? Ältere: Kann ein 65-Jähriger es am Handy lesen (18 px, Kontrast, klare
-  Wege)?
-- Tamil-Satz: richtige Schrift, `lang="ta"`, keine kaputten Zeichen.
-- Echte Inhalte, keine erfundenen Fakten.
+**D. Leser:** Kann ein 65-Jähriger es am Handy lesen (Schriftgrößen, Kontrast, Tippflächen, klare Wege)? Findet eine
+19-Jährige in fünf Sekunden, was wichtig ist? Stimmen die Inhalte mit `design/inhalte/inhalte.json` überein: nichts
+erfunden, nichts weggelassen, Reihenfolge eingehalten?
 
-**F. Technik** aus `bericht.json`: Fehler = P0; Tippflächen/Tamil ohne `lang` = P2.
+**E. Technik** aus `bericht.json` von `shots.mjs`: Fehler = P0; Tippflächen unter 44 px = P2.
+
+**F. Bedienbarkeit, nur zur Information:** Nielsen 1–10, je 0–4, mit einem Satz. Die Summe ist kein Tor und steht
+nicht in der Kopfzeile.
 
 ## Ausgabe `design/kritik/<slug>-r<n>.md`
 
 ```markdown
-# Kritik <slug>, Runde <n>
-Punkte: <xx>/40 · Slop-Test: bestanden|nicht bestanden · Template-Geruch: <0–4>/4 · **Urteil: zeigen | überarbeiten | verwerfen**
+# Prüfung <slug>, Runde <n>
+Harte Kriterien: <x> von 12 erfüllt · P0: <n> · P1: <n> · P2: <n>
 ## Erster Eindruck (3 Sätze)
-## Heuristiken (Tabelle 1–10 mit Punkt und einem Satz)
-## Befunde
-- P0 … (bricht, falsch, Fehler im Bericht)
-- P1 … (Verbotsliste, Idee nicht sichtbar, Lesbarkeit)
-- P2 … P3 …
-## Was stark ist (max. 3 Punkte)
+## Harte Kriterien (Tabelle: Kriterium, Messwert Handy, Messwert Desktop, erfüllt oder verletzt)
+## Paarvergleich (je Paar die beobachtbaren Unterschiede)
+## Befunde (P0 bis P3, je mit Ort: Breite und Element, und Behebungsvorschlag)
+## Was trägt (höchstens 3 Punkte)
+## Bedienbarkeit (Tabelle, nur zur Information)
 ```
 
-**Urteil:** zeigen = ≥ 28/40 und Slop-Test bestanden und kein offenes P0/P1; überarbeiten = sonst, wenn behebbar;
-verwerfen = < 20/40 oder Idee trägt nicht. Sei streng: Drei Entwürfe wurden schon abgelehnt, ein vierter
-durchschnittlicher kostet mehr als eine harte Kritik.
+Sei genau und streng. Vier Entwürfe wurden abgelehnt: zwei als alt oder generisch, zwei als laut oder Baukasten. Gib
+kein Gesamturteil und keine Empfehlung ab, ob gezeigt wird.

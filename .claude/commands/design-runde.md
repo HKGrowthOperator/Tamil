@@ -1,39 +1,45 @@
 ---
-description: Redesign-Runde für tamil.de – Brief prüfen, Referenzen, vier Richtungen parallel skizzieren, unabhängig kritisieren, nur bestandene Richtungen als Vergleichsseite zeigen (Tor G2).
-argument-hint: "[slugs, Standard: plakatwand,zine,raster,feed]"
-allowed-tools: Agent, Read, Write, Glob, Grep, Bash(node tools/shots.mjs*), Bash(git *), AskUserQuestion, Skill
+description: Redesign-Runde für tamil.de – Brief und Vorbilder prüfen, drei Schnellproben parallel, Kennzahlen messen, Vorschau für Luis, gewählte Probe ausarbeiten und unabhängig prüfen, Vorlage für den Auftraggeber (Tor G2).
+argument-hint: "[slugs, Standard: klar,blatt,bild]"
+allowed-tools: Agent, Read, Write, Edit, Glob, Grep, Bash(node tools/shots.mjs*), Bash(node design/vergleich/aufnahmen.mjs*), Bash(python tools/bild_holen.py*), Bash(git *), AskUserQuestion, Skill, Artifact
 ---
 
 # /design-runde
 
 ## Ausführungsvertrag
 
-- Die Hauptsitzung **gestaltet nicht selbst**: kein HTML/CSS für Richtungen, keine Bewertungen. Sie startet Agents,
-  liest deren Ergebnisse, baut nur die Vergleichsseite.
-- Jede Kritik kommt aus einem **frischen** `design-kritiker`, dem die Begründung des Gestalters nicht mitgegeben wird.
-- Gezeigt wird nur, was die Schwelle besteht (≥ 28/40, Slop-Test bestanden, kein offenes P0/P1).
+- Die Hauptsitzung **gestaltet nicht selbst**: kein HTML/CSS für Proben, keine Geschmacksurteile. Sie startet
+  Agents, misst mit `aufnahmen.mjs` und baut Vorschau und Vorlage.
+- **Luis sieht Schnellproben früh und ungefiltert** (interne Vorschau, als solche gekennzeichnet). **Der
+  Auftraggeber** sieht nur, was Luis gewählt hat und was die unabhängige Prüfung bestanden hat.
+- Jede Prüfung kommt aus einem **frischen** `design-kritiker`, der weder die Begründung des Gestalters noch frühere
+  Kritiken bekommt. Er liefert Messwerte und Befunde, kein Urteil.
+- **Durchgelassen wird**, was alle harten Kriterien des Briefs erfüllt und kein offenes P0 oder P1 hat. Das
+  entscheidet die Hauptsitzung; eine Punktsumme ist kein Tor.
 - Liefert ein Agent nichts Brauchbares (keine Dateien, Prüffehler): einmal mit konkretem Fehler neu beauftragen, dann
-  die Richtung als „nicht geliefert“ melden. Nicht selbst einspringen.
+  als „nicht geliefert“ melden. Nicht selbst einspringen.
 
 ## Schritte
 
-1. **Tor G1 prüfen.** Gibt es `design/brief.md` und `docs/abnahme/*-G1.md`? Wenn nein: Brief mit dem Skill
-   `impeccable` (`shape`) gemeinsam mit Luis erarbeiten (Fragen per AskUserQuestion), Referenzen aus
-   `design/referenzen/README.md` und die Links des Auftraggebers einbeziehen, Brief nach `design/brief.md`, Luis
-   bestätigen lassen, Abnahme nach `docs/abnahme/<datum>-G1.md`. **Ohne G1 stoppen.**
-2. **Referenzen** aktuell? Sonst `referenz-scout` (Agent) mit den Richtungen beauftragen.
-3. **Vier `art-director` parallel** (ein Nachricht, vier Agent-Aufrufe), je mit: `slug`, Richtung (aus dem Brief),
-   Umfang „Skizze“, Runde 1, Pfad `design/richtungen/<slug>/`, die 1–2 Vorbilder aus den Referenzen. Standard-Slugs:
-   `plakatwand` (Kollywood-Plakatwand), `zine` (Diaspora-Zine), `raster` (Raster + Tamil-Schrift), `feed` (Vertikaler
-   Feed); G1 kann Richtungen streichen oder schärfen.
-4. **Vier `design-kritiker` parallel**, je mit: Seiten der Richtung, `design/brief.md`, Ausgabe
-   `design/kritik/<slug>-r1.md`. Keine Begründung, kein Bericht des Gestalters mitgeben.
-5. **Überarbeiten:** Urteil „überarbeiten“ → derselbe Slug an einen `art-director` mit Verweis auf die Kritikdatei
-   (Runde 2), danach erneut ein frischer `design-kritiker` (`-r2.md`). Höchstens eine Überarbeitung.
-6. **Filtern:** „zeigen“ kommt auf die Vergleichsseite; „verwerfen“ oder nach Runde 2 unter der Schwelle → Liste für
-   Luis mit Grund.
-7. **Vergleichsseite** `design/vergleich/index.html`: je bestandener Richtung erster Bildschirm Handy und Desktop
-   (Kacheln aus `shots/`), Link zur klickbaren Skizze, Vorbild, Idee in einem Satz, Punktzahl. Als Artifact
-   veröffentlichen (Skizzen als Dateien mit), Luis den Link geben – privat, er teilt mit dem Auftraggeber.
-8. **Commit** `feat(design): Richtungsskizzen Runde <n>` (nur `design/`), Push.
-9. Auf **Tor G2** warten; Urteil in `docs/abnahme/<datum>-G2.md`.
+1. **Brief prüfen.** Liegt `design/brief.md` in der aktuellen Fassung vor? Bestätigt ist er, wenn es für diese
+   Fassung eine Abnahme gibt (`docs/abnahme/*-G1-runde<n>.md`). Eine Arbeitsfassung reicht für Schnellproben, nicht
+   für die Vorlage beim Auftraggeber.
+2. **Vorbilder** aktuell? `design/referenzen/news-marken.md` mit Bildern und der Zeile „Spanne der Marken“. Sonst
+   `referenz-scout` beauftragen (Startseiten bei 390 und 1280, vermessen).
+3. **Material** vorhanden? `design/inhalte/inhalte.json` und die Bilder (`python tools/bild_holen.py`).
+4. **Drei `art-director` parallel** (eine Nachricht), je mit `slug`, Variante aus dem Brief und Umfang
+   „Schnellprobe“. Standard: `klar`, `blatt`, `bild`.
+5. **Messen:** `node design/vergleich/aufnahmen.mjs <slugs>`. Verstößt eine Probe gegen ein hartes Kriterium, geht
+   sie einmal mit dem Messwert zurück.
+6. **Vorschau für Luis** (`design/vergleich/index.html` als privates Artifact, Vermerk „interne Vorschau, noch ohne
+   Prüfung“): je Probe zwei Handy-Bildschirme und der erste Desktop-Bildschirm, Link zur klickbaren Probe und die
+   Kennzahlen; daneben ein Vorbild und Runde 2 bei gleicher Breite. **Luis wählt** eine Probe oder eine Mischung
+   (AskUserQuestion: was gefällt, was stört, „zu laut“ und „zu langweilig“ als Gegenpole, „würdest du es dem
+   Auftraggeber zeigen?“). Mit der Wahl ist der Brief bestätigt: `docs/abnahme/<datum>-G1-runde<n>.md`.
+7. **Ausarbeiten:** derselbe `art-director` mit Umfang „Skizze“ (Artikelkopf dazu) und den Anmerkungen von Luis.
+8. **Prüfen:** ein frischer `design-kritiker` → `design/kritik/<slug>-r1.md`. Bei P0 oder P1: eine Überarbeitung,
+   dann eine zweite frische Prüfung (`-r2.md`). Höchstens eine Überarbeitung.
+9. **Vorlage für den Auftraggeber:** dieselbe Seite ohne den Vermerk „intern“ und ohne Punktzahlen, als Artifact.
+   Luis bekommt den Link und teilt ihn. Was nicht bestanden hat, geht mit Grund nur an Luis.
+10. **Commits** je Schritt (nur `design/` und `docs/abnahme/`), Push.
+11. Auf **Tor G2** warten; Urteil nach `docs/abnahme/<datum>-G2-runde<n>.md`.

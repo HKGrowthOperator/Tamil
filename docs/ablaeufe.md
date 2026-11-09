@@ -24,17 +24,19 @@ Wer was macht. Die Hauptsitzung steuert über Commands (`.claude/commands/`), di
 Gesundheit Radar und Website, Warteschlange, Budget, Entwürfe (`radar-auswertung`), PR-Stand, offene Tore.
 
 ### `/design-runde` → Tor G2
-1. Tor G1 prüfen: Gibt es `design/brief.md` mit Bestätigung in `docs/abnahme/`? Sonst Brief mit `impeccable shape`
-   (Fragen an Luis) und stoppen.
-2. `referenz-scout`, falls `design/referenzen/` fehlt oder veraltet ist.
-3. **4× `art-director` parallel**, je eine Richtung: Kollywood-Plakatwand, Diaspora-Zine, Raster + Tamil-Schrift,
-   Vertikaler Feed (G1 kann streichen). Umfang: Startseite (erster Bildschirm plus ein Abschnitt) und Artikelkopf,
-   Handy und Desktop, echte Inhalte.
-4. **4× `design-kritiker`**, jeder frisch. Schwelle: mindestens 28/40 und KI-Slop-Test bestanden.
-5. P0/P1 → derselbe `art-director` überarbeitet einmal → neue Kritik.
-6. Unter der Schwelle: verworfen, nicht gezeigt (Luis bekommt die Liste mit Begründung).
-7. Vergleichsseite als Artifact: bestandene Richtungen nebeneinander, je Vorbild und drei Sätze. Luis zeigt sie dem
-   Auftraggeber.
+1. Brief prüfen (`design/brief.md`; bestätigt mit `docs/abnahme/*-G1-runde<n>.md`), Vorbilder
+   (`design/referenzen/news-marken.md`, vermessene Nachrichtenmarken) und Material (`design/inhalte/`).
+2. **3× `art-director` parallel**, je eine Schnellprobe: `klar`, `blatt`, `bild`. Umfang: nur die Startseite, Handy
+   und Desktop, feste echte Inhalte.
+3. Die Hauptsitzung misst jede Probe gegen die harten Kriterien des Briefs (`design/vergleich/aufnahmen.mjs`).
+4. **Vorschau für Luis**, intern und ungefiltert: je Probe zwei Handy-Bildschirme, Desktop, Kennzahlen, daneben ein
+   Vorbild und Runde 2. Luis wählt eine Probe oder eine Mischung; damit ist der Brief bestätigt.
+5. Derselbe `art-director` arbeitet die gewählte Probe aus (Artikelkopf, Anmerkungen von Luis).
+6. **`design-kritiker`**, frisch: Messwerte und Befunde, kein Urteil. Bei P0/P1 eine Überarbeitung, dann eine zweite
+   frische Prüfung.
+7. Durchgelassen wird, was alle harten Kriterien erfüllt und kein offenes P0 oder P1 hat. Eine Punktsumme ist kein
+   Tor. Was nicht besteht, geht mit Grund nur an Luis.
+8. Vorlage für den Auftraggeber als Artifact. Luis zeigt sie; Urteil nach `docs/abnahme/<datum>-G2-runde<n>.md`.
 
 ### `/design-ausbau <slug>` → Tor G3
 `art-director` baut Start, Artikel, Rubrik, Events, Kinoliste, Kontakt; danach `design-kritiker` und `qa-pruefer`,

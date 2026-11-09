@@ -8,9 +8,11 @@ allowed-tools: Agent, Read, Write, Glob, Grep, Bash(node tools/shots.mjs*), Bash
 
 ## Ausführungsvertrag
 
-- Nur mit Tor G2 (`docs/abnahme/*-G2.md` nennt `<slug>`). Sonst stoppen.
+- Nur mit Tor G2: Die jüngste Abnahme `docs/abnahme/*-G2*.md` nennt `<slug>` als vom Auftraggeber gewählt. Eine
+  abgelehnte oder nur vorgelegte Runde zählt nicht. Sonst stoppen.
 - Die Hauptsitzung gestaltet nicht selbst; Kritik und QA kommen aus frischen Agents.
-- Höchstens zwei Runden Kritik/QA; danach gilt, was die Schwelle besteht, oder Luis entscheidet.
+- Höchstens zwei Runden Kritik/QA; danach gilt, was die harten Kriterien des Briefs erfüllt und kein offenes P0
+  oder P1 hat, oder Luis entscheidet.
 
 ## Schritte
 
