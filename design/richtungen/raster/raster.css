@@ -214,7 +214,7 @@ a { color: inherit; }
 }
 
 /* Das Stichwort: Steckbuchstaben, füllt die Feldbreite.
-   Archivo wdth 62 / 850 setzt Versalien im Mittel mit rund 0,5 em; das Theme schreibt die Zeichenzahl als --zeichen
+   Archivo wdth 62 / 850 setzt Versalien im Mittel mit rund 0,5 em (KANGUVA 3,47 em, RAMAYANA 4,10 em, DOSA 2,01 em); das Theme schreibt die Zeichenzahl als --zeichen
    in den Stil (Titel vor dem Gedankenstrich, bis 12 Zeichen). Obergrenze 22rem, damit „DOSA“ nicht den Bildschirm füllt. */
 .cover__wort {
   grid-area: wort;
@@ -225,14 +225,14 @@ a { color: inherit; }
   font-weight: 850;
   text-transform: uppercase;
   white-space: nowrap;
-  font-size: min(calc(100vw / (var(--zeichen, 7) * 0.53)), 22rem);
+  font-size: min(calc(100vw / (var(--zeichen, 7) * 0.55)), 22rem);
   line-height: 0.8;
   letter-spacing: -0.005em;
   padding-bottom: 0.06em;
   overflow: hidden;
 }
 @supports (font-size: 1cqi) {
-  .cover__wort { font-size: min(calc((100cqi - 2 * var(--fuge)) / (var(--zeichen, 7) * 0.5)), 22rem); }
+  .cover__wort { font-size: min(calc((100cqi - 2 * var(--fuge)) / (var(--zeichen, 7) * 0.52)), 22rem); }
 }
 
 .cover__titel {

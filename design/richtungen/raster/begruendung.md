@@ -121,3 +121,32 @@ Darunter setzt sich dasselbe Raster als **Ortsraster** fort: Jeder Kino- oder Ev
   am Seitenende (ohne JavaScript).
 - Teilen über WhatsApp im Artikel als einfacher Link (`https://wa.me/?text=…`), kein Skript.
 - Kein JavaScript auf beiden Seiten.
+
+## Runde 2 (nach Kritik `design/kritik/raster-r1.md`)
+
+**P1, Idee im ersten Bildschirm:** Das Cover beginnt jetzt mit einer **Fahrplanzeile**, gebaut wie die Einträge in
+„Diese Woche“: links groß und rot die Zeit („14.11.“, darunter „ab Do, 14. Nov. 2024“), daneben was und wo
+(„Kino · Kinostart“, „Mit Suriya und Bobby Deol“, „In deutschen Kinos, auch in 3D“). Erst danach kommen Wort, Satz und Bild.
+Ab 820 px steht diese Zeile in denselben Spalten (3 | 4 | 5 von 12) wie der Fahrplan; ab 1024 px sitzt das Bild unter
+der Ortsspalte, sodass alle senkrechten Linien des Covers bis in „Diese Woche“ durchlaufen. Cover und Fahrplan sind ein
+Aushang. Am Handy steht die Zeile über dem Wort (Zeit | Ort), die Überschrift bleibt ohne Scrollen ganz lesbar.
+Alle Angaben stammen aus Beitrag 9711 (Starttermin, Hauptdarsteller, 3D); der Wochentag ist aus dem Datum berechnet.
+Der alte Metastreifen ist aus dem Raster genommen und steht als leise Zeile unter dem Vorspann.
+
+**P2, übernommen:**
+- *Fahrplan ohne Zeit / doppeltes „IM KINO“:* Kino-Einträge zeigen links die belegte Zahl der Kinos („11“, „2“) groß
+  und rot; „im Kino“ steht nur noch einmal im Etikett.
+- *11 gegen 2:* Ortsraster mit fester Feldbreite (`auto-fill`, kein Wachsen); was nicht belegt ist, bleibt hell.
+  „Scene“ füllt Zeilen, „Ramayana“ lässt Felder frei. Die übrigen 6 Städte als ein Feld „+6 weitere Städte“.
+- *Kein Hochskalieren:* Bilder bekommen ihre Originalmaße als `--bild-b` / `--bild-h` (im Theme aus den Bilddaten) und
+  dürfen höchstens so groß werden; `object-fit: cover` beschneidet nur innerhalb dieser Grenzen. Am Handy quadratischer
+  Ausschnitt (390 × 390 aus 1024 × 538, also verkleinert), damit das Foto nicht der kleinste Teil des Covers ist.
+- *Cover-Wort:* Größe aus der Zeichenzahl `--zeichen` (setzt das Theme) mit 0,52 em je Zeichen, Obergrenze 22rem. Gemessen: KANGUVA füllt 95 %, RAMAYANA 98 % der Breite, DOSA bleibt bei der Obergrenze. Wörter mit vielen breiten Buchstaben (M, W) können knapp abgeschnitten werden; genauer wird es mit Breitenwerten je Buchstabe im Theme.
+- *Aktuelle Rubrik:* `aria-current` rot mit 3 px Unterkante in Kopf und Daumenleiste; „Rubriken“ in Tinte.
+- *Kasten um jedes Metadatum:* Felder gibt es nur noch für Zeit, Ort, Cover-Teile und Spielorte. Artikel-Metadaten und
+  Teilen sind freie Zeilen; der Artikel ist ein einziges ruhiges Feld, Text beginnt an der Titellinie des Fahrplans.
+
+**P3, nebenbei:** Daumenleiste in `wdth 75`; Diwali ohne doppeltes Datum („Sa, 21. Nov. 2026“, darunter nur der
+Verein); Rubrikenraster am Desktop ausgeblendet (Kopf hat die Rubriken).
+
+**Offen:** Ein zweiter Cover-Fall (kurzes oder langes Wort) ist im Code angelegt, aber nicht als Seite gezeigt.

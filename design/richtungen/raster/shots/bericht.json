@@ -1,9 +1,9 @@
 {
-  "stand": "2026-11-09T20:41:29.009Z",
+  "stand": "2026-11-09T20:42:35.269Z",
   "ergebnisse": [
     {
       "ziel": "design/richtungen/raster/index.html",
-      "url": "http://127.0.0.1:39443/design/richtungen/raster/index.html",
+      "url": "http://127.0.0.1:38817/design/richtungen/raster/index.html",
       "breite": 390,
       "status": 200,
       "datei": "design/richtungen/raster/shots/design-richtungen-raster-index-390.png",
@@ -21,7 +21,7 @@
     },
     {
       "ziel": "design/richtungen/raster/artikel.html",
-      "url": "http://127.0.0.1:39443/design/richtungen/raster/artikel.html",
+      "url": "http://127.0.0.1:38817/design/richtungen/raster/artikel.html",
       "breite": 390,
       "status": 200,
       "datei": "design/richtungen/raster/shots/design-richtungen-raster-artikel-390.png",
@@ -39,7 +39,7 @@
     },
     {
       "ziel": "design/richtungen/raster/index.html",
-      "url": "http://127.0.0.1:39443/design/richtungen/raster/index.html",
+      "url": "http://127.0.0.1:38817/design/richtungen/raster/index.html",
       "breite": 820,
       "status": 200,
       "datei": "design/richtungen/raster/shots/design-richtungen-raster-index-820.png",
@@ -57,7 +57,7 @@
     },
     {
       "ziel": "design/richtungen/raster/artikel.html",
-      "url": "http://127.0.0.1:39443/design/richtungen/raster/artikel.html",
+      "url": "http://127.0.0.1:38817/design/richtungen/raster/artikel.html",
       "breite": 820,
       "status": 200,
       "datei": "design/richtungen/raster/shots/design-richtungen-raster-artikel-820.png",
@@ -75,7 +75,7 @@
     },
     {
       "ziel": "design/richtungen/raster/index.html",
-      "url": "http://127.0.0.1:39443/design/richtungen/raster/index.html",
+      "url": "http://127.0.0.1:38817/design/richtungen/raster/index.html",
       "breite": 1280,
       "status": 200,
       "datei": "design/richtungen/raster/shots/design-richtungen-raster-index-1280.png",
@@ -93,7 +93,7 @@
     },
     {
       "ziel": "design/richtungen/raster/artikel.html",
-      "url": "http://127.0.0.1:39443/design/richtungen/raster/artikel.html",
+      "url": "http://127.0.0.1:38817/design/richtungen/raster/artikel.html",
       "breite": 1280,
       "status": 200,
       "datei": "design/richtungen/raster/shots/design-richtungen-raster-artikel-1280.png",
