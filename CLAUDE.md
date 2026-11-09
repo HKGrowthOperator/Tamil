@@ -81,4 +81,5 @@ Richtung · **G3** Probeseite · **G4** Live-Website. Betriebstore bei Luis: **B
   `tamil-theme`, `tamil-cockpit`, `radar-research`, `radar-auswertung`, `coolify-betrieb`, `tamil-migration`, `pruefen`.
 - Agents (`.claude/agents/`): `referenz-scout`, `art-director`, `design-kritiker`, `qa-pruefer`, `theme-bauer`,
   `cockpit-bauer`, `radar-entwickler`, `code-pruefer`, `redakteur`, `migrator`.
-- Wer was macht und wann: `docs/ablaeufe.md`.
+- Wer was macht und wann: `docs/ablaeufe.md`. Was entschieden ist (nicht stillschweigend umkehren):
+  `docs/entscheidungen.md`.
