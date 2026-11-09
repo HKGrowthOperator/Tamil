@@ -43,8 +43,8 @@ from .config import load_settings
 from .store import Store
 from .writer import STYLE_FILE, RawWriter
 
-KEY_HINT = ("ANTHROPIC_API_KEY fehlt – Schlüssel in .env oder als Secret setzen, "
-            "oder `run --ohne-ki` für Rohfassungen ohne KI.")
+KEY_HINT = ("ANTHROPIC_API_KEY fehlt – Schlüssel in .env setzen (in einer Claude-Code-Umgebung als "
+            "RADAR_ANTHROPIC_API_KEY), oder `run --ohne-ki` für Rohfassungen ohne KI.")
 
 
 def pick_writer(ohne_ki: bool, settings):

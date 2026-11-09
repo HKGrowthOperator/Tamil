@@ -179,8 +179,17 @@ def _reihenfolge(raw: str) -> tuple[str, ...]:
     return teile if teile else BILD_REIHENFOLGE
 
 
+def _radar_schluessel() -> None:
+    """RADAR_ANTHROPIC_API_KEY gilt nur für den Radar-Prozess: In einer Claude-Code-Umgebung würde ANTHROPIC_API_KEY
+    auch die Sitzung selbst über diesen Schlüssel abrechnen lassen. Ein gesetzter ANTHROPIC_API_KEY hat Vorrang."""
+    radar = os.environ.get("RADAR_ANTHROPIC_API_KEY", "").strip()
+    if radar and not os.environ.get("ANTHROPIC_API_KEY"):
+        os.environ["ANTHROPIC_API_KEY"] = radar
+
+
 def load_settings(sources_file: Path = ROOT / "sources.toml") -> Settings:
     load_dotenv()
+    _radar_schluessel()
     raw = tomllib.loads(sources_file.read_text(encoding="utf-8"))
     alle_quellen = [Source(**s) for s in raw.get("source", [])]
     sources = [s for s in alle_quellen if s.enabled]
@@ -198,6 +207,7 @@ def load_settings(sources_file: Path = ROOT / "sources.toml") -> Settings:
     env = os.environ.get
     return Settings(
         sources=sources,
+        data_dir=Path(env("RADAR_DATA_DIR")).expanduser() if env("RADAR_DATA_DIR") else ROOT / "data",
         keywords={k.lower(): int(v) for k, v in raw.get("keywords", {}).items()},
         blocklist=[t.lower() for t in raw.get("blocklist", {}).get("terms", [])],
         categories=categories,

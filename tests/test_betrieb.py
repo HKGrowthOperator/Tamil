@@ -182,3 +182,21 @@ def test_stand_is_validated_and_cleanup_keeps_foreign_files(settings, tmp_path):
     bad = subprocess.run(["bash", str(ROOT / "deploy" / "restore.sh"), "../etc"], env={**os.environ, "OHNE_SYSTEMCTL": "1"},
                          capture_output=True, text=True)
     assert bad.returncode == 2 and "YYYY-MM-DD" in bad.stderr
+
+
+def test_data_dir_and_radar_key_from_environment(tmp_path, monkeypatch):
+    import os as _os
+
+    from news_radar.config import load_settings
+
+    monkeypatch.setenv("RADAR_DATA_DIR", str(tmp_path / "pilot"))
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.setenv("RADAR_ANTHROPIC_API_KEY", "sk-ant-test")
+    s = load_settings()
+    assert s.data_dir == tmp_path / "pilot" and s.db_path == tmp_path / "pilot" / "radar.sqlite"
+    assert _os.environ["ANTHROPIC_API_KEY"] == "sk-ant-test"
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-vorrang")  # ein gesetzter ANTHROPIC_API_KEY bleibt
+    load_settings()
+    assert _os.environ["ANTHROPIC_API_KEY"] == "sk-ant-vorrang"
+    monkeypatch.delenv("RADAR_DATA_DIR")
+    assert load_settings().data_dir.name == "data"
