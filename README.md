@@ -135,6 +135,33 @@ Ausführlich in [`wordpress/README.md`](wordpress/README.md). Kurz:
 4. `python -m news_radar publish --pruefen` zeigt, ob das Plugin antwortet. Ohne Plugin nutzt der Radar die Core-REST
    (dann ohne Termin- und Kinofelder; SEO nur mit `WP_SEO_META=rankmath|yoast`).
 
+### Coolify (Dockerfile, ein Container)
+
+Coolify baut das `Dockerfile` im Repo-Root (Build-Pack „Dockerfile“, Port **3000**). Im Container läuft
+`python -m news_radar dienst`: Cockpit (gunicorn) auf `$PORT`, Scan alle 3 Minuten, Worker der Redaktion v2,
+Tageszusammenfassung um 8 Uhr und eine tägliche Sicherung nach `/app/data/backup`. Alles läuft als Nutzer `radar`, nicht als root.
+
+- **Persistent Storage:** ein Volume auf `/app/data`. Ohne Volume sind Datenbank und Bilder beim Redeploy weg.
+- **Domain:** in Coolify setzen, dieselbe Adresse als `RADAR_WEB_URL` (mit `https://`).
+- **Umgebungsvariablen** (Schlüssel und Passwörter nur in Coolify, nie im Repo):
+
+| Variable | Wert | Zweck |
+|---|---|---|
+| `ANTHROPIC_API_KEY` | Schlüssel | Modelle der Redaktion v2 (ohne: nur Scan, Worker startet nicht) |
+| `RADAR_WORKFLOW` | `v2` | Redaktion mit Rollen, Belegen und Budget |
+| `WEB_USER` / `WEB_PASSWORD` | Name / mind. 12 Zeichen | Notzugang (admin) – ohne Passwort startet das Cockpit nicht |
+| `WEB_SECRET` | zufällig, 32+ Zeichen | signiert die Cookies |
+| `RADAR_WEB_URL` | `https://<domain>` | Links, sichere Cookies |
+| `RADAR_PROXY_HOPS` | `1` | hinter Coolify/Traefik: echte Client-IP für die Login-Drossel, HTTPS erkennen |
+| `RADAR_BUDGET_TAG_USD` / `RADAR_BUDGET_MONAT_USD` | Pilot: `2` / `2` | harter Kostendeckel |
+| `RADAR_ENTWUERFE_TAG` | `5` | neue bezahlte Storys je Tag |
+| `RADAR_KI_BILDER_JE_ARTIKEL` | Pilot: `0` | keine KI-Bilder (dann auch kein `GEMINI_API_KEY` nötig) |
+| `RADAR_LESE_TOKEN` | zufällig, 32+ Zeichen | optional: `GET /api/bericht` (nur lesen) für Auswertungen |
+
+WordPress-Variablen (`WP_*`) leer lassen, solange nur getestet wird: Dann veröffentlicht der Radar nichts.
+`/gesund` zeigt Warteschlange und Budget. Einzelbefehle laufen über „Execute command“ im Container, z. B.
+`python -m news_radar kosten` oder `python -m news_radar nutzer anlegen priya --rolle redaktion`.
+
 ### Server (HK-Server, systemd)
 
 ```bash
