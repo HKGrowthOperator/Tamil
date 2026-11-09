@@ -25,6 +25,8 @@ META_FIELDS = (
 def radar_meta(row: dict) -> dict:
     """Meta für das Plugin: Herkunft, Bildnachweis, Ort, Event- und Kinodaten."""
     meta = {"radar_uid": row["uid"]}
+    if row.get("story_id"):
+        meta["radar_story_id"] = int(row["story_id"])  # Redaktion v2: Verweis auf Story, Belege und Kosten im Radar
     for column, key in META_FIELDS:
         value = row.get(column)
         if value not in (None, "", 0):

@@ -146,3 +146,54 @@ def test_seo_meta_variants(env):
     assert publisher.seo_meta(settings, row) == {"_yoast_wpseo_title": "T", "_yoast_wpseo_metadesc": "Tz"}
     settings.wp_seo_meta = "none"
     assert publisher.seo_meta(settings, row) is None
+
+
+def test_timeout_after_successful_post_does_not_create_a_second_post(env):
+    """WordPress legt den Beitrag an, die Antwort geht unterwegs verloren (Timeout). Der nächste Versuch bekommt 409
+    (radar_uid existiert) und markiert den Entwurf als veröffentlicht – ohne zweiten Beitrag."""
+    import requests
+
+    from news_radar.wordpress import TamilRadarClient
+
+    settings, store = env
+
+    class Resp:
+        def __init__(self, code, data):
+            self.status_code, self._data, self.text = code, data, ""
+
+        def json(self):
+            return self._data
+
+    class Session:
+        def __init__(self):
+            self.posts, self.headers, self.auth = {}, {}, None
+            self.verloren = True
+
+        def request(self, method, url, timeout=None, json=None, **kw):
+            if method == "POST" and url.endswith("/beitrag"):
+                uid = json["meta"]["radar_uid"]
+                if uid in self.posts:
+                    pid = self.posts[uid]
+                    return Resp(409, {"code": "tamil_radar_duplicate", "data": {"status": 409, "id": pid,
+                                                                                "link": f"https://www.tamil.de/p{pid}/"}})
+                self.posts[uid] = 700 + len(self.posts)
+                assert json["meta"]["radar_story_id"] == 42
+                if self.verloren:
+                    self.verloren = False
+                    raise requests.Timeout("Antwort verloren")
+                return Resp(201, {"id": self.posts[uid], "link": "x", "status": "publish"})
+            raise AssertionError(url)
+
+    session = Session()
+    wp = TamilRadarClient("https://www.tamil.de", "u", "p", session=session)
+    name, _ = save_pair(branded_card("Lichterfest", "Community", "s42"), settings.bilder_dir, "s42")
+    draft_id = store.insert_draft(dict(uid="https://example.com/lichterfest", titel="Lichterfest in Hamm", teaser="T",
+                                       inhalt_html="<p>Text</p>", kategorie="community", bild_datei=name, story_id=42))
+    store.set_status(draft_id, "freigeben")
+    erste = publisher.publish_approved(settings, store, wp=wp)
+    assert erste[0].status == "fehler" and store.get_draft(draft_id)["status"] == "fehler"
+    store.set_status(draft_id, "erneut")
+    zweite = publisher.publish_approved(settings, store, wp=wp)
+    row = store.get_draft(draft_id)
+    assert zweite[0].status == "veroeffentlicht" and row["status"] == "veroeffentlicht" and row["wp_post_id"] == 700
+    assert len(session.posts) == 1

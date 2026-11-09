@@ -17,6 +17,7 @@ defined( 'ABSPATH' ) || exit;
 function tamil_radar_meta_keys(): array {
 	return array(
 		'radar_uid'          => 'text',
+		'radar_story_id'     => 'int',
 		'radar_relevanz'     => 'int',
 		'quelle_name'        => 'text',
 		'quelle_url'         => 'url',
