@@ -49,6 +49,9 @@ def grauzone(items: list[NewsItem], settings: Settings, seen: set[str], ausgewae
         text = f"{item.title} {item.summary}".lower()
         if any(filtering._contains(text, t) for t in settings.blocklist):
             continue
+        quelle = filtering.quelle_fuer(item, settings)
+        if quelle and quelle.bezug_noetig and not filtering.hat_bezug(item, settings):
+            continue  # ohne tamilischen Bezug auch keine zweite Chance über Haiku
         score = filtering.score_item(item, settings.keywords)
         dach, ort = filtering.dach_score(item, settings.regions)
         schwelle = settings.min_score_dach if dach > 0 else settings.min_score

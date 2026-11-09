@@ -2,14 +2,18 @@
 
 Zweistufig: Meldungen mit erkennbarem DACH-Bezug brauchen nur wenige tamilische Stichworte,
 Meldungen ohne DACH-Bezug die volle Schwelle. Events und Kinoprogramme umgehen die Stichwortwertung.
+Termine brauchen ein junges echtes Datum oder einen Termin in der Zukunft; Quellen mit `bezug_noetig` einen
+Begriff mit tamilischem Bezug.
 """
 
 from __future__ import annotations
 
 import re
-from datetime import datetime, timedelta, timezone
+from collections import Counter
+from datetime import date, datetime, timedelta, timezone
 from difflib import SequenceMatcher
 
+from . import dates
 from .config import Regions, Settings, Source
 from .sources import NewsItem
 
@@ -77,15 +81,51 @@ def similar(a: str, b: str, threshold: float = 0.82) -> bool:
     return SequenceMatcher(None, a.lower(), b.lower()).ratio() >= threshold
 
 
+def quelle_fuer(item: NewsItem, settings: Settings) -> Source | None:
+    by_name = {s.name: s for s in settings.sources}
+    return by_name.get(item.source) or by_name.get(item.source.split(" · ")[0])
+
+
+def hat_bezug(item: NewsItem, settings: Settings) -> bool:
+    """Nennt die Meldung einen Begriff mit Bezug zur tamilischen Community ([bezug] in sources.toml)?"""
+    text = f"{item.title} {item.summary}".lower()
+    return any(_contains(text, term, suffix=2) for term in settings.bezug)
+
+
+def termin_veraltet(item: NewsItem, settings: Settings, now: datetime) -> bool:
+    """Alter Bericht statt Termin: laut Quelle älter als `event_max_alter_tage` und kein Datum in der Zukunft.
+
+    Termin-Rubriken mit Archiv (z. B. Swiss Tamil Info · Events) liefern monatealte Berichte; ihr `published` ist der
+    Abrufzeitpunkt. Ohne echtes Datum (Kalender, Termin-Seiten) gibt es keine Altersprüfung. Ein Datum ohne Jahr im
+    Text wird vom Veröffentlichungstag aus gelesen, nicht von heute."""
+    echt = item.source_published
+    if item.kind != "event" or echt is None or echt >= now - timedelta(days=settings.event_max_alter_tage):
+        return False
+    heute = now.astimezone(dates.TZ).date()
+    raw = str((item.facts or {}).get("event_datum") or "")[:10]
+    try:
+        if raw and date.fromisoformat(raw) >= heute:
+            return False
+    except ValueError:
+        pass
+    termine = dates.alle_daten(f"{item.title}\n{item.summary}", now=echt.astimezone(dates.TZ))
+    return not any(d >= heute for d in termine)
+
+
 def select(
     items: list[NewsItem],
     settings: Settings,
     seen_uids: set[str],
     recent_titles: list[str],
     now: datetime | None = None,
+    zaehler: Counter | None = None,
 ) -> list[NewsItem]:
-    """Die relevantesten neuen Meldungen, DACH zuerst, dann nach Punkten und Datum."""
+    """Die relevantesten neuen Meldungen, DACH zuerst, dann nach Punkten und Datum.
+
+    `zaehler` (optional) zählt, was herausfällt: `termin_veraltet` (alter Bericht aus einer Termin-Quelle) und
+    `ohne_bezug` (Quelle mit bezug_noetig, aber kein Begriff aus [bezug])."""
     now = now or datetime.now(timezone.utc)
+    zaehler = zaehler if zaehler is not None else Counter()
     cutoff = now - timedelta(hours=settings.max_age_hours)
     by_name: dict[str, Source] = {s.name: s for s in settings.sources}
     per_source: dict[str, int] = {}
@@ -102,6 +142,9 @@ def select(
         source = by_name.get(item.source) or by_name.get(item.source.split(" · ")[0])
         if source and source.kind != "news" and item.kind == "news":
             item.kind = source.kind
+        if termin_veraltet(item, settings, now):
+            zaehler["termin_veraltet"] += 1
+            continue
         item.score = score_item(item, settings.keywords)
         item.dach_score, item.ort = dach_score(item, settings.regions)
         ausland = item.dach_score == 0 and any(_contains(text, t) for t in settings.regions.ausland)
@@ -110,6 +153,9 @@ def select(
         if source and source.country and not item.ort and not ausland:
             item.ort = {"DE": "Deutschland", "CH": "Schweiz", "AT": "Österreich"}.get(source.country, source.country)
             item.dach_score = max(item.dach_score, 1)
+        if source and source.bezug_noetig and not hat_bezug(item, settings):
+            zaehler["ohne_bezug"] += 1  # allgemeine Meldung der Quelle ohne tamilischen Bezug (Entscheidung 09.11.)
+            continue
         needed = None
         if source and source.min_score is not None:
             needed = source.min_score  # 0 = vertrauenswürdige Quelle, alles durchlassen

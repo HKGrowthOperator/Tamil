@@ -114,7 +114,10 @@ type = "rss"
 url = "https://swisstamilinfo.ch/category/swiss/feed/"
 language = "ta"
 country = "CH"
+# Allgemeine Schweizer Meldungen (Unfall, Polizei, Wahl) erscheinen nicht (Entscheidung Luis, 09.11.): ohne Stichwort-
+# Schwelle, aber jede Meldung braucht einen Begriff aus [bezug].
 min_score = 0
+bezug_noetig = true
 max_items = 2
 
 [[source]]
@@ -396,7 +399,8 @@ at = ["Wien", "Graz", "Linz", "Salzburg"]
 
 [regions.laender]
 de = ["Deutschland", "Germany", "NRW", "Nordrhein-Westfalen", "Hessen", "Bayern", "Baden-Württemberg", "ஜெர்மனி"]
-ch = ["Schweiz", "Switzerland", "Swiss", "சுவிஸ்", "சுவிட்சர்லாந்து"]
+# „சுவிட்சர்லாந்த“ = Stamm für சுவிட்சர்லாந்தில்/-தை/-தின் (die Grundform endet auf -து und trifft die Beugungen nicht)
+ch = ["Schweiz", "Switzerland", "Swiss", "சுவிஸ்", "சுவிட்சர்லாந்து", "சுவிட்சர்லாந்த"]
 at = ["Österreich", "Austria", "ஆஸ்திரியா"]
 
 [regions.aliases]
@@ -418,7 +422,23 @@ ausland = ["Kanada", "Canada", "Canadian", "கனடா", "கனடிய", "T
            "Scarborough", "Montreal", "London", "லண்டன்", "England", "Frankreich", "France", "Paris", "பாரிஸ்",
            "Norwegen", "Norway", "Oslo", "Dänemark", "Denmark", "Niederlande", "Netherlands", "Australien",
            "Australia", "Sydney", "Melbourne", "Malaysia", "Singapur", "Singapore", "USA", "Jaffna", "யாழ்ப்பாணம்",
-           "Chennai", "சென்னை", "Colombo", "கொழும்பு"]
+           "Chennai", "சென்னை", "Colombo", "கொழும்பு",
+           # Sri Lanka und Indien (Fund 09.11.: alte Berichte aus Kilinochchi, Jaffna, Kataragama als „Termin“).
+           # Tamil-Schrift trifft als Teilstring: „யாழ்“ ohne Punkt träfe auch யாழினி (Vorname) und யாழிசை –
+           # deshalb nur die Kurzform mit Punkt („யாழ். பல்கலை“).
+           "Sri Lanka", "இலங்கை", "Kilinochchi", "கிளிநொச்சி", "யாழ்.", "Kataragama", "கதிர்காமம்", "Mullaitivu",
+           "முல்லைத்தீவு", "Batticaloa", "மட்டக்களப்பு", "Trincomalee", "திருகோணமலை", "Vavuniya", "வவுனியா",
+           "Mannar", "மன்னார்", "Tamil Nadu", "தமிழ்நாடு", "Indien", "India", "இந்தியா"]
+
+# ---- Bezug zur tamilischen Community (Quellen mit bezug_noetig = true) ----
+# Mindestens einer dieser Begriffe muss in Titel oder Text stehen. Keine Ortsnamen: „சுவிஸ்“, „Zürich“ oder
+# „Sri Lanka“ allein machen eine Schweizer Meldung nicht tamilisch. Lateinisch als ganzes Wort (+2 Buchstaben),
+# Tamil-Schrift als Teilstring (தமிழ் trifft தமிழர்கள்).
+[bezug]
+terms = ["tamil", "tamilisch", "tamilen", "tamilin", "eelam", "kollywood", "rajinikanth", "anirudh", "a.r. rahman",
+         "ilaiyaraaja", "pongal", "deepavali", "diwali", "thaipusam", "navaratri", "bharatanatyam", "kamadchi",
+         "murugan", "hindu", "தமிழ்", "ஈழ", "இந்து", "கோவில்", "கோயில்", "அம்மன்", "முருகன்", "பொங்கல்",
+         "தீபாவளி", "நவராத்திரி", "தைப்பூசம்", "பரதநாட்டியம்", "அரங்கேற்றம்"]
 
 # ---- Stichwort-Gewichte (klein geschrieben; Treffer im Titel zählen doppelt) ----
 [keywords]

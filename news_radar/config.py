@@ -37,6 +37,7 @@ class Source:
     kind: str = "news"  # news | event | kino – Vorgabe für alle Treffer der Quelle
     country: str = ""  # DE | CH | AT, wenn die Quelle eindeutig ein Land abdeckt
     min_score: int | None = None  # Überschreibt die Stichwort-Schwelle (0 = vertrauenswürdige Quelle)
+    bezug_noetig: bool = False  # jede Meldung braucht einen Begriff aus [bezug] (Ortsnamen zählen nicht)
     max_items: int = 3  # höchstens so viele Treffer je Lauf
     interval_minutes: int = 0  # 0 = bei jedem Lauf abfragen
     # Register (Blueprint): Status, Rechte, Betreiber – `quellen pruefen` schreibt die Messwerte dazu
@@ -89,6 +90,7 @@ class Settings:
     blocklist: list[str]
     categories: list[Category]
     regions: Regions = field(default_factory=Regions)
+    bezug: list[str] = field(default_factory=list)  # Begriffe mit Bezug zur tamilischen Community ([bezug] terms)
     alle_quellen: list[Source] = field(default_factory=list)  # inkl. abgeschalteter (enabled = false)
     anthropic_model: str = "claude-opus-5-5"
     newsapi_key: str = ""
@@ -116,6 +118,7 @@ class Settings:
     max_articles: int = 5
     max_drafts_per_day: int = 40
     max_age_hours: int = 36
+    event_max_alter_tage: int = 30  # Termin-Berichte, die laut Quelle älter sind, fallen ohne Datum in der Zukunft heraus
     min_score: int = 4
     min_score_dach: int = 2
     min_relevance: int = 6
@@ -217,6 +220,7 @@ def load_settings(sources_file: Path = ROOT / "sources.toml") -> Settings:
         blocklist=[t.lower() for t in raw.get("blocklist", {}).get("terms", [])],
         categories=categories,
         regions=regions,
+        bezug=[t.lower() for t in raw.get("bezug", {}).get("terms", [])],
         alle_quellen=alle_quellen,
         anthropic_model=env("RADAR_MODEL", "claude-opus-5-5"),
         newsapi_key=env("NEWSAPI_KEY", ""),
@@ -243,6 +247,7 @@ def load_settings(sources_file: Path = ROOT / "sources.toml") -> Settings:
         max_articles=_int("RADAR_MAX_ARTICLES", 5),
         max_drafts_per_day=_int("RADAR_MAX_DRAFTS_PER_DAY", 40),
         max_age_hours=_int("RADAR_MAX_AGE_HOURS", 36),
+        event_max_alter_tage=_int("RADAR_EVENT_MAX_ALTER_TAGE", 30),
         min_score=_int("RADAR_MIN_SCORE", 4),
         min_score_dach=_int("RADAR_MIN_SCORE_DACH", 2),
         min_relevance=_int("RADAR_MIN_RELEVANCE", 6),

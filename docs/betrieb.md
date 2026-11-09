@@ -23,6 +23,7 @@ Passwörter, Tokens und Schlüssel liegen ausschließlich in den Coolify-Variabl
 | Volume | `/app/data` (SQLite, Bilder, `backup/`) |
 | Variablen (gesetzt) | `RADAR_WORKFLOW`, `RADAR_BUDGET_TAG_USD`, `RADAR_BUDGET_MONAT_USD`, `RADAR_ENTWUERFE_TAG`, `RADAR_KI_BILDER_JE_ARTIKEL`, `RADAR_PROXY_HOPS`, `RADAR_WEB_URL`, `WEB_USER`, `WEB_PASSWORD`, `WEB_SECRET`, `RADAR_LESE_TOKEN`, `RADAR_AGENT_TOKEN` |
 | Variablen (offen) | `ANTHROPIC_API_KEY` (Tor B1, trägt Luis ein) · `WP_URL`, `WP_USER`, `WP_APP_PASSWORD`, `WP_POST_STATUS=publish` (nach `/website-live`) |
+| Variablen (optional, Standard im Code) | `RADAR_EVENT_MAX_ALTER_TAGE` (30: Termin-Berichte, die laut Quelle älter sind und kein Datum in der Zukunft nennen, fallen im Vorfilter heraus; Laufnotiz `termin_veraltet`) |
 | Lesezugriff | `GET /api/bericht` mit `Authorization: Bearer $RADAR_LESE_TOKEN` |
 | Agent-Modus | `GET /api/agent/export`, `POST /api/agent/import` mit `Bearer $RADAR_AGENT_TOKEN` |
 
