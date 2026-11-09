@@ -1,0 +1,70 @@
+{
+  "slug": "klar",
+  "stand": "2026-11-09T22:56",
+  "handy": {
+    "kopfleiste_hoehe": 112,
+    "erste_schlagzeile_ab": 369,
+    "schlagzeilen_ganz_sichtbar": 3,
+    "schlagzeilen_seite": 18,
+    "max_zeilen_schlagzeile": 3,
+    "groesste_schrift": {
+      "px": 28,
+      "text": "Uma Kumaran, Londons erste tamilische Ab"
+    },
+    "groesste_rote_schrift": {
+      "px": 13,
+      "text": "Nachrichten"
+    },
+    "versalien_ueber_14px": 0,
+    "schriftfamilien": [
+      "Libre Franklin"
+    ],
+    "groesster_radius": {
+      "px": 0,
+      "element": ""
+    },
+    "schatten": 0,
+    "gedreht": 0,
+    "schriftbreite_verstellt": 0,
+    "bilder_ueber_natuerlicher_breite": [],
+    "ueberlauf": 0,
+    "farbanteil_ohne_bilder": {
+      "bunt": 0.002,
+      "rot": 0.002
+    },
+    "seitenfehler": []
+  },
+  "desktop": {
+    "kopfleiste_hoehe": 90,
+    "erste_schlagzeile_ab": 145,
+    "schlagzeilen_ganz_sichtbar": 9,
+    "schlagzeilen_seite": 18,
+    "max_zeilen_schlagzeile": 3,
+    "groesste_schrift": {
+      "px": 34,
+      "text": "Uma Kumaran, Londons erste tamilische Ab"
+    },
+    "groesste_rote_schrift": {
+      "px": 13,
+      "text": "Nachrichten"
+    },
+    "versalien_ueber_14px": 0,
+    "schriftfamilien": [
+      "Libre Franklin"
+    ],
+    "groesster_radius": {
+      "px": 0,
+      "element": ""
+    },
+    "schatten": 0,
+    "gedreht": 0,
+    "schriftbreite_verstellt": 0,
+    "bilder_ueber_natuerlicher_breite": [],
+    "ueberlauf": 0,
+    "farbanteil_ohne_bilder": {
+      "bunt": 0.0018,
+      "rot": 0.0018
+    },
+    "seitenfehler": []
+  }
+}
