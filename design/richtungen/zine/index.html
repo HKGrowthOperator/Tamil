@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>tamil.de · Heft KW 46</title>
+  <meta name="description" content="Das Heft der tamilischen Diaspora in Deutschland, Österreich und der Schweiz.">
+  <link rel="preload" href="fonts/anybody-normal-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/atkinson-hyperlegible-next-normal-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="zine.css">
+</head>
+<body class="seite-start">
+  <a class="sprung" href="#cover">Zum Cover springen</a>
+
+  <header class="kopf">
+    <a class="marke" href="index.html">
+      <img src="../../../prototyp/static/img/logo.png" alt="tamil.de, Startseite" width="300" height="121">
+    </a>
+    <nav class="rubriken" aria-label="Rubriken">
+      <ul>
+        <li><a href="#">Nachrichten</a></li>
+        <li><a href="#">Entertainment</a></li>
+        <li><a href="#woche">Events</a></li>
+        <li><a href="#">Community</a></li>
+        <li><a href="#">Küche</a></li>
+        <li><a href="#woche">Kino</a></li>
+        <li><a href="#">Sport</a></li>
+        <li><a href="#">Kultur</a></li>
+        <li><a href="#">Kontakt</a></li>
+      </ul>
+    </nav>
+    <p class="heftzeile">
+      <span class="heftzeile-nr">Heft KW&nbsp;46</span>
+      <span class="heftzeile-datum">9. bis 15. Nov. 2026</span>
+    </p>
+  </header>
+
+  <main>
+    <!-- Das Cover der Woche: die ganze Fläche führt zum Artikel -->
+    <article class="cover" id="cover">
+      <a class="cover-flaeche" href="#">
+        <span class="heft" aria-hidden="true">
+          <span class="heft-wort">Heft</span>
+          <span class="heft-nr">KW&nbsp;46</span>
+          <span class="heft-datum">9. bis 15. November 2026</span>
+        </span>
+        <span class="druck">
+          <img src="../../../prototyp/static/img/p9711.jpg" width="1024" height="538"
+               alt="Suriya als Kanguva mit Fellumhang, Zahnketten und Zeichen im Gesicht; hinter ihm Menschen mit großen Hörnern und Fackeln, vorn ein Feuer">
+          <span class="stempel">Kino</span>
+        </span>
+        <h1 class="cover-titel">
+          <span class="coverwort">Kanguva</span><span class="unsichtbar"> – </span>
+          <span class="coverzeile">Ein tamilisches Kino-Highlight ab 14.&nbsp;November in Deutschland</span>
+        </h1>
+        <span class="cover-unten">
+          <span class="cover-vorspann">Ab dem 14. November ist der Film Kanguva in deutschen Kinos zu sehen und wird von tamilischen wie internationalen Filmfans mit Spannung erwartet.</span>
+          <span class="weiter">Weiterlesen <span aria-hidden="true">→</span></span>
+        </span>
+      </a>
+    </article>
+
+    <!-- Diese Woche: das Schwarze Brett mit Aushängen und Abreißzetteln -->
+    <section class="brett" id="woche" aria-labelledby="woche-titel">
+      <div class="brett-kopf">
+        <h2 id="woche-titel">Diese Woche</h2>
+        <p>Kino und Feste in Deutschland und der Schweiz</p>
+      </div>
+
+      <ul class="aushaenge">
+        <li class="aushang aushang--viele">
+          <p class="aushang-art">Im Kino</p>
+          <h3 class="aushang-titel"><a href="#">Scene</a></h3>
+          <p class="aushang-info"><strong>11 Spielorte</strong> in Deutschland</p>
+          <ul class="zettel" aria-label="Spielorte">
+            <li>Berlin</li>
+            <li>Bremen</li>
+            <li>Chemnitz</li>
+            <li>Dortmund</li>
+            <li>Düsseldorf</li>
+            <li class="zettel-mehr">+&nbsp;6 weitere Städte</li>
+          </ul>
+        </li>
+
+        <li class="aushang aushang--fest">
+          <p class="aushang-art">Fest</p>
+          <p class="datumstempel"><time datetime="2026-11-21"><span class="datumstempel-tag">Samstag</span> <span class="datumstempel-zahl">21.&nbsp;Nov.</span> <span class="datumstempel-jahr">2026</span></time></p>
+          <h3 class="aushang-titel"><a href="#">Diwali in Basel</a></h3>
+          <p class="aushang-info">Basel Tamil Sangam feiert</p>
+          <ul class="zettel" aria-label="Ort">
+            <li>Aula Lysbüchel, Basel</li>
+          </ul>
+        </li>
+
+        <li class="aushang aushang--wenige">
+          <p class="aushang-art">Im Kino</p>
+          <h3 class="aushang-titel aushang-titel--lang"><a href="#">Ramayana: Rise of a Legend</a></h3>
+          <p class="aushang-info"><strong>2 Spielorte</strong> in Deutschland</p>
+          <ul class="zettel" aria-label="Spielorte">
+            <li>Gütersloh</li>
+            <li>Ravensburg</li>
+          </ul>
+        </li>
+      </ul>
+    </section>
+
+    <!-- Letzte Heftseite: Inhaltsverzeichnis mit allen Rubriken -->
+    <nav class="inhalt" id="inhalt" aria-labelledby="inhalt-titel">
+      <h2 id="inhalt-titel">Inhalt</h2>
+      <ul>
+        <li><a href="#">Nachrichten</a></li>
+        <li><a href="#">Entertainment</a></li>
+        <li><a href="#woche">Events</a></li>
+        <li><a href="#">Community</a></li>
+        <li><a href="#">Küche</a></li>
+        <li><a href="#woche">Kino</a></li>
+        <li><a href="#">Sport</a></li>
+        <li><a href="#">Kultur</a></li>
+        <li><a href="#">Kontakt</a></li>
+      </ul>
+      <p class="inhalt-kanal"><a href="https://whatsapp.com/channel/0029VaFIN43KWEKo3BGoE13t">tamil.de als WhatsApp-Kanal folgen</a></p>
+    </nav>
+  </main>
+
+  <footer class="fuss">
+    <img src="../../../prototyp/static/img/logo.png" alt="tamil.de" width="300" height="121" loading="lazy">
+    <p>Heft KW&nbsp;46 · Deutschland, Österreich, Schweiz</p>
+  </footer>
+
+  <!-- Am Handy: Rubriken in Daumenreichweite -->
+  <nav class="daumen" aria-label="Schnellwahl">
+    <a href="#woche">Kino</a>
+    <a href="#woche">Events</a>
+    <a href="#">Nachrichten</a>
+    <a href="#inhalt">Inhalt</a>
+  </nav>
+</body>
+</html>
