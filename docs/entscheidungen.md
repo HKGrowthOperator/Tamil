@@ -5,6 +5,15 @@ Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
 ## 09.11.2026
 
+- **Neue Richtung: wie eine große Nachrichtenmarke.** Ruhig und seriös, viele Geschichten auf einen Blick, Rot nur
+  als Akzent, normale Schrift; Vorbilder Zeit Online, Spiegel, Tagesschau/BBC, Guardian/NZZ. Das löst den Eintrag
+  „Redesign für Gen Z: Hypebeast/Highsnobiety, Rot trägt die Seite“ weiter unten ab, ebenso „erster Bildschirm = die
+  eine große Geschichte“ und „laut im Kopf“ vom selben Tag. · Luis · nach Ablehnung der vier Richtungsskizzen („zu
+  viel Rot, zu laut“, „Baukasten“, „Schrift ist hässlich“, „nicht hochwertig genug“).
+- **Prüfung misst statt zu bepunkten.** Die Summe 28/40 ist kein Tor mehr. Durchgelassen wird, was die harten
+  Kriterien des Briefs erfüllt und kein offenes P0 oder P1 hat. Luis sieht Schnellproben früh und ungefiltert; der
+  Auftraggeber sieht weiter nur Gewähltes und Bestandenes. · Hauptsitzung, von Luis mit „mache es weiter“ getragen ·
+  Drei Skizzen hatten mit genau 28/40 bestanden und fielen bei Luis sofort durch.
 - **Design-Runde 1, Ergebnis der Kritik:** `zine`, `raster` und `feed` bestehen nach einer Überarbeitung mit je
   28/40 und kommen auf die Vergleichsseite. `plakatwand` erreicht 29/40, hat aber ein offenes P1 und wird nach der
   Regel „nur bestandene“ nicht gezeigt. Stand in `docs/abnahme/2026-11-09-G2.md`. · Ablauf `/design-runde`
