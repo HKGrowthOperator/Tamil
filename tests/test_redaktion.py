@@ -352,3 +352,14 @@ def test_sensitive_topics_without_false_positives():
         assert not _SENSIBEL_RE.search(harmlos), harmlos
     for sensibel in ("Das Verwaltungsgericht stoppt die Abschiebung", "Polizei nimmt Mann fest", "Sänger verstorben"):
         assert _SENSIBEL_RE.search(sensibel), sensibel
+
+
+def test_run_v2_records_run_and_processes_jobs_until_deadline(settings):
+    item = meldung("Tamilisches Lichterfest im Tempel Hamm", "Fest", url="https://www.ruhrnachrichten.de/lauf")
+    stats = orchestrator.lauf(settings, mit_jobs=True, client=FakeAnthropic(), items=[item],
+                              fetch_text=lambda u: ARTIKEL, suche=lambda q: [])
+    with Store(settings.db_path) as store:
+        run = store.recent_runs(1)[0]
+        assert len(store.list_drafts("neu")) == 1
+    assert stats["storys"] == 1 and stats["jobs"]["fertig"] == 7
+    assert run["modus"].startswith("v2") and run["finished_at"] and run["entwuerfe"] == 1
