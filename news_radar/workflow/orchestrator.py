@@ -83,7 +83,8 @@ def scan(ctx: Kontext, items: list[sources.NewsItem] | None = None) -> dict:
     stats: Counter = Counter(gesammelt=len(items))
     stats["kino_aktualisiert"] = len(refresh_kino(items, store, seen))
     # Ähnliche Titel nicht verwerfen (wie v1), sondern dem Clustering geben: sie reichern bestehende Storys an
-    picked = filtering.select(items, s, seen, [], now=now)
+    aussortiert: Counter = Counter()
+    picked = filtering.select(items, s, seen, [], now=now, zaehler=aussortiert)
     bezahlt = repo.bezahlte_storys_heute(store, costs.tag_start(now).astimezone(timezone.utc).isoformat(timespec="seconds"))
     grau = relevance.grauzone(items, s, seen, {i.uid for i in picked}, now) if bezahlt < s.entwuerfe_tag else []
     stats["grauzone"] = len(grau)
@@ -96,6 +97,7 @@ def scan(ctx: Kontext, items: list[sources.NewsItem] | None = None) -> dict:
             if item.uid in beurteilt and item.uid not in angenommen:
                 store.mark(item.uid, item.title, item.url, item.source, "irrelevant")
     stats["relevant"] = len(picked)
+    stats.update(aussortiert)  # termin_veraltet, ohne_bezug – erscheinen in der Laufnotiz nur, wenn größer 0
     limit_gemeldet = False
     neue_storys: dict[int, int] = {}  # Index der Zuordnung → angelegte Story (für Meldungen desselben Scans)
     zuordnungen = cluster.zuordnen(ctx, picked)

@@ -269,7 +269,7 @@ def test_grey_zone_without_model_stays_unseen_and_signal_error_does_not_stop_sca
 
     item = meldung("Lichterfest in Hamm: Tempel lädt ein", "Fest im Tempel, tamil")
     monkeypatch.setattr(relevance, "grauzone", lambda items, s, seen, picked, now=None: [item])
-    monkeypatch.setattr(orchestrator.filtering, "select", lambda items, s, seen, titles, now=None: [])
+    monkeypatch.setattr(orchestrator.filtering, "select", lambda items, s, seen, titles, now=None, **kw: [])
     monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
     with Store(settings.db_path) as store:
         ctx = orchestrator.kontext(settings, store, fetch_text=lambda u: "", suche=lambda q: [])
@@ -363,6 +363,21 @@ def test_run_v2_records_run_and_processes_jobs_until_deadline(settings):
         assert len(store.list_drafts("neu")) == 1
     assert stats["storys"] == 1 and stats["jobs"]["fertig"] == 7
     assert run["modus"].startswith("v2") and run["finished_at"] and run["entwuerfe"] == 1
+    assert "termin_veraltet" not in run["notiz"] and "ohne_bezug" not in run["notiz"]  # nur, wenn größer 0
+
+
+def test_run_note_counts_stale_events_and_reports_without_community_link(settings):
+    """Fund 09.11.: Die Laufnotiz zeigt, wie viele Meldungen der Vorfilter als veraltet und ohne Bezug aussortiert hat."""
+    alt = meldung("நவராத்திரி விரதம் இன்று ஆரம்பம்!", "விரதம் தொடங்குகிறது", url="https://swisstamilinfo.ch/27129/",
+                  source="Swiss Tamil Info · Events", kind="event", hours_old=0, source_published=NOW - timedelta(days=60))
+    unfall = meldung("வெர்பியேயில் பாராகிளைடிங் விபத்து", "சுவிஸின் வாலே மாநிலத்தில்", url="https://swisstamilinfo.ch/28493/",
+                     source="Swiss Tamil Info · Schweiz")
+    stats = orchestrator.lauf(settings, client=FakeAnthropic(), items=[alt, unfall])
+    with Store(settings.db_path) as store:
+        run = store.recent_runs(1)[0]
+        assert store.list_drafts("neu") == []
+    assert stats["termin_veraltet"] == 1 and stats["ohne_bezug"] == 1 and stats["relevant"] == 0
+    assert "termin_veraltet 1" in run["notiz"] and "ohne_bezug 1" in run["notiz"]
 
 
 def test_source_document_keeps_real_publication_date_of_event_report(settings):
