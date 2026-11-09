@@ -72,7 +72,7 @@ def test_build_service_from_settings(monkeypatch, tmp_path):
     monkeypatch.delenv("RADAR_ANTHROPIC_API_KEY", raising=False)
     monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
     ohne = dienst.aufbauen(load_settings(), 3000)
-    assert [l.name for l in ohne.langlaeufer] == ["web"]
+    assert [l.name for l in ohne.langlaeufer] == ["web", "worker"]  # ohne Schlüssel nur Kino, Gate, Bild
     assert "0.0.0.0:3000" in ohne.langlaeufer[0].befehl
     assert [a.name for a in ohne.aufgaben] == ["scan", "digest", "sicherung"]
     monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")

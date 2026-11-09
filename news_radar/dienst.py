@@ -4,7 +4,7 @@
 
 Langläufer (bei Absturz mit Backoff neu gestartet):
   web     gunicorn „news_radar.web:create_app()“ auf 0.0.0.0:$PORT (Standard 3000)
-  worker  Redaktion v2 (nur mit RADAR_WORKFLOW=v2 und Schlüssel)
+  worker  Redaktion v2 (RADAR_WORKFLOW=v2; ohne Schlüssel nur Kino, Gate und Bild)
 Zeitplan (Europe/Berlin; jeweils als eigener Prozess mit Timeout, nie doppelt):
   scan      `run` alle 3 Minuten           (news-radar.timer)
   digest    `digest` täglich 08:00          (news-radar-digest.timer)
@@ -175,11 +175,11 @@ def aufbauen(settings: Settings, port: int) -> Dienst:
     langlaeufer = [Langlaeufer("web", [sys.executable, "-m", "gunicorn", "-w", "2", "--threads", "4",
                                        "-b", f"0.0.0.0:{port}", "--timeout", "120", "--access-logfile", "-",
                                        "news_radar.web:create_app()"])]
-    if settings.workflow == "v2" and os.environ.get("ANTHROPIC_API_KEY"):
+    if settings.workflow == "v2":
         langlaeufer.append(Langlaeufer("worker", py + ["worker"]))
-    elif settings.workflow == "v2":
-        log.warning("RADAR_WORKFLOW=v2 ohne ANTHROPIC_API_KEY: Scan legt Storys an, der Worker startet nicht "
-                    "(Agent-Modus: agent export --v2)")
+        if not os.environ.get("ANTHROPIC_API_KEY"):
+            log.warning("RADAR_WORKFLOW=v2 ohne ANTHROPIC_API_KEY: der Worker erledigt nur Kino, Gate und Bild; "
+                        "Recherche-Jobs warten auf den Schlüssel (danach Neustart)")
     aufgaben = [
         Aufgabe("scan", py + ["run"], Regel(alle=180), timeout=300),
         Aufgabe("digest", py + ["digest"], Regel(um=(8, 0)), timeout=300),

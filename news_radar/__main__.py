@@ -338,8 +338,8 @@ def main(argv: list[str] | None = None) -> int:
         from .workflow import orchestrator
 
         if not os.environ.get("ANTHROPIC_API_KEY"):
-            raise SystemExit(KEY_HINT.replace("`run --ohne-ki` für Rohfassungen ohne KI",
-                                              "`agent export --v2` für Research per Zuruf"))
+            logging.warning("Ohne ANTHROPIC_API_KEY: nur Schritte ohne Modell (Kino, Gate, Bild); Recherche-Jobs warten "
+                            "auf den Schlüssel oder auf `agent export --v2`")
         stats = orchestrator.worker(settings, parallel=args.parallel, einmal=args.einmal)
         print(", ".join(f"{k} {v}" for k, v in stats.items()) or "keine Jobs")
         return 0
