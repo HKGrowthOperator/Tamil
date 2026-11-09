@@ -13,3 +13,6 @@ prototyp/dist-artifact/
 prototyp/shots/
 
 wordpress/dist/
+
+# Arbeitskopien der Agents (isolation: worktree)
+.claude/worktrees/
