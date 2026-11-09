@@ -12,12 +12,12 @@
     <span class="relevanz r{{ d.relevanz }}">Relevanz {{ d.relevanz }}</span>
     <span class="leise">{{ fmt_dt(d.created_at) }}{% if d.bearbeitet_von %} · zuletzt {{ d.bearbeitet_von }}{% endif %}{% if d.rewrite_count %} · {{ d.rewrite_count }}× neu geschrieben{% endif %}</span>
   </div>
-  <p class="leise">Quelle: <a href="{{ d.quelle_url }}" target="_blank" rel="noopener">{{ d.quelle_name }}</a>
-    {% for q in d.weitere_quellen %} · <a href="{{ q.url }}" target="_blank" rel="noopener">{{ q.name }}</a>{% endfor %}
+  <p class="leise">Quelle: <a href="{{ d.quelle_url|safe_url }}" target="_blank" rel="noopener">{{ d.quelle_name }}</a>
+    {% for q in d.weitere_quellen %} · <a href="{{ q.url|safe_url }}" target="_blank" rel="noopener">{{ q.name }}</a>{% endfor %}
     · Einschätzung: {{ d.begruendung }}</p>
   {% if d.hinweise %}<ul class="hinweise">{% for h in d.hinweise %}<li>{{ h }}</li>{% endfor %}</ul>{% endif %}
   {% if d.fehler %}<p class="fehlertext">{{ d.fehler }}</p>{% endif %}
-  {% if d.wp_link %}<p><a class="knopf" href="{{ d.wp_link }}" target="_blank" rel="noopener">{{ 'Beitrag auf tamil.de öffnen' if d.status == 'veroeffentlicht' else 'In WordPress öffnen' }}</a></p>{% endif %}
+  {% if d.wp_link %}<p><a class="knopf" href="{{ d.wp_link|safe_url }}" target="_blank" rel="noopener">{{ 'Beitrag auf tamil.de öffnen' if d.status == 'veroeffentlicht' else 'In WordPress öffnen' }}</a></p>{% endif %}
 
   <div class="aktionen gross">
     {% if can_publish %}

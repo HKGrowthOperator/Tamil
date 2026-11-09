@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Any, Iterable
 
@@ -312,17 +313,71 @@ def nutzer_anlegen(store, name: str, passwort: str, rolle: str = "redaktion") ->
         "ON CONFLICT(name) DO UPDATE SET passwort_hash = excluded.passwort_hash, rolle = excluded.rolle, aktiv = 1",
         (name, generate_password_hash(passwort), rolle, now_iso()),
     )
+    sitzungen_beenden(store, name)  # neues Passwort oder neue Rolle: bestehende Anmeldungen enden
+
+
+SITZUNG_TAGE = 30
+
+
+def sitzung_anlegen(store, nutzer: str, konto: str, tage: int = SITZUNG_TAGE) -> str:
+    sid = secrets.token_urlsafe(32)
+    jetzt = datetime.now(timezone.utc)
+    store._write("DELETE FROM sitzungen WHERE ablauf < ?", (jetzt.isoformat(timespec="seconds"),))
+    store._write("INSERT INTO sitzungen (id, nutzer, konto, erstellt, ablauf) VALUES (?,?,?,?,?)",
+                 (sid, nutzer, konto, jetzt.isoformat(timespec="seconds"),
+                  (jetzt + timedelta(days=tage)).isoformat(timespec="seconds")))
+    return sid
+
+
+def sitzung_pruefen(store, sid: str) -> dict | None:
+    """Gültige Sitzung mit aktueller Rolle (für Konten aus der Tabelle frisch aus `users`) – sonst None."""
+    if not sid:
+        return None
+    row = store.db.execute("SELECT * FROM sitzungen WHERE id = ?", (sid,)).fetchone()
+    if row is None or row["ablauf"] < datetime.now(timezone.utc).isoformat(timespec="seconds"):
+        return None
+    sitzung = {"nutzer": row["nutzer"], "konto": row["konto"], "rolle": None}
+    if row["konto"] == "db":
+        u = store.db.execute("SELECT rolle FROM users WHERE name = ? AND aktiv = 1", (row["nutzer"],)).fetchone()
+        if u is None:
+            return None
+        sitzung["rolle"] = u["rolle"]
+    return sitzung
+
+
+def sitzung_beenden(store, sid: str) -> None:
+    if sid:
+        store._write("DELETE FROM sitzungen WHERE id = ?", (sid,))
+
+
+def sitzungen_beenden(store, nutzer: str) -> int:
+    return store._write("DELETE FROM sitzungen WHERE nutzer = ?", (nutzer,)).rowcount
 
 
 def nutzer_sperren(store, name: str) -> bool:
-    return store._write("UPDATE users SET aktiv = 0 WHERE name = ?", (name,)).rowcount == 1
+    gesperrt = store._write("UPDATE users SET aktiv = 0 WHERE name = ?", (name,)).rowcount == 1
+    sitzungen_beenden(store, name)
+    return gesperrt
+
+
+_DUMMY_HASH: list[str] = []
+
+
+def _dummy_hash() -> str:
+    """Ein fester Hash für unbekannte oder gesperrte Namen: die Prüfung dauert so lange wie bei echten Konten."""
+    from werkzeug.security import generate_password_hash
+
+    if not _DUMMY_HASH:
+        _DUMMY_HASH.append(generate_password_hash(secrets.token_urlsafe(16)))
+    return _DUMMY_HASH[0]
 
 
 def nutzer_pruefen(store, name: str, passwort: str) -> dict | None:
     from werkzeug.security import check_password_hash
 
     row = store.db.execute("SELECT * FROM users WHERE name = ? AND aktiv = 1", (name,)).fetchone()
-    if row is None or not check_password_hash(row["passwort_hash"], passwort):
+    ok = check_password_hash(row["passwort_hash"] if row is not None else _dummy_hash(), passwort)
+    if row is None or not ok:
         return None
     store._write("UPDATE users SET letzter_login = ? WHERE name = ?", (now_iso(), name))
     return {"name": row["name"], "rolle": row["rolle"]}

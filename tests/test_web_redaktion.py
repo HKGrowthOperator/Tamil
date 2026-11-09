@@ -123,3 +123,127 @@ def test_approved_version_hash_matches_queued_draft(app):
         row = store.get_draft(1)
         entwurf = [v for v in repo.fassungen(store, draft_id=1) if v["rolle"] == "entwurf"][-1]
     assert entwurf["hash"] == repo.fassung_hash(row)
+
+
+# ---- Review 2: Login, Sitzungen, Weiterleitung ------------------------------------------------------------------
+
+def _store(app):
+    return Store(app.extensions["settings"].db_path)
+
+
+def test_env_login_needs_a_password_and_app_refuses_to_start_without(app, tmp_path):
+    from news_radar.web import check_login
+
+    settings = app.extensions["settings"]
+    settings.web_password = ""
+    assert check_login(settings, "luis", "") is None
+    client = app.test_client()
+    client.get("/login")
+    with client.session_transaction() as s:
+        token = s["csrf"]
+    assert client.post("/login", data={"user": "luis", "password": "", "_csrf": token}).status_code == 200
+    settings.web_password = "kurz"
+    with pytest.raises(RuntimeError, match="WEB_PASSWORD"):
+        create_app(settings)
+    settings.web_password = "lang-genug-123"
+    assert create_app(settings) is not None
+
+
+def test_locked_or_demoted_user_loses_access_at_once(app):
+    with _store(app) as store:
+        repo.nutzer_anlegen(store, "anna", "anna-passwort-1", "admin")
+    client = app.test_client()
+    login(client, "anna", "anna-passwort-1")
+    assert client.get("/nutzer").status_code == 200
+    with _store(app) as store:  # Rolle direkt in der Tabelle geändert: gilt beim nächsten Klick
+        store._write("UPDATE users SET rolle = 'redaktion' WHERE name = 'anna'")
+    assert client.get("/nutzer").status_code == 403
+    with _store(app) as store:
+        repo.nutzer_sperren(store, "anna")
+    resp = client.get("/")
+    assert resp.status_code == 302 and "/login" in resp.headers["Location"]
+    with client.session_transaction() as s:
+        assert "user" not in s
+
+
+def test_logout_revokes_a_copied_cookie_and_new_password_ends_sessions(app):
+    client = app.test_client()
+    token = login(client)
+    kopie = app.test_client()
+    kopie.set_cookie("session", client.get_cookie("session").value)
+    assert kopie.get("/").status_code == 200
+    client.post("/logout", data={"_csrf": token})
+    assert kopie.get("/").status_code == 302
+
+    with _store(app) as store:
+        repo.nutzer_anlegen(store, "priya", "priya-passwort-1")
+    c2 = app.test_client()
+    login(c2, "priya", "priya-passwort-1")
+    with _store(app) as store:
+        repo.nutzer_anlegen(store, "priya", "neues-passwort-22")  # Passwort neu gesetzt
+    assert c2.get("/").status_code == 302
+
+
+def test_cookie_without_server_session_is_not_enough(app):
+    client = app.test_client()
+    with client.session_transaction() as s:  # wie ein Cookie aus der Zeit vor den Sitzungen
+        s["user"], s["rolle"] = "luis", "admin"
+    assert client.get("/nutzer").status_code == 302
+
+
+@pytest.mark.parametrize("ziel, erwartet", [("//evil.example/phish", "/"), ("https://evil.example", "/"),
+                                            ("/\\evil.example", "/"), ("/entwurf/1", "/entwurf/1")])
+def test_login_redirect_stays_on_this_host(app, ziel, erwartet):
+    client = app.test_client()
+    client.get("/login")
+    with client.session_transaction() as s:
+        token = s["csrf"]
+    resp = client.post("/login", query_string={"next": ziel}, data={"user": "luis", "password": "geheim", "_csrf": token})
+    assert resp.status_code == 302 and resp.headers["Location"] == erwartet
+
+
+def test_login_rate_limit_csrf_unicode_and_constant_work(app, monkeypatch):
+    import werkzeug.security
+
+    client = app.test_client()
+    assert client.post("/login", data={"user": "luis", "password": "geheim"}).status_code == 400  # ohne CSRF-Token
+    client.get("/login")
+    with client.session_transaction() as s:
+        token = s["csrf"]
+    resp = client.post("/login", data={"user": "läuft", "password": "pässwört", "_csrf": token})
+    assert resp.status_code == 200  # Umlaute: Fehlermeldung statt 500
+    resp = client.post("/login", data={"user": "luis", "password": "geheim", "_csrf": "tökén"})
+    assert resp.status_code == 400
+
+    aufrufe = []
+    echt = werkzeug.security.check_password_hash
+    monkeypatch.setattr(werkzeug.security, "check_password_hash", lambda h, p: aufrufe.append(1) or echt(h, p))
+    client.post("/login", data={"user": "gibtsnicht", "password": "x", "_csrf": token})
+    assert aufrufe, "unbekannte Namen brauchen dieselbe Hash-Prüfung wie echte Konten"
+
+    for _ in range(10):
+        client.post("/login", data={"user": "luis", "password": "falsch", "_csrf": token},
+                    headers={"CF-Connecting-IP": "203.0.113.9"})
+    gesperrt = client.post("/login", data={"user": "luis", "password": "geheim", "_csrf": token},
+                           headers={"CF-Connecting-IP": "203.0.113.9"})
+    assert gesperrt.status_code == 429 and "Zu viele Fehlversuche" in gesperrt.get_data(as_text=True)
+    andere_ip = client.post("/login", data={"user": "luis", "password": "geheim", "_csrf": token},
+                            headers={"CF-Connecting-IP": "198.51.100.4"})
+    assert andere_ip.status_code == 302
+
+
+def test_preview_and_links_are_safe(app):
+    client = app.test_client()
+    token = login(client)
+    with _store(app) as store:
+        d = store.get_draft(1)
+        store.update_draft(1, inhalt_html='<p>Text</p><img src="x"/onerror="alert(1)"><a href="&#106;avascript:alert(2)">a</a>',
+                           ticket_url="javascript:alert(3)", weitere_quellen=[{"name": "W", "url": "javascript:alert(4)"}])
+        assert d is not None
+    html = client.get("/entwurf/1").get_data(as_text=True)
+    assert "onerror" not in html and "javascript:" not in html
+    client.post("/entwurf/1", data={"_csrf": token, "titel": "T", "teaser": "T", "kategorie": "events",
+                                    "inhalt_html": '<p onclick="x()">a</p><svg/onload=alert(1)>', "ticket_url": "javascript:alert(5)"})
+    with _store(app) as store:
+        row = store.get_draft(1)
+    assert "onclick" not in row["inhalt_html"] and "onload" not in row["inhalt_html"] and row["ticket_url"] == ""

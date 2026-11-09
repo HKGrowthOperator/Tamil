@@ -102,6 +102,24 @@ def _loads(value: Any, default: Any) -> Any:
         return default
 
 
+URL_COLUMNS = ("quelle_url", "ticket_url", "quelle_bild", "wp_link")
+
+
+def _bereinigen(data: dict) -> dict:
+    """Beim Speichern: HTML über die Allowlist, Adressen nur http/https – egal ob aus Writer, Agent-Import oder Formular."""
+    from .render import safe_url, sanitize_html
+
+    if data.get("inhalt_html"):
+        data["inhalt_html"] = sanitize_html(data["inhalt_html"])
+    for col in URL_COLUMNS:
+        if data.get(col):
+            data[col] = safe_url(data[col])
+    if isinstance(data.get("weitere_quellen"), list):
+        data["weitere_quellen"] = [{**q, "url": safe_url(q.get("url"))} if isinstance(q, dict) else q
+                                   for q in data["weitere_quellen"]]
+    return data
+
+
 def row_to_draft(row: sqlite3.Row | None) -> dict | None:
     """DB-Zeile → dict mit geparsten JSON-Spalten."""
     if row is None:
@@ -223,7 +241,7 @@ class Store:
     # ---- Entwürfe ----------------------------------------------------------
     def insert_draft(self, row: dict) -> int | None:
         """Legt einen Entwurf an. Gibt None zurück, wenn es zu dieser uid schon einen gibt."""
-        data = {k: row.get(k) for k in DRAFT_COLUMNS if k in row}
+        data = _bereinigen({k: row.get(k) for k in DRAFT_COLUMNS if k in row})
         for col in JSON_COLUMNS:
             if col in data and not isinstance(data[col], (str, type(None))):
                 data[col] = _dumps(data[col])
@@ -265,10 +283,12 @@ class Store:
         return counts
 
     def update_draft(self, draft_id: int, von: str = "", **fields) -> None:
-        data = {k: v for k, v in fields.items() if k in DRAFT_COLUMNS and k not in ("uid", "status")}
+        data = _bereinigen({k: v for k, v in fields.items() if k in DRAFT_COLUMNS and k not in ("uid", "status")})
         for col in JSON_COLUMNS:
             if col in data and not isinstance(data[col], (str, type(None))):
                 data[col] = _dumps(data[col])
+        if isinstance(data.get("original_json"), dict):
+            data["original_json"] = _dumps(data["original_json"])
         if "fakten" in fields:
             data["fakten_json"] = _dumps(fields["fakten"])
         if "dach_bezug" in data:

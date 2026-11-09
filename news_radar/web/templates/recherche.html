@@ -8,7 +8,7 @@
   <div class="meta"><span class="rubrik r-{{ s.kategorie }}">{{ category_label(s.kategorie) }}</span><span class="badge typ">{{ s.typ }}</span>{% if s.ort %}<span class="badge ort">{{ s.ort }}</span>{% endif %}<span class="leise">{{ age(s.aktualisiert) }}</span></div>
   <h2>{{ s.titel }}</h2>
   {% if s.notiz %}<ul class="hinweise">{% for g in s.notiz.split('; ') %}<li>{{ g }}</li>{% endfor %}</ul>{% endif %}
-  <p class="leise">Quellen: {% for q in s.dokumente %}<a href="{{ q.url }}" target="_blank" rel="noopener">{{ q.doc_key }} {{ q.publisher or q.quelle }}</a> ({{ arten.get(q.art, q.art) }}){{ ', ' if not loop.last }}{% endfor %}</p>
+  <p class="leise">Quellen: {% for q in s.dokumente %}<a href="{{ q.url|safe_url }}" target="_blank" rel="noopener">{{ q.doc_key }} {{ q.publisher or q.quelle }}</a> ({{ arten.get(q.art, q.art) }}){{ ', ' if not loop.last }}{% endfor %}</p>
   {% if s.claims %}<p class="leise">{{ s.claims|selectattr('support', 'equalto', 'bestaetigt')|list|length }} von {{ s.claims|length }} Aussagen bestätigt.</p>{% endif %}
   <form method="post" action="/story/{{ s.id }}/quelle" class="zeile">
     <input type="hidden" name="_csrf" value="{{ csrf_token() }}">

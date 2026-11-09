@@ -6,6 +6,7 @@ import json
 import logging
 import re
 from datetime import datetime, timezone
+from urllib.parse import urlsplit
 
 from flask import (Blueprint, Response, abort, current_app, flash, g, jsonify, redirect, render_template, request,
                    send_from_directory, session, url_for)
@@ -15,7 +16,7 @@ from ..workflow import repo
 from ..render import render_content, sanitize_html
 from ..store import OPEN_STATES, PUBLISHABLE, STATUSES, TRANSITIONS, ConflictError
 from ..wordpress import slugify
-from . import check_login, get_store
+from . import anmelden, client_ip, get_store, gleich
 
 log = logging.getLogger(__name__)
 ui = Blueprint("ui", __name__)
@@ -63,24 +64,47 @@ def _user() -> str:
     return session.get("user", "")
 
 
+def sicheres_ziel(target: str | None, default: str = "/") -> str:
+    """Nur Pfade auf diesem Host: „/…“, aber nicht „//host“, „/\\host“ oder „https://…“ (Open Redirect)."""
+    if not target or not target.startswith("/") or target.startswith("//") or "\\" in target:
+        return default
+    teile = urlsplit(target)
+    if teile.scheme or teile.netloc or any(ord(c) < 32 for c in target):
+        return default
+    return target
+
+
 # ---- Login -------------------------------------------------------------------------
 
 @ui.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        rolle = check_login(_settings(), request.form.get("user", ""), request.form.get("password", ""), get_store())
-        if rolle:
+        if not gleich(request.form.get("_csrf", ""), session.get("csrf", "")) or not session.get("csrf"):
+            abort(400, "Formular abgelaufen – bitte Seite neu laden.")
+        user = request.form.get("user", "").strip()[:100]
+        password = request.form.get("password", "")[:1000]
+        drossel = current_app.extensions["drossel"]
+        schluessel = {"ip": client_ip(), "nutzer": user.casefold()}
+        if drossel.gesperrt(schluessel):
+            flash("Zu viele Fehlversuche – bitte in 15 Minuten erneut versuchen.", "fehler")
+            return render_template("login.html"), 429
+        ergebnis = anmelden(_settings(), user, password, get_store())
+        if ergebnis:
+            rolle, konto = ergebnis
+            drossel.erfolg(schluessel)
             session.permanent = True
-            session["user"] = request.form["user"]
+            session["user"] = user
             session["rolle"] = rolle
-            target = request.args.get("next") or "/"
-            return redirect(target if target.startswith("/") else "/")
+            session["sid"] = repo.sitzung_anlegen(get_store(), user, konto)
+            return redirect(sicheres_ziel(request.args.get("next")))
+        drossel.fehler(schluessel)
         flash("Benutzername oder Passwort falsch.", "fehler")
     return render_template("login.html")
 
 
 @ui.post("/logout")
 def logout():
+    repo.sitzung_beenden(get_store(), session.get("sid", ""))
     session.clear()
     return redirect(url_for("ui.login"))
 
@@ -121,8 +145,7 @@ def set_status(draft_id: int):
     repo.aktion(store, wer=_user(), aktion=aktion, draft_id=draft_id, story_id=row.get("story_id"),
                 fassung=repo.fassung_hash(row))
     flash(f"{STATUS_LABELS.get(neu, neu)}.", "ok")
-    target = request.form.get("next") or request.args.get("next") or url_for("ui.feed")
-    return redirect(target if target.startswith("/") else url_for("ui.feed"))
+    return redirect(sicheres_ziel(request.form.get("next") or request.args.get("next"), url_for("ui.feed")))
 
 
 # ---- Bearbeiten -------------------------------------------------------------------------

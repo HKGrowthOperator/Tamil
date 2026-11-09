@@ -105,7 +105,16 @@ V2 = [
         aktiv INTEGER NOT NULL DEFAULT 1, erstellt TEXT NOT NULL, letzter_login TEXT)""",
 ]
 
-MIGRATIONS: dict[int, list[str]] = {2: V2}
+# V3: serverseitige Sitzungen – Sperren, Rollenwechsel und Abmelden wirken sofort, auch auf kopierte Cookies
+V3 = [
+    """CREATE TABLE IF NOT EXISTS sitzungen (
+        id TEXT PRIMARY KEY, nutzer TEXT NOT NULL,
+        konto TEXT NOT NULL,  -- db (Tabelle users) | env (WEB_USER aus der .env)
+        erstellt TEXT NOT NULL, ablauf TEXT NOT NULL)""",
+    "CREATE INDEX IF NOT EXISTS sitzungen_nutzer ON sitzungen(nutzer)",
+]
+
+MIGRATIONS: dict[int, list[str]] = {2: V2, 3: V3}
 LATEST = max(MIGRATIONS)
 
 

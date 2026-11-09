@@ -84,7 +84,6 @@ def test_requires_login(client):
 
 
 def test_login_wrong_password_then_ok(client, monkeypatch):
-    monkeypatch.setattr("news_radar.web.time.sleep", lambda s: None)
     client.get("/login")
     with client.session_transaction() as s:
         token = s["csrf"]
@@ -291,9 +290,11 @@ def test_embedding_headers_allow_only_wordpress(tmp_path, monkeypatch):
     settings.wp_url = "https://www.tamil.de"
     app = create_app(settings, testing=True)
     resp = app.test_client().get("/login")
-    assert resp.headers["Content-Security-Policy"] == "frame-ancestors 'self' https://www.tamil.de"
+    csp = resp.headers["Content-Security-Policy"]
+    assert csp.endswith("frame-ancestors 'self' https://www.tamil.de")
+    assert "script-src 'self'" in csp and "object-src 'none'" in csp and "base-uri 'self'" in csp
     assert app.config["SESSION_COOKIE_SAMESITE"] == "None" and app.config["SESSION_COOKIE_SECURE"] is True
     settings.web_url, settings.wp_url = "http://127.0.0.1:8787", ""
     lokal = create_app(settings, testing=True)
     assert lokal.config["SESSION_COOKIE_SAMESITE"] == "Lax"
-    assert lokal.test_client().get("/login").headers["Content-Security-Policy"] == "frame-ancestors 'self'"
+    assert lokal.test_client().get("/login").headers["Content-Security-Policy"].endswith("frame-ancestors 'self'")

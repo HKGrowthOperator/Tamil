@@ -4,7 +4,7 @@
   <h3>Quellen</h3>
   <ol class="quellen-liste">
     {% for q in belege.dokumente %}
-    <li><b>{{ q.doc_key }}</b> {% if q.url and not q.url.endswith('#daten') %}<a href="{{ q.url }}" target="_blank" rel="noopener">{{ q.publisher or q.quelle or q.url }}</a>{% else %}{{ q.publisher or q.quelle }}{% endif %}
+    <li><b>{{ q.doc_key }}</b> {% if q.url and not q.url.endswith('#daten') %}<a href="{{ q.url|safe_url }}" target="_blank" rel="noopener">{{ q.publisher or q.quelle or q.url }}</a>{% else %}{{ q.publisher or q.quelle }}{% endif %}
       <span class="leise">· {{ belege.labels.art.get(q.art, q.art) }}{% if q.primaer %} · Primärquelle{% endif %} · Rechte: {{ q.rights }}{% if q.published_at %} · {{ q.published_at[:10] }}{% endif %}</span></li>
     {% endfor %}
   </ol>

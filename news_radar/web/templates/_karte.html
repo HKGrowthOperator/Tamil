@@ -15,7 +15,7 @@
     <h2><a href="/entwurf/{{ d.id }}" data-open>{{ d.titel }}</a></h2>
     <p class="teaser">{{ d.teaser }}</p>
     {% if d.status == 'fehler' %}<p class="fehlertext">{{ d.fehler }}</p>{% endif %}
-    {% if d.wp_link %}<p class="leise"><a href="{{ d.wp_link }}" target="_blank" rel="noopener">{{ 'Beitrag öffnen' if d.status == 'veroeffentlicht' else 'In WordPress öffnen' }}</a></p>{% endif %}
+    {% if d.wp_link %}<p class="leise"><a href="{{ d.wp_link|safe_url }}" target="_blank" rel="noopener">{{ 'Beitrag öffnen' if d.status == 'veroeffentlicht' else 'In WordPress öffnen' }}</a></p>{% endif %}
     <div class="aktionen">
       {% set open = d.status in ('neu', 'bearbeitet', 'zurueckgestellt') %}
       {% if open or d.status == 'fehler' %}

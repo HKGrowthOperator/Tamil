@@ -6,3 +6,4 @@ pydantic>=2.6
 flask>=3.1
 gunicorn>=23
 beautifulsoup4>=4.12
+nh3>=0.2.17

@@ -19,8 +19,17 @@ if (inhalt) {
       if (ziel) {
         const parser = new DOMParser();
         const doc = parser.parseFromString(inhalt.value, "text/html");
-        doc.querySelectorAll("script,iframe,object,embed,style").forEach((n) => n.remove());
-        doc.querySelectorAll("*").forEach((n) => [...n.attributes].forEach((a) => { if (/^on/i.test(a.name) || /^javascript:/i.test(a.value)) n.removeAttribute(a.name); }));
+        // Live-Vorschau: dieselbe Allowlist wie auf dem Server (render.sanitize_html), dazu blockt die CSP Inline-Skripte
+        const TAGS = /^(P|H2|H3|STRONG|EM|B|I|UL|OL|LI|A|BR|BLOCKQUOTE|FIGURE|FIGCAPTION|IMG|DIV|SPAN|TABLE|THEAD|TBODY|TR|TH|TD)$/;
+        const ATTR = /^(class|href|src|alt|title|rel|target|width|height|colspan|rowspan)$/;
+        doc.querySelectorAll("script,style,iframe,object,embed,template,noscript").forEach((n) => n.remove());
+        [...doc.body.querySelectorAll("*")].reverse().forEach((n) => {
+          [...n.attributes].forEach((a) => {
+            const wert = a.value.replace(/[\u0000-\u0020\u007f]/g, "");
+            if (!ATTR.test(a.name) || ((a.name === "href" || a.name === "src") && !/^(https?:|mailto:|\/(?!\/)|#)/i.test(wert))) n.removeAttribute(a.name);
+          });
+          if (!TAGS.test(n.tagName)) n.replaceWith(...n.childNodes);
+        });
         ziel.innerHTML = doc.body.innerHTML;
       }
       const vt = document.getElementById("vorschau-titel"); if (vt && titel) vt.textContent = titel.value;
@@ -81,3 +90,5 @@ if (status) {
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("/sw.js").catch(() => {});
 }
+
+document.querySelectorAll("select[data-auto-submit]").forEach((sel) => sel.addEventListener("change", () => sel.form.submit()));
