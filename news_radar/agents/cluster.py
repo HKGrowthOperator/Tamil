@@ -33,6 +33,7 @@ class Zuordnung:
     item: NewsItem
     story_id: int | None
     grund: str
+    bezug: int | None = None  # gleiche Story wie die neue Meldung an dieser Stelle desselben Scans
 
 
 def woerter(text: str) -> set[str]:
@@ -75,6 +76,13 @@ def zuordnen(ctx: Kontext, items: list[NewsItem], tage: int = 7) -> list[Zuordnu
                 continue
         if item.kind == "kino":
             ergebnis.append(Zuordnung(item, None, "neue Kinowoche"))
+            continue
+        # Meldungen desselben Scans, die der Vorfilter nicht zusammengelegt hat (z. B. „… (verschoben)“)
+        frueher = next((i for i, z in enumerate(ergebnis) if z.story_id is None and z.bezug is None
+                        and z.item.kind == item.kind and ((key and schluessel(z.item) == key)
+                                                          or aehnlichkeit(item.title, z.item.title) >= SICHER)), None)
+        if frueher is not None:
+            ergebnis.append(Zuordnung(item, None, "gleiche Story wie eine Meldung desselben Scans", bezug=frueher))
             continue
         best, wert = None, 0.0
         for s in bestehend:

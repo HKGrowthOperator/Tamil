@@ -17,7 +17,7 @@ from typing import Any, Callable
 Responder = Callable[[str, str, dict], dict]
 
 _BLOCK_RE = r"<{name}>\n(.*?)\n</{name}>"
-_SATZ_RE = re.compile(r"(?<=[.!?])\s+(?=[A-ZÄÖÜ„\"0-9])")
+_SATZ_RE = re.compile(r"(?<=[^0-9][.!?])\s+(?=[A-ZÄÖÜ„\"])")  # nicht nach „21.“ (Datum) trennen
 _DATUM_RE = re.compile(r"\b\d{1,2}\.\s*(?:\d{1,2}\.|Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|"
                        r"November|Dezember)|\b20\d\d-\d\d-\d\d\b|\b(?:Montag|Dienstag|Mittwoch|Donnerstag|Freitag|"
                        r"Samstag|Sonntag)\b", re.I)
@@ -69,7 +69,7 @@ def recherche(user: str, system: str, req: dict) -> dict:
     docs = [d for d in (block(user, "dokumente") or []) if d.get("art") != "hinweis"]
     claims, n = [], 0
     for doc in docs:
-        for satz in _saetze(f"{doc.get('titel', '')}. {doc.get('text', '')}")[:6]:
+        for satz in _saetze(f"{doc.get('titel', '')}. {doc.get('text', '')}")[:10]:
             if any(SequenceMatcher(None, satz, c["aussage"]).ratio() > 0.8 for c in claims):
                 continue
             n += 1
@@ -87,7 +87,7 @@ def recherche(user: str, system: str, req: dict) -> dict:
                            "kern": art in ("was", "wann", "wo", "preis") and n <= 4,
                            "quellen": quellen or [doc["doc_key"]], "fundstelle": satz[:160], "sicherheit": 0.9,
                            "support": "offen"})
-            if n >= 8:
+            if n >= 10:
                 break
     return {"claims": claims, "widersprueche": [], "fehlende_angaben": []}
 

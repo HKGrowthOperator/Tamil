@@ -19,6 +19,7 @@
   nutzer    anlegen | sperren | liste – Benutzer der Freigabe-App (Rollen redaktion, admin)
   sicherung erstellen | pruefen | wiederherstellen – Datenbank und Bilder (deploy/backup.sh, deploy/restore.sh)
   bericht   --woche: Annahmequote, Fehler, Kosten je Artikel der letzten 7 Tage
+  abnahme   51 Szenarien mit FakeClaude durchspielen, Kriterien K1–K9 messen (--bericht Datei)
 
 Mit RADAR_WORKFLOW=v2 legt `run` Storys und Jobs an (Redaktion v2); `run --mit-jobs` arbeitet sie bis zur Deadline ab.
 """
@@ -143,6 +144,9 @@ def main(argv: list[str] | None = None) -> int:
     ber = sub.add_parser("bericht", help="Wochenbericht der Redaktion")
     ber.add_argument("--woche", action="store_true", help="letzte 7 Tage (Standard)")
     ber.add_argument("--tage", type=int, default=7)
+    ab = sub.add_parser("abnahme", help="Abnahme-Szenarien mit FakeClaude")
+    ab.add_argument("--bericht", default="data/abnahme-bericht.md")
+    ab.add_argument("--nur", type=int, nargs="*", help="nur diese Szenario-Nummern")
     kosten = sub.add_parser("kosten", help="Kosten je Rolle/Modell/Tag und Budgetstand")
     kosten.add_argument("--tage", type=int, default=30)
     kosten.add_argument("--csv", help="alle Aufrufe des Zeitraums als CSV (Fremdkostenabrechnung)")
@@ -158,6 +162,20 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.cmd == "style":
         return cmd_style(args.site, args.count)
+
+    if args.cmd == "abnahme":
+        from . import abnahme
+
+        ergebnisse = abnahme.alle(args.nur)
+        text = abnahme.bericht(ergebnisse)
+        Path(args.bericht).parent.mkdir(parents=True, exist_ok=True)
+        Path(args.bericht).write_text(text, encoding="utf-8")
+        for e in ergebnisse:
+            print(f"{'ok  ' if e.ok else 'FEHL'} {e.szenario.nr:2} {e.szenario.name}"
+                  + ("" if e.ok else f"  → {'; '.join(e.abweichungen or [k for k, v in e.kriterien.items() if not v])}"))
+        bestanden = sum(1 for e in ergebnisse if e.ok)
+        print(f"\n{bestanden} von {len(ergebnisse)} Szenarien bestanden → {args.bericht}")
+        return 0 if bestanden == len(ergebnisse) else 1
 
     settings = load_settings()
 

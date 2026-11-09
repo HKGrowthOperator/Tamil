@@ -97,9 +97,14 @@ def scan(ctx: Kontext, items: list[sources.NewsItem] | None = None) -> dict:
                 store.mark(item.uid, item.title, item.url, item.source, "irrelevant")
     stats["relevant"] = len(picked)
     limit_gemeldet = False
-    for z in cluster.zuordnen(ctx, picked):
+    neue_storys: dict[int, int] = {}  # Index der Zuordnung → angelegte Story (für Meldungen desselben Scans)
+    for idx, z in enumerate(cluster.zuordnen(ctx, picked)):
         item = z.item
         publisher = quelle_name(item)
+        if z.bezug is not None:
+            if z.bezug not in neue_storys:
+                continue  # die erste Meldung wurde nicht angelegt (Tageslimit/veraltet): diese auch nicht
+            z.story_id = neue_storys[z.bezug]
         if item.kind == "event":
             vergangen = stale_event_date(item, "", s, now=now)
             if vergangen:
@@ -136,6 +141,7 @@ def scan(ctx: Kontext, items: list[sources.NewsItem] | None = None) -> dict:
             relevanz=relevanz, begruendung=signal.get("grund") or f"Vorfilter: {item.score} Punkte, DACH {item.dach_score}",
             sensibel=signal.get("risiko") == "sensibel",
         )
+        neue_storys[idx] = sid
         research.dokumente_aus_meldung(ctx, sid, item, publisher)
         if typ == "kino":
             jobs.einreihen(store, sid, "kino", prio=prio, payload={

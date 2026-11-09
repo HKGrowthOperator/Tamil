@@ -52,7 +52,7 @@ def grauzone(items: list[NewsItem], settings: Settings, seen: set[str], ausgewae
         score = filtering.score_item(item, settings.keywords)
         dach, ort = filtering.dach_score(item, settings.regions)
         schwelle = settings.min_score_dach if dach > 0 else settings.min_score
-        if schwelle - GRAUZONE <= score < schwelle:
+        if score > 0 and schwelle - GRAUZONE <= score < schwelle:  # ohne jedes Stichwort keine Grauzone
             item.score, item.dach_score, item.ort = score, dach, ort
             out.append(item)
     out.sort(key=lambda i: (i.dach_score, i.score), reverse=True)
