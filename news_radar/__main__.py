@@ -15,6 +15,7 @@
   quellen   pruefen – jede Quelle live abfragen und bewerten (data/quellen-pruefung.csv) · liste – Register zeigen
   kosten    Kosten je Rolle, Modell und Tag, Budgetstand; --csv für die Fremdkostenabrechnung
   worker    Redaktion v2: Jobs abarbeiten (Dienst; --einmal leert die Schlange und beendet)
+  dienst    Container-Betrieb (Coolify/Dockerfile): Cockpit auf $PORT, Scan, Worker, Digest, Sicherung
   dossier   Entwurf als Dossier recherchieren lassen (--entwurf ID)
   nutzer    anlegen | sperren | liste – Benutzer der Freigabe-App (Rollen redaktion, admin)
   sicherung erstellen | pruefen | wiederherstellen – Datenbank und Bilder (deploy/backup.sh, deploy/restore.sh)
@@ -152,6 +153,7 @@ def main(argv: list[str] | None = None) -> int:
     ab = sub.add_parser("abnahme", help="Abnahme-Szenarien mit FakeClaude")
     ab.add_argument("--bericht", default="data/abnahme-bericht.md")
     ab.add_argument("--nur", type=int, nargs="*", help="nur diese Szenario-Nummern")
+    sub.add_parser("dienst", help="Container-Betrieb (Coolify): Cockpit, Scan, Worker, Digest, Sicherung in einem Prozess")
     kosten = sub.add_parser("kosten", help="Kosten je Rolle/Modell/Tag und Budgetstand")
     kosten.add_argument("--tage", type=int, default=30)
     kosten.add_argument("--csv", help="alle Aufrufe des Zeitraums als CSV (Fremdkostenabrechnung)")
@@ -183,6 +185,11 @@ def main(argv: list[str] | None = None) -> int:
         return 0 if bestanden == len(ergebnisse) else 1
 
     settings = load_settings()
+
+    if args.cmd == "dienst":
+        from .dienst import main as dienst_main
+
+        return dienst_main(settings)
 
     if args.cmd == "scan":
         with Store(settings.db_path) as store:
