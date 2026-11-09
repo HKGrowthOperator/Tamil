@@ -11,15 +11,17 @@ paths:
 
 # Regeln: Gestaltung
 
-- **Ablauf statt Alleingang:** Gestaltet wird über `/design-runde` → Tor G2 → `/design-ausbau` → Tor G3 →
-  `/design-umsetzung`. Die Hauptsitzung gestaltet nicht selbst nebenbei.
+- **Ablauf statt Alleingang:** Gestaltet wird über `/design-runde` (Schnellproben → Vorschau für Luis → Prüfung) →
+  Tor G2 → `/design-ausbau` → Tor G3 → `/design-umsetzung`. Die Hauptsitzung gestaltet nicht selbst nebenbei.
 - **Markenwissen zuerst:** Skill `tamil-marke` (Zielgruppe, Pflichten, Verbotsliste in
-  `references/abgelehnt.md`). Drei Entwürfe sind abgelehnt; nichts davon wiederholen.
-- **Jede Richtung nennt** ein echtes Vorbild, drei Stimmwörter, die Schriftwahl nach dem impeccable-Verfahren mit
-  Ausschlussliste, die Farbstrategie, ein Signatur-Element und was sie von den abgelehnten Entwürfen unterscheidet
-  (`begruendung.md`).
-- **Kritik ist unabhängig:** Der `design-kritiker` sieht nur Ergebnis und Brief. Gezeigt wird nur, was mindestens
-  28/40 erreicht und den KI-Slop-Test besteht.
+  `references/abgelehnt.md`). Vier Entwürfe sind abgelehnt; nichts davon wiederholen.
+- **Ziel:** eine große, ruhige Nachrichtenmarke nach `design/brief.md`. Vertrautheit vor Eigenwilligkeit; kein Effekt
+  als Erkennungszeichen.
+- **Jede Probe nennt** ihr Vorbild aus `design/referenzen/news-marken.md` mit den übernommenen Messwerten, die Schrift
+  aus der Kandidatenliste des Briefs und die Abgrenzung gegen Runde 2 und Runde 4 (`begruendung.md`).
+- **Prüfung ist unabhängig und misst:** Der `design-kritiker` sieht nur Ergebnis und Brief und liefert Messwerte und
+  Befunde. Durchgelassen wird, was alle harten Kriterien des Briefs erfüllt und kein offenes P0 oder P1 hat; das
+  entscheidet die Hauptsitzung. Luis sieht Schnellproben vorher, der Auftraggeber nur Gewähltes und Bestandenes.
 - **Pflichten:** WCAG 2.2 AA, Fließtext ≥ 18 px am Handy, Tippflächen ≥ 44 px, `lang="ta"` für Tamil,
   `prefers-reduced-motion`, kein seitliches Scrollen bei 390/820/1280.
 - **Echte Inhalte**, keine erfundenen Titel, Daten, Bildnachweise oder Kontakte.

@@ -1,60 +1,67 @@
 ---
 name: tamil-richtung
-description: Wie eine Gestaltungsrichtung für tamil.de als Skizze oder Probeseite entsteht – fester Umfang, Pflichtbegründung, Ablage, Prüfung. Vorgeladen im art-director; gilt für /design-runde und /design-ausbau.
+description: Wie eine Gestaltungsprobe für tamil.de entsteht – als Schnellprobe (nur Startseite), Skizze oder Probeseite – mit festem Umfang, kurzer Begründung, Ablage und Prüfung. Vorgeladen im art-director; gilt für /design-runde und /design-ausbau.
 user-invocable: false
 ---
 
-# Eine Richtung gestalten
+# Eine Probe gestalten
 
-Du baust **genau eine** Richtung. Grundlage: `design/brief.md` (Tor G1), `design/referenzen/README.md`, Skill
-`tamil-marke` (Pflichten, Verbotsliste), Skill `impeccable` (Gestaltungsgesetze, brand-Register). Der Auftrag nennt
-dir den `slug` und die Richtung.
+Du baust **genau eine** Variante. Grundlage, in dieser Reihenfolge: `design/brief.md` (Leitplanken, Farbwerte,
+Schriftkandidaten, harte Kriterien), `design/referenzen/news-marken.md` (Vorbilder mit Messwerten), Skill
+`tamil-marke` (Pflichten, Verbotsliste). Der Brief geht allem anderen vor. Der Auftrag nennt dir `slug`, Variante und
+Umfang.
 
-## 1. Erst denken, dann bauen – `design/richtungen/<slug>/begruendung.md`
+Ziel ist die Ruhe und Ordnung einer großen Nachrichtenmarke. Wertigkeit entsteht aus Hierarchie, Abständen, sauberem
+Satz und guten Bildausschnitten, nicht aus einer Idee oder einem Effekt.
 
-Pflichtfelder, bevor eine Zeile CSS entsteht:
+## 1. Erst festlegen, dann bauen – `design/richtungen/<slug>/begruendung.md`
 
-1. **Vorbild:** 1–2 echte Vorbilder aus `design/referenzen/` (Name + URL) und was genau du übernimmst.
-2. **Idee in einem Satz:** was diese Seite hat, das nur zu tamil.de passt (nicht „modern und jung“).
-3. **Drei Stimmwörter** als Gegenstände gedacht (z. B. „Siebdruck, Kinokasse, Straßenbanner“).
-4. **Schrift:** nach dem impeccable-Verfahren (`reference/brand.md`, Abschnitt Font selection): drei Reflex-Schriften
-   nennen und verwerfen; gewählte Familie(n) mit Begründung; Latein **und** Tamil abgedeckt (Google Fonts mit
-   Tamil-Unterstützung oder selbst gehostet mit Lizenz). Nicht erlaubt: impeccable-Ausschlussliste und die in
-   `tamil-marke` genannten verbrannten Schriften.
-5. **Farbstrategie:** Restrained / Committed / Full palette / Drenched – mit Rot aus dem Logo als Träger; Tokens in
-   OKLCH; nie reines Schwarz/Weiß.
-6. **Signatur-Element:** das eine Ding, an dem man die Seite wiedererkennt.
-7. **Abgrenzung:** in drei Punkten, warum das nicht wie die drei abgelehnten Runden aussieht
+Kurz halten (Schnellprobe: höchstens zehn Zeilen):
+
+1. **Vorbild:** ein bis zwei Marken aus `news-marken.md` und welche Messwerte du übernimmst (Kopfhöhe,
+   Schlagzeilengröße, Spalten, Bildformat).
+2. **Schrift:** aus der Kandidatenliste des Briefs für deine Variante, in normaler Breite. Nicht erlaubt: alles von den
+   Verbotslisten in `tamil-marke`. Tamil im Inhalt setzt eine Ersatzschrift im Schriftstapel (`lang="ta"`).
+3. **Farbe:** die festen Werte aus dem Brief. Rot nur für Logo, Links und kleine Marken.
+4. **Ordnung:** die drei Stufen der Anreißer (Aufmacher, Nebenstück mit Bild, Meldung ohne Bild) mit ihren Größen;
+   das eine Format für Dachzeile und Datum.
+5. **Erkennungszeichen (freiwillig, leise):** etwas aus dem Inhalt, zum Beispiel wie Spielorte und Termine gesetzt
+   sind. Kein Effekt, kein Riesenwort.
+6. **Abgrenzung** gegen Runde 2 (alt, Portal aus dem Baukasten) und Runde 4 (laut), je mit einem Messwert
    (`tamil-marke/references/abgelehnt.md`).
 
 ## 2. Umfang
 
 | Auftrag | Seiten | Inhalt |
 |---|---|---|
-| Skizze (`/design-runde`) | `index.html` (erster Bildschirm + **ein** weiterer Abschnitt, z. B. Kino oder Events) und `artikel.html` (Kopf bis erster Absatz) | Handy und Desktop gleich ernst |
+| Schnellprobe (`/design-runde`, vor der Wahl) | nur `index.html`: Kopf mit Logo und Rubriken, Aufmacher, drei bis vier Nebenstücke mit Bild, Meldungsliste ohne Bild (vier bis sechs Titel), ein Rubrikblock, Dienstblock „Diese Woche“ | Handy 390 und Desktop 1280 ernst; bei 820 nur kein Überlauf; kein Fuß, keine Zustände |
+| Skizze (`/design-runde`, nach der Wahl) | dazu `artikel.html` (Kopf bis erster Absatz) und die Anmerkungen von Luis | Handy und Desktop gleich ernst |
 | Probeseite (`/design-ausbau`) | Start, Artikel, Rubrik, Events, Kinoliste, Kontakt | alle Zustände, die das Theme braucht |
 
-- Echte Inhalte aus `tamil-marke/references/inhalte.md`; Bilder relativ aus `../../../prototyp/static/img/` einbinden.
-- Eigene CSS-Datei `<slug>.css`, keine gemeinsame Basis mit anderen Richtungen, kein Framework.
-- JavaScript nur, wenn die Idee es braucht (z. B. Wischen); Inhalte müssen ohne JS sichtbar sein.
-- Pflichten aus `tamil-marke` gelten schon in der Skizze (18 px, 44 px, Kontrast, `lang="ta"`).
+- Inhalte, Bilder und Schriften liegen fertig in `design/inhalte/` (`inhalte.json`, `bilder/`, `schriften/`). Nimm
+  genau diese Inhalte in genau dieser Reihenfolge; nichts erfinden, nichts weglassen. Einbinden relativ
+  (`../../inhalte/…`).
+- Eigene CSS-Datei `<slug>.css`, kein Framework, kein JavaScript.
+- Pflichten aus `tamil-marke` gelten ab der ersten Probe (18 px Fließtext, 44 px Tippflächen, Kontrast, `lang="ta"`).
 
 ## 3. Prüfen, bevor du abgibst
 
 ```bash
-node tools/shots.mjs design/richtungen/<slug>/index.html design/richtungen/<slug>/artikel.html \
-     --out design/richtungen/<slug>/shots --kacheln
+node tools/shots.mjs design/richtungen/<slug>/index.html --out design/richtungen/<slug>/shots --kacheln
+node design/vergleich/aufnahmen.mjs <slug>     # sichtbarer erster Bildschirm und Kennzahlen
 ```
 
-- 0 Fehler im Bericht; Hinweise zu Tippflächen und Tamil beheben.
-- Erste Kacheln (`-k0`) bei 390 und 1280 ansehen und gegen die eigene Idee prüfen: Ist das Signatur-Element im
-  ersten Bildschirm sichtbar? Würde jemand sagen „das ist eine App-Vorlage“? Dann überarbeiten.
+- 0 Fehler im Bericht von `shots.mjs`.
+- Die Kennzahlen aus `aufnahmen.mjs` gegen die harten Kriterien des Briefs halten (Zahl der Schlagzeilen im ersten
+  Bildschirm, Rotanteil, größte Schrift, größter Radius). Was verstößt, behebst du vor der Abgabe.
+- Den ersten Bildschirm bei 390 und 1280 ansehen und neben das Bild deines Vorbilds legen: Ist das dieselbe Liga?
+  Würde jemand „Baukasten“, „laut“ oder „altbacken“ sagen? Dann überarbeiten.
 - Gegen die Verbotsliste prüfen.
 
 ## 4. Abgabe
 
-Kurzbericht (max. 10 Zeilen): Pfade, Idee in einem Satz, Vorbild, Schrift, Prüfergebnis. **Keine** Selbstbewertung –
-die macht der `design-kritiker`.
+Kurzbericht (höchstens zehn Zeilen): Pfade, Vorbild, Schrift, Kennzahlen, Prüfergebnis, was offen ist. **Keine**
+Selbstbewertung.
 
-Bei einer Überarbeitung nach Kritik: nur die P0/P1-Punkte aus `design/kritik/<slug>-r<n>.md` beheben, `begruendung.md`
-um einen Abschnitt „Überarbeitung“ ergänzen, neu prüfen.
+Bei einer Überarbeitung: nur die genannten Punkte beheben (Anmerkungen von Luis oder P0/P1 aus
+`design/kritik/<slug>-r<n>.md`), `begruendung.md` um einen Abschnitt „Überarbeitung“ ergänzen, neu prüfen.
