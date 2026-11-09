@@ -380,6 +380,16 @@ def test_run_note_counts_stale_events_and_reports_without_community_link(setting
     assert "termin_veraltet 1" in run["notiz"] and "ohne_bezug 1" in run["notiz"]
 
 
+def test_run_note_counts_events_abroad(settings):
+    kataragama = meldung("கதிர்காமம் சென்ற சுப்பிரமணிக்கு மலையேற அனுமதி மறுப்பு", "பாதயாத்திரைக் குழு",
+                         url="https://swisstamilinfo.ch/22051/", source="Swiss Tamil Info · Events", kind="event",
+                         hours_old=0)
+    stats = orchestrator.lauf(settings, client=FakeAnthropic(), items=[kataragama])
+    with Store(settings.db_path) as store:
+        run = store.recent_runs(1)[0]
+    assert stats["ausland"] == 1 and "ausland 1" in run["notiz"]
+
+
 def test_source_document_keeps_real_publication_date_of_event_report(settings):
     """Bei Termin-Quellen ist `published` der Abrufzeitpunkt; in source_documents gehört das Datum der Quelle."""
     echt = (NOW - timedelta(days=3)).replace(second=0, microsecond=0)

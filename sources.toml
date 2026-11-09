@@ -423,12 +423,13 @@ ausland = ["Kanada", "Canada", "Canadian", "கனடா", "கனடிய", "T
            "Norwegen", "Norway", "Oslo", "Dänemark", "Denmark", "Niederlande", "Netherlands", "Australien",
            "Australia", "Sydney", "Melbourne", "Malaysia", "Singapur", "Singapore", "USA", "Jaffna", "யாழ்ப்பாணம்",
            "Chennai", "சென்னை", "Colombo", "கொழும்பு",
-           # Sri Lanka und Indien (Fund 09.11.: alte Berichte aus Kilinochchi, Jaffna, Kataragama als „Termin“).
+           # Orte in Sri Lanka (Fund 09.11.: alte Berichte aus Kilinochchi, Jaffna, Kataragama als „Termin“).
            # Tamil-Schrift trifft als Teilstring: „யாழ்“ ohne Punkt träfe auch யாழினி (Vorname) und யாழிசை –
            # deshalb nur die Kurzform mit Punkt („யாழ். பல்கலை“).
-           "Sri Lanka", "இலங்கை", "Kilinochchi", "கிளிநொச்சி", "யாழ்.", "Kataragama", "கதிர்காமம்", "Mullaitivu",
-           "முல்லைத்தீவு", "Batticaloa", "மட்டக்களப்பு", "Trincomalee", "திருகோணமலை", "Vavuniya", "வவுனியா",
-           "Mannar", "மன்னார்", "Tamil Nadu", "தமிழ்நாடு", "Indien", "India", "இந்தியா"]
+           # Keine Länder- oder Volksnamen (Sri Lanka, இலங்கை, Indien, Tamil Nadu): Sie stehen in fast jedem Bericht
+           # der Diaspora und würden echte Schweizer Termine ohne bekannte Stadt still herauswerfen.
+           "Kilinochchi", "கிளிநொச்சி", "யாழ்.", "Kataragama", "கதிர்காமம்", "Mullaitivu", "முல்லைத்தீவு",
+           "Batticaloa", "மட்டக்களப்பு", "Trincomalee", "திருகோணமலை", "Vavuniya", "வவுனியா", "Mannar", "மன்னார்"]
 
 # ---- Bezug zur tamilischen Community (Quellen mit bezug_noetig = true) ----
 # Mindestens einer dieser Begriffe muss in Titel oder Text stehen. Keine Ortsnamen: „சுவிஸ்“, „Zürich“ oder

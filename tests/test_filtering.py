@@ -201,6 +201,29 @@ def test_ausland_sri_lanka_ohne_falsche_treffer(settings):
     assert filtering.dach_score(_mit_bezug(5), settings.regions)[0] > 0
 
 
+def test_laendernamen_heben_den_dach_bezug_nicht_auf(settings):
+    """Review: „இலங்கை“ (Sri Lanka) steht in fast jedem Bericht der Diaspora. Nur Ortsnamen außerhalb von DACH machen
+    einen Termin zum Auslandstermin, Ländernamen nicht."""
+    gestern = FUND - timedelta(days=1)
+    luzern = NewsItem(title="லுசேர்ன் நகரில் மாவீரர் நாள் 27.11.2026", url="https://swisstamilinfo.ch/40001/",
+                      summary="இலங்கையில் உயிர்நீத்த மாவீரர்களை நினைவுகூரும் நிகழ்வு", source="Swiss Tamil Info · Events",
+                      published=FUND, language="ta", kind="event", source_published=gestern)
+    visa = NewsItem(title="இலங்கைத் தமிழர்களுக்கு புதிய விசா விதிகள்", url="https://swisstamilinfo.ch/40002/",
+                    summary="தமிழ் அகதிகள் புதிய விதிகளை எதிர்கொள்கின்றனர்", source="Swiss Tamil Info · Schweiz",
+                    published=gestern, language="ta", source_published=gestern)
+    picked = {p.url: p for p in filtering.select([luzern, visa], settings, set(), [], now=FUND)}
+    assert picked[luzern.url].ort == "Schweiz"
+    assert picked[visa.url].ort == "Schweiz" and picked[visa.url].dach_score >= 1
+
+
+def test_termin_mit_auslandsort_zaehlt_im_zaehler(settings):
+    events = _feed(settings, "swisstamilinfo_events.xml", "Swiss Tamil Info · Events")
+    ohne_alter = [e for e in events if e.source_published is None]  # Fälle 13, 14, 15: nur über den Ort
+    zaehler = Counter()
+    assert filtering.select(ohne_alter, settings, set(), [], now=FUND, zaehler=zaehler) == []
+    assert zaehler == Counter(ausland=3)
+
+
 def test_bezug_noetig_nur_fuer_die_markierte_quelle(settings):
     quelle = "Swiss Tamil Info · Schweiz"
     assert _quelle(settings, quelle).bezug_noetig

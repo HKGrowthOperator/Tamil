@@ -122,8 +122,9 @@ def select(
 ) -> list[NewsItem]:
     """Die relevantesten neuen Meldungen, DACH zuerst, dann nach Punkten und Datum.
 
-    `zaehler` (optional) zählt, was herausfällt: `termin_veraltet` (alter Bericht aus einer Termin-Quelle) und
-    `ohne_bezug` (Quelle mit bezug_noetig, aber kein Begriff aus [bezug])."""
+    `zaehler` (optional) zählt, was herausfällt: `termin_veraltet` (alter Bericht aus einer Termin-Quelle),
+    `ausland` (Termin an einem Ort außerhalb von DACH) und `ohne_bezug` (Quelle mit bezug_noetig, aber kein Begriff
+    aus [bezug])."""
     now = now or datetime.now(timezone.utc)
     zaehler = zaehler if zaehler is not None else Counter()
     cutoff = now - timedelta(hours=settings.max_age_hours)
@@ -149,6 +150,7 @@ def select(
         item.dach_score, item.ort = dach_score(item, settings.regions)
         ausland = item.dach_score == 0 and any(_contains(text, t) for t in settings.regions.ausland)
         if ausland and item.kind == "event":
+            zaehler["ausland"] += 1
             continue  # Termin im Ausland, auch wenn die Quelle aus DACH berichtet
         if source and source.country and not item.ort and not ausland:
             item.ort = {"DE": "Deutschland", "CH": "Schweiz", "AT": "Österreich"}.get(source.country, source.country)

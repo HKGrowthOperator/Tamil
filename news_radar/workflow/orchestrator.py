@@ -97,7 +97,7 @@ def scan(ctx: Kontext, items: list[sources.NewsItem] | None = None) -> dict:
             if item.uid in beurteilt and item.uid not in angenommen:
                 store.mark(item.uid, item.title, item.url, item.source, "irrelevant")
     stats["relevant"] = len(picked)
-    stats.update(aussortiert)  # termin_veraltet, ohne_bezug – erscheinen in der Laufnotiz nur, wenn größer 0
+    stats.update(aussortiert)  # termin_veraltet, ausland, ohne_bezug – in der Laufnotiz nur, wenn größer 0
     limit_gemeldet = False
     neue_storys: dict[int, int] = {}  # Index der Zuordnung → angelegte Story (für Meldungen desselben Scans)
     zuordnungen = cluster.zuordnen(ctx, picked)
