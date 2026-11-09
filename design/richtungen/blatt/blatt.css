@@ -27,7 +27,7 @@
   --sans: "Source Sans 3", "Segoe UI", Roboto, "Noto Sans Tamil", Arial, sans-serif;
 
   --rand: 16px;
-  --abstand: 20px;
+  --abstand: 16px;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -97,33 +97,33 @@ a:focus-visible { outline: 2px solid var(--tinte); outline-offset: 3px; }
 .anr--aufmacher .anr__bild { margin-bottom: 12px; }
 .anr--aufmacher .meta { margin-bottom: 6px; }
 .anr--aufmacher .anr__titel { font-size: 27px; line-height: 1.14; letter-spacing: -0.005em; }
-.anr--aufmacher .anr__vorspann { margin-top: 10px; font-size: 17px; line-height: 1.45; }
+.anr--aufmacher .anr__vorspann { display: none; margin-top: 10px; font-size: 17px; line-height: 1.45; } /* am Handy aus (wie Guardian): Platz für die zweite Schlagzeile und den Dienstblock */
 
 /* Nebenstück mit Bild */
 .anr--neben { border-top: 1px solid var(--linie); padding-top: var(--abstand); margin-top: var(--abstand); }
-.anr--neben .anr__bild { margin-bottom: 10px; }
+.anr--neben .anr__bild { margin-bottom: 10px; aspect-ratio: 12 / 5; } /* am Handy flacher: zweites Bildformat */
 .anr--neben .meta { margin-bottom: 4px; }
 .anr--neben .anr__titel { font-size: 20px; line-height: 1.2; }
 
 /* Meldung ohne Bild */
 .anr--meldung { border-top: 1px solid var(--linie); }
-.anr--meldung > a { padding: 12px 0 13px; }
+.anr--meldung > a { padding: 10px 0 11px; }
 .anr--meldung .meta { margin-bottom: 3px; }
 .anr--meldung .anr__titel { font-size: 17px; line-height: 1.25; }
 .meldungen .anr--meldung:first-child { border-top: 0; }
 
 /* Rubrikblock */
-.rubrik { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 14px; }
+.rubrik { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 14px; }
 .anr--klein .anr__bild { margin-bottom: 8px; }
-.anr--klein .meta { margin-bottom: 2px; font-size: 13px; }
+.anr--klein .meta { margin-bottom: 2px; }
 .anr--klein .anr__titel { font-size: 19px; line-height: 1.2; }
 
 /* ---------- Blöcke ---------- */
-.block { margin-top: 32px; border-top: 1px solid var(--tinte); padding-top: 10px; }
+.block { margin-top: 28px; border-top: 1px solid var(--tinte); padding-top: 10px; }
 .block__titel {
   font-family: var(--sans); font-size: 18px; font-weight: 700; line-height: 1.3; margin-bottom: 4px;
 }
-.block--rubrik .block__titel { margin-bottom: 14px; }
+.block--rubrik .block__titel { margin-bottom: 12px; }
 
 /* ---------- Dienstblock „Diese Woche“ ---------- */
 .dienst {
@@ -152,6 +152,8 @@ a:focus-visible { outline: 2px solid var(--tinte); outline-offset: 3px; }
   .seite, .kopf__innen, .rubriken__liste { max-width: 754px; margin-left: auto; margin-right: auto; }
   .oben { display: grid; grid-template-columns: 1fr 1fr; column-gap: 24px; }
   .anr--aufmacher { grid-column: 1 / -1; }
+  .anr--neben .anr__bild { aspect-ratio: 2 / 1; }
+  .anr--aufmacher .anr__vorspann { display: block; }
   .oben__spalte .anr--neben:first-child { margin-top: var(--abstand); }
   .meldungen { display: grid; grid-template-columns: 1fr 1fr; column-gap: 24px; }
   .meldungen .anr--meldung:nth-child(2) { border-top: 0; }
@@ -196,19 +198,19 @@ a:focus-visible { outline: 2px solid var(--tinte); outline-offset: 3px; }
   .block__titel { margin-bottom: 8px; }
 
   /* Meldungen: drei Spalten mit Linien */
-  .meldungen { grid-template-columns: repeat(3, 1fr); column-gap: 0; }
-  .meldungen .anr--meldung { padding: 0 24px; border-top: 0; border-left: 1px solid var(--linie); }
-  .meldungen .anr--meldung:nth-child(3n + 1) { padding-left: 0; border-left: 0; }
-  .meldungen .anr--meldung:nth-child(3n) { padding-right: 0; }
+  .meldungen { grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 49px; }
+  .meldungen .anr--meldung { position: relative; border-top: 0; }
+  .meldungen .anr--meldung:not(:nth-child(3n + 1))::before,
+  .anr--klein:not(:first-child)::before {
+    content: ""; position: absolute; top: 0; bottom: 0; left: -25px; width: 1px; background: var(--linie);
+  }
   .meldungen .anr--meldung:nth-child(n + 4) > a { border-top: 1px solid var(--linie); }
   .anr--meldung > a { padding: 12px 0 16px; }
   .anr--meldung .anr__titel { font-size: 18px; }
 
   /* Rubrikblock: vier Spalten mit Linien */
-  .rubrik { grid-template-columns: repeat(4, 1fr); gap: 0; }
-  .anr--klein { padding: 0 24px; border-left: 1px solid var(--linie); }
-  .anr--klein:first-child { padding-left: 0; border-left: 0; }
-  .anr--klein:last-child { padding-right: 0; }
+  .rubrik { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 49px; }
+  .anr--klein { position: relative; }
   .anr--klein .anr__bild { margin-bottom: 10px; }
   .anr--klein .meta { font-size: 14px; }
   .anr--klein .anr__titel { font-size: 20px; }
