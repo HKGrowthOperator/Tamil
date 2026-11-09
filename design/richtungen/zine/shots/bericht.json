@@ -1,9 +1,9 @@
 {
-  "stand": "2026-11-09T20:34:11.881Z",
+  "stand": "2026-11-09T20:43:42.225Z",
   "ergebnisse": [
     {
       "ziel": "design/richtungen/zine/index.html",
-      "url": "http://127.0.0.1:46457/design/richtungen/zine/index.html",
+      "url": "http://127.0.0.1:44781/design/richtungen/zine/index.html",
       "breite": 390,
       "status": 200,
       "datei": "design/richtungen/zine/shots/design-richtungen-zine-index-390.png",
@@ -22,7 +22,7 @@
     },
     {
       "ziel": "design/richtungen/zine/artikel.html",
-      "url": "http://127.0.0.1:46457/design/richtungen/zine/artikel.html",
+      "url": "http://127.0.0.1:44781/design/richtungen/zine/artikel.html",
       "breite": 390,
       "status": 200,
       "datei": "design/richtungen/zine/shots/design-richtungen-zine-artikel-390.png",
@@ -34,13 +34,15 @@
       "konsole": [],
       "bilder": [],
       "schriften": [],
-      "tippflaechen": [],
+      "tippflaechen": [
+        "a „Nachrichten“ 149×39"
+      ],
       "tamil_ohne_lang": 0,
       "fehler": 0
     },
     {
       "ziel": "design/richtungen/zine/index.html",
-      "url": "http://127.0.0.1:46457/design/richtungen/zine/index.html",
+      "url": "http://127.0.0.1:44781/design/richtungen/zine/index.html",
       "breite": 820,
       "status": 200,
       "datei": "design/richtungen/zine/shots/design-richtungen-zine-index-820.png",
@@ -58,7 +60,7 @@
     },
     {
       "ziel": "design/richtungen/zine/artikel.html",
-      "url": "http://127.0.0.1:46457/design/richtungen/zine/artikel.html",
+      "url": "http://127.0.0.1:44781/design/richtungen/zine/artikel.html",
       "breite": 820,
       "status": 200,
       "datei": "design/richtungen/zine/shots/design-richtungen-zine-artikel-820.png",
@@ -70,13 +72,15 @@
       "konsole": [],
       "bilder": [],
       "schriften": [],
-      "tippflaechen": [],
+      "tippflaechen": [
+        "a „Nachrichten“ 149×39"
+      ],
       "tamil_ohne_lang": 0,
       "fehler": 0
     },
     {
       "ziel": "design/richtungen/zine/index.html",
-      "url": "http://127.0.0.1:46457/design/richtungen/zine/index.html",
+      "url": "http://127.0.0.1:44781/design/richtungen/zine/index.html",
       "breite": 1280,
       "status": 200,
       "datei": "design/richtungen/zine/shots/design-richtungen-zine-index-1280.png",
@@ -94,7 +98,7 @@
     },
     {
       "ziel": "design/richtungen/zine/artikel.html",
-      "url": "http://127.0.0.1:46457/design/richtungen/zine/artikel.html",
+      "url": "http://127.0.0.1:44781/design/richtungen/zine/artikel.html",
       "breite": 1280,
       "status": 200,
       "datei": "design/richtungen/zine/shots/design-richtungen-zine-artikel-1280.png",

@@ -70,7 +70,7 @@ Brett, nicht über Platten hinter Text.
 
 **Das Wochen-Cover im Zweifarbdruck:** ein Coverwort in riesiger gestauchter Anybody, ein in Rot gedrucktes Foto,
 leicht schief eingeklebt und das Coverwort anschneidend, ein roter Gummistempel mit der Rubrik und die
-Heftzeile „Heft KW 46“ (die echte Kalenderwoche vom 9. bis 15. November 2026, keine erfundene Ausgabennummer).
+Heftzeile „Heft KW 45“ (die Kalenderwoche des Originaldatums, siehe Runde 2; keine erfundene Ausgabennummer).
 Darunter, als zweites Erkennungszeichen: **Aushänge mit Abreißzetteln**, bei denen jeder Spielort ein Streifen
 ist. 11 Kinos ergeben eine lange gestrichelte Reihe, 2 Kinos eine kurze.
 
@@ -115,3 +115,38 @@ ist. 11 Kinos ergeben eine lange gestrichelte Reihe, 2 Kinos eine kurze.
   wie die letzte Heftseite alle Rubriken groß aufführt. Am Desktop steht die Rubrikzeile oben.
 - Teilen im Artikel: ein normaler Link zu WhatsApp (`wa.me`), kein Skript.
 - Kein JavaScript.
+
+## Runde 2 (nach `design/kritik/zine-r1.md`)
+
+- **P1-1a, Heft am Handy:** Auf der Startseite ist der Kopf am Handy der Heftkopf des Covers: Logo links,
+  „HEFT KW 45“ rechts in Rot und groß (56 px, gestauchte Anybody), darunter das Wochendatum in 18 px. Keine Linie
+  zwischen Kopf und Cover; die erste Linie trennt erst Heftkopf und Coverzeile. Marke, Ausgabe und Coverwort stehen
+  so im ersten Bildschirm als Einheit. Ab 760 px bleibt das große „KW 45“ links im Cover.
+- **P1-1b, Haltung:** Das Cover hat ein eigenes Feld **Coverzeile der Redaktion** (`.cover-ruf`): eine kurze
+  Zeile in Anführungszeichen, die die Redaktion jede Woche schreibt (Richtwert bis 40 Zeichen). Sie steht am Handy
+  zwischen Heftkopf und Foto, am Desktop links unter „KW 45“. In der Skizze stehen dort nur Worte aus dem echten
+  Vorspann von Beitrag 9711: „Mit Spannung erwartet“. Nichts erfunden; im Quelltext als Platzhalter kommentiert.
+- **P2-4, Heftdatum:** Die Heftkennung folgt dem Originaldatum des Beitrags. Kanguva ist vom 6. November 2024, also
+  „Heft KW 45, 4. bis 10. November 2024“. Damit liest niemand einen Kinostart in der laufenden Woche. Der Artikel
+  zeigt im Kopf „Aus Heft KW 35, 26. Aug. bis 1. Sep. 2024“ (Beitrag vom 26. August 2024). Regel fürs Theme: Ein
+  Cover trägt immer die Woche seines Beitrags, nie die laufende Woche.
+- **P2-2 und P2-3, Foto und „rote Platte“:** Am Handy wird das Foto auf 4:3 um das Gesicht geschnitten, heller
+  gedruckt (mehr Papier, weniger Vollton) und ohne Raster gezeigt; das Raster kommt erst ab 560 px. Auch am Desktop
+  ist der Druck heller. „KANGUVA“ greift jetzt rund die halbe Buchstabenhöhe ins Bild und wird als Überdruck
+  (`mix-blend-mode: multiply`) gedruckt, nicht bündig an die Bildkante gestellt.
+- **P2-1, das Tamil-Eigene sichtbar:** Der Diwali-Aushang hat den Verein als Absender („Aushang von“ und ein
+  Tintenstempel „Basel Tamil Sangam“) statt der allgemeinen Marke „Fest“. Jeder Aushang endet mit „Per WhatsApp
+  weiterschicken“: das ist der Abreißzettel von heute, so wie Termine in der Community wirklich weiterwandern
+  (Familiengruppen). Die Unterzeile des Bretts sagt das: „Zum Weiterschicken an die Familie.“ Keine tamilische
+  Schrift, nichts von der Verbotsliste.
+- **P2-1 und P3-4, weniger Baukasten:** Gedreht sind nur noch das Cover-Foto und der Stempel „Kino“. Aushänge und
+  Datumstempel stehen gerade, Text ist nie gedreht.
+- **P2-5, zweite Tonlage:** Klasse `.cover--nachricht` für Nachrichten-Cover: Foto in Graustufen auf Papier, nicht
+  gedreht, Rot nur im Rubrikstempel. Der Rotdruck bleibt Kino, Kultur und Community vorbehalten.
+- **P2-6, Linkname:** Der Cover-Link trägt `aria-labelledby` auf die Überschrift; das Bild im Link hat `alt=""`
+  (die Beschreibung gehört in den Artikel).
+- **P3-2:** „und 6 weitere Städte“ sieht aus wie die anderen Zettel, nicht wie ein Knopf.
+- **P3-3:** Heftzeile 18 px, Breite 75 %. **P3-6:** Coverwort am Desktop breiter geschnitten und kleiner (Breite
+  120, 15,4 cqi), damit Coverwort und Titel bei 1280 × 900 gemeinsam im ersten Bildschirm stehen.
+- Offen: P3-1 (Grundton bleibt unverändert kühl), P3-5 (doppelte Navigationsziele) erst im Theme.
+

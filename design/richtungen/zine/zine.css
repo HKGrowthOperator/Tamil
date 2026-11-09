@@ -170,6 +170,7 @@ ul { padding: 0; list-style: none; }
 .cover-flaeche:focus-visible { outline-offset: 8px; }
 
 .heft { display: none; }
+.cover-links { display: block; }
 
 /* Coverzeile der Redaktion: die Stimme der Woche, eigenes Feld */
 .cover-ruf {
@@ -202,7 +203,7 @@ ul { padding: 0; list-style: none; }
   aspect-ratio: 4 / 3;
   object-fit: cover;
   object-position: 48% 30%;
-  filter: grayscale(1) contrast(1.55) brightness(1.95);
+  filter: grayscale(1) contrast(1.3) brightness(2.35);
   mix-blend-mode: screen;
 }
 /* feines Kopierraster, erst wo das Bild groß genug dafür ist */
@@ -519,7 +520,7 @@ body { padding-bottom: 3.5rem; }
 /* ---------- Artikel: still ---------- */
 .artikel { padding: 2.25rem var(--rand) 4rem; }
 .artikel-kopf { max-width: 46rem; }
-.stempel--rubrik { rotate: -3deg; padding: 0; }
+.stempel--rubrik { padding: 0; }
 .stempel--rubrik a {
   display: block;
   padding: 0.65rem 0.8rem 0.55rem;
@@ -583,7 +584,7 @@ body { padding-bottom: 3.5rem; }
 
 /* ---------- ab Tablet ---------- */
 @media (min-width: 560px) {
-  .druck img { aspect-ratio: auto; filter: grayscale(1) contrast(1.45) brightness(1.7); }
+  .druck img { aspect-ratio: auto; filter: grayscale(1) contrast(1.3) brightness(2.3); }
   .druck::after { display: block; }
   .coverwort { font-stretch: 75%; font-size: 24cqi; }
   .aushaenge { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
@@ -602,9 +603,6 @@ body { padding-bottom: 3.5rem; }
   }
   .heft {
     display: block;
-    grid-column: 1 / 5;
-    grid-row: 1;
-    align-self: start;
     font-family: var(--display);
     line-height: 0.9;
   }
@@ -637,29 +635,34 @@ body { padding-bottom: 3.5rem; }
   .seite-start .heftzeile { display: none; }
   .seite-start .kopf { border-bottom: var(--linie); align-items: center; padding-top: 0.5rem; }
   .cover { padding-top: 2rem; }
+  .cover-links {
+    grid-column: 1 / 5; grid-row: 1;
+    align-self: stretch;
+    display: flex; flex-direction: column; justify-content: space-between; gap: 1.5rem;
+    padding-bottom: 10.5cqi;  /* Platz für das Coverwort, das von unten hereinragt */
+  }
   .cover-ruf {
-    grid-column: 1 / 5; grid-row: 2; align-self: end;
-    padding: 0.8rem 0 0; margin-bottom: 0.4em;
+    padding: 0.8rem 0 0;
     font-size: clamp(1.75rem, 0.6rem + 2.2vw, 2.6rem);
   }
-  .druck { grid-column: 5 / 13; grid-row: 1 / 3; justify-self: end; }
+  .druck { grid-column: 5 / 13; grid-row: 1; justify-self: end; align-self: start; }
   .druck .stempel { left: -1.5rem; right: auto; top: 1.25rem; rotate: -5deg; font-size: 1.5rem; }
   .cover-titel { mix-blend-mode: normal; }
   .cover-titel { display: contents; }
   .coverwort {
-    grid-column: 1 / -1; grid-row: 3;
+    grid-column: 1 / -1; grid-row: 2;
     position: relative; z-index: 1;
     mix-blend-mode: multiply;
     font-stretch: 120%; font-size: 15.4cqi; margin-top: -0.45em;
   }
   .coverzeile {
-    grid-column: 1 / 8; grid-row: 4; align-self: start;
+    grid-column: 1 / 8; grid-row: 3; align-self: start;
     max-width: 20ch; margin-top: 1.1rem;
     font-size: clamp(2rem, 0.9rem + 2.4vw, 3.1rem);
   }
   .cover-unten {
     grid-column: 8 / -1;
-    grid-row: 4;
+    grid-row: 3;
     align-self: start;
     margin-top: 1.3rem;
     padding-left: 1.25rem;
@@ -670,8 +673,8 @@ body { padding-bottom: 3.5rem; }
 
   .brett { padding-top: 3.5rem; padding-bottom: 5rem; }
   .brett-kopf { display: flex; align-items: flex-end; justify-content: space-between; gap: 2rem; }
-  .brett-kopf h2 { font-stretch: 100%; font-size: 11cqi; }
-  .brett-kopf p { max-width: 16ch; text-align: right; margin: 0 0 0.4rem; }
+  .brett-kopf h2 { flex: none; font-stretch: 100%; font-size: 9.6cqi; }
+  .brett-kopf p { max-width: 22ch; text-align: right; margin: 0 0 0.4rem; }
 }
 
 @media (min-width: 1100px) {
