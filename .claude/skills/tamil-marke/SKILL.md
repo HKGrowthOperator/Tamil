@@ -18,7 +18,9 @@ Nachrichten aus Sri Lanka und Tamil Nadu mit DACH-Bezug.
 - „Mehr für Gen Z“, „schöner“, „nicht so ein hingerotztes News-Magazin“, aber „viel Potenzial“.
 - Richtung grob: Hypebeast/Highsnobiety trifft Instagram/TikTok. Jung und alt gleich lesbar.
 - Rot aus dem Logo trägt die Seite. Helles Grundbild. Logo bleibt (`prototyp/static/img/logo.png`, Rot #B5282A + Grau).
-- Tamil-Schrift ordentlich gesetzt, wo sie Inhalt ist.
+- **Nur Deutsch** (Luis, 09.11.2026): keine tamilische Schrift als Gestaltungsmittel, auch nicht in Rubriken oder
+  Überschriften. Kommt Tamil im Inhalt selbst vor (Namen, Zitate im Altbestand), wird es sauber gesetzt.
+- Erster Bildschirm: die eine große Geschichte als Cover. Laut im Kopf (Startseite, Rubrikköpfe), ruhig im Text.
 
 ## Register
 

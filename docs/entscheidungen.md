@@ -5,6 +5,18 @@ Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
 ## 09.11.2026
 
+- **Tor G1 bestätigt (vorläufig):** Brief `design/brief.md` mit den Vorbildern des Scouts; die Auswahl des
+  Auftraggebers fließt bis G2 ein. Alle vier Richtungen gehen in die Skizzenrunde. · Luis · Die Runde soll nicht auf
+  die Rückmeldung warten.
+- **Nur Deutsch:** keine tamilische Schrift als Gestaltungsmittel. Die Richtung „Raster + Tamil-Schrift“ wird zu
+  „Raster + große Schrift“. · Luis
+- **Erster Bildschirm = die eine große Geschichte** (Cover); Kino und Events folgen als zweiter Abschnitt. Laut im
+  Kopf, ruhig im Text. · Luis
+- **Radar: nur Meldungen mit tamilischem Bezug.** Allgemeine Schweizer Meldungen (Unfall, Polizei, Wahl) erscheinen
+  nicht; Quellen, die solche Meldungen liefern, verlangen ein Community-Stichwort. · Luis · Leser finden das auf
+  Deutsch überall, und jede Recherche kostet.
+- **Coolify-Zugang über DNS-Namen und sicheres Formular:** `coolify.hk-growthoperator.de`, enges Token statt
+  Root-Token, Wert nie im Chat (Tor B2). · Luis
 - **Projekt-Ordnung (Phase 7):** `CLAUDE.md`, `docs/`, `design/`, Bereichsregeln, 12 Skills, 10 Agents, 7 Commands, vier
   Abnahme-Tore. · Luis · Drei Designrunden sind am Ablauf gescheitert, das Wissen lag nur im Chat.
 - **`prototyp/` bleibt Archiv**, Pfade unverändert; `prototyp/content/` bleibt Datenquelle. · Luis · Kein Umbau ohne
