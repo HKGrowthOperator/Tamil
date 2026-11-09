@@ -3,6 +3,11 @@
 Projekt HKG-2026-TML-V-001 (HK Growth Operator × KBS Management GmbH). Plan, Audit, Quellen und ROI:
 [„Tamil.de Relaunch, Automation & ROI“](https://claude.ai/code/artifact/08e13154-b4ac-4123-9ff3-0087cf3a3612).
 
+**Für Claude-Sitzungen und Entwickler:** Einstieg ist [`CLAUDE.md`](CLAUDE.md) (Systeme, Befehle, Regeln, Abläufe).
+Tiefer: [`docs/architektur.md`](docs/architektur.md), [`docs/betrieb.md`](docs/betrieb.md) (Coolify, Variablen,
+Deploy, Sicherung), [`docs/ablaeufe.md`](docs/ablaeufe.md) (Rollen und Abnahme-Tore),
+[`docs/entscheidungen.md`](docs/entscheidungen.md).
+
 ## News-Radar (Teil B)
 
 Findet Nachrichten mit Bezug zur tamilischen Community im DACH-Raum, schreibt daraus einen eigenen
@@ -137,31 +142,10 @@ Ausführlich in [`wordpress/README.md`](wordpress/README.md). Kurz:
 
 ### Coolify (Dockerfile, ein Container)
 
-Coolify baut das `Dockerfile` im Repo-Root (Build-Pack „Dockerfile“, Port **3000**). Im Container läuft
-`python -m news_radar dienst`: Cockpit (gunicorn) auf `$PORT`, Scan alle 3 Minuten, Worker der Redaktion v2,
-Tageszusammenfassung um 8 Uhr und eine tägliche Sicherung nach `/app/data/backup`. Alles läuft als Nutzer `radar`, nicht als root.
-
-- **Persistent Storage:** ein Volume auf `/app/data`. Ohne Volume sind Datenbank und Bilder beim Redeploy weg.
-- **Domain:** in Coolify setzen, dieselbe Adresse als `RADAR_WEB_URL` (mit `https://`).
-- **Umgebungsvariablen** (Schlüssel und Passwörter nur in Coolify, nie im Repo):
-
-| Variable | Wert | Zweck |
-|---|---|---|
-| `ANTHROPIC_API_KEY` | Schlüssel | Modelle der Redaktion v2 (ohne: nur Scan, Worker startet nicht) |
-| `RADAR_WORKFLOW` | `v2` | Redaktion mit Rollen, Belegen und Budget |
-| `WEB_USER` / `WEB_PASSWORD` | Name / mind. 12 Zeichen | Notzugang (admin) – ohne Passwort startet das Cockpit nicht |
-| `WEB_SECRET` | zufällig, 32+ Zeichen | signiert die Cookies |
-| `RADAR_WEB_URL` | `https://<domain>` | Links, sichere Cookies |
-| `RADAR_PROXY_HOPS` | `1` | hinter Coolify/Traefik: echte Client-IP für die Login-Drossel, HTTPS erkennen |
-| `RADAR_BUDGET_TAG_USD` / `RADAR_BUDGET_MONAT_USD` | Pilot: `2` / `2` | harter Kostendeckel |
-| `RADAR_ENTWUERFE_TAG` | `5` | neue bezahlte Storys je Tag |
-| `RADAR_KI_BILDER_JE_ARTIKEL` | Pilot: `0` | keine KI-Bilder (dann auch kein `GEMINI_API_KEY` nötig) |
-| `RADAR_LESE_TOKEN` | zufällig, 32+ Zeichen | optional: `GET /api/bericht` (nur lesen) für Auswertungen |
-| `RADAR_AGENT_TOKEN` | zufällig, 32+ Zeichen | optional: Research per Zuruf übers Netz – `GET /api/agent/export`, `POST /api/agent/import` (dieselben Gates wie `agent --v2`) |
-
-WordPress-Variablen (`WP_*`) leer lassen, solange nur getestet wird: Dann veröffentlicht der Radar nichts.
-`/gesund` zeigt Warteschlange und Budget. Einzelbefehle laufen über „Execute command“ im Container, z. B.
-`python -m news_radar kosten` oder `python -m news_radar nutzer anlegen priya --rolle redaktion`.
+Standardbetrieb. Coolify baut das `Dockerfile` im Repo-Root (Port 3000); im Container läuft `python -m news_radar dienst`
+(Cockpit, Scan alle 3 Minuten, Worker, Digest 08:00, Sicherung 03:00) als Nutzer `radar`. Persistent Storage auf
+`/app/data`. App, Domain, alle Variablennamen, Deploy, Rollback und Sicherung: [`docs/betrieb.md`](docs/betrieb.md).
+Einzelbefehle über „Execute command“ im Container, z. B. `python -m news_radar kosten`.
 
 ### Server (HK-Server, systemd)
 
