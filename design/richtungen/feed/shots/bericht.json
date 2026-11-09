@@ -1,9 +1,9 @@
 {
-  "stand": "2026-11-09T20:33:28.751Z",
+  "stand": "2026-11-09T20:34:33.822Z",
   "ergebnisse": [
     {
       "ziel": "design/richtungen/feed/index.html",
-      "url": "http://127.0.0.1:45479/design/richtungen/feed/index.html",
+      "url": "http://127.0.0.1:37309/design/richtungen/feed/index.html",
       "breite": 390,
       "status": 200,
       "datei": "design/richtungen/feed/shots/design-richtungen-feed-index-390.png",
@@ -21,7 +21,7 @@
     },
     {
       "ziel": "design/richtungen/feed/artikel.html",
-      "url": "http://127.0.0.1:45479/design/richtungen/feed/artikel.html",
+      "url": "http://127.0.0.1:37309/design/richtungen/feed/artikel.html",
       "breite": 390,
       "status": 200,
       "datei": "design/richtungen/feed/shots/design-richtungen-feed-artikel-390.png",
@@ -39,7 +39,7 @@
     },
     {
       "ziel": "design/richtungen/feed/index.html",
-      "url": "http://127.0.0.1:45479/design/richtungen/feed/index.html",
+      "url": "http://127.0.0.1:37309/design/richtungen/feed/index.html",
       "breite": 820,
       "status": 200,
       "datei": "design/richtungen/feed/shots/design-richtungen-feed-index-820.png",
@@ -58,7 +58,7 @@
     },
     {
       "ziel": "design/richtungen/feed/artikel.html",
-      "url": "http://127.0.0.1:45479/design/richtungen/feed/artikel.html",
+      "url": "http://127.0.0.1:37309/design/richtungen/feed/artikel.html",
       "breite": 820,
       "status": 200,
       "datei": "design/richtungen/feed/shots/design-richtungen-feed-artikel-820.png",
@@ -76,7 +76,7 @@
     },
     {
       "ziel": "design/richtungen/feed/index.html",
-      "url": "http://127.0.0.1:45479/design/richtungen/feed/index.html",
+      "url": "http://127.0.0.1:37309/design/richtungen/feed/index.html",
       "breite": 1280,
       "status": 200,
       "datei": "design/richtungen/feed/shots/design-richtungen-feed-index-1280.png",
@@ -94,7 +94,7 @@
     },
     {
       "ziel": "design/richtungen/feed/artikel.html",
-      "url": "http://127.0.0.1:45479/design/richtungen/feed/artikel.html",
+      "url": "http://127.0.0.1:37309/design/richtungen/feed/artikel.html",
       "breite": 1280,
       "status": 200,
       "datei": "design/richtungen/feed/shots/design-richtungen-feed-artikel-1280.png",

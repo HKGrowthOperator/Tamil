@@ -51,8 +51,9 @@ body {
   font-family: var(--text);
   font-size: 1.1875rem;               /* 19 px */
   line-height: 1.55;
-  padding-bottom: calc(var(--leiste-h) + env(safe-area-inset-bottom));
 }
+/* Platz für die feste Leiste: der letzte Abschnitt trägt ihn selbst, damit kein Papierstreifen bleibt */
+main > :last-child { padding-bottom: calc(var(--leiste-h) + 3.5rem + env(safe-area-inset-bottom)) !important; }
 
 img { display: block; max-width: 100%; }
 a { color: inherit; }
@@ -76,8 +77,8 @@ a { color: inherit; }
 
 .zeichen {
   display: flex;
-  align-items: flex-end;
-  gap: 0.55em;
+  align-items: baseline;
+  gap: 0.4em;
   margin: 0;
   font-family: var(--text);
   font-weight: 700;
@@ -388,7 +389,7 @@ a { color: inherit; }
   margin: 0 0 1.25rem;
   font-size: 1.3125rem;               /* 21 px */
   line-height: 1.5;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--grau);
   max-width: 34em;
 }
@@ -515,11 +516,13 @@ a { color: inherit; }
   .woche-fuss { padding: 1.5rem var(--rand) 0; margin-left: 50%; }
 
   .leiste { right: auto; width: 50%; }
-  .leiste > ul { justify-content: flex-start; }
+  .seite-artikel .leiste { width: auto; }
+  .seite-artikel .kopf { position: static; width: auto; }
+  .leiste > ul { justify-content: flex-start; padding: 0; }
   .alle { columns: 2; }
 
   /* Artikel: links eine Spalte für Rubrik und Teilen, rechts der Text */
-  .artikel { padding-top: 7rem; }
+  .artikel { padding-top: 1.5rem; }
   .artikel-raster {
     display: grid;
     grid-template-columns: minmax(12rem, 1fr) minmax(0, 46rem) minmax(0, 1fr);

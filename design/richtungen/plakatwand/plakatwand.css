@@ -1,0 +1,413 @@
+/* tamil.de · Richtung „Plakatwand“ · Skizze Runde 1
+   Eine Wand, ein Bogen, ein Titel auf Wandbreite. Laut im Kopf, ruhig im Text. */
+
+/* ---------- Schriften (OFL, selbst gehostet, Lizenzen in schriften/) ---------- */
+@font-face {
+  font-family: "Bricolage Grotesque";
+  src: url("schriften/bricolage-grotesque-latin.woff2") format("woff2");
+  font-weight: 200 800;
+  font-stretch: 75% 100%;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible Next";
+  src: url("schriften/atkinson-next-latin.woff2") format("woff2");
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Noto Sans Tamil";
+  src: url("schriften/noto-sans-tamil-tamil.woff2") format("woff2");
+  font-weight: 400 700;
+  font-display: swap;
+  unicode-range: U+0964-0965, U+0B82-0BFA, U+200C-200D, U+20B9, U+25CC;
+}
+
+/* ---------- Tokens ---------- */
+:root {
+  --rot: oklch(0.508 0.177 25.6);        /* Logo #B5282A */
+  --rot-tief: oklch(0.42 0.15 25.6);
+  --papier: oklch(0.977 0.005 25);
+  --tinte: oklch(0.21 0.022 25);
+  --grau: oklch(0.46 0.02 25);
+
+  --plakat: "Bricolage Grotesque", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --text: "Atkinson Hyperlegible Next", "Noto Sans Tamil", system-ui, sans-serif;
+
+  --rand: clamp(16px, 3.75vw, 48px);
+  --spalt: clamp(16px, 3vw, 40px);
+  --kopf-h: 60px;
+  --daumen-h: 56px;
+}
+@media (min-width: 900px) {
+  :root { --kopf-h: 80px; --daumen-h: 0px; }
+}
+
+/* ---------- Grundlage ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--papier);
+  color: var(--tinte);
+  font-family: var(--text);
+  font-size: 1.125rem;            /* 18 px am Handy */
+  line-height: 1.55;
+  padding-bottom: calc(var(--daumen-h) + env(safe-area-inset-bottom, 0px));
+  overflow-x: clip;
+}
+@media (min-width: 900px) { body { font-size: 1.1875rem; } }
+:lang(ta) { font-family: "Noto Sans Tamil", var(--text); }
+img { display: block; max-width: 100%; height: auto; }
+h1, h2, h3, p, ul, figure { margin: 0; }
+ul { padding: 0; list-style: none; }
+a { color: inherit; }
+
+:focus-visible { outline: 3px solid var(--tinte); outline-offset: 3px; }
+.wand :focus-visible, .bogen-fest :focus-visible,
+.wand-flaeche:focus-visible, .bogen-fest .bogen-flaeche:focus-visible { outline-color: var(--papier); }
+.wand-flaeche:focus-visible { outline-offset: -6px; }
+
+.vh {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap;
+}
+.sprung {
+  position: absolute; left: var(--rand); top: -100px; z-index: 20;
+  background: var(--tinte); color: var(--papier); padding: 12px 16px; text-decoration: none; font-weight: 700;
+}
+.sprung:focus { top: 8px; }
+
+/* ---------- Plakatsatz: jede Zeile auf die Breite ihrer Wand ----------
+   --r ist die Zeilenbreite in em (gemessen). Schriftgröße = Wandbreite / --r. */
+.satz { display: block; container-type: inline-size; }
+.z {
+  display: block;
+  width: max-content;
+  white-space: nowrap;
+  font-family: var(--plakat);
+  font-weight: 800;
+  font-stretch: 75%;
+  font-optical-sizing: none;
+  font-variation-settings: "opsz" 96;
+  font-size: calc(100cqi / var(--r, 6));
+  line-height: 0.98;
+  letter-spacing: 0;
+}
+.z-versal { text-transform: uppercase; line-height: 0.8; }
+
+/* ---------- Kopf ---------- */
+.kopf {
+  height: var(--kopf-h);
+  display: flex; align-items: center; justify-content: space-between; gap: var(--spalt);
+  padding-inline: var(--rand);
+  background: var(--papier);
+}
+.marke { display: block; padding-block: 4px; }
+.marke img { height: 44px; width: auto; }
+.rubriken-oben { display: none; }
+
+@media (min-width: 900px) {
+  .marke img { height: 58px; }
+  .rubriken-oben { display: block; }
+  .rubriken-oben ul { display: flex; flex-wrap: wrap; gap: 0 clamp(12px, 1.6vw, 24px); }
+  .rubriken-oben a {
+    display: block; padding-block: 12px;
+    font-family: var(--plakat); font-weight: 700; font-stretch: 75%; font-size: 1.25rem; line-height: 1;
+    text-decoration: none;
+  }
+  .rubriken-oben a:hover { color: var(--rot); text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 6px; }
+}
+
+/* ---------- Daumenleiste (Handy, Tablet) ---------- */
+.daumen {
+  position: fixed; inset: auto 0 0 0; z-index: 10;
+  display: flex;
+  background: var(--papier);
+  border-top: 2px solid var(--tinte);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.daumen a {
+  flex: 1 1 auto;
+  min-height: var(--daumen-h);
+  display: flex; align-items: center; justify-content: center;
+  padding-inline: 6px;
+  font-weight: 700; font-size: 1rem; line-height: 1.1; text-align: center; text-decoration: none;
+}
+.daumen a + a { border-left: 1px solid oklch(0.21 0.022 25 / 0.25); }
+.daumen a:hover { color: var(--rot); }
+@media (min-width: 900px) { .daumen { display: none; } }
+
+/* =========================================================
+   STARTSEITE · Die Wand
+   ========================================================= */
+.wand {
+  --r-titel: 3.4;
+  container-type: inline-size;
+  background: var(--rot);
+  color: var(--papier);
+  overflow: clip;
+}
+.wand-flaeche {
+  --titel-h: calc((100cqi - 2 * var(--rand)) / var(--r-titel) * 0.8);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  padding: 0 var(--rand) 20px;
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Handy: Bildbogen oben randlos, Titel greift über die Bildkante */
+.wand-bild {
+  grid-row: 1;
+  margin-inline: calc(-1 * var(--rand));
+  height: clamp(190px, calc(100svh - var(--kopf-h) - var(--daumen-h) - 2.25 * 100cqi / 5.6 * 0.98 * 2 - var(--titel-h) * 0.6 - 76px), 340px);
+  overflow: hidden;
+  background: var(--tinte);
+}
+.wand-bild img {
+  width: 100%; height: 100%;
+  max-width: 1024px; max-height: 538px;   /* nie über die Originalgröße */
+  object-fit: cover;
+  object-position: 48% 24%;
+}
+.wand-titel {
+  grid-row: 2;
+  position: relative; z-index: 1;
+  margin-top: calc(-0.42 * var(--titel-h));
+  font-weight: inherit;
+}
+.satz-titel .z { font-size: calc(100cqi / var(--r-titel)); }
+.satz-zusatz { margin-top: 0.35rem; }
+
+.wand-fuss {
+  grid-row: 3;
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px;
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 2px solid var(--papier);
+  font-size: 1.0625rem;
+  line-height: 1.35;
+}
+.wand-rubrik {
+  font-family: var(--plakat); font-weight: 800; font-stretch: 75%;
+  font-size: 1.25rem; text-transform: uppercase; letter-spacing: 0.02em;
+}
+.wand-lesen {
+  margin-left: auto;
+  font-weight: 700;
+  text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 5px;
+}
+.wand-lesen::after { content: " \2192"; }
+.wand-flaeche:hover .wand-lesen { text-decoration-thickness: 4px; }
+
+/* Tablet und Desktop: Titel quer über die Wand, Bildbogen rechts angeschnitten */
+@media (min-width: 760px) {
+  .wand-flaeche {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    grid-template-rows: var(--titel-h) auto;
+    column-gap: var(--spalt);
+    padding: clamp(20px, 3vw, 36px) var(--rand) clamp(24px, 3vw, 40px);
+  }
+  .wand-titel {
+    grid-column: 1 / -1; grid-row: 1 / 3;
+    margin-top: 0;
+    pointer-events: none;
+  }
+  .satz-zusatz {
+    width: calc((100% - var(--spalt)) * 5 / 12);
+    margin-top: clamp(16px, 2.2vw, 30px);
+  }
+  .wand-bild {
+    grid-column: 2; grid-row: 2;
+    margin: calc(-0.14 * var(--titel-h)) calc(-1 * var(--rand)) 0 0;
+    height: clamp(300px, 36cqi, 538px);
+  }
+  .wand-fuss {
+    grid-column: 1; grid-row: 2;
+    align-self: end;
+    margin-top: 0;
+  }
+}
+
+/* =========================================================
+   STARTSEITE · Diese Woche (Schriftplakate, Kante an Kante)
+   ========================================================= */
+.woche {
+  padding: clamp(40px, 7vw, 96px) var(--rand) clamp(40px, 6vw, 80px);
+}
+.woche-titel {
+  font-family: var(--plakat); font-weight: 800; font-stretch: 75%;
+  font-size: clamp(2rem, 1.3rem + 3vw, 3.25rem); line-height: 1;
+  margin-bottom: clamp(16px, 2.5vw, 28px);
+}
+
+.bogen { border-top: 3px solid var(--tinte); }
+.bogen-flaeche {
+  display: flex; flex-direction: column;
+  height: 100%;
+  padding: 16px 0 28px;
+  text-decoration: none; color: inherit;
+}
+.bogen-art {
+  font-weight: 700; font-size: 1rem; line-height: 1.2;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--rot);
+}
+.bogen-satz { margin: 12px 0 18px; }
+.bogen-gross .bogen-satz { color: var(--rot); }
+.bogen-name {
+  font-family: var(--plakat); font-weight: 800; font-stretch: 75%;
+  font-size: clamp(1.75rem, 1.4rem + 1.4vw, 2.25rem); line-height: 1.02;
+  margin: -6px 0 14px;
+}
+.kasse { display: block; max-width: 34em; }
+.kasse-zahl { display: block; font-weight: 700; font-size: 1.1875rem; line-height: 1.3; }
+.kasse-orte { display: block; font-size: 1.125rem; line-height: 1.45; }
+
+.bogen-flaeche:hover .bogen-satz,
+.bogen-flaeche:hover .bogen-name { text-decoration: underline; text-decoration-thickness: 0.06em; text-underline-offset: 0.08em; }
+
+/* Der Fest-Bogen ist rot: das eine laute Blatt im Aushang */
+.bogen-fest {
+  border-top: 0;
+  background: var(--rot);
+  color: var(--papier);
+  margin-inline: calc(-1 * var(--rand));
+}
+.bogen-fest .bogen-flaeche { padding: 20px var(--rand) 30px; }
+.bogen-fest .bogen-art { color: var(--papier); }
+
+.woche-weiter {
+  display: flex; flex-wrap: wrap; gap: 0 28px;
+  margin-top: 20px;
+}
+.woche-weiter a {
+  display: inline-flex; align-items: center; min-height: 48px;
+  font-weight: 700;
+  text-decoration: underline; text-decoration-color: var(--rot); text-decoration-thickness: 3px; text-underline-offset: 6px;
+}
+.woche-weiter a::after { content: "\00a0\2192"; }
+.woche-weiter a:hover { color: var(--rot); }
+
+@media (min-width: 760px) {
+  .aushang {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    grid-template-rows: auto auto;
+    column-gap: var(--spalt);
+  }
+  .bogen-gross { grid-column: 1; grid-row: 1 / 3; }
+  .bogen-gross .bogen-flaeche { padding-bottom: 32px; }
+  .bogen-gross .kasse { margin-top: auto; }
+  .bogen-schmal { grid-column: 2; grid-row: 1; }
+  .bogen-fest { grid-column: 2; grid-row: 2; margin-inline: 0; }
+  .bogen-fest .bogen-flaeche { padding-inline: clamp(16px, 2vw, 28px); }
+}
+
+/* ---------- Fuß ---------- */
+.fuss {
+  border-top: 3px solid var(--tinte);
+  padding: 28px var(--rand) 40px;
+}
+.fuss-titel {
+  font-family: var(--plakat); font-weight: 800; font-stretch: 75%;
+  font-size: 1.5rem; line-height: 1; margin-bottom: 8px;
+}
+.fuss-liste { display: flex; flex-wrap: wrap; gap: 0 22px; }
+.fuss-liste a, .fuss-kanal a {
+  display: inline-flex; align-items: center; min-height: 44px; font-weight: 600;
+}
+.fuss-kanal { margin-top: 8px; }
+.fuss-hinweis { margin-top: 16px; font-size: 1rem; color: var(--grau); max-width: 60ch; }
+
+/* =========================================================
+   ARTIKEL · ruhig
+   ========================================================= */
+.artikel {
+  --spalte: min(40rem, 100%);
+  display: grid;
+  grid-template-columns: [voll-start] minmax(var(--rand), 1fr) [text-start] var(--spalte) [text-end] minmax(var(--rand), 1fr) [voll-end];
+  padding-top: clamp(20px, 5vw, 72px);
+  padding-bottom: clamp(40px, 6vw, 96px);
+}
+.artikel > * { grid-column: text; }
+
+.artikel-rubrik a {
+  display: inline-flex; align-items: center; min-height: 44px;
+  font-family: var(--plakat); font-weight: 800; font-stretch: 75%;
+  font-size: 1.25rem; line-height: 1; text-transform: uppercase; letter-spacing: 0.03em;
+  color: var(--rot); text-decoration: none;
+}
+.artikel-rubrik a:hover { text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 5px; }
+.artikel-titel {
+  margin-top: 4px;
+  font-family: var(--plakat); font-weight: 800; font-stretch: 75%;
+  font-size: clamp(2.5rem, 1.6rem + 3.4vw, 4.25rem);
+  line-height: 1;
+  letter-spacing: -0.005em;
+  text-wrap: balance;
+}
+.artikel-meta {
+  margin-top: 16px;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0 18px;
+  color: var(--grau); font-size: 1.0625rem;
+}
+.teilen {
+  display: inline-flex; align-items: center; min-height: 44px;
+  color: var(--tinte); font-weight: 700;
+  text-decoration: underline; text-decoration-color: var(--rot); text-decoration-thickness: 3px; text-underline-offset: 6px;
+}
+.teilen:hover { color: var(--rot); }
+.artikel-vorspann {
+  margin-top: clamp(18px, 3vw, 28px);
+  font-size: clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem);
+  line-height: 1.45;
+  font-weight: 500;
+  max-width: 34em;
+}
+
+/* Der Bildbogen klebt auf einem Streifen Wand: das Echo der Startseite */
+.artikel-bild {
+  grid-column: voll;
+  display: grid;
+  grid-template-columns: subgrid;
+  margin-top: clamp(28px, 4vw, 48px);
+  padding-bottom: clamp(28px, 4vw, 48px);
+  background: linear-gradient(to bottom, transparent 42%, var(--rot) 42%);
+}
+.artikel-bild img {
+  grid-column: text;
+  justify-self: start;
+  width: 100%;
+  max-width: 900px;
+}
+@media (min-width: 900px) {
+  .artikel-bild img { grid-column: text-start / voll-end; width: min(100%, 900px); }
+}
+
+.artikel-text {
+  margin-top: clamp(28px, 4vw, 44px);
+  max-width: 62ch;
+  font-size: clamp(1.1875rem, 1.1rem + 0.35vw, 1.3125rem);
+  line-height: 1.62;
+}
+.artikel-text p + ul { margin-top: 14px; }
+.laender {
+  columns: 2; column-gap: 28px;
+  list-style: square; padding-left: 1.2em;
+}
+.laender + .laender { margin-top: 0; }
+.laender li { break-inside: avoid; padding-left: 2px; }
+.laender li::marker { color: var(--rot); }
+.laender-block { margin-top: 14px; }
+@media (min-width: 600px) {
+  .laender-block { display: grid; grid-template-columns: 1fr 1fr; column-gap: 28px; }
+  .laender { columns: 1; }
+}
+
+/* ---------- Bewegung ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  .rubriken-oben a, .daumen a, .woche-weiter a, .teilen, .artikel-rubrik a { transition: color 160ms cubic-bezier(0.22, 1, 0.36, 1); }
+}
