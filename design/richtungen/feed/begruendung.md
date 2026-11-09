@@ -74,8 +74,8 @@ von einer aufrechten, nüchternen Zeile: **wo und wann es hier ankommt.**
 
 Es ist kein Etikett und keine Pille: kein Kasten, keine Rundung, keine Farbe außer Grau (auf Papier) oder Papier
 (auf Rot). Die Länderkennung selbst ist Zeichen, nicht Information; das Land steht immer ausgeschrieben im Text
-daneben, damit niemand „.ch“ deuten muss. Oben im Kopf stehen einmal `.de .at .ch` neben dem Logo: so lernt man
-das System beim ersten Blick.
+daneben, damit niemand „.ch“ deuten muss. Erklärt wird das System einmal als Legende im Kopf von „Diese Woche“
+(Runde 2; vorher stand `.de .at .ch` oben neben dem Logo).
 
 Dazu die **zwei Hälften**: am Desktop links Papier mit roter Schrift (das „tamil“), rechts Rot mit Bild (die
 Fläche); die Naht bei 50 % läuft von Cover in „Diese Woche“ weiter (Titel links, Ort und Tag rechts). Am Handy
@@ -116,3 +116,30 @@ liegen die Hälften übereinander: erst Papier mit Überschrift, dann Bild und R
   Daumenreichweite; „Mehr“ öffnet alle neun Rubriken nach oben, ohne JavaScript (`<details>`).
 - Im Artikel trägt die Leiste rechts **„Teilen“** als WhatsApp-Link (`wa.me`, kein Skript); unter dem Vorspann
   steht derselbe Link noch einmal.
+
+## Runde 2 (Überarbeitung nach `design/kritik/feed-r1.md`)
+
+Geändert wurde nur, was die Kritik nennt; Idee, Schriften und Farben bleiben.
+
+- **P1 Leiste am Desktop (Startseite):** Ab 900 px ist die Leiste nicht mehr fest. Sie schließt die linke Hälfte
+  des ersten Bildschirms unten ab (`position: absolute` im Block `.erster`) und scrollt mit; über „Diese Woche“
+  liegt nichts mehr. Am Desktop gibt es keinen Daumen, die Rubriken stehen dort, wo der erste Blick endet.
+- **P1 Leiste am Desktop (Artikel):** Ab 900 px wird die Leiste zur Wortliste in der linken Meta-Spalte unter
+  Rubrik und Datum (Start, Nachrichten, Mehr, Teilen), mitlaufend (`sticky`) in ihrer eigenen Spalte. Sie liegt
+  weder auf dem Foto noch auf der Textspalte; „Mehr“ klappt darin nach unten auf, ohne den Text zu verschieben.
+  Am Handy bleibt sie in beiden Seiten fest unten in Daumenreichweite.
+- **Länderzeichen lesbar:** Das Land steht jetzt überall ausgeschrieben neben dem Zeichen (Cover: „in Deutschland
+  ab 14. November“; Artikel: „Einreise aus Deutschland visumfrei ab 1. Oktober 2024“). `.de .at .ch` oben rechts
+  ist entfernt (sah wie ein Umschalter aus). Erklärt wird das System dort, wo es unterscheidet: im Kopf von
+  „Diese Woche“ als Legende „.de Deutschland · .at Österreich · .ch Schweiz“.
+- **Ende des Covers:** Der Kopf von „Diese Woche“ steht auf Papier (rote Überschrift, graue Legende), erst die
+  Termine stehen auf Rot. So endet das Cover am Handy sichtbar, und Papier/Rot wechseln sich als Gegensatz ab.
+- **Tonlage Nachrichten:** Artikelüberschrift in Grau und Strichstärke 620 statt Rot 800; Rot nur noch für Rubrik
+  und Länderzeichen. Die volle Lautstärke bleibt Startseite, Kino und Kultur.
+- **„Mehr“:** Raster mit gleicher Zeilenhöhe statt Spalten; auf der Startseite ohne die vier Rubriken, die schon in
+  der Leiste stehen.
+- **Kopfwort:** Regel festgeschrieben: nur bei einem ersten Wort mit höchstens 8 Zeichen, sonst ganzer Titel in der
+  zweiten Größe; als Sicherung `overflow-wrap: anywhere`.
+- **Fokus auf dem Cover:** Ring je Teilfläche: Grau auf Papier, Papier mit grauer Innenkante auf Bild und Rot.
+- **P3 Artikelbild:** bündig mit der Textspalte (736 px breit, kleiner als die 900 Bildpixel). **P3 Cover Desktop:**
+  Textblock sitzt unten an der Leiste statt mittig.

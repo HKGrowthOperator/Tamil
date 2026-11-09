@@ -177,7 +177,7 @@ a { color: inherit; }
   hyphens: manual;
 }
 
-.cover-text .zeichen { font-size: 1.25rem; color: var(--grau); }
+.cover-text .zeichen { font-size: 1.1875rem; color: var(--grau); }
 .cover-text .zeichen .tld { font-size: 2.6em; }
 
 .cover-bild {
