@@ -50,7 +50,7 @@ def dokumente_aus_meldung(ctx: Kontext, story_id: int, item: NewsItem, publisher
     art = "hinweis" if ist_google(item.url) else "zusammenfassung"
     key = repo.dokument_hinzufuegen(
         ctx.store, story_id, url=item.url, uid=item.uid, publisher=publisher, quelle=source.name if source else item.source,
-        published_at=item.published.isoformat(timespec="minutes"), language=item.language,
+        published_at=(item.source_published or item.published).isoformat(timespec="minutes"), language=item.language,
         rights="zitat", primaer=trusted and art != "hinweis", art=art, titel=clean_text(item.title),
         text=clean_text(item.summary),
     )
@@ -69,7 +69,8 @@ def dokumente_aus_meldung(ctx: Kontext, story_id: int, item: NewsItem, publisher
     for rel in item.related[:4]:
         key = repo.dokument_hinzufuegen(
             ctx.store, story_id, url=rel.url, uid=rel.uid, publisher=rel.source, quelle=rel.source,
-            published_at=rel.published.isoformat(timespec="minutes"), language=rel.language, rights="zitat",
+            published_at=(rel.source_published or rel.published).isoformat(timespec="minutes"), language=rel.language,
+            rights="zitat",
             art="hinweis" if ist_google(rel.url) else "zusammenfassung", titel=clean_text(rel.title),
             text=clean_text(rel.summary),
         )

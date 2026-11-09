@@ -79,6 +79,23 @@ def test_tamil_feed_keeps_tamil_title_and_event_kind(monkeypatch):
     assert "சுவிட்சர்லாந்தில்" in items[0].title
 
 
+def test_feed_keeps_real_date_for_event_sources():
+    """Fund 09.11.: Termin-Quellen bekamen als Datum den Abrufzeitpunkt – alte Berichte aus dem Archiv der Rubrik
+    sahen frisch aus. `published` bleibt der Abrufzeitpunkt (Sortierung), das echte Datum steht daneben."""
+    now = datetime(2026, 11, 9, 20, tzinfo=timezone.utc)
+    events = Source(name="Swiss Tamil Info · Events", type="rss", url="https://x", language="ta", kind="event")
+    items = sources._feed_items((FIX / "swisstamilinfo_events.xml").read_bytes(), events, now=now)
+    assert [i.url.rsplit("/", 2)[-2] for i in items] == ["22670", "27129", "22741", "22541", "22051"]
+    assert all(i.published == now for i in items)
+    assert items[0].source_published == datetime(2026, 7, 12, tzinfo=timezone.utc)
+    assert items[1].source_published == datetime(2026, 10, 11, tzinfo=timezone.utc)
+    assert items[2].source_published is None  # Feed ohne Datum: unbekannt, nicht der Abrufzeitpunkt
+
+    news = Source(name="Swiss Tamil Info · Schweiz", type="rss", url="https://x", language="ta")
+    meldung = sources._feed_items((FIX / "swisstamilinfo_schweiz.xml").read_bytes(), news, now=now)[0]
+    assert meldung.published == meldung.source_published == datetime(2026, 11, 9, 15, tzinfo=timezone.utc)
+
+
 def test_fetch_html_with_selectors(monkeypatch, settings):
     monkeypatch.setattr(sources.requests, "get", lambda url, **kw: FakeResponse(FIX / "eventfrog_search.html"))
     src = next(s for s in settings.sources if s.name == "Eventfrog CH")
@@ -112,6 +129,11 @@ def test_fetch_wp_json_maps_fields(monkeypatch, settings):
     assert calls[0][0].endswith("/wp-json/wp/v2/mec-events") and calls[0][1]["search"] == "Saivanerikoodam"
     assert len(items) == 2 and items[0].kind == "event" and items[0].title.startswith("Verein Saivanerikoodam")
     assert "Murugan" in items[0].summary and items[0].url.startswith("https://haus-der-religionen.ch/events/")
+    # Kalendereintrag (eigener Beitragstyp): date_gmt ist das Anlagedatum, kein Veröffentlichungsdatum eines Berichts
+    assert items[0].source_published is None
+    artikel = Source(name="Portal", type="wp_json", url="https://x", endpoint="posts", kind="event")
+    assert sources.fetch_wp_json(artikel, settings)[0].source_published == datetime(2026, 2, 12, 7, 24, 21,
+                                                                                   tzinfo=timezone.utc)
 
 
 def test_parse_de_date():

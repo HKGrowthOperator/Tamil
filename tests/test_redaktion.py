@@ -365,6 +365,18 @@ def test_run_v2_records_run_and_processes_jobs_until_deadline(settings):
     assert run["modus"].startswith("v2") and run["finished_at"] and run["entwuerfe"] == 1
 
 
+def test_source_document_keeps_real_publication_date_of_event_report(settings):
+    """Bei Termin-Quellen ist `published` der Abrufzeitpunkt; in source_documents gehört das Datum der Quelle."""
+    echt = (NOW - timedelta(days=3)).replace(second=0, microsecond=0)
+    termin = meldung("Tamil Fest in Basel am 28. November", "Kulturabend der Gemeinde", url="https://swisstamilinfo.ch/30001/",
+                     source="Swiss Tamil Info · Events", kind="event", hours_old=0, source_published=echt)
+    with Store(settings.db_path) as store:
+        ctx = orchestrator.kontext(settings, store, client=FakeAnthropic(), fetch_text=lambda u: "", suche=lambda q: [])
+        assert orchestrator.scan(ctx, [termin])["storys"] == 1
+        datum = store.db.execute("SELECT published_at FROM source_documents WHERE url = ?", (termin.url,)).fetchone()[0]
+    assert datum == echt.isoformat(timespec="minutes")
+
+
 # ---- Review 2: Wiederholung, Quelle ergänzen, Agent-Import, Termin, Cluster -----------------------------------
 
 def _lichterfest(settings):

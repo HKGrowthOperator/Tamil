@@ -58,6 +58,9 @@ class NewsItem:
     fingerprint: str = ""
     uid_override: str = ""
     related: list["NewsItem"] = field(default_factory=list)
+    # Echtes Veröffentlichungsdatum laut Quelle (None = unbekannt). Bei Termin-Quellen ist `published` der
+    # Abrufzeitpunkt (Sortierung); erst dieses Feld zeigt, dass ein „neuer“ Treffer ein alter Bericht aus dem Archiv ist.
+    source_published: datetime | None = None
 
     @property
     def uid(self) -> str:
@@ -141,7 +144,8 @@ def _feed_items(content: bytes, source: Source, now: datetime | None = None) -> 
     items = []
     for entry in feed.entries:
         struct = entry.get("published_parsed") or entry.get("updated_parsed")
-        published = datetime.fromtimestamp(calendar.timegm(struct), tz=timezone.utc) if struct else now
+        echt = datetime.fromtimestamp(calendar.timegm(struct), tz=timezone.utc) if struct else None
+        published = echt or now
         image = ""
         for media in entry.get("media_content", []) + entry.get("media_thumbnail", []):
             if media.get("url"):
@@ -159,6 +163,7 @@ def _feed_items(content: bytes, source: Source, now: datetime | None = None) -> 
                 image_url=image,
                 language=source.language,
                 kind=source.kind,
+                source_published=echt,
             )
         )
     return items
@@ -193,6 +198,7 @@ def fetch_newsapi(source: Source, settings: Settings) -> list[NewsItem]:
             published=_parse_iso(a.get("publishedAt")),
             image_url=a.get("urlToImage") or "",
             language=source.language,
+            source_published=_parse_iso(a["publishedAt"]) if a.get("publishedAt") else None,
         )
         for a in resp.json().get("articles", [])
     ]
@@ -216,6 +222,7 @@ def fetch_gnews(source: Source, settings: Settings) -> list[NewsItem]:
             published=_parse_iso(a.get("publishedAt")),
             image_url=a.get("image") or "",
             language=source.language,
+            source_published=_parse_iso(a["publishedAt"]) if a.get("publishedAt") else None,
         )
         for a in resp.json().get("articles", [])
     ]
@@ -275,10 +282,13 @@ def fetch_wp_json(source: Source, settings: Settings) -> list[NewsItem]:
     for post in resp.json():
         title = clean_text((post.get("title") or {}).get("rendered", ""))
         summary = clean_text((post.get("excerpt") or {}).get("rendered") or (post.get("content") or {}).get("rendered") or "")
+        roh = post.get("date_gmt") or post.get("date")
+        # Nur Beiträge haben ein Veröffentlichungsdatum; bei Kalendereinträgen (mec-events & Co.) ist es das Anlagedatum
+        echt = _parse_iso(roh) if roh and source.endpoint == "posts" else None
         items.append(NewsItem(
             title=title, url=post.get("link", ""), summary=summary[:1200], source=source.name,
-            published=_parse_iso(post.get("date_gmt") or post.get("date")) if source.kind == "news" else now,
-            language=source.language, kind=source.kind,
+            published=_parse_iso(roh) if source.kind == "news" else now,
+            language=source.language, kind=source.kind, source_published=echt,
         ))
     return items
 
@@ -355,6 +365,8 @@ def fetch_html(source: Source, settings: Settings) -> list[NewsItem]:
             published=now if source.kind != "news" else (when.astimezone(timezone.utc) if when else now),
             language=source.language, kind=source.kind, ort=ort,
             facts={"event_datum": when.date().isoformat() if when else "", "event_ort": ort},
+            # bei Termin-Seiten ist das Datum der Termin (steht in facts), kein Veröffentlichungsdatum
+            source_published=when.astimezone(timezone.utc) if when and source.kind == "news" else None,
         ))
     return items
 
