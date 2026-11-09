@@ -75,3 +75,38 @@ def test_weekly_report_and_digest_include_costs_and_problems(settings):
         digest = notify.digest(settings, store)
     assert "Annahmequote 50%" in text and "$0.12" in text and "1 abgebrochene Jobs" in text
     assert "Kosten" in digest and "Recherche nötig" in digest and "abgebrochene Jobs" in digest
+
+
+def test_blind_comparison_sheet_hides_models_and_evaluates(settings, tmp_path):
+    import csv
+
+    from news_radar import bewertung
+    from news_radar.sources import NewsItem
+    from news_radar.workflow import orchestrator
+    from news_radar.workflow.fake import FakeAnthropic
+    from datetime import datetime, timezone
+
+    text = ("Die tamilische Gemeinde in Hamm feiert am Samstag, 14. November, ihr Lichterfest im Tempel. "
+            "Erwartet werden rund 3000 Besucherinnen und Besucher aus ganz Deutschland. "
+            "Die Feier beginnt um 10 Uhr mit einer Prozession, der Eintritt ist frei. "
+            "Veranstalter ist der Tempelverein, der seit 2002 in Hamm aktiv ist und jedes Jahr einlädt.")
+    item = NewsItem(title="Tamilisches Lichterfest im Tempel Hamm", url="https://rn.example/l", summary="Fest",
+                    source="RN", published=datetime.now(timezone.utc))
+    with Store(settings.db_path) as store:
+        ctx = orchestrator.kontext(settings, store, client=FakeAnthropic(), fetch_text=lambda u: text, suche=lambda q: [])
+        orchestrator.scan(ctx, [item])
+        orchestrator.abarbeiten(ctx)
+        out = bewertung.vergleich(ctx, tmp_path / "bw", anzahl=5, seed=1)
+        modelle = [r["kwargs"]["model"] for r in ctx.claude.client.requests if r["rolle"] == "text"][-2:]
+    assert out["fassungen"] == 2 and sorted(modelle) == ["claude-opus-5-5", "claude-sonnet-5-5"]
+    zeilen = list(csv.DictReader((tmp_path / "bw" / "bogen.csv").open(encoding="utf-8-sig"), delimiter=";"))
+    assert "claude" not in (tmp_path / "bw" / "bogen.csv").read_text(encoding="utf-8-sig")
+    for z in zeilen:
+        z.update(richtigkeit_1_5="4" if z["fassung"] == "A" else "2", stil_1_5="3", verstaendlichkeit_1_5="5",
+                 wuerde_freigeben_ja_nein="ja" if z["fassung"] == "A" else "nein")
+    with (tmp_path / "bw" / "bogen.csv").open("w", newline="", encoding="utf-8-sig") as fh:
+        w = csv.DictWriter(fh, fieldnames=list(zeilen[0]), delimiter=";")
+        w.writeheader()
+        w.writerows(zeilen)
+    werte = bewertung.auswerten(tmp_path / "bw" / "bogen.csv", tmp_path / "bw" / "schluessel.json")
+    assert sorted(w["richtigkeit"] for w in werte.values()) == [2.0, 4.0]

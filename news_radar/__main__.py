@@ -20,6 +20,7 @@
   sicherung erstellen | pruefen | wiederherstellen – Datenbank und Bilder (deploy/backup.sh, deploy/restore.sh)
   bericht   --woche: Annahmequote, Fehler, Kosten je Artikel der letzten 7 Tage
   abnahme   51 Szenarien mit FakeClaude durchspielen, Kriterien K1–K9 messen (--bericht Datei)
+  bewertung vergleich (Sonnet vs. Opus blind, braucht Schlüssel) | bogen (letzte Entwürfe) | auswerten
 
 Mit RADAR_WORKFLOW=v2 legt `run` Storys und Jobs an (Redaktion v2); `run --mit-jobs` arbeitet sie bis zur Deadline ab.
 """
@@ -144,6 +145,10 @@ def main(argv: list[str] | None = None) -> int:
     ber = sub.add_parser("bericht", help="Wochenbericht der Redaktion")
     ber.add_argument("--woche", action="store_true", help="letzte 7 Tage (Standard)")
     ber.add_argument("--tage", type=int, default=7)
+    bw = sub.add_parser("bewertung", help="Blindbewertung der Texte (Pilot)")
+    bw.add_argument("aktion", choices=("vergleich", "bogen", "auswerten"))
+    bw.add_argument("--anzahl", type=int, default=10)
+    bw.add_argument("--ordner", default="data/bewertung")
     ab = sub.add_parser("abnahme", help="Abnahme-Szenarien mit FakeClaude")
     ab.add_argument("--bericht", default="data/abnahme-bericht.md")
     ab.add_argument("--nur", type=int, nargs="*", help="nur diese Szenario-Nummern")
@@ -226,6 +231,26 @@ def main(argv: list[str] | None = None) -> int:
 
         with Store(settings.db_path) as store:
             print(repo.wochenbericht_text(store, args.tage))
+        return 0
+
+    if args.cmd == "bewertung":
+        from . import bewertung
+
+        ordner = Path(args.ordner)
+        if args.aktion == "auswerten":
+            for modell, werte in bewertung.auswerten(ordner / "bogen.csv", ordner / "schluessel.json").items():
+                print(f"{modell:20} {werte}")
+            return 0
+        with Store(settings.db_path) as store:
+            if args.aktion == "bogen":
+                print(f"Bogen → {bewertung.bogen_aus_entwuerfen(store, settings, ordner, args.anzahl)}")
+                return 0
+            if not os.environ.get("ANTHROPIC_API_KEY"):
+                raise SystemExit("Der Modellvergleich braucht ANTHROPIC_API_KEY (zwei Textaufrufe je Story).")
+            from .workflow import orchestrator
+
+            out = bewertung.vergleich(orchestrator.kontext(settings, store), ordner, args.anzahl)
+        print(f"{out['storys']} Storys, {out['fassungen']} Fassungen → {out['bogen']} (Schlüssel erst nach der Bewertung öffnen)")
         return 0
 
     if args.cmd == "kosten":
