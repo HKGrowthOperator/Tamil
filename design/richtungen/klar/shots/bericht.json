@@ -1,0 +1,62 @@
+{
+  "stand": "2026-11-09T22:56:08.506Z",
+  "ergebnisse": [
+    {
+      "ziel": "design/richtungen/klar/index.html",
+      "url": "http://127.0.0.1:41595/design/richtungen/klar/index.html",
+      "breite": 390,
+      "status": 200,
+      "datei": "design/richtungen/klar/shots/design-richtungen-klar-index-390.png",
+      "kacheln": [
+        "design/richtungen/klar/shots/design-richtungen-klar-index-390-k0.png",
+        "design/richtungen/klar/shots/design-richtungen-klar-index-390-k1.png",
+        "design/richtungen/klar/shots/design-richtungen-klar-index-390-k2.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "design/richtungen/klar/index.html",
+      "url": "http://127.0.0.1:41595/design/richtungen/klar/index.html",
+      "breite": 820,
+      "status": 200,
+      "datei": "design/richtungen/klar/shots/design-richtungen-klar-index-820.png",
+      "kacheln": [
+        "design/richtungen/klar/shots/design-richtungen-klar-index-820-k0.png",
+        "design/richtungen/klar/shots/design-richtungen-klar-index-820-k1.png",
+        "design/richtungen/klar/shots/design-richtungen-klar-index-820-k2.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "design/richtungen/klar/index.html",
+      "url": "http://127.0.0.1:41595/design/richtungen/klar/index.html",
+      "breite": 1280,
+      "status": 200,
+      "datei": "design/richtungen/klar/shots/design-richtungen-klar-index-1280.png",
+      "kacheln": [
+        "design/richtungen/klar/shots/design-richtungen-klar-index-1280-k0.png",
+        "design/richtungen/klar/shots/design-richtungen-klar-index-1280-k1.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    }
+  ],
+  "fehler": 0
+}
