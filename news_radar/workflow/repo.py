@@ -333,3 +333,35 @@ def nutzer_anzahl(store) -> int:
 
 def json_feld(value: Any) -> str:
     return json.dumps(value, ensure_ascii=False, default=str)
+
+
+def wochenbericht(store, tage: int = 7) -> dict:
+    """Annahmequote, Fehler und Kosten je Artikel: die Kennzahlen des Pilotbetriebs."""
+    since = (datetime.now(timezone.utc) - timedelta(days=tage)).isoformat(timespec="seconds")
+    q = store.db.execute
+    entwuerfe = q("SELECT COUNT(*) FROM drafts WHERE created_at >= ?", (since,)).fetchone()[0]
+    angenommen = q("SELECT COUNT(*) FROM drafts WHERE created_at >= ? AND status IN "
+                   "('freigegeben', 'wird_veroeffentlicht', 'veroeffentlicht', 'in_wordpress')", (since,)).fetchone()[0]
+    abgelehnt = q("SELECT COUNT(*) FROM drafts WHERE created_at >= ? AND status = 'abgelehnt'", (since,)).fetchone()[0]
+    storys = {r[0]: r[1] for r in q("SELECT status, COUNT(*) FROM stories WHERE erstellt >= ? GROUP BY status", (since,))}
+    kosten = kosten_bericht(store, tage)
+    tote = q("SELECT COUNT(*) FROM workflow_jobs WHERE status = 'tot' AND aktualisiert >= ?", (since,)).fetchone()[0]
+    fehlversuche = q("SELECT COUNT(*) FROM agent_usage WHERE ts >= ? AND status != 'ok'", (since,)).fetchone()[0]
+    entschieden = angenommen + abgelehnt
+    return {
+        "tage": tage, "entwuerfe": entwuerfe, "angenommen": angenommen, "abgelehnt": abgelehnt,
+        "annahmequote": round(angenommen / entschieden, 2) if entschieden else None,
+        "storys": storys, "recherche_noetig": storys.get("recherche_erforderlich", 0),
+        "kosten_usd": kosten["gesamt_usd"], "kosten_je_entwurf": kosten["je_entwurf_usd"],
+        "jobs_abgebrochen": tote, "fehlversuche": fehlversuche,
+    }
+
+
+def wochenbericht_text(store, tage: int = 7) -> str:
+    b = wochenbericht(store, tage)
+    quote = f"{b['annahmequote']:.0%}" if b["annahmequote"] is not None else "–"
+    je = f"${b['kosten_je_entwurf']:.3f}" if b["kosten_je_entwurf"] else "–"
+    return (f"Radar – letzte {tage} Tage: {b['entwuerfe']} Entwürfe, {b['angenommen']} angenommen, {b['abgelehnt']} "
+            f"abgelehnt (Annahmequote {quote}); {b['recherche_noetig']} Storys „Recherche nötig“; Kosten "
+            f"${b['kosten_usd']:.2f} ({je} je Entwurf); {b['jobs_abgebrochen']} abgebrochene Jobs, "
+            f"{b['fehlversuche']} Fehlversuche bei Modellaufrufen.")

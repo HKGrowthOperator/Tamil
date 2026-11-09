@@ -17,6 +17,8 @@
   worker    Redaktion v2: Jobs abarbeiten (Dienst; --einmal leert die Schlange und beendet)
   dossier   Entwurf als Dossier recherchieren lassen (--entwurf ID)
   nutzer    anlegen | sperren | liste – Benutzer der Freigabe-App (Rollen redaktion, admin)
+  sicherung erstellen | pruefen | wiederherstellen – Datenbank und Bilder (deploy/backup.sh, deploy/restore.sh)
+  bericht   --woche: Annahmequote, Fehler, Kosten je Artikel der letzten 7 Tage
 
 Mit RADAR_WORKFLOW=v2 legt `run` Storys und Jobs an (Redaktion v2); `run --mit-jobs` arbeitet sie bis zur Deadline ab.
 """
@@ -120,6 +122,7 @@ def main(argv: list[str] | None = None) -> int:
     pool.add_argument("aktion", choices=("status", "fuellen"))
     pool.add_argument("--thema", help="nur dieses Thema füllen")
     pool.add_argument("--anzahl", type=int, default=3, help="Zielbestand je Thema")
+    pool.add_argument("--mit-budget", action="store_true", help="Kosten messen und am Budget stoppen (für den Timer)")
     quellen = sub.add_parser("quellen", help="Quellen-Register prüfen bzw. anzeigen")
     quellen.add_argument("aktion", choices=("pruefen", "liste"))
     quellen.add_argument("--file", default="data/quellen-pruefung.csv")
@@ -133,6 +136,13 @@ def main(argv: list[str] | None = None) -> int:
     nu.add_argument("aktion", choices=("anlegen", "sperren", "liste"))
     nu.add_argument("name", nargs="?")
     nu.add_argument("--rolle", default="redaktion", choices=("redaktion", "admin"))
+    sich = sub.add_parser("sicherung", help="Sicherung und Wiederherstellung")
+    sich.add_argument("aktion", choices=("erstellen", "pruefen", "wiederherstellen"))
+    sich.add_argument("--ziel", default="", help="Ordner der Sicherungen (Standard: <App>/backup)")
+    sich.add_argument("--datum", default="", help="pruefen/wiederherstellen: Stand YYYY-MM-DD")
+    ber = sub.add_parser("bericht", help="Wochenbericht der Redaktion")
+    ber.add_argument("--woche", action="store_true", help="letzte 7 Tage (Standard)")
+    ber.add_argument("--tage", type=int, default=7)
     kosten = sub.add_parser("kosten", help="Kosten je Rolle/Modell/Tag und Budgetstand")
     kosten.add_argument("--tage", type=int, default=30)
     kosten.add_argument("--csv", help="alle Aufrufe des Zeitraums als CSV (Fremdkostenabrechnung)")
@@ -175,6 +185,29 @@ def main(argv: list[str] | None = None) -> int:
             print(f"{p.punkte:6.1f}  {p.treffer_jetzt:5} {p.treffer_14_tage:5} {p.entwuerfe_db:5}  {p.robots:9} "
                   f"{p.empfehlung:11} {p.name}{'  (' + p.fehler + ')' if p.fehler else ''}")
         print(f"\n→ {args.file}")
+        return 0
+
+    if args.cmd == "sicherung":
+        from . import sicherung
+
+        ziel = Path(args.ziel) if args.ziel else settings.data_dir.parent / "backup"
+        if args.aktion == "erstellen":
+            out = sicherung.erstellen(settings.data_dir, ziel)
+            print(f"Sicherung: {out['datenbank']} · {out['bilder']}")
+            return 0
+        if not args.datum:
+            raise SystemExit("--datum YYYY-MM-DD fehlt")
+        if args.aktion == "pruefen":
+            print(sicherung.pruefen(ziel / f"radar-{args.datum}.sqlite"))
+            return 0
+        print(f"Wiederhergestellt: {sicherung.wiederherstellen(settings.data_dir, ziel, args.datum)}")
+        return 0
+
+    if args.cmd == "bericht":
+        from .workflow import repo
+
+        with Store(settings.db_path) as store:
+            print(repo.wochenbericht_text(store, args.tage))
         return 0
 
     if args.cmd == "kosten":
@@ -287,7 +320,14 @@ def main(argv: list[str] | None = None) -> int:
         if args.aktion == "fuellen":
             if not settings.gemini_key:
                 raise SystemExit("GEMINI_API_KEY fehlt – ohne Bild-KI lässt sich der Pool nicht füllen.")
-            erzeugt = pool.fuellen(settings, thema=args.thema, anzahl=args.anzahl)
+            if args.mit_budget:
+                from .workflow.providers import budget_fuer
+
+                with Store(settings.db_path) as store:
+                    erzeugt = pool.fuellen(settings, thema=args.thema, anzahl=args.anzahl, store=store,
+                                           budget=budget_fuer(settings, store))
+            else:
+                erzeugt = pool.fuellen(settings, thema=args.thema, anzahl=args.anzahl)
             print(f"{sum(erzeugt.values())} Bilder erzeugt: " + (", ".join(f"{t} +{n}" for t, n in erzeugt.items()) or "nichts fehlte"))
         status = pool.status()
         print(f"Bildpool {settings.bildpool_dir}: {sum(s['anzahl'] for s in status.values())} Bilder in {len(status)} Themen")

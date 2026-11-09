@@ -165,8 +165,12 @@ class BildPool:
         return FeaturedImage(data, f"{slug}.jpg", "image/jpeg", entry.get("credit") or KI_CREDIT, "pool")
 
     def fuellen(self, settings: Settings, thema: str | None = None, anzahl: int = 3,
-                transport: Transport | None = None) -> dict[str, int]:
-        """Erzeugt fehlende Bilder je Thema aus den Motiv-Prompts in prompts/bildpool.md."""
+                transport: Transport | None = None, store=None, budget=None) -> dict[str, int]:
+        """Erzeugt fehlende Bilder je Thema aus den Motiv-Prompts in prompts/bildpool.md.
+
+        Mit `store`/`budget` (Timer): jedes Bild wird vorher reserviert und als Kosten protokolliert; ist das Budget
+        erreicht, hört das Auffüllen auf.
+        """
         themen = [thema] if thema else prompts.thema_slugs()
         erzeugt: dict[str, int] = {}
         for t in themen:
@@ -176,7 +180,28 @@ class BildPool:
                 continue
             for n in range(self.anzahl(t), anzahl):
                 prompt = prompts.bild_prompt_bauen(motiv, t)
-                image = from_gemini(prompt, settings, f"{t}-{n + 1}", transport)
+                reservierung = None
+                if budget is not None:
+                    from .workflow.costs import BudgetErschoepft, bild_kosten
+
+                    try:
+                        reservierung = budget.reservieren(bild_kosten(settings.bild_modell, settings.bild_groesse), "bildpool")
+                    except BudgetErschoepft as exc:
+                        log.warning("Bildpool: %s", exc)
+                        return erzeugt
+                try:
+                    image = from_gemini(prompt, settings, f"{t}-{n + 1}", transport)
+                finally:
+                    if reservierung is not None:
+                        budget.freigeben(reservierung)
+                if store is not None:
+                    from .workflow.costs import bild_kosten
+                    from .workflow.providers import usage_protokollieren
+
+                    usage_protokollieren(store, rolle="bildpool", provider="gemini", modell_angefragt=settings.bild_modell,
+                                         modell=settings.bild_modell, bilder=1 if image else 0,
+                                         usd=bild_kosten(settings.bild_modell, settings.bild_groesse) if image else 0.0,
+                                         status="ok" if image else "fehler")
                 if image is None:
                     break
                 self.add(t, image, prompt)

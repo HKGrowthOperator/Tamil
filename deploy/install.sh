@@ -12,17 +12,26 @@ cp sources.toml requirements.txt "$APP/"
 "$APP/.venv/bin/pip" install -q --upgrade pip
 "$APP/.venv/bin/pip" install -q -r "$APP/requirements.txt"
 cp deploy/backup.sh "$APP/backup.sh"
+cp deploy/restore.sh "$APP/restore.sh"
 chown -R newsradar: "$APP"
 chmod 600 "$APP/.env"
 cp deploy/news-radar.service deploy/news-radar.timer deploy/news-radar-web.service \
-   deploy/news-radar-digest.service deploy/news-radar-digest.timer /etc/systemd/system/
+   deploy/news-radar-digest.service deploy/news-radar-digest.timer \
+   deploy/news-radar-worker.service deploy/news-radar-bildpool.service deploy/news-radar-bildpool.timer /etc/systemd/system/
 systemctl daemon-reload
 systemctl enable --now news-radar.timer news-radar-digest.timer news-radar-web.service
 systemctl restart news-radar-web.service
+# Redaktion v2: Worker und Bildpool nur, wenn RADAR_WORKFLOW=v2 in der .env steht
+if grep -q '^RADAR_WORKFLOW=v2' "$APP/.env"; then
+  systemctl enable --now news-radar-worker.service news-radar-bildpool.timer
+  systemctl restart news-radar-worker.service
+fi
 echo "0 3 * * * newsradar $APP/backup.sh" > /etc/cron.d/tamil-news-radar
 echo
 echo "Fertig."
 echo "  Status:    systemctl list-timers 'news-radar*' ; systemctl status news-radar-web"
-echo "  Logs:      journalctl -u news-radar -u news-radar-web -f"
+echo "  Logs:      journalctl -u news-radar -u news-radar-web -u news-radar-worker -f"
+echo "  Kosten:    sudo -u newsradar $APP/.venv/bin/python -m news_radar kosten   (in $APP)"
+echo "  Restore:   sudo $APP/restore.sh YYYY-MM-DD   (Stände: ls $APP/backup)"
 echo "  App lokal: curl http://127.0.0.1:8787/gesund   (nach außen: deploy/cloudflared-ingress.yml)"
 echo "  Erstbefüllung: sudo -u newsradar $APP/.venv/bin/python -m news_radar run --max-age-hours 336  (in $APP)"

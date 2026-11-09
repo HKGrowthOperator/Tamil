@@ -48,6 +48,34 @@ def digest(settings: Settings, store: Store) -> str:
         ort = f" · {d['ort']}" if d.get("ort") else ""
         lines.append(f"• [{d['kategorie']}] {d['titel']} (Relevanz {d['relevanz']}{ort}) – {settings.web_url}/entwurf/{d['id']}")
     lines.append(f"Alle Entwürfe: {settings.web_url}/")
+    lines += _redaktion_v2(settings, store)
     text = "\n".join(lines)
     _post(settings, text)
     return text
+
+
+def _redaktion_v2(settings: Settings, store: Store) -> list[str]:
+    """Kosten und Probleme der letzten 24 Stunden (Redaktion v2); leer, solange nichts gemessen wurde."""
+    from .workflow import jobs, repo
+    from .workflow.providers import budget_fuer
+
+    bericht = repo.kosten_bericht(store, 1)
+    stand = budget_fuer(settings, store).stand()
+    zaehler = jobs.zaehlen(store)
+    recherche = store.db.execute("SELECT COUNT(*) FROM stories WHERE status = 'recherche_erforderlich'").fetchone()[0]
+    if not bericht["je_rolle"] and not any(zaehler.values()) and not recherche:
+        return []
+    zeilen = [f"💶 Kosten gestern/heute: ${bericht['gesamt_usd']:.2f} · Monat ${stand['monat_usd']:.2f} von "
+              f"${stand['monat_limit']:.2f}" + (" · BUDGET ERREICHT" if stand["stopp"] else "")]
+    probleme = []
+    if recherche:
+        probleme.append(f"{recherche} Storys „Recherche nötig“ ({settings.web_url}/recherche)")
+    if zaehler["tot"]:
+        probleme.append(f"{zaehler['tot']} abgebrochene Jobs ({settings.web_url}/warteschlange?status=tot)")
+    if zaehler["wartet_budget"]:
+        probleme.append(f"{zaehler['wartet_budget']} Jobs warten aufs Budget")
+    if bericht["fehler"]:
+        probleme.append(f"{len(bericht['fehler'])} Fehlversuche bei Modellaufrufen")
+    if probleme:
+        zeilen.append("⚠️ " + " · ".join(probleme))
+    return zeilen
