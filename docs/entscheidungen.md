@@ -5,6 +5,12 @@ Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
 ## 09.11.2026
 
+- **Design-Runde 1, Ergebnis der Kritik:** `zine`, `raster` und `feed` bestehen nach einer Überarbeitung mit je
+  28/40 und kommen auf die Vergleichsseite. `plakatwand` erreicht 29/40, hat aber ein offenes P1 und wird nach der
+  Regel „nur bestandene“ nicht gezeigt. Stand in `docs/abnahme/2026-11-09-G2.md`. · Ablauf `/design-runde`
+- **Radar: keine Ländernamen in der Ausland-Liste.** „Sri Lanka“ oder „Indien“ stehen in fast jedem Bericht der
+  Diaspora und würden echte Termine ohne bekannte Stadt verwerfen; in der Liste stehen nur Orte. Altersgrenze für
+  Termin-Berichte: 30 Tage (`RADAR_EVENT_MAX_ALTER_TAGE`). · Code-Review, Hauptsitzung
 - **Tor G1 bestätigt (vorläufig):** Brief `design/brief.md` mit den Vorbildern des Scouts; die Auswahl des
   Auftraggebers fließt bis G2 ein. Alle vier Richtungen gehen in die Skizzenrunde. · Luis · Die Runde soll nicht auf
   die Rückmeldung warten.
