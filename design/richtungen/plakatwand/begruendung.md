@@ -105,7 +105,8 @@ derselben Schrift, aber normal umbrochen und ruhig.
   der Rest wird in Zeilen von etwa 12 bis 18 Zeichen geteilt. Am Handy bleibt die Überschrift so im ersten Bildschirm;
   wird sie zu hoch, wird der Bildbogen niedriger, nie die Schrift kleiner als 40 px.
 - **Viele und wenige Spielorte:** gezeigt mit „Scene“ (11) und „Ramayana“ (2). Der Kassenblock wächst, der
-  Plakatsatz bleibt; am Desktop ist der Bogen mit vielen Orten der große.
+  Plakatsatz bleibt. Am Desktop stehen die beiden Kino-Bogen nebeneinander, die Kassenblöcke unten bündig; der
+  Fest-Bogen klebt rot und quer darunter (Datum links auf Bogenbreite, Angaben rechts).
 - **Fokus und Bewegung:** Jeder Link hat einen sichtbaren Fokusrahmen (Tinte auf Papier, Papier auf Rot). Es gibt
   keine automatische Bewegung; die einzige Überblendung beim Zeigen ist unter `prefers-reduced-motion` abgeschaltet.
 

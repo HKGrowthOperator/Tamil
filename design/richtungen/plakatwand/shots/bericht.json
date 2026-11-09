@@ -1,0 +1,114 @@
+{
+  "stand": "2026-11-09T20:37:48.187Z",
+  "ergebnisse": [
+    {
+      "ziel": "design/richtungen/plakatwand/index.html",
+      "url": "http://127.0.0.1:38861/design/richtungen/plakatwand/index.html",
+      "breite": 390,
+      "status": 200,
+      "datei": "design/richtungen/plakatwand/shots/design-richtungen-plakatwand-index-390.png",
+      "kacheln": [
+        "design/richtungen/plakatwand/shots/design-richtungen-plakatwand-index-390-k0.png",
+        "design/richtungen/plakatwand/shots/design-richtungen-plakatwand-index-390-k1.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "design/richtungen/plakatwand/artikel.html",
+      "url": "http://127.0.0.1:38861/design/richtungen/plakatwand/artikel.html",
+      "breite": 390,
+      "status": 200,
+      "datei": "design/richtungen/plakatwand/shots/design-richtungen-plakatwand-artikel-390.png",
+      "kacheln": [
+        "design/richtungen/plakatwand/shots/design-richtungen-plakatwand-artikel-390-k0.png",
+        "design/richtungen/plakatwand/shots/design-richtungen-plakatwand-artikel-390-k1.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "design/richtungen/plakatwand/index.html",
+      "url": "http://127.0.0.1:38861/design/richtungen/plakatwand/index.html",
+      "breite": 820,
+      "status": 200,
+      "datei": "design/richtungen/plakatwand/shots/design-richtungen-plakatwand-index-820.png",
+      "kacheln": [
+        "design/richtungen/plakatwand/shots/design-richtungen-plakatwand-index-820-k0.png",
+        "design/richtungen/plakatwand/shots/design-richtungen-plakatwand-index-820-k1.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "design/richtungen/plakatwand/artikel.html",
+      "url": "http://127.0.0.1:38861/design/richtungen/plakatwand/artikel.html",
+      "breite": 820,
+      "status": 200,
+      "datei": "design/richtungen/plakatwand/shots/design-richtungen-plakatwand-artikel-820.png",
+      "kacheln": [
+        "design/richtungen/plakatwand/shots/design-richtungen-plakatwand-artikel-820-k0.png",
+        "design/richtungen/plakatwand/shots/design-richtungen-plakatwand-artikel-820-k1.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "design/richtungen/plakatwand/index.html",
+      "url": "http://127.0.0.1:38861/design/richtungen/plakatwand/index.html",
+      "breite": 1280,
+      "status": 200,
+      "datei": "design/richtungen/plakatwand/shots/design-richtungen-plakatwand-index-1280.png",
+      "kacheln": [
+        "design/richtungen/plakatwand/shots/design-richtungen-plakatwand-index-1280-k0.png",
+        "design/richtungen/plakatwand/shots/design-richtungen-plakatwand-index-1280-k1.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "design/richtungen/plakatwand/artikel.html",
+      "url": "http://127.0.0.1:38861/design/richtungen/plakatwand/artikel.html",
+      "breite": 1280,
+      "status": 200,
+      "datei": "design/richtungen/plakatwand/shots/design-richtungen-plakatwand-artikel-1280.png",
+      "kacheln": [
+        "design/richtungen/plakatwand/shots/design-richtungen-plakatwand-artikel-1280-k0.png",
+        "design/richtungen/plakatwand/shots/design-richtungen-plakatwand-artikel-1280-k1.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    }
+  ],
+  "fehler": 0
+}

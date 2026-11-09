@@ -130,6 +130,7 @@ a { color: inherit; }
 }
 .daumen a {
   flex: 1 1 auto;
+  min-width: 64px;
   min-height: var(--daumen-h);
   display: flex; align-items: center; justify-content: center;
   padding-inline: 6px;
@@ -143,7 +144,8 @@ a { color: inherit; }
    STARTSEITE · Die Wand
    ========================================================= */
 .wand {
-  --r-titel: 3.4;
+  --r-titel: 3.4;      /* Breite der Titelzeile in em (je Beitrag gemessen) */
+  --zusatz-hoehe: 0.8; /* Höhe der Zusatzzeilen als Anteil der Wandbreite (je Beitrag gemessen) */
   container-type: inline-size;
   background: var(--rot);
   color: var(--papier);
@@ -162,7 +164,8 @@ a { color: inherit; }
 .wand-bild {
   grid-row: 1;
   margin-inline: calc(-1 * var(--rand));
-  height: clamp(190px, calc(100svh - var(--kopf-h) - var(--daumen-h) - 2.25 * 100cqi / 5.6 * 0.98 * 2 - var(--titel-h) * 0.6 - 76px), 340px);
+  /* Das Bild gibt nach, nicht die Schrift: die ganze Überschrift bleibt im ersten Bildschirm */
+  height: clamp(180px, calc(100svh - var(--kopf-h) - var(--daumen-h) - 0.58 * var(--titel-h) - var(--zusatz-hoehe) * (100cqi - 2 * var(--rand)) - 112px), 340px);
   overflow: hidden;
   background: var(--tinte);
 }
@@ -206,7 +209,7 @@ a { color: inherit; }
 @media (min-width: 760px) {
   .wand-flaeche {
     grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-    grid-template-rows: var(--titel-h) auto;
+    grid-template-rows: var(--titel-h) auto auto;
     column-gap: var(--spalt);
     padding: clamp(20px, 3vw, 36px) var(--rand) clamp(24px, 3vw, 40px);
   }
@@ -220,14 +223,14 @@ a { color: inherit; }
     margin-top: clamp(16px, 2.2vw, 30px);
   }
   .wand-bild {
-    grid-column: 2; grid-row: 2;
+    grid-column: 2; grid-row: 2 / 4;
     margin: calc(-0.14 * var(--titel-h)) calc(-1 * var(--rand)) 0 0;
     height: clamp(300px, 36cqi, 538px);
   }
   .wand-fuss {
-    grid-column: 1; grid-row: 2;
+    grid-column: 1; grid-row: 3;
     align-self: end;
-    margin-top: 0;
+    margin-top: 18px;
   }
 }
 
@@ -294,16 +297,23 @@ a { color: inherit; }
 @media (min-width: 760px) {
   .aushang {
     display: grid;
-    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-    grid-template-rows: auto auto;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     column-gap: var(--spalt);
   }
-  .bogen-gross { grid-column: 1; grid-row: 1 / 3; }
-  .bogen-gross .bogen-flaeche { padding-bottom: 32px; }
-  .bogen-gross .kasse { margin-top: auto; }
-  .bogen-schmal { grid-column: 2; grid-row: 1; }
-  .bogen-fest { grid-column: 2; grid-row: 2; margin-inline: 0; }
-  .bogen-fest .bogen-flaeche { padding-inline: clamp(16px, 2vw, 28px); }
+  .bogen-gross .kasse, .bogen-schmal .kasse { margin-top: auto; }
+  /* Der Fest-Bogen klebt quer unter beiden: Datum links auf Bogenbreite, Angaben rechts */
+  .bogen-fest { grid-column: 1 / -1; margin: 12px 0 0; }
+  .bogen-fest .bogen-flaeche {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    grid-template-rows: auto auto 1fr;
+    column-gap: var(--spalt);
+    padding: clamp(18px, 2.4vw, 32px) clamp(16px, 2.4vw, 32px) clamp(22px, 2.6vw, 36px);
+  }
+  .bogen-fest .bogen-art { grid-column: 1; grid-row: 1; }
+  .bogen-fest .bogen-satz { grid-column: 1; grid-row: 2 / 4; margin-bottom: 0; }
+  .bogen-fest .bogen-name { grid-column: 2; grid-row: 2; margin: 12px 0 10px; font-size: clamp(2rem, 1.2rem + 2vw, 3rem); }
+  .bogen-fest .kasse { grid-column: 2; grid-row: 3; }
 }
 
 /* ---------- Fuß ---------- */
@@ -317,7 +327,7 @@ a { color: inherit; }
 }
 .fuss-liste { display: flex; flex-wrap: wrap; gap: 0 22px; }
 .fuss-liste a, .fuss-kanal a {
-  display: inline-flex; align-items: center; min-height: 44px; font-weight: 600;
+  display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; font-weight: 600;
 }
 .fuss-kanal { margin-top: 8px; }
 .fuss-hinweis { margin-top: 16px; font-size: 1rem; color: var(--grau); max-width: 60ch; }
@@ -326,7 +336,7 @@ a { color: inherit; }
    ARTIKEL · ruhig
    ========================================================= */
 .artikel {
-  --spalte: min(40rem, 100%);
+  --spalte: min(40rem, 100% - 2 * var(--rand));
   display: grid;
   grid-template-columns: [voll-start] minmax(var(--rand), 1fr) [text-start] var(--spalte) [text-end] minmax(var(--rand), 1fr) [voll-end];
   padding-top: clamp(20px, 5vw, 72px);
@@ -394,18 +404,13 @@ a { color: inherit; }
   line-height: 1.62;
 }
 .artikel-text p + ul { margin-top: 14px; }
-.laender {
-  columns: 2; column-gap: 28px;
-  list-style: square; padding-left: 1.2em;
+.laender-block {
+  margin-top: 14px;
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 24px;
 }
-.laender + .laender { margin-top: 0; }
-.laender li { break-inside: avoid; padding-left: 2px; }
+.laender { list-style: square; padding-left: 1.2em; }
+.laender li { padding-left: 2px; }
 .laender li::marker { color: var(--rot); }
-.laender-block { margin-top: 14px; }
-@media (min-width: 600px) {
-  .laender-block { display: grid; grid-template-columns: 1fr 1fr; column-gap: 28px; }
-  .laender { columns: 1; }
-}
 
 /* ---------- Bewegung ---------- */
 @media (prefers-reduced-motion: no-preference) {
