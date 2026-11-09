@@ -113,15 +113,18 @@ Schatten; Farbanteil ohne Bilder meist unter 8 %; die Schlagzeile des Aufmachers
 
 1. **Viele Geschichten:** am Handy die Schlagzeile des Aufmachers vollständig und mindestens eine weitere
    Schlagzeile vollständig sichtbar; am Desktop mindestens vier. Jede Schlagzeile ist ein `h2` oder `h3` mit Link.
-2. **Kopf** (Logo und Rubrikzeile) am Handy höchstens 120 px; die Schlagzeile des Aufmachers beginnt spätestens bei
-   480 px.
-3. **Drei Stufen** von Anreißern, der Aufmacher mindestens 1,25-mal so groß wie ein Nebenstück; höchstens zwei
-   Schriftfamilien.
-4. **Größte Schrift** im ersten Bildschirm höchstens 32 px am Handy und 38 px am Desktop; höchstens drei Zeilen je
-   Schlagzeile; keine Versalien über 14 px.
-5. **Rot** höchstens 3 % der Fläche (Bilder ausgeblendet); keine rote Schrift über 20 px; kein zweiter Buntton.
+   Das ist bewusst strenger als bei den Marken, weil die Probe keine Anzeigen zeigt.
+2. **Kopf:** Logo und Rubrikzeile stehen im `<header>`, am Handy zusammen höchstens 120 px hoch; die Schlagzeile des
+   Aufmachers beginnt spätestens bei 480 px.
+3. **Drei Stufen** von Anreißern auf der ganzen Seite, der Aufmacher mindestens 1,25-mal so groß wie ein
+   Nebenstück; höchstens zwei Schriftfamilien.
+4. **Größte Schrift** im ersten Bildschirm höchstens 32 px am Handy und 38 px am Desktop; die Schlagzeile des
+   Aufmachers hat höchstens drei Zeilen, jede andere höchstens vier; keine Versalien über 14 px.
+5. **Rot** höchstens 3 % der Fläche (Bilder ausgeblendet); keine rote Schrift über 20 px; kein zweiter Buntton in
+   den eigenen Elementen der Seite.
 6. **Keine Effekte:** Radius höchstens 2 px, kein weicher Schatten, nichts gedreht, normale Schriftbreite.
-7. **Anreißer ohne Kasten**, ohne Icon, ohne Knopf.
+7. **Anreißer ohne Kasten**, ohne Icon, ohne Knopf. Kasten heißt: Hintergrundfläche oder Rahmen um einen einzelnen
+   Anreißer; Linien zwischen Anreißern sind erlaubt. Auch die Rubrikzeile hat keine Pillen oder Knöpfe.
 8. **Ein Format** für Dachzeile und Datum; höchstens zwei Bildformate.
 9. **Kein Bild** über seiner natürlichen Breite bei doppelter Pixeldichte.
 10. **Kein seitlicher Überlauf** bei 390, 820 und 1280; keine Konsolenfehler.

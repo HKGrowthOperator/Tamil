@@ -36,7 +36,10 @@ wie eine aussehen; Vertrautheit ist kein Mangel. Mangel ist, was laut, verspielt
 
 **A. Harte Kriterien** (Brief, Abschnitt 7): jedes Kriterium einzeln mit Messwert für Handy und Desktop und
 „erfüllt“ oder „verletzt“. Jede Verletzung ist **P1**. Passt eine Kennzahl nicht zum Bild, miss von Hand nach und
-kennzeichne den Wert so.
+kennzeichne den Wert so. Die Höhe des Kopfs ist `kopfleiste_hoehe`, nicht `erste_schlagzeile_ab`.
+
+Führe **jede Ursache nur einmal** als Befund, im strengsten passenden Abschnitt. Wer dieselbe rote Riesenschrift in
+A, B und C zählt, macht die Zahl der Befunde wertlos.
 
 **B. Wertigkeit im Paarvergleich:** je Paar zwei bis drei beobachtbare Unterschiede. Dazu die vier Punkte, an denen
 Runde 4 gescheitert ist, und ihr Gegenteil:
@@ -44,10 +47,10 @@ Runde 4 gescheitert ist, und ihr Gegenteil:
 | Punkt | Woran es sich zeigt | Stufe |
 |---|---|---|
 | zu viel Rot, zu laut | Rotanteil, größte Schrift, Versalien und Effekte laut Kennzahlen; dazu der Eindruck im Bild | P1 |
-| Baukasten | Kästen, Pillen, Icons, gleichförmige Kartenraster, Knöpfe „Weiterlesen“, weiche Schatten, große Rundungen; oder die Probe steht im Paarvergleich näher an Runde 2 als an den Vorbildern | P1 |
+| Baukasten | Kästen (Fläche oder Rahmen um einzelne Anreißer), Pillen, dekorative Icons, gleichförmige Kartenraster, Knöpfe „Weiterlesen“, weiche Schatten, große Rundungen; Linien zwischen Anreißern sind kein Kasten | P1 |
 | Schrift | verzerrte, extraschmale oder extrabreite Schnitte; unruhiger Satz (Zeilenfall, Löcher, zu enge oder zu weite Zeilen); mehr als zwei Familien | P1 |
 | nicht hochwertig | ungleiche Abstände, verrutschte Kanten, uneinheitliche Bildformate, schlecht gewählte Bildausschnitte, Dachzeilen und Daten in wechselnder Form | P1 im ersten Bildschirm, sonst P2 |
-| alt oder langweilig | wie Runde 2: Creme oder Sand, Serife im Fließtext, braungraue Tinte, runde Bilder, bunte Rubrikpunkte, Mosaik | P1 |
+| alt oder langweilig | wie Runde 2: Creme oder Sand als Grund, braungraue Tinte, runde Bilder, bunte Rubrikpunkte oder ein Mosaik, jeweils für sich; eine Serife im Fließtext nur zusammen mit warmem Grund | P1 |
 
 **C. Verbotsliste:** jede Übereinstimmung mit `tamil-marke` ist P1. Ausdrücklich erlaubt sind eine Serife in den
 Schlagzeilen auf kühlem Weiß (Variante `blatt`), ein vertrauter Nachrichtenaufbau und Meldungslisten.
