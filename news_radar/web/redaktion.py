@@ -110,6 +110,8 @@ def quelle(story_id: int):
     url = request.form.get("url", "").strip()
     try:
         orchestrator.quelle_ergaenzen(store, story_id, url, von=_user())
+    except orchestrator.StoryNichtOffen as exc:
+        return render_template("fehler.html", titel="Story nicht offen", text=str(exc)), 409
     except ValueError as exc:  # net.UnsafeURL ist ein ValueError
         flash(f"Diese Adresse geht nicht: {exc}", "fehler")
         return redirect(url_for("red.recherche"))

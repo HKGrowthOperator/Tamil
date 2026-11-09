@@ -247,3 +247,14 @@ def test_preview_and_links_are_safe(app):
     with _store(app) as store:
         row = store.get_draft(1)
     assert "onclick" not in row["inhalt_html"] and "onload" not in row["inhalt_html"] and row["ticket_url"] == ""
+
+
+def test_add_source_to_finished_story_is_refused(app):
+    client = app.test_client()
+    token = login(client)
+    with _store(app) as store:
+        fertig = repo.stories(store, "fertig")[0]["id"]
+    resp = client.post(f"/story/{fertig}/quelle", data={"_csrf": token, "url": "https://www1.wdr.de/x"})
+    assert resp.status_code == 409 and "Recherche nötig" in resp.get_data(as_text=True)
+    with _store(app) as store:
+        assert jobs.offen_fuer_story(store, fertig) == []

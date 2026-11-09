@@ -363,3 +363,161 @@ def test_run_v2_records_run_and_processes_jobs_until_deadline(settings):
         assert len(store.list_drafts("neu")) == 1
     assert stats["storys"] == 1 and stats["jobs"]["fertig"] == 7
     assert run["modus"].startswith("v2") and run["finished_at"] and run["entwuerfe"] == 1
+
+
+# ---- Review 2: Wiederholung, Quelle ergänzen, Agent-Import, Termin, Cluster -----------------------------------
+
+def _lichterfest(settings):
+    item = meldung("Tamilisches Lichterfest im Tempel Hamm am 14. November", "Tamilen feiern in Hamm",
+                   url="https://www.ruhrnachrichten.de/hamm/lichterfest")
+    lauf(settings, [item], texte={item.url: ARTIKEL})
+    return item
+
+
+def test_rerun_with_open_draft_updates_untouched_and_never_overwrites_edits(settings):
+    _lichterfest(settings)
+    with Store(settings.db_path) as store:
+        draft = store.list_drafts("neu")[0]
+        sid = draft["story_id"]
+        ctx = orchestrator.kontext(settings, store, client=FakeAnthropic(), fetch_text=lambda u: ARTIKEL, suche=lambda q: [])
+        repo.story_setzen(store, sid, status="fehler")
+        assert orchestrator.neu_starten(store, sid, "Test")
+        orchestrator.abarbeiten(ctx)
+        assert repo.story(store, sid)["status"] == "fertig"  # früher: ProgrammingError (original_json als dict)
+        assert jobs.zaehlen(store)["offen"] == 0 and not store.db.execute(
+            "SELECT 1 FROM workflow_jobs WHERE status = 'tot'").fetchone()
+
+        store.update_draft(draft["id"], von="luis", titel="Von Hand", inhalt_html="<p>Von Hand geschrieben</p>")
+        repo.story_setzen(store, sid, status="fehler")
+        orchestrator.neu_starten(store, sid, "Test")
+        orchestrator.abarbeiten(ctx)
+        row = store.get_draft(draft["id"])
+        rollen = [v["rolle"] for v in repo.fassungen(store, story_id=sid)]
+    assert row["titel"] == "Von Hand" and row["inhalt_html"] == "<p>Von Hand geschrieben</p>"
+    assert any(h.startswith("Neue Radar-Fassung") for h in row["hinweise"]) and "entwurf_neu" in rollen
+
+
+def test_add_source_only_for_stuck_stories(settings):
+    _lichterfest(settings)
+    with Store(settings.db_path) as store:
+        sid = store.list_drafts("neu")[0]["story_id"]
+        with pytest.raises(orchestrator.StoryNichtOffen):
+            orchestrator.quelle_ergaenzen(store, sid, "https://www1.wdr.de/x", von="luis")
+        kino = repo.story_anlegen(store, typ="kino", titel="Film der Woche")
+        repo.story_setzen(store, kino, status="fehler")
+        with pytest.raises(orchestrator.StoryNichtOffen):
+            orchestrator.quelle_ergaenzen(store, kino, "https://www1.wdr.de/x", von="luis")
+        haengt = repo.story_anlegen(store, typ="news", titel="Hängt")
+        repo.story_setzen(store, haengt, status="recherche_erforderlich")
+        assert orchestrator.quelle_ergaenzen(store, haengt, "https://www1.wdr.de/x", von="luis")
+        with pytest.raises(orchestrator.StoryNichtOffen):  # läuft jetzt: kein zweiter Durchlauf parallel
+            orchestrator.quelle_ergaenzen(store, haengt, "https://www1.wdr.de/y", von="luis")
+        assert jobs.offen_fuer_story(store, sid) == []
+
+
+def _agent_paket(settings, store, tmp_path, url="https://www.ruhrnachrichten.de/ag"):
+    import json
+
+    from news_radar.agent_v2 import export_v2
+    from news_radar.agents import Kontext
+    from news_radar.workflow.fake import recherche, text
+
+    item = meldung("Tamilisches Lichterfest im Tempel Hamm am 14. November", "Fest", url=url)
+    ctx = orchestrator.kontext(settings, store, fetch_text=lambda u: ARTIKEL, suche=lambda q: [])
+    orchestrator.scan(ctx, [item])
+    mappe = export_v2(store, settings, tmp_path / "m.json", ctx=Kontext(settings, store, fetch_text=lambda u: ARTIKEL,
+                                                                      suche=lambda q: []))
+    paket = mappe["storys"][0]
+    claims = recherche("<dokumente>\n" + json.dumps(paket["dokumente"]) + "\n</dokumente>", "", {})["claims"]
+    beitrag = text("<story>\n" + json.dumps({"titel": paket["titel"], "ort": "Hamm"}) + "\n</story>\n<claims>\n"
+                   + json.dumps(claims) + "\n</claims>", "", {})
+    return paket, claims, beitrag
+
+
+def test_agent_import_only_touches_exported_stories_and_survives_bad_input(settings, tmp_path, monkeypatch):
+    import json
+
+    from news_radar.agent_v2 import import_v2
+    from news_radar.agents import Kontext
+
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    with Store(settings.db_path) as store:
+        paket, claims, beitrag = _agent_paket(settings, store, tmp_path)
+        sid = paket["story_id"]
+        datei = tmp_path / "e.json"
+        datei.write_text(json.dumps({"ergebnisse": [
+            {"story_id": "kaputt"},  # Validierungsfehler: der Rest der Datei läuft trotzdem
+            {"story_id": sid, "claims": claims, "widersprueche": [], "beitrag": beitrag}]}))
+        kw = {"von": "cloud-sitzung", "ctx": Kontext(settings, store, fetch_text=lambda u: "")}
+        erst = import_v2(store, settings, datei, **kw)
+        assert erst["entwuerfe"] == 1 and len(erst["fehler"]) == 1
+        draft = store.list_drafts("neu")[0]
+
+        nochmal = import_v2(store, settings, datei, **kw)  # dieselbe Datei noch einmal
+        datei.write_text(json.dumps({"ergebnisse": [{"story_id": sid, "verwerfen": "alte Datei"}]}))
+        verwerfen = import_v2(store, settings, datei, **kw)
+        story = repo.story(store, sid)
+        assert store.get_draft(draft["id"])["titel"] == draft["titel"]
+        for leer in ({"ergebnisse": None}, 5, "text"):
+            datei.write_text(json.dumps(leer))
+            with pytest.raises(ValueError, match="ergebnisse"):
+                import_v2(store, settings, datei, **kw)
+    assert nochmal["entwuerfe"] == 0 and "nicht aus dem Export" in nochmal["fehler"][-1]
+    assert verwerfen["verworfen"] == 0 and story["status"] == "fertig"
+
+
+def test_agent_import_needs_evidence_for_every_paragraph(settings, tmp_path, monkeypatch):
+    import json
+
+    from news_radar.agent_v2 import import_v2
+    from news_radar.agents import Kontext
+
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    with Store(settings.db_path) as store:
+        paket, claims, beitrag = _agent_paket(settings, store, tmp_path)
+        beitrag["inhalt_html"] += "<p>Ein Satz, den keine Quelle trägt.</p>"
+        (tmp_path / "e.json").write_text(json.dumps({"ergebnisse": [
+            {"story_id": paket["story_id"], "claims": claims, "widersprueche": [], "beitrag": beitrag}]}))
+        stats = import_v2(store, settings, tmp_path / "e.json", ctx=Kontext(settings, store, fetch_text=lambda u: ""))
+        story = repo.story(store, paket["story_id"])
+        assert store.list_drafts("neu") == []
+    assert stats["recherche_noetig"] == 1 and story["status"] == "recherche_erforderlich"
+    assert "ohne Beleg" in story["notiz"]
+
+
+def test_past_event_check_uses_latest_date_in_text(settings):
+    from types import SimpleNamespace
+
+    from news_radar import dates
+
+    uhr = lambda: datetime(2026, 11, 9, 12, tzinfo=dates.TZ)  # noqa: E731
+    ctx = SimpleNamespace(uhr=uhr, settings=settings)
+    story = {"typ": "event"}
+    doc = lambda text, art="volltext": SimpleNamespace(art=art, titel="Konzert", text=text)  # noqa: E731
+    zukunft = doc("Veröffentlicht am 01.10.2026. Das Konzert findet am 20. Dezember 2026 in Bern statt.")
+    vorbei = doc("Veröffentlicht am 01.10.2026. Das Konzert fand am 3. Oktober 2026 in Bern statt.")
+    daten = SimpleNamespace(art="daten", titel="", text='{"event_datum": "2026-10-03"}')
+    assert orchestrator.termin_vorbei(ctx, story, [zukunft]) == ""
+    assert orchestrator.termin_vorbei(ctx, story, [vorbei]) == "2026-10-03"
+    assert orchestrator.termin_vorbei(ctx, story, [daten, zukunft]) == "2026-10-03"  # strukturiertes Datum zählt zuerst
+    assert orchestrator.termin_vorbei(ctx, {"typ": "news"}, [vorbei]) == ""
+
+
+def test_same_scan_item_follows_story_the_model_chose(settings, monkeypatch):
+    from news_radar.agents import cluster
+
+    _lichterfest(settings)
+    with Store(settings.db_path) as store:
+        alt = store.list_drafts("neu")[0]["story_id"]
+        a = meldung("Lichterfest Hamm: Tempel erwartet tausende Gäste", "Tamilen in Hamm", url="https://www.wa.de/a")
+        b = meldung("Lichterfest Hamm: Tempel erwartet Tausende Gäste", "Tamilen in Hamm", url="https://www.wn.de/b",
+                    source="Westfälische Nachrichten")
+        monkeypatch.setattr(cluster, "zuordnen", lambda ctx, items: [
+            cluster.Zuordnung(a, alt, "gleiche Story laut Cluster-Prüfung"),
+            cluster.Zuordnung(b, None, "gleiche Story wie eine Meldung desselben Scans", bezug=0)])
+        ctx = orchestrator.kontext(settings, store, client=FakeAnthropic(), fetch_text=lambda u: ARTIKEL, suche=lambda q: [])
+        monkeypatch.setattr(orchestrator.filtering, "select", lambda items, *a, **k: list(items))
+        orchestrator.scan(ctx, [a, b])
+        urls = {d.url for d in repo.dokumente(store, alt)}
+        storys = len(repo.stories(store, None, limit=50))
+    assert "https://www.wn.de/b" in urls and storys == 1

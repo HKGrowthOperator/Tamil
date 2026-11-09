@@ -92,3 +92,36 @@ def parse_de_datetime(text: str, now: datetime | None = None) -> datetime | None
 def parse_de_date(text: str, now: datetime | None = None) -> date | None:
     dt = parse_de_datetime(text, now)
     return dt.date() if dt else None
+
+
+_MONTH_DAY_ALL_RE = re.compile(rf"\b({_MONTH_RE})\.?\s+(\d{{1,2}})(?!\d)(?:\s*,?\s*(\d{{4}}))?", re.I)
+
+
+def alle_daten(text: str, now: datetime | None = None) -> list[date]:
+    """Alle Kalenderdaten in einem Text (ISO, 7.11.2026, 7.11., 7. November 2026, Nov 7) – ohne heute/morgen."""
+    if not text:
+        return []
+    today = (now or datetime.now(TZ)).date()
+    gefunden: set[date] = set()
+
+    def add(year: int, month: int, day: int) -> None:
+        try:
+            gefunden.add(date(year, month, day))
+        except ValueError:
+            pass
+
+    for m in _ISO_RE.finditer(text):
+        add(int(m.group(1)), int(m.group(2)), int(m.group(3)))
+    for m in _NUMERIC_RE.finditer(text):
+        year = int(m.group(3))
+        add(year + 2000 if year < 100 else year, int(m.group(2)), int(m.group(1)))
+    for m in _NUMERIC_NOYEAR_RE.finditer(text):
+        day, month = int(m.group(1)), int(m.group(2))
+        add(_year_for(month, day, today), month, day)
+    for m in _DAY_MONTH_RE.finditer(text):
+        day, month = int(m.group(1)), MONTHS[m.group(2).lower()]
+        add(int(m.group(3)) if m.group(3) else _year_for(month, day, today), month, day)
+    for m in _MONTH_DAY_ALL_RE.finditer(text):
+        month, day = MONTHS[m.group(1).lower()], int(m.group(2))
+        add(int(m.group(3)) if m.group(3) else _year_for(month, day, today), month, day)
+    return sorted(gefunden)

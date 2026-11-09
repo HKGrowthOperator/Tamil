@@ -23,7 +23,7 @@ from .. import filtering, notify, sources
 from ..agents import Kontext, cluster, copydesk, factcheck, media, relevance, research, schreiben, seo
 from ..config import Settings
 from ..pipeline import Result, category_label, quelle_name, refresh_kino, stale_event_date
-from ..store import Store
+from ..store import Store, now_iso
 from ..wordpress import slugify
 from ..writer import split_source_suffix
 from . import costs, jobs, repo
@@ -98,13 +98,17 @@ def scan(ctx: Kontext, items: list[sources.NewsItem] | None = None) -> dict:
     stats["relevant"] = len(picked)
     limit_gemeldet = False
     neue_storys: dict[int, int] = {}  # Index der Zuordnung → angelegte Story (für Meldungen desselben Scans)
-    for idx, z in enumerate(cluster.zuordnen(ctx, picked)):
+    zuordnungen = cluster.zuordnen(ctx, picked)
+    for idx, z in enumerate(zuordnungen):
         item = z.item
         publisher = quelle_name(item)
         if z.bezug is not None:
-            if z.bezug not in neue_storys:
+            # dieselbe Story wie eine frühere Meldung des Scans: deren neue Story – oder die bestehende, der das Modell
+            # den Grenzfall zugeordnet hat
+            ziel = neue_storys.get(z.bezug) or zuordnungen[z.bezug].story_id
+            if not ziel:
                 continue  # die erste Meldung wurde nicht angelegt (Tageslimit/veraltet): diese auch nicht
-            z.story_id = neue_storys[z.bezug]
+            z.story_id = ziel
         if item.kind == "event":
             vergangen = stale_event_date(item, "", s, now=now)
             if vergangen:
@@ -180,8 +184,9 @@ def _weiter(payload: dict, **neu) -> dict:
 
 
 def termin_vorbei(ctx: Kontext, story: dict, docs) -> str:
-    """Datum eines Termins, wenn er schon vorbei ist („“ sonst). Erst die strukturierten Daten der Quelle, sonst das
-    erste Datum im Volltext – Veranstaltungsseiten nennen das Datum oft nur im Text, nicht im Feed."""
+    """Datum eines Termins, wenn er schon vorbei ist („“ sonst). Erst die strukturierten Daten der Quelle; ohne sie
+    das **späteste** Datum im Text – Veranstaltungsseiten nennen den Termin oft nur im Text, und davor stehen gern das
+    Veröffentlichungsdatum oder frühere Termine. Ein Termin in der Zukunft hält die Story also immer offen."""
     if story["typ"] != "event":
         return ""
     from .. import dates
@@ -198,11 +203,9 @@ def termin_vorbei(ctx: Kontext, story: dict, docs) -> str:
             if when:
                 break
     if when is None:
-        for d in docs:
-            if d.art in ("volltext", "zusammenfassung"):
-                when = dates.parse_de_date(f"{d.titel}\n{d.text[:2000]}", now=now)
-                if when:
-                    break
+        kandidaten = [t for d in docs if d.art in ("volltext", "zusammenfassung")
+                      for t in dates.alle_daten(f"{d.titel}\n{d.text[:4000]}", now=now)]
+        when = max(kandidaten) if kandidaten else None
     if when is None:
         return ""
     cutoff = (now - timedelta(hours=ctx.settings.max_age_hours)).date()
@@ -344,8 +347,19 @@ def entwurf_anlegen(ctx: Kontext, story: dict, felder: dict, payload: dict, *, t
     if draft_id is None:
         existing = ctx.store.draft_by_uid(uid)
         if existing and existing["status"] in ("neu", "bearbeitet", "zurueckgestellt"):
-            ctx.store.update_draft(existing["id"], von="radar", **{k: v for k, v in row.items() if k not in ("uid", "fakten")})
             draft_id = existing["id"]
+            if von_mensch_bearbeitet(existing):
+                # Die Arbeit der Redaktion nie überschreiben: die neue Fassung liegt in den Fassungen, der Entwurf
+                # bekommt nur einen Hinweis.
+                hinweis = f"Neue Radar-Fassung vom {now_iso()[:16].replace('T', ' ')} (Story {story['id']}) – Text nicht überschrieben, siehe Fassungen"
+                ctx.store.update_draft(draft_id, hinweise=[hinweis] + [h for h in existing.get("hinweise") or []
+                                                                       if not h.startswith("Neue Radar-Fassung")])
+                repo.fassung_speichern(ctx.store, story["id"], "entwurf_neu", {**felder, **{k: row[k] for k in repo.FASSUNG_FELDER if k in row}},
+                                       von="radar", draft_id=draft_id)
+                repo.story_setzen(ctx.store, story["id"], status="fertig")
+                ctx.store.event("entwurf_nicht_ueberschrieben", id=draft_id, story=story["id"], status=existing["status"])
+                return draft_id
+            ctx.store.update_draft(draft_id, von="radar", **{k: v for k, v in row.items() if k not in ("uid", "fakten")})
         else:
             ctx.store.event("entwurf_existiert", story=story["id"], uid=uid)
             repo.story_setzen(ctx.store, story["id"], status="verworfen", notiz="Entwurf zu dieser Meldung existiert schon")
@@ -539,10 +553,21 @@ def _recherche_neu(store: Store, story_id: int, notiz: str) -> None:
                    key=f"{story_id}:recherche:neu{n + 1}", payload=payload)
 
 
+def von_mensch_bearbeitet(draft: dict) -> bool:
+    return draft["status"] == "bearbeitet" or (draft.get("bearbeitet_von") or "radar") not in ("radar", "agent")
+
+
+NEU_STARTBAR = ("recherche_erforderlich", "fehler")
+
+
+class StoryNichtOffen(Exception):
+    """Die Story ist fertig, verworfen, läuft gerade oder ist ein Kino-Datensatz – „Quelle ergänzen“ geht dort nicht."""
+
+
 def neu_starten(store: Store, story_id: int, notiz: str) -> bool:
     """Eine Story, die wegen fehlender Belege oder eines Fehlers hängt, mit der neuen Quelle noch einmal prüfen."""
     story = repo.story(store, story_id)
-    if story is None or story["status"] not in ("recherche_erforderlich", "fehler") or story["typ"] == "kino":
+    if story is None or story["status"] not in NEU_STARTBAR or story["typ"] == "kino":
         return False
     _recherche_neu(store, story_id, notiz)
     return True
@@ -552,6 +577,11 @@ def quelle_ergaenzen(store: Store, story_id: int, url: str, von: str = "") -> st
     """„Recherche nötig“: die Redaktion gibt eine Quelle dazu, die Story läuft erneut durch Recherche und Gate."""
     from .. import net
 
+    story = repo.story(store, story_id)
+    if story is None or story["status"] not in NEU_STARTBAR or story["typ"] == "kino" or jobs.offen_fuer_story(store, story_id):
+        status = story["status"] if story else "fehlt"
+        raise StoryNichtOffen(f"Story {story_id} ist {status} – eine Quelle lässt sich nur bei „Recherche nötig“ oder "
+                              "„Fehler“ ergänzen (nicht bei Kino und nicht, solange sie läuft)")
     net.check_url(url)
     key = repo.dokument_hinzufuegen(store, story_id, url=url, publisher="Redaktion", quelle="Redaktion", rights="zitat",
                                     art="zusammenfassung", titel=f"Quelle ergänzt von {von or 'Redaktion'}")
