@@ -326,6 +326,70 @@ a:focus-visible {
   .woche__gruppe:first-child .eintrag + .eintrag { border-top: 0; }
 }
 
+/* ---------- Artikel ---------- */
+
+.artikel { padding: 20px var(--rand) 64px; }
+.artikel__titel {
+  font-size: 28px;
+  line-height: 1.14;
+  font-weight: 650;
+  letter-spacing: -0.012em;
+  text-wrap: balance;
+  hyphens: manual;
+}
+.artikel__vorspann {
+  margin-top: 12px;
+  font-size: 19px;
+  line-height: 1.45;
+  font-weight: 500;
+}
+.artikel__leiste {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  column-gap: 16px;
+  margin-top: 16px;
+  border-top: 1px solid var(--linie);
+  font-size: 14px;
+  line-height: 1.35;
+  color: var(--leise);
+}
+.artikel__teilen {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--tinte);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+.artikel__teilen:hover { color: var(--rot); }
+.artikel__bild {
+  width: calc(100% + 2 * var(--rand));
+  max-width: none;
+  margin: 8px calc(-1 * var(--rand)) 0;
+}
+.artikel__text {
+  margin-top: 24px;
+  font-size: 18px;
+  line-height: 1.6;
+}
+.artikel__text p + p { margin-top: 1em; }
+
+@media (min-width: 600px) {
+  .artikel { max-width: 712px; margin: 0 auto; padding-top: 32px; }
+  .artikel__bild { width: 100%; margin-inline: 0; }
+}
+
+@media (min-width: 1024px) {
+  .artikel { max-width: 760px; padding: 48px var(--rand) 96px; }
+  .artikel__titel { font-size: 36px; line-height: 1.12; letter-spacing: -0.015em; }
+  .artikel__vorspann { font-size: 20px; margin-top: 14px; }
+  .artikel__text { margin-top: 32px; font-size: 19px; line-height: 1.6; max-width: 640px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
