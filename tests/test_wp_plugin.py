@@ -153,14 +153,14 @@ def test_weiterleitungen_rechte_prozent_ketten_grenzen():
         # Redakteur-/Radar-Benutzer ohne manage_options: 403
         assert requests.post(url, json={"csv": seed}, auth=(USER, PW), timeout=30).status_code == 403
         csv = ("alt,neu\n/%c3%bcber-uns/,/ueber-uns/\n"
-               "/a/,/b/\n/b/,/c/\n"            # Kette: /a/ wird verworfen
+               "/a/,/b/\n/b/,/c/\n"            # Kette: wird aufgelöst, nicht verworfen
                "/x/,/y/\n/y/,/x/\n"            # Schleife: beide verworfen
                "/fremd/,https://example.org/z/\n")
         r = requests.post(url, json={"csv": csv}, auth=admin, timeout=30)
         assert r.status_code == 200
         gruende = {v["alt"]: v["grund"] for v in r.json()["verworfen"]}
-        assert {"/a/", "/x/", "/y/", "/fremd/"} <= set(gruende) and "/b/" not in gruende
-        assert r.json()["eintraege"] == 2  # /ueber-uns/-Quelle und /b/
+        assert {"/x/", "/y/", "/fremd/"} == set(gruende)
+        assert r.json()["eintraege"] == 3  # /über-uns/, /a/, /b/
         r = requests.get(f"{URL}/%C3%BCber-uns/", allow_redirects=False, timeout=30)
         assert r.status_code == 301 and r.headers["Location"].rstrip("/").endswith("/ueber-uns")
         assert requests.get(f"{URL}/fremd/", allow_redirects=False, timeout=30).status_code != 301
