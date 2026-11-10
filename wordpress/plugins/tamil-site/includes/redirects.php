@@ -61,9 +61,9 @@ function tamil_site_prepare_redirects( string $csv ) {
 			unset( $table[ $from ] );
 		}
 	}
-	$keys = array_keys( $table );
-	foreach ( $keys as $from ) {
-		if ( isset( $table[ tamil_site_normalize_path( $table[ $from ] ) ] ) ) {
+	$quellen = $table;
+	foreach ( array_keys( $quellen ) as $from ) {
+		if ( isset( $quellen[ tamil_site_normalize_path( $quellen[ $from ] ) ] ) ) {
 			$verworfen[] = array(
 				'alt'   => $from,
 				'grund' => 'Kette oder Schleife (Ziel ist selbst eine Quelle)',
