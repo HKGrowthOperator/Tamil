@@ -10,7 +10,8 @@ Beiträge mit Originaldatum und Original-Slug, Rubriken, Beitragsbild und Bilder
         --passwort-datei <datei> [--trocken] [--limit 50] [--bericht bericht.json]
 
 Passwort: aus der Datei (--passwort-datei) oder $MIGRATION_APP_PASSWORD; wird nie ausgegeben. Beispielwerte aus
-prototyp/content/site.json (Telefon, E-Mail, WhatsApp) werden nie übernommen, sondern aus Texten entfernt und gemeldet.
+prototyp/content/site.json (Telefon, E-Mail, WhatsApp) füllen nie die Kontaktfelder der neuen Website; Texte bleiben
+unverändert, der Bericht zählt nur, wo Kontaktangaben vorkommen.
 """
 
 from __future__ import annotations
@@ -19,6 +20,7 @@ import argparse
 import base64
 import csv
 import hashlib
+import ipaddress
 import html as html_mod
 import importlib.util
 import io
@@ -36,13 +38,15 @@ REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 sys.path.insert(0, str(REPO / "tools"))
 
+import nh3  # noqa: E402
 import export_site  # noqa: E402  (Kategorien-/Seiten-Abbildung und Weiterleitungen: eine Quelle der Wahrheit)
 
 NEUE_RUBRIKEN = ("news", "entertainment", "events", "community", "kueche", "kino", "sport", "kultur")
 EXTRA_SCHLAGWORT = {"kritik": "Kritik", "anirudh": "Anirudh"}  # laut CATEGORY_MAP „+ Schlagwort …“
 ALTE_HOSTS = ("tamil.de", "www.tamil.de")
 UPLOAD_RE = re.compile(r"https?://(?:www\.)?tamil\.de/wp-content/uploads/([^\"'\s<>?#)]+)", re.I)
-INTERN_RE = re.compile(r"""(href=["'])https?://(?:www\.)?tamil\.de(/[^"']*)?(["'])""", re.I)
+INTERN_RE = re.compile(r"""(href=["'])https?://(?:www\.)?tamil\.de(/(?!wp-content/)[^"']*|/?)(["'])""", re.I)
+OFFENE_UPLOAD_HREF_RE = re.compile(r"""href=["']https?://(?:www\.)?tamil\.de/wp-content/""", re.I)
 SRCSET_RE = re.compile(r"""\s(?:srcset|sizes)=(["']).*?\1""", re.I | re.S)
 YT_IFRAME_RE = re.compile(r"""<iframe\b[^>]*\bsrc=["']https?://(?:www\.)?youtube(?:-nocookie)?\.com/embed/([\w-]{6,})[^"']*["'][^>]*>\s*</iframe>""", re.I)
 IFRAME_RE = re.compile(r"<iframe\b", re.I)
@@ -99,16 +103,12 @@ def beispielwerte(site_json: dict) -> list[str]:
     return [v for v in (k.get("telefon"), k.get("email"), k.get("whatsapp")) if v]
 
 
-def strip_beispielwerte(html: str, werte: list[str]) -> tuple[str, list[str]]:
-    """Beispielwerte aus HTML entfernen; gibt (bereinigtes HTML, gefundene Werte) zurück."""
-    gefunden = []
-    for v in werte:
-        for form in {v, v.replace(" ", "")}:
-            if form and form in html:
-                html = html.replace(form, "")
-                if v not in gefunden:
-                    gefunden.append(v)
-    return html, gefunden
+def kontaktangaben(html: str, werte: list[str]) -> list[str]:
+    """Welche Kontaktangaben (E-Mail, Telefon, WhatsApp aus site.json) kommen im Text vor? Es wird nichts verändert:
+    die E-Mail steht auch auf der alten Seite in Texten. Nur die Kontaktfelder der neuen Website (Customizer) bleiben
+    ohne die Beispielwerte."""
+    flach = html.replace(" ", "")
+    return [v for v in werte if v and (v in html or v.replace(" ", "") in flach)]
 
 
 def upload_urls(html: str) -> list[str]:
@@ -196,31 +196,125 @@ def seiten_plan(pages: list[dict]) -> dict[str, list[dict]]:
     return plan
 
 
+SEITEN_TAGS = {"a", "p", "br", "hr", "h1", "h2", "h3", "h4", "h5", "h6", "ul", "ol", "li", "strong", "b", "em", "i", "u",
+               "blockquote", "figure", "figcaption", "img", "table", "thead", "tbody", "tr", "th", "td", "div", "span",
+               "details", "summary", "small", "sub", "sup", "pre", "code"}
+SEITEN_ATTRIBUTE = {"a": {"href", "title", "rel", "target"}, "img": {"src", "alt", "width", "height", "title"},
+                    "*": {"class", "id", "lang", "dir"}, "td": {"colspan", "rowspan"}, "th": {"colspan", "rowspan"}}
+URL_ZEILE_RE = re.compile(r"\s*https?://\S+\s*")
+VIDEO_URL_RE = re.compile(r"https?://(?:www\.)?(?:youtube\.com|youtu\.be|youtube-nocookie\.com)/\S+", re.I)
+
+
+def seite_bereinigen(html: str) -> str:
+    """Seiteninhalt vor dem Senden bereinigen (Seiten laufen als Administrator ungefiltert durch die Core-REST):
+    keine Skripte, keine iframes, keine on*-Attribute, keine javascript:-Adressen (Allowlist nh3)."""
+    return nh3.clean(html or "", tags=SEITEN_TAGS, attributes=SEITEN_ATTRIBUTE, url_schemes={"http", "https", "mailto", "tel"},
+                     link_rel=None, strip_comments=True)
+
+
+def bilde_teaser(excerpt_html: str, content_html: str, max_woerter: int = 55) -> tuple[str, bool]:
+    """Auszug: der eigene Auszug des alten Beitrags, solange keine nackte Video-Adresse darin steht. Sonst (oder ohne
+    Auszug) aus dem Text gebildet – ohne die Zeilen, die nur aus einer Adresse bestehen. Gibt (Teaser, ersetzt) zurück."""
+    eigen = text(excerpt_html)
+    if eigen and not VIDEO_URL_RE.search(eigen):
+        return eigen, False
+    roh = re.sub(r"<(script|style|iframe)\b.*?</\1>", " ", content_html or "", flags=re.S | re.I)
+    roh = re.sub(r"</(p|div|figure|li|h\d|blockquote)>|<br\s*/?>", "\n", roh, flags=re.I)
+    zeilen = [re.sub(r"\s+", " ", html_mod.unescape(TAG_RE.sub("", z))).strip() for z in roh.split("\n")]
+    woerter = " ".join(z for z in zeilen if z and not URL_ZEILE_RE.fullmatch(z)).split()
+    teaser = " ".join(woerter[:max_woerter]) + ("…" if len(woerter) > max_woerter else "")
+    return teaser, bool(eigen)
+
+
+def ziel_pruefen(url: str, nach_umschaltung: bool = False, bestaetigt: bool = False) -> str:
+    """Prüft die Ziel-Adresse; gibt eine Fehlermeldung zurück oder "" wenn sie zulässig ist.
+
+    Nie die alte Seite (tamil.de und Unterdomains) beschreiben; keine Anmeldedaten in der Adresse; http nur lokal.
+    Nach der Domain-Umschaltung darf das Ziel genau tamil.de/www.tamil.de sein – nur mit zwei ausdrücklichen Schaltern."""
+    teile = urlsplit(url)
+    if teile.scheme not in ("http", "https") or not teile.hostname:
+        return "Adresse unbrauchbar (http/https mit Host nötig)."
+    if teile.username is not None or teile.password is not None or "@" in teile.netloc:
+        return "Adressen mit Anmeldedaten sind nicht erlaubt."
+    host = teile.hostname.lower().rstrip(".")
+    alt = host == "tamil.de" or host.endswith(".tamil.de")
+    if alt and not (nach_umschaltung and bestaetigt and host in ALTE_HOSTS):
+        return "Ziel ist die alte tamil.de-Adresse. Die alte Seite wird nie beschrieben."
+    if teile.scheme == "http":
+        try:
+            lokal = ipaddress.ip_address(host).is_loopback
+        except ValueError:
+            lokal = host == "localhost"
+        if not lokal:
+            return "http nur für 127.0.0.1, localhost und ::1: das Anwendungspasswort ginge sonst im Klartext hinaus."
+    return ""
+
+
 # ---------------------------------------------------------------- Netz (alte Seite nur lesen, neue Seite schreiben)
 
 class Medien:
-    """Quelle der Bilder: Medien-Ordner des Exports, sonst lesend von der alten Seite (mit Pause, im Ordner zwischengelagert)."""
+    """Quelle der Bilder: Medien-Ordner (Layout JJJJ/MM/datei wie export_site), sonst lesend von der alten Seite.
 
-    def __init__(self, ordner: Path, pause: float = 0.25):
-        self.ordner, self.pause = ordner, pause
+    Nur https und nur Hosts der alten Seite; Weiterleitungen nur auf dieselben Hosts (höchstens 3); bei 429/5xx bis
+    zu drei Versuche mit Wartezeit. `status[url]` hält fest, woran es lag (404 = gibt es auf der alten Seite nicht)."""
+
+    def __init__(self, ordner: Path, pause: float = 0.25, warte: float = 2.0):
+        self.ordner, self.pause, self.warte = Path(ordner), pause, warte
         self.session = export_site.make_session()
+        self.session.max_redirects = 3
         self.geladen = 0
+        self.status: dict[str, int | str] = {}
+
+    def ziel(self, url: str) -> Path:
+        rel = export_site.media_target(Path("."), url).relative_to("media")
+        return self.ordner / rel
 
     def holen(self, url: str) -> bytes | None:
-        ziel = export_site.media_target(self.ordner.parent, url)
+        ziel = self.ziel(url)
         if ziel.exists() and ziel.stat().st_size > 0:
+            self.status.pop(url, None)
             return ziel.read_bytes()
-        try:
-            r = self.session.get(re.sub(r"^http://", "https://", url), timeout=60)
-            r.raise_for_status()
-        except Exception as exc:  # noqa: BLE001
-            print(f"  Bild fehlt: {url} ({str(exc)[:80]})", file=sys.stderr)
+        teile = urlsplit(re.sub(r"^http://", "https://", url))
+        if teile.scheme != "https" or (teile.hostname or "").lower() not in ALTE_HOSTS:
+            self.status[url] = "fremder Host"
             return None
-        ziel.parent.mkdir(parents=True, exist_ok=True)
-        ziel.write_bytes(r.content)
-        self.geladen += 1
-        time.sleep(self.pause)
-        return r.content
+        adresse = teile.geturl()
+        for versuch in range(3):
+            try:
+                r = None
+                for _ in range(4):
+                    r = self.session.get(adresse, timeout=30, allow_redirects=False)
+                    if r.status_code in (301, 302, 307, 308) and r.headers.get("Location"):
+                        nxt = urlsplit(requests_join(adresse, r.headers["Location"]))
+                        if nxt.scheme != "https" or (nxt.hostname or "").lower() not in ALTE_HOSTS:
+                            self.status[url] = "Weiterleitung auf fremden Host"
+                            return None
+                        adresse = nxt.geturl()
+                        continue
+                    break
+            except Exception as exc:  # noqa: BLE001
+                self.status[url] = f"Netzfehler: {str(exc)[:60]}"
+                time.sleep(self.warte * (versuch + 1))
+                continue
+            if r.status_code == 200 and r.content:
+                ziel.parent.mkdir(parents=True, exist_ok=True)
+                ziel.write_bytes(r.content)
+                self.geladen += 1
+                self.status.pop(url, None)
+                time.sleep(self.pause)
+                return r.content
+            self.status[url] = r.status_code
+            if r.status_code == 429 or r.status_code >= 500:
+                time.sleep(self.warte * (versuch + 1))
+                continue
+            break
+        print(f"  Bild fehlt: {url} ({self.status.get(url)})", file=sys.stderr)
+        return None
+
+
+def requests_join(basis: str, ziel: str) -> str:
+    from urllib.parse import urljoin
+    return urljoin(basis, ziel)
 
 
 class Migration:
@@ -228,17 +322,25 @@ class Migration:
         self.wp, self.export, self.medien, self.trocken = wp, export, medien, trocken
         self.werte = beispielwerte(site_json)
         self.bericht: dict = {
-            "beitraege": Counter(), "seiten": Counter(), "medien": Counter(), "fehlende_bilder": [],
-            "beispielwerte_gefunden": {}, "fremde_bilder": 0, "fremde_bilder_beitraege": [],
-            "nicht_youtube_iframes": 0, "slug_abweichungen": [], "ohne_rubrik": [], "alt_text_fallback": 0,
-            "bilder_unter_1200px": 0, "seiten_ohne_text": [],
+            "beitraege": Counter(), "seiten": Counter(), "medien": Counter(), "fehlende_bilder": [], "unvollstaendig": [],
+            "kontaktangaben_in_texten": {}, "fremde_bilder": 0, "fremde_bilder_beitraege": [],
+            "nicht_youtube_iframes": 0, "slug_abweichungen": [], "slug_kollisionen": [], "alt_text_fallback": 0,
+            "bilder_unter_1200px": 0, "seiten_ohne_text": [], "teaser_ohne_videoadresse": 0, "href_alte_uploads_offen": 0,
+            "bilder_nachgezogen": 0,
         }
+        self.fehlend: dict[str, set] = {}
+        self.unvollstaendig: set = set()
         self.media_by_id = {m["id"]: m for m in json.loads((export / "media.json").read_text(encoding="utf-8"))}
         self.media_by_url = {m["source_url"]: m for m in self.media_by_id.values()}
 
     # -- Medien im Text
-    def text_medien(self, html: str) -> dict[str, str]:
-        """Alte Upload-Adressen im Text als Medien der neuen Seite anlegen; gibt alt -> neu zurück."""
+    def fehlt(self, url: str, aus: str) -> None:
+        self.fehlend.setdefault(url, set()).add(aus)
+        self.unvollstaendig.add(aus)
+
+    def text_medien(self, html: str, aus: str = "") -> dict[str, str]:
+        """Alte Upload-Adressen im Text als Medien der neuen Seite anlegen; gibt alt -> neu zurück.
+        Was nicht zu holen ist, bleibt auf der Altadresse (https) und wird als fehlend/unvollständig gemeldet."""
         mapping: dict[str, str] = {}
         for url in upload_urls(html):
             name = upload_dateiname(url)
@@ -248,10 +350,11 @@ class Migration:
                 mapping[url] = found[0]["source_url"]
                 self.bericht["medien"]["vorhanden"] += 1
                 continue
+            alt_https = re.sub(r"^http://", "https://", url)
             daten = self.medien.holen(url)
             if daten is None:
-                self.bericht["fehlende_bilder"].append(url)
-                mapping[url] = re.sub(r"^http://", "https://", url)  # Altadresse bleibt, bis das Bild nachgeliefert ist
+                self.fehlt(url, aus)
+                mapping[url] = alt_https
                 continue
             if self.trocken:
                 self.bericht["medien"]["neu"] += 1
@@ -260,32 +363,37 @@ class Migration:
             r = self.wp.http.post(f"{self.wp.url}/wp-json/wp/v2/media", data=daten, timeout=300, params={"slug": slug},
                                   headers={"Content-Disposition": f'attachment; filename="{name}"', "Content-Type": mime})
             if r.status_code >= 400:
-                self.bericht["fehlende_bilder"].append(url)
-                mapping[url] = re.sub(r"^http://", "https://", url)
+                self.medien.status[url] = f"Upload {r.status_code}"
+                self.fehlt(url, aus)
+                mapping[url] = alt_https
                 continue
             mapping[url] = r.json()["source_url"]
             self.bericht["medien"]["neu"] += 1
         return mapping
 
-    def inhalt(self, html: str, aus: str) -> str:
-        html, gefunden = strip_beispielwerte(html, self.werte)
+    def inhalt(self, html: str, aus: str, bereinigen: bool = False) -> str:
+        gefunden = kontaktangaben(html, self.werte)
         for v in gefunden:
-            self.bericht["beispielwerte_gefunden"].setdefault(v, []).append(aus)
+            self.bericht["kontaktangaben_in_texten"].setdefault(v, []).append(aus)
         self.bericht["nicht_youtube_iframes"] += len(IFRAME_RE.findall(YT_IFRAME_RE.sub("", html)))
         fremd = fremde_bilder(html)
         if fremd:
             self.bericht["fremde_bilder"] += len(fremd)
             self.bericht["fremde_bilder_beitraege"].append(aus)
-        return rewrite_html(html, self.text_medien(html))
+        neu = rewrite_html(html, self.text_medien(html, aus))
+        if bereinigen:
+            neu = seite_bereinigen(neu)
+        self.bericht["href_alte_uploads_offen"] += len(OFFENE_UPLOAD_HREF_RE.findall(neu))
+        return neu
 
     # -- Beiträge
-    def beitragsbild(self, p: dict, titel: str) -> dict:
+    def beitragsbild(self, p: dict, titel: str, uid: str = "") -> dict:
         m = self.media_by_id.get(p.get("featured_media"))
         if not m:
             return {}
         daten = self.medien.holen(m["source_url"])
         if daten is None:
-            self.bericht["fehlende_bilder"].append(m["source_url"])
+            self.fehlt(m["source_url"], uid)
             return {}
         if (m.get("media_details") or {}).get("width", 9999) < 1200:
             self.bericht["bilder_unter_1200px"] += 1
@@ -294,6 +402,31 @@ class Migration:
             alt = titel
             self.bericht["alt_text_fallback"] += 1
         return {"daten": base64.b64encode(daten).decode("ascii"), "dateiname": upload_dateiname(m["source_url"]), "alt": alt, "credit": ""}
+
+    def nachziehen(self, uid: str, wp_id: int, p: dict, aus_seite: bool) -> None:
+        """Vorhandener Beitrag: fehlendes Beitragsbild und nicht übertragene Bilder im Text eines früheren Laufs nachholen."""
+        if self.trocken or not wp_id:
+            return
+        code, d = self.wp.req("GET", f"wp/v2/posts/{wp_id}", params={"context": "edit", "_fields": "content,featured_media"})
+        if code != 200:
+            return
+        upd: dict = {}
+        titel = text(p["title"]["rendered"]) if isinstance(p["title"], dict) else text(p["title"])
+        if not aus_seite and p.get("featured_media") in self.media_by_id and not d.get("featured_media"):
+            bild = self.beitragsbild(p, titel, uid)
+            if bild:
+                upd["bild"] = bild
+                self.bericht["bilder_nachgezogen"] += 1
+        roh = (d.get("content") or {}).get("raw", "")
+        if UPLOAD_RE.search(roh):
+            neu = rewrite_html(roh, self.text_medien(roh, uid))
+            if neu != roh:
+                upd["inhalt"] = neu
+                self.bericht["bilder_nachgezogen"] += 1
+        if upd:
+            c, data = self.wp.req("PUT", f"tamil-radar/v1/beitrag/{uid}", json=upd)
+            if c >= 400:
+                raise RuntimeError(f"{uid}: nachziehen {c} {str(data)[:200]}")
 
     def beitrag(self, p: dict, kat_slugs: list[str], aus_seite: bool = False, ziel_rubrik: str = "") -> int:
         uid = post_uid(p["id"], aus_seite)
@@ -307,12 +440,18 @@ class Migration:
         code, vorhanden = self.wp.req("GET", f"tamil-radar/v1/beitrag/{uid}")
         if code == 200:
             self.bericht["beitraege"]["vorhanden"] += 1
-            return int(vorhanden.get("id") or 0)
+            wp_id = int(vorhanden.get("id") or 0)
+            self.nachziehen(uid, wp_id, p, aus_seite)
+            return wp_id
         titel = text(p["title"]["rendered"]) if isinstance(p["title"], dict) else text(p["title"])
+        inhalt = self.inhalt(p["content"]["rendered"], uid)
+        teaser, ersetzt = bilde_teaser((p.get("excerpt") or {}).get("rendered", ""), p["content"]["rendered"])
+        if ersetzt or (not text((p.get("excerpt") or {}).get("rendered", "")) and VIDEO_URL_RE.search(p["content"]["rendered"])):
+            self.bericht["teaser_ohne_videoadresse"] += 1
         payload = {
             "titel": titel,
-            "inhalt": self.inhalt(p["content"]["rendered"], uid),
-            "teaser": text((p.get("excerpt") or {}).get("rendered", "")),
+            "inhalt": inhalt,
+            "teaser": teaser,
             "status": "publish",
             "slug": p["slug"],
             "datum": p["date"].replace("T", " "),
@@ -320,28 +459,49 @@ class Migration:
             "kategorien": weitere,
             "schlagworte": extra,
             "meta": {"radar_uid": uid},
-            "bild": {} if aus_seite else self.beitragsbild(p, titel),
+            "bild": {} if aus_seite else self.beitragsbild(p, titel, uid),
         }
         if self.trocken:
             self.bericht["beitraege"]["neu (trocken)"] += 1
             return 0
         status, wp_id = self.wp.beitrag(payload)
         self.bericht["beitraege"][status] += 1
-        if status == "neu":
-            code, data = self.wp.req("GET", f"tamil-radar/v1/beitrag/{uid}")
-            if code == 200 and data.get("slug") != p["slug"]:
-                self.bericht["slug_abweichungen"].append((p["link"], data.get("link", ""), p["slug"], data.get("slug")))
         return wp_id
 
-    def beitraege(self, posts: list[dict], kategorien: dict[int, str], tags: dict[int, str], limit: int = 0) -> list[tuple[str, str]]:
-        extra_redirects: list[tuple[str, str]] = []
+    def beitraege(self, posts: list[dict], kategorien: dict[int, str], limit: int = 0) -> None:
         for i, p in enumerate(posts):
             if limit and i >= limit:
                 break
-            slugs = [kategorien.get(c, str(c)) for c in p.get("categories", [])]
-            self.beitrag(p, slugs)
-        extra_redirects += [(alt, neu) for alt, neu, _, _ in self.bericht["slug_abweichungen"] if neu]
-        return extra_redirects
+            self.beitrag(p, [kategorien.get(c, str(c)) for c in p.get("categories", [])])
+
+    def abweichungen(self, posts: list[dict], kategorien: dict[int, str], pages: list[dict]) -> list[tuple[str, str]]:
+        """Weiterleitungen für Beiträge, deren Slug auf der neuen Seite vom alten abweicht – bei JEDEM Lauf für alle
+        importierten Beiträge (alt-*, altseite-*) neu ermittelt, unabhängig von --limit und davon, ob sie neu sind.
+        Gehört der alte Slug einem fremden Beitrag (ohne alt-Kennung), wird gemeldet und nichts umgeleitet."""
+        kandidaten = []
+        for p in posts:
+            if map_kategorien([kategorien.get(c, str(c)) for c in p.get("categories", [])])[0]:
+                kandidaten.append((post_uid(p["id"]), p))
+        kandidaten += [(post_uid(p["id"], True), p) for p in seiten_plan(pages)["beitrag"]]
+        gefunden: list[tuple[str, dict, dict]] = []
+        for uid, p in kandidaten:
+            code, d = self.wp.req("GET", f"tamil-radar/v1/beitrag/{uid}")
+            if code == 200:
+                gefunden.append((uid, p, d))
+        eigene_ids = {int(d["id"]) for _, _, d in gefunden}
+        rows: list[tuple[str, str]] = []
+        self.bericht["slug_abweichungen"], self.bericht["slug_kollisionen"] = [], []
+        for uid, p, d in gefunden:
+            if d.get("slug") == p["slug"]:
+                continue
+            code, belegt = self.wp.req("GET", "wp/v2/posts", params={"slug": p["slug"], "status": "any", "context": "edit", "_fields": "id"})
+            fremd = [int(x["id"]) for x in belegt if int(x["id"]) not in eigene_ids] if code == 200 and isinstance(belegt, list) else []
+            if fremd:
+                self.bericht["slug_kollisionen"].append({"uid": uid, "slug": p["slug"], "neu": d.get("slug"), "belegt_von": fremd})
+                continue
+            self.bericht["slug_abweichungen"].append({"uid": uid, "alt": p["link"], "neu": d.get("link")})
+            rows.append((p["link"], d["link"]))
+        return rows
 
     # -- Seiten
     def seite(self, slug: str, titel: str, quelle: dict, aus: str) -> None:
@@ -352,7 +512,7 @@ class Migration:
         if vorhanden and not leer:
             self.bericht["seiten"]["vorhanden"] += 1
             return
-        inhalt = self.inhalt(quelle["content"]["rendered"], aus)
+        inhalt = self.inhalt(quelle["content"]["rendered"], aus, bereinigen=True)
         if aus == "seite-reporter" and inhalt.strip():
             inhalt = "<h2>Mitmachen: Leser-Reporter</h2>\n" + inhalt
         if len(text(inhalt).split()) < 25:
@@ -381,13 +541,13 @@ class Migration:
         self.bericht["seiten"]["Weiterleitung (kein Inhalt)"] += len(plan["redirect"])
         self.bericht["seiten"]["Altlast nicht übernommen"] += len(plan["loeschen"])
 
-    def weiterleitungen(self, csv_text: str) -> int:
+    def weiterleitungen(self, csv_text: str) -> dict:
         if self.trocken:
-            return 0
+            return {}
         code, data = self.wp.req("POST", "tamil-site/v1/weiterleitungen", json={"csv": csv_text})
         if code >= 400:
             raise RuntimeError(f"Weiterleitungen: {code} {str(data)[:200]}")
-        return int(data.get("eintraege", 0))
+        return data
 
 
 def passwort(datei: str) -> str:
@@ -406,6 +566,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--trocken", action="store_true", help="nichts schreiben, nur zählen")
     ap.add_argument("--limit", type=int, default=0, help="nur die ersten N Beiträge (Zeitmessung)")
     ap.add_argument("--bericht", type=Path, default=None, help="Bericht als JSON schreiben")
+    ap.add_argument("--nach-umschaltung", action="store_true", help="erlaubt nach der Domain-Umschaltung das Ziel tamil.de/www.tamil.de (nur mit --bestaetigt-von-luis)")
+    ap.add_argument("--bestaetigt-von-luis", action="store_true", help="ausdrückliche Bestätigung zu --nach-umschaltung")
     ap.add_argument("--nur", choices=("beitraege", "seiten", "weiterleitungen"), action="append", help="Teilschritte (Standard: alle)")
     args = ap.parse_args(argv)
 
@@ -413,12 +575,12 @@ def main(argv: list[str] | None = None) -> int:
     if not (args.url and pw):
         print("Adresse (--url) und Passwort (--passwort-datei oder $MIGRATION_APP_PASSWORD) fehlen.")
         return 2
-    host = urlsplit(args.url).netloc.split(":")[0]
-    if host in ALTE_HOSTS and os.environ.get("MIGRATION_ZIEL_IST_NEU") != "1":
-        print("Abbruch: Ziel ist die alte tamil.de-Adresse. Die alte Seite wird nie beschrieben.")
+    fehler = ziel_pruefen(args.url, args.nach_umschaltung, args.bestaetigt_von_luis)
+    if args.nach_umschaltung and not args.bestaetigt_von_luis:
+        fehler = fehler or "--nach-umschaltung verlangt --bestaetigt-von-luis."
+    if fehler:
+        print("Abbruch: " + fehler)
         return 2
-    if args.url.startswith("http://") and host not in ("127.0.0.1", "localhost"):
-        print("Hinweis: Anwendungspasswörter funktionieren nur über HTTPS.")
 
     export = args.export
     site_json = json.loads((REPO / "prototyp" / "content" / "site.json").read_text(encoding="utf-8"))
@@ -431,25 +593,31 @@ def main(argv: list[str] | None = None) -> int:
     WP = _lade_wp_klasse()
     m = Migration(WP(args.url, args.benutzer, pw), export, Medien(args.medien or export / "media"), site_json, args.trocken)
     start = time.time()
-    extra: list[tuple[str, str]] = []
+    alle = sorted(posts, key=lambda p: p["date"])
     if "beitraege" in schritte:
-        extra = m.beitraege(sorted(posts, key=lambda p: p["date"]), kat, {}, args.limit)
+        m.beitraege(alle, kat, args.limit)
     if "seiten" in schritte:
         m.seiten(pages)
     eintraege = 0
     if "weiterleitungen" in schritte:
-        eintraege = m.weiterleitungen(redirect_csv("https://www.tamil.de", cats, pages, extra))
+        extra = m.abweichungen(alle, kat, pages)  # immer über alle Beiträge, nie nur über die dieses Laufs
+        antwort = m.weiterleitungen(redirect_csv("https://www.tamil.de", cats, pages, extra))
+        eintraege = antwort.get("eintraege", 0)
+        m.bericht["weiterleitungen_verworfen"] = antwort.get("verworfen", [])
     b = m.bericht
+    b["unvollstaendig"] = sorted(m.unvollstaendig)
+    b["fehlende_bilder"] = [{"url": u, "status": m.medien.status[u]} for u in sorted(m.fehlend) if u in m.medien.status]
+    b["fehlende_bilder_404"] = sum(1 for f in b["fehlende_bilder"] if f["status"] == 404)
     b["dauer_sekunden"] = round(time.time() - start, 1)
     b["weiterleitungen_eintraege"] = eintraege
     b["bilder_von_alter_seite_geladen"] = m.medien.geladen
     b["doppelte_slugs_im_export"] = idempotenz_pruefen(posts)
-    b["beispielwerte_geprueft"] = m.werte and ["Telefon", "E-Mail", "WhatsApp"]
     out = json.dumps(b, ensure_ascii=False, indent=1, default=dict)
     if args.bericht:
         args.bericht.write_text(out, encoding="utf-8")
     print(out)
-    return 0
+    # Bilder, die auf der alten Seite da wären, aber nicht geholt wurden (429/5xx/Netz): Lauf wiederholen
+    return 3 if any(f["status"] != 404 for f in b["fehlende_bilder"]) else 0
 
 
 if __name__ == "__main__":
