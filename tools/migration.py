@@ -18,6 +18,7 @@ from __future__ import annotations
 import argparse
 import base64
 import csv
+import hashlib
 import html as html_mod
 import importlib.util
 import io
@@ -116,6 +117,14 @@ def upload_urls(html: str) -> list[str]:
     for m in UPLOAD_RE.finditer(html or ""):
         seen[m.group(0)] = None
     return list(seen)
+
+
+def media_slug(url: str) -> str:
+    """Stabiler Medien-Slug aus alter Adresse (Dateiname + Kurzprüfsumme): gleiche Dateinamen aus verschiedenen
+    Monaten kollidieren nicht, und ein zweiter Lauf findet das Medium wieder (Idempotenz-Schlüssel der Bilder im Text)."""
+    stem = re.sub(r"[^a-z0-9]+", "-", Path(urlsplit(url).path).stem.lower()).strip("-")[:60] or "bild"
+    pfad = UPLOAD_RE.sub(lambda m: m.group(1), url)  # Schema und Host spielen keine Rolle (http/https, mit/ohne www)
+    return "alt-%s-%s" % (stem, hashlib.sha1(pfad.encode()).hexdigest()[:8])
 
 
 def upload_dateiname(url: str) -> str:
@@ -233,8 +242,8 @@ class Migration:
         mapping: dict[str, str] = {}
         for url in upload_urls(html):
             name = upload_dateiname(url)
-            stem = re.sub(r"[^a-z0-9]+", "-", Path(name).stem.lower()).strip("-")
-            code, found = self.wp.req("GET", "wp/v2/media", params={"slug": stem, "_fields": "id,source_url"})
+            slug = media_slug(url)
+            code, found = self.wp.req("GET", "wp/v2/media", params={"slug": slug, "_fields": "id,source_url"})
             if code == 200 and found:
                 mapping[url] = found[0]["source_url"]
                 self.bericht["medien"]["vorhanden"] += 1
@@ -248,7 +257,7 @@ class Migration:
                 self.bericht["medien"]["neu"] += 1
                 continue
             mime = mimetypes.guess_type(name)[0] or "application/octet-stream"
-            r = self.wp.http.post(f"{self.wp.url}/wp-json/wp/v2/media", data=daten, timeout=300,
+            r = self.wp.http.post(f"{self.wp.url}/wp-json/wp/v2/media", data=daten, timeout=300, params={"slug": slug},
                                   headers={"Content-Disposition": f'attachment; filename="{name}"', "Content-Type": mime})
             if r.status_code >= 400:
                 self.bericht["fehlende_bilder"].append(url)
@@ -335,20 +344,27 @@ class Migration:
         return extra_redirects
 
     # -- Seiten
-    def seite(self, slug: str, titel: str, inhalt: str, datum: str) -> None:
+    def seite(self, slug: str, titel: str, quelle: dict, aus: str) -> None:
+        """Seite anlegen (oder eine leere Hülle füllen). Erst prüfen, ob es sie gibt – dann erst Medien anfassen."""
         code, data = self.wp.req("GET", "wp/v2/pages", params={"slug": slug, "status": "publish,draft", "context": "edit"})
-        if code == 200 and data:
-            roh = (data[0].get("content") or {}).get("raw", "").strip()
-            if roh or not inhalt.strip() or self.trocken:
-                self.bericht["seiten"]["vorhanden"] += 1
-                return
-            self.wp.req("POST", f"wp/v2/pages/{data[0]['id']}", json={"content": inhalt})
-            self.bericht["seiten"]["gefüllt (war leer)"] += 1
+        vorhanden = code == 200 and bool(data)
+        leer = vorhanden and not (data[0].get("content") or {}).get("raw", "").strip()
+        if vorhanden and not leer:
+            self.bericht["seiten"]["vorhanden"] += 1
             return
+        inhalt = self.inhalt(quelle["content"]["rendered"], aus)
+        if aus == "seite-reporter" and inhalt.strip():
+            inhalt = "<h2>Mitmachen: Leser-Reporter</h2>\n" + inhalt
+        if len(text(inhalt).split()) < 25:
+            self.bericht["seiten_ohne_text"].append(slug)
         if self.trocken:
             self.bericht["seiten"]["neu (trocken)"] += 1
             return
-        code, data = self.wp.req("POST", "wp/v2/pages", json={"slug": slug, "title": titel, "content": inhalt, "status": "publish", "date": datum})
+        if vorhanden:
+            self.wp.req("POST", f"wp/v2/pages/{data[0]['id']}", json={"content": inhalt})
+            self.bericht["seiten"]["gefüllt (war leer)"] += 1
+            return
+        code, data = self.wp.req("POST", "wp/v2/pages", json={"slug": slug, "title": titel, "content": inhalt, "status": "publish", "date": quelle["date"].replace("T", " ")})
         if code >= 400:
             raise RuntimeError(f"Seite {slug}: {code} {str(data)[:300]}")
         self.bericht["seiten"]["neu"] += 1
@@ -358,12 +374,7 @@ class Migration:
         for p in plan["seite"]:
             slug = p["slug"]
             neu = export_site.PAGE_MAP.get(slug, ("seite", slug))[1]
-            html = self.inhalt(p["content"]["rendered"], f"seite-{slug}")
-            if slug == "reporter" and html.strip():
-                html = "<h2>Mitmachen: Leser-Reporter</h2>\n" + html
-            if len(text(html).split()) < 25:
-                self.bericht["seiten_ohne_text"].append(neu)
-            self.seite(neu, text(p["title"]["rendered"]), html, p["date"].replace("T", " "))
+            self.seite(neu, text(p["title"]["rendered"]), p, f"seite-{slug}")
         for p in plan["beitrag"]:
             self.beitrag(p, [], aus_seite=True, ziel_rubrik=export_site.PAGE_MAP[p["slug"]][1])
             self.bericht["seiten"]["als Beitrag"] += 1

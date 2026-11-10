@@ -87,3 +87,10 @@ def test_redirect_csv_und_seitenplan():
 
 def test_text_entities():
     assert migration.text("Kanguva &#8211; <b>Highlight</b>\n  jetzt") == "Kanguva – Highlight jetzt"
+
+
+def test_medien_slug_stabil_und_eindeutig():
+    a = migration.media_slug("https://www.tamil.de/wp-content/uploads/2019/11/image.gif")
+    assert a == migration.media_slug("http://tamil.de/wp-content/uploads/2019/11/image.gif")  # Schema/Host egal
+    assert a != migration.media_slug("https://www.tamil.de/wp-content/uploads/2020/01/image.gif")  # gleicher Name, anderer Monat
+    assert a.startswith("alt-image-")
