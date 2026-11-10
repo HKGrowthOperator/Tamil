@@ -81,7 +81,7 @@ td.gut { color: var(--gut); font-weight: 700; }
 td.schlecht { color: var(--schlecht); font-weight: 700; }
 .leise, .fuss { color: var(--leise); }
 .fuss { font-size: 0.9375rem; max-width: 72ch; }
-.oeffnen { font-weight: 700; }
+.oeffnen { font-weight: 700; display: flex; flex-wrap: wrap; gap: 0.25rem 1.75rem; }
 .trenner { border: 0; border-top: 1px solid var(--linie); margin: 0; }
 .abschluss { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); }
 .abschluss h2 { font-size: 1.25rem; font-weight: 800; margin-bottom: 0.5rem; }
