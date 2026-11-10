@@ -8,6 +8,9 @@
 
 defined( 'ABSPATH' ) || exit;
 
+const TAMIL_SITE_REDIRECT_MAX_BYTES  = 524288;
+const TAMIL_SITE_REDIRECT_MAX_ZEILEN = 5000;
+
 /**
  * Pfad normalisieren: nur der Pfadteil, Kleinbuchstaben, mit abschließendem Schrägstrich.
  */
@@ -21,15 +24,73 @@ function tamil_site_normalize_path( string $value ): string {
 }
 
 /**
+ * CSV zeilenweise bereinigen. sanitize_textarea_field entfernt %xx-Folgen und würde /%c3%bcber-uns/ zu /ber-uns/
+ * machen; hier fallen nur Tags und Steuerzeichen weg.
+ */
+function tamil_site_clean_csv( string $csv ): string {
+	$out = array();
+	foreach ( (array) preg_split( '/\r\n|\r|\n/', $csv ) as $line ) {
+		$line = trim( (string) preg_replace( '/[\x00-\x08\x0B\x0C\x0E-\x1F]/', '', wp_strip_all_tags( (string) wp_check_invalid_utf8( (string) $line ) ) ) );
+		if ( '' !== $line ) {
+			$out[] = $line;
+		}
+	}
+	return implode( "\n", $out );
+}
+
+/**
+ * CSV prüfen und in die Tabelle verwandeln: Obergrenze (Zeilen, Bytes), danach Ziele nur auf der eigenen Website,
+ * keine Ketten und Schleifen.
+ *
+ * @return array{csv:string,table:array<string,string>,verworfen:array<int,array{alt:string,grund:string}>}|WP_Error
+ */
+function tamil_site_prepare_redirects( string $csv ) {
+	if ( strlen( $csv ) > TAMIL_SITE_REDIRECT_MAX_BYTES || substr_count( $csv, "\n" ) + 1 > TAMIL_SITE_REDIRECT_MAX_ZEILEN ) {
+		return new WP_Error( 'tamil_site_zu_gross', __( 'Die Weiterleitungsliste ist zu groß.', 'tamil-site' ), array( 'status' => 413 ) );
+	}
+	$csv       = tamil_site_clean_csv( $csv );
+	$verworfen = array();
+	$table     = tamil_site_parse_redirect_csv( $csv, $verworfen );
+	foreach ( $table as $from => $to ) {
+		$ziel = tamil_site_normalize_path( $to );
+		if ( $ziel === $from ) {
+			$verworfen[] = array(
+				'alt'   => $from,
+				'grund' => 'Schleife (Ziel gleich Quelle)',
+			);
+			unset( $table[ $from ] );
+		}
+	}
+	$keys = array_keys( $table );
+	foreach ( $keys as $from ) {
+		if ( isset( $table[ tamil_site_normalize_path( $table[ $from ] ) ] ) ) {
+			$verworfen[] = array(
+				'alt'   => $from,
+				'grund' => 'Kette oder Schleife (Ziel ist selbst eine Quelle)',
+			);
+			unset( $table[ $from ] );
+		}
+	}
+	return array(
+		'csv'       => $csv,
+		'table'     => $table,
+		'verworfen' => $verworfen,
+	);
+}
+
+/**
  * CSV-Text in die Weiterleitungstabelle verwandeln.
  *
- * @return array<string,string> Pfad → Ziel (Pfad oder URL).
+ * @param string                                       $csv       CSV mit Spalten „alt“ und „neu“.
+ * @param array<int,array{alt:string,grund:string}>    $verworfen Wird um verworfene Zeilen ergänzt (fremder Host).
+ * @return array<string,string> Pfad → Ziel (URL auf der eigenen Website).
  */
-function tamil_site_parse_redirect_csv( string $csv ): array {
-	$table = array();
-	$lines = (array) preg_split( '/\r\n|\r|\n/', trim( $csv ) );
-	$alt   = 0;
-	$neu   = 1;
+function tamil_site_parse_redirect_csv( string $csv, array &$verworfen = array() ): array {
+	$table   = array();
+	$lines   = (array) preg_split( '/\r\n|\r|\n/', trim( $csv ) );
+	$alt     = 0;
+	$neu     = 1;
+	$eigener = strtolower( (string) wp_parse_url( home_url(), PHP_URL_HOST ) );
 	foreach ( $lines as $i => $line ) {
 		if ( '' === trim( $line ) ) {
 			continue;
@@ -50,7 +111,17 @@ function tamil_site_parse_redirect_csv( string $csv ): array {
 		if ( '/' === $from_path ) {
 			continue;
 		}
-		$table[ $from_path ] = esc_url_raw( str_starts_with( $to, 'http' ) ? $to : home_url( tamil_site_normalize_path( $to ) ) );
+		if ( str_starts_with( $to, 'http' ) ) {
+			if ( strtolower( (string) wp_parse_url( $to, PHP_URL_HOST ) ) !== $eigener ) {
+				$verworfen[] = array(
+					'alt'   => $from_path,
+					'grund' => 'Ziel außerhalb der eigenen Website',
+				);
+				continue;
+			}
+			$to = tamil_site_normalize_path( $to );
+		}
+		$table[ $from_path ] = esc_url_raw( home_url( tamil_site_normalize_path( $to ) ) );
 	}
 	return $table;
 }
@@ -84,12 +155,19 @@ add_action( 'template_redirect', 'tamil_site_maybe_redirect', 1 );
  * manage_options). So kann die Migration (tools/migration.py) die 301-Tabelle ohne Zugang zur Oberfläche einspielen;
  * ein zweiter Aufruf mit gleichem Inhalt ändert nichts.
  */
-function tamil_site_rest_redirects( WP_REST_Request $request ): WP_REST_Response {
-	$csv = sanitize_textarea_field( (string) $request->get_param( 'csv' ) );
-	update_option( 'tamil_site_redirects_csv', $csv, false );
-	$table = tamil_site_parse_redirect_csv( $csv );
-	update_option( 'tamil_site_redirects', $table, false );
-	return new WP_REST_Response( array( 'eintraege' => count( $table ) ) );
+function tamil_site_rest_redirects( WP_REST_Request $request ) {
+	$prep = tamil_site_prepare_redirects( (string) $request->get_param( 'csv' ) );
+	if ( is_wp_error( $prep ) ) {
+		return $prep;
+	}
+	update_option( 'tamil_site_redirects_csv', $prep['csv'], false );
+	update_option( 'tamil_site_redirects', $prep['table'], false );
+	return new WP_REST_Response(
+		array(
+			'eintraege' => count( $prep['table'] ),
+			'verworfen' => $prep['verworfen'],
+		)
+	);
 }
 
 function tamil_site_register_redirect_route(): void {

@@ -55,9 +55,16 @@ function tamil_site_sanitize_settings( $input ): array {
  * CSV speichern und daraus die Tabelle für template_redirect ableiten.
  */
 function tamil_site_sanitize_redirects_csv( $input ): string {
-	$csv = sanitize_textarea_field( (string) $input );
-	update_option( 'tamil_site_redirects', tamil_site_parse_redirect_csv( $csv ), false );
-	return $csv;
+	$prep = tamil_site_prepare_redirects( (string) $input );
+	if ( is_wp_error( $prep ) ) {
+		add_settings_error( 'tamil_site_redirects_csv', 'zu_gross', $prep->get_error_message() );
+		return (string) get_option( 'tamil_site_redirects_csv', '' );
+	}
+	foreach ( $prep['verworfen'] as $v ) {
+		add_settings_error( 'tamil_site_redirects_csv', 'verworfen', esc_html( $v['alt'] . ': ' . $v['grund'] ), 'warning' );
+	}
+	update_option( 'tamil_site_redirects', $prep['table'], false );
+	return $prep['csv'];
 }
 
 function tamil_site_page_settings(): void {
