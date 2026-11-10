@@ -1,5 +1,6 @@
-/* tamil.de – Probe „klar“ (Schnellprobe, Runde 2)
-   Vorbild BBC News und tagesschau. Feste Farbwerte aus design/brief.md, Abschnitt 3. Kein JavaScript. */
+/* tamil.de – Probe „klar2“ (Skizze nach Brief 2.1, Abschnitt 10)
+   „klar“ mit mehr Bild und mehr Bühne. Vorbild BBC News und tagesschau, für die Bildblöcke Spiegel.
+   Feste Farbwerte aus design/brief.md, Abschnitt 3 und 10.1. Kein JavaScript. */
 
 @font-face {
   font-family: "Libre Franklin";
@@ -21,15 +22,28 @@
 }
 
 :root {
+  /* hell (Abschnitt 3) */
   --grund: oklch(0.985 0.002 250);
   --flaeche: oklch(0.962 0.003 250);
   --tinte: oklch(0.21 0.012 255);
   --leise: oklch(0.45 0.012 255);
   --linie: oklch(0.88 0.004 250);
   --rot: oklch(0.508 0.177 25.6);
+  /* auf Dunkel (Abschnitt 10.1) */
+  --hell: oklch(0.985 0.002 250);
+  --hell-leise: oklch(0.82 0.006 250);
+  --linie-dunkel: oklch(0.36 0.010 255);
+  --flaeche-dunkel: oklch(0.26 0.012 255);
+  /* der einzige Verlauf: unter Schrift im Bild, von durchsichtig nach Tinte */
+  --verlauf: linear-gradient(to bottom,
+    oklch(0.21 0.012 255 / 0) 0,
+    oklch(0.21 0.012 255 / 0.74) 52px,
+    oklch(0.21 0.012 255 / 0.9) 100%);
 
   --schrift: "Libre Franklin", "Noto Sans Tamil", "Tamil Sangam MN", system-ui, sans-serif;
   --rand: 16px;
+  --breite: 1280px;
+  --zoom: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -70,42 +84,81 @@ a:focus-visible {
   font-size: 1rem;
 }
 
-/* ---------- Kopf ---------- */
-
-.kopf {
-  background: var(--grund);
-  border-bottom: 1px solid var(--linie);
+.innen {
+  max-width: var(--breite);
+  margin: 0 auto;
+  padding: 0 var(--rand);
 }
+
+/* ---------- Kopf: Kopfzeile, Logo, Rubrikband ---------- */
+
+.kopfzeile { border-bottom: 1px solid var(--linie); }
+.kopfzeile__innen {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 44px;
+  font-size: 13px;
+  line-height: 1.3;
+  color: var(--leise);
+}
+.kopfzeile__hinweise { display: none; }
+.kopfzeile a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  color: var(--tinte);
+}
+.kopfzeile a:hover { color: var(--rot); }
+.kopfzeile__suche { font-size: 14px; font-weight: 600; padding-left: 12px; }
+.kopfzeile__suche svg { width: 16px; height: 16px; flex: none; }
+
 .kopf__logo {
   display: block;
   width: max-content;
-  padding: 10px var(--rand) 8px;
+  padding: 6px 0;
 }
-.kopf__logo img { width: 119px; height: auto; }
+.kopf__logo img { height: 44px; width: auto; }
 
-.rubriken { border-top: 1px solid var(--linie); }
-.rubriken ul {
+.band {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--tinte);
+}
+.band ul {
   display: flex;
   overflow-x: auto;
   scrollbar-width: none;
+  max-width: var(--breite);
+  margin: 0 auto;
   padding: 0 4px;
 }
-.rubriken ul::-webkit-scrollbar { display: none; }
-.rubriken a {
+.band ul::-webkit-scrollbar { display: none; }
+.band a {
+  position: relative;
   display: block;
   padding: 0 12px;
-  line-height: 44px;
+  line-height: 46px;
   font-size: 15px;
   font-weight: 500;
+  color: var(--hell-leise);
   white-space: nowrap;
 }
-.rubriken a:hover { color: var(--rot); }
-.rubriken a[aria-current] { color: var(--rot); font-weight: 600; }
-.rubriken a:focus-visible { outline-offset: -3px; }
+.band a:hover { color: var(--hell); }
+.band a[aria-current] { color: var(--hell); font-weight: 600; }
+.band a[aria-current]::after {
+  content: "";
+  position: absolute;
+  left: 12px; right: 12px; bottom: 0;
+  height: 3px;
+  background: var(--rot);
+}
+.band a:focus-visible { outline-color: var(--hell); outline-offset: -4px; }
 
 /* ---------- gemeinsame Bausteine ---------- */
-
-.seite { padding: 0 var(--rand) 56px; }
 
 .anr { display: block; }
 .anr:hover .titel {
@@ -114,12 +167,22 @@ a:focus-visible {
   text-underline-offset: 0.14em;
 }
 
-.bild {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
+/* Bildrahmen: schneidet den leichten Zoom beim Überfahren ab. Keine dunkle Ersatzfläche. */
+.rahmen {
+  position: relative;
+  overflow: hidden;
   background: var(--flaeche);
 }
+.rahmen img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: var(--zoom);
+}
+.anr:hover .rahmen img { transform: scale(1.03); }
+
+.r169 { aspect-ratio: 16 / 9; }
+.r43 { aspect-ratio: 4 / 3; }
 
 .meta {
   font-size: 13px;
@@ -137,7 +200,8 @@ a:focus-visible {
   width: 1px;
   height: 0.95em;
   margin: 0 8px;
-  background: var(--leise);
+  background: currentColor;
+  opacity: 0.7;
   vertical-align: -0.12em;
 }
 
@@ -150,31 +214,71 @@ a:focus-visible {
 .vorspann { margin-top: 8px; }
 
 .block-titel {
-  font-size: 16px;
+  font-size: 19px;
   line-height: 1.25;
   font-weight: 700;
   border-top: 1px solid var(--tinte);
-  padding-top: 10px;
+  padding-top: 12px;
   margin-bottom: 4px;
 }
 
+/* Titel im Bild: Text unten auf dem Verlauf; Dachzeile hell, weil Rot auf Dunkel zu schwach ist. */
+.imbild {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  padding: 60px var(--rand) 16px;
+  background-image: var(--verlauf);
+  color: var(--hell);
+}
+.imbild .meta { color: var(--hell-leise); }
+.imbild .meta__rubrik { color: var(--hell); }
+.kachel .anr:focus-visible,
+.aufmacher .anr:focus-visible { outline-offset: 3px; }
+
 /* ---------- Aufmacher ---------- */
 
-.aufmacher .bild {
-  width: calc(100% + 2 * var(--rand));
-  max-width: none;
-  margin-inline: calc(-1 * var(--rand));
-}
-.aufmacher__text { padding: 14px 0 24px; }
+.aufmacher .rahmen { margin-inline: calc(-1 * var(--rand)); }
 .aufmacher .titel {
-  font-size: 28px;
-  line-height: 1.14;
+  font-size: 30px;
+  line-height: 1.12;
   letter-spacing: -0.012em;
 }
-.aufmacher .vorspann { font-size: 17px; line-height: 1.5; }
+.aufmacher .vorspann { margin-top: 12px; font-size: 17px; line-height: 1.5; }
+
+/* ---------- Rubrikkacheln (Navigation) ---------- */
+
+.kacheln { margin-top: 24px; }
+.kacheln ul {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin-inline: calc(-1 * var(--rand));
+  padding: 0 var(--rand);
+}
+.kacheln ul::-webkit-scrollbar { display: none; }
+.kacheln li { flex: 0 0 138px; }
+.kacheln a { position: relative; display: block; }
+.kacheln .rahmen { display: block; aspect-ratio: 16 / 9; }
+.kacheln a:hover .rahmen img { transform: scale(1.03); }
+.kachel__name {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  padding: 26px 10px 7px;
+  background-image: linear-gradient(to bottom,
+    oklch(0.21 0.012 255 / 0) 0,
+    oklch(0.21 0.012 255 / 0.8) 22px,
+    oklch(0.21 0.012 255 / 0.92) 100%);
+  color: var(--hell);
+  font-size: 15px;
+  line-height: 1.25;
+  font-weight: 600;
+}
+.kacheln a:hover .kachel__name { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.14em; }
 
 /* ---------- Nebenstücke ---------- */
 
+.neben { margin-top: 20px; }
 .stueck { border-top: 1px solid var(--linie); }
 .stueck .anr {
   display: grid;
@@ -183,9 +287,7 @@ a:focus-visible {
   align-items: start;
   padding: 16px 0;
 }
-/* Handy wie BBC: zwei feste Spalten, Bild links, Dachzeile und Schlagzeile rechts mit einer Kante
-   (höchstens vier Zeilen); unter dem Bild bleibt frei, wenn der Text höher ist. */
-.stueck .bild { margin-top: 3px; }
+.stueck .rahmen { margin-top: 3px; }
 .stueck .titel {
   font-size: 19px;
   line-height: 1.22;
@@ -195,73 +297,122 @@ a:focus-visible {
 
 /* ---------- Meldungen ---------- */
 
-.meldungen { margin-top: 32px; }
+.meldungen { margin-top: 28px; }
 .meldung + .meldung { border-top: 1px solid var(--linie); }
-.meldung .anr { padding: 14px 0; }
+.meldung .anr {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 96px;
+  column-gap: 14px;
+  align-items: start;
+  padding: 14px 0;
+}
+.meldung .rahmen { margin-top: 3px; }
 .meldung .titel {
   font-size: 17px;
   line-height: 1.3;
   font-weight: 600;
 }
 
-/* ---------- Küche ---------- */
+/* ---------- Bildkacheln mit Titel im Bild (Diese Woche, Küche) ---------- */
 
-.kueche { margin-top: 40px; }
-.kueche__liste {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 24px 16px;
-  padding-top: 12px;
-}
-.rezept .bild { margin-bottom: 10px; }
-.rezept .titel { font-size: 19px; line-height: 1.22; }
+.kachel .anr { position: relative; height: 100%; }
+.kachel .rahmen { width: 100%; height: 100%; }
+.kachel .titel { font-size: 19px; line-height: 1.2; }
+.kachel--gross .titel { font-size: 22px; line-height: 1.18; }
+.kachel .imbild { padding-bottom: 14px; }
+/* p9697 trägt unten links eine eingebrannte Bildzeile: das Bild ist höher als sein Rahmen und oben
+   angelegt, so liegt der untere Streifen mit der Zeile außerhalb und wird abgeschnitten. */
+.rahmen--ohne-zeile img { height: 108%; object-position: 50% 0; }
 
-/* ---------- Diese Woche ---------- */
+/* ---------- Diese Woche (dunkel) ---------- */
 
 .woche {
   margin-top: 48px;
-  background: var(--flaeche);
-  margin-inline: calc(-1 * var(--rand));
-  padding: 0 var(--rand) 8px;
+  background: var(--tinte);
+  color: var(--hell);
+  padding: 28px 0 40px;
 }
-.woche .block-titel { padding-top: 20px; border-top: 0; }
+.woche a:focus-visible { outline-color: var(--hell); }
+.woche__titel {
+  font-size: 22px;
+  line-height: 1.2;
+  font-weight: 700;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--linie-dunkel);
+  margin-bottom: 20px;
+}
+.woche__raster { display: grid; gap: 16px; }
+.woche .kachel--gross .rahmen { aspect-ratio: 4 / 3; }
+.woche .kachel--klein .rahmen { aspect-ratio: 16 / 9; }
+.woche__gruppe { display: flex; flex-direction: column; gap: 10px; }
 .woche__art {
   font-size: 13px;
   line-height: 1.35;
   font-weight: 600;
-  color: var(--rot);
-  padding: 16px 0 8px;
-  border-bottom: 1px solid var(--linie);
+  color: var(--hell-leise);
+  padding-top: 6px;
 }
-.eintrag + .eintrag { border-top: 1px solid var(--linie); }
-.eintrag .anr { padding: 12px 0 14px; }
-.eintrag .titel { font-size: 18px; line-height: 1.25; }
-.eintrag .meta { margin: 4px 0 0; }
-.eintrag__zahl {
-  font-size: 16px;
+.woche__gruppe ul { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+.grafik { flex: 1; background: var(--flaeche-dunkel); }
+.grafik .anr { height: 100%; padding: 16px 16px 18px; }
+.grafik .titel { font-size: 20px; line-height: 1.2; }
+.grafik__zahl {
+  margin-top: 6px;
+  font-size: 18px;
+  line-height: 1.3;
   font-weight: 600;
-  margin-top: 4px;
   font-variant-numeric: tabular-nums;
 }
-.eintrag__orte { font-size: 16px; color: var(--leise); }
-.eintrag__text { font-size: 16px; margin-top: 6px; }
+.grafik__orte {
+  margin-top: 6px;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--hell-leise);
+}
+.grafik__text { margin-top: 8px; font-size: 16px; line-height: 1.5; max-width: 36em; }
 
-/* ---------- Tablet: eine Spalte, begrenzte Breite ---------- */
+/* ---------- Küche (hell) ---------- */
+
+.kueche { margin-top: 44px; padding-bottom: 56px; }
+.kueche__raster { display: grid; gap: 12px; padding-top: 14px; }
+.kueche .kachel--gross .rahmen { aspect-ratio: 4 / 3; }
+.kueche .kachel--klein .rahmen { aspect-ratio: 21 / 10; }
+
+/* ---------- Tablet ---------- */
 
 @media (min-width: 600px) {
-  .seite { max-width: 712px; margin: 0 auto; }
-  .kopf__innen { max-width: 712px; margin: 0 auto; }
-  .aufmacher .bild { width: 100%; margin-inline: 0; }
-  .stueck .anr {
-    display: grid;
-    grid-template-columns: 200px minmax(0, 1fr);
-    column-gap: 20px;
-    align-items: start;
+  :root { --rand: 24px; }
+  .kopfzeile__hinweise {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
   }
-  .stueck .bild { margin-top: 0; }
+  .kopfzeile__hinweise strong { color: var(--tinte); font-weight: 600; }
+  .kopfzeile__hinweise a + a::before {
+    content: "";
+    width: 1px;
+    height: 0.95em;
+    margin-right: 14px;
+    background: var(--linie);
+  }
+  .kopfzeile__datum { flex: none; }
+  .kopf__logo img { height: 52px; }
+  .stueck .anr { grid-template-columns: 200px minmax(0, 1fr); column-gap: 20px; }
+  .stueck .rahmen { margin-top: 0; }
   .stueck .vorspann { display: block; }
-  .kueche__liste { gap: 28px 24px; }
-  .woche { margin-inline: 0; padding-inline: 24px; }
+  .meldung .anr { grid-template-columns: minmax(0, 1fr) 160px; }
+  .kacheln li { flex-basis: 160px; }
+  .woche__raster { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .woche .kachel--gross { grid-column: 1 / -1; }
+  .kueche__raster { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .kueche .kachel--gross { grid-column: 1 / -1; }
+  .kueche .kachel--gross .rahmen { aspect-ratio: 16 / 9; }
+  .kueche .kachel--klein .rahmen { aspect-ratio: 4 / 3; }
+}
+
+@media (min-width: 600px) and (max-width: 1023px) {
+  .aufmacher .rahmen { margin-inline: 0; }
 }
 
 /* ---------- Desktop ---------- */
@@ -269,73 +420,102 @@ a:focus-visible {
 @media (min-width: 1024px) {
   :root { --rand: 40px; }
 
-  .kopf__innen {
-    max-width: 1280px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 32px;
-    padding: 0 var(--rand);
-  }
-  .kopf__logo { padding: 14px 0; }
-  .kopf__logo img { width: 150px; }
-  .rubriken { border-top: 0; }
-  .rubriken ul { padding: 0; overflow: visible; }
-  .rubriken a { padding: 0 10px; }
-  .rubriken li:last-child a { padding-right: 0; }
-
-  .seite { max-width: 1280px; padding: 32px var(--rand) 80px; }
+  .kopfzeile__innen { min-height: 38px; }
+  .kopfzeile a { min-height: 38px; }
+  .kopf__logo { padding: 11px 0; }
+  .kopf__logo img { height: 58px; }
+  .band ul { padding: 0 calc(var(--rand) - 14px); overflow: visible; }
+  .band a { padding: 0 14px; line-height: 48px; font-size: 16px; }
+  .band a[aria-current]::after { left: 14px; right: 14px; }
 
   .oben {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 320px;
-    grid-template-areas: "auf mel" "neb mel";
-    column-gap: 48px;
+    grid-template-columns: minmax(0, 1fr) 388px;
+    grid-template-areas: "auf mel" "kach kach" "neb neb";
+    column-gap: 32px;
     align-items: start;
+    padding-top: 24px;
   }
   .aufmacher { grid-area: auf; }
-  .neben { grid-area: neb; }
   .meldungen { grid-area: mel; margin-top: 0; }
+  .kacheln { grid-area: kach; margin-top: 36px; }
+  .neben { grid-area: neb; margin-top: 36px; }
 
-  .aufmacher .anr {
+  .aufmacher .rahmen { margin-inline: 0; }
+  .aufmacher .imbild { padding: 120px 32px 26px; }
+  .aufmacher .titel { font-size: 40px; line-height: 1.1; letter-spacing: -0.015em; max-width: 17em; }
+  .aufmacher .vorspann { margin-top: 14px; max-width: 40em; }
+
+  .meldungen .block-titel { margin-bottom: 0; }
+  .meldung .anr { grid-template-columns: minmax(0, 1fr) 120px; column-gap: 16px; padding: 13px 0 14px; }
+  .meldung .titel { font-size: 17px; line-height: 1.3; }
+
+  .kacheln ul {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    column-gap: 28px;
-    align-items: start;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 16px;
+    overflow: visible;
+    margin: 0;
+    padding: 0;
   }
-  .aufmacher__text { padding: 0 0 28px; }
-  .aufmacher .titel { font-size: 34px; line-height: 1.12; letter-spacing: -0.015em; }
-  .aufmacher .vorspann { margin-top: 12px; }
+  .kachel__name { font-size: 16px; padding: 26px 12px 9px; }
 
-  .stueck .anr { grid-template-columns: 208px minmax(0, 1fr); column-gap: 24px; padding: 18px 0; }
-  .stueck .titel { font-size: 22px; line-height: 1.2; }
-  .stueck .vorspann { margin-top: 6px; color: var(--tinte); max-width: 31em; }
-
-  .meldung .anr { padding: 13px 0 14px; }
-  .meldung .titel { font-size: 18px; line-height: 1.28; }
-
-  .kueche { margin-top: 56px; }
-  .kueche__liste { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 32px; padding-top: 16px; }
-
-  .woche { margin-top: 64px; padding: 0 32px 20px; }
-  /* drei gleich breite Spalten: zwei Filme, ein Termin; gleiche Linie und Oberkante */
-  .woche__spalten {
+  .neben {
     display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    column-gap: 24px;
+  }
+  .stueck { border-top: 0; }
+  .stueck .anr { display: block; padding: 0 0 8px; }
+  .stueck .rahmen { margin: 0 0 12px; }
+  .stueck .titel { font-size: 20px; line-height: 1.22; }
+  .stueck .vorspann { margin-top: 8px; font-size: 16px; }
+
+  .woche { margin-top: 64px; padding: 36px 0 48px; }
+  .woche__titel { font-size: 24px; margin-bottom: 24px; }
+  .woche__raster {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    column-gap: 32px;
+    grid-template-areas:
+      "gross gross klein"
+      "gross gross kino"
+      "termin termin termin";
+    gap: 24px;
   }
-  .woche__gruppe:first-child { grid-column: span 2; }
-  .woche__gruppe:first-child .eintrag + .eintrag { border-top: 0; }
-  .woche__gruppe:first-child ul {
+  .woche .kachel--gross { grid-area: gross; }
+  .woche .kachel--klein { grid-area: klein; }
+  .woche__gruppe--kino { grid-area: kino; }
+  .woche__gruppe--termine { grid-area: termin; }
+  .kachel--gross .imbild { padding: 120px 28px 24px; }
+  .kachel .titel { font-size: 20px; }
+  .kachel--gross .titel { font-size: 26px; line-height: 1.16; max-width: 22em; }
+  .kachel .imbild { padding-inline: 20px; }
+  .grafik .anr { padding: 18px 20px 20px; }
+  .woche__gruppe--termine .anr {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: 32px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+    column-gap: 40px;
   }
+  .woche__gruppe--termine .grafik__orte,
+  .woche__gruppe--termine .grafik__text { grid-column: 2; }
+  .woche__gruppe--termine .grafik__orte { grid-row: 1; margin-top: 2px; }
+  .woche__gruppe--termine .grafik__text { grid-row: 2 / 4; }
+
+  .kueche { margin-top: 64px; padding-bottom: 88px; }
+  .kueche__raster {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+    padding-top: 16px;
+  }
+  .kueche .kachel--gross { grid-column: 1 / 3; grid-row: 1 / 4; }
+  .kueche .kachel--gross .rahmen { aspect-ratio: 4 / 3; }
+  .kueche .kachel--klein .rahmen { aspect-ratio: auto; }
 }
 
 /* ---------- Artikel ---------- */
 
 .artikel { padding: 20px var(--rand) 64px; }
+.artikel .meta { margin-bottom: 8px; }
 .artikel__titel {
   font-size: 28px;
   line-height: 1.14;
@@ -377,6 +557,9 @@ a:focus-visible {
 .artikel__bild {
   width: calc(100% + 2 * var(--rand));
   max-width: none;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  object-position: 50% 25%;
   margin: 8px calc(-1 * var(--rand)) 0;
 }
 .artikel__text {
@@ -388,17 +571,20 @@ a:focus-visible {
 .artikel__text p + p { margin-top: 1em; }
 
 @media (min-width: 600px) {
-  .artikel { max-width: 712px; margin: 0 auto; padding-top: 32px; }
-  .artikel__bild { width: 100%; margin-inline: 0; }
+  .artikel { max-width: 760px; margin: 0 auto; padding-top: 32px; }
+  .artikel__bild { width: 100%; margin-inline: 0; aspect-ratio: 16 / 9; }
 }
 
 @media (min-width: 1024px) {
-  .artikel { max-width: 760px; padding: 48px var(--rand) 96px; }
-  .artikel__titel { font-size: 36px; line-height: 1.12; letter-spacing: -0.015em; }
+  .artikel { max-width: 1120px; padding: 48px var(--rand) 96px; }
+  .artikel__kopf, .artikel__text { max-width: 720px; margin-inline: auto; }
+  .artikel__titel { font-size: 38px; line-height: 1.1; letter-spacing: -0.015em; }
   .artikel__vorspann { font-size: 20px; margin-top: 14px; }
-  .artikel__text { margin-top: 32px; font-size: 19px; line-height: 1.6; }
+  .artikel__bild { margin-top: 12px; }
+  .artikel__text { margin-top: 36px; font-size: 19px; line-height: 1.6; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  .anr:hover .rahmen img, .kacheln a:hover .rahmen img { transform: none; }
 }

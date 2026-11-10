@@ -3,30 +3,41 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Uma Kumaran, Londons erste tamilische Abgeordnete – tamil.de (Probe „klar“)</title>
+<title>Uma Kumaran, Londons erste tamilische Abgeordnete – tamil.de (Probe „klar2“)</title>
 <link rel="preload" href="schriften/libre-franklin-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="klar2.css">
 </head>
 <body>
 
 <header class="kopf">
-  <div class="kopf__innen">
+  <div class="kopfzeile">
+    <div class="innen kopfzeile__innen">
+      <time class="kopfzeile__datum" datetime="2026-11-10">Dienstag, 10. November 2026</time>
+      <p class="kopfzeile__hinweise"><strong>Diese Woche</strong>
+        <a href="index.html#diese-woche">Diwali in Basel am 21. November</a>
+        <a href="index.html#diese-woche">„Scene“ läuft in 11 Kinos</a>
+      </p>
+      <a class="kopfzeile__suche" href="#"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="6.8" cy="6.8" r="5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10.6 10.6 14.5 14.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Suche</a>
+    </div>
+  </div>
+  <div class="innen">
     <a class="kopf__logo" href="index.html"><img src="../../inhalte/logo.png" width="300" height="121" alt="tamil.de – zur Startseite"></a>
-    <nav class="rubriken" aria-label="Rubriken">
-      <ul>
-        <li><a href="#" aria-current="true">Nachrichten</a></li>
-        <li><a href="#">Entertainment</a></li>
-        <li><a href="#">Events</a></li>
-        <li><a href="#">Community</a></li>
-        <li><a href="#">Küche</a></li>
-        <li><a href="#">Kino</a></li>
-        <li><a href="#">Sport</a></li>
-        <li><a href="#">Kultur</a></li>
-        <li><a href="#">Kontakt</a></li>
-      </ul>
-    </nav>
   </div>
 </header>
+
+<nav class="band" aria-label="Rubriken">
+  <ul>
+    <li><a href="#" aria-current="page">Nachrichten</a></li>
+    <li><a href="#">Entertainment</a></li>
+    <li><a href="#">Events</a></li>
+    <li><a href="#">Community</a></li>
+    <li><a href="index.html#kueche">Küche</a></li>
+    <li><a href="#">Kino</a></li>
+    <li><a href="#">Sport</a></li>
+    <li><a href="#">Kultur</a></li>
+    <li><a href="#">Kontakt</a></li>
+  </ul>
+</nav>
 
 <main class="artikel">
   <article>
@@ -40,7 +51,7 @@
       </div>
     </header>
 
-    <img class="artikel__bild" src="../../inhalte/bilder/p9631.jpg" width="1382" height="716"
+    <img class="artikel__bild" src="../../inhalte/bilder/p9631.jpg" width="1382" height="716" fetchpriority="high"
          alt="Uma Kumaran mit roter Labour-Rosette am Blazer spricht auf der Straße, um sie herum Unterstützer.">
 
     <div class="artikel__text">
