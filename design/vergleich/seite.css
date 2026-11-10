@@ -86,3 +86,8 @@ td.schlecht { color: var(--schlecht); font-weight: 700; }
 .abschluss { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); }
 .abschluss h2 { font-size: 1.25rem; font-weight: 800; margin-bottom: 0.5rem; }
 .abschluss ol, .abschluss ul { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.4rem; max-width: 52ch; }
+.punkte { margin: 0; display: grid; gap: 0; border-top: 1px solid var(--linie); max-width: 60rem; }
+.punkte div { display: grid; grid-template-columns: minmax(9rem, 14rem) 1fr; gap: 0.25rem 1.5rem; padding-block: 0.7rem; border-bottom: 1px solid var(--linie); }
+.punkte dt { font-weight: 700; }
+.punkte dd { margin: 0; }
+@media (max-width: 34rem) { .punkte div { grid-template-columns: 1fr; } }

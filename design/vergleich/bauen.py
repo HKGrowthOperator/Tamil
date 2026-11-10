@@ -3,8 +3,10 @@
 
     python3 design/vergleich/bauen.py intern klar blatt bild      # Vorschau für Luis, mit Vermerk und Kennzahlen
     python3 design/vergleich/bauen.py vorlage klar                # Vorlage für den Auftraggeber, ohne Kennzahlen
+    python3 design/vergleich/bauen.py vorher-nachher klar klar2   # Vorschau für Luis: alte und neue Fassung nebeneinander
 
-Vorher: node design/vergleich/aufnahmen.mjs <slugs>. „intern“ schreibt index.html und dateien.json, „vorlage“ schreibt
+Vorher: node design/vergleich/aufnahmen.mjs <slugs>. „intern“ und „vorher-nachher“ schreiben index.html und dateien.json
+(dieselbe interne Seite, derselbe Link), „vorlage“ schreibt
 vorlage.html und dateien-vorlage.json: zwei getrennte Artifacts, damit die Bilder fremder Nachrichtenseiten intern
 bleiben. Die Seiten haben kein doctype, die Hülle setzt die Veröffentlichung.
 """
@@ -26,6 +28,49 @@ PROBEN = {
     "bild": {"name": "Bild", "kurz": "Das Foto führt. Großes Aufmacherbild, kräftige Schlagzeile darunter, dann ein dichter Block mit weiteren Geschichten.",
              "familie": "Spiegel", "vorbild": ("Der Spiegel", "spiegel")},
 }
+PROBEN["klar2"] = {
+    "name": "Klar", "kurz": "Klar, mit mehr Bild. Ein großes Aufmacherbild mit der Schlagzeile im Bild, ein Foto an jeder Geschichte, "
+    "ein dunkler Bereich für Kino und Termine und ein Kopf, der mehr zeigt.",
+    "familie": "Tagesschau und BBC, in den Bildern Spiegel", "vorbild": ("Der Spiegel", "spiegel"),
+    "aenderungen": [
+        ("Überall ein Bild", "Jede Meldung hat jetzt ein Foto. Zwei Beiträge, deren Bild eine Landkarte und eine Werbegrafik war, sind gegen Beiträge mit Foto getauscht."),
+        ("Großes Aufmacherbild", "Das Foto der wichtigsten Geschichte ist groß, Rubrik und Schlagzeile stehen im Bild."),
+        ("Kräftiger Balken", "Die Rubriken stehen in einem dunklen Band. Es bleibt beim Scrollen oben stehen."),
+        ("Mehr Inhalt im Kopf", "Über dem Logo steht eine schmale Zeile mit Datum, zwei Hinweisen auf diese Woche und der Suche."),
+        ("Größer und klarer", "Das Logo ist größer, die aktive Rubrik ist deutlich markiert."),
+        ("Rubriken mit Bild", "Unter dem Aufmacher führt eine Reihe kleiner Bildkacheln in die Rubriken; am Handy wischt man sie zur Seite."),
+        ("Dunkler Kino-Bereich", "„Diese Woche“ ist ein dunkles Band: Kino-Beiträge als große Bildkacheln, daneben Spielorte und Termine."),
+        ("Bildstarke Blöcke", "Die Küche zeigt große Bildkacheln mit dem Titel im Bild, eine davon größer."),
+        ("Sanfte Bewegung", "Bilder zoomen leicht, wenn man mit der Maus darüberfährt. Nichts bewegt sich von selbst."),
+    ],
+}
+
+
+def _zweite(m):
+    liste = m.get("schriftgroessen_seite") or []
+    return round(liste[1]["px"]) if len(liste) > 1 else None
+
+
+# Grenzen für klar2 (Brief, Abschnitt 10.4): (Bezeichnung, Wert aus Kennzahlen einer Breite und der ganzen Probe, Grenze, Prüfung Handy, Prüfung Desktop)
+ZIELE_KLAR2 = [
+    ("Schlagzeilen im ersten Bildschirm", lambda m, k: m["schlagzeilen_ganz_sichtbar"], "Handy mind. 2, Desktop mind. 4", lambda v: v >= 2, lambda v: v >= 4),
+    ("Geschichten ohne Bild", lambda m, k: len(m["anreisser_ohne_bild"]) if "anreisser_ohne_bild" in m else None, "keine", lambda v: v == 0, lambda v: v == 0),
+    ("Größte Schrift (Schlagzeile des Aufmachers)", lambda m, k: round(m["groesste_schrift"]["px"]), "höchstens 34 / 44 px", lambda v: v <= 34, lambda v: v <= 44),
+    ("Zweitgrößte Schrift der Seite", lambda m, k: _zweite(m), "höchstens 24 / 28 px", lambda v: v is not None and v <= 24, lambda v: v is not None and v <= 28),
+    ("Rot in der Fläche (ohne Bilder)", lambda m, k: round(m["farbanteil_ohne_bilder"]["rot"] * 100, 1), "höchstens 3 %", lambda v: v <= 3, lambda v: v <= 3),
+    ("Größte rote Schrift", lambda m, k: round(m["groesste_rote_schrift"]["px"]), "höchstens 20 px", lambda v: v <= 20, lambda v: v <= 20),
+    ("Dunkle Flächen auf der Seite", lambda m, k: len(m["dunkle_flaechen"]) if "dunkle_flaechen" in m else None, "genau 2 (Rubrikband, „Diese Woche“)", lambda v: v == 2, lambda v: v == 2),
+    ("Dunkel im ersten Bildschirm (ohne Bilder)", lambda m, k: round(m["farbanteil_ohne_bilder"].get("dunkel", 0) * 100, 1), "höchstens 12 %", lambda v: v <= 12, lambda v: v <= 12),
+    ("Helle Schrift auf Bild oder Dunkel, kleinster Kontrast", lambda m, k: (m.get("helle_schrift") or {}).get("kleinster_kontrast"), "mindestens 4,5 : 1", lambda v: v is not None and v >= 4.5, lambda v: v is not None and v >= 4.5),
+    ("Kopf bis Unterkante Rubrikband", lambda m, k: m.get("kopfleiste_hoehe"), "am Handy höchstens 152 px", lambda v: v is not None and v <= 152, lambda v: True),
+    ("Zoom beim Überfahren", lambda m, k: k.get("groesster_massstab"), "höchstens 1,04", lambda v: v is not None and v <= 1.04, lambda v: v is not None and v <= 1.04),
+    ("Längster Übergang", lambda m, k: (m.get("bewegung") or {}).get("laengster_uebergang_s"), "höchstens 0,4 s", lambda v: v is not None and v <= 0.4, lambda v: v is not None and v <= 0.4),
+    ("Übergänge bei „Bewegung reduzieren“, Animationen", lambda m, k: (m.get("bewegung_bei_reduziert") or {}).get("uebergaenge", 0) + (m.get("bewegung") or {}).get("animationen", 0), "keine", lambda v: v == 0, lambda v: v == 0),
+    ("Größte Rundung", lambda m, k: m["groesster_radius"]["px"], "höchstens 2 px", lambda v: v <= 2, lambda v: v <= 2),
+    ("Schatten, Drehungen, verstellte Schriftbreite", lambda m, k: m["schatten"] + m["gedreht"] + m["schriftbreite_verstellt"], "keine", lambda v: v == 0, lambda v: v == 0),
+    ("Bilder über ihrer Dateibreite", lambda m, k: len(m["bilder_ueber_dateibreite"]) if "bilder_ueber_dateibreite" in m else None, "keine", lambda v: v == 0, lambda v: v == 0),
+]
+
 ZIELE = [  # (Bezeichnung, Schlüssel-Funktion Handy/Desktop, Ziel-Text, Prüfung Handy, Prüfung Desktop, Marken-Spanne)
     ("Schlagzeilen im ersten Bildschirm", lambda m: m["schlagzeilen_ganz_sichtbar"], "Handy mind. 2, Desktop mind. 4",
      lambda v: v >= 2, lambda v: v >= 4, "1–3 / 0–4"),
@@ -93,6 +138,8 @@ def abschnitt(slug, intern):
              '<div class="reihe handys">',
              bild(f"img/{slug}-start-handy.jpg", f"{p['name']}, Startseite am Handy, erster Bildschirm", "handy", "Startseite am Handy, erster Bildschirm", 780, 1688),
              bild(f"img/{slug}-start-handy-2.jpg", f"{p['name']}, Startseite am Handy, zweiter Bildschirm", "handy", "Startseite am Handy, weiter unten", 780, 1688)]
+    if not intern and (HIER / "img" / f"{slug}-woche-handy.jpg").exists():
+        teile.append(bild(f"img/{slug}-woche-handy.jpg", f"{p['name']}, Kino und Termine am Handy", "handy", "Diese Woche: Kino und Termine", 780, 1688))
     if not intern and (HIER / "img" / f"{slug}-artikel-handy.jpg").exists():
         teile.append(bild(f"img/{slug}-artikel-handy.jpg", f"{p['name']}, Artikel am Handy", "handy", "Artikel am Handy", 780, 1688))
     if intern:
@@ -101,6 +148,10 @@ def abschnitt(slug, intern):
     teile.append(bild(f"img/{slug}-start-desktop.jpg", f"{p['name']}, Startseite am Desktop, erster Bildschirm", "desktop", "Startseite am Desktop, erster Bildschirm", 2560, 1600))
     if intern:
         teile.append(bild(f"design/referenzen/img/news-{kurzname}-desktop-1.jpg", f"Zum Vergleich: {marke} am Desktop", "desktop vergleich", f"Zum Vergleich: {marke}", 1280, 800))
+    if not intern:
+        for teil, text in (("woche-desktop", "Diese Woche: Kino und Termine am Desktop"), ("kueche-desktop", "Küche am Desktop")):
+            if (HIER / "img" / f"{slug}-{teil}.jpg").exists():
+                teile.append(bild(f"img/{slug}-{teil}.jpg", f"{p['name']}, {text}", "desktop", text, 2560, 1600))
     teile.append('</div>')
     if intern:
         tab, verletzt = tabelle(slug)
@@ -135,6 +186,108 @@ def dateien(slugs, intern):
         for name in ("r2-community-magazin-390.jpg", "r4-raster-390.jpg", "r4-feed-390.jpg"):
             karte[f"img/abgelehnt-{name}"] = f"{ABGELEHNT}/{name}"
     return karte
+
+
+def tabelle_vorher_nachher(alt, neu):
+    ka, kn = kennzahlen(alt), kennzahlen(neu)
+    if not kn or "handy" not in kn or "desktop" not in kn:
+        return '<p class="leise">Kennzahlen fehlen.</p>', 0
+
+    def wert(funktion, k, breite):
+        try:
+            return funktion(k[breite], k) if k and breite in k else None
+        except (KeyError, TypeError):
+            return None
+    zeilen, verletzt = [], 0
+    for name, funktion, grenze, ok_h, ok_d in ZIELE_KLAR2:
+        h, d = wert(funktion, kn, "handy"), wert(funktion, kn, "desktop")
+        gut = h is not None and d is not None and ok_h(h) and ok_d(d)
+        verletzt += 0 if gut else 1
+        zeilen.append(
+            f'<tr><th scope="row">{html.escape(name)}</th><td>{zahl(h)} / {zahl(d)}</td>'
+            f'<td class="{"gut" if gut else "schlecht"}">{"eingehalten" if gut else "verletzt"}</td>'
+            f'<td>{html.escape(grenze)}</td><td>{zahl(wert(funktion, ka, "handy"))} / {zahl(wert(funktion, ka, "desktop"))}</td></tr>')
+    kopf = ('<thead><tr><th scope="col">Messwert</th><th scope="col">Neu (Handy / Desktop)</th><th scope="col">Ergebnis</th>'
+            '<th scope="col">Grenze</th><th scope="col">Vorher (Handy / Desktop)</th></tr></thead>')
+    return f'<div class="tabellenrahmen"><table>{kopf}<tbody>{"".join(zeilen)}</tbody></table></div>', verletzt
+
+
+def seite_vorher_nachher(alt, neu):
+    p = PROBEN[neu]
+
+    def da(slug, teil):
+        return (HIER / "img" / f"{slug}-{teil}.jpg").exists()
+
+    def handy(slug, teil, text, vorher=False):
+        return bild(f"img/{slug}-{teil}.jpg", text, "handy vergleich" if vorher else "handy", text, 780, 1688) if da(slug, teil) else ""
+
+    def desktop(slug, teil, text, vorher=False):
+        return bild(f"img/{slug}-{teil}.jpg", text, "desktop vergleich" if vorher else "desktop", text, 2560, 1600) if da(slug, teil) else ""
+
+    tab, verletzt = tabelle_vorher_nachher(alt, neu)
+    sprung = [("start", "Erster Blick"), ("unten", "Weiter unten"), ("woche", "Kino und Termine"), ("kueche", "Küche"),
+              ("artikel", "Artikel"), ("geaendert", "Was neu ist"), ("gemessen", "Gemessen")]
+    teile = [f'<!-- Erzeugt von design/vergleich/bauen.py (vorher-nachher: {alt}, {neu}). Nicht von Hand ändern. -->',
+             "<title>Richtungsvergleich tamil.de</title>", '<meta name="claude:viewport-fit-sides" content="cover">',
+             f"<style>\n{STIL}</style>", '<div class="rahmen">', '<header class="kopf">',
+             '<p class="vermerk">Interne Vorschau · noch ohne unabhängige Prüfung · nicht für den Auftraggeber</p>',
+             "<h1>Klar mit mehr Wow: vorher und nachher</h1>",
+             '<p class="vorspann">Deine Rückmeldung zur ersten Fassung: gut vom Design, aber noch zu classic; mehr Wow, überall ein Bild, '
+             "der Kopf zu schlicht. Die neue Fassung behält Schrift, Farben und die Ordnung der Nachrichten und legt Bild und Bühne dazu. "
+             "Zu sehen ist jeweils zuerst der alte Stand, dann der neue.</p>",
+             '<nav class="sprung" aria-label="Abschnitte">' + "".join(f'<a href="#{a}">{html.escape(t)}</a>' for a, t in sprung) + "</nav>",
+             f'<p class="oeffnen"><a href="design/richtungen/{neu}/index.html">Neue Startseite öffnen und selbst scrollen</a> '
+             f'<a href="design/richtungen/{neu}/artikel.html">Neuen Artikel öffnen</a> '
+             f'<a href="design/richtungen/{alt}/index.html">Alte Startseite zum Vergleich</a></p>',
+             "</header>",
+             '<section class="probe" id="start" aria-labelledby="start-titel"><div class="probe-kopf"><p class="etikett">Erster Blick</p>'
+             '<h2 id="start-titel">Der erste Bildschirm, am Handy und am Desktop.</h2>'
+             '<p class="idee">Neu: eine Zeile mit Datum und Hinweisen über dem Logo, das dunkle Band mit den Rubriken und das große '
+             "Foto mit der Schlagzeile im Bild.</p></div>",
+             '<div class="reihe handys">' + handy(alt, "start-handy", "Vorher: Startseite am Handy", True) + handy(neu, "start-handy", "Neu: Startseite am Handy") + "</div>",
+             '<div class="reihe desktops">' + desktop(alt, "start-desktop", "Vorher: Startseite am Desktop", True) + desktop(neu, "start-desktop", "Neu: Startseite am Desktop") + "</div></section>",
+             '<hr class="trenner">',
+             '<section class="probe" id="unten" aria-labelledby="unten-titel"><div class="probe-kopf"><p class="etikett">Weiter unten</p>'
+             '<h2 id="unten-titel">Jede Geschichte hat jetzt ein Bild.</h2>'
+             '<p class="idee">Vorher standen die Meldungen als reine Textliste. Das dunkle Band bleibt beim Scrollen oben stehen.</p></div>',
+             '<div class="reihe handys">' + handy(alt, "start-handy-2", "Vorher: am Handy weiter unten", True) + handy(neu, "start-handy-2", "Neu: zweiter Bildschirm am Handy")
+             + handy(neu, "start-handy-3", "Neu: dritter Bildschirm am Handy") + "</div></section>",
+             '<hr class="trenner">',
+             '<section class="probe" id="woche" aria-labelledby="woche-titel"><div class="probe-kopf"><p class="etikett">Diese Woche</p>'
+             '<h2 id="woche-titel">Kino und Termine im dunklen Bereich.</h2>'
+             '<p class="idee">Die Kino-Beiträge sind große Bildkacheln. Spielorte und Termine kommen aus dem News-Radar und haben kein Foto; '
+             "sie stehen als gestaltete Kacheln daneben, ohne erfundenes Bild.</p></div>",
+             '<div class="reihe desktops">' + desktop(neu, "woche-desktop", "Neu: Diese Woche am Desktop") + "</div>",
+             '<div class="reihe handys">' + handy(neu, "woche-handy", "Neu: Diese Woche am Handy") + "</div></section>",
+             '<hr class="trenner">',
+             '<section class="probe" id="kueche" aria-labelledby="kueche-titel"><div class="probe-kopf"><p class="etikett">Küche</p>'
+             '<h2 id="kueche-titel">Große Bildkacheln statt vier gleicher Karten.</h2></div>',
+             '<div class="reihe desktops">' + desktop(neu, "kueche-desktop", "Neu: Küche am Desktop") + "</div></section>",
+             '<hr class="trenner">',
+             '<section class="probe" id="artikel" aria-labelledby="artikel-titel"><div class="probe-kopf"><p class="etikett">Artikel</p>'
+             '<h2 id="artikel-titel">Der Artikel: derselbe Kopf, das Bild groß, der Text ruhig.</h2></div>',
+             '<div class="reihe handys">' + handy(alt, "artikel-handy", "Vorher: Artikel am Handy", True) + handy(neu, "artikel-handy", "Neu: Artikel am Handy") + "</div></section>",
+             '<hr class="trenner">',
+             '<section class="probe" id="geaendert" aria-labelledby="geaendert-titel"><div class="probe-kopf"><p class="etikett">Was neu ist</p>'
+             '<h2 id="geaendert-titel">Deine Punkte, einer nach dem anderen.</h2></div><dl class="punkte">'
+             + "".join(f"<div><dt>{html.escape(a)}</dt><dd>{html.escape(b)}</dd></div>" for a, b in p.get("aenderungen", [])) + "</dl></section>",
+             '<hr class="trenner">',
+             '<section class="probe" id="gemessen" aria-labelledby="gemessen-titel"><div class="probe-kopf"><p class="etikett">Gemessen</p>'
+             f'<h2 id="gemessen-titel">{"Alle Grenzen eingehalten." if verletzt == 0 else str(verletzt) + (" Grenze" if verletzt == 1 else " Grenzen") + " verletzt."}</h2>'
+             '<p class="idee">Mehr Wow darf nicht wieder laut werden. Deshalb hat jede Verstärkung eine Grenze, die das Skript nachmisst: '
+             "Rot bleibt ein kleiner Akzent, die Schrift bleibt gedeckelt, dunkel sind nur zwei Flächen.</p></div>" + tab + "</section>",
+             '<hr class="trenner">',
+             '<section class="abschluss" aria-label="Rückmeldung"><div><h2>Was ich von dir brauche</h2><ol>'
+             "<li>Passt das Wow jetzt, oder ist es immer noch zu classic?</li>"
+             "<li>Ist etwas zu viel geworden?</li><li>Fehlt etwas?</li></ol></div>"
+             "<div><h2>Wie es weitergeht</h2><ul>"
+             "<li>Parallel läuft eine unabhängige Prüfung der neuen Fassung.</li>"
+             "<li>Der Auftraggeber bekommt sie erst, wenn du zustimmst und die Prüfung nichts Schweres findet.</li></ul></div></section>",
+             '<p class="fuss">Stand vom 10. November 2026. Die Beiträge stammen aus dem Archiv der Seite, das im November 2024 endet; die Kino- '
+             "und Termineinträge aus dem News-Radar. Das Logo liegt bisher nur als kleines Bild vor. Die klickbaren Seiten öffnen sich im "
+             "selben Fenster; zurück geht es mit der Zurück-Taste.</p>",
+             "</div>"]
+    return "\n".join(t for t in teile if t) + "\n"
 
 
 STIL = (HIER / "seite.css").read_text(encoding="utf-8") if (HIER / "seite.css").exists() else ""
@@ -189,14 +342,16 @@ def seite(modus, slugs):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 3 or sys.argv[1] not in ("intern", "vorlage"):
+    if len(sys.argv) < 3 or sys.argv[1] not in ("intern", "vorlage", "vorher-nachher"):
         sys.exit(__doc__)
     modus, slugs = sys.argv[1], sys.argv[2:]
+    if modus == "vorher-nachher" and len(slugs) != 2:
+        sys.exit("vorher-nachher braucht genau zwei Proben: <alt> <neu>")
     unbekannt = [s for s in slugs if s not in PROBEN]
     if unbekannt:
         sys.exit(f"Unbekannte Probe: {unbekannt}. Bekannt: {sorted(PROBEN)}")
-    ziel, liste = ("index.html", "dateien.json") if modus == "intern" else ("vorlage.html", "dateien-vorlage.json")
-    (HIER / ziel).write_text(seite(modus, slugs), encoding="utf-8")
+    ziel, liste = ("vorlage.html", "dateien-vorlage.json") if modus == "vorlage" else ("index.html", "dateien.json")
+    (HIER / ziel).write_text(seite_vorher_nachher(*slugs) if modus == "vorher-nachher" else seite(modus, slugs), encoding="utf-8")
     karte = dateien(slugs, modus == "intern")
     fehlend = [q for q in karte.values() if not (WURZEL / q).is_file()]
     (HIER / liste).write_text(json.dumps(karte, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
