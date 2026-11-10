@@ -121,3 +121,24 @@ def test_redirect_and_ad_seed():
     assert r.status_code == 301 and r.headers["Location"].rstrip("/").endswith("/category/events")
     home = requests.get(URL + "/", timeout=30).text
     assert "Testbanner Leaderboard" in home or 'class="ad-test"' in home or "<body" in home  # Theme entscheidet, ob der Platz gerendert wird
+
+
+ADMIN_USER = os.environ.get("WP_ADMIN_USER", "")
+ADMIN_PW = os.environ.get("WP_ADMIN_APP_PASSWORD", "")
+
+
+@pytest.mark.skipif(not (ADMIN_USER and ADMIN_PW), reason="WP_ADMIN_USER/WP_ADMIN_APP_PASSWORD fehlen")
+def test_weiterleitungen_per_rest_und_idempotent():
+    """Migration: tamil-site/v1/weiterleitungen ersetzt die Tabelle; wiederholter Aufruf ändert nichts."""
+    seed = "alt,neu\n/category/anirudh/,/category/events/\n"
+    csv = seed + "/category/blog/,/community/\n"
+    url = f"{URL}/wp-json/tamil-site/v1/weiterleitungen"
+    try:
+        assert requests.post(url, json={"csv": csv}, timeout=30).status_code in (401, 403)  # ohne Anmeldung nicht erlaubt
+        for _ in range(2):
+            r = requests.post(url, json={"csv": csv}, auth=(ADMIN_USER, ADMIN_PW), timeout=30)
+            assert r.status_code == 200 and r.json()["eintraege"] == 2
+        r = requests.get(f"{URL}/category/blog/", allow_redirects=False, timeout=30)
+        assert r.status_code == 301 and r.headers["Location"].rstrip("/").endswith("/community")
+    finally:
+        requests.post(url, json={"csv": seed}, auth=(ADMIN_USER, ADMIN_PW), timeout=30)

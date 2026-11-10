@@ -78,3 +78,37 @@ function tamil_site_maybe_redirect(): void {
 	}
 }
 add_action( 'template_redirect', 'tamil_site_maybe_redirect', 1 );
+
+/**
+ * REST: POST tamil-site/v1/weiterleitungen mit {"csv": "alt,neu\n…"} ersetzt die Weiterleitungstabelle (nur mit
+ * manage_options). So kann die Migration (tools/migration.py) die 301-Tabelle ohne Zugang zur Oberfläche einspielen;
+ * ein zweiter Aufruf mit gleichem Inhalt ändert nichts.
+ */
+function tamil_site_rest_redirects( WP_REST_Request $request ): WP_REST_Response {
+	$csv = sanitize_textarea_field( (string) $request->get_param( 'csv' ) );
+	update_option( 'tamil_site_redirects_csv', $csv, false );
+	$table = tamil_site_parse_redirect_csv( $csv );
+	update_option( 'tamil_site_redirects', $table, false );
+	return new WP_REST_Response( array( 'eintraege' => count( $table ) ) );
+}
+
+function tamil_site_register_redirect_route(): void {
+	register_rest_route(
+		'tamil-site/v1',
+		'/weiterleitungen',
+		array(
+			'methods'             => 'POST',
+			'callback'            => 'tamil_site_rest_redirects',
+			'permission_callback' => static function (): bool {
+				return current_user_can( 'manage_options' );
+			},
+			'args'                => array(
+				'csv' => array(
+					'type'     => 'string',
+					'required' => true,
+				),
+			),
+		)
+	);
+}
+add_action( 'rest_api_init', 'tamil_site_register_redirect_route' );
