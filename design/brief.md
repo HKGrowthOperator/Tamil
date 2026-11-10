@@ -198,8 +198,8 @@ Wo dieser Abschnitt nichts sagt, gelten die Abschnitte 1 bis 9 weiter. Inhalte: 
 - **Bildformate:** höchstens drei Seitenverhältnisse auf der Seite (bisher zwei), zum Beispiel eines für die
   Anreißer, eines für Aufmacher und große Kacheln, eines für die Rubrikkacheln.
 - **Bildgröße:** Kein Bild wird über seine Dateibreite hinaus gezeigt. Bei doppelter Pixeldichte gilt weiter die
-  halbe Dateibreite; ausgenommen sind das Aufmacherbild und die eine große Kachel in „Diese Woche“ und in „Küche“.
-  Die echte Seite liefert später größere Dateien aus.
+  halbe Dateibreite; ausgenommen sind das Aufmacherbild (auf der Startseite und als großes Bild im Artikel) und die
+  eine große Kachel in „Diese Woche“ und in „Küche“. Die echte Seite liefert später größere Dateien aus.
 
 ### 10.2 Aufbau von oben nach unten
 
@@ -223,13 +223,15 @@ Wo dieser Abschnitt nichts sagt, gelten die Abschnitte 1 bis 9 weiter. Inhalte: 
    96 px breit, am Desktop mindestens 120 px). Die Ordnung aus `klar` bleibt: Dachzeile „Rubrik | Datum“, Linien
    statt Kästen.
 5. **„Diese Woche“** (`id="diese-woche"`, dunkel, über die volle Breite): zwei Kino-Beiträge als Bildkacheln mit
-   Titel im Bild, die erste groß. Daneben oder darunter „Im Kino“ mit den zwei Filmen aus dem News-Radar und
+   Titel im Bild, die erste groß. Bei der zweiten, kleinen Kachel darf der Titel unter dem Bild stehen, wenn er im
+   Bild Gesichter verdecken würde (so beim Gruppenfoto zu „Rathamaarey“; festgehalten nach Prüfung Runde 1 und 2). Daneben oder darunter „Im Kino“ mit den zwei Filmen aus dem News-Radar und
    „Termine“ mit Diwali in Basel. Diese drei Einträge haben kein Foto; sie sind gestaltete Kacheln aus Schrift und
    „Fläche auf Dunkel“ und tragen `data-grafik`. Die Zahl der Kinos und das Datum des Termins sind dort die größten
    Angaben nach dem Titel. Kein erfundenes Bild, kein Platzhalterbild, kein Icon.
 6. **„Küche“** (`id="kueche"`, heller Grund): vier Bildkacheln mit Titel im Bild, die erste deutlich größer als die
    anderen. Vier gleiche Kacheln in einer Reihe sind ausgeschlossen.
-7. **Artikel** (`artikel.html`): derselbe Kopf, das Bild groß (randlos am Handy), sonst ruhig wie bei `klar`.
+7. **Artikel** (`artikel.html`): derselbe Kopf, das Bild groß (randlos am Handy), sonst ruhig wie bei `klar`. Kopf
+   und Fließtext stehen in einer Spalte mit höchstens 70 Zeichen je Zeile, auch am Desktop.
 
 ### 10.3 Was sich nicht ändert
 
@@ -263,8 +265,8 @@ Kennzahl aus `design/vergleich/kennzahlen/klar2.json`.
    für die drei Einträge aus dem News-Radar (`anreisser_mit_grafik` höchstens drei).
 10. **Ein Format** für Dachzeile und Datum; höchstens drei Bildformate.
 11. **Bildgröße:** kein Bild über seiner Dateibreite (`bilder_ueber_dateibreite` leer); bei doppelter Pixeldichte
-    über der halben Dateibreite nur das Aufmacherbild und die große Kachel in „Diese Woche“ und „Küche“
-    (`bilder_ueber_natuerlicher_breite`).
+    über der halben Dateibreite nur das Aufmacherbild (Startseite und Artikel) und die große Kachel in „Diese Woche“
+    und „Küche“ (`bilder_ueber_natuerlicher_breite`).
 12. **Helle Schrift** auf Bild oder dunklem Grund: Kontrast mindestens 4,5 : 1 an der hellsten Stelle
     (`helle_schrift.unter_4_5` leer).
 13. **Bewegung:** Maßstab höchstens 1,04 (`groesster_massstab`); längster Übergang höchstens 0,4 s; keine
