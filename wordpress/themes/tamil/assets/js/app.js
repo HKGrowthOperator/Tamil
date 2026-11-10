@@ -60,8 +60,15 @@
     var btn = $(".video-load", box); if (!btn) return;
     btn.addEventListener("click", function () {
       var id = box.getAttribute("data-video");
+      var frame = document.createElement("iframe");
+      frame.src = "https://www.youtube-nocookie.com/embed/" + encodeURIComponent(id) + "?autoplay=1";
+      frame.title = "YouTube-Video";
+      frame.allow = "autoplay; encrypted-media; picture-in-picture";
+      frame.allowFullscreen = true;
       box.classList.add("is-geladen");
-      box.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + encodeURIComponent(id) + '?autoplay=1" title="YouTube-Video" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>';
+      box.textContent = "";
+      box.appendChild(frame);
+      frame.focus(); // der Knopf ist weg; der Fokus bleibt beim Video statt an den Seitenanfang zu springen
     });
   });
 

@@ -92,19 +92,9 @@ function tamil_youtube_id( string $url ): string {
 }
 
 /**
- * YouTube erst nach Klick laden (DSGVO). Statt des eingebetteten Players erscheint die Box .video-embed mit Knopf;
- * assets/js/app.js lädt das Video dann von youtube-nocookie.com. Der Filter greift vor dem oEmbed-Abruf, beim Aufbau
- * der Seite geht also keine Anfrage an YouTube hinaus, und der feste iframe (läuft am Handy seitlich über) entfällt.
- * Die Box enthält nur Zeilenelemente, damit wpautop sie nicht zerlegt.
- *
- * @param string|null $result Vorab-Ergebnis anderer Filter.
- * @param string      $url    Adresse, die eingebettet werden soll.
+ * Die Box „Video laden“ für eine YouTube-Kennung. Sie enthält nur Zeilenelemente, damit wpautop sie nicht zerlegt.
  */
-function tamil_youtube_nach_klick( $result, $url ) {
-	$id = tamil_youtube_id( (string) $url );
-	if ( '' === $id ) {
-		return $result;
-	}
+function tamil_youtube_box( string $id ): string {
 	return sprintf(
 		'<div class="video-embed" data-video="%1$s"><button type="button" class="video-load">%2$s</button><span class="video-hint">%3$s <a href="%4$s" rel="noopener">%5$s</a></span></div>',
 		esc_attr( $id ),
@@ -114,4 +104,29 @@ function tamil_youtube_nach_klick( $result, $url ) {
 		esc_html__( 'Bei YouTube ansehen', 'tamil' )
 	);
 }
+
+/**
+ * YouTube erst nach Klick laden (DSGVO). Statt des eingebetteten Players erscheint die Box .video-embed mit Knopf;
+ * assets/js/app.js lädt das Video dann von youtube-nocookie.com. Der Filter greift vor dem oEmbed-Abruf, beim Aufbau
+ * der Seite geht also keine Anfrage an YouTube hinaus, und der feste iframe (läuft am Handy seitlich über) entfällt.
+ *
+ * @param string|null $result Vorab-Ergebnis anderer Filter.
+ * @param string      $url    Adresse, die eingebettet werden soll.
+ */
+function tamil_youtube_nach_klick( $result, $url ) {
+	$id = tamil_youtube_id( (string) $url );
+	return '' === $id ? $result : tamil_youtube_box( $id );
+}
 add_filter( 'pre_oembed_result', 'tamil_youtube_nach_klick', 10, 2 );
+
+/**
+ * Dasselbe für schon zwischengespeicherte Einbettungen (Metadaten _oembed_*), die noch den festen Player enthalten.
+ *
+ * @param string|false $html Gespeichertes oder frisch geholtes Einbettungs-HTML.
+ * @param string       $url  Adresse der Einbettung.
+ */
+function tamil_youtube_nach_klick_gespeichert( $html, $url ) {
+	$id = tamil_youtube_id( (string) $url );
+	return '' === $id ? $html : tamil_youtube_box( $id );
+}
+add_filter( 'embed_oembed_html', 'tamil_youtube_nach_klick_gespeichert', 10, 2 );
