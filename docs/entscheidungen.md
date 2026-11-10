@@ -5,6 +5,9 @@ Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
 ## 10.11.2026
 
+- **`klar2` passt, das Aufmacherfoto bleibt groß (4:3).** `klar2` wird die Vorlage für den Auftraggeber; `klar`
+  bleibt als Rückfall im Repo. · Luis · nach der internen Vorschau und dem Blick auf alle Bilder im Chat. Am Desktop
+  stehen damit sechs statt rund zehn Schlagzeilen im ersten Bildschirm; das ist so gewollt.
 - **`klar` bekommt mehr Wow: Fassung `klar2`.** Überall ein Bild (kein Anreißer ohne Bild), großes Aufmacherbild mit
   der Schlagzeile im Bild, Rubrikkacheln mit Bild, große Bildkacheln in „Küche“, ein dunkler Bereich „Diese Woche“,
   ein dreiteiliger Kopf mit dunklem Rubrikband, sanfte Bewegung. · Luis · nach dem Blick auf die Vorlage: „gut vom
