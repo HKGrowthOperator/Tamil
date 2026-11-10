@@ -1,9 +1,9 @@
 {
-  "stand": "2026-11-10T09:40:42.456Z",
+  "stand": "2026-11-10T09:48:57.287Z",
   "ergebnisse": [
     {
       "ziel": "design/richtungen/klar/index.html",
-      "url": "http://127.0.0.1:46115/design/richtungen/klar/index.html",
+      "url": "http://127.0.0.1:34147/design/richtungen/klar/index.html",
       "breite": 390,
       "status": 200,
       "datei": "design/richtungen/klar/shots/design-richtungen-klar-index-390.png",
@@ -22,7 +22,7 @@
     },
     {
       "ziel": "design/richtungen/klar/artikel.html",
-      "url": "http://127.0.0.1:46115/design/richtungen/klar/artikel.html",
+      "url": "http://127.0.0.1:34147/design/richtungen/klar/artikel.html",
       "breite": 390,
       "status": 200,
       "datei": "design/richtungen/klar/shots/design-richtungen-klar-artikel-390.png",
@@ -40,7 +40,7 @@
     },
     {
       "ziel": "design/richtungen/klar/index.html",
-      "url": "http://127.0.0.1:46115/design/richtungen/klar/index.html",
+      "url": "http://127.0.0.1:34147/design/richtungen/klar/index.html",
       "breite": 820,
       "status": 200,
       "datei": "design/richtungen/klar/shots/design-richtungen-klar-index-820.png",
@@ -59,7 +59,7 @@
     },
     {
       "ziel": "design/richtungen/klar/artikel.html",
-      "url": "http://127.0.0.1:46115/design/richtungen/klar/artikel.html",
+      "url": "http://127.0.0.1:34147/design/richtungen/klar/artikel.html",
       "breite": 820,
       "status": 200,
       "datei": "design/richtungen/klar/shots/design-richtungen-klar-artikel-820.png",
@@ -77,7 +77,7 @@
     },
     {
       "ziel": "design/richtungen/klar/index.html",
-      "url": "http://127.0.0.1:46115/design/richtungen/klar/index.html",
+      "url": "http://127.0.0.1:34147/design/richtungen/klar/index.html",
       "breite": 1280,
       "status": 200,
       "datei": "design/richtungen/klar/shots/design-richtungen-klar-index-1280.png",
@@ -95,7 +95,7 @@
     },
     {
       "ziel": "design/richtungen/klar/artikel.html",
-      "url": "http://127.0.0.1:46115/design/richtungen/klar/artikel.html",
+      "url": "http://127.0.0.1:34147/design/richtungen/klar/artikel.html",
       "breite": 1280,
       "status": 200,
       "datei": "design/richtungen/klar/shots/design-richtungen-klar-artikel-1280.png",

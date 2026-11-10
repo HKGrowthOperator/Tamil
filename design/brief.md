@@ -48,8 +48,8 @@ weitere Geschichten. Eine davon wird angetippt.
   | Dachzeile, Datum | 12–14 px | 12–14 px |
 
   Der Aufmacher ist mindestens 1,25-mal so groß wie ein Nebenstück; Nebenstück und Meldung unterscheiden sich
-  sichtbar in Größe oder Gewicht. Versalien nur in Dachzeilen bis 14 px. Keine Worttrennung in Schlagzeilen; jede Schlagzeile hat höchstens drei Zeilen, auch der längste Titel der
-  Inhaltsliste (81 Zeichen).
+  sichtbar in Größe oder Gewicht. Versalien nur in Dachzeilen bis 14 px. Keine Worttrennung in Schlagzeilen. Die Schlagzeile des Aufmachers hat höchstens drei Zeilen, jede andere
+  höchstens vier, auch der längste Titel der Inhaltsliste (81 Zeichen); drei sind das Ziel.
 - **Ordnung:** drei Stufen von Anreißern (Aufmacher, Nebenstück mit Bild, Meldung ohne Bild). Jeder Anreißer hat
   eine Dachzeile (Rubrik) und ein Datum in einem einzigen Format („17. Juli 2024“). Getrennt wird nur mit feinen
   Linien und Abstand: kein Kasten, kein Schatten, keine Pille, kein Icon, kein Knopf „Weiterlesen“. Der ganze

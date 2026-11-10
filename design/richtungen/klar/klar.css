@@ -98,6 +98,7 @@ a:focus-visible {
   white-space: nowrap;
 }
 .rubriken a:hover { color: var(--rot); }
+.rubriken a[aria-current] { color: var(--rot); font-weight: 600; }
 .rubriken a:focus-visible { outline-offset: -3px; }
 
 /* ---------- gemeinsame Bausteine ---------- */
@@ -175,12 +176,17 @@ a:focus-visible {
 .stueck { border-top: 1px solid var(--linie); }
 .stueck .anr {
   display: grid;
-  grid-template-columns: 90px minmax(0, 1fr);
-  column-gap: 12px;
+  grid-template-columns: 132px minmax(0, 1fr);
+  column-gap: 14px;
   align-items: start;
   padding: 16px 0;
 }
-.stueck .bild { margin-top: 3px; }
+/* Handy: Bild links, Dachzeile an seiner Unterkante, Schlagzeile darunter über die volle Breite (höchstens drei Zeilen). */
+.stueck__text { display: contents; }
+.stueck .bild { grid-column: 1; grid-row: 1; }
+.stueck .meta { grid-column: 2; grid-row: 1; align-self: end; margin-bottom: 0; }
+.stueck .titel { grid-column: 1 / -1; margin-top: 10px; }
+.stueck .vorspann { grid-column: 1 / -1; }
 .stueck .titel {
   font-size: 19px;
   line-height: 1.22;
@@ -224,12 +230,10 @@ a:focus-visible {
   font-size: 13px;
   line-height: 1.35;
   font-weight: 600;
-  color: var(--leise);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  padding: 16px 0 2px;
+  color: var(--rot);
+  padding: 16px 0 8px;
 }
-.eintrag + .eintrag { border-top: 1px solid var(--linie); }
+.eintrag { border-top: 1px solid var(--linie); }
 .eintrag .anr { padding: 12px 0 14px; }
 .eintrag .titel { font-size: 18px; line-height: 1.25; }
 .eintrag__zahl {
@@ -239,12 +243,6 @@ a:focus-visible {
   font-variant-numeric: tabular-nums;
 }
 .eintrag__orte { font-size: 16px; color: var(--leise); }
-.eintrag__datum {
-  font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 4px;
-  font-variant-numeric: tabular-nums;
-}
 .eintrag__text { font-size: 16px; margin-top: 6px; }
 
 /* ---------- Tablet: eine Spalte, begrenzte Breite ---------- */
@@ -254,6 +252,9 @@ a:focus-visible {
   .kopf__innen { max-width: 712px; margin: 0 auto; }
   .aufmacher .bild { width: 100%; margin-inline: 0; }
   .stueck .anr { grid-template-columns: 200px minmax(0, 1fr); column-gap: 20px; }
+  .stueck__text { display: block; grid-column: 2; grid-row: 1; }
+  .stueck .meta { margin-bottom: 6px; }
+  .stueck .titel { margin-top: 0; }
   .stueck .vorspann { display: block; }
   .kueche__liste { gap: 28px 24px; }
   .woche { margin-inline: 0; padding-inline: 24px; }
@@ -304,7 +305,7 @@ a:focus-visible {
 
   .stueck .anr { grid-template-columns: 208px minmax(0, 1fr); column-gap: 24px; padding: 18px 0; }
   .stueck .titel { font-size: 22px; line-height: 1.2; }
-  .stueck .vorspann { margin-top: 6px; color: var(--tinte); }
+  .stueck .vorspann { margin-top: 6px; color: var(--tinte); max-width: 31em; }
 
   .meldung .anr { padding: 13px 0 14px; }
   .meldung .titel { font-size: 18px; line-height: 1.28; }
@@ -313,17 +314,18 @@ a:focus-visible {
   .kueche__liste { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 32px; padding-top: 16px; }
 
   .woche { margin-top: 64px; padding: 0 32px 20px; }
+  /* drei gleich breite Spalten: zwei Filme, ein Termin; gleiche Linie und Oberkante */
   .woche__spalten {
     display: grid;
-    grid-template-columns: 2fr 1fr;
-    column-gap: 48px;
-  }
-  .woche__gruppe:first-child ul {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     column-gap: 32px;
   }
-  .woche__gruppe:first-child .eintrag + .eintrag { border-top: 0; }
+  .woche__gruppe:first-child { grid-column: span 2; }
+  .woche__gruppe:first-child ul {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 32px;
+  }
 }
 
 /* ---------- Artikel ---------- */

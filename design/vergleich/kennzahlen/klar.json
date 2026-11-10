@@ -1,10 +1,10 @@
 {
   "slug": "klar",
-  "stand": "2026-11-10T09:41",
+  "stand": "2026-11-10T09:49",
   "handy": {
     "kopfleiste_hoehe": 112,
     "erste_schlagzeile_ab": 369,
-    "schlagzeilen_ganz_sichtbar": 3,
+    "schlagzeilen_ganz_sichtbar": 2,
     "schlagzeilen_seite": 18,
     "max_zeilen_schlagzeile": 3,
     "groesste_schrift": {
@@ -29,8 +29,8 @@
     "bilder_ueber_natuerlicher_breite": [],
     "ueberlauf": 0,
     "farbanteil_ohne_bilder": {
-      "bunt": 0.002,
-      "rot": 0.002
+      "bunt": 0.0016,
+      "rot": 0.0016
     },
     "seitenfehler": []
   },
