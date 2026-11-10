@@ -1,9 +1,9 @@
 {
-  "stand": "2026-11-10T15:03:03.447Z",
+  "stand": "2026-11-10T15:12:30.331Z",
   "ergebnisse": [
     {
       "ziel": "design/richtungen/klar2/index.html",
-      "url": "http://127.0.0.1:40943/design/richtungen/klar2/index.html",
+      "url": "http://127.0.0.1:35749/design/richtungen/klar2/index.html",
       "breite": 390,
       "status": 200,
       "datei": "design/richtungen/klar2/shots/design-richtungen-klar2-index-390.png",
@@ -23,7 +23,7 @@
     },
     {
       "ziel": "design/richtungen/klar2/artikel.html",
-      "url": "http://127.0.0.1:40943/design/richtungen/klar2/artikel.html",
+      "url": "http://127.0.0.1:35749/design/richtungen/klar2/artikel.html",
       "breite": 390,
       "status": 200,
       "datei": "design/richtungen/klar2/shots/design-richtungen-klar2-artikel-390.png",
@@ -41,7 +41,7 @@
     },
     {
       "ziel": "design/richtungen/klar2/index.html",
-      "url": "http://127.0.0.1:40943/design/richtungen/klar2/index.html",
+      "url": "http://127.0.0.1:35749/design/richtungen/klar2/index.html",
       "breite": 820,
       "status": 200,
       "datei": "design/richtungen/klar2/shots/design-richtungen-klar2-index-820.png",
@@ -61,7 +61,7 @@
     },
     {
       "ziel": "design/richtungen/klar2/artikel.html",
-      "url": "http://127.0.0.1:40943/design/richtungen/klar2/artikel.html",
+      "url": "http://127.0.0.1:35749/design/richtungen/klar2/artikel.html",
       "breite": 820,
       "status": 200,
       "datei": "design/richtungen/klar2/shots/design-richtungen-klar2-artikel-820.png",
@@ -79,7 +79,7 @@
     },
     {
       "ziel": "design/richtungen/klar2/index.html",
-      "url": "http://127.0.0.1:40943/design/richtungen/klar2/index.html",
+      "url": "http://127.0.0.1:35749/design/richtungen/klar2/index.html",
       "breite": 1280,
       "status": 200,
       "datei": "design/richtungen/klar2/shots/design-richtungen-klar2-index-1280.png",
@@ -98,7 +98,7 @@
     },
     {
       "ziel": "design/richtungen/klar2/artikel.html",
-      "url": "http://127.0.0.1:40943/design/richtungen/klar2/artikel.html",
+      "url": "http://127.0.0.1:35749/design/richtungen/klar2/artikel.html",
       "breite": 1280,
       "status": 200,
       "datei": "design/richtungen/klar2/shots/design-richtungen-klar2-artikel-1280.png",

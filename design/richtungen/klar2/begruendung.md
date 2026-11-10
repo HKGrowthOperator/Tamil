@@ -50,3 +50,10 @@ die sechs Farbwerte, das Dachzeilenformat „Rubrik | Datum“, Linien statt Kä
 - **Desktop:** Die Reihe der Rubrikkacheln ist zwischen zwei feinen Linien mit 40 px Abstand vom Block der
   Nebenstücke abgesetzt.
 - **Offen:** P2 Nr. 7 (Rangfolge Nebenstücke und Meldungen am Desktop).
+
+## Überarbeitung (Prüfung r2)
+
+- Artikel bei 1280 px: Kopf und Text stehen in einer Spalte von 560 px. Gezählt sind es höchstens 66 und im Mittel 60 Zeichen je Zeile; bei 390 px 44/39, bei 820 px 66/56.
+- Streifen und Rubrikband rasten mit `scroll-snap` ein (`proximity`), rechts mit 50 % `scroll-padding`. Eine fokussierte, angeschnittene Kachel wird hereingeholt, der Streifen bleibt frei wischbar und rechts angeschnitten.
+- Die Termin-Kachel hat zwei Gruppen mit 48 px Abstand statt eines Lochs.
+- Die Kopfzeilen-Hinweise erscheinen erst ab 800 px, dort passen sie einzeilig.

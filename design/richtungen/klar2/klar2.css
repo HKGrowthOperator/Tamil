@@ -142,7 +142,7 @@ a:focus-visible {
   padding: 0 4px;
 }
 .band ul::-webkit-scrollbar { display: none; }
-.band ul { scroll-snap-type: x proximity; scroll-padding-inline: 4px; }
+.band ul { scroll-snap-type: x proximity; scroll-padding-inline: 4px 50%; }
 .band li { scroll-snap-align: start; }
 .band a {
   position: relative;
@@ -278,7 +278,8 @@ a:focus-visible {
   scrollbar-width: none;
   margin: -5px calc(-1 * var(--rand));
   padding: 5px var(--rand);
-  scroll-padding-inline: var(--rand);
+  /* rechts großer Innenabstand: eine angeschnittene Kachel gilt beim Fokus als außerhalb und wird hereingeholt */
+  scroll-padding-inline: var(--rand) 50%;
   scroll-snap-type: x proximity;
 }
 .kacheln li { scroll-snap-align: start; }
@@ -629,8 +630,8 @@ a:focus-visible {
 
 @media (min-width: 1024px) {
   .artikel { max-width: 1120px; padding: 48px var(--rand) 96px; }
-  /* eine Spalte für Kopf und Text: 32em bei 19 px = 608 px, höchstens 70 Zeichen je Zeile */
-  .artikel__kopf, .artikel__text { max-width: 608px; margin-inline: auto; }
+  /* eine Spalte für Kopf und Text: 560 px (29,5em bei 19 px), höchstens 70 Zeichen je Zeile */
+  .artikel__kopf, .artikel__text { max-width: 560px; margin-inline: auto; }
   .artikel__titel { font-size: 38px; line-height: 1.1; letter-spacing: -0.015em; }
   .artikel__vorspann { font-size: 20px; margin-top: 14px; }
   .artikel__bild { margin-top: 12px; }
