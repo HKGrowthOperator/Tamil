@@ -1,4 +1,4 @@
-<!-- Erzeugt von design/vergleich/bauen.py (vorlage: klar). Nicht von Hand ändern. -->
+<!-- Erzeugt von design/vergleich/bauen.py (vorlage: klar2). Nicht von Hand ändern. -->
 <title>Redesign tamil.de</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <style>
@@ -90,23 +90,31 @@ td.schlecht { color: var(--schlecht); font-weight: 700; }
 .abschluss { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); }
 .abschluss h2 { font-size: 1.25rem; font-weight: 800; margin-bottom: 0.5rem; }
 .abschluss ol, .abschluss ul { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.4rem; max-width: 52ch; }
+.punkte { margin: 0; display: grid; gap: 0; border-top: 1px solid var(--linie); max-width: 60rem; }
+.punkte div { display: grid; grid-template-columns: minmax(9rem, 14rem) 1fr; gap: 0.25rem 1.5rem; padding-block: 0.7rem; border-bottom: 1px solid var(--linie); }
+.punkte dt { font-weight: 700; }
+.punkte dd { margin: 0; }
+@media (max-width: 34rem) { .punkte div { grid-template-columns: 1fr; } }
 </style>
 <div class="rahmen">
 <header class="kopf">
 <p class="etikett">Redesign tamil.de · Abnahme der Richtung</p>
 <h1>tamil.de wie eine große Nachrichtenmarke</h1>
-<p class="vorspann">Ruhig, klar und aufgeräumt: ein deutlicher Aufmacher und viele Geschichten auf einen Blick. Rot bleibt die Farbe des Logos und kleiner Marken, die Schrift ist ruhig und gut lesbar. Zu sehen sind die Startseite und ein Artikel mit echten Beiträgen. Gefragt ist, ob diese Richtung stimmt.</p>
+<p class="vorspann">Ruhig, klar und aufgeräumt: ein deutlicher Aufmacher und viele Geschichten auf einen Blick. Rot bleibt die Farbe des Logos und kleiner Marken, die Schrift ist ruhig und gut lesbar. Die Fotos tragen die Seite: Jede Geschichte hat ein Bild, Kino und Termine stehen in einem eigenen dunklen Bereich. Zu sehen sind die Startseite und ein Artikel mit echten Beiträgen. Gefragt ist, ob diese Richtung stimmt.</p>
 </header>
-<section class="probe" id="klar" aria-labelledby="klar-titel">
-<div class="probe-kopf"><p class="etikett">Richtung Klar</p><h2 id="klar-titel">Nüchtern und kompakt.</h2><p class="idee">Schlagzeilen in einer klaren Grotesk, das Bild neben dem Text, viele Meldungen auf einen Blick. Vorbilder dieser Richtung: Tagesschau und BBC.</p></div>
+<section class="probe" id="klar2" aria-labelledby="klar2-titel">
+<div class="probe-kopf"><p class="etikett">Richtung Klar</p><h2 id="klar2-titel">Klar, mit mehr Bild.</h2><p class="idee">Ein großes Aufmacherbild mit der Schlagzeile im Bild, ein Foto an jeder Geschichte, ein dunkler Bereich für Kino und Termine und ein Kopf, der mehr zeigt. Vorbilder dieser Richtung: Tagesschau und BBC, in den Bildern Spiegel.</p></div>
 <div class="reihe handys">
-<figure class="aufnahme handy"><img src="img/klar-start-handy.jpg" width="780" height="1688" alt="Klar, Startseite am Handy, erster Bildschirm"><figcaption>Startseite am Handy, erster Bildschirm</figcaption></figure>
-<figure class="aufnahme handy"><img src="img/klar-start-handy-2.jpg" width="780" height="1688" alt="Klar, Startseite am Handy, zweiter Bildschirm"><figcaption>Startseite am Handy, weiter unten</figcaption></figure>
-<figure class="aufnahme handy"><img src="img/klar-artikel-handy.jpg" width="780" height="1688" alt="Klar, Artikel am Handy"><figcaption>Artikel am Handy</figcaption></figure>
+<figure class="aufnahme handy"><img src="img/klar2-start-handy.jpg" width="780" height="1688" alt="Klar, Startseite am Handy, erster Bildschirm"><figcaption>Startseite am Handy, erster Bildschirm</figcaption></figure>
+<figure class="aufnahme handy"><img src="img/klar2-start-handy-2.jpg" width="780" height="1688" alt="Klar, Startseite am Handy, zweiter Bildschirm"><figcaption>Startseite am Handy, weiter unten</figcaption></figure>
+<figure class="aufnahme handy"><img src="img/klar2-woche-handy.jpg" width="780" height="1688" alt="Klar, Kino und Termine am Handy"><figcaption>Diese Woche: Kino und Termine</figcaption></figure>
+<figure class="aufnahme handy"><img src="img/klar2-artikel-handy.jpg" width="780" height="1688" alt="Klar, Artikel am Handy"><figcaption>Artikel am Handy</figcaption></figure>
 </div><div class="reihe desktops">
-<figure class="aufnahme desktop"><img src="img/klar-start-desktop.jpg" width="2560" height="1600" alt="Klar, Startseite am Desktop, erster Bildschirm"><figcaption>Startseite am Desktop, erster Bildschirm</figcaption></figure>
+<figure class="aufnahme desktop"><img src="img/klar2-start-desktop.jpg" width="2560" height="1600" alt="Klar, Startseite am Desktop, erster Bildschirm"><figcaption>Startseite am Desktop, erster Bildschirm</figcaption></figure>
+<figure class="aufnahme desktop"><img src="img/klar2-woche-desktop.jpg" width="2560" height="1600" alt="Klar, Diese Woche: Kino und Termine am Desktop"><figcaption>Diese Woche: Kino und Termine am Desktop</figcaption></figure>
+<figure class="aufnahme desktop"><img src="img/klar2-kueche-desktop.jpg" width="2560" height="1600" alt="Klar, Küche am Desktop"><figcaption>Küche am Desktop</figcaption></figure>
 </div>
-<p class="oeffnen"><a href="design/richtungen/klar/index.html">Startseite öffnen und selbst scrollen</a> <a href="design/richtungen/klar/artikel.html">Artikel öffnen</a></p></section>
+<p class="oeffnen"><a href="design/richtungen/klar2/index.html">Startseite öffnen und selbst scrollen</a> <a href="design/richtungen/klar2/artikel.html">Artikel öffnen</a></p></section>
 <hr class="trenner"><section class="abschluss" aria-label="Entscheidung"><div><h2>Was für die Entscheidung gebraucht wird</h2><ol><li>Stimmt die Richtung: ja, nein oder ja mit Änderungen.</li><li>Was gefällt und was stört, gern in Stichworten.</li></ol></div><div><h2>Wie es danach weitergeht</h2><ul><li>Die Richtung wird zur Probeseite mit allen Seitentypen ausgebaut: Start, Artikel, Rubrik, Events, Kinoliste, Kontakt.</li><li>Erst nach der Abnahme der Probeseite wird die echte Website umgebaut.</li></ul></div></section>
 <p class="fuss">Stand vom 10. November 2026. Die Beiträge stammen aus dem Archiv der Seite, das im November 2024 endet; die Kino- und Termineinträge aus dem News-Radar. Das Logo liegt bisher nur als kleines Bild vor; mit einer Vektordatei wird es schärfer. Die klickbaren Seiten öffnen sich im selben Fenster; zurück geht es mit der Zurück-Taste.</p>
 </div>

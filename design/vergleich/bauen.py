@@ -308,8 +308,10 @@ def seite(modus, slugs):
     else:
         kopf += ['<p class="etikett">Redesign tamil.de · Abnahme der Richtung</p>', "<h1>tamil.de wie eine große Nachrichtenmarke</h1>",
                  '<p class="vorspann">Ruhig, klar und aufgeräumt: ein deutlicher Aufmacher und viele Geschichten auf einen Blick. '
-                 "Rot bleibt die Farbe des Logos und kleiner Marken, die Schrift ist ruhig und gut lesbar. Zu sehen sind die Startseite "
-                 "und ein Artikel mit echten Beiträgen. Gefragt ist, ob diese Richtung stimmt.</p>"]
+                 "Rot bleibt die Farbe des Logos und kleiner Marken, die Schrift ist ruhig und gut lesbar. "
+                 + ("Die Fotos tragen die Seite: Jede Geschichte hat ein Bild, Kino und Termine stehen in einem eigenen dunklen Bereich. "
+                    if any("aenderungen" in PROBEN[s] for s in slugs) else "")
+                 + "Zu sehen sind die Startseite und ein Artikel mit echten Beiträgen. Gefragt ist, ob diese Richtung stimmt.</p>"]
     if intern or len(slugs) > 1:
         kopf.append('<nav class="sprung" aria-label="Proben">' + "".join(f'<a href="#{s}">{html.escape(PROBEN[s]["name"])}</a>' for s in slugs)
                     + ('<a href="#vorher">Vorher</a>' if intern else "") + "</nav>")
