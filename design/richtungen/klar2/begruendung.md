@@ -29,3 +29,24 @@ die sechs Farbwerte, das Dachzeilenformat „Rubrik | Datum“, Linien statt Kä
 5. **Abgrenzung Runde 4** (laut): größte Schrift 30/40 px statt 98–335 px, zweitgrößte 22/26 px (Grenze 24/28), Rot 0,1 % der
    Fläche (Runde 4: 6–54 %), keine rote Schrift über 13 px, dunkel im ersten Bildschirm 6,4/5,8 % (Grenze 12),
    genau zwei dunkle Flächen, keine Versalien, nichts gedreht, keine Animation.
+
+## Überarbeitung (Prüfung r1)
+
+- **P1 Bildformate:** Die Rasterzeile bestimmt keine Bildhöhe mehr. Jede Kachel hat ein festes Format aus 4:3, 16:9
+  und 8:3. 8:3 gilt für Rathamaarey und die kleinen Küche-Kacheln: Bei 8:3 schneidet das Bild unten 12 % ab, so
+  bleibt die eingebrannte Bildzeile unsichtbar, und alle vier Männer sind zu sehen.
+  - Gemessen sind es je Breite genau drei Formate (390, 820 und 1280: 1,33 / 1,78 / 2,67).
+  - Die Küche am Desktop hat Spalten im Verhältnis 803 : 373. Kottu Roti steht in 16:9 (803 × 452), die drei
+    kleinen Kacheln in 8:3 (373 × 140), beide Seiten enden auf derselben Linie.
+  - In „Diese Woche“ gleichen die Kino-Kacheln ohne Foto die Höhe aus.
+- **Rathamaarey:** Titel unter dem Bild statt im Bild, damit die Gesichter frei bleiben.
+- **Sprungziele:** `scroll-padding-top: 56px`.
+- **Fokus:** Bei Aufmacher, Bildkacheln und Rubrikkacheln wird der Rahmen nach innen gezeichnet: dunkler Rand mit
+  heller Linie. Der Streifen hat 5 px Innenabstand oben und unten und `scroll-padding-inline`.
+- **Bei 600–1023 px:**
+  - Aufmachertitel 34 px.
+  - Meldungen zweispaltig.
+  - „Termine“ über die volle Breite.
+- **Desktop:** Die Reihe der Rubrikkacheln ist zwischen zwei feinen Linien mit 40 px Abstand vom Block der
+  Nebenstücke abgesetzt.
+- **Offen:** P2 Nr. 7 (Rangfolge Nebenstücke und Meldungen am Desktop).
