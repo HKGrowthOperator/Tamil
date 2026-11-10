@@ -236,7 +236,7 @@ for (const slug of slugs) {
         const el = document.querySelector(sel);
         if (!el) return false;
         const festHoch = Math.max(0, ...[...document.querySelectorAll('body *')].filter((e) => ['sticky', 'fixed'].includes(getComputedStyle(e).position)).map((e) => e.getBoundingClientRect().height));
-        window.scrollTo(0, el.getBoundingClientRect().top + scrollY - festHoch - 12);
+        window.scrollTo(0, el.getBoundingClientRect().top + scrollY - festHoch);
         return true;
       }, a.anker);
       if (!da) { await kontext.close(); continue; }
