@@ -230,7 +230,7 @@ def seite_vorher_nachher(alt, neu):
     teile = [f'<!-- Erzeugt von design/vergleich/bauen.py (vorher-nachher: {alt}, {neu}). Nicht von Hand ändern. -->',
              "<title>Richtungsvergleich tamil.de</title>", '<meta name="claude:viewport-fit-sides" content="cover">',
              f"<style>\n{STIL}</style>", '<div class="rahmen">', '<header class="kopf">',
-             '<p class="vermerk">Interne Vorschau · noch ohne unabhängige Prüfung · nicht für den Auftraggeber</p>',
+             '<p class="vermerk">Interne Vorschau · nicht für den Auftraggeber</p>',
              "<h1>Klar mit mehr Wow: vorher und nachher</h1>",
              '<p class="vorspann">Deine Rückmeldung zur ersten Fassung: gut vom Design, aber noch zu classic; mehr Wow, überall ein Bild, '
              "der Kopf zu schlicht. Die neue Fassung behält Schrift, Farben und die Ordnung der Nachrichten und legt Bild und Bühne dazu. "
@@ -281,8 +281,8 @@ def seite_vorher_nachher(alt, neu):
              "<li>Passt das Wow jetzt, oder ist es immer noch zu classic?</li>"
              "<li>Ist etwas zu viel geworden?</li><li>Fehlt etwas?</li></ol></div>"
              "<div><h2>Wie es weitergeht</h2><ul>"
-             "<li>Parallel läuft eine unabhängige Prüfung der neuen Fassung.</li>"
-             "<li>Der Auftraggeber bekommt sie erst, wenn du zustimmst und die Prüfung nichts Schweres findet.</li></ul></div></section>",
+             "<li>Die neue Fassung wird unabhängig geprüft; was die Prüfung findet, wird eingearbeitet.</li>"
+             "<li>Der Auftraggeber bekommt sie erst, wenn du zustimmst und kein schwerer Befund offen ist.</li></ul></div></section>",
              '<p class="fuss">Stand vom 10. November 2026. Die Beiträge stammen aus dem Archiv der Seite, das im November 2024 endet; die Kino- '
              "und Termineinträge aus dem News-Radar. Das Logo liegt bisher nur als kleines Bild vor. Die klickbaren Seiten öffnen sich im "
              "selben Fenster; zurück geht es mit der Zurück-Taste.</p>",
