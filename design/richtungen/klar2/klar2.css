@@ -142,6 +142,8 @@ a:focus-visible {
   padding: 0 4px;
 }
 .band ul::-webkit-scrollbar { display: none; }
+.band ul { scroll-snap-type: x proximity; scroll-padding-inline: 4px; }
+.band li { scroll-snap-align: start; }
 .band a {
   position: relative;
   display: block;
@@ -277,7 +279,9 @@ a:focus-visible {
   margin: -5px calc(-1 * var(--rand));
   padding: 5px var(--rand);
   scroll-padding-inline: var(--rand);
+  scroll-snap-type: x proximity;
 }
+.kacheln li { scroll-snap-align: start; }
 .kacheln ul::-webkit-scrollbar { display: none; }
 .kacheln li { flex: 0 0 138px; }
 .kacheln a { position: relative; display: block; }
@@ -406,20 +410,6 @@ a:focus-visible {
 
 @media (min-width: 600px) {
   :root { --rand: 24px; }
-  .kopfzeile__hinweise {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    min-width: 0;
-  }
-  .kopfzeile__hinweise strong { color: var(--tinte); font-weight: 600; }
-  .kopfzeile__hinweise a + a::before {
-    content: "";
-    width: 1px;
-    height: 0.95em;
-    margin-right: 14px;
-    background: var(--linie);
-  }
   .kopfzeile__datum { flex: none; }
   .kopf__logo img { height: 52px; }
   .stueck .anr { grid-template-columns: 200px minmax(0, 1fr); column-gap: 20px; }
@@ -434,6 +424,25 @@ a:focus-visible {
   .kueche .kachel--gross { grid-column: 1 / -1; }
   .kueche .kachel--gross .rahmen { aspect-ratio: 16 / 9; }
   .kueche .kachel--klein .rahmen { aspect-ratio: 4 / 3; }
+}
+
+/* Die Hinweise erst, wenn sie einzeilig neben Datum und Suche passen */
+@media (min-width: 800px) {
+  .kopfzeile__hinweise {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+    white-space: nowrap;
+  }
+  .kopfzeile__hinweise strong { color: var(--tinte); font-weight: 600; }
+  .kopfzeile__hinweise a + a::before {
+    content: "";
+    width: 1px;
+    height: 0.95em;
+    margin-right: 14px;
+    background: var(--linie);
+  }
 }
 
 @media (min-width: 600px) and (max-width: 1023px) {
@@ -530,8 +539,8 @@ a:focus-visible {
   .grafik .anr { padding: 18px 20px 20px; }
   .woche__gruppe--termine .anr {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
-    column-gap: 40px;
+    grid-template-columns: max-content minmax(0, 36em);
+    column-gap: 48px;
   }
   .woche__gruppe--termine .grafik__orte,
   .woche__gruppe--termine .grafik__text { grid-column: 2; }
@@ -620,7 +629,8 @@ a:focus-visible {
 
 @media (min-width: 1024px) {
   .artikel { max-width: 1120px; padding: 48px var(--rand) 96px; }
-  .artikel__kopf, .artikel__text { max-width: 720px; margin-inline: auto; }
+  /* eine Spalte für Kopf und Text: 32em bei 19 px = 608 px, höchstens 70 Zeichen je Zeile */
+  .artikel__kopf, .artikel__text { max-width: 608px; margin-inline: auto; }
   .artikel__titel { font-size: 38px; line-height: 1.1; letter-spacing: -0.015em; }
   .artikel__vorspann { font-size: 20px; margin-top: 14px; }
   .artikel__bild { margin-top: 12px; }
