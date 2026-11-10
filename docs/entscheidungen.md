@@ -5,6 +5,23 @@ Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
 ## 10.11.2026
 
+- **Website geht jetzt auf Coolify, mit echten Inhalten und dem bisherigen Theme** (App „tamil-web“ unter der
+  Vorschau-Adresse; voller Altbestand, Radar verbunden). Das neue Design `klar2` folgt als Theme nach dem Urteil des
+  Auftraggebers und der Probeseite. · Luis („alles auf Coolify pushen, deployen“; auf Rückfrage: Website mit echten
+  Inhalten)
+- **Die drei schon freigegebenen Entwürfe** (Diwali in Basel, „Scene“, „Ramayana“) **erscheinen beim Verbinden alle
+  drei.** · Luis · Diwali in Basel ist mit 73 Wörtern kurz und hat keine Quellenzeile; das war ihm bekannt.
+- **Coolify-Zugang bleibt beim DNS-Namen:** Das sichere Formular nimmt nur echte Hostnamen an, die Adresse
+  `coolify.167.233.76.202.sslip.io` lehnt es ab. Luis legt den A-Eintrag `coolify.hk-growthoperator.de` auf den
+  Coolify-Server, trägt die Adresse in Coolify ein und erzeugt ein Token ohne Root-Rechte (Tor B2). · Luis · Die
+  Alternativen (Token als Umgebungsvariable, App von Hand anlegen) hat er nicht gewählt.
+- **Texte der alten Seite bleiben unverändert**, auch Kontaktangaben darin (`info@tamil.de` ist die echte Adresse der
+  alten Seite). Leer bleiben nur die Kontaktfelder der neuen Website, bis der Auftraggeber die echten Werte nennt;
+  die Beispielwerte aus `prototyp/content/site.json` werden nie eingetragen. · Hauptsitzung nach Code-Review · Das
+  Import-Werkzeug hatte die Adresse zuerst aus 11 Beiträgen entfernt.
+- **YouTube-Videos laden erst nach Klick** (Box „Video laden“, dann youtube-nocookie.com); das gilt für alle
+  übernommenen Beiträge. · Hauptsitzung · Pflicht aus den Markenregeln (Drittanbieter erst nach Klick); der feste
+  Player lief am Handy außerdem seitlich über.
 - **`klar2` passt, das Aufmacherfoto bleibt groß (4:3).** `klar2` wird die Vorlage für den Auftraggeber; `klar`
   bleibt als Rückfall im Repo. · Luis · nach der internen Vorschau und dem Blick auf alle Bilder im Chat. Am Desktop
   stehen damit sechs statt rund zehn Schlagzeilen im ersten Bildschirm; das ist so gewollt.

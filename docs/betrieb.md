@@ -9,7 +9,7 @@ Passwörter, Tokens und Schlüssel liegen ausschließlich in den Coolify-Variabl
 |---|---|
 | Oberfläche / API | `https://coolify.167.233.76.202.sslip.io` · API `…/api/v1` |
 | Quelle | GitHub-App-Source `52`, Repo `HKGrowthOperator/Tamil`, Branch `claude/radar-multiagent` (nach dem Merge von PR #2: `main`) |
-| API-Token | nur als Umgebungsvariable `COOLIFY_TOKEN` in der Shell, nie in Dateien oder Ausgaben. Der eingefügte Root-Token ist zu widerrufen (Tor B2) und durch ein eng gefasstes Token zu ersetzen |
+| API-Token | nie in Dateien, Ausgaben oder im Chat. Weg (Tor B2): A-Eintrag `coolify.hk-growthoperator.de` auf den Coolify-Server, die Adresse in Coolify als Instanz-Adresse eintragen, ein Token mit den Rechten lesen, schreiben und deployen (kein Root) anlegen und über das sichere Formular der Sitzung hinterlegen. Das Formular nimmt nur echte Hostnamen an, nicht die sslip-Adresse. Danach `COOLIFY_URL=https://coolify.hk-growthoperator.de` und ein Platzhalter als `COOLIFY_TOKEN`; der Sitzungs-Proxy setzt den echten Wert ein. Der alte Root-Token ist zu widerrufen |
 | Werkzeug | `tools/coolify.py` (Status, Deploy und Warten, Logs, Variablen setzen ohne Ausgabe, Volumes) |
 
 ### App „tamil.de“ – News-Radar und Cockpit
@@ -31,7 +31,7 @@ Passwörter, Tokens und Schlüssel liegen ausschließlich in den Coolify-Variabl
 
 | | |
 |---|---|
-| UUID | wird bei `/website-live` angelegt und hier eingetragen |
+| UUID | wird bei `/website-live` angelegt und hier eingetragen (Stand 10.11.2026: noch nicht angelegt, wartet auf den Coolify-Zugang, Tor B2) |
 | Domain | `https://tamil-web.167.233.76.202.sslip.io` (vorerst; eigene Subdomain später) |
 | Build | `wordpress/Dockerfile`, Build-Kontext Repo-Root, Port 80, Healthcheck `/wp-login.php` |
 | Volumes | `/var/www/html/wp-content/uploads`, `/var/www/html/wp-content/database` |
