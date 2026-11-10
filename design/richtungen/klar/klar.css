@@ -59,6 +59,8 @@ a:focus-visible {
   outline-offset: 3px;
 }
 
+.zusammen { white-space: nowrap; }
+
 .nur-vorlesen {
   position: absolute;
   width: 1px; height: 1px;
@@ -175,18 +177,16 @@ a:focus-visible {
 
 .stueck { border-top: 1px solid var(--linie); }
 .stueck .anr {
-  display: grid;
-  grid-template-columns: 132px minmax(0, 1fr);
-  column-gap: 14px;
-  align-items: start;
+  display: flow-root;
   padding: 16px 0;
 }
-/* Handy: Bild links, Dachzeile an seiner Unterkante, Schlagzeile darunter über die volle Breite (höchstens drei Zeilen). */
-.stueck__text { display: contents; }
-.stueck .bild { grid-column: 1; grid-row: 1; }
-.stueck .meta { grid-column: 2; grid-row: 1; align-self: end; margin-bottom: 0; }
-.stueck .titel { grid-column: 1 / -1; margin-top: 10px; }
-.stueck .vorspann { grid-column: 1 / -1; }
+/* Handy wie BBC: Bild links, Dachzeile und Schlagzeile rechts ab der Bildoberkante;
+   längerer Text läuft unter dem Bild weiter (höchstens vier Zeilen). */
+.stueck .bild {
+  float: left;
+  width: 132px;
+  margin: 3px 14px 6px 0;
+}
 .stueck .titel {
   font-size: 19px;
   line-height: 1.22;
@@ -232,10 +232,12 @@ a:focus-visible {
   font-weight: 600;
   color: var(--rot);
   padding: 16px 0 8px;
+  border-bottom: 1px solid var(--linie);
 }
-.eintrag { border-top: 1px solid var(--linie); }
+.eintrag + .eintrag { border-top: 1px solid var(--linie); }
 .eintrag .anr { padding: 12px 0 14px; }
 .eintrag .titel { font-size: 18px; line-height: 1.25; }
+.eintrag .meta { margin: 4px 0 0; }
 .eintrag__zahl {
   font-size: 16px;
   font-weight: 600;
@@ -251,10 +253,13 @@ a:focus-visible {
   .seite { max-width: 712px; margin: 0 auto; }
   .kopf__innen { max-width: 712px; margin: 0 auto; }
   .aufmacher .bild { width: 100%; margin-inline: 0; }
-  .stueck .anr { grid-template-columns: 200px minmax(0, 1fr); column-gap: 20px; }
-  .stueck__text { display: block; grid-column: 2; grid-row: 1; }
-  .stueck .meta { margin-bottom: 6px; }
-  .stueck .titel { margin-top: 0; }
+  .stueck .anr {
+    display: grid;
+    grid-template-columns: 200px minmax(0, 1fr);
+    column-gap: 20px;
+    align-items: start;
+  }
+  .stueck .bild { float: none; width: 100%; margin: 0; }
   .stueck .vorspann { display: block; }
   .kueche__liste { gap: 28px 24px; }
   .woche { margin-inline: 0; padding-inline: 24px; }
@@ -321,6 +326,7 @@ a:focus-visible {
     column-gap: 32px;
   }
   .woche__gruppe:first-child { grid-column: span 2; }
+  .woche__gruppe:first-child .eintrag + .eintrag { border-top: 0; }
   .woche__gruppe:first-child ul {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));

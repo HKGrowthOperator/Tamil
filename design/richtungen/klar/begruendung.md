@@ -14,3 +14,5 @@
 - Nebenstücke am Handy: Bild 132 × 74 px, Dachzeile an der Bildunterkante, Schlagzeile darunter über die volle Breite. Daneben gesetzt liefen die Titel bei 120–132 px auf 4–5 Zeilen; der Brief erlaubt höchstens 3.
 - „Diese Woche“: Etiketten „Im Kino“ und „Termine“ in der Form der Dachzeile (13 px, Rot), Datum des Termins als Meta-Zeile (13 px, leise); am Desktop drei gleich breite Spalten mit derselben Linie und Oberkante. Vorspann der Nebenstücke am Desktop höchstens 31 em (≤ 66 Zeichen).
 - Klein: Rubrik „Nachrichten“ im Artikel als aktiv markiert (`aria-current`, Rot, 600); in „Küche“ nur noch das Datum statt Rubrik und Datum.
+- Prüfung r2: Nebenstücke am Handy wie BBC: Bild 132 × 74 px links (umflossen), Dachzeile und Schlagzeile ab der Bildoberkante mit gemeinsamer Kante, längere Titel laufen unter dem Bild weiter (Brief jetzt: höchstens vier Zeilen; gemessen 2/4/4/4).
+- Zeilenfall „14.&nbsp;November“ mit geschütztem Leerzeichen, „Kino-Highlight“ und „Dating-Event“ ungetrennt (`nowrap`, weil Libre Franklin keinen geschützten Bindestrich U+2011 hat); im Dienstblock Termindatum unter dem Titel, Linie unter „Im Kino“ über beide Kinospalten.
