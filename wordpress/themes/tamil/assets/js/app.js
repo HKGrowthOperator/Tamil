@@ -60,6 +60,7 @@
     var btn = $(".video-load", box); if (!btn) return;
     btn.addEventListener("click", function () {
       var id = box.getAttribute("data-video");
+      box.classList.add("is-geladen");
       box.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + encodeURIComponent(id) + '?autoplay=1" title="YouTube-Video" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>';
     });
   });

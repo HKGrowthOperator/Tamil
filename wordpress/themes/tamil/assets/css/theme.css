@@ -381,7 +381,8 @@ textarea { border-radius: var(--r); padding: 12px 16px; }
 .video-embed { aspect-ratio: 16 / 9; background: var(--sand); border-radius: var(--r); display: grid; place-content: center; justify-items: center; gap: 12px; text-align: center; padding: 24px; }
 .video-embed .video-load { min-height: 46px; padding: 0 22px; border: 0; border-radius: 999px; background: var(--rot); color: var(--weiss); font-family: var(--titel); font-weight: 700; font-size: 16px; cursor: pointer; }
 .video-embed .video-hint { font-family: var(--titel); font-size: 14px; color: var(--tinte-3); }
-.video-embed iframe { width: 100%; height: 100%; border: 0; border-radius: var(--r); }
+.video-embed.is-geladen { display: block; padding: 0; }
+.video-embed iframe { display: block; width: 100%; height: 100%; border: 0; border-radius: var(--r); }
 
 /* ---------- Veranstaltungskalender ---------- */
 .events-werkzeuge { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 6px; }

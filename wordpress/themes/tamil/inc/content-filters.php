@@ -80,3 +80,38 @@ function tamil_links_noopener( string $content ): string {
 	return (string) preg_replace( '/<a ((?:(?!rel=)[^>])*?)target="_blank"((?:(?!rel=)[^>])*)>/i', '<a $1target="_blank" rel="noopener"$2>', $content );
 }
 add_filter( 'the_content', 'tamil_links_noopener', 30 );
+
+/**
+ * YouTube-Kennung aus einer Video-Adresse (watch, embed, shorts, youtu.be); leer, wenn es keine ist.
+ */
+function tamil_youtube_id( string $url ): string {
+	if ( preg_match( '~^https?://(?:www\.|m\.)?(?:youtube(?:-nocookie)?\.com/(?:watch\?(?:[^#\s]*&)?v=|embed/|shorts/)|youtu\.be/)([\w-]{6,20})~i', $url, $treffer ) ) {
+		return $treffer[1];
+	}
+	return '';
+}
+
+/**
+ * YouTube erst nach Klick laden (DSGVO). Statt des eingebetteten Players erscheint die Box .video-embed mit Knopf;
+ * assets/js/app.js lädt das Video dann von youtube-nocookie.com. Der Filter greift vor dem oEmbed-Abruf, beim Aufbau
+ * der Seite geht also keine Anfrage an YouTube hinaus, und der feste iframe (läuft am Handy seitlich über) entfällt.
+ * Die Box enthält nur Zeilenelemente, damit wpautop sie nicht zerlegt.
+ *
+ * @param string|null $result Vorab-Ergebnis anderer Filter.
+ * @param string      $url    Adresse, die eingebettet werden soll.
+ */
+function tamil_youtube_nach_klick( $result, $url ) {
+	$id = tamil_youtube_id( (string) $url );
+	if ( '' === $id ) {
+		return $result;
+	}
+	return sprintf(
+		'<div class="video-embed" data-video="%1$s"><button type="button" class="video-load">%2$s</button><span class="video-hint">%3$s <a href="%4$s" rel="noopener">%5$s</a></span></div>',
+		esc_attr( $id ),
+		esc_html__( 'Video laden', 'tamil' ),
+		esc_html__( 'Beim Laden werden Daten an YouTube übertragen.', 'tamil' ),
+		esc_url( 'https://www.youtube.com/watch?v=' . $id ),
+		esc_html__( 'Bei YouTube ansehen', 'tamil' )
+	);
+}
+add_filter( 'pre_oembed_result', 'tamil_youtube_nach_klick', 10, 2 );
