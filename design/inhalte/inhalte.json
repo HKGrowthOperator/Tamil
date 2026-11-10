@@ -244,5 +244,26 @@
         "text": "Der Basel Tamil Sangam lädt Familien zur Diwali-Feier in die Aula Lysbüchel ein. Mitglieder erhalten Tickets günstiger."
       }
     ]
+  },
+  "artikel": {
+    "hinweis": "Für artikel.html: der Aufmacher als Artikel. Kopf (Dachzeile, Schlagzeile, Vorspann, Datum, Lesezeit), Bild, dann genau diese Absätze, unverändert. Kein weiterer Text, keine Autorenzeile, kein Bildnachweis (beides liegt nicht vor). Teilen über WhatsApp als schlichter Link mit Titel, ohne Skript.",
+    "id": 9631,
+    "dachzeile": "Nachrichten",
+    "titel": "Uma Kumaran, Londons erste tamilische Abgeordnete",
+    "vorspann": "In einem Erdrutschsieg für die Labour Party wurde Uma Kumaran zur Abgeordneten für Stratford und Bow gewählt, nachdem die Generalwahl am Donnerstag, den 4. Juli 2024, stattfand. Die britische Tamilin, die sri-lankisch-tamilischer …",
+    "datum": "17. Juli 2024",
+    "datum_iso": "2024-07-17",
+    "lesezeit_min": 2,
+    "bild": {
+      "datei": "bilder/p9631.jpg",
+      "w": 1382,
+      "h": 716
+    },
+    "absaetze": [
+      "Die britische Tamilin, die sri-lankisch-tamilischer Herkunft ist, ist die erste tamilische Parlamentarierin in London. Geboren in Ost-London, kam Uma’s Familie als Flüchtlinge nach Großbritannien, um dem Krieg und der Verfolgung in Sri Lanka zu entkommen. Sie studierte an der Queen Mary University und hat in Stratford, Maryland und Bow gelebt.",
+      "Ihre frühen Jahre verbrachte sie in Harrow, wo sie die Bentley Wood High School und das St. Dominic’s Sixth Form College besuchte. Uma kandidierte zweimal in Harrow, erstmals 2010 für den Pinner South Ward, wo sie 1535 Stimmen erhielt. Ein weiterer Versuch folgte 2015 in Harrow East, einer Heimat vieler tamilischer und südasiatischer Gemeinschaften, wo sie 19.911 Stimmen erhielt.",
+      "Den Großteil ihres Arbeitslebens verbrachte sie im öffentlichen Dienst, vom NHS bis hin zur Arbeit mit den Vereinten Nationen und globalen Befürwortern im Kampf gegen den Klimawandel. Sie wird weiterhin dem Bürgermeister von London helfen, lebensverändernde Politiken wie kostenlose Schulmahlzeiten und neue Sozialwohnungen umzusetzen. Zuletzt war sie als Direktorin für diplomatische Beziehungen für eine globale Klimaschutzorganisation tätig."
+    ],
+    "weitere_absaetze_im_original": 2
   }
 }

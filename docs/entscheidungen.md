@@ -3,6 +3,14 @@
 Neueste oben. Format: Datum · Entscheidung · wer · warum. Was hier steht, gilt, bis ein neuerer Eintrag es ändert.
 Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
+## 10.11.2026
+
+- **Probe `klar` wird ausgearbeitet** (nüchtern und kompakt nach BBC und Tagesschau, Schrift Libre Franklin). Brief 2
+  ist damit bestätigt. · Luis · gewählt, ohne die Vorschau anzusehen; er sieht die Vorlage, bevor sie zum
+  Auftraggeber geht. `blatt` und `bild` bleiben als Alternativen im Repo.
+- **Vorlage für den Auftraggeber als eigenes Artifact**, getrennt von der internen Vorschau (dort liegen Bilder
+  fremder Nachrichtenseiten zum Vergleich). · Hauptsitzung
+
 ## 09.11.2026
 
 - **Neue Richtung: wie eine große Nachrichtenmarke.** Ruhig und seriös, viele Geschichten auf einen Blick, Rot nur

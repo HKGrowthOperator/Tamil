@@ -1,8 +1,8 @@
 # Design-Brief: tamil.de, Runde 2 – wie eine große Nachrichtenmarke
 
-- **Status:** Arbeitsfassung 2 vom 09.11.2026. Bestätigt wird sie zusammen mit Luis' Wahl einer Schnellprobe
-  (`docs/abnahme/<datum>-G1-runde2.md`). Fassung 1 (eine Geschichte als Cover, „Rot trägt“, vier Richtungen) ist
-  abgelöst und steht in der Git-Historie (`6195fe5`).
+- **Status:** Fassung 2, bestätigt am 10.11.2026 mit der Wahl der Probe `klar` durch Luis
+  (`docs/abnahme/2026-11-10-G1-runde2.md`; gewählt, ohne die Vorschau anzusehen). Fassung 1 (eine Geschichte als
+  Cover, „Rot trägt“, vier Richtungen) ist abgelöst und steht in der Git-Historie (`6195fe5`).
 - **Grundlage:** Urteil von Luis vom 09.11.2026 (`docs/abnahme/2026-11-09-G2.md`), Skill `tamil-marke` mit
   `references/abgelehnt.md`, die vermessenen Vorbilder in `design/referenzen/news-marken.md`.
 - **Gilt für:** alle Proben dieser Runde und für die Prüfung. Der Brief geht jeder anderen Anleitung vor.
