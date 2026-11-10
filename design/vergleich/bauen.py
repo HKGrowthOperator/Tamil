@@ -2,10 +2,11 @@
 """Baut die Vergleichsseite (design/vergleich/index.html) aus den Aufnahmen und Kennzahlen der Proben.
 
     python3 design/vergleich/bauen.py intern klar blatt bild      # Vorschau für Luis, mit Vermerk und Kennzahlen
-    python3 design/vergleich/bauen.py vorlage blatt               # Vorlage für den Auftraggeber, ohne Kennzahlen
+    python3 design/vergleich/bauen.py vorlage klar                # Vorlage für den Auftraggeber, ohne Kennzahlen
 
-Vorher: node design/vergleich/aufnahmen.mjs <slugs>. Die Seite wird als Artifact veröffentlicht (ohne doctype, die
-Hülle setzt die Veröffentlichung). dateien.json daneben listet, welche Dateien unter welchem Pfad mitgehen.
+Vorher: node design/vergleich/aufnahmen.mjs <slugs>. „intern“ schreibt index.html und dateien.json, „vorlage“ schreibt
+vorlage.html und dateien-vorlage.json: zwei getrennte Artifacts, damit die Bilder fremder Nachrichtenseiten intern
+bleiben. Die Seiten haben kein doctype, die Hülle setzt die Veröffentlichung.
 """
 import html
 import json
@@ -86,23 +87,28 @@ def abschnitt(slug, intern):
     p = PROBEN[slug]
     marke, kurzname = p["vorbild"]
     teile = [f'<section class="probe" id="{slug}" aria-labelledby="{slug}-titel">',
-             f'<div class="probe-kopf"><p class="etikett">Probe {html.escape(p["name"])}</p>'
+             f'<div class="probe-kopf"><p class="etikett">{"Probe" if intern else "Richtung"} {html.escape(p["name"])}</p>'
              f'<h2 id="{slug}-titel">{html.escape(p["kurz"].split(". ")[0])}.</h2>'
-             f'<p class="idee">{html.escape(p["kurz"].split(". ", 1)[1])} Familie der Vorbilder: {html.escape(p["familie"])}.</p></div>',
+             f'<p class="idee">{html.escape(p["kurz"].split(". ", 1)[1])} Vorbilder dieser Richtung: {html.escape(p["familie"])}.</p></div>',
              '<div class="reihe handys">',
-             bild(f"img/{slug}-start-handy.jpg", f"Probe {p['name']}, Startseite am Handy, erster Bildschirm", "handy", "Probe, erster Bildschirm am Handy", 780, 1688),
-             bild(f"img/{slug}-start-handy-2.jpg", f"Probe {p['name']}, Startseite am Handy, zweiter Bildschirm", "handy", "Probe, zweiter Bildschirm", 780, 1688)]
+             bild(f"img/{slug}-start-handy.jpg", f"{p['name']}, Startseite am Handy, erster Bildschirm", "handy", "Startseite am Handy, erster Bildschirm", 780, 1688),
+             bild(f"img/{slug}-start-handy-2.jpg", f"{p['name']}, Startseite am Handy, zweiter Bildschirm", "handy", "Startseite am Handy, weiter unten", 780, 1688)]
+    if not intern and (HIER / "img" / f"{slug}-artikel-handy.jpg").exists():
+        teile.append(bild(f"img/{slug}-artikel-handy.jpg", f"{p['name']}, Artikel am Handy", "handy", "Artikel am Handy", 780, 1688))
     if intern:
         teile.append(bild(f"design/referenzen/img/news-{kurzname}-handy-1.jpg", f"Zum Vergleich: {marke} am Handy", "handy vergleich", f"Zum Vergleich: {marke}", 780, 1688))
     teile.append('</div><div class="reihe desktops">')
-    teile.append(bild(f"img/{slug}-start-desktop.jpg", f"Probe {p['name']}, Startseite am Desktop, erster Bildschirm", "desktop", "Probe, erster Bildschirm am Desktop", 2560, 1600))
+    teile.append(bild(f"img/{slug}-start-desktop.jpg", f"{p['name']}, Startseite am Desktop, erster Bildschirm", "desktop", "Startseite am Desktop, erster Bildschirm", 2560, 1600))
     if intern:
         teile.append(bild(f"design/referenzen/img/news-{kurzname}-desktop-1.jpg", f"Zum Vergleich: {marke} am Desktop", "desktop vergleich", f"Zum Vergleich: {marke}", 1280, 800))
     teile.append('</div>')
     if intern:
         tab, verletzt = tabelle(slug)
         teile.append(f'<h3>Gemessen: {"alle Vorgaben erfüllt" if verletzt == 0 else str(verletzt) + " Vorgabe" + ("n" if verletzt != 1 else "") + " verletzt"}</h3>{tab}')
-    teile.append(f'<p class="oeffnen"><a href="design/richtungen/{slug}/index.html">Probe öffnen und selbst scrollen</a></p></section>')
+    links = [f'<a href="design/richtungen/{slug}/index.html">Startseite öffnen und selbst scrollen</a>']
+    if (WURZEL / "design" / "richtungen" / slug / "artikel.html").exists():
+        links.append(f'<a href="design/richtungen/{slug}/artikel.html">Artikel öffnen</a>')
+    teile.append(f'<p class="oeffnen">{" ".join(links)}</p></section>')
     return "\n".join(teile)
 
 
@@ -137,7 +143,7 @@ STIL = (HIER / "seite.css").read_text(encoding="utf-8") if (HIER / "seite.css").
 def seite(modus, slugs):
     intern = modus == "intern"
     kopf = [f'<!-- Erzeugt von design/vergleich/bauen.py ({modus}: {", ".join(slugs)}). Nicht von Hand ändern. -->',
-            "<title>Richtungsvergleich tamil.de</title>",
+            f"<title>{'Richtungsvergleich tamil.de' if intern else 'Redesign tamil.de'}</title>",
             '<meta name="claude:viewport-fit-sides" content="cover">',
             f"<style>\n{STIL}</style>", '<div class="rahmen">', '<header class="kopf">']
     if intern:
@@ -148,10 +154,13 @@ def seite(modus, slugs):
                  "oder eine Mischung, zum Beispiel die Schrift der einen mit dem Aufmacher der anderen.</p>"]
     else:
         kopf += ['<p class="etikett">Redesign tamil.de · Abnahme der Richtung</p>', "<h1>tamil.de wie eine große Nachrichtenmarke</h1>",
-                 '<p class="vorspann">Ruhig, klar und aufgeräumt, mit vielen Geschichten auf einen Blick. Die Seite zeigt echte Beiträge. '
-                 "Nach der Abnahme wird diese Richtung zur vollständigen Probeseite mit allen Seitentypen ausgebaut.</p>"]
-    kopf.append('<nav class="sprung" aria-label="Proben">' + "".join(f'<a href="#{s}">{html.escape(PROBEN[s]["name"])}</a>' for s in slugs)
-                + ('<a href="#vorher">Vorher</a>' if intern else "") + "</nav></header>")
+                 '<p class="vorspann">Ruhig, klar und aufgeräumt: ein deutlicher Aufmacher und viele Geschichten auf einen Blick. '
+                 "Rot bleibt die Farbe des Logos und kleiner Marken, die Schrift ist ruhig und gut lesbar. Zu sehen sind die Startseite "
+                 "und ein Artikel mit echten Beiträgen. Gefragt ist, ob diese Richtung stimmt.</p>"]
+    if intern or len(slugs) > 1:
+        kopf.append('<nav class="sprung" aria-label="Proben">' + "".join(f'<a href="#{s}">{html.escape(PROBEN[s]["name"])}</a>' for s in slugs)
+                    + ('<a href="#vorher">Vorher</a>' if intern else "") + "</nav>")
+    kopf.append("</header>")
     koerper = ['\n<hr class="trenner">\n'.join(abschnitt(s, intern) for s in slugs)]
     if intern:
         koerper.append('<hr class="trenner"><section class="probe" id="vorher" aria-label="Die abgelehnten Stände"><div class="probe-kopf">'
@@ -167,8 +176,15 @@ def seite(modus, slugs):
                        "November 2024 endet; die Kino- und Termineinträge aus dem News-Radar. Die Bilder der Nachrichtenseiten dienen nur dem "
                        "internen Vergleich. Die klickbaren Proben öffnen sich im selben Fenster; zurück geht es mit der Zurück-Taste.</p>")
     else:
-        koerper.append('<p class="fuss">Stand vom 9. November 2026. Die Beiträge stammen aus dem Archiv der Seite, das im November 2024 endet; '
-                       "die Kino- und Termineinträge aus dem News-Radar. Die klickbare Probe öffnet sich im selben Fenster.</p>")
+        koerper.append('<hr class="trenner"><section class="abschluss" aria-label="Entscheidung"><div><h2>Was für die Entscheidung gebraucht wird</h2><ol>'
+                       "<li>Stimmt die Richtung: ja, nein oder ja mit Änderungen.</li>"
+                       "<li>Was gefällt und was stört, gern in Stichworten.</li></ol></div>"
+                       "<div><h2>Wie es danach weitergeht</h2><ul>"
+                       "<li>Die Richtung wird zur Probeseite mit allen Seitentypen ausgebaut: Start, Artikel, Rubrik, Events, Kinoliste, Kontakt.</li>"
+                       "<li>Erst nach der Abnahme der Probeseite wird die echte Website umgebaut.</li></ul></div></section>")
+        koerper.append('<p class="fuss">Stand vom 10. November 2026. Die Beiträge stammen aus dem Archiv der Seite, das im November 2024 endet; '
+                       "die Kino- und Termineinträge aus dem News-Radar. Das Logo liegt bisher nur als kleines Bild vor; mit einer "
+                       "Vektordatei wird es schärfer. Die klickbaren Seiten öffnen sich im selben Fenster; zurück geht es mit der Zurück-Taste.</p>")
     return "\n".join(kopf + koerper + ["</div>"]) + "\n"
 
 
@@ -179,9 +195,10 @@ if __name__ == "__main__":
     unbekannt = [s for s in slugs if s not in PROBEN]
     if unbekannt:
         sys.exit(f"Unbekannte Probe: {unbekannt}. Bekannt: {sorted(PROBEN)}")
-    (HIER / "index.html").write_text(seite(modus, slugs), encoding="utf-8")
+    ziel, liste = ("index.html", "dateien.json") if modus == "intern" else ("vorlage.html", "dateien-vorlage.json")
+    (HIER / ziel).write_text(seite(modus, slugs), encoding="utf-8")
     karte = dateien(slugs, modus == "intern")
     fehlend = [q for q in karte.values() if not (WURZEL / q).is_file()]
-    (HIER / "dateien.json").write_text(json.dumps(karte, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    (HIER / liste).write_text(json.dumps(karte, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     groesse = sum((WURZEL / q).stat().st_size for q in karte.values() if (WURZEL / q).is_file())
-    print(f"index.html ({modus}: {', '.join(slugs)}), {len(karte)} Dateien, {groesse / 1e6:.1f} MB, fehlend: {fehlend}")
+    print(f"{ziel} ({modus}: {', '.join(slugs)}), {len(karte)} Dateien, {groesse / 1e6:.1f} MB, fehlend: {fehlend}")
