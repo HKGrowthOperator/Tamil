@@ -39,6 +39,8 @@ sys.path.insert(0, str(REPO))
 sys.path.insert(0, str(REPO / "tools"))
 
 import nh3  # noqa: E402
+import requests  # noqa: E402
+from requests.models import PreparedRequest  # noqa: E402
 import export_site  # noqa: E402  (Kategorien-/Seiten-Abbildung und Weiterleitungen: eine Quelle der Wahrheit)
 
 NEUE_RUBRIKEN = ("news", "entertainment", "events", "community", "kueche", "kino", "sport", "kultur")
@@ -136,7 +138,7 @@ def rewrite_html(html: str, url_map: dict[str, str]) -> str:
     interne Links relativ machen, YouTube-iframes als Embed-URL (kses des Plugins entfernt iframes)."""
     for alt, neu in sorted(url_map.items(), key=lambda kv: -len(kv[0])):
         html = html.replace(alt, neu)
-        html = html.replace(alt.replace("https://", "http://", 1), neu)
+        html = re.sub(re.escape(alt.replace("https://", "http://", 1)), lambda _m: neu, html, flags=re.I)
     html = SRCSET_RE.sub("", html)
     html = YT_IFRAME_RE.sub(
         lambda m: f'<figure class="wp-block-embed is-type-video"><div class="wp-block-embed__wrapper">\nhttps://www.youtube.com/watch?v={m.group(1)}\n</div></figure>',
@@ -198,9 +200,10 @@ def seiten_plan(pages: list[dict]) -> dict[str, list[dict]]:
 
 SEITEN_TAGS = {"a", "p", "br", "hr", "h1", "h2", "h3", "h4", "h5", "h6", "ul", "ol", "li", "strong", "b", "em", "i", "u",
                "blockquote", "figure", "figcaption", "img", "table", "thead", "tbody", "tr", "th", "td", "div", "span",
-               "details", "summary", "small", "sub", "sup", "pre", "code"}
+               "details", "summary", "small", "sub", "sup", "pre", "code", "caption", "tfoot", "colgroup", "col", "s",
+               "mark", "abbr", "cite"}
 SEITEN_ATTRIBUTE = {"a": {"href", "title", "rel", "target"}, "img": {"src", "alt", "width", "height", "title"},
-                    "*": {"class", "id", "lang", "dir"}, "td": {"colspan", "rowspan"}, "th": {"colspan", "rowspan"}}
+                    "*": {"class", "id", "lang", "dir"}, "td": {"colspan", "rowspan"}, "th": {"colspan", "rowspan"}, "col": {"span"}, "colgroup": {"span"}}
 URL_ZEILE_RE = re.compile(r"\s*https?://\S+\s*")
 VIDEO_URL_RE = re.compile(r"https?://(?:www\.)?(?:youtube\.com|youtu\.be|youtube-nocookie\.com)/\S+", re.I)
 
@@ -226,28 +229,66 @@ def bilde_teaser(excerpt_html: str, content_html: str, max_woerter: int = 55) ->
     return teaser, bool(eigen)
 
 
-def ziel_pruefen(url: str, nach_umschaltung: bool = False, bestaetigt: bool = False) -> str:
-    """Prüft die Ziel-Adresse; gibt eine Fehlermeldung zurück oder "" wenn sie zulässig ist.
+ERLAUBTE_ZIELE = ("tamil-web.167.233.76.202.sslip.io", "localhost", "127.0.0.1", "::1")
 
-    Nie die alte Seite (tamil.de und Unterdomains) beschreiben; keine Anmeldedaten in der Adresse; http nur lokal.
-    Nach der Domain-Umschaltung darf das Ziel genau tamil.de/www.tamil.de sein – nur mit zwei ausdrücklichen Schaltern."""
-    teile = urlsplit(url)
-    if teile.scheme not in ("http", "https") or not teile.hostname:
-        return "Adresse unbrauchbar (http/https mit Host nötig)."
-    if teile.username is not None or teile.password is not None or "@" in teile.netloc:
-        return "Adressen mit Anmeldedaten sind nicht erlaubt."
-    host = teile.hostname.lower().rstrip(".")
-    alt = host == "tamil.de" or host.endswith(".tamil.de")
-    if alt and not (nach_umschaltung and bestaetigt and host in ALTE_HOSTS):
-        return "Ziel ist die alte tamil.de-Adresse. Die alte Seite wird nie beschrieben."
-    if teile.scheme == "http":
-        try:
-            lokal = ipaddress.ip_address(host).is_loopback
-        except ValueError:
-            lokal = host == "localhost"
-        if not lokal:
-            return "http nur für 127.0.0.1, localhost und ::1: das Anwendungspasswort ginge sonst im Klartext hinaus."
-    return ""
+
+def ziel_normalisieren(url: str, nach_umschaltung: bool = False, bestaetigt: bool = False, ziel_host: str = "") -> tuple[str, str]:
+    """Ziel-Adresse so normalisieren, wie `requests` es tut, und erst dann prüfen. Gibt (Adresse, Fehlermeldung) zurück;
+    bei Fehler ist die Adresse leer. Nur die normalisierte Adresse darf verwendet werden.
+
+    - `%`, Leerzeichen und Nicht-ASCII im Host-Teil: immer abgelehnt (sonst wird aus https://%74amil.de die alte Seite).
+    - Anmeldedaten, Host mit Punkt am Ende, IP-Adressen (außer 127.0.0.1 und ::1): abgelehnt.
+    - tamil.de und alle Unterdomains: abgelehnt; Ausnahme nur mit nach_umschaltung UND bestaetigt für genau
+      tamil.de/www.tamil.de.
+    - Positivliste: sslip-Host der neuen Website, localhost, 127.0.0.1, ::1; jeder andere Host nur mit ziel_host, der
+      dem normalisierten Host exakt entspricht.
+    - http nur für localhost, 127.0.0.1 und ::1.
+    """
+    roh = urlsplit(url).netloc
+    if any(c in roh for c in "% \t\r\n") or not roh.isascii():
+        return "", "Host enthält %, Leerzeichen oder Nicht-ASCII-Zeichen."
+    try:
+        pr = PreparedRequest()
+        pr.prepare_url(url, None)
+        norm = urlsplit(pr.url)
+    except Exception:  # noqa: BLE001
+        return "", "Adresse unbrauchbar."
+    if norm.scheme not in ("http", "https") or not norm.hostname:
+        return "", "Adresse unbrauchbar (http/https mit Host nötig)."
+    if norm.username is not None or norm.password is not None or "@" in norm.netloc:
+        return "", "Adressen mit Anmeldedaten sind nicht erlaubt."
+    host = norm.hostname.lower()
+    if host.endswith("."):
+        return "", "Host mit Punkt am Ende ist nicht erlaubt."
+    ist_ip = True
+    try:
+        ipaddress.ip_address(host)
+    except ValueError:
+        ist_ip = False
+    if ist_ip and host not in ("127.0.0.1", "::1"):
+        return "", "IP-Adressen sind als Ziel nicht erlaubt (außer 127.0.0.1 und ::1)."
+    freigegeben = False
+    if host == "tamil.de" or host.endswith(".tamil.de"):
+        if not (nach_umschaltung and bestaetigt and host in ALTE_HOSTS):
+            return "", "Ziel ist die alte tamil.de-Adresse. Die alte Seite wird nie beschrieben."
+        freigegeben = True
+    if not freigegeben and host not in ERLAUBTE_ZIELE and host != ziel_host.strip().lower():
+        return "", f"Host {host} steht nicht auf der Positivliste; ausdrücklich mit --ziel-host {host} freigeben."
+    if norm.scheme == "http" and host not in ("localhost", "127.0.0.1", "::1"):
+        return "", "http nur für 127.0.0.1, localhost und ::1: das Anwendungspasswort ginge sonst im Klartext hinaus."
+    return norm.geturl().rstrip("/"), ""
+
+
+def ziel_pruefen(url: str, nach_umschaltung: bool = False, bestaetigt: bool = False, ziel_host: str = "") -> str:
+    """Nur die Fehlermeldung von ziel_normalisieren ("" = zulässig)."""
+    return ziel_normalisieren(url, nach_umschaltung, bestaetigt, ziel_host)[1]
+
+
+def ist_voruebergehend(status) -> bool:
+    """Lohnt ein neuer Lauf? 429, 5xx, Netz- und Upload-Fehler ja; 404, andere 4xx und fremde Hosts nein."""
+    if isinstance(status, int):
+        return status == 429 or status >= 500
+    return str(status).startswith(("Netzfehler", "Upload"))
 
 
 # ---------------------------------------------------------------- Netz (alte Seite nur lesen, neue Seite schreiben)
@@ -260,7 +301,9 @@ class Medien:
 
     def __init__(self, ordner: Path, pause: float = 0.25, warte: float = 2.0):
         self.ordner, self.pause, self.warte = Path(ordner), pause, warte
-        self.session = export_site.make_session()
+        # eigene Sitzung ohne Retry-Adapter: es gelten nur die drei Versuche unten, nichts hängt minutenlang
+        self.session = requests.Session()
+        self.session.headers["User-Agent"] = export_site.USER_AGENT
         self.session.max_redirects = 3
         self.geladen = 0
         self.status: dict[str, int | str] = {}
@@ -274,7 +317,7 @@ class Medien:
         if ziel.exists() and ziel.stat().st_size > 0:
             self.status.pop(url, None)
             return ziel.read_bytes()
-        teile = urlsplit(re.sub(r"^http://", "https://", url))
+        teile = urlsplit(re.sub(r"^http://", "https://", url, flags=re.I))
         if teile.scheme != "https" or (teile.hostname or "").lower() not in ALTE_HOSTS:
             self.status[url] = "fremder Host"
             return None
@@ -350,7 +393,7 @@ class Migration:
                 mapping[url] = found[0]["source_url"]
                 self.bericht["medien"]["vorhanden"] += 1
                 continue
-            alt_https = re.sub(r"^http://", "https://", url)
+            alt_https = re.sub(r"^http://", "https://", url, flags=re.I)
             daten = self.medien.holen(url)
             if daten is None:
                 self.fehlt(url, aus)
@@ -360,8 +403,10 @@ class Migration:
                 self.bericht["medien"]["neu"] += 1
                 continue
             mime = mimetypes.guess_type(name)[0] or "application/octet-stream"
-            r = self.wp.http.post(f"{self.wp.url}/wp-json/wp/v2/media", data=daten, timeout=300, params={"slug": slug},
+            r = self.wp.http.post(f"{self.wp.url}/wp-json/wp/v2/media", data=daten, timeout=300, params={"slug": slug}, allow_redirects=False,
                                   headers={"Content-Disposition": f'attachment; filename="{name}"', "Content-Type": mime})
+            if 300 <= r.status_code < 400:
+                raise RuntimeError(f"Weiterleitung {r.status_code} der neuen Website beim Hochladen (Ziel-Adresse prüfen)")
             if r.status_code >= 400:
                 self.medien.status[url] = f"Upload {r.status_code}"
                 self.fehlt(url, aus)
@@ -495,7 +540,10 @@ class Migration:
             if d.get("slug") == p["slug"]:
                 continue
             code, belegt = self.wp.req("GET", "wp/v2/posts", params={"slug": p["slug"], "status": "any", "context": "edit", "_fields": "id"})
-            fremd = [int(x["id"]) for x in belegt if int(x["id"]) not in eigene_ids] if code == 200 and isinstance(belegt, list) else []
+            if code != 200 or not isinstance(belegt, list):
+                self.bericht.setdefault("slug_pruefung_fehlgeschlagen", []).append({"uid": uid, "slug": p["slug"], "status": code})
+                continue  # nichts umleiten, solange nicht klar ist, wem der alte Slug gehört
+            fremd = [int(x["id"]) for x in belegt if int(x["id"]) not in eigene_ids]
             if fremd:
                 self.bericht["slug_kollisionen"].append({"uid": uid, "slug": p["slug"], "neu": d.get("slug"), "belegt_von": fremd})
                 continue
@@ -521,7 +569,9 @@ class Migration:
             self.bericht["seiten"]["neu (trocken)"] += 1
             return
         if vorhanden:
-            self.wp.req("POST", f"wp/v2/pages/{data[0]['id']}", json={"content": inhalt})
+            c, antwort = self.wp.req("POST", f"wp/v2/pages/{data[0]['id']}", json={"content": inhalt})
+            if c >= 400:
+                raise RuntimeError(f"Seite {slug}: Füllen fehlgeschlagen {c} {str(antwort)[:200]}")
             self.bericht["seiten"]["gefüllt (war leer)"] += 1
             return
         code, data = self.wp.req("POST", "wp/v2/pages", json={"slug": slug, "title": titel, "content": inhalt, "status": "publish", "date": quelle["date"].replace("T", " ")})
@@ -568,18 +618,20 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--bericht", type=Path, default=None, help="Bericht als JSON schreiben")
     ap.add_argument("--nach-umschaltung", action="store_true", help="erlaubt nach der Domain-Umschaltung das Ziel tamil.de/www.tamil.de (nur mit --bestaetigt-von-luis)")
     ap.add_argument("--bestaetigt-von-luis", action="store_true", help="ausdrückliche Bestätigung zu --nach-umschaltung")
+    ap.add_argument("--ziel-host", default="", help="Host der neuen Website, falls nicht auf der Positivliste (muss dem normalisierten Host exakt entsprechen)")
     ap.add_argument("--nur", choices=("beitraege", "seiten", "weiterleitungen"), action="append", help="Teilschritte (Standard: alle)")
     args = ap.parse_args(argv)
 
-    pw = passwort(args.passwort_datei)
-    if not (args.url and pw):
-        print("Adresse (--url) und Passwort (--passwort-datei oder $MIGRATION_APP_PASSWORD) fehlen.")
-        return 2
-    fehler = ziel_pruefen(args.url, args.nach_umschaltung, args.bestaetigt_von_luis)
     if args.nach_umschaltung and not args.bestaetigt_von_luis:
-        fehler = fehler or "--nach-umschaltung verlangt --bestaetigt-von-luis."
-    if fehler:
+        print("Abbruch: --nach-umschaltung verlangt --bestaetigt-von-luis.")
+        return 2
+    url, fehler = ziel_normalisieren(args.url, args.nach_umschaltung, args.bestaetigt_von_luis, args.ziel_host)
+    if fehler:  # vor dem Lesen des Passworts
         print("Abbruch: " + fehler)
+        return 2
+    pw = passwort(args.passwort_datei)
+    if not pw:
+        print("Passwort fehlt (--passwort-datei oder $MIGRATION_APP_PASSWORD).")
         return 2
 
     export = args.export
@@ -591,7 +643,7 @@ def main(argv: list[str] | None = None) -> int:
     schritte = set(args.nur or ("beitraege", "seiten", "weiterleitungen"))
 
     WP = _lade_wp_klasse()
-    m = Migration(WP(args.url, args.benutzer, pw), export, Medien(args.medien or export / "media"), site_json, args.trocken)
+    m = Migration(WP(url, args.benutzer, pw), export, Medien(args.medien or export / "media"), site_json, args.trocken)
     start = time.time()
     alle = sorted(posts, key=lambda p: p["date"])
     if "beitraege" in schritte:
@@ -617,7 +669,7 @@ def main(argv: list[str] | None = None) -> int:
         args.bericht.write_text(out, encoding="utf-8")
     print(out)
     # Bilder, die auf der alten Seite da wären, aber nicht geholt wurden (429/5xx/Netz): Lauf wiederholen
-    return 3 if any(f["status"] != 404 for f in b["fehlende_bilder"]) else 0
+    return 3 if any(ist_voruebergehend(f["status"]) for f in b["fehlende_bilder"]) else 0
 
 
 if __name__ == "__main__":

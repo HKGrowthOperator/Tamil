@@ -109,15 +109,50 @@ def test_ziel_pruefen_lehnt_ab(url):
     assert migration.ziel_pruefen(url)
 
 
-@pytest.mark.parametrize("url", ["https://tamil-web.example.sslip.io", "https://nottamil.de", "https://tamil.de.evil.example",
-                                 "http://127.0.0.1:8086", "http://localhost:8085", "http://[::1]:8085"])
+SSLIP = "https://tamil-web.167.233.76.202.sslip.io"
+
+
+@pytest.mark.parametrize("url", [SSLIP, SSLIP + "/", "http://127.0.0.1:8086", "http://localhost:8085", "http://[::1]:8085", "HTTPS://TAMIL-WEB.167.233.76.202.SSLIP.IO"])
 def test_ziel_pruefen_erlaubt(url):
     assert migration.ziel_pruefen(url) == ""
+    assert migration.ziel_normalisieren(url)[0].startswith(("http://", "https://"))
+
+
+def test_normalisierte_adresse_wird_verwendet():
+    assert migration.ziel_normalisieren("HTTPS://TAMIL-WEB.167.233.76.202.SSLIP.IO/")[0] == SSLIP
+
+
+@pytest.mark.parametrize("url", ["https://%74amil.de", "https://tamil.de%2e", "https://%54AMIL.DE", "https://www.%74amil.de/x",
+                                 "https://exämple.de", "https://tamil.de\u2024", "https://a b.de",
+                                 "https://10.0.0.5", "https://203.0.113.9", "https://[2001:db8::1]", "https://127.0.0.2", "https://xn--tamil-xyz.de"])
+def test_ziel_normalisieren_lehnt_ab(url):
+    assert migration.ziel_normalisieren(url) == ("", migration.ziel_normalisieren(url)[1]) and migration.ziel_normalisieren(url)[1]
+
+
+def test_prozent_im_host_auch_mit_ziel_host_abgelehnt():
+    assert migration.ziel_pruefen("https://%74amil.de", ziel_host="tamil.de")
+    assert migration.ziel_pruefen("https://neu%2eexample", ziel_host="neu.example")
+
+
+def test_punycode_nur_mit_ziel_host():
+    assert "Positivliste" in migration.ziel_pruefen("https://xn--exmple-cua.de")
+    assert migration.ziel_pruefen("https://xn--exmple-cua.de", ziel_host="xn--exmple-cua.de") == ""
+    assert migration.ziel_pruefen("https://exämple.de", ziel_host="exämple.de")  # Nicht-ASCII bleibt verboten
+
+
+def test_positivliste_und_ziel_host():
+    assert "Positivliste" in migration.ziel_pruefen("https://neu.example")
+    assert migration.ziel_pruefen("https://neu.example", ziel_host="neu.example") == ""
+    assert migration.ziel_pruefen("https://neu.example", ziel_host="NEU.example") == ""  # Vergleich nach Normalisierung
+    assert "Positivliste" in migration.ziel_pruefen("https://neu.example", ziel_host="andere.example")
+    # --ziel-host öffnet nie die alte Seite
+    assert "alte" in migration.ziel_pruefen("https://alt.tamil.de", ziel_host="alt.tamil.de")
+    assert "alte" in migration.ziel_pruefen("https://tamil.de", ziel_host="tamil.de")
 
 
 def test_http_nur_lokal():
-    assert "Klartext" in migration.ziel_pruefen("http://neu.example")
-    assert "Klartext" in migration.ziel_pruefen("http://10.0.0.5")
+    assert "Klartext" in migration.ziel_pruefen("http://neu.example", ziel_host="neu.example")
+    assert "Klartext" in migration.ziel_pruefen("http://tamil-web.167.233.76.202.sslip.io")
 
 
 def test_nach_umschaltung_nur_mit_beiden_schaltern():
@@ -125,10 +160,11 @@ def test_nach_umschaltung_nur_mit_beiden_schaltern():
     assert migration.ziel_pruefen("https://alt.tamil.de", True, True)  # Unterdomain nie
     assert migration.ziel_pruefen("https://www.tamil.de", True, True) == ""
     assert migration.ziel_pruefen("https://tamil.de", True, True) == ""
+    assert "alte" in migration.ziel_pruefen("https://alt.tamil.de", True, True, ziel_host="alt.tamil.de")
 
 
 @pytest.mark.parametrize("url", ["https://TAMIL.DE", "https://x@tamil.de", "https://tamil.de.", "https://alt.tamil.de",
-                                 "https://www.tamil.de:8443", "http://neu.example"])
+                                 "https://www.tamil.de:8443", "http://neu.example", "https://%74amil.de", "https://tamil.de%2e", "https://neu.example"])
 def test_main_bricht_ab(url, monkeypatch, tmp_path, capsys):
     monkeypatch.setenv("MIGRATION_APP_PASSWORD", "geheim-nicht-ausgeben")
     monkeypatch.setenv("MIGRATION_ZIEL_IST_NEU", "1")  # frühere Abschaltung wirkt nicht mehr
@@ -273,3 +309,101 @@ def test_slug_kollision_mit_fremdem_beitrag_ohne_weiterleitung(tmp_path):
     m = _mig(tmp_path, wp)
     assert m.abweichungen(_posts(), {1: "news"}, []) == []
     assert m.bericht["slug_kollisionen"][0]["belegt_von"] == [999] and m.bericht["slug_abweichungen"] == []
+
+
+def test_main_prueft_ziel_vor_dem_passwort(monkeypatch, tmp_path, capsys):
+    monkeypatch.delenv("MIGRATION_APP_PASSWORD", raising=False)
+    pwdatei = tmp_path / "gibtsnicht.pw"  # würde beim Lesen eine Ausnahme auslösen
+    assert migration.main(["--export", str(tmp_path), "--url", "https://alt.tamil.de", "--passwort-datei", str(pwdatei)]) == 2
+
+
+# ---- schreibende Sitzung folgt keinen Weiterleitungen
+
+def _wp_klasse():
+    return migration._lade_wp_klasse()
+
+
+class _FakeHttp:
+    def __init__(self, antwort):
+        self.antwort, self.aufrufe = antwort, []
+
+    def request(self, method, url, **kw):
+        self.aufrufe.append((method, url, kw))
+        return self.antwort
+
+
+class _R:
+    def __init__(self, code, header=None, daten=None):
+        self.status_code, self.headers, self._d, self.text = code, header or {}, daten if daten is not None else {}, ""
+
+    def json(self):
+        return self._d
+
+
+@pytest.mark.parametrize("code", [301, 302, 307, 308])
+def test_wp_req_folgt_keinen_weiterleitungen(code):
+    wp = _wp_klasse()("http://127.0.0.1:1", "u", "geheim")
+    wp.http = _FakeHttp(_R(code, {"Location": "https://www.tamil.de/wp-json/x"}))
+    with pytest.raises(RuntimeError) as exc:
+        wp.req("POST", "tamil-radar/v1/beitrag", json={})
+    assert "www.tamil.de" in str(exc.value) and "geheim" not in str(exc.value)
+    assert wp.http.aufrufe[0][2]["allow_redirects"] is False
+
+
+def test_wp_req_normal_weiter():
+    wp = _wp_klasse()("http://127.0.0.1:1", "u", "p")
+    wp.http = _FakeHttp(_R(200, daten={"ok": 1}))
+    assert wp.req("GET", "x") == (200, {"ok": 1})
+
+
+# ---- kleinere Punkte
+
+def test_medien_sitzung_ohne_retry_adapter(tmp_path):
+    m = migration.Medien(tmp_path)
+    assert m.session.get_adapter("https://www.tamil.de").max_retries.total == 0
+
+
+def test_voruebergehende_fehler_und_rueckgabecode_logik():
+    assert migration.ist_voruebergehend(503) and migration.ist_voruebergehend(429)
+    assert migration.ist_voruebergehend("Netzfehler: timeout") and migration.ist_voruebergehend("Upload 500")
+    assert not migration.ist_voruebergehend(404) and not migration.ist_voruebergehend(403)
+    assert not migration.ist_voruebergehend("fremder Host")
+    assert not migration.ist_voruebergehend("Weiterleitung auf fremden Host")
+
+
+def test_http_gross_geschrieben_wird_https(tmp_path):
+    m = _medien(tmp_path, [_Antwort(200, b"X")])
+    m.holen("HTTP://www.tamil.de/wp-content/uploads/2020/03/d.jpg")
+    assert m.session.aufrufe[0][0].startswith("https://")
+    assert migration.rewrite_html('<img src="HTTP://www.tamil.de/wp-content/uploads/2020/03/d.jpg">',
+                                  {"https://www.tamil.de/wp-content/uploads/2020/03/d.jpg": "https://n/d.jpg"}).count("https://n/d.jpg") == 1
+
+
+def test_kollisionspruefung_ohne_200_schreibt_nichts(tmp_path):
+    wp = FakeWP()
+    for i, slug in ((1, "s1"), (2, "s2-2"), (3, "s3")):
+        wp.beitraege[f"alt-{i}"] = {"id": 100 + i, "slug": slug, "link": f"http://127.0.0.1:1/{slug}/"}
+    wp.req_orig = wp.req
+    wp.req = lambda method, path, **kw: (500, {}) if path == "wp/v2/posts" else wp.req_orig(method, path, **kw)
+    m = _mig(tmp_path, wp)
+    assert m.abweichungen(_posts(), {1: "news"}, []) == []
+    assert m.bericht["slug_pruefung_fehlgeschlagen"][0]["status"] == 500
+
+
+def test_seite_bereinigen_behaelt_tabellen_und_zitate():
+    h = "<table><caption>C</caption><colgroup><col></colgroup><tbody><tr><td>x</td></tr></tbody><tfoot><tr><td>f</td></tr></tfoot></table><s>a</s><mark>b</mark><abbr title=\"t\">c</abbr><cite>d</cite>"
+    sauber = migration.seite_bereinigen(h)
+    for tag in ("caption", "colgroup", "tfoot", "<s>", "mark", "abbr", "cite"):
+        assert tag in sauber
+
+
+def test_leere_seite_fuellen_fehler_bricht_ab(tmp_path):
+    class W(FakeWP):
+        def req(self, method, path, **kw):
+            if method == "GET" and path == "wp/v2/pages":
+                return 200, [{"id": 7, "content": {"raw": ""}}]
+            return 500, {"message": "kaputt"}
+    m = _mig(tmp_path, W())
+    quelle = {"content": {"rendered": "<p>" + "Wort " * 30 + "</p>"}, "date": "2020-01-01T00:00:00"}
+    with pytest.raises(RuntimeError):
+        m.seite("kontakt", "Kontakt", quelle, "seite-x")
