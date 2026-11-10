@@ -38,7 +38,7 @@ def client():
     created: list[int] = []
     yield c, created
     # Die Rolle „radar“ darf veröffentlichte Beiträge nicht löschen – aufräumen mit dem Admin-Zugang, falls vorhanden
-    auth = (os.environ["WP_ADMIN_USER"], os.environ["WP_ADMIN_APP_PASSWORD"]) if os.environ.get("WP_ADMIN_APP_PASSWORD") else (USER, PW)
+    auth = (os.environ.get("WP_ADMIN_USER") or "admin", os.environ["WP_ADMIN_APP_PASSWORD"]) if os.environ.get("WP_ADMIN_APP_PASSWORD") else (USER, PW)
     for post_id in created:
         r = requests.delete(f"{URL}/wp-json/wp/v2/posts/{post_id}", params={"force": "true"}, auth=auth, timeout=30)
         assert r.status_code == 200 or auth == (USER, PW), f"Aufräumen von Post {post_id} fehlgeschlagen: {r.status_code}"
@@ -123,7 +123,7 @@ def test_redirect_and_ad_seed():
     assert "Testbanner Leaderboard" in home or 'class="ad-test"' in home or "<body" in home  # Theme entscheidet, ob der Platz gerendert wird
 
 
-ADMIN_USER = os.environ.get("WP_ADMIN_USER", "")
+ADMIN_USER = os.environ.get("WP_ADMIN_USER") or ("admin" if os.environ.get("WP_ADMIN_APP_PASSWORD") else "")
 ADMIN_PW = os.environ.get("WP_ADMIN_APP_PASSWORD", "")
 
 
@@ -169,3 +169,55 @@ def test_weiterleitungen_rechte_prozent_ketten_grenzen():
         assert requests.post(url, json={"csv": gross}, auth=admin, timeout=60).status_code == 413
     finally:
         requests.post(url, json={"csv": seed}, auth=admin, timeout=30)
+
+
+@pytest.mark.skipif(not (ADMIN_USER and ADMIN_PW), reason="WP_ADMIN_USER/WP_ADMIN_APP_PASSWORD fehlen")
+def test_weiterleitungen_ketten_aufloesen_schleifen_verwerfen_pfade_speichern():
+    url = f"{URL}/wp-json/tamil-site/v1/weiterleitungen"
+    seed = "alt,neu\n/category/anirudh/,/category/events/\n"
+    admin = (ADMIN_USER, ADMIN_PW)
+    try:
+        csv = ("alt,neu\n"
+               "/a/,/b/\n/b/,/c/\n"                       # Kette: /a/ zeigt direkt auf /c/
+               "/K1,/K2\n/k2/,/k3/\n"                      # Groß-/Kleinschreibung und fehlender Schrägstrich
+               "/p/,/q/\n/q/,/r/\n/r/,/p/\n"              # Schleife über drei: alle verworfen
+               f"/voll/,{URL}/ziel/\n")                    # volle eigene Adresse -> Pfad
+        r = requests.post(url, json={"csv": csv}, auth=admin, timeout=30)
+        assert r.status_code == 200
+        tabelle, verworfen = r.json()["tabelle"], {v["alt"] for v in r.json()["verworfen"]}
+        assert tabelle["/a/"] == "/c/" and tabelle["/b/"] == "/c/"
+        assert tabelle["/k1/"] == "/k3/"
+        assert {"/p/", "/q/", "/r/"} == verworfen and not {"/p/", "/q/", "/r/"} & set(tabelle)
+        assert tabelle["/voll/"] == "/ziel/"  # nur der Pfad wird gespeichert
+        r = requests.get(f"{URL}/a/", allow_redirects=False, timeout=30)
+        assert r.status_code == 301 and r.headers["Location"].rstrip("/").endswith("/c")
+        # Zeilen werden auch bei \r und \r\n gezählt (Obergrenze)
+        gross = "alt,neu\r" + "\r".join(f"/p{i}/,/q{i}/" for i in range(5100))
+        assert requests.post(url, json={"csv": gross}, auth=admin, timeout=60).status_code == 413
+    finally:
+        requests.post(url, json={"csv": seed}, auth=admin, timeout=30)
+
+
+@pytest.mark.skipif(not os.environ.get("WP_TEST_WP_CLI"), reason="WP_TEST_WP_CLI (Aufruf von wp-cli) fehlt")
+def test_weiterleitungsziel_folgt_geaendertem_host():
+    """Die Adresse der Website wird erst beim Weiterleiten gebildet: nach der Domain-Umschaltung zeigt dieselbe Tabelle auf den neuen Host."""
+    import shlex
+    import subprocess
+    code = ("add_filter('home_url', function($u,$p){return 'https://www.tamil.de'.$p;}, 10, 2);"
+            "echo tamil_site_redirect_url('/x/') . ' ' . tamil_site_redirect_url('http://alt-host.example/y/');")
+    out = subprocess.run([*shlex.split(os.environ["WP_TEST_WP_CLI"]), "eval", code], capture_output=True, text=True, check=True).stdout
+    assert out.strip() == "https://www.tamil.de/x/ https://www.tamil.de/y/"
+
+
+@pytest.mark.skipif(not os.environ.get("WP_TEST_WP_CLI"), reason="WP_TEST_WP_CLI (Aufruf von wp-cli) fehlt")
+def test_admin_formular_bereinigt_wie_rest():
+    """Weg über das Einstellungsformular (sanitize_callback) ohne Browser: %xx bleibt, Ketten werden aufgelöst."""
+    import json
+    import shlex
+    import subprocess
+    code = ("$alt = get_option('tamil_site_redirects_csv', '');"
+            "tamil_site_sanitize_redirects_csv(\"alt,neu\\n/%c3%bcber-uns/,/a/\\n/a/,/b/\\n/x/,/y/\\n/y/,/x/\\n\");"
+            "echo json_encode(get_option('tamil_site_redirects'));"
+            "tamil_site_sanitize_redirects_csv($alt);")
+    out = subprocess.run([*shlex.split(os.environ["WP_TEST_WP_CLI"]), "eval", code], capture_output=True, text=True, check=True).stdout
+    assert json.loads(out) == {"/%c3%bcber-uns/": "/b/", "/a/": "/b/"}

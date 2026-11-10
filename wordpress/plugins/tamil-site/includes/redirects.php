@@ -45,31 +45,38 @@ function tamil_site_clean_csv( string $csv ): string {
  * @return array{csv:string,table:array<string,string>,verworfen:array<int,array{alt:string,grund:string}>}|WP_Error
  */
 function tamil_site_prepare_redirects( string $csv ) {
-	if ( strlen( $csv ) > TAMIL_SITE_REDIRECT_MAX_BYTES || substr_count( $csv, "\n" ) + 1 > TAMIL_SITE_REDIRECT_MAX_ZEILEN ) {
+	if ( strlen( $csv ) > TAMIL_SITE_REDIRECT_MAX_BYTES || preg_match_all( '/\r\n|\r|\n/', $csv ) + 1 > TAMIL_SITE_REDIRECT_MAX_ZEILEN ) {
 		return new WP_Error( 'tamil_site_zu_gross', __( 'Die Weiterleitungsliste ist zu groß.', 'tamil-site' ), array( 'status' => 413 ) );
 	}
 	$csv       = tamil_site_clean_csv( $csv );
 	$verworfen = array();
 	$table     = tamil_site_parse_redirect_csv( $csv, $verworfen );
-	foreach ( $table as $from => $to ) {
-		$ziel = tamil_site_normalize_path( $to );
+	// Ketten A→B→C werden bis zum Ende aufgelöst (A zeigt direkt auf C); nur echte Schleifen fallen weg.
+	$quellen = $table;
+	foreach ( $quellen as $from => $to ) {
+		$ziel    = $to;
+		$gesehen = array( $from );
+		while ( isset( $quellen[ $ziel ] ) ) {
+			if ( in_array( $ziel, $gesehen, true ) ) {
+				$verworfen[] = array(
+					'alt'   => $from,
+					'grund' => 'Schleife',
+				);
+				unset( $table[ $from ] );
+				continue 2;
+			}
+			$gesehen[] = $ziel;
+			$ziel      = $quellen[ $ziel ];
+		}
 		if ( $ziel === $from ) {
 			$verworfen[] = array(
 				'alt'   => $from,
 				'grund' => 'Schleife (Ziel gleich Quelle)',
 			);
 			unset( $table[ $from ] );
+			continue;
 		}
-	}
-	$quellen = $table;
-	foreach ( array_keys( $quellen ) as $from ) {
-		if ( isset( $quellen[ tamil_site_normalize_path( $quellen[ $from ] ) ] ) ) {
-			$verworfen[] = array(
-				'alt'   => $from,
-				'grund' => 'Kette oder Schleife (Ziel ist selbst eine Quelle)',
-			);
-			unset( $table[ $from ] );
-		}
+		$table[ $from ] = $ziel;
 	}
 	return array(
 		'csv'       => $csv,
@@ -83,7 +90,7 @@ function tamil_site_prepare_redirects( string $csv ) {
  *
  * @param string                                       $csv       CSV mit Spalten „alt“ und „neu“.
  * @param array<int,array{alt:string,grund:string}>    $verworfen Wird um verworfene Zeilen ergänzt (fremder Host).
- * @return array<string,string> Pfad → Ziel (URL auf der eigenen Website).
+ * @return array<string,string> Pfad → Zielpfad auf der eigenen Website.
  */
 function tamil_site_parse_redirect_csv( string $csv, array &$verworfen = array() ): array {
 	$table   = array();
@@ -121,7 +128,8 @@ function tamil_site_parse_redirect_csv( string $csv, array &$verworfen = array()
 			}
 			$to = tamil_site_normalize_path( $to );
 		}
-		$table[ $from_path ] = esc_url_raw( home_url( tamil_site_normalize_path( $to ) ) );
+		// Nur der Pfad wird gespeichert; die Adresse der Website kommt erst beim Weiterleiten dazu (Domain-Umschaltung).
+		$table[ $from_path ] = tamil_site_normalize_path( $to );
 	}
 	return $table;
 }
@@ -134,6 +142,13 @@ function tamil_site_redirects(): array {
 	return is_array( $table ) ? $table : array();
 }
 
+/**
+ * Zieladresse zur Weiterleitungszeit bilden (home_url von jetzt). Alte Einträge mit voller Adresse werden auf den Pfad gekürzt.
+ */
+function tamil_site_redirect_url( string $target ): string {
+	return home_url( tamil_site_normalize_path( $target ) );
+}
+
 function tamil_site_maybe_redirect(): void {
 	if ( is_admin() || wp_doing_ajax() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
 		return;
@@ -144,7 +159,7 @@ function tamil_site_maybe_redirect(): void {
 	}
 	$path = tamil_site_normalize_path( (string) ( $_SERVER['REQUEST_URI'] ?? '/' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 	if ( isset( $table[ $path ] ) && tamil_site_normalize_path( $table[ $path ] ) !== $path ) {
-		wp_safe_redirect( $table[ $path ], 301, 'Tamil.de Relaunch' );
+		wp_safe_redirect( tamil_site_redirect_url( $table[ $path ] ), 301, 'Tamil.de Relaunch' );
 		exit;
 	}
 }
@@ -165,6 +180,7 @@ function tamil_site_rest_redirects( WP_REST_Request $request ) {
 	return new WP_REST_Response(
 		array(
 			'eintraege' => count( $prep['table'] ),
+			'tabelle'   => $prep['table'],
 			'verworfen' => $prep['verworfen'],
 		)
 	);
