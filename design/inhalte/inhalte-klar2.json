@@ -1,0 +1,410 @@
+{
+  "stand": "2026-11-10",
+  "hinweis": "Feste Inhalte für die Fassung klar2 (Brief 2.1, Abschnitt 10). Reihenfolge und Zuordnung nicht ändern, nichts weglassen, nichts erfinden. Titel und Vorspann stammen unverändert aus prototyp/content/posts.json; der Vorspann darf für die Anzeige an einem Satzende gekürzt werden. Das Datum ist das Originaldatum und wird immer mit Jahr gezeigt. Dachzeilen sind echte Rubriknamen. Bilder sind die Originale der alten Seite; w und h sind die Maße der Datei. Kein Bild über seine Dateibreite hinaus zeigen; bei doppelter Pixeldichte höchstens w/2, ausgenommen das Aufmacherbild und die eine große Kachel je Block. Alt-Texte nur schreiben, nachdem das Bild angesehen wurde. Jeder Anreißer hat ein Bild. Die Einträge aus dem News-Radar (Kino-Spielorte, Termin) haben kein Foto: Sie bekommen eine gestaltete Kachel aus Schrift und Fläche, kein erfundenes Bild.",
+  "logo": {
+    "datei": "logo.png",
+    "w": 300,
+    "h": 121,
+    "hinweis": "unverändert verwenden; nicht einfärben, nicht beschneiden"
+  },
+  "kopfzeile": {
+    "hinweis": "Schmale Zeile ganz oben. Das Datum ist der Stand der Probe. Die beiden Hinweise führen zum Bereich „Diese Woche“. Die Suche ist in der Probe ein Link auf #.",
+    "datum": "Dienstag, 10. November 2026",
+    "diese_woche": [
+      "Diwali in Basel am 21. November",
+      "„Scene“ läuft in 11 Kinos"
+    ],
+    "suche": "Suche"
+  },
+  "rubriken": [
+    "Nachrichten",
+    "Entertainment",
+    "Events",
+    "Community",
+    "Küche",
+    "Kino",
+    "Sport",
+    "Kultur",
+    "Kontakt"
+  ],
+  "rubrik_kacheln": {
+    "hinweis": "Je Rubrik mit Beiträgen eine kleine Bildkachel mit dem Rubriknamen. Das Bild stammt aus einem echten Beitrag dieser Rubrik und kommt sonst auf der Seite nicht vor. „Sport“ hat keine Beiträge und „Kontakt“ ist eine Seite: beide bekommen keine Kachel, stehen aber im Rubrikband. Die Kacheln sind Navigation, keine Schlagzeilen (kein h2 oder h3).",
+    "kacheln": [
+      {
+        "rubrik": "Nachrichten",
+        "aus_beitrag": 8468,
+        "bild": {
+          "datei": "bilder/p8468.jpg",
+          "w": 1147,
+          "h": 602
+        }
+      },
+      {
+        "rubrik": "Entertainment",
+        "aus_beitrag": 9344,
+        "bild": {
+          "datei": "bilder/p9344.jpg",
+          "w": 1376,
+          "h": 714
+        }
+      },
+      {
+        "rubrik": "Events",
+        "aus_beitrag": 9198,
+        "bild": {
+          "datei": "bilder/p9198.jpg",
+          "w": 680,
+          "h": 353
+        }
+      },
+      {
+        "rubrik": "Community",
+        "aus_beitrag": 9146,
+        "bild": {
+          "datei": "bilder/p9146.jpg",
+          "w": 1005,
+          "h": 503
+        }
+      },
+      {
+        "rubrik": "Küche",
+        "aus_beitrag": 9149,
+        "bild": {
+          "datei": "bilder/p9149.jpg",
+          "w": 968,
+          "h": 463
+        }
+      },
+      {
+        "rubrik": "Kino",
+        "aus_beitrag": 6708,
+        "bild": {
+          "datei": "bilder/p6708.jpg",
+          "w": 692,
+          "h": 360
+        }
+      },
+      {
+        "rubrik": "Kultur",
+        "aus_beitrag": 8527,
+        "bild": {
+          "datei": "bilder/p8527.jpg",
+          "w": 870,
+          "h": 395
+        }
+      }
+    ]
+  },
+  "aufmacher": {
+    "id": 9631,
+    "dachzeile": "Nachrichten",
+    "titel": "Uma Kumaran, Londons erste tamilische Abgeordnete",
+    "vorspann": "In einem Erdrutschsieg für die Labour Party wurde Uma Kumaran zur Abgeordneten für Stratford und Bow gewählt, nachdem die Generalwahl am Donnerstag, den 4. Juli 2024, stattfand. Die britische Tamilin, die sri-lankisch-tamilischer …",
+    "datum": "17. Juli 2024",
+    "datum_iso": "2024-07-17",
+    "lesezeit_min": 2,
+    "bild": {
+      "datei": "bilder/p9631.jpg",
+      "w": 1382,
+      "h": 716
+    }
+  },
+  "nebenstuecke": [
+    {
+      "id": 9655,
+      "dachzeile": "Nachrichten",
+      "titel": "Sri Lanka schafft Visum für Deutsche ab",
+      "vorspann": "Tolle Neuigkeiten: Das schöne Sri Lanka verzichtet bald für 35 Länder auf die Visumpflicht, auch Deutschland ist dabei. Ziel dieser Entscheidung ist die Wiederbelebung des Tourismussektors und die Unterstützung der Wirtschaft. …",
+      "datum": "26. August 2024",
+      "datum_iso": "2024-08-26",
+      "lesezeit_min": 2,
+      "bild": {
+        "datei": "bilder/p9655.jpg",
+        "w": 1200,
+        "h": 610
+      }
+    },
+    {
+      "id": 9642,
+      "dachzeile": "Kultur",
+      "titel": "Parai: Das ursprüngliche Musik zur Vereinigung der tamilischen Gemeinschaft",
+      "vorspann": "Parai bedeutet „Sprechen oder Kommunizieren“. Es ist auch eines der frühesten Perkussionsinstrumente, das bis in prähistorische Zeiten zurückreicht. Tholkaapiam, ein tamilisches Grammatikbuch, das vor der christlichen Ära …",
+      "datum": "18. Juli 2024",
+      "datum_iso": "2024-07-18",
+      "lesezeit_min": 5,
+      "bild": {
+        "datei": "bilder/p9642.jpg",
+        "w": 1200,
+        "h": 622
+      }
+    },
+    {
+      "id": 9662,
+      "dachzeile": "Entertainment",
+      "titel": "Spektakuläres Konzert 2025: Santhosh Narayanan und Dhee in NRW",
+      "vorspann": "AJ Entertainment, bekannt für ihre erfolgreichen Konzerte im Jahr 2023 mit Musikgrößen wie Anirudh, Ilaiyaraaja und A.R. Rahman, hat ein weiteres Highlight für 2025 angekündigt. Der Veranstalter bestätigte, dass der renommierte …",
+      "datum": "26. August 2024",
+      "datum_iso": "2024-08-26",
+      "lesezeit_min": 1,
+      "bild": {
+        "datei": "bilder/p9662.jpg",
+        "w": 1200,
+        "h": 609
+      }
+    },
+    {
+      "id": 9650,
+      "dachzeile": "Entertainment",
+      "titel": "Maya Neelakantan: Ich vertrete ganz Indien auf der Bühne von America’s Got Talent",
+      "vorspann": "Eine 10-jährige Gitarristin aus Chennai, Tamil Nadu, brachte die Juroren von America’s Got Talent zum Staunen. Maya Neelakantan trat bei America’s Got Talent auf und erhielt eine Standing Ovation. Sie begann ihre Performance mit …",
+      "datum": "19. Juli 2024",
+      "datum_iso": "2024-07-19",
+      "lesezeit_min": 1,
+      "bild": {
+        "datei": "bilder/p9650.jpg",
+        "w": 1382,
+        "h": 716
+      }
+    }
+  ],
+  "meldungen": [
+    {
+      "id": 9674,
+      "dachzeile": "Kultur",
+      "titel": "Tamil Nadu: Ein Mosaik aus Kultur, Kulturerbe und natürlicher Schönheit",
+      "vorspann": "Tamil Nadu, ein Bundesstaat im Süden Indiens, ist ein Reiseziel, das Besucher mit seiner tief verwurzelten Geschichte, reichen Kultur und atemberaubenden natürlichen Landschaften fesselt. Während der kürzlich stattgefundenen ITB …",
+      "datum": "13. September 2024",
+      "datum_iso": "2024-09-13",
+      "lesezeit_min": 5,
+      "bild": {
+        "datei": "bilder/p9674.jpg",
+        "w": 695,
+        "h": 338
+      }
+    },
+    {
+      "id": 9670,
+      "dachzeile": "Nachrichten",
+      "titel": "Indien: Viel Interesse für tamilische Wurzeln von Kamala Harris",
+      "vorspann": "Die südindischen Wurzeln der US-Politikerin Kamala Harris stoßen in Indien auf viel Interesse, seit klar ist, dass Harris wohl die neue Präsidentschaftskandidatin der Demokraten wird. Das berichtet die Agentur Asianews. Ein …",
+      "datum": "13. September 2024",
+      "datum_iso": "2024-09-13",
+      "lesezeit_min": 3,
+      "bild": {
+        "datei": "bilder/p9670.jpg",
+        "w": 678,
+        "h": 352
+      }
+    },
+    {
+      "id": 9635,
+      "dachzeile": "Nachrichten",
+      "titel": "Vijay unterstützt Sri-Lanka-Tamilen",
+      "vorspann": "Der Schauspieler aus Tamil Nadu, Vijay, hat eine bedeutende Geschichte der Unterstützung des Befreiungskampfes von Tamil Eelam. Sein Aktivismus in diesem Bereich war besonders bemerkenswert, insbesondere während wichtiger Momente …",
+      "datum": "17. Juli 2024",
+      "datum_iso": "2024-07-17",
+      "lesezeit_min": 2,
+      "bild": {
+        "datei": "bilder/p9635.jpg",
+        "w": 1382,
+        "h": 716
+      }
+    },
+    {
+      "id": 9556,
+      "dachzeile": "Community",
+      "titel": "Mango erzielt Rekordpreis bei Auktion im Sri Kurinchikumaran Tempel in Gummersbach",
+      "vorspann": "Ein bemerkenswertes Ereignis fand kürzlich im Ukkulankulama Pillaiar Kovil in Vavuniya statt, als eine Mango bei einer Auktion für die beeindruckende Summe von 162.000 Rs, umgerechnet 500€ verkauft wurde. Die Mango wurde von …",
+      "datum": "27. Juni 2024",
+      "datum_iso": "2024-06-27",
+      "lesezeit_min": 1,
+      "bild": {
+        "datei": "bilder/p9556.jpg",
+        "w": 694,
+        "h": 359
+      }
+    },
+    {
+      "id": 9572,
+      "dachzeile": "Nachrichten",
+      "titel": "Shruthi Kumar: Eine mutige Rede!",
+      "vorspann": "Die tamilisch-amerikanische Studentin Shruthi Kumar kritisierte während ihrer Abschlussfeier-Rede die Harvard University, da letztere insgesamt 13 pro-palästinensischen Studenten auf unfaire Weise den Abschluss an der Universität …",
+      "datum": "1. Juni 2024",
+      "datum_iso": "2024-06-01",
+      "lesezeit_min": 1,
+      "bild": {
+        "datei": "bilder/p9572.jpg",
+        "w": 694,
+        "h": 359
+      }
+    },
+    {
+      "id": 9583,
+      "dachzeile": "Kultur",
+      "titel": "Die faszinierende Schönheit",
+      "vorspann": "Die faszinierende Schönheit des Thiruchendur Murugan-Tempels, welcher sich in Tamil Nadu’s Küstenstadt Thiruchendur befindet, zieht jedes Jahr Millionen von Besuchern aus aller Welt an. Der Tempel soll 2000 Jahre alt sein und …",
+      "datum": "29. Mai 2024",
+      "datum_iso": "2024-05-29",
+      "lesezeit_min": 2,
+      "bild": {
+        "datei": "bilder/p9583.jpg",
+        "w": 694,
+        "h": 359
+      }
+    }
+  ],
+  "kino_bereich": {
+    "hinweis": "Dunkler Bereich „Diese Woche“. Zwei Kino-Beiträge aus dem Bestand mit Foto (der erste ist die große Kachel), daneben die Einträge aus dem News-Radar (freigegeben am 09.11.2026) als gestaltete Kacheln ohne Foto. Keine Uhrzeiten, Preise oder weiteren Orte ergänzen. Das Foto zu 9697 trägt unten links eine eingebrannte Bildzeile („Team Rathamaarey with Rajinikanth“): so beschneiden oder überdecken, dass sie nicht halb angeschnitten zu sehen ist.",
+    "titel": "Diese Woche",
+    "beitraege": [
+      {
+        "id": 9711,
+        "dachzeile": "Kino",
+        "titel": "Kanguva – Ein tamilisches Kino-Highlight ab 14. November in Deutschland",
+        "vorspann": "Ab dem 14. November ist der Film Kanguva in deutschen Kinos zu sehen und wird von tamilischen wie internationalen Filmfans mit Spannung erwartet. Schon der Trailer hat viele Zuschauer begeistert, und es gibt Spekulationen, dass …",
+        "datum": "6. November 2024",
+        "datum_iso": "2024-11-06",
+        "lesezeit_min": 2,
+        "bild": {
+          "datei": "bilder/p9711.jpg",
+          "w": 1600,
+          "h": 840
+        },
+        "gross": true
+      },
+      {
+        "id": 9697,
+        "dachzeile": "Kino",
+        "titel": "Von Deutschland nach Tamil Nadu: Prashath Lokeshwarans Debüt in Rathamaarey",
+        "vorspann": "Mit seinem kommenden Film „Rathamaarey“ betretet der aufstrebende Regisseur Dinesha Ravichandran aus Chidambaram (Tamil Nadu) nach über zehn Jahren Erfahrung in der tamilischen Filmindustrie erstmals als Regisseur die große …",
+        "datum": "13. Oktober 2024",
+        "datum_iso": "2024-10-13",
+        "lesezeit_min": 3,
+        "bild": {
+          "datei": "bilder/p9697.jpg",
+          "w": 1600,
+          "h": 680
+        }
+      }
+    ],
+    "kino": [
+      {
+        "titel": "Scene",
+        "kinos": 11,
+        "land": "Deutschland",
+        "orte": [
+          "Berlin",
+          "Bremen",
+          "Chemnitz",
+          "Dortmund",
+          "Düsseldorf"
+        ],
+        "weitere_staedte": 6
+      },
+      {
+        "titel": "Ramayana: Rise of a Legend",
+        "kinos": 2,
+        "land": "Deutschland",
+        "orte": [
+          "Gütersloh",
+          "Ravensburg"
+        ],
+        "weitere_staedte": 0
+      }
+    ],
+    "termine": [
+      {
+        "titel": "Diwali in Basel",
+        "veranstalter": "Basel Tamil Sangam",
+        "datum": "Samstag, 21. November 2026",
+        "datum_iso": "2026-11-21",
+        "ort": "Aula Lysbüchel, Basel",
+        "text": "Der Basel Tamil Sangam lädt Familien zur Diwali-Feier in die Aula Lysbüchel ein. Mitglieder erhalten Tickets günstiger."
+      }
+    ]
+  },
+  "rubrikblock": {
+    "rubrik": "Küche",
+    "hinweis": "Große Bildkacheln mit Titel im Bild; die erste ist die größere.",
+    "beitraege": [
+      {
+        "id": 9600,
+        "dachzeile": "Küche",
+        "titel": "Kottu Roti",
+        "vorspann": "Kottu Roti ist ein Klassiker des sri-lankischen Street Foods. Die Übersetzung des tamilischen Begriffs lautet „gehacktes Roti“, wobei Roti wiederum ein weitverbreitetes ungesäuertes Fladenbrot bezeichnet. Bei Kottu Roti handelt …",
+        "datum": "16. Juli 2024",
+        "datum_iso": "2024-07-16",
+        "lesezeit_min": 1,
+        "bild": {
+          "datei": "bilder/p9600.jpg",
+          "w": 1558,
+          "h": 724
+        },
+        "gross": true
+      },
+      {
+        "id": 9597,
+        "dachzeile": "Küche",
+        "titel": "Payasam",
+        "vorspann": "Dies ist ein traditionelles Gericht, das als Nachspeise serviert wird. Es ist ein süßes Gericht, das einem feuchten Pudding ähnelt. In anderen Teilen Südindiens wird es oft auch Kheer genannt. Die Hauptzutaten sind Ghee, Reis …",
+        "datum": "16. Juli 2024",
+        "datum_iso": "2024-07-16",
+        "lesezeit_min": 1,
+        "bild": {
+          "datei": "bilder/p9597.jpg",
+          "w": 1200,
+          "h": 530
+        }
+      },
+      {
+        "id": 9594,
+        "dachzeile": "Küche",
+        "titel": "Biryani",
+        "vorspann": "Es gibt zwar mehrere Biryanis, die von den Tamilen geliebt werden, aber eines dieser Gerichte ist das Aloo Biryani. Bei diesem köstlichen Gericht werden die Kartoffeln mariniert und nehmen den reichen Geschmack der Gewürze auf. …",
+        "datum": "16. Juli 2024",
+        "datum_iso": "2024-07-16",
+        "lesezeit_min": 1,
+        "bild": {
+          "datei": "bilder/p9594.jpg",
+          "w": 1200,
+          "h": 539
+        }
+      },
+      {
+        "id": 9591,
+        "dachzeile": "Küche",
+        "titel": "Dosa",
+        "vorspann": "Dosa ist ein größtenteils knuspriges Fladenbrot, das aus einem Teig mit einer Mischung aus Linsen (Urad Dal) und Reis hergestellt wird. Der Teig wird zunächst fermentiert und dann wie ein dünner Pfannkuchen in einer heißen …",
+        "datum": "16. Juli 2024",
+        "datum_iso": "2024-07-16",
+        "lesezeit_min": 1,
+        "bild": {
+          "datei": "bilder/p9591.jpg",
+          "w": 1200,
+          "h": 545
+        }
+      }
+    ]
+  },
+  "artikel": {
+    "hinweis": "Für artikel.html: der Aufmacher als Artikel. Kopf (Dachzeile, Schlagzeile, Vorspann, Datum, Lesezeit), Bild, dann genau diese Absätze, unverändert. Kein weiterer Text, keine Autorenzeile, kein Bildnachweis (beides liegt nicht vor). Teilen über WhatsApp als schlichter Link mit Titel, ohne Skript.",
+    "id": 9631,
+    "dachzeile": "Nachrichten",
+    "titel": "Uma Kumaran, Londons erste tamilische Abgeordnete",
+    "vorspann": "In einem Erdrutschsieg für die Labour Party wurde Uma Kumaran zur Abgeordneten für Stratford und Bow gewählt, nachdem die Generalwahl am Donnerstag, den 4. Juli 2024, stattfand. Die britische Tamilin, die sri-lankisch-tamilischer …",
+    "datum": "17. Juli 2024",
+    "datum_iso": "2024-07-17",
+    "lesezeit_min": 2,
+    "bild": {
+      "datei": "bilder/p9631.jpg",
+      "w": 1382,
+      "h": 716
+    },
+    "absaetze": [
+      "Die britische Tamilin, die sri-lankisch-tamilischer Herkunft ist, ist die erste tamilische Parlamentarierin in London. Geboren in Ost-London, kam Uma’s Familie als Flüchtlinge nach Großbritannien, um dem Krieg und der Verfolgung in Sri Lanka zu entkommen. Sie studierte an der Queen Mary University und hat in Stratford, Maryland und Bow gelebt.",
+      "Ihre frühen Jahre verbrachte sie in Harrow, wo sie die Bentley Wood High School und das St. Dominic’s Sixth Form College besuchte. Uma kandidierte zweimal in Harrow, erstmals 2010 für den Pinner South Ward, wo sie 1535 Stimmen erhielt. Ein weiterer Versuch folgte 2015 in Harrow East, einer Heimat vieler tamilischer und südasiatischer Gemeinschaften, wo sie 19.911 Stimmen erhielt.",
+      "Den Großteil ihres Arbeitslebens verbrachte sie im öffentlichen Dienst, vom NHS bis hin zur Arbeit mit den Vereinten Nationen und globalen Befürwortern im Kampf gegen den Klimawandel. Sie wird weiterhin dem Bürgermeister von London helfen, lebensverändernde Politiken wie kostenlose Schulmahlzeiten und neue Sozialwohnungen umzusetzen. Zuletzt war sie als Direktorin für diplomatische Beziehungen für eine globale Klimaschutzorganisation tätig."
+    ],
+    "weitere_absaetze_im_original": 2
+  }
+}

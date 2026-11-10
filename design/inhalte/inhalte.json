@@ -85,8 +85,8 @@
       "lesezeit_min": 2,
       "bild": {
         "datei": "bilder/p9711.jpg",
-        "w": 1200,
-        "h": 630
+        "w": 1600,
+        "h": 840
       }
     }
   ],
@@ -159,8 +159,8 @@
         "lesezeit_min": 1,
         "bild": {
           "datei": "bilder/p9600.jpg",
-          "w": 1200,
-          "h": 558
+          "w": 1558,
+          "h": 724
         }
       },
       {
