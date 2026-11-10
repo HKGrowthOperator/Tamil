@@ -178,8 +178,8 @@ a:focus-visible {
 .stueck { border-top: 1px solid var(--linie); }
 .stueck .anr {
   display: grid;
-  grid-template-columns: 132px minmax(0, 1fr);
-  column-gap: 14px;
+  grid-template-columns: 112px minmax(0, 1fr);
+  column-gap: 12px;
   align-items: start;
   padding: 16px 0;
 }
