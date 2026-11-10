@@ -5,6 +5,23 @@ Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
 ## 10.11.2026
 
+- **`klar` bekommt mehr Wow: Fassung `klar2`.** Überall ein Bild (kein Anreißer ohne Bild), großes Aufmacherbild mit
+  der Schlagzeile im Bild, Rubrikkacheln mit Bild, große Bildkacheln in „Küche“, ein dunkler Bereich „Diese Woche“,
+  ein dreiteiliger Kopf mit dunklem Rubrikband, sanfte Bewegung. · Luis · nach dem Blick auf die Vorlage: „gut vom
+  Design, aber noch ein wenig zu classic“; er hat alle acht angebotenen Verstärkungen gewählt.
+- **Dafür gelockert, jeweils mit messbarer Grenze** (`design/brief.md`, Abschnitt 10): genau zwei dunkle Flächen in
+  der kühlen Tinte (bisher: Dunkel verboten); heller Titel im Bild auf einem Verlauf (bisher: kein Verlauf, kein
+  Text im Bild); Zoom beim Überfahren bis 1,04 und ein stehendes Rubrikband (bisher: keine Bewegung); Schlagzeile des
+  Aufmachers bis 34 und 44 px (bisher 32 und 38); Kopf am Handy bis 152 px (bisher 120); drei Bildformate (bisher
+  zwei); Aufmacherbild und je eine große Kachel bis zur Dateibreite. · Hauptsitzung nach Luis' Auswahl · Unverändert
+  bleiben Rot höchstens 3 %, keine rote Schrift über 20 px, normale Schriftbreite, Radius höchstens 2 px, nur
+  Deutsch. Runde 4 ist an „zu laut“ gescheitert; deshalb hat jede Lockerung eine Zahl.
+- **Einträge aus dem News-Radar ohne Foto bekommen eine gestaltete Kachel**, kein erfundenes Bild. · Hauptsitzung ·
+  Der Radar erzeugt für solche Beiträge schon heute eine Grafik („Grafik: Tamil.de“); deren Aussehen folgt später der
+  abgenommenen Kachel.
+- **Reihenfolge der Vorlage:** Luis sieht `klar2` zuerst in der internen Vorschau; die Vorlage für den Auftraggeber
+  wird erst danach und nur ohne offenes P0 oder P1 ersetzt. · Hauptsitzung · Zwei Runden sind ungesehen
+  weitergegangen und durchgefallen.
 - **Probe `klar` wird ausgearbeitet** (nüchtern und kompakt nach BBC und Tagesschau, Schrift Libre Franklin). Brief 2
   ist damit bestätigt. · Luis · gewählt, ohne die Vorschau anzusehen; er sieht die Vorlage, bevor sie zum
   Auftraggeber geht. `blatt` und `bild` bleiben als Alternativen im Repo.
