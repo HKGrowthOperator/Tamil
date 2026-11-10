@@ -407,3 +407,98 @@ def test_leere_seite_fuellen_fehler_bricht_ab(tmp_path):
     quelle = {"content": {"rendered": "<p>" + "Wort " * 30 + "</p>"}, "date": "2020-01-01T00:00:00"}
     with pytest.raises(RuntimeError):
         m.seite("kontakt", "Kontakt", quelle, "seite-x")
+
+
+# ---- letzte Runde: nur scheme://host[:port], Zahlenhosts, Vorabprüfung, Upload bei 3xx
+
+@pytest.mark.parametrize("url", [SSLIP + "/wp-json/", SSLIP + "/pfad", SSLIP + "?a=1", SSLIP + "/?a=1", SSLIP + "#x", SSLIP + "/#x", "http://127.0.0.1:8086/blog"])
+def test_ziel_nur_scheme_host_port(url):
+    assert "scheme://host" in migration.ziel_pruefen(url)
+
+
+@pytest.mark.parametrize("host", ["2130706433", "127.1", "0x7f.1", "0x7f000001", "0177.0.0.1", "1.2.3", "017700000001"])
+def test_zahlenhosts_nie_erlaubt(host):
+    assert migration.ziel_pruefen(f"https://{host}", ziel_host=host)
+    assert migration.ziel_pruefen(f"http://{host}", ziel_host=host)
+
+
+def test_loopback_bleibt_erlaubt():
+    assert migration.ziel_pruefen("http://127.0.0.1:8086") == "" and migration.ziel_pruefen("http://[::1]:8086") == ""
+
+
+class _VA:
+    def __init__(self, antwort=None, fehler=None):
+        self.antwort, self.fehler, self.aufrufe = antwort, fehler, []
+
+    def get(self, url, **kw):
+        self.aufrufe.append((url, kw))
+        if self.fehler:
+            raise self.fehler
+        return self.antwort
+
+
+class _VR:
+    def __init__(self, code=200, daten=None, kein_json=False):
+        self.status_code, self._d, self.kein_json = code, daten, kein_json
+
+    def json(self):
+        if self.kein_json:
+            raise ValueError("kein JSON")
+        return self._d
+
+
+GUT = {"namespaces": ["wp/v2", "tamil-radar/v1", "tamil-site/v1"], "home": "https://tamil-web.167.233.76.202.sslip.io", "url": "https://tamil-web.167.233.76.202.sslip.io"}
+
+
+def test_vorabpruefung_gut_und_ohne_weiterleitung():
+    http = _VA(_VR(200, GUT))
+    assert migration.vorabpruefung(SSLIP, http) == ""
+    assert http.aufrufe[0][0] == SSLIP + "/wp-json/" and http.aufrufe[0][1]["allow_redirects"] is False
+
+
+@pytest.mark.parametrize("antwort,teil", [
+    (_VR(200, {"namespaces": ["wp/v2", "tamil-radar/v1"], "home": "https://x.example"}), "tamil-site/v1"),
+    (_VR(200, {"namespaces": ["wp/v2", "tamil-site/v1"], "home": "https://x.example"}), "tamil-radar/v1"),
+    (_VR(200, {**GUT, "home": "https://www.tamil.de"}), "home"),
+    (_VR(200, {**GUT, "url": "https://alt.tamil.de/"}), "url"),
+    (_VR(200, kein_json=True), "kein JSON"),
+    (_VR(302), "Weiterleitung 302"),
+    (_VR(307), "Weiterleitung 307"),
+])
+def test_vorabpruefung_lehnt_ab(antwort, teil):
+    assert teil in migration.vorabpruefung(SSLIP, _VA(antwort))
+
+
+def test_vorabpruefung_home_auf_tamil_de_nur_nach_umschaltung():
+    d = {**GUT, "home": "https://www.tamil.de", "url": "https://www.tamil.de"}
+    assert migration.vorabpruefung(SSLIP, _VA(_VR(200, d)))
+    assert migration.vorabpruefung(SSLIP, _VA(_VR(200, d)), True, False)
+    assert migration.vorabpruefung(SSLIP, _VA(_VR(200, d)), True, True) == ""
+
+
+def test_vorabpruefung_netzfehler():
+    assert "nicht erreichbar" in migration.vorabpruefung(SSLIP, _VA(fehler=OSError("boom")))
+
+
+@pytest.mark.parametrize("trocken", [[], ["--trocken"]])
+def test_main_vorabpruefung_auch_bei_trocken(monkeypatch, tmp_path, trocken):
+    monkeypatch.setenv("MIGRATION_APP_PASSWORD", "x")
+    monkeypatch.setattr(migration.requests, "Session", lambda: _VA(_VR(200, kein_json=True)))
+    assert migration.main(["--export", str(tmp_path), "--url", SSLIP, *trocken]) == 4
+
+
+def test_upload_bei_3xx_bricht_ab(tmp_path):
+    class Http:
+        def post(self, *a, **kw):
+            return _R(302, {"Location": "https://www.tamil.de/x"})
+
+    class W(FakeWP):
+        http = Http()
+
+        def req(self, method, path, **kw):
+            return (200, []) if path == "wp/v2/media" else super().req(method, path, **kw)
+
+    m = _mig(tmp_path, W())
+    m.medien = type("M", (), {"holen": lambda self, u: b"BILD", "status": {}, "geladen": 0})()
+    with pytest.raises(RuntimeError, match="Weiterleitung 302"):
+        m.text_medien('<img src="https://www.tamil.de/wp-content/uploads/2020/01/a.jpg">', "alt-1")

@@ -221,3 +221,31 @@ def test_admin_formular_bereinigt_wie_rest():
             "tamil_site_sanitize_redirects_csv($alt);")
     out = subprocess.run([*shlex.split(os.environ["WP_TEST_WP_CLI"]), "eval", code], capture_output=True, text=True, check=True).stdout
     assert json.loads(out) == {"/%c3%bcber-uns/": "/b/", "/a/": "/b/"}
+
+
+@pytest.mark.skipif(not (ADMIN_USER and ADMIN_PW), reason="WP_ADMIN_USER/WP_ADMIN_APP_PASSWORD fehlen")
+def test_weiterleitungen_gefaehrliche_ziele_und_geschuetzte_pfade():
+    """Nie auf fremden Host umleiten, nie Anmeldung/Verwaltung/REST umleiten (Aussperren)."""
+    url = f"{URL}/wp-json/tamil-site/v1/weiterleitungen"
+    seed = "alt,neu\n/category/anirudh/,/category/events/\n"
+    admin = (ADMIN_USER, ADMIN_PW)
+    try:
+        csv = ("alt,neu\n"
+               "/s1/,//fremd.example/x\n"          # protokollrelativ: bleibt auf der eigenen Website
+               "/s2/,/\\fremd\n"                   # Backslash: verworfen
+               "/s3/,/a\x01b\x07c/\n"              # Steuerzeichen fallen weg
+               "/wp-admin/,/x/\n/wp-json/,/x/\n/wp-login.php,/x/\n/wp-admin/options.php,/x/\n")
+        r = requests.post(url, json={"csv": csv}, auth=admin, timeout=30)
+        assert r.status_code == 200
+        tabelle, verworfen = r.json()["tabelle"], {v["alt"] for v in r.json()["verworfen"]}
+        assert {"/s2/", "/wp-admin/", "/wp-json/", "/wp-login.php/", "/wp-admin/options.php/"} <= verworfen
+        assert all(t.startswith("/") and not t.startswith("//") and "\\" not in t for t in tabelle.values())
+        assert tabelle["/s3/"] == "/abc/"
+        # kein Redirect auf fremden Host, REST und Anmeldung bleiben erreichbar
+        for pfad in ("/s1/", "/s3/"):
+            loc = requests.get(f"{URL}{pfad}", allow_redirects=False, timeout=30).headers.get("Location", "")
+            assert loc.startswith(URL + "/"), loc
+        assert requests.get(f"{URL}/wp-json/", allow_redirects=False, timeout=30).status_code == 200
+        assert requests.get(f"{URL}/wp-login.php", allow_redirects=False, timeout=30).status_code in (200, 302)
+    finally:
+        requests.post(url, json={"csv": seed}, auth=admin, timeout=30)

@@ -118,6 +118,21 @@ function tamil_site_parse_redirect_csv( string $csv, array &$verworfen = array()
 		if ( '/' === $from_path ) {
 			continue;
 		}
+		if ( str_contains( $from, '\\' ) || str_contains( $to, '\\' ) ) {
+			$verworfen[] = array(
+				'alt'   => $from_path,
+				'grund' => 'Backslash nicht erlaubt',
+			);
+			continue;
+		}
+		// Nie umleiten: Anmeldung, Verwaltung, REST und Systemdateien (sonst Aussperren).
+		if ( preg_match( '#^/(wp-admin|wp-json|wp-login\.php|wp-cron\.php|xmlrpc\.php)(/|$)#', $from_path ) ) {
+			$verworfen[] = array(
+				'alt'   => $from_path,
+				'grund' => 'geschützter Pfad',
+			);
+			continue;
+		}
 		if ( str_starts_with( $to, 'http' ) ) {
 			if ( strtolower( (string) wp_parse_url( $to, PHP_URL_HOST ) ) !== $eigener ) {
 				$verworfen[] = array(

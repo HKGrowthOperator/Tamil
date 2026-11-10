@@ -229,6 +229,7 @@ def bilde_teaser(excerpt_html: str, content_html: str, max_woerter: int = 55) ->
     return teaser, bool(eigen)
 
 
+ZAHLENHOST_RE = re.compile(r"^(?:0x[0-9a-f]*|[0-9]+)(?:\.(?:0x[0-9a-f]*|[0-9]+))*\.?$", re.I)
 ERLAUBTE_ZIELE = ("tamil-web.167.233.76.202.sslip.io", "localhost", "127.0.0.1", "::1")
 
 
@@ -257,7 +258,12 @@ def ziel_normalisieren(url: str, nach_umschaltung: bool = False, bestaetigt: boo
         return "", "Adresse unbrauchbar (http/https mit Host nötig)."
     if norm.username is not None or norm.password is not None or "@" in norm.netloc:
         return "", "Adressen mit Anmeldedaten sind nicht erlaubt."
+    roh_teile = urlsplit(url)
+    if roh_teile.path not in ("", "/") or roh_teile.query or roh_teile.fragment or "?" in url or "#" in url:
+        return "", "Nur scheme://host[:port] ist erlaubt (kein Pfad, keine Query, kein Fragment)."
     host = norm.hostname.lower()
+    if host not in ("127.0.0.1", "::1") and ZAHLENHOST_RE.match(host):
+        return "", "Hosts aus Ziffern, Punkten oder 0x… (Kurz- und Dezimalformen von IP-Adressen) sind nie erlaubt."
     if host.endswith("."):
         return "", "Host mit Punkt am Ende ist nicht erlaubt."
     ist_ip = True
@@ -277,6 +283,31 @@ def ziel_normalisieren(url: str, nach_umschaltung: bool = False, bestaetigt: boo
     if norm.scheme == "http" and host not in ("localhost", "127.0.0.1", "::1"):
         return "", "http nur für 127.0.0.1, localhost und ::1: das Anwendungspasswort ginge sonst im Klartext hinaus."
     return norm.geturl().rstrip("/"), ""
+
+
+def vorabpruefung(url: str, http, nach_umschaltung: bool = False, bestaetigt: bool = False) -> str:
+    """Einmal GET <ziel>/wp-json/ ohne Weiterleitungen: ist das wirklich die neue Website mit beiden Plugins, und zeigen
+    `home`/`url` nicht auf die alte Seite? Gibt eine Fehlermeldung zurück ("" = in Ordnung)."""
+    try:
+        r = http.get(f"{url}/wp-json/", timeout=30, allow_redirects=False)
+    except Exception as exc:  # noqa: BLE001
+        return f"Ziel nicht erreichbar: {str(exc)[:80]}"
+    if 300 <= r.status_code < 400:
+        return f"Ziel antwortet mit Weiterleitung {r.status_code}; Adresse prüfen (nicht gefolgt)."
+    try:
+        d = r.json()
+        namen = d.get("namespaces") or []
+    except Exception:  # noqa: BLE001
+        return "Antwort von /wp-json/ ist kein JSON: das ist nicht die neue WordPress-Website."
+    fehlt = [n for n in ("tamil-radar/v1", "tamil-site/v1") if n not in namen]
+    if fehlt:
+        return "Plugins nicht aktiv, Namensräume fehlen: " + ", ".join(fehlt)
+    if not (nach_umschaltung and bestaetigt):
+        for feld in ("home", "url"):
+            host = (urlsplit(str(d.get(feld) or "")).hostname or "").lower().rstrip(".")
+            if host == "tamil.de" or host.endswith(".tamil.de"):
+                return f"Die Website meldet {feld} auf {host}: das wäre die alte Seite oder schon umgeschaltet (--nach-umschaltung)."
+    return ""
 
 
 def ziel_pruefen(url: str, nach_umschaltung: bool = False, bestaetigt: bool = False, ziel_host: str = "") -> str:
@@ -633,6 +664,10 @@ def main(argv: list[str] | None = None) -> int:
     if not pw:
         print("Passwort fehlt (--passwort-datei oder $MIGRATION_APP_PASSWORD).")
         return 2
+    vor = vorabpruefung(url, requests.Session(), args.nach_umschaltung, args.bestaetigt_von_luis)  # auch bei --trocken
+    if vor:
+        print("Abbruch (Vorabprüfung): " + vor)
+        return 4
 
     export = args.export
     site_json = json.loads((REPO / "prototyp" / "content" / "site.json").read_text(encoding="utf-8"))
