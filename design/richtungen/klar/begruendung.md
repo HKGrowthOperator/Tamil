@@ -1,4 +1,4 @@
-# klar – Begründung (Schnellprobe)
+# klar – Begründung (Skizze)
 
 1. **Vorbild:** BBC News und tagesschau. Übernommen: ein Bildformat 16:9 für alle Bilder (BBC), Aufmacher-Schlagzeile 28 px Handy / 34 px Desktop (tagesschau 32/34, BBC 24/28), Desktop wie BBC: Aufmacher mit Bild neben dem Text, rechts eine Spalte mit Meldungen; Nebenstücke wie tagesschau-Bildschirm 2 (Bild links, Text rechts); Trennung nur durch 1-px-Linien, Radius 0.
 2. **Schrift:** Libre Franklin (variabel, normale Breite, OFL, `schriften/`), Schlagzeilen 600–650, Text 400. Tamil im Inhalt: Ersatzschrift über `:lang(ta)`.
@@ -6,3 +6,5 @@
 4. **Ordnung:** Aufmacher 28/34 px · Nebenstück mit Bild 19/22 px · Meldung ohne Bild 17/18 px. Dachzeile immer „Rubrik | 17. Juli 2024“, 13 px, über der Schlagzeile.
 5. **Erkennungszeichen:** „Diese Woche“ als nüchterne Liste: Film, Zahl der Kinos, Städte; Termin mit Datum, Ort, Veranstalter.
 6. **Abgrenzung:** gegen Runde 2 kühler Grund statt Creme, Grotesk statt Serifen-Fließtext, Radius 0 statt runder Bilder (R2 etwa 12 px); gegen Runde 4 größte Schrift 34 px statt 98–335 px, Rotanteil unter 1 % statt 6–54 %, keine Versalien in Schlagzeilen.
+7. **Artikel:** eine Spalte (Bild 680 px, Text höchstens 29 em ≈ 66 Zeichen), Dachzeile wie auf der Startseite, `h1` 28/36 px, Vorspann 19/20 px (Gewicht 500), Fließtext 18/19 px bei Zeilenhöhe 1,6.
+8. **Artikel:** Lesezeit und „Per WhatsApp teilen“ als schlichte Leiste unter einer 1-px-Linie (Link unterstrichen, rot nur beim Überfahren); darunter nur Bild und Text.

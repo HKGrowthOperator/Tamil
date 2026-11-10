@@ -342,6 +342,7 @@ a:focus-visible {
   font-size: 19px;
   line-height: 1.45;
   font-weight: 500;
+  max-width: 29em;
 }
 .artikel__leiste {
   display: flex;
@@ -375,6 +376,7 @@ a:focus-visible {
   margin-top: 24px;
   font-size: 18px;
   line-height: 1.6;
+  max-width: 29em;
 }
 .artikel__text p + p { margin-top: 1em; }
 
@@ -387,7 +389,7 @@ a:focus-visible {
   .artikel { max-width: 760px; padding: 48px var(--rand) 96px; }
   .artikel__titel { font-size: 36px; line-height: 1.12; letter-spacing: -0.015em; }
   .artikel__vorspann { font-size: 20px; margin-top: 14px; }
-  .artikel__text { margin-top: 32px; font-size: 19px; line-height: 1.6; max-width: 640px; }
+  .artikel__text { margin-top: 32px; font-size: 19px; line-height: 1.6; }
 }
 
 @media (prefers-reduced-motion: reduce) {
