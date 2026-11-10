@@ -13,7 +13,7 @@ Tamilinnen und Tamilen in Deutschland, Österreich und der Schweiz: die junge, h
 WhatsApp. Themen: tamilisches Kino in hiesigen Kinos, Feste, Konzerte, Tempel und Vereine, Community, Küche,
 Nachrichten aus Sri Lanka und Tamil Nadu mit DACH-Bezug.
 
-## Was gewollt ist (Stand 09.11.2026 abends, Luis)
+## Was gewollt ist (Stand 10.11.2026, Luis)
 
 - **Wie eine große Nachrichtenmarke:** klar, seriös, aufgeräumt, viele Geschichten auf einen Blick. Vorbilder sind
   Zeit Online, Spiegel, Tagesschau/BBC und Guardian/NZZ (`design/referenzen/news-marken.md`), nicht
@@ -25,6 +25,11 @@ Nachrichten aus Sri Lanka und Tamil Nadu mit DACH-Bezug.
   Überschriften. Kommt Tamil im Inhalt selbst vor (Namen, Zitate im Altbestand), wird es sauber gesetzt.
 - **Erster Bildschirm:** ein klarer Aufmacher und weitere Geschichten. Das Eigene von tamil.de liegt im Inhalt (Kino
   mit Spielorten, Termine der Community, klare Dachzeilen), nicht in einem Effekt.
+- **Mehr Wow, in Grenzen (Luis, 10.11.2026, nach dem Blick auf `klar`: „gut, aber zu classic“):** überall ein
+  Bild, ein großes Aufmacherbild mit der Schlagzeile im Bild, bildstarke Blöcke, ein dunkler Bereich „Diese Woche“,
+  ein kräftigeres Rubrikband im Kopf, sanfte Bewegung beim Überfahren. Was genau erlaubt ist und wo die Grenze
+  liegt, steht in `design/brief.md`, Abschnitt 10. Das Wow kommt aus Fotos, Fläche und Hell-Dunkel, nicht aus
+  Schriftgröße, Rot oder Effekten.
 - **Abgelöst** sind die früheren Festlegungen „Hypebeast/Highsnobiety trifft Instagram/TikTok“, „Rot trägt die
   Seite“, „eine Geschichte als Cover“ und „laut im Kopf“. Der Wunsch des Auftraggebers „schöner, nicht so ein
   hingerotztes News-Magazin“ gilt weiter: Maßstab ist eine **große** Marke, kein Portal aus dem Baukasten.
@@ -43,7 +48,8 @@ Nachrichten aus Sri Lanka und Tamil Nadu mit DACH-Bezug.
 - WCAG 2.2 AA; Kontrast Text ≥ 4,5:1.
 - Fließtext ≥ 18 px am Handy, Zeilenlänge ≤ 70 Zeichen; Tippflächen ≥ 44 × 44 px.
 - Tamil-Text mit `lang="ta"` und einer Schrift, die Tamil sauber setzt.
-- `prefers-reduced-motion` respektieren; keine Laufbänder, keine automatisch startenden Animationen.
+- `prefers-reduced-motion` respektieren; keine Laufbänder, keine automatisch startenden Animationen. Bewegung nur
+  als Antwort auf Zeigen oder Scrollen und in den Grenzen des Briefs (Abschnitt 10).
 - Kein seitliches Scrollen bei 390, 820, 1280 px (`node tools/shots.mjs`).
 - Werbung klar als „Anzeige“ gekennzeichnet und dem Inhalt untergeordnet.
 - Drittanbieter-Inhalte (Instagram, YouTube) erst nach Klick laden (DSGVO).
@@ -53,13 +59,16 @@ Nachrichten aus Sri Lanka und Tamil Nadu mit DACH-Bezug.
 Vier Entwürfe wurden abgelehnt. Bilder, Urteile und Gründe: [references/abgelehnt.md](references/abgelehnt.md).
 **Vor jeder Gestaltung lesen.** Kurzfassung – nichts davon wiederholen:
 
-- Nachtblau oder Dunkel als Grund, Gold/Gelb, Ornamente, Bollywood-Glitzer, Neon.
+- Nachtblau oder Dunkel als Grund, Gold/Gelb, Ornamente, Bollywood-Glitzer, Neon. (Erlaubt seit Brief 2.1: genau
+  zwei dunkle Flächen in der kühlen Tinte auf sonst hellem Grund, das Rubrikband und „Diese Woche“.)
 - Tamilische Wörter als Deko vor Überschriften; rotes Laufband/Ticker.
 - Creme/Sand + Serifen-Fließtext + braungraue Tinte (wirkt „altbacken“).
 - App-Vorlagen-Look: Pillen-Labels überall, runde Karten im Raster, Instagram-Story-Kreise, abgerundete
-  Knopf-Reihen, rosa Hinterlegungskästen, „rote Platte über dem Bild“ als Aufmacher.
+  Knopf-Reihen, rosa Hinterlegungskästen, „rote Platte über dem Bild“ als Aufmacher. (Erlaubt seit Brief 2.1:
+  heller Titel im Bild auf einem Verlauf nach Tinte, rechteckig, ohne Platte und ohne Rot.)
 - Identische Kartenraster, Icons über Überschriften, nummerierte 01/02/03 ohne echte Reihenfolge.
-- Laut und Baukasten (Runde 4): riesige rote Titelwörter; Schlagzeilen über 32 px am Handy oder 38 px am Desktop;
+- Laut und Baukasten (Runde 4): riesige rote Titelwörter; Schlagzeilen über 32 px am Handy oder 38 px am Desktop
+  (seit Brief 2.1 allein die Schlagzeile des Aufmachers bis 34 und 44 px);
   verzerrte, extraschmale oder extrabreite Schriften; Schlagzeilen in Versalien; Stempel, Halbton, Schräglage;
   Rot als Fläche oder andere Vollfarbflächen; ein Cover mit nur einer Geschichte; „Signatur-Elemente“ als Effekt.
 - Schriften aus der impeccable-Ausschlussliste (Inter, DM Sans, Space Grotesk, Fraunces, Playfair …) und die schon

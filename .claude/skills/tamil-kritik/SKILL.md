@@ -28,14 +28,19 @@ wie eine aussehen; Vertrautheit ist kein Mangel. Mangel ist, was laut, verspielt
    - Runde 2 (`.claude/skills/tamil-marke/references/abgelehnt/r2-community-magazin-390.jpg` und `-1280.jpg`),
    - eine Skizze aus Runde 4 (`…/abgelehnt/r4-raster-390.jpg` und `-1280.jpg`).
 
+   Bei `klar2` liegt als erstes Paar `klar` daneben (`design/vergleich/img/klar-start-*.jpg`); die Bilder des
+   Bereichs „Diese Woche“ und der „Küche“ (`design/vergleich/img/klar2-woche-*.jpg`, `-kueche-desktop.jpg`) siehst
+   du dir ebenfalls an, denn dort liegen die neuen Mittel.
+
    Frage je Paar: Welche Seite wirkt wertiger, und woran genau sieht man es (Abstände, Linien, Hierarchie, Satz,
    Bildausschnitt, Farbe)? Benenne beobachtbare Unterschiede, keine Adjektive.
 4. **Bogen ausfüllen**, Ergebnis nach `design/kritik/<slug>-r<n>.md`.
 
 ## Bogen
 
-**A. Harte Kriterien** (Brief, Abschnitt 7): jedes Kriterium einzeln mit Messwert für Handy und Desktop und
-„erfüllt“ oder „verletzt“. Jede Verletzung ist **P1**. Passt eine Kennzahl nicht zum Bild, miss von Hand nach und
+**A. Harte Kriterien:** für `klar`, `blatt` und `bild` der Brief, Abschnitt 7 (zwölf Kriterien); für `klar2` der
+Brief, Abschnitt 10.4 (sechzehn Kriterien, mit den Kennzahlen in Klammern). Der Auftrag nennt dir die Fassung. Jedes
+Kriterium einzeln mit Messwert für Handy und Desktop und „erfüllt“ oder „verletzt“. Jede Verletzung ist **P1**. Passt eine Kennzahl nicht zum Bild, miss von Hand nach und
 kennzeichne den Wert so. Die Höhe des Kopfs ist `kopfleiste_hoehe`, nicht `erste_schlagzeile_ab`.
 
 Führe **jede Ursache nur einmal** als Befund, im strengsten passenden Abschnitt. Wer dieselbe rote Riesenschrift in
@@ -53,11 +58,16 @@ Runde 4 gescheitert ist, und ihr Gegenteil:
 | alt oder langweilig | wie Runde 2: Creme oder Sand als Grund, braungraue Tinte, runde Bilder, bunte Rubrikpunkte oder ein Mosaik, jeweils für sich; eine Serife im Fließtext nur zusammen mit warmem Grund | P1 |
 
 **C. Verbotsliste:** jede Übereinstimmung mit `tamil-marke` ist P1. Ausdrücklich erlaubt sind eine Serife in den
-Schlagzeilen auf kühlem Weiß (Variante `blatt`), ein vertrauter Nachrichtenaufbau und Meldungslisten.
+Schlagzeilen auf kühlem Weiß (Variante `blatt`), ein vertrauter Nachrichtenaufbau und Meldungslisten. Für `klar2`
+zusätzlich erlaubt, jeweils nur in den Grenzen von Brief 10.1: zwei dunkle Flächen in Tinte, heller Titel im Bild
+auf einem Verlauf nach Tinte, Zoom beim Überfahren, ein stehendes Rubrikband, die größere Schlagzeile des
+Aufmachers. Was über diese Grenzen hinausgeht, ist P1 wie bisher.
 
 **D. Leser:** Kann ein 65-Jähriger es am Handy lesen (Schriftgrößen, Kontrast, Tippflächen, klare Wege)? Findet eine
-19-Jährige in fünf Sekunden, was wichtig ist? Stimmen die Inhalte mit `design/inhalte/inhalte.json` überein: nichts
-erfunden, nichts weggelassen, Reihenfolge eingehalten?
+19-Jährige in fünf Sekunden, was wichtig ist? Stimmen die Inhalte mit der Inhaltsliste überein
+(`design/inhalte/inhalte.json`, für `klar2` `inhalte-klar2.json`): nichts erfunden, nichts weggelassen, Reihenfolge
+eingehalten? Schrift im Bild: an jeder Stelle lesbar, auch über hellen Bildteilen? Ist beim Zoomen auf 200 % und mit
+der Tastatur alles erreichbar, auch der seitlich laufende Streifen?
 
 **E. Technik** aus `bericht.json` von `shots.mjs`: Fehler = P0; Tippflächen unter 44 px = P2.
 
@@ -68,7 +78,7 @@ nicht in der Kopfzeile.
 
 ```markdown
 # Prüfung <slug>, Runde <n>
-Harte Kriterien: <x> von 12 erfüllt · P0: <n> · P1: <n> · P2: <n>
+Harte Kriterien: <x> von <12 oder 16> erfüllt · P0: <n> · P1: <n> · P2: <n>
 ## Erster Eindruck (3 Sätze)
 ## Harte Kriterien (Tabelle: Kriterium, Messwert Handy, Messwert Desktop, erfüllt oder verletzt)
 ## Paarvergleich (je Paar die beobachtbaren Unterschiede)
