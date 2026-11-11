@@ -57,9 +57,11 @@ def main(argv=None) -> int:
     p.add_argument("--token-datei")
     p.add_argument("--json", action="store_true", help="rohen Bericht ausgeben")
     a = p.parse_args(argv)
-    token = Path(a.token_datei).read_text().strip() if a.token_datei else os.environ.get("RADAR_LESE_TOKEN")
+    # /api/bericht nimmt das Lese- oder das Agent-Token; das Lese-Token geht vor
+    token = (Path(a.token_datei).read_text().strip() if a.token_datei
+             else os.environ.get("RADAR_LESE_TOKEN") or os.environ.get("RADAR_AGENT_TOKEN"))
     if not token:
-        print("RADAR_LESE_TOKEN fehlt (oder --token-datei).", file=sys.stderr)
+        print("RADAR_LESE_TOKEN oder RADAR_AGENT_TOKEN fehlt (oder --token-datei).", file=sys.stderr)
         return 2
     basis = a.url.rstrip("/")
     # Mit --json geht die Gesundheitszeile nach stderr, damit die Standardausgabe reines JSON bleibt.

@@ -36,3 +36,26 @@ def test_uebersicht_zeigt_gesundheit_weiter_oben(monkeypatch, capsys, tmp_path):
     assert radar_bericht.main(["--url", "https://radar.example", "--token-datei", str(datei)]) == 0
     aus = capsys.readouterr()
     assert aus.out.startswith("Gesundheit:") and "Storys (7 Tage): 1" in aus.out
+
+
+def test_ohne_lese_token_nimmt_es_das_agent_token(monkeypatch, capsys):
+    """/api/bericht nimmt auch das Agent-Token: die Routine kommt mit RADAR_AGENT_TOKEN allein aus."""
+    gesehen = []
+
+    def holen(url, token=None):
+        gesehen.append(token)
+        return {"ok": True} if url.endswith("/gesund") else {"tage": 7, "storys": [], "entwuerfe": [], "budget": {}}
+
+    monkeypatch.setattr(radar_bericht, "holen", holen)
+    monkeypatch.delenv("RADAR_LESE_TOKEN", raising=False)
+    monkeypatch.setenv("RADAR_AGENT_TOKEN", "agent-geheim")
+    assert radar_bericht.main(["--url", "https://radar.example", "--json"]) == 0
+    aus = capsys.readouterr()
+    assert "agent-geheim" in gesehen and "agent-geheim" not in aus.out + aus.err
+    monkeypatch.setenv("RADAR_LESE_TOKEN", "lese-geheim")  # beide gesetzt: das Lese-Token geht vor
+    gesehen.clear()
+    assert radar_bericht.main(["--url", "https://radar.example", "--json"]) == 0
+    assert "lese-geheim" in gesehen and "agent-geheim" not in gesehen
+    monkeypatch.delenv("RADAR_LESE_TOKEN")
+    monkeypatch.delenv("RADAR_AGENT_TOKEN")
+    assert radar_bericht.main(["--url", "https://radar.example"]) == 2
