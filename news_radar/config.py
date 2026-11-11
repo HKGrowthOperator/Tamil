@@ -61,6 +61,29 @@ class Regions:
     ausland: list[str] = field(default_factory=list)  # Orte außerhalb von DACH (gegen das Land der Quelle)
 
 
+BILDQUELLEN_ARTEN = ("tempel", "verein", "veranstalter", "festival", "kino", "betrieb", "person", "sport")
+
+
+@dataclass
+class Bildquelle:
+    """Eintrag im Bildquellen-Register ([[bildquellen]] in sources.toml): Seiten, deren eigenes Bildmaterial tamil.de
+    mit dem eingetragenen Nachweis redaktionell verwenden darf (Entscheidung vom 11.11.2026)."""
+    host: str
+    betreiber: str
+    art: str
+    nachweis: str
+
+    def __post_init__(self) -> None:
+        host = (self.host or "").strip()
+        if not host or host != host.lower() or host.startswith("www.") or any(c in host for c in "/:@ "):
+            raise ValueError(f"Bildquelle: Host klein und ohne www./Pfad angeben ({self.host!r})")
+        if not (self.nachweis or "").strip() or not (self.betreiber or "").strip():
+            raise ValueError(f"Bildquelle {host}: Nachweis und Betreiber dürfen nicht leer sein")
+        if self.art not in BILDQUELLEN_ARTEN:
+            raise ValueError(f"Bildquelle {host}: art muss eine von {', '.join(BILDQUELLEN_ARTEN)} sein")
+        self.host, self.nachweis, self.betreiber = host, self.nachweis.strip(), self.betreiber.strip()
+
+
 @dataclass
 class Category:
     slug: str
@@ -92,6 +115,7 @@ class Settings:
     regions: Regions = field(default_factory=Regions)
     bezug: list[str] = field(default_factory=list)  # Begriffe mit Bezug zur tamilischen Community ([bezug] terms)
     alle_quellen: list[Source] = field(default_factory=list)  # inkl. abgeschalteter (enabled = false)
+    bildquellen: list[Bildquelle] = field(default_factory=list)  # Register für den Weg „Bild mit Nachweis“
     anthropic_model: str = "claude-opus-5-5"
     newsapi_key: str = ""
     gnews_token: str = ""
@@ -223,6 +247,7 @@ def load_settings(sources_file: Path = ROOT / "sources.toml") -> Settings:
         regions=regions,
         bezug=[t.lower() for t in raw.get("bezug", {}).get("terms", [])],
         alle_quellen=alle_quellen,
+        bildquellen=[Bildquelle(**b) for b in raw.get("bildquellen", [])],
         anthropic_model=env("RADAR_MODEL", "claude-opus-5-5"),
         newsapi_key=env("NEWSAPI_KEY", ""),
         gnews_token=env("GNEWS_TOKEN", ""),

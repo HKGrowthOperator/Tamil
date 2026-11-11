@@ -524,3 +524,176 @@ hints = ["cricket", "sport", "fußball", "football", "olympia", "turnier", "liga
 [categories.kultur]
 label = "Kultur"
 hints = ["pongal", "deepavali", "diwali", "thaipusam", "bharatanatyam", "sprache", "literatur", "kultur", "tradition", "murugan"]
+
+# Bildquellen: Seiten, deren eigenes Bildmaterial tamil.de mit Bildnachweis redaktionell verwenden darf.
+# Entscheidung vom 11.11.2026 (docs/entscheidungen.md): Material von Veranstaltern, Tempeln, Vereinen, Festivals,
+# Kinos (Plakate und Filmbilder vom Verleih) und Betrieben, über die berichtet wird. Keine Nachrichtenmedien, keine
+# Agenturen, keine sozialen Netzwerke, keine Behörden. Der Nachweis wird wörtlich übernommen.
+
+[[bildquellen]]
+host = "hindutempleberlin.de"
+betreiber = "Sri Ganesha Hindu Tempel Berlin e.V."
+art = "tempel"
+nachweis = "Foto: Sri Ganesha Hindu Tempel Berlin"
+
+[[bildquellen]]
+host = "ammankovil.ch"
+betreiber = "Tamilische Hindu Kultur-Gemeinschaft Luzern"
+art = "tempel"
+nachweis = "Foto: Amman Hindu Tempel Luzern"
+
+[[bildquellen]]
+host = "murugantemple.ch"
+betreiber = "Sri Sivasubramaniar Tempel Zürich"
+art = "tempel"
+nachweis = "Foto: Sri Sivasubramaniar Tempel Zürich"
+
+[[bildquellen]]
+host = "sivankovil.ch"
+betreiber = "Arulmigu Sivan Kovil Glattbrugg"
+art = "tempel"
+nachweis = "Foto: Arulmigu Sivan Kovil Glattbrugg"
+
+[[bildquellen]]
+host = "srikathirvel.com"
+betreiber = "Sri Kathirvelayutha Swamy Tempel St. Margrethen"
+art = "tempel"
+nachweis = "Foto: Sri Kathirvelayutha Swamy Tempel St. Margrethen"
+
+[[bildquellen]]
+host = "hindutempel-wuppertal.de"
+betreiber = "Hindu-Tempel Wuppertal"
+art = "tempel"
+nachweis = "Foto: Hindu-Tempel Wuppertal"
+
+[[bildquellen]]
+host = "haus-der-religionen.ch"
+betreiber = "Haus der Religionen – Dialog der Kulturen, Bern"
+art = "verein"
+nachweis = "Foto: Haus der Religionen Bern"
+
+[[bildquellen]]
+host = "wallfahrt-kevelaer.de"
+betreiber = "Wallfahrt Kevelaer / Pfarrei St. Marien"
+art = "veranstalter"
+nachweis = "Foto: Wallfahrt Kevelaer"
+
+[[bildquellen]]
+host = "duesseldorftamilsangam.com"
+betreiber = "Düsseldorf Tamil Sangam e.V."
+art = "verein"
+nachweis = "Foto: Düsseldorf Tamil Sangam"
+
+[[bildquellen]]
+host = "tbvgermany.com"
+betreiber = "Tamilische Bildungsvereinigung e.V. (TBV Germany)"
+art = "verein"
+nachweis = "Foto: Tamilische Bildungsvereinigung (TBV)"
+
+[[bildquellen]]
+host = "tamilschool.ch"
+betreiber = "Tamil Education Service Switzerland (TESS)"
+art = "verein"
+nachweis = "Foto: Tamil Education Service Switzerland"
+
+[[bildquellen]]
+host = "tamilmandram.ch"
+betreiber = "Tamilmandram Luzern"
+art = "verein"
+nachweis = "Foto: Tamilmandram Luzern"
+
+[[bildquellen]]
+host = "natyamandir.at"
+betreiber = "Natya Mandir, Wien"
+art = "verein"
+nachweis = "Foto: Natya Mandir Wien"
+
+[[bildquellen]]
+host = "karate.ch"
+betreiber = "Swiss Karate Federation"
+art = "sport"
+nachweis = "Foto: Swiss Karate Federation"
+
+[[bildquellen]]
+host = "tamilfest.ch"
+betreiber = "Tamil Fest"
+art = "veranstalter"
+nachweis = "Foto: Tamil Fest"
+
+[[bildquellen]]
+host = "indisches-filmfestival.de"
+betreiber = "Indisches Filmfestival Stuttgart (Filmbüro Baden-Württemberg e.V.)"
+art = "festival"
+nachweis = "Bild: via Indisches Filmfestival Stuttgart"
+
+[[bildquellen]]
+host = "frauenfilmfest.com"
+betreiber = "Internationales Frauen Film Fest Dortmund+Köln"
+art = "festival"
+nachweis = "Bild: via Internationales Frauen Film Fest Dortmund+Köln"
+
+[[bildquellen]]
+host = "arsenal-berlin.de"
+betreiber = "Arsenal – Institut für Film und Videokunst e.V."
+art = "festival"
+nachweis = "Bild: via Arsenal – Institut für Film und Videokunst"
+
+[[bildquellen]]
+host = "babylonberlin.eu"
+betreiber = "Babylon Berlin"
+art = "kino"
+nachweis = "Filmbild: via Babylon Berlin"
+
+[[bildquellen]]
+host = "filmkunstkinos.de"
+betreiber = "Düsseldorfer Filmkunstkinos"
+art = "kino"
+nachweis = "Filmbild: via Düsseldorfer Filmkunstkinos"
+
+[[bildquellen]]
+host = "cinestar.de"
+betreiber = "CineStar"
+art = "kino"
+nachweis = "Filmplakat: via CineStar"
+
+[[bildquellen]]
+host = "kinopolis.de"
+betreiber = "Kinopolis"
+art = "kino"
+nachweis = "Filmplakat: via Kinopolis"
+
+[[bildquellen]]
+host = "megaplex.at"
+betreiber = "Hollywood Megaplex"
+art = "kino"
+nachweis = "Filmplakat: via Hollywood Megaplex"
+
+[[bildquellen]]
+host = "ceylon-palace.de"
+betreiber = "Ceylon Palace, Bremen"
+art = "betrieb"
+nachweis = "Foto: Ceylon Palace"
+
+[[bildquellen]]
+host = "kamala-restaurant.de"
+betreiber = "Kamala Restaurant"
+art = "betrieb"
+nachweis = "Foto: Kamala Restaurant"
+
+[[bildquellen]]
+host = "thamarai.de"
+betreiber = "THAMARAI Restaurant Heilbronn"
+art = "betrieb"
+nachweis = "Foto: THAMARAI Restaurant"
+
+[[bildquellen]]
+host = "aiya.ch"
+betreiber = "AiYA Restaurant"
+art = "betrieb"
+nachweis = "Foto: AiYA Restaurant"
+
+[[bildquellen]]
+host = "rupan.ch"
+betreiber = "Rupan Sivaganesan"
+art = "person"
+nachweis = "Foto: rupan.ch"
