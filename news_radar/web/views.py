@@ -353,6 +353,7 @@ def bild(draft_id: int):
     version = sum(1 for e in store.iter_log(event="bild") if e.get("id") == draft_id) + 2
     stem = f"{stem_base}-{version}"
     label = next((c.label for c in settings.categories if c.slug == row["kategorie"]), row["kategorie"])
+    felder: dict = {}  # Bildfelder (Prompt, Thema, Suchbegriff) gehen mit dem bedingten Bild-UPDATE zusammen
     try:
         if aktion == "upload":
             file = request.files.get("datei")
@@ -373,7 +374,7 @@ def bild(draft_id: int):
                 return redirect(url_for("ui.entwurf", draft_id=draft_id))
             prompt = prompts.bild_prompt_bauen(motiv, thema)
             image = bilder.from_gemini(prompt, settings, stem, current_app.extensions.get("bild_transport"))
-            store.update_draft(draft_id, bild_prompt=motiv, bild_thema=thema)
+            felder = {"bild_prompt": motiv, "bild_thema": thema}
             if image is None:
                 flash("Die Bild-KI hat kein Bild geliefert (Protokoll prüfen) – Bild unverändert.", "fehler")
                 return redirect(url_for("ui.entwurf", draft_id=draft_id))
@@ -385,13 +386,13 @@ def bild(draft_id: int):
             if image is None:
                 flash(f"Im Bildpool „{thema or '–'}“ liegt noch kein Bild – Bild unverändert.", "fehler")
                 return redirect(url_for("ui.entwurf", draft_id=draft_id))
-            store.update_draft(draft_id, bild_thema=thema)
+            felder = {"bild_thema": thema}
         elif aktion == "stock":
             query = request.form.get("suchbegriff", "").strip() or row.get("bild_suchbegriff") or row["titel"]
             image = images.featured_image(settings, query, row["titel"], label, stem)
             if image.origin == "karte":
                 flash("Kein Stockfoto gefunden (oder kein Unsplash/Pexels-Schlüssel) – Bildkarte erzeugt.", "fehler")
-            store.update_draft(draft_id, bild_suchbegriff=query)
+            felder = {"bild_suchbegriff": query}
         else:
             image = images.branded_card(row["titel"], label, stem, row.get("kategorie") or "")
     except Exception as exc:  # noqa: BLE001
@@ -404,7 +405,7 @@ def bild(draft_id: int):
                                     f"{basis}-e{draft_id}-{hashlib.sha256(image.data).hexdigest()[:8]}")
     # erst schreiben, dann aufräumen (und nie eine Datei löschen, auf die ein anderer Entwurf zeigt)
     if not store.update_draft(draft_id, von=_user(), nur_status=OPEN_STATES, bild_vorher=row.get("bild_datei"),
-                              bild_datei=name, bild_credit=image.credit, bild_origin=image.origin):
+                              bild_datei=name, bild_credit=image.credit, bild_origin=image.origin, **felder):
         # inzwischen freigegeben oder anderes Bild: nichts ändern, neue Datei nur weg, wenn niemand darauf zeigt
         if not store.db.execute("SELECT 1 FROM drafts WHERE bild_datei = ? LIMIT 1", (name,)).fetchone():
             for neu in (name, _thumb):

@@ -962,3 +962,27 @@ def test_bild_von_hand_rennen_mit_freigabe(settings, monkeypatch):
         d = store.get_draft(a)
         assert d["status"] == "freigegeben" and d["bild_datei"] == "alt.jpg"
     assert sorted(p.name for p in settings.bilder_dir.iterdir()) == ["alt.jpg"]
+
+
+
+def test_bild_von_hand_rennen_aendert_keine_bildfelder(settings, monkeypatch):
+    """Freigabe während der Stocksuche: auch Suchbegriff und Stand bleiben, wie die Freigabe sie gesehen hat."""
+    from news_radar import images
+
+    with Store(settings.db_path) as store:
+        _, a = story_mit_entwurf(store)
+    client, token = _cockpit(settings)
+
+    def stock_mit_freigabe(settings_, query, titel, label, stem):
+        with Store(settings.db_path) as s2:
+            s2.set_status(a, "freigeben", von="zweite", stand=s2.get_draft(a)["stand"])
+        return images.branded_card(titel, label, stem, "community")
+
+    monkeypatch.setattr(images, "featured_image", stock_mit_freigabe)
+    with Store(settings.db_path) as store:
+        vorher = store.get_draft(a)
+    client.post(f"/entwurf/{a}/bild", data={"_csrf": token, "aktion": "stock", "suchbegriff": "tempel"})
+    with Store(settings.db_path) as store:
+        d = store.get_draft(a)
+        assert d["status"] == "freigegeben" and d["bild_datei"] == vorher["bild_datei"]
+        assert d["bild_suchbegriff"] == vorher["bild_suchbegriff"] and d["stand"] == vorher["stand"]
