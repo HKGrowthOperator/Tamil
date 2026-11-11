@@ -131,7 +131,11 @@ def _text(html: str) -> str:
 def _gleich(a: str, b: str) -> bool:
     """Bildadressen vergleichen: Schema, Host ohne www., Pfad und Abfrage; das Fragment zählt nicht."""
     pa, pb = urlsplit(a.strip()), urlsplit(b.strip())
-    return (pa.scheme.lower(), _host(a), pa.path, pa.query) == (pb.scheme.lower(), _host(b), pb.path, pb.query)
+
+    def ort(p) -> str:  # vollständige Adresse (netloc mit Port und Benutzerteil), nur www. und Groß/klein egal
+        return p.netloc.lower().removeprefix("www.")
+
+    return (pa.scheme.lower(), ort(pa), pa.path, pa.query) == (pb.scheme.lower(), ort(pb), pb.path, pb.query)
 
 
 def _intern_pruefen(url: str) -> None:
@@ -500,6 +504,13 @@ def _eins(store: Store, settings: Settings, raw, nr: int, von: str, abrufen: Cal
                 continue
             if not isinstance(wert, str) or len(wert) > 2000 or not wert.strip().lower().startswith(("http://", "https://")):
                 raise Abgelehnt(f"{feld}: nur http/https-Adressen")
+            teile = urlsplit(wert.strip())
+            try:
+                port = teile.port
+            except ValueError:
+                port = -1
+            if feld == "bild_url" and (port is not None or "@" in teile.netloc):
+                raise Abgelehnt("bild_url: keine Adresse mit Port oder Benutzerteil")
         alt = _alt(raw.get("alt"))
         if raw["weg"] == "commons":
             commons_datei(raw["seite_url"])  # Form prüfen, bevor etwas abgerufen wird

@@ -390,6 +390,20 @@ def test_interne_adresse_abgelehnt_nichts_abgerufen(settings, monkeypatch):
 
 # ---- Entwurf, Eingabe, Stopp, Zeitlimit ---------------------------------------------------------------
 
+@pytest.mark.parametrize("bild_url", ["https://www.murugantemple.ch:8443/media/prozession-gross.jpg",
+                                      "https://anna@www.murugantemple.ch/media/prozession-gross.jpg"])
+def test_bild_url_mit_port_oder_benutzer_abgelehnt(settings, bild_url):
+    with Store(settings.db_path) as store:
+        sid, _ = story_mit_entwurf(store)
+        abrufe = []
+        html = seite(body=f'<img src="{bild_url}" alt="x">')
+        e = eins(store, settings, {"story_id": sid, "weg": "quelle", "seite_url": DOK, "bild_url": bild_url},
+                 {DOK: html, bild_url: jpeg()}, abrufe)
+        assert e["ergebnis"] == "abgelehnt" and abrufe == [], e
+    assert not bildvorschlag._gleich("https://www.murugantemple.ch:8443/a.jpg", "https://murugantemple.ch/a.jpg")
+    assert bildvorschlag._gleich("https://www.murugantemple.ch/a.jpg#x", "https://murugantemple.ch/a.jpg")
+
+
 def test_entwurf_schon_freigegeben_oder_keiner(settings):
     with Store(settings.db_path) as store:
         sid, _ = story_mit_entwurf(store, status="freigeben")
