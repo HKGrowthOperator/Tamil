@@ -900,3 +900,38 @@ def test_bild_von_hand_loescht_keine_datei_eines_anderen_entwurfs(settings):
     with Store(settings.db_path) as store:
         assert store.get_draft(did_a)["bild_datei"] != "alt.jpg" and store.get_draft(did_b)["bild_datei"] == "alt.jpg"
     assert (settings.bilder_dir / "alt.jpg").exists()
+
+
+def test_bild_von_hand_ueberschreibt_keine_datei_eines_anderen_entwurfs(settings):
+    import hashlib
+
+    with Store(settings.db_path) as store:
+        _, a = story_mit_entwurf(store)
+        _, b = story_mit_entwurf(store, url=DOK + "-b")
+        store.update_draft(b, titel="Ganz anderer Titel B")
+        settings.bilder_dir.mkdir(parents=True, exist_ok=True)
+        (settings.bilder_dir / "alt.jpg").write_bytes(b"x")
+    client, token = _cockpit(settings)
+    client.post(f"/entwurf/{a}/bild", data={"_csrf": token, "aktion": "karte"})
+    with Store(settings.db_path) as store:
+        da = store.get_draft(a)["bild_datei"]
+    vorher = hashlib.sha256((settings.bilder_dir / da).read_bytes()).hexdigest()
+    client.post(f"/entwurf/{b}/bild", data={"_csrf": token, "aktion": "karte"})
+    with Store(settings.db_path) as store:
+        db_ = store.get_draft(b)["bild_datei"]
+    assert da != db_ and f"-e{a}-" in da and f"-e{b}-" in db_
+    assert hashlib.sha256((settings.bilder_dir / da).read_bytes()).hexdigest() == vorher
+
+
+def test_bild_von_hand_nur_fuer_wartende_entwuerfe(settings):
+    with Store(settings.db_path) as store:
+        _, did = story_mit_entwurf(store, status="freigeben")
+        settings.bilder_dir.mkdir(parents=True, exist_ok=True)
+        (settings.bilder_dir / "alt.jpg").write_bytes(b"x")
+    client, token = _cockpit(settings)
+    html = client.post(f"/entwurf/{did}/bild", data={"_csrf": token, "aktion": "karte"},
+                       follow_redirects=True).get_data(as_text=True)
+    assert "Freigegebene Entwürfe zuerst zurückstellen" in html
+    with Store(settings.db_path) as store:
+        assert store.get_draft(did)["bild_datei"] == "alt.jpg"
+    assert sorted(p.name for p in settings.bilder_dir.iterdir()) == ["alt.jpg"]

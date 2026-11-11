@@ -343,6 +343,9 @@ def zuruecksetzen(draft_id: int):
 def bild(draft_id: int):
     store = get_store()
     row = _draft_or_404(draft_id)
+    if row["status"] not in OPEN_STATES:  # sonst ginge ein ungesehenes Bild ohne neue Freigabe hinaus
+        flash("Freigegebene Entwürfe zuerst zurückstellen, dann das Bild ersetzen.", "fehler")
+        return redirect(url_for("ui.entwurf", draft_id=draft_id))
     settings = _settings()
     aktion = request.form.get("aktion", "karte")
     stem_base = (row.get("bild_datei") or f"{row['uid'][:12]}-{slugify(row['titel'], 50)}.jpg").removesuffix(".jpg")
