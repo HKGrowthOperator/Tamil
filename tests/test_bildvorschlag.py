@@ -280,22 +280,32 @@ def test_quelle_bild_url_aus_dem_html(settings):
     ({"seite_url": DOK}, {DOK: seite(), OG: jpeg(3000, 1000)}, "Seitenverhältnis"),
     ({"seite_url": DOK}, {DOK: seite(og="https://scontent.xx.fbcdn.net/v/t1/bild.jpg")}, "gesperrt"),
     ({"seite_url": DOK}, {DOK: seite(og="")}, "kein Bild"),
-    ({"seite_url": DOK}, {DOK: seite(og="https://cdn.example.org/fremd.jpg"), "x": b""}, None),
+    ({"seite_url": DOK}, {DOK: seite(og="https://cdn.example.org/fremd.jpg"),
+                          "https://cdn.example.org/fremd.jpg": jpeg()}, "Host"),
+    ({"seite_url": DOK}, {DOK: seite(og="https://bilder.keystone.ch/fremd.jpg")}, "gesperrt"),
+    ({"seite_url": DOK}, {DOK: seite(og="https://www.apnews.com/a.jpg")}, "gesperrt"),
+    ({"seite_url": DOK}, {DOK: seite(og="https://cdn.ap.org/a.jpg")}, "gesperrt"),
+    ({"seite_url": DOK}, {DOK: seite(og="https://epa.eu/a.jpg")}, "gesperrt"),
 ])
 def test_quelle_abgelehnt(settings, eintrag, seiten, grund):
     with Store(settings.db_path) as store:
         sid, did = story_mit_entwurf(store)
-        if grund is None:  # og:image auf fremdem Host ist erlaubt (nicht gesperrt): gesetzt
-            seiten = {**seiten, "https://cdn.example.org/fremd.jpg": jpeg()}
         e = eins(store, settings, {"story_id": sid, "weg": "quelle", **eintrag}, seiten)
-        if grund is None:
-            assert e["ergebnis"] == "gesetzt", e
-            return
         assert e["ergebnis"] == "abgelehnt" and grund in e["grund"], e
         assert store.get_draft(did)["bild_origin"] == "karte"
 
 
-def test_quelle_bild_auf_fremdem_host_nur_als_og_image(settings):
+def test_quelle_bild_auf_eigenem_cdn_ueber_bild_hosts(settings):
+    settings.bildquellen = [Bildquelle(host=TEMPEL.host, betreiber=TEMPEL.betreiber, art="tempel",
+                                       nachweis=TEMPEL.nachweis, bild_hosts=["cdn.example.org"])]
+    with Store(settings.db_path) as store:
+        sid, _ = story_mit_entwurf(store)
+        cdn = "https://img.cdn.example.org/fremd.jpg"
+        e = eins(store, settings, {"story_id": sid, "weg": "quelle", "seite_url": DOK}, {DOK: seite(og=cdn), cdn: jpeg()})
+        assert e["ergebnis"] == "gesetzt", e
+
+
+def test_quelle_bild_auf_fremdem_host_abgelehnt(settings):
     with Store(settings.db_path) as store:
         sid, _ = story_mit_entwurf(store)
         fremd = "https://cdn.example.org/fremd.jpg"

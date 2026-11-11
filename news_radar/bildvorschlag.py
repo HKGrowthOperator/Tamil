@@ -8,7 +8,8 @@ Eingabe: {"bilder": [{story_id, weg: "commons" | "quelle", seite_url, bild_url?,
 - commons: seite_url ist eine Dateiseite auf commons.wikimedia.org. Lizenz, Urheber, Dateityp und Größe liest der
   Radar selbst aus der Commons-API; erlaubt sind nur gemeinfrei/CC0, CC BY und CC BY-SA (feste Positivliste).
 - quelle: seite_url ist ein Dokument genau dieser Story auf einem Host aus dem Bildquellen-Register
-  ([[bildquellen]] in sources.toml). Das Bild muss auf der abgerufenen Seite stehen; der Nachweis kommt aus dem
+  ([[bildquellen]] in sources.toml). Das Bild muss auf der abgerufenen Seite stehen und unter dem eingetragenen Host
+  (oder einem Host aus `bild_hosts` des Eintrags) liegen; der Nachweis kommt aus dem
   Register, nie aus dem Vorschlag. Soziale Netzwerke und Bildagenturen sind fest gesperrt, Agenturbilder werden am
   Umfeld erkannt und abgelehnt.
 
@@ -54,7 +55,8 @@ COMMONS_BILDHOST = "upload.wikimedia.org"
 # Fest gesperrt, auch wenn jemand sie ins Register schreibt (Host selbst oder eine Subdomain davon)
 GESPERRT = ("instagram.com", "facebook.com", "fbcdn.net", "cdninstagram.com", "tiktok.com", "x.com", "twitter.com",
             "twimg.com", "youtube.com", "ytimg.com", "pinimg.com", "shutterstock.com", "istockphoto.com", "alamy.com",
-            "picture-alliance.com", "keystone-sda.ch", "dpa.com", "reuters.com", "afp.com")
+            "picture-alliance.com", "keystone-sda.ch", "keystone.ch", "dpa.com", "reuters.com", "afp.com",
+            "apnews.com", "ap.org", "epa.eu")
 GESPERRT_MARKEN = ("pinterest", "gettyimages", "imago-images")  # unter jeder Endung (pinterest.de, gettyimages.ch …)
 
 AGENTUR = re.compile(
@@ -383,8 +385,9 @@ def _quelle(store: Store, settings: Settings, eintrag: dict, story_id: int, abru
     bild_host = _host(bild_url)
     if gesperrt(bild_host):
         raise Abgelehnt(f"Bild-Host gesperrt (soziales Netzwerk oder Bildagentur): {bild_host}")
-    if not _unter(bild_host, quelle.host) and not (og and _gleich(bild_url, og)):
-        raise Abgelehnt(f"Bild liegt nicht beim eingetragenen Host ({bild_host} statt {quelle.host})")
+    erlaubt = (quelle.host, *quelle.bild_hosts)
+    if not any(_unter(bild_host, h) for h in erlaubt):
+        raise Abgelehnt(f"Bild liegt nicht beim eingetragenen Host ({bild_host} statt {', '.join(erlaubt)})")
     umfeld = " ".join([unquote(urlsplit(bild_url).path.rsplit("/", 1)[-1])]
                       + [u for k, u in kandidaten if _gleich(k, bild_url)])
     treffer = AGENTUR.search(umfeld)
@@ -393,7 +396,7 @@ def _quelle(store: Store, settings: Settings, eintrag: dict, story_id: int, abru
     _intern_pruefen(bild_url)
     got = abrufen(bild_url, bild=True)
     ziel = _host(got.url or bild_url)  # nach Umleitungen: nie gesperrt, sonst derselbe oder der eingetragene Host
-    if gesperrt(ziel) or (ziel != bild_host and not _unter(ziel, quelle.host)):
+    if gesperrt(ziel) or not any(_unter(ziel, h) for h in erlaubt):
         raise Abgelehnt(f"Bild leitet auf einen anderen Host um: {ziel}")
     img = _bild_lesen(got.content, streng=True)
     return {"img": img, "nachweis": quelle.nachweis, "rechteinhaber": quelle.betreiber, "quelle_url": bild_url,

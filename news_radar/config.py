@@ -72,16 +72,19 @@ class Bildquelle:
     betreiber: str
     art: str
     nachweis: str
+    bild_hosts: list[str] = field(default_factory=list)  # optional: eigenes CDN der Quelle (Subdomains zählen)
 
     def __post_init__(self) -> None:
         host = (self.host or "").strip()
-        if not host or host != host.lower() or host.startswith("www.") or any(c in host for c in "/:@ "):
-            raise ValueError(f"Bildquelle: Host klein und ohne www./Pfad angeben ({self.host!r})")
+        for h in (host, *self.bild_hosts):
+            if not h or h != h.lower() or h.startswith("www.") or any(c in h for c in "/:@ "):
+                raise ValueError(f"Bildquelle: Host klein und ohne www./Pfad angeben ({h!r})")
         if not (self.nachweis or "").strip() or not (self.betreiber or "").strip():
             raise ValueError(f"Bildquelle {host}: Nachweis und Betreiber dürfen nicht leer sein")
         if self.art not in BILDQUELLEN_ARTEN:
             raise ValueError(f"Bildquelle {host}: art muss eine von {', '.join(BILDQUELLEN_ARTEN)} sein")
         self.host, self.nachweis, self.betreiber = host, self.nachweis.strip(), self.betreiber.strip()
+        self.bild_hosts = list(self.bild_hosts)
 
 
 @dataclass

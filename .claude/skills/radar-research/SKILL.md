@@ -43,7 +43,9 @@ darf ein echtes Bild vorgeschlagen werden, auf zwei Wegen:
   bei CC BY und CC BY-SA muss ein Urheber angegeben sein.
 - **quelle:** `seite_url` ist ein Dokument genau dieser Story auf einem Host aus dem Bildquellen-Register
   (`[[bildquellen]]` in `sources.toml`: Tempel, Vereine, Veranstalter, Festivals, Kinos, Betriebe). Ohne `bild_url` nimmt
-  der Radar das `og:image`; mit `bild_url` muss die Adresse auf der Seite stehen. Nie Agenturfotos (dpa, Keystone,
+  der Radar das `og:image`; mit `bild_url` muss die Adresse auf der Seite stehen. Das Bild muss unter dem eingetragenen
+  Host liegen (Subdomains und die `bild_hosts` des Eintrags zählen); ein `og:image` auf einem Zeitungs- oder Agentur-CDN
+  wird abgelehnt. Nie Agenturfotos (dpa, Keystone,
   Getty …), nie KI-Bilder, nie etwas aus sozialen Netzwerken; Logos, Icons und Banner werden abgelehnt.
 
 Aufruf: `curl -fsS -X POST -H "Authorization: Bearer $RADAR_AGENT_TOKEN" -H "Content-Type: application/json" --data

@@ -529,6 +529,9 @@ hints = ["pongal", "deepavali", "diwali", "thaipusam", "bharatanatyam", "sprache
 # Entscheidung vom 11.11.2026 (docs/entscheidungen.md): Material von Veranstaltern, Tempeln, Vereinen, Festivals,
 # Kinos (Plakate und Filmbilder vom Verleih) und Betrieben, über die berichtet wird. Keine Nachrichtenmedien, keine
 # Agenturen, keine sozialen Netzwerke, keine Behörden. Der Nachweis wird wörtlich übernommen.
+# Das Bild muss unter dem eingetragenen Host liegen (Subdomains zählen). Liegt das eigene Bildmaterial einer Quelle auf
+# einem eigenen CDN, wird dessen Host im Eintrag als bild_hosts = ["cdn.beispiel.ch"] ergänzt (vorerst bei keinem Eintrag).
+# Hosts sozialer Netzwerke und Bildagenturen sind fest gesperrt und dürfen hier nicht stehen.
 
 [[bildquellen]]
 host = "hindutempleberlin.de"
