@@ -13,8 +13,11 @@ from __future__ import annotations
 
 import html
 import json
+import logging
 import re
 from pathlib import Path
+
+log = logging.getLogger(__name__)
 
 STYLE_FILE = Path(__file__).with_name("style_examples.json")
 ARTEN = ("nachricht", "kino", "event", "portraet", "kueche")
@@ -148,18 +151,35 @@ def beispiel(post: dict, kategorien: dict[int, str], art: str) -> dict:
             "woerter": len(text.split()), "text": kuerzen(text)}
 
 
+class ExportFehler(ValueError):
+    """Export der alten Seite fehlt, ist kein JSON oder hat nicht die WordPress-REST-Form."""
+
+
 def laden_export(ordner: Path) -> tuple[list[dict], dict[int, str]]:
-    posts = json.loads((ordner / "posts.json").read_text(encoding="utf-8"))
+    try:
+        posts = json.loads((ordner / "posts.json").read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise ExportFehler(f"{ordner / 'posts.json'} fehlt") from exc
+    except (OSError, ValueError) as exc:
+        raise ExportFehler(f"{ordner / 'posts.json'} ist kein lesbares JSON: {exc}") from exc
+    if not isinstance(posts, list) or not all(
+            isinstance(p, dict) and {"id", "title", "content"} <= p.keys() for p in posts):
+        raise ExportFehler(f"{ordner / 'posts.json'} hat nicht die Form eines WordPress-REST-Exports "
+                           "(Liste mit id, title, content)")
     kat_datei = ordner / "categories.json"
     kategorien = {}
     if kat_datei.exists():
-        kategorien = {c["id"]: html.unescape(c.get("name", "")) for c in json.loads(kat_datei.read_text(encoding="utf-8"))}
+        try:
+            kategorien = {c["id"]: html.unescape(c.get("name", ""))
+                          for c in json.loads(kat_datei.read_text(encoding="utf-8"))}
+        except (OSError, ValueError, TypeError, KeyError, AttributeError) as exc:
+            raise ExportFehler(f"{kat_datei} ist nicht lesbar: {exc}") from exc
     return posts, kategorien
 
 
 def auswaehlen(posts: list[dict], kategorien: dict[int, str], auswahl: dict[int, str] | None = None) -> list[dict]:
     auswahl = AUSWAHL if auswahl is None else auswahl
-    nach_id = {p["id"]: p for p in posts}
+    nach_id = {p["id"]: p for p in posts if isinstance(p, dict) and "id" in p}
     fehler, out = [], []
     for pid, art in auswahl.items():
         if art not in ARTEN:
@@ -193,9 +213,18 @@ def art_fuer(typ: str, kategorie: str = "") -> str:
 
 
 def laden(path: Path = STYLE_FILE) -> list[dict]:
+    """Gespeicherte Beispiele; fehlt oder bricht die Datei, geht es ohne Beispiele weiter (mit Warnung im Log)."""
     if not path.exists():
         return []
-    return json.loads(path.read_text(encoding="utf-8"))
+    try:
+        daten = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        log.warning("Stilbeispiele nicht lesbar (%s): %s – weiter ohne Beispiele", path.name, exc)
+        return []
+    if not isinstance(daten, list):
+        log.warning("Stilbeispiele in %s sind keine Liste – weiter ohne Beispiele", path.name)
+        return []
+    return [b for b in daten if isinstance(b, dict) and b.get("title") and b.get("text")]
 
 
 def passende(typ: str, kategorie: str = "", n: int = 3, path: Path = STYLE_FILE) -> list[dict]:

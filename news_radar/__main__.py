@@ -88,12 +88,16 @@ def cmd_style_export(ordner: Path, nur_kandidaten: bool = False) -> int:
     """Stilbeispiele aus einem Export der alten Seite (wiederholbar, Auswahl in stilbeispiele.AUSWAHL)."""
     from . import stilbeispiele
 
-    posts, kategorien = stilbeispiele.laden_export(ordner)
-    if nur_kandidaten:
-        for k in stilbeispiele.kandidaten(posts, kategorien):
-            print(f"{k['id']:>6}  {k['woerter']:>5} W  {k['datum']}  {k['rubrik']:<20}  {k['title'][:70]}")
-        return 0
-    beispiele = stilbeispiele.auswaehlen(posts, kategorien)
+    try:
+        posts, kategorien = stilbeispiele.laden_export(ordner)
+        if nur_kandidaten:
+            for k in stilbeispiele.kandidaten(posts, kategorien):
+                print(f"{k['id']:>6}  {k['woerter']:>5} W  {k['datum']}  {k['rubrik']:<20}  {k['title'][:70]}")
+            return 0
+        beispiele = stilbeispiele.auswaehlen(posts, kategorien)
+    except ValueError as exc:  # ExportFehler und untaugliche Auswahl
+        print(f"Stilbeispiele nicht erzeugt: {exc}", file=sys.stderr)
+        return 1
     STYLE_FILE.write_text(json.dumps(beispiele, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"{len(beispiele)} Stilbeispiele gespeichert in {STYLE_FILE}")
     return 0

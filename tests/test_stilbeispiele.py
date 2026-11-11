@@ -106,3 +106,33 @@ def test_gespeicherte_beispiele_ohne_fremde_nachweise():
                         r"\bQuelle\s*:|\bTel\.|^Von [A-ZÄÖÜ]\w+ [A-ZÄÖÜ]\w+$", re.M)
     for b in stilbeispiele.laden():
         assert not muster.search(b["text"]), (b["id"], muster.search(b["text"]).group(0))
+
+
+@pytest.mark.parametrize("kaputt", ["fehlt", "kein_json", "falsche_form", "untauglich"])
+def test_cli_meldet_kaputte_eingabe_ohne_traceback(tmp_path, monkeypatch, capsys, kaputt):
+    from news_radar import __main__ as cli
+
+    ziel = tmp_path / "style.json"
+    monkeypatch.setattr(cli, "STYLE_FILE", ziel)
+    ordner = tmp_path / "export"
+    ordner.mkdir()
+    if kaputt == "kein_json":
+        (ordner / "posts.json").write_text("{kaputt", encoding="utf-8")
+    elif kaputt == "falsche_form":
+        (ordner / "posts.json").write_text('[{"id": 1}]', encoding="utf-8")
+    elif kaputt == "untauglich":
+        (ordner / "posts.json").write_text((EXPORT / "posts.json").read_text(encoding="utf-8"), encoding="utf-8")
+        monkeypatch.setattr(stilbeispiele, "AUSWAHL", {9597: "kueche"})
+    assert cli.main(["style", "--export", str(ordner)]) == 1
+    assert "Stilbeispiele" in capsys.readouterr().err
+    assert not ziel.exists()
+
+
+def test_kaputte_beispieldatei_laesst_export_ohne_beispiele_weiterlaufen(tmp_path):
+    datei = tmp_path / "style.json"
+    datei.write_text("[{kaputt", encoding="utf-8")
+    assert stilbeispiele.laden(datei) == [] and stilbeispiele.passende("event", "", path=datei) == []
+    datei.write_text('{"kein": "liste"}', encoding="utf-8")
+    assert stilbeispiele.laden(datei) == []
+    datei.write_text('[{"title": "ohne Text"}, {"title": "T", "text": "x", "art": "event"}]', encoding="utf-8")
+    assert [b["title"] for b in stilbeispiele.laden(datei)] == ["T"]
