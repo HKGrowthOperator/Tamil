@@ -322,8 +322,9 @@ def main(argv: list[str] | None = None) -> int:
                 return 2
         for e in out["ergebnisse"]:
             print(f"{e['nr']:>3} {e['ergebnis']:<10} {e.get('story_id') or '':>6} {e.get('grund') or ''}")
-        print(f"{out['angelegt']} angelegt, {out['vorhanden']} schon vorhanden, {out['abgelehnt']} abgelehnt")
-        return 0
+        print(f"{out['angelegt']} angelegt, {out['vorhanden']} schon vorhanden, {out['vielleicht_vorhanden']} vielleicht "
+              f"vorhanden, {out['abgelehnt']} abgelehnt, {out['nicht_bearbeitet']} nicht bearbeitet")
+        return 3 if out.get("angehalten") else 0
 
     if args.cmd == "agent" and not args.file:
         print("agent export/import braucht --file", file=sys.stderr)

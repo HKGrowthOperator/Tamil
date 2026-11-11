@@ -142,6 +142,12 @@ def test_export_liefert_nachtrag_mit_hinweisen_und_verwirft_vergangenes_nicht(se
                    "sprache": "de", "art": "bericht"} for i in range(7)]}, "höchstens 6"),
     ({"quellen": [{"url": "ftp://example.org/x", "titel": "t", "herausgeber": "h", "datum": "2026-01-01",
                    "sprache": "de", "art": "bericht"}]}, "http"),
+    ({"arbeitstitel": "x" * 201}, "arbeitstitel"),
+    ({"ort": "x" * 121}, "ort"),
+    ({"bezug": "x" * 1001}, "bezug"),
+    ({"kernfakten": ["x" * 301]}, "kernfakten"),
+    ({"kernfakten": ["x"] * 13}, "kernfakten"),
+    ({"bild_hinweis": "x" * 301}, "bild_hinweis"),
 ])
 def test_ungueltige_vorschlaege_werden_mit_grund_abgelehnt(settings, aenderung, grund):
     with Store(settings.db_path) as store:
@@ -189,7 +195,8 @@ def test_derselbe_vorschlag_zweimal_ergibt_keine_zweite_story(settings):
                                                             "url": "https://www.wdr.de/tempel-hamm", "titel": "t",
                                                             "herausgeber": "WDR", "datum": "2026-03-16",
                                                             "sprache": "de", "art": "bericht"}])])["ergebnisse"][0]
-        assert aehnlich["ergebnis"] == "vorhanden" and aehnlich["story_id"] == erst["story_id"]
+        assert aehnlich["ergebnis"] == "vielleicht_vorhanden" and aehnlich["story_id"] == erst["story_id"]
+        assert aehnlich["grund"] == f"vielleicht schon vorhanden: Story {erst['story_id']}"
         assert len(repo.stories(store)) == 1
 
 
@@ -308,6 +315,99 @@ def test_scan_ordnet_nachtraegen_keine_meldung_mit_job_zu(settings):
         assert store.db.execute("SELECT COUNT(*) FROM agent_usage WHERE story_id = ?", (sid,)).fetchone()[0] == 0
 
 
+QUELLE3 = {"url": "https://www.wdr.de/kultur/abend", "titel": "t", "herausgeber": "WDR", "datum": "2026-03-14",
+           "sprache": "de", "art": "bericht"}
+
+
+def test_titel_dublette_nur_vielleicht_ort_trennt_erzwingen_legt_an(settings):
+    """P2/P3: verschiedener Ort ist keine Dublette; reine Titelähnlichkeit meldet nur; eine gemeinsame Adresse reicht
+    nicht, nur wenn alle Adressen schon Beleg derselben Story sind."""
+    zh = vorschlag(arbeitstitel="Tamilischer Kulturabend in Zürich", ort="Zürich", quellen=[vorschlag()["quellen"][0]])
+    be = vorschlag(arbeitstitel="Tamilischer Kulturabend in Bern", ort="Bern", quellen=[QUELLE3])
+    with Store(settings.db_path) as store:
+        seiten = {**SEITEN, QUELLE3["url"]: html(ARTIKEL2)}
+        out = annehmen(store, settings, [zh, be], seiten=seiten)
+        assert [e["ergebnis"] for e in out["ergebnisse"]] == ["angelegt", "angelegt"]
+        bern2 = {**be, "quellen": [{**QUELLE3, "url": "https://www.derbund.ch/kulturabend"}]}
+        seiten["https://www.derbund.ch/kulturabend"] = html(ARTIKEL2)
+        e = annehmen(store, settings, [bern2], seiten=seiten)["ergebnisse"][0]
+        assert e["ergebnis"] == "vielleicht_vorhanden" and e["story_id"] == out["ergebnisse"][1]["story_id"]
+        e = annehmen(store, settings, [{**bern2, "erzwingen": True}], seiten=seiten)["ergebnisse"][0]
+        assert e["ergebnis"] == "angelegt"
+        # Jahresbericht: eine gemeinsame Adresse plus eine neue → kein Abweisen
+        neu = vorschlag(arbeitstitel="Tamil-Schule Essen feiert Jubiläum", ort="Essen",
+                        quellen=[vorschlag()["quellen"][0], {**QUELLE3, "url": "https://www.waz.de/essen/schule"}])
+        seiten["https://www.waz.de/essen/schule"] = html(ARTIKEL2)
+        assert annehmen(store, settings, [neu], seiten=seiten)["ergebnisse"][0]["ergebnis"] == "angelegt"
+        assert annehmen(store, settings, [neu], seiten=seiten)["ergebnisse"][0]["ergebnis"] == "vorhanden"
+
+
+def test_verschraenkte_aufrufe_legen_keine_doppelte_story_an(settings):
+    """P2: Zwischen Dublettenprüfung und Anlegen liegen die Abrufe – ein zweiter Aufruf darf dazwischenkommen."""
+    with Store(settings.db_path) as store:
+        innen = {}
+        basis = abruf_aus(SEITEN)
+
+        def abruf(url, frist=None):
+            if not innen:  # während Aufruf A seine Quellen holt, läuft Aufruf B vollständig durch
+                innen["b"] = nachtrag.annehmen(store, settings, {"vorschlaege": [vorschlag()]}, von="b",
+                                               ctx=kontext(store, settings), abruf=basis)
+            return basis(url, frist)
+        a = nachtrag.annehmen(store, settings, {"vorschlaege": [vorschlag()]}, von="a", ctx=kontext(store, settings),
+                              abruf=abruf)["ergebnisse"][0]
+        b = innen["b"]["ergebnisse"][0]
+        assert b["ergebnis"] == "angelegt" and a["ergebnis"] == "vorhanden" and a["story_id"] == b["story_id"]
+        assert len(repo.stories(store)) == 1 and len(repo.dokumente(store, b["story_id"])) == 2
+
+
+def test_zeitlimit_je_aufruf_und_hoechstzahl(settings):
+    """P2: Gesamtfrist je Aufruf; was nicht mehr geschafft wird, kommt als „nicht bearbeitet“ zurück, ohne Story."""
+    uhr = {"t": 0.0}
+    fristen = []
+    basis = abruf_aus({**SEITEN, QUELLE3["url"]: html(ARTIKEL2)})
+
+    def langsam(url, frist=None):
+        fristen.append(frist)
+        uhr["t"] += 50
+        return basis(url, frist)
+    eins = vorschlag(quellen=[vorschlag()["quellen"][0]])
+    zwei = vorschlag(arbeitstitel="Kulturabend in Bern", ort="Bern", quellen=[QUELLE3])
+    with Store(settings.db_path) as store:
+        out = nachtrag.annehmen(store, settings, {"vorschlaege": [eins, zwei, {**zwei, "arbeitstitel": "Drittes"}]},
+                                ctx=kontext(store, settings), abruf=langsam, frist_gesamt=90, frist_abruf=20,
+                                uhr=lambda: uhr["t"])
+        assert [e["ergebnis"] for e in out["ergebnisse"]] == ["angelegt", "angelegt", "nicht_bearbeitet"]
+        assert out["ergebnisse"][2]["grund"] == "nicht bearbeitet: Zeitlimit" and out["nicht_bearbeitet"] == 1
+        assert fristen == [20, 70]  # je Abruf höchstens 20 s, nie über die Gesamtfrist hinaus
+        assert len(repo.stories(store)) == 2
+        with pytest.raises(ValueError, match="höchstens 5"):
+            nachtrag.annehmen(store, settings, {"vorschlaege": [eins] * 6}, max_vorschlaege=5,
+                              ctx=kontext(store, settings), abruf=basis)
+
+
+def test_safe_get_haelt_die_gesamtfrist_ein():
+    import time
+
+    with pytest.raises(net.Zeitlimit):
+        net.safe_get("https://www.example.org/", frist=time.monotonic() - 1)
+
+
+def test_stopp_mitten_im_stapel_liefert_bisherige_ergebnisse(settings):
+    with Store(settings.db_path) as store:
+        basis = abruf_aus({**SEITEN, QUELLE3["url"]: html(ARTIKEL2)})
+
+        def abruf(url, frist=None):
+            schalter.setzen(store, "redaktion", True, wer="anna", grund="Pause")
+            return basis(url, frist)
+        out = nachtrag.annehmen(store, settings, {"vorschlaege": [
+            vorschlag(quellen=[vorschlag()["quellen"][0]]),
+            vorschlag(arbeitstitel="Kulturabend in Bern", ort="Bern", quellen=[QUELLE3])]},
+            ctx=kontext(store, settings), abruf=abruf)
+        assert [e["ergebnis"] for e in out["ergebnisse"]] == ["angelegt", "nicht_bearbeitet"]
+        assert out["angehalten"]["kanal"] == "redaktion" and "angehalten" in out["ergebnisse"][1]["grund"]
+        assert len(repo.stories(store)) == 1
+
+
 # ---- Import und Veröffentlichung ------------------------------------------------------------------------
 
 def _ergebnis(paket: dict) -> dict:
@@ -375,6 +475,8 @@ def test_route_vorschlag_mit_token_stopp_und_fehlern(settings, monkeypatch):
                        headers={"Authorization": "Bearer falsch"}).status_code == 401
     assert client.post("/api/agent/vorschlag", data="x", headers=kopf, content_type="text/plain").status_code == 400
     assert client.post("/api/agent/vorschlag", json={"vorschlaege": "x"}, headers=kopf).status_code == 400
+    zu_viele = client.post("/api/agent/vorschlag", json={"vorschlaege": [vorschlag()] * 6}, headers=kopf)
+    assert zu_viele.status_code == 400 and "höchstens 5" in zu_viele.get_json()["fehler"]
     resp = client.post("/api/agent/vorschlag?von=rueckblick", json={"vorschlaege": [vorschlag(), vorschlag()]},
                        headers=kopf)
     data = resp.get_json()

@@ -93,14 +93,18 @@ def agent_vorschlag():
     if raw is None:
         return jsonify({"fehler": "JSON erwartet"}), 400
     von = str(request.args.get("von") or "claude-code")[:60]
+    from ..nachtrag import WEB_FRIST_GESAMT, WEB_MAX_VORSCHLAEGE
+
     try:
-        out = annehmen(get_store(), g.settings, raw, von=von)
+        out = annehmen(get_store(), g.settings, raw, von=von, max_vorschlaege=WEB_MAX_VORSCHLAEGE,
+                       frist_gesamt=WEB_FRIST_GESAMT)
     except schalter.Gestoppt as exc:
         return _angehalten(exc)
     except ValueError as exc:
         return jsonify({"fehler": str(exc)}), 400
-    get_store().event("agent_api_vorschlag", von=von, angelegt=out["angelegt"], vorhanden=out["vorhanden"],
-                      abgelehnt=out["abgelehnt"])
+    get_store().event("agent_api_vorschlag", von=von, **{k: v for k, v in out.items() if isinstance(v, int)})
+    if out.get("angehalten"):  # mitten im Stapel angehalten: 409, mit den bis dahin erzielten Ergebnissen
+        return jsonify({"fehler": "Redaktion angehalten", **out["angehalten"], **out}), 409
     return jsonify(out)
 
 

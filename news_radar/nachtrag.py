@@ -2,9 +2,14 @@
 
   POST /api/agent/vorschlag  (Bearer RADAR_AGENT_TOKEN)   ·   python -m news_radar agent vorschlag --datei v.json
 
-Eingabe: {"vorschlaege": [...]} oder eine Liste. Je Vorschlag: arbeitstitel, datum (JJJJ-MM-TT, Tag des Ereignisses
-oder der Meldung), rubrik, ort, bezug, heikel, quellen [{url, titel, herausgeber, datum, sprache, art}], optional
-kernfakten und bild_hinweis (nur Hinweise für den Agenten, nie Belege).
+Eingabe: {"vorschlaege": [...]} oder eine Liste (Web höchstens 5, CLI höchstens 100 je Aufruf). Je Vorschlag:
+arbeitstitel, datum (JJJJ-MM-TT, Tag des Ereignisses oder der Meldung), rubrik, ort, bezug, heikel, quellen
+[{url, titel, herausgeber, datum, sprache, art}], optional kernfakten, bild_hinweis (nur Hinweise für den Agenten,
+nie Belege) und erzwingen (legt trotz „vielleicht schon vorhanden“ an).
+
+Ergebnis je Vorschlag: angelegt · vorhanden (alle Adressen sind schon Beleg derselben Story) · vielleicht_vorhanden
+(ähnlicher Titel, gleicher oder unbekannter Ort, im selben Zeitraum) · abgelehnt · nicht_bearbeitet (Zeitlimit oder
+Stopp). Dublettenprüfung und Anlegen laufen zusammen in einer Schreibtransaktion.
 
 Der Radar holt jede Quelle selbst (net.safe_get, Stopp-Schalter vor jedem Abruf) und legt sie als source_documents
 an; Text und Titel eines Dokuments stammen nie aus dem Vorschlag, sondern aus der abgerufenen Seite (Titel aus
@@ -14,8 +19,10 @@ og:title bzw. <title>, sonst leer) – sonst würde ein erfundener „Titel“ z
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
+import time
 from datetime import date, timedelta
 from difflib import SequenceMatcher
 from html import unescape
@@ -28,37 +35,41 @@ from . import net, schalter, sources
 from .agents import Kontext
 from .agents.research import VOLLTEXT_MIN
 from .config import Settings
-from .store import Store
+from .store import Store, now_iso
 from .workflow import repo
 
 RUBRIKEN = ("news", "community", "entertainment", "kino", "events", "kueche", "sport", "kultur")
 MAX_QUELLEN = 6
-MAX_VORSCHLAEGE = 20  # je Aufruf: jeder Vorschlag holt bis zu 6 Seiten
+MAX_VORSCHLAEGE = 100  # CLI je Aufruf; die Web-Route erlaubt höchstens WEB_MAX_VORSCHLAEGE
+WEB_MAX_VORSCHLAEGE = 5
+WEB_FRIST_GESAMT = 90.0  # Sekunden je Web-Aufruf (der Webserver bricht nach 120 s ab)
+FRIST_ABRUF = 20.0  # Sekunden je Seitenabruf (gesamt, nicht je Socket-Operation)
 FRUEHESTES = date(2020, 1, 1)
-ZEITRAUM_TAGE = 14  # Titel-Dublette: ähnlicher Titel in diesem Abstand zum Ereignisdatum
+ZEITRAUM_TAGE = 14  # Titel-Ähnlichkeit: im Abstand von höchstens so vielen Tagen zum Ereignisdatum
 AEHNLICH = 0.82
 TEXT_MAX = 20000
 
 
 class Quelle(BaseModel):
-    url: str
-    titel: str = ""
-    herausgeber: str = ""
-    datum: str = ""
-    sprache: str = "de"
-    art: str = ""
+    url: str = Field(max_length=2000)
+    titel: str = Field(default="", max_length=300)  # nur zur Orientierung, wird nie Dokument-Titel
+    herausgeber: str = Field(default="", max_length=120)
+    datum: str = Field(default="", max_length=40)
+    sprache: str = Field(default="de", max_length=8)
+    art: str = Field(default="", max_length=40)
 
 
 class Vorschlag(BaseModel):
-    arbeitstitel: str = Field(min_length=3, max_length=300)
+    arbeitstitel: str = Field(min_length=3, max_length=200)
     datum: str
     rubrik: str
-    ort: str = ""
-    bezug: str = ""
+    ort: str = Field(default="", max_length=120)
+    bezug: str = Field(default="", max_length=1000)
     heikel: bool = False
     quellen: list[Quelle] = Field(min_length=1)
-    kernfakten: list[str] = Field(default_factory=list)
-    bild_hinweis: str = ""
+    kernfakten: list[str] = Field(default_factory=list, max_length=12)
+    bild_hinweis: str = Field(default="", max_length=300)
+    erzwingen: bool = False
 
     @field_validator("datum")
     @classmethod
@@ -73,6 +84,13 @@ class Vorschlag(BaseModel):
     def _rubrik(cls, v: str) -> str:
         if v not in RUBRIKEN:
             raise ValueError(f"rubrik muss eine von {', '.join(RUBRIKEN)} sein")
+        return v
+
+    @field_validator("kernfakten")
+    @classmethod
+    def _kernfakten(cls, v: list[str]) -> list[str]:
+        if any(len(k) > 300 for k in v):
+            raise ValueError("je Kernfakt höchstens 300 Zeichen")
         return v
 
     @field_validator("quellen")
@@ -99,7 +117,7 @@ _TITEL_RES = (
 
 def standard_abruf(url: str, frist: float | None = None) -> net.Fetched:
     """Seite holen: SSRF-Schutz, Umleitungen geprüft, Größenlimit (net.safe_get)."""
-    return net.safe_get(url, accept=net.TEXT_TYPES, timeout=8, max_bytes=3_000_000)
+    return net.safe_get(url, accept=net.TEXT_TYPES, timeout=8, max_bytes=3_000_000, frist=frist)
 
 
 def _flach(s: str) -> str:
@@ -144,6 +162,10 @@ def seite_lesen(seite: net.Fetched) -> tuple[str, str]:
     return sources.extract_paragraphs(roh, TEXT_MAX), titel
 
 
+class Zeitlimit(Exception):
+    """Die Gesamtfrist des Aufrufs ist abgelaufen."""
+
+
 def _fehlertext(exc: ValidationError) -> str:
     err = exc.errors()[0]
     feld = ".".join(str(x) for x in err.get("loc", ()))
@@ -154,27 +176,52 @@ def _norm(titel: str) -> str:
     return " ".join(re.findall(r"\w+", (titel or "").lower()))
 
 
-def _dublette(store: Store, v: Vorschlag) -> int | None:
-    """Story, die diesen Vorschlag schon abdeckt: eine der Adressen ist dort Beleg, oder ein sehr ähnlicher Titel im
-    selben Zeitraum. Vom Scan verworfene Radar-Storys zählen nicht (ein Rückblick-Ereignis ist oft „vorbei“ verworfen
-    worden); Nachtrag-Storys zählen in jedem Status."""
+def _uid(url: str) -> str:
+    return f"nachtrag:{repo.normalize_url(url)}"
+
+
+def _alle_adressen_belegt(store: Store, v: Vorschlag) -> int | None:
+    """Harte Dublette: **alle** Adressen des Vorschlags sind schon Beleg derselben Story. Eine einzelne gemeinsame
+    Adresse (etwa ein Jahresbericht) reicht nicht. Vom Scan verworfene Radar-Storys zählen nicht (ein vergangenes
+    Ereignis ist dort oft als „vorbei“ verworfen worden); Nachtrag-Storys zählen in jedem Status."""
+    gemeinsam: set[int] | None = None
     for q in v.quellen:
-        norm = repo.normalize_url(q.url)
-        row = store.db.execute(
-            "SELECT s.id FROM source_documents d JOIN stories s ON s.id = d.story_id WHERE (d.url_norm = ? OR d.uid = ?) "
-            "AND NOT (s.herkunft = 'radar' AND s.status = 'verworfen') ORDER BY s.id LIMIT 1",
-            (norm, f"nachtrag:{norm}")).fetchone()
-        if row:
-            return row[0]
+        ids = {r[0] for r in store.db.execute(
+            "SELECT DISTINCT s.id FROM source_documents d JOIN stories s ON s.id = d.story_id "
+            "WHERE (d.url_norm = ? OR d.uid = ?) AND NOT (s.herkunft = 'radar' AND s.status = 'verworfen')",
+            (repo.normalize_url(q.url), _uid(q.url)))}
+        gemeinsam = ids if gemeinsam is None else gemeinsam & ids
+        if not gemeinsam:
+            return None
+    return min(gemeinsam) if gemeinsam else None
+
+
+def _aehnlicher_titel(store: Store, v: Vorschlag) -> int | None:
+    """Weiche Dublette: sehr ähnlicher Titel im selben Zeitraum – nicht bei verschiedenem Ort."""
     tag = date.fromisoformat(v.datum)
     von, bis = (tag - timedelta(days=ZEITRAUM_TAGE)).isoformat(), (tag + timedelta(days=ZEITRAUM_TAGE)).isoformat()
-    titel = _norm(v.arbeitstitel)
+    titel, ort = _norm(v.arbeitstitel), _norm(v.ort)
     for row in store.db.execute(
-            "SELECT id, titel FROM stories WHERE (herkunft = 'nachtrag' AND ereignis_datum BETWEEN ? AND ?) "
+            "SELECT id, titel, ort FROM stories WHERE (herkunft = 'nachtrag' AND ereignis_datum BETWEEN ? AND ?) "
             "OR (herkunft = 'radar' AND status != 'verworfen' AND substr(erstellt, 1, 10) BETWEEN ? AND ?) ORDER BY id",
             (von, bis, von, bis)):
+        anderer_ort = _norm(row["ort"])
+        if ort and anderer_ort and ort != anderer_ort:
+            continue
         if SequenceMatcher(None, titel, _norm(row["titel"])).ratio() >= AEHNLICH:
             return row["id"]
+    return None
+
+
+def _dublette(store: Store, v: Vorschlag) -> dict | None:
+    sid = _alle_adressen_belegt(store, v)
+    if sid:
+        return {"ergebnis": "vorhanden", "story_id": sid, "grund": f"schon vorhanden: Story {sid}"}
+    if not v.erzwingen:
+        sid = _aehnlicher_titel(store, v)
+        if sid:
+            return {"ergebnis": "vielleicht_vorhanden", "story_id": sid,
+                    "grund": f"vielleicht schon vorhanden: Story {sid}"}
     return None
 
 
@@ -199,21 +246,64 @@ def _pruefen(raw, heute: date) -> Vorschlag:
     return v
 
 
-def _eins(ctx: Kontext, store: Store, raw, nr: int, von: str, abruf: Callable) -> dict:
+def _anlegen(store: Store, v: Vorschlag, geholt: list) -> dict:
+    """Dublettenprüfung wiederholen und Story mit Dokumenten anlegen – in einer Schreibtransaktion (BEGIN IMMEDIATE),
+    damit zwei gleichzeitige Aufrufe nicht beide anlegen (zwischen erster Prüfung und hier lagen die Abrufe)."""
+    hinweise = {"bezug": v.bezug, "kernfakten": v.kernfakten, "bild_hinweis": v.bild_hinweis}
+    with store.lock:
+        db = store.db
+        if db.in_transaction:
+            db.commit()
+        db.execute("BEGIN IMMEDIATE")
+        try:
+            dublette = _dublette(store, v)
+            if dublette:
+                db.rollback()
+                return dublette
+            ts = now_iso()
+            sid = db.execute(
+                "INSERT INTO stories (typ, status, titel, kategorie, ort, region, sensibel, schluessel, prioritaet, "
+                "laenge, relevanz, begruendung, notiz, herkunft, ereignis_datum, vorschlag, erstellt, aktualisiert) "
+                "VALUES ('news', 'neu', ?, ?, ?, '', ?, '', 0, 'normal', 7, 'Nachtrag für den Rückblick', ?, "
+                "'nachtrag', ?, ?, ?, ?)",
+                (v.arbeitstitel, v.rubrik, v.ort, 1 if v.heikel else 0, f"Nachtrag · Bezug: {v.bezug}"[:900], v.datum,
+                 json.dumps(hinweise, ensure_ascii=False), ts, ts)).lastrowid
+            for n, (q, text, seitentitel, gelesen) in enumerate(geholt, 1):
+                # verlinkt wird die gelesene Adresse; die Ursprungsadresse bleibt als uid für die Dublettenprüfung
+                db.execute(
+                    "INSERT INTO source_documents (story_id, doc_key, url, url_norm, uid, publisher, quelle, "
+                    "published_at, retrieved_at, language, rights, primaer, art, titel, text, text_sha256, auszug) "
+                    "VALUES (?,?,?,?,?,?, 'Nachtrag', ?,?,?, 'zitat', 1, 'volltext', ?,?,?,?)",
+                    (sid, f"Q{n}", gelesen, repo.normalize_url(gelesen), _uid(q.url),
+                     herausgeber(q.herausgeber, gelesen), _datum_streng(q.datum), ts, (q.sprache or "de")[:8],
+                     seitentitel, text, hashlib.sha256(text.encode("utf-8")).hexdigest(), text[:500]))
+            db.commit()
+        except BaseException:
+            db.rollback()
+            raise
+    return {"ergebnis": "angelegt", "story_id": sid}
+
+
+def _eins(store: Store, raw, nr: int, von: str, abruf: Callable, heute: date, uhr: Callable[[], float],
+          ende: float | None, frist_abruf: float) -> dict:
     titel = raw.get("arbeitstitel", "") if isinstance(raw, dict) else ""
     out: dict = {"nr": nr, "arbeitstitel": str(titel)[:120]}
     try:
-        v = _pruefen(raw, ctx.uhr().date())
+        v = _pruefen(raw, heute)
     except VorschlagAbgelehnt as exc:
         return {**out, "ergebnis": "abgelehnt", "grund": str(exc)[:300]}
-    vorhanden = _dublette(store, v)
-    if vorhanden:
-        return {**out, "ergebnis": "vorhanden", "story_id": vorhanden, "grund": f"schon vorhanden: Story {vorhanden}"}
+    dublette = _dublette(store, v)  # vor den Abrufen: nichts holen, was schon da ist
+    if dublette:
+        return {**out, **dublette}
     geholt, uebersprungen = [], []
     for q in v.quellen:
+        jetzt = uhr()
+        if ende is not None and jetzt >= ende:
+            raise Zeitlimit
         schalter.pruefen(store, "redaktion")  # unmittelbar vor dem Abruf
+        frist = jetzt + frist_abruf if ende is None else min(jetzt + frist_abruf, ende)
         try:
-            seite = abruf(q.url)
+            seite = abruf(q.url, frist=frist)
             text, seitentitel = seite_lesen(seite)
         except Exception as exc:  # noqa: BLE001 – eine kaputte Seite stoppt den Vorschlag nicht
             uebersprungen.append({"url": q.url, "grund": f"nicht abrufbar ({type(exc).__name__})"[:80]})
@@ -221,20 +311,13 @@ def _eins(ctx: Kontext, store: Store, raw, nr: int, von: str, abruf: Callable) -
         if len(text or "") < VOLLTEXT_MIN:
             uebersprungen.append({"url": q.url, "grund": "ohne lesbaren Text"})
             continue
-        geholt.append((q, text, seitentitel, seite.url or q.url))
+        geholt.append((q, text[:TEXT_MAX], seitentitel, seite.url or q.url))
     if not geholt:
         return {**out, "ergebnis": "abgelehnt", "grund": "keine Quelle abrufbar", "quellen_uebersprungen": uebersprungen}
-    sid = repo.story_anlegen(store, typ="news", titel=v.arbeitstitel, kategorie=v.rubrik, ort=v.ort,
-                             sensibel=v.heikel, status="neu", relevanz=7, begruendung="Nachtrag für den Rückblick")
-    hinweise = {"bezug": v.bezug, "kernfakten": v.kernfakten[:12], "bild_hinweis": v.bild_hinweis[:300]}
-    store._write("UPDATE stories SET herkunft = 'nachtrag', ereignis_datum = ?, vorschlag = ?, notiz = ? WHERE id = ?",
-                 (v.datum, json.dumps(hinweise, ensure_ascii=False), f"Nachtrag · Bezug: {v.bezug}"[:900], sid))
-    for q, text, seitentitel, gelesen in geholt:
-        # verlinkt wird die gelesene Adresse; die Ursprungsadresse bleibt als uid für die Dublettenprüfung
-        repo.dokument_hinzufuegen(store, sid, url=gelesen, uid=f"nachtrag:{repo.normalize_url(q.url)}",
-                                  publisher=herausgeber(q.herausgeber, gelesen), quelle="Nachtrag",
-                                  published_at=_datum_streng(q.datum), language=(q.sprache or "de")[:8], rights="zitat",
-                                  primaer=True, art="volltext", titel=seitentitel, text=text[:TEXT_MAX])
+    ergebnis = _anlegen(store, v, geholt)
+    if ergebnis["ergebnis"] != "angelegt":
+        return {**out, **ergebnis}
+    sid = ergebnis["story_id"]
     repo.aktion(store, wer=von[:60], aktion="nachtrag_angelegt", story_id=sid, kanal="redaktion", ausloeser="agent",
                 notiz=f"{len(geholt)} Quellen geholt, {len(uebersprungen)} übersprungen")
     store.event("nachtrag", story=sid, quellen=len(geholt), uebersprungen=len(uebersprungen), von=von[:60])
@@ -242,17 +325,40 @@ def _eins(ctx: Kontext, store: Store, raw, nr: int, von: str, abruf: Callable) -
             "quellen_uebersprungen": uebersprungen}
 
 
+ERGEBNISSE = ("angelegt", "vorhanden", "vielleicht_vorhanden", "abgelehnt", "nicht_bearbeitet")
+
+
 def annehmen(store: Store, settings: Settings, raw, *, von: str = "agent", ctx: Kontext | None = None,
-             abruf: Callable | None = None) -> dict:
-    """Vorschläge annehmen. Hält der Schalter „redaktion“ an, wirft schalter.Gestoppt, bevor etwas abgerufen wird."""
+             abruf: Callable | None = None, max_vorschlaege: int = MAX_VORSCHLAEGE,
+             frist_gesamt: float | None = None, frist_abruf: float = FRIST_ABRUF,
+             uhr: Callable[[], float] = time.monotonic) -> dict:
+    """Vorschläge annehmen. Hält der Schalter „redaktion“ schon vorher an, wirft schalter.Gestoppt (nichts getan);
+    hält er mitten im Stapel an, enthält die Antwort die bisherigen Ergebnisse und „angehalten“."""
     schalter.pruefen(store, "redaktion")
     items = raw.get("vorschlaege") if isinstance(raw, dict) else raw
     if not isinstance(items, list):
         raise ValueError('Vorschläge: erwartet {"vorschlaege": [...]} oder eine Liste')
-    if len(items) > MAX_VORSCHLAEGE:
-        raise ValueError(f"höchstens {MAX_VORSCHLAEGE} Vorschläge je Aufruf")
+    if len(items) > max_vorschlaege:
+        raise ValueError(f"höchstens {max_vorschlaege} Vorschläge je Aufruf")
     ctx = ctx or Kontext(settings=settings, store=store)
     abruf = abruf or (lambda url, frist=None: standard_abruf(url, frist=frist))  # zur Laufzeit (austauschbar)
-    ergebnisse = [_eins(ctx, store, raw_v, nr, von, abruf) for nr, raw_v in enumerate(items, 1)]
-    zaehler = {k: sum(1 for e in ergebnisse if e["ergebnis"] == k) for k in ("angelegt", "vorhanden", "abgelehnt")}
-    return {"ergebnisse": ergebnisse, **zaehler}
+    heute = ctx.uhr().date()
+    ende = uhr() + frist_gesamt if frist_gesamt is not None else None
+    ergebnisse: list[dict] = []
+    angehalten = None
+    for nr, raw_v in enumerate(items, 1):
+        titel = str(raw_v.get("arbeitstitel", "") if isinstance(raw_v, dict) else "")[:120]
+        if angehalten is None and (ende is None or uhr() < ende):
+            try:
+                ergebnisse.append(_eins(store, raw_v, nr, von, abruf, heute, uhr, ende, frist_abruf))
+                continue
+            except Zeitlimit:
+                pass
+            except schalter.Gestoppt as exc:
+                angehalten = {"kanal": exc.sperre["kanal"], "seit": exc.sperre["seit"]}
+        grund = "nicht bearbeitet: angehalten" if angehalten else "nicht bearbeitet: Zeitlimit"
+        ergebnisse.append({"nr": nr, "arbeitstitel": titel, "ergebnis": "nicht_bearbeitet", "grund": grund})
+    out = {"ergebnisse": ergebnisse, **{k: sum(1 for e in ergebnisse if e["ergebnis"] == k) for k in ERGEBNISSE}}
+    if angehalten:
+        out["angehalten"] = angehalten
+    return out
