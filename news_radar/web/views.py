@@ -164,7 +164,8 @@ def sammelfreigabe():
     ziel = sicheres_ziel(request.form.get("next"), url_for("ui.feed"))
     ids: list[int] = []
     for roh in request.form.getlist("ids"):
-        if roh.isdigit() and int(roh) not in ids:
+        # nur ASCII-Ziffern: isdigit() ließe „²“ durch (int() scheitert), isdecimal() allein andere Schriften
+        if roh.isascii() and roh.isdecimal() and int(roh) not in ids:
             ids.append(int(roh))
     if not ids:
         flash("Keine Entwürfe ausgewählt.", "fehler")
