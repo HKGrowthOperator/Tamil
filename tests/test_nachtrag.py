@@ -712,3 +712,54 @@ def test_html_quelle_unveraendert_neben_pdf(settings):
         docs = repo.dokumente(store, e["story_id"])
         assert [d.url for d in docs] == [URL1, PDF_URL] and docs[0].text == ARTIKEL1
         assert docs[0].titel == "Tempel eröffnet Gemeindehaus – Lokales"
+
+
+# ---- Notanker: strukturierte Angaben (JSON-LD), wenn eine Seite ohne JavaScript keinen Text hat --------------
+
+KINO_URL = "https://www.kino-beispiel.de/film/jailer-2"
+KINO_LD = {"@context": "https://schema.org", "@graph": [
+    {"@type": "Organization", "name": "Kino Beispiel GmbH"},
+    {"@type": ["Movie"], "name": "Jailer 2", "inLanguage": "ta", "duration": "PT2H48M",
+     "description": "Rajinikanth kehrt als pensionierter Gefängnisdirektor Muthuvel Pandian zurück und muss seine "
+                    "Familie vor einem alten Gegner schützen. Der Film läuft in tamilischer Originalfassung mit "
+                    "deutschen Untertiteln in ausgewählten Kinos in Deutschland, Österreich und der Schweiz.",
+     "director": {"@type": "Person", "name": "Nelson Dilipkumar"},
+     "actor": [{"@type": "Person", "name": "Rajinikanth"}, {"@type": "Person", "name": "Ramya Krishnan"}]},
+    {"@type": "ScreeningEvent", "name": "Jailer 2 (OmU)", "startDate": "2026-06-12T20:00",
+     "location": {"@type": "MovieTheater", "name": "Kino Beispiel Saal 3",
+                  "address": {"@type": "PostalAddress", "streetAddress": "Hauptstraße 1", "postalCode": "50667",
+                              "addressLocality": "Köln"}},
+     "offers": [{"@type": "Offer", "price": "14.50", "priceCurrency": "EUR"}]}]}
+
+
+def kino_html(ld, text: str = "") -> str:
+    skript = f'<script type="application/ld+json">{json.dumps(ld, ensure_ascii=False)}</script>'
+    return f"<html><head><title>Jailer 2 – Kino</title>{skript}</head><body><div id='app'></div>{text}</body></html>"
+
+
+def html_seite(roh: str) -> net.Fetched:
+    return net.Fetched(url=KINO_URL, status=200, content=roh.encode("utf-8"), content_type="text/html; charset=utf-8")
+
+
+def test_seite_ohne_text_mit_json_ld_wird_zu_strukturierten_angaben(settings):
+    v = vorschlag(arbeitstitel="Jailer 2 im Kino", rubrik="kino", ort="Köln", quellen=[
+        {"url": KINO_URL, "titel": "t", "herausgeber": "Kino", "datum": "2026-06-01", "sprache": "de", "art": "kino"}])
+    with Store(settings.db_path) as store:
+        e = annehmen(store, settings, [v], seiten={KINO_URL: kino_html(KINO_LD)})["ergebnisse"][0]
+        assert e["ergebnis"] == "angelegt", e
+        doc = repo.dokumente(store, e["story_id"])[0]
+        t = doc.text
+        assert t.startswith("Angaben der Seite (strukturierte Daten)") and doc.titel == "Jailer 2 – Kino"
+        for wert in ("Jailer 2", "Rajinikanth kehrt als pensionierter Gefängnisdirektor", "Nelson Dilipkumar",
+                     "Ramya Krishnan", "PT2H48M", "2026-06-12T20:00", "Kino Beispiel Saal 3", "Hauptstraße 1",
+                     "Köln", "14.50", "inLanguage: ta"):
+            assert wert in t, wert
+        assert "Kino Beispiel GmbH" not in t  # nur Movie, Event, ScreeningEvent, NewsArticle, Article
+
+
+def test_json_ld_nur_als_notanker_und_nur_passende_typen():
+    assert nachtrag.seite_lesen(html_seite(kino_html(KINO_LD, f"<article><p>{ARTIKEL1}</p></article>")))[0] == ARTIKEL1
+    nur_firma = {"@type": "Organization", "name": "Kino Beispiel GmbH", "description": "x" * 400}
+    kaputt = '<html><script type="application/ld+json">{kein json</script><body></body></html>'
+    for roh in (kino_html(nur_firma), kaputt):
+        assert nachtrag.seite_lesen(html_seite(roh))[0] == ""

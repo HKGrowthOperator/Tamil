@@ -236,6 +236,64 @@ def _datum_streng(wert: str) -> str:
     return wert
 
 
+_LD_RE = re.compile(r"<script[^>]+type=[\"']application/ld\+json[\"'][^>]*>(.*?)</script\s*>", re.I | re.S)
+LD_TYPEN = {"Movie", "Event", "ScreeningEvent", "NewsArticle", "Article"}
+LD_FELDER = ("name", "description", "startDate", "endDate", "datePublished", "location.name", "location.address",
+             "director", "actor", "duration", "inLanguage", "offers.price")
+LD_KOPF = "Angaben der Seite (strukturierte Daten)"
+
+
+def _ld_objekte(roh: str):
+    for m in _LD_RE.finditer(roh):
+        try:
+            daten = json.loads(m.group(1).strip())
+        except ValueError:
+            continue
+        stapel = daten if isinstance(daten, list) else [daten]
+        for obj in stapel:
+            if isinstance(obj, dict):
+                yield obj
+                stapel_graph = obj.get("@graph")
+                if isinstance(stapel_graph, list):
+                    yield from (o for o in stapel_graph if isinstance(o, dict))
+
+
+def _ld_werte(wert) -> list[str]:
+    """Wörtliche Werte: Text und Zahlen unverändert, Personen/Orte über name, Adressen über ihre Felder."""
+    if isinstance(wert, (str, int, float)) and not isinstance(wert, bool):
+        return [sources.clean_text(unescape(str(wert)))]
+    if isinstance(wert, list):
+        return [w for x in wert for w in _ld_werte(x)]
+    if isinstance(wert, dict):
+        if "name" in wert:
+            return _ld_werte(wert["name"])
+        teile = [w for k in ("streetAddress", "postalCode", "addressLocality", "addressRegion", "addressCountry")
+                 for w in _ld_werte(wert.get(k))]
+        return [" ".join(teile)] if teile else []
+    return []
+
+
+def strukturierte_angaben(roh: str) -> str:
+    """Notanker für Seiten ohne lesbaren Text: Felder aus JSON-LD (Movie, Event, ScreeningEvent, NewsArticle, Article),
+    nur wörtlich übernommene Werte, höchstens TEXT_MAX. Leer, wenn nichts Passendes da ist."""
+    zeilen = []
+    for obj in _ld_objekte(roh):
+        typ = obj.get("@type")
+        if not ({typ} if isinstance(typ, str) else set(typ) if isinstance(typ, list) else set()) & LD_TYPEN:
+            continue
+        for feld in LD_FELDER:
+            wert = obj
+            for teil in feld.split("."):
+                wert = (wert[0] if wert else None) if isinstance(wert, list) else wert
+                wert = wert.get(teil) if isinstance(wert, dict) else None
+            werte = [w for w in _ld_werte(wert) if w]
+            if werte:
+                zeilen.append(f"{feld}: {', '.join(werte)}")
+        zeilen.append("")
+    text = "\n".join(zeilen).strip()
+    return f"{LD_KOPF}\n\n{text}"[:TEXT_MAX] if text else ""
+
+
 def seite_lesen(seite: net.Fetched, adresse: str = "") -> tuple[str, str]:
     """(Text, Titel) der abgerufenen Seite. Der Titel kommt nur aus og:title oder <title>, sonst bleibt er leer.
     PDF: Text ab der Seite aus dem Anker „#page=N“ der Adresse (sonst Seite 1), Titel aus den Metadaten."""
@@ -248,7 +306,10 @@ def seite_lesen(seite: net.Fetched, adresse: str = "") -> tuple[str, str]:
         if m and m.group(1).strip():
             titel = sources.clean_text(unescape(m.group(1)))[:300]
             break
-    return sources.extract_paragraphs(roh, TEXT_MAX), titel
+    text = sources.extract_paragraphs(roh, TEXT_MAX)
+    if len(text or "") < VOLLTEXT_MIN:  # ohne JavaScript kein Text: strukturierte Angaben als Notanker
+        text = strukturierte_angaben(roh) or text
+    return text, titel
 
 
 class Zeitlimit(Exception):
