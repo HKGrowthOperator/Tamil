@@ -109,3 +109,48 @@ def test_website_angehalten_freigegeben_und_wartet(app):
     assert _status(app)[1] == _status(app)[4] == "freigegeben"
     assert "angehalten" in html and "warten" in html
     assert _protokoll(app, 4) == [("priya", "freigeben", None), ("priya", "zurueckgehalten", "website")]
+
+
+@pytest.mark.parametrize("ids", [["²"], ["1²"], ["٣"], ["-1"], ["abc"], [""]])
+def test_nicht_numerische_kennungen_sind_keine_auswahl(app, ids):
+    client, token = login(app, "priya")
+    resp = client.post("/entwurf/sammelfreigabe", data={"_csrf": token, "ids": ids}, follow_redirects=True)
+    assert resp.status_code == 200 and "Keine Entwürfe ausgewählt" in resp.get_data(as_text=True)
+    assert _status(app)[1] == "neu"
+
+
+def test_obergrenze(app):
+    from news_radar.web import views
+
+    client, token = login(app, "priya")
+    ids = [str(i) for i in range(1, views.SAMMEL_MAX + 2)]
+    html = client.post("/entwurf/sammelfreigabe", data={"_csrf": token, "ids": ids},
+                       follow_redirects=True).get_data(as_text=True)
+    assert f"Höchstens {views.SAMMEL_MAX} Entwürfe" in html and _status(app)[1] == "neu"
+    ok = client.post("/entwurf/sammelfreigabe", data={"_csrf": token, "ids": ids[:views.SAMMEL_MAX]},
+                     follow_redirects=True).get_data(as_text=True)
+    assert "3 Entwürfe freigegeben" in ok
+
+
+def test_entwurf_mit_fehler_protokoll_und_ereignis_nennen_erneut(app):
+    with Store(app.config["DB"]) as store:
+        store.db.execute("UPDATE drafts SET status = 'fehler' WHERE id = 2")
+        store.db.commit()
+    client, token = login(app, "priya")
+    client.post("/entwurf/sammelfreigabe", data={"_csrf": token, "ids": ["2"]})
+    assert _status(app)[2] == "freigegeben"
+    assert _protokoll(app, 2) == [("priya", "erneut", None)]
+    with Store(app.config["DB"]) as store:
+        ereignisse = [e for e in store.iter_log("aktion") if e.get("id") == 2]
+    assert [e["aktion"] for e in ereignisse] == ["erneut"]
+
+
+def test_einzelfreigabe_im_feed_bei_angehaltener_website_wartet_wie_sammel(app):
+    with Store(app.config["DB"]) as store:
+        schalter.setzen(store, "website", True, wer="anna", grund="Prüfung")
+    client, token = login(app, "priya")
+    html = client.post("/entwurf/1/status?next=/", data={"_csrf": token, "aktion": "freigeben"},
+                       follow_redirects=True).get_data(as_text=True)
+    assert _status(app)[1] == "freigegeben"
+    assert "angehalten" in html and "wartet" in html
+    assert _protokoll(app, 1) == [("priya", "freigeben", None), ("priya", "zurueckgehalten", "website")]
