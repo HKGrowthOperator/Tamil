@@ -24,12 +24,12 @@ Bausteine und Reihenfolge: siehe unten. Einzelheiten je Baustein: `festlegung-<b
 | A1.7 | Für KBS bearbeitbare Inhalte, pflegbarer Inhalts- und Medienbestand | – | fertig (WordPress, Einstellungen, Menüs, Mediathek) |
 | A1.8 | Neun Themenbereiche (Nachrichten, Community, Entertainment, Kino, Events, Küche, Sport, Kultur, Kontakt), konsistente Navigation | 6 | teilweise: acht Rubriken und die Seite Kontakt; Kontakt fehlt in der Rubrikleiste |
 | A1.9 | Technische Übernahme vorhandener Inhalte | 0 | fertig: 532 Beiträge, 7 Seiten, 1445 Medien (`docs/abnahme/2026-11-11-uebernahme.md`) |
-| A1.10 | Basis-SEO | 1 | teilweise: Titel und Termin-Schema vorhanden; Beschreibung, Vorschau für Social und Artikel-Schema fehlen |
+| A1.10 | Basis-SEO | 1 | fertig: Titel, Beschreibung, Vorschau für soziale Netze, Artikel- und Termin-Schema, Brotkrumen; das Testsystem ist bis zum Livegang für Suchmaschinen gesperrt |
 | A1.11 | Weiterleitungen | 0 | fertig: 25 Einträge, alle geprüft |
 | A1.12 | Sitemap | – | fertig (WordPress-Kern, `wp-sitemap.xml`) |
-| A1.13 | Performance- und Mobiloptimierung | 1, 6 | teilweise: Bildgrößen, lokale Schriften; Cache-Kopfzeilen fehlen |
+| A1.13 | Performance- und Mobiloptimierung | 1, 6 | teilweise: Bildgrößen, lokale Schriften, Cache-Kopfzeilen; die Messung am Handy (Zielwert 80) steht aus und folgt mit dem neuen Aussehen |
 | A1.14 | Einbindung rechtlich freigegebener Pflichtinformationen | 1 | wartet: Impressum und Datenschutz brauchen Texte von KBS (das Impressum der alten Seite ist leer) |
-| A1.15 | Cookie-Consent-Technik | 1 | offen |
+| A1.15 | Cookie-Consent-Technik | 1 | gebaut, ausgeschaltet: eigene Lösung ohne fremden Dienst; eingeschaltet wird nach dem Ja zu F0 und mit dem Text von KBS |
 | A2.1 | Öffentliche Angebots- und Preisdarstellung; KBS pflegt Formate, Preise und Laufzeiten im Admin | 4 | offen (sechs Werbeplätze mit Eigenanzeigen vorhanden) |
 | A2.2 | Self-Service-Buchung: Werbefläche, Laufzeit, verfügbare Belegung wählen; Kundendaten; Werbemittel hochladen | 4 | offen |
 | A2.3 | Automatische Reservierungs- und Verfügbarkeitsprüfung gegen Doppelbuchung; Freigabeprüfung für unzulässige oder auffällige Werbemittel | 4 | offen |
@@ -41,7 +41,7 @@ Bausteine und Reihenfolge: siehe unten. Einzelheiten je Baustein: `festlegung-<b
 
 | Nr. | Der Vertrag verlangt | Baustein | Stand 11.11.2026 |
 |---|---|---|---|
-| B1.1 | Zentrales webbasiertes Agenten-Cockpit mit Rollen, Aufgaben- und Freigabestatus, Bearbeitung, zeitgesteuerten Ausführungen, Fehleransicht, Stopp-Funktion und Protokoll | 1 | teilweise: Stopp-Funktion fehlt, die Rollen trennen wenig, das Protokoll erfasst nicht jede Aktion |
+| B1.1 | Zentrales webbasiertes Agenten-Cockpit mit Rollen, Aufgaben- und Freigabestatus, Bearbeitung, zeitgesteuerten Ausführungen, Fehleransicht, Stopp-Funktion und Protokoll | 1 | fertig bis auf das Ja zu F0: Stopp-Schalter (alles und je Kanal), Rollen `admin`, `redaktion`, `leser`, Protokoll mit Filter und Export, Zeitplan-Ansicht, Fehleransicht; die Zuordnung der Rollen ist ein Vorschlag |
 | B1.2 | Automatische Erfassung und Vorbereitung eingehender Beiträge, Event-Einreichungen, Kooperations- und Werbeanfragen; Vorschläge nachvollziehbar und editierbar | 2 | offen |
 | B1.3 | Durchsuchbares öffentliches Verzeichnis (Business, Dienstleister, Vereine, Tempel) mit Kategorien, Profilen, Kontaktdaten, Standortfiltern, Premium-Markierung durch die Verwaltung | 3 | offen |
 | B1.4 | Agent für Verzeichniseinträge: Dubletten- und Fehlfeldprüfung, Klassifikation, Vorschläge zur Freigabe; nichts Ungeprüftes oder Erfundenes | 3 | offen |
