@@ -363,6 +363,44 @@ def _figcaption(html: str, start: int) -> str:
     return _text(m.group(1)) if m else ""
 
 
+_NACHWEIS_TAG = re.compile(
+    r"<(\w+)\b[^>]*?(?:class|id|itemprop|data-[\w-]+)\s*=\s*[\"'][^\"']*"
+    r"(?:credit|copyright|caption|bildnachweis|quelle|source)[^\"']*[\"'][^>]*>"
+    r"|<(\w+)\b[^>]*?\bdata-(?:credit|copyright|caption|bildnachweis|quelle|source)\b[^>]*>", re.I)
+
+
+def nachweise_der_seite(html: str) -> list[str]:
+    """Bildnachweise der ganzen Seite: alle figcaption, Elemente mit Klassen/Attributen für Nachweis (credit,
+    copyright, caption, bildnachweis, quelle, source) samt Attributwerten, meta author/copyright."""
+    texte = [_text(m.group(1)) for m in re.finditer(r"<figcaption[^>]*>(.*?)</figcaption", html, re.I | re.S)]
+    for m in _NACHWEIS_TAG.finditer(html):
+        tag = m.group(1) or m.group(2)
+        zu = html.lower().find(f"</{tag.lower()}", m.end())
+        inhalt = html[m.end():zu if 0 < zu < m.end() + 500 else m.end() + 500]
+        texte.append(" ".join((*_attrs(m.group(0)).values(), _text(inhalt))))
+    for m in re.finditer(r"<meta\b[^>]*>", html, re.I):
+        a = _attrs(m.group(0))
+        if (a.get("name") or "").lower() in ("author", "copyright"):
+            texte.append(a.get("content", ""))
+    return [t for t in texte if t.strip()]
+
+
+def _stamm(url: str) -> str:
+    """Dateistamm ohne Endung und Größen-Zusätze (feier-800.jpg, feier-1200x675.jpg, feier_scaled.webp → feier)."""
+    name = unquote(urlsplit(url).path.rsplit("/", 1)[-1]).lower().rsplit(".", 1)[0]
+    vorher = None
+    while vorher != name:
+        vorher = name
+        name = re.sub(r"[-_@](?:\d{2,4}(?:x\d{2,4})?|\d{2,4}w|w\d{2,4}|\dx|small|medium|large|thumb|thumbnail|scaled|"
+                      r"full|og|social)$", "", name)
+    return name
+
+
+def _img_adressen(a: dict[str, str]) -> list[str]:
+    adressen = [a.get("src", "")] + [t.strip().split(" ")[0] for t in a.get("srcset", "").split(",")]
+    return [u.strip() for u in adressen if u.strip()]
+
+
 def bilder_der_seite(html: str, basis: str) -> tuple[list[tuple[str, str]], str, str]:
     """([(Adresse, Umfeld)], og:image, twitter:image) – Adressen gegen die Seite aufgelöst."""
     kandidaten: list[tuple[str, str]] = []
@@ -370,8 +408,7 @@ def bilder_der_seite(html: str, basis: str) -> tuple[list[tuple[str, str]], str,
         a = _attrs(m.group(0))
         umfeld = " ".join((a.get("alt", ""), a.get("title", ""), _figcaption(html, m.start()),
                            _text(html[max(0, m.start() - 300):m.end() + 300])))
-        adressen = [a.get("src", "")] + [t.strip().split(" ")[0] for t in a.get("srcset", "").split(",")]
-        kandidaten += [(urljoin(basis, u.strip()), umfeld) for u in adressen if u.strip()]
+        kandidaten += [(urljoin(basis, u), umfeld) for u in _img_adressen(a)]
     og = tw = ""
     for m in re.finditer(r"<meta\b[^>]*>", html, re.I):
         a = _attrs(m.group(0))
@@ -433,11 +470,21 @@ def _quelle(store: Store, settings: Settings, eintrag: dict, story_id: int, abru
     erlaubt = (quelle.host, *quelle.bild_hosts)
     if not any(_unter(bild_host, h) for h in erlaubt):
         raise Abgelehnt(f"Bild liegt nicht beim eingetragenen Host ({bild_host} statt {', '.join(erlaubt)})")
-    umfeld = " ".join([unquote(urlsplit(bild_url).path.rsplit("/", 1)[-1])]
-                      + [u for k, u in kandidaten if _gleich(k, bild_url)])
+    # Umfeld: Dateiname, das Bild selbst und alle <img> mit gleichem Dateistamm (andere Größen desselben Bildes)
+    stamm = _stamm(bild_url)
+    gleich = [(k, u) for k, u in kandidaten if _gleich(k, bild_url) or (stamm and _stamm(k) == stamm)]
+    umfeld = " ".join([unquote(urlsplit(bild_url).path.rsplit("/", 1)[-1])] + [u for _, u in gleich])
     treffer = agentur(umfeld)
     if treffer:
         raise Abgelehnt(f"Agenturbild ({treffer}) – nur eigenes Material der Quelle")
+    seite_agentur = next((agentur(t) for t in nachweise_der_seite(seite.text) if agentur(t)), "")
+    if seite_agentur:
+        # Agentur-Nachweis irgendwo auf der Seite: nur ein Bild mit eigener, agenturfreier Unterschrift geht durch
+        eigene = [_figcaption(seite.text, m.start()) for m in re.finditer(r"<img\b[^>]*>", seite.text, re.I)
+                  if any(_gleich(urljoin(seite.url or eintrag["seite_url"], u), k) for k, _ in gleich
+                         for u in _img_adressen(_attrs(m.group(0))))]
+        if (og and _gleich(bild_url, og)) or not any(c and not agentur(c) for c in eigene):
+            raise Abgelehnt(f"Agenturbild nicht ausgeschlossen ({seite_agentur} auf der Seite)")
     _intern_pruefen(bild_url)
     got = abrufen(bild_url, bild=True)
     ziel = _host(got.url or bild_url)  # nach Umleitungen: nie gesperrt, sonst derselbe oder der eingetragene Host

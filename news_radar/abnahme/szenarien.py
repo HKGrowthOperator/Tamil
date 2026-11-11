@@ -284,6 +284,8 @@ BILD_TEXTE = {NACHTRAG_URL: T.HAMM, TEMPEL_URL: T.HAMM}
 TEMPEL_HTML = (f'<html><head><meta property="og:image" content="{TEMPEL_OG}"></head><body><figure>'
                '<img src="/media/einweihung.jpg" alt="Einweihung"><figcaption>Foto: dpa</figcaption></figure>'
                "</body></html>")
+# Seite ohne Agentur-Nachweis (für den Erfolgsfall); TEMPEL_HTML trägt „Foto: dpa“ an einem anderen Bild
+TEMPEL_HTML_EIGEN = TEMPEL_HTML.replace("Foto: dpa", "Foto: Tempelverein")
 BILD_BASIS = {"_ohne_modell": True, "_vorschlaege": [[BILD_NACHTRAG]]}
 
 SZENARIEN += [
@@ -300,7 +302,7 @@ SZENARIEN += [
              texte=BILD_TEXTE, nachher="bild_vorschlag",
              einstellungen={**BILD_BASIS, "_bilder": [{"weg": "quelle", "seite_url": TEMPEL_URL,
                                                        "nachweis": "Foto: erfunden"}],
-                            "_bild_seiten": {TEMPEL_URL: TEMPEL_HTML, TEMPEL_OG: "jpeg:1600x900"}},
+                            "_bild_seiten": {TEMPEL_URL: TEMPEL_HTML_EIGEN, TEMPEL_OG: "jpeg:1600x900"}},
              erwartet={"aufrufe": 0, "bild": "quelle",
                        "stats": {"bild_gesetzt": 1, "asset_quelle": 1, "nachweis_am_entwurf": 1, "protokoll_bild": 1}}),
     Szenario(61, "Bildvorschläge abgelehnt (Agenturbild, NC-Lizenz, Host nicht im Register, interne Adresse): "

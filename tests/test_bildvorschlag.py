@@ -353,6 +353,29 @@ def test_bild_zu_viele_pixel_wird_nicht_dekodiert(settings, monkeypatch):
         assert e["ergebnis"] == "abgelehnt" and "Dateityp" in e["grund"], e
 
 
+FEIER = ('<html><head><meta property="og:image" content="/media/feier-1200.jpg"></head><body>'
+         '<figure><img src="/media/feier-800.jpg"><figcaption>Foto: picture alliance / dpa</figcaption></figure></body></html>')
+LANG = "<p>" + "Text über das Fest. " * 40 + "</p>"
+
+
+@pytest.mark.parametrize("html,eintrag,ergebnis", [
+    (FEIER, {}, "abgelehnt"),  # Regressionsfall: Unterschrift am <img> mit anderer Größe, og:image ohne Umfeld
+    (seite(body=LANG + '<p class="bildnachweis">Titelbild: Keystone</p>'), {}, "abgelehnt"),
+    (seite().replace("</head>", '<meta name="copyright" content="dpa"></head>'), {}, "abgelehnt"),
+    (seite(body=LANG + '<div data-credit="x">Reuters</div>'), {"bild_url": IMG}, "gesetzt"),  # eigene Unterschrift
+    (seite(body=LANG + '<span class="credit">Reuters</span>').replace("<figcaption>Prozession 2026</figcaption>", ""),
+     {"bild_url": IMG}, "abgelehnt"),  # keine eigene Unterschrift
+])
+def test_agentur_irgendwo_auf_der_seite(settings, html, eintrag, ergebnis):
+    with Store(settings.db_path) as store:
+        sid, _ = story_mit_entwurf(store)
+        e = eins(store, settings, {"story_id": sid, "weg": "quelle", "seite_url": DOK, **eintrag},
+                 {DOK: html, OG: jpeg(), IMG: jpeg(), "https://www.murugantemple.ch/media/feier-1200.jpg": jpeg()})
+        assert e["ergebnis"] == ergebnis, e
+        if ergebnis == "abgelehnt":
+            assert "Agentur" in e["grund"]
+
+
 def test_quelle_bild_auf_eigenem_cdn_ueber_bild_hosts(settings):
     settings.bildquellen = [Bildquelle(host=TEMPEL.host, betreiber=TEMPEL.betreiber, art="tempel",
                                        nachweis=TEMPEL.nachweis, bild_hosts=["cdn.example.org"])]
