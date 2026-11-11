@@ -566,14 +566,16 @@ def _ergaenzen(store: Store, v: Vorschlag, geholt: list, heute: date) -> dict:
             zusatz = f"Ergänzt am {heute.isoformat()}: {len(neu)} {'Quelle' if len(neu) == 1 else 'Quellen'}"
             alt = (story.get("notiz") or "").strip()
             notiz = f"{alt[:900 - len(zusatz) - 3]} · {zusatz}" if alt else zusatz
-            db.execute("UPDATE stories SET status = 'neu', notiz = ?, vorschlag = ?, ereignis_datum = ?, "
-                       "aktualisiert = ? WHERE id = ?",
-                       (notiz, json.dumps(hinweise, ensure_ascii=False), v.datum, ts, sid))  # Datum nur neu, wenn anders
+            # das Ereignisdatum der Story bleibt (ein Platzhalter-Datum im Vorschlag verschiebt den Beitrag nicht)
+            db.execute("UPDATE stories SET status = 'neu', notiz = ?, vorschlag = ?, aktualisiert = ? WHERE id = ?",
+                       (notiz, json.dumps(hinweise, ensure_ascii=False), ts, sid))
             db.commit()
         except BaseException:
             db.rollback()
             raise
-    return {"ergebnis": "ergaenzt", "story_id": sid, "quellen_geholt": len(neu)}
+    out = {"ergebnis": "ergaenzt", "story_id": sid, "quellen_geholt": len(neu)}
+    alt_datum = story.get("ereignis_datum") or ""
+    return {**out, "hinweis": f"Datum der Story bleibt {alt_datum}"} if alt_datum and alt_datum != v.datum else out
 
 
 def _anlegen(store: Store, v: Vorschlag, geholt: list) -> dict:

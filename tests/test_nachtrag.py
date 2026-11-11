@@ -1106,7 +1106,8 @@ def test_ergaenzen_haengt_neue_quellen_an_und_gibt_die_story_wieder_frei(setting
         assert URL1 not in abrufe  # schon Beleg: nicht noch einmal geholt
         s = repo.story(store, sid)
         heute = kontext(store, settings).uhr().date().isoformat()
-        assert s["status"] == "neu" and s["ereignis_datum"] == "2026-03-15"
+        assert s["status"] == "neu" and s["ereignis_datum"] == "2026-03-14"  # Datum der Story bleibt
+        assert e["hinweis"] == "Datum der Story bleibt 2026-03-14"
         assert s["titel"] == "Tempel in Hamm eröffnet Gemeindehaus"  # der Arbeitstitel ändert die Story nicht
         assert s["notiz"].startswith("Fehlt: Zahl der Gäste laut Polizei")
         assert f"Ergänzt am {heute}: 2 Quellen" in s["notiz"]
@@ -1200,7 +1201,7 @@ def test_ergaenzen_pdf_mit_anker_wird_angehaengt_gleiche_seite_uebersprungen(set
         repo.story_setzen(store, sid, status="recherche_erforderlich", notiz="Fehlt: Zahl")
         e = pdf_annehmen(store, settings, pdf_vorschlag(PDF_URL + "#page=2", PDF_URL + "#page=3", story_id=sid),
                          {PDF_URL: datei})
-        assert e["ergebnis"] == "ergaenzt" and e["quellen_geholt"] == 1, e
+        assert e["ergebnis"] == "ergaenzt" and e["quellen_geholt"] == 1 and "hinweis" not in e, e
         assert e["quellen_uebersprungen"] == [{"url": PDF_URL + "#page=2", "grund": "schon Beleg dieser Story"}]
         docs = repo.dokumente(store, sid)
         assert [(d.doc_key, d.url) for d in docs] == [("Q1", PDF_URL + "#page=2"), ("Q2", PDF_URL + "#page=3")]
