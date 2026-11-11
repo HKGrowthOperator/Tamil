@@ -24,9 +24,10 @@ Passwörter, Tokens und Schlüssel liegen ausschließlich in den Coolify-Variabl
 | Variablen (gesetzt) | `RADAR_WORKFLOW`, `RADAR_BUDGET_TAG_USD`, `RADAR_BUDGET_MONAT_USD`, `RADAR_ENTWUERFE_TAG`, `RADAR_KI_BILDER_JE_ARTIKEL`, `RADAR_PROXY_HOPS`, `RADAR_WEB_URL`, `WEB_USER`, `WEB_PASSWORD`, `WEB_SECRET`, `RADAR_LESE_TOKEN`, `RADAR_AGENT_TOKEN` |
 | Variablen (seit 11.11.2026) | `WP_URL` (die Vorschau-Adresse der Website), `WP_USER` (`ki-agent`), `WP_APP_PASSWORD`, `WP_POST_STATUS` (`publish`): Freigegebenes erscheint beim nächsten Lauf auf der Website |
 | Variablen (offen) | `ANTHROPIC_API_KEY` (Tor B1, trägt Luis ein) |
-| Variablen (optional, Standard im Code) | `RADAR_EVENT_MAX_ALTER_TAGE` (30: Termin-Berichte, die laut Quelle älter sind und kein Datum in der Zukunft nennen, fallen im Vorfilter heraus; Laufnotiz `termin_veraltet`) |
+| Variablen (optional, Standard im Code) | `RADAR_EVENT_MAX_ALTER_TAGE` (30: Termin-Berichte, die laut Quelle älter sind und kein Datum in der Zukunft nennen, fallen im Vorfilter heraus; Laufnotiz `termin_veraltet`), `RADAR_NACHTRAG_TAG` (60: so viele Nachtrag-Entwürfe für den Rückblick nimmt der Radar am Tag an) |
 | Lesezugriff | `GET /api/bericht` mit `Authorization: Bearer $RADAR_LESE_TOKEN` |
 | Agent-Modus | `GET /api/agent/export`, `POST /api/agent/import` mit `Bearer $RADAR_AGENT_TOKEN` |
+| Nachtrag (Rückblick) | `POST /api/agent/vorschlag?von=<name>` mit `Bearer $RADAR_AGENT_TOKEN`: höchstens fünf Vorschläge je Aufruf (Thema, Datum, ein bis sechs Quellen); der Radar ruft die Quellen selbst ab. Größere Mengen: `python -m news_radar agent vorschlag --datei <json>` im Container |
 
 ### App „tamil-web“ – Website (WordPress)
 
