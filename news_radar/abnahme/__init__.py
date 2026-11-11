@@ -579,8 +579,79 @@ def _nachtrag_bis_website(ctx, sz: Szenario, now: datetime) -> dict:
     return dict(stats)
 
 
+def _bild_abruf(seiten: dict, abrufe: list) -> Callable:
+    """Fake für bildvorschlag: „jpeg:BxH“ → Bild, „commons:<Lizenz>“ → Antwort der Commons-API, sonst HTML."""
+
+    from PIL import Image
+
+    from .. import net
+
+    def abruf(url: str, frist: float | None = None, bild: bool = False) -> net.Fetched:
+        abrufe.append(url)
+        schluessel = "API" if url.startswith("https://commons.wikimedia.org/w/api.php") else url
+        if schluessel not in seiten:
+            raise net.HTTPError(404, url)
+        wert = seiten[schluessel]
+        if wert.startswith("jpeg:"):
+            b, h = (int(x) for x in wert[5:].split("x"))
+            buf = io.BytesIO()
+            Image.new("RGB", (b, h), (200, 120, 40)).save(buf, "JPEG")
+            return net.Fetched(url=url, status=200, content=buf.getvalue(), content_type="image/jpeg")
+        if wert.startswith("commons:"):
+            lizenz, _, thumb = wert[8:].partition("|")
+            ext = {"LicenseShortName": {"value": lizenz}, "Artist": {"value": "<a href='#'>Ravi S.</a>"},
+                   "LicenseUrl": {"value": "https://creativecommons.org/licenses/by-sa/4.0"}}
+            info = {"url": thumb, "thumburl": thumb, "width": 3000, "height": 2000, "mime": "image/jpeg",
+                    "extmetadata": ext}
+            body = json.dumps({"query": {"pages": {"1": {"imageinfo": [info]}}}})
+            return net.Fetched(url=url, status=200, content=body.encode(), content_type="application/json")
+        return net.Fetched(url=url, status=200, content=wert.encode(), content_type="text/html; charset=utf-8")
+    return abruf
+
+
+def _bild_vorschlag(ctx, sz: Szenario, now: datetime) -> dict:
+    """Nachtrag → Agent-Modus (wartender Entwurf mit Bildkarte) → Bildvorschläge aus einstellungen["_bilder"].
+    Ohne DNS: Hostnamen lösen auf eine öffentliche Beispieladresse auf (wie in den Tests), IP-Literale bleiben echt."""
+    from .. import net
+
+    aufloesen = net._resolve
+    net._resolve = lambda host: ["93.184.216.34"]
+    try:
+        return _bild_vorschlag_ablauf(ctx, sz, now)
+    finally:
+        net._resolve = aufloesen
+
+
+def _bild_vorschlag_ablauf(ctx, sz: Szenario, now: datetime) -> dict:
+    from ..bildvorschlag import annehmen
+
+    stats = _vorschlaege_annehmen(ctx, sz, now)
+    stats.update(_agent_v2(ctx, sz, now))
+    store = ctx.store
+    entwurf = store.list_drafts("neu")[0]
+    eintraege = [{**e, "story_id": entwurf["story_id"]} for e in sz.einstellungen["_bilder"]]
+    abrufe: list[str] = []
+    out = annehmen(store, ctx.settings, {"bilder": eintraege}, von="abnahme",
+                   abruf=_bild_abruf(sz.einstellungen.get("_bild_seiten", {}), abrufe))
+    for e in out["ergebnisse"]:
+        stats[f"bild_{e['ergebnis']}"] += 1
+        grund = e.get("grund") or ""
+        if e["ergebnis"] == "abgelehnt":
+            stats["grund_" + next((k for k, t in (("agentur", "Agenturbild"), ("lizenz", "Lizenz nicht erlaubt"),
+                                                  ("register", "nicht im Bildquellen-Register"),
+                                                  ("intern", "interne Adresse")) if t in grund), "sonst")] += 1
+    d = store.get_draft(entwurf["id"])
+    asset = repo.asset_fuer_datei(store, d.get("bild_datei") or "")
+    stats["asset_" + (asset["herkunft"] if asset else "keins")] += 1
+    stats["nachweis_am_entwurf"] += int(bool(asset) and d.get("bild_credit") == asset.get("attribution"))
+    stats["protokoll_bild"] += len([a for a in repo.aktionen(store, d["id"])
+                                    if a["aktion"] == "bild" and a["ausloeser"] == "agent"])
+    stats["abrufe_intern"] += sum(1 for u in abrufe if "169.254" in u)
+    return dict(stats)
+
+
 NACHHER: dict[str, Callable] = {
-    "nachtrag": _nachtrag, "nachtrag_bis_website": _nachtrag_bis_website,
+    "nachtrag": _nachtrag, "nachtrag_bis_website": _nachtrag_bis_website, "bild_vorschlag": _bild_vorschlag,
     "scan_im_stopp": _scan_im_stopp, "website_stopp": _website_stopp,
     "kino_update": _kino_update, "kino_veroeffentlicht": _kino_nach_veroeffentlichung, "wp_timeout": _wp_timeout,
     "agent_v2": _agent_v2, "quelle_ergaenzen": _quelle_ergaenzen, "dossier": _dossier,
