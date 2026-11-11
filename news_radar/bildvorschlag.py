@@ -75,7 +75,7 @@ def agentur(text: str) -> str:
     return m.group(1) if m and m.re is AGENTUR else ("AP" if m else "")
 
 # Lizenzprüfung Commons: maßgeblich ist die Lizenz-Adresse (exakte Pfade bei creativecommons.org); der Kurzname muss
-# dazu passen und darf kein „nc“, „nd“ oder „fair“ enthalten. Gemeinfrei ohne Lizenz-Adresse nur über GEMEINFREI_NAMEN.
+# dazu passen und darf kein „nc“, „nd“ oder „fair“ enthalten. Ohne Lizenz-Adresse wird alles abgelehnt.
 _LIZENZ_PFADE = (
     (re.compile(r"/licenses/by/(\d\.\d)(?:/[a-z]{2})?"), "cc-by"),
     (re.compile(r"/licenses/by-sa/(\d\.\d)(?:/[a-z]{2})?"), "cc-by-sa"),
@@ -88,10 +88,9 @@ _KURZ = {  # normalisierter Kurzname (klein, „-“/„_“ → „ “) je Liz
     "cc0": re.compile(r"cc0(?: (1\.0))?|cc zero"),
     "pdm": re.compile(r"public domain(?: mark)?(?: (1\.0))?"),
 }
-# Gemeinfrei ohne Lizenz-Adresse: nur die allgemeine Kennzeichnung „Public domain“, CC0 und PD-old (Urheber seit 70,
-# 80, 90 oder 100 Jahren tot). Nicht: PD-US-…, PD-self, PD-Art, PD-textlogo, PD-ineligible o. Ä. – deren Gemeinfreiheit
-# hängt an Land, Herkunft oder Schöpfungshöhe und ist für eine Nutzung in DACH nicht sicher.
-GEMEINFREI_NAMEN = {"public domain", "cc0", "cc0 1.0", "pd old", "pd old 70", "pd old 80", "pd old 90", "pd old 100"}
+# Gemeinfrei nur mit Lizenz-Adresse (publicdomain/zero/1.0 oder publicdomain/mark/1.0): Commons liefert bei fast
+# allen PD-Vorlagen (PD-old, PD-US-expired, PD-textlogo …) nur den Kurznamen „Public domain“ ohne Adresse; ob die
+# Gemeinfreiheit für eine Nutzung in DACH gilt, lässt sich daraus nicht unterscheiden. Deshalb ohne Adresse: abgelehnt.
 _VERBOTEN = re.compile(r"(?<![a-z])(?:nc|nd)(?![a-z])|fair")
 
 
@@ -276,7 +275,7 @@ def commons_lizenz(kurzname: str, lizenz_url: str = "") -> str | None:
         return None
     url = (lizenz_url or "").strip()
     if not url:
-        return "gemeinfrei" if norm in GEMEINFREI_NAMEN else None
+        return None
     teile = urlsplit(url if "://" in url else "https:" + url)
     if teile.scheme not in ("http", "https") or (teile.hostname or "").lower() not in (
             "creativecommons.org", "www.creativecommons.org") or teile.query or teile.port:
@@ -317,7 +316,11 @@ def _commons(eintrag: dict, abrufen: Callable) -> dict:
     meta = info.get("extmetadata") or {}
     kurzname = _text(_ext(meta, "LicenseShortName"))
     lizenz_url = _ext(meta, "LicenseUrl")
+    if _ext(meta, "NonFree").lower() in ("true", "1", "yes"):
+        raise Abgelehnt("Lizenz nicht erlaubt (Commons markiert die Datei als NonFree)")
     art = commons_lizenz(kurzname, lizenz_url)
+    if art is None and not lizenz_url and re.match(r"public domain|pd|cc0", _lizenz_norm(kurzname)):
+        raise Abgelehnt(f"Lizenz nicht erlaubt: Gemeinfreiheit nicht eindeutig ({kurzname} ohne Lizenz-Adresse)")
     if art is None:
         raise Abgelehnt(f"Lizenz nicht erlaubt ({kurzname or 'leer'}; nur gemeinfrei, CC0, CC BY, CC BY-SA)")
     artist = urhebername(_ext(meta, "Artist"))
@@ -340,7 +343,9 @@ def _commons(eintrag: dict, abrufen: Callable) -> dict:
     if (urlsplit(got.url).hostname or "").lower() != COMMONS_BILDHOST:  # Umleitung weg von Commons
         raise Abgelehnt(f"Bild leitet weg von {COMMONS_BILDHOST} um")
     img = _bild_lesen(got.content, streng=False)
+    hinweis = ", ".join(t for t in re.split(r"[|,]\s*", _text(_ext(meta, "Restrictions"))) if t)[:200]
     return {"img": img, "nachweis": nachweis, "lizenz": lizenz, "rechteinhaber": artist or "gemeinfrei",
+            "umfang": f"{UMFANG}; Hinweis von Commons: {hinweis}" if hinweis else UMFANG,
             "quelle_url": eintrag["seite_url"].strip(), "bild_url": bild_url}
 
 
@@ -537,7 +542,8 @@ def _setzen(store: Store, settings: Settings, entwurf: dict, story_id: int, weg:
             db.execute(
                 "INSERT INTO assets (datei, sha256, herkunft, rechteinhaber, lizenz, umfang, attribution, ablauf, "
                 "quelle_url, ki, story_id, draft_id, erstellt) VALUES (?,?,?,?,?,?,?,'',?,0,?,?,?)",
-                (name, hashlib.sha256(data).hexdigest(), weg, bild["rechteinhaber"], bild["lizenz"], UMFANG,
+                (name, hashlib.sha256(data).hexdigest(), weg, bild["rechteinhaber"], bild["lizenz"],
+                 bild.get("umfang") or UMFANG,
                  bild["nachweis"], bild["quelle_url"], story_id, entwurf["id"], now_iso()))
             cur = db.execute(
                 f"UPDATE drafts SET {sets}, updated_at = ?, bearbeitet_von = ? "

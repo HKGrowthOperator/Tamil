@@ -51,12 +51,14 @@ def cc_url(lizenz: str) -> str:
 
 def commons_api(lizenz="CC BY-SA 4.0", artist='<a href="//commons.wikimedia.org/wiki/User:X">Anna K.</a>',
                 mime="image/jpeg", breite=4000, lizenz_url=None, titel="File:Thaipusam Zurich 2019.jpg",
-                weitere=False, normalized=True):
+                weitere=False, normalized=True, extra=None):
     lizenz_url = cc_url(lizenz) if lizenz_url is None else lizenz_url
     ext = {"LicenseShortName": {"value": lizenz}, "License": {"value": lizenz.lower().replace(" ", "-")},
            "LicenseUrl": {"value": lizenz_url}, "AttributionRequired": {"value": "true"}}
     if artist is not None:
         ext["Artist"] = {"value": artist}
+    for k, v in (extra or {}).items():
+        ext[k] = {"value": v}
     info = {"url": "https://upload.wikimedia.org/wikipedia/commons/a/ab/Thaipusam_Zurich_2019.jpg",
             "thumburl": COMMONS_THUMB, "width": breite, "height": 2500, "mime": mime, "extmetadata": ext}
     pages = {"123": {"title": titel, "imageinfo": [info]}}
@@ -169,6 +171,7 @@ def test_commons_abgelehnt(settings, lizenz, artist, mime, grund):
     ("pd-us-unpublished", ""), ("CC BY 4.0", "https://creativecommons.org/licenses/by-nc/4.0/"),
     ("CC BY-SA 4.0", "https://creativecommons.org/licenses/by/4.0/"), ("CC BY 4.0", ""),
     ("CC BY 4.0", "https://example.org/licenses/by/4.0/"), ("Public domain", "https://example.org/pd"),
+    ("Public domain", ""), ("PD-old-70", ""), ("PD-US-expired", ""), ("CC0", ""),
 ])
 def test_commons_lizenz_nur_ueber_positivliste_und_adresse(settings, lizenz, url):
     with Store(settings.db_path) as store:
@@ -180,7 +183,8 @@ def test_commons_lizenz_nur_ueber_positivliste_und_adresse(settings, lizenz, url
 
 @pytest.mark.parametrize("lizenz,url", [
     ("CC BY 2.0 de", "https://creativecommons.org/licenses/by/2.0/de/"), ("CC0", "https://creativecommons.org/publicdomain/zero/1.0/"),
-    ("PD-old-70", ""), ("Public domain", ""), ("CC BY-SA 3.0", "http://creativecommons.org/licenses/by-sa/3.0"),
+    ("Public Domain Mark 1.0", "https://creativecommons.org/publicdomain/mark/1.0/"),
+    ("CC BY-SA 3.0", "http://creativecommons.org/licenses/by-sa/3.0"),
 ])
 def test_commons_lizenz_erlaubt(settings, lizenz, url):
     with Store(settings.db_path) as store:
@@ -228,8 +232,25 @@ def test_commons_gemeinfrei_ohne_artist(settings):
     with Store(settings.db_path) as store:
         sid, _ = story_mit_entwurf(store)
         e = eins(store, settings, {"story_id": sid, "weg": "commons", "seite_url": COMMONS_SEITE},
-                 {"API": commons_api("Public domain", None, lizenz_url=""), COMMONS_THUMB: jpeg()})
+                 {"API": commons_api("CC0", None, lizenz_url="https://creativecommons.org/publicdomain/zero/1.0/"),
+                  COMMONS_THUMB: jpeg()})
         assert e["ergebnis"] == "gesetzt" and e["nachweis"] == "Foto: Wikimedia Commons, gemeinfrei"
+        e = eins(store, settings, {"story_id": sid, "weg": "commons", "seite_url": COMMONS_SEITE},
+                 {"API": commons_api("Public domain", None, lizenz_url=""), COMMONS_THUMB: jpeg()})
+        assert e["ergebnis"] == "abgelehnt" and "Gemeinfreiheit nicht eindeutig" in e["grund"]
+
+
+def test_commons_nonfree_abgelehnt_restrictions_als_hinweis(settings):
+    with Store(settings.db_path) as store:
+        sid, did = story_mit_entwurf(store)
+        e = eins(store, settings, {"story_id": sid, "weg": "commons", "seite_url": COMMONS_SEITE},
+                 {"API": commons_api(extra={"NonFree": "true"}), COMMONS_THUMB: jpeg()})
+        assert e["ergebnis"] == "abgelehnt" and "NonFree" in e["grund"]
+        e = eins(store, settings, {"story_id": sid, "weg": "commons", "seite_url": COMMONS_SEITE},
+                 {"API": commons_api(extra={"Restrictions": "personality|trademarked"}), COMMONS_THUMB: jpeg()})
+        assert e["ergebnis"] == "gesetzt", e
+        a = repo.asset_fuer_datei(store, store.get_draft(did)["bild_datei"])
+        assert "Hinweis von Commons: personality, trademarked" in a["umfang"]
 
 
 def test_commons_zu_schmal_abgelehnt(settings):
@@ -591,6 +612,21 @@ def test_cockpit_zeigt_nachweis_lizenz_und_link(settings):
     assert "Foto: Anna K. / Wikimedia Commons, CC BY-SA 4.0" in html
     assert "Wikimedia Commons</span>" in html and f'href="{COMMONS_SEITE}"' in html
     assert "Lizenz: CC BY-SA 4.0" in html
+
+
+def test_cockpit_zeigt_hinweis_von_commons(settings):
+    from news_radar.web import create_app
+
+    from test_web_redaktion import login
+
+    with Store(settings.db_path) as store:
+        sid, did = story_mit_entwurf(store)
+        eins(store, settings, {"story_id": sid, "weg": "commons", "seite_url": COMMONS_SEITE},
+             {"API": commons_api(extra={"Restrictions": "personality"}), COMMONS_THUMB: jpeg()})
+    settings.web_user, settings.web_password, settings.web_secret = "luis", "geheim", "s3cret"
+    client = create_app(settings, testing=True).test_client()
+    login(client)
+    assert "Hinweis von Commons: personality" in client.get(f"/entwurf/{did}").get_data(as_text=True)
 
 
 def test_register_aus_sources_toml():
