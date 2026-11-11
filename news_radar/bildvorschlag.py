@@ -158,7 +158,8 @@ def _alt(raw) -> str | None:
     return alt or None
 
 
-def _abrufen(store: Store, abruf: Callable, url: str, *, bild: bool, uhr, ende, frist_abruf: float) -> net.Fetched:
+def _abrufen(store: Store, abruf: Callable, url: str, *, bild: bool, uhr, ende, frist_abruf: float,
+             zaehler: list[int] | None = None) -> net.Fetched:
     jetzt = uhr()
     if ende is not None and jetzt >= ende:
         raise Zeitlimit
@@ -166,6 +167,8 @@ def _abrufen(store: Store, abruf: Callable, url: str, *, bild: bool, uhr, ende, 
     frist = time.monotonic() + frist_abruf
     if ende is not None:
         frist = min(frist, time.monotonic() + max(0.0, ende - jetzt))
+    if zaehler is not None:
+        zaehler[0] += 1
     try:
         return abruf(url, frist=frist, bild=bild)
     except net.Zeitlimit:
@@ -554,6 +557,17 @@ def _eins(store: Store, settings: Settings, raw, nr: int, von: str, abrufen: Cal
 ERGEBNISSE = ("gesetzt", "abgelehnt", "nicht_bearbeitet")
 
 
+def _protokoll_ohne_bild(store: Store, von: str, ergebnis: dict, eintrag, abgerufen: bool) -> None:
+    """Protokollzeile für jeden Eintrag, bei dem etwas nach außen abgerufen wurde, auch ohne Bild (gesetzte Bilder
+    schreibt _setzen). Nur Ergebnis, Weg und Grund – keine Personendaten (Urhebernamen stehen nie im Grund)."""
+    if not abgerufen or ergebnis["ergebnis"] == "gesetzt":
+        return
+    sid = ergebnis.get("story_id") if isinstance(ergebnis.get("story_id"), int) else None
+    weg = eintrag.get("weg") if isinstance(eintrag, dict) and eintrag.get("weg") in WEGE else "?"
+    repo.aktion(store, wer=von, aktion=f"bild_{ergebnis['ergebnis']}", story_id=sid, kanal="redaktion",
+                ausloeser="agent", notiz=f"{weg}: {ergebnis.get('grund') or ''}"[:300])
+
+
 def annehmen(store: Store, settings: Settings, raw, *, von: str = "agent", abruf: Callable | None = None,
              max_bilder: int = MAX_BILDER, frist_gesamt: float | None = None, frist_abruf: float = FRIST_ABRUF,
              uhr: Callable[[], float] = time.monotonic) -> dict:
@@ -569,15 +583,19 @@ def annehmen(store: Store, settings: Settings, raw, *, von: str = "agent", abruf
     abruf = abruf or (lambda url, frist=None, bild=False: standard_abruf(url, frist=frist, bild=bild))
     ende = uhr() + frist_gesamt if frist_gesamt is not None else None
 
+    abgerufen = [0]  # Abrufe nach außen (gezählt unmittelbar vor dem Aufruf, nach Schalter und Frist)
+
     def abrufen(url: str, *, bild: bool) -> net.Fetched:
-        return _abrufen(store, abruf, url, bild=bild, uhr=uhr, ende=ende, frist_abruf=frist_abruf)
+        return _abrufen(store, abruf, url, bild=bild, uhr=uhr, ende=ende, frist_abruf=frist_abruf, zaehler=abgerufen)
 
     ergebnisse: list[dict] = []
     angehalten = None
     for nr, eintrag in enumerate(items, 1):
+        vorher = abgerufen[0]
         if angehalten is None and (ende is None or uhr() < ende):
             try:
                 ergebnisse.append(_eins(store, settings, eintrag, nr, von, abrufen))
+                _protokoll_ohne_bild(store, von, ergebnisse[-1], eintrag, abgerufen[0] > vorher)
                 continue
             except Zeitlimit:
                 pass
@@ -586,6 +604,7 @@ def annehmen(store: Store, settings: Settings, raw, *, von: str = "agent", abruf
         grund = "nicht bearbeitet: angehalten" if angehalten else "nicht bearbeitet: Zeitlimit"
         sid = eintrag.get("story_id") if isinstance(eintrag, dict) else None
         ergebnisse.append({"nr": nr, "story_id": sid, "ergebnis": "nicht_bearbeitet", "grund": grund})
+        _protokoll_ohne_bild(store, von, ergebnisse[-1], eintrag, abgerufen[0] > vorher)
     out = {"ergebnisse": ergebnisse, **{k: sum(1 for e in ergebnisse if e["ergebnis"] == k) for k in ERGEBNISSE}}
     if angehalten:
         out["angehalten"] = angehalten

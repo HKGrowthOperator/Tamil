@@ -204,6 +204,23 @@ def test_commons_urhebername(settings, artist, ergebnis, erwartet):
         assert "script" not in (e.get("nachweis") or "") and "alert" not in (e.get("nachweis") or "")
 
 
+def test_protokoll_auch_bei_ablehnung_nach_abruf(settings):
+    with Store(settings.db_path) as store:
+        sid, _ = story_mit_entwurf(store)
+        e = eins(store, settings, {"story_id": sid, "weg": "commons", "seite_url": COMMONS_SEITE},
+                 {"API": commons_api("CC BY-NC-SA 4.0", "Anna"), COMMONS_THUMB: jpeg()})
+        assert e["ergebnis"] == "abgelehnt"
+        zeilen = repo.aktionen_liste(store, aktion="bild_abgelehnt")
+        assert len(zeilen) == 1 and zeilen[0]["kanal"] == "redaktion" and zeilen[0]["ausloeser"] == "agent"
+        assert zeilen[0]["wer"] == "test" and "Lizenz" in zeilen[0]["notiz"] and zeilen[0]["story_id"] == sid
+        assert "Anna" not in zeilen[0]["notiz"]
+        eins(store, settings, {"story_id": sid, "weg": "commons", "seite_url": COMMONS_SEITE + "x/y"}, {})
+        eins(store, settings, {"story_id": sid, "weg": "quelle", "seite_url": DOK},
+             {DOK: seite(), OG: net.Zeitlimit("langsam")})
+        assert len(repo.aktionen_liste(store, aktion="bild_abgelehnt")) == 1  # ohne Abruf keine Zeile
+        assert len(repo.aktionen_liste(store, aktion="bild_nicht_bearbeitet")) == 1
+
+
 def test_commons_gemeinfrei_ohne_artist(settings):
     with Store(settings.db_path) as store:
         sid, _ = story_mit_entwurf(store)
