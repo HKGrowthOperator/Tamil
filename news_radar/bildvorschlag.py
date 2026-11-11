@@ -61,10 +61,29 @@ AGENTUR = re.compile(
     r"(?<![a-z0-9])(dpa|keystone|sda|getty|gettyimages|reuters|afp|ap[ _-]?photo|imago|picture[ _-]?alliance|"
     r"shutterstock|adobe[ _-]?stock|istock|istockphoto|epa|ddp|freshfocus|alamy|unsplash|pexels)(?![a-z0-9])", re.I)
 
-# Positivliste auf den normalisierten Kurznamen (klein, Leerzeichen/Unterstriche → „ “); alles andere ist abgelehnt.
-_GEMEINFREI = re.compile(r"public domain|cc0(?: 1\.0)?|cc zero|pd(?:-[a-z0-9.-]+)?")
-_CC_BY = re.compile(r"cc[ -]by(?:[ -]\d\.\d)?(?: [a-z]{2,3})?")
-_CC_BY_SA = re.compile(r"cc[ -]by-sa(?:[ -]\d\.\d)?(?: [a-z]{2,3})?")
+# Lizenzprüfung Commons: maßgeblich ist die Lizenz-Adresse (exakte Pfade bei creativecommons.org); der Kurzname muss
+# dazu passen und darf kein „nc“, „nd“ oder „fair“ enthalten. Gemeinfrei ohne Lizenz-Adresse nur über GEMEINFREI_NAMEN.
+_LIZENZ_PFADE = (
+    (re.compile(r"/licenses/by/(\d\.\d)(?:/[a-z]{2})?"), "cc-by"),
+    (re.compile(r"/licenses/by-sa/(\d\.\d)(?:/[a-z]{2})?"), "cc-by-sa"),
+    (re.compile(r"/publicdomain/zero/(1\.0)"), "cc0"),
+    (re.compile(r"/publicdomain/mark/(1\.0)"), "pdm"),
+)
+_KURZ = {  # normalisierter Kurzname (klein, „-“/„_“ → „ “) je Lizenzart; Version und Land optional
+    "cc-by": re.compile(r"cc by(?: (\d\.\d))?(?: [a-z]{2})?"),
+    "cc-by-sa": re.compile(r"cc by sa(?: (\d\.\d))?(?: [a-z]{2})?"),
+    "cc0": re.compile(r"cc0(?: (1\.0))?|cc zero"),
+    "pdm": re.compile(r"public domain(?: mark)?(?: (1\.0))?"),
+}
+# Gemeinfrei ohne Lizenz-Adresse: nur die allgemeine Kennzeichnung „Public domain“, CC0 und PD-old (Urheber seit 70,
+# 80, 90 oder 100 Jahren tot). Nicht: PD-US-…, PD-self, PD-Art, PD-textlogo, PD-ineligible o. Ä. – deren Gemeinfreiheit
+# hängt an Land, Herkunft oder Schöpfungshöhe und ist für eine Nutzung in DACH nicht sicher.
+GEMEINFREI_NAMEN = {"public domain", "cc0", "cc0 1.0", "pd old", "pd old 70", "pd old 80", "pd old 90", "pd old 100"}
+_VERBOTEN = re.compile(r"(?<![a-z])(?:nc|nd)(?![a-z])|fair")
+
+
+def _lizenz_norm(kurzname: str) -> str:
+    return " ".join(_text(kurzname).lower().replace("_", " ").replace("-", " ").split())
 
 
 class Abgelehnt(ValueError):
@@ -202,15 +221,27 @@ def _ext(meta: dict, key: str) -> str:
     return str(wert or "").strip()
 
 
-def commons_lizenz(kurzname: str) -> str | None:
-    """'gemeinfrei', 'cc-by' oder 'cc-by-sa' – sonst None (abgelehnt)."""
-    norm = " ".join(_text(kurzname).lower().replace("_", " ").split())
-    if _GEMEINFREI.fullmatch(norm):
-        return "gemeinfrei"
-    if _CC_BY_SA.fullmatch(norm):
-        return "cc-by-sa"
-    if _CC_BY.fullmatch(norm):
-        return "cc-by"
+def commons_lizenz(kurzname: str, lizenz_url: str = "") -> str | None:
+    """'gemeinfrei', 'cc-by' oder 'cc-by-sa' – sonst None (abgelehnt). Im Zweifel None."""
+    norm = _lizenz_norm(kurzname)
+    if not norm or _VERBOTEN.search(norm):
+        return None
+    url = (lizenz_url or "").strip()
+    if not url:
+        return "gemeinfrei" if norm in GEMEINFREI_NAMEN else None
+    teile = urlsplit(url if "://" in url else "https:" + url)
+    if teile.scheme not in ("http", "https") or (teile.hostname or "").lower() not in (
+            "creativecommons.org", "www.creativecommons.org") or teile.query or teile.port:
+        return None
+    pfad = teile.path.rstrip("/")
+    for rx, art in _LIZENZ_PFADE:
+        m = rx.fullmatch(pfad)
+        if not m:
+            continue
+        k = _KURZ[art].fullmatch(norm)
+        if not k or (k.group(1) and k.group(1) != m.group(1)):
+            return None
+        return "gemeinfrei" if art in ("cc0", "pdm") else art
     return None
 
 
@@ -226,7 +257,8 @@ def _commons(eintrag: dict, abrufen: Callable) -> dict:
         raise Abgelehnt("Datei auf Commons nicht gefunden")
     meta = info.get("extmetadata") or {}
     kurzname = _text(_ext(meta, "LicenseShortName"))
-    art = commons_lizenz(kurzname)
+    lizenz_url = _ext(meta, "LicenseUrl")
+    art = commons_lizenz(kurzname, lizenz_url)
     if art is None:
         raise Abgelehnt(f"Lizenz nicht erlaubt ({kurzname or 'leer'}; nur gemeinfrei, CC0, CC BY, CC BY-SA)")
     artist = _text(_ext(meta, "Artist"))[:80].strip()
@@ -244,7 +276,6 @@ def _commons(eintrag: dict, abrufen: Callable) -> dict:
         nachweis = f"Foto: {artist} / Wikimedia Commons, gemeinfrei" if artist else "Foto: Wikimedia Commons, gemeinfrei"
     else:
         nachweis = f"Foto: {artist} / Wikimedia Commons, {kurzname}"
-    lizenz_url = _ext(meta, "LicenseUrl")
     lizenz = f"{kurzname} ({lizenz_url})" if lizenz_url.startswith(("http://", "https://")) else kurzname
     got = abrufen(bild_url, bild=True)
     if (urlsplit(got.url).hostname or "").lower() != COMMONS_BILDHOST:  # Umleitung weg von Commons

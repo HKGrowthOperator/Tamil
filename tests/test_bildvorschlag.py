@@ -38,8 +38,17 @@ def seite(og=OG, body="") -> str:
             f"</figure>{body}</article></body></html>")
 
 
+def cc_url(lizenz: str) -> str:
+    """Lizenz-Adresse, wie Commons sie zum Kurznamen liefert (by, by-sa; sonst leer)."""
+    import re as _re
+    v = (_re.search(r"\d\.\d", lizenz) or [None])[0] or "4.0"
+    art = "by-sa" if "sa" in lizenz.lower() else "by" if "by" in lizenz.lower() else ""
+    return f"https://creativecommons.org/licenses/{art}/{v}/" if art else ""
+
+
 def commons_api(lizenz="CC BY-SA 4.0", artist='<a href="//commons.wikimedia.org/wiki/User:X">Anna K.</a>',
-                mime="image/jpeg", breite=4000, lizenz_url="https://creativecommons.org/licenses/by-sa/4.0"):
+                mime="image/jpeg", breite=4000, lizenz_url=None):
+    lizenz_url = cc_url(lizenz) if lizenz_url is None else lizenz_url
     ext = {"LicenseShortName": {"value": lizenz}, "License": {"value": lizenz.lower().replace(" ", "-")},
            "LicenseUrl": {"value": lizenz_url}, "AttributionRequired": {"value": "true"}}
     if artist is not None:
@@ -143,6 +152,32 @@ def test_commons_abgelehnt(settings, lizenz, artist, mime, grund):
                  {"API": commons_api(lizenz, artist, mime), COMMONS_THUMB: jpeg()}, abrufe)
         assert e["ergebnis"] == "abgelehnt" and grund in e["grund"], e
         assert COMMONS_THUMB not in abrufe and store.get_draft(did)["bild_origin"] == "karte"
+
+
+@pytest.mark.parametrize("lizenz,url", [
+    ("CC BY NC", None), ("CC BY 4.0 ND", None), ("CC BY-SA 4.0 nc", None), ("PD-fairuse", ""),
+    ("pd-us-unpublished", ""), ("CC BY 4.0", "https://creativecommons.org/licenses/by-nc/4.0/"),
+    ("CC BY-SA 4.0", "https://creativecommons.org/licenses/by/4.0/"), ("CC BY 4.0", ""),
+    ("CC BY 4.0", "https://example.org/licenses/by/4.0/"), ("Public domain", "https://example.org/pd"),
+])
+def test_commons_lizenz_nur_ueber_positivliste_und_adresse(settings, lizenz, url):
+    with Store(settings.db_path) as store:
+        sid, _ = story_mit_entwurf(store)
+        e = eins(store, settings, {"story_id": sid, "weg": "commons", "seite_url": COMMONS_SEITE},
+                 {"API": commons_api(lizenz, "Anna", lizenz_url=url), COMMONS_THUMB: jpeg()})
+        assert e["ergebnis"] == "abgelehnt" and "Lizenz" in e["grund"], e
+
+
+@pytest.mark.parametrize("lizenz,url", [
+    ("CC BY 2.0 de", "https://creativecommons.org/licenses/by/2.0/de/"), ("CC0", "https://creativecommons.org/publicdomain/zero/1.0/"),
+    ("PD-old-70", ""), ("Public domain", ""), ("CC BY-SA 3.0", "http://creativecommons.org/licenses/by-sa/3.0"),
+])
+def test_commons_lizenz_erlaubt(settings, lizenz, url):
+    with Store(settings.db_path) as store:
+        sid, _ = story_mit_entwurf(store)
+        e = eins(store, settings, {"story_id": sid, "weg": "commons", "seite_url": COMMONS_SEITE},
+                 {"API": commons_api(lizenz, "Anna", lizenz_url=url), COMMONS_THUMB: jpeg()})
+        assert e["ergebnis"] == "gesetzt", e
 
 
 def test_commons_gemeinfrei_ohne_artist(settings):
