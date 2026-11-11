@@ -411,6 +411,20 @@ def test_interne_adresse_abgelehnt_nichts_abgerufen(settings, monkeypatch):
         assert e["ergebnis"] == "abgelehnt" and "interne Adresse" in e["grund"] and abrufe == []
 
 
+@pytest.mark.parametrize("text", [
+    "Foto: PTI", "Bild: ANI", "IANS", "Foto: APA/Hans", "Xinhua", "AAP Image", "Anadolu Agency", "EFE", "Kyodo News",
+    "SIPA", "Abaca Press", "laif", "Westend61", "Action Press", "Eibner-Pressefoto", "Sven Simon", "Foto: AP",
+    "Photo: AP Photo/Rafiq", "© AP", "Quelle: AP", "AP/Keystone", "Bild: dpa", "picture alliance"])
+def test_agenturbegriffe(text):
+    assert bildvorschlag.agentur(text), text
+
+
+@pytest.mark.parametrize("text", ["Kapital", "Sipan Rao", "Anika", "Laifer", "Tapas", "Apart", "Ganesha", "Aniruth",
+                                  "Prozession 2026", "Foto: Sri Ganesha Tempel", "Aapka", "Efendi"])
+def test_agentur_gegenproben(text):
+    assert not bildvorschlag.agentur(text), text
+
+
 # ---- Entwurf, Eingabe, Stopp, Zeitlimit ---------------------------------------------------------------
 
 @pytest.mark.parametrize("bild_url", ["https://www.murugantemple.ch:8443/media/prozession-gross.jpg",

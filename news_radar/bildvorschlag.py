@@ -61,7 +61,18 @@ GESPERRT_MARKEN = BILD_GESPERRT_MARKEN
 
 AGENTUR = re.compile(
     r"(?<![a-z0-9])(dpa|keystone|sda|getty|gettyimages|reuters|afp|ap[ _-]?photo|imago|picture[ _-]?alliance|"
-    r"shutterstock|adobe[ _-]?stock|istock|istockphoto|epa|ddp|freshfocus|alamy|unsplash|pexels)(?![a-z0-9])", re.I)
+    r"shutterstock|adobe[ _-]?stock|istock|istockphoto|epa|ddp|freshfocus|alamy|unsplash|pexels|"
+    r"pti|ani|ians|apa|xinhua|aap|anadolu|efe|kyodo|sipa|abaca|laif|westend61|action[ _-]?press|eibner|"
+    r"sven[ _-]?simon)(?![a-z0-9])", re.I)
+# „AP“ allein ist zu kurz für ein freies Wort: nur in Nachweis-Mustern („Foto: AP“, „© AP“, „AP/…“)
+AGENTUR_AP = re.compile(r"(?:(?<![a-z0-9])(?:foto|photo|bild|quelle)|©)\s*:?\s*ap(?![a-z0-9])|(?<![a-z0-9])ap\s*/",
+                        re.I)
+
+
+def agentur(text: str) -> str:
+    """Erster Agenturbegriff im Text (leer, wenn keiner)."""
+    m = AGENTUR.search(text or "") or AGENTUR_AP.search(text or "")
+    return m.group(1) if m and m.re is AGENTUR else ("AP" if m else "")
 
 # Lizenzprüfung Commons: maßgeblich ist die Lizenz-Adresse (exakte Pfade bei creativecommons.org); der Kurzname muss
 # dazu passen und darf kein „nc“, „nd“ oder „fair“ enthalten. Gemeinfrei ohne Lizenz-Adresse nur über GEMEINFREI_NAMEN.
@@ -424,9 +435,9 @@ def _quelle(store: Store, settings: Settings, eintrag: dict, story_id: int, abru
         raise Abgelehnt(f"Bild liegt nicht beim eingetragenen Host ({bild_host} statt {', '.join(erlaubt)})")
     umfeld = " ".join([unquote(urlsplit(bild_url).path.rsplit("/", 1)[-1])]
                       + [u for k, u in kandidaten if _gleich(k, bild_url)])
-    treffer = AGENTUR.search(umfeld)
+    treffer = agentur(umfeld)
     if treffer:
-        raise Abgelehnt(f"Agenturbild ({treffer.group(1)}) – nur eigenes Material der Quelle")
+        raise Abgelehnt(f"Agenturbild ({treffer}) – nur eigenes Material der Quelle")
     _intern_pruefen(bild_url)
     got = abrufen(bild_url, bild=True)
     ziel = _host(got.url or bild_url)  # nach Umleitungen: nie gesperrt, sonst derselbe oder der eingetragene Host
