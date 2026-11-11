@@ -104,6 +104,10 @@ h2 small, h1 small { font-weight: 500; font-size: 14px; letter-spacing: 0; margi
 /* Knöpfe */
 .aktionen { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; }
 .aktionen.gross { margin-top: 14px; gap: 8px; }
+.sammelleiste { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-bottom: 12px; padding: 8px 12px; background: var(--sand); border-radius: 16px; }
+.sammelleiste button { margin-left: auto; }
+.auswahl { display: inline-flex; align-items: center; gap: 8px; min-height: 38px; padding: 0 6px; font-size: 15px; font-weight: 700; color: var(--tinte); cursor: pointer; }
+.auswahl input { width: 20px; height: 20px; margin: 0; accent-color: var(--tinte); cursor: pointer; }
 form.inline { display: inline; }
 button, .knopf { appearance: none; display: inline-flex; align-items: center; justify-content: center; min-height: 38px; padding: 0 16px; border: 0; border-radius: 999px; background: var(--weiss); color: var(--tinte); box-shadow: inset 0 0 0 1.5px var(--linie); font: inherit; font-size: 15px; font-weight: 700; line-height: 1.1; cursor: pointer; text-decoration: none; transition: background-color .2s var(--ease), box-shadow .2s var(--ease), color .2s var(--ease); }
 button:hover, .knopf:hover { background: var(--sand); color: var(--tinte); box-shadow: inset 0 0 0 1.5px var(--sand-2); }
@@ -260,7 +264,7 @@ tr.aus td { color: var(--tinte-3); }
   .rail nav { display: flex; flex: 1 0 auto; gap: 2px; justify-content: space-between; }
   .rail nav a { flex: 0 0 auto; white-space: nowrap; min-height: 44px; padding: 0 10px; font-size: 15px; }
   .rail .abmelden { flex: 0 0 auto; }
-  button, .knopf { min-height: 44px; }
+  button, .knopf, .auswahl { min-height: 44px; }
   .banner a, .protokoll a { display: inline-flex; align-items: center; min-height: 44px; }
   .wisch-hinweis { display: block; margin: 0 0 6px; }
   .rail .status, .rail .abmelden .nutzer { display: none; }

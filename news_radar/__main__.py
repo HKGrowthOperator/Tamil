@@ -84,6 +84,25 @@ def cmd_style(site: str, count: int) -> int:
     return 0
 
 
+def cmd_style_export(ordner: Path, nur_kandidaten: bool = False) -> int:
+    """Stilbeispiele aus einem Export der alten Seite (wiederholbar, Auswahl in stilbeispiele.AUSWAHL)."""
+    from . import stilbeispiele
+
+    try:
+        posts, kategorien = stilbeispiele.laden_export(ordner)
+        if nur_kandidaten:
+            for k in stilbeispiele.kandidaten(posts, kategorien):
+                print(f"{k['id']:>6}  {k['woerter']:>5} W  {k['datum']}  {k['rubrik']:<20}  {k['title'][:70]}")
+            return 0
+        beispiele = stilbeispiele.auswaehlen(posts, kategorien)
+    except ValueError as exc:  # ExportFehler und untaugliche Auswahl
+        print(f"Stilbeispiele nicht erzeugt: {exc}", file=sys.stderr)
+        return 1
+    STYLE_FILE.write_text(json.dumps(beispiele, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    print(f"{len(beispiele)} Stilbeispiele gespeichert in {STYLE_FILE}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="news_radar", description="Tamil.de News-Radar")
     parser.add_argument("-v", "--verbose", action="store_true")
@@ -111,6 +130,8 @@ def main(argv: list[str] | None = None) -> int:
     style = sub.add_parser("style")
     style.add_argument("--site", default="https://www.tamil.de")
     style.add_argument("--count", type=int, default=6)
+    style.add_argument("--export", help="Ordner mit posts.json/categories.json der alten Seite: kuratierte Auswahl")
+    style.add_argument("--kandidaten", action="store_true", help="mit --export: taugliche Beiträge auflisten")
     exp = sub.add_parser("export")
     exp.add_argument("--file", default="radar-protokoll.jsonl")
     agent = sub.add_parser("agent", help="Agent-Modus: Aufgabenmappe exportieren / fertige Beiträge importieren")
@@ -175,6 +196,8 @@ def main(argv: list[str] | None = None) -> int:
         logging.getLogger(noisy).setLevel(logging.WARNING)
 
     if args.cmd == "style":
+        if args.export:
+            return cmd_style_export(Path(args.export), args.kandidaten)
         return cmd_style(args.site, args.count)
 
     if args.cmd == "abnahme":

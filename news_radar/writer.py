@@ -43,8 +43,8 @@ Harte Regeln:
 - Schreibe einen EIGENEN Text. Übernimm keine Sätze aus der Quelle, nur Fakten.
 - Verwende nur Fakten aus dem Quellmaterial. Was unklar ist, lässt du weg. Datum, Ort und \
 Ticket-Link eines Events nur angeben, wenn sie in der Quelle stehen.
-- Länge des Haupttextes: 250-450 Wörter, 3-6 Absätze als <p>, optional eine <h2>-Zwischenüberschrift. \
-Bei typ=kino_termine nur 120-200 Wörter über den Film und den Kinostart – die Liste der Kinos und \
+- Länge des Haupttextes nach Stoff, nie gestreckt: wenig Stoff 80-150 Wörter, sonst 250-400 Wörter in 3-6 <p>, \
+optional eine <h2>-Zwischenüberschrift. Bei typ=kino_termine 250-400 Wörter über den Film und den Kinostart – die Liste der Kinos und \
 Termine wird automatisch unter den Text gesetzt, also KEINE Kinos im Text aufzählen.
 - Der letzte Absatz nennt die Quelle: <p class="quelle">Quelle: NAME</p>.
 - typ: "event" nur für eine konkrete Veranstaltung mit Datum; "kino_termine" nur, wenn das \
@@ -61,7 +61,8 @@ SCHEMA_RULES = """\
 Technische Regeln für die Antwort (JSON nach Schema):
 - Du schreibst IMMER auf Deutsch, auch wenn die Quelle Englisch oder Tamil ist.
 - Schreibe einen EIGENEN Text; übernimm keine Sätze aus der Quelle, nur Fakten. Was unklar ist, lässt du weg.
-- Länge: 180-350 Wörter in 3-6 <p>-Absätzen, optional eine <h2>. Bei typ=kino_termine nur 120-200 Wörter über Film \
+- Länge: 250-400 Wörter in 3-6 <p>-Absätzen, optional eine <h2>; wenig Stoff ergibt 80-150 Wörter, nie strecken. \
+Bei typ=kino_termine 250-400 Wörter über Film \
 und Kinostart – die Kinoliste wird automatisch angehängt, also KEINE Kinos im Text aufzählen.
 - Der letzte Absatz nennt die Quelle: <p class="quelle">Quelle: NAME</p>.
 - typ: "event" nur für eine konkrete Veranstaltung mit Datum; "kino_termine" nur, wenn das Quellmaterial ein \

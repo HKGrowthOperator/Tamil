@@ -109,15 +109,17 @@ def paket_v2(store: Store, settings: Settings, *, limit: int = 10, ctx: Kontext 
             repo.story_setzen(store, story["id"], status="verworfen", notiz=f"Termin vom {vorbei} liegt zurück")
             _jobs_schliessen(store, story["id"])
             continue
-        bestaetigt_moeglich = any(d.primaer or d.art == "volltext" for d in docs)
         paket = {
             "story_id": story["id"], "typ": story["typ"], "titel": story["titel"], "kategorie": story["kategorie"],
             "ort": story["ort"], "relevanz": story["relevanz"], "herkunft": story.get("herkunft") or "radar",
-            "laenge": schreiben.laenge_text(
-                story.get("laenge") or {"event": "event", "kino": "kino", "dossier": "dossier"}.get(
-                    story["typ"], "normal" if bestaetigt_moeglich else "kurz"), story["typ"]),
+            # Dieselbe Einstufung wie beim Import (factcheck.gate), je Zahl bestätigter Aussagen
+            "laenge": factcheck.staffel_text(story["typ"], docs),
+            "laenge_staffel": factcheck.staffel(story["typ"], docs),
             "dokumente": [d.model_dump() for d in docs],
             "quellen": schreiben.quellen_liste(docs),
+            # Stilbeispiele aus dem Altbestand passend zur Art (Nachricht, Kino, Event, Porträt, Küche)
+            "stilbeispiele": [{k: b.get(k) for k in ("title", "art", "woerter", "text")}
+                              for b in schreiben.stilbeispiele(story["typ"], story["kategorie"] or "", n=2)],
         }
         if nachtrag:
             paket["ereignis_datum"] = story.get("ereignis_datum") or ""

@@ -151,8 +151,65 @@ def set_status(draft_id: int):
     row = store.get_draft(draft_id)
     repo.aktion(store, wer=_user(), aktion=aktion, draft_id=draft_id, story_id=row.get("story_id"),
                 fassung=repo.fassung_hash(row))
-    flash(f"{STATUS_LABELS.get(neu, neu)}.", "ok")
+    sperre = schalter.sperre(store, "website") if neu == "freigegeben" else None
+    if sperre is not None:  # wie Entwurfsseite und Sammelfreigabe: freigegeben, wartet
+        _wartet(row, sperre)
+        flash(_angehalten_meldung(sperre, "Nichts wurde an WordPress übertragen. Der Entwurf ist freigegeben und "
+                                          "wartet; er geht beim nächsten Lauf hinaus, sobald der Schalter wieder aus "
+                                          "ist."), "fehler")
+    else:
+        flash(f"{STATUS_LABELS.get(neu, neu)}.", "ok")
     return redirect(sicheres_ziel(request.form.get("next") or request.args.get("next"), url_for("ui.feed")))
+
+
+SAMMEL_MAX = 100  # mehr Karten zeigt der Feed nicht auf einmal
+
+
+@ui.post("/entwurf/sammelfreigabe")
+@recht_noetig("freigeben")
+def sammelfreigabe():
+    """Mehrere Entwürfe freigeben: je Entwurf derselbe Übergang und dieselbe Protokollzeile wie einzeln. Was nicht
+    freigegeben werden kann, wird mit Grund gemeldet. Bei angehaltener Website: freigegeben, wartet (wie einzeln)."""
+    ziel = sicheres_ziel(request.form.get("next"), url_for("ui.feed"))
+    ids: list[int] = []
+    for roh in request.form.getlist("ids"):
+        # nur ASCII-Ziffern: isdigit() ließe „²“ durch (int() scheitert), isdecimal() allein andere Schriften
+        if roh.isascii() and roh.isdecimal() and int(roh) not in ids:
+            ids.append(int(roh))
+    if not ids:
+        flash("Keine Entwürfe ausgewählt.", "fehler")
+        return redirect(ziel)
+    if len(ids) > SAMMEL_MAX:
+        flash(f"Höchstens {SAMMEL_MAX} Entwürfe auf einmal – bitte kleiner auswählen.", "fehler")
+        return redirect(ziel)
+    store = get_store()
+    sperre = schalter.sperre(store, "website")
+    frei, nicht = [], []
+    for draft_id in ids:
+        row = store.get_draft(draft_id)
+        if row is None:
+            nicht.append(f"#{draft_id}: nicht gefunden")
+            continue
+        if row["status"] not in OPEN_STATES and row["status"] != "fehler":
+            nicht.append(f"#{draft_id} „{row['titel'][:60]}“: Status „{STATUS_LABELS.get(row['status'], row['status'])}“")
+            continue
+        aktion = _freigeben(store, row)
+        if not aktion:
+            nicht.append(f"#{draft_id} „{row['titel'][:60]}“: Zustand hat sich gerade geändert")
+            continue
+        store.event("aktion", id=draft_id, aktion=aktion, status="freigegeben", von=_user(), sammel=True)
+        if sperre is not None:
+            _wartet(row, sperre)
+        frei.append(draft_id)
+    if frei:
+        flash(f"{len(frei)} {'Entwurf' if len(frei) == 1 else 'Entwürfe'} freigegeben.", "ok")
+    if frei and sperre is not None:
+        flash(_angehalten_meldung(sperre, "Nichts wurde an WordPress übertragen. Die freigegebenen Entwürfe warten "
+                                          "und gehen beim nächsten Lauf hinaus, sobald der Schalter wieder aus ist."),
+              "fehler")
+    if nicht:
+        flash(f"Nicht freigegeben ({len(nicht)}): " + "; ".join(nicht), "fehler")
+    return redirect(ziel)
 
 
 # ---- Bearbeiten -------------------------------------------------------------------------
@@ -381,18 +438,24 @@ def _publish(draft_id: int, status: str):
     return redirect(url_for("ui.entwurf", draft_id=draft_id))
 
 
-def _freigeben(store, row: dict) -> bool:
-    """Offenen Entwurf freigeben, einen mit Fehler erneut freigeben (mit Protokollzeile); False, wenn er es schon war
-    oder nicht freigebbar ist."""
+def _freigeben(store, row: dict) -> str:
+    """Offenen Entwurf freigeben, einen mit Fehler erneut freigeben (mit Protokollzeile). Gibt die tatsächliche
+    Aktion zurück („freigeben“ oder „erneut“); leer, wenn er es schon war oder nicht freigebbar ist."""
     aktion = "erneut" if row["status"] == "fehler" else "freigeben"
     if row["status"] not in OPEN_STATES and row["status"] != "fehler":
-        return False
+        return ""
     try:
         store.set_status(row["id"], aktion, von=_user())
     except ConflictError:
-        return False
+        return ""
     _protokoll(aktion, row, fassung=repo.fassung_hash(row))
-    return True
+    return aktion
+
+
+def _wartet(row: dict, sperre: dict) -> None:
+    """Protokollzeile „zurueckgehalten“ für einen freigegebenen Entwurf bei angehaltener Website (alle Wege gleich)."""
+    _protokoll("zurueckgehalten", row, fassung=repo.fassung_hash(row), kanal="website",
+               notiz=f"Schalter „{sperre['kanal']}“ angehalten seit {sperre['seit']}")
 
 
 def _freigeben_wartend(store, row: dict, sperre: dict, schon_frei: bool = False) -> None:
@@ -404,8 +467,7 @@ def _freigeben_wartend(store, row: dict, sperre: dict, schon_frei: bool = False)
         flash(_angehalten_meldung(sperre, f"Nichts wurde übertragen; der Entwurf steht auf "
                                           f"„{STATUS_LABELS.get(jetzt, jetzt)}“ und wartet nicht."), "fehler")
         return
-    _protokoll("zurueckgehalten", row, fassung=repo.fassung_hash(row), kanal="website",
-               notiz=f"Schalter „{sperre['kanal']}“ angehalten seit {sperre['seit']}")
+    _wartet(row, sperre)
     flash(_angehalten_meldung(sperre, "Nichts wurde an WordPress übertragen. Der Entwurf ist freigegeben und wartet; "
                                       "er geht beim nächsten Lauf hinaus, sobald der Schalter wieder aus ist."), "fehler")
 

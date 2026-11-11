@@ -49,6 +49,26 @@ document.querySelectorAll(".chip[data-anweisung]").forEach((chip) => {
   });
 });
 
+// Sammelfreigabe: Auswahl je Karte, „alle sichtbaren“, Rückfrage mit Anzahl (Server prüft jeden Entwurf einzeln)
+const sammel = document.querySelector("form[data-sammel]");
+if (sammel) {
+  const boxen = [...document.querySelectorAll('input[name="ids"][form="sammel"]')];
+  const alle = sammel.querySelector("[data-alle]");
+  const anzahl = sammel.querySelector("[data-anzahl]");
+  const knopf = sammel.querySelector("button");
+  const zaehle = () => {
+    const n = boxen.filter((b) => b.checked).length;
+    anzahl.textContent = n ? `${n} ausgewählt` : "Keiner ausgewählt";
+    knopf.disabled = n === 0;
+    alle.checked = n > 0 && n === boxen.length;
+    alle.indeterminate = n > 0 && n < boxen.length;
+    sammel.setAttribute("data-confirm", `${n} ${n === 1 ? "Entwurf" : "Entwürfe"} freigeben?`);
+  };
+  boxen.forEach((b) => b.addEventListener("change", zaehle));
+  alle.addEventListener("change", () => { boxen.forEach((b) => { b.checked = alle.checked; }); zaehle(); });
+  zaehle();
+}
+
 // Tastatur im Feed: J/K wechseln, F freigeben, A ablehnen, Enter öffnet
 const board = document.querySelector("[data-board]");
 if (board) {

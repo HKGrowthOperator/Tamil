@@ -6,10 +6,10 @@ Das Modell bekommt nur Claims mit Status „bestaetigt“ und die Quellenliste. 
 
 from __future__ import annotations
 
-import json
 import re
 
 from .. import prompts
+from .. import stilbeispiele as stilbeispiele_mod
 from ..config import Settings
 from ..writer import SCHEMA_RULES, STYLE_GUIDE, STYLE_FILE
 from ..workflow.models import Claim, SourceDocument, TextErgebnis
@@ -17,30 +17,18 @@ from ..workflow.providers import json_block
 from . import Kontext
 
 # Wörter im Haupttext je Längenregel (redaktion.md: Länge nach Stofflage)
-LAENGEN = {"kurz": (80, 150), "normal": (180, 350), "lang": (300, 450), "event": (150, 250), "kino": (120, 200),
+# Anweisung des Auftraggebers vom 11.11.2026: Beiträge von mehreren Minuten, wenn der belegte Stoff es trägt.
+# event/kino = knapp (ohne Volltext), *_mittel = mittlerer Stoff, *_lang = viel Stoff.
+LAENGEN = {"kurz": (80, 150), "normal": (250, 400), "lang": (450, 750), "event": (150, 250), "kino": (150, 250),
+           "event_mittel": (250, 400), "kino_mittel": (250, 400), "event_lang": (350, 550), "kino_lang": (350, 550),
            "dossier": (600, 1000)}
-_STIL_SIGNALE = {
-    "event": ("uhr", "eintritt", "tickets", "veranstalt", "abend", "event"),
-    "kino": ("kino", "film", "regie", "trailer", "kinostart"),
-    "news": ("regierung", "sri lanka", "politik", "abgeordnete", "visum", "wahl"),
-    "community": ("verein", "community", "debüt", "erfolg", "singles"),
-}
+KNAPP = ("kurz", "event", "kino")
+H2_AB_WOERTER = 350  # ab hier gliedern Zwischenüberschriften (Längentext, Lektorat, redaktion.md)
 
 
 def stilbeispiele(typ: str, kategorie: str, n: int = 3) -> list[dict]:
-    """2–3 Beispiele, die zu Typ und Rubrik passen (statt immer der ersten vier)."""
-    if not STYLE_FILE.exists():
-        return []
-    beispiele = json.loads(STYLE_FILE.read_text(encoding="utf-8"))
-    signale = _STIL_SIGNALE.get(typ) or _STIL_SIGNALE.get(kategorie) or _STIL_SIGNALE["news"]
-    if kategorie in _STIL_SIGNALE and kategorie != typ:
-        signale = signale + _STIL_SIGNALE[kategorie]
-
-    def punkte(ex: dict) -> int:
-        text = f"{ex['title']} {ex['text'][:800]}".lower()
-        return sum(text.count(s) for s in signale)
-
-    return sorted(beispiele, key=punkte, reverse=True)[:n]
+    """2–3 Beispiele aus dem Altbestand, die zur Art passen (Nachricht, Kino, Event, Porträt, Küche)."""
+    return stilbeispiele_mod.passende(typ, kategorie, n=n, path=STYLE_FILE)
 
 
 def system_prompt(settings: Settings, typ: str, kategorie: str) -> str:
@@ -51,21 +39,33 @@ def system_prompt(settings: Settings, typ: str, kategorie: str) -> str:
                         and "Kinoliste wird automatisch" not in z)
     text = (f"{profil}\n\n{rolle}\n\n{technik}\n\nKategorien (Slug: Name):\n{cats}\n\n"
             f"Bildthemen (bild_thema): {', '.join(prompts.thema_slugs()) or 'diaspora-stadt'}\n")
-    beispiele = stilbeispiele({"artikel": "news"}.get(typ, typ), kategorie)
+    beispiele = stilbeispiele({"artikel": "news", "kino_termine": "kino"}.get(typ, typ), kategorie)
     if beispiele:
         text += "\nSo klingen veröffentlichte Tamil.de-Beiträge (nur Ton, nicht Inhalt übernehmen):\n"
         for ex in beispiele:
-            text += f"\n<beispiel>\n# {ex['title']}\n{ex['text']}\n</beispiel>\n"
+            art = f" ({ex['art']}, {ex.get('woerter', '?')} Wörter)" if ex.get("art") else ""
+            text += f"\n<beispiel>\n# {ex['title']}{art}\n{ex['text']}\n</beispiel>\n"
     return text
 
 
 def laenge_text(laenge: str, typ: str) -> str:
     lo, hi = LAENGEN.get(laenge, LAENGEN["normal"])
     zusatz = ""
+    if laenge in KNAPP:
+        zusatz += " Wenig belegter Stoff oder kein Volltext: eine knappe Meldung, nichts auffüllen."
+        if typ in ("event", "kino"):
+            zusatz += " Wann, wo, Karten – nur, was belegt ist."
+    else:
+        zusatz += (" Aufbau: erster Absatz mit dem Kern (wer, was, wann, wo), dann <h2>-Zwischenüberschriften"
+                   f" (eine je Abschnitt, ab etwa {H2_AB_WOERTER} Wörtern), Hintergrund und Einordnung nur aus den"
+                   " Claims.")
+        if typ in ("event", "kino"):
+            zusatz += " Zum Schluss ein Service-Absatz: wann, wo, Karten – nur, was belegt ist."
+        zusatz += (" Die Länge entsteht aus mehr belegten Einzelheiten und Zusammenhang; nicht strecken – keine"
+                   " Wiederholung, keine Floskeln, keine Vermutungen. Trägt der Stoff die Spanne nicht, bleibt der"
+                   " Text kürzer.")
     if typ == "kino":
-        zusatz = " Die Kinoliste wird automatisch angehängt – keine Kinos im Text aufzählen."
-    if laenge == "kurz":
-        zusatz += " Wenig belegter Stoff: eine kurze Meldung, nichts auffüllen."
+        zusatz += " Die Kinoliste wird automatisch angehängt – keine Kinos im Text aufzählen."
     return f"{lo}–{hi} Wörter im Haupttext.{zusatz}"
 
 

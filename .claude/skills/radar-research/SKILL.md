@@ -20,7 +20,8 @@ nur aus bestätigten Claims, Belege je `<p>`, Links nur auf Quellen der Story.
 
 ## Schritte
 
-1. Mappe holen; `anleitung`, `stil` und je Story `dokumente` (mit `id`), `laenge`, `typ` lesen.
+1. Mappe holen; `anleitung`, `stil` und je Story `dokumente` (mit `id`), `laenge`, `typ` und `stilbeispiele`
+   (zwei Beiträge der alten tamil.de derselben Art: nur Ton und Aufbau, nie Inhalt) lesen.
 2. Je Story genau ein Ergebnis in `{"ergebnisse": [...]}`:
    - **Beitrag:** `claims` (Aussage, `evidence_source_ids`, wörtliche Fundstelle aus dem Dokument), optional
      `widersprueche`, `beitrag` mit allen Feldern aus der Anleitung; `belege`: zu jedem `<p>` (ab 1) die Claim-IDs.
@@ -36,7 +37,12 @@ nur aus bestätigten Claims, Belege je `<p>`, Links nur auf Quellen der Story.
 
 - Fundstellen müssen **wörtlich** im Dokument stehen, sonst verwirft das Gate den Claim.
 - Termine: das späteste Datum im Text zählt; liegt es in der Vergangenheit → verwerfen.
-- Länge nach `laenge` (Event 150–250 Wörter); zu kurz erzeugt Hinweise im Cockpit.
+- Länge nach Stofflage (`laenge` in der Mappe, Staffel in `redaktion.md`): viel Stoff (ab acht bestätigten Aussagen
+  aus zwei Quellen oder einer ergiebigen Primärquelle) Nachricht/Porträt 450–750, Kino/Event 350–550 Wörter; mittel
+  (vier bis sieben) 250–400; wenig = Kurzmeldung 80–150; ohne Volltext Event/Kino höchstens 150–250, sonst
+  Kurzmeldung. Die Mappe nennt je Story die Staffel in `laenge` und `laenge_staffel` – genau so stuft der Import ein. Lange Beiträge: Kern im ersten Absatz, `<h2>` je Abschnitt,
+  Hintergrund nur aus Claims, bei Termin/Kino ein Service-Absatz. **Nie strecken** – trägt der Stoff die Spanne
+  nicht, bleibt der Text kürzer. Abweichungen und lange Texte ohne `<h2>` erzeugen Hinweise im Cockpit.
 - Stil: `news_radar/prompts/redaktion.md` (Deutsch, „ihr“-Ansprache, keine übernommenen Sätze, keine erfundenen
   Zitate).
 - Lokaler Rückfallweg ohne Live-Radar: `python -m news_radar agent export --v2 --file …` / `agent import --v2 …`.

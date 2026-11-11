@@ -211,6 +211,9 @@ def test_without_api_key_scan_runs_and_agent_mode_v2_finishes_the_story(settings
         mappe = export_v2(store, settings, tmp_path / "m.json", ctx=Kontext(settings, store, fetch_text=lambda u: ARTIKEL,
                                                                           suche=lambda q: []))
         paket = mappe["storys"][0]
+        from news_radar import stilbeispiele
+        assert len(paket["stilbeispiele"]) == 2 and paket["stilbeispiele"][0]["art"] == stilbeispiele.art_fuer(
+            paket["typ"], paket["kategorie"] or "") and paket["stilbeispiele"][0]["text"]
         dokus = "<dokumente>\n" + json.dumps(paket["dokumente"]) + "\n</dokumente>"
         rech = recherche(dokus, "", {})
         claims = [c for c in rech["claims"]]
@@ -225,6 +228,8 @@ def test_without_api_key_scan_runs_and_agent_mode_v2_finishes_the_story(settings
         offene = jobs.zaehlen(store)["offen"]
     assert stats["entwuerfe"] == 1 and draft["story_id"] == paket["story_id"]
     assert any("Agent-Modus" in h for h in draft["hinweise"]) and tuple(usage) == ("claude-code", 0)
+    with Store(settings.db_path) as store:
+        assert repo.story(store, paket["story_id"])["laenge"] in paket["laenge_staffel"].values()
     assert offene == 0
 
 

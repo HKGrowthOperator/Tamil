@@ -74,18 +74,42 @@ def support(claim: Claim, docs: dict[str, SourceDocument], widerspruch_ids: set[
     return "unbestaetigt"
 
 
-def laenge_fuer(typ: str, bestaetigt: int, verlage: int) -> str:
+def laenge_fuer(typ: str, bestaetigt: int, verlage: int, primaer: bool = False, volltext: bool = True) -> str:
+    """Staffel nach Stofflage (redaktion.md): wenig (< 4 bestätigte Aussagen) = Kurzmeldung, mittel (4–7), viel (≥ 8
+    aus zwei Verlagen oder aus einer Primärquelle mit Volltext). Ohne Volltext nie mehr als knapp: Event und Kino
+    150–250 Wörter, alles andere Kurzmeldung."""
     if typ == "dossier":
         return "dossier"
-    if typ == "event":
-        return "event"
-    if typ == "kino":
-        return "kino"
     if bestaetigt < 4:
         return "kurz"
-    if bestaetigt >= 8 and verlage >= 2:
-        return "lang"
-    return "normal"
+    if not volltext:
+        return typ if typ in ("event", "kino") else "kurz"
+    viel = bestaetigt >= 8 and (verlage >= 2 or primaer)
+    if typ in ("event", "kino"):
+        return f"{typ}_lang" if viel else f"{typ}_mittel"
+    return "lang" if viel else "normal"
+
+
+def stoff(docs: list[SourceDocument]) -> tuple[int, bool, bool]:
+    """(Verlage, Primärquelle mit Volltext, irgendein Volltext) – dieselbe Grundlage für Gate und Agent-Export."""
+    verlage = len({_verlag(d) for d in docs if d.art != "hinweis"})
+    return (verlage, any(d.primaer and d.art == "volltext" for d in docs), any(d.art == "volltext" for d in docs))
+
+
+STUFEN = (("unter 4", 3), ("4 bis 7", 5), ("ab 8", 8))
+
+
+def staffel(typ: str, docs: list[SourceDocument]) -> dict[str, str]:
+    """Längenregel je Zahl bestätigter Aussagen für diese Dokumente – genau das, was `gate` beim Import anwendet."""
+    verlage, primaer, volltext = stoff(docs)
+    return {stufe: laenge_fuer(typ, n, verlage, primaer, volltext) for stufe, n in STUFEN}
+
+
+def staffel_text(typ: str, docs: list[SourceDocument]) -> str:
+    from .schreiben import laenge_text
+
+    zeilen = [f"{stufe} bestätigte Aussagen: {laenge_text(l, typ)}" for stufe, l in staffel(typ, docs).items()]
+    return "Länge nach der Zahl bestätigter Aussagen (so stuft der Import ein):\n- " + "\n- ".join(zeilen)
 
 
 def gate(story: dict, docs: list[SourceDocument], claims: list[Claim], widersprueche: list[dict]) -> GateErgebnis:
@@ -111,13 +135,14 @@ def gate(story: dict, docs: list[SourceDocument], claims: list[Claim], widerspru
     for c in bewertet:
         if not c.kern and c.support in ("unbestaetigt", "widerspruch"):
             hinweise.append(f"{c.id} ({c.support}) bleibt aus dem Text: {c.aussage[:100]}")
-    if not any(d.art in ("volltext", "daten") for d in docs) and not any(d.primaer for d in docs):
-        hinweise.append("Kein Volltext der Quelle verfügbar – höchstens Kurzmeldung")
     bestaetigt = [c for c in bewertet if c.support == "bestaetigt"]
-    verlage = len({_verlag(d) for d in docs if d.art != "hinweis"})
-    laenge = laenge_fuer(story["typ"], len(bestaetigt), verlage)
-    if laenge not in ("kurz", "dossier", "event", "kino") and not any(d.art == "volltext" for d in docs):
-        laenge = "kurz"
+    verlage, primaer, volltext = stoff(docs)
+    laenge = laenge_fuer(story["typ"], len(bestaetigt), verlage, primaer, volltext)
+    if not volltext and laenge != "dossier":
+        from .schreiben import LAENGEN
+
+        lo, hi = LAENGEN[laenge]
+        hinweise.append(f"Kein Volltext der Quelle verfügbar – höchstens {lo}–{hi} Wörter, nichts auffüllen")
     text = f"{story.get('titel', '')} " + " ".join(c.aussage for c in bewertet)
     sensibel = bool(_SENSIBEL_RE.search(text))
     if sensibel:
