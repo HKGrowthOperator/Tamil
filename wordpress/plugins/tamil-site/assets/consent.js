@@ -40,7 +40,27 @@
     return !!(stand && stand[kategorie] === true);
   }
 
+  // Inhalte, die erst nach Zustimmung laden dürfen (z. B. fremdes Werbe-HTML), stehen inaktiv in
+  // <template data-zustimmung="kategorie"> und werden hier eingesetzt. Skripte aus einer Vorlage laufen nicht von selbst,
+  // darum werden sie neu angelegt. (Werbeskripte mit document.write funktionieren nachträglich nicht.)
+  function vorlagenEinsetzen() {
+    Array.prototype.forEach.call(document.querySelectorAll("template[data-zustimmung]"), function (tpl) {
+      if (!hat(tpl.getAttribute("data-zustimmung"))) return;
+      var platz = tpl.closest("[data-tz-platz]") || tpl.parentNode;
+      var inhalt = tpl.content.cloneNode(true);
+      Array.prototype.forEach.call(inhalt.querySelectorAll("script"), function (alt) {
+        var neu = document.createElement("script");
+        Array.prototype.forEach.call(alt.attributes, function (a) { neu.setAttribute(a.name, a.value); });
+        neu.text = alt.text;
+        alt.parentNode.replaceChild(neu, alt);
+      });
+      platz.textContent = "";
+      platz.appendChild(inhalt);
+    });
+  }
+
   function melden() {
+    vorlagenEinsetzen();
     var detail = {};
     KATEGORIEN.forEach(function (k) { detail[k] = hat(k); });
     var ev;
