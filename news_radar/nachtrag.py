@@ -125,6 +125,7 @@ SEITE_MAX = 3_000_000  # Bytes je HTML-Seite
 PDF_MAX = 8_000_000  # Bytes je PDF-Datei
 PDF_SEITEN_MAX = 40  # gelesen ab der Anker-Seite, bis TEXT_MAX (pdf_kind.SEITEN_MAX)
 PDF_TYPES = ("application/pdf",)
+ANKER_JE_DATEI = 2  # Quellen je Vorschlag, die auf dieselbe Datei zeigen (verschiedene Seiten)
 _ANKER_RE = re.compile(r"#page=([0-9]{1,5})\Z")
 
 
@@ -465,14 +466,28 @@ def _eins(store: Store, raw, nr: int, von: str, abruf: Callable, heute: date, uh
     if dublette:
         return {**out, **dublette}
     geholt, uebersprungen = [], []
+    abgerufen: dict[str, net.Fetched | Exception] = {}  # je Datei (ohne Anker) nur ein Abruf je Vorschlag
+    je_datei: dict[str, int] = {}
     for q in v.quellen:
+        datei = repo.normalize_url(q.url)
+        je_datei[datei] = je_datei.get(datei, 0) + 1
+        if je_datei[datei] > ANKER_JE_DATEI:
+            uebersprungen.append({"url": q.url, "grund": "höchstens zwei Seiten je Datei"})
+            continue
         jetzt = uhr()
         if ende is not None and jetzt >= ende:
             raise Zeitlimit
-        schalter.pruefen(store, "redaktion")  # unmittelbar vor dem Abruf
         frist = jetzt + frist_abruf if ende is None else min(jetzt + frist_abruf, ende)
+        if datei not in abgerufen:
+            schalter.pruefen(store, "redaktion")  # unmittelbar vor dem Abruf
+            try:
+                abgerufen[datei] = abruf(q.url, frist=frist)
+            except Exception as exc:  # noqa: BLE001 – unten wie jeder Abruffehler behandelt
+                abgerufen[datei] = exc
         try:
-            seite = abruf(q.url, frist=frist)
+            seite = abgerufen[datei]
+            if isinstance(seite, Exception):
+                raise seite
             text, seitentitel = seite_lesen(seite, q.url, frist=frist)
         except Unlesbar as exc:
             uebersprungen.append({"url": q.url, "grund": str(exc)[:80]})

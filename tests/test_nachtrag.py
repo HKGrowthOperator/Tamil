@@ -871,3 +871,16 @@ def test_anker_nur_bei_pdf_und_page_1_wie_ohne_anker(settings):
         assert neu["ergebnis"] == "angelegt" and "#page" not in store.db.execute(
             "SELECT url_norm || uid FROM source_documents WHERE story_id = ?", (neu["story_id"],)).fetchone()[0]
         assert doc.text == ARTIKEL1  # HTML: der Anker ändert nichts am Text
+
+
+def test_dieselbe_pdf_einmal_abgerufen_hoechstens_zwei_anker(settings):
+    """Befund P2: mehrere Anker auf dieselbe Datei → ein Abruf, höchstens zwei Seiten je Datei."""
+    abrufe = []
+    v = pdf_vorschlag(PDF_URL + "#page=2", PDF_URL + "#page=3", PDF_URL + "#page=1", URL1)
+    with Store(settings.db_path) as store:
+        e = nachtrag.annehmen(store, settings, {"vorschlaege": [v]}, von="test", ctx=kontext(store, settings),
+                              abruf=pdf_abruf({PDF_URL: pdf_bytes([SEITE1, SEITE2, SEITE1])}, abrufe))["ergebnisse"][0]
+        assert e["ergebnis"] == "angelegt" and e["quellen_geholt"] == 3
+        assert [a.split("#")[0] for a in abrufe] == [PDF_URL, URL1]  # die Datei nur einmal geholt
+        assert e["quellen_uebersprungen"] == [{"url": PDF_URL + "#page=1", "grund": "höchstens zwei Seiten je Datei"}]
+        assert [d.url for d in repo.dokumente(store, e["story_id"])] == [PDF_URL + "#page=2", PDF_URL + "#page=3", URL1]
