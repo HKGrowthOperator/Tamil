@@ -311,11 +311,13 @@ def strukturierte_angaben(roh: str) -> str:
     return f"{LD_KOPF}\n\n{text}"[:TEXT_MAX] if text else ""
 
 
-def seite_lesen(seite: net.Fetched, adresse: str = "", frist: float | None = None) -> tuple[str, str]:
-    """(Text, Titel) der abgerufenen Seite. Der Titel kommt nur aus og:title oder <title>, sonst bleibt er leer.
-    PDF: Text ab der Seite aus dem Anker „#page=N“ der Adresse (sonst Seite 1), Titel aus den Metadaten."""
+def seite_lesen(seite: net.Fetched, adresse: str = "", frist: float | None = None) -> tuple[str, str, str]:
+    """(Text, Titel, Art) der abgerufenen Seite. Der Titel kommt nur aus og:title oder <title>, sonst bleibt er leer.
+    PDF: Text ab der Seite aus dem Anker „#page=N“ der Adresse (sonst Seite 1), Titel aus den Metadaten.
+    Art „volltext“; „daten“, wenn der Text nur aus strukturierten Angaben (JSON-LD) stammt – kein sichtbarer
+    Seitentext: Aussagen bleiben belegbar, die Längenregel macht daraus aber keinen langen Beitrag."""
     if ist_pdf(seite):
-        return pdf_lesen(seite.content, max(1, anker_seite(adresse or seite.url)), frist=frist)
+        return (*pdf_lesen(seite.content, max(1, anker_seite(adresse or seite.url)), frist=frist), "volltext")
     roh = seite.text
     titel = ""
     for rx in _TITEL_RES:
@@ -325,8 +327,10 @@ def seite_lesen(seite: net.Fetched, adresse: str = "", frist: float | None = Non
             break
     text = sources.extract_paragraphs(roh, TEXT_MAX)
     if len(text or "") < VOLLTEXT_MIN:  # ohne JavaScript kein Text: strukturierte Angaben als Notanker
-        text = strukturierte_angaben(roh) or text
-    return text, titel
+        daten = strukturierte_angaben(roh)
+        if daten:
+            return daten, titel, "daten"
+    return text, titel, "volltext"
 
 
 class Zeitlimit(Exception):
@@ -444,15 +448,15 @@ def _anlegen(store: Store, v: Vorschlag, geholt: list) -> dict:
                 "'nachtrag', ?, ?, ?, ?)",
                 (v.arbeitstitel, v.rubrik, v.ort, 1 if v.heikel else 0, f"Nachtrag · Bezug: {v.bezug}"[:900], v.datum,
                  json.dumps(hinweise, ensure_ascii=False), ts, ts)).lastrowid
-            for n, (q, text, seitentitel, gelesen, pdf) in enumerate(geholt, 1):
+            for n, (q, text, seitentitel, gelesen, pdf, art) in enumerate(geholt, 1):
                 # verlinkt wird die gelesene Adresse; die Ursprungsadresse bleibt als uid für die Dublettenprüfung
                 db.execute(
                     "INSERT INTO source_documents (story_id, doc_key, url, url_norm, uid, publisher, quelle, "
                     "published_at, retrieved_at, language, rights, primaer, art, titel, text, text_sha256, auszug) "
-                    "VALUES (?,?,?,?,?,?, 'Nachtrag', ?,?,?, 'zitat', 1, 'volltext', ?,?,?,?)",
+                    "VALUES (?,?,?,?,?,?, 'Nachtrag', ?,?,?, 'zitat', 1, ?, ?,?,?,?)",
                     (sid, f"Q{n}", gelesen, adresse_norm(gelesen, pdf), _uid(q.url, pdf),
                      herausgeber(q.herausgeber, gelesen), _datum_streng(q.datum), ts, (q.sprache or "de")[:8],
-                     seitentitel, text, hashlib.sha256(text.encode("utf-8")).hexdigest(), text[:500]))
+                     art, seitentitel, text, hashlib.sha256(text.encode("utf-8")).hexdigest(), text[:500]))
             db.commit()
         except BaseException:
             db.rollback()
@@ -494,7 +498,7 @@ def _eins(store: Store, raw, nr: int, von: str, abruf: Callable, heute: date, uh
             seite = abgerufen[datei]
             if isinstance(seite, Exception):
                 raise seite
-            text, seitentitel = seite_lesen(seite, q.url, frist=frist)
+            text, seitentitel, art = seite_lesen(seite, q.url, frist=frist)
         except Unlesbar as exc:
             uebersprungen.append({"url": q.url, "grund": str(exc)[:80]})
             continue
@@ -510,7 +514,7 @@ def _eins(store: Store, raw, nr: int, von: str, abruf: Callable, heute: date, uh
         if any(adresse_norm(g[3], g[4]) == adresse_norm(gelesen, pdf) for g in geholt):
             uebersprungen.append({"url": q.url, "grund": "doppelt im Vorschlag"})
             continue
-        geholt.append((q, text[:TEXT_MAX], seitentitel, gelesen, pdf))
+        geholt.append((q, text[:TEXT_MAX], seitentitel, gelesen, pdf, art))
     if not geholt:
         return {**out, "ergebnis": "abgelehnt", "grund": "keine Quelle abrufbar", "quellen_uebersprungen": uebersprungen}
     ergebnis = _anlegen(store, v, geholt)

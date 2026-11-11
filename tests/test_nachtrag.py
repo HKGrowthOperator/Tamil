@@ -755,6 +755,18 @@ def test_seite_ohne_text_mit_json_ld_wird_zu_strukturierten_angaben(settings):
                      "Köln", "14.50", "inLanguage: ta"):
             assert wert in t, wert
         assert "Kino Beispiel GmbH" not in t  # nur Movie, Event, ScreeningEvent, NewsArticle, Article
+        # Befund P3: kein sichtbarer Seitentext → art „daten“: Aussagen belegbar, aber kein langer Beitrag daraus
+        from news_radar.agents import factcheck
+        from news_radar.workflow.models import Claim
+
+        assert doc.art == "daten" and doc.primaer
+        claim = Claim(id="C1", aussage="Regie: Nelson Dilipkumar", art="wer", kern=True, quellen=[doc.doc_key],
+                      fundstelle="director: Nelson Dilipkumar", sicherheit=0.9)
+        assert factcheck.support(claim, {doc.doc_key: doc}, set()) == "bestaetigt"
+        verlage, primaer, volltext = factcheck.stoff([doc])
+        assert not primaer and not volltext
+        assert factcheck.laenge_fuer("kino", 10, verlage, primaer, volltext) == "kino"  # nicht kino_lang/kino_mittel
+        assert factcheck.laenge_fuer("news", 10, verlage, primaer, volltext) == "kurz"
 
 
 def test_json_ld_nur_als_notanker_und_nur_passende_typen():
