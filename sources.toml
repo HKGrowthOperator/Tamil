@@ -14,7 +14,7 @@
 # Register (Blueprint 19.10.): enabled (false = abgeschaltet, bleibt im Register), prioritaet A/B/C, betreiber,
 # robots (Ergebnis von `quellen pruefen`), paywall, bild_nutzen (Pressebilder nur mit dokumentierter Erlaubnis),
 # vertrag, rechtlich_geprueft (Datum), notiz. Auswahl 20 von 28 am 08.11.2026 nach `quellen pruefen`; 11.11.2026
-# elf Quellen aus der Quellen-Inventur dazu (Tempel, Vereine, Kinoreihen, Lokalpresse, SEM) → 31 von 39 aktiv.
+# elf Quellen aus der Quellen-Inventur dazu (Tempel, Vereine, Kinoreihen, Lokalpresse, SEM) → 30 von 39 aktiv.
 
 # ---- Presse DACH über Google News (rotierend) ----
 [[source]]
@@ -467,7 +467,8 @@ max_items = 2
 interval_minutes = 180
 selectors = { item = "article.event-card", title = "h3", link = "h3 a::attr(href)", date = ".card-meta .pill", ort = "p.muted" }
 
-# Kino: tamilische Vorstellungen (Reihen und Programme zeigen auch Hindi/Telugu – nur Treffer mit „Tamil“)
+# Kino: Reihen und Programme mit Selektoren (provider = "html") über den Kino-Weg – nur Einträge, die „Tamil“ nennen;
+# ein Eintrag je Film und Kinowoche, zusammengelegt mit CineStar/kinoheld (Film-Schlüssel ohne Reihe und Untertitel)
 [[source]]
 name = "Filmkunstkinos Düsseldorf · Kino aus Indien"
 prioritaet = "B"
@@ -477,34 +478,32 @@ paywall = false
 bild_nutzen = false
 notiz = "Inventur 11.11.2026: eine Seite mit allen Vorstellungen der Reihe samt Sprache; Adresse trägt die Jahreszahl – im Januar auf …-2027 umstellen; antwortete einmal mit 429, deshalb langes Intervall; Plakate sind Verleihmaterial"
 rechtlich_geprueft = ""
-type = "html"
+type = "kino"
+provider = "html"
 url = "https://filmkunstkinos.de/specials/filmreihe-kino-aus-indien-2026/"
-kind = "event"
 country = "DE"
-min_score = 3  # nur Vorstellungen mit „Tamil version“
-bezug_noetig = true
 max_items = 1
 interval_minutes = 720
-selectors = { item = "#event-container article", title = ".event-small--title", link = "a::attr(href)", date = ".event-small--date", summary = ".event-small--content" }
+params = { kino = "Filmkunstkinos Düsseldorf", stadt = "Düsseldorf" }
+selectors = { item = "#event-container article", title = ".event-small--title", link = "a::attr(href)", date = ".event-small--date" }
 
 [[source]]
 name = "dein-dein · Tamil Films in Germany"
+enabled = false
 prioritaet = "C"
 betreiber = "dein-dein.com"
 robots = "erlaubt"
 paywall = false
 bild_nutzen = false
-notiz = "Inventur 11.11.2026: tamilische Filme mit bestätigten Vorstellungen in deutschen Kinos; nur Hinweis auf Kinostarts – Spielzeiten beim Kino prüfen; Betreiber nicht geprüft"
+notiz = "aus: robots.txt sperrt KI-Crawler (ClaudeBot, GPTBot u. a.) ausdrücklich, erlaubt nur „*“ – Entscheidung Luis offen. Inventur 11.11.2026: tamilische Filme mit Vorstellungen in deutschen Kinos; Spielzeiten beim Kino prüfen; Betreiber nicht geprüft"
 rechtlich_geprueft = ""
-type = "html"
+type = "kino"
+provider = "html"
 url = "https://dein-dein.com/germany/tamil-films"
-language = "en"
-kind = "event"
 country = "DE"
-min_score = 0
 max_items = 1
 interval_minutes = 360
-selectors = { item = "section[aria-label='Indian film snapshot'] article", title = "h3", link = "a::attr(href)", date = "time::attr(datetime)", ort = "p span:not([aria-hidden])", summary = ".ui-kicker" }
+selectors = { item = "section[aria-label='Indian film snapshot'] article", title = "h3", link = "a::attr(href)", date = "time", ort = "p span:not([aria-hidden])" }
 
 [[source]]
 name = "Mathäser Filmpalast München"
@@ -515,15 +514,14 @@ paywall = false
 bild_nutzen = false
 notiz = "Inventur 11.11.2026: Programmseite nennt die Sprache im Titel („Scene (Tamil)“); große Seite (~900 KB); möglicherweise doppelt zu kinoheld"
 rechtlich_geprueft = ""
-type = "html"
+type = "kino"
+provider = "html"
 url = "https://www.mathaeser.de/mm/programm"
-kind = "event"
 country = "DE"
-min_score = 3  # nur Filme mit „Tamil“ im Titel
-bezug_noetig = true
 max_items = 1
 interval_minutes = 360
-selectors = { item = "section.movie", title = "h2 a", link = "h2 a::attr(href)", date = ".prog-nav__day", summary = ".movie__specs" }
+params = { kino = "Mathäser Filmpalast", stadt = "München" }
+selectors = { item = "section.movie", title = "h2 a", link = "h2 a::attr(href)", date = ".prog-nav__day" }
 
 [[source]]
 name = "Babylon Berlin · IndoGerman Film"
@@ -534,15 +532,14 @@ paywall = false
 bild_nutzen = false
 notiz = "Inventur 11.11.2026: Reihe indischer Filme in Originalsprache; Sprache je Film steht in der Beschreibung („[Telugu]“) – nur tamilische Fassungen kommen durch"
 rechtlich_geprueft = ""
-type = "html"
+type = "kino"
+provider = "html"
 url = "https://babylonberlin.eu/programm/filmreihen/indogerman-film"
-kind = "event"
 country = "DE"
-min_score = 3
-bezug_noetig = true
 max_items = 1
 interval_minutes = 360
-selectors = { item = ".blog .items-leading > div, .blog .items-row .item", title = "h2", link = "h2 a::attr(href)", date = ".first_showtime", summary = "p" }
+params = { kino = "Babylon", stadt = "Berlin" }
+selectors = { item = ".blog .items-leading > div, .blog .items-row .item", title = "h2", link = "h2 a::attr(href)", date = ".first_showtime" }
 
 # Medien und Behörden: nur mit tamilischem Bezug
 [[source]]
@@ -586,11 +583,12 @@ betreiber = "Staatssekretariat für Migration SEM (News Service Bund)"
 robots = "erlaubt"
 paywall = false
 bild_nutzen = false
-notiz = "Inventur 11.11.2026: amtlicher Feed (Asylstatistik, Rückkehr); Sri Lanka nur gelegentlich – normale Stichwortschwelle; newsd.admin.ch ohne robots.txt"
+notiz = "Inventur 11.11.2026: amtlicher Feed (Asylstatistik, Rückkehr); Sri Lanka nur gelegentlich – volle Schwelle 4 (sonst gälte wegen country CH die DACH-Schwelle 2 und ein beiläufiges „Sri Lanka“ reichte); newsd.admin.ch ohne robots.txt"
 rechtlich_geprueft = ""
 type = "rss"
 url = "https://www.newsd.admin.ch/newsd/feeds/rss?lang=de&org-nr=405"
 country = "CH"
+min_score = 4
 max_items = 1
 interval_minutes = 120
 
