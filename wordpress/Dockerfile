@@ -78,6 +78,36 @@ RUN { \
     } > /etc/apache2/conf-available/tamil.conf \
     && a2enconf tamil
 
+# Apache: Browser-Speicher für statische Dateien. Theme- und Plugin-Dateien mit Versions-Parameter (?ver=, setzt
+# WordPress beim Einbinden) ein Jahr unveränderlich, dieselben Dateien ohne Parameter (Schriften, direkt verlinkte
+# Bilder) 30 Tage, Uploads 30 Tage. HTML regelt das Plugin tamil-site (includes/leistung.php).
+RUN { \
+        echo '<IfModule mod_expires.c>'; \
+        echo '    <Directory /var/www/html/wp-content/uploads>'; \
+        echo '        ExpiresActive On'; \
+        echo '        ExpiresDefault "access plus 30 days"'; \
+        echo '    </Directory>'; \
+        echo '</IfModule>'; \
+        echo '<IfModule mod_headers.c>'; \
+        echo '    <Directory /var/www/html/wp-content/uploads>'; \
+        echo '        Header set Cache-Control "public, max-age=2592000"'; \
+        echo '    </Directory>'; \
+        echo '    <DirectoryMatch "^/var/www/html/wp-content/(themes|plugins)/">'; \
+        echo '        <FilesMatch "\.(?i:css|js|mjs|woff2?|ttf|otf|svg|png|jpe?g|gif|webp|avif|ico)$">'; \
+        echo '            <If "%{QUERY_STRING} =~ /(^|&)ver=/">'; \
+        echo '                Header set Cache-Control "public, max-age=31536000, immutable"'; \
+        echo '            </If>'; \
+        echo '            <Else>'; \
+        echo '                Header set Cache-Control "public, max-age=2592000"'; \
+        echo '            </Else>'; \
+        echo '        </FilesMatch>'; \
+        echo '    </DirectoryMatch>'; \
+        echo '</IfModule>'; \
+    } > /etc/apache2/conf-available/tamil-cache.conf \
+    && a2enmod headers expires \
+    && a2enconf tamil-cache \
+    && apachectl configtest
+
 # Theme und Plugins aus dem Repo – Code gehört root, www-data liest nur
 COPY wordpress/themes/tamil /usr/src/wordpress/wp-content/themes/tamil
 COPY wordpress/plugins/tamil-site /usr/src/wordpress/wp-content/plugins/tamil-site
