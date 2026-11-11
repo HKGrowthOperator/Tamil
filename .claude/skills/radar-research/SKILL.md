@@ -49,7 +49,7 @@ darf ein echtes Bild vorgeschlagen werden, auf zwei Wegen:
   Getty …), nie KI-Bilder, nie etwas aus sozialen Netzwerken; Logos, Icons und Banner werden abgelehnt.
 
 Aufruf: `curl -fsS -X POST -H "Authorization: Bearer $RADAR_AGENT_TOKEN" -H "Content-Type: application/json" --data
-'{"bilder": [{"story_id": 42, "weg": "quelle", "seite_url": "https://…", "alt": "…"}]}' "$RADAR/api/agent/bild?von=Claude%20(Research)"`
+'{"bilder": [{"story_id": 42, "weg": "quelle", "seite_url": "https://…", "alt": "…"}]}' "$RADAR/api/agent/bild?von=claude-research"` (`von`: a–z, 0–9, Bindestrich)
 (höchstens fünf je Aufruf, `alt` höchstens 160 Zeichen reiner Text). Den Bildnachweis und die Lizenz setzt **der
 Radar** selbst (aus Commons bzw. dem Register), nie aus dem Vorschlag. Antwort je Eintrag: `gesetzt` (mit `nachweis`,
 `lizenz`), `abgelehnt` (mit `grund`) oder `nicht_bearbeitet`. Die Freigabe bleibt beim Menschen im Cockpit.

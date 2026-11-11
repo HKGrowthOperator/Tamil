@@ -119,7 +119,7 @@ def agent_bild():
     raw = request.get_json(silent=True)
     if raw is None:
         return jsonify({"fehler": "JSON erwartet"}), 400
-    von = str(request.args.get("von") or "claude-code")[:60]
+    von = str(request.args.get("von") or "claude-code")
     try:
         out = annehmen(get_store(), g.settings, raw, von=von, max_bilder=WEB_MAX_BILDER, frist_gesamt=WEB_FRIST_GESAMT)
     except schalter.Gestoppt as exc:

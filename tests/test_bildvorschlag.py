@@ -307,8 +307,11 @@ def test_quelle_og_image_mit_nachweis_aus_dem_register(settings):
         assert d["bild_credit"] == e["nachweis"] and d["bild_origin"] == "quelle" and d["bild_alt"] in (None, "")
         a = repo.asset_fuer_datei(store, d["bild_datei"])
         assert a["herkunft"] == "quelle" and a["rechteinhaber"] == TEMPEL.betreiber and a["quelle_url"] == DOK
-        assert any(ev.get("bild_url") == OG for ev in store.iter_log(event="bild"))
-        assert OG in repo.aktionen(store, did)[-1]["notiz"]
+        kurz = bildvorschlag.adress_hash(OG)
+        assert any(ev.get("bild_host") == "murugantemple.ch" and ev.get("bild_hash") == kurz
+                   for ev in store.iter_log(event="bild"))
+        notiz = repo.aktionen(store, did)[-1]["notiz"]
+        assert "thaipusam-og" not in notiz and kurz in notiz and f"Asset {a['id']}" in notiz
         assert "tempel" in a["lizenz"] and "keine ausdrückliche Lizenz" in a["lizenz"]
 
 
@@ -327,7 +330,7 @@ def test_quelle_bild_url_aus_dem_html(settings):
                  {DOK: seite(), IMG: jpeg(2000, 1300)})
         assert e["ergebnis"] == "gesetzt", e
         assert repo.asset_fuer_datei(store, store.get_draft(did)["bild_datei"])["quelle_url"] == DOK
-        assert IMG in repo.aktionen(store, did)[-1]["notiz"]
+        assert "prozession-gross" not in repo.aktionen(store, did)[-1]["notiz"]
 
 
 @pytest.mark.parametrize("eintrag,seiten,grund", [
@@ -565,6 +568,8 @@ def test_route_bild_mit_token_stopp_und_fehlern(settings, monkeypatch):
     kopf = {"Authorization": "Bearer agent-token-mit-genug-zeichen"}
     assert client.post("/api/agent/bild", json={"bilder": []}, headers={"Authorization": "Bearer x"}).status_code == 401
     assert client.post("/api/agent/bild", data="x", headers=kopf, content_type="text/plain").status_code == 400
+    for von in ("Anna Muster", "x" * 41, "a/b", "ÄÖ"):
+        assert client.post(f"/api/agent/bild?von={von}", json={"bilder": []}, headers=kopf).status_code == 400
     zu_viele = client.post("/api/agent/bild", json={"bilder": [eintrag] * 6}, headers=kopf)
     assert zu_viele.status_code == 400 and "höchstens 5" in zu_viele.get_json()["fehler"] and abrufe == []
     with Store(settings.db_path) as store:

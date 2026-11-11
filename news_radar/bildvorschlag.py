@@ -120,6 +120,11 @@ def _host(url: str) -> str:
     return host[4:] if host.startswith("www.") else host
 
 
+def adress_hash(url: str) -> str:
+    """Kurzer Hash einer Adresse fürs Protokoll (Dateinamen enthalten oft Personennamen)."""
+    return hashlib.sha256((url or "").encode("utf-8")).hexdigest()[:10]
+
+
 def _unter(host: str, basis: str) -> bool:
     return host == basis or host.endswith("." + basis)
 
@@ -539,12 +544,12 @@ def _setzen(store: Store, settings: Settings, entwurf: dict, story_id: int, weg:
             db.commit()
         db.execute("BEGIN IMMEDIATE")
         try:
-            db.execute(
+            asset_id = db.execute(
                 "INSERT INTO assets (datei, sha256, herkunft, rechteinhaber, lizenz, umfang, attribution, ablauf, "
                 "quelle_url, ki, story_id, draft_id, erstellt) VALUES (?,?,?,?,?,?,?,'',?,0,?,?,?)",
                 (name, hashlib.sha256(data).hexdigest(), weg, bild["rechteinhaber"], bild["lizenz"],
                  bild.get("umfang") or UMFANG,
-                 bild["nachweis"], bild["quelle_url"], story_id, entwurf["id"], now_iso()))
+                 bild["nachweis"], bild["quelle_url"], story_id, entwurf["id"], now_iso())).lastrowid
             cur = db.execute(
                 f"UPDATE drafts SET {sets}, updated_at = ?, bearbeitet_von = ? "
                 f"WHERE id = ? AND status IN ({marks}) AND bild_datei IS ?",
@@ -569,9 +574,12 @@ def _setzen(store: Store, settings: Settings, entwurf: dict, story_id: int, weg:
     for alt_pfad in (alt_datei, (alt_datei or "").replace(".jpg", "-thumb.jpg")):
         if alt_pfad and alt_pfad not in (name, thumb):
             (settings.bilder_dir / alt_pfad).unlink(missing_ok=True)
-    store.event("bild", id=entwurf["id"], aktion=f"agent_{weg}", origin=weg, von=von, bild_url=bild.get("bild_url", ""))
+    # Protokoll ohne Personendaten: Host, Asset-Nummer und kurzer Hash; die volle Adresse steht im Lizenz-Datensatz
+    host, kurz = _host(bild.get("bild_url", "")), adress_hash(bild.get("bild_url", ""))
+    store.event("bild", id=entwurf["id"], aktion=f"agent_{weg}", origin=weg, von=von, asset=asset_id, bild_host=host,
+                bild_hash=kurz)
     repo.aktion(store, wer=von, aktion="bild", draft_id=entwurf["id"], story_id=story_id, kanal="redaktion",
-                ausloeser="agent", notiz=f"Bild mit Nachweis ({weg}): {bild.get('bild_url', '')}"[:500])
+                ausloeser="agent", notiz=f"Bild mit Nachweis ({weg}): Asset {asset_id}, {host}, #{kurz}")
     return {"ergebnis": "gesetzt", "grund": "Bild gesetzt", "entwurf_id": entwurf["id"],
             "nachweis": bild["nachweis"], "lizenz": bild["lizenz"]}
 
@@ -637,7 +645,8 @@ def annehmen(store: Store, settings: Settings, raw, *, von: str = "agent", abruf
         raise ValueError('Bilder: erwartet {"bilder": [...]} oder eine Liste')
     if len(items) > max_bilder:
         raise ValueError(f"höchstens {max_bilder} Bilder je Aufruf")
-    von = (von or "agent")[:60]
+    if not isinstance(von, str) or not re.fullmatch(r"[a-z0-9-]{1,40}", von):
+        raise ValueError("von: nur a-z, 0-9 und Bindestrich, höchstens 40 Zeichen")
     abruf = abruf or (lambda url, frist=None, bild=False: standard_abruf(url, frist=frist, bild=bild))
     ende = uhr() + frist_gesamt if frist_gesamt is not None else None
 
