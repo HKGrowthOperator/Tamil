@@ -2,8 +2,10 @@
 /**
  * Tempo: Cache-Kopfzeilen für die HTML-Seiten.
  *
- * Nicht angemeldete Besucher bekommen Seiten bei GET 60 Sekunden aus dem Browser-Speicher (kurz genug, dass neue
- * Beiträge schnell erscheinen). Suchergebnisse und Seiten, die sich über den Filter tamil_site_nie_zwischenspeichern
+ * Nicht angemeldete Besucher bekommen Seiten bei GET 60 Sekunden aus dem eigenen Browser-Speicher (kurz genug, dass
+ * neue Beiträge schnell erscheinen). `private` statt `public`: Es gibt keinen gemeinsamen Zwischenspeicher, und so
+ * kann keiner die Seite eines Besuchers an einen anderen ausliefern; dazu `Vary: Cookie`.
+ * Suchergebnisse, Beiträge mit Passwort und Seiten, die sich über den Filter tamil_site_nie_zwischenspeichern
  * anmelden (spätere Formular- und Buchungsseiten), werden nie zwischengespeichert. Angemeldete Benutzer, Verwaltung
  * und REST bleiben, wie WordPress sie ausliefert. Statische Dateien regelt Apache (wordpress/Dockerfile).
  */
@@ -30,7 +32,7 @@ function tamil_site_cache_regel( bool $angemeldet, bool $suche, bool $nie ): str
 	if ( $suche || $nie ) {
 		return 'no-store';
 	}
-	return 'public, max-age=' . TAMIL_SITE_HTML_MAX_AGE;
+	return 'private, max-age=' . TAMIL_SITE_HTML_MAX_AGE;
 }
 
 /**
@@ -44,8 +46,11 @@ function tamil_site_cache_kopfzeilen(): void {
 	if ( wp_doing_ajax() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) || is_preview() || is_customize_preview() ) {
 		return;
 	}
-	// Persönliche Inhalte für Gäste: geschützte Beiträge und eigene, noch nicht freigegebene Kommentare.
-	$persoenlich = ( is_singular() && post_password_required() ) || ! empty( wp_get_current_commenter()['comment_author_email'] );
+	// Persönliche Inhalte für Gäste: Beiträge mit Passwort (auch nach der Eingabe, dann ist post_password_required()
+	// falsch) und eigene, noch nicht freigegebene Kommentare.
+	$post        = is_singular() ? get_queried_object() : null;
+	$persoenlich = ( $post instanceof WP_Post && '' !== (string) $post->post_password )
+		|| ! empty( wp_get_current_commenter()['comment_author_email'] );
 	/**
 	 * Aktuelle Seite nie zwischenspeichern (Formulare, Buchung, persönliche Antworten).
 	 *
@@ -57,6 +62,7 @@ function tamil_site_cache_kopfzeilen(): void {
 		return;
 	}
 	header( 'Cache-Control: ' . $regel );
+	header( 'Vary: Cookie', false );
 	if ( 'no-store' !== $regel ) {
 		header_remove( 'Pragma' );
 		header_remove( 'Expires' );
