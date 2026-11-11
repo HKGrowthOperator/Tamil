@@ -305,8 +305,9 @@ class Store:
         sets = ", ".join(f"{k} = ?" for k in data)
         self._write(f"UPDATE drafts SET {sets} WHERE id = ?", (*data.values(), draft_id))
 
-    def set_status(self, draft_id: int, aktion: str, von: str = "") -> str:
-        """Wendet eine Aktion der Status-Maschine an; ConflictError, wenn der Zustand nicht passt."""
+    def set_status(self, draft_id: int, aktion: str, von: str = "", stand: int | None = None) -> str:
+        """Wendet eine Aktion der Status-Maschine an; ConflictError, wenn der Zustand nicht passt. Mit `stand` nur,
+        wenn der Entwurf noch den Stand hat, den die Seite gezeigt hat (Bedingung im selben UPDATE)."""
         if aktion not in TRANSITIONS:
             raise ValueError(f"Unbekannte Aktion: {aktion}")
         allowed, target = TRANSITIONS[aktion]
@@ -318,9 +319,13 @@ class Store:
         if extra:
             params.append(now_iso())
         params += [draft_id, *allowed]
+        bedingung = ""
+        if stand is not None:
+            bedingung = " AND stand = ?"
+            params.append(stand)
         cur = self._write(
             f"UPDATE drafts SET status = ?, updated_at = ?, bearbeitet_von = ?{extra} "
-            f"WHERE id = ? AND status IN ({marks})",
+            f"WHERE id = ? AND status IN ({marks}){bedingung}",
             tuple(params),
         )
         if cur.rowcount != 1:

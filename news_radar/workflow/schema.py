@@ -146,7 +146,15 @@ V5 = [
     "CREATE INDEX IF NOT EXISTS drafts_herkunft ON drafts(herkunft, created_at)",
 ]
 
-MIGRATIONS: dict[int, list[str]] = {2: V2, 3: V3, 4: V4, 5: V5}
+# Stand eines Entwurfs: zählt bei jeder Änderung am Inhalt (Text, Bild, Nachweis …) hoch. Die Freigabe im Cockpit
+# greift nur, wenn der Stand noch der ist, den die Seite gezeigt hat (Bedingung im selben UPDATE).
+DRAFT_INHALT = ('typ', 'quelle_name', 'quelle_url', 'quelle_datum', 'quelle_sprache', 'weitere_quellen', 'quelle_bild', 'relevanz', 'begruendung', 'dach_bezug', 'ort', 'kategorie', 'titel', 'teaser', 'inhalt_html', 'schlagworte', 'seo_titel', 'meta_beschreibung', 'bild_datei', 'bild_credit', 'bild_alt', 'bild_suchbegriff', 'bild_origin', 'bild_thema', 'bild_prompt', 'event_datum', 'event_ort', 'ticket_url', 'fakten_json', 'hinweise', 'story_id', 'herkunft', 'ereignis_datum')
+V6 = [
+    "ALTER TABLE drafts ADD COLUMN stand INTEGER NOT NULL DEFAULT 0",
+    "CREATE TRIGGER IF NOT EXISTS drafts_stand AFTER UPDATE OF " + ", ".join(DRAFT_INHALT) + " ON drafts "
+    "BEGIN UPDATE drafts SET stand = stand + 1 WHERE id = NEW.id; END",
+]
+MIGRATIONS: dict[int, list[str]] = {2: V2, 3: V3, 4: V4, 5: V5, 6: V6}
 LATEST = max(MIGRATIONS)
 
 

@@ -106,9 +106,13 @@ def test_feed_tabs_and_counts(client):
 def test_status_action_requires_csrf_and_follows_transitions(client):
     token = login(client)
     assert client.post("/entwurf/1/status", data={"aktion": "freigeben"}).status_code == 400
-    resp = client.post("/entwurf/1/status", data={"aktion": "freigeben", "_csrf": token, "next": "/?status=neu"})
+    from stand_hilfe import stand_aus
+
+    stand = stand_aus(client.get("/entwurf/1").get_data(as_text=True))
+    resp = client.post("/entwurf/1/status", data={"aktion": "freigeben", "_csrf": token, "next": "/?status=neu",
+                                                  "stand": stand})
     assert resp.status_code == 302 and resp.headers["Location"].endswith("/?status=neu")
-    assert client.post("/entwurf/3/status", data={"aktion": "freigeben", "_csrf": token}).status_code == 409
+    assert client.post("/entwurf/3/status", data={"aktion": "freigeben", "_csrf": token, "stand": "0"}).status_code == 409
     assert client.post("/entwurf/1/status", data={"aktion": "explodieren", "_csrf": token}).status_code == 400
     html = client.get("/?status=freigegeben").get_data(as_text=True)
     assert "Jailer 2 in Mainz" in html and "Zurückziehen" in html

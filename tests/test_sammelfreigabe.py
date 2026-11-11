@@ -45,6 +45,13 @@ def login(app, user):
     return client, token
 
 
+def _staende(app, ids) -> dict:
+    """Stand je Entwurf, wie der Feed ihn in die Sammelfreigabe legt (stand_<id>)."""
+    with Store(app.config["DB"]) as store:
+        return {f"stand_{i}": str(store.get_draft(int(i))["stand"]) for i in ids
+                if str(i).isdecimal() and store.get_draft(int(i))}
+
+
 def _status(app):
     with Store(app.config["DB"]) as store:
         return {i: store.get_draft(i)["status"] for i in (1, 2, 3, 4)}
@@ -67,20 +74,20 @@ def test_feed_zeigt_auswahl_nur_fuer_freigebbare_und_nur_mit_recht(app):
 
 def test_leser_bekommt_403_und_nichts_aendert_sich(app):
     client, token = login(app, "lena")
-    resp = client.post("/entwurf/sammelfreigabe", data={"_csrf": token, "ids": ["1", "2"]})
+    resp = client.post("/entwurf/sammelfreigabe", data={"_csrf": token, "ids": ["1", "2"], **_staende(app, ["1", "2"])})
     assert resp.status_code == 403
     assert _status(app)[1] == "neu" and _protokoll(app, 1) == []
 
 
 def test_ohne_csrf_abgelehnt(app):
     client, _ = login(app, "priya")
-    assert client.post("/entwurf/sammelfreigabe", data={"ids": ["1"]}).status_code in (400, 403)
+    assert client.post("/entwurf/sammelfreigabe", data={"ids": ["1"], **_staende(app, ["1"])}).status_code in (400, 403)
     assert _status(app)[1] == "neu"
 
 
 def test_gemischte_auswahl_meldet_grund_und_protokolliert_je_entwurf(app):
     client, token = login(app, "priya")
-    resp = client.post("/entwurf/sammelfreigabe", data={"_csrf": token, "ids": ["1", "2", "3", "99"]},
+    resp = client.post("/entwurf/sammelfreigabe", data={"_csrf": token, "ids": ["1", "2", "3", "99"], **_staende(app, ["1", "2", "3", "99"])},
                        follow_redirects=True)
     html = resp.get_data(as_text=True)
     assert _status(app) == {1: "freigegeben", 2: "freigegeben", 3: "abgelehnt", 4: "neu"}
@@ -94,7 +101,7 @@ def test_gemischte_auswahl_meldet_grund_und_protokolliert_je_entwurf(app):
 
 def test_zweimal_derselbe_entwurf_und_leere_auswahl(app):
     client, token = login(app, "priya")
-    client.post("/entwurf/sammelfreigabe", data={"_csrf": token, "ids": ["1", "1"]})
+    client.post("/entwurf/sammelfreigabe", data={"_csrf": token, "ids": ["1", "1"], **_staende(app, ["1", "1"])})
     assert _protokoll(app, 1) == [("priya", "freigeben", None)]
     html = client.post("/entwurf/sammelfreigabe", data={"_csrf": token}, follow_redirects=True).get_data(as_text=True)
     assert "Keine Entwürfe ausgewählt" in html
@@ -104,7 +111,7 @@ def test_website_angehalten_freigegeben_und_wartet(app):
     with Store(app.config["DB"]) as store:
         schalter.setzen(store, "website", True, wer="anna", grund="Prüfung")
     client, token = login(app, "priya")
-    html = client.post("/entwurf/sammelfreigabe", data={"_csrf": token, "ids": ["1", "4"]},
+    html = client.post("/entwurf/sammelfreigabe", data={"_csrf": token, "ids": ["1", "4"], **_staende(app, ["1", "4"])},
                        follow_redirects=True).get_data(as_text=True)
     assert _status(app)[1] == _status(app)[4] == "freigegeben"
     assert "angehalten" in html and "warten" in html
@@ -114,7 +121,7 @@ def test_website_angehalten_freigegeben_und_wartet(app):
 @pytest.mark.parametrize("ids", [["²"], ["1²"], ["٣"], ["-1"], ["abc"], [""]])
 def test_nicht_numerische_kennungen_sind_keine_auswahl(app, ids):
     client, token = login(app, "priya")
-    resp = client.post("/entwurf/sammelfreigabe", data={"_csrf": token, "ids": ids}, follow_redirects=True)
+    resp = client.post("/entwurf/sammelfreigabe", data={"_csrf": token, "ids": ids, **_staende(app, ids)}, follow_redirects=True)
     assert resp.status_code == 200 and "Keine Entwürfe ausgewählt" in resp.get_data(as_text=True)
     assert _status(app)[1] == "neu"
 
@@ -124,10 +131,10 @@ def test_obergrenze(app):
 
     client, token = login(app, "priya")
     ids = [str(i) for i in range(1, views.SAMMEL_MAX + 2)]
-    html = client.post("/entwurf/sammelfreigabe", data={"_csrf": token, "ids": ids},
+    html = client.post("/entwurf/sammelfreigabe", data={"_csrf": token, "ids": ids, **_staende(app, ids)},
                        follow_redirects=True).get_data(as_text=True)
     assert f"Höchstens {views.SAMMEL_MAX} Entwürfe" in html and _status(app)[1] == "neu"
-    ok = client.post("/entwurf/sammelfreigabe", data={"_csrf": token, "ids": ids[:views.SAMMEL_MAX]},
+    ok = client.post("/entwurf/sammelfreigabe", data={"_csrf": token, "ids": ids[:views.SAMMEL_MAX], **_staende(app, ids[:views.SAMMEL_MAX])},
                      follow_redirects=True).get_data(as_text=True)
     assert "3 Entwürfe freigegeben" in ok
 
@@ -137,7 +144,7 @@ def test_entwurf_mit_fehler_protokoll_und_ereignis_nennen_erneut(app):
         store.db.execute("UPDATE drafts SET status = 'fehler' WHERE id = 2")
         store.db.commit()
     client, token = login(app, "priya")
-    client.post("/entwurf/sammelfreigabe", data={"_csrf": token, "ids": ["2"]})
+    client.post("/entwurf/sammelfreigabe", data={"_csrf": token, "ids": ["2"], **_staende(app, ["2"])})
     assert _status(app)[2] == "freigegeben"
     assert _protokoll(app, 2) == [("priya", "erneut", None)]
     with Store(app.config["DB"]) as store:
@@ -149,7 +156,8 @@ def test_einzelfreigabe_im_feed_bei_angehaltener_website_wartet_wie_sammel(app):
     with Store(app.config["DB"]) as store:
         schalter.setzen(store, "website", True, wer="anna", grund="Prüfung")
     client, token = login(app, "priya")
-    html = client.post("/entwurf/1/status?next=/", data={"_csrf": token, "aktion": "freigeben"},
+    html = client.post("/entwurf/1/status?next=/", data={"_csrf": token, "aktion": "freigeben",
+                                                         "stand": _staende(app, ["1"])["stand_1"]},
                        follow_redirects=True).get_data(as_text=True)
     assert _status(app)[1] == "freigegeben"
     assert "angehalten" in html and "wartet" in html

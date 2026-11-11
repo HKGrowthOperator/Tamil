@@ -365,6 +365,9 @@ def test_neu_schreiben_im_stopp_ohne_modellaufruf(web, settings):
     assert "angehalten" in text and Writer.aufrufe == 0
     # Bearbeiten und Freigeben von Hand bleiben möglich
     client.post("/entwurf/1", data={"_csrf": token, "titel": "Neu", "kategorie": "news", "inhalt_html": "<p>a</p>"})
-    client.post("/entwurf/1/status", data={"_csrf": token, "aktion": "freigeben"})
+    from stand_hilfe import stand_aus
+
+    stand = stand_aus(client.get("/entwurf/1").get_data(as_text=True))
+    client.post("/entwurf/1/status", data={"_csrf": token, "aktion": "freigeben", "stand": stand})
     with Store(settings.db_path) as st:
         assert st.get_draft(1)["titel"] == "Neu" and st.get_draft(1)["status"] == "freigegeben"

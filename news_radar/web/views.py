@@ -140,12 +140,20 @@ def set_status(draft_id: int):
     aktion = request.form.get("aktion", "")
     if aktion not in TRANSITIONS:
         abort(400)
+    store = get_store()
+    stand = None
     if aktion in ("freigeben", "erneut"):
         pruefe("freigeben")
-    store = get_store()
+        stand = _stand(request.form.get("stand"))
+        if stand is None or (store.get_draft(draft_id) or {}).get("stand", stand) != stand:
+            flash(GEAENDERT, "fehler")  # ohne oder mit altem Stand: nichts ändern, noch einmal ansehen
+            return redirect(url_for("ui.entwurf", draft_id=draft_id))
     try:
-        neu = store.set_status(draft_id, aktion, von=_user())
+        neu = store.set_status(draft_id, aktion, von=_user(), stand=stand)
     except ConflictError as exc:
+        if stand is not None and (store.get_draft(draft_id) or {}).get("stand") != stand:
+            flash(GEAENDERT, "fehler")
+            return redirect(url_for("ui.entwurf", draft_id=draft_id))
         return render_template("fehler.html", titel="Zustand hat sich geändert", text=str(exc), draft_id=draft_id), 409
     store.event("aktion", id=draft_id, aktion=aktion, status=neu, von=_user())
     row = store.get_draft(draft_id)
@@ -193,9 +201,15 @@ def sammelfreigabe():
         if row["status"] not in OPEN_STATES and row["status"] != "fehler":
             nicht.append(f"#{draft_id} „{row['titel'][:60]}“: Status „{STATUS_LABELS.get(row['status'], row['status'])}“")
             continue
-        aktion = _freigeben(store, row)
+        stand = _stand(request.form.get(f"stand_{draft_id}"))
+        if stand is None or row.get("stand") != stand:
+            nicht.append(f"#{draft_id} „{row['titel'][:60]}“: {GEAENDERT}")
+            continue
+        aktion = _freigeben(store, row, stand=stand)
         if not aktion:
-            nicht.append(f"#{draft_id} „{row['titel'][:60]}“: Zustand hat sich gerade geändert")
+            geaendert = (store.get_draft(draft_id) or {}).get("stand") != stand
+            nicht.append(f"#{draft_id} „{row['titel'][:60]}“: "
+                         + (GEAENDERT if geaendert else "Zustand hat sich gerade geändert"))
             continue
         store.event("aktion", id=draft_id, aktion=aktion, status="freigegeben", von=_user(), sammel=True)
         if sperre is not None:
@@ -438,14 +452,23 @@ def _publish(draft_id: int, status: str):
     return redirect(url_for("ui.entwurf", draft_id=draft_id))
 
 
-def _freigeben(store, row: dict) -> str:
+GEAENDERT = "Der Entwurf wurde inzwischen geändert, bitte noch einmal ansehen."
+
+
+def _stand(roh: str | None) -> int | None:
+    """Stand des Entwurfs, den die Seite gezeigt hat (Formularfeld); None, wenn er fehlt oder ungültig ist."""
+    roh = (roh or "").strip()
+    return int(roh) if roh.isascii() and roh.isdecimal() and len(roh) < 12 else None
+
+
+def _freigeben(store, row: dict, stand: int | None = None) -> str:
     """Offenen Entwurf freigeben, einen mit Fehler erneut freigeben (mit Protokollzeile). Gibt die tatsächliche
     Aktion zurück („freigeben“ oder „erneut“); leer, wenn er es schon war oder nicht freigebbar ist."""
     aktion = "erneut" if row["status"] == "fehler" else "freigeben"
     if row["status"] not in OPEN_STATES and row["status"] != "fehler":
         return ""
     try:
-        store.set_status(row["id"], aktion, von=_user())
+        store.set_status(row["id"], aktion, von=_user(), stand=stand)
     except ConflictError:
         return ""
     _protokoll(aktion, row, fassung=repo.fassung_hash(row))

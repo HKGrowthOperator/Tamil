@@ -33,6 +33,7 @@
       {% if d.status != 'freigegeben' %}
       <form method="post" action="/entwurf/{{ d.id }}/status?next=/entwurf/{{ d.id }}" class="inline">
         <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="aktion" value="freigeben">
+        <input type="hidden" name="stand" value="{{ d.stand }}">
         <button class="primaer">Freigeben</button>
       </form>
       {% endif %}

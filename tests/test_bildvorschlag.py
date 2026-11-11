@@ -649,3 +649,56 @@ def test_register_lehnt_gesperrte_hosts_beim_laden_ab(tmp_path, host, bild_hosts
                     f"bild_hosts = {json.dumps(bild_hosts)}\n", encoding="utf-8")
     with pytest.raises(ValueError, match="gesperrt"):
         load_settings(toml)
+
+
+# ---- Freigabe nur für den gesehenen Stand -------------------------------------------------------------
+
+def _cockpit(settings):
+    from news_radar.web import create_app
+
+    from test_web_redaktion import login
+
+    settings.web_user, settings.web_password, settings.web_secret = "luis", "geheim", "s3cret"
+    client = create_app(settings, testing=True).test_client()
+    token = login(client)
+    return client, token
+
+
+def test_freigabe_nur_mit_aktuellem_stand(settings):
+    with Store(settings.db_path) as store:
+        sid, did = story_mit_entwurf(store)
+        stand = store.get_draft(did)["stand"]
+    client, token = _cockpit(settings)
+    html = client.get(f"/entwurf/{did}").get_data(as_text=True)
+    assert f'name="stand" value="{stand}"' in html
+    with Store(settings.db_path) as store:  # der Agent setzt ein neues Bild, während die Seite offen ist
+        eins(store, settings, {"story_id": sid, "weg": "quelle", "seite_url": DOK}, {DOK: seite(), OG: jpeg()})
+        assert store.get_draft(did)["stand"] != stand
+    resp = client.post(f"/entwurf/{did}/status", data={"_csrf": token, "aktion": "freigeben", "stand": str(stand)},
+                       follow_redirects=True)
+    assert "inzwischen geändert" in resp.get_data(as_text=True)
+    resp = client.post(f"/entwurf/{did}/status", data={"_csrf": token, "aktion": "freigeben"}, follow_redirects=True)
+    assert "inzwischen geändert" in resp.get_data(as_text=True)
+    with Store(settings.db_path) as store:
+        assert store.get_draft(did)["status"] == "neu"
+        aktuell = store.get_draft(did)["stand"]
+    client.post(f"/entwurf/{did}/status", data={"_csrf": token, "aktion": "freigeben", "stand": str(aktuell)})
+    with Store(settings.db_path) as store:
+        assert store.get_draft(did)["status"] == "freigegeben"
+
+
+def test_sammelfreigabe_gemischt(settings):
+    with Store(settings.db_path) as store:
+        ids = [story_mit_entwurf(store, url=f"{DOK}-{n}")[1] for n in range(3)]
+        staende = {i: store.get_draft(i)["stand"] for i in ids}
+    client, token = _cockpit(settings)
+    feed = client.get("/").get_data(as_text=True)
+    assert f'name="stand_{ids[0]}"' in feed
+    with Store(settings.db_path) as store:
+        store.update_draft(ids[1], titel="Geändert, nachdem der Feed geladen war")
+    daten = {"_csrf": token, "ids": [str(i) for i in ids], f"stand_{ids[0]}": str(staende[ids[0]]),
+             f"stand_{ids[1]}": str(staende[ids[1]])}  # ids[2] ohne Stand
+    html = client.post("/entwurf/sammelfreigabe", data=daten, follow_redirects=True).get_data(as_text=True)
+    assert "1 Entwurf freigegeben" in html and "inzwischen geändert" in html
+    with Store(settings.db_path) as store:
+        assert [store.get_draft(i)["status"] for i in ids] == ["freigegeben", "neu", "neu"]
