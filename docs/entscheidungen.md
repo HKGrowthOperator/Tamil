@@ -3,6 +3,40 @@
 Neueste oben. Format: Datum · Entscheidung · wer · warum. Was hier steht, gilt, bis ein neuerer Eintrag es ändert.
 Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
+## 11.11.2026
+
+- **Der Vertrag ist der Maßstab.** Für tamil.de gilt Anlage 1, Teil A und B des Gesamtvertrags (Vertragsstand
+  11.11.2026). Das Leistungsverzeichnis steht in `docs/vertrag/leistungen.md`; Preise, Zahlungsplan und die
+  Vertragsdatei liegen nicht im Repo. Merzlicht und AJ Gamestation sind eigene Projekte. · Luis („genau so müssen wir
+  das angehen, alles für tamil.de übernehmen und fertig machen, genauer definieren zusammen“)
+- **Reihenfolge der Bausteine:** Grundlage, dann Formulare und Verzeichnis, dann Werbebuchung, dann Instagram und
+  Facebook. · Luis · Formulare und Verzeichnis brauchen am Anfang nichts von KBS, und die späteren Bausteine bauen
+  darauf auf.
+- **Zahlungsanbieter: Stripe**, zuerst im Testmodus; KBS legt später ein eigenes Konto an. · Luis
+- **Erst festlegen, dann bauen:** Je Baustein eine Festlegung (`docs/vertrag/festlegung-<baustein>.md`, für Luis als
+  Reiter im Projekt-Dokument); Luis bestätigt oder ändert, dann wird gebaut. Neue Tore F0 bis F4. · Luis · Der
+  Vertrag verlangt für alles Automatische freigegebene, dokumentierte Regeln (§8 Abs. 1).
+- **Website und Cockpit bleiben getrennt abnehmbar:** WordPress hält Öffentliches, Kunden und Geld (Formulare,
+  Verzeichnis, Werbebuchung, Zahlung); das Cockpit hält Agenten, Prüfung, Freigabe, Zeitplan, Stopp und Protokoll.
+  Der Radar holt bei WordPress ab, nie umgekehrt. · Hauptsitzung nach gegengeprüftem Bauplan
+- **Keine automatische E-Mail, auch keine Bestätigungen** (§8 Abs. 2). Rückmeldung steht auf der Website; die
+  Buchungsübersicht kommt über einen geheimen Link. Ein Test sichert ab, dass im Code kein Mailversand vorkommt. ·
+  Hauptsitzung
+- **WhatsApp bleibt Handarbeit:** Entwurf zum Kopieren, weil Meta für Kanäle keine Schnittstelle zum Veröffentlichen
+  nennt (geprüft in der Doku von Meta am 11.11.). · Hauptsitzung · Vertrag B3, §3 Abs. 3
+- **Neue Funktionen sind im Echtbetrieb aus**, bis Auftragsverarbeitung und Rechtstexte vorliegen; auf dem Testsystem
+  (Vorschau-Adresse) laufen sie. · Hauptsitzung · §8 Abs. 3
+- **„Alle Szenarien“ statt „51/51“:** Die Abnahme des Radars wächst mit den Bausteinen; die Regel nennt keine feste
+  Zahl mehr. · Hauptsitzung
+- **Website steht mit dem vollen Altbestand** (532 Beiträge, 7 Seiten, 1445 Medien, 25 Weiterleitungen; Stichprobe,
+  alle Weiterleitungen und der zweite Lauf ohne Befund). Der Radar ist verbunden und veröffentlicht Freigegebenes
+  direkt. · Ablauf `/website-live` · Prüfliste in `docs/abnahme/2026-11-11-uebernahme.md`
+- **Coolify-Zugang über Tokens aus dem Chat.** Luis hat zwei Tokens als Bildschirmfoto gegeben und angewiesen, sie zu
+  verwenden („behalte den und mache“); der DNS-Eintrag für das sichere Formular wurde nicht gesetzt. Die Werte liegen
+  nur in Sitzungsdateien, wurden nie ausgegeben und nur für die beiden Tamil-Apps benutzt. Beide Tokens sind zu
+  widerrufen (Tor B2). Das löst den Eintrag vom 10.11. („Zugang bleibt beim DNS-Namen“) für die Einrichtung ab; als
+  Zielzustand bleibt er richtig. · Luis
+
 ## 10.11.2026
 
 - **Website geht jetzt auf Coolify, mit echten Inhalten und dem bisherigen Theme** (App „tamil-web“ unter der

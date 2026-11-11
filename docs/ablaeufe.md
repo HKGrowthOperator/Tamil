@@ -14,6 +14,7 @@ Wer was macht. Die Hauptsitzung steuert über Commands (`.claude/commands/`), di
 | `theme-bauer` | opus | abgenommenes Design ins WordPress-Theme (eigener Worktree) | Commits in `wordpress/themes/tamil` |
 | `cockpit-bauer` | opus | gleiches Design im Cockpit, Produkt-Register (eigener Worktree) | Commits in `news_radar/web` |
 | `radar-entwickler` | opus | Python-Änderungen am Radar, Test zuerst (eigener Worktree) | Commits in `news_radar/` |
+| `plugin-bauer` | opus | Funktionen in den WordPress-Plugins nach bestätigter Festlegung, Test zuerst (eigener Worktree); fasst das Aussehen nicht an | Commits in `wordpress/plugins/` |
 | `code-pruefer` | opus | Diff vor jedem Push prüfen: Sicherheit, Fehlerpfade, Tests | Befunde mit Datei:Zeile |
 | `redakteur` | opus | wartende Storys im Agent-Modus schreiben oder begründet verwerfen | Import in den Live-Radar |
 | `migrator` | sonnet | Altbestand von tamil.de in die neue Website, mit Prüfliste | Bericht + Prüfliste |
@@ -59,6 +60,17 @@ Live-Adresse.
 `pruefen` → `code-pruefer` → Befunde beheben → Commits je Bereich → Push → PR #2 aktualisieren → Coolify-Deploy mit
 Warten → `/gesund` und Logs → Bericht.
 
+### `/vertrag-bau <baustein>` → Tore F0 bis F4
+Maßstab ist der Vertrag (`docs/vertrag/leistungen.md`). Je Baustein (`grundlage`, `einreichungen`, `verzeichnis`,
+`werbung`, `social`): Festlegung schreiben (`docs/vertrag/festlegung-<baustein>.md`, für Luis als Reiter im
+Projekt-Dokument) → Luis sagt Ja oder ändert (`docs/abnahme/<datum>-F<n>-<baustein>.md`) → `plugin-bauer` (Website)
+und `radar-entwickler` (Radar, Cockpit) bauen parallel in Worktrees → `pruefen`, bei Oberflächen `qa-pruefer` →
+`code-pruefer` → zusammenführen → `/release` → auf dem Testsystem zeigen. Regeln: `.claude/rules/vertrag.md`.
+
+### `/abnahme-vertrag` → Abnahme durch KBS
+Die sieben Tests aus B5 automatisch ausführen, Protokoll `docs/abnahme/<datum>-B5.md` mit den Handtests für das
+Testsystem schreiben. Danach Übergabe nach §4 (Kernabläufe, Zugänge, Protokoll) und Livegang (Tor B3).
+
 ## Tore
 
 Abnahmen laufen immer über Luis: Er zeigt dem Auftraggeber den Link und bringt das Urteil zurück. Jede Abnahme wird in
@@ -72,4 +84,9 @@ Abnahmen laufen immer über Luis: Er zeigt dem Auftraggeber den Link und bringt 
 | G4 | Live-Website mit echten Inhalten | Go-live-Vorbereitung, Merge von PR #2 |
 | B1 | Anthropic-Schlüssel in Coolify (Luis) | Pilot mit Modellen, Kostenmessung |
 | B2 | Coolify-Root-Token widerrufen (Luis) | eigenes, eng gefasstes Token |
-| B3 | Domain tamil.de umschalten (Luis mit Auftraggeber) | Livegang |
+| B3 | Domain tamil.de umschalten (Luis mit Auftraggeber) | Livegang; danach beginnen Feinjustierung und Betreuung (Vertrag B4) |
+| F0 | Festlegung Grundlage (Rollen, Stopp-Schalter, Cookie-Zustimmung, Fristen) | Rollen und Texte gelten; die Technik beginnt schon vorher |
+| F1 | Festlegung Einreichungen | Formulare und Eingang bauen |
+| F2 | Festlegung Verzeichnis | Verzeichnis und Verzeichnis-Agent bauen |
+| F3 | Festlegung Werbung (Plätze, Preise, Laufzeiten, Ablauf, Erstattung) | Werbebuchung bauen |
+| F4 | Festlegung Social und Regelwerk `docs/regeln-social.md` (zusätzlich einmalig durch KBS, §8 Abs. 1) | Instagram, Facebook, WhatsApp-Entwurf bauen und automatisch veröffentlichen |
