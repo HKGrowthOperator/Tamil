@@ -204,6 +204,7 @@ def safe_get(
     headers: dict | None = None,
     timeout: float = 12,
     max_bytes: int = MAX_BYTES,
+    max_bytes_je_typ: dict[str, int] | None = None,
     accept: tuple[str, ...] | None = None,
     etag: str = "",
     last_modified: str = "",
@@ -216,6 +217,8 @@ def safe_get(
 
     HTTP-Fehler (4xx/5xx) werfen HTTPError mit `.status`; 304 liefert Fetched(status=304, content=b"").
     `frist` (time.monotonic) begrenzt den ganzen Abruf: geprüft vor jeder Weiterleitung und je Datenblock.
+    `max_bytes_je_typ` ({"application/pdf": 8_000_000}) setzt die Grenze nach dem gemeldeten Content-Type; sonst gilt
+    `max_bytes`.
     """
     def _frist_pruefen() -> None:
         if frist is not None and time.monotonic() > frist:
@@ -247,15 +250,17 @@ def safe_get(
                 raise HTTPError(resp.status_code, current)
             if accept and ctype and not ctype.lower().startswith(accept):
                 raise WrongContentType(f"{ctype} statt {'/'.join(accept)}: {current}")
+            grenze = next((n for typ, n in (max_bytes_je_typ or {}).items() if ctype.lower().startswith(typ)),
+                          max_bytes)
             declared = resp.headers.get("Content-Length", "")
-            if declared.isdigit() and int(declared) > max_bytes:
-                raise ResponseTooLarge(f"{declared} Bytes > {max_bytes}: {current}")
+            if declared.isdigit() and int(declared) > grenze:
+                raise ResponseTooLarge(f"{declared} Bytes > {grenze}: {current}")
             chunks, size = [], 0
             for chunk in resp.iter_content(64 * 1024):
                 _frist_pruefen()
                 size += len(chunk)
-                if size > max_bytes:
-                    raise ResponseTooLarge(f"mehr als {max_bytes} Bytes: {current}")
+                if size > grenze:
+                    raise ResponseTooLarge(f"mehr als {grenze} Bytes: {current}")
                 chunks.append(chunk)
             return Fetched(status=resp.status_code, content=b"".join(chunks), **meta)
         finally:

@@ -134,12 +134,10 @@ class Unlesbar(ValueError):
 
 
 def standard_abruf(url: str, frist: float | None = None) -> net.Fetched:
-    """Seite oder PDF holen: SSRF-Schutz, Umleitungen geprüft, Größenlimit (net.safe_get). HTML höchstens SEITE_MAX,
-    PDF höchstens PDF_MAX Bytes."""
-    seite = net.safe_get(url, accept=net.TEXT_TYPES + PDF_TYPES, timeout=8, max_bytes=PDF_MAX, frist=frist)
-    if not ist_pdf(seite) and len(seite.content) > SEITE_MAX:
-        raise net.ResponseTooLarge(f"mehr als {SEITE_MAX} Bytes: {seite.url}")
-    return seite
+    """Seite oder PDF holen: SSRF-Schutz, Umleitungen geprüft, Größenlimit (net.safe_get) schon beim Lesen nach dem
+    gemeldeten Content-Type: PDF höchstens PDF_MAX, alles andere höchstens SEITE_MAX Bytes."""
+    return net.safe_get(url, accept=net.TEXT_TYPES + PDF_TYPES, timeout=8, max_bytes=SEITE_MAX,
+                        max_bytes_je_typ={PDF_TYPES[0]: PDF_MAX}, frist=frist)
 
 
 def anker_seite(url: str) -> int:

@@ -697,12 +697,12 @@ def test_standard_abruf_nimmt_pdf_bis_8_mb_an_html_bleibt_bei_3_mb(monkeypatch):
 
     def fake_get(url, **kw):
         aufrufe.append(kw)
-        return net.Fetched(url=url, status=200, content=b"<p>x</p>" * 400_000, content_type="text/html")
+        return net.Fetched(url=url, status=200, content=b"<p>x</p>", content_type="text/html")
     monkeypatch.setattr(net, "safe_get", fake_get)
-    with pytest.raises(net.ResponseTooLarge):
-        nachtrag.standard_abruf("https://example.org/a", frist=5.0)
-    kw = aufrufe[0]
-    assert "application/pdf" in kw["accept"] and kw["max_bytes"] == 8_000_000 and kw["frist"] == 5.0
+    nachtrag.standard_abruf("https://example.org/a", frist=5.0)
+    kw = aufrufe[0]  # die Grenze gilt schon beim Lesen, je gemeldetem Content-Type
+    assert kw["max_bytes"] == 3_000_000 and kw["max_bytes_je_typ"] == {"application/pdf": 8_000_000}
+    assert "application/pdf" in kw["accept"] and kw["frist"] == 5.0
     assert all(t in kw["accept"] for t in net.TEXT_TYPES)
 
 
