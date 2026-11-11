@@ -407,3 +407,36 @@ def test_media_speichern_raeumt_bei_fehler_auf(settings, monkeypatch):  # noqa: 
         with pytest.raises(RuntimeError):
             media.speichern(Kontext(settings, store), bild, "stem-x", None)
     assert not settings.bilder_dir.exists() or list(settings.bilder_dir.iterdir()) == []
+
+
+
+def _loeschen_vor_dem_schreiben(store, settings, methode, monkeypatch):
+    """Ein anderer Lauf räumt die (gleich benannte) Datei auf, nachdem save_pair sie als vorhanden übersprungen hat."""
+    echt = getattr(store, methode)
+
+    def schreiben(*args, **kw):
+        daten = args[0] if methode == "insert_draft" else kw
+        (settings.bilder_dir / daten["bild_datei"]).unlink(missing_ok=True)
+        return echt(*args, **kw)
+
+    monkeypatch.setattr(store, methode, schreiben)
+
+
+def test_orchestrator_datei_nach_dem_schreiben_vorhanden(settings, monkeypatch):  # noqa: F811
+    from news_radar.workflow import orchestrator, repo
+
+    with Store(settings.db_path) as store:
+        ctx, sid, felder = _orchestrator_story(store, settings)
+        _loeschen_vor_dem_schreiben(store, settings, "insert_draft", monkeypatch)
+        did = orchestrator.entwurf_anlegen(ctx, repo.story(store, sid), felder, {}, typ="artikel", hinweise=[])
+        assert (settings.bilder_dir / store.get_draft(did)["bild_datei"]).is_file()
+
+
+def test_agent_import_datei_nach_dem_schreiben_vorhanden(settings, tmp_path, monkeypatch):  # noqa: F811
+    with Store(settings.db_path) as store:
+        did = store.insert_draft(_row("u1", "Tempelfest Hamm"))
+        _loeschen_vor_dem_schreiben(store, settings, "update_draft", monkeypatch)
+        datei = tmp_path / "ergebnis.json"
+        datei.write_text(json.dumps({"ergebnisse": [_fertig(did, "Tempelfest")]}), encoding="utf-8")
+        assert agent.import_results(store, settings, datei)["uebernommen"] == 1
+        assert (settings.bilder_dir / store.get_draft(did)["bild_datei"]).is_file()

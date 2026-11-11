@@ -204,6 +204,13 @@ def save_pair(image: FeaturedImage, folder: Path, stem: str) -> tuple[str, str]:
     return name, thumb
 
 
+def datei_sicherstellen(image: FeaturedImage, folder: Path, name: str) -> None:
+    """Nach dem Festschreiben am Entwurf: Fehlt die Datei (ein anderer Lauf hat die gleich benannte, als vorhanden
+    übersprungene Datei inzwischen aufgeräumt), wird sie neu geschrieben."""
+    if not (folder / name).is_file() or not (folder / name.replace(".jpg", "-thumb.jpg")).is_file():
+        save_pair(image, folder, name.removesuffix(".jpg"))
+
+
 def _schreiben(pfad: Path, daten: bytes) -> None:
     """Nie in place überschreiben (sonst ist die Datei eines freigegebenen Entwurfs kurz leer): gleicher Inhalt →
     nichts tun, sonst über eine temporäre Datei im selben Ordner und os.replace."""

@@ -412,6 +412,7 @@ def bild(draft_id: int):
                 (settings.bilder_dir / neu).unlink(missing_ok=True)
         flash(GEAENDERT, "fehler")
         return redirect(url_for("ui.entwurf", draft_id=draft_id))
+    images.datei_sicherstellen(image, settings.bilder_dir, name)
     andere = row.get("bild_datei") and store.db.execute(
         "SELECT 1 FROM drafts WHERE bild_datei = ? AND id != ? LIMIT 1", (row["bild_datei"], draft_id)).fetchone()
     for old in (() if andere else (row.get("bild_datei"), (row.get("bild_datei") or "").replace(".jpg", "-thumb.jpg"))):

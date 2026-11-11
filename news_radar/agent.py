@@ -25,7 +25,7 @@ from pydantic import BaseModel, Field, ValidationError
 from . import prompts, sources
 from .bilder import BildPool, Transport, beitragsbild
 from .config import Settings
-from .images import save_pair
+from .images import datei_sicherstellen, save_pair
 from .store import OPEN_STATES, ConflictError, Store
 from .wordpress import slugify
 from .writer import Draft
@@ -198,6 +198,7 @@ def import_results(
                     (settings.bilder_dir / neu).unlink(missing_ok=True)
             stats["fehler"].append(f"{draft_id}: inzwischen freigegeben oder geändert – nicht übernommen")
             continue
+        datei_sicherstellen(image, settings.bilder_dir, name)
         for old in (row.get("bild_datei"), (row.get("bild_datei") or "").replace(".jpg", "-thumb.jpg")):
             if old and old not in (name, thumb) and not store.db.execute(
                     "SELECT 1 FROM drafts WHERE bild_datei = ? AND id != ?", (row.get("bild_datei"), d.id)).fetchone():

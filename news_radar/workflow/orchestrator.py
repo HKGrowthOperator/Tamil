@@ -20,7 +20,7 @@ from collections import Counter
 from datetime import date, datetime, timedelta, timezone
 from typing import Any, Callable
 
-from .. import filtering, notify, schalter, sources
+from .. import filtering, images, notify, schalter, sources
 from ..agents import Kontext, cluster, copydesk, factcheck, media, relevance, research, schreiben, seo
 from ..config import Settings
 from ..pipeline import Result, category_label, quelle_name, refresh_kino, stale_event_date
@@ -431,6 +431,7 @@ def _entwurf_eintragen(ctx: Kontext, story: dict, felder: dict, payload: dict, *
             ctx.store.event("entwurf_existiert", story=story["id"], uid=uid)
             repo.story_setzen(ctx.store, story["id"], status="verworfen", notiz="Entwurf zu dieser Meldung existiert schon")
             return None
+    images.datei_sicherstellen(bild.image, s.bilder_dir, name)  # Datei gehört jetzt sicher zum Entwurf
     repo.asset_draft_setzen(ctx.store, asset_id, draft_id)
     # Fassung „entwurf“ = genau das, was in der Warteschlange liegt (inkl. Bild) – derselbe Hash wie bei der Freigabe
     endfassung = {**felder, **{k: row[k] for k in repo.FASSUNG_FELDER if k in row}}
