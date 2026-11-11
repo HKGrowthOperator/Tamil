@@ -1,5 +1,7 @@
 """Plugin tamil-site: Cache-Kopfzeilen für HTML (Gäste 60 Sekunden, Suche und angemeldete Seiten nie)."""
 
+import re
+
 import requests
 
 
@@ -48,3 +50,13 @@ def test_passwortgeschuetzter_beitrag_nie_zwischenspeichern(wp, wp_cli):
         assert "Nur mit Passwort." in r.text and "no-store" in _cc(r) and "public" not in _cc(r)
     finally:
         wp_cli(f"wp_delete_post( {pid}, true );")
+
+
+def test_plugin_dateien_tragen_dateizeit_in_der_version(wp, wp_cli, wp_sitzung):
+    """Dateien mit ?ver= sind ein Jahr unveränderlich im Browser (wordpress/Dockerfile): jede Version muss sich mit der
+    Datei ändern, sonst bleibt nach einem Deploy die alte Fassung stehen."""
+
+    seite = wp_sitzung.get(f"{wp.url}/wp-admin/index.php", timeout=30).text
+    m = re.search(r"tamil-radar/assets/admin\.css\?ver=([^'\"&]+)", seite)
+    erwartet = wp_cli("echo TAMIL_RADAR_VERSION . '.' . filemtime( TAMIL_RADAR_DIR . 'assets/admin.css' );").strip()
+    assert m and m.group(1) == erwartet
