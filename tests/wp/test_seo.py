@@ -26,7 +26,7 @@ def _meta(seite: str, attr: str, name: str) -> list[str]:
 
 
 def _jsonld(seite: str) -> list[dict]:
-    bloecke = re.findall(r'<script type="application/ld\+json">(.*?)</script>', seite, re.S)
+    bloecke = re.findall(r'<script type="application/ld\+json">(.*?)</script>', seite, re.DOTALL)
     daten = [json.loads(b) for b in bloecke]  # ungültiges JSON lässt den Test scheitern
     flach = []
     for d in daten:

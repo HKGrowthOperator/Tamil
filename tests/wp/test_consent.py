@@ -21,10 +21,16 @@ def _ladeadressen(seite: str, basis: str) -> list[str]:
 
 
 def test_schalter_aus_keine_ausgabe(wp, wp_cli):
-    if '"zustimmung":true' in wp_cli("echo wp_json_encode( get_option( 'tamil_site_funktionen', array() ) );"):
+    alt = wp_cli("echo wp_json_encode( get_option( 'tamil_site_funktionen', null ) );").strip()
+    try:
         wp_cli("$f = (array) get_option( 'tamil_site_funktionen', array() ); $f['zustimmung'] = false; update_option( 'tamil_site_funktionen', $f );")
-    seite = wp.get("/").text
-    assert "tz-hinweis" not in seite and "consent.js" not in seite and "Cookie-Einstellungen" not in seite
+        seite = wp.get("/").text
+        assert "tz-hinweis" not in seite and "consent.js" not in seite and "Cookie-Einstellungen" not in seite
+    finally:
+        if alt == "null":
+            wp_cli("delete_option( 'tamil_site_funktionen' );")
+        else:
+            wp_cli(f"update_option( 'tamil_site_funktionen', json_decode( '{alt}', true ) );")
 
 
 def test_kopfzeile_wirkt_nur_lokal(wp_cli):
