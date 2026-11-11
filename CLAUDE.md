@@ -25,7 +25,7 @@ Freigabe im Cockpit → `publisher.py` → Plugin `tamil-radar` (REST) → Beitr
 - `design/` – `brief.md`, `referenzen/`, `richtungen/<slug>/`, `kritik/`, später `tokens.css`.
 - `prototyp/` – **Archiv.** Nur `prototyp/content/*.json` ist noch Datenquelle (Importer, Tests). Nichts Neues hier bauen.
 - `tools/` – `export_site.py` (alte tamil.de nur lesen), `shots.mjs` (Screenshots + Prüfung), `coolify.py` (Deploy).
-- `tests/` – pytest; `tests/test_wp_plugin.py` braucht ein lokales WordPress (`wordpress/dev/`).
+- `tests/` – pytest; `tests/wp/` braucht ein lokales WordPress (`wordpress/dev/`), sonst übersprungen.
 - `.claude/` – `rules/` (Bereichsregeln), `skills/`, `agents/`, `commands/` (siehe unten).
 
 ## Befehle

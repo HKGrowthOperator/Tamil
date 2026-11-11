@@ -140,6 +140,7 @@ setenv WP_POST_STATUS publish
 setenv WP_TEST_URL "$URL"
 setenv WP_TEST_USER ki-agent
 setenv WP_TEST_APP_PASSWORD "$(getenv WP_APP_PASSWORD)"
+setenv WP_TEST_WP_CLI "php $WP_DIR/wp-cli.phar --path=$WP_DIR --allow-root"
 chmod 600 "$ENV_LOCAL"
 
 echo

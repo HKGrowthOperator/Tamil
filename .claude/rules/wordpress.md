@@ -7,7 +7,7 @@ paths:
 
 - **WPCS:** escapen bei der Ausgabe (`esc_html`, `esc_attr`, `esc_url`, `wp_kses_post`), bereinigen bei der Eingabe,
   Nonces und Rechteprüfung in Admin- und REST-Routen. `bash wordpress/dev/lint.sh` muss sauber sein.
-- **Plugins** (`tamil-radar`, `tamil-site`) nur mit Test in `tests/test_wp_plugin.py` ändern; der Radar hängt an der
+- **Plugins** (`tamil-radar`, `tamil-site`) nur mit Test in `tests/wp/` ändern; der Radar hängt an der
   REST-Schnittstelle von `tamil-radar`.
 - **Theme-Umbauten** am Aussehen nur nach Tor G3 und über `/design-umsetzung` (siehe `.claude/rules/design.md`).
 - **Schriften selbst gehostet** in `themes/tamil/assets/fonts/` mit Lizenzdatei, eingebunden über `theme.json`
