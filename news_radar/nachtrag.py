@@ -20,6 +20,7 @@ from datetime import date, timedelta
 from difflib import SequenceMatcher
 from html import unescape
 from typing import Callable
+from urllib.parse import urlsplit
 
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
@@ -101,6 +102,36 @@ def standard_abruf(url: str, frist: float | None = None) -> net.Fetched:
     return net.safe_get(url, accept=net.TEXT_TYPES, timeout=8, max_bytes=3_000_000)
 
 
+def _flach(s: str) -> str:
+    s = (s or "").lower()
+    for a, b in (("ä", "ae"), ("ö", "oe"), ("ü", "ue"), ("ß", "ss")):
+        s = s.replace(a, b)
+    return re.sub(r"[^a-z0-9]", "", s)
+
+
+def herausgeber(name: str, url: str) -> str:
+    """Herausgeber für die Quellenangabe: der Host der tatsächlich gelesenen Adresse (nach Umleitungen). Ein Name aus
+    dem Vorschlag gilt nur, wenn er zum Host passt („SRF“ ↔ srf.ch), sonst steht der Host da."""
+    host = (urlsplit(url).hostname or "").lower()
+    host = host[4:] if host.startswith("www.") else host
+    if not host:
+        return ""
+    kern, n = _flach(host.rsplit(".", 1)[0]), _flach(name)
+    if n and (n == _flach(host) or (len(n) >= 3 and n in kern) or (len(kern) >= 3 and kern in n)):
+        return name.strip()[:120]
+    return host[:120]
+
+
+def _datum_streng(wert: str) -> str:
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", wert or ""):
+        return ""
+    try:
+        date.fromisoformat(wert)
+    except ValueError:
+        return ""
+    return wert
+
+
 def seite_lesen(seite: net.Fetched) -> tuple[str, str]:
     """(Text, Titel) der abgerufenen Seite. Der Titel kommt nur aus og:title oder <title>, sonst bleibt er leer."""
     roh = seite.text
@@ -128,10 +159,11 @@ def _dublette(store: Store, v: Vorschlag) -> int | None:
     selben Zeitraum. Vom Scan verworfene Radar-Storys zählen nicht (ein Rückblick-Ereignis ist oft „vorbei“ verworfen
     worden); Nachtrag-Storys zählen in jedem Status."""
     for q in v.quellen:
+        norm = repo.normalize_url(q.url)
         row = store.db.execute(
-            "SELECT s.id FROM source_documents d JOIN stories s ON s.id = d.story_id WHERE d.url_norm = ? "
+            "SELECT s.id FROM source_documents d JOIN stories s ON s.id = d.story_id WHERE (d.url_norm = ? OR d.uid = ?) "
             "AND NOT (s.herkunft = 'radar' AND s.status = 'verworfen') ORDER BY s.id LIMIT 1",
-            (repo.normalize_url(q.url),)).fetchone()
+            (norm, f"nachtrag:{norm}")).fetchone()
         if row:
             return row[0]
     tag = date.fromisoformat(v.datum)
@@ -181,14 +213,15 @@ def _eins(ctx: Kontext, store: Store, raw, nr: int, von: str, abruf: Callable) -
     for q in v.quellen:
         schalter.pruefen(store, "redaktion")  # unmittelbar vor dem Abruf
         try:
-            text, seitentitel = seite_lesen(abruf(q.url))
+            seite = abruf(q.url)
+            text, seitentitel = seite_lesen(seite)
         except Exception as exc:  # noqa: BLE001 – eine kaputte Seite stoppt den Vorschlag nicht
             uebersprungen.append({"url": q.url, "grund": f"nicht abrufbar ({type(exc).__name__})"[:80]})
             continue
         if len(text or "") < VOLLTEXT_MIN:
             uebersprungen.append({"url": q.url, "grund": "ohne lesbaren Text"})
             continue
-        geholt.append((q, text, seitentitel))
+        geholt.append((q, text, seitentitel, seite.url or q.url))
     if not geholt:
         return {**out, "ergebnis": "abgelehnt", "grund": "keine Quelle abrufbar", "quellen_uebersprungen": uebersprungen}
     sid = repo.story_anlegen(store, typ="news", titel=v.arbeitstitel, kategorie=v.rubrik, ort=v.ort,
@@ -196,9 +229,11 @@ def _eins(ctx: Kontext, store: Store, raw, nr: int, von: str, abruf: Callable) -
     hinweise = {"bezug": v.bezug, "kernfakten": v.kernfakten[:12], "bild_hinweis": v.bild_hinweis[:300]}
     store._write("UPDATE stories SET herkunft = 'nachtrag', ereignis_datum = ?, vorschlag = ?, notiz = ? WHERE id = ?",
                  (v.datum, json.dumps(hinweise, ensure_ascii=False), f"Nachtrag · Bezug: {v.bezug}"[:900], sid))
-    for q, text, seitentitel in geholt:
-        repo.dokument_hinzufuegen(store, sid, url=q.url, publisher=q.herausgeber[:120], quelle="Nachtrag",
-                                  published_at=q.datum[:25], language=(q.sprache or "de")[:8], rights="zitat",
+    for q, text, seitentitel, gelesen in geholt:
+        # verlinkt wird die gelesene Adresse; die Ursprungsadresse bleibt als uid für die Dublettenprüfung
+        repo.dokument_hinzufuegen(store, sid, url=gelesen, uid=f"nachtrag:{repo.normalize_url(q.url)}",
+                                  publisher=herausgeber(q.herausgeber, gelesen), quelle="Nachtrag",
+                                  published_at=_datum_streng(q.datum), language=(q.sprache or "de")[:8], rights="zitat",
                                   primaer=True, art="volltext", titel=seitentitel, text=text[:TEXT_MAX])
     repo.aktion(store, wer=von[:60], aktion="nachtrag_angelegt", story_id=sid, kanal="redaktion", ausloeser="agent",
                 notiz=f"{len(geholt)} Quellen geholt, {len(uebersprungen)} übersprungen")

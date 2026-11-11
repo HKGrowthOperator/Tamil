@@ -220,6 +220,26 @@ def test_titel_der_quelle_kommt_von_der_seite_nie_aus_dem_vorschlag(settings):
         assert erfunden not in json.dumps(paket_v2(store, settings, ctx=kontext(store, settings)), ensure_ascii=False)
 
 
+def test_herausgeber_aus_dem_host_und_datum_streng(settings):
+    """P2: Herausgeber und Datum werden zur Quellenangabe – nicht ungeprüft aus dem Vorschlag."""
+    quellen = [{**vorschlag()["quellen"][0], "herausgeber": "Tagesschau", "datum": "14.03.2026"},
+               {**vorschlag()["quellen"][1], "herausgeber": "Westfälischer Anzeiger", "datum": "2026-03-15T10:00"}]
+    with Store(settings.db_path) as store:
+        sid = annehmen(store, settings, [vorschlag(quellen=quellen)],
+                       umleitung={URL2: "https://www.fremd-verlag.example/artikel"})["ergebnisse"][0]["story_id"]
+        docs = repo.dokumente(store, sid)
+        assert [d.publisher for d in docs] == ["Tagesschau", "fremd-verlag.example"]
+        assert [d.published_at for d in docs] == ["", ""]
+        assert docs[1].url == "https://www.fremd-verlag.example/artikel"  # verlinkt wird, was gelesen wurde
+        # dieselbe Ursprungsadresse wird trotzdem als Dublette erkannt
+        nochmal = annehmen(store, settings, [vorschlag(quellen=quellen)],
+                           umleitung={URL2: "https://www.fremd-verlag.example/artikel"})["ergebnisse"][0]
+        assert nochmal["ergebnis"] == "vorhanden" and nochmal["story_id"] == sid
+    assert nachtrag.herausgeber("SRF", "https://www.srf.ch/x") == "SRF"
+    assert nachtrag.herausgeber("WDR", "https://www1.wdr.de/x") == "WDR"
+    assert nachtrag.herausgeber("Bild", "https://www.wa.de/x") == "wa.de"
+
+
 # ---- Import und Veröffentlichung ------------------------------------------------------------------------
 
 def _ergebnis(paket: dict) -> dict:
