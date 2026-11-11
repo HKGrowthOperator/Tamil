@@ -166,6 +166,10 @@ def publish_draft(row: dict, settings: Settings, wp: WordPress | TamilRadarClien
     schalter.pruefen(store, "website")  # unmittelbar vor dem ersten Aufruf an WordPress
     if isinstance(wp, TamilRadarClient):
         return publish_via_plugin(row, settings, wp, store, status)
+    if ist_nachtrag(row):
+        # Der alte REST-Weg kennt kein Ereignisdatum: der Beitrag stünde mit heutigem Datum auf der Website
+        raise RuntimeError("Nachtrag nur über das Plugin tamil-radar veröffentlichen (Ereignisdatum) – ohne Plugin "
+                           "nicht gesendet")
     media_id = None
     if row.get("bild_datei"):
         path = settings.bilder_dir / row["bild_datei"]
@@ -173,7 +177,7 @@ def publish_draft(row: dict, settings: Settings, wp: WordPress | TamilRadarClien
             media_id = wp.upload_media(load_image(path, row.get("bild_credit") or ""), row.get("bild_alt") or row["titel"])
     post = wp.create_post(
         title=row["titel"],
-        content=inhalt_fuer_wp(row),
+        content=render_content(row),
         excerpt=row.get("teaser") or "",
         status=status,
         category_slug=row.get("kategorie") or "news",

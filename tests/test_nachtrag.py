@@ -442,6 +442,46 @@ def test_nachtrag_entwurf_traegt_ereignisdatum_und_wird_mit_datum_und_vermerk_ve
         assert "datum" not in normal and "Nachtrag der Redaktion" not in normal["inhalt"]
 
 
+def test_ohne_plugin_wird_ein_nachtrag_nicht_veroeffentlicht(settings):
+    """P3: Der alte REST-Weg kennt kein Ereignisdatum – lieber klar ablehnen als mit heutigem Datum senden."""
+    class CoreWP:
+        def __init__(self):
+            self.posts = []
+
+        def create_post(self, **kw):
+            self.posts.append(kw)
+            return {"id": 1, "link": "https://www.tamil.de/p/"}
+
+        def edit_link(self, post):
+            return ""
+
+    wp = CoreWP()
+    with Store(settings.db_path) as store:
+        row = {"id": 1, "uid": "x", "titel": "Rückblick", "inhalt_html": "<p>Text</p>", "kategorie": "news",
+               "herkunft": "nachtrag", "ereignis_datum": "2026-03-14"}
+        with pytest.raises(RuntimeError, match="Plugin"):
+            publisher.publish_draft(row, settings, wp, store, status="publish")
+        assert wp.posts == []
+        publisher.publish_draft({**row, "herkunft": "radar", "ereignis_datum": ""}, settings, wp, store, status="draft")
+        assert len(wp.posts) == 1 and "Nachtrag der Redaktion" not in wp.posts[0]["content"]
+
+
+def test_cockpit_vorschau_zeigt_den_vermerk(settings):
+    from news_radar.web import create_app
+
+    from test_web_redaktion import login
+
+    with Store(settings.db_path) as store:
+        annehmen(store, settings, [vorschlag()])
+        _schreiben(store, settings)
+        did = store.list_drafts("neu")[0]["id"]
+    settings.web_user, settings.web_password, settings.web_secret = "luis", "geheim", "s3cret"
+    client = create_app(settings, testing=True).test_client()
+    login(client)
+    assert "Nachtrag der Redaktion: Dieser Beitrag wurde im" in client.get(f"/entwurf/{did}").get_data(as_text=True)
+    assert "Nachtrag der Redaktion: Dieser Beitrag wurde im" in client.get(f"/vorschau/{did}").get_data(as_text=True)
+
+
 def test_nachtrag_entwuerfe_haben_eigene_tagesgrenze(settings):
     settings.entwuerfe_tag = 0  # das Pilot-Limit des Scans blockiert den Rückblick nicht
     settings.nachtrag_entwuerfe_tag = 1

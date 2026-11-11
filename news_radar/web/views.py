@@ -13,7 +13,8 @@ from flask import (Blueprint, Response, abort, current_app, flash, g, jsonify, r
 
 from .. import bilder, images, prompts, schalter
 from ..workflow import repo
-from ..render import render_content, sanitize_html
+from ..publisher import inhalt_fuer_wp  # Vorschau wie veröffentlicht (Nachtrag: mit Vermerk)
+from ..render import sanitize_html
 from ..store import OPEN_STATES, PUBLISHABLE, STATUSES, TRANSITIONS, ConflictError
 from ..wordpress import slugify
 from . import anmelden, client_ip, get_store, gleich
@@ -196,7 +197,7 @@ def entwurf(draft_id: int):
     return render_template("entwurf.html", d=row, labels=STATUS_LABELS, categories=settings.categories,
                            belege=belege_fuer(store, row),
                            can_publish=row["status"] in PUBLISHABLE, open_states=OPEN_STATES,
-                           preview=render_content(row), bildthemen=themen, ki_bereit=bool(settings.gemini_key),
+                           preview=inhalt_fuer_wp(row), bildthemen=themen, ki_bereit=bool(settings.gemini_key),
                            bild_thema=row.get("bild_thema") or prompts.thema_fuer(row["kategorie"], row["titel"]))
 
 
@@ -426,7 +427,7 @@ def wp_entwurf(draft_id: int):
 @ui.get("/vorschau/<int:draft_id>")
 def vorschau(draft_id: int):
     row = _draft_or_404(draft_id)
-    return render_template("vorschau.html", d=row, content=render_content(row))
+    return render_template("vorschau.html", d=row, content=inhalt_fuer_wp(row))
 
 
 @ui.get("/dashboard")
