@@ -40,6 +40,7 @@ Passwörter, Tokens und Schlüssel liegen ausschließlich in den Coolify-Variabl
 | Start | `wordpress/docker/start.sh`: Code frisch aus dem Image, wp-config aus Variablen, Erstinstallation, Nutzer `ki-agent` mit Anwendungspasswort |
 | Inhalt | Altbestand übernommen am 11.11.2026 mit `tools/migration.py` (532 Beiträge, 7 Seiten, 1445 Medien, 25 Weiterleitungen); Prüfliste in `docs/abnahme/2026-11-11-uebernahme.md` |
 | Anmeldung | `/wp-login.php`, Benutzer aus `WP_ADMIN_USER`; das Passwort liest Luis in Coolify bei den Variablen der App nach |
+| Suchmaschinen | Solange `WP_ENVIRONMENT_TYPE` nicht `production` ist (Standard im Container: `staging`), sperrt das Plugin `tamil-site` die Website für Suchmaschinen (noindex, `robots.txt` mit `Disallow: /`, keine Sitemap). **Beim Livegang (Tor B3) `WP_ENVIRONMENT_TYPE=production` setzen**, sonst bleibt tamil.de unsichtbar |
 
 ## Deploy
 

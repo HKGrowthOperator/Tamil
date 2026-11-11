@@ -1,8 +1,12 @@
 # Festlegung F0: Grundlage (Website-Technik und Cockpit)
 
 Vertrag: A1 (Basis-SEO, Performance, Pflichtinformationen, Cookie-Consent), B1 (Cockpit mit Rollen, Stopp-Funktion,
-Protokoll), §8. Stand: **Vorschlag vom 11.11.2026, wartet auf das Ja von Luis.** Die reine Technik (Upgrade-Routine,
-Register, Tests) beginnt sofort, weil sie keine Geschäftsregel enthält.
+Protokoll), §8. Stand: **Vorschlag vom 11.11.2026, wartet auf das Ja von Luis.**
+
+Was davon sofort gebaut wird (so im Plan vom 11.11. freigegeben, weil es keine Geschäftsregel enthält):
+Upgrade-Routine, Angaben für Suchmaschinen, Tempo, Stopp-Schalter, Protokoll, Zeitplan, Tests. **Auf das Ja warten:**
+die Zuordnung der Rollen (gebaut nach dem Vorschlag unten und mit einer Zeile änderbar), das Einschalten des
+Cookie-Hinweises (gebaut, Schalter aus) und die Löschfristen (nicht gebaut).
 
 ## Was gebaut wird
 
@@ -23,6 +27,10 @@ Register, Tests) beginnt sofort, weil sie keine Geschäftsregel enthält.
    angelegt und im Fuß verlinkt; veröffentlicht wird der Text, den KBS liefert.
 6. **Funktionsschalter:** Jeder neue Baustein lässt sich einzeln ein- und ausschalten. Im Echtbetrieb bleibt er aus,
    bis Auftragsverarbeitung und Rechtstexte vorliegen; auf dem Testsystem ist er an.
+7. **Testsystem bleibt aus den Suchmaschinen:** Solange die Website unter der Vorschau-Adresse läuft, ist sie für
+   Suchmaschinen gesperrt (kein Index, keine Sitemap). Sonst stünden die übernommenen Beiträge doppelt im Netz, einmal
+   unter tamil.de und einmal unter der Vorschau-Adresse. Mit dem Umschalten der Domain (Umgebung `production`) wird
+   sie indexierbar.
 
 **Cockpit**
 7. **Stopp-Schalter**, einer für alles und je einer pro Kanal:
