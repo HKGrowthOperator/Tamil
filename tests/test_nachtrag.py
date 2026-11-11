@@ -1029,3 +1029,40 @@ def test_doppelte_adresse_wird_vor_dem_lesen_erkannt(settings, monkeypatch):
                          {PDF_URL: pdf_bytes([SEITE1, SEITE2])})
     assert e["ergebnis"] == "angelegt" and gelesen == [2]
     assert e["quellen_uebersprungen"] == [{"url": PDF_URL + "#page=2", "grund": "doppelt im Vorschlag"}]
+
+
+def _pdf_text_und_schwer(seiten: list) -> bytes:
+    """Seiten aus Textzeilen (Liste) oder einem schweren Strom (Zahl = MB Leerraum-Operatoren)."""
+    import zlib
+
+    objekte = [b"<< /Type /Catalog /Pages 2 0 R >>", b"", b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>"]
+    for s in seiten:
+        if isinstance(s, list):
+            ops = b"BT /F1 10 Tf 12 TL 40 800 Td " + b" ".join(b"(" + z.encode("latin-1") + b") Tj T*" for z in s) + b" ET"
+            objekte.append(b"<< /Length %d >>\nstream\n" % len(ops) + ops + b"\nendstream")
+        else:
+            roh = zlib.compress(b"1 0 0 1 0 0 cm\n" * (s * 1_000_000 // 15), 9)
+            objekte.append(b"<< /Length %d /Filter /FlateDecode >>\nstream\n" % len(roh) + roh + b"\nendstream")
+    erste = len(objekte) + 1
+    for n in range(len(seiten)):
+        objekte.append(b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >>"
+                       b" /Contents %d 0 R >>" % (4 + n))
+    kids = " ".join(f"{erste + n} 0 R" for n in range(len(seiten))).encode()
+    objekte[1] = b"<< /Type /Pages /Kids [%s] /Count %d >>" % (kids, len(seiten))
+    return pdf_roh(objekte)
+
+
+def test_pdf_zu_aufwendige_seite_kuerzt_lueckenlos_mit_hinweis(settings):
+    """Befund P3 (zweite Prüfung): nie still Seiten überspringen. Gelesen wird ein lückenloser Anfang bis vor die
+    erste zu aufwendige Seite, mit Hinweis „gekürzt“; ist schon die Startseite zu aufwendig: abgelehnt."""
+    zeilen = [z.replace("ä", "ae").replace("ü", "ue") for z in SEITE1]
+    datei = _pdf_text_und_schwer([zeilen, 3, ["Diese Seite nach der schweren darf nicht im Text stehen."]])
+    with Store(settings.db_path) as store:
+        e = pdf_annehmen(store, settings, pdf_vorschlag(PDF_URL), {PDF_URL: datei})
+        assert e["ergebnis"] == "angelegt", e
+        text = repo.dokumente(store, e["story_id"])[0].text
+        assert "Kleine Anfrage" in text and "nach der schweren" not in text
+        assert e["quellen_hinweise"] == [{"url": PDF_URL, "hinweis": "gekürzt: gelesen bis Seite 1, Seite 2 zu aufwendig"}]
+        schwer = pdf_annehmen(store, settings, pdf_vorschlag(PDF_URL + "#page=2", erzwingen=True,
+                                                             arbeitstitel="Nur die schwere Seite"), {PDF_URL: datei})
+        assert schwer["ergebnis"] == "abgelehnt" and "PDF zu aufwendig" in schwer["quellen_uebersprungen"][0]["grund"]

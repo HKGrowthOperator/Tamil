@@ -191,8 +191,8 @@ PDF_PARALLEL = 2  # Kinder zugleich je Prozess (je höchstens 300 MB, pdf_kind.S
 _PDF_PLAETZE = threading.BoundedSemaphore(PDF_PARALLEL)
 
 
-def pdf_lesen(daten: bytes, ab_seite: int = 1, frist: float | None = None) -> tuple[str, str]:
-    """(Text, Titel) eines PDF ab `ab_seite`, höchstens PDF_SEITEN_MAX Seiten bzw. TEXT_MAX Zeichen; Titel nur aus den
+def pdf_lesen(daten: bytes, ab_seite: int = 1, frist: float | None = None) -> tuple[str, str, str]:
+    """(Text, Titel, Hinweis „gekürzt …“ oder leer) eines PDF ab `ab_seite`, höchstens PDF_SEITEN_MAX Seiten bzw. TEXT_MAX Zeichen; Titel nur aus den
     Metadaten (/Title). Gelesen wird in einem eigenen Prozess (pdf_kind.py) mit hartem Zeitlimit (Rest der Frist,
     höchstens PDF_ZEIT_MAX) und Speichergrenze – eine präparierte Datei hält den Web-Worker nicht auf.
     Verschlüsselt, kaputt, zu groß oder zu aufwendig → Unlesbar (nie eine andere Ausnahme)."""
@@ -222,7 +222,8 @@ def pdf_lesen(daten: bytes, ab_seite: int = 1, frist: float | None = None) -> tu
         raise Unlesbar("PDF zu aufwendig")  # vom Speicherlimit beendet o. Ä.
     if out.get("fehler"):
         raise Unlesbar(str(out["fehler"])[:120])
-    return str(out.get("text") or "")[:TEXT_MAX], sources.clean_text(str(out.get("titel") or ""))[:300]
+    return (str(out.get("text") or "")[:TEXT_MAX], sources.clean_text(str(out.get("titel") or ""))[:300],
+            str(out.get("hinweis") or "")[:120])
 
 
 def _flach(s: str) -> str:
@@ -339,13 +340,14 @@ def strukturierte_angaben(roh: str) -> str:
     return f"{LD_KOPF}\n\n{text}"[:TEXT_MAX] if text else ""
 
 
-def seite_lesen(seite: net.Fetched, adresse: str = "", frist: float | None = None) -> tuple[str, str, str]:
-    """(Text, Titel, Art) der abgerufenen Seite. Der Titel kommt nur aus og:title oder <title>, sonst bleibt er leer.
+def seite_lesen(seite: net.Fetched, adresse: str = "", frist: float | None = None) -> tuple[str, str, str, str]:
+    """(Text, Titel, Art, Hinweis) der abgerufenen Seite. Der Titel kommt nur aus og:title oder <title>, sonst bleibt er leer.
     PDF: Text ab der Seite aus dem Anker „#page=N“ der Adresse (sonst Seite 1), Titel aus den Metadaten.
     Art „volltext“; „daten“, wenn der Text nur aus strukturierten Angaben (JSON-LD) stammt – kein sichtbarer
     Seitentext: Aussagen bleiben belegbar, die Längenregel macht daraus aber keinen langen Beitrag."""
     if ist_pdf(seite):
-        return (*pdf_lesen(seite.content, max(1, anker_seite(adresse or seite.url)), frist=frist), "volltext")
+        text, titel, hinweis = pdf_lesen(seite.content, max(1, anker_seite(adresse or seite.url)), frist=frist)
+        return text, titel, "volltext", hinweis
     roh = seite.text
     titel = ""
     kandidaten = _og_titel(roh)
@@ -360,8 +362,8 @@ def seite_lesen(seite: net.Fetched, adresse: str = "", frist: float | None = Non
     if len(text or "") < VOLLTEXT_MIN:  # ohne JavaScript kein Text: strukturierte Angaben als Notanker
         daten = strukturierte_angaben(roh)
         if daten:
-            return daten, titel, "daten"
-    return text, titel, "volltext"
+            return daten, titel, "daten", ""
+    return text, titel, "volltext", ""
 
 
 class Zeitlimit(Exception):
@@ -510,6 +512,7 @@ def _eins(store: Store, raw, nr: int, von: str, abruf: Callable, heute: date, uh
     abgerufen: dict[str, net.Fetched | Exception] = {}  # je Datei (ohne Anker) nur ein Abruf je Vorschlag
     je_datei: dict[str, int] = {}
     gesehen: set[str] = set()
+    hinweise: list[dict] = []  # z. B. „gekürzt …“ je Quelle
     for q in v.quellen:
         if adresse_norm(q.url) in gesehen:  # vor dem Abruf und Lesen; nach Umleitungen prüft die Stelle unten
             uebersprungen.append({"url": q.url, "grund": "doppelt im Vorschlag"})
@@ -536,7 +539,7 @@ def _eins(store: Store, raw, nr: int, von: str, abruf: Callable, heute: date, uh
                 raise seite
             # Lesen (PDF) mit eigener Frist ab jetzt (höchstens PDF_ZEIT_MAX), nur durch das Gesamtende begrenzt
             frist_lesen = None if ende is None else time.monotonic() + (ende - uhr())
-            text, seitentitel, art = seite_lesen(seite, q.url, frist=frist_lesen)
+            text, seitentitel, art, hinweis = seite_lesen(seite, q.url, frist=frist_lesen)
         except Unlesbar as exc:
             uebersprungen.append({"url": q.url, "grund": str(exc)[:80]})
             continue
@@ -553,6 +556,8 @@ def _eins(store: Store, raw, nr: int, von: str, abruf: Callable, heute: date, uh
             uebersprungen.append({"url": q.url, "grund": "doppelt im Vorschlag"})
             continue
         geholt.append((q, text[:TEXT_MAX], seitentitel, gelesen, pdf, art))
+        if hinweis:
+            hinweise.append({"url": q.url, "hinweis": hinweis})
     if not geholt:
         return {**out, "ergebnis": "abgelehnt", "grund": "keine Quelle abrufbar", "quellen_uebersprungen": uebersprungen}
     ergebnis = _anlegen(store, v, geholt)
@@ -562,8 +567,9 @@ def _eins(store: Store, raw, nr: int, von: str, abruf: Callable, heute: date, uh
     repo.aktion(store, wer=von[:60], aktion="nachtrag_angelegt", story_id=sid, kanal="redaktion", ausloeser="agent",
                 notiz=f"{len(geholt)} Quellen geholt, {len(uebersprungen)} übersprungen")
     store.event("nachtrag", story=sid, quellen=len(geholt), uebersprungen=len(uebersprungen), von=von[:60])
-    return {**out, "ergebnis": "angelegt", "story_id": sid, "quellen_geholt": len(geholt),
-            "quellen_uebersprungen": uebersprungen}
+    out = {**out, "ergebnis": "angelegt", "story_id": sid, "quellen_geholt": len(geholt),
+           "quellen_uebersprungen": uebersprungen}
+    return {**out, "quellen_hinweise": hinweise} if hinweise else out
 
 
 ERGEBNISSE = ("angelegt", "vorhanden", "vielleicht_vorhanden", "abgelehnt", "nicht_bearbeitet")

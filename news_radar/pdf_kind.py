@@ -79,7 +79,10 @@ def _stroeme(seite) -> list[tuple[tuple | None, object]]:
     return out
 
 
-def lesen(daten: bytes, ab_seite: int = 1) -> tuple[str, str]:
+def lesen(daten: bytes, ab_seite: int = 1) -> tuple[str, str, str]:
+    """(Text, Titel, Hinweis). Gelesen wird ein lückenloser Anfang ab `ab_seite`: an der ersten zu aufwendigen
+    Seite (über INHALT_MAX bzw. GESAMT_MAX) ist Schluss, mit Hinweis „gekürzt“ – nie still Seiten auslassen. Ist
+    schon die Startseite zu aufwendig: Unlesbar(„PDF zu aufwendig“)."""
     from io import BytesIO
 
     from pypdf import PdfReader
@@ -96,7 +99,7 @@ def lesen(daten: bytes, ab_seite: int = 1) -> tuple[str, str]:
         anzahl = len(reader.pages)
         if ab_seite > anzahl:
             raise Unlesbar(f"PDF nicht lesbar: keine Seite {ab_seite} (hat {anzahl})")
-        teile, laenge, gesamt, gelesen = [], 0, 0, set()
+        teile, laenge, gesamt, gelesen, hinweis = [], 0, 0, set(), ""
         for i in range(ab_seite - 1, min(anzahl, ab_seite - 1 + SEITEN_MAX)):
             seite = reader.pages[i]
             stroeme = _stroeme(seite)
@@ -105,10 +108,11 @@ def lesen(daten: bytes, ab_seite: int = 1) -> tuple[str, str]:
                 continue  # derselbe Inhaltsstrom wie eine schon gelesene Seite
             gelesen |= schluessel
             groesse = sum(_entpackt(s) for _, s in stroeme)
-            if groesse > INHALT_MAX:
-                continue  # zu großer Inhaltsstrom: Seite überspringen
             gesamt += groesse
-            if gesamt > GESAMT_MAX:
+            if groesse > INHALT_MAX or gesamt > GESAMT_MAX:
+                if i == ab_seite - 1:
+                    raise Unlesbar(f"PDF zu aufwendig (Seite {i + 1})")
+                hinweis = f"gekürzt: gelesen bis Seite {i}, Seite {i + 1} zu aufwendig"
                 break
             t = seite_text(seite.extract_text() or "")
             if t:
@@ -126,7 +130,7 @@ def lesen(daten: bytes, ab_seite: int = 1) -> tuple[str, str]:
         raise Unlesbar("PDF zu aufwendig") from None
     except Exception:  # noqa: BLE001 – kaputte Datei (auch Schleifen im Seitenbaum)
         raise Unlesbar("PDF nicht lesbar") from None
-    return "\n\n".join(teile)[:TEXT_MAX], titel
+    return "\n\n".join(teile)[:TEXT_MAX], titel, hinweis
 
 
 def main(argv: list[str]) -> int:
@@ -134,8 +138,8 @@ def main(argv: list[str]) -> int:
     logging.disable(logging.WARNING)  # pypdf-Warnungen (je Objekt eine Zeile) gar nicht erst schreiben
     try:
         ab_seite = max(1, int(argv[1])) if len(argv) > 1 else 1
-        text, titel = lesen(sys.stdin.buffer.read(), ab_seite)
-        out = {"text": text, "titel": titel}
+        text, titel, hinweis = lesen(sys.stdin.buffer.read(), ab_seite)
+        out = {"text": text, "titel": titel, "hinweis": hinweis}
     except Unlesbar as exc:
         out = {"fehler": str(exc)}
     except MemoryError:
