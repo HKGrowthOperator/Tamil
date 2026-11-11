@@ -65,7 +65,7 @@ def commons_api(lizenz="CC BY-SA 4.0", artist='<a href="//commons.wikimedia.org/
     return json.dumps({"query": query})
 
 
-def fake(seiten: dict, abrufe: list | None = None):
+def fake(seiten: dict, abrufe: list | None = None, umleitung: dict | None = None):
     """Wie net.safe_get, ohne Netz: str → HTML/JSON, bytes → Bild; unbekannte Adresse → 404."""
     def abruf(url, *, frist=None, bild=False):
         if abrufe is not None:
@@ -80,7 +80,7 @@ def fake(seiten: dict, abrufe: list | None = None):
         if isinstance(inhalt, bytes):
             return net.Fetched(url=url, status=200, content=inhalt, content_type="image/jpeg")
         ctype = "application/json" if url == "API" else "text/html; charset=utf-8"
-        return net.Fetched(url=url, status=200, content=inhalt.encode(), content_type=ctype)
+        return net.Fetched(url=(umleitung or {}).get(url, url), status=200, content=inhalt.encode(), content_type=ctype)
     return abruf
 
 
@@ -348,6 +348,22 @@ def test_quelle_bild_auf_fremdem_host_abgelehnt(settings):
         e = eins(store, settings, {"story_id": sid, "weg": "quelle", "seite_url": DOK, "bild_url": fremd},
                  {DOK: html, fremd: jpeg()})
         assert e["ergebnis"] == "abgelehnt" and "Host" in e["grund"]
+
+
+@pytest.mark.parametrize("ziel,ergebnis", [("https://www.ammankovil.ch/aktuell/x", "abgelehnt"),
+                                           ("https://news.murugantemple.ch/thaipusam", "gesetzt")])
+def test_quelle_umleitung_nur_beim_eingetragenen_host(settings, ziel, ergebnis):
+    settings.bildquellen = [TEMPEL, Bildquelle(host="ammankovil.ch", betreiber="Amman", art="tempel",
+                                               nachweis="Foto: Amman")]
+    with Store(settings.db_path) as store:
+        sid, _ = story_mit_entwurf(store)
+        og = ziel.rsplit("/", 1)[0] + "/bild.jpg"
+        out = bildvorschlag.annehmen(store, settings, {"bilder": [{"story_id": sid, "weg": "quelle", "seite_url": DOK}]},
+                                     von="test", abruf=fake({DOK: seite(og=og), og: jpeg()}, umleitung={DOK: ziel}))
+        e = out["ergebnisse"][0]
+        assert e["ergebnis"] == ergebnis, e
+        if ergebnis == "abgelehnt":
+            assert "umgeleitet" in e["grund"]
 
 
 def test_gesperrter_host_auch_im_register(settings):

@@ -404,8 +404,8 @@ def _quelle_vorpruefen(store: Store, settings: Settings, eintrag: dict, story_id
 def _quelle(store: Store, settings: Settings, eintrag: dict, story_id: int, abrufen: Callable) -> dict:
     quelle = _quelle_vorpruefen(store, settings, eintrag, story_id)
     seite = abrufen(eintrag["seite_url"].strip(), bild=False)
-    if _host(seite.url) != _host(eintrag["seite_url"]) and not _register(settings, _host(seite.url)):
-        raise Abgelehnt(f"Seite leitet auf einen Host außerhalb des Registers um: {_host(seite.url)}")
+    if not _unter(_host(seite.url or eintrag["seite_url"]), quelle.host):  # auch nicht zu einem anderen Registerhost
+        raise Abgelehnt(f"Seite wird auf einen anderen Host umgeleitet: {_host(seite.url)} statt {quelle.host}")
     kandidaten, og, tw = bilder_der_seite(seite.text, seite.url or eintrag["seite_url"])
     if eintrag.get("bild_url"):
         bild_url = eintrag["bild_url"].strip()
