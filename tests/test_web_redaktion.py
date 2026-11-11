@@ -280,6 +280,32 @@ def test_report_api_needs_token_and_returns_pilot_data(app):
     assert client.post("/api/bericht", headers={"Authorization": "Bearer lese-token-mit-genug-zeichen"}).status_code != 200
 
 
+def test_report_api_accepts_agent_token_too(app):
+    """Die tägliche Redaktionsroutine kommt mit RADAR_AGENT_TOKEN allein aus: /api/bericht nimmt Lese- oder Agent-Token."""
+    client = app.test_client()
+    s = app.extensions["settings"]
+    lese, agent = "lese-token-mit-genug-zeichen", "agent-token-mit-genug-zeichen"
+    s.lese_token, s.agent_token = "", ""
+    assert client.get("/api/bericht", headers={"Authorization": f"Bearer {agent}"}).status_code == 404
+    s.agent_token = agent  # nur das Agent-Token gesetzt
+    assert client.get("/api/bericht", headers={"Authorization": f"Bearer {agent}"}).status_code == 200
+    assert client.get("/api/bericht", headers={"Authorization": f"Bearer {lese}"}).status_code == 401
+    assert client.get("/api/bericht", headers={"Authorization": "Bearer "}).status_code == 401
+    s.lese_token = lese  # beide gesetzt
+    assert client.get("/api/bericht", headers={"Authorization": f"Bearer {agent}"}).status_code == 200
+    assert client.get("/api/bericht", headers={"Authorization": f"Bearer {lese}"}).status_code == 200
+    assert client.get("/api/bericht", headers={"Authorization": "Bearer falsch"}).status_code == 401
+    assert client.get("/api/bericht").status_code == 401
+    s.agent_token = ""  # nur das Lese-Token gesetzt
+    assert client.get("/api/bericht", headers={"Authorization": f"Bearer {lese}"}).status_code == 200
+    assert client.get("/api/bericht", headers={"Authorization": f"Bearer {agent}"}).status_code == 401
+    roh = client.get("/api/bericht", headers={"Authorization": f"Bearer {lese}"}).get_data(as_text=True)
+    assert agent not in roh and lese not in roh
+    # Das Lese-Token öffnet den Agent-Modus nicht
+    s.agent_token = agent
+    assert client.get("/api/agent/export", headers={"Authorization": f"Bearer {lese}"}).status_code == 401
+
+
 def test_behind_proxy_rate_limit_uses_real_client_ip(tmp_path, monkeypatch):
     for var in ("WP_URL", "WP_USER", "WP_APP_PASSWORD", "NOTIFY_WEBHOOK_URL"):
         monkeypatch.setenv(var, "")

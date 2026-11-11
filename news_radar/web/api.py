@@ -1,11 +1,12 @@
-"""Lesezugang für Auswertungen (Pilot): GET /api/bericht mit `Authorization: Bearer <RADAR_LESE_TOKEN>`.
+"""Lesezugang für Auswertungen (Pilot): GET /api/bericht mit `Authorization: Bearer <RADAR_LESE_TOKEN>` oder
+`<RADAR_AGENT_TOKEN>`.
 Agent-Modus übers Netz: GET /api/agent/export und POST /api/agent/import mit `Bearer <RADAR_AGENT_TOKEN>` – dieselbe
 Aufgabenmappe und derselbe Import wie `agent export/import --v2`, mit allen Gates. POST /api/agent/vorschlag nimmt
 Nachtrag-Vorschläge mit Quellen an (`nachtrag.annehmen`, kein Modell).
 
-Nur lesen, kein Login, keine Änderungen. Ohne RADAR_LESE_TOKEN gibt es den Endpunkt nicht (404). Er liefert Storys,
-Quellen-Dokumente, Claims, Entwürfe, Fassungen mit Belegen, Kosten je Aufruf, Warteschlange und Budget – nie Benutzer,
-Sitzungen oder Einstellungen.
+Nur lesen, kein Login, keine Änderungen. Ohne RADAR_LESE_TOKEN und RADAR_AGENT_TOKEN gibt es den Endpunkt nicht (404).
+Er liefert Storys, Quellen-Dokumente, Claims, Entwürfe, Fassungen mit Belegen, Kosten je Aufruf, Warteschlange und
+Budget – nie Benutzer, Sitzungen oder Einstellungen.
 """
 
 from __future__ import annotations
@@ -23,12 +24,17 @@ api = Blueprint("api", __name__)
 TEXT_MAX = 8000  # Zeichen je Quellen-Dokument
 
 
-def _berechtigt(token: str | None = None) -> bool:
-    token = g.settings.lese_token if token is None else token
-    if not token:
+def _berechtigt(*tokens: str) -> bool:
+    """Bearer-Token gegen die gesetzten Tokens prüfen (zeitkonstant, jedes gesetzte wird verglichen).
+
+    Ist keines gesetzt, gibt es den Endpunkt nicht (404)."""
+    gesetzt = [t for t in tokens if t]
+    if not gesetzt:
         abort(404)
     kopf = request.headers.get("Authorization", "")
-    return kopf.startswith("Bearer ") and gleich(kopf[7:].strip(), token)
+    wert = kopf[7:].strip() if kopf.startswith("Bearer ") else ""
+    treffer = [gleich(wert, t) for t in gesetzt]  # alle vergleichen, kein früher Abbruch
+    return bool(wert) and any(treffer)
 
 
 def _angehalten(exc: schalter.Gestoppt):
@@ -121,7 +127,8 @@ def agent_vorschlag():
 
 @api.get("/api/bericht")
 def bericht():
-    if not _berechtigt():
+    # Lese-Token (Auswertung) oder Agent-Token (tägliche Redaktionsroutine mit nur einem Token)
+    if not _berechtigt(g.settings.lese_token, g.settings.agent_token):
         return _abgewiesen()
     try:
         tage = min(60, max(1, int(request.args.get("tage", 7))))
