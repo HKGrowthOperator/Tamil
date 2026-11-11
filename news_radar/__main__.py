@@ -144,6 +144,7 @@ def main(argv: list[str] | None = None) -> int:
     agent.add_argument("--ohne-text", action="store_true", help="export: Quelltexte nicht nachladen")
     agent.add_argument("--von", default="agent", help="import: Name für Protokoll und bearbeitet_von")
     agent.add_argument("--v2", action="store_true", help="Redaktion v2: Evidenzpakete statt Rohfassungen")
+    agent.add_argument("--ids", help="export --v2: nur diese Story-Nummern (z. B. 3,4,5; höchstens 20, soweit offen)")
     pool = sub.add_parser("bildpool", help="Reserve-Bilder je Thema (prompts/bildpool.md)")
     pool.add_argument("aktion", choices=("status", "fuellen"))
     pool.add_argument("--thema", help="nur dieses Thema füllen")
@@ -358,7 +359,16 @@ def main(argv: list[str] | None = None) -> int:
 
         with Store(settings.db_path) as store:
             if args.aktion == "export":
-                data = export_v2(store, settings, Path(args.file), limit=args.limit)
+                ids = None
+                if args.ids is not None:
+                    from .agent_v2 import ids_lesen
+
+                    try:
+                        ids = ids_lesen(args.ids)
+                    except ValueError as exc:
+                        print(str(exc), file=sys.stderr)
+                        return 2
+                data = export_v2(store, settings, Path(args.file), limit=args.limit, ids=ids)
                 print(f"{len(data['storys'])} Storys → {args.file} "
                       f"({sum(len(p['dokumente']) for p in data['storys'])} Dokumente)")
                 return 0
