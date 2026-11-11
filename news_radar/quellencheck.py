@@ -51,6 +51,16 @@ class Pruefung:
     paywall_hinweis: bool
     punkte: float = 0.0
     empfehlung: str = ""
+    warnung: str = ""
+
+
+_JAHR_RE = re.compile(r"(?<!\d)(20\d\d)(?!\d)")
+
+
+def jahr_warnung(url: str, jahr: int) -> str:
+    """Adresse mit einer Jahreszahl vor dem laufenden Jahr (z. B. Filmreihe „…-2026/“): wahrscheinlich umzustellen."""
+    alt = sorted({int(j) for j in _JAHR_RE.findall(url or "") if int(j) < jahr})
+    return f"Adresse nennt {', '.join(map(str, alt))} – auf {jahr} umstellen?" if alt else ""
 
 
 def robots_status(url: str, timeout: float = 8) -> str:
@@ -115,6 +125,9 @@ def pruefe_quelle(source: Source, settings: Settings, store: Store | None, now: 
                  erreichbar=False, fehler="", sekunden=0.0, treffer_jetzt=0, treffer_14_tage=0,
                  gesehen_14_tage_db=0, entwuerfe_db=0, robots="unbekannt", paywall_hinweis=False)
     p.gesehen_14_tage_db, p.entwuerfe_db = _db_counts(store, source, since)
+    p.warnung = jahr_warnung(source.url, now.year)
+    if p.warnung:
+        log.warning("%s: %s", source.name, p.warnung)
     env_key = TOKEN_TYPES.get(source.type)
     if env_key and not getattr(settings, {"newsapi": "newsapi_key", "gnews": "gnews_token"}[source.type]):
         p.fehler = f"kein Schlüssel ({env_key})"

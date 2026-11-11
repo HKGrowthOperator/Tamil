@@ -177,7 +177,39 @@ def fetch_cineplexx(source: Source, settings: Settings, http=requests) -> list[S
     return shows
 
 
-PROVIDERS = {"cinestar": fetch_cinestar, "kinoheld": fetch_kinoheld, "cineplexx": fetch_cineplexx}
+def fetch_html_kino(source: Source, settings: Settings, http=None, now: datetime | None = None) -> list[Show]:
+    """Kinoseite oder Filmreihe mit CSS-Selektoren (wie Quellentyp html): eine Vorstellung je Eintrag, nur Einträge,
+    die „Tamil“ nennen (Titel, Sprachangabe). `params.kino`/`params.stadt` benennen das Haus, sonst der Ort-Selektor.
+
+    Zurückgestellt (Prüfung 11.11.2026), keine Quelle nutzt den Anbieter: Spielorte springen zwischen Scans
+    (anderer Takt als kinoheld/CineStar), die Tamil-Erkennung über den ganzen Eintrag ist zu weit, und Seiten ohne
+    Uhrzeit ergeben 00:00."""
+    from urllib.parse import urljoin
+
+    from bs4 import BeautifulSoup
+
+    from . import sources as quellen
+    from .dates import parse_de_datetime
+
+    soup = BeautifulSoup(quellen._get(source.url).text, "html.parser")
+    sel, now = source.selectors, now or datetime.now(TZ)
+    shows = []
+    for node in soup.select(sel.get("item", "article")):
+        film = quellen._select_text(node, sel.get("title", "h2"))
+        if not film or not is_tamil(node.get_text(" ")):
+            continue
+        link = quellen._select_text(node, sel.get("link", "a::attr(href)"))
+        datum = quellen._select_text(node, sel.get("date", ""))
+        ort = quellen._select_text(node, sel.get("ort", ""))
+        shows.append(Show(clean_film_title(film), source.params.get("kino") or ort or source.name,
+                          source.params.get("stadt") or ort, source.country or "DE",
+                          start=parse_de_datetime(datum, now) if datum else None,
+                          url=urljoin(source.url, link) if link else source.url, provider="html"))
+    return shows
+
+
+PROVIDERS = {"cinestar": fetch_cinestar, "kinoheld": fetch_kinoheld, "cineplexx": fetch_cineplexx,
+             "html": fetch_html_kino}
 
 
 # ---- Aggregation --------------------------------------------------------------

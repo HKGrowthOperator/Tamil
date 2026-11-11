@@ -50,6 +50,16 @@ def zusammenfassen(b: dict) -> str:
     return "\n".join(z)
 
 
+def sicher(url: str) -> bool:
+    """Token nur verschlüsselt übers Netz: https, oder http an diesen Rechner (lokale Tests)."""
+    from urllib.parse import urlsplit
+
+    teile = urlsplit(url)
+    if teile.scheme == "https" and teile.hostname:
+        return True
+    return teile.scheme == "http" and teile.hostname in ("localhost", "127.0.0.1")
+
+
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     p.add_argument("--url", default=os.environ.get("RADAR_URL", "https://tamil.hk-growthoperator.de"))
@@ -57,11 +67,17 @@ def main(argv=None) -> int:
     p.add_argument("--token-datei")
     p.add_argument("--json", action="store_true", help="rohen Bericht ausgeben")
     a = p.parse_args(argv)
-    token = Path(a.token_datei).read_text().strip() if a.token_datei else os.environ.get("RADAR_LESE_TOKEN")
+    # /api/bericht nimmt das Lese- oder das Agent-Token; das Lese-Token geht vor
+    token = (Path(a.token_datei).read_text().strip() if a.token_datei
+             else os.environ.get("RADAR_LESE_TOKEN") or os.environ.get("RADAR_AGENT_TOKEN"))
     if not token:
-        print("RADAR_LESE_TOKEN fehlt (oder --token-datei).", file=sys.stderr)
+        print("RADAR_LESE_TOKEN oder RADAR_AGENT_TOKEN fehlt (oder --token-datei).", file=sys.stderr)
         return 2
     basis = a.url.rstrip("/")
+    if not sicher(basis):
+        print(f"Abbruch: Das Token geht nur an https-Adressen (lokal auch http://localhost), nicht an {basis}.",
+              file=sys.stderr)
+        return 2
     # Mit --json geht die Gesundheitszeile nach stderr, damit die Standardausgabe reines JSON bleibt.
     kanal = sys.stderr if a.json else sys.stdout
     try:

@@ -21,7 +21,7 @@ nur aus bestätigten Claims, Belege je `<p>`, Links nur auf Quellen der Story.
 - Dokumente mit `art: "daten"` sind strukturierte Angaben einer Seite (JSON-LD), kein sichtbarer Text: Aussagen
   daraus sind belegbar, aber die Länge bleibt knapp (Längenregel); nichts aus ihnen ausschmücken.
 - Import: `curl -fsS -X POST -H "Authorization: Bearer $RADAR_AGENT_TOKEN" -H "Content-Type: application/json" --data @<scratch>/ergebnis.json "$RADAR/api/agent/import?von=Claude%20(Research)"`
-- Kontrolle: `python tools/radar_bericht.py` (Lese-Token).
+- Kontrolle: `python tools/radar_bericht.py` (Lese-Token `RADAR_LESE_TOKEN`, sonst `RADAR_AGENT_TOKEN` – `/api/bericht` nimmt beide).
 
 ## Schritte
 

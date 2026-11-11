@@ -88,7 +88,7 @@ def test_costs_sources_queue_pages_and_csv(app):
     csv = client.get("/kosten.csv")
     assert csv.mimetype == "text/csv" and "kosten_usd" in csv.get_data(as_text=True)
     quellen = client.get("/quellen").get_data(as_text=True)
-    assert "20 von 28 Quellen aktiv" in quellen and "verboten" in quellen
+    assert "27 von 39 Quellen aktiv" in quellen and "verboten" in quellen
     schlange = client.get("/warteschlange?status=tot").get_data(as_text=True)
     assert "Kaputte Story" in schlange and "Erneut" in schlange
     resp = client.post("/job/9999/erneut", data={"_csrf": token}, follow_redirects=True)
@@ -280,6 +280,32 @@ def test_report_api_needs_token_and_returns_pilot_data(app):
     roh = resp.get_data(as_text=True)
     assert "passwort_hash" not in roh and "lese-token" not in roh and "s3cret" not in roh
     assert client.post("/api/bericht", headers={"Authorization": "Bearer lese-token-mit-genug-zeichen"}).status_code != 200
+
+
+def test_report_api_accepts_agent_token_too(app):
+    """Die tägliche Redaktionsroutine kommt mit RADAR_AGENT_TOKEN allein aus: /api/bericht nimmt Lese- oder Agent-Token."""
+    client = app.test_client()
+    s = app.extensions["settings"]
+    lese, agent = "lese-token-mit-genug-zeichen", "agent-token-mit-genug-zeichen"
+    s.lese_token, s.agent_token = "", ""
+    assert client.get("/api/bericht", headers={"Authorization": f"Bearer {agent}"}).status_code == 404
+    s.agent_token = agent  # nur das Agent-Token gesetzt
+    assert client.get("/api/bericht", headers={"Authorization": f"Bearer {agent}"}).status_code == 200
+    assert client.get("/api/bericht", headers={"Authorization": f"Bearer {lese}"}).status_code == 401
+    assert client.get("/api/bericht", headers={"Authorization": "Bearer "}).status_code == 401
+    s.lese_token = lese  # beide gesetzt
+    assert client.get("/api/bericht", headers={"Authorization": f"Bearer {agent}"}).status_code == 200
+    assert client.get("/api/bericht", headers={"Authorization": f"Bearer {lese}"}).status_code == 200
+    assert client.get("/api/bericht", headers={"Authorization": "Bearer falsch"}).status_code == 401
+    assert client.get("/api/bericht").status_code == 401
+    s.agent_token = ""  # nur das Lese-Token gesetzt
+    assert client.get("/api/bericht", headers={"Authorization": f"Bearer {lese}"}).status_code == 200
+    assert client.get("/api/bericht", headers={"Authorization": f"Bearer {agent}"}).status_code == 401
+    roh = client.get("/api/bericht", headers={"Authorization": f"Bearer {lese}"}).get_data(as_text=True)
+    assert agent not in roh and lese not in roh
+    # Das Lese-Token öffnet den Agent-Modus nicht
+    s.agent_token = agent
+    assert client.get("/api/agent/export", headers={"Authorization": f"Bearer {lese}"}).status_code == 401
 
 
 def test_behind_proxy_rate_limit_uses_real_client_ip(tmp_path, monkeypatch):

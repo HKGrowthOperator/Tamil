@@ -13,7 +13,8 @@
 #
 # Register (Blueprint 19.10.): enabled (false = abgeschaltet, bleibt im Register), prioritaet A/B/C, betreiber,
 # robots (Ergebnis von `quellen pruefen`), paywall, bild_nutzen (Pressebilder nur mit dokumentierter Erlaubnis),
-# vertrag, rechtlich_geprueft (Datum), notiz. Auswahl 20 von 28 am 08.11.2026 nach `quellen pruefen`.
+# vertrag, rechtlich_geprueft (Datum), notiz. Auswahl 20 von 28 am 08.11.2026 nach `quellen pruefen`; 11.11.2026
+# elf Quellen aus der Quellen-Inventur dazu (Tempel, Vereine, Kinoreihen, Lokalpresse, SEM) → 27 von 39 aktiv (die vier Kino-Seiten zurückgestellt).
 
 # ---- Presse DACH über Google News (rotierend) ----
 [[source]]
@@ -390,6 +391,208 @@ type = "gnews"
 query = "Tamilen OR tamilisch OR \"Tamil Germany\" OR \"Tamil Switzerland\""
 language = "de"
 max_items = 3
+
+# ---- Aus der Quellen-Inventur 11.11.2026 (live geprüft: erreichbar, robots erlaubt, Einträge mit Datum) ----
+# Tempel und Vereine: Ankündigungen als Termine (echtes Datum → Altersgrenze für Berichte aus dem Archiv gilt)
+[[source]]
+name = "Sivan Kovil Glattbrugg"
+prioritaet = "B"
+betreiber = "Saiva Tamil Sangam (Arulmigu Sivan Kovil), Glattbrugg"
+robots = "erlaubt"
+paywall = false
+bild_nutzen = false
+notiz = "Inventur 11.11.2026: Feed mit Festankündigungen (7 Beiträge 2026); Feed-XML endet ohne </rss>, feedparser liest es trotzdem. Kalender (/wp-json/tribe/events/v1) bewusst nicht: viele Fastentage und Gedenktermine (Maaveerar) – solche Termine redaktionell prüfen"
+rechtlich_geprueft = ""
+type = "rss"
+url = "https://sivankovil.ch/feed/"
+language = "ta"
+kind = "event"
+country = "CH"
+min_score = 0
+max_items = 1
+interval_minutes = 360
+
+[[source]]
+name = "Sri Kathirvelayutha Swamy Tempel St. Margrethen"
+prioritaet = "B"
+betreiber = "Arulmigu Sri Kathirvelayutha Swamy Alayam, St. Margrethen"
+robots = "erlaubt"
+paywall = false
+bild_nutzen = false
+notiz = "Inventur 11.11.2026: Feed mit 9 Beiträgen 2026, aktiv rund um das Jahresfest (Mai), sonst still"
+rechtlich_geprueft = ""
+type = "rss"
+url = "https://srikathirvel.com/feed/"
+language = "ta"
+kind = "event"
+country = "CH"
+min_score = 0
+max_items = 1
+interval_minutes = 360
+
+[[source]]
+name = "Düsseldorf Tamil Sangam"
+prioritaet = "B"
+betreiber = "Düsseldorf Tamil Sangam e.V."
+robots = "erlaubt"
+paywall = false
+bild_nutzen = false
+notiz = "Inventur 11.11.2026: Feed führt jede Veranstaltung als Beitrag (zwei bis vier im Jahr), den Tag nennt nur der Beitrag selbst. Nicht die Seite /events/: dort stehen alte Termine ohne Jahr, die als nächstes Jahr gelesen würden"
+rechtlich_geprueft = ""
+type = "rss"
+url = "https://duesseldorftamilsangam.com/feed/"
+language = "en"
+kind = "event"
+country = "DE"
+min_score = 0
+max_items = 1
+interval_minutes = 360
+
+[[source]]
+name = "Tamils.co · Termine Deutschland"
+prioritaet = "B"
+betreiber = "Tamils.co (Beta, Betreiber nicht genannt)"
+robots = "erlaubt"
+paywall = false
+bild_nutzen = false
+notiz = "Inventur 11.11.2026: Verzeichnis, in das Veranstalter selbst eintragen; Ortsangaben teils falsch (kanadischer Park unter Deutschland) – Ort immer gegenprüfen; kein Impressum"
+rechtlich_geprueft = ""
+type = "html"
+url = "https://tamils.co/countries/11-germany"
+language = "en"
+kind = "event"
+country = "DE"
+min_score = 0
+max_items = 2
+interval_minutes = 180
+selectors = { item = "article.event-card", title = "h3", link = "h3 a::attr(href)", date = ".card-meta .pill", ort = "p.muted" }
+
+# Kino: Reihen und Programme mit Selektoren (provider = "html") – zurückgestellt (Prüfung 11.11.2026), alle aus
+[[source]]
+name = "Filmkunstkinos Düsseldorf · Kino aus Indien"
+enabled = false
+prioritaet = "B"
+betreiber = "Metropol Düsseldorfer Filmkunstkino GmbH"
+robots = "erlaubt"
+paywall = false
+bild_nutzen = false
+notiz = "aus: Kino-HTML-Weg zurückgestellt, siehe Prüfung 11.11.: Spielorte springen zwischen Scans (unterschiedlicher Takt zu kinoheld/CineStar), Tamil-Erkennung über die Beschreibung zu weit, Mathäser ohne Uhrzeit → 00:00. Inventur 11.11.2026: eine Seite mit allen Vorstellungen der Reihe samt Sprache; Adresse trägt die Jahreszahl – im Januar auf …-2027 umstellen; antwortete einmal mit 429, deshalb langes Intervall; Plakate sind Verleihmaterial"
+rechtlich_geprueft = ""
+type = "kino"
+provider = "html"
+url = "https://filmkunstkinos.de/specials/filmreihe-kino-aus-indien-2026/"
+country = "DE"
+max_items = 1
+interval_minutes = 720
+params = { kino = "Filmkunstkinos Düsseldorf", stadt = "Düsseldorf" }
+selectors = { item = "#event-container article", title = ".event-small--title", link = "a::attr(href)", date = ".event-small--date" }
+
+[[source]]
+name = "dein-dein · Tamil Films in Germany"
+enabled = false
+prioritaet = "C"
+betreiber = "dein-dein.com"
+robots = "erlaubt"
+paywall = false
+bild_nutzen = false
+notiz = "aus: Kino-HTML-Weg zurückgestellt, siehe Prüfung 11.11.: Spielorte springen zwischen Scans (unterschiedlicher Takt zu kinoheld/CineStar), Tamil-Erkennung über die Beschreibung zu weit, Mathäser ohne Uhrzeit → 00:00. Außerdem: robots.txt sperrt KI-Crawler (ClaudeBot, GPTBot u. a.) ausdrücklich, erlaubt nur „*“ – Entscheidung Luis offen. Inventur 11.11.2026: tamilische Filme mit Vorstellungen in deutschen Kinos; Spielzeiten beim Kino prüfen; Betreiber nicht geprüft"
+rechtlich_geprueft = ""
+type = "kino"
+provider = "html"
+url = "https://dein-dein.com/germany/tamil-films"
+country = "DE"
+max_items = 1
+interval_minutes = 360
+selectors = { item = "section[aria-label='Indian film snapshot'] article", title = "h3", link = "a::attr(href)", date = "time", ort = "p span:not([aria-hidden])" }
+
+[[source]]
+name = "Mathäser Filmpalast München"
+enabled = false
+prioritaet = "C"
+betreiber = "Kinopolis Management Multiplex GmbH"
+robots = "erlaubt"
+paywall = false
+bild_nutzen = false
+notiz = "aus: Kino-HTML-Weg zurückgestellt, siehe Prüfung 11.11.: Spielorte springen zwischen Scans (unterschiedlicher Takt zu kinoheld/CineStar), Tamil-Erkennung über die Beschreibung zu weit, Mathäser ohne Uhrzeit → 00:00. Inventur 11.11.2026: Programmseite nennt die Sprache im Titel („Scene (Tamil)“); große Seite (~900 KB); möglicherweise doppelt zu kinoheld"
+rechtlich_geprueft = ""
+type = "kino"
+provider = "html"
+url = "https://www.mathaeser.de/mm/programm"
+country = "DE"
+max_items = 1
+interval_minutes = 360
+params = { kino = "Mathäser Filmpalast", stadt = "München" }
+selectors = { item = "section.movie", title = "h2 a", link = "h2 a::attr(href)", date = ".prog-nav__day" }
+
+[[source]]
+name = "Babylon Berlin · IndoGerman Film"
+enabled = false
+prioritaet = "C"
+betreiber = "Neue Babylon Berlin GmbH"
+robots = "erlaubt"
+paywall = false
+bild_nutzen = false
+notiz = "aus: Kino-HTML-Weg zurückgestellt, siehe Prüfung 11.11.: Spielorte springen zwischen Scans (unterschiedlicher Takt zu kinoheld/CineStar), Tamil-Erkennung über die Beschreibung zu weit, Mathäser ohne Uhrzeit → 00:00. Inventur 11.11.2026: Reihe indischer Filme in Originalsprache; Sprache je Film steht in der Beschreibung („[Telugu]“) – nur tamilische Fassungen kommen durch"
+rechtlich_geprueft = ""
+type = "kino"
+provider = "html"
+url = "https://babylonberlin.eu/programm/filmreihen/indogerman-film"
+country = "DE"
+max_items = 1
+interval_minutes = 360
+params = { kino = "Babylon", stadt = "Berlin" }
+selectors = { item = ".blog .items-leading > div, .blog .items-row .item", title = "h2", link = "h2 a::attr(href)", date = ".first_showtime" }
+
+# Medien und Behörden: nur mit tamilischem Bezug
+[[source]]
+name = "Kevelaerer Blatt · Tamilen"
+prioritaet = "C"
+betreiber = "Kevelaerer Blatt"
+robots = "erlaubt"
+paywall = false
+bild_nutzen = false
+notiz = "Inventur 11.11.2026: Suchfeed „tamilen“ der Lokalzeitung am Wallfahrtsort (Tamilenwallfahrt im August); Suche trifft auch Fremdes, deshalb bezug_noetig; Bezahlschranke einzelner Artikel nicht geprüft"
+rechtlich_geprueft = ""
+type = "rss"
+url = "https://www.kevelaerer-blatt.de/?s=tamilen&feed=rss2"
+country = "DE"
+min_score = 0
+bezug_noetig = true
+max_items = 1
+interval_minutes = 360
+
+[[source]]
+name = "theinder.net"
+prioritaet = "C"
+betreiber = "theinder.net (Das Indernet)"
+robots = "erlaubt"
+paywall = false
+bild_nutzen = false
+notiz = "Inventur 11.11.2026: Magazin der indischen Diaspora in Deutschland; tamilische Themen selten – nur mit Stichwort und Bezug"
+rechtlich_geprueft = ""
+type = "rss"
+url = "https://www.theinder.net/feed/"
+country = "DE"
+min_score = 3
+bezug_noetig = true
+max_items = 1
+interval_minutes = 120
+
+[[source]]
+name = "SEM · Medienmitteilungen"
+prioritaet = "C"
+betreiber = "Staatssekretariat für Migration SEM (News Service Bund)"
+robots = "erlaubt"
+paywall = false
+bild_nutzen = false
+notiz = "Inventur 11.11.2026: amtlicher Feed (Asylstatistik, Rückkehr); Sri Lanka nur gelegentlich – volle Schwelle 4 (sonst gälte wegen country CH die DACH-Schwelle 2 und ein beiläufiges „Sri Lanka“ reichte); newsd.admin.ch ohne robots.txt"
+rechtlich_geprueft = ""
+type = "rss"
+url = "https://www.newsd.admin.ch/newsd/feeds/rss?lang=de&org-nr=405"
+country = "CH"
+min_score = 4
+max_items = 1
+interval_minutes = 120
 
 # ---- Regionen: DACH-Bezug und Orte (Reihenfolge = Priorität für Google-News-Abfragen) ----
 [regions.staedte]
