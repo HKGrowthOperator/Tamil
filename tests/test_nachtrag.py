@@ -998,3 +998,13 @@ def test_pdf_kind_stderr_verworfen_und_warnungen_aus(monkeypatch):
     assert "capture_output" not in aufruf
     quelle = (nachtrag.Path(nachtrag.__file__).with_name("pdf_kind.py")).read_text(encoding="utf-8")
     assert "logging.disable(logging.WARNING)" in quelle
+
+
+def test_pdf_kind_bekommt_nur_eine_kleine_umgebung(monkeypatch):
+    """Befund P3 (zweite Prüfung): keine Geheimnisse aus der Umgebung des Web-Prozesses im Kind."""
+    monkeypatch.setenv("RADAR_AGENT_TOKEN", "geheim-nicht-ins-kind")
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "geheim-auch-nicht")
+    aufruf = _aufruf_merken(monkeypatch)
+    nachtrag.pdf_lesen(b"%PDF-1.4")
+    assert aufruf["env"] is not None and set(aufruf["env"]) <= {"PATH", "LANG", "LC_ALL"}
+    assert "geheim" not in str(aufruf["env"])

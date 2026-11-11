@@ -140,7 +140,7 @@ def main(argv: list[str]) -> int:
         out = {"fehler": str(exc)}
     except MemoryError:
         out = {"fehler": "PDF zu aufwendig"}
-    sys.stdout.write(json.dumps(out, ensure_ascii=False))
+    sys.stdout.buffer.write(json.dumps(out).encode("ascii"))  # unabhängig von der Locale des Kindes
     return 0
 
 

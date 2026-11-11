@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
 import subprocess
 import sys
@@ -205,7 +206,8 @@ def pdf_lesen(daten: bytes, ab_seite: int = 1, frist: float | None = None) -> tu
         if zeit <= 0:
             raise Unlesbar("PDF zu aufwendig (Zeitlimit)")
         lauf = subprocess.run([*PDF_BEFEHL, str(max(1, ab_seite))], input=daten, stdout=subprocess.PIPE,
-                              stderr=subprocess.DEVNULL, timeout=zeit, check=False)  # Warnungen nicht sammeln
+                              stderr=subprocess.DEVNULL, timeout=zeit, check=False,  # Warnungen nicht sammeln
+                              env={"PATH": os.environ.get("PATH", "/usr/bin:/bin"), "LANG": "C.UTF-8"})
     except subprocess.TimeoutExpired:
         raise Unlesbar("PDF zu aufwendig (Zeitlimit)") from None
     except OSError:
