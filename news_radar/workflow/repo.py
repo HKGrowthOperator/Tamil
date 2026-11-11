@@ -240,16 +240,62 @@ def asset_fuer_datei(store, datei: str) -> dict | None:
 
 # ---- Redaktionelle Aktionen (wer hat welche Fassung freigegeben) ---------------------------------
 
+AUSLOESER = ("person", "dienst", "agent")
+
+
 def aktion(store, *, wer: str, aktion: str, draft_id: int | None = None, story_id: int | None = None,
-           fassung: str = "", wp_post_id: int | None = None, notiz: str = "") -> None:
+           fassung: str = "", wp_post_id: int | None = None, notiz: str = "", gegenstand_typ: str | None = None,
+           gegenstand_id: str | int | None = None, kanal: str | None = None, regel_fassung: str | None = None,
+           ausloeser: str = "person") -> None:
+    """Eine Zeile im Protokoll der Aktionen (Vertrag §8): wer (Person, Dienst oder Agent), was, woran, Kanal, Fassung.
+    Nur Kennungen, keine Inhalte: `notiz` trägt höchstens einen Grund aus der Redaktion (z. B. eines Stopps)."""
+    if ausloeser not in AUSLOESER:
+        raise ValueError(f"Auslöser muss {', '.join(AUSLOESER)} sein")
+    if gegenstand_typ is None:
+        if draft_id is not None:
+            gegenstand_typ, gegenstand_id = "entwurf", draft_id
+        elif story_id is not None:
+            gegenstand_typ, gegenstand_id = "story", story_id
     store._write(
-        "INSERT INTO editorial_actions (ts, wer, aktion, draft_id, story_id, fassung_hash, wp_post_id, notiz) "
-        "VALUES (?,?,?,?,?,?,?,?)", (now_iso(), wer, aktion, draft_id, story_id, fassung, wp_post_id, notiz[:300]),
+        "INSERT INTO editorial_actions (ts, wer, aktion, draft_id, story_id, fassung_hash, wp_post_id, notiz, "
+        "gegenstand_typ, gegenstand_id, kanal, regel_fassung, ausloeser) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        (now_iso(), wer, aktion, draft_id, story_id, fassung, wp_post_id, (notiz or "")[:300], gegenstand_typ,
+         None if gegenstand_id is None else str(gegenstand_id), kanal, regel_fassung, ausloeser),
     )
 
 
 def aktionen(store, draft_id: int) -> list[dict]:
     return _rows(store.db.execute("SELECT * FROM editorial_actions WHERE draft_id = ? ORDER BY id", (draft_id,)))
+
+
+def aktionen_liste(store, *, wer: str | None = None, aktion: str | None = None, kanal: str | None = None,
+                   von: str | None = None, bis: str | None = None, limit: int | None = 300) -> list[dict]:
+    """Protokoll der Aktionen, neueste zuerst. `von`/`bis` sind ISO-Daten (YYYY-MM-DD, bis einschließlich)."""
+    where, params = [], []
+    for spalte, wert in (("wer", wer), ("aktion", aktion), ("kanal", kanal)):
+        if wert:
+            where.append(f"{spalte} = ?")
+            params.append(wert)
+    if von:
+        where.append("ts >= ?")
+        params.append(von)
+    if bis:
+        where.append("ts < ?")
+        params.append(bis + "￿")  # „bis 2026-11-11“ schließt den ganzen Tag ein
+    sql = "SELECT * FROM editorial_actions" + (" WHERE " + " AND ".join(where) if where else "") + " ORDER BY id DESC"
+    if limit:
+        sql += f" LIMIT {int(limit)}"
+    return _rows(store.db.execute(sql, params))
+
+
+def aktionen_werte(store) -> dict[str, list[str]]:
+    """Auswahl für die Filter im Protokoll: vorkommende Personen, Aktionen und Kanäle."""
+    def werte(spalte: str) -> list[str]:
+        return [r[0] for r in store.db.execute(
+            f"SELECT DISTINCT {spalte} FROM editorial_actions WHERE {spalte} IS NOT NULL AND {spalte} != '' "
+            f"ORDER BY {spalte}")]
+
+    return {"wer": werte("wer"), "aktion": werte("aktion"), "kanal": werte("kanal")}
 
 
 # ---- Kosten -------------------------------------------------------------------------------------
