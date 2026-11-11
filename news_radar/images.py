@@ -220,6 +220,7 @@ def _schreiben(pfad: Path, daten: bytes) -> None:
     fd, tmp_name = tempfile.mkstemp(dir=pfad.parent, prefix=f".{pfad.name}.", suffix=".tmp")
     tmp = Path(tmp_name)
     try:
+        os.fchmod(fd, 0o644)  # mkstemp legt 0600 an; Cockpit und Publisher lesen als anderer Nutzer als ein root-Befehl
         with os.fdopen(fd, "wb") as f:
             f.write(daten)
         os.replace(tmp, pfad)

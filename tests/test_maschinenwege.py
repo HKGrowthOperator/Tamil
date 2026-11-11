@@ -349,6 +349,15 @@ def test_save_pair_anderer_inhalt_neue_inode(tmp_path):
     assert (tmp_path / name).stat().st_ino != inode  # ersetzt, nicht in place überschrieben
 
 
+def test_save_pair_dateien_fuer_andere_nutzer_lesbar(tmp_path):
+    """Schreibt ein Befehl im Container als root, liest Cockpit und Publisher als Nutzer radar: 0644, nie 0600."""
+    from news_radar import images
+
+    name, thumb = images.save_pair(branded_card("Titel", "Community", "x", "community"), tmp_path, "datei")
+    for n in (name, thumb):
+        assert (tmp_path / n).stat().st_mode & 0o777 == 0o644
+
+
 
 def test_agent_import_ueberschreibt_kein_bild_aus_dem_cockpit(settings, tmp_path, monkeypatch):  # noqa: F811
     with Store(settings.db_path) as store:
