@@ -19,7 +19,7 @@ from collections import Counter
 from datetime import date, datetime, timedelta, timezone
 from typing import Any, Callable
 
-from .. import filtering, notify, sources
+from .. import filtering, notify, schalter, sources
 from ..agents import Kontext, cluster, copydesk, factcheck, media, relevance, research, schreiben, seo
 from ..config import Settings
 from ..pipeline import Result, category_label, quelle_name, refresh_kino, stale_event_date
@@ -75,7 +75,19 @@ def _offener_entwurf(store: Store, story_id: int) -> dict | None:
 
 
 def scan(ctx: Kontext, items: list[sources.NewsItem] | None = None) -> dict:
-    """Ein Scan: neue Treffer werden Storys (mit Job) oder reichern bestehende Storys an. Gibt Zählwerte zurück."""
+    """Ein Scan: neue Treffer werden Storys (mit Job) oder reichern bestehende Storys an. Gibt Zählwerte zurück.
+    Hält der Schalter „redaktion“ an – vorher oder mittendrin –, endet der Scan sauber: keine halbe Story, und was
+    nicht verarbeitet ist, bleibt ungesehen für den nächsten Scan."""
+    if schalter.gestoppt(ctx.store, "redaktion"):  # Stopp-Schalter: kein Abruf der Quellen, keine Story, kein Job
+        return {"angehalten": 1}
+    try:
+        return _scan(ctx, items)
+    except schalter.Gestoppt:
+        log.info("Scan angehalten (Schalter)")
+        return {"angehalten": 1}
+
+
+def _scan(ctx: Kontext, items: list[sources.NewsItem] | None = None) -> dict:
     s, store = ctx.settings, ctx.store
     now = ctx.uhr()
     items = items if items is not None else sources.fetch_all(s, store)
@@ -100,8 +112,10 @@ def scan(ctx: Kontext, items: list[sources.NewsItem] | None = None) -> dict:
     stats.update(aussortiert)  # termin_veraltet, ausland, ohne_bezug – in der Laufnotiz nur, wenn größer 0
     limit_gemeldet = False
     neue_storys: dict[int, int] = {}  # Index der Zuordnung → angelegte Story (für Meldungen desselben Scans)
+    schalter.pruefen(store, "redaktion")
     zuordnungen = cluster.zuordnen(ctx, picked)
     for idx, z in enumerate(zuordnungen):
+        schalter.pruefen(store, "redaktion")  # vor jeder Meldung: entweder ganz oder gar nicht
         item = z.item
         publisher = quelle_name(item)
         if z.bezug is not None:
@@ -450,6 +464,11 @@ def job_ausfuehren(ctx: Kontext, job: dict) -> str:
         return "fehler"
     try:
         naechste = handler(ctx, job)
+    except schalter.Gestoppt as exc:
+        # Schalter mitten im Schritt: der Schritt endet ohne Aufruf nach außen, der Job wartet ohne Versuch
+        jobs.angehalten(store, job["id"], str(exc), worker=job.get("worker"))
+        store.event("angehalten", story=job["story_id"], schritt=job["schritt"], kanal=exc.sperre["kanal"])
+        return "angehalten"
     except costs.BudgetErschoepft as exc:
         jobs.wartet_budget(store, job["id"], str(exc))
         store.event("budget", story=job["story_id"], schritt=job["schritt"], grund=str(exc))

@@ -14,7 +14,7 @@ import logging
 import re
 from typing import Any
 
-from .. import prompts
+from .. import prompts, schalter
 from ..config import Source
 from ..sources import NewsItem, clean_text
 from ..workflow import repo
@@ -109,6 +109,8 @@ def belege_sammeln(ctx: Kontext, story: dict) -> list[SourceDocument]:
         text = ""
         try:
             text = ctx.text_von(doc.url)
+        except schalter.Gestoppt:
+            raise  # angehalten: der Schritt endet, der Job wartet
         except Exception as exc:  # noqa: BLE001 – eine kaputte Seite stoppt die Recherche nicht
             log.info("Volltext nicht geladen (%s): %s", doc.url[:80], exc)
         if len(text) >= VOLLTEXT_MIN:
@@ -118,6 +120,7 @@ def belege_sammeln(ctx: Kontext, story: dict) -> list[SourceDocument]:
     verlage = {d.publisher for d in docs if d.art in ("volltext", "zusammenfassung") and d.publisher}
     if story["typ"] in ("news", "dossier") and len(verlage) < 2 and ctx.settings.recherche_google_news:
         suche = ctx.suche or google_news_suche
+        schalter.pruefen(ctx.store, "redaktion")  # unmittelbar vor der Suche nach einer zweiten Quelle
         bekannt = {d.titel.lower() for d in docs}
         n = 0
         for treffer in suche(_suchbegriffe(story.get("titel") or "")):

@@ -20,8 +20,8 @@
   {% if d.wp_link %}<p><a class="knopf" href="{{ d.wp_link|safe_url }}" target="_blank" rel="noopener">{{ 'Beitrag auf tamil.de öffnen' if d.status == 'veroeffentlicht' else 'In WordPress öffnen' }}</a></p>{% endif %}
 
   <div class="aktionen gross">
-    {% if can_publish %}
-      {% if wordpress_enabled %}
+    {% if can_publish and darf('freigeben') %}
+      {% if wordpress_enabled and darf('veroeffentlichen') %}
       <form method="post" action="/entwurf/{{ d.id }}/veroeffentlichen" class="inline" data-confirm="Jetzt direkt auf tamil.de veröffentlichen?">
         <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="gold" data-busy="Wird veröffentlicht …">Direkt posten</button>
       </form>
@@ -36,6 +36,7 @@
       </form>
       {% endif %}
     {% endif %}
+    {% if darf('bearbeiten') %}
     {% if d.status in open_states %}
     <form method="post" action="/entwurf/{{ d.id }}/status?next=/entwurf/{{ d.id }}" class="inline">
       <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="aktion" value="zurueckstellen">
@@ -54,8 +55,9 @@
       <button class="leise">Wiederherstellen</button>
     </form>
     {% endif %}
+    {% endif %}
     <a class="knopf" href="/vorschau/{{ d.id }}" target="_blank">Vorschau</a>
-    {% if d.typ != 'kino_termine' %}
+    {% if d.typ != 'kino_termine' and darf('dossier') %}
     <form method="post" action="/entwurf/{{ d.id }}/dossier" class="inline" data-confirm="Als Dossier recherchieren lassen? Das kostet mehr (Opus) und dauert länger.">
       <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="leise">Als Dossier recherchieren</button>
     </form>
@@ -75,6 +77,7 @@
   </article>
 </section>
 
+{% if darf('bearbeiten') %}
 <section class="karte">
   <h2>Text</h2>
   <form method="post" action="/entwurf/{{ d.id }}" id="editor">
@@ -104,6 +107,7 @@
     <button class="primaer">Speichern</button>
   </form>
 </section>
+{% endif %}
 {% if belege %}{% include "_belege.html" %}{% endif %}
 </div>
 
@@ -119,6 +123,7 @@
 <section class="karte">
   <h2>Bild</h2>
   {% if d.bild_datei %}<img class="bild" src="/bild/{{ d.bild_datei }}" alt="{{ d.bild_alt }}"><p class="leise">{% if d.bild_origin in ('ki', 'pool') and 'KI' in (d.bild_credit or '') %}<span class="badge ki">KI-Symbolbild</span> {% endif %}{{ d.bild_credit }} · {{ {'karte': 'Bildkarte', 'ki': 'KI-Bild', 'pool': 'Bildpool', 'upload': 'eigenes Bild', 'quelle': 'Bild der Quelle', 'unsplash': 'Unsplash', 'pexels': 'Pexels'}.get(d.bild_origin, d.bild_origin) }}</p>{% endif %}
+  {% if darf('bearbeiten') %}
   <form method="post" action="/entwurf/{{ d.id }}/bild" class="bild-ki">
     <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="aktion" value="ki">
     <label>Motiv für die Bild-KI (englisch, keine realen Personen, kein Text)
@@ -145,8 +150,10 @@
     <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="aktion" value="karte">
     <button class="leise">Tamil.de-Bildkarte erzeugen</button>
   </form>
+  {% endif %}
 </section>
 
+{% if darf('bearbeiten') %}
 <section class="karte">
   <h2>Neu schreiben lassen</h2>
   <form method="post" action="/entwurf/{{ d.id }}/neu-schreiben">
@@ -165,6 +172,7 @@
     <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="leise">Auf Original zurücksetzen</button>
   </form>
 </section>
+{% endif %}
 </aside>
 </div>
 {% endblock %}

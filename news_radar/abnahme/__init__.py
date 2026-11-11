@@ -1,4 +1,4 @@
-"""Abnahme der Redaktion v2: 50 Szenarien mit FakeClaude, jedes in einer eigenen Datenbank.
+"""Abnahme der Redaktion v2: alle Szenarien mit FakeClaude, jedes in einer eigenen Datenbank.
 
   python -m news_radar abnahme [--bericht data/abnahme-bericht.md] [--nur 12]
 
@@ -193,6 +193,18 @@ def ausfuehren(sz: Szenario, basis: Settings | None = None, ordner: Path | None 
     tmp = Path(tempfile.mkdtemp(prefix=f"abnahme-{sz.nr:02d}-", dir=ordner))
     s = _settings(basis, tmp / "data", sz)
     antworten, fehler = _antworten(sz)
+    halter: dict = {}
+    stopp_rolle = sz.einstellungen.get("_stopp_in_rolle")
+    if stopp_rolle:  # während dieser Rolle drückt jemand „Redaktion anhalten“: der Aufruf läuft zu Ende
+        basis_antwort = antworten.get(stopp_rolle) or fake_mod.STANDARD[stopp_rolle]
+
+        def mit_stopp(user, system, req, basis_antwort=basis_antwort):
+            from .. import schalter
+
+            if not schalter.gestoppt(halter["store"], "redaktion"):
+                schalter.setzen(halter["store"], "redaktion", True, wer="abnahme", grund="Stopp während eines Jobs")
+            return basis_antwort(user, system, req)
+        antworten[stopp_rolle] = mit_stopp
     client = FakeAnthropic(antworten, ablehnen=tuple(sz.fake.get("ablehnen", ())),
                            abschneiden=tuple(sz.fake.get("abschneiden", ())), fehler=fehler,
                            fallback_modell=sz.fake.get("fallback") or {})
@@ -203,6 +215,7 @@ def ausfuehren(sz: Szenario, basis: Settings | None = None, ordner: Path | None 
     stats: Counter = Counter()
     fehltext = ""
     with Store(s.db_path) as store:
+        halter["store"] = store
         if sz.einstellungen.get("_ohne_modell"):  # nie den echten Client: Kontext ohne Modell von Hand
             from ..agents import Kontext
 
@@ -221,6 +234,10 @@ def ausfuehren(sz: Szenario, basis: Settings | None = None, ordner: Path | None 
                 stats = Counter()
             stats.update({k: v for k, v in orchestrator.scan(ctx, [meldung(m, now) for m in sz.meldungen]).items()
                           if isinstance(v, int)})
+            if sz.einstellungen.get("_stopp_nach_scan"):
+                from .. import schalter
+
+                schalter.setzen(store, sz.einstellungen["_stopp_nach_scan"], True, wer="abnahme", grund="Abnahme")
             stats.update({f"job_{k}": v for k, v in _zeitraffer(ctx).items()})
             if sz.nachher:
                 stats.update(NACHHER[sz.nachher](ctx, sz, now))
@@ -451,7 +468,48 @@ def _dossier(ctx, sz: Szenario, now: datetime) -> dict:
     return {f"dossier_{k}": v for k, v in _zeitraffer(ctx).items()}
 
 
+def _scan_im_stopp(ctx, sz: Szenario, now: datetime) -> dict:
+    """Noch eine Meldung, während angehalten ist: kein Scan, keine Story."""
+    neu = [meldung({"titel": "Tamilischer Kulturverein Köln lädt zum Pongal-Fest", "url": "https://www.ksta.de/pongal",
+                    "zusammenfassung": "Tamilen in Köln feiern Pongal"}, now)]
+    return {f"stopp_{k}": v for k, v in orchestrator.scan(ctx, neu).items() if isinstance(v, int)}
+
+
+def _website_stopp(ctx, sz: Szenario, now: datetime) -> dict:
+    """Website angehalten: Freigegebenes geht nicht hinaus, wird einmal als zurückgehalten protokolliert und geht nach
+    dem Einschalten beim nächsten Lauf hinaus."""
+    from .. import publisher, schalter
+
+    class WP:
+        def __init__(self):
+            self.posts = []
+
+        def upload_media(self, image, alt):
+            return 1
+
+        def create_post(self, **kw):
+            self.posts.append(kw)
+            return {"id": 800 + len(self.posts), "link": "https://www.tamil.de/p/"}
+
+        def edit_link(self, post):
+            return "https://www.tamil.de/wp-admin/"
+
+    store, wp = ctx.store, WP()
+    d = store.list_drafts("neu")[0]
+    schalter.setzen(store, "website", True, wer="abnahme", grund="Abnahme")
+    store.set_status(d["id"], "freigeben", von="abnahme")
+    publisher.publish_approved(ctx.settings, store, wp=wp)
+    publisher.publish_approved(ctx.settings, store, wp=wp)
+    im_stopp = len(wp.posts)
+    zurueck = len(repo.aktionen_liste(store, aktion="zurueckgehalten"))
+    schalter.setzen(store, "website", False, wer="abnahme")
+    publisher.publish_approved(ctx.settings, store, wp=wp)
+    return {"wp_im_stopp": im_stopp, "zurueckgehalten": zurueck, "wp_danach": len(wp.posts),
+            "protokoll_dienst": len(repo.aktionen_liste(store, aktion="veroeffentlicht", kanal="website"))}
+
+
 NACHHER: dict[str, Callable] = {
+    "scan_im_stopp": _scan_im_stopp, "website_stopp": _website_stopp,
     "kino_update": _kino_update, "kino_veroeffentlicht": _kino_nach_veroeffentlichung, "wp_timeout": _wp_timeout,
     "agent_v2": _agent_v2, "quelle_ergaenzen": _quelle_ergaenzen, "dossier": _dossier,
 }

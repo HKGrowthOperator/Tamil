@@ -17,10 +17,11 @@
   worker    Redaktion v2: Jobs abarbeiten (Dienst; --einmal leert die Schlange und beendet)
   dienst    Container-Betrieb (Coolify/Dockerfile): Cockpit auf $PORT, Scan, Worker, Digest, Sicherung
   dossier   Entwurf als Dossier recherchieren lassen (--entwurf ID)
-  nutzer    anlegen | sperren | liste – Benutzer der Freigabe-App (Rollen redaktion, admin)
+  nutzer    anlegen | sperren | liste – Benutzer der Freigabe-App (Rollen admin, redaktion, leser)
+  stopp     an | aus [kanal] --grund "…" – Stopp-Schalter („an“ = angehalten; ohne Kanal: alles) · status
   sicherung erstellen | pruefen | wiederherstellen – Datenbank und Bilder (deploy/backup.sh, deploy/restore.sh)
   bericht   --woche: Annahmequote, Fehler, Kosten je Artikel der letzten 7 Tage
-  abnahme   51 Szenarien mit FakeClaude durchspielen, Kriterien K1–K9 messen (--bericht Datei)
+  abnahme   alle Szenarien mit FakeClaude durchspielen, Kriterien K1–K9 messen (--bericht Datei)
   bewertung vergleich (Sonnet vs. Opus blind, braucht Schlüssel) | bogen (letzte Entwürfe) | auswerten
 
 Mit RADAR_WORKFLOW=v2 legt `run` Storys und Jobs an (Redaktion v2); `run --mit-jobs` arbeitet sie bis zur Deadline ab.
@@ -138,7 +139,12 @@ def main(argv: list[str] | None = None) -> int:
     nu = sub.add_parser("nutzer", help="Benutzer der Freigabe-App")
     nu.add_argument("aktion", choices=("anlegen", "sperren", "liste"))
     nu.add_argument("name", nargs="?")
-    nu.add_argument("--rolle", default="redaktion", choices=("redaktion", "admin"))
+    nu.add_argument("--rolle", default="redaktion", choices=("admin", "redaktion", "leser"))
+    st = sub.add_parser("stopp", help="Stopp-Schalter: an (= angehalten) | aus | status")
+    st.add_argument("aktion", choices=("an", "aus", "status"))
+    st.add_argument("kanal", nargs="?", default="alles", help="alles (Standard), redaktion, website, eingang, …")
+    st.add_argument("--grund", default="", help="Pflicht bei „an“")
+    st.add_argument("--wer", default="konsole", help="Person für das Protokoll (Standard: konsole)")
     sich = sub.add_parser("sicherung", help="Sicherung und Wiederherstellung")
     sich.add_argument("aktion", choices=("erstellen", "pruefen", "wiederherstellen"))
     sich.add_argument("--ziel", default="", help="Ordner der Sicherungen (Standard: <App>/backup)")
@@ -290,6 +296,16 @@ def main(argv: list[str] | None = None) -> int:
         print(f"{n} Protokolleinträge → {args.file}")
         return 0
 
+    if args.cmd == "agent":
+        from . import schalter
+
+        with Store(settings.db_path) as store:
+            sperre = schalter.sperre(store, "redaktion")
+        if sperre is not None:  # Agent-Modus gehört zur Redaktion: im Stopp weder abrufen noch anlegen
+            print(f"Redaktion angehalten (Schalter „{sperre['kanal']}“ seit {sperre['seit']}): {sperre['grund']} – "
+                  "nichts exportiert oder importiert.", file=sys.stderr)
+            return 3
+
     if args.cmd == "agent" and args.v2:
         from .agent_v2 import export_v2, import_v2
 
@@ -318,12 +334,30 @@ def main(argv: list[str] | None = None) -> int:
                 return 0
             if not args.name:
                 raise SystemExit("Name fehlt: nutzer anlegen NAME [--rolle admin]")
-            if args.aktion == "sperren":
-                print("gesperrt" if repo.nutzer_sperren(store, args.name) else "unbekannt")
-                return 0
-            passwort = os.environ.get("RADAR_NEUES_PASSWORT") or getpass(f"Passwort für {args.name} (mind. 10 Zeichen): ")
-            repo.nutzer_anlegen(store, args.name, passwort, args.rolle)
+            try:
+                if args.aktion == "sperren":
+                    print("gesperrt" if repo.nutzer_sperren(store, args.name) else "unbekannt")
+                    return 0
+                passwort = os.environ.get("RADAR_NEUES_PASSWORT") or getpass(f"Passwort für {args.name} (mind. 10 Zeichen): ")
+                repo.nutzer_anlegen(store, args.name, passwort, args.rolle)
+            except ValueError as exc:
+                raise SystemExit(str(exc)) from None
         print(f"{args.name} angelegt ({args.rolle})")
+        return 0
+
+    if args.cmd == "stopp":
+        from . import schalter
+
+        with Store(settings.db_path) as store:
+            if args.aktion != "status":
+                try:
+                    schalter.setzen(store, args.kanal, args.aktion == "an", wer=args.wer, grund=args.grund)
+                except ValueError as exc:
+                    raise SystemExit(str(exc)) from None
+            for z in schalter.stand(store):
+                zustand = "angehalten" if z["gestoppt"] else "läuft"
+                extra = f"  seit {z['seit']} · {z['wer']} · {z['grund']}" if z["gestoppt"] else ""
+                print(f"{z['kanal']:12} {zustand:11}{extra}")
         return 0
 
     if args.cmd == "dossier":

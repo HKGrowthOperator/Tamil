@@ -1,10 +1,16 @@
-"""Veröffentlichen freigegebener Entwürfe in WordPress („Direkt posten“ und Timer-Lauf)."""
+"""Veröffentlichen freigegebener Entwürfe in WordPress („Direkt posten“ und Timer-Lauf).
+
+Stopp-Schalter „website“ (oder „alles“): `publish_draft` prüft ihn unmittelbar vor dem ersten Aufruf an WordPress;
+der Timer-Lauf überträgt dann nichts, Freigegebenes wartet und geht beim ersten Lauf nach dem Einschalten hinaus.
+Jede Übertragung im Lauf steht mit Auslöser „dienst“ und Kanal im Protokoll der Aktionen.
+"""
 
 from __future__ import annotations
 
 import base64
 import logging
 
+from . import schalter
 from .config import Settings
 from .images import load_image
 from .render import render_content
@@ -122,6 +128,7 @@ def publish_draft(row: dict, settings: Settings, wp: WordPress | TamilRadarClien
     Wirft bei WordPress-Fehlern; der Aufrufer markiert dann `fehler`.
     """
     status = status or settings.wp_post_status
+    schalter.pruefen(store, "website")  # unmittelbar vor dem ersten Aufruf an WordPress
     if isinstance(wp, TamilRadarClient):
         return publish_via_plugin(row, settings, wp, store, status)
     media_id = None
@@ -143,22 +150,57 @@ def publish_draft(row: dict, settings: Settings, wp: WordPress | TamilRadarClien
     return _finish(row, store, post, status, wp.edit_link(post))
 
 
+KANAL = "website"
+
+
+def zurueckhalten_protokollieren(store: Store) -> int:
+    """Website angehalten: je freigegebenem Entwurf einmal je Stopp eine Zeile „zurueckgehalten“ (mit dem Schalter als
+    Grund) – nicht bei jedem Lauf alle drei Minuten erneut."""
+    from .workflow import repo
+
+    sperre = schalter.sperre(store, KANAL)
+    if sperre is None:
+        return 0
+    n = 0
+    for row in store.db.execute(
+            "SELECT d.id, d.story_id FROM drafts d WHERE d.status = 'freigegeben' AND NOT EXISTS (SELECT 1 FROM "
+            "editorial_actions a WHERE a.draft_id = d.id AND a.aktion = 'zurueckgehalten' AND a.ts >= ?)",
+            (sperre["seit"],)).fetchall():
+        repo.aktion(store, wer="dienst", aktion="zurueckgehalten", draft_id=row["id"], story_id=row["story_id"],
+                    kanal=KANAL, ausloeser="dienst", notiz=f"Schalter „{sperre['kanal']}“ angehalten seit {sperre['seit']}")
+        n += 1
+    return n
+
+
 def publish_approved(settings: Settings, store: Store, wp: WordPress | None = None, limit: int = 10) -> list:
-    """Timer-Lauf: alles Freigegebene veröffentlichen, das noch nicht gepostet ist."""
+    """Timer-Lauf: alles Freigegebene veröffentlichen, das noch nicht gepostet ist – außer der Schalter hält an."""
     from .pipeline import Result  # zirkulärer Import vermeiden
+    from .workflow import repo
 
     results: list[Result] = []
+    if schalter.gestoppt(store, KANAL):
+        zurueckhalten_protokollieren(store)
+        return results
     claimed = store.claim_for_publish(limit)
     if not claimed:
         return results
     wp = wp or make_wordpress(settings)
-    for row in claimed:
+    for i, row in enumerate(claimed):
         try:
             info = publish_draft(row, settings, wp, store)
-            results.append(Result(row["titel"], "veroeffentlicht", row.get("kategorie") or "", info["link"], draft_id=row["id"]))
+        except schalter.Gestoppt:
+            for rest in claimed[i:]:  # mitten im Lauf angehalten: der Rest wartet wieder als „freigegeben“
+                store.release_claim(rest["id"])
+            zurueckhalten_protokollieren(store)
+            break
         except Exception as exc:  # noqa: BLE001 - ein fehlerhafter Beitrag stoppt den Lauf nicht
             log.exception("Veröffentlichen fehlgeschlagen: %s", row["titel"])
             store.mark_publish_failed(row["id"], str(exc))
             store.event("fehler", id=row["id"], titel=row["titel"], fehler=str(exc)[:300], schritt="veroeffentlichen")
             results.append(Result(row["titel"], "fehler", row.get("kategorie") or "", note=str(exc)[:200], draft_id=row["id"]))
+            continue
+        repo.aktion(store, wer="dienst", aktion="veroeffentlicht" if info["status"] == "publish" else "in_wordpress",
+                    draft_id=row["id"], story_id=row.get("story_id"), fassung=repo.fassung_hash(row),
+                    wp_post_id=info.get("post_id"), kanal=KANAL, ausloeser="dienst")
+        results.append(Result(row["titel"], "veroeffentlicht", row.get("kategorie") or "", info["link"], draft_id=row["id"]))
     return results

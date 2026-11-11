@@ -114,7 +114,27 @@ V3 = [
     "CREATE INDEX IF NOT EXISTS sitzungen_nutzer ON sitzungen(nutzer)",
 ]
 
-MIGRATIONS: dict[int, list[str]] = {2: V2, 3: V3}
+# V4: Cockpit-Grundlage (Vertrag B1.1, §8) – Stopp-Schalter je Kanal, Läufe des Dienstes für die Zeitplan-Ansicht,
+# Protokoll mit Gegenstand, Kanal, Fassung der Regel und Auslöser. Bestehende Zeilen behalten ihre Werte (NULL = alt).
+V4 = [
+    """CREATE TABLE IF NOT EXISTS schalter (
+        kanal TEXT PRIMARY KEY,                 -- alles | redaktion | website | eingang | verzeichnis | instagram …
+        gestoppt INTEGER NOT NULL DEFAULT 0,
+        grund TEXT, wer TEXT, seit TEXT)""",
+    """CREATE TABLE IF NOT EXISTS dienst_laeufe (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        aufgabe TEXT NOT NULL, start TEXT NOT NULL, ende TEXT,
+        ergebnis TEXT)                          -- ok | fehler (Code n) | timeout | abgebrochen | angehalten (Kanal)""",
+    "CREATE INDEX IF NOT EXISTS dienst_laeufe_aufgabe ON dienst_laeufe(aufgabe, id)",
+    "ALTER TABLE editorial_actions ADD COLUMN gegenstand_typ TEXT",   # entwurf | story | job | nutzer | schalter
+    "ALTER TABLE editorial_actions ADD COLUMN gegenstand_id TEXT",
+    "ALTER TABLE editorial_actions ADD COLUMN kanal TEXT",
+    "ALTER TABLE editorial_actions ADD COLUMN regel_fassung TEXT",
+    "ALTER TABLE editorial_actions ADD COLUMN ausloeser TEXT",        # person | dienst | agent
+    "CREATE INDEX IF NOT EXISTS actions_ts ON editorial_actions(ts)",
+]
+
+MIGRATIONS: dict[int, list[str]] = {2: V2, 3: V3, 4: V4}
 LATEST = max(MIGRATIONS)
 
 
@@ -122,19 +142,38 @@ def _columns(db: sqlite3.Connection, table: str) -> set[str]:
     return {row[1] for row in db.execute(f"PRAGMA table_info({table})")}
 
 
+def _version(db: sqlite3.Connection) -> int:
+    return db.execute("PRAGMA user_version").fetchone()[0] or 1
+
+
 def apply(db: sqlite3.Connection) -> int:
-    """Wendet alle ausstehenden Migrationen an und gibt die neue Version zurück."""
-    version = db.execute("PRAGMA user_version").fetchone()[0] or 1
+    """Wendet alle ausstehenden Migrationen an und gibt die neue Version zurück.
+
+    Jede Version läuft in einer Schreibtransaktion (BEGIN IMMEDIATE) und liest die Version darin neu: Starten Cockpit,
+    Worker und Scan gleichzeitig, migriert genau einer, die anderen warten (busy_timeout) und finden nichts mehr zu tun.
+    """
+    version = _version(db)
     for target in sorted(v for v in MIGRATIONS if v > version):
-        for sql in MIGRATIONS[target]:
-            stripped = " ".join(sql.split())
-            if stripped.upper().startswith("ALTER TABLE") and " ADD COLUMN " in stripped.upper():
-                parts = stripped.split()
-                table, column = parts[2], parts[5]
-                if column in _columns(db, table):
-                    continue
-            db.execute(sql)
-        db.execute(f"PRAGMA user_version = {int(target)}")
-        db.commit()
+        if db.in_transaction:
+            db.commit()
+        db.execute("BEGIN IMMEDIATE")
+        try:
+            if _version(db) >= target:  # ein anderer Prozess war schneller
+                db.commit()
+                version = _version(db)
+                continue
+            for sql in MIGRATIONS[target]:
+                stripped = " ".join(sql.split())
+                if stripped.upper().startswith("ALTER TABLE") and " ADD COLUMN " in stripped.upper():
+                    parts = stripped.split()
+                    table, column = parts[2], parts[5]
+                    if column in _columns(db, table):
+                        continue
+                db.execute(sql)
+            db.execute(f"PRAGMA user_version = {int(target)}")
+            db.commit()
+        except BaseException:
+            db.rollback()
+            raise
         version = target
     return version

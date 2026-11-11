@@ -29,7 +29,7 @@ publisher.py ── REST (Anwendungspasswort ki-agent) ──► Plugin tamil-ra
 | Prompts | `prompts/*.md` | Prompt je Rolle als Markdown, Version = Hash des Inhalts |
 | Bilder | `bilder.py`, `images.py`, `agents/media.py` | Reihenfolge Archiv → Quelle → Stock → Pool → KI → Karte, Lizenz je Bild |
 | Veröffentlichen | `publisher.py`, `wordpress.py` | idempotent, `story_id` als Meta |
-| Betrieb | `sicherung.py`, `notify.py`, `bewertung.py`, `abnahme/` | Backup/Restore, Digest, Blindbewertung, 51 Szenarien |
+| Betrieb | `sicherung.py`, `notify.py`, `bewertung.py`, `abnahme/` | Backup/Restore, Digest, Blindbewertung, Abnahme-Szenarien |
 
 ## Cockpit (`news_radar/web/`)
 

@@ -13,6 +13,7 @@ from datetime import datetime, timedelta, timezone
 
 from flask import Blueprint, abort, g, jsonify, request
 
+from .. import schalter
 from ..workflow import jobs, repo
 from . import get_store, gleich
 
@@ -27,6 +28,13 @@ def _berechtigt(token: str | None = None) -> bool:
         abort(404)
     kopf = request.headers.get("Authorization", "")
     return kopf.startswith("Bearer ") and gleich(kopf[7:].strip(), token)
+
+
+def _angehalten(exc: schalter.Gestoppt):
+    """409: Der Schalter hält die Redaktion an – nichts abgerufen, nichts angelegt."""
+    resp = jsonify({"fehler": str(exc), "kanal": exc.sperre["kanal"], "seit": exc.sperre["seit"]})
+    resp.status_code = 409
+    return resp
 
 
 def _abgewiesen():
@@ -46,7 +54,10 @@ def agent_export():
         limit = min(20, max(1, int(request.args.get("limit", 5))))
     except ValueError:
         limit = 5
-    return jsonify(paket_v2(get_store(), g.settings, limit=limit))
+    try:
+        return jsonify(paket_v2(get_store(), g.settings, limit=limit))
+    except schalter.Gestoppt as exc:
+        return _angehalten(exc)
 
 
 @api.post("/api/agent/import")
@@ -61,6 +72,8 @@ def agent_import():
     von = str(request.args.get("von") or "claude-code")[:60]
     try:
         stats = import_daten(get_store(), g.settings, raw, von=von)
+    except schalter.Gestoppt as exc:
+        return _angehalten(exc)
     except ValueError as exc:
         return jsonify({"fehler": str(exc)}), 400
     get_store().event("agent_api", von=von, **{k: v for k, v in stats.items() if k != "fehler"},
@@ -107,4 +120,5 @@ def bericht():
         "storys": storys,
         "entwuerfe": entwuerfe,
         "laeufe": store.recent_runs(20),
+        "gestoppt": [{"kanal": z["kanal"], "seit": z["seit"]} for z in schalter.aktive(store)],
     })

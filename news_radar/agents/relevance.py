@@ -10,7 +10,7 @@ from __future__ import annotations
 import logging
 from datetime import datetime, timedelta, timezone
 
-from .. import filtering, prompts
+from .. import filtering, prompts, schalter
 from ..config import Settings
 from ..sources import NewsItem
 from ..workflow.costs import BudgetErschoepft
@@ -82,6 +82,8 @@ def pruefen(ctx: Kontext, kandidaten: list[NewsItem]) -> tuple[list[NewsItem], s
         except BudgetErschoepft:
             log.info("Signal: Budget erreicht, Grauzone bleibt liegen")
             break
+        except schalter.Gestoppt:
+            raise  # angehalten: der Scan bricht ab
         except Exception as exc:  # noqa: BLE001 – Ausfall des Modells: Grauzone bleibt liegen, Scan läuft weiter
             log.warning("Signal fehlgeschlagen (%s) – Grauzone bleibt liegen", exc)
             break

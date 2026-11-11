@@ -14,7 +14,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlsplit
 
-from flask import Flask, abort, g, redirect, request, session, url_for
+from flask import Flask, abort, g, redirect, render_template, request, session, url_for
 
 from ..config import Settings, load_settings
 from ..render import safe_url
@@ -118,12 +118,20 @@ def create_app(settings: Settings | None = None, testing: bool = False) -> Flask
     app.jinja_env.filters["safe_url"] = safe_url
 
     from .api import api
+    from .betrieb import betrieb
     from .redaktion import red
     from .views import ui
 
     app.register_blueprint(ui)
     app.register_blueprint(red)
+    app.register_blueprint(betrieb)
     app.register_blueprint(api)
+
+    @app.errorhandler(403)
+    def _verboten(exc):
+        text = exc.description if getattr(exc, "description", "").startswith("Ihre Rolle") else \
+            "Dafür fehlt Ihrer Rolle das Recht. Ansehen geht weiter."
+        return render_template("fehler.html", titel="Keine Berechtigung", text=text), 403
     if settings.proxy_hops:
         # Hinter Coolify/Traefik: echte Client-IP (Login-Drossel) und HTTPS aus den X-Forwarded-Kopfzeilen
         from werkzeug.middleware.proxy_fix import ProxyFix
@@ -196,7 +204,19 @@ def create_app(settings: Settings | None = None, testing: bool = False) -> Flask
         def recherche_offen():
             return get_store().db.execute("SELECT COUNT(*) FROM stories WHERE status = 'recherche_erforderlich'").fetchone()[0]
 
+        def stopps():
+            if "stopps" not in g:
+                from .. import schalter
+
+                g.stopps = schalter.aktive(get_store())
+            return g.stopps
+
+        from .rechte import darf
+
         return {
+            "darf": darf,
+            "schalter_label": lambda k: __import__("news_radar.schalter", fromlist=["LABEL"]).LABEL.get(k, k),
+            "stopps": stopps,
             "budget": budget,
             "recherche_offen": recherche_offen,
             "ist_admin": session.get("rolle") == "admin",

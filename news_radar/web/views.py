@@ -11,12 +11,13 @@ from urllib.parse import urlsplit
 from flask import (Blueprint, Response, abort, current_app, flash, g, jsonify, redirect, render_template, request,
                    send_from_directory, session, url_for)
 
-from .. import bilder, images, prompts
+from .. import bilder, images, prompts, schalter
 from ..workflow import repo
 from ..render import render_content, sanitize_html
 from ..store import OPEN_STATES, PUBLISHABLE, STATUSES, TRANSITIONS, ConflictError
 from ..wordpress import slugify
 from . import anmelden, client_ip, get_store, gleich
+from .rechte import pruefe, recht_noetig
 
 log = logging.getLogger(__name__)
 ui = Blueprint("ui", __name__)
@@ -103,6 +104,7 @@ def login():
 
 
 @ui.post("/logout")
+@recht_noetig("abmelden")
 def logout():
     repo.sitzung_beenden(get_store(), session.get("sid", ""))
     session.clear()
@@ -131,10 +133,13 @@ def feed():
 
 
 @ui.post("/entwurf/<int:draft_id>/status")
+@recht_noetig("bearbeiten")
 def set_status(draft_id: int):
     aktion = request.form.get("aktion", "")
     if aktion not in TRANSITIONS:
         abort(400)
+    if aktion in ("freigeben", "erneut"):
+        pruefe("freigeben")
     store = get_store()
     try:
         neu = store.set_status(draft_id, aktion, von=_user())
@@ -150,25 +155,37 @@ def set_status(draft_id: int):
 
 # ---- Bearbeiten -------------------------------------------------------------------------
 
-@ui.route("/entwurf/<int:draft_id>", methods=["GET", "POST"])
+def _protokoll(aktion: str, row: dict, **kw) -> None:
+    """Eine Zeile im Protokoll der Aktionen für eine Person aus dem Cockpit (nur Kennungen, keine Inhalte)."""
+    repo.aktion(get_store(), wer=_user(), aktion=aktion, draft_id=row["id"], story_id=row.get("story_id"), **kw)
+
+
+@ui.post("/entwurf/<int:draft_id>")
+@recht_noetig("bearbeiten")
+def entwurf_speichern(draft_id: int):
+    store = get_store()
+    row = _draft_or_404(draft_id)
+    fields = {k: request.form.get(k, "").strip() for k in EDITABLE}
+    fields["inhalt_html"] = sanitize_html(fields["inhalt_html"])
+    fields["schlagworte"] = [t.strip() for t in request.form.get("schlagworte", "").split(",") if t.strip()]
+    if fields["kategorie"] not in _settings().category_slugs():
+        fields["kategorie"] = row["kategorie"]
+    store.update_draft(draft_id, von=_user(), **fields)
+    if row["status"] in ("neu", "zurueckgestellt"):
+        try:
+            store.set_status(draft_id, "bearbeiten", von=_user())
+        except ConflictError:
+            pass
+    store.event("bearbeitet", id=draft_id, von=_user())
+    _protokoll("gespeichert", row, fassung=repo.fassung_hash(store.get_draft(draft_id)))
+    flash("Gespeichert.", "ok")
+    return redirect(url_for("ui.entwurf", draft_id=draft_id))
+
+
+@ui.get("/entwurf/<int:draft_id>")
 def entwurf(draft_id: int):
     store = get_store()
     row = _draft_or_404(draft_id)
-    if request.method == "POST":
-        fields = {k: request.form.get(k, "").strip() for k in EDITABLE}
-        fields["inhalt_html"] = sanitize_html(fields["inhalt_html"])
-        fields["schlagworte"] = [t.strip() for t in request.form.get("schlagworte", "").split(",") if t.strip()]
-        if fields["kategorie"] not in _settings().category_slugs():
-            fields["kategorie"] = row["kategorie"]
-        store.update_draft(draft_id, von=_user(), **fields)
-        if row["status"] in ("neu", "zurueckgestellt"):
-            try:
-                store.set_status(draft_id, "bearbeiten", von=_user())
-            except ConflictError:
-                pass
-        store.event("bearbeitet", id=draft_id, von=_user())
-        flash("Gespeichert.", "ok")
-        return redirect(url_for("ui.entwurf", draft_id=draft_id))
     settings = _settings()
     pool = bilder.BildPool(settings.bildpool_dir).status()
     themen = [{"slug": t["thema"], "rubrik": t.get("rubrik", ""), "anzahl": pool.get(t["thema"], {}).get("anzahl", 0)}
@@ -182,13 +199,29 @@ def entwurf(draft_id: int):
                            bild_thema=row.get("bild_thema") or prompts.thema_fuer(row["kategorie"], row["titel"]))
 
 
+def _angehalten_meldung(sperre: dict, was: str) -> str:
+    from . import fmt_dt
+
+    return (f"{schalter.LABEL[sperre['kanal']]} angehalten (seit {fmt_dt(sperre['seit'])}, {sperre['wer']}: "
+            f"{sperre['grund']}). {was}")
+
+
 @ui.post("/entwurf/<int:draft_id>/neu-schreiben")
+@recht_noetig("bearbeiten")
 def neu_schreiben(draft_id: int):
     store = get_store()
     row = _draft_or_404(draft_id)
     anweisung = request.form.get("anweisung", "").strip() or "Schreibe den Text flüssiger und kürzer."
+    sperre = schalter.sperre(store, "redaktion")
+    if sperre is not None:
+        flash(_angehalten_meldung(sperre, "Neu schreiben ruft ein Modell auf und geht erst wieder, wenn der Schalter "
+                                          "aus ist. Bearbeiten von Hand geht weiter."), "fehler")
+        return redirect(url_for("ui.entwurf", draft_id=draft_id))
     try:
         draft = _writer().rewrite(row, anweisung)
+    except schalter.Gestoppt as exc:
+        flash(_angehalten_meldung(exc.sperre, "Der Text bleibt unverändert."), "fehler")
+        return redirect(url_for("ui.entwurf", draft_id=draft_id))
     except Exception as exc:  # noqa: BLE001 - dem Nutzer den Fehler zeigen statt 500
         log.exception("Umschreiben fehlgeschlagen")
         flash(f"Umschreiben fehlgeschlagen: {str(exc)[:200]}", "fehler")
@@ -206,11 +239,13 @@ def neu_schreiben(draft_id: int):
         except ConflictError:
             pass
     store.event("neu_geschrieben", id=draft_id, anweisung=anweisung, von=_user())
+    _protokoll("neu_geschrieben", row, fassung=repo.fassung_hash(store.get_draft(draft_id)))
     flash("Neu geschrieben – bitte prüfen.", "ok")
     return redirect(url_for("ui.entwurf", draft_id=draft_id))
 
 
 @ui.post("/entwurf/<int:draft_id>/zuruecksetzen")
+@recht_noetig("bearbeiten")
 def zuruecksetzen(draft_id: int):
     store = get_store()
     row = _draft_or_404(draft_id)
@@ -224,11 +259,13 @@ def zuruecksetzen(draft_id: int):
     original.pop("typ", None)
     store.update_draft(draft_id, von=_user(), **original)
     store.event("zurueckgesetzt", id=draft_id, von=_user())
+    _protokoll("zurueckgesetzt", row, fassung=repo.fassung_hash(store.get_draft(draft_id)))
     flash("Auf das Original zurückgesetzt.", "ok")
     return redirect(url_for("ui.entwurf", draft_id=draft_id))
 
 
 @ui.post("/entwurf/<int:draft_id>/bild")
+@recht_noetig("bearbeiten")
 def bild(draft_id: int):
     store = get_store()
     row = _draft_or_404(draft_id)
@@ -251,6 +288,11 @@ def bild(draft_id: int):
             motiv = request.form.get("bild_prompt", "").strip()
             if not settings.gemini_key:
                 flash("Für KI-Bilder fehlt GEMINI_API_KEY in der .env – Bild unverändert.", "fehler")
+                return redirect(url_for("ui.entwurf", draft_id=draft_id))
+            sperre = schalter.sperre(store, "redaktion")
+            if sperre is not None:  # die Bild-KI ist ein Aufruf nach außen der Agenten-Redaktion
+                flash(_angehalten_meldung(sperre, "KI-Bilder gehen erst wieder, wenn der Schalter aus ist – Bild "
+                                                  "unverändert."), "fehler")
                 return redirect(url_for("ui.entwurf", draft_id=draft_id))
             prompt = prompts.bild_prompt_bauen(motiv, thema)
             image = bilder.from_gemini(prompt, settings, stem, current_app.extensions.get("bild_transport"))
@@ -285,6 +327,7 @@ def bild(draft_id: int):
             (settings.bilder_dir / old).unlink(missing_ok=True)
     store.update_draft(draft_id, von=_user(), bild_datei=name, bild_credit=image.credit, bild_origin=image.origin)
     store.event("bild", id=draft_id, aktion=aktion, origin=image.origin, von=_user())
+    _protokoll("bild", row, notiz=aktion)
     flash("Bild ersetzt.", "ok")
     return redirect(url_for("ui.entwurf", draft_id=draft_id))
 
@@ -296,20 +339,30 @@ def _publish(draft_id: int, status: str):
 
     store = get_store()
     row = _draft_or_404(draft_id)
+    sperre = schalter.sperre(store, "website")
+    if sperre is not None and status != "publish":
+        # „In WordPress bearbeiten“ ist kein Freigeben: im Stopp bleibt der Status, sonst ginge der Text später live
+        flash(_angehalten_meldung(sperre, "Es wurde kein WordPress-Entwurf angelegt, der Status bleibt "
+                                          f"„{STATUS_LABELS.get(row['status'], row['status'])}“. Bitte nach dem "
+                                          "Einschalten erneut wählen."), "fehler")
+        return redirect(url_for("ui.entwurf", draft_id=draft_id))
+    if sperre is not None:  # Freigeben von Hand geht, übertragen nicht: der Entwurf wartet auf den nächsten Lauf
+        _freigeben_wartend(store, row, sperre)
+        return redirect(url_for("ui.entwurf", draft_id=draft_id))
     wp = _wordpress()
     if wp is None:
         flash("WordPress ist noch nicht angebunden (WP_URL, WP_USER, WP_APP_PASSWORD in .env). Der Entwurf bleibt freigegeben.", "fehler")
-        if row["status"] in OPEN_STATES:
-            try:
-                store.set_status(draft_id, "freigeben", von=_user())
-            except ConflictError:
-                pass
+        _freigeben(store, row)
         return redirect(url_for("ui.entwurf", draft_id=draft_id))
     claimed = store.claim_draft(draft_id, von=_user())
     if claimed is None:
         return render_template("fehler.html", titel="Schon unterwegs", text="Dieser Entwurf wird gerade veröffentlicht oder ist schon veröffentlicht.", draft_id=draft_id), 409
     try:
         info = publish_draft(claimed, _settings(), wp, store, status=status)
+    except schalter.Gestoppt as exc:  # zwischen Prüfung und Aufruf angehalten: nichts übertragen
+        store.release_claim(draft_id)
+        _freigeben_wartend(store, row, exc.sperre, schon_frei=True)
+        return redirect(url_for("ui.entwurf", draft_id=draft_id))
     except Exception as exc:  # noqa: BLE001
         log.exception("Veröffentlichen fehlgeschlagen")
         store.mark_publish_failed(draft_id, str(exc))
@@ -317,7 +370,8 @@ def _publish(draft_id: int, status: str):
         flash(f"WordPress-Fehler: {str(exc)[:200]} – Status „Fehler“, später erneut versuchen.", "fehler")
         return redirect(url_for("ui.entwurf", draft_id=draft_id))
     repo.aktion(store, wer=_user(), aktion="veroeffentlicht" if status == "publish" else "wp_entwurf", draft_id=draft_id,
-                story_id=row.get("story_id"), fassung=repo.fassung_hash(row), wp_post_id=info.get("post_id"))
+                story_id=row.get("story_id"), fassung=repo.fassung_hash(row), wp_post_id=info.get("post_id"),
+                kanal="website")
     if status == "publish":
         flash(f"Live auf tamil.de: {info['link']}", "ok")
     else:
@@ -325,12 +379,43 @@ def _publish(draft_id: int, status: str):
     return redirect(url_for("ui.entwurf", draft_id=draft_id))
 
 
+def _freigeben(store, row: dict) -> bool:
+    """Offenen Entwurf freigeben, einen mit Fehler erneut freigeben (mit Protokollzeile); False, wenn er es schon war
+    oder nicht freigebbar ist."""
+    aktion = "erneut" if row["status"] == "fehler" else "freigeben"
+    if row["status"] not in OPEN_STATES and row["status"] != "fehler":
+        return False
+    try:
+        store.set_status(row["id"], aktion, von=_user())
+    except ConflictError:
+        return False
+    _protokoll(aktion, row, fassung=repo.fassung_hash(row))
+    return True
+
+
+def _freigeben_wartend(store, row: dict, sperre: dict, schon_frei: bool = False) -> None:
+    """Website angehalten: freigeben, nicht übertragen, und dem Menschen sagen, warum und wie es weitergeht."""
+    if not schon_frei:
+        _freigeben(store, row)
+    jetzt = store.get_draft(row["id"])["status"]
+    if jetzt != "freigegeben":  # ehrlich bleiben: was nicht freigegeben ist, wartet auch nicht
+        flash(_angehalten_meldung(sperre, f"Nichts wurde übertragen; der Entwurf steht auf "
+                                          f"„{STATUS_LABELS.get(jetzt, jetzt)}“ und wartet nicht."), "fehler")
+        return
+    _protokoll("zurueckgehalten", row, fassung=repo.fassung_hash(row), kanal="website",
+               notiz=f"Schalter „{sperre['kanal']}“ angehalten seit {sperre['seit']}")
+    flash(_angehalten_meldung(sperre, "Nichts wurde an WordPress übertragen. Der Entwurf ist freigegeben und wartet; "
+                                      "er geht beim nächsten Lauf hinaus, sobald der Schalter wieder aus ist."), "fehler")
+
+
 @ui.post("/entwurf/<int:draft_id>/veroeffentlichen")
+@recht_noetig("veroeffentlichen")
 def veroeffentlichen(draft_id: int):
     return _publish(draft_id, "publish")
 
 
 @ui.post("/entwurf/<int:draft_id>/wp-entwurf")
+@recht_noetig("veroeffentlichen")
 def wp_entwurf(draft_id: int):
     return _publish(draft_id, "draft")
 
@@ -349,14 +434,40 @@ def dashboard():
     return render_template("dashboard.html", dash=get_store().dashboard(days), days=days, labels=STATUS_LABELS)
 
 
+_DATUM_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+
+def _aktionen_filter() -> dict:
+    """Filter aus der Adresse: Person, Aktion, Kanal, Zeitraum (YYYY-MM-DD); Unsinniges wird ignoriert."""
+    f = {k: (request.args.get(k) or "").strip()[:60] or None for k in ("wer", "aktion", "kanal")}
+    for k in ("von", "bis"):
+        wert = (request.args.get(k) or "").strip()
+        f[k] = wert if _DATUM_RE.match(wert) else None
+    return f
+
+
 @ui.get("/protokoll")
 def protokoll():
+    store = get_store()
     event = request.args.get("ereignis") or None
-    rows = list(get_store().iter_log(event=event, limit=200))
-    return render_template("protokoll.html", rows=rows, event=event)
+    rows = list(store.iter_log(event=event, limit=200))
+    filt = _aktionen_filter()
+    return render_template("protokoll.html", rows=rows, event=event, aktionen=repo.aktionen_liste(store, **filt),
+                           filt=filt, werte=repo.aktionen_werte(store))
+
+
+@ui.get("/protokoll/aktionen.jsonl")
+@recht_noetig("export")
+def aktionen_jsonl():
+    filt = _aktionen_filter()
+    rows = repo.aktionen_liste(get_store(), limit=None, **filt)
+    rows.reverse()  # wie /protokoll.jsonl: älteste zuerst
+    return Response("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), mimetype="application/x-ndjson",
+                    headers={"Content-Disposition": "attachment; filename=radar-aktionen.jsonl"})
 
 
 @ui.get("/protokoll.jsonl")
+@recht_noetig("export")
 def protokoll_jsonl():
     db_path = _settings().db_path
 
@@ -388,10 +499,13 @@ def gesund():
     runs = store.recent_runs(1)
     warteschlange = jobs.zaehlen(store)
     stand = budget_stand(store)
+    gestoppte = schalter.aktive(store)
     return jsonify({"ok": True, "letzter_lauf": runs[0]["started_at"] if runs else None,
                     "offen": sum(store.counts_by_status()[s] for s in OPEN_STATES),
                     "warteschlange": {k: warteschlange[k] for k in ("offen", "laeuft", "tot", "wartet_budget")},
                     "budget": {k: stand[k] for k in ("tag_usd", "monat_usd", "tag_limit", "monat_limit", "warnung", "stopp")},
+                    # öffentlich: nur ob und wie viele; Kanäle und Zeiten stehen im geschützten /api/bericht
+                    "gestoppt": bool(gestoppte), "gestoppt_kanaele": len(gestoppte),
                     "zeit": datetime.now(timezone.utc).isoformat()})
 
 

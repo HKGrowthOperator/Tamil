@@ -15,7 +15,7 @@
   {% for j in jobs %}
   <tr><td>{{ j.id }}</td><td>{{ j.story_titel or j.story_id }}</td><td>{{ j.schritt }}</td><td>{{ j.status }}</td><td class="zahl">{{ j.versuche }}</td>
     <td class="leise">{{ (j.fehler or '')[:120] }}</td>
-    <td>{% if j.status in ('tot', 'wartet_budget') and ist_admin %}<form method="post" action="/job/{{ j.id }}/erneut" class="inline"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="knopf">Erneut</button></form>{% endif %}</td></tr>
+    <td>{% if j.status in ('tot', 'wartet_budget') and darf('job_erneut') %}<form method="post" action="/job/{{ j.id }}/erneut" class="inline"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="knopf">Erneut</button></form>{% endif %}</td></tr>
   {% else %}<tr><td colspan="7" class="leise">Keine Jobs.</td></tr>{% endfor %}
 </table>
 </section>

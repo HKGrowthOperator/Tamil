@@ -16,6 +16,7 @@ from typing import Any, Callable, TypeVar
 
 from pydantic import BaseModel, ValidationError
 
+from .. import schalter
 from ..config import Settings
 from ..store import now_iso
 from . import costs
@@ -184,8 +185,10 @@ class Claude:
             if retries is not None:
                 opts["max_retries"] = retries
             client = client.with_options(**opts)
-        t0 = time.monotonic()
         try:
+            # Stopp-Schalter unmittelbar vor dem Aufruf nach außen: wirft Gestoppt, kein Aufruf, keine Kosten
+            schalter.pruefen(self.store, "redaktion")
+            t0 = time.monotonic()
             try:
                 response = client.beta.messages.create(**kwargs)
             except Exception as exc:  # noqa: BLE001 – protokollieren und weiterreichen

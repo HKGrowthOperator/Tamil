@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Schalter{% endblock %}
+{% block content %}
+<header class="topline">
+  <div><h1>Schalter</h1><p class="unter">Ein Stopp heißt: Es beginnt nichts Neues, und vor jedem Aufruf nach außen wird noch einmal geprüft. Bearbeiten und Freigeben von Hand gehen weiter; Freigegebenes wartet, bis der Schalter wieder aus ist. Jede Änderung steht im <a href="/protokoll?aktion=schalter_an">Protokoll</a>.</p></div>
+</header>
+{% for k in kanaele %}
+<section class="karte">
+  <div class="meta">
+    <span class="badge status {{ 's-fehler' if k.gestoppt else 's-veroeffentlicht' }}">{{ 'angehalten' if k.gestoppt else 'läuft' }}</span>
+    {% if k.gestoppt %}<span class="leise">seit {{ fmt_dt(k.seit) }} · {{ k.wer }}</span>{% endif %}
+  </div>
+  <h2>{{ k.label }}</h2>
+  <p class="leise">Hält an: {{ k.haelt_an }}.</p>
+  {% if k.gestoppt %}<p><b>Grund:</b> {{ k.grund }}</p>{% endif %}
+  {% if k.gestoppt %}
+    {% if darf('alles_einschalten' if k.kanal == 'alles' else 'kanal_einschalten') %}
+    <form method="post" action="/schalter/{{ k.kanal }}/aus" class="inline" data-confirm="{{ k.label }} wieder einschalten?">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="primaer">Wieder einschalten</button>
+    </form>
+    {% elif k.kanal == 'alles' and darf('anhalten') %}<p class="leise">„Alles“ wieder einschalten darf nur die Rolle admin.</p>{% endif %}
+  {% elif darf('anhalten') %}
+    <form method="post" action="/schalter/{{ k.kanal }}/an" class="zeile" data-confirm="{{ k.label }} anhalten?">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <label>Grund (Pflicht) <input name="grund" required maxlength="300" placeholder="z. B. Theme-Umbau, Kosten prüfen"></label>
+      <button class="gefahr">Anhalten</button>
+    </form>
+  {% endif %}
+</section>
+{% endfor %}
+{% endblock %}

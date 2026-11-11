@@ -1,4 +1,4 @@
-"""Die 50 Abnahme-Szenarien (Blueprint: Quelle aktuell/veraltet, DACH ja/nein, Tamil/Englisch, mehrere Quellen zu
+"""Die Abnahme-Szenarien (Blueprint: Quelle aktuell/veraltet, DACH ja/nein, Tamil/Englisch, mehrere Quellen zu
 einem Ereignis, Kino-Update, Event verschoben, Google News ohne Volltext, Widerspruch, Bildrechte, 429, Timeout,
 Budget, WordPress-Timeout nach dem Post …)."""
 
@@ -225,3 +225,19 @@ BILD = Szenario(51, "KI-Symbolbild mit Lizenz-Datensatz und Kosten", "Bild", [HA
                 einstellungen={"gemini_key": "test", "bild_reihenfolge": ("archiv", "quelle", "ki", "karte")},
                 fake={"bild_prompt": True}, erwartet={"entwuerfe": 1, "bild": "ki", "kosten_min": 0.0336})
 SZENARIEN.append(BILD)
+
+# ---- Stopp-Schalter (Vertrag B1.1, §8, Test T7) ----
+SZENARIEN += [
+    Szenario(52, "Stopp „alles“: kein Job beginnt, kein Modellaufruf, kein neuer Scan", "Stopp", [HAMM], texte=HAMM_TEXT,
+             einstellungen={"_stopp_nach_scan": "alles"}, nachher="scan_im_stopp",
+             erwartet={"aufrufe": 0, "entwuerfe": 0, "storys": 1, "jobs": {"offen": 1, "laeuft": 0, "fertig": 0},
+                       "stats": {"stopp_angehalten": 1}}),
+    Szenario(53, "Stopp „website“: Freigegebenes wartet und geht nach dem Einschalten hinaus", "Stopp", [HAMM],
+             texte=HAMM_TEXT, nachher="website_stopp",
+             erwartet={"veroeffentlicht": 1, "stats": {"wp_im_stopp": 0, "zurueckgehalten": 1, "wp_danach": 1,
+                                                       "protokoll_dienst": 1}}),
+    Szenario(54, "Stopp während ein Job läuft: der Schritt endet, es beginnt kein neuer", "Stopp", [HAMM],
+             texte=HAMM_TEXT, einstellungen={"_stopp_in_rolle": "recherche"},
+             erwartet={"entwuerfe": 0, "rolle_anzahl": {"recherche": 1}, "rollen_ohne": ["text"],
+                       "jobs": {"laeuft": 0, "fertig": 1, "offen": 1, "tot": 0}, "ereignis": "schalter"}),
+]

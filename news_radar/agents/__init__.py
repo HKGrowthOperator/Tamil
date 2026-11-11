@@ -34,6 +34,9 @@ class Kontext:
     uhr: Callable[[], datetime] = field(default=lambda: datetime.now(timezone.utc))
 
     def text_von(self, url: str) -> str:
+        from .. import schalter
+
+        schalter.pruefen(self.store, "redaktion")  # unmittelbar vor dem Seitenabruf
         if self.fetch_text is not None:
             return self.fetch_text(url)
         from ..sources import fetch_article_text
