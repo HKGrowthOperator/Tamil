@@ -36,26 +36,38 @@ Gesetz? Rubriken: Nachrichten, Community, Entertainment, Kino, Events, Küche, S
 
 ## Aufbau je Beitragstyp
 
-**Nachricht (Standard, 180–350 Wörter):** 1. Satz = Kern der Meldung mit Ort/Datum. 2.–4. Absatz = Hintergrund, Zitate
-mit Namen und Funktion, Zahlen. Letzter Absatz = Einordnung oder praktischer Hinweis (Termin, Link, Kontakt). Eine
-`<h2>`-Zwischenüberschrift ab etwa 250 Wörtern, sonst keine.
+**Länge nach Stofflage (gilt für alle Typen außer Dossier):** Die Länge richtet sich nach den belegten Fakten, nicht
+nach einem Soll. Leser:innen sollen mehrere Minuten lesen können, wenn der Stoff es trägt – so wie auf der alten
+tamil.de.
 
-**Kino/Film (150–250 Wörter):** Kinostart im DACH-Raum zuerst (Datum, 3D ja/nein, Sprache/Untertitel, wenn bekannt), dann
-Besetzung, Regie, Musik, worum es geht (ohne Spoiler), warum der Film für die Community zählt. Schluss: Wie finde ich ein
-Kino? Bei `typ = kino_termine` nur 120–200 Wörter über Film und Start; die Kinoliste wird automatisch angehängt, deshalb
-**keine Kinos im Text aufzählen**.
+| Stoff | Nachricht, Porträt | Kino, Event |
+|---|---|---|
+| viel: acht und mehr bestätigte Aussagen aus mindestens zwei Quellen oder aus einer ergiebigen Primärquelle | 450–750 Wörter | 350–550 Wörter |
+| mittel: vier bis sieben bestätigte Aussagen | 250–400 Wörter | 250–400 Wörter |
+| wenig: unter vier bestätigten Aussagen | Kurzmeldung, 80–150 Wörter | Kurzmeldung, 80–150 Wörter |
 
-**Event/Konzert/Fest (150–250 Wörter):** Was, wann, wo, wer veranstaltet, was kostet es, wo gibt es Tickets – alles nur,
-wenn es in der Quelle steht. Danach ein Absatz Stimmung oder Vorgeschichte (letztes Jahr, Künstler:in, Tradition). Bei
-`typ = event` werden Datum, Ort und Ticket-Link zusätzlich in die Event-Box geschrieben.
+Länge entsteht aus mehr belegten Einzelheiten und Zusammenhang, **nicht aus Wiederholung, Floskeln oder
+Vermutungen**. Wir strecken nie: Trägt der Stoff die Spanne nicht, bleibt der Text kürzer.
 
-**Community-Porträt / Erfolg (150–300 Wörter):** Person oder Verein mit vollem Namen, Ort, Alter nur wenn relevant;
-was erreicht wurde; ein Zitat, wenn die Quelle eines hat; am Ende dürfen wir gratulieren („Wir von Tamil.de wünschen
-… alles Gute auf ihrem Weg.“).
+**Aufbau langer Beiträge (ab 350 Wörtern):** Einstieg mit dem Kern (wer, was, wann, wo) im ersten Absatz. Danach
+Abschnitte mit `<h2>`-Zwischenüberschriften, die eine Aussage machen („Baustart nach zehn Jahren Planung“, nicht
+„Hintergrund“). Hintergrund und Einordnung nur aus Belegen: Vorgeschichte, Zahlen, Stimmen mit Namen und Funktion.
+Bei Terminen und Kino zum Schluss ein Service-Absatz: wann, wo, Karten (nur, was belegt ist).
 
-**Länge nach Stofflage (Redaktion v2):** Die Länge richtet sich nach den belegten Fakten, nicht nach einem Soll.
-Wenige Belege (unter vier bestätigten Aussagen) ergeben eine **Kurzmeldung (80–150 Wörter)**. Viel Stoff (acht und mehr
-bestätigte Aussagen aus mindestens zwei Quellen) erlaubt eine **lange Nachricht (300–450 Wörter)**.
+**Nachricht:** 1. Satz = Kern der Meldung mit Ort/Datum. Dann Hintergrund, Zitate mit Namen und Funktion, Zahlen.
+Letzter Absatz = Einordnung oder praktischer Hinweis (Termin, Link, Kontakt).
+
+**Kino/Film:** Kinostart im DACH-Raum zuerst (Datum, 3D ja/nein, Sprache/Untertitel, wenn bekannt), dann Besetzung,
+Regie, Musik, worum es geht (ohne Spoiler), warum der Film für die Community zählt. Schluss: Wie finde ich ein Kino?
+Bei `typ = kino_termine` wird die Kinoliste automatisch angehängt, deshalb **keine Kinos im Text aufzählen**.
+
+**Event/Konzert/Fest:** Was, wann, wo, wer veranstaltet, was kostet es, wo gibt es Tickets – alles nur, wenn es in der
+Quelle steht. Danach Stimmung oder Vorgeschichte (letztes Jahr, Künstler:in, Tradition). Bei `typ = event` werden
+Datum, Ort und Ticket-Link zusätzlich in die Event-Box geschrieben.
+
+**Community-Porträt / Erfolg:** Person oder Verein mit vollem Namen, Ort, Alter nur wenn relevant; was erreicht wurde;
+Werdegang, soweit belegt; ein Zitat, wenn die Quelle eines hat; am Ende dürfen wir gratulieren („Wir von Tamil.de
+wünschen … alles Gute auf ihrem Weg.“).
 
 **Dossier (600–1.000 Wörter, nur auf Anforderung der Redaktion):** Mehrere Quellen, Zwischenüberschriften, Chronologie
 oder Hintergrund; jede Tatsache mit Beleg, offene Fragen als offen benennen.
@@ -84,7 +96,8 @@ oder Hintergrund; jede Tatsache mit Beleg, offene Fragen als offen benennen.
    KI-generiert · Tamil.de“, „Grafik: Tamil.de“).
 2. **Titel** max. 90 Zeichen, konkret, mit Namen/Ort/Datum, keine Fragezeichen-Titel außer bei Kommentaren.
 3. **Teaser/Standfirst** 1–2 Sätze, max. 220 Zeichen, erweitert den Titel, wiederholt ihn nicht.
-4. **Text** in `<p>`-Absätzen (3–6), `<strong>` nur für Termine oder Preise, `<h2>` sparsam; Listen (`<ul>`/`<ol>`) nur
+4. **Text** in `<p>`-Absätzen (Kurzmeldung 2–3, lange Beiträge 6–12), `<strong>` nur für Termine oder Preise,
+   `<h2>` als Abschnittsüberschrift in langen Beiträgen; Listen (`<ul>`/`<ol>`) nur
    bei Rezepten, Programmen oder Länderlisten.
 5. **Event-Box** (automatisch bei `typ = event`): Datum, Uhrzeit, Ort, Tickets.
 6. **Kinoliste** (automatisch bei `typ = kino_termine`).

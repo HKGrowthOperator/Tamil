@@ -54,9 +54,12 @@ def pruefen(entwurf: dict, claims: list[Claim], docs: list[SourceDocument], laen
     n = woerter(html_text)
     lo, hi = LAENGEN.get(laenge, LAENGEN["normal"])
     if n < lo * 0.85:
-        hinweise.append(f"Länge: {n} Wörter, Regel „{laenge}“ verlangt {lo}–{hi}")
+        hinweise.append(f"Länge: {n} Wörter, Regel „{laenge}“ sieht {lo}–{hi} vor – nur mit weiteren belegten "
+                        "Einzelheiten verlängern, nicht strecken")
     elif n > hi * 1.15:
         hinweise.append(f"Länge: {n} Wörter, Regel „{laenge}“ erlaubt höchstens {hi}")
+    if n >= 400 and "<h2" not in html_text:
+        hinweise.append(f"Langer Text ({n} Wörter) ohne Zwischenüberschrift – Abschnitte mit <h2> gliedern")
     belegt = " ".join(c.aussage for c in claims) + " " + " ".join(d.text + " " + d.titel for d in docs)
     belegt_zahlen = set(_ZAHL_RE.findall(belegt))
     fliesstext = _text(re.sub(r'<p class="quelle">.*?</p>', " ", html_text, flags=re.S))

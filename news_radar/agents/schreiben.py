@@ -17,8 +17,9 @@ from ..workflow.providers import json_block
 from . import Kontext
 
 # Wörter im Haupttext je Längenregel (redaktion.md: Länge nach Stofflage)
-LAENGEN = {"kurz": (80, 150), "normal": (180, 350), "lang": (300, 450), "event": (150, 250), "kino": (120, 200),
-           "dossier": (600, 1000)}
+# Anweisung des Auftraggebers vom 11.11.2026: Beiträge von mehreren Minuten, wenn der belegte Stoff es trägt.
+LAENGEN = {"kurz": (80, 150), "normal": (250, 400), "lang": (450, 750), "event": (250, 400),
+           "event_lang": (350, 550), "kino": (250, 400), "kino_lang": (350, 550), "dossier": (600, 1000)}
 _STIL_SIGNALE = {
     "event": ("uhr", "eintritt", "tickets", "veranstalt", "abend", "event"),
     "kino": ("kino", "film", "regie", "trailer", "kinostart"),
@@ -62,10 +63,18 @@ def system_prompt(settings: Settings, typ: str, kategorie: str) -> str:
 def laenge_text(laenge: str, typ: str) -> str:
     lo, hi = LAENGEN.get(laenge, LAENGEN["normal"])
     zusatz = ""
-    if typ == "kino":
-        zusatz = " Die Kinoliste wird automatisch angehängt – keine Kinos im Text aufzählen."
     if laenge == "kurz":
         zusatz += " Wenig belegter Stoff: eine kurze Meldung, nichts auffüllen."
+    else:
+        zusatz += (" Aufbau: erster Absatz mit dem Kern (wer, was, wann, wo), dann <h2>-Zwischenüberschriften"
+                   " (eine je Abschnitt, ab etwa 350 Wörtern), Hintergrund und Einordnung nur aus den Claims.")
+        if typ in ("event", "kino"):
+            zusatz += " Zum Schluss ein Service-Absatz: wann, wo, Karten – nur, was belegt ist."
+        zusatz += (" Die Länge entsteht aus mehr belegten Einzelheiten und Zusammenhang; nicht strecken – keine"
+                   " Wiederholung, keine Floskeln, keine Vermutungen. Trägt der Stoff die Spanne nicht, bleibt der"
+                   " Text kürzer.")
+    if typ == "kino":
+        zusatz += " Die Kinoliste wird automatisch angehängt – keine Kinos im Text aufzählen."
     return f"{lo}–{hi} Wörter im Haupttext.{zusatz}"
 
 

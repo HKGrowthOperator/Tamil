@@ -74,18 +74,17 @@ def support(claim: Claim, docs: dict[str, SourceDocument], widerspruch_ids: set[
     return "unbestaetigt"
 
 
-def laenge_fuer(typ: str, bestaetigt: int, verlage: int) -> str:
+def laenge_fuer(typ: str, bestaetigt: int, verlage: int, primaer: bool = False) -> str:
+    """Staffel nach Stofflage (redaktion.md): wenig (< 4 bestätigte Aussagen) = Kurzmeldung, mittel (4–7) = normal,
+    viel (≥ 8 aus zwei Verlagen oder aus einer Primärquelle mit Volltext) = lang. Event und Kino eigene Spannen."""
     if typ == "dossier":
         return "dossier"
-    if typ == "event":
-        return "event"
-    if typ == "kino":
-        return "kino"
     if bestaetigt < 4:
         return "kurz"
-    if bestaetigt >= 8 and verlage >= 2:
-        return "lang"
-    return "normal"
+    viel = bestaetigt >= 8 and (verlage >= 2 or primaer)
+    if typ in ("event", "kino"):
+        return f"{typ}_lang" if viel else typ
+    return "lang" if viel else "normal"
 
 
 def gate(story: dict, docs: list[SourceDocument], claims: list[Claim], widersprueche: list[dict]) -> GateErgebnis:
@@ -115,9 +114,11 @@ def gate(story: dict, docs: list[SourceDocument], claims: list[Claim], widerspru
         hinweise.append("Kein Volltext der Quelle verfügbar – höchstens Kurzmeldung")
     bestaetigt = [c for c in bewertet if c.support == "bestaetigt"]
     verlage = len({_verlag(d) for d in docs if d.art != "hinweis"})
-    laenge = laenge_fuer(story["typ"], len(bestaetigt), verlage)
-    if laenge not in ("kurz", "dossier", "event", "kino") and not any(d.art == "volltext" for d in docs):
-        laenge = "kurz"
+    primaer = any(d.primaer and d.art == "volltext" for d in docs)
+    laenge = laenge_fuer(story["typ"], len(bestaetigt), verlage, primaer)
+    if not any(d.art == "volltext" for d in docs):
+        # Ohne Volltext keine lange Fassung: Event/Kino bleiben in ihrer mittleren Spanne, alles andere wird kurz
+        laenge = {"event_lang": "event", "kino_lang": "kino", "normal": "kurz", "lang": "kurz"}.get(laenge, laenge)
     text = f"{story.get('titel', '')} " + " ".join(c.aussage for c in bewertet)
     sensibel = bool(_SENSIBEL_RE.search(text))
     if sensibel:
