@@ -509,7 +509,12 @@ def _eins(store: Store, raw, nr: int, von: str, abruf: Callable, heute: date, uh
     geholt, uebersprungen = [], []
     abgerufen: dict[str, net.Fetched | Exception] = {}  # je Datei (ohne Anker) nur ein Abruf je Vorschlag
     je_datei: dict[str, int] = {}
+    gesehen: set[str] = set()
     for q in v.quellen:
+        if adresse_norm(q.url) in gesehen:  # vor dem Abruf und Lesen; nach Umleitungen prüft die Stelle unten
+            uebersprungen.append({"url": q.url, "grund": "doppelt im Vorschlag"})
+            continue
+        gesehen.add(adresse_norm(q.url))
         datei = repo.normalize_url(q.url)
         je_datei[datei] = je_datei.get(datei, 0) + 1
         if je_datei[datei] > ANKER_JE_DATEI:

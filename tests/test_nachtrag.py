@@ -1017,3 +1017,15 @@ def test_pdf_lesen_hat_eigene_frist_nach_dem_abruf(settings):
                               ctx=kontext(store, settings), abruf=pdf_abruf({PDF_URL: pdf_bytes([SEITE1, SEITE2])}),
                               frist_abruf=0.000001)["ergebnisse"][0]
         assert e["ergebnis"] == "angelegt", e
+
+
+def test_doppelte_adresse_wird_vor_dem_lesen_erkannt(settings, monkeypatch):
+    gelesen = []
+    echt = nachtrag.pdf_lesen
+    monkeypatch.setattr(nachtrag, "pdf_lesen", lambda daten, ab_seite=1, frist=None: (gelesen.append(ab_seite)
+                                                                                      or echt(daten, ab_seite, frist)))
+    with Store(settings.db_path) as store:
+        e = pdf_annehmen(store, settings, pdf_vorschlag(PDF_URL + "#page=2", PDF_URL + "#page=2"),
+                         {PDF_URL: pdf_bytes([SEITE1, SEITE2])})
+    assert e["ergebnis"] == "angelegt" and gelesen == [2]
+    assert e["quellen_uebersprungen"] == [{"url": PDF_URL + "#page=2", "grund": "doppelt im Vorschlag"}]
