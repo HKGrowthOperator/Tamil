@@ -74,3 +74,35 @@ def test_cli_schreibt_auswahl(tmp_path, monkeypatch):
     monkeypatch.setattr(stilbeispiele, "AUSWAHL", {9118: "portraet"})
     assert cli.main(["style", "--export", str(EXPORT)]) == 0
     assert [b["id"] for b in json.loads(ziel.read_text(encoding="utf-8"))] == [9118]
+
+
+def test_bereinigen_entfernt_bildnachweise_agenturen_und_autorenzeilen():
+    roh = ("<p>SOLINGEN (red) – Rund 75 Kinder lernen sonntags Tamil.</p>"
+           "<p>Von Jürgen Webermann</p><p>MALOLO KESSLER</p>"
+           "<p>Er sitzt neu im Stadtparlament. (Bild: Urs Bucher) Er läuft Halbmarathons.</p>"
+           "<p>© Nierhoff</p><p>Foto: Max Muster</p>"
+           "<p>Die Schule feiert. ( Foto: Nanthakumar Kumarasamy )</p>"
+           "<p>Pfarrer Savarimuthu lud ein. © Nierhoff Werne – Seit 2013 gibt es Messen in Tamil.</p>"
+           "<p>Anna Fries ( KNA )</p><p>Das Fest endet am Dienstag. Anna Fries ( KNA )</p>"
+           "<p>Schmerzhafte Rituale</p>"
+           "<p>«Ich will Menschenleben retten.» (Berner Zeitung)</p><p>Jürgen Kappel</p><p>Templefest:</p>")
+    text = stilbeispiele.bereinigen(roh)
+    for rest in ("SOLINGEN", "(red)", "Webermann", "KESSLER", "Bucher", "Nierhoff", "Muster", "Kumarasamy", "Foto",
+                 "©", "KNA", "Fries", "Berner Zeitung", "Kappel"):
+        assert rest not in text, rest
+    assert text.startswith("Rund 75 Kinder lernen sonntags Tamil.")
+    assert "Er sitzt neu im Stadtparlament. Er läuft Halbmarathons." in text
+    assert "Pfarrer Savarimuthu lud ein. Seit 2013 gibt es Messen in Tamil." in text
+    assert "Das Fest endet am Dienstag.\n\n" in text
+    assert "Schmerzhafte Rituale" in text                      # Zwischenzeile mitten im Text bleibt
+    assert text.endswith("«Ich will Menschenleben retten.»")
+    assert stilbeispiele.bereinigen("<p>LützelflühVor 26 Jahren kam sie zur Welt.</p>") == \
+        "Vor 26 Jahren kam sie zur Welt."
+
+
+def test_gespeicherte_beispiele_ohne_fremde_nachweise():
+    import re
+    muster = re.compile(r"\((?:\s*(?:Foto|Fotos|Bild|Bilder)\s*:)|©|\((?:red|dpa|KNA|ots|epd|AFP|sda)\s*\)|"
+                        r"\bQuelle\s*:|\bTel\.|^Von [A-ZÄÖÜ]\w+ [A-ZÄÖÜ]\w+$", re.M)
+    for b in stilbeispiele.laden():
+        assert not muster.search(b["text"]), (b["id"], muster.search(b["text"]).group(0))

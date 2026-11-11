@@ -52,6 +52,19 @@ _KALENDER_RE = re.compile(r"\s@\s\d")  # Terminliste eines Kalender-Plugins („
 _URL_RE = re.compile(r"https?://\S+")
 _KONTAKT_RE = re.compile(r"[\w.+-]+@[\w-]+\.[\w.]+|\+?\d[\d /-]{7,}\d")
 _TEILEN = {"whatsapp", "facebook", "twitter", "telegram", "linkedin", "pinterest", "e-mail", "email", "teilen"}
+# Fremde Nachweise: Bildnachweise, Agenturkürzel, Autorenzeilen. Das Modell soll weder Fotografen noch Agenturen
+# übernehmen; Bildnachweise stehen bei uns unter dem Bild, nie im Fließtext.
+_AGENTUR = r"(?:red|dpa|kna|ots|epd|afp|ap|sda|apa|reuters|kipa|idea)"
+_NACHWEIS_ABSATZ_RE = re.compile(r"^(?:\(?\s*(?:fotos?|bild(?:er)?|grafik)\s*:|©)", re.I)
+_NACHWEIS_KLAMMER_RE = re.compile(r"\s*\(\s*(?:fotos?|bild(?:er)?|grafik)\s*:[^)]*\)", re.I)
+_COPYRIGHT_RE = re.compile(r"\s*©[^–.]*(?:–|\.|$)")
+_ORTSMARKE_RE = re.compile(rf"^[A-ZÄÖÜ][\w.\- ÄÖÜäöüß]{{0,40}}?\s*\(\s*{_AGENTUR}\s*\)\s*[–-]\s*", re.I)
+_AGENTUR_ZEILE_RE = re.compile(rf"^[^.]{{0,40}}\(\s*{_AGENTUR}\s*\)$", re.I)
+_AGENTUR_AM_ENDE_RE = re.compile(rf"\s+[A-ZÄÖÜ][\w\-]+(?:\s+[A-ZÄÖÜ][\w\-]+){{0,2}}\s*\(\s*{_AGENTUR}\s*\)$", re.I)
+_AUTOR_RE = re.compile(r"^(?:von|text|text von|autor|autorin)\s*:?\s+[A-ZÄÖÜ][\w\-]+(?:\s+[A-ZÄÖÜ][\w\-]+){0,2}$", re.I)
+_NAME_RE = re.compile(r"^[A-ZÄÖÜ][\wÄÖÜäöüß\-]+(?:\s+[A-ZÄÖÜ][\wÄÖÜäöüß\-]+){1,2}$")
+_ORTSMARKE_GEKLEBT_RE = re.compile(r"^[A-ZÄÖÜ][a-zäöüß]{2,}(?=[A-ZÄÖÜ][a-zäöüß]+\s)")  # „LützelflühVor 26 Jahren“
+_MEDIUM_AM_ENDE_RE = re.compile(r"(?<=[.!?»“\"])\s*\([A-ZÄÖÜ][^()]{1,40}\)$")
 _EINBETTUNG = ("Share on:", "Sieh dir diesen Beitrag auf Instagram an", "A post shared by", "Ein Beitrag geteilt von")
 
 
@@ -75,8 +88,19 @@ def bereinigen(inhalt_html: str) -> str:
                 or _KALENDER_RE.search(text)):
             continue
         text = _KONTAKT_RE.sub("", _URL_RE.sub("", text)).strip()
+        if not text.startswith("## "):
+            if (_NACHWEIS_ABSATZ_RE.match(text) or _AGENTUR_ZEILE_RE.match(text) or _AUTOR_RE.match(text)
+                    or (_NAME_RE.match(text) and text.isupper())):
+                continue
+            text = _MEDIUM_AM_ENDE_RE.sub("", _ORTSMARKE_RE.sub("", _NACHWEIS_KLAMMER_RE.sub("", text)))
+            text = _AGENTUR_AM_ENDE_RE.sub("", _ORTSMARKE_GEKLEBT_RE.sub("", text))
+            text = re.sub(r"\s{2,}", " ", _COPYRIGHT_RE.sub(" ", text)).strip()
         if text and text != "##":
             absaetze.append(text)
+    # Eine reine Namenszeile am Schluss ist die Autorenzeile (mitten im Text kann es eine Zwischenzeile sein)
+    # Ebenso ein loses Etikett („Templefest:“), dessen Inhalt (Kalender) schon entfernt ist
+    while absaetze and (_NAME_RE.match(absaetze[-1]) or (absaetze[-1].endswith(":") and len(absaetze[-1].split()) <= 3)):
+        absaetze.pop()
     return "\n\n".join(absaetze)
 
 
