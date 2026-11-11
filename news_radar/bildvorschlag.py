@@ -23,6 +23,7 @@ from __future__ import annotations
 import hashlib
 import io
 import logging
+import math
 import re
 import sqlite3
 import time
@@ -44,7 +45,8 @@ WEB_MAX_BILDER = 5
 WEB_FRIST_GESAMT = 90.0
 FRIST_ABRUF = 20.0
 MAX_BYTES = 8_000_000
-MAX_PIXEL = 40_000_000
+MAX_PIXEL = 40_000_000  # JPEG (wird per draft() verkleinert dekodiert)
+MAX_PIXEL_VERLUSTFREI = 25_000_000  # PNG und WebP werden voll dekodiert
 URHEBER_MAX = 80
 MIN_BREITE = 800
 MIN_KANTE = 400
@@ -211,8 +213,12 @@ def _bild_lesen(daten: bytes, *, streng: bool) -> Image.Image:
     except (OSError, ValueError):
         raise Abgelehnt("Dateityp nicht erlaubt oder Bild nicht lesbar (nur JPEG, PNG, WebP)") from None
     breite, hoehe = img.size
-    if breite * hoehe > MAX_PIXEL:
-        raise Abgelehnt(f"Bild zu groß ({breite}×{hoehe} Pixel, höchstens {MAX_PIXEL // 1_000_000} Mio.)")
+    grenze = MAX_PIXEL if img.format == "JPEG" else MAX_PIXEL_VERLUSTFREI  # JPEG wird per draft() verkleinert
+    if breite * hoehe > grenze:
+        raise Abgelehnt(f"Bild zu groß ({breite}×{hoehe} Pixel, höchstens {grenze // 1_000_000} Mio.)")
+    if img.mode in ("I;16", "I;16B", "I;16L", "I;16N", "I", "F"):
+        raise Abgelehnt(f"Farbmodus {img.mode} nicht erlaubt (16/32 Bit)")
+    roh = img.size
     try:
         if img.getexif().get(0x0112) in (5, 6, 7, 8):  # EXIF-Drehung um 90°: Breite und Höhe tauschen
             breite, hoehe = hoehe, breite
@@ -225,13 +231,16 @@ def _bild_lesen(daten: bytes, *, streng: bool) -> Image.Image:
             raise Abgelehnt(f"Bild zu klein (kürzere Kante {min(breite, hoehe)} Pixel, mindestens {MIN_KANTE})")
         if not VERHAELTNIS[0] <= breite / hoehe <= VERHAELTNIS[1]:
             raise Abgelehnt(f"Seitenverhältnis {breite / hoehe:.2f} passt nicht (Logo, Icon oder Banner?)")
-    ziel = (SIZE[0] * 2, SIZE[1] * 2)
+    # Ziel: nur so groß, dass der Zuschnitt auf SIZE das Bild gerade noch füllt (nie darunter)
+    faktor = min(1.0, max(SIZE[0] / breite, SIZE[1] / hoehe))
     try:
         if img.format == "JPEG":
-            img.draft("RGB", ziel)
+            img.draft("RGB", (math.ceil(roh[0] * faktor), math.ceil(roh[1] * faktor)))
         img.load()
         img = ImageOps.exif_transpose(img)
-        img.thumbnail((max(ziel) * 2, max(ziel) * 2), Image.Resampling.LANCZOS)
+        ziel = (math.ceil(breite * faktor), math.ceil(hoehe * faktor))  # breite/hoehe nach EXIF-Drehung
+        if img.size[0] > ziel[0] and img.size[1] > ziel[1]:
+            img.thumbnail(ziel, Image.Resampling.LANCZOS)
     except (OSError, ValueError, Image.DecompressionBombError):
         raise Abgelehnt("Bild nicht lesbar") from None
     return img

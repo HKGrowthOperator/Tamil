@@ -871,3 +871,18 @@ def test_register_namensteile_und_geteilte_hoster(host, bild_hosts, grund):
     with pytest.raises(ValueError, match=grund):
         Bildquelle(host=host, betreiber="X", art="tempel", nachweis="Foto: X", bild_hosts=bild_hosts)
     Bildquelle(host="tempel.ch", betreiber="X", art="tempel", nachweis="Foto: X", bild_hosts=["cdn.tempel-bilder.ch"])
+
+
+def test_png_grenze_modi_und_thumbnail(settings):
+    gross = io.BytesIO()
+    Image.new("1", (6000, 4500)).save(gross, "PNG")  # 27 Mio. Pixel: für PNG zu groß (Grenze 25 Mio.)
+    tief = io.BytesIO()
+    Image.new("I;16", (1600, 1000)).save(tief, "PNG")
+    with pytest.raises(bildvorschlag.Abgelehnt, match="zu groß"):
+        bildvorschlag._bild_lesen(gross.getvalue(), streng=True)
+    with pytest.raises(bildvorschlag.Abgelehnt, match="Farbmodus"):
+        bildvorschlag._bild_lesen(tief.getvalue(), streng=True)
+    img = bildvorschlag._bild_lesen(jpeg(4000, 2000), streng=True)
+    assert img.size[0] >= 1200 and img.size[1] >= 675 and (img.size[0] < 1500 or img.size[1] < 800)
+    hoch = bildvorschlag._bild_lesen(jpeg(1000, 1900, fmt="PNG"), streng=True)
+    assert hoch.size[0] >= 1200 or hoch.size == (1000, 1900)  # nie unter das Seitenformat verkleinern
