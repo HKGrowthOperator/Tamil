@@ -289,6 +289,12 @@ def _ext(meta: dict, key: str) -> str:
     return str(wert or "").strip()
 
 
+def lizenz_kanonisch(url: str) -> str:
+    """https://creativecommons.org/<pfad>/ – ohne www., Abfrage, Fragment; nur für schon geprüfte Adressen."""
+    teile = urlsplit(url.strip() if "://" in url else "https:" + url.strip())
+    return f"https://creativecommons.org{teile.path.rstrip('/')}/"
+
+
 def commons_lizenz(kurzname: str, lizenz_url: str = "") -> str | None:
     """'gemeinfrei', 'cc-by' oder 'cc-by-sa' – sonst None (abgelehnt). Im Zweifel None."""
     norm = _lizenz_norm(kurzname)
@@ -299,7 +305,8 @@ def commons_lizenz(kurzname: str, lizenz_url: str = "") -> str | None:
         return None
     teile = urlsplit(url if "://" in url else "https:" + url)
     if teile.scheme not in ("http", "https") or (teile.hostname or "").lower() not in (
-            "creativecommons.org", "www.creativecommons.org") or teile.query or teile.port:
+            "creativecommons.org", "www.creativecommons.org") or teile.query or teile.port or teile.fragment \
+            or "@" in teile.netloc or "#" in url:
         return None
     pfad = teile.path.rstrip("/")
     for rx, art in _LIZENZ_PFADE:
@@ -361,7 +368,7 @@ def _commons(eintrag: dict, abrufen: Callable) -> dict:
         nachweis = f"Foto: {artist} / Wikimedia Commons, gemeinfrei" if artist else "Foto: Wikimedia Commons, gemeinfrei"
     else:
         nachweis = f"Foto: {artist} / Wikimedia Commons, {kurzname}"
-    lizenz = f"{kurzname} ({lizenz_url})" if lizenz_url.startswith(("http://", "https://")) else kurzname
+    lizenz = f"{kurzname} ({lizenz_kanonisch(lizenz_url)})"  # nur die kanonische Adresse
     got = abrufen(bild_url, bild=True)
     if (urlsplit(got.url).hostname or "").lower() != COMMONS_BILDHOST:  # Umleitung weg von Commons
         raise Abgelehnt(f"Bild leitet weg von {COMMONS_BILDHOST} um")

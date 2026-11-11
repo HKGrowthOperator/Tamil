@@ -837,3 +837,23 @@ def test_urhebername_reste_und_unbekannt_abgelehnt(settings, artist):
         e = eins(store, settings, {"story_id": sid, "weg": "commons", "seite_url": COMMONS_SEITE},
                  {"API": commons_api(artist=artist), COMMONS_THUMB: jpeg()})
         assert e["ergebnis"] == "abgelehnt" and "Urheber" in e["grund"], e
+
+
+@pytest.mark.parametrize("url", ["https://creativecommons.org/licenses/by-sa/4.0/#x",
+                                 "https://anna@creativecommons.org/licenses/by-sa/4.0/",
+                                 "https://creativecommons.org:8443/licenses/by-sa/4.0/"])
+def test_lizenz_adresse_mit_fragment_oder_benutzer_abgelehnt(settings, url):
+    with Store(settings.db_path) as store:
+        sid, _ = story_mit_entwurf(store)
+        e = eins(store, settings, {"story_id": sid, "weg": "commons", "seite_url": COMMONS_SEITE},
+                 {"API": commons_api(lizenz_url=url), COMMONS_THUMB: jpeg()})
+        assert e["ergebnis"] == "abgelehnt" and "Lizenz" in e["grund"], e
+
+
+def test_lizenz_adresse_kanonisch_gespeichert(settings):
+    with Store(settings.db_path) as store:
+        sid, did = story_mit_entwurf(store)
+        e = eins(store, settings, {"story_id": sid, "weg": "commons", "seite_url": COMMONS_SEITE},
+                 {"API": commons_api(lizenz_url="//www.creativecommons.org/licenses/by-sa/4.0"), COMMONS_THUMB: jpeg()})
+        assert e["lizenz"] == "CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/)", e
+        assert repo.asset_fuer_datei(store, store.get_draft(did)["bild_datei"])["lizenz"] == e["lizenz"]
