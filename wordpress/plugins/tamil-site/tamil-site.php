@@ -24,6 +24,7 @@ require_once TAMIL_SITE_DIR . 'includes/metabox.php';
 require_once TAMIL_SITE_DIR . 'includes/queries.php';
 require_once TAMIL_SITE_DIR . 'includes/ads.php';
 require_once TAMIL_SITE_DIR . 'includes/redirects.php';
+require_once TAMIL_SITE_DIR . 'includes/seo.php';
 require_once TAMIL_SITE_DIR . 'includes/admin.php';
 
 register_activation_hook( __FILE__, 'flush_rewrite_rules' );

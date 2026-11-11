@@ -34,6 +34,15 @@ function tamil_site_register_settings(): void {
 	);
 	register_setting(
 		'tamil_site',
+		'tamil_site_seo',
+		array(
+			'type'              => 'array',
+			'sanitize_callback' => 'tamil_site_sanitize_seo',
+			'default'           => array(),
+		)
+	);
+	register_setting(
+		'tamil_site',
 		'tamil_site_redirects_csv',
 		array(
 			'type'              => 'string',
@@ -98,6 +107,14 @@ function tamil_site_page_settings(): void {
 				<p><label><input type="checkbox" name="tamil_site_funktionen[<?php echo esc_attr( $name ); ?>]" value="1" <?php checked( $an ); ?>> <?php echo esc_html( tamil_site_funktionen()[ $name ] ); ?></label></p>
 				<?php endforeach; ?>
 			</fieldset>
+			<h2><?php esc_html_e( 'Suchmaschinen und soziale Netze', 'tamil-site' ); ?></h2>
+			<table class="form-table" role="presentation">
+				<tr>
+					<th scope="row"><label for="tamil-site-seo-bild"><?php esc_html_e( 'Standard-Vorschaubild', 'tamil-site' ); ?></label></th>
+					<td><input type="url" class="regular-text" id="tamil-site-seo-bild" name="tamil_site_seo[bild]" value="<?php echo esc_attr( tamil_site_seo_einstellungen()['bild'] ); ?>">
+					<p class="description"><?php esc_html_e( 'Adresse eines Bildes (am besten 1200 × 630) für Seiten ohne Beitragsbild. Leer: Website-Icon.', 'tamil-site' ); ?></p></td>
+				</tr>
+			</table>
 			<h2><?php esc_html_e( 'Werbeplätze', 'tamil-site' ); ?></h2>
 			<p class="description"><?php esc_html_e( 'Je Platz gilt: Advanced-Ads-Platzierung vor Banner-HTML vor Eigenanzeige. Ist nichts gesetzt, bleibt der Platz unsichtbar.', 'tamil-site' ); ?></p>
 			<table class="form-table" role="presentation">
