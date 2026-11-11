@@ -355,7 +355,7 @@ def entwurf_anlegen(ctx: Kontext, story: dict, felder: dict, payload: dict, *, t
                                     quelle=_quelle(ctx, payload.get("quelle", "")), quelle_bild=payload.get("quelle_bild", ""))
     # Eindeutiger Name (Entwurf, falls schon da, und Inhalts-Hash): nie die Datei eines anderen Entwurfs überschreiben
     vorhanden = ctx.store.draft_by_uid(uid)
-    eindeutig = f"{stem}-e{vorhanden['id']}" if vorhanden else stem
+    eindeutig = f"{stem}-e{vorhanden['id']}" if vorhanden else f"{stem}-u{hashlib.sha256(uid.encode()).hexdigest()[:6]}"
     eindeutig += "-" + hashlib.sha256(bild.image.data).hexdigest()[:8]
     name, asset_id = media.speichern(ctx, bild, eindeutig, story["id"])
     try:

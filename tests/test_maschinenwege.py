@@ -231,3 +231,14 @@ def test_save_pair_schreibt_gleiche_datei_nicht_neu(tmp_path):
     images.save_pair(anders, tmp_path, "datei")
     assert (tmp_path / name).read_bytes() == anders.data
     assert sorted(p.name for p in tmp_path.iterdir()) == sorted([name, thumb])  # keine Temp-Dateien übrig
+
+
+
+def test_orchestrator_zwei_entwuerfe_einer_story_teilen_keine_datei(settings):  # noqa: F811
+    from news_radar.workflow import orchestrator, repo
+
+    with Store(settings.db_path) as store:
+        ctx, sid, felder = _orchestrator_story(store, settings)
+        a = orchestrator.entwurf_anlegen(ctx, repo.story(store, sid), felder, {"uid": "u-a"}, typ="artikel", hinweise=[])
+        b = orchestrator.entwurf_anlegen(ctx, repo.story(store, sid), felder, {"uid": "u-b"}, typ="artikel", hinweise=[])
+        assert a != b and store.get_draft(a)["bild_datei"] != store.get_draft(b)["bild_datei"]
