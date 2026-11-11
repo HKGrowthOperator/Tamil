@@ -27,6 +27,7 @@ import json
 import re
 import subprocess
 import sys
+import threading
 import time
 from datetime import date, timedelta
 from difflib import SequenceMatcher
@@ -185,6 +186,8 @@ def ist_pdf(seite: net.Fetched) -> bool:
 
 PDF_ZEIT_MAX = 20.0  # Sekunden je PDF im Kindprozess (höchstens; sonst der Rest der Frist)
 PDF_BEFEHL = [sys.executable, "-I", str(Path(__file__).with_name("pdf_kind.py"))]  # austauschbar (Tests)
+PDF_PARALLEL = 2  # Kinder zugleich je Prozess (je höchstens 300 MB, pdf_kind.SPEICHER_MAX)
+_PDF_PLAETZE = threading.BoundedSemaphore(PDF_PARALLEL)
 
 
 def pdf_lesen(daten: bytes, ab_seite: int = 1, frist: float | None = None) -> tuple[str, str]:
@@ -194,16 +197,21 @@ def pdf_lesen(daten: bytes, ab_seite: int = 1, frist: float | None = None) -> tu
     Verschlüsselt, kaputt, zu groß oder zu aufwendig → Unlesbar (nie eine andere Ausnahme)."""
     if len(daten) > PDF_MAX:
         raise Unlesbar(f"PDF zu groß (mehr als {PDF_MAX // 1_000_000} MB)")
-    zeit = PDF_ZEIT_MAX if frist is None else min(PDF_ZEIT_MAX, frist - time.monotonic())
-    if zeit <= 0:
-        raise Unlesbar("PDF zu aufwendig (Zeitlimit)")
+    ende = time.monotonic() + (PDF_ZEIT_MAX if frist is None else min(PDF_ZEIT_MAX, frist - time.monotonic()))
+    if ende <= time.monotonic() or not _PDF_PLAETZE.acquire(timeout=ende - time.monotonic()):
+        raise Unlesbar("PDF zu aufwendig (Zeitlimit)")  # höchstens PDF_PARALLEL Kinder zugleich
     try:
+        zeit = ende - time.monotonic()
+        if zeit <= 0:
+            raise Unlesbar("PDF zu aufwendig (Zeitlimit)")
         lauf = subprocess.run([*PDF_BEFEHL, str(max(1, ab_seite))], input=daten, capture_output=True, timeout=zeit,
                               check=False)
     except subprocess.TimeoutExpired:
         raise Unlesbar("PDF zu aufwendig (Zeitlimit)") from None
     except OSError:
         raise Unlesbar("PDF nicht lesbar (Leser nicht startbar)") from None
+    finally:
+        _PDF_PLAETZE.release()
     try:
         out = json.loads(lauf.stdout.decode("utf-8"))
     except ValueError:

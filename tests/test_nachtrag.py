@@ -935,3 +935,42 @@ def test_tuerkisches_i_verschiebt_keine_fundstellen():
     ld = vorn + kino_html(KINO_LD)
     assert "name: Jailer 2" in nachtrag.strukturierte_angaben(ld)
     assert nachtrag.strukturierte_angaben(ld) == nachtrag.strukturierte_angaben(kino_html(KINO_LD))
+
+
+def test_hoechstens_zwei_pdf_kinder_gleichzeitig(monkeypatch):
+    """Befund P2 (zweite Prüfung): je Kind bis 300 MB, also höchstens zwei zugleich; wer in der Frist nicht
+    drankommt, bekommt „PDF zu aufwendig“."""
+    import subprocess
+    import threading
+    import time
+
+    from news_radar import pdf_kind
+
+    assert pdf_kind.SPEICHER_MAX == 300 * 1024 * 1024
+    stand = {"jetzt": 0, "max": 0}
+    sperre = threading.Lock()
+
+    def fake_run(befehl, **kw):
+        with sperre:
+            stand["jetzt"] += 1
+            stand["max"] = max(stand["max"], stand["jetzt"])
+        time.sleep(0.2)
+        with sperre:
+            stand["jetzt"] -= 1
+        return subprocess.CompletedProcess(befehl, 0, stdout=b'{"text": "x", "titel": ""}', stderr=None)
+    monkeypatch.setattr(nachtrag.subprocess, "run", fake_run)
+    faeden = [threading.Thread(target=nachtrag.pdf_lesen, args=(b"%PDF-1.4",)) for _ in range(6)]
+    for f in faeden:
+        f.start()
+    for f in faeden:
+        f.join()
+    assert stand["max"] == 2
+    belegt = [nachtrag._PDF_PLAETZE.acquire() for _ in range(nachtrag.PDF_PARALLEL)]
+    try:
+        t = time.monotonic()
+        with pytest.raises(nachtrag.Unlesbar, match="PDF zu aufwendig"):
+            nachtrag.pdf_lesen(b"%PDF-1.4", frist=time.monotonic() + 0.3)
+        assert time.monotonic() - t < 1.5
+    finally:
+        for _ in belegt:
+            nachtrag._PDF_PLAETZE.release()

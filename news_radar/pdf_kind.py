@@ -15,7 +15,7 @@ import re
 import sys
 import zlib
 
-SPEICHER_MAX = 600 * 1024 * 1024
+SPEICHER_MAX = 300 * 1024 * 1024  # je Kind; höchstens nachtrag.PDF_PARALLEL Kinder zugleich
 SEITEN_MAX = 40
 INHALT_MAX = 2_000_000  # entpackte Bytes Inhaltsstrom je Seite
 GESAMT_MAX = 8_000_000  # entpackte Bytes Inhaltsstrom je Datei
