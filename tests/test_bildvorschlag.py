@@ -827,3 +827,13 @@ def test_datenbank_belegt_nicht_bearbeitet_ohne_500(settings):
         assert store.get_draft(did)["bild_datei"] == "alt.jpg"
         assert store.db.execute("SELECT COUNT(*) FROM assets").fetchone()[0] == 0
         assert len(repo.aktionen_liste(store, aktion="bild_nicht_bearbeitet")) == 1
+
+
+@pytest.mark.parametrize("artist", ["Anna &amp;lt; K.", "Anna &foo; K.", "Unknown author", "unknown", "Unbekannt",
+                                    "Anonymous", "Anonym", "<i>Unknown</i> author", "Autor unbekannt"])
+def test_urhebername_reste_und_unbekannt_abgelehnt(settings, artist):
+    with Store(settings.db_path) as store:
+        sid, _ = story_mit_entwurf(store)
+        e = eins(store, settings, {"story_id": sid, "weg": "commons", "seite_url": COMMONS_SEITE},
+                 {"API": commons_api(artist=artist), COMMONS_THUMB: jpeg()})
+        assert e["ergebnis"] == "abgelehnt" and "Urheber" in e["grund"], e

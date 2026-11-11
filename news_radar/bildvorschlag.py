@@ -261,9 +261,19 @@ def urhebername(roh: str) -> str:
     if any(unicodedata.category(c) in ("Cc", "Cf", "Cs", "Co", "Cn") or not c.isprintable() for c in t) \
             or "<" in t or ">" in t:
         raise Abgelehnt("Urhebername enthält Steuer- oder Sonderzeichen")
+    if re.search(r"&#?\w+;", t):  # Entitäten-Reste (doppelt kodiert o. Ä.): Name nicht sicher lesbar
+        raise Abgelehnt("Urhebername enthält nicht aufgelöste Entitäten")
     if len(t) > URHEBER_MAX:
         raise Abgelehnt(f"Urhebername länger als {URHEBER_MAX} Zeichen (Namensnennung nicht vollständig möglich)")
     return t
+
+
+UNBEKANNT = {"unknown", "unknown author", "author unknown", "unbekannt", "autor unbekannt", "unbekannter autor",
+             "unbekannter urheber", "urheber unbekannt", "anonymous", "anonym", "anon", "anonymous author", "n a", "na"}
+
+
+def unbekannt(name: str) -> bool:
+    return " ".join(re.sub(r"[^\w]+", " ", name.lower()).split()) in UNBEKANNT
 
 
 def commons_api_url(name: str) -> str:
@@ -335,6 +345,8 @@ def _commons(eintrag: dict, abrufen: Callable) -> dict:
     if art is None:
         raise Abgelehnt(f"Lizenz nicht erlaubt ({kurzname or 'leer'}; nur gemeinfrei, CC0, CC BY, CC BY-SA)")
     artist = urhebername(_ext(meta, "Artist"))
+    if art != "gemeinfrei" and artist and unbekannt(artist):
+        raise Abgelehnt(f"Namensnennung nicht erfüllbar ({kurzname}, Urheber unbekannt)")
     if art != "gemeinfrei" and not artist:
         raise Abgelehnt(f"Namensnennung nicht erfüllbar ({kurzname} ohne Urheber)")
     mime = str(info.get("mime") or "").lower()
