@@ -147,6 +147,30 @@ def test_commons_cc_by_sa_gesetzt_mit_nachweis_lizenz_und_protokoll(settings):
         assert any(ev.get("id") == did for ev in store.iter_log(event="bild"))
 
 
+def test_commons_vorschaubild_vom_thumb_host(settings):
+    """Live am 11.11.2026: Commons liefert thumburl auf thumb.wikimedia.org (mit utm-Parametern) statt upload."""
+    thumb = ("https://thumb.wikimedia.org/wikipedia/commons/thumb/7/76/Stockhorn_Arena_%28FC_Thun%29_1.JPG/"
+             "1920px-Stockhorn_Arena_%28FC_Thun%29_1.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo"
+             "&utm_content=thumbnail")
+    api = json.loads(commons_api())
+    list(api["query"]["pages"].values())[0]["imageinfo"][0]["thumburl"] = thumb
+    with Store(settings.db_path) as store:
+        sid, did = story_mit_entwurf(store)
+        e = eins(store, settings, {"story_id": sid, "weg": "commons", "seite_url": COMMONS_SEITE, "alt": "Stadion"},
+                 {"API": json.dumps(api), thumb: jpeg()})
+        assert e["ergebnis"] == "gesetzt", e
+
+
+def test_commons_fremder_bildhost_abgelehnt(settings):
+    api = json.loads(commons_api())
+    list(api["query"]["pages"].values())[0]["imageinfo"][0]["thumburl"] = "https://thumb.example.org/x.jpg"
+    with Store(settings.db_path) as store:
+        sid, _ = story_mit_entwurf(store)
+        e = eins(store, settings, {"story_id": sid, "weg": "commons", "seite_url": COMMONS_SEITE},
+                 {"API": json.dumps(api), "https://thumb.example.org/x.jpg": jpeg()})
+        assert e["ergebnis"] == "abgelehnt" and "wikimedia.org" in e["grund"]
+
+
 def test_protokoll_auch_wenn_datei_wiederherstellen_scheitert(settings, monkeypatch):
     """Nach dem Festschreiben (Bild und Lizenz gesetzt) darf ein Schreibfehler das Protokoll nicht verhindern."""
     from news_radar import images

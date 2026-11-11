@@ -57,7 +57,8 @@ UMFANG = "Online-Veröffentlichung auf tamil.de; Zuschnitt auf das Seitenformat"
 FORMATE = {"JPEG", "PNG", "WEBP"}
 COMMONS_MIME = ("image/jpeg", "image/png", "image/webp")
 COMMONS_API = "https://commons.wikimedia.org/w/api.php"
-COMMONS_BILDHOST = "upload.wikimedia.org"
+# Wikimedia liefert Originale über upload., Vorschaubilder seit 2026 auch über thumb.wikimedia.org
+COMMONS_BILDHOSTS = frozenset({"upload.wikimedia.org", "thumb.wikimedia.org"})
 
 # Fest gesperrt (soziale Netzwerke, Bildagenturen): Liste und Prüfung in config, damit schon das Register sie ablehnt
 GESPERRT = BILD_GESPERRT
@@ -371,16 +372,16 @@ def _commons(eintrag: dict, abrufen: Callable) -> dict:
     if int(info.get("width") or 0) < MIN_BREITE:
         raise Abgelehnt(f"Bild zu klein ({info.get('width')} Pixel breit, mindestens {MIN_BREITE})")
     bild_url = str(info.get("thumburl") or info.get("url") or "")
-    if urlsplit(bild_url).scheme != "https" or (urlsplit(bild_url).hostname or "") != COMMONS_BILDHOST:
-        raise Abgelehnt("Commons liefert keine Bildadresse auf upload.wikimedia.org")
+    if urlsplit(bild_url).scheme != "https" or (urlsplit(bild_url).hostname or "") not in COMMONS_BILDHOSTS:
+        raise Abgelehnt("Commons liefert keine Bildadresse auf upload.wikimedia.org oder thumb.wikimedia.org")
     if art == "gemeinfrei":
         nachweis = f"Foto: {artist} / Wikimedia Commons, gemeinfrei" if artist else "Foto: Wikimedia Commons, gemeinfrei"
     else:
         nachweis = f"Foto: {artist} / Wikimedia Commons, {kurzname}"
     lizenz = f"{kurzname} ({lizenz_kanonisch(lizenz_url)})"  # nur die kanonische Adresse
     got = abrufen(bild_url, bild=True)
-    if (urlsplit(got.url).hostname or "").lower() != COMMONS_BILDHOST:  # Umleitung weg von Commons
-        raise Abgelehnt(f"Bild leitet weg von {COMMONS_BILDHOST} um")
+    if (urlsplit(got.url).hostname or "").lower() not in COMMONS_BILDHOSTS:  # Umleitung weg von Commons
+        raise Abgelehnt("Bild leitet weg von Wikimedia um")
     img = _bild_lesen(got.content, streng=False)
     hinweis = ", ".join(t for t in re.split(r"[|,]\s*", _text(_ext(meta, "Restrictions"))) if t)[:200]
     return {"img": img, "nachweis": nachweis, "lizenz": lizenz, "rechteinhaber": artist or "gemeinfrei",
