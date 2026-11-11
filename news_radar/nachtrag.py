@@ -219,17 +219,39 @@ def _datum_streng(wert: str) -> str:
     return wert
 
 
-_LD_RE = re.compile(r"<script[^>]+type=[\"']application/ld\+json[\"'][^>]*>(.*?)</script\s*>", re.I | re.S)
+LD_BLOECKE_MAX = 20
+LD_BYTES_MAX = 200_000  # Zeichen JSON-LD je Seite zusammen
 LD_TYPEN = {"Movie", "Event", "ScreeningEvent", "NewsArticle", "Article"}
 LD_FELDER = ("name", "description", "startDate", "endDate", "datePublished", "location.name", "location.address",
              "director", "actor", "duration", "inLanguage", "offers.price")
 LD_KOPF = "Angaben der Seite (strukturierte Daten)"
 
 
+def _ld_bloecke(roh: str) -> list[str]:
+    """Inhalte der <script type="application/ld+json">-Blöcke – ein linearer Durchlauf mit str.find (kein Regex über
+    die Rohseite: „(.*?)</script>“ wäre bei fehlenden Schluss-Tags quadratisch). Höchstens LD_BLOECKE_MAX Blöcke und
+    zusammen LD_BYTES_MAX Zeichen; ein Block darüber und alles danach wird ignoriert."""
+    klein, pos, bloecke, summe = roh.lower(), 0, [], 0
+    while len(bloecke) < LD_BLOECKE_MAX:
+        anfang = klein.find("<script", pos)
+        tag_ende = klein.find(">", anfang) if anfang >= 0 else -1
+        schluss = klein.find("</script", tag_ende) if tag_ende >= 0 else -1
+        if schluss < 0:
+            break  # kein vollständiger Block mehr
+        pos = schluss + 8
+        if re.search(r"type\s*=\s*[\"']?application/ld\+json", klein[anfang:tag_ende]):
+            inhalt = roh[tag_ende + 1:schluss]
+            summe += len(inhalt)
+            if summe > LD_BYTES_MAX:
+                break
+            bloecke.append(inhalt)
+    return bloecke
+
+
 def _ld_objekte(roh: str):
-    for m in _LD_RE.finditer(roh):
+    for block in _ld_bloecke(roh):
         try:
-            daten = json.loads(m.group(1).strip())
+            daten = json.loads(block.strip())
         except ValueError:
             continue
         stapel = daten if isinstance(daten, list) else [daten]

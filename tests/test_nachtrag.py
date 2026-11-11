@@ -835,3 +835,19 @@ def test_pdf_mit_schleife_im_seitenbaum_endet_sauber():
     with pytest.raises(nachtrag.Unlesbar, match="PDF"):
         nachtrag.pdf_lesen(schleife)
     assert time.monotonic() - t < 6
+
+
+def test_json_ld_ohne_schliessende_tags_ist_linear_und_begrenzt():
+    import time
+
+    offen = '<script type="application/ld+json">{"@type": "Movie", "name": "x"' * 10000  # ~440 KB, nie geschlossen
+    t = time.monotonic()
+    assert nachtrag.strukturierte_angaben(offen) == ""
+    assert time.monotonic() - t < 1
+    film = {"@type": "Movie", "description": "Rajinikanth kehrt als Gefängnisdirektor zurück."}
+    viele = "".join(f'<script type="application/ld+json">{json.dumps({**film, "name": f"Film {i}"})}</script>'
+                    for i in range(40))
+    text = nachtrag.strukturierte_angaben(viele)
+    assert "Film 19" in text and "Film 20" not in text  # höchstens 20 Blöcke
+    gross = '<script type="application/ld+json">' + json.dumps({**film, "name": "y" * 250_000}) + "</script>"
+    assert nachtrag.strukturierte_angaben(gross) == ""  # zusammen höchstens 200 KB
