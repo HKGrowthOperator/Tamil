@@ -5,6 +5,41 @@ Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
 ## 11.11.2026
 
+- **Rückblick 2026:** Die Website bekommt die wichtigsten Ereignisse des Jahres 2026 aus der tamilischen Community in
+  Deutschland, Österreich und der Schweiz als neu geschriebene Beiträge; der Altbestand bleibt unverändert stehen.
+  Neueste zuerst. · Luis („komplett auffrischen, nur mit Daten aus 2026, die aktuellen nach oben, nichts löschen“)
+- **Nachtrag statt Rückdatierung ohne Hinweis:** Jeder Rückblick-Beitrag trägt das Datum des Ereignisses und am Ende
+  den Vermerk, dass er im November 2026 für den Rückblick geschrieben wurde. Im Cockpit steht „Nachtrag · Datum“. ·
+  Hauptsitzung · Ein Beitrag darf nicht so aussehen, als sei er damals erschienen.
+- **Vorschläge für den Rückblick kommen über `POST /api/agent/vorschlag`**: Thema, Datum und ein bis sechs Quellen.
+  Der Radar ruft die Quellen selbst ab; Titel, Herausgeber und Text zählen nur aus der abgerufenen Seite. Für
+  Nachträge läuft nie ein bezahlter Modell-Job; eigene Tagesgrenze `RADAR_NACHTRAG_TAG`. · Hauptsitzung nach
+  unabhängiger Code-Prüfung
+- **Länge nach Stofflage:** wenig Stoff (unter 4 bestätigte Aussagen) Kurzmeldung 80–150 Wörter; mittel (4–7, mit
+  Volltext) 250–400; viel (ab 8 aus zwei Verlagen oder aus einer Primärquelle mit Volltext) 450–750, Kino und Termine
+  350–550; Dossier 600–1000. Zwischentitel ab 350 Wörtern. Ohne Volltext nie mehr als knapp. · Luis („nicht nur eine
+  Minute, sondern mehrere Minuten“) · Länge entsteht nur aus belegtem Stoff, nicht aus Füllsätzen.
+- **Stil wie die alte Seite:** 19 Beispiele aus dem Altbestand dienen als Tonvorlage (je Story zwei passende). Viele
+  lange Altbeiträge sind aus anderen Medien übernommen; sie sind nur Vorbild für den Ton, neue Beiträge entstehen aus
+  den Quellen. · Luis („genau in dem gleichen redaktionellen Stil“)
+- **Freigabe bleibt bei Luis:** Rückblick-Beiträge erscheinen erst nach Freigabe im Cockpit; neu ist „Ausgewählte
+  freigeben“ (bis 100 auf einmal). · Hauptsitzung · Vertrag §8 Abs. 1
+- **Bilder:** Plakate und Szenenbilder vom Verleih, Material von Veranstaltern, Tempeln, Vereinen und von der
+  betroffenen Person selbst, Wikimedia Commons mit Lizenz, später eigene Instagram-Bilder; jeweils mit Nachweis. Sonst
+  die Bildkarte „Grafik: Tamil.de“. Keine Agenturfotos aus anderen Medien (dpa, Keystone, Getty …), keine KI-Bilder.
+  · Luis („mit allen Bildern, alles Mögliche“), Grenze bei Agenturfotos: Hauptsitzung · Fremde Agenturfotos sind
+  ohne Lizenz ein Abmahnrisiko für KBS.
+- **Instagram als Quelle nur über einen Export oder den offiziellen Zugang von Meta**, nicht durch Auslesen der
+  Seite. Der Rückblick startet ohne Instagram. · Luis („ausgenommen von Instagram kannst du es trotzdem machen“) ·
+  Vertrag §3 Abs. 3
+- **Laufende Automatik für neue Meldungen:** Der Radar bekommt weitere Quellen aus einer Quellen-Inventur. Schreiben
+  ohne Zutun braucht den Anthropic-Schlüssel (Tor B1) oder bis dahin eine tägliche Runde im Agent-Modus. · Luis („eine
+  Automation, dass immer alles neu rausgesucht wird“)
+- **Angaben für Suchmaschinen und Cache-Kopfzeilen haben keinen eigenen Schalter** und sind live; sie enthalten keine
+  Geschäftsregel. Auf das Ja zu F0 warten nur die Rollen-Zuordnung, das Einschalten des Cookie-Hinweises und die
+  Löschfristen. · Hauptsitzung nach Code-Prüfung
+- **Das Testsystem ist für Suchmaschinen gesperrt**, solange `WP_ENVIRONMENT_TYPE` nicht `production` ist (noindex,
+  `robots.txt`, keine Sitemap). · Hauptsitzung · Sonst stünden 535 Beiträge doppelt im Netz.
 - **Der Vertrag ist der Maßstab.** Für tamil.de gilt Anlage 1, Teil A und B des Gesamtvertrags (Vertragsstand
   11.11.2026). Das Leistungsverzeichnis steht in `docs/vertrag/leistungen.md`; Preise, Zahlungsplan und die
   Vertragsdatei liegen nicht im Repo. Merzlicht und AJ Gamestation sind eigene Projekte. · Luis („genau so müssen wir
