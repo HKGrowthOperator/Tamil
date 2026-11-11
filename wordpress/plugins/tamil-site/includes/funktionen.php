@@ -61,10 +61,11 @@ function tamil_site_funktion_an( string $name ): bool {
 /**
  * Für diesen Aufruf eingeschaltete Schalter aus der Test-Kopfzeile – nur lokal, sonst immer leer.
  *
+ * @param string|null $umgebung Umgebung (Standard: wp_get_environment_type()).
  * @return array<int,string>
  */
-function tamil_site_funktionen_test(): array {
-	if ( ! in_array( wp_get_environment_type(), array( 'local', 'development' ), true ) ) {
+function tamil_site_funktionen_test( ?string $umgebung = null ): array {
+	if ( ! in_array( $umgebung ?? wp_get_environment_type(), array( 'local', 'development' ), true ) ) {
 		return array();
 	}
 	$kopf = isset( $_SERVER['HTTP_X_TAMIL_FUNKTIONEN'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_TAMIL_FUNKTIONEN'] ) ) : '';

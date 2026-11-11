@@ -43,6 +43,15 @@ function tamil_site_register_settings(): void {
 	);
 	register_setting(
 		'tamil_site',
+		'tamil_site_zustimmung',
+		array(
+			'type'              => 'array',
+			'sanitize_callback' => 'tamil_site_sanitize_zustimmung',
+			'default'           => array(),
+		)
+	);
+	register_setting(
+		'tamil_site',
 		'tamil_site_redirects_csv',
 		array(
 			'type'              => 'string',
@@ -114,6 +123,35 @@ function tamil_site_page_settings(): void {
 					<td><input type="url" class="regular-text" id="tamil-site-seo-bild" name="tamil_site_seo[bild]" value="<?php echo esc_attr( tamil_site_seo_einstellungen()['bild'] ); ?>">
 					<p class="description"><?php esc_html_e( 'Adresse eines Bildes (am besten 1200 × 630) für Seiten ohne Beitragsbild. Leer: Website-Icon.', 'tamil-site' ); ?></p></td>
 				</tr>
+			</table>
+			<h2><?php esc_html_e( 'Cookie-Zustimmung', 'tamil-site' ); ?></h2>
+			<p class="description"><?php esc_html_e( 'Texte für Hinweis und Einstellungen. Leer lassen = Standardtext (vorläufige Fassung). Eine neue Fassung fragt alle Besucher erneut.', 'tamil-site' ); ?></p>
+			<table class="form-table" role="presentation">
+				<?php
+				$tz_texte    = tamil_site_zustimmung_texte();
+				$tz_gepflegt = (array) get_option( 'tamil_site_zustimmung', array() );
+				$tz_felder   = array(
+					'titel'          => __( 'Überschrift', 'tamil-site' ),
+					'text'           => __( 'Hinweistext', 'tamil-site' ),
+					'notwendig'      => __( 'Kategorie „Notwendig“', 'tamil-site' ),
+					'externe_medien' => __( 'Kategorie „Externe Medien“', 'tamil-site' ),
+					'statistik'      => __( 'Kategorie „Statistik“', 'tamil-site' ),
+					'fassung'        => __( 'Fassung', 'tamil-site' ),
+				);
+				foreach ( $tz_felder as $tz_key => $tz_label ) :
+					$tz_id = 'tamil-site-tz-' . $tz_key;
+					?>
+				<tr>
+					<th scope="row"><label for="<?php echo esc_attr( $tz_id ); ?>"><?php echo esc_html( $tz_label ); ?></label></th>
+					<td>
+					<?php if ( in_array( $tz_key, array( 'titel', 'fassung' ), true ) ) : ?>
+						<input type="text" class="regular-text" id="<?php echo esc_attr( $tz_id ); ?>" name="tamil_site_zustimmung[<?php echo esc_attr( $tz_key ); ?>]" value="<?php echo esc_attr( (string) ( $tz_gepflegt[ $tz_key ] ?? '' ) ); ?>" placeholder="<?php echo esc_attr( $tz_texte[ $tz_key ] ); ?>">
+					<?php else : ?>
+						<textarea class="large-text" rows="3" id="<?php echo esc_attr( $tz_id ); ?>" name="tamil_site_zustimmung[<?php echo esc_attr( $tz_key ); ?>]" placeholder="<?php echo esc_attr( $tz_texte[ $tz_key ] ); ?>"><?php echo esc_textarea( (string) ( $tz_gepflegt[ $tz_key ] ?? '' ) ); ?></textarea>
+					<?php endif; ?>
+					</td>
+				</tr>
+				<?php endforeach; ?>
 			</table>
 			<h2><?php esc_html_e( 'Werbeplätze', 'tamil-site' ); ?></h2>
 			<p class="description"><?php esc_html_e( 'Je Platz gilt: Advanced-Ads-Platzierung vor Banner-HTML vor Eigenanzeige. Ist nichts gesetzt, bleibt der Platz unsichtbar.', 'tamil-site' ); ?></p>
