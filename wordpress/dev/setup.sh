@@ -64,8 +64,8 @@ fi
 
 ENV_LOCAL="$WP_DIR/.env.local"
 touch "$ENV_LOCAL"
-setenv() { grep -q "^$1=" "$ENV_LOCAL" && sed -i "s|^$1=.*|$1=$2|" "$ENV_LOCAL" || echo "$1=$2" >> "$ENV_LOCAL"; }
-getenv() { grep "^$1=" "$ENV_LOCAL" | head -1 | cut -d= -f2-; }
+# setenv/getenv: Werte gequotet, damit `set -a; . .env.local; set +a` sie unverändert lädt
+. "$HERE/env_local.sh"
 
 echo "== Installation"
 if ! "${WP[@]}" core is-installed >/dev/null 2>&1; then
