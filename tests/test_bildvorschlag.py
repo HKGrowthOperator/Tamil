@@ -630,7 +630,10 @@ def test_cockpit_zeigt_nachweis_lizenz_und_link(settings):
     html = client.get(f"/entwurf/{did}").get_data(as_text=True)
     assert "Foto: Anna K. / Wikimedia Commons, CC BY-SA 4.0" in html
     assert "Wikimedia Commons</span>" in html and f'href="{COMMONS_SEITE}"' in html
-    assert "Lizenz: CC BY-SA 4.0" in html
+    assert html.count("Wikimedia Commons</") == 1  # Kennzeichen nur einmal (Badge), nicht zusätzlich in der Zeile
+    assert 'Lizenz: <a href="https://creativecommons.org/licenses/by-sa/4.0/"' in html and ">CC BY-SA 4.0</a>" in html
+    assert "(https://creativecommons.org" not in html.split("<h2>Bild</h2>", 1)[1]
+    assert f'<p><a class="knopf" href="{COMMONS_SEITE}"' in html  # eigene Zeile, Tippfläche über .knopf
 
 
 def test_cockpit_zeigt_hinweis_von_commons(settings):
