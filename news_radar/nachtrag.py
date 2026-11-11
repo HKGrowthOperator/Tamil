@@ -13,7 +13,10 @@ Stopp). Dublettenprüfung und Anlegen laufen zusammen in einer Schreibtransaktio
 
 Der Radar holt jede Quelle selbst (net.safe_get, Stopp-Schalter vor jedem Abruf) und legt sie als source_documents
 an; Text und Titel eines Dokuments stammen nie aus dem Vorschlag, sondern aus der abgerufenen Seite (Titel aus
-og:title bzw. <title>, sonst leer) – sonst würde ein erfundener „Titel“ zur Fundstelle im Gate. Danach steht die Story im Agent-Export
+og:title bzw. <title>, sonst leer) – sonst würde ein erfundener „Titel“ zur Fundstelle im Gate. PDF-Quellen
+(Drucksachen, Urteile, Berichte) liest pypdf: höchstens 8 MB, ab der Seite aus dem Anker „#page=N“ (sonst Seite 1),
+höchstens 40 Seiten bzw. TEXT_MAX; Titel aus den PDF-Metadaten; der Anker bleibt im Link und in der Adresse für die
+Dublettenprüfung. Danach steht die Story im Agent-Export
 (Herkunft „nachtrag“, Status „neu“, kein Job) und läuft durch Import und Gate wie jede andere.
 """
 
@@ -115,9 +118,92 @@ _TITEL_RES = (
 )
 
 
+SEITE_MAX = 3_000_000  # Bytes je HTML-Seite
+PDF_MAX = 8_000_000  # Bytes je PDF-Datei
+PDF_SEITEN_MAX = 40  # gelesen ab der Anker-Seite, bis TEXT_MAX
+PDF_TYPES = ("application/pdf",)
+_ANKER_RE = re.compile(r"#page=([0-9]{1,5})\Z")
+
+
+class Unlesbar(ValueError):
+    """Die Quelle ist abgerufen, aber nicht lesbar; der Text der Ausnahme ist der Grund für den Bericht."""
+
+
 def standard_abruf(url: str, frist: float | None = None) -> net.Fetched:
-    """Seite holen: SSRF-Schutz, Umleitungen geprüft, Größenlimit (net.safe_get)."""
-    return net.safe_get(url, accept=net.TEXT_TYPES, timeout=8, max_bytes=3_000_000, frist=frist)
+    """Seite oder PDF holen: SSRF-Schutz, Umleitungen geprüft, Größenlimit (net.safe_get). HTML höchstens SEITE_MAX,
+    PDF höchstens PDF_MAX Bytes."""
+    seite = net.safe_get(url, accept=net.TEXT_TYPES + PDF_TYPES, timeout=8, max_bytes=PDF_MAX, frist=frist)
+    if not ist_pdf(seite) and len(seite.content) > SEITE_MAX:
+        raise net.ResponseTooLarge(f"mehr als {SEITE_MAX} Bytes: {seite.url}")
+    return seite
+
+
+def anker_seite(url: str) -> int:
+    """Seite aus dem Anker „#page=N“ (ab 1); 0 ohne Anker."""
+    m = _ANKER_RE.search(url or "")
+    return int(m.group(1)) if m and int(m.group(1)) > 0 else 0
+
+
+def adresse_norm(url: str) -> str:
+    """Normalisierte Adresse; ein Seitenanker bleibt Teil davon (dieselbe Datei, andere Seite = andere Adresse)."""
+    n = anker_seite(url)
+    return repo.normalize_url(url) + (f"#page={n}" if n else "")
+
+
+def ist_pdf(seite: net.Fetched) -> bool:
+    return seite.content_type.lower().startswith(PDF_TYPES) or seite.content[:5] == b"%PDF-"
+
+
+def _trennung(m: re.Match) -> str:
+    # „Bundes-\namt“ → „Bundesamt“; vor einem Großbuchstaben bleibt der Bindestrich („Sri-\nLanka“ → „Sri-Lanka“)
+    return m.group(1) + ("" if m.group(2).islower() else "-") + m.group(2)
+
+
+def _pdf_seite_text(roh: str) -> str:
+    t = (roh or "").replace("­", "").replace("\r\n", "\n").replace("\r", "\n")
+    t = re.sub(r"(\w)-[ \t]*\n[ \t]*(\w)", _trennung, t)
+    absaetze = (re.sub(r"\s+", " ", a).strip() for a in re.split(r"\n[ \t]*\n", t))
+    return "\n\n".join(a for a in absaetze if a)
+
+
+def pdf_lesen(daten: bytes, ab_seite: int = 1) -> tuple[str, str]:
+    """(Text, Titel) eines PDF ab `ab_seite`, höchstens PDF_SEITEN_MAX Seiten bzw. TEXT_MAX Zeichen. Titel nur aus den
+    Metadaten (/Title). Verschlüsselt, kaputt oder zu groß → Unlesbar (nie eine andere Ausnahme)."""
+    from io import BytesIO
+
+    if len(daten) > PDF_MAX:
+        raise Unlesbar(f"PDF zu groß (mehr als {PDF_MAX // 1_000_000} MB)")
+    try:
+        from pypdf import PdfReader
+
+        reader = PdfReader(BytesIO(daten))
+        if reader.is_encrypted:
+            try:  # nur Rechte-Schutz ohne Kennwort lässt sich öffnen
+                offen = reader.decrypt("")
+            except Exception:  # noqa: BLE001
+                offen = 0
+            if not offen:
+                raise Unlesbar("PDF nicht lesbar (verschlüsselt)")
+        anzahl = len(reader.pages)
+        if ab_seite > anzahl:
+            raise Unlesbar(f"PDF nicht lesbar: keine Seite {ab_seite} (hat {anzahl})")
+        teile, laenge = [], 0
+        for i in range(ab_seite - 1, min(anzahl, ab_seite - 1 + PDF_SEITEN_MAX)):
+            t = _pdf_seite_text(reader.pages[i].extract_text() or "")
+            if t:
+                teile.append(t)
+                laenge += len(t) + 2
+            if laenge >= TEXT_MAX:
+                break
+        try:
+            titel = sources.clean_text(str((reader.metadata or {}).get("/Title") or ""))[:300]
+        except Exception:  # noqa: BLE001 – kaputte Metadaten: ohne Titel
+            titel = ""
+    except Unlesbar:
+        raise
+    except Exception:  # noqa: BLE001 – kaputte Datei: sauber abgelehnt, keine Ausnahme nach außen
+        raise Unlesbar("PDF nicht lesbar") from None
+    return "\n\n".join(teile)[:TEXT_MAX], titel
 
 
 def _flach(s: str) -> str:
@@ -150,8 +236,11 @@ def _datum_streng(wert: str) -> str:
     return wert
 
 
-def seite_lesen(seite: net.Fetched) -> tuple[str, str]:
-    """(Text, Titel) der abgerufenen Seite. Der Titel kommt nur aus og:title oder <title>, sonst bleibt er leer."""
+def seite_lesen(seite: net.Fetched, adresse: str = "") -> tuple[str, str]:
+    """(Text, Titel) der abgerufenen Seite. Der Titel kommt nur aus og:title oder <title>, sonst bleibt er leer.
+    PDF: Text ab der Seite aus dem Anker „#page=N“ der Adresse (sonst Seite 1), Titel aus den Metadaten."""
+    if ist_pdf(seite):
+        return pdf_lesen(seite.content, max(1, anker_seite(adresse or seite.url)))
     roh = seite.text
     titel = ""
     for rx in _TITEL_RES:
@@ -177,7 +266,7 @@ def _norm(titel: str) -> str:
 
 
 def _uid(url: str) -> str:
-    return f"nachtrag:{repo.normalize_url(url)}"
+    return f"nachtrag:{adresse_norm(url)}"
 
 
 def _alle_adressen_belegt(store: Store, v: Vorschlag) -> int | None:
@@ -189,7 +278,7 @@ def _alle_adressen_belegt(store: Store, v: Vorschlag) -> int | None:
         ids = {r[0] for r in store.db.execute(
             "SELECT DISTINCT s.id FROM source_documents d JOIN stories s ON s.id = d.story_id "
             "WHERE (d.url_norm = ? OR d.uid = ?) AND NOT (s.herkunft = 'radar' AND s.status = 'verworfen')",
-            (repo.normalize_url(q.url), _uid(q.url)))}
+            (adresse_norm(q.url), _uid(q.url)))}
         gemeinsam = ids if gemeinsam is None else gemeinsam & ids
         if not gemeinsam:
             return None
@@ -274,7 +363,7 @@ def _anlegen(store: Store, v: Vorschlag, geholt: list) -> dict:
                     "INSERT INTO source_documents (story_id, doc_key, url, url_norm, uid, publisher, quelle, "
                     "published_at, retrieved_at, language, rights, primaer, art, titel, text, text_sha256, auszug) "
                     "VALUES (?,?,?,?,?,?, 'Nachtrag', ?,?,?, 'zitat', 1, 'volltext', ?,?,?,?)",
-                    (sid, f"Q{n}", gelesen, repo.normalize_url(gelesen), _uid(q.url),
+                    (sid, f"Q{n}", gelesen, adresse_norm(gelesen), _uid(q.url),
                      herausgeber(q.herausgeber, gelesen), _datum_streng(q.datum), ts, (q.sprache or "de")[:8],
                      seitentitel, text, hashlib.sha256(text.encode("utf-8")).hexdigest(), text[:500]))
             db.commit()
@@ -304,14 +393,23 @@ def _eins(store: Store, raw, nr: int, von: str, abruf: Callable, heute: date, uh
         frist = jetzt + frist_abruf if ende is None else min(jetzt + frist_abruf, ende)
         try:
             seite = abruf(q.url, frist=frist)
-            text, seitentitel = seite_lesen(seite)
+            text, seitentitel = seite_lesen(seite, q.url)
+        except Unlesbar as exc:
+            uebersprungen.append({"url": q.url, "grund": str(exc)[:80]})
+            continue
         except Exception as exc:  # noqa: BLE001 – eine kaputte Seite stoppt den Vorschlag nicht
             uebersprungen.append({"url": q.url, "grund": f"nicht abrufbar ({type(exc).__name__})"[:80]})
             continue
         if len(text or "") < VOLLTEXT_MIN:
             uebersprungen.append({"url": q.url, "grund": "ohne lesbaren Text"})
             continue
-        geholt.append((q, text[:TEXT_MAX], seitentitel, seite.url or q.url))
+        gelesen = seite.url or q.url
+        if anker_seite(q.url) and ist_pdf(seite) and "#" not in gelesen:
+            gelesen += f"#page={anker_seite(q.url)}"  # der Link führt auf die gelesene Seite
+        if any(adresse_norm(g[3]) == adresse_norm(gelesen) for g in geholt):
+            uebersprungen.append({"url": q.url, "grund": "doppelt im Vorschlag"})
+            continue
+        geholt.append((q, text[:TEXT_MAX], seitentitel, gelesen))
     if not geholt:
         return {**out, "ergebnis": "abgelehnt", "grund": "keine Quelle abrufbar", "quellen_uebersprungen": uebersprungen}
     ergebnis = _anlegen(store, v, geholt)

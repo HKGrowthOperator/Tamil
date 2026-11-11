@@ -562,3 +562,153 @@ def test_cockpit_zeigt_nachtrag_und_filter_rueckblick(settings):
     assert "Nachtrag · 14.03.2026" in rueckblick and "Normale Meldung aus dem Radar" not in rueckblick
     assert "Rückblick" in feed
     assert "Nachtrag · 14.03.2026" in client.get(f"/entwurf/{did}").get_data(as_text=True)
+
+
+# ---- PDF-Quellen (Rückblick 2026: Drucksachen, Urteile, Berichte, Statistiken) ----------------------------
+
+PDF_URL = "https://dserver.bundestag.de/btd/20/123/2012345.pdf"
+SEITE1 = ["Deutscher Bundestag Drucksache 20/12345, 20. Wahlperiode.",
+          "Antwort der Bundesregierung auf die Kleine Anfrage zur Lage der tamilischen Gemeinden.",
+          "Vorbemerkung der Fragesteller: Die Fragen betreffen Abschiebungen nach Sri Lanka.",
+          "Die Bundesregierung beantwortet die Fragen im Einvernehmen mit dem Auswärtigen Amt.",
+          "Die Zahlen stammen aus dem Ausländerzentralregister zum Stichtag 30. Juni 2026."]
+SEITE2 = ["Im ersten Halbjahr 2026 stellten 412 Personen aus Sri Lanka einen Erstantrag beim Bundes-",
+          "amt für Migration und Flüchtlinge. Die Schutzquote lag bei 18,4 Prozent.",
+          "Die Zahl der Abschiebungen nach Sri-",
+          "Lanka betrug im selben Zeitraum 37, davon 21 im Rahmen von Sammelabschiebungen.",
+          "Weitere Angaben zu Dublin-Verfahren enthält die Anlage zu dieser Antwort der Bundesregierung."]
+
+
+def pdf_bytes(seiten: list[list[str]], titel: str = "", passwort: str = "") -> bytes:
+    """Kleines Text-PDF ohne Netz: eine Inhaltsdatei je Seite (Helvetica, WinAnsi), Zeilen mit T*."""
+    from io import BytesIO
+
+    from pypdf import PdfWriter
+    from pypdf.generic import DecodedStreamObject, DictionaryObject, NameObject
+
+    w = PdfWriter()
+    font = w._add_object(DictionaryObject({
+        NameObject("/Type"): NameObject("/Font"), NameObject("/Subtype"): NameObject("/Type1"),
+        NameObject("/BaseFont"): NameObject("/Helvetica"), NameObject("/Encoding"): NameObject("/WinAnsiEncoding")}))
+    for zeilen in seiten:
+        seite = w.add_blank_page(595, 842)
+        ops = ["BT /F1 10 Tf 12 TL 40 800 Td"]
+        ops += ["(" + z.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)") + ") Tj T*" for z in zeilen]
+        stream = DecodedStreamObject()
+        stream.set_data("\n".join(ops + ["ET"]).encode("cp1252"))
+        seite[NameObject("/Contents")] = w._add_object(stream)
+        seite[NameObject("/Resources")] = DictionaryObject(
+            {NameObject("/Font"): DictionaryObject({NameObject("/F1"): font})})
+    if titel:
+        w.add_metadata({"/Title": titel})
+    if passwort:
+        w.encrypt(passwort, algorithm="RC4-128")
+    buf = BytesIO()
+    w.write(buf)
+    return buf.getvalue()
+
+
+def pdf_abruf(dateien: dict, abrufe=None):
+    """Fake-Transport: PDF-Bytes je Adresse ohne Anker (wie requests: das Fragment geht nie an den Server)."""
+    def abruf(url, frist=None):
+        if abrufe is not None:
+            abrufe.append(url)
+        ohne = url.split("#", 1)[0]
+        if ohne in dateien:
+            return net.Fetched(url=ohne, status=200, content=dateien[ohne], content_type="application/pdf")
+        return abruf_aus(SEITEN)(url, frist)
+    return abruf
+
+
+def pdf_vorschlag(*urls, **kw) -> dict:
+    v = {"arbeitstitel": "Bundesregierung zu Abschiebungen nach Sri Lanka", "rubrik": "news", "ort": "Berlin",
+         "quellen": [{"url": u, "titel": "erfundener Titel", "herausgeber": "Deutscher Bundestag",
+                      "datum": "2026-08-01", "sprache": "de", "art": "drucksache"} for u in urls]}
+    return vorschlag(**{**v, **kw})
+
+
+def pdf_annehmen(store, settings, v, dateien):
+    return nachtrag.annehmen(store, settings, {"vorschlaege": [v]}, von="test", ctx=kontext(store, settings),
+                             abruf=pdf_abruf(dateien))["ergebnisse"][0]
+
+
+def test_pdf_quelle_wird_gelesen_titel_aus_metadaten(settings):
+    datei = pdf_bytes([SEITE1, SEITE2], titel="Drucksache 20/12345")
+    with Store(settings.db_path) as store:
+        e = pdf_annehmen(store, settings, pdf_vorschlag(PDF_URL), {PDF_URL: datei})
+        assert e["ergebnis"] == "angelegt", e
+        doc = repo.dokumente(store, e["story_id"])[0]
+        assert doc.titel == "Drucksache 20/12345" and doc.url == PDF_URL and doc.art == "volltext"
+        assert "Antwort der Bundesregierung auf die Kleine Anfrage" in doc.text
+        assert "412 Personen aus Sri Lanka" in doc.text and "\n\n" in doc.text  # Seitenwechsel als Leerzeile
+        # Silbentrennung zusammengezogen, echter Bindestrich vor Großbuchstaben bleibt
+        assert "beim Bundesamt für Migration" in doc.text and "nach Sri-Lanka betrug" in doc.text
+        assert "Bundes-" not in doc.text and "  " not in doc.text
+    assert nachtrag.pdf_lesen(pdf_bytes([SEITE1, SEITE2]))[1] == ""  # ohne Metadaten leer, nie aus dem Vorschlag
+
+
+def test_pdf_anker_page_beginnt_auf_seite_und_bleibt_in_der_adresse(settings):
+    datei = pdf_bytes([SEITE1, SEITE2, SEITE1])
+    with Store(settings.db_path) as store:
+        e = pdf_annehmen(store, settings, pdf_vorschlag(PDF_URL + "#page=2"), {PDF_URL: datei})
+        doc = repo.dokumente(store, e["story_id"])[0]
+        assert doc.url == PDF_URL + "#page=2" and doc.text.startswith("Im ersten Halbjahr 2026")
+        # dieselbe Datei, andere Seite: keine Dublette derselben Adresse
+        zwei = pdf_annehmen(store, settings, pdf_vorschlag(PDF_URL + "#page=3", erzwingen=True), {PDF_URL: datei})
+        assert zwei["ergebnis"] == "angelegt" and zwei["story_id"] != e["story_id"]
+        gleich = pdf_annehmen(store, settings, pdf_vorschlag(PDF_URL + "#page=2"), {PDF_URL: datei})
+        assert gleich["ergebnis"] == "vorhanden" and gleich["story_id"] == e["story_id"]
+        # zwei Seiten derselben Datei als Belege einer Story
+        beide = pdf_annehmen(store, settings, pdf_vorschlag(PDF_URL + "#page=1", PDF_URL + "#page=2", erzwingen=True,
+                                                            arbeitstitel="Asylzahlen im ersten Halbjahr"),
+                             {PDF_URL: datei})
+        assert beide["ergebnis"] == "angelegt" and beide["quellen_geholt"] == 2
+        assert [d.url for d in repo.dokumente(store, beide["story_id"])] == [PDF_URL + "#page=1", PDF_URL + "#page=2"]
+        weg = pdf_annehmen(store, settings, pdf_vorschlag(PDF_URL + "#page=9", erzwingen=True,
+                                                          arbeitstitel="Seite gibt es nicht"), {PDF_URL: datei})
+        assert weg["ergebnis"] == "abgelehnt" and "keine Seite 9" in weg["quellen_uebersprungen"][0]["grund"]
+
+
+@pytest.mark.parametrize("daten", [b"%PDF-1.7\n kaputt \x00\x01 ohne xref", b"<<< gar kein PDF >>>"])
+def test_kaputtes_pdf_wird_mit_grund_abgelehnt(settings, daten):
+    with Store(settings.db_path) as store:
+        e = pdf_annehmen(store, settings, pdf_vorschlag(PDF_URL), {PDF_URL: daten})
+        assert e["ergebnis"] == "abgelehnt" and "keine Quelle abrufbar" in e["grund"]
+        assert "PDF nicht lesbar" in e["quellen_uebersprungen"][0]["grund"] and repo.stories(store) == []
+
+
+def test_verschluesseltes_pdf_wird_abgelehnt(settings):
+    with Store(settings.db_path) as store:
+        e = pdf_annehmen(store, settings, pdf_vorschlag(PDF_URL), {PDF_URL: pdf_bytes([SEITE1], passwort="geheim")})
+        assert e["ergebnis"] == "abgelehnt" and "PDF nicht lesbar" in e["quellen_uebersprungen"][0]["grund"]
+
+
+def test_pdf_ohne_text_uebersprungen_und_ueber_8_mb_abgelehnt(settings):
+    gross = pdf_bytes([SEITE1, SEITE2]) + b"%" + b"x" * 8_000_001
+    with Store(settings.db_path) as store:
+        e = pdf_annehmen(store, settings, pdf_vorschlag(PDF_URL), {PDF_URL: pdf_bytes([[], []])})
+        assert e["ergebnis"] == "abgelehnt" and e["quellen_uebersprungen"][0]["grund"] == "ohne lesbaren Text"
+        g = pdf_annehmen(store, settings, pdf_vorschlag(PDF_URL), {PDF_URL: gross})
+        assert g["ergebnis"] == "abgelehnt" and "zu groß" in g["quellen_uebersprungen"][0]["grund"]
+
+
+def test_standard_abruf_nimmt_pdf_bis_8_mb_an_html_bleibt_bei_3_mb(monkeypatch):
+    aufrufe = []
+
+    def fake_get(url, **kw):
+        aufrufe.append(kw)
+        return net.Fetched(url=url, status=200, content=b"<p>x</p>" * 400_000, content_type="text/html")
+    monkeypatch.setattr(net, "safe_get", fake_get)
+    with pytest.raises(net.ResponseTooLarge):
+        nachtrag.standard_abruf("https://example.org/a", frist=5.0)
+    kw = aufrufe[0]
+    assert "application/pdf" in kw["accept"] and kw["max_bytes"] == 8_000_000 and kw["frist"] == 5.0
+    assert all(t in kw["accept"] for t in net.TEXT_TYPES)
+
+
+def test_html_quelle_unveraendert_neben_pdf(settings):
+    with Store(settings.db_path) as store:
+        e = pdf_annehmen(store, settings, pdf_vorschlag(URL1, PDF_URL), {PDF_URL: pdf_bytes([SEITE1, SEITE2])})
+        docs = repo.dokumente(store, e["story_id"])
+        assert [d.url for d in docs] == [URL1, PDF_URL] and docs[0].text == ARTIKEL1
+        assert docs[0].titel == "Tempel eröffnet Gemeindehaus – Lokales"

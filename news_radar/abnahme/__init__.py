@@ -513,11 +513,44 @@ def _fake_abruf(sz: Szenario) -> Callable:
     from .. import net
 
     def abruf(url: str, frist: float | None = None) -> net.Fetched:
+        datei = url.split("#", 1)[0]  # das Fragment geht nie an den Server
+        if datei.endswith(".pdf") and datei in sz.texte:
+            return net.Fetched(url=datei, status=200, content=_pdf(sz.texte[datei]), content_type="application/pdf")
         if url not in sz.texte:
             raise net.HTTPError(404, url)
         seite = f"<html><head><title>Seite {url.rsplit('/', 1)[-1]}</title></head><body><article><p>{sz.texte[url]}</p></article></body></html>"
         return net.Fetched(url=url, status=200, content=seite.encode(), content_type="text/html; charset=utf-8")
     return abruf
+
+
+def _pdf(text: str) -> bytes:
+    """PDF wie eine Drucksache: Seite 1 Deckblatt, Seite 2 der Text in Zeilen umbrochen, mit einer Silbentrennung."""
+    import textwrap
+    from io import BytesIO
+
+    from pypdf import PdfWriter
+    from pypdf.generic import DecodedStreamObject, DictionaryObject, NameObject
+
+    vorn, _, hinten = text.replace("Besucherinnen", "Besu-\x00cherinnen", 1).partition("\x00")
+    seiten = [["Deutscher Bundestag Drucksache 20/99999", "Deckblatt ohne Bezug zum Thema"],
+              textwrap.wrap(vorn, 60) + textwrap.wrap(hinten, 60)]
+    w = PdfWriter()
+    font = w._add_object(DictionaryObject({
+        NameObject("/Type"): NameObject("/Font"), NameObject("/Subtype"): NameObject("/Type1"),
+        NameObject("/BaseFont"): NameObject("/Helvetica"), NameObject("/Encoding"): NameObject("/WinAnsiEncoding")}))
+    for zeilen in seiten:
+        seite = w.add_blank_page(595, 842)
+        ops = ["BT /F1 10 Tf 12 TL 40 800 Td"] + [
+            "(" + z.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)") + ") Tj T*" for z in zeilen]
+        stream = DecodedStreamObject()
+        stream.set_data("\n".join(ops + ["ET"]).encode("cp1252"))
+        seite[NameObject("/Contents")] = w._add_object(stream)
+        seite[NameObject("/Resources")] = DictionaryObject(
+            {NameObject("/Font"): DictionaryObject({NameObject("/F1"): font})})
+    w.add_metadata({"/Title": "Drucksache 20/99999"})
+    buf = BytesIO()
+    w.write(buf)
+    return buf.getvalue()
 
 
 def _vorschlaege_annehmen(ctx, sz: Szenario, now: datetime) -> Counter:
@@ -579,8 +612,19 @@ def _nachtrag_bis_website(ctx, sz: Szenario, now: datetime) -> dict:
     return dict(stats)
 
 
+def _nachtrag_pdf(ctx, sz: Szenario, now: datetime) -> dict:
+    """PDF-Quelle mit Anker #page=2 bis zur Website; zählt Dokumente mit Anker und mit dem Wortlaut der Seite 2."""
+    stats = _nachtrag_bis_website(ctx, sz, now)
+    for url, text, titel in ctx.store.db.execute("SELECT url, text, titel FROM source_documents"):
+        stats["pdf_anker"] = stats.get("pdf_anker", 0) + int(url.endswith(".pdf#page=2"))
+        stats["pdf_wortlaut"] = stats.get("pdf_wortlaut", 0) + int(
+            "Erwartet werden rund 3000 Besucherinnen und Besucher" in text and "Deckblatt" not in text)
+        stats["pdf_titel"] = stats.get("pdf_titel", 0) + int(titel == "Drucksache 20/99999")
+    return stats
+
+
 NACHHER: dict[str, Callable] = {
-    "nachtrag": _nachtrag, "nachtrag_bis_website": _nachtrag_bis_website,
+    "nachtrag": _nachtrag, "nachtrag_bis_website": _nachtrag_bis_website, "nachtrag_pdf": _nachtrag_pdf,
     "scan_im_stopp": _scan_im_stopp, "website_stopp": _website_stopp,
     "kino_update": _kino_update, "kino_veroeffentlicht": _kino_nach_veroeffentlichung, "wp_timeout": _wp_timeout,
     "agent_v2": _agent_v2, "quelle_ergaenzen": _quelle_ergaenzen, "dossier": _dossier,
