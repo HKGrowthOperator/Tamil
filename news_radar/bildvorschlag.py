@@ -24,6 +24,7 @@ import hashlib
 import io
 import re
 import time
+import unicodedata
 from html import unescape
 from typing import Callable
 from urllib.parse import unquote, urlencode, urljoin, urlsplit
@@ -42,6 +43,7 @@ WEB_FRIST_GESAMT = 90.0
 FRIST_ABRUF = 20.0
 MAX_BYTES = 8_000_000
 MAX_PIXEL = 40_000_000
+URHEBER_MAX = 80
 MIN_BREITE = 800
 MIN_KANTE = 400
 VERHAELTNIS = (0.5, 2.4)
@@ -228,6 +230,20 @@ def commons_datei(seite_url: str) -> str:
     return name
 
 
+def urhebername(roh: str) -> str:
+    """Urheber aus Commons (HTML): erst Entitäten zurückwandeln, dann Skripte und Tags entfernen. Steuer-, Format- und
+    Bidi-Zeichen oder mehr als 80 Zeichen → abgelehnt (eine gekürzte Namensnennung wäre unvollständig)."""
+    t = unescape(roh or "")
+    t = re.sub(r"<(script|style)\b.*?</\1\s*>", " ", t, flags=re.I | re.S)
+    t = " ".join(re.sub(r"<[^>]*>", " ", t).split())
+    if any(unicodedata.category(c) in ("Cc", "Cf", "Cs", "Co", "Cn") or not c.isprintable() for c in t) \
+            or "<" in t or ">" in t:
+        raise Abgelehnt("Urhebername enthält Steuer- oder Sonderzeichen")
+    if len(t) > URHEBER_MAX:
+        raise Abgelehnt(f"Urhebername länger als {URHEBER_MAX} Zeichen (Namensnennung nicht vollständig möglich)")
+    return t
+
+
 def commons_api_url(name: str) -> str:
     return COMMONS_API + "?" + urlencode({
         "action": "query", "format": "json", "prop": "imageinfo", "iiprop": "url|size|mime|extmetadata",
@@ -292,7 +308,7 @@ def _commons(eintrag: dict, abrufen: Callable) -> dict:
     art = commons_lizenz(kurzname, lizenz_url)
     if art is None:
         raise Abgelehnt(f"Lizenz nicht erlaubt ({kurzname or 'leer'}; nur gemeinfrei, CC0, CC BY, CC BY-SA)")
-    artist = _text(_ext(meta, "Artist"))[:80].strip()
+    artist = urhebername(_ext(meta, "Artist"))
     if art != "gemeinfrei" and not artist:
         raise Abgelehnt(f"Namensnennung nicht erfüllbar ({kurzname} ohne Urheber)")
     mime = str(info.get("mime") or "").lower()

@@ -187,6 +187,23 @@ def test_commons_lizenz_erlaubt(settings, lizenz, url):
         assert e["ergebnis"] == "gesetzt", e
 
 
+@pytest.mark.parametrize("artist,ergebnis,erwartet", [
+    ("&lt;script&gt;alert(1)&lt;/script&gt;Anna K.", "gesetzt", "Foto: Anna K. / Wikimedia Commons, CC BY-SA 4.0"),
+    ("<b>Anna</b> &amp; Ravi", "gesetzt", "Foto: Anna & Ravi / Wikimedia Commons, CC BY-SA 4.0"),
+    ("Anna\u202eK.", "abgelehnt", "Urheber"),
+    ("Anna\x07K.", "abgelehnt", "Urheber"),
+    ("A" * 81, "abgelehnt", "Urheber"),
+])
+def test_commons_urhebername(settings, artist, ergebnis, erwartet):
+    with Store(settings.db_path) as store:
+        sid, _ = story_mit_entwurf(store)
+        e = eins(store, settings, {"story_id": sid, "weg": "commons", "seite_url": COMMONS_SEITE},
+                 {"API": commons_api(artist=artist), COMMONS_THUMB: jpeg()})
+        assert e["ergebnis"] == ergebnis, e
+        assert erwartet in (e.get("nachweis") or e["grund"])
+        assert "script" not in (e.get("nachweis") or "") and "alert" not in (e.get("nachweis") or "")
+
+
 def test_commons_gemeinfrei_ohne_artist(settings):
     with Store(settings.db_path) as store:
         sid, _ = story_mit_entwurf(store)
