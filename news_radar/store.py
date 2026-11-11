@@ -332,14 +332,17 @@ class Store:
             raise ConflictError(f"Entwurf {draft_id}: Aktion „{aktion}“ im aktuellen Zustand nicht möglich")
         return target
 
-    def claim_draft(self, draft_id: int, von: str = "") -> dict | None:
-        """Reserviert einen Entwurf fürs Veröffentlichen („Direkt posten“). None = schon vergeben."""
+    def claim_draft(self, draft_id: int, von: str = "", stand: int | None = None) -> dict | None:
+        """Reserviert einen Entwurf fürs Veröffentlichen („Direkt posten“). None = schon vergeben oder (mit `stand`)
+        inzwischen geändert – die Bedingung steht im selben UPDATE."""
         marks = ",".join("?" for _ in PUBLISHABLE)
         ts = now_iso()
+        bedingung, extra = ("", ()) if stand is None else (" AND stand = ?", (stand,))
         cur = self._write(
             f"UPDATE drafts SET status = 'wird_veroeffentlicht', updated_at = ?, bearbeitet_von = ?, "
-            f"freigegeben_at = COALESCE(freigegeben_at, ?), fehler = NULL WHERE id = ? AND status IN ({marks})",
-            (ts, von, ts, draft_id, *PUBLISHABLE),
+            f"freigegeben_at = COALESCE(freigegeben_at, ?), fehler = NULL WHERE id = ? AND status IN ({marks})"
+            f"{bedingung}",
+            (ts, von, ts, draft_id, *PUBLISHABLE, *extra),
         )
         return self.get_draft(draft_id) if cur.rowcount == 1 else None
 

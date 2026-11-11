@@ -1,5 +1,7 @@
 """Befunde der Code-Prüfung zum Stopp-Schalter, zu Rollen und /gesund – je Befund ein Test."""
 
+from stand_hilfe import stand_von
+
 import json
 
 import pytest
@@ -46,7 +48,7 @@ def test_wp_entwurf_im_stopp_bleibt_unveraendert_und_geht_nie_live(settings):
         schalter.setzen(st, "website", True, wer="anna", grund="Theme-Umbau")
     app, client, token = _client(settings)
     wp = app.extensions["wordpress"] = FakeWP()
-    text = client.post(f"/entwurf/{did}/wp-entwurf", data={"_csrf": token}, follow_redirects=True).get_data(as_text=True)
+    text = client.post(f"/entwurf/{did}/wp-entwurf", data={"_csrf": token, "stand": stand_von(client, did)}, follow_redirects=True).get_data(as_text=True)
     assert "kein WordPress-Entwurf angelegt" in text
     with Store(settings.db_path) as st:
         assert st.get_draft(did)["status"] == "neu" and repo.aktionen(st, did) == []
@@ -157,9 +159,9 @@ def test_fehler_wartet_wirklich_und_abgelehnt_ehrlich(settings):
         schalter.setzen(st, "website", True, wer="anna", grund="Theme-Umbau")
     app, client, token = _client(settings)
     app.extensions["wordpress"] = FakeWP()
-    text = client.post(f"/entwurf/{fehler}/veroeffentlichen", data={"_csrf": token}, follow_redirects=True).get_data(as_text=True)
+    text = client.post(f"/entwurf/{fehler}/veroeffentlichen", data={"_csrf": token, "stand": stand_von(client, fehler)}, follow_redirects=True).get_data(as_text=True)
     assert "freigegeben und wartet" in text
-    text = client.post(f"/entwurf/{abgelehnt}/veroeffentlichen", data={"_csrf": token}, follow_redirects=True).get_data(as_text=True)
+    text = client.post(f"/entwurf/{abgelehnt}/veroeffentlichen", data={"_csrf": token, "stand": stand_von(client, abgelehnt)}, follow_redirects=True).get_data(as_text=True)
     assert "wartet nicht" in text
     with Store(settings.db_path) as st:
         assert st.get_draft(fehler)["status"] == "freigegeben" and st.get_draft(abgelehnt)["status"] == "abgelehnt"

@@ -1,6 +1,8 @@
 """Stopp-Schalter (Vertrag B1.1, §8, Test T7): global und je Kanal, Prüfung unmittelbar vor dem Aufruf nach außen,
 Grund Pflicht, Protokollzeile, CLI und Cockpit. Kein Netz: FakeAnthropic und Fake-WordPress."""
 
+from stand_hilfe import stand_von
+
 import sqlite3
 
 import pytest
@@ -337,7 +339,7 @@ def test_direkt_posten_im_stopp_gibt_frei_und_sagt_warum(web, settings, weg):
     app, client, token = web
     wp = app.extensions["wordpress"] = FakeWP()
     client.post("/schalter/website/an", data={"_csrf": token, "grund": "Theme-Umbau"})
-    resp = client.post(f"/entwurf/1/{weg}", data={"_csrf": token}, follow_redirects=True)
+    resp = client.post(f"/entwurf/1/{weg}", data={"_csrf": token, "stand": stand_von(client, 1)}, follow_redirects=True)
     text = resp.get_data(as_text=True)
     assert resp.status_code == 200 and "angehalten" in text and "wartet" in text
     assert wp.posts == []

@@ -24,10 +24,10 @@
     {% if can_publish and darf('freigeben') %}
       {% if wordpress_enabled and darf('veroeffentlichen') %}
       <form method="post" action="/entwurf/{{ d.id }}/veroeffentlichen" class="inline" data-confirm="Jetzt direkt auf tamil.de veröffentlichen?">
-        <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="gold" data-busy="Wird veröffentlicht …">Direkt posten</button>
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="stand" value="{{ d.stand }}"><button class="gold" data-busy="Wird veröffentlicht …">Direkt posten</button>
       </form>
       <form method="post" action="/entwurf/{{ d.id }}/wp-entwurf" class="inline">
-        <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="knopf" data-busy="Wird angelegt …">In WordPress bearbeiten</button>
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="stand" value="{{ d.stand }}"><button class="knopf" data-busy="Wird angelegt …">In WordPress bearbeiten</button>
       </form>
       {% endif %}
       {% if d.status != 'freigegeben' %}

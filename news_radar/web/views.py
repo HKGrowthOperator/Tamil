@@ -412,6 +412,10 @@ def _publish(draft_id: int, status: str):
 
     store = get_store()
     row = _draft_or_404(draft_id)
+    stand = _stand(request.form.get("stand"))
+    if stand is None or row.get("stand") != stand:  # nur den Stand veröffentlichen, den die Seite gezeigt hat
+        flash(GEAENDERT, "fehler")
+        return redirect(url_for("ui.entwurf", draft_id=draft_id))
     sperre = schalter.sperre(store, "website")
     if sperre is not None and status != "publish":
         # „In WordPress bearbeiten“ ist kein Freigeben: im Stopp bleibt der Status, sonst ginge der Text später live
@@ -420,14 +424,18 @@ def _publish(draft_id: int, status: str):
                                           "Einschalten erneut wählen."), "fehler")
         return redirect(url_for("ui.entwurf", draft_id=draft_id))
     if sperre is not None:  # Freigeben von Hand geht, übertragen nicht: der Entwurf wartet auf den nächsten Lauf
-        _freigeben_wartend(store, row, sperre)
+        _freigeben_wartend(store, row, sperre, stand=stand)
         return redirect(url_for("ui.entwurf", draft_id=draft_id))
     wp = _wordpress()
     if wp is None:
         flash("WordPress ist noch nicht angebunden (WP_URL, WP_USER, WP_APP_PASSWORD in .env). Der Entwurf bleibt freigegeben.", "fehler")
-        _freigeben(store, row)
+        if not _freigeben(store, row, stand=stand) and (store.get_draft(draft_id) or {}).get("stand") != stand:
+            flash(GEAENDERT, "fehler")
         return redirect(url_for("ui.entwurf", draft_id=draft_id))
-    claimed = store.claim_draft(draft_id, von=_user())
+    claimed = store.claim_draft(draft_id, von=_user(), stand=stand)
+    if claimed is None and (store.get_draft(draft_id) or {}).get("stand") != stand:
+        flash(GEAENDERT, "fehler")
+        return redirect(url_for("ui.entwurf", draft_id=draft_id))
     if claimed is None:
         return render_template("fehler.html", titel="Schon unterwegs", text="Dieser Entwurf wird gerade veröffentlicht oder ist schon veröffentlicht.", draft_id=draft_id), 409
     try:
@@ -481,10 +489,10 @@ def _wartet(row: dict, sperre: dict) -> None:
                notiz=f"Schalter „{sperre['kanal']}“ angehalten seit {sperre['seit']}")
 
 
-def _freigeben_wartend(store, row: dict, sperre: dict, schon_frei: bool = False) -> None:
+def _freigeben_wartend(store, row: dict, sperre: dict, schon_frei: bool = False, stand: int | None = None) -> None:
     """Website angehalten: freigeben, nicht übertragen, und dem Menschen sagen, warum und wie es weitergeht."""
     if not schon_frei:
-        _freigeben(store, row)
+        _freigeben(store, row, stand=stand)
     jetzt = store.get_draft(row["id"])["status"]
     if jetzt != "freigegeben":  # ehrlich bleiben: was nicht freigegeben ist, wartet auch nicht
         flash(_angehalten_meldung(sperre, f"Nichts wurde übertragen; der Entwurf steht auf "

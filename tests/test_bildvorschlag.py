@@ -724,3 +724,43 @@ def test_sammelfreigabe_gemischt(settings):
     assert "1 Entwurf freigegeben" in html and "inzwischen geändert" in html
     with Store(settings.db_path) as store:
         assert [store.get_draft(i)["status"] for i in ids] == ["freigegeben", "neu", "neu"]
+
+
+@pytest.mark.parametrize("route", ["veroeffentlichen", "wp-entwurf"])
+def test_direkt_posten_nur_mit_aktuellem_stand(settings, route):
+    with Store(settings.db_path) as store:
+        sid, did = story_mit_entwurf(store)
+        alt = store.get_draft(did)["stand"]
+        store.update_draft(did, titel="Vom Agenten geändert")
+    client, token = _cockpit(settings)
+    for daten in ({"_csrf": token, "stand": str(alt)}, {"_csrf": token}):
+        html = client.post(f"/entwurf/{did}/{route}", data=daten, follow_redirects=True).get_data(as_text=True)
+        assert "inzwischen geändert" in html
+        with Store(settings.db_path) as store:
+            assert store.get_draft(did)["status"] == "neu"
+    with Store(settings.db_path) as store:
+        aktuell = store.get_draft(did)["stand"]
+        assert store.claim_draft(did, von="x", stand=alt) is None and store.get_draft(did)["status"] == "neu"
+    client.post(f"/entwurf/{did}/{route}", data={"_csrf": token, "stand": str(aktuell)})
+    with Store(settings.db_path) as store:  # ohne WordPress: der Entwurf wird freigegeben (wie bisher)
+        assert store.get_draft(did)["status"] == "freigegeben"
+
+
+def test_migration_6_mit_bestehenden_entwuerfen(settings, monkeypatch):
+    from news_radar.workflow import schema
+
+    alt = {k: v for k, v in schema.MIGRATIONS.items() if k < 6}
+    monkeypatch.setattr(schema, "MIGRATIONS", alt)
+    with Store(settings.db_path) as store:
+        assert store.db.execute("PRAGMA user_version").fetchone()[0] == 5
+        sid, did = story_mit_entwurf(store)
+        store.set_status(did, "zurueckstellen")
+    monkeypatch.undo()
+    with Store(settings.db_path) as store:
+        assert store.db.execute("PRAGMA user_version").fetchone()[0] == schema.LATEST >= 6
+        d = store.get_draft(did)
+        assert d["stand"] == 0 and d["status"] == "zurueckgestellt" and d["titel"] == "Thaipusam in Zürich"
+        store.update_draft(did, titel="Neu")
+        assert store.get_draft(did)["stand"] == 1
+        store.set_status(did, "freigeben", stand=1)  # Statuswechsel zählt den Stand nicht hoch
+        assert store.get_draft(did)["stand"] == 1 and store.get_draft(did)["status"] == "freigegeben"
