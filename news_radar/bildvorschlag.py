@@ -203,8 +203,9 @@ def commons_datei(seite_url: str) -> str:
             or teile.username or teile.port:
         raise Abgelehnt("seite_url ist keine Commons-Dateiseite (https://commons.wikimedia.org/wiki/File:…)")
     name = unquote(m.group(1)).replace("_", " ").strip()
-    if not name or "/" in name:
-        raise Abgelehnt("seite_url ist keine Commons-Dateiseite (Dateiname fehlt)")
+    if not name or teile.query or teile.fragment or any(c in name for c in "/|#<>[]{}") \
+            or not all(c.isprintable() for c in name):
+        raise Abgelehnt("seite_url ist keine Commons-Dateiseite (Dateiname fehlt oder enthält |#<>[]{}/Steuerzeichen)")
     return name
 
 
@@ -249,9 +250,20 @@ def _commons(eintrag: dict, abrufen: Callable) -> dict:
     name = commons_datei(eintrag["seite_url"])
     try:
         data = abrufen(commons_api_url(name), bild=False).json()
-        seiten = list(((data or {}).get("query") or {}).get("pages", {}).values())
-        info = (seiten[0].get("imageinfo") or [None])[0] if seiten else None
-    except (ValueError, AttributeError, TypeError):
+        query = (data or {}).get("query") or {}
+        seiten = list((query.get("pages") or {}).values())
+        angefragt = f"File:{name}"
+        for n in query.get("normalized") or []:
+            if n.get("from") == angefragt:
+                angefragt = n.get("to") or angefragt
+        if len(seiten) != 1:  # genau die verlinkte Datei, keine zweite über die Abfrage
+            raise Abgelehnt("Datei auf Commons nicht gefunden" if not seiten else "Commons liefert mehr als eine Datei")
+        if seiten[0].get("title") != angefragt:
+            raise Abgelehnt("Commons liefert eine andere Datei als die verlinkte")
+        info = (seiten[0].get("imageinfo") or [None])[0]
+    except (ValueError, AttributeError, TypeError) as exc:
+        if isinstance(exc, Abgelehnt):
+            raise
         raise Abgelehnt("Commons-Antwort unlesbar") from None
     if not info:
         raise Abgelehnt("Datei auf Commons nicht gefunden")

@@ -584,6 +584,8 @@ def _bild_abruf(seiten: dict, abrufe: list) -> Callable:
 
     from PIL import Image
 
+    from urllib.parse import unquote
+
     from .. import net
 
     def abruf(url: str, frist: float | None = None, bild: bool = False) -> net.Fetched:
@@ -603,7 +605,8 @@ def _bild_abruf(seiten: dict, abrufe: list) -> Callable:
                    "LicenseUrl": {"value": "https://creativecommons.org/licenses/by-sa/4.0"}}
             info = {"url": thumb, "thumburl": thumb, "width": 3000, "height": 2000, "mime": "image/jpeg",
                     "extmetadata": ext}
-            body = json.dumps({"query": {"pages": {"1": {"imageinfo": [info]}}}})
+            titel = "File:" + unquote(thumb.rsplit("/", 2)[-2]).replace("_", " ")
+            body = json.dumps({"query": {"pages": {"1": {"title": titel, "imageinfo": [info]}}}})
             return net.Fetched(url=url, status=200, content=body.encode(), content_type="application/json")
         return net.Fetched(url=url, status=200, content=wert.encode(), content_type="text/html; charset=utf-8")
     return abruf

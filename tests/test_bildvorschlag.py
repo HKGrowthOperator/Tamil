@@ -47,7 +47,8 @@ def cc_url(lizenz: str) -> str:
 
 
 def commons_api(lizenz="CC BY-SA 4.0", artist='<a href="//commons.wikimedia.org/wiki/User:X">Anna K.</a>',
-                mime="image/jpeg", breite=4000, lizenz_url=None):
+                mime="image/jpeg", breite=4000, lizenz_url=None, titel="File:Thaipusam Zurich 2019.jpg",
+                weitere=False, normalized=True):
     lizenz_url = cc_url(lizenz) if lizenz_url is None else lizenz_url
     ext = {"LicenseShortName": {"value": lizenz}, "License": {"value": lizenz.lower().replace(" ", "-")},
            "LicenseUrl": {"value": lizenz_url}, "AttributionRequired": {"value": "true"}}
@@ -55,7 +56,13 @@ def commons_api(lizenz="CC BY-SA 4.0", artist='<a href="//commons.wikimedia.org/
         ext["Artist"] = {"value": artist}
     info = {"url": "https://upload.wikimedia.org/wikipedia/commons/a/ab/Thaipusam_Zurich_2019.jpg",
             "thumburl": COMMONS_THUMB, "width": breite, "height": 2500, "mime": mime, "extmetadata": ext}
-    return json.dumps({"query": {"pages": {"123": {"title": "File:Thaipusam Zurich 2019.jpg", "imageinfo": [info]}}}})
+    pages = {"123": {"title": titel, "imageinfo": [info]}}
+    if weitere:
+        pages["124"] = {"title": "File:Anderes.jpg", "imageinfo": [info]}
+    query = {"pages": pages}
+    if normalized:
+        query["normalized"] = [{"from": "File:Thaipusam_Zurich_2019.jpg", "to": "File:Thaipusam Zurich 2019.jpg"}]
+    return json.dumps({"query": query})
 
 
 def fake(seiten: dict, abrufe: list | None = None):
@@ -207,6 +214,27 @@ def test_commons_keine_dateiseite_abgelehnt(settings, url):
         abrufe = []
         e = eins(store, settings, {"story_id": sid, "weg": "commons", "seite_url": url}, {}, abrufe)
         assert e["ergebnis"] == "abgelehnt" and "Dateiseite" in e["grund"] and abrufe == []
+
+
+@pytest.mark.parametrize("url", [COMMONS_SEITE.replace(".jpg", ".jpg%7CFile:Anderes.jpg"),
+                                 COMMONS_SEITE.replace(".jpg", ".jpg|File:Anderes.jpg"), COMMONS_SEITE + "%23x",
+                                 COMMONS_SEITE.replace("Zurich", "Zu%00rich"), COMMONS_SEITE.replace("Zurich", "Zu[r]ich")])
+def test_commons_titel_mit_sonderzeichen_abgelehnt(settings, url):
+    with Store(settings.db_path) as store:
+        sid, _ = story_mit_entwurf(store)
+        abrufe = []
+        e = eins(store, settings, {"story_id": sid, "weg": "commons", "seite_url": url}, {}, abrufe)
+        assert e["ergebnis"] == "abgelehnt" and "Dateiseite" in e["grund"] and abrufe == [], e
+
+
+@pytest.mark.parametrize("api", [commons_api(weitere=True), commons_api(titel="File:Anderes.jpg"),
+                                 json.dumps({"query": {"pages": {}}})])
+def test_commons_genau_die_verlinkte_datei(settings, api):
+    with Store(settings.db_path) as store:
+        sid, _ = story_mit_entwurf(store)
+        e = eins(store, settings, {"story_id": sid, "weg": "commons", "seite_url": COMMONS_SEITE},
+                 {"API": api, COMMONS_THUMB: jpeg()})
+        assert e["ergebnis"] == "abgelehnt", e
 
 
 # ---- Quelle aus dem Register --------------------------------------------------------------------------
