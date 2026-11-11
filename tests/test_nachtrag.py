@@ -1144,7 +1144,10 @@ def test_ergaenzen_nur_bei_recherche_noetig_oder_neu(settings, status):
         abrufe = []
         e = annehmen(store, settings, [vorschlag(story_id=sid, quellen=[quelle(URL3)])], seiten=SEITEN3,
                      abrufe=abrufe)["ergebnisse"][0]
-        assert e["ergebnis"] == "abgelehnt" and e["grund"] == f"Story ist {status}" and abrufe == []
+        assert e["ergebnis"] == "abgelehnt" and e["grund"] == "Story nicht ergänzbar" and abrufe == []
+        log = [json.loads(z["data"]) for z in store.db.execute(
+            "SELECT data FROM log WHERE event = 'nachtrag_ergaenzen_abgelehnt'")]
+        assert log == [{"story": sid, "grund": f"Story ist {status}", "von": "test"}]
         assert len(repo.dokumente(store, sid)) == 1
 
 
@@ -1176,7 +1179,10 @@ def test_ergaenzen_unbekannte_fremde_oder_beschaeftigte_story_wird_abgelehnt(set
                          abrufe=abrufe)["ergebnisse"][0]
             assert e["ergebnis"] == "abgelehnt", (ziel, e)
             gruende[repr(ziel)] = e["grund"]
-        assert gruende["99999"] == "Story nicht gefunden" and gruende[repr(radar)] == "keine Nachtrag-Story"
+        assert gruende["99999"] == gruende[repr(radar)] == "Story nicht ergänzbar"  # einheitlich nach außen
+        details = {json.loads(z["data"])["grund"] for z in store.db.execute(
+            "SELECT data FROM log WHERE event = 'nachtrag_ergaenzen_abgelehnt'")}
+        assert {"Story nicht gefunden", "keine Nachtrag-Story"} <= details
         assert "läuft gerade ein Job" in gruende[repr(sid)]
         assert all(g.startswith("story_id") for k, g in gruende.items() if k in ("0", "'7'", "True")), gruende
         assert abrufe == [] and len(repo.dokumente(store, sid)) == 1

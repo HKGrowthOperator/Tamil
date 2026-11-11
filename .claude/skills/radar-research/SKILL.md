@@ -45,8 +45,8 @@ denselben Vorschlag mit `"story_id": <Nummer>` und den neuen Quellen an `POST /a
 `agent vorschlag --datei`). Der Radar holt nur Adressen, die noch nicht Beleg der Story sind, hängt sie an (Q<n+1> …),
 gibt die Story wieder frei (Status „neu“) und führt die Hinweise zusammen (leeres `bezug`/`bild_hinweis` behält den
 alten Wert; `kernfakten` aus neu und alt ohne Doppel, neue zuerst, höchstens 12). Antwort
-`ergaenzt`; `vorhanden` heißt: keine neue Quelle; `abgelehnt` nennt den Grund (Story nicht gefunden, keine
-Nachtrag-Story, Story ist …, schon ein Entwurf, Job läuft). Danach die Story im nächsten Export neu schreiben – alle Dokumente sind dabei.
+`ergaenzt`; `vorhanden` heißt: keine neue Quelle; `abgelehnt` nennt den Grund („Story nicht ergänzbar“: unbekannt,
+keine Nachtrag-Story, nicht „Recherche nötig“ oder schon ein Entwurf; oder „Job läuft“; Einzelheiten im Ereignislog). Danach die Story im nächsten Export neu schreiben – alle Dokumente sind dabei.
 
 ## Stolperfallen
 

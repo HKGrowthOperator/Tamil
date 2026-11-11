@@ -467,6 +467,19 @@ def _pruefen(raw, heute: date) -> Vorschlag:
 
 ERGAENZBAR = ("recherche_erforderlich",)  # nicht „neu“: ein gleichzeitiger Import könnte die Quelle am Gate vorbei führen
 SCHON_BELEG = "schon Beleg dieser Story"
+NICHT_ERGAENZBAR = "Story nicht ergänzbar"  # nach außen einheitlich; der genaue Grund steht im Ereignis
+JOB_LAEUFT = "an der Story läuft gerade ein Job"
+
+
+def _nach_aussen(store: Store, sid: int, grund: str, von: str, story: dict | None = None,
+                 inzwischen: bool = False) -> str:
+    """Genauen Grund ins Ereignis schreiben, nach außen: Job läuft · Story inzwischen <status> · nicht ergänzbar."""
+    store.event("nachtrag_ergaenzen_abgelehnt", story=sid, grund=grund, von=von[:60])
+    if grund == JOB_LAEUFT:
+        return grund
+    if inzwischen and story is not None and grund.startswith("Story ist "):
+        return f"Story inzwischen {story['status']}"
+    return NICHT_ERGAENZBAR
 
 
 def _ziel_grund(store: Store, sid: int) -> tuple[dict | None, str]:
@@ -483,7 +496,7 @@ def _ziel_grund(store: Store, sid: int) -> tuple[dict | None, str]:
     if store.db.execute("SELECT 1 FROM drafts WHERE story_id = ?", (sid,)).fetchone():
         return story, "Story hat schon einen Entwurf"
     if store.db.execute("SELECT 1 FROM workflow_jobs WHERE story_id = ? AND status = 'laeuft'", (sid,)).fetchone():
-        return story, "an der Story läuft gerade ein Job"
+        return story, JOB_LAEUFT
     return story, ""
 
 
@@ -550,9 +563,7 @@ def _ergaenzen(store: Store, v: Vorschlag, geholt: list, heute: date) -> dict:
             story, grund = _ziel_grund(store, sid)
             if grund:
                 db.rollback()
-                if story is not None and grund.startswith("Story ist "):
-                    grund = f"Story inzwischen {story['status']}"
-                return {"ergebnis": "abgelehnt", "story_id": sid, "grund": grund}
+                return {"ergebnis": "abgelehnt", "story_id": sid, "grund": grund, "_story": story}
             belege, je_datei, anzahl = _bestand(store, sid)
             neu, grund = [], ""
             for g in geholt:  # Grenzen wie vor den Abrufen, jetzt mit dem Bestand zum Zeitpunkt des Schreibens
@@ -640,7 +651,8 @@ def _eins(store: Store, raw, nr: int, von: str, abruf: Callable, heute: date, uh
     if v.story_id:  # Nachtrag ergänzen: die Story ist genannt, keine Dublettenprüfung
         _, grund = _ziel_grund(store, v.story_id)
         if grund:
-            return {**out, "ergebnis": "abgelehnt", "story_id": v.story_id, "grund": grund}
+            return {**out, "ergebnis": "abgelehnt", "story_id": v.story_id,
+                    "grund": _nach_aussen(store, v.story_id, grund, von)}
         belege, je_datei, anzahl = _bestand(store, v.story_id)
     else:
         dublette = _dublette(store, v)  # vor den Abrufen: nichts holen, was schon da ist
@@ -727,6 +739,9 @@ def _eins(store: Store, raw, nr: int, von: str, abruf: Callable, heute: date, uh
 def _ergaenzt_melden(store: Store, out: dict, v: Vorschlag, geholt: list, uebersprungen: list, hinweise: list,
                      heute: date, von: str) -> dict:
     ergebnis = _ergaenzen(store, v, geholt, heute)
+    if "_story" in ergebnis:  # Story-Prüfung in der Schreibtransaktion gescheitert
+        story = ergebnis.pop("_story")
+        ergebnis["grund"] = _nach_aussen(store, v.story_id, ergebnis["grund"], von, story, inzwischen=True)
     if ergebnis["ergebnis"] != "ergaenzt":
         return {**out, **ergebnis, "quellen_uebersprungen": uebersprungen}
     sid, n = ergebnis["story_id"], ergebnis["quellen_geholt"]
