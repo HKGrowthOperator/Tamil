@@ -485,10 +485,23 @@ def _ziel_grund(store: Store, sid: int) -> tuple[dict | None, str]:
     return story, ""
 
 
-def _belege(store: Store, sid: int) -> set[str]:
-    """Adressen (url_norm und uid), die schon Dokument der Story sind."""
-    return {w for r in store.db.execute("SELECT url_norm, uid FROM source_documents WHERE story_id = ?", (sid,))
-            for w in r if w}
+MAX_DOKUMENTE = 10  # je Nachtrag-Story, auch über mehrere Ergänzungen
+GRUND_SEITEN = "höchstens zwei Seiten je Datei"
+GRUND_MAX = f"höchstens {MAX_DOKUMENTE} Dokumente je Story"
+
+
+def _ohne_anker(wert: str) -> str:
+    return (wert or "").split("#page=", 1)[0]
+
+
+def _bestand(store: Store, sid: int) -> tuple[set[str], dict[str, int], int]:
+    """(Adressen – url_norm und uid –, Dokumente je Datei ohne Seitenanker, Anzahl Dokumente) der Story."""
+    zeilen = list(store.db.execute("SELECT url_norm, uid FROM source_documents WHERE story_id = ?", (sid,)))
+    je_datei: dict[str, int] = {}
+    for url_norm, uid in zeilen:
+        for datei in {_ohne_anker(url_norm), _ohne_anker((uid or "").removeprefix("nachtrag:"))} - {""}:
+            je_datei[datei] = je_datei.get(datei, 0) + 1
+    return {w for z in zeilen for w in z if w}, je_datei, len(zeilen)
 
 
 def _schon_beleg(belege: set[str], url: str, pdf: bool = True) -> bool:
@@ -525,11 +538,24 @@ def _ergaenzen(store: Store, v: Vorschlag, geholt: list, heute: date) -> dict:
                 if story is not None and grund.startswith("Story ist "):
                     grund = f"Story inzwischen {story['status']}"
                 return {"ergebnis": "abgelehnt", "story_id": sid, "grund": grund}
-            belege = _belege(store, sid)
-            neu = [g for g in geholt if not _schon_beleg(belege, g[0].url, g[4])
-                   and adresse_norm(g[3], g[4]) not in belege]
+            belege, je_datei, anzahl = _bestand(store, sid)
+            neu, grund = [], ""
+            for g in geholt:  # Grenzen wie vor den Abrufen, jetzt mit dem Bestand zum Zeitpunkt des Schreibens
+                if _schon_beleg(belege, g[0].url, g[4]) or adresse_norm(g[3], g[4]) in belege:
+                    continue
+                dateien = {repo.normalize_url(g[0].url), repo.normalize_url(g[3])}
+                if max(je_datei.get(d, 0) for d in dateien) >= ANKER_JE_DATEI:
+                    grund = GRUND_SEITEN
+                elif anzahl + len(neu) >= MAX_DOKUMENTE:
+                    grund = GRUND_MAX
+                else:
+                    for d in dateien:
+                        je_datei[d] = je_datei.get(d, 0) + 1
+                    neu.append(g)
             if not neu:
                 db.rollback()
+                if grund:
+                    return {"ergebnis": "abgelehnt", "story_id": sid, "grund": grund}
                 return {"ergebnis": "vorhanden", "story_id": sid, "grund": f"schon vorhanden: Story {sid}"}
             nummern = [int(r[0][1:]) for r in db.execute(
                 "SELECT doc_key FROM source_documents WHERE story_id = ?", (sid,)) if re.fullmatch(r"Q[0-9]+", r[0])]
@@ -590,18 +616,19 @@ def _eins(store: Store, raw, nr: int, von: str, abruf: Callable, heute: date, uh
     except VorschlagAbgelehnt as exc:
         return {**out, "ergebnis": "abgelehnt", "grund": str(exc)[:300]}
     belege: set[str] = set()
+    je_datei: dict[str, int] = {}  # je Datei (ohne Anker); beim Ergänzen mit den Seiten, die schon Beleg sind
+    anzahl = 0
     if v.story_id:  # Nachtrag ergänzen: die Story ist genannt, keine Dublettenprüfung
         _, grund = _ziel_grund(store, v.story_id)
         if grund:
             return {**out, "ergebnis": "abgelehnt", "story_id": v.story_id, "grund": grund}
-        belege = _belege(store, v.story_id)
+        belege, je_datei, anzahl = _bestand(store, v.story_id)
     else:
         dublette = _dublette(store, v)  # vor den Abrufen: nichts holen, was schon da ist
         if dublette:
             return {**out, **dublette}
     geholt, uebersprungen = [], []
     abgerufen: dict[str, net.Fetched | Exception] = {}  # je Datei (ohne Anker) nur ein Abruf je Vorschlag
-    je_datei: dict[str, int] = {}
     gesehen: set[str] = set()
     hinweise: list[dict] = []  # z. B. „gekürzt …“ je Quelle
     for q in v.quellen:
@@ -615,7 +642,10 @@ def _eins(store: Store, raw, nr: int, von: str, abruf: Callable, heute: date, uh
         datei = repo.normalize_url(q.url)
         je_datei[datei] = je_datei.get(datei, 0) + 1
         if je_datei[datei] > ANKER_JE_DATEI:
-            uebersprungen.append({"url": q.url, "grund": "höchstens zwei Seiten je Datei"})
+            uebersprungen.append({"url": q.url, "grund": GRUND_SEITEN})
+            continue
+        if v.story_id and anzahl + len(geholt) >= MAX_DOKUMENTE:
+            uebersprungen.append({"url": q.url, "grund": GRUND_MAX})
             continue
         jetzt = uhr()
         if ende is not None and jetzt >= ende:
@@ -659,7 +689,8 @@ def _eins(store: Store, raw, nr: int, von: str, abruf: Callable, heute: date, uh
         return {**out, "ergebnis": "vorhanden", "story_id": v.story_id, "grund": f"schon vorhanden: Story {v.story_id}",
                 "quellen_uebersprungen": uebersprungen}
     if not geholt:
-        return {**out, "ergebnis": "abgelehnt", "grund": "keine Quelle abrufbar", "quellen_uebersprungen": uebersprungen}
+        grund = "keine neue Quelle anhängbar" if v.story_id else "keine Quelle abrufbar"
+        return {**out, "ergebnis": "abgelehnt", "grund": grund, "quellen_uebersprungen": uebersprungen}
     if v.story_id:
         return _ergaenzt_melden(store, out, v, geholt, uebersprungen, hinweise, heute, von)
     ergebnis = _anlegen(store, v, geholt)

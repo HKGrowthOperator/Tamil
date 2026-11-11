@@ -1249,3 +1249,52 @@ def test_ergaenzen_riesige_story_id_wird_abgelehnt_und_der_stapel_laeuft_weiter(
         e = out["ergebnisse"]
         assert [x["ergebnis"] for x in e] == ["abgelehnt", "abgelehnt", "ergaenzt"], e
         assert e[0]["grund"].startswith("story_id") and e[1]["grund"].startswith("story_id")
+
+
+def test_ergaenzen_zaehlt_vorhandene_seiten_derselben_datei_mit(settings):
+    datei = pdf_bytes([SEITE1, SEITE2, SEITE1, SEITE2])
+    with Store(settings.db_path) as store:
+        sid = pdf_annehmen(store, settings, pdf_vorschlag(PDF_URL + "#page=2"), {PDF_URL: datei})["story_id"]
+        repo.story_setzen(store, sid, status="recherche_erforderlich")
+        e = pdf_annehmen(store, settings, pdf_vorschlag(PDF_URL + "#page=3", story_id=sid), {PDF_URL: datei})
+        assert e["ergebnis"] == "ergaenzt", e
+        repo.story_setzen(store, sid, status="recherche_erforderlich")
+        abrufe = []
+        e = nachtrag.annehmen(store, settings, {"vorschlaege": [pdf_vorschlag(PDF_URL + "#page=4", story_id=sid)]},
+                              von="test", ctx=kontext(store, settings), abruf=pdf_abruf({PDF_URL: datei}, abrufe))
+        e = e["ergebnisse"][0]
+        assert e["ergebnis"] == "abgelehnt" and abrufe == [], e
+        assert e["quellen_uebersprungen"] == [{"url": PDF_URL + "#page=4", "grund": "höchstens zwei Seiten je Datei"}]
+        assert len(repo.dokumente(store, sid)) == 2
+
+
+def test_ergaenzen_hoechstens_zehn_dokumente_je_story(settings):
+    with Store(settings.db_path) as store:
+        sid = nachtrag_mit_luecke(store, settings)
+        for n in range(8):
+            repo.dokument_hinzufuegen(store, sid, url=f"https://www.example.org/bericht-{n}", text=ARTIKEL1)
+        e = annehmen(store, settings, [vorschlag(story_id=sid, quellen=[quelle(URL3), quelle(URL2)])],
+                     seiten=SEITEN3)["ergebnisse"][0]
+        assert e["ergebnis"] == "ergaenzt" and e["quellen_geholt"] == 1, e
+        assert e["quellen_uebersprungen"] == [{"url": URL2, "grund": "höchstens 10 Dokumente je Story"}]
+        repo.story_setzen(store, sid, status="recherche_erforderlich")
+        abrufe = []
+        e = annehmen(store, settings, [vorschlag(story_id=sid, quellen=[quelle(URL2)])], seiten=SEITEN3,
+                     abrufe=abrufe)["ergebnisse"][0]
+        assert e["ergebnis"] == "abgelehnt" and abrufe == [] and len(repo.dokumente(store, sid)) == 10
+
+
+def test_ergaenzen_seitengrenze_auch_in_der_schreibtransaktion(settings):
+    datei = pdf_bytes([SEITE1, SEITE2, SEITE1, SEITE2, SEITE1])
+    with Store(settings.db_path) as store:
+        sid = pdf_annehmen(store, settings, pdf_vorschlag(PDF_URL + "#page=2"), {PDF_URL: datei})["story_id"]
+        repo.story_setzen(store, sid, status="recherche_erforderlich")
+        basis = pdf_abruf({PDF_URL: datei})
+
+        def abruf(url, frist=None):  # ein gleichzeitiger Aufruf hängt Seite 5 an
+            repo.dokument_hinzufuegen(store, sid, url=PDF_URL + "#page=5", text="x" * 400)
+            return basis(url, frist)
+        e = nachtrag.annehmen(store, settings, {"vorschlaege": [pdf_vorschlag(PDF_URL + "#page=3", story_id=sid)]},
+                              von="test", ctx=kontext(store, settings), abruf=abruf)["ergebnisse"][0]
+        assert e["ergebnis"] == "abgelehnt" and "höchstens zwei Seiten je Datei" in e["grund"], e
+        assert [d.url for d in repo.dokumente(store, sid)] == [PDF_URL + "#page=2", PDF_URL + "#page=5"]
