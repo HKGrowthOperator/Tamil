@@ -354,6 +354,8 @@ def nutzer_anlegen(store, name: str, passwort: str, rolle: str = "redaktion") ->
         raise ValueError(f"Rolle muss {', '.join(ROLLEN)} sein")
     if len(passwort) < 10:
         raise ValueError("Passwort: mindestens 10 Zeichen")
+    if rolle != "admin" and _letzter_admin(store, name):
+        raise ValueError(f"{name} ist der letzte aktive Admin und kann nicht herabgestuft werden.")
     store._write(
         "INSERT INTO users (name, passwort_hash, rolle, aktiv, erstellt) VALUES (?,?,?,1,?) "
         "ON CONFLICT(name) DO UPDATE SET passwort_hash = excluded.passwort_hash, rolle = excluded.rolle, aktiv = 1",
@@ -400,7 +402,17 @@ def sitzungen_beenden(store, nutzer: str) -> int:
     return store._write("DELETE FROM sitzungen WHERE nutzer = ?", (nutzer,)).rowcount
 
 
+def _letzter_admin(store, name: str) -> bool:
+    """Ist `name` aktiver Admin und kein anderer aktiver Admin übrig?"""
+    ist = store.db.execute("SELECT 1 FROM users WHERE name = ? AND rolle = 'admin' AND aktiv = 1", (name,)).fetchone()
+    andere = store.db.execute("SELECT COUNT(*) FROM users WHERE name != ? AND rolle = 'admin' AND aktiv = 1",
+                              (name,)).fetchone()[0]
+    return bool(ist) and andere == 0
+
+
 def nutzer_sperren(store, name: str) -> bool:
+    if _letzter_admin(store, name):
+        raise ValueError(f"{name} ist der letzte aktive Admin und kann nicht gesperrt werden.")
     gesperrt = store._write("UPDATE users SET aktiv = 0 WHERE name = ?", (name,)).rowcount == 1
     sitzungen_beenden(store, name)
     return gesperrt

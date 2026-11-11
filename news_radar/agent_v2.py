@@ -87,7 +87,11 @@ def export_v2(store: Store, settings: Settings, file: Path, *, limit: int = 10, 
 
 
 def paket_v2(store: Store, settings: Settings, *, limit: int = 10, ctx: Kontext | None = None) -> dict:
-    """Die Aufgabenmappe als dict: offene Storys mit Dokumenten (Volltext), Längenregel und allen Regeln."""
+    """Die Aufgabenmappe als dict: offene Storys mit Dokumenten (Volltext), Längenregel und allen Regeln.
+    Hält der Schalter „redaktion“ an, wirft schalter.Gestoppt, bevor irgendetwas abgerufen wird."""
+    from . import schalter
+
+    schalter.pruefen(store, "redaktion")
     ctx = ctx or Kontext(settings=settings, store=store)
     pakete = []
     from .workflow.orchestrator import termin_vorbei
@@ -135,7 +139,11 @@ def import_v2(store: Store, settings: Settings, file: Path, *, von: str = "agent
 
 
 def import_daten(store: Store, settings: Settings, raw, *, von: str = "agent", ctx: Kontext | None = None) -> dict:
-    """Ergebnisse der Cloud-Sitzung übernehmen ({"ergebnisse": [...]} oder Liste) – mit Gate und allen Regeln."""
+    """Ergebnisse der Cloud-Sitzung übernehmen ({"ergebnisse": [...]} oder Liste) – mit Gate und allen Regeln.
+    Hält der Schalter „redaktion“ an, wirft schalter.Gestoppt, bevor irgendetwas angelegt wird."""
+    from . import schalter
+
+    schalter.pruefen(store, "redaktion")
     ctx = ctx or Kontext(settings=settings, store=store)
     items = raw.get("ergebnisse") if isinstance(raw, dict) else raw
     if not isinstance(items, list):

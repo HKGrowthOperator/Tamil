@@ -340,6 +340,12 @@ def _publish(draft_id: int, status: str):
     store = get_store()
     row = _draft_or_404(draft_id)
     sperre = schalter.sperre(store, "website")
+    if sperre is not None and status != "publish":
+        # „In WordPress bearbeiten“ ist kein Freigeben: im Stopp bleibt der Status, sonst ginge der Text später live
+        flash(_angehalten_meldung(sperre, "Es wurde kein WordPress-Entwurf angelegt, der Status bleibt "
+                                          f"„{STATUS_LABELS.get(row['status'], row['status'])}“. Bitte nach dem "
+                                          "Einschalten erneut wählen."), "fehler")
+        return redirect(url_for("ui.entwurf", draft_id=draft_id))
     if sperre is not None:  # Freigeben von Hand geht, übertragen nicht: der Entwurf wartet auf den nächsten Lauf
         _freigeben_wartend(store, row, sperre)
         return redirect(url_for("ui.entwurf", draft_id=draft_id))
@@ -374,14 +380,16 @@ def _publish(draft_id: int, status: str):
 
 
 def _freigeben(store, row: dict) -> bool:
-    """Offenen Entwurf freigeben (mit Protokollzeile); False, wenn er es schon war oder nicht freigebbar ist."""
-    if row["status"] not in OPEN_STATES:
+    """Offenen Entwurf freigeben, einen mit Fehler erneut freigeben (mit Protokollzeile); False, wenn er es schon war
+    oder nicht freigebbar ist."""
+    aktion = "erneut" if row["status"] == "fehler" else "freigeben"
+    if row["status"] not in OPEN_STATES and row["status"] != "fehler":
         return False
     try:
-        store.set_status(row["id"], "freigeben", von=_user())
+        store.set_status(row["id"], aktion, von=_user())
     except ConflictError:
         return False
-    _protokoll("freigeben", row, fassung=repo.fassung_hash(row))
+    _protokoll(aktion, row, fassung=repo.fassung_hash(row))
     return True
 
 
@@ -389,6 +397,11 @@ def _freigeben_wartend(store, row: dict, sperre: dict, schon_frei: bool = False)
     """Website angehalten: freigeben, nicht übertragen, und dem Menschen sagen, warum und wie es weitergeht."""
     if not schon_frei:
         _freigeben(store, row)
+    jetzt = store.get_draft(row["id"])["status"]
+    if jetzt != "freigegeben":  # ehrlich bleiben: was nicht freigegeben ist, wartet auch nicht
+        flash(_angehalten_meldung(sperre, f"Nichts wurde übertragen; der Entwurf steht auf "
+                                          f"„{STATUS_LABELS.get(jetzt, jetzt)}“ und wartet nicht."), "fehler")
+        return
     _protokoll("zurueckgehalten", row, fassung=repo.fassung_hash(row), kanal="website",
                notiz=f"Schalter „{sperre['kanal']}“ angehalten seit {sperre['seit']}")
     flash(_angehalten_meldung(sperre, "Nichts wurde an WordPress übertragen. Der Entwurf ist freigegeben und wartet; "
@@ -486,12 +499,13 @@ def gesund():
     runs = store.recent_runs(1)
     warteschlange = jobs.zaehlen(store)
     stand = budget_stand(store)
+    gestoppte = schalter.aktive(store)
     return jsonify({"ok": True, "letzter_lauf": runs[0]["started_at"] if runs else None,
                     "offen": sum(store.counts_by_status()[s] for s in OPEN_STATES),
                     "warteschlange": {k: warteschlange[k] for k in ("offen", "laeuft", "tot", "wartet_budget")},
                     "budget": {k: stand[k] for k in ("tag_usd", "monat_usd", "tag_limit", "monat_limit", "warnung", "stopp")},
-                    # öffentlich: nur Kanal und Zeit, nie Grund oder Person
-                    "gestoppt": [{"kanal": z["kanal"], "seit": z["seit"]} for z in schalter.aktive(store)],
+                    # öffentlich: nur ob und wie viele; Kanäle und Zeiten stehen im geschützten /api/bericht
+                    "gestoppt": bool(gestoppte), "gestoppt_kanaele": len(gestoppte),
                     "zeit": datetime.now(timezone.utc).isoformat()})
 
 

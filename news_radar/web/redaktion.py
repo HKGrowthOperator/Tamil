@@ -211,6 +211,8 @@ def nutzer_aendern():
     name = request.form.get("name", "").strip()
     aktion = "sperren" if request.form.get("aktion") == "sperren" else "anlegen"
     try:
+        if name == _user() and (aktion == "sperren" or request.form.get("rolle", "redaktion") != session.get("rolle")):
+            raise ValueError("Sich selbst sperren oder herabstufen geht nicht – das macht ein anderer Admin.")
         if aktion == "sperren":
             if not repo.nutzer_sperren(store, name):
                 raise ValueError(f"{name} gibt es nicht.")

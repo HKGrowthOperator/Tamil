@@ -13,7 +13,7 @@ import re
 from dataclasses import dataclass
 from difflib import SequenceMatcher
 
-from .. import prompts
+from .. import prompts, schalter
 from ..sources import NewsItem
 from ..workflow import repo
 from ..workflow.costs import BudgetErschoepft
@@ -110,6 +110,8 @@ def _grenzfaelle_entscheiden(ctx: Kontext, faelle: list[tuple[int, NewsItem, dic
         antwort = ctx.claude.call("cluster", prompts.load_prompt("cluster"), json_block("paare", paare), ClusterErgebnis)
     except BudgetErschoepft:
         return  # im Zweifel neue Story
+    except schalter.Gestoppt:
+        raise  # angehalten: der Scan bricht ab, statt doppelte Storys anzulegen
     except Exception as exc:  # noqa: BLE001 – Ausfall des Modells: im Zweifel neue Story, Scan läuft weiter
         log.warning("Cluster-Prüfung fehlgeschlagen (%s) – Grenzfälle werden neue Storys", exc)
         return

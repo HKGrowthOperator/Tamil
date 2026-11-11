@@ -12,7 +12,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 
-from . import dates, filtering, notify, sources
+from . import dates, filtering, notify, schalter, sources
 from .config import Settings
 from .bilder import beitragsbild
 from .images import save_pair
@@ -189,7 +189,7 @@ def run(settings: Settings, writer: Writer | None = None, store: Store | None = 
     run_id = store.start_run(modus)
     results: list[Result] = []
     try:
-        from . import schalter
+
 
         if schalter.gestoppt(store, "redaktion"):  # Stopp-Schalter: kein Abruf, kein Text; Freigegebenes geht weiter
             log.info("Redaktion angehalten – kein Scan; nur Veröffentlichung freigegebener Entwürfe")
@@ -227,6 +227,8 @@ def run(settings: Settings, writer: Writer | None = None, store: Store | None = 
                     item = futures[fut]
                     try:
                         results.append(fut.result())
+                    except schalter.Gestoppt:
+                        log.info("Angehalten – %s folgt nach dem Einschalten", item.title)
                     except Exception as exc:  # noqa: BLE001 - ein fehlerhafter Beitrag stoppt den Lauf nicht
                         log.exception("Fehler bei %s", item.title)
                         store.event("fehler", titel=item.title, quelle=item.url, fehler=str(exc)[:300])

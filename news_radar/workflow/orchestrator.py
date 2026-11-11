@@ -75,10 +75,20 @@ def _offener_entwurf(store: Store, story_id: int) -> dict | None:
 
 
 def scan(ctx: Kontext, items: list[sources.NewsItem] | None = None) -> dict:
-    """Ein Scan: neue Treffer werden Storys (mit Job) oder reichern bestehende Storys an. Gibt Zählwerte zurück."""
-    s, store = ctx.settings, ctx.store
-    if schalter.gestoppt(store, "redaktion"):  # Stopp-Schalter: kein Abruf der Quellen, keine Story, kein Job
+    """Ein Scan: neue Treffer werden Storys (mit Job) oder reichern bestehende Storys an. Gibt Zählwerte zurück.
+    Hält der Schalter „redaktion“ an – vorher oder mittendrin –, endet der Scan sauber: keine halbe Story, und was
+    nicht verarbeitet ist, bleibt ungesehen für den nächsten Scan."""
+    if schalter.gestoppt(ctx.store, "redaktion"):  # Stopp-Schalter: kein Abruf der Quellen, keine Story, kein Job
         return {"angehalten": 1}
+    try:
+        return _scan(ctx, items)
+    except schalter.Gestoppt:
+        log.info("Scan angehalten (Schalter)")
+        return {"angehalten": 1}
+
+
+def _scan(ctx: Kontext, items: list[sources.NewsItem] | None = None) -> dict:
+    s, store = ctx.settings, ctx.store
     now = ctx.uhr()
     items = items if items is not None else sources.fetch_all(s, store)
     seen = store.seen_uids()
@@ -102,8 +112,10 @@ def scan(ctx: Kontext, items: list[sources.NewsItem] | None = None) -> dict:
     stats.update(aussortiert)  # termin_veraltet, ausland, ohne_bezug – in der Laufnotiz nur, wenn größer 0
     limit_gemeldet = False
     neue_storys: dict[int, int] = {}  # Index der Zuordnung → angelegte Story (für Meldungen desselben Scans)
+    schalter.pruefen(store, "redaktion")
     zuordnungen = cluster.zuordnen(ctx, picked)
     for idx, z in enumerate(zuordnungen):
+        schalter.pruefen(store, "redaktion")  # vor jeder Meldung: entweder ganz oder gar nicht
         item = z.item
         publisher = quelle_name(item)
         if z.bezug is not None:

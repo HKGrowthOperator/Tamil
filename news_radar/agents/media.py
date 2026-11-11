@@ -21,7 +21,7 @@ from pathlib import Path
 import requests
 from PIL import Image, ImageOps
 
-from .. import bilder, images, net, prompts
+from .. import bilder, images, net, prompts, schalter
 from ..config import Source
 from ..images import SIZE, FeaturedImage
 from ..workflow import costs, repo
@@ -145,6 +145,8 @@ def besorgen(ctx: Kontext, story: dict, felder: dict, slug: str, *, kategorie_la
     versucht = []
     for stufe in s.bild_reihenfolge:
         bild = None
+        if stufe in ("quelle", "stock", "ki"):  # Aufruf nach außen: Gestoppt geht nach oben, kein Ausweichen
+            schalter.pruefen(ctx.store, "redaktion")
         if stufe == "archiv":
             bild = _archiv(ctx, thema, felder.get("kategorie") or "", slug)
         elif stufe == "quelle":

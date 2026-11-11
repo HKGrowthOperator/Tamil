@@ -296,6 +296,16 @@ def main(argv: list[str] | None = None) -> int:
         print(f"{n} Protokolleinträge → {args.file}")
         return 0
 
+    if args.cmd == "agent":
+        from . import schalter
+
+        with Store(settings.db_path) as store:
+            sperre = schalter.sperre(store, "redaktion")
+        if sperre is not None:  # Agent-Modus gehört zur Redaktion: im Stopp weder abrufen noch anlegen
+            print(f"Redaktion angehalten (Schalter „{sperre['kanal']}“ seit {sperre['seit']}): {sperre['grund']} – "
+                  "nichts exportiert oder importiert.", file=sys.stderr)
+            return 3
+
     if args.cmd == "agent" and args.v2:
         from .agent_v2 import export_v2, import_v2
 
@@ -324,11 +334,14 @@ def main(argv: list[str] | None = None) -> int:
                 return 0
             if not args.name:
                 raise SystemExit("Name fehlt: nutzer anlegen NAME [--rolle admin]")
-            if args.aktion == "sperren":
-                print("gesperrt" if repo.nutzer_sperren(store, args.name) else "unbekannt")
-                return 0
-            passwort = os.environ.get("RADAR_NEUES_PASSWORT") or getpass(f"Passwort für {args.name} (mind. 10 Zeichen): ")
-            repo.nutzer_anlegen(store, args.name, passwort, args.rolle)
+            try:
+                if args.aktion == "sperren":
+                    print("gesperrt" if repo.nutzer_sperren(store, args.name) else "unbekannt")
+                    return 0
+                passwort = os.environ.get("RADAR_NEUES_PASSWORT") or getpass(f"Passwort für {args.name} (mind. 10 Zeichen): ")
+                repo.nutzer_anlegen(store, args.name, passwort, args.rolle)
+            except ValueError as exc:
+                raise SystemExit(str(exc)) from None
         print(f"{args.name} angelegt ({args.rolle})")
         return 0
 

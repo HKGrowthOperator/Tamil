@@ -319,19 +319,20 @@ def test_schalterseite_grund_pflicht_banner_und_gesund(web):
     assert 'name="grund"' in html and "required" in html
     resp = client.post("/schalter/website/an", data={"_csrf": token, "grund": "  "}, follow_redirects=True)
     assert "Grund fehlt" in resp.get_data(as_text=True)
-    assert client.get("/gesund").get_json()["gestoppt"] == []
+    assert client.get("/gesund").get_json()["gestoppt"] is False
     client.post("/schalter/website/an", data={"_csrf": token, "grund": "Theme-Umbau"})
     for seite in ("/", "/kosten", "/protokoll", "/entwurf/1", "/schalter", "/zeitplan"):
         text = client.get(seite).get_data(as_text=True)
         assert 'class="banner stopp"' in text and "Website" in text and "Theme-Umbau" in text, seite
     gesund = client.get("/gesund").get_json()
-    assert gesund["ok"] is True and [g["kanal"] for g in gesund["gestoppt"]] == ["website"]
-    assert gesund["gestoppt"][0]["seit"] and set(gesund["gestoppt"][0]) == {"kanal", "seit"}  # öffentlich: ohne Grund, ohne Person
+    # öffentlich: nur ob und wie viele – kein Kanal, keine Zeit, kein Grund, keine Person
+    assert gesund["ok"] is True and gesund["gestoppt"] is True and gesund["gestoppt_kanaele"] == 1
+    assert "website" not in client.get("/gesund").get_data(as_text=True)
     client.post("/schalter/website/aus", data={"_csrf": token})
     assert 'class="banner stopp"' not in client.get("/").get_data(as_text=True)
 
 
-@pytest.mark.parametrize("weg", ["veroeffentlichen", "wp-entwurf"])
+@pytest.mark.parametrize("weg", ["veroeffentlichen"])  # „wp-entwurf“ im Stopp: test_schalter_befunde.py
 def test_direkt_posten_im_stopp_gibt_frei_und_sagt_warum(web, settings, weg):
     app, client, token = web
     wp = app.extensions["wordpress"] = FakeWP()
