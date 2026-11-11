@@ -15,6 +15,7 @@ import json
 import logging
 import threading
 import time
+import hashlib
 from collections import Counter
 from datetime import date, datetime, timedelta, timezone
 from typing import Any, Callable
@@ -324,6 +325,21 @@ def _quelle(ctx: Kontext, name: str):
     return by_name.get(name) or by_name.get((name or "").split(" · ")[0])
 
 
+def _neues_bild_verwerfen(ctx: Kontext, name: str, asset_id: int) -> None:
+    """Nicht übernommenes Bild: den ungebundenen Lizenz-Datensatz entfernen, Datei und Vorschaubild nur, wenn kein
+    Entwurf darauf zeigt (bei gleichen Bytes ist es dieselbe Datei wie die des bestehenden Entwurfs)."""
+    ctx.store._write("DELETE FROM assets WHERE id = ? AND draft_id IS NULL", (asset_id,))
+    _alte_datei_aufraeumen(ctx, name, "")
+
+
+def _alte_datei_aufraeumen(ctx: Kontext, datei: str | None, neu: str) -> None:
+    if not datei or datei == neu or ctx.store.db.execute(
+            "SELECT 1 FROM drafts WHERE bild_datei = ? LIMIT 1", (datei,)).fetchone():
+        return
+    for pfad in (datei, datei.replace(".jpg", "-thumb.jpg")):
+        (ctx.settings.bilder_dir / pfad).unlink(missing_ok=True)
+
+
 def entwurf_anlegen(ctx: Kontext, story: dict, felder: dict, payload: dict, *, typ: str, hinweise: list[str],
                     fakten: dict | None = None, fingerprint: str = "") -> int | None:
     """Bild besorgen, Entwurf in die Warteschlange (Status „neu“), Lizenz und Fassung verknüpfen."""
@@ -337,7 +353,11 @@ def entwurf_anlegen(ctx: Kontext, story: dict, felder: dict, payload: dict, *, t
     label = category_label(s, felder.get("kategorie") or "news")
     bild, versucht = media.besorgen(ctx, story, felder, stem, kategorie_label=label,
                                     quelle=_quelle(ctx, payload.get("quelle", "")), quelle_bild=payload.get("quelle_bild", ""))
-    name, asset_id = media.speichern(ctx, bild, stem, story["id"])
+    # Eindeutiger Name (Entwurf, falls schon da, und Inhalts-Hash): nie die Datei eines anderen Entwurfs überschreiben
+    vorhanden = ctx.store.draft_by_uid(uid)
+    eindeutig = f"{stem}-e{vorhanden['id']}" if vorhanden else stem
+    eindeutig += "-" + hashlib.sha256(bild.image.data).hexdigest()[:8]
+    name, asset_id = media.speichern(ctx, bild, eindeutig, story["id"])
     weitere = [{"name": d.publisher or d.quelle, "url": d.url} for d in docs[1:] if d.url and not d.url.endswith("#daten")]
     if story.get("sensibel"):
         hinweise = ["Sensibles Thema: vor der Freigabe eine zweite Person lesen lassen"] + \
@@ -376,11 +396,15 @@ def entwurf_anlegen(ctx: Kontext, story: dict, felder: dict, payload: dict, *, t
                                        von="radar", draft_id=draft_id)
                 repo.story_setzen(ctx.store, story["id"], status="fertig")
                 ctx.store.event("entwurf_nicht_ueberschrieben", id=draft_id, story=story["id"], status=existing["status"])
+                _neues_bild_verwerfen(ctx, name, asset_id)
                 return draft_id
             if not ctx.store.update_draft(draft_id, von="radar", nur_status=OPEN_STATES,
                                           **{k: v for k, v in row.items() if k not in ("uid", "fakten")}):
                 existing = None  # inzwischen freigegeben: nicht überschreiben, wie ein schon vorhandener Entwurf
+            else:
+                _alte_datei_aufraeumen(ctx, existing.get("bild_datei"), name)
         if existing is None or existing["status"] not in OPEN_STATES:
+            _neues_bild_verwerfen(ctx, name, asset_id)
             ctx.store.event("entwurf_existiert", story=story["id"], uid=uid)
             repo.story_setzen(ctx.store, story["id"], status="verworfen", notiz="Entwurf zu dieser Meldung existiert schon")
             return None
