@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import io
 import logging
+import os
 import re
 import textwrap
 from dataclasses import dataclass
@@ -195,11 +196,24 @@ def save_pair(image: FeaturedImage, folder: Path, stem: str) -> tuple[str, str]:
     stem = re.sub(r"[^A-Za-z0-9._-]+", "-", stem).strip("-.") or "bild"
     folder.mkdir(parents=True, exist_ok=True)
     name, thumb = f"{stem}.jpg", f"{stem}-thumb.jpg"
-    (folder / name).write_bytes(image.data)
+    _schreiben(folder / name, image.data)
     img = Image.open(io.BytesIO(image.data))
     img.thumbnail((400, 400))
-    (folder / thumb).write_bytes(_encode(img, quality=80))
+    _schreiben(folder / thumb, _encode(img, quality=80))
     return name, thumb
+
+
+def _schreiben(pfad: Path, daten: bytes) -> None:
+    """Nie in place überschreiben (sonst ist die Datei eines freigegebenen Entwurfs kurz leer): gleicher Inhalt →
+    nichts tun, sonst über eine temporäre Datei im selben Ordner und os.replace."""
+    if pfad.is_file() and pfad.read_bytes() == daten:
+        return
+    tmp = pfad.with_name(f".{pfad.name}.{os.getpid()}.tmp")
+    try:
+        tmp.write_bytes(daten)
+        os.replace(tmp, pfad)
+    finally:
+        tmp.unlink(missing_ok=True)
 
 
 def load_image(path: Path, credit: str = "", origin: str = "datei") -> FeaturedImage:

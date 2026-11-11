@@ -216,3 +216,18 @@ def test_asset_fuer_datei_bevorzugt_gebundene(settings):  # noqa: F811
         gebunden = repo.asset_anlegen(store, datei="x.jpg", herkunft="karte", draft_id=7)
         repo.asset_anlegen(store, datei="x.jpg", herkunft="ki")  # verwaist, aber neuer
         assert repo.asset_fuer_datei(store, "x.jpg")["id"] == gebunden
+
+
+
+def test_save_pair_schreibt_gleiche_datei_nicht_neu(tmp_path):
+    from news_radar import images
+
+    bild = branded_card("Titel", "Community", "x", "community")
+    name, thumb = images.save_pair(bild, tmp_path, "datei")
+    vorher = {n: ((tmp_path / n).stat().st_ino, (tmp_path / n).stat().st_mtime_ns) for n in (name, thumb)}
+    assert images.save_pair(bild, tmp_path, "datei") == (name, thumb)
+    assert {n: ((tmp_path / n).stat().st_ino, (tmp_path / n).stat().st_mtime_ns) for n in (name, thumb)} == vorher
+    anders = branded_card("Anderer Titel", "Kultur", "x", "kultur")
+    images.save_pair(anders, tmp_path, "datei")
+    assert (tmp_path / name).read_bytes() == anders.data
+    assert sorted(p.name for p in tmp_path.iterdir()) == sorted([name, thumb])  # keine Temp-Dateien übrig
