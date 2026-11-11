@@ -615,7 +615,10 @@ def _setzen(store: Store, settings: Settings, entwurf: dict, story_id: int, weg:
                         (settings.bilder_dir / neu).unlink(missing_ok=True)
     if not gesetzt:
         raise Abgelehnt("Entwurf hat sich während des Abrufs geändert (freigegeben oder anderes Bild)")
-    images.datei_sicherstellen(fi, settings.bilder_dir, name)
+    try:  # nach dem Festschreiben darf ein Schreibfehler das Protokoll unten nicht verhindern
+        images.datei_sicherstellen(fi, settings.bilder_dir, name)
+    except OSError:
+        logging.getLogger(__name__).exception("Bilddatei %s ließ sich nicht wiederherstellen", name)
     andere = alt_datei and store.db.execute(  # nie eine Datei löschen, auf die ein anderer Entwurf zeigt
         "SELECT 1 FROM drafts WHERE bild_datei = ? AND id != ? LIMIT 1", (alt_datei, entwurf["id"])).fetchone()
     for alt_pfad in (() if andere else (alt_datei, (alt_datei or "").replace(".jpg", "-thumb.jpg"))):

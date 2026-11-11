@@ -147,6 +147,22 @@ def test_commons_cc_by_sa_gesetzt_mit_nachweis_lizenz_und_protokoll(settings):
         assert any(ev.get("id") == did for ev in store.iter_log(event="bild"))
 
 
+def test_protokoll_auch_wenn_datei_wiederherstellen_scheitert(settings, monkeypatch):
+    """Nach dem Festschreiben (Bild und Lizenz gesetzt) darf ein Schreibfehler das Protokoll nicht verhindern."""
+    from news_radar import images
+
+    def platte_voll(*a, **kw):
+        raise OSError("No space left on device")
+
+    monkeypatch.setattr(images, "datei_sicherstellen", platte_voll)
+    with Store(settings.db_path) as store:
+        sid, did = story_mit_entwurf(store)
+        e = eins(store, settings, {"story_id": sid, "weg": "commons", "seite_url": COMMONS_SEITE, "alt": "Tempel"},
+                 {"API": commons_api(), COMMONS_THUMB: jpeg()})
+        assert e["ergebnis"] == "gesetzt", e
+        assert repo.aktionen(store, did)[-1]["aktion"] == "bild"
+
+
 @pytest.mark.parametrize("lizenz,artist,mime,grund", [
     ("CC BY-NC-SA 4.0", "Anna", "image/jpeg", "Lizenz"),
     ("CC BY-ND 2.0", "Anna", "image/jpeg", "Lizenz"),
