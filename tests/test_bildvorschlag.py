@@ -265,7 +265,9 @@ def test_quelle_og_image_mit_nachweis_aus_dem_register(settings):
         d = store.get_draft(did)
         assert d["bild_credit"] == e["nachweis"] and d["bild_origin"] == "quelle" and d["bild_alt"] in (None, "")
         a = repo.asset_fuer_datei(store, d["bild_datei"])
-        assert a["herkunft"] == "quelle" and a["rechteinhaber"] == TEMPEL.betreiber and a["quelle_url"] == OG
+        assert a["herkunft"] == "quelle" and a["rechteinhaber"] == TEMPEL.betreiber and a["quelle_url"] == DOK
+        assert any(ev.get("bild_url") == OG for ev in store.iter_log(event="bild"))
+        assert OG in repo.aktionen(store, did)[-1]["notiz"]
         assert "tempel" in a["lizenz"] and "keine ausdrückliche Lizenz" in a["lizenz"]
 
 
@@ -283,7 +285,8 @@ def test_quelle_bild_url_aus_dem_html(settings):
         e = eins(store, settings, {"story_id": sid, "weg": "quelle", "seite_url": DOK, "bild_url": IMG},
                  {DOK: seite(), IMG: jpeg(2000, 1300)})
         assert e["ergebnis"] == "gesetzt", e
-        assert repo.asset_fuer_datei(store, store.get_draft(did)["bild_datei"])["quelle_url"] == IMG
+        assert repo.asset_fuer_datei(store, store.get_draft(did)["bild_datei"])["quelle_url"] == DOK
+        assert IMG in repo.aktionen(store, did)[-1]["notiz"]
 
 
 @pytest.mark.parametrize("eintrag,seiten,grund", [

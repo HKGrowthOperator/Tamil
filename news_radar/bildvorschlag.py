@@ -333,7 +333,7 @@ def _commons(eintrag: dict, abrufen: Callable) -> dict:
         raise Abgelehnt(f"Bild leitet weg von {COMMONS_BILDHOST} um")
     img = _bild_lesen(got.content, streng=False)
     return {"img": img, "nachweis": nachweis, "lizenz": lizenz, "rechteinhaber": artist or "gemeinfrei",
-            "quelle_url": eintrag["seite_url"].strip()}
+            "quelle_url": eintrag["seite_url"].strip(), "bild_url": bild_url}
 
 
 # ---- Weg „quelle“ -------------------------------------------------------------------------------------
@@ -436,7 +436,9 @@ def _quelle(store: Store, settings: Settings, eintrag: dict, story_id: int, abru
     if gesperrt(ziel) or not any(_unter(ziel, h) for h in erlaubt):
         raise Abgelehnt(f"Bild leitet auf einen anderen Host um: {ziel}")
     img = _bild_lesen(got.content, streng=True)
-    return {"img": img, "nachweis": quelle.nachweis, "rechteinhaber": quelle.betreiber, "quelle_url": bild_url,
+    # „Bildquelle öffnen“ im Cockpit zeigt auf die Seite, auf der das Bild steht (dort prüft der Mensch die Herkunft)
+    return {"img": img, "nachweis": quelle.nachweis, "rechteinhaber": quelle.betreiber,
+            "quelle_url": eintrag["seite_url"].strip(), "bild_url": bild_url,
             "lizenz": f"Material der Quelle ({quelle.art}), redaktionelle Nutzung mit Bildnachweis; "
                       "keine ausdrückliche Lizenz"}
 
@@ -506,9 +508,9 @@ def _setzen(store: Store, settings: Settings, entwurf: dict, story_id: int, weg:
     for alt_pfad in (alt_datei, (alt_datei or "").replace(".jpg", "-thumb.jpg")):
         if alt_pfad and alt_pfad not in (name, thumb):
             (settings.bilder_dir / alt_pfad).unlink(missing_ok=True)
-    store.event("bild", id=entwurf["id"], aktion=f"agent_{weg}", origin=weg, von=von)
+    store.event("bild", id=entwurf["id"], aktion=f"agent_{weg}", origin=weg, von=von, bild_url=bild.get("bild_url", ""))
     repo.aktion(store, wer=von, aktion="bild", draft_id=entwurf["id"], story_id=story_id, kanal="redaktion",
-                ausloeser="agent", notiz=f"Bild mit Nachweis ({weg})")
+                ausloeser="agent", notiz=f"Bild mit Nachweis ({weg}): {bild.get('bild_url', '')}"[:500])
     return {"ergebnis": "gesetzt", "grund": "Bild gesetzt", "entwurf_id": entwurf["id"],
             "nachweis": bild["nachweis"], "lizenz": bild["lizenz"]}
 
