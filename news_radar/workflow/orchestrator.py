@@ -328,7 +328,10 @@ def _quelle(ctx: Kontext, name: str):
 def _neues_bild_verwerfen(ctx: Kontext, name: str, asset_id: int) -> None:
     """Nicht übernommenes Bild: den ungebundenen Lizenz-Datensatz entfernen, Datei und Vorschaubild nur, wenn kein
     Entwurf darauf zeigt (bei gleichen Bytes ist es dieselbe Datei wie die des bestehenden Entwurfs)."""
-    ctx.store._write("DELETE FROM assets WHERE id = ? AND draft_id IS NULL", (asset_id,))
+    # Zeigt schon ein Entwurf auf die Datei (festgeschrieben, nur das Binden fehlte), bleibt der Datensatz: sonst
+    # hätte der Entwurf ein Bild ohne Lizenz und ohne KI-Kennzeichnung.
+    ctx.store._write("DELETE FROM assets WHERE id = ? AND draft_id IS NULL AND NOT EXISTS "
+                     "(SELECT 1 FROM drafts WHERE drafts.bild_datei = assets.datei)", (asset_id,))
     _alte_datei_aufraeumen(ctx, name, "")
 
 
