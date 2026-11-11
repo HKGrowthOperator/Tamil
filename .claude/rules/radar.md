@@ -22,4 +22,4 @@ paths:
   Inline-Script und ohne Inline-Event-Handler; Verhalten gehört in `static/app.js`.
 - **Prompts** liegen als Markdown in `news_radar/prompts/`; die Version ist der Hash des Inhalts.
 - **Schema-Änderungen** nur als neue Migration in `workflow/schema.py` (`MIGRATIONS`), nie bestehende ändern.
-- **Fertig:** `python -m pytest -q` und `python -m news_radar abnahme` (51/51).
+- **Fertig:** `python -m pytest -q` und `python -m news_radar abnahme` (alle Szenarien bestanden).

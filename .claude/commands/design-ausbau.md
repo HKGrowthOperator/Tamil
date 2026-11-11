@@ -18,7 +18,11 @@ allowed-tools: Agent, Read, Write, Glob, Grep, Bash(node tools/shots.mjs*), Bash
 
 1. Änderungswünsche aus G2 und `design/kritik/<slug>-r*.md` sammeln.
 2. `art-director` mit Umfang „Probeseite“: Seiten nach `design/richtungen/<slug>/seiten/` (start, artikel, rubrik,
-   events, kinoliste, kontakt), Änderungswünsche als Pflichtliste.
+   events, kinoliste, kontakt), Änderungswünsche als Pflichtliste. Dazu die Seitentypen aus dem Vertrag
+   (`docs/vertrag/leistungen.md`), damit der Auftraggeber alles in einem Durchgang abnimmt: verzeichnis (Liste mit
+   Filtern und Profil), einreichen (Formular und Danke-Seite), werben (Preisseite, Buchung, Kundenübersicht),
+   Cookie-Hinweis, Textseite (Impressum). Felder und Abläufe stehen in den Festlegungen; Klassen der Bauteile aus den
+   Plugins (`tf-`, `vz-`, `wb-`) verwenden.
 3. Parallel `design-kritiker` (Ausgabe `design/kritik/<slug>-ausbau-r1.md`) und `qa-pruefer`.
 4. P0/P1 → `art-director` behebt (Runde 2) → erneut Kritik und QA.
 5. Artifact veröffentlichen (Seiten als Dateien, Navigation zwischen ihnen), Link an Luis.

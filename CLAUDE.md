@@ -2,7 +2,7 @@
 
 Relaunch von tamil.de (deutschsprachiges Magazin der tamilischen Diaspora in DE/AT/CH) plus News-Radar mit
 Agenten-Redaktion. Auftraggeber über Luis (HK Growth Operator). Sprache in Code-Kommentaren, Oberflächen und Doku:
-Deutsch.
+Deutsch. **Maßstab für „fertig“ ist der Vertrag (Anlage 1):** `docs/vertrag/leistungen.md`.
 
 ## Systeme
 
@@ -20,7 +20,8 @@ Freigabe im Cockpit → `publisher.py` → Plugin `tamil-radar` (REST) → Beitr
 ## Wo was liegt
 
 - `docs/` – `architektur.md`, `betrieb.md` (Apps, Variablennamen, Volumes, Deploy), `ablaeufe.md` (Abläufe und Tore),
-  `entscheidungen.md` (Entscheidungslog), `abnahme/` (jede Abnahme des Auftraggebers).
+  `entscheidungen.md` (Entscheidungslog), `abnahme/` (jede Abnahme des Auftraggebers), `vertrag/`
+  (Leistungsverzeichnis, Festlegung je Baustein, Zuarbeit von KBS).
 - `design/` – `brief.md`, `referenzen/`, `richtungen/<slug>/`, `kritik/`, später `tokens.css`.
 - `prototyp/` – **Archiv.** Nur `prototyp/content/*.json` ist noch Datenquelle (Importer, Tests). Nichts Neues hier bauen.
 - `tools/` – `export_site.py` (alte tamil.de nur lesen), `shots.mjs` (Screenshots + Prüfung), `coolify.py` (Deploy).
@@ -32,7 +33,7 @@ Freigabe im Cockpit → `publisher.py` → Plugin `tamil-radar` (REST) → Beitr
 ```bash
 pip install -r requirements.txt
 python -m pytest -q                         # alle Tests (FakeClaude, kein Netz)
-python -m news_radar abnahme                # 51 Szenarien, muss 51/51 sein
+python -m news_radar abnahme                # alle Szenarien müssen bestehen
 python -m news_radar web                    # Cockpit lokal auf :8787
 bash wordpress/dev/setup.sh && bash wordpress/dev/serve.sh &   # lokales WordPress (SQLite) auf :8085
 bash wordpress/dev/lint.sh                  # PHP-Lint, theme.json, PHPCS/WPCS
@@ -51,7 +52,11 @@ python tools/coolify.py status              # Stand beider Apps (Token aus $COOL
 - **Inhalte:** Die echte tamil.de wird nur gelesen, nie beschrieben. Keine erfundenen Fakten, Kontakte oder
   Bildnachweise. Platzhalter kennzeichnen (Telefon, E-Mail und WhatsApp-Nummer in `prototyp/content/site.json` sind
   Beispielwerte).
-- **Fertig heißt:** pytest grün · `abnahme` 51/51 · bei Theme/Plugin zusätzlich `lint.sh` · bei Oberflächen zusätzlich
+- **Vertrag:** Erst festlegen, dann bauen (`docs/vertrag/festlegung-<baustein>.md`, Ja von Luis in `docs/abnahme/`).
+  Kein Mailversand. Automatisch läuft nur, was in einer freigegebenen Regel steht; jede automatische Ausführung prüft
+  den Stopp-Schalter und schreibt Protokoll. Neue Funktionen bleiben im Echtbetrieb aus, bis Auftragsverarbeitung und
+  Rechtstexte vorliegen. Einzelheiten: `.claude/rules/vertrag.md`.
+- **Fertig heißt:** pytest grün · `abnahme` alle Szenarien · bei Theme/Plugin zusätzlich `lint.sh` · bei Oberflächen zusätzlich
   `tools/shots.mjs` bei 390/820/1280 ohne seitliches Scrollen und ohne Konsolenfehler. Skill `pruefen` macht das je
   Bereich.
 - **Design:** Kein Umbau von Theme oder Cockpit ohne Tor G3. Gestaltet wird über `/design-runde`, `/design-ausbau`,
@@ -70,16 +75,19 @@ python tools/coolify.py status              # Stand beider Apps (Token aus $COOL
 | `/research` | wartende Storys im Agent-Modus gegen den Live-Radar schreiben, dann auswerten |
 | `/website-live` | WordPress in Coolify einrichten, echte Inhalte migrieren, Radar verbinden (Tor G4) |
 | `/release` | prüfen → Code-Review → Commits → Push → PR → Deploy → Gesundheit |
+| `/vertrag-bau <baustein>` | einen Baustein aus dem Vertrag nach bestätigter Festlegung bauen, prüfen, zusammenführen |
+| `/abnahme-vertrag` | die sieben Abnahmetests aus dem Vertrag (B5) ausführen, Protokoll schreiben |
 
 Tore beim Auftraggeber (immer über Luis, festgehalten in `docs/abnahme/`): **G1** Brief und Referenzen · **G2**
 Richtung · **G3** Probeseite · **G4** Live-Website. Betriebstore bei Luis: **B1** Anthropic-Schlüssel in Coolify ·
-**B2** Root-Token widerrufen · **B3** Domain tamil.de umschalten.
+**B2** Root-Token widerrufen · **B3** Domain tamil.de umschalten. Festlegungen bei Luis: **F0** Grundlage · **F1**
+Einreichungen · **F2** Verzeichnis · **F3** Werbung · **F4** Social (Regelwerk zusätzlich einmalig durch KBS).
 
 ## Skills und Agents
 
 - Skills (`.claude/skills/`): `tamil-marke`, `tamil-screens`, `tamil-richtung`, `tamil-kritik`, `impeccable`,
   `tamil-theme`, `tamil-cockpit`, `radar-research`, `radar-auswertung`, `coolify-betrieb`, `tamil-migration`, `pruefen`.
 - Agents (`.claude/agents/`): `referenz-scout`, `art-director`, `design-kritiker`, `qa-pruefer`, `theme-bauer`,
-  `cockpit-bauer`, `radar-entwickler`, `code-pruefer`, `redakteur`, `migrator`.
+  `cockpit-bauer`, `radar-entwickler`, `plugin-bauer`, `code-pruefer`, `redakteur`, `migrator`.
 - Wer was macht und wann: `docs/ablaeufe.md`. Was entschieden ist (nicht stillschweigend umkehren):
   `docs/entscheidungen.md`.

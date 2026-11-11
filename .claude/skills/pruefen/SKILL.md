@@ -12,7 +12,8 @@ allowed-tools: Bash(python -m pytest*), Bash(python -m news_radar abnahme*), Bas
 | Geändert | Prüfung | Muss |
 |---|---|---|
 | `news_radar/**`, `sources.toml`, `tests/**`, `tools/*.py` | `python -m pytest -q` | alle grün (WordPress-Integrationstests dürfen ohne `WP_TEST_*` übersprungen sein) |
-| `news_radar/workflow/**`, `news_radar/agents/**`, `news_radar/prompts/**` | zusätzlich `python -m news_radar abnahme` | 51/51 |
+| `news_radar/workflow/**`, `news_radar/agents/**`, `news_radar/prompts/**`, `news_radar/social/**` | zusätzlich `python -m news_radar abnahme` | alle Szenarien bestanden |
+| Bausteine aus dem Vertrag (`docs/vertrag/`) | zusätzlich `python -m pytest -q tests/test_kein_mailversand.py`, sobald vorhanden | kein Mailversand im Repo |
 | `wordpress/**` | `bash wordpress/dev/lint.sh` (`PHPCS=0` nur, wenn Composer fehlt – dann sagen) | ohne Befund |
 | Oberflächen (`design/**`, Theme, `news_radar/web/**`) | `node tools/shots.mjs <seiten> --out <scratch>/shots` | 0 Fehler (kein seitliches Scrollen, keine Konsolenfehler, keine leeren Bilder) |
 | `Dockerfile`, `wordpress/Dockerfile` | Build lokal, falls Docker verfügbar; sonst sagen, dass nicht gebaut wurde | Image startet, Healthcheck grün |

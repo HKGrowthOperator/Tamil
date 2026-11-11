@@ -27,10 +27,24 @@ def test_struktur_vollstaendig():
         "radar-research", "radar-auswertung", "coolify-betrieb", "tamil-migration", "pruefen"}
     assert {p.stem for p in AGENTS} >= {
         "referenz-scout", "art-director", "design-kritiker", "qa-pruefer", "theme-bauer", "cockpit-bauer",
-        "radar-entwickler", "code-pruefer", "redakteur", "migrator"}
+        "radar-entwickler", "plugin-bauer", "code-pruefer", "redakteur", "migrator"}
     assert {p.stem for p in COMMANDS} >= {
-        "status", "design-runde", "design-ausbau", "design-umsetzung", "research", "website-live", "release"}
-    assert {p.stem for p in RULES} >= {"radar", "wordpress", "design", "betrieb"}
+        "status", "design-runde", "design-ausbau", "design-umsetzung", "research", "website-live", "release",
+        "vertrag-bau", "abnahme-vertrag"}
+    assert {p.stem for p in RULES} >= {"radar", "wordpress", "design", "betrieb", "vertrag"}
+
+
+def test_vertrag_leistungsverzeichnis_und_festlegungen():
+    """Der Vertrag ist der Maßstab: Verzeichnis und Festlegungen liegen im Repo, ohne Preise und Bankdaten."""
+    v = WURZEL / "docs" / "vertrag"
+    for name in ("leistungen.md", "zuarbeit-kbs.md", "festlegung-grundlage.md", "festlegung-einreichungen.md",
+                 "festlegung-verzeichnis.md"):
+        assert (v / name).exists(), name
+    text = "\n".join(p.read_text(encoding="utf-8") for p in v.glob("*.md"))
+    for punkt in ("A1.1", "A2.6", "B1.4", "B2.4", "B3.1", "B5", "T7"):
+        assert punkt in text, f"Vertragspunkt {punkt} fehlt im Leistungsverzeichnis"
+    for verboten in ("IBAN", "Steuer-Nr", "35.000", "5.000,00"):
+        assert verboten not in text, f"Vertragsdaten gehören nicht ins Repo: {verboten}"
 
 
 @pytest.mark.parametrize("p", SKILLS, ids=lambda p: p.parent.name)
