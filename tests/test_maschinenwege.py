@@ -388,3 +388,22 @@ def test_orchestrator_ueberschreibt_kein_bild_aus_dem_cockpit(settings, monkeypa
         assert orchestrator.entwurf_anlegen(ctx, repo.story(store, sid), felder2, {}, typ="artikel", hinweise=[]) is None
         d = store.get_draft(did)
         assert d["bild_datei"] == "cockpit.jpg" and d["inhalt_html"] == "<p>Erste</p>"
+
+
+
+def test_media_speichern_raeumt_bei_fehler_auf(settings, monkeypatch):  # noqa: F811
+    import pytest
+
+    from news_radar.agents import Kontext, media
+    from news_radar.workflow import repo
+
+    def kaputt(*a, **k):
+        raise RuntimeError("database is locked")
+
+    monkeypatch.setattr(repo, "asset_anlegen", kaputt)
+    with Store(settings.db_path) as store:
+        karte = branded_card("Titel", "Community", "x", "community")
+        bild = media.Bild(karte, "Tamil.de", "eigene Grafik", attribution=karte.credit)
+        with pytest.raises(RuntimeError):
+            media.speichern(Kontext(settings, store), bild, "stem-x", None)
+    assert not settings.bilder_dir.exists() or list(settings.bilder_dir.iterdir()) == []
