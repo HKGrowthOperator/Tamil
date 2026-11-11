@@ -908,3 +908,19 @@ def test_tief_verschachteltes_json_ld_wird_uebersprungen():
     film = {"@type": "Movie", "name": "Jailer 2", "director": verschachtelt, "actor": [[[[[[["Tief"]]]]]]]}
     text = nachtrag.strukturierte_angaben(f'<script type="application/ld+json">{json.dumps(film)}</script>')
     assert "name: Jailer 2" in text and "innen" not in text and "Tief" not in text  # höchstens 5 Ebenen
+
+
+def test_seite_lesen_linear_bei_nicht_geschlossenen_tags():
+    import time
+
+    for roh in ("<title>offen " * 40000, '<script type="application/ld+json">{"a":1}' * 10000,
+                '<meta property="og:title" ' * 20000, '<meta content="x" property="og:title" ' * 20000):
+        t = time.monotonic()
+        nachtrag.seite_lesen(net.Fetched(url=URL1, status=200, content=roh.encode(), content_type="text/html"))
+        assert time.monotonic() - t < 1, roh[:20]
+    assert nachtrag.seite_lesen(net.Fetched(url=URL1, status=200, content=html(ARTIKEL1, "Titel &amp; mehr").encode(),
+                                            content_type="text/html"))[1] == "Titel & mehr"
+    og = ('<meta name="a" content="b"><meta content="Zweites Muster" property="og:title">'
+          '<meta property="og:title" content="Erstes Muster"><title>Titel</title>')
+    assert nachtrag.seite_lesen(net.Fetched(url=URL1, status=200, content=og.encode(),
+                                            content_type="text/html"))[1] == "Erstes Muster"  # Reihenfolge wie bisher

@@ -117,8 +117,28 @@ class VorschlagAbgelehnt(ValueError):
 _TITEL_RES = (
     re.compile(r'<meta[^>]+property=["\']og:title["\'][^>]+content=["\']([^"\']*)["\']', re.I),
     re.compile(r'<meta[^>]+content=["\']([^"\']*)["\'][^>]+property=["\']og:title["\']', re.I),
-    re.compile(r"<title[^>]*>(.*?)</title\s*>", re.I | re.S),
 )
+_TITLE_START_RE = re.compile(r"<(title)", re.I)  # wie bisher „<title[^>]*>“, aber linear (sources.bloecke)
+
+
+def _og_titel(roh: str) -> list[str]:
+    """og:title je Muster (erster Treffer auf der Seite, Muster in Reihenfolge) – linear: nur an „<meta“-Stellen
+    geprüft und je Tag höchstens bis kurz hinter sein Ende (ein Regex über die Rohseite wäre bei fehlendem „>“
+    quadratisch)."""
+    treffer: list[str | None] = [None] * len(_TITEL_RES)
+    klein, pos = roh.lower(), 0
+    while None in treffer:
+        i = klein.find("<meta", pos)
+        j = roh.find(">", i) if i >= 0 else -1
+        if j < 0:
+            break
+        for n, rx in enumerate(_TITEL_RES):
+            if treffer[n] is None:
+                m = rx.match(roh, i, j + 1000)
+                if m:
+                    treffer[n] = m.group(1)
+        pos = j + 1
+    return [t for t in treffer if t is not None]
 
 
 SEITE_MAX = 3_000_000  # Bytes je HTML-Seite
@@ -318,10 +338,13 @@ def seite_lesen(seite: net.Fetched, adresse: str = "", frist: float | None = Non
         return (*pdf_lesen(seite.content, max(1, anker_seite(adresse or seite.url)), frist=frist), "volltext")
     roh = seite.text
     titel = ""
-    for rx in _TITEL_RES:
-        m = rx.search(roh)
-        if m and m.group(1).strip():
-            titel = sources.clean_text(unescape(m.group(1)))[:300]
+    kandidaten = _og_titel(roh)
+    block = next(sources.bloecke(roh, _TITLE_START_RE), None)
+    if block:
+        kandidaten.append(roh[block[1]:block[2]])
+    for wert in kandidaten:
+        if wert.strip():
+            titel = sources.clean_text(unescape(wert))[:300]
             break
     text = sources.extract_paragraphs(roh, TEXT_MAX)
     if len(text or "") < VOLLTEXT_MIN:  # ohne JavaScript kein Text: strukturierte Angaben als Notanker

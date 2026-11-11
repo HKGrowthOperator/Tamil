@@ -230,3 +230,70 @@ def test_fetch_all_respects_budget_and_records_status(monkeypatch, settings, tmp
     status = {s["name"]: s for s in store.source_status_all()}
     assert status["schnell"]["last_count"] == 1 and "500" in status["kaputt"]["error_msg"]
     store.close()
+
+
+# ---- extract_paragraphs: linear statt Regex über die ganze Seite (Fund aus der Code-Prüfung) --------------
+
+def _alt_extract(html_text: str, limit: int = 6000) -> str:
+    """Die bisherige Fassung (Regex über die Rohseite) – nur als Vergleich für normale Seiten."""
+    import re
+
+    rausch = re.compile(r"<(script|style|noscript|template|svg|nav|header|footer|aside|form)\b[^>]*>.*?</\1\s*>",
+                        re.S | re.I)
+    body = rausch.sub(" ", html_text)
+    m = re.search(r"<article\b[^>]*>(.*?)</article\s*>", body, flags=re.S | re.I)
+    if m and len(m.group(1)) > 400:
+        body = m.group(1)
+    out = []
+    for raw in re.findall(r"<p[^>]*>(.*?)</p>", body, flags=re.S | re.I):
+        p = sources.clean_text(raw)
+        if len(p) <= 60 or len(p) > 3000:
+            continue
+        if len(sources._CODE_HINT_RE.findall(p)) >= 2 or p.count("{") + p.count("}") >= 4:
+            continue
+        out.append(p)
+    return "\n".join(out)[:limit]
+
+
+def _echte_seiten() -> list[str]:
+    import json
+
+    ordner = Path(__file__).parent / "fixtures"
+    seiten = [(ordner / f).read_text(encoding="utf-8")
+              for f in ("tamil_home.html", "tamilswiss_events.html", "eventfrog_search.html")]
+    posts = json.loads((ordner / "alt_export" / "posts.json").read_text(encoding="utf-8"))
+    for post in posts:  # Beiträge der alten tamil.de, eingebettet in eine Seite mit typischem Rauschen
+        inhalt = post["content"]["rendered"]
+        seiten.append(inhalt)
+        seiten.append(
+            "<html><head><style>p{color:red}</style><script>var a='<p>kein Absatz</p>';</script>"
+            "<script type='application/ld+json'>{\"@context\":\"https://schema.org\"}</script></head><body>"
+            "<HEADER class=k><nav><ul><li><p>Menü mit einem ausreichend langen Text, der nicht zählen darf.</p></li>"
+            "</ul></nav></HEADER ><svg><path d='M0'/></svg >"
+            f"<article class='post'>{inhalt}<form><p>Kommentar schreiben und dabei einen langen Text eingeben, "
+            "der nicht in die Absätze gehört.</p></form ></article><aside><p>Weitere Beiträge aus der Rubrik mit "
+            "einem langen Teaser, der ebenfalls verschwinden muss.</p></aside><footer>© tamil.de</footer></body>"
+            "</html>")
+    return seiten
+
+
+def test_extract_paragraphs_gleich_wie_bisher_auf_echten_seiten():
+    seiten = _echte_seiten()
+    assert len(seiten) >= 6 and any(_alt_extract(s) for s in seiten)
+    for seite in seiten:
+        assert sources.extract_paragraphs(seite) == _alt_extract(seite)
+        assert sources.extract_paragraphs(seite, 300) == _alt_extract(seite, 300)
+
+
+def test_extract_paragraphs_linear_bei_nicht_geschlossenen_tags():
+    import time
+
+    for roh in ('<script type="application/ld+json">{"a":1}' * 10000,  # ~420 KB, nie geschlossen
+                "<p>offen " * 50000, "<article>offen " * 30000, "<script " * 60000):
+        t = time.monotonic()
+        sources.extract_paragraphs(roh, 20000)
+        assert time.monotonic() - t < 1, roh[:30]
+    # ein nicht geschlossener Rauschblock endet am Seitenende
+    assert sources.extract_paragraphs("<p>" + "Echter Absatz mit genug Text für die Mindestlänge. " * 2
+                                      + "</p><script>var x = '<p>" + "Kein Absatz aus dem Skript. " * 4 + "</p>'") \
+        == ("Echter Absatz mit genug Text für die Mindestlänge. " * 2).strip()
