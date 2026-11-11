@@ -884,3 +884,15 @@ def test_dieselbe_pdf_einmal_abgerufen_hoechstens_zwei_anker(settings):
         assert [a.split("#")[0] for a in abrufe] == [PDF_URL, URL1]  # die Datei nur einmal geholt
         assert e["quellen_uebersprungen"] == [{"url": PDF_URL + "#page=1", "grund": "höchstens zwei Seiten je Datei"}]
         assert [d.url for d in repo.dokumente(store, e["story_id"])] == [PDF_URL + "#page=2", PDF_URL + "#page=3", URL1]
+
+
+def test_tief_verschachteltes_json_ld_wird_uebersprungen():
+    """Befund P2: RecursionError beim Parsen bzw. in _ld_werte darf nicht nach außen dringen."""
+    tief = '<script type="application/ld+json">' + "[" * 100_000 + "]" * 100_000 + "</script>"
+    assert nachtrag.strukturierte_angaben(tief) == ""
+    verschachtelt = {"name": "innen"}
+    for _ in range(400):
+        verschachtelt = {"name": verschachtelt}
+    film = {"@type": "Movie", "name": "Jailer 2", "director": verschachtelt, "actor": [[[[[[["Tief"]]]]]]]}
+    text = nachtrag.strukturierte_angaben(f'<script type="application/ld+json">{json.dumps(film)}</script>')
+    assert "name: Jailer 2" in text and "innen" not in text and "Tief" not in text  # höchstens 5 Ebenen

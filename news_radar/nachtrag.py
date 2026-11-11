@@ -258,7 +258,7 @@ def _ld_objekte(roh: str):
     for block in _ld_bloecke(roh):
         try:
             daten = json.loads(block.strip())
-        except ValueError:
+        except (ValueError, RecursionError):  # kaputt oder zu tief verschachtelt: Block überspringen
             continue
         stapel = daten if isinstance(daten, list) else [daten]
         for obj in stapel:
@@ -269,17 +269,23 @@ def _ld_objekte(roh: str):
                     yield from (o for o in stapel_graph if isinstance(o, dict))
 
 
-def _ld_werte(wert) -> list[str]:
-    """Wörtliche Werte: Text und Zahlen unverändert, Personen/Orte über name, Adressen über ihre Felder."""
+LD_TIEFE_MAX = 5
+
+
+def _ld_werte(wert, tiefe: int = 0) -> list[str]:
+    """Wörtliche Werte: Text und Zahlen unverändert, Personen/Orte über name, Adressen über ihre Felder; tiefer als
+    LD_TIEFE_MAX Ebenen wird nicht gelesen."""
     if isinstance(wert, (str, int, float)) and not isinstance(wert, bool):
         return [sources.clean_text(unescape(str(wert)))]
+    if tiefe >= LD_TIEFE_MAX:
+        return []
     if isinstance(wert, list):
-        return [w for x in wert for w in _ld_werte(x)]
+        return [w for x in wert for w in _ld_werte(x, tiefe + 1)]
     if isinstance(wert, dict):
         if "name" in wert:
-            return _ld_werte(wert["name"])
+            return _ld_werte(wert["name"], tiefe + 1)
         teile = [w for k in ("streetAddress", "postalCode", "addressLocality", "addressRegion", "addressCountry")
-                 for w in _ld_werte(wert.get(k))]
+                 for w in _ld_werte(wert.get(k), tiefe + 1)]
         return [" ".join(teile)] if teile else []
     return []
 
