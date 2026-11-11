@@ -33,7 +33,7 @@ function tamil_site_zustimmung_kategorien(): array {
 function tamil_site_zustimmung_standard(): array {
 	return array(
 		'titel'          => __( 'Cookies und externe Inhalte', 'tamil-site' ),
-		'text'           => __( 'Vorläufige Fassung, der endgültige Text folgt. Wir speichern nur, was die Website zum Funktionieren braucht. Videos von YouTube und die Live-Streams der TV-Sender laden erst, wenn Sie zustimmen; dabei werden Daten an den jeweiligen Anbieter übertragen. Ihre Wahl bleibt sechs Monate in Ihrem Browser gespeichert und lässt sich jederzeit über „Cookie-Einstellungen“ im Fuß der Seite ändern.', 'tamil-site' ),
+		'text'           => __( 'Vorläufige Fassung. Videos von YouTube und TV-Streams laden erst mit Ihrer Zustimmung; dabei gehen Daten an den Anbieter. Ihre Wahl bleibt sechs Monate im Browser.', 'tamil-site' ),
 		'notwendig'      => __( 'Für den Betrieb der Website nötig, zum Beispiel diese Einstellung selbst. Immer aktiv.', 'tamil-site' ),
 		'externe_medien' => __( 'Videos von YouTube und Live-Streams der TV-Sender laden sofort. Dabei werden Daten an die Anbieter übertragen.', 'tamil-site' ),
 		'statistik'      => __( 'Derzeit nicht im Einsatz.', 'tamil-site' ),

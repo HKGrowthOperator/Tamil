@@ -119,3 +119,10 @@ def test_werbeplatz_ohne_fremde_adressen_wie_bisher(wp, wp_cli):
         assert wp_cli(code).strip() == "[true,true,false,false,true,true,false]"
     finally:
         _banner_zurueck(wp_cli, alt)
+
+
+def test_standardtext_kurz_genug_fuers_handy(wp_cli):
+    """Der Hinweis soll bei 390 px höchstens etwa ein Drittel der Höhe einnehmen (geprüft mit Aufnahme); Maß dafür: der
+    Standardtext bleibt unter 200 Zeichen."""
+    text = wp_cli("echo tamil_site_zustimmung_standard()['text'];").strip()
+    assert "Vorläufige Fassung" in text and len(text) <= 200, len(text)
