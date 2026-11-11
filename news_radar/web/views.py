@@ -403,7 +403,14 @@ def bild(draft_id: int):
     name, _thumb = images.save_pair(image, settings.bilder_dir,
                                     f"{basis}-e{draft_id}-{hashlib.sha256(image.data).hexdigest()[:8]}")
     # erst schreiben, dann aufräumen (und nie eine Datei löschen, auf die ein anderer Entwurf zeigt)
-    store.update_draft(draft_id, von=_user(), bild_datei=name, bild_credit=image.credit, bild_origin=image.origin)
+    if not store.update_draft(draft_id, von=_user(), nur_status=OPEN_STATES, bild_vorher=row.get("bild_datei"),
+                              bild_datei=name, bild_credit=image.credit, bild_origin=image.origin):
+        # inzwischen freigegeben oder anderes Bild: nichts ändern, neue Datei nur weg, wenn niemand darauf zeigt
+        if not store.db.execute("SELECT 1 FROM drafts WHERE bild_datei = ? LIMIT 1", (name,)).fetchone():
+            for neu in (name, _thumb):
+                (settings.bilder_dir / neu).unlink(missing_ok=True)
+        flash(GEAENDERT, "fehler")
+        return redirect(url_for("ui.entwurf", draft_id=draft_id))
     andere = row.get("bild_datei") and store.db.execute(
         "SELECT 1 FROM drafts WHERE bild_datei = ? AND id != ? LIMIT 1", (row["bild_datei"], draft_id)).fetchone()
     for old in (() if andere else (row.get("bild_datei"), (row.get("bild_datei") or "").replace(".jpg", "-thumb.jpg"))):

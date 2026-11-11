@@ -935,3 +935,30 @@ def test_bild_von_hand_nur_fuer_wartende_entwuerfe(settings):
     with Store(settings.db_path) as store:
         assert store.get_draft(did)["bild_datei"] == "alt.jpg"
     assert sorted(p.name for p in settings.bilder_dir.iterdir()) == ["alt.jpg"]
+
+
+
+def test_bild_von_hand_rennen_mit_freigabe(settings, monkeypatch):
+    """Freigabe, während das neue Bild entsteht: der freigegebene Entwurf behält sein Bild, keine neue Datei bleibt."""
+    from news_radar import images
+
+    with Store(settings.db_path) as store:
+        _, a = story_mit_entwurf(store)
+        settings.bilder_dir.mkdir(parents=True, exist_ok=True)
+        (settings.bilder_dir / "alt.jpg").write_bytes(b"x")
+    client, token = _cockpit(settings)
+    echt = images.branded_card
+
+    def karte_mit_freigabe(*args, **kw):
+        with Store(settings.db_path) as s2:  # zweite Person gibt frei, während das Bild entsteht
+            s2.set_status(a, "freigeben", von="zweite", stand=s2.get_draft(a)["stand"])
+        return echt(*args, **kw)
+
+    monkeypatch.setattr(images, "branded_card", karte_mit_freigabe)
+    html = client.post(f"/entwurf/{a}/bild", data={"_csrf": token, "aktion": "karte"},
+                       follow_redirects=True).get_data(as_text=True)
+    assert "inzwischen geändert" in html
+    with Store(settings.db_path) as store:
+        d = store.get_draft(a)
+        assert d["status"] == "freigegeben" and d["bild_datei"] == "alt.jpg"
+    assert sorted(p.name for p in settings.bilder_dir.iterdir()) == ["alt.jpg"]
