@@ -467,20 +467,45 @@ def _setzen(store: Store, settings: Settings, entwurf: dict, story_id: int, weg:
         felder["bild_alt"] = alt
     sets = ", ".join(f"{k} = ?" for k in felder)
     marks = ",".join("?" for _ in OPEN_STATES)
-    cur = store._write(  # nur, solange der Entwurf noch wartet (zwischen Prüfung und hier lagen die Abrufe)
-        f"UPDATE drafts SET {sets}, updated_at = ?, bearbeitet_von = ? WHERE id = ? AND status IN ({marks})",
-        (*felder.values(), now_iso(), von, entwurf["id"], *OPEN_STATES))
-    if cur.rowcount != 1:
-        if name != entwurf.get("bild_datei"):
-            for neu in (name, thumb):
-                (settings.bilder_dir / neu).unlink(missing_ok=True)
-        raise Abgelehnt("schon freigegeben (während des Abrufs)")
-    for alt_datei in (entwurf.get("bild_datei"), (entwurf.get("bild_datei") or "").replace(".jpg", "-thumb.jpg")):
-        if alt_datei and alt_datei not in (name, thumb):
-            (settings.bilder_dir / alt_datei).unlink(missing_ok=True)
-    repo.asset_anlegen(store, datei=name, herkunft=weg, rechteinhaber=bild["rechteinhaber"], lizenz=bild["lizenz"],
-                       umfang=UMFANG, attribution=bild["nachweis"], quelle_url=bild["quelle_url"],
-                       story_id=story_id, draft_id=entwurf["id"], daten=data)
+    alt_datei = entwurf.get("bild_datei")
+    # Lizenz-Datensatz und Bild am Entwurf in einer Transaktion; das UPDATE gilt nur, solange der Entwurf noch wartet
+    # und noch das Bild trägt, von dem dieser Vorschlag ausging (zwischen Prüfung und hier lagen die Abrufe).
+    gesetzt = False
+    with store.lock:
+        db = store.db
+        if db.in_transaction:
+            db.commit()
+        db.execute("BEGIN IMMEDIATE")
+        try:
+            db.execute(
+                "INSERT INTO assets (datei, sha256, herkunft, rechteinhaber, lizenz, umfang, attribution, ablauf, "
+                "quelle_url, ki, story_id, draft_id, erstellt) VALUES (?,?,?,?,?,?,?,'',?,0,?,?,?)",
+                (name, hashlib.sha256(data).hexdigest(), weg, bild["rechteinhaber"], bild["lizenz"], UMFANG,
+                 bild["nachweis"], bild["quelle_url"], story_id, entwurf["id"], now_iso()))
+            cur = db.execute(
+                f"UPDATE drafts SET {sets}, updated_at = ?, bearbeitet_von = ? "
+                f"WHERE id = ? AND status IN ({marks}) AND bild_datei IS ?",
+                (*felder.values(), now_iso(), von, entwurf["id"], *OPEN_STATES, alt_datei))
+            if cur.rowcount == 1:
+                db.commit()
+                gesetzt = True
+            else:
+                db.rollback()  # nimmt den Lizenz-Datensatz mit zurück
+        except BaseException:
+            db.rollback()
+            gesetzt = False
+            raise
+        finally:
+            if not gesetzt:
+                aktuell = (store.get_draft(entwurf["id"]) or {}).get("bild_datei")
+                if name not in (alt_datei, aktuell):
+                    for neu in (name, thumb):
+                        (settings.bilder_dir / neu).unlink(missing_ok=True)
+    if not gesetzt:
+        raise Abgelehnt("Entwurf hat sich während des Abrufs geändert (freigegeben oder anderes Bild)")
+    for alt_pfad in (alt_datei, (alt_datei or "").replace(".jpg", "-thumb.jpg")):
+        if alt_pfad and alt_pfad not in (name, thumb):
+            (settings.bilder_dir / alt_pfad).unlink(missing_ok=True)
     store.event("bild", id=entwurf["id"], aktion=f"agent_{weg}", origin=weg, von=von)
     repo.aktion(store, wer=von, aktion="bild", draft_id=entwurf["id"], story_id=story_id, kanal="redaktion",
                 ausloeser="agent", notiz=f"Bild mit Nachweis ({weg})")

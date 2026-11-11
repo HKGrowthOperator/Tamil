@@ -416,6 +416,28 @@ def test_entwurf_schon_freigegeben_oder_keiner(settings):
         assert e["ergebnis"] == "abgelehnt" and "kein wartender Entwurf" in e["grund"]
 
 
+def test_zwei_vorschlaege_auf_demselben_stand_ohne_verwaiste_datei(settings):
+    with Store(settings.db_path) as store:
+        sid, did = story_mit_entwurf(store)
+        settings.bilder_dir.mkdir(parents=True, exist_ok=True)
+        for alt in ("alt.jpg", "alt-thumb.jpg"):
+            (settings.bilder_dir / alt).write_bytes(b"x")
+        stand = bildvorschlag._wartender_entwurf(store, sid)
+
+        def bild(farbe):
+            return {"img": Image.new("RGB", (1600, 900), farbe), "nachweis": "Foto: X / Wikimedia Commons, CC0",
+                    "lizenz": "CC0", "rechteinhaber": "X", "quelle_url": COMMONS_SEITE, "bild_url": COMMONS_THUMB}
+
+        bildvorschlag._setzen(store, settings, dict(stand), sid, "commons", bild((10, 20, 30)), None, "a")
+        with pytest.raises(bildvorschlag.Abgelehnt):
+            bildvorschlag._setzen(store, settings, dict(stand), sid, "commons", bild((200, 20, 30)), None, "b")
+        d = store.get_draft(did)
+        assert sorted(p.name for p in settings.bilder_dir.iterdir()) == sorted(
+            [d["bild_datei"], d["bild_datei"].replace(".jpg", "-thumb.jpg")])
+        assert store.db.execute("SELECT COUNT(*) FROM assets WHERE draft_id = ?", (did,)).fetchone()[0] == 1
+        assert repo.asset_fuer_datei(store, d["bild_datei"])["draft_id"] == did
+
+
 def test_eingabe_fehler(settings):
     with Store(settings.db_path) as store:
         sid, _ = story_mit_entwurf(store)
