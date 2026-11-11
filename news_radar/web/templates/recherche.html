@@ -10,14 +10,18 @@
   {% if s.notiz %}<ul class="hinweise">{% for g in s.notiz.split('; ') %}<li>{{ g }}</li>{% endfor %}</ul>{% endif %}
   <p class="leise">Quellen: {% for q in s.dokumente %}<a href="{{ q.url|safe_url }}" target="_blank" rel="noopener">{{ q.doc_key }} {{ q.publisher or q.quelle }}</a> ({{ arten.get(q.art, q.art) }}){{ ', ' if not loop.last }}{% endfor %}</p>
   {% if s.claims %}<p class="leise">{{ s.claims|selectattr('support', 'equalto', 'bestaetigt')|list|length }} von {{ s.claims|length }} Aussagen bestätigt.</p>{% endif %}
+  {% if darf('quelle_ergaenzen') %}
   <form method="post" action="/story/{{ s.id }}/quelle" class="zeile">
     <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
     <input type="url" name="url" placeholder="https://… (Quelle mit dem vollständigen Bericht)" required>
     <button class="primaer">Quelle ergänzen</button>
   </form>
+  {% endif %}
+  {% if darf('story_verwerfen') %}
   <form method="post" action="/story/{{ s.id }}/verwerfen" class="inline" data-confirm="Story verwerfen?">
     <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="leise">Verwerfen</button>
   </form>
+  {% endif %}
 </section>
 {% else %}
 <section class="karte"><p>Nichts offen. Jede Story hatte genug Belege.</p></section>

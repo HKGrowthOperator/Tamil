@@ -344,14 +344,14 @@ def usage_zeilen(store, tage: int = 31) -> list[dict]:
 
 # ---- Benutzer -----------------------------------------------------------------------------------
 
-ROLLEN = ("redaktion", "admin")
+ROLLEN = ("admin", "redaktion", "leser")  # Rechte je Rolle: web/rechte.py
 
 
 def nutzer_anlegen(store, name: str, passwort: str, rolle: str = "redaktion") -> None:
     from werkzeug.security import generate_password_hash
 
     if rolle not in ROLLEN:
-        raise ValueError(f"Rolle muss {' oder '.join(ROLLEN)} sein")
+        raise ValueError(f"Rolle muss {', '.join(ROLLEN)} sein")
     if len(passwort) < 10:
         raise ValueError("Passwort: mindestens 10 Zeichen")
     store._write(

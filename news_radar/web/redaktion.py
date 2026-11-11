@@ -6,7 +6,6 @@ import csv
 import difflib
 import io
 import re
-from functools import wraps
 
 from flask import Blueprint, Response, abort, current_app, flash, redirect, render_template, request, session, url_for
 
@@ -14,6 +13,7 @@ from .. import net
 from ..workflow import jobs, orchestrator, repo
 from ..workflow.providers import budget_fuer
 from . import get_store
+from .rechte import recht_noetig
 
 red = Blueprint("red", __name__)
 
@@ -30,16 +30,6 @@ def _settings():
 
 def _user() -> str:
     return session.get("user", "")
-
-
-def admin_noetig(fn):
-    @wraps(fn)
-    def wrapper(*args, **kwargs):
-        if session.get("rolle") != "admin":
-            abort(403)
-        return fn(*args, **kwargs)
-
-    return wrapper
 
 
 def _plain(html_text: str) -> list[str]:
@@ -103,6 +93,7 @@ def recherche():
 
 
 @red.post("/story/<int:story_id>/quelle")
+@recht_noetig("quelle_ergaenzen")
 def quelle(story_id: int):
     store = get_store()
     if repo.story(store, story_id) is None:
@@ -115,28 +106,33 @@ def quelle(story_id: int):
     except ValueError as exc:  # net.UnsafeURL ist ein ValueError
         flash(f"Diese Adresse geht nicht: {exc}", "fehler")
         return redirect(url_for("red.recherche"))
+    repo.aktion(store, wer=_user(), aktion="quelle_ergaenzt", story_id=story_id)  # nur die Kennung, keine Adresse
     flash("Quelle ergänzt – die Story läuft erneut durch Recherche und Prüfung.", "ok")
     return redirect(url_for("red.recherche"))
 
 
 @red.post("/story/<int:story_id>/verwerfen")
+@recht_noetig("story_verwerfen")
 def story_verwerfen(story_id: int):
     store = get_store()
     if repo.story(store, story_id) is None:
         abort(404)
     repo.story_setzen(store, story_id, status="verworfen", notiz=f"verworfen von {_user()}")
     store.event("story_verworfen", story=story_id, von=_user())
+    repo.aktion(store, wer=_user(), aktion="story_verworfen", story_id=story_id)
     flash("Story verworfen.", "ok")
     return redirect(url_for("red.recherche"))
 
 
 @red.post("/entwurf/<int:draft_id>/dossier")
+@recht_noetig("dossier")
 def dossier(draft_id: int):
     store = get_store()
     try:
         sid = orchestrator.dossier_anlegen(store, draft_id, von=_user())
     except ValueError:
         abort(404)
+    repo.aktion(store, wer=_user(), aktion="dossier", draft_id=draft_id, notiz=f"neue Story {sid}")
     flash(f"Dossier angestoßen (Story {sid}). Es erscheint als neuer Entwurf, sobald Recherche und Text fertig sind.", "ok")
     return redirect(url_for("ui.entwurf", draft_id=draft_id))
 
@@ -155,6 +151,7 @@ def kosten():
 
 
 @red.get("/kosten.csv")
+@recht_noetig("export")
 def kosten_csv():
     tage = request.args.get("tage", "31")
     zeilen = repo.usage_zeilen(get_store(), int(tage) if tage.isdigit() else 31)
@@ -187,11 +184,12 @@ def warteschlange():
 
 
 @red.post("/job/<int:job_id>/erneut")
-@admin_noetig
+@recht_noetig("job_erneut")
 def job_erneut(job_id: int):
     store = get_store()
     if jobs.erneut(store, job_id):
         store.event("job_erneut", job=job_id, von=_user())
+        repo.aktion(store, wer=_user(), aktion="job_erneut", gegenstand_typ="job", gegenstand_id=job_id)
         flash("Job steht wieder in der Warteschlange.", "ok")
     else:
         flash("Dieser Job kann nicht neu gestartet werden.", "fehler")
@@ -200,27 +198,33 @@ def job_erneut(job_id: int):
 
 # ---- Benutzer -----------------------------------------------------------------------------------
 
-@red.route("/nutzer", methods=["GET", "POST"])
-@admin_noetig
+@red.get("/nutzer")
+@recht_noetig("benutzer")
 def nutzer():
+    return render_template("nutzer.html", nutzer=repo.nutzer_liste(get_store()), rollen=repo.ROLLEN)
+
+
+@red.post("/nutzer")
+@recht_noetig("benutzer")
+def nutzer_aendern():
     store = get_store()
-    if request.method == "POST":
-        name = request.form.get("name", "").strip()
-        aktion = request.form.get("aktion", "anlegen")
-        try:
-            if aktion == "sperren":
-                repo.nutzer_sperren(store, name)
-                flash(f"{name} gesperrt.", "ok")
-            else:
-                if not re.fullmatch(r"[A-Za-z0-9._@-]{2,40}", name):
-                    raise ValueError("Name: 2–40 Zeichen, Buchstaben, Ziffern, . _ @ -")
-                repo.nutzer_anlegen(store, name, request.form.get("passwort", ""), request.form.get("rolle", "redaktion"))
-                flash(f"{name} angelegt.", "ok")
-            store.event("nutzer", aktion=aktion, name=name, von=_user())
-        except ValueError as exc:
-            flash(str(exc), "fehler")
-        return redirect(url_for("red.nutzer"))
-    return render_template("nutzer.html", nutzer=repo.nutzer_liste(store))
+    name = request.form.get("name", "").strip()
+    aktion = "sperren" if request.form.get("aktion") == "sperren" else "anlegen"
+    try:
+        if aktion == "sperren":
+            if not repo.nutzer_sperren(store, name):
+                raise ValueError(f"{name} gibt es nicht.")
+            flash(f"{name} gesperrt.", "ok")
+        else:
+            if not re.fullmatch(r"[A-Za-z0-9._@-]{2,40}", name):
+                raise ValueError("Name: 2–40 Zeichen, Buchstaben, Ziffern, . _ @ -")
+            repo.nutzer_anlegen(store, name, request.form.get("passwort", ""), request.form.get("rolle", "redaktion"))
+            flash(f"{name} angelegt.", "ok")
+        store.event("nutzer", aktion=aktion, name=name, von=_user())
+        repo.aktion(store, wer=_user(), aktion=f"nutzer_{aktion}", gegenstand_typ="nutzer", gegenstand_id=name)
+    except ValueError as exc:
+        flash(str(exc), "fehler")
+    return redirect(url_for("red.nutzer"))
 
 
 def pruefe_url(url: str) -> bool:

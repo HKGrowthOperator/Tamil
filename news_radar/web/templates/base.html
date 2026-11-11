@@ -26,7 +26,10 @@
     <a href="/quellen" class="{{ 'aktiv' if request.endpoint == 'red.quellen' }}"><span>Quellen</span></a>
     <a href="/warteschlange" class="{{ 'aktiv' if request.endpoint == 'red.warteschlange' }}"><span>Warteschlange</span></a>
     <a href="/protokoll" class="{{ 'aktiv' if request.endpoint == 'ui.protokoll' }}"><span>Protokoll</span></a>
-    {% if ist_admin %}<a href="/nutzer" class="{{ 'aktiv' if request.endpoint == 'red.nutzer' }}"><span>Benutzer</span></a>{% endif %}
+    <a href="/zeitplan" class="{{ 'aktiv' if request.endpoint == 'betrieb.zeitplan' }}"><span>Zeitplan</span></a>
+    {% set st = stopps() %}
+    <a href="/schalter" class="{{ 'aktiv' if request.endpoint == 'betrieb.schalter_seite' }}"><span>Schalter</span>{% if st %}<span class="count">{{ st|length }}</span>{% endif %}</a>
+    {% if darf('benutzer') %}<a href="/nutzer" class="{{ 'aktiv' if request.endpoint == 'red.nutzer' }}"><span>Benutzer</span></a>{% endif %}
   </nav>
   <div class="status" {% if lauf %}data-lauf="{{ lauf.started_at }}"{% endif %}>
     <span class="live">Radar läuft</span>
@@ -38,6 +41,9 @@
 </aside>
 {% endif %}
 <main class="cockpit">
+{% if session.user %}{% for s in stopps() %}
+<div class="banner stopp"><b>{{ s.label }} angehalten</b> seit {{ fmt_dt(s.seit) }} ({{ s.wer }}): {{ s.grund }}. Es hält an: {{ s.haelt_an }}. Bearbeiten und Freigeben von Hand gehen weiter. <a href="/schalter">Schalter ansehen</a></div>
+{% endfor %}{% endif %}
 {% if session.user %}{% set b = budget() %}{% if b.stopp or b.warnung %}
 <div class="banner {{ 'stopp' if b.stopp else 'warnung' }}">{% if b.stopp %}<b>Budget erreicht.</b> Neue bezahlte Schritte warten bis morgen bzw. bis zum nächsten Monat; Freigeben und Veröffentlichen gehen weiter.{% else %}<b>Budget zu {{ (b.anteil * 100)|round|int }} % verbraucht.</b>{% endif %} Heute ${{ '%.2f'|format(b.tag_usd) }} von ${{ '%.2f'|format(b.tag_limit) }}, Monat ${{ '%.2f'|format(b.monat_usd) }} von ${{ '%.2f'|format(b.monat_limit) }}. <a href="/kosten">Kosten ansehen</a></div>
 {% endif %}{% endif %}

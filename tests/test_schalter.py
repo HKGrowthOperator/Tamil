@@ -291,3 +291,79 @@ def test_cli_stopp(settings, monkeypatch, capsys):
     with Store(settings.db_path) as st:
         assert not any(schalter.gestoppt(st, k) for k in schalter.KANAELE)
         assert len(repo.aktionen_liste(st, aktion="schalter_an")) == 2
+
+
+# ---- Cockpit: Seite, Banner, /gesund, Direkt posten im Stopp ------------------------------------
+
+@pytest.fixture
+def web(settings):
+    from news_radar.web import create_app
+
+    settings.web_user, settings.web_password, settings.web_secret = "luis", "geheim", "s3cret"
+    with Store(settings.db_path) as st:
+        entwurf(st, freigeben=False)
+    app = create_app(settings, testing=True)
+    client = app.test_client()
+    client.get("/login")
+    with client.session_transaction() as s:
+        token = s["csrf"]
+    assert client.post("/login", data={"user": "luis", "password": "geheim", "_csrf": token}).status_code == 302
+    return app, client, token
+
+
+def test_schalterseite_grund_pflicht_banner_und_gesund(web):
+    app, client, token = web
+    html = client.get("/schalter").get_data(as_text=True)
+    for k in schalter.KANAELE:
+        assert f"/schalter/{k}/an" in html
+    assert 'name="grund"' in html and "required" in html
+    resp = client.post("/schalter/website/an", data={"_csrf": token, "grund": "  "}, follow_redirects=True)
+    assert "Grund fehlt" in resp.get_data(as_text=True)
+    assert client.get("/gesund").get_json()["gestoppt"] == []
+    client.post("/schalter/website/an", data={"_csrf": token, "grund": "Theme-Umbau"})
+    for seite in ("/", "/kosten", "/protokoll", "/entwurf/1", "/schalter", "/zeitplan"):
+        text = client.get(seite).get_data(as_text=True)
+        assert 'class="banner stopp"' in text and "Website" in text and "Theme-Umbau" in text, seite
+    gesund = client.get("/gesund").get_json()
+    assert gesund["ok"] is True and [g["kanal"] for g in gesund["gestoppt"]] == ["website"]
+    assert gesund["gestoppt"][0]["seit"] and set(gesund["gestoppt"][0]) == {"kanal", "seit"}  # öffentlich: ohne Grund, ohne Person
+    client.post("/schalter/website/aus", data={"_csrf": token})
+    assert 'class="banner stopp"' not in client.get("/").get_data(as_text=True)
+
+
+@pytest.mark.parametrize("weg", ["veroeffentlichen", "wp-entwurf"])
+def test_direkt_posten_im_stopp_gibt_frei_und_sagt_warum(web, settings, weg):
+    app, client, token = web
+    wp = app.extensions["wordpress"] = FakeWP()
+    client.post("/schalter/website/an", data={"_csrf": token, "grund": "Theme-Umbau"})
+    resp = client.post(f"/entwurf/1/{weg}", data={"_csrf": token}, follow_redirects=True)
+    text = resp.get_data(as_text=True)
+    assert resp.status_code == 200 and "angehalten" in text and "wartet" in text
+    assert wp.posts == []
+    with Store(settings.db_path) as st:
+        assert st.get_draft(1)["status"] == "freigegeben"
+        assert [a["aktion"] for a in repo.aktionen(st, 1)] == ["freigeben", "zurueckgehalten"]
+        assert repo.aktionen(st, 1)[-1]["kanal"] == "website"
+    client.post("/schalter/website/aus", data={"_csrf": token})
+    with Store(settings.db_path) as st:
+        assert [r.status for r in publisher.publish_approved(settings, st, wp=wp)] == ["veroeffentlicht"]
+
+
+def test_neu_schreiben_im_stopp_ohne_modellaufruf(web, settings):
+    app, client, token = web
+
+    class Writer:
+        aufrufe = 0
+
+        def rewrite(self, row, anweisung):
+            Writer.aufrufe += 1
+
+    app.extensions["writer"] = Writer()
+    client.post("/schalter/redaktion/an", data={"_csrf": token, "grund": "Kosten prüfen"})
+    text = client.post("/entwurf/1/neu-schreiben", data={"_csrf": token}, follow_redirects=True).get_data(as_text=True)
+    assert "angehalten" in text and Writer.aufrufe == 0
+    # Bearbeiten und Freigeben von Hand bleiben möglich
+    client.post("/entwurf/1", data={"_csrf": token, "titel": "Neu", "kategorie": "news", "inhalt_html": "<p>a</p>"})
+    client.post("/entwurf/1/status", data={"_csrf": token, "aktion": "freigeben"})
+    with Store(settings.db_path) as st:
+        assert st.get_draft(1)["titel"] == "Neu" and st.get_draft(1)["status"] == "freigegeben"

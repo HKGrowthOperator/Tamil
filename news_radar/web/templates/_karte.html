@@ -18,8 +18,8 @@
     {% if d.wp_link %}<p class="leise"><a href="{{ d.wp_link|safe_url }}" target="_blank" rel="noopener">{{ 'Beitrag öffnen' if d.status == 'veroeffentlicht' else 'In WordPress öffnen' }}</a></p>{% endif %}
     <div class="aktionen">
       {% set open = d.status in ('neu', 'bearbeitet', 'zurueckgestellt') %}
-      {% if open or d.status == 'fehler' %}
-      {% if wordpress_enabled %}
+      {% if (open or d.status == 'fehler') and darf('freigeben') %}
+      {% if wordpress_enabled and darf('veroeffentlichen') %}
       <form method="post" action="/entwurf/{{ d.id }}/veroeffentlichen" class="inline" data-confirm="Jetzt direkt auf tamil.de veröffentlichen?">
         <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="gold" data-busy="Wird veröffentlicht …">Direkt posten</button>
       </form>
@@ -29,7 +29,8 @@
         <button class="primaer">Freigeben</button>
       </form>
       {% endif %}
-      <a class="knopf" href="/entwurf/{{ d.id }}">Bearbeiten</a>
+      <a class="knopf" href="/entwurf/{{ d.id }}">{{ 'Bearbeiten' if darf('bearbeiten') else 'Ansehen' }}</a>
+      {% if darf('bearbeiten') %}
       {% if open %}
       <form method="post" action="/entwurf/{{ d.id }}/status?next=/?status={{ status }}" class="inline">
         <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="aktion" value="zurueckstellen">
@@ -53,6 +54,7 @@
         <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="aktion" value="zurueckstellen">
         <button class="leise">Zurückziehen</button>
       </form>
+      {% endif %}
       {% endif %}
     </div>
   </div>

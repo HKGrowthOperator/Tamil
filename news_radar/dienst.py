@@ -13,6 +13,10 @@ Zeitplan (Europe/Berlin; jeweils als eigener Prozess mit Timeout, nie doppelt):
 
 Startet der Container als root, gehört der Datenordner danach dem Nutzer `radar` und der Dienst gibt die Rechte ab
 (Coolify-Volumes gehören anfangs root). SIGTERM (Redeploy) beendet alle Kinder geordnet.
+
+Der Plan steht einmal als Daten in `plan()`; der Dienst und die Zeitplan-Ansicht im Cockpit lesen ihn von dort. Jeder
+Lauf einer Aufgabe landet in `dienst_laeufe` (Start, Ende, Ergebnis). Eine Aufgabe ruht, solange alle ihre Kanäle
+angehalten sind (Stopp-Schalter, „alles“ hält jede Aufgabe mit Kanal an); die Sicherung hat keinen Kanal.
 """
 
 from __future__ import annotations
@@ -20,13 +24,14 @@ from __future__ import annotations
 import logging
 import os
 import signal
+import sqlite3
 import subprocess
 import sys
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Callable
+from typing import Any, Callable, Mapping
 from zoneinfo import ZoneInfo
 
 from .config import Settings
@@ -55,6 +60,32 @@ def letzter_termin(jetzt: datetime, regel: Regel) -> datetime:
     return termin
 
 
+def naechster_termin(jetzt: datetime, regel: Regel, letzte: datetime | None) -> datetime | None:
+    """Nächste Fälligkeit für die Ansicht: Intervall ab dem letzten Start (None = beim nächsten Start des Dienstes),
+    Uhrzeit der nächste geplante Zeitpunkt nach `jetzt`."""
+    if regel.alle:
+        return letzte + timedelta(seconds=regel.alle) if letzte is not None else None
+    assert regel.um is not None
+    termin = jetzt.replace(hour=regel.um[0], minute=regel.um[1], second=0, microsecond=0)
+    if termin <= jetzt:
+        termin += timedelta(days=1)
+    if regel.wochentag is not None:
+        while termin.weekday() != regel.wochentag:
+            termin += timedelta(days=1)
+    return termin
+
+
+WOCHENTAGE = ("montags", "dienstags", "mittwochs", "donnerstags", "freitags", "samstags", "sonntags")
+
+
+def takt_text(regel: Regel) -> str:
+    if regel.alle:
+        return f"alle {regel.alle // 60} Minuten" if regel.alle % 60 == 0 else f"alle {regel.alle} Sekunden"
+    assert regel.um is not None
+    tag = "täglich" if regel.wochentag is None else WOCHENTAGE[regel.wochentag]
+    return f"{tag} {regel.um[0]:02d}:{regel.um[1]:02d}"
+
+
 def faellig(jetzt: datetime, letzte: datetime | None, regel: Regel) -> bool:
     """Intervall: beim ersten Mal sofort, dann alle `alle` Sekunden. Uhrzeit: wenn seit `letzte` ein Termin lag."""
     if regel.alle:
@@ -68,9 +99,11 @@ class Aufgabe:
     befehl: list[str]
     regel: Regel
     timeout: int = 300
+    kanaele: tuple[str, ...] = ()  # Stopp-Schalter, die diese Aufgabe anhalten (alle müssen angehalten sein)
     letzte: datetime | None = None
     proc: subprocess.Popen | None = None
     gestartet: float = 0.0
+    lauf_id: int | None = None
 
 
 @dataclass
@@ -90,9 +123,38 @@ class Dienst:
     uhr: Callable[[], datetime] = field(default=lambda: datetime.now(TZ))
     env: dict[str, str] | None = None
     stop: bool = False
+    store: Any = None  # Radar-Datenbank: Läufe aufzeichnen, Schalter prüfen (ohne: wie bisher)
 
     def _starten(self, befehl: list[str]) -> subprocess.Popen:
         return subprocess.Popen(befehl, env=self.env)
+
+    def _db(self, sql: str, params: tuple) -> int | None:
+        """Aufzeichnung ist Beiwerk: ein Datenbankfehler hält den Dienst nicht an."""
+        if self.store is None:
+            return None
+        try:
+            return self.store._write(sql, params).lastrowid
+        except sqlite3.Error as exc:
+            log.warning("Lauf nicht aufgezeichnet: %s", exc)
+            return None
+
+    def _lauf_ende(self, a: Aufgabe, ergebnis: str) -> None:
+        from .store import now_iso
+
+        if a.lauf_id is not None:
+            self._db("UPDATE dienst_laeufe SET ende = ?, ergebnis = ? WHERE id = ?", (now_iso(), ergebnis, a.lauf_id))
+        a.lauf_id = None
+
+    def _sperre(self, a: Aufgabe) -> dict | None:
+        if self.store is None or not a.kanaele:
+            return None
+        from . import schalter
+
+        try:
+            return schalter.haelt_an(self.store, a.kanaele)
+        except sqlite3.Error as exc:
+            log.warning("Schalter nicht lesbar (%s) – %s läuft", exc, a.name)
+            return None
 
     def schritt(self) -> None:
         mono = time.monotonic()
@@ -115,15 +177,29 @@ class Dienst:
                         a.proc.kill()
                         a.proc.wait()
                         a.proc = None
+                        self._lauf_ende(a, "timeout")
                     continue  # läuft noch: nicht doppelt starten
                 if a.proc.returncode:
                     log.warning("%s endete mit Code %s", a.name, a.proc.returncode)
+                self._lauf_ende(a, f"fehler (Code {a.proc.returncode})" if a.proc.returncode else "ok")
                 a.proc = None
             if faellig(jetzt, a.letzte, a.regel):
+                from .store import now_iso
+
                 a.letzte = jetzt
+                sperre = self._sperre(a)
+                if sperre is not None:  # dieser Termin entfällt; der nächste prüft den Schalter erneut
+                    log.info("%s ruht: Schalter „%s“ angehalten", a.name, sperre["kanal"])
+                    self._db("INSERT INTO dienst_laeufe (aufgabe, start, ende, ergebnis) VALUES (?,?,?,?)",
+                             (a.name, now_iso(), now_iso(), f"angehalten ({sperre['kanal']})"))
+                    continue
                 a.proc, a.gestartet = self._starten(a.befehl), mono
+                a.lauf_id = self._db("INSERT INTO dienst_laeufe (aufgabe, start) VALUES (?,?)", (a.name, now_iso()))
 
     def beenden(self, frist: float = 20.0) -> None:
+        for a in self.aufgaben:
+            if a.proc is not None and a.proc.poll() is None:
+                self._lauf_ende(a, "abgebrochen")
         procs = [p for p in [l.proc for l in self.langlaeufer] + [a.proc for a in self.aufgaben] if p is not None]
         for p in procs:
             if p.poll() is None:
@@ -170,6 +246,35 @@ def rechte_abgeben(data_dir: Path, nutzer: str = "radar") -> None:
     os.environ["HOME"] = pw.pw_dir
 
 
+@dataclass(frozen=True)
+class PlanEintrag:
+    """Eine zeitgesteuerte Aufgabe: Argumente nach `python -m news_radar`, Takt, Timeout, Schalter, Zweck."""
+    name: str
+    args: tuple[str, ...]
+    regel: Regel
+    timeout: int
+    kanaele: tuple[str, ...]
+    zweck: str
+
+
+def plan(settings: Settings, env: Mapping[str, str] | None = None) -> list[PlanEintrag]:
+    """Der Zeitplan als Daten – Quelle für den Dienst (`aufbauen`) und die Ansicht /zeitplan."""
+    env = os.environ if env is None else env
+    eintraege = [
+        # der Lauf scannt (redaktion) und überträgt Freigegebenes (website): er ruht erst, wenn beides angehalten ist
+        PlanEintrag("scan", ("run",), Regel(alle=180), 300, ("redaktion", "website"),
+                    "Quellen scannen, Storys und Jobs anlegen; freigegebene Beiträge nach WordPress"),
+        PlanEintrag("digest", ("digest",), Regel(um=(8, 0)), 300, ("alles",), "Tageszusammenfassung an den Webhook"),
+        PlanEintrag("sicherung", ("sicherung", "erstellen", "--ziel", str(settings.data_dir / "backup")),
+                    Regel(um=(3, 0)), 1800, (), "Datenbank und Bilder sichern (lokal, läuft auch im Stopp)"),
+    ]
+    if env.get("GEMINI_API_KEY"):
+        eintraege.append(PlanEintrag("bildpool", ("bildpool", "fuellen", "--anzahl", "3", "--mit-budget"),
+                                     Regel(um=(4, 30), wochentag=0), 1800, ("redaktion",),
+                                     "Reserve-Bilder je Thema über die Bild-KI"))
+    return eintraege
+
+
 def aufbauen(settings: Settings, port: int) -> Dienst:
     py = [sys.executable, "-m", "news_radar"]
     langlaeufer = [Langlaeufer("web", [sys.executable, "-m", "gunicorn", "-w", "2", "--threads", "4",
@@ -180,15 +285,7 @@ def aufbauen(settings: Settings, port: int) -> Dienst:
         if not os.environ.get("ANTHROPIC_API_KEY"):
             log.warning("RADAR_WORKFLOW=v2 ohne ANTHROPIC_API_KEY: der Worker erledigt nur Kino, Gate und Bild; "
                         "Recherche-Jobs warten auf den Schlüssel (danach Neustart)")
-    aufgaben = [
-        Aufgabe("scan", py + ["run"], Regel(alle=180), timeout=300),
-        Aufgabe("digest", py + ["digest"], Regel(um=(8, 0)), timeout=300),
-        Aufgabe("sicherung", py + ["sicherung", "erstellen", "--ziel", str(settings.data_dir / "backup")],
-                Regel(um=(3, 0)), timeout=1800),
-    ]
-    if os.environ.get("GEMINI_API_KEY"):
-        aufgaben.append(Aufgabe("bildpool", py + ["bildpool", "fuellen", "--anzahl", "3", "--mit-budget"],
-                                Regel(um=(4, 30), wochentag=0), timeout=1800))
+    aufgaben = [Aufgabe(e.name, py + list(e.args), e.regel, timeout=e.timeout, kanaele=e.kanaele) for e in plan(settings)]
     return Dienst(langlaeufer, aufgaben)
 
 
@@ -197,6 +294,9 @@ def main(settings: Settings) -> int:
     rechte_abgeben(settings.data_dir)
     port = int(os.environ.get("PORT", "3000"))
     dienst = aufbauen(settings, port)
+    from .store import Store
+
+    dienst.store = Store(settings.db_path)  # nach rechte_abgeben: Dateien gehören radar; migriert vor allen Kindern
 
     def anhalten(signum, _frame):
         log.info("Signal %s – beende alle Prozesse", signum)
@@ -206,5 +306,8 @@ def main(settings: Settings) -> int:
     signal.signal(signal.SIGINT, anhalten)
     log.info("Radar-Dienst: Port %s, Daten %s, Workflow %s, Langläufer %s", port, settings.data_dir, settings.workflow,
              ", ".join(l.name for l in dienst.langlaeufer))
-    dienst.laufen()
+    try:
+        dienst.laufen()
+    finally:
+        dienst.store.close()
     return 0

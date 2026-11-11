@@ -2,7 +2,7 @@
 {% block title %}Benutzer{% endblock %}
 {% block content %}
 <h1>Benutzer</h1>
-<p class="leise">Jede Freigabe wird mit Person und Fassung protokolliert. Rolle „admin“ darf Benutzer verwalten und abgebrochene Jobs neu starten.</p>
+<p class="leise">Jede Freigabe wird mit Person und Fassung protokolliert. Rolle „admin“ darf alles, auch Benutzer, „Erneut“, Export und den Schalter „Alles“ wieder einschalten; „redaktion“ bearbeitet, gibt frei, veröffentlicht und darf anhalten; „leser“ sieht alles und ändert nichts.</p>
 <section class="karte">
 <table class="voll kompakt"><tr><th>Name</th><th>Rolle</th><th>Status</th><th>letzter Login</th><th></th></tr>
 {% for n in nutzer %}<tr><td>{{ n.name }}</td><td>{{ n.rolle }}</td><td>{{ 'aktiv' if n.aktiv else 'gesperrt' }}</td><td>{{ fmt_dt(n.letzter_login) or '–' }}</td>
@@ -16,7 +16,7 @@
     <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="aktion" value="anlegen">
     <label>Name <input name="name" required pattern="[A-Za-z0-9._@-]{2,40}"></label>
     <label>Passwort (mind. 10 Zeichen) <input name="passwort" type="password" minlength="10" required autocomplete="new-password"></label>
-    <label>Rolle <select name="rolle"><option value="redaktion">Redaktion</option><option value="admin">Admin</option></select></label>
+    <label>Rolle <select name="rolle">{% for r in rollen %}<option value="{{ r }}"{% if r == 'redaktion' %} selected{% endif %}>{{ r }}</option>{% endfor %}</select></label>
     <button class="primaer">Anlegen</button>
   </form>
 </section>
