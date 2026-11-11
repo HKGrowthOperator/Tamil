@@ -37,7 +37,7 @@ def test_kopfzeile_wirkt_nur_lokal(wp_cli):
     code = ("$_SERVER['HTTP_X_TAMIL_FUNKTIONEN'] = 'zustimmung,gibtsnicht';"
             "echo wp_json_encode( array( tamil_site_funktionen_test( 'production' ), tamil_site_funktionen_test( 'staging' ),"
             " tamil_site_funktionen_test( 'local' ), tamil_site_funktionen_test( 'development' ) ) );")
-    assert wp_cli(code).strip() == '[[],[],["zustimmung"],["zustimmung"]]'
+    assert wp_cli(code).strip() == '[[],[],["zustimmung"],[]]'
 
 
 def test_schalter_an_hinweis_dialog_und_link(wp):

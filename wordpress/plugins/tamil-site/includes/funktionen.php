@@ -3,7 +3,7 @@
  * Funktionsschalter: je Baustein ein Schalter, Standard aus. Im Echtbetrieb bleibt ein Baustein aus, bis
  * Auftragsverarbeitung und Rechtstexte vorliegen; eingeschaltet wird unter Einstellungen → Tamil.de Website.
  *
- * Nur in lokaler Umgebung (WP_ENVIRONMENT_TYPE local oder development) dürfen Tests einen Schalter für einen
+ * Nur in lokaler Umgebung (WP_ENVIRONMENT_TYPE local, nicht development) dürfen Tests einen Schalter für einen
  * einzelnen Aufruf einschalten: Kopfzeile `X-Tamil-Funktionen: zustimmung,werbung`.
  */
 
@@ -59,13 +59,13 @@ function tamil_site_funktion_an( string $name ): bool {
 }
 
 /**
- * Für diesen Aufruf eingeschaltete Schalter aus der Test-Kopfzeile – nur lokal, sonst immer leer.
+ * Für diesen Aufruf eingeschaltete Schalter aus der Test-Kopfzeile – nur in der Umgebung local, sonst immer leer.
  *
  * @param string|null $umgebung Umgebung (Standard: wp_get_environment_type()).
  * @return array<int,string>
  */
 function tamil_site_funktionen_test( ?string $umgebung = null ): array {
-	if ( ! in_array( $umgebung ?? wp_get_environment_type(), array( 'local', 'development' ), true ) ) {
+	if ( 'local' !== ( $umgebung ?? wp_get_environment_type() ) ) {
 		return array();
 	}
 	$kopf = isset( $_SERVER['HTTP_X_TAMIL_FUNKTIONEN'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_TAMIL_FUNKTIONEN'] ) ) : '';
