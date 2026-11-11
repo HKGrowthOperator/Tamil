@@ -128,7 +128,12 @@ def test_suche_noindex(wp):
     seite = wp.get("/?s=kino").text
     robots = _meta(seite, "name", "robots")
     assert robots and "noindex" in robots[0]
-    assert "noindex" not in " ".join(_meta(wp.get("/").text, "name", "robots"))
+
+
+def test_suche_noindex_auch_in_production(wp_cli):
+    code = ("add_filter( 'tamil_site_indexierbar', '__return_true' ); add_filter( 'tamil_site_nicht_indexieren', '__return_true' );"
+            "echo wp_json_encode( apply_filters( 'wp_robots', array() ) );")
+    assert json.loads(wp_cli(code)).get("noindex") is True
 
 
 def test_kein_doppel_mit_seo_plugin(wp_cli):
@@ -139,3 +144,37 @@ def test_kein_doppel_mit_seo_plugin(wp_cli):
 def test_bildgroesse_registriert(wp_cli):
     assert json.loads(wp_cli("echo wp_json_encode( wp_get_registered_image_subsizes()['tamil-og'] ?? null );")) == {
         "width": 1200, "height": 630, "crop": True}
+
+
+# --- Testsystem nicht indexieren: jede Umgebung außer production -------------------------------------------------
+
+
+def test_testsystem_noindex_ueberall(wp):
+    for pfad in ("/", "/category/kino/", "/?s=kino"):
+        r = wp.get(pfad)
+        robots = _meta(r.text, "name", "robots")
+        assert robots and "noindex" in robots[0] and "nofollow" in robots[0], (pfad, robots)
+        assert r.headers.get("X-Robots-Tag", "").replace(" ", "") == "noindex,nofollow", pfad
+    # OpenGraph und JSON-LD bleiben
+    assert _meta(wp.get("/").text, "property", "og:title") and "WebSite" in _typen(wp.get("/").text)
+
+
+def test_testsystem_robots_txt_und_keine_sitemap(wp):
+    r = wp.get("/robots.txt")
+    assert r.status_code == 200
+    zeilen = [z.strip() for z in r.text.splitlines() if z.strip()]
+    assert "Disallow: /" in zeilen and not any(z.lower().startswith("sitemap:") for z in zeilen)
+    assert r.headers.get("X-Robots-Tag", "").replace(" ", "") == "noindex,nofollow"
+    assert wp.get("/wp-sitemap.xml").status_code == 404
+
+
+def test_production_bleibt_indexierbar(wp_cli):
+    code = ("echo wp_json_encode( array( tamil_site_indexierbar( 'production' ), tamil_site_indexierbar( 'staging' ),"
+            " tamil_site_indexierbar( 'local' ), tamil_site_indexierbar( 'development' ) ) );")
+    assert wp_cli(code).strip() == "[true,false,false,false]"
+    # mit production (Filter): Robots ohne noindex, robots.txt und Sitemap wie von WordPress
+    code = ("add_filter( 'tamil_site_indexierbar', '__return_true' );"
+            "echo wp_json_encode( array( apply_filters( 'wp_robots', array() ), apply_filters( 'robots_txt', 'X', true ),"
+            " apply_filters( 'wp_sitemaps_enabled', true ), tamil_site_robots_kopfzeile() ) );")
+    robots, txt, sitemap, kopf = json.loads(wp_cli(code))
+    assert "noindex" not in (robots or {}) and "Disallow: /\n" not in txt and txt.startswith("X") and sitemap is True and kopf == ""
