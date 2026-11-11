@@ -4,9 +4,11 @@
 <h1>Benutzer</h1>
 <p class="leise">Jede Freigabe wird mit Person und Fassung protokolliert. Rolle „admin“ darf alles, auch Benutzer, „Erneut“, Export und den Schalter „Alles“ wieder einschalten; „redaktion“ bearbeitet, gibt frei, veröffentlicht und darf anhalten; „leser“ sieht alles und ändert nichts.</p>
 <section class="karte">
-<table class="voll kompakt"><tr><th>Name</th><th>Rolle</th><th>Status</th><th>letzter Login</th><th></th></tr>
-{% for n in nutzer %}<tr><td>{{ n.name }}</td><td>{{ n.rolle }}</td><td>{{ 'aktiv' if n.aktiv else 'gesperrt' }}</td><td>{{ fmt_dt(n.letzter_login) or '–' }}</td>
-  <td>{% if n.aktiv %}<form method="post" class="inline" data-confirm="{{ n.name }} sperren?"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="aktion" value="sperren"><input type="hidden" name="name" value="{{ n.name }}"><button class="leise">Sperren</button></form>{% endif %}</td></tr>
+<p class="leise wisch-hinweis">Tabelle seitlich wischen für alle Spalten.</p>
+<table class="voll kompakt"><tr><th>Name</th><th></th><th>Rolle</th><th>Status</th><th>letzter Login</th></tr>
+{% for n in nutzer %}<tr><td>{{ n.name }}</td>
+  <td>{% if n.aktiv %}<form method="post" class="inline" data-confirm="{{ n.name }} sperren?"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="aktion" value="sperren"><input type="hidden" name="name" value="{{ n.name }}"><button class="leise">Sperren</button></form>{% endif %}</td>
+  <td>{{ n.rolle }}</td><td>{{ 'aktiv' if n.aktiv else 'gesperrt' }}</td><td>{{ fmt_dt(n.letzter_login) or '–' }}</td></tr>
 {% else %}<tr><td colspan="5" class="leise">Noch keine Benutzer – angemeldet wird mit dem Zugang aus der .env.</td></tr>{% endfor %}
 </table>
 </section>

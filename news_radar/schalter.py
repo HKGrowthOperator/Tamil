@@ -106,7 +106,7 @@ def setzen(store, kanal: str, an: bool, *, wer: str, grund: str = "") -> dict:
     )
     repo.aktion(store, wer=wer, aktion="schalter_an" if an else "schalter_aus", gegenstand_typ="schalter",
                 gegenstand_id=kanal, kanal=kanal, notiz=grund, ausloeser="person")
-    store.event("schalter", kanal=kanal, gestoppt=an, von=wer)
+    store.event("schalter", kanal=kanal, gestoppt=an, grund=grund, von=wer)
     return {"kanal": kanal, "gestoppt": an, "grund": grund, "wer": wer, "seit": jetzt}
 
 

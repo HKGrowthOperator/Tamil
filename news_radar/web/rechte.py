@@ -36,7 +36,12 @@ RECHTE: dict[str, tuple[str, ...]] = {
     "abmelden": ALLE,
 }
 
-TEXT_403 = ("Ihre Rolle „{rolle}“ darf das nicht ({recht}). Ansehen geht weiter; wer Änderungen braucht, fragt "
+NAMEN = {"bearbeiten": "Entwürfe bearbeiten", "freigeben": "Entwürfe freigeben", "veroeffentlichen": "veröffentlichen",
+         "story_verwerfen": "Storys verwerfen", "quelle_ergaenzen": "Quellen ergänzen", "dossier": "Dossiers anstoßen",
+         "anhalten": "Kanäle anhalten", "kanal_einschalten": "Kanäle wieder einschalten",
+         "alles_einschalten": "„Alles“ wieder einschalten", "job_erneut": "abgebrochene Jobs neu starten",
+         "benutzer": "Benutzer verwalten", "export": "Daten exportieren", "abmelden": "abmelden"}
+TEXT_403 = ("Ihre Rolle „{rolle}“ darf nicht: {recht}. Ansehen geht weiter; wer Änderungen braucht, fragt "
             "jemanden mit Rolle admin.")
 
 
@@ -51,7 +56,7 @@ def darf(recht: str, rolle_: str | None = None) -> bool:
 
 def pruefe(recht: str) -> None:
     if not darf(recht):
-        abort(403, description=TEXT_403.format(rolle=rolle() or "unbekannt", recht=recht))
+        abort(403, description=TEXT_403.format(rolle=rolle() or "unbekannt", recht=NAMEN.get(recht, recht)))
 
 
 def recht_noetig(recht: str):

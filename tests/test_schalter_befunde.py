@@ -206,3 +206,27 @@ def test_kanaele_nur_im_geschuetzten_bericht(settings):
     assert gesund["gestoppt"] is True and gesund["gestoppt_kanaele"] == 1 and "instagram" not in json.dumps(gesund)
     bericht = client.get("/api/bericht", headers={"Authorization": "Bearer lese-token"}).get_json()
     assert [g["kanal"] for g in bericht["gestoppt"]] == ["instagram"] and bericht["gestoppt"][0]["seit"]
+
+
+# ---- Oberfläche B, C, D, G, H ------------------------------------------------------------------------------
+
+def test_oberflaeche_sammelbanner_status_protokoll_403_fehlermeldung(settings):
+    with Store(settings.db_path) as st:
+        repo.nutzer_anlegen(st, "lena", "lena-passwort-1", "leser")
+    app, client, token = _client(settings)
+    text = client.post("/schalter/website/an", data={"_csrf": token, "grund": " "}, follow_redirects=True).get_data(as_text=True)
+    assert 'role="alert"' in text and "Nicht angehalten" in text and 'class="banner stopp"' not in text  # H
+    assert "Radar läuft" in text
+    for kanal, grund in (("website", "Theme-Umbau"), ("instagram", "Regel"), ("facebook", "Regel"), ("redaktion", "Kosten")):
+        client.post(f"/schalter/{kanal}/an", data={"_csrf": token, "grund": grund})
+    client.post("/schalter/website/aus", data={"_csrf": token})
+    client.post("/schalter/website/an", data={"_csrf": token, "grund": "Theme-Umbau"})
+    text = client.get("/protokoll").get_data(as_text=True)
+    assert text.count('class="banner stopp"') == 1 and 'role="status"' in text  # B
+    assert text.count("Bearbeiten und Freigeben von Hand gehen weiter") == 1
+    assert "Radar angehalten" in text and "Radar läuft" not in text  # C
+    assert "Website angehalten: Theme-Umbau" in text and "Website wieder eingeschaltet" in text  # D
+    assert "False" not in text and "True" not in text
+    _, lena, _ = _client(settings, "lena", "lena-passwort-1")
+    text = lena.get("/nutzer").get_data(as_text=True)
+    assert "Benutzer verwalten" in text and "(benutzer)" not in text  # G

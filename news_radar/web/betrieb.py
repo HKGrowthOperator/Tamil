@@ -33,9 +33,9 @@ def anhalten(kanal: str):
     try:
         schalter.setzen(get_store(), kanal, True, wer=session.get("user", ""), grund=request.form.get("grund", ""))
     except ValueError as exc:
-        flash(f"{exc} – nichts angehalten.", "fehler")
+        flash(f"Nicht angehalten: {exc}.", "fehler")
         return redirect(url_for("betrieb.schalter_seite"))
-    flash(f"{schalter.LABEL[kanal]} angehalten. Bearbeiten und Freigeben von Hand gehen weiter.", "ok")
+    flash(f"{schalter.LABEL[kanal]} angehalten.", "ok")  # der Rest steht im Banner
     return redirect(url_for("betrieb.schalter_seite"))
 
 

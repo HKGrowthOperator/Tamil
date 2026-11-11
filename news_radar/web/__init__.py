@@ -215,6 +215,7 @@ def create_app(settings: Settings | None = None, testing: bool = False) -> Flask
 
         return {
             "darf": darf,
+            "schalter_label": lambda k: __import__("news_radar.schalter", fromlist=["LABEL"]).LABEL.get(k, k),
             "stopps": stopps,
             "budget": budget,
             "recherche_offen": recherche_offen,

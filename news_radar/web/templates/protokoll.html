@@ -15,14 +15,16 @@
     <button class="knopf">Filtern</button>
   </form>
   {% if darf('export') %}<p class="leise"><a href="/protokoll/aktionen.jsonl?{{ request.query_string.decode() }}">Aktionen als JSONL exportieren</a> · <a href="/protokoll.jsonl">Ereignisse als JSONL exportieren</a></p>{% endif %}
+  <p class="leise wisch-hinweis">Tabelle seitlich wischen für alle Spalten.</p>
   <table class="voll kompakt protokoll">
-    <tr><th>Zeit</th><th>Wer</th><th>Aktion</th><th>Gegenstand</th><th>Kanal</th><th>Details</th></tr>
+    <tr><th>Aktion</th><th>Kanal</th><th>Gegenstand</th><th>Details</th><th>Wer</th><th>Zeit</th></tr>
     {% for a in aktionen %}
-    <tr><td class="zeit">{{ fmt_dt(a.ts) }}</td><td>{{ a.wer }}{% if a.ausloeser and a.ausloeser != 'person' %} <span class="leise">({{ a.ausloeser }})</span>{% endif %}</td>
-      <td><span class="badge ereignis">{{ a.aktion }}</span></td>
-      <td>{% if a.gegenstand_typ == 'entwurf' %}<a href="/entwurf/{{ a.gegenstand_id }}">Entwurf #{{ a.gegenstand_id }}</a>{% elif a.gegenstand_typ %}{{ a.gegenstand_typ }} {{ a.gegenstand_id }}{% elif a.draft_id %}<a href="/entwurf/{{ a.draft_id }}">Entwurf #{{ a.draft_id }}</a>{% endif %}</td>
+    <tr><td><span class="badge ereignis">{{ a.aktion }}</span></td>
       <td>{{ a.kanal or '' }}</td>
-      <td class="leise">{{ a.notiz or '' }}{% if a.fassung_hash %} · Fassung {{ a.fassung_hash[:8] }}{% endif %}{% if a.regel_fassung %} · Regel {{ a.regel_fassung }}{% endif %}{% if a.wp_post_id %} · WP {{ a.wp_post_id }}{% endif %}</td></tr>
+      <td>{% if a.gegenstand_typ == 'entwurf' %}<a href="/entwurf/{{ a.gegenstand_id }}">Entwurf #{{ a.gegenstand_id }}</a>{% elif a.gegenstand_typ %}{{ a.gegenstand_typ }} {{ a.gegenstand_id }}{% elif a.draft_id %}<a href="/entwurf/{{ a.draft_id }}">Entwurf #{{ a.draft_id }}</a>{% endif %}</td>
+      <td class="leise">{{ a.notiz or '' }}{% if a.fassung_hash %} · Fassung {{ a.fassung_hash[:8] }}{% endif %}{% if a.regel_fassung %} · Regel {{ a.regel_fassung }}{% endif %}{% if a.wp_post_id %} · WP {{ a.wp_post_id }}{% endif %}</td>
+      <td>{{ a.wer }}{% if a.ausloeser and a.ausloeser != 'person' %} <span class="leise">({{ a.ausloeser }})</span>{% endif %}</td>
+      <td class="zeit">{{ fmt_dt(a.ts) }}</td></tr>
     {% else %}<tr><td colspan="6" class="leise">Keine Aktionen für diesen Filter.</td></tr>{% endfor %}
   </table>
 </section>
@@ -36,12 +38,15 @@
       {% endfor %}
     </select>
   </form>
+<p class="leise wisch-hinweis">Tabelle seitlich wischen für alle Spalten.</p>
 <table class="voll protokoll">
   <tr><th>Zeit</th><th>Ereignis</th><th>Details</th></tr>
   {% for r in rows %}
   <tr><td class="zeit">{{ fmt_dt(r.ts) }}</td><td><span class="badge ereignis e-{{ r.event }}">{{ r.event }}</span></td>
-    <td class="leise">{% for k, v in r.items() if k not in ('id', 'ts', 'event') %}<b>{{ k }}</b>: {% if k == 'link' or k == 'quelle' %}<a href="{{ v|safe_url }}" target="_blank" rel="noopener">{{ v|truncate(60) }}</a>{% else %}{{ v|string|truncate(120) }}{% endif %} {% endfor %}
-    {% if r.id %}· <a href="/entwurf/{{ r.id }}">#{{ r.id }}</a>{% endif %}</td></tr>
+    <td class="leise">{% if r.event == 'schalter' %}{{ schalter_label(r.kanal) }} {{ 'angehalten' if r.gestoppt else 'wieder eingeschaltet' }}{% if r.gestoppt and r.grund %}: {{ r.grund }}{% endif %} ({{ r.von }})
+    {% elif r.event == 'angehalten' %}Schritt „{{ r.schritt }}“ angehalten durch Schalter „{{ schalter_label(r.kanal) }}“; der Job wartet
+    {% else %}{% for k, v in r.items() if k not in ('id', 'ts', 'event') %}<b>{{ k }}</b>: {% if k == 'link' or k == 'quelle' %}<a href="{{ v|safe_url }}" target="_blank" rel="noopener">{{ v|truncate(60) }}</a>{% elif v is sameas true %}ja{% elif v is sameas false %}nein{% else %}{{ v|string|truncate(120) }}{% endif %} {% endfor %}{% endif %}
+    {% if r.id and r.event not in ('schalter', 'angehalten') %}· <a href="/entwurf/{{ r.id }}">#{{ r.id }}</a>{% endif %}</td></tr>
   {% else %}<tr><td colspan="3" class="leise">Noch keine Einträge.</td></tr>{% endfor %}
 </table>
 </section>
