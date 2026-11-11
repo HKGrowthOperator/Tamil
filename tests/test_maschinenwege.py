@@ -182,3 +182,37 @@ def test_kino_update_ignoriert_wird_protokolliert(settings, monkeypatch):  # noq
         pipeline.refresh_kino([Item()], store, {"kino:1"})
         assert any(e.get("id") == did for e in store.iter_log(event="kino_update_ignoriert"))
         assert store.get_draft(did)["fingerprint"] == "a"
+
+
+
+def test_orchestrator_ausnahme_zwischen_speichern_und_binden(settings, monkeypatch):  # noqa: F811
+    import pytest
+
+    from news_radar.workflow import orchestrator, repo
+
+    with Store(settings.db_path) as store:
+        ctx, sid, felder = _orchestrator_story(store, settings)
+        did = orchestrator.entwurf_anlegen(ctx, repo.story(store, sid), felder, {}, typ="artikel", hinweise=[])
+        store.set_status(did, "freigeben", von="luis")
+        vorher = _bildstand(store, settings, did)
+        dateien = sorted(p.name for p in settings.bilder_dir.iterdir())
+
+        def kaputt(*a, **k):
+            raise RuntimeError("DB belegt")
+
+        monkeypatch.setattr(store, "insert_draft", kaputt)
+        with pytest.raises(RuntimeError):
+            orchestrator.entwurf_anlegen(ctx, repo.story(store, sid), {**felder, "inhalt_html": "<p>3</p>"}, {},
+                                         typ="artikel", hinweise=[])
+        assert _bildstand(store, settings, did) == vorher
+        assert sorted(p.name for p in settings.bilder_dir.iterdir()) == dateien
+        assert store.db.execute("SELECT COUNT(*) FROM assets WHERE draft_id IS NULL").fetchone()[0] == 0
+
+
+def test_asset_fuer_datei_bevorzugt_gebundene(settings):  # noqa: F811
+    from news_radar.workflow import repo
+
+    with Store(settings.db_path) as store:
+        gebunden = repo.asset_anlegen(store, datei="x.jpg", herkunft="karte", draft_id=7)
+        repo.asset_anlegen(store, datei="x.jpg", herkunft="ki")  # verwaist, aber neuer
+        assert repo.asset_fuer_datei(store, "x.jpg")["id"] == gebunden

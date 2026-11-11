@@ -358,68 +358,72 @@ def entwurf_anlegen(ctx: Kontext, story: dict, felder: dict, payload: dict, *, t
     eindeutig = f"{stem}-e{vorhanden['id']}" if vorhanden else stem
     eindeutig += "-" + hashlib.sha256(bild.image.data).hexdigest()[:8]
     name, asset_id = media.speichern(ctx, bild, eindeutig, story["id"])
-    weitere = [{"name": d.publisher or d.quelle, "url": d.url} for d in docs[1:] if d.url and not d.url.endswith("#daten")]
-    if story.get("sensibel"):
-        hinweise = ["Sensibles Thema: vor der Freigabe eine zweite Person lesen lassen"] + \
-            [h for h in hinweise if not h.startswith("Sensibles Thema")]
-    row = {
-        "uid": uid, "typ": typ, "story_id": story["id"],
-        "herkunft": story.get("herkunft") or "radar", "ereignis_datum": story.get("ereignis_datum") or "",
-        "quelle_name": primaer.publisher if primaer else "", "quelle_url": primaer.url if primaer else "",
-        "quelle_datum": primaer.published_at if primaer else "", "quelle_sprache": primaer.language if primaer else "de",
-        "quelle_bild": payload.get("quelle_bild", ""), "weitere_quellen": weitere,
-        "relevanz": story.get("relevanz") or felder.get("relevanz") or 6,
-        "begruendung": story.get("begruendung") or felder.get("begruendung", ""),
-        "dach_bezug": bool(felder.get("dach_bezug") or story.get("ort")), "ort": felder.get("ort") or story.get("ort") or "",
-        "kategorie": felder.get("kategorie") or story.get("kategorie") or "news",
-        "titel": felder.get("titel", ""), "teaser": felder.get("teaser", ""), "inhalt_html": felder.get("inhalt_html", ""),
-        "schlagworte": felder.get("schlagworte") or [], "seo_titel": felder.get("seo_titel", ""),
-        "meta_beschreibung": felder.get("meta_beschreibung", ""), "bild_datei": name, "bild_credit": bild.image.credit,
-        "bild_alt": felder.get("bild_alt", ""), "bild_suchbegriff": felder.get("bild_suchbegriff", ""),
-        "bild_origin": bild.image.origin, "bild_thema": felder.get("bild_thema", ""), "bild_prompt": felder.get("bild_prompt", ""),
-        "event_datum": felder.get("event_datum", ""), "event_ort": felder.get("event_ort", ""),
-        "ticket_url": felder.get("ticket_url", ""), "fakten": fakten if fakten is not None else payload.get("fakten") or {},
-        "fingerprint": fingerprint, "hinweise": hinweise, "original_json": felder,
-    }
-    draft_id = ctx.store.insert_draft(row)
-    if draft_id is None:
-        existing = ctx.store.draft_by_uid(uid)
-        if existing and existing["status"] in ("neu", "bearbeitet", "zurueckgestellt"):
-            draft_id = existing["id"]
-            if von_mensch_bearbeitet(existing):
-                # Die Arbeit der Redaktion nie überschreiben: die neue Fassung liegt in den Fassungen, der Entwurf
-                # bekommt nur einen Hinweis.
-                hinweis = f"Neue Radar-Fassung vom {now_iso()[:16].replace('T', ' ')} (Story {story['id']}) – Text nicht überschrieben, siehe Fassungen"
-                ctx.store.update_draft(draft_id, nur_status=OPEN_STATES, hinweise=[hinweis] + [h for h in existing.get("hinweise") or []
-                                                                       if not h.startswith("Neue Radar-Fassung")])
-                repo.fassung_speichern(ctx.store, story["id"], "entwurf_neu", {**felder, **{k: row[k] for k in repo.FASSUNG_FELDER if k in row}},
-                                       von="radar", draft_id=draft_id)
-                repo.story_setzen(ctx.store, story["id"], status="fertig")
-                ctx.store.event("entwurf_nicht_ueberschrieben", id=draft_id, story=story["id"], status=existing["status"])
+    try:
+        weitere = [{"name": d.publisher or d.quelle, "url": d.url} for d in docs[1:] if d.url and not d.url.endswith("#daten")]
+        if story.get("sensibel"):
+            hinweise = ["Sensibles Thema: vor der Freigabe eine zweite Person lesen lassen"] + \
+                [h for h in hinweise if not h.startswith("Sensibles Thema")]
+        row = {
+            "uid": uid, "typ": typ, "story_id": story["id"],
+            "herkunft": story.get("herkunft") or "radar", "ereignis_datum": story.get("ereignis_datum") or "",
+            "quelle_name": primaer.publisher if primaer else "", "quelle_url": primaer.url if primaer else "",
+            "quelle_datum": primaer.published_at if primaer else "", "quelle_sprache": primaer.language if primaer else "de",
+            "quelle_bild": payload.get("quelle_bild", ""), "weitere_quellen": weitere,
+            "relevanz": story.get("relevanz") or felder.get("relevanz") or 6,
+            "begruendung": story.get("begruendung") or felder.get("begruendung", ""),
+            "dach_bezug": bool(felder.get("dach_bezug") or story.get("ort")), "ort": felder.get("ort") or story.get("ort") or "",
+            "kategorie": felder.get("kategorie") or story.get("kategorie") or "news",
+            "titel": felder.get("titel", ""), "teaser": felder.get("teaser", ""), "inhalt_html": felder.get("inhalt_html", ""),
+            "schlagworte": felder.get("schlagworte") or [], "seo_titel": felder.get("seo_titel", ""),
+            "meta_beschreibung": felder.get("meta_beschreibung", ""), "bild_datei": name, "bild_credit": bild.image.credit,
+            "bild_alt": felder.get("bild_alt", ""), "bild_suchbegriff": felder.get("bild_suchbegriff", ""),
+            "bild_origin": bild.image.origin, "bild_thema": felder.get("bild_thema", ""), "bild_prompt": felder.get("bild_prompt", ""),
+            "event_datum": felder.get("event_datum", ""), "event_ort": felder.get("event_ort", ""),
+            "ticket_url": felder.get("ticket_url", ""), "fakten": fakten if fakten is not None else payload.get("fakten") or {},
+            "fingerprint": fingerprint, "hinweise": hinweise, "original_json": felder,
+        }
+        draft_id = ctx.store.insert_draft(row)
+        if draft_id is None:
+            existing = ctx.store.draft_by_uid(uid)
+            if existing and existing["status"] in ("neu", "bearbeitet", "zurueckgestellt"):
+                draft_id = existing["id"]
+                if von_mensch_bearbeitet(existing):
+                    # Die Arbeit der Redaktion nie überschreiben: die neue Fassung liegt in den Fassungen, der Entwurf
+                    # bekommt nur einen Hinweis.
+                    hinweis = f"Neue Radar-Fassung vom {now_iso()[:16].replace('T', ' ')} (Story {story['id']}) – Text nicht überschrieben, siehe Fassungen"
+                    ctx.store.update_draft(draft_id, nur_status=OPEN_STATES, hinweise=[hinweis] + [h for h in existing.get("hinweise") or []
+                                                                           if not h.startswith("Neue Radar-Fassung")])
+                    repo.fassung_speichern(ctx.store, story["id"], "entwurf_neu", {**felder, **{k: row[k] for k in repo.FASSUNG_FELDER if k in row}},
+                                           von="radar", draft_id=draft_id)
+                    repo.story_setzen(ctx.store, story["id"], status="fertig")
+                    ctx.store.event("entwurf_nicht_ueberschrieben", id=draft_id, story=story["id"], status=existing["status"])
+                    _neues_bild_verwerfen(ctx, name, asset_id)
+                    return draft_id
+                if not ctx.store.update_draft(draft_id, von="radar", nur_status=OPEN_STATES,
+                                              **{k: v for k, v in row.items() if k not in ("uid", "fakten")}):
+                    existing = None  # inzwischen freigegeben: nicht überschreiben, wie ein schon vorhandener Entwurf
+                else:
+                    _alte_datei_aufraeumen(ctx, existing.get("bild_datei"), name)
+            if existing is None or existing["status"] not in OPEN_STATES:
                 _neues_bild_verwerfen(ctx, name, asset_id)
-                return draft_id
-            if not ctx.store.update_draft(draft_id, von="radar", nur_status=OPEN_STATES,
-                                          **{k: v for k, v in row.items() if k not in ("uid", "fakten")}):
-                existing = None  # inzwischen freigegeben: nicht überschreiben, wie ein schon vorhandener Entwurf
-            else:
-                _alte_datei_aufraeumen(ctx, existing.get("bild_datei"), name)
-        if existing is None or existing["status"] not in OPEN_STATES:
-            _neues_bild_verwerfen(ctx, name, asset_id)
-            ctx.store.event("entwurf_existiert", story=story["id"], uid=uid)
-            repo.story_setzen(ctx.store, story["id"], status="verworfen", notiz="Entwurf zu dieser Meldung existiert schon")
-            return None
-    repo.asset_draft_setzen(ctx.store, asset_id, draft_id)
-    # Fassung „entwurf“ = genau das, was in der Warteschlange liegt (inkl. Bild) – derselbe Hash wie bei der Freigabe
-    endfassung = {**felder, **{k: row[k] for k in repo.FASSUNG_FELDER if k in row}}
-    repo.fassung_speichern(ctx.store, story["id"], "entwurf", endfassung, von="radar", draft_id=draft_id)
-    repo.story_setzen(ctx.store, story["id"], status="fertig")
-    kosten = repo.kosten_story(ctx.store, story["id"])
-    ctx.store.event("entwurf", id=draft_id, story=story["id"], titel=row["titel"], kategorie=row["kategorie"], typ=typ,
-                    bild=bild.image.origin, relevanz=row["relevanz"], dach=row["ort"], modus="v2",
-                    kosten_usd=kosten["usd"], bild_versucht=versucht)
-    notify.notify_new(s, [Result(row["titel"], "entwurf", row["kategorie"], f"{s.web_url}/entwurf/{draft_id}",
-                                 note=f"Story {story['id']}, ${kosten['usd']:.3f}", draft_id=draft_id)])
-    return draft_id
+                ctx.store.event("entwurf_existiert", story=story["id"], uid=uid)
+                repo.story_setzen(ctx.store, story["id"], status="verworfen", notiz="Entwurf zu dieser Meldung existiert schon")
+                return None
+        repo.asset_draft_setzen(ctx.store, asset_id, draft_id)
+        # Fassung „entwurf“ = genau das, was in der Warteschlange liegt (inkl. Bild) – derselbe Hash wie bei der Freigabe
+        endfassung = {**felder, **{k: row[k] for k in repo.FASSUNG_FELDER if k in row}}
+        repo.fassung_speichern(ctx.store, story["id"], "entwurf", endfassung, von="radar", draft_id=draft_id)
+        repo.story_setzen(ctx.store, story["id"], status="fertig")
+        kosten = repo.kosten_story(ctx.store, story["id"])
+        ctx.store.event("entwurf", id=draft_id, story=story["id"], titel=row["titel"], kategorie=row["kategorie"], typ=typ,
+                        bild=bild.image.origin, relevanz=row["relevanz"], dach=row["ort"], modus="v2",
+                        kosten_usd=kosten["usd"], bild_versucht=versucht)
+        notify.notify_new(s, [Result(row["titel"], "entwurf", row["kategorie"], f"{s.web_url}/entwurf/{draft_id}",
+                                     note=f"Story {story['id']}, ${kosten['usd']:.3f}", draft_id=draft_id)])
+        return draft_id
+    except BaseException:  # Abbruch nach dem Speichern: keine Datei und kein Lizenz-Datensatz ohne Entwurf
+        _neues_bild_verwerfen(ctx, name, asset_id)
+        raise
 
 
 def schritt_bild(ctx: Kontext, job: dict) -> list[tuple[str, dict]]:
