@@ -395,7 +395,9 @@ def bild(draft_id: int):
         flash(f"Bild fehlgeschlagen: {str(exc)[:200]}", "fehler")
         return redirect(url_for("ui.entwurf", draft_id=draft_id))
     name, _thumb = images.save_pair(image, settings.bilder_dir, stem)
-    for old in (row.get("bild_datei"), (row.get("bild_datei") or "").replace(".jpg", "-thumb.jpg")):
+    andere = row.get("bild_datei") and store.db.execute(  # nie eine Datei löschen, auf die ein anderer Entwurf zeigt
+        "SELECT 1 FROM drafts WHERE bild_datei = ? AND id != ? LIMIT 1", (row["bild_datei"], draft_id)).fetchone()
+    for old in (() if andere else (row.get("bild_datei"), (row.get("bild_datei") or "").replace(".jpg", "-thumb.jpg"))):
         if old and old != name:
             (settings.bilder_dir / old).unlink(missing_ok=True)
     store.update_draft(draft_id, von=_user(), bild_datei=name, bild_credit=image.credit, bild_origin=image.origin)
