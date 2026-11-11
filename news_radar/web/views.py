@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import hashlib
 import re
 from datetime import datetime, timezone
 from urllib.parse import urlsplit
@@ -394,13 +395,17 @@ def bild(draft_id: int):
         log.exception("Bild fehlgeschlagen")
         flash(f"Bild fehlgeschlagen: {str(exc)[:200]}", "fehler")
         return redirect(url_for("ui.entwurf", draft_id=draft_id))
-    name, _thumb = images.save_pair(image, settings.bilder_dir, stem)
-    andere = row.get("bild_datei") and store.db.execute(  # nie eine Datei löschen, auf die ein anderer Entwurf zeigt
+    # Eindeutiger Name je Entwurf und Inhalt: nie die Datei eines anderen Entwurfs überschreiben
+    basis = re.sub(r"(?:-e\d+)?-(?:\d+|[0-9a-f]{8})$", "", stem_base)
+    name, _thumb = images.save_pair(image, settings.bilder_dir,
+                                    f"{basis}-e{draft_id}-{hashlib.sha256(image.data).hexdigest()[:8]}")
+    # erst schreiben, dann aufräumen (und nie eine Datei löschen, auf die ein anderer Entwurf zeigt)
+    store.update_draft(draft_id, von=_user(), bild_datei=name, bild_credit=image.credit, bild_origin=image.origin)
+    andere = row.get("bild_datei") and store.db.execute(
         "SELECT 1 FROM drafts WHERE bild_datei = ? AND id != ? LIMIT 1", (row["bild_datei"], draft_id)).fetchone()
     for old in (() if andere else (row.get("bild_datei"), (row.get("bild_datei") or "").replace(".jpg", "-thumb.jpg"))):
-        if old and old != name:
+        if old and old not in (name, _thumb):
             (settings.bilder_dir / old).unlink(missing_ok=True)
-    store.update_draft(draft_id, von=_user(), bild_datei=name, bild_credit=image.credit, bild_origin=image.origin)
     store.event("bild", id=draft_id, aktion=aktion, origin=image.origin, von=_user())
     _protokoll("bild", row, notiz=aktion)
     flash("Bild ersetzt.", "ok")
