@@ -8,7 +8,7 @@ arbeitstitel, datum (JJJJ-MM-TT, Tag des Ereignisses oder der Meldung), rubrik, 
 nie Belege) und erzwingen (legt trotz „vielleicht schon vorhanden“ an).
 
 Nachtrag ergänzen: mit story_id (positive Ganzzahl) hängt der Vorschlag seine neuen Quellen an eine bestehende
-Nachtrag-Story im Status „recherche_erforderlich“ oder „neu“ an, an der gerade kein Job läuft (Kennungen Q<n+1> …),
+Nachtrag-Story im Status „recherche_erforderlich“ ohne Entwurf an, an der gerade kein Job läuft (Kennungen Q<n+1> …),
 und gibt sie wieder zum Schreiben frei (Status „neu“). Adressen, die schon Beleg dieser Story sind, werden nicht
 geholt; die Titel-Ähnlichkeit wird nicht geprüft und erzwingen ignoriert. Ergebnis „ergaenzt“, ohne Neues „vorhanden“.
 
@@ -465,13 +465,13 @@ def _pruefen(raw, heute: date) -> Vorschlag:
     return v
 
 
-ERGAENZBAR = ("recherche_erforderlich", "neu")
+ERGAENZBAR = ("recherche_erforderlich",)  # nicht „neu“: ein gleichzeitiger Import könnte die Quelle am Gate vorbei führen
 SCHON_BELEG = "schon Beleg dieser Story"
 
 
 def _ziel_grund(store: Store, sid: int) -> tuple[dict | None, str]:
-    """(Story, Grund) – Grund leer, wenn die Story ergänzt werden darf: Nachtrag, Status ERGAENZBAR, kein Job läuft
-    (wie agent_v2._OFFEN_SQL)."""
+    """(Story, Grund) – Grund leer, wenn die Story ergänzt werden darf: Nachtrag, Status ERGAENZBAR, kein Entwurf,
+    kein Job läuft (wie agent_v2._OFFEN_SQL)."""
     row = store.db.execute("SELECT * FROM stories WHERE id = ?", (sid,)).fetchone()
     if row is None:
         return None, "Story nicht gefunden"
@@ -480,6 +480,8 @@ def _ziel_grund(store: Store, sid: int) -> tuple[dict | None, str]:
         return story, "keine Nachtrag-Story"
     if story["status"] not in ERGAENZBAR:
         return story, f"Story ist {story['status']}"
+    if store.db.execute("SELECT 1 FROM drafts WHERE story_id = ?", (sid,)).fetchone():
+        return story, "Story hat schon einen Entwurf"
     if store.db.execute("SELECT 1 FROM workflow_jobs WHERE story_id = ? AND status = 'laeuft'", (sid,)).fetchone():
         return story, "an der Story läuft gerade ein Job"
     return story, ""

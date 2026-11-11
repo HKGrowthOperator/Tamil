@@ -1137,7 +1137,7 @@ def test_ergaenzen_ohne_neue_quelle_ist_vorhanden_und_holt_nichts(settings):
         assert s["status"] == "recherche_erforderlich" and s["ereignis_datum"] == "2026-03-14"
 
 
-@pytest.mark.parametrize("status", ["fertig", "verworfen", "geschrieben"])
+@pytest.mark.parametrize("status", ["fertig", "verworfen", "geschrieben", "neu"])
 def test_ergaenzen_nur_bei_recherche_noetig_oder_neu(settings, status):
     with Store(settings.db_path) as store:
         sid = nachtrag_mit_luecke(store, settings, status=status)
@@ -1148,12 +1148,16 @@ def test_ergaenzen_nur_bei_recherche_noetig_oder_neu(settings, status):
         assert len(repo.dokumente(store, sid)) == 1
 
 
-def test_ergaenzen_bei_status_neu_bleibt_neu(settings):
+def test_ergaenzen_nicht_bei_vorhandenem_entwurf(settings):
+    """Nur „Recherche nötig“ ohne Entwurf: sonst könnte ein gleichzeitiger Import die neue Quelle am Gate vorbei
+    unter „weitere Quellen“ führen."""
     with Store(settings.db_path) as store:
-        sid = nachtrag_mit_luecke(store, settings, status="neu")
-        e = annehmen(store, settings, [vorschlag(story_id=sid, quellen=[quelle(URL3)])], seiten=SEITEN3)["ergebnisse"][0]
-        assert e["ergebnis"] == "ergaenzt" and repo.story(store, sid)["status"] == "neu"
-        assert [d.doc_key for d in repo.dokumente(store, sid)] == ["Q1", "Q2"]
+        sid = nachtrag_mit_luecke(store, settings)
+        store.insert_draft({"uid": "entwurf-1", "titel": "Entwurf", "story_id": sid})
+        abrufe = []
+        e = annehmen(store, settings, [vorschlag(story_id=sid, quellen=[quelle(URL3)])], seiten=SEITEN3,
+                     abrufe=abrufe)["ergebnisse"][0]
+        assert e["ergebnis"] == "abgelehnt" and abrufe == [] and len(repo.dokumente(store, sid)) == 1, e
 
 
 def test_ergaenzen_unbekannte_fremde_oder_beschaeftigte_story_wird_abgelehnt(settings):
@@ -1234,6 +1238,8 @@ def test_ergaenzen_ueber_route_und_cli(settings, monkeypatch, tmp_path, capsys):
                        headers={"Authorization": "Bearer agent-token-mit-genug-zeichen"})
     data = resp.get_json()
     assert resp.status_code == 200 and data["ergaenzt"] == 1 and data["ergebnisse"][0]["ergebnis"] == "ergaenzt"
+    with Store(settings.db_path) as store:
+        repo.story_setzen(store, sid, status="recherche_erforderlich")
     datei = tmp_path / "v.json"
     datei.write_text(json.dumps([vorschlag(story_id=sid, quellen=[quelle(URL2)])]), encoding="utf-8")
     assert main(["agent", "vorschlag", "--datei", str(datei)]) == 0

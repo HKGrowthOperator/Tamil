@@ -46,7 +46,7 @@ denselben Vorschlag mit `"story_id": <Nummer>` und den neuen Quellen an `POST /a
 gibt die Story wieder frei (Status „neu“) und führt die Hinweise zusammen (leeres `bezug`/`bild_hinweis` behält den
 alten Wert; `kernfakten` aus neu und alt ohne Doppel, neue zuerst, höchstens 12). Antwort
 `ergaenzt`; `vorhanden` heißt: keine neue Quelle; `abgelehnt` nennt den Grund (Story nicht gefunden, keine
-Nachtrag-Story, Story ist …, Job läuft). Danach die Story im nächsten Export neu schreiben – alle Dokumente sind dabei.
+Nachtrag-Story, Story ist …, schon ein Entwurf, Job läuft). Danach die Story im nächsten Export neu schreiben – alle Dokumente sind dabei.
 
 ## Stolperfallen
 

@@ -288,7 +288,8 @@ SZENARIEN += [
 
 # Nummer 66: 59–61 belegt ein paralleler Auftrag. Nachtrag ergänzen: der Import scheitert an fehlenden Kernfakten
 # (Recherche nötig), ein Rückblick-Vorschlag nennt die Story und bringt eine neue Quelle; die schon belegte Adresse
-# wird nicht noch einmal geholt, ein zweiter gleicher Vorschlag ist „vorhanden“, danach schreibt der Agent-Modus.
+# wird nicht noch einmal geholt; ein zweiter Vorschlag trifft die schon freigegebene Story (Status „neu“) und wird
+# abgelehnt; danach schreibt der Agent-Modus.
 NACHTRAG_URL2 = "https://www.wdr.de/nachrichten/lichterfest-tempel-hamm-100.html"
 NACHTRAG_ERGAENZUNG = {**NACHTRAG, "arbeitstitel": "Lichterfest Hamm: Zahl der Gäste", "kernfakten": ["rund 3000 Gäste"],
                        "quellen": [NACHTRAG_QUELLE, {**NACHTRAG_QUELLE, "url": NACHTRAG_URL2, "herausgeber": "WDR"}]}
@@ -297,7 +298,7 @@ SZENARIEN += [
              "Nachtrag", [], texte={NACHTRAG_URL: T.HAMM, NACHTRAG_URL2: T.HAMM_ZWEI}, nachher="nachtrag_ergaenzen",
              einstellungen={"_ohne_modell": True, "_vorschlaege": [[NACHTRAG]], "_ergaenzung": NACHTRAG_ERGAENZUNG},
              erwartet={"storys": 1, "entwuerfe": 1, "aufrufe": 0, "dokumente": 2,
-                       "stats": {"nachtrag_angelegt": 1, "ergaenzung_ergaenzt": 1, "ergaenzung_vorhanden": 1,
-                                 "uebersprungen_schon_beleg": 3, "status_neu": 1, "export_dokumente": 2,
+                       "stats": {"nachtrag_angelegt": 1, "ergaenzung_ergaenzt": 1, "ergaenzung_abgelehnt": 1,
+                                 "uebersprungen_schon_beleg": 1, "status_neu": 1, "export_dokumente": 2,
                                  "notiz_alt_und_ergaenzt": 1, "agent_entwuerfe": 1}}),
 ]

@@ -625,7 +625,7 @@ def _nachtrag_pdf(ctx, sz: Szenario, now: datetime) -> dict:
 
 def _nachtrag_ergaenzen(ctx, sz: Szenario, now: datetime) -> dict:
     """Nachtrag anlegen, Import scheitert (Recherche nötig), Vorschlag mit story_id ergänzt die Story zweimal (zweites
-    Mal ohne Neues), Export enthält alle Dokumente, danach Agent-Modus mit Gate."""
+    Mal abgelehnt: schon freigegeben), Export enthält alle Dokumente, danach Agent-Modus mit Gate."""
     from ..agent_v2 import paket_v2
     from ..nachtrag import annehmen
 
