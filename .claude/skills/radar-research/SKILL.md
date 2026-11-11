@@ -33,6 +33,25 @@ nur aus bestätigten Claims, Belege je `<p>`, Links nur auf Quellen der Story.
 4. `python tools/radar_bericht.py` → Entwürfe mit Hinweisen prüfen (Länge, Quellenzeile, Copydesk).
 5. Bericht an Luis: Tabelle Story · Ergebnis · Titel/Grund · Hinweise.
 
+## Bild vorschlagen
+
+Entwürfe aus dem Agent-Modus haben zunächst nur die Bildkarte. Für einen **wartenden** Entwurf (noch nicht freigegeben)
+darf ein echtes Bild vorgeschlagen werden, auf zwei Wegen:
+
+- **commons:** `seite_url` ist eine Dateiseite `https://commons.wikimedia.org/wiki/File:…`. Erlaubt sind nur
+  gemeinfrei/CC0, CC BY und CC BY-SA (nichts mit NC oder ND, kein reines GFDL); JPEG, PNG oder WebP ab 800 Pixel Breite;
+  bei CC BY und CC BY-SA muss ein Urheber angegeben sein.
+- **quelle:** `seite_url` ist ein Dokument genau dieser Story auf einem Host aus dem Bildquellen-Register
+  (`[[bildquellen]]` in `sources.toml`: Tempel, Vereine, Veranstalter, Festivals, Kinos, Betriebe). Ohne `bild_url` nimmt
+  der Radar das `og:image`; mit `bild_url` muss die Adresse auf der Seite stehen. Nie Agenturfotos (dpa, Keystone,
+  Getty …), nie KI-Bilder, nie etwas aus sozialen Netzwerken; Logos, Icons und Banner werden abgelehnt.
+
+Aufruf: `curl -fsS -X POST -H "Authorization: Bearer $RADAR_AGENT_TOKEN" -H "Content-Type: application/json" --data
+'{"bilder": [{"story_id": 42, "weg": "quelle", "seite_url": "https://…", "alt": "…"}]}' "$RADAR/api/agent/bild?von=Claude%20(Research)"`
+(höchstens fünf je Aufruf, `alt` höchstens 160 Zeichen reiner Text). Den Bildnachweis und die Lizenz setzt **der
+Radar** selbst (aus Commons bzw. dem Register), nie aus dem Vorschlag. Antwort je Eintrag: `gesetzt` (mit `nachweis`,
+`lizenz`), `abgelehnt` (mit `grund`) oder `nicht_bearbeitet`. Die Freigabe bleibt beim Menschen im Cockpit.
+
 ## Stolperfallen
 
 - Fundstellen müssen **wörtlich** im Dokument stehen, sonst verwirft das Gate den Claim.

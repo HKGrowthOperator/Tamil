@@ -28,6 +28,7 @@ Passwörter, Tokens und Schlüssel liegen ausschließlich in den Coolify-Variabl
 | Lesezugriff | `GET /api/bericht` mit `Authorization: Bearer $RADAR_LESE_TOKEN` |
 | Agent-Modus | `GET /api/agent/export`, `POST /api/agent/import` mit `Bearer $RADAR_AGENT_TOKEN` |
 | Nachtrag (Rückblick) | `POST /api/agent/vorschlag?von=<name>` mit `Bearer $RADAR_AGENT_TOKEN`: höchstens fünf Vorschläge je Aufruf (Thema, Datum, ein bis sechs Quellen); der Radar ruft die Quellen selbst ab. Größere Mengen: `python -m news_radar agent vorschlag --datei <json>` im Container |
+| Bild mit Nachweis | `POST /api/agent/bild?von=<name>` mit `Bearer $RADAR_AGENT_TOKEN`: höchstens fünf Bildvorschläge je Aufruf (`story_id`, `weg` commons oder quelle, `seite_url`, optional `bild_url`, `alt`); der Radar prüft Lizenz bzw. Bildquellen-Register (`[[bildquellen]]` in `sources.toml`), holt das Bild selbst und setzt es am wartenden Entwurf. Größere Mengen: `python -m news_radar agent bild --datei <json>` im Container |
 
 ### App „tamil-web“ – Website (WordPress)
 
