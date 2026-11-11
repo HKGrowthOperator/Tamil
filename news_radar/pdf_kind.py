@@ -11,6 +11,7 @@ INHALT_MAX entpackte Bytes Inhaltsstrom, zusammen höchstens GESAMT_MAX, und jed
 from __future__ import annotations
 
 import json
+import logging
 import re
 import sys
 import zlib
@@ -130,6 +131,7 @@ def lesen(daten: bytes, ab_seite: int = 1) -> tuple[str, str]:
 
 def main(argv: list[str]) -> int:
     begrenzen()
+    logging.disable(logging.WARNING)  # pypdf-Warnungen (je Objekt eine Zeile) gar nicht erst schreiben
     try:
         ab_seite = max(1, int(argv[1])) if len(argv) > 1 else 1
         text, titel = lesen(sys.stdin.buffer.read(), ab_seite)

@@ -204,8 +204,8 @@ def pdf_lesen(daten: bytes, ab_seite: int = 1, frist: float | None = None) -> tu
         zeit = ende - time.monotonic()
         if zeit <= 0:
             raise Unlesbar("PDF zu aufwendig (Zeitlimit)")
-        lauf = subprocess.run([*PDF_BEFEHL, str(max(1, ab_seite))], input=daten, capture_output=True, timeout=zeit,
-                              check=False)
+        lauf = subprocess.run([*PDF_BEFEHL, str(max(1, ab_seite))], input=daten, stdout=subprocess.PIPE,
+                              stderr=subprocess.DEVNULL, timeout=zeit, check=False)  # Warnungen nicht sammeln
     except subprocess.TimeoutExpired:
         raise Unlesbar("PDF zu aufwendig (Zeitlimit)") from None
     except OSError:

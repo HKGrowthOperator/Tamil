@@ -974,3 +974,27 @@ def test_hoechstens_zwei_pdf_kinder_gleichzeitig(monkeypatch):
     finally:
         for _ in belegt:
             nachtrag._PDF_PLAETZE.release()
+
+
+def _aufruf_merken(monkeypatch) -> dict:
+    import subprocess
+
+    aufruf = {}
+
+    def fake_run(befehl, **kw):
+        aufruf.update(kw)
+        return subprocess.CompletedProcess(befehl, 0, stdout=b'{"text": "x", "titel": ""}', stderr=None)
+    monkeypatch.setattr(nachtrag.subprocess, "run", fake_run)
+    return aufruf
+
+
+def test_pdf_kind_stderr_verworfen_und_warnungen_aus(monkeypatch):
+    """Befund P2 (zweite Prüfung): stderr des Kindes (pypdf-Warnungen, 15 MB) nicht im Web-Worker sammeln."""
+    import subprocess
+
+    aufruf = _aufruf_merken(monkeypatch)
+    nachtrag.pdf_lesen(b"%PDF-1.4")
+    assert aufruf["stderr"] is subprocess.DEVNULL and aufruf["stdout"] is subprocess.PIPE
+    assert "capture_output" not in aufruf
+    quelle = (nachtrag.Path(nachtrag.__file__).with_name("pdf_kind.py")).read_text(encoding="utf-8")
+    assert "logging.disable(logging.WARNING)" in quelle
