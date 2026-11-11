@@ -7,6 +7,7 @@
     <span class="badge status s-{{ d.status }}">{{ labels.get(d.status, d.status) }}</span>
     <span class="rubrik r-{{ d.kategorie }}">{{ category_label(d.kategorie) }}</span>
     {% if d.typ != 'artikel' %}<span class="badge typ">{{ 'Kinotermine' if d.typ == 'kino_termine' else 'Event' }}</span>{% endif %}
+    {% if d.herkunft == 'nachtrag' and d.ereignis_datum %}<span class="badge typ" title="Nachtrag für den Rückblick, erscheint mit dem Ereignisdatum">Nachtrag · {{ d.ereignis_datum[8:10] }}.{{ d.ereignis_datum[5:7] }}.{{ d.ereignis_datum[:4] }}</span>{% endif %}
     {% if d.ort %}<span class="badge ort">{{ d.ort }}</span>{% endif %}
     {% if d.hinweise and d.hinweise[0].startswith('Rohfassung') %}<span class="badge hinweis roh" title="{{ d.hinweise[0] }}">Rohfassung ohne KI</span>{% endif %}
     <span class="relevanz r{{ d.relevanz }}">Relevanz {{ d.relevanz }}</span>

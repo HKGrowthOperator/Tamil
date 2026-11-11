@@ -278,3 +278,26 @@ def test_cli_agent_vorschlag(settings, monkeypatch, tmp_path, capsys):
     assert "1 angelegt" in capsys.readouterr().out
     with Store(settings.db_path) as store:
         assert repo.stories(store)[0]["herkunft"] == "nachtrag"
+
+
+# ---- Cockpit ----------------------------------------------------------------------------------------------
+
+def test_cockpit_zeigt_nachtrag_und_filter_rueckblick(settings):
+    from news_radar.web import create_app
+
+    from test_web_redaktion import login
+
+    with Store(settings.db_path) as store:
+        annehmen(store, settings, [vorschlag()])
+        _schreiben(store, settings)
+        did = store.list_drafts("neu")[0]["id"]
+        store.insert_draft({"uid": "radar-1", "titel": "Normale Meldung aus dem Radar", "kategorie": "news"})
+    settings.web_user, settings.web_password, settings.web_secret = "luis", "geheim", "s3cret"
+    client = create_app(settings, testing=True).test_client()
+    login(client)
+    feed = client.get("/").get_data(as_text=True)
+    assert "Nachtrag · 14.03.2026" in feed and "Normale Meldung aus dem Radar" in feed
+    rueckblick = client.get("/?status=neu&herkunft=nachtrag").get_data(as_text=True)
+    assert "Nachtrag · 14.03.2026" in rueckblick and "Normale Meldung aus dem Radar" not in rueckblick
+    assert "Rückblick" in feed
+    assert "Nachtrag · 14.03.2026" in client.get(f"/entwurf/{did}").get_data(as_text=True)

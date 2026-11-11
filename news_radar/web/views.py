@@ -118,6 +118,7 @@ def feed():
     status = request.args.get("status", "neu")
     if status not in STATUSES:
         abort(404)
+    herkunft = "nachtrag" if request.args.get("herkunft") == "nachtrag" else None  # Filter „Rückblick“
     page = max(1, int(request.args.get("seite", 1)))
     per_page = 30
     store = get_store()
@@ -126,10 +127,10 @@ def feed():
     statuses = ["veroeffentlicht", "in_wordpress", "wird_veroeffentlicht"] if status == "veroeffentlicht" else [status]
     drafts = []
     for s in statuses:
-        drafts += store.list_drafts(s, limit=per_page, offset=(page - 1) * per_page)
+        drafts += store.list_drafts(s, limit=per_page, offset=(page - 1) * per_page, herkunft=herkunft)
     drafts.sort(key=lambda d: d["updated_at"], reverse=True) if status != "neu" else None
     return render_template("feed.html", drafts=drafts, status=status, tabs=TABS, counts=counts, page=page,
-                           has_more=len(drafts) >= per_page, labels=STATUS_LABELS)
+                           has_more=len(drafts) >= per_page, labels=STATUS_LABELS, herkunft=herkunft)
 
 
 @ui.post("/entwurf/<int:draft_id>/status")

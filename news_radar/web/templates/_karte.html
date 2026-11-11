@@ -7,6 +7,7 @@
     <div class="meta">
       <span class="rubrik r-{{ d.kategorie }}">{{ category_label(d.kategorie) }}</span>
       {% if d.typ == 'kino_termine' %}<span class="badge typ">Kinotermine</span>{% elif d.typ == 'event' %}<span class="badge typ">Event</span>{% endif %}
+      {% if d.herkunft == 'nachtrag' and d.ereignis_datum %}<span class="badge typ" title="Nachtrag für den Rückblick, erscheint mit dem Ereignisdatum">Nachtrag · {{ d.ereignis_datum[8:10] }}.{{ d.ereignis_datum[5:7] }}.{{ d.ereignis_datum[:4] }}</span>{% endif %}
       {% if d.ort %}<span class="badge ort">{{ d.ort }}</span>{% endif %}
       <span class="relevanz r{{ d.relevanz }}" title="Relevanz {{ d.relevanz }} von 10"><i style="--r:{{ d.relevanz }}"></i>Relevanz {{ d.relevanz }}</span>
       <span class="leise">{{ age(d.created_at) }} · {{ d.quelle_name }}</span>
