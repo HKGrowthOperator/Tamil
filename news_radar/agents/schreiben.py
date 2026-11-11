@@ -23,6 +23,7 @@ LAENGEN = {"kurz": (80, 150), "normal": (250, 400), "lang": (450, 750), "event":
            "event_mittel": (250, 400), "kino_mittel": (250, 400), "event_lang": (350, 550), "kino_lang": (350, 550),
            "dossier": (600, 1000)}
 KNAPP = ("kurz", "event", "kino")
+H2_AB_WOERTER = 350  # ab hier gliedern Zwischenüberschriften (Längentext, Lektorat, redaktion.md)
 
 
 def stilbeispiele(typ: str, kategorie: str, n: int = 3) -> list[dict]:
@@ -56,7 +57,8 @@ def laenge_text(laenge: str, typ: str) -> str:
             zusatz += " Wann, wo, Karten – nur, was belegt ist."
     else:
         zusatz += (" Aufbau: erster Absatz mit dem Kern (wer, was, wann, wo), dann <h2>-Zwischenüberschriften"
-                   " (eine je Abschnitt, ab etwa 350 Wörtern), Hintergrund und Einordnung nur aus den Claims.")
+                   f" (eine je Abschnitt, ab etwa {H2_AB_WOERTER} Wörtern), Hintergrund und Einordnung nur aus den"
+                   " Claims.")
         if typ in ("event", "kino"):
             zusatz += " Zum Schluss ein Service-Absatz: wann, wo, Karten – nur, was belegt ist."
         zusatz += (" Die Länge entsteht aus mehr belegten Einzelheiten und Zusammenhang; nicht strecken – keine"

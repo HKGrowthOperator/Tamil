@@ -123,3 +123,13 @@ def test_staffel_im_export_entspricht_dem_gate(typ, docs):
     for laenge in set(staffel.values()):
         lo, hi = schreiben.LAENGEN[laenge]
         assert f"{lo}–{hi}" in text
+
+
+def test_eine_schwelle_fuer_die_zwischenueberschrift():
+    ab = schreiben.H2_AB_WOERTER
+    assert f"ab etwa {ab} Wörtern" in schreiben.laenge_text("lang", "news")
+    assert f"ab {ab} Wörtern" in prompts.redaktion()
+    hinweise = copydesk.pruefen({"inhalt_html": _html(ab + 10)}, [], [], "normal", [])
+    assert any("Zwischenüberschrift" in h for h in hinweise)
+    assert not any("Zwischenüberschrift" in h
+                   for h in copydesk.pruefen({"inhalt_html": _html(ab - 10)}, [], [], "normal", []))
