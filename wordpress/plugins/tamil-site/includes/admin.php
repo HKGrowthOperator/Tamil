@@ -1,6 +1,9 @@
 <?php
 /**
- * Einstellungen → Tamil.de Website: Werbeplätze und 301-Weiterleitungen.
+ * Einstellungen → Tamil.de Website: Funktionsschalter, Werbeplätze und 301-Weiterleitungen.
+ *
+ * Alle Optionen dieser Seite stehen in einer Gruppe; options.php speichert jede registrierte Option der Gruppe, darum
+ * muss jede hier registrierte Option auch im Formular stehen.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -17,6 +20,15 @@ function tamil_site_register_settings(): void {
 		array(
 			'type'              => 'array',
 			'sanitize_callback' => 'tamil_site_sanitize_settings',
+			'default'           => array(),
+		)
+	);
+	register_setting(
+		'tamil_site',
+		'tamil_site_funktionen',
+		array(
+			'type'              => 'array',
+			'sanitize_callback' => 'tamil_site_sanitize_funktionen',
 			'default'           => array(),
 		)
 	);
@@ -79,6 +91,13 @@ function tamil_site_page_settings(): void {
 		<h1><?php esc_html_e( 'Tamil.de Website', 'tamil-site' ); ?></h1>
 		<form method="post" action="options.php">
 			<?php settings_fields( 'tamil_site' ); ?>
+			<h2><?php esc_html_e( 'Funktionen', 'tamil-site' ); ?></h2>
+			<p class="description"><?php esc_html_e( 'Jeder Baustein lässt sich einzeln einschalten. Im Echtbetrieb bleibt er aus, bis Auftragsverarbeitung und Rechtstexte vorliegen.', 'tamil-site' ); ?></p>
+			<fieldset>
+				<?php foreach ( tamil_site_funktionen_stand() as $name => $an ) : ?>
+				<p><label><input type="checkbox" name="tamil_site_funktionen[<?php echo esc_attr( $name ); ?>]" value="1" <?php checked( $an ); ?>> <?php echo esc_html( tamil_site_funktionen()[ $name ] ); ?></label></p>
+				<?php endforeach; ?>
+			</fieldset>
 			<h2><?php esc_html_e( 'Werbeplätze', 'tamil-site' ); ?></h2>
 			<p class="description"><?php esc_html_e( 'Je Platz gilt: Advanced-Ads-Platzierung vor Banner-HTML vor Eigenanzeige. Ist nichts gesetzt, bleibt der Platz unsichtbar.', 'tamil-site' ); ?></p>
 			<table class="form-table" role="presentation">
