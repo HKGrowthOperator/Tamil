@@ -296,6 +296,31 @@ _TUERKISCH = {  # „İ“.lower() hat zwei Zeichen: Positionen aus einer kleing
 }
 
 
+_OHNE_SCHLUSS = {  # Rauschblöcke ohne passenden Schluss: wie bisher überspringen, der Rest der Seite bleibt
+    "custom-nav-element": "<nav-menu><a>x</a></nav-menu>" + _ABSATZ * 3,
+    "header-component": "<header-component>m</header-component><main>" + _ABSATZ * 3 + "</main>",
+    "form-field": "<form-field name=a></form-field>" + _ABSATZ * 3,
+    "aside-panel": "<aside-panel>x</aside-panel>" + _ABSATZ * 3,
+    "svg-icon": "<svg-icon name=x></svg-icon>" + _ABSATZ * 3,
+    "kommentar-nav": "<!-- <nav> alt --> " + _ABSATZ * 3,
+    "form-im-attribut": "<div data-t='<form'>x</div>" + _ABSATZ * 3,
+    "svg-selbstschliessend": "<svg/>" + _ABSATZ * 3,
+    "offenes-skript-dann-style": "<script>offen " + _ABSATZ + "<style>a{}</style>" + _ABSATZ * 2,
+    "nav-menu-dann-nav": "<nav-menu>" + _ABSATZ + "</nav>" + _ABSATZ * 2,
+    "verschachtelt": "<header><nav>a</nav>b</header>" + _ABSATZ * 2,
+    "leerraum-im-schluss": "<script >x</script >" + _ABSATZ,
+    "scriptx": "<scriptx>a</scriptx>" + _ABSATZ,
+    "gross": "<NAV>n</NAV><P>" + "Langer Text " * 10 + "</P>",
+    "offener-absatz": "<p>offen ohne Schluss " + _ABSATZ * 2,
+}
+
+
+@pytest.mark.parametrize("name", sorted(_OHNE_SCHLUSS))
+def test_extract_paragraphs_ohne_schluss_wie_bisher(name):
+    seite = _OHNE_SCHLUSS[name]
+    assert sources.extract_paragraphs(seite) == _alt_extract(seite)
+
+
 @pytest.mark.parametrize("name", sorted(_TUERKISCH))
 def test_extract_paragraphs_mit_tuerkischem_i_wie_bisher(name):
     seite = _TUERKISCH[name]
@@ -310,7 +335,11 @@ def test_extract_paragraphs_linear_bei_nicht_geschlossenen_tags():
         t = time.monotonic()
         sources.extract_paragraphs(roh, 20000)
         assert time.monotonic() - t < 1, roh[:30]
-    # ein nicht geschlossener Rauschblock endet am Seitenende
-    assert sources.extract_paragraphs("<p>" + "Echter Absatz mit genug Text für die Mindestlänge. " * 2
-                                      + "</p><script>var x = '<p>" + "Kein Absatz aus dem Skript. " * 4 + "</p>'") \
-        == ("Echter Absatz mit genug Text für die Mindestlänge. " * 2).strip()
+    # ein nicht geschlossener Rauschblock wird wie bisher übersprungen, der Rest der Seite bleibt
+    seite = ("<p>" + "Echter Absatz mit genug Text für die Mindestlänge. " * 2 + "</p><script>var x = '<p>"
+             + "Absatz nach offenem Skript. " * 4 + "</p>'")
+    assert sources.extract_paragraphs(seite) == _alt_extract(seite) and "nach offenem Skript" in _alt_extract(seite)
+    for roh in ("<script x" * 60000 + ">", "<nav>" * 60000):  # „>“ erst am Ende bzw. nie ein Schluss
+        t = time.monotonic()
+        sources.extract_paragraphs(roh)
+        assert time.monotonic() - t < 1, roh[:20]

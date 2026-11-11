@@ -474,27 +474,34 @@ def _schluss_re(name: str, mit_leerraum: bool) -> re.Pattern:
     return _SCHLUSS_CACHE[key]
 
 
-def bloecke(text: str, start_re: re.Pattern, mit_leerraum: bool = True, *, offen_bis_ende: bool = False):
+def bloecke(text: str, start_re: re.Pattern, mit_leerraum: bool = True):
     """Blöcke „<name …>Inhalt</name>“ in einem linearen Durchlauf: je (Anfang, Inhalt-Anfang, Inhalt-Ende, Ende).
 
-    Gleiches Ergebnis wie ein Regex „<name[^>]*>(.*?)</name\\s*>“ mit re.S und re.I über die Seite, aber ohne dessen
-    quadratische Laufzeit bei fehlenden Schluss-Tags (jedes öffnende Tag suchte bis zum Seitenende). `start_re` liefert
-    den Namen in Gruppe 1. Gesucht wird nur im Original – Positionen aus einer kleingeschriebenen Kopie verrutschen
-    („İ“.lower() hat zwei Zeichen). Fehlt der Schluss: mit `offen_bis_ende` endet der Block am Seitenende, sonst ist
-    Schluss."""
+    Gleiches Ergebnis wie re.finditer mit „<name\\b[^>]*>(.*?)</name\\s*>“ (re.S, re.I) über die Seite, aber ohne
+    dessen quadratische Laufzeit bei fehlenden Schluss-Tags. `start_re` liefert den Namen in Gruppe 1. Wie beim Regex
+    wird ein Start ohne Schluss übersprungen und weitergesucht (der Rest der Seite bleibt); linear bleibt es über eine
+    Merkliste je Name (ab dort gibt es keinen Schluss mehr) und das gemerkte nächste „>“. Gesucht wird nur im
+    Original – Positionen aus einer kleingeschriebenen Kopie verrutschen („İ“.lower() hat zwei Zeichen)."""
     pos, n = 0, len(text)
+    kein_schluss_ab: dict[str, int] = {}
+    auf = -1
     while pos <= n:
         m = start_re.search(text, pos)
         if not m:
             return
-        auf = text.find(">", m.end())
-        if auf < 0:
-            return
-        e = _schluss_re(m.group(1), mit_leerraum).search(text, auf + 1)
+        if auf < m.end():
+            auf = text.find(">", m.end())
+            if auf < 0:
+                return  # kein „>“ mehr: kein Start kann mehr passen
+        name = m.group(1).lower()
+        e = None
+        if name not in kein_schluss_ab:  # die Starts kommen in steigender Folge, also auch auf + 1
+            e = _schluss_re(m.group(1), mit_leerraum).search(text, auf + 1)
+            if e is None:
+                kein_schluss_ab[name] = auf + 1
         if e is None:
-            if offen_bis_ende:
-                yield m.start(), auf + 1, n, n
-            return
+            pos = m.start() + 1  # wie der Regex: diesen Start überspringen, weitersuchen
+            continue
         yield m.start(), auf + 1, e.start(), e.end()
         pos = e.end()
 
@@ -502,7 +509,7 @@ def bloecke(text: str, start_re: re.Pattern, mit_leerraum: bool = True, *, offen
 def ohne_rauschen(html_text: str) -> str:
     """Skripte, Styles, Navigation, Kopf, Fuß, Formulare usw. durch ein Leerzeichen ersetzen (linear)."""
     teile, pos = [], 0
-    for anfang, _, _, ende in bloecke(html_text, _NOISE_START_RE, offen_bis_ende=True):
+    for anfang, _, _, ende in bloecke(html_text, _NOISE_START_RE):
         teile += [html_text[pos:anfang], " "]
         pos = ende
     teile.append(html_text[pos:])
