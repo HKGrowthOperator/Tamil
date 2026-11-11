@@ -153,6 +153,55 @@ def set_status(draft_id: int):
     return redirect(sicheres_ziel(request.form.get("next") or request.args.get("next"), url_for("ui.feed")))
 
 
+SAMMEL_MAX = 100  # mehr Karten zeigt der Feed nicht auf einmal
+
+
+@ui.post("/entwurf/sammelfreigabe")
+@recht_noetig("freigeben")
+def sammelfreigabe():
+    """Mehrere Entwürfe freigeben: je Entwurf derselbe Übergang und dieselbe Protokollzeile wie einzeln. Was nicht
+    freigegeben werden kann, wird mit Grund gemeldet. Bei angehaltener Website: freigegeben, wartet (wie einzeln)."""
+    ziel = sicheres_ziel(request.form.get("next"), url_for("ui.feed"))
+    ids: list[int] = []
+    for roh in request.form.getlist("ids"):
+        if roh.isdigit() and int(roh) not in ids:
+            ids.append(int(roh))
+    if not ids:
+        flash("Keine Entwürfe ausgewählt.", "fehler")
+        return redirect(ziel)
+    if len(ids) > SAMMEL_MAX:
+        flash(f"Höchstens {SAMMEL_MAX} Entwürfe auf einmal – bitte kleiner auswählen.", "fehler")
+        return redirect(ziel)
+    store = get_store()
+    sperre = schalter.sperre(store, "website")
+    frei, nicht = [], []
+    for draft_id in ids:
+        row = store.get_draft(draft_id)
+        if row is None:
+            nicht.append(f"#{draft_id}: nicht gefunden")
+            continue
+        if row["status"] not in OPEN_STATES and row["status"] != "fehler":
+            nicht.append(f"#{draft_id} „{row['titel'][:60]}“: Status „{STATUS_LABELS.get(row['status'], row['status'])}“")
+            continue
+        if not _freigeben(store, row):
+            nicht.append(f"#{draft_id} „{row['titel'][:60]}“: Zustand hat sich gerade geändert")
+            continue
+        store.event("aktion", id=draft_id, aktion="freigeben", status="freigegeben", von=_user(), sammel=True)
+        if sperre is not None:
+            _protokoll("zurueckgehalten", row, fassung=repo.fassung_hash(row), kanal="website",
+                       notiz=f"Schalter „{sperre['kanal']}“ angehalten seit {sperre['seit']}")
+        frei.append(draft_id)
+    if frei:
+        flash(f"{len(frei)} {'Entwurf' if len(frei) == 1 else 'Entwürfe'} freigegeben.", "ok")
+    if frei and sperre is not None:
+        flash(_angehalten_meldung(sperre, "Nichts wurde an WordPress übertragen. Die freigegebenen Entwürfe warten "
+                                          "und gehen beim nächsten Lauf hinaus, sobald der Schalter wieder aus ist."),
+              "fehler")
+    if nicht:
+        flash(f"Nicht freigegeben ({len(nicht)}): " + "; ".join(nicht), "fehler")
+    return redirect(ziel)
+
+
 # ---- Bearbeiten -------------------------------------------------------------------------
 
 def _protokoll(aktion: str, row: dict, **kw) -> None:

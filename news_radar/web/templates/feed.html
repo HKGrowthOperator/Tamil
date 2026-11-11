@@ -12,6 +12,15 @@
 {% if not drafts %}
   <div class="leer"><strong>Nichts zu tun.</strong><span>Keine Entwürfe mit Status „{{ labels.get(status, status) }}“. Der Radar meldet sich, sobald er etwas findet.</span></div>
 {% endif %}
+{% set freigebbar = drafts|selectattr('status', 'in', ['neu', 'bearbeitet', 'zurueckgestellt', 'fehler'])|list %}
+{% if freigebbar and darf('freigeben') %}
+<form id="sammel" class="sammelleiste" method="post" action="/entwurf/sammelfreigabe" data-sammel data-confirm="Ausgewählte Entwürfe freigeben?">
+  <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="next" value="/?status={{ status }}">
+  <label class="auswahl"><input type="checkbox" data-alle> Alle sichtbaren auswählen</label>
+  <span class="leise" data-anzahl aria-live="polite">Keiner ausgewählt</span>
+  <button class="primaer" data-busy="Wird freigegeben …">Ausgewählte freigeben</button>
+</form>
+{% endif %}
 <div class="liste" data-board>
 {% for d in drafts %}
   {% include "_karte.html" %}

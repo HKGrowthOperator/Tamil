@@ -19,6 +19,7 @@
     <div class="aktionen">
       {% set open = d.status in ('neu', 'bearbeitet', 'zurueckgestellt') %}
       {% if (open or d.status == 'fehler') and darf('freigeben') %}
+      <label class="auswahl"><input type="checkbox" name="ids" value="{{ d.id }}" form="sammel" aria-label="„{{ d.titel }}“ auswählen"> Auswählen</label>
       {% if wordpress_enabled and darf('veroeffentlichen') %}
       <form method="post" action="/entwurf/{{ d.id }}/veroeffentlichen" class="inline" data-confirm="Jetzt direkt auf tamil.de veröffentlichen?">
         <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="gold" data-busy="Wird veröffentlicht …">Direkt posten</button>
