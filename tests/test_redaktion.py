@@ -228,6 +228,8 @@ def test_without_api_key_scan_runs_and_agent_mode_v2_finishes_the_story(settings
         offene = jobs.zaehlen(store)["offen"]
     assert stats["entwuerfe"] == 1 and draft["story_id"] == paket["story_id"]
     assert any("Agent-Modus" in h for h in draft["hinweise"]) and tuple(usage) == ("claude-code", 0)
+    with Store(settings.db_path) as store:
+        assert repo.story(store, paket["story_id"])["laenge"] in paket["laenge_staffel"].values()
     assert offene == 0
 
 
