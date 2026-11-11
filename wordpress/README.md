@@ -69,7 +69,7 @@ bash wordpress/dev/serve.sh &                       # http://127.0.0.1:8085
 set -a; . "$WP_DIR/.env.local"; set +a              # Zugänge (nie ins Repo)
 python wordpress/dev/import_prototype.py --wp-cli "php $WP_DIR/wp-cli.phar --path=$WP_DIR --allow-root"
 python wordpress/dev/shots.py --out "$WP_DIR/shots" # Screenshots 390/820/1280 + Backend, prüft horizontales Scrollen
-python -m pytest tests/test_wp_plugin.py -v         # Integrationstests gegen das laufende WordPress
+python -m pytest tests/wp -v                        # Integrationstests gegen das laufende WordPress
 bash wordpress/dev/lint.sh                          # php -l + WordPress-Coding-Standards (PHPCS)
 bash wordpress/dev/package.sh                       # ZIPs nach wordpress/dist/
 ```

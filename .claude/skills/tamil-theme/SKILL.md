@@ -47,5 +47,5 @@ Customizer, Gutenberg).
 
 - Customizer-Werte (Kontakt, Social) erscheinen nur, wenn gesetzt – Beispielwerte nie als echt einbauen.
 - Werbeplätze kommen aus dem Plugin `tamil-site`; Optik im Theme, Logik im Plugin lassen.
-- Plugins nicht für Optik ändern. Wenn doch nötig: Test in `tests/test_wp_plugin.py`.
+- Plugins nicht für Optik ändern. Wenn doch nötig: Test in `tests/wp/`.
 - PHPCS meckert über ungeescapte Ausgaben und fehlende Textdomain `tamil`.
