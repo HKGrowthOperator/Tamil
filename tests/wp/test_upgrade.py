@@ -35,8 +35,7 @@ def test_vorhandene_seiten_bleiben_unberuehrt_und_lauf_ist_idempotent(wp_cli):
     if ( $sicher ) {
         wp_update_post( array_merge( array( 'ID' => $id ), $sicher ) );
     } else {
-        wp_delete_post( $id, true );
-        tamil_site_seite_sicherstellen( 'impressum', 'Impressum' );
+        wp_delete_post( $id, true ); // vorher gab es keine: nichts zurücklassen
     }
     echo wp_json_encode( $ergebnis );
     """
@@ -48,20 +47,17 @@ def test_vorhandene_seiten_bleiben_unberuehrt_und_lauf_ist_idempotent(wp_cli):
 
 def test_fehlende_seite_wird_leerer_entwurf(wp_cli):
     code = r"""
-    $alt    = get_page_by_path( 'datenschutz', OBJECT, 'page' );
-    $sicher = $alt ? get_post( $alt->ID, ARRAY_A ) : null;
-    if ( $alt ) { wp_delete_post( $alt->ID, true ); }
+    // Eine vorhandene Seite wird nur kurz umbenannt (ID und Inhalt bleiben), nicht gelöscht.
+    $alt = get_page_by_path( 'datenschutz', OBJECT, 'page' );
+    if ( $alt ) { wp_update_post( array( 'ID' => $alt->ID, 'post_name' => 'datenschutz-testpause' ) ); }
     delete_option( 'tamil_site_datenversion' );
     tamil_site_upgrade_ausfuehren();
     tamil_site_upgrade_ausfuehren();
     $neu   = get_page_by_path( 'datenschutz', OBJECT, 'page' );
     $daten = array( $neu->post_status, $neu->post_content, $neu->post_title,
         count( get_posts( array( 'post_type' => 'page', 'post_name__in' => array( 'datenschutz' ), 'post_status' => 'any', 'numberposts' => -1 ) ) ) );
-    if ( $sicher ) {
-        wp_delete_post( $neu->ID, true );
-        unset( $sicher['ID'] );
-        wp_insert_post( $sicher );
-    }
+    wp_delete_post( $neu->ID, true );
+    if ( $alt ) { wp_update_post( array( 'ID' => $alt->ID, 'post_name' => 'datenschutz' ) ); }
     echo wp_json_encode( $daten );
     """
     assert _php_json(wp_cli, code) == ["draft", "", "Datenschutz", 1]
@@ -129,3 +125,43 @@ def test_einstellungsseite_zeigt_schalter(wp, wp_sitzung):
     html = wp_sitzung.get(f"{wp.url}/wp-admin/options-general.php?page=tamil-site", timeout=30).text
     for name in ("einreichungen", "verzeichnis", "werbung", "zustimmung"):
         assert f'name="tamil_site_funktionen[{name}]"' in html
+
+
+def test_nach_fehlschlag_wartezeit_statt_neuversuch_bei_jedem_aufruf(wp_cli):
+    code = r"""
+    $r = array();
+    $GLOBALS['tamil_test_zaehler'] = 0;
+    tamil_site_upgrade_schritt( TAMIL_SITE_DATENVERSION, 'kaputt', function () { $GLOBALS['tamil_test_zaehler']++; throw new RuntimeException( 'kaputt' ); } );
+    update_option( 'tamil_site_datenversion', 0 );
+    delete_option( 'tamil_site_upgrade_fehler' );
+    $r['lauf'] = tamil_site_upgrade_ausfuehren();
+    $r['fehler_gemerkt'] = (int) get_option( 'tamil_site_upgrade_fehler' ) > 0;
+    tamil_site_upgrade_pruefen();
+    tamil_site_upgrade_pruefen();
+    $r['versuche_in_wartezeit'] = $GLOBALS['tamil_test_zaehler'];
+    update_option( 'tamil_site_upgrade_fehler', time() - TAMIL_SITE_UPGRADE_WARTEN_SEKUNDEN - 1 );
+    tamil_site_upgrade_pruefen();
+    $r['versuche_nach_wartezeit'] = $GLOBALS['tamil_test_zaehler'];
+    $r['version'] = (int) get_option( 'tamil_site_datenversion' );
+    // aufräumen: ohne den kaputten Schritt (gibt es nur in diesem Prozess) wieder auf Stand
+    delete_option( 'tamil_site_upgrade_fehler' );
+    update_option( 'tamil_site_datenversion', TAMIL_SITE_DATENVERSION );
+    echo wp_json_encode( $r );
+    """
+    r = json.loads(wp_cli(code))
+    assert r == {"lauf": False, "fehler_gemerkt": True, "versuche_in_wartezeit": 1, "versuche_nach_wartezeit": 2, "version": 0}
+
+
+def test_liegengebliebene_sperre_nur_mit_gelesenem_wert_loeschen(wp_cli):
+    code = r"""
+    global $wpdb;
+    tamil_site_upgrade_entsperren();
+    $wpdb->query( "INSERT INTO {$wpdb->options} (option_name, option_value, autoload) VALUES ('tamil_site_upgrade_sperre', 'B', 'off')" );
+    $r = array( tamil_site_upgrade_sperre_aufraeumen( 'A' ) );
+    $r[] = $wpdb->get_var( "SELECT option_value FROM {$wpdb->options} WHERE option_name = 'tamil_site_upgrade_sperre'" );
+    $r[] = tamil_site_upgrade_sperre_aufraeumen( 'B' );
+    $r[] = $wpdb->get_var( "SELECT option_value FROM {$wpdb->options} WHERE option_name = 'tamil_site_upgrade_sperre'" );
+    tamil_site_upgrade_entsperren();
+    echo wp_json_encode( $r );
+    """
+    assert json.loads(wp_cli(code)) == [False, "B", True, None]

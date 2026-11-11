@@ -28,6 +28,12 @@ define( 'TAMIL_SITE_DATENVERSION', 1 );
 define( 'TAMIL_SITE_UPGRADE_SPERRE_SEKUNDEN', 300 );
 
 /**
+ * Nach einem gescheiterten Lauf so viele Sekunden warten, bevor ein Seitenaufruf es erneut versucht (sonst liefe der
+ * kaputte Schritt bei jedem Aufruf). Ein ausdrücklicher Aufruf von tamil_site_upgrade_ausfuehren() wartet nicht.
+ */
+define( 'TAMIL_SITE_UPGRADE_WARTEN_SEKUNDEN', 600 );
+
+/**
  * Gemeinsames Register der Upgrade-Routine.
  *
  * @return array{seiten:array<string,string>,rechte:array<string,array<int,string>>,schritte:array<int,array{version:int,name:string,fn:callable}>}
@@ -98,6 +104,10 @@ function tamil_site_upgrade_pruefen(): void {
 	if ( tamil_site_datenversion() >= TAMIL_SITE_DATENVERSION ) {
 		return;
 	}
+	$fehler = (int) get_option( 'tamil_site_upgrade_fehler', 0 );
+	if ( $fehler && time() - $fehler < TAMIL_SITE_UPGRADE_WARTEN_SEKUNDEN ) {
+		return;
+	}
 	tamil_site_upgrade_ausfuehren();
 }
 // Priorität 20: nach tamil_radar_init (10), damit die Rolle „radar“ schon existiert.
@@ -112,11 +122,33 @@ function tamil_site_upgrade_sperren(): bool {
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- atomare Sperre, darf nicht aus dem Cache kommen
 	$alt = $wpdb->get_var( $wpdb->prepare( "SELECT option_value FROM {$wpdb->options} WHERE option_name = %s", 'tamil_site_upgrade_sperre' ) );
 	if ( null !== $alt && $jetzt - (int) $alt > TAMIL_SITE_UPGRADE_SPERRE_SEKUNDEN ) {
-		tamil_site_upgrade_entsperren(); // liegengeblieben (abgebrochener Lauf)
+		tamil_site_upgrade_sperre_aufraeumen( (string) $alt ); // liegengeblieben (abgebrochener Lauf)
 	}
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- atomare Sperre
 	$neu = $wpdb->query( $wpdb->prepare( "INSERT IGNORE INTO {$wpdb->options} (option_name, option_value, autoload) VALUES (%s, %s, 'off')", 'tamil_site_upgrade_sperre', (string) $jetzt ) );
 	return 1 === (int) $neu;
+}
+
+/**
+ * Liegengebliebene Sperre löschen – nur, wenn sie noch den gelesenen Wert hat. Hat inzwischen ein anderer Lauf sie
+ * neu gesetzt, bleibt sie stehen.
+ *
+ * @param string $gelesen Wert der Sperre beim Lesen.
+ * @return bool Gelöscht.
+ */
+function tamil_site_upgrade_sperre_aufraeumen( string $gelesen ): bool {
+	global $wpdb;
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Gegenstück zur atomaren Sperre
+	$geloescht = (int) $wpdb->delete(
+		$wpdb->options,
+		array(
+			'option_name'  => 'tamil_site_upgrade_sperre',
+			'option_value' => $gelesen,
+		)
+	);
+	wp_cache_delete( 'tamil_site_upgrade_sperre', 'options' );
+	wp_cache_delete( 'notoptions', 'options' );
+	return $geloescht > 0;
 }
 
 function tamil_site_upgrade_entsperren(): void {
@@ -129,8 +161,8 @@ function tamil_site_upgrade_entsperren(): void {
 
 /**
  * Holt nach, was fehlt: Seiten, Rechte, dann die nummerierten Schritte in aufsteigender Reihenfolge.
- * Gibt false zurück, wenn ein anderer Lauf die Sperre hält oder ein Schritt scheitert (dann bleibt die Version stehen
- * und der nächste Aufruf versucht es erneut).
+ * Gibt false zurück, wenn ein anderer Lauf die Sperre hält oder ein Schritt scheitert (dann bleibt die Version stehen,
+ * die Zeit des Fehlschlags wird gemerkt, und Seitenaufrufe versuchen es erst nach der Wartezeit erneut).
  */
 function tamil_site_upgrade_ausfuehren(): bool {
 	if ( ! tamil_site_upgrade_sperren() ) {
@@ -165,6 +197,9 @@ function tamil_site_upgrade_ausfuehren(): bool {
 	} finally {
 		if ( $ok ) {
 			update_option( 'tamil_site_datenversion', TAMIL_SITE_DATENVERSION, true );
+			delete_option( 'tamil_site_upgrade_fehler' );
+		} else {
+			update_option( 'tamil_site_upgrade_fehler', time(), true );
 		}
 		tamil_site_upgrade_entsperren();
 	}
