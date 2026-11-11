@@ -83,7 +83,7 @@ class Vorschlag(BaseModel):
     kernfakten: list[str] = Field(default_factory=list, max_length=12)
     bild_hinweis: str = Field(default="", max_length=300)
     erzwingen: bool = False
-    story_id: int | None = Field(default=None, gt=0, strict=True)  # Nachtrag ergänzen statt neu anlegen
+    story_id: int | None = Field(default=None, gt=0, le=2_147_483_647, strict=True)  # ergänzen statt anlegen
 
     @field_validator("datum")
     @classmethod

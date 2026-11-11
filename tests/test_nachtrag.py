@@ -1238,3 +1238,14 @@ def test_ergaenzen_ueber_route_und_cli(settings, monkeypatch, tmp_path, capsys):
     assert "1 ergänzt" in capsys.readouterr().out
     with Store(settings.db_path) as store:
         assert [d.doc_key for d in repo.dokumente(store, sid)] == ["Q1", "Q2", "Q3"]
+
+
+def test_ergaenzen_riesige_story_id_wird_abgelehnt_und_der_stapel_laeuft_weiter(settings):
+    with Store(settings.db_path) as store:
+        sid = nachtrag_mit_luecke(store, settings)
+        out = annehmen(store, settings, [vorschlag(story_id=2**63, quellen=[quelle(URL3)]),
+                                         vorschlag(story_id=2**31, quellen=[quelle(URL3)]),
+                                         vorschlag(story_id=sid, quellen=[quelle(URL3)])], seiten=SEITEN3)
+        e = out["ergebnisse"]
+        assert [x["ergebnis"] for x in e] == ["abgelehnt", "abgelehnt", "ergaenzt"], e
+        assert e[0]["grund"].startswith("story_id") and e[1]["grund"].startswith("story_id")
