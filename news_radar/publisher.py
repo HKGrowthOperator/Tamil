@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import base64
 import logging
+from datetime import datetime, timezone
 
 from . import schalter
 from .config import Settings
@@ -57,11 +58,42 @@ def bild_payload(row: dict, settings: Settings) -> dict:
     }
 
 
-def plugin_payload(row: dict, settings: Settings, status: str) -> dict:
+MONATE = ("Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November",
+          "Dezember")
+
+
+def ist_nachtrag(row: dict) -> bool:
+    return row.get("herkunft") == "nachtrag" and bool(row.get("ereignis_datum"))
+
+
+def nachtrag_vermerk(row: dict, jetzt: datetime | None = None) -> str:
+    """Sichtbarer Vermerk am Ende eines Nachtrags (eigener Absatz, kein Beleg-Absatz: er entsteht erst beim
+    Veröffentlichen, nach Gate und Freigabe). Monat und Jahr der tatsächlichen Veröffentlichung."""
+    try:
+        from zoneinfo import ZoneInfo
+
+        jetzt = (jetzt or datetime.now(timezone.utc)).astimezone(ZoneInfo("Europe/Berlin"))
+    except Exception:  # noqa: BLE001 – ohne Zeitzonendaten gilt UTC
+        jetzt = jetzt or datetime.now(timezone.utc)
+    jahr = str(row.get("ereignis_datum") or "")[:4]
+    return (f"<p><em>Nachtrag der Redaktion: Dieser Beitrag wurde im {MONATE[jetzt.month - 1]} {jetzt.year} für den "
+            f"Rückblick auf das Jahr {jahr} geschrieben.</em></p>")
+
+
+def inhalt_fuer_wp(row: dict, jetzt: datetime | None = None) -> str:
+    inhalt = render_content(row)
+    if ist_nachtrag(row):
+        inhalt = inhalt.rstrip() + "\n" + nachtrag_vermerk(row, jetzt)
+    return inhalt
+
+
+def plugin_payload(row: dict, settings: Settings, status: str, jetzt: datetime | None = None) -> dict:
+    """Nachtrag: `datum` = Ereignisdatum (12 Uhr Ortszeit), damit WordPress den Beitrag am Tag des Ereignisses
+    einsortiert; dazu der Vermerk am Ende. Normale Entwürfe bleiben unverändert."""
     schlagworte = [s for s in (row.get("schlagworte") or []) if str(s).strip()]
-    return {
+    payload = {
         "titel": row["titel"],
-        "inhalt": render_content(row),
+        "inhalt": inhalt_fuer_wp(row, jetzt),
         "teaser": row.get("teaser") or "",
         "status": status,
         "slug": slugify(row["titel"]),
@@ -75,6 +107,9 @@ def plugin_payload(row: dict, settings: Settings, status: str) -> dict:
         },
         "bild": bild_payload(row, settings),
     }
+    if ist_nachtrag(row):
+        payload["datum"] = f"{str(row['ereignis_datum'])[:10]} 12:00:00"
+    return payload
 
 
 def seo_meta(settings: Settings, row: dict) -> dict | None:
@@ -131,6 +166,10 @@ def publish_draft(row: dict, settings: Settings, wp: WordPress | TamilRadarClien
     schalter.pruefen(store, "website")  # unmittelbar vor dem ersten Aufruf an WordPress
     if isinstance(wp, TamilRadarClient):
         return publish_via_plugin(row, settings, wp, store, status)
+    if ist_nachtrag(row):
+        # Der alte REST-Weg kennt kein Ereignisdatum: der Beitrag stünde mit heutigem Datum auf der Website
+        raise RuntimeError("Nachtrag nur über das Plugin tamil-radar veröffentlichen (Ereignisdatum) – ohne Plugin "
+                           "nicht gesendet")
     media_id = None
     if row.get("bild_datei"):
         path = settings.bilder_dir / row["bild_datei"]

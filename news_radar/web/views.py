@@ -13,7 +13,8 @@ from flask import (Blueprint, Response, abort, current_app, flash, g, jsonify, r
 
 from .. import bilder, images, prompts, schalter
 from ..workflow import repo
-from ..render import render_content, sanitize_html
+from ..publisher import inhalt_fuer_wp  # Vorschau wie veröffentlicht (Nachtrag: mit Vermerk)
+from ..render import sanitize_html
 from ..store import OPEN_STATES, PUBLISHABLE, STATUSES, TRANSITIONS, ConflictError
 from ..wordpress import slugify
 from . import anmelden, client_ip, get_store, gleich
@@ -118,6 +119,7 @@ def feed():
     status = request.args.get("status", "neu")
     if status not in STATUSES:
         abort(404)
+    herkunft = "nachtrag" if request.args.get("herkunft") == "nachtrag" else None  # Filter „Rückblick“
     page = max(1, int(request.args.get("seite", 1)))
     per_page = 30
     store = get_store()
@@ -126,10 +128,10 @@ def feed():
     statuses = ["veroeffentlicht", "in_wordpress", "wird_veroeffentlicht"] if status == "veroeffentlicht" else [status]
     drafts = []
     for s in statuses:
-        drafts += store.list_drafts(s, limit=per_page, offset=(page - 1) * per_page)
+        drafts += store.list_drafts(s, limit=per_page, offset=(page - 1) * per_page, herkunft=herkunft)
     drafts.sort(key=lambda d: d["updated_at"], reverse=True) if status != "neu" else None
     return render_template("feed.html", drafts=drafts, status=status, tabs=TABS, counts=counts, page=page,
-                           has_more=len(drafts) >= per_page, labels=STATUS_LABELS)
+                           has_more=len(drafts) >= per_page, labels=STATUS_LABELS, herkunft=herkunft)
 
 
 @ui.post("/entwurf/<int:draft_id>/status")
@@ -195,7 +197,7 @@ def entwurf(draft_id: int):
     return render_template("entwurf.html", d=row, labels=STATUS_LABELS, categories=settings.categories,
                            belege=belege_fuer(store, row),
                            can_publish=row["status"] in PUBLISHABLE, open_states=OPEN_STATES,
-                           preview=render_content(row), bildthemen=themen, ki_bereit=bool(settings.gemini_key),
+                           preview=inhalt_fuer_wp(row), bildthemen=themen, ki_bereit=bool(settings.gemini_key),
                            bild_thema=row.get("bild_thema") or prompts.thema_fuer(row["kategorie"], row["titel"]))
 
 
@@ -425,7 +427,7 @@ def wp_entwurf(draft_id: int):
 @ui.get("/vorschau/<int:draft_id>")
 def vorschau(draft_id: int):
     row = _draft_or_404(draft_id)
-    return render_template("vorschau.html", d=row, content=render_content(row))
+    return render_template("vorschau.html", d=row, content=inhalt_fuer_wp(row))
 
 
 @ui.get("/dashboard")

@@ -86,7 +86,7 @@ def zuordnen(ctx: Kontext, items: list[NewsItem], tage: int = 7) -> list[Zuordnu
             continue
         best, wert = None, 0.0
         for s in bestehend:
-            if s["typ"] in ("kino", "dossier") or s["status"] == "verworfen":
+            if s["typ"] in ("kino", "dossier") or s["status"] == "verworfen" or s.get("herkunft") == "nachtrag":
                 continue
             w = aehnlichkeit(item.title, s.get("titel") or "")
             if w > wert:

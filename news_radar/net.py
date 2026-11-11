@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import ipaddress
 import socket
+import time
 from dataclasses import dataclass
 from typing import Callable
 from urllib.parse import urljoin, urlsplit
@@ -38,6 +39,10 @@ class UnsafeURL(ValueError):
 
 class ResponseTooLarge(ValueError):
     """Die Antwort überschreitet das Größenlimit."""
+
+
+class Zeitlimit(ValueError):
+    """Die Gesamtfrist des Abrufs (frist, time.monotonic) ist abgelaufen."""
 
 
 class WrongContentType(ValueError):
@@ -205,11 +210,17 @@ def safe_get(
     session: requests.Session | None = None,
     resolve: Resolver | None = None,
     max_redirects: int = MAX_REDIRECTS,
+    frist: float | None = None,
 ) -> Fetched:
     """GET mit SSRF-Schutz, Weiterleitungen von Hand, Größenlimit und optionalem bedingtem Abruf.
 
     HTTP-Fehler (4xx/5xx) werfen HTTPError mit `.status`; 304 liefert Fetched(status=304, content=b"").
+    `frist` (time.monotonic) begrenzt den ganzen Abruf: geprüft vor jeder Weiterleitung und je Datenblock.
     """
+    def _frist_pruefen() -> None:
+        if frist is not None and time.monotonic() > frist:
+            raise Zeitlimit(f"Zeitlimit beim Abruf: {url}")
+
     http = session or requests
     hdrs = {"User-Agent": USER_AGENT, **(headers or {})}
     if etag:
@@ -218,6 +229,7 @@ def safe_get(
         hdrs["If-Modified-Since"] = last_modified
     current = url
     for _hop in range(max_redirects + 1):
+        _frist_pruefen()
         check_url(current, resolve)
         client = http if session is not None or not _ohne_proxy(current) else _safe_session()
         resp = client.get(current, params=params, headers=hdrs, timeout=timeout, stream=True, allow_redirects=False)
@@ -240,6 +252,7 @@ def safe_get(
                 raise ResponseTooLarge(f"{declared} Bytes > {max_bytes}: {current}")
             chunks, size = [], 0
             for chunk in resp.iter_content(64 * 1024):
+                _frist_pruefen()
                 size += len(chunk)
                 if size > max_bytes:
                     raise ResponseTooLarge(f"mehr als {max_bytes} Bytes: {current}")

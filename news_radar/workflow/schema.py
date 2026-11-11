@@ -134,7 +134,19 @@ V4 = [
     "CREATE INDEX IF NOT EXISTS actions_ts ON editorial_actions(ts)",
 ]
 
-MIGRATIONS: dict[int, list[str]] = {2: V2, 3: V3, 4: V4}
+# Nachtrag (Rückblick): Storys aus einem Vorschlag mit Quellen statt aus dem Scan; das Ereignisdatum reist bis zur
+# Veröffentlichung mit (Entwurf → Plugin-Feld „datum“). Bestehende Zeilen bekommen Herkunft „radar“.
+V5 = [
+    "ALTER TABLE stories ADD COLUMN herkunft TEXT NOT NULL DEFAULT 'radar'",   # radar | nachtrag
+    "ALTER TABLE stories ADD COLUMN ereignis_datum TEXT",                      # JJJJ-MM-TT (nur Nachtrag)
+    "ALTER TABLE stories ADD COLUMN vorschlag TEXT",                           # JSON: Hinweise aus dem Vorschlag
+    "ALTER TABLE drafts ADD COLUMN herkunft TEXT NOT NULL DEFAULT 'radar'",
+    "ALTER TABLE drafts ADD COLUMN ereignis_datum TEXT",
+    "CREATE INDEX IF NOT EXISTS stories_herkunft ON stories(herkunft, ereignis_datum)",
+    "CREATE INDEX IF NOT EXISTS drafts_herkunft ON drafts(herkunft, created_at)",
+]
+
+MIGRATIONS: dict[int, list[str]] = {2: V2, 3: V3, 4: V4, 5: V5}
 LATEST = max(MIGRATIONS)
 
 

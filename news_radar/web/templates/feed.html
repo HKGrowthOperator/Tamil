@@ -5,8 +5,9 @@
   <div><h1>Freigabe</h1><p class="unter">Entwürfe des Radars prüfen, bearbeiten und mit einem Klick veröffentlichen.</p></div>
   <nav class="tabs" aria-label="Status">
     {% for slug, label in tabs %}
-    <a href="/?status={{ slug }}" class="{{ 'aktiv' if slug == status }}">{{ label }} <b>{{ counts.get(slug, 0) }}</b></a>
+    <a href="/?status={{ slug }}{% if herkunft %}&herkunft={{ herkunft }}{% endif %}" class="{{ 'aktiv' if slug == status }}">{{ label }} <b>{{ counts.get(slug, 0) }}</b></a>
     {% endfor %}
+    <a href="/?status={{ status }}{% if not herkunft %}&herkunft=nachtrag{% endif %}" class="{{ 'aktiv' if herkunft }}" title="Nur Nachträge für den Rückblick">Rückblick{% if herkunft %} ✕{% endif %}</a>
   </nav>
 </header>
 {% if not drafts %}
@@ -17,5 +18,5 @@
   {% include "_karte.html" %}
 {% endfor %}
 </div>
-{% if has_more %}<p class="mehr"><a class="knopf" href="/?status={{ status }}&seite={{ page + 1 }}">Weitere laden</a></p>{% endif %}
+{% if has_more %}<p class="mehr"><a class="knopf" href="/?status={{ status }}{% if herkunft %}&herkunft={{ herkunft }}{% endif %}&seite={{ page + 1 }}">Weitere laden</a></p>{% endif %}
 {% endblock %}

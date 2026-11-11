@@ -77,9 +77,11 @@ def stories_seit(store, tage: int = 7, typen: Iterable[str] | None = None) -> li
 
 
 def bezahlte_storys_heute(store, seit_iso: str) -> int:
-    """Storys, die heute den bezahlten Weg gegangen sind (alles außer Kino, das ohne Modell läuft)."""
+    """Storys, die heute den bezahlten Weg gegangen sind (alles außer Kino, das ohne Modell läuft, und Nachträge,
+    die der Agent-Modus schreibt und die eine eigene Tagesgrenze haben)."""
     return store.db.execute(
-        "SELECT COUNT(*) FROM stories WHERE erstellt >= ? AND typ != 'kino' AND status != 'verworfen'", (seit_iso,)
+        "SELECT COUNT(*) FROM stories WHERE erstellt >= ? AND typ != 'kino' AND status != 'verworfen' "
+        "AND herkunft != 'nachtrag'", (seit_iso,)
     ).fetchone()[0]
 
 
