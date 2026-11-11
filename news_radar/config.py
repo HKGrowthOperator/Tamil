@@ -76,6 +76,8 @@ def bild_host_gesperrt(host: str) -> bool:
     return any(m in host.split(".") for m in BILD_GESPERRT_MARKEN)
 
 
+GETEILTE_HOSTER = ("wp.com", "wordpress.com", "cloudfront.net", "blogspot.com", "wixstatic.com", "squarespace-cdn.com",
+                   "googleusercontent.com", "amazonaws.com", "akamaized.net")
 BILDQUELLEN_ARTEN = ("tempel", "verein", "veranstalter", "festival", "kino", "betrieb", "person", "sport")
 
 
@@ -94,6 +96,8 @@ class Bildquelle:
         for h in (host, *self.bild_hosts):
             if not h or h != h.lower() or h.startswith("www.") or any(c in h for c in "/:@ "):
                 raise ValueError(f"Bildquelle: Host klein und ohne www./Pfad angeben ({h!r})")
+            if len([t for t in h.split(".") if t]) < 2:
+                raise ValueError(f"Bildquelle: Host {h} braucht mindestens zwei Namensteile (z. B. tempel.ch)")
             if bild_host_gesperrt(h):
                 raise ValueError(f"Bildquelle: Host {h} ist gesperrt (soziales Netzwerk oder Bildagentur)")
         if not (self.nachweis or "").strip() or not (self.betreiber or "").strip():
@@ -102,6 +106,9 @@ class Bildquelle:
             raise ValueError(f"Bildquelle {host}: art muss eine von {', '.join(BILDQUELLEN_ARTEN)} sein")
         self.host, self.nachweis, self.betreiber = host, self.nachweis.strip(), self.betreiber.strip()
         self.bild_hosts = list(self.bild_hosts)
+        for h in self.bild_hosts:  # geteilte Hoster: dort liegt Material vieler Betreiber, kein eigenes CDN
+            if any(h == g or h.endswith("." + g) for g in GETEILTE_HOSTER):
+                raise ValueError(f"Bildquelle {host}: bild_hosts {h} ist ein geteilter Hoster")
 
 
 @dataclass

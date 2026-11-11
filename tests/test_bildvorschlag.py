@@ -857,3 +857,17 @@ def test_lizenz_adresse_kanonisch_gespeichert(settings):
                  {"API": commons_api(lizenz_url="//www.creativecommons.org/licenses/by-sa/4.0"), COMMONS_THUMB: jpeg()})
         assert e["lizenz"] == "CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/)", e
         assert repo.asset_fuer_datei(store, store.get_draft(did)["bild_datei"])["lizenz"] == e["lizenz"]
+
+
+@pytest.mark.parametrize("host,bild_hosts,grund", [
+    ("localhost", [], "zwei"), ("tempel.ch", ["cdn"], "zwei"),
+    ("tempel.ch", ["i0.wp.com"], "geteilt"), ("tempel.ch", ["wordpress.com"], "geteilt"),
+    ("tempel.ch", ["d1.cloudfront.net"], "geteilt"), ("tempel.ch", ["x.blogspot.com"], "geteilt"),
+    ("tempel.ch", ["static.wixstatic.com"], "geteilt"), ("tempel.ch", ["images.squarespace-cdn.com"], "geteilt"),
+    ("tempel.ch", ["lh3.googleusercontent.com"], "geteilt"), ("tempel.ch", ["s3.amazonaws.com"], "geteilt"),
+    ("tempel.ch", ["a.akamaized.net"], "geteilt"),
+])
+def test_register_namensteile_und_geteilte_hoster(host, bild_hosts, grund):
+    with pytest.raises(ValueError, match=grund):
+        Bildquelle(host=host, betreiber="X", art="tempel", nachweis="Foto: X", bild_hosts=bild_hosts)
+    Bildquelle(host="tempel.ch", betreiber="X", art="tempel", nachweis="Foto: X", bild_hosts=["cdn.tempel-bilder.ch"])
