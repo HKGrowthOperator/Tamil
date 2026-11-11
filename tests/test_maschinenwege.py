@@ -242,3 +242,19 @@ def test_orchestrator_zwei_entwuerfe_einer_story_teilen_keine_datei(settings):  
         a = orchestrator.entwurf_anlegen(ctx, repo.story(store, sid), felder, {"uid": "u-a"}, typ="artikel", hinweise=[])
         b = orchestrator.entwurf_anlegen(ctx, repo.story(store, sid), felder, {"uid": "u-b"}, typ="artikel", hinweise=[])
         assert a != b and store.get_draft(a)["bild_datei"] != store.get_draft(b)["bild_datei"]
+
+
+
+def test_fassung_entwurf_neu_zeigt_auf_keine_geloeschte_datei(settings):  # noqa: F811
+    from news_radar.workflow import orchestrator, repo
+
+    with Store(settings.db_path) as store:
+        ctx, sid, felder = _orchestrator_story(store, settings)
+        did = orchestrator.entwurf_anlegen(ctx, repo.story(store, sid), felder, {}, typ="artikel", hinweise=[])
+        store.update_draft(did, von="luis", titel="Von Hand")
+        orchestrator.entwurf_anlegen(ctx, repo.story(store, sid), {**felder, "kategorie": "kultur"}, {}, typ="artikel",
+                                     hinweise=[])
+        neu = [f for f in repo.fassungen(store, story_id=sid) if f["rolle"] == "entwurf_neu"]
+        inhalt = neu[-1]["inhalt"]
+        inhalt = json.loads(inhalt) if isinstance(inhalt, str) else inhalt
+        assert neu and inhalt.get("bild_datei", "") == ""

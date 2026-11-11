@@ -393,7 +393,8 @@ def entwurf_anlegen(ctx: Kontext, story: dict, felder: dict, payload: dict, *, t
                     hinweis = f"Neue Radar-Fassung vom {now_iso()[:16].replace('T', ' ')} (Story {story['id']}) – Text nicht überschrieben, siehe Fassungen"
                     ctx.store.update_draft(draft_id, nur_status=OPEN_STATES, hinweise=[hinweis] + [h for h in existing.get("hinweise") or []
                                                                            if not h.startswith("Neue Radar-Fassung")])
-                    repo.fassung_speichern(ctx.store, story["id"], "entwurf_neu", {**felder, **{k: row[k] for k in repo.FASSUNG_FELDER if k in row}},
+                    repo.fassung_speichern(ctx.store, story["id"], "entwurf_neu", {**felder, **{k: row[k] for k in repo.FASSUNG_FELDER if k in row},
+                                                                         "bild_datei": ""},  # Bild wird verworfen
                                            von="radar", draft_id=draft_id)
                     repo.story_setzen(ctx.store, story["id"], status="fertig")
                     ctx.store.event("entwurf_nicht_ueberschrieben", id=draft_id, story=story["id"], status=existing["status"])
