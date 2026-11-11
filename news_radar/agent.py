@@ -192,7 +192,7 @@ def import_results(
             rewrite_count=int(row.get("rewrite_count") or 0) + 1,
         )
         # erst schreiben (nur solange der Entwurf wartet), dann aufräumen
-        if not store.update_draft(d.id, von=von, nur_status=OPEN_STATES, **fields):
+        if not store.update_draft(d.id, von=von, nur_status=OPEN_STATES, bild_vorher=row.get("bild_datei"), **fields):
             if not store.db.execute("SELECT 1 FROM drafts WHERE bild_datei = ? LIMIT 1", (name,)).fetchone():
                 for neu in (name, thumb):  # nur, wenn kein Entwurf auf die neue Datei zeigt
                     (settings.bilder_dir / neu).unlink(missing_ok=True)

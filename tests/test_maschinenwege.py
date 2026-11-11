@@ -347,3 +347,44 @@ def test_save_pair_anderer_inhalt_neue_inode(tmp_path):
     inode = (tmp_path / name).stat().st_ino
     images.save_pair(branded_card("Anderer Titel", "Kultur", "x", "kultur"), tmp_path, "datei")
     assert (tmp_path / name).stat().st_ino != inode  # ersetzt, nicht in place überschrieben
+
+
+
+def test_agent_import_ueberschreibt_kein_bild_aus_dem_cockpit(settings, tmp_path, monkeypatch):  # noqa: F811
+    with Store(settings.db_path) as store:
+        did = store.insert_draft(_row("u1", "Tempelfest Hamm", bild_datei="alt.jpg"))
+        settings.bilder_dir.mkdir(parents=True, exist_ok=True)
+        for n in ("alt.jpg", "cockpit.jpg"):
+            (settings.bilder_dir / n).write_bytes(b"x")
+
+        def bild_waehrend_cockpit(settings, **kw):  # während des Bildabrufs ersetzt ein Mensch das Bild
+            store.update_draft(did, bild_datei="cockpit.jpg", bild_origin="upload")
+            karte = branded_card("Neu", "Community", kw["slug"], "community")
+            return FeaturedImage(karte.data, karte.filename, karte.mime, karte.credit, "karte")
+
+        monkeypatch.setattr(agent, "beitragsbild", bild_waehrend_cockpit)
+        datei = tmp_path / "ergebnis.json"
+        datei.write_text(json.dumps({"ergebnisse": [_fertig(did, "Ungesehener Titel")]}), encoding="utf-8")
+        stats = agent.import_results(store, settings, datei)
+        d = store.get_draft(did)
+        assert stats["uebernommen"] == 0 and d["bild_datei"] == "cockpit.jpg" and d["titel"] == "Tempelfest Hamm"
+        assert sorted(p.name for p in settings.bilder_dir.iterdir()) == ["alt.jpg", "cockpit.jpg"]
+
+
+def test_orchestrator_ueberschreibt_kein_bild_aus_dem_cockpit(settings, monkeypatch):  # noqa: F811
+    from news_radar.workflow import orchestrator, repo
+
+    with Store(settings.db_path) as store:
+        ctx, sid, felder = _orchestrator_story(store, settings)
+        did = orchestrator.entwurf_anlegen(ctx, repo.story(store, sid), felder, {}, typ="artikel", hinweise=[])
+        (settings.bilder_dir / "cockpit.jpg").write_bytes(b"x")
+
+        def cockpit_bild_dazwischen(existing):
+            store.update_draft(did, bild_datei="cockpit.jpg", bild_origin="upload")
+            return False
+
+        monkeypatch.setattr(orchestrator, "von_mensch_bearbeitet", cockpit_bild_dazwischen)
+        felder2 = {**felder, "inhalt_html": "<p>Zweite</p>", "kategorie": "kultur"}
+        assert orchestrator.entwurf_anlegen(ctx, repo.story(store, sid), felder2, {}, typ="artikel", hinweise=[]) is None
+        d = store.get_draft(did)
+        assert d["bild_datei"] == "cockpit.jpg" and d["inhalt_html"] == "<p>Erste</p>"

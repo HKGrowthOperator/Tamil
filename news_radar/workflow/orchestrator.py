@@ -421,8 +421,9 @@ def _entwurf_eintragen(ctx: Kontext, story: dict, felder: dict, payload: dict, *
                 _neues_bild_verwerfen(ctx, name, asset_id)
                 return draft_id
             if not ctx.store.update_draft(draft_id, von="radar", nur_status=OPEN_STATES,
+                                          bild_vorher=existing.get("bild_datei"),
                                           **{k: v for k, v in row.items() if k not in ("uid", "fakten")}):
-                existing = None  # inzwischen freigegeben: nicht überschreiben, wie ein schon vorhandener Entwurf
+                existing = None  # inzwischen freigegeben oder anderes Bild: nicht überschreiben
             else:
                 _alte_datei_aufraeumen(ctx, existing.get("bild_datei"), name)
         if existing is None or existing["status"] not in OPEN_STATES:
