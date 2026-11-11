@@ -13,6 +13,7 @@ Warteschlange. Der Mensch gibt im Cockpit frei wie bei jedem anderen Entwurf.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
 from datetime import datetime, timezone
@@ -181,7 +182,7 @@ def import_results(
             slug=stem, bild_prompt=d.bild_prompt, bild_thema=d.bild_thema, bild_suchbegriff=d.bild_suchbegriff,
             transport=transport, pool=pool,
         )
-        name, thumb = save_pair(image, settings.bilder_dir, stem)
+        name, thumb = save_pair(image, settings.bilder_dir, f"{stem}-{hashlib.sha256(image.data).hexdigest()[:8]}")
 
         fields = d.model_dump(exclude={"id"})
         fields.update(
@@ -192,8 +193,8 @@ def import_results(
         )
         # erst schreiben (nur solange der Entwurf wartet), dann aufräumen
         if not store.update_draft(d.id, von=von, nur_status=OPEN_STATES, **fields):
-            for neu in (name, thumb):
-                if neu != row.get("bild_datei"):
+            if not store.db.execute("SELECT 1 FROM drafts WHERE bild_datei = ? LIMIT 1", (name,)).fetchone():
+                for neu in (name, thumb):  # nur, wenn kein Entwurf auf die neue Datei zeigt
                     (settings.bilder_dir / neu).unlink(missing_ok=True)
             stats["fehler"].append(f"{draft_id}: inzwischen freigegeben oder geändert – nicht übernommen")
             continue

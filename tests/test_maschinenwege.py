@@ -258,3 +258,17 @@ def test_fassung_entwurf_neu_zeigt_auf_keine_geloeschte_datei(settings):  # noqa
         inhalt = neu[-1]["inhalt"]
         inhalt = json.loads(inhalt) if isinstance(inhalt, str) else inhalt
         assert neu and inhalt.get("bild_datei", "") == ""
+
+
+
+def test_agent_import_name_mit_inhalts_hash(settings, tmp_path):  # noqa: F811
+    import hashlib
+
+    with Store(settings.db_path) as store:
+        did = store.insert_draft(_row("u1", "Tempelfest Hamm"))
+        datei = tmp_path / "ergebnis.json"
+        datei.write_text(json.dumps({"ergebnisse": [_fertig(did, "Tempelfest")]}), encoding="utf-8")
+        assert agent.import_results(store, settings, datei)["uebernommen"] == 1
+        name = store.get_draft(did)["bild_datei"]
+        kurz = hashlib.sha256((settings.bilder_dir / name).read_bytes()).hexdigest()[:8]
+        assert f"-e{did}-" in name and name.endswith(f"-{kurz}.jpg")
