@@ -502,10 +502,15 @@ def _quelle(store: Store, settings: Settings, eintrag: dict, story_id: int, abru
         raise Abgelehnt(f"Bild leitet auf einen anderen Host um: {ziel}")
     img = _bild_lesen(got.content, streng=True)
     # „Bildquelle öffnen“ im Cockpit zeigt auf die Seite, auf der das Bild steht (dort prüft der Mensch die Herkunft)
-    return {"img": img, "nachweis": quelle.nachweis, "rechteinhaber": quelle.betreiber,
-            "quelle_url": eintrag["seite_url"].strip(), "bild_url": bild_url,
-            "lizenz": f"Material der Quelle ({quelle.art}), redaktionelle Nutzung mit Bildnachweis; "
-                      "keine ausdrückliche Lizenz"}
+    if quelle.art in ("kino", "festival"):  # Plakate und Filmbilder gehören dem Verleih bzw. der Produktion
+        rechteinhaber = f"Verleih bzw. Produktion (über {quelle.betreiber})"
+        lizenz = (f"Werbematerial des Verleihs (Plakat oder Filmbild), über {quelle.betreiber}; redaktionelle Nutzung "
+                  "mit Bildnachweis; keine ausdrückliche Lizenz")
+    else:
+        rechteinhaber = quelle.betreiber
+        lizenz = f"Material der Quelle ({quelle.art}), redaktionelle Nutzung mit Bildnachweis; keine ausdrückliche Lizenz"
+    return {"img": img, "nachweis": quelle.nachweis, "rechteinhaber": rechteinhaber, "lizenz": lizenz,
+            "quelle_url": eintrag["seite_url"].strip(), "bild_url": bild_url}
 
 
 # ---- Entwurf und Ablauf -------------------------------------------------------------------------------

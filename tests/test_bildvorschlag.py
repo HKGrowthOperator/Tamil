@@ -315,6 +315,20 @@ def test_quelle_og_image_mit_nachweis_aus_dem_register(settings):
         assert "tempel" in a["lizenz"] and "keine ausdrückliche Lizenz" in a["lizenz"]
 
 
+@pytest.mark.parametrize("art", ["kino", "festival"])
+def test_kino_und_festival_rechte_beim_verleih(settings, art):
+    settings.bildquellen = [Bildquelle(host="murugantemple.ch", betreiber="Kino X", art=art,
+                                       nachweis="Filmplakat: via Kino X")]
+    with Store(settings.db_path) as store:
+        sid, did = story_mit_entwurf(store)
+        e = eins(store, settings, {"story_id": sid, "weg": "quelle", "seite_url": DOK}, {DOK: seite(), OG: jpeg()})
+        assert e["ergebnis"] == "gesetzt" and e["nachweis"] == "Filmplakat: via Kino X"
+        a = repo.asset_fuer_datei(store, store.get_draft(did)["bild_datei"])
+        assert a["rechteinhaber"] == "Verleih bzw. Produktion (über Kino X)"
+        assert a["lizenz"] == ("Werbematerial des Verleihs (Plakat oder Filmbild), über Kino X; redaktionelle Nutzung "
+                               "mit Bildnachweis; keine ausdrückliche Lizenz")
+
+
 def test_quelle_nachweis_nie_aus_dem_vorschlag(settings):
     with Store(settings.db_path) as store:
         sid, _ = story_mit_entwurf(store)
