@@ -91,3 +91,9 @@ Einreichungen · **F2** Verzeichnis · **F3** Werbung · **F4** Social (Regelwer
   `cockpit-bauer`, `radar-entwickler`, `plugin-bauer`, `code-pruefer`, `redakteur`, `migrator`.
 - Wer was macht und wann: `docs/ablaeufe.md`. Was entschieden ist (nicht stillschweigend umkehren):
   `docs/entscheidungen.md`.
+
+## Gemeinsames Agent-Playbook
+
+Für modellübergreifendes Routing, geprüfte Skillquellen, Schnittstellen-/QA-Verträge und den kopierbaren
+Umsetzungsauftrag zusätzlich `docs/agent-playbook/README.md` lesen. `AGENTS.md` führt andere Runner zu denselben
+Projektregeln. Vertragsregister, Entscheidungslog, bestehende Commands und dokumentierte Tore bleiben maßgeblich.
