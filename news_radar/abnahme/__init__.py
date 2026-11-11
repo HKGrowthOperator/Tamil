@@ -623,8 +623,34 @@ def _nachtrag_pdf(ctx, sz: Szenario, now: datetime) -> dict:
     return stats
 
 
+def _nachtrag_ergaenzen(ctx, sz: Szenario, now: datetime) -> dict:
+    """Nachtrag anlegen, Import scheitert (Recherche nötig), Vorschlag mit story_id ergänzt die Story zweimal (zweites
+    Mal ohne Neues), Export enthält alle Dokumente, danach Agent-Modus mit Gate."""
+    from ..agent_v2 import paket_v2
+    from ..nachtrag import annehmen
+
+    stats = _vorschlaege_annehmen(ctx, sz, now)
+    sid = next(s["id"] for s in repo.stories(ctx.store) if s["herkunft"] == "nachtrag")
+    repo.story_setzen(ctx.store, sid, status="recherche_erforderlich", notiz="Fehlt: Zahl der Gäste")
+    v = {**sz.einstellungen["_ergaenzung"], "story_id": sid}
+    v["datum"] = _datum(v["datum"], now)
+    for _ in range(2):
+        out = annehmen(ctx.store, ctx.settings, {"vorschlaege": [v]}, von="abnahme", ctx=ctx, abruf=_fake_abruf(sz))
+        e = out["ergebnisse"][0]
+        stats[f"ergaenzung_{e['ergebnis']}"] += 1
+        stats["uebersprungen_schon_beleg"] += sum(
+            1 for u in e.get("quellen_uebersprungen", []) if u["grund"] == "schon Beleg dieser Story")
+    story = repo.story(ctx.store, sid)
+    stats["status_neu"] += int(story["status"] == "neu")
+    stats["notiz_alt_und_ergaenzt"] += int(story["notiz"].startswith("Fehlt: Zahl der Gäste") and "Ergänzt am" in story["notiz"])
+    mappe = paket_v2(ctx.store, ctx.settings, ctx=ctx)
+    stats["export_dokumente"] += sum(len(p["dokumente"]) for p in mappe["storys"] if p["story_id"] == sid)
+    stats.update(_agent_v2(ctx, sz, now))
+    return dict(stats)
+
+
 NACHHER: dict[str, Callable] = {
-    "nachtrag": _nachtrag, "nachtrag_bis_website": _nachtrag_bis_website, "nachtrag_pdf": _nachtrag_pdf,
+    "nachtrag": _nachtrag, "nachtrag_ergaenzen": _nachtrag_ergaenzen, "nachtrag_bis_website": _nachtrag_bis_website, "nachtrag_pdf": _nachtrag_pdf,
     "scan_im_stopp": _scan_im_stopp, "website_stopp": _website_stopp,
     "kino_update": _kino_update, "kino_veroeffentlicht": _kino_nach_veroeffentlichung, "wp_timeout": _wp_timeout,
     "agent_v2": _agent_v2, "quelle_ergaenzen": _quelle_ergaenzen, "dossier": _dossier,
