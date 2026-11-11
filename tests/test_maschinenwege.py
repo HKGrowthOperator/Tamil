@@ -440,3 +440,24 @@ def test_agent_import_datei_nach_dem_schreiben_vorhanden(settings, tmp_path, mon
         datei.write_text(json.dumps({"ergebnisse": [_fertig(did, "Tempelfest")]}), encoding="utf-8")
         assert agent.import_results(store, settings, datei)["uebernommen"] == 1
         assert (settings.bilder_dir / store.get_draft(did)["bild_datei"]).is_file()
+
+
+
+def test_agent_import_fehlerpfad_loescht_keine_datei_eines_anderen_entwurfs(settings, tmp_path, monkeypatch):  # noqa: F811
+    """Scheitert das Übernehmen (inzwischen freigegeben), darf die neue Datei nicht weg, wenn ein Entwurf auf sie zeigt."""
+    with Store(settings.db_path) as store:
+        a = store.insert_draft(_row("u1", "Tempelfest Hamm"))
+        b = store.insert_draft(_row("u2", "Anderer Entwurf"))
+        echt = agent.save_pair
+
+        def speichern_und_dazwischen(image, folder, stem):
+            name, thumb = echt(image, folder, stem)
+            store.update_draft(b, bild_datei=name)  # ein anderer Entwurf zeigt auf dieselbe Datei
+            store.set_status(a, "freigeben", von="luis")  # und A wird freigegeben
+            return name, thumb
+
+        monkeypatch.setattr(agent, "save_pair", speichern_und_dazwischen)
+        datei = tmp_path / "ergebnis.json"
+        datei.write_text(json.dumps({"ergebnisse": [_fertig(a, "Ungesehen")]}), encoding="utf-8")
+        assert agent.import_results(store, settings, datei)["uebernommen"] == 0
+        assert (settings.bilder_dir / store.get_draft(b)["bild_datei"]).is_file()
