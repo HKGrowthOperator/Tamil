@@ -22,7 +22,9 @@ from __future__ import annotations
 
 import hashlib
 import io
+import logging
 import re
+import sqlite3
 import time
 import unicodedata
 from html import unescape
@@ -104,6 +106,10 @@ class Abgelehnt(ValueError):
 
 class Zeitlimit(Exception):
     """Die Gesamtfrist des Aufrufs ist abgelaufen."""
+
+
+class NichtBearbeitet(Exception):
+    """Der Eintrag konnte gerade nicht gesetzt werden (z. B. Datenbank belegt); er kann erneut gesendet werden."""
 
 
 def standard_abruf(url: str, *, frist: float | None = None, bild: bool = False) -> net.Fetched:
@@ -546,10 +552,10 @@ def _setzen(store: Store, settings: Settings, entwurf: dict, story_id: int, weg:
     gesetzt = False
     with store.lock:
         db = store.db
-        if db.in_transaction:
-            db.commit()
-        db.execute("BEGIN IMMEDIATE")
         try:
+            if db.in_transaction:
+                db.commit()
+            db.execute("BEGIN IMMEDIATE")
             asset_id = db.execute(
                 "INSERT INTO assets (datei, sha256, herkunft, rechteinhaber, lizenz, umfang, attribution, ablauf, "
                 "quelle_url, ki, story_id, draft_id, erstellt) VALUES (?,?,?,?,?,?,?,'',?,0,?,?,?)",
@@ -565,6 +571,10 @@ def _setzen(store: Store, settings: Settings, entwurf: dict, story_id: int, weg:
                 gesetzt = True
             else:
                 db.rollback()  # nimmt den Lizenz-Datensatz mit zurück
+        except sqlite3.OperationalError as exc:  # Datenbank belegt o. Ä.: nichts gesetzt, später erneut
+            db.rollback()
+            gesetzt = False
+            raise NichtBearbeitet(f"Datenbank belegt ({str(exc)[:60]}) – später erneut senden") from None
         except BaseException:
             db.rollback()
             gesetzt = False
@@ -636,6 +646,13 @@ def _protokoll_ohne_bild(store: Store, von: str, ergebnis: dict, eintrag, abgeru
     schreibt _setzen). Nur Ergebnis, Weg und Grund – keine Personendaten (Urhebernamen stehen nie im Grund)."""
     if not abgerufen or ergebnis["ergebnis"] == "gesetzt":
         return
+    try:
+        _protokoll_schreiben(store, von, ergebnis, eintrag)
+    except sqlite3.OperationalError as exc:  # Protokoll belegt: nicht als 500 enden, aber im Log festhalten
+        logging.getLogger(__name__).warning("Protokollzeile Bild nicht geschrieben: %s", exc)
+
+
+def _protokoll_schreiben(store: Store, von: str, ergebnis: dict, eintrag) -> None:
     sid = ergebnis.get("story_id") if isinstance(ergebnis.get("story_id"), int) else None
     weg = eintrag.get("weg") if isinstance(eintrag, dict) and eintrag.get("weg") in WEGE else "?"
     repo.aktion(store, wer=von, aktion=f"bild_{ergebnis['ergebnis']}", story_id=sid, kanal="redaktion",
@@ -674,6 +691,12 @@ def annehmen(store: Store, settings: Settings, raw, *, von: str = "agent", abruf
                 continue
             except Zeitlimit:
                 pass
+            except NichtBearbeitet as exc:
+                sid = eintrag.get("story_id") if isinstance(eintrag, dict) else None
+                ergebnisse.append({"nr": nr, "story_id": sid, "ergebnis": "nicht_bearbeitet",
+                                   "grund": f"nicht bearbeitet: {exc}"})
+                _protokoll_ohne_bild(store, von, ergebnisse[-1], eintrag, abgerufen[0] > vorher)
+                continue
             except schalter.Gestoppt as exc:
                 angehalten = {"kanal": exc.sperre["kanal"], "seit": exc.sperre["seit"]}
         grund = "nicht bearbeitet: angehalten" if angehalten else "nicht bearbeitet: Zeitlimit"

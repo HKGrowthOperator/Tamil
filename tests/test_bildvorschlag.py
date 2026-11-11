@@ -794,3 +794,36 @@ def test_alte_datei_bleibt_wenn_ein_anderer_entwurf_darauf_zeigt(settings):
         (settings.bilder_dir / "alt.jpg").write_bytes(b"x")
         eins(store, settings, {"story_id": sid_a, "weg": "quelle", "seite_url": DOK}, {DOK: seite(), OG: jpeg()})
         assert (settings.bilder_dir / "alt.jpg").exists() and store.get_draft(did_b)["bild_datei"] == "alt.jpg"
+
+
+def test_datenbank_belegt_nicht_bearbeitet_ohne_500(settings):
+    import sqlite3
+
+    class Belegt:
+        def __init__(self, db):
+            self._db = db
+
+        def __getattr__(self, name):
+            return getattr(self._db, name)
+
+        def execute(self, sql, *args):
+            if sql.startswith("BEGIN"):
+                raise sqlite3.OperationalError("database is locked")
+            return self._db.execute(sql, *args)
+
+    with Store(settings.db_path) as store:
+        sid, did = story_mit_entwurf(store)
+        settings.bilder_dir.mkdir(parents=True, exist_ok=True)
+        (settings.bilder_dir / "alt.jpg").write_bytes(b"x")
+        echt, store.db = store.db, Belegt(store.db)
+        try:
+            out = vorschlagen(store, settings, [{"story_id": sid, "weg": "quelle", "seite_url": DOK}],
+                              {DOK: seite(), OG: jpeg()})
+        finally:
+            store.db = echt
+        e = out["ergebnisse"][0]
+        assert e["ergebnis"] == "nicht_bearbeitet" and "Datenbank" in e["grund"], e
+        assert sorted(p.name for p in settings.bilder_dir.iterdir()) == ["alt.jpg"]
+        assert store.get_draft(did)["bild_datei"] == "alt.jpg"
+        assert store.db.execute("SELECT COUNT(*) FROM assets").fetchone()[0] == 0
+        assert len(repo.aktionen_liste(store, aktion="bild_nicht_bearbeitet")) == 1
