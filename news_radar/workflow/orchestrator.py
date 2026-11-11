@@ -23,7 +23,7 @@ from .. import filtering, notify, schalter, sources
 from ..agents import Kontext, cluster, copydesk, factcheck, media, relevance, research, schreiben, seo
 from ..config import Settings
 from ..pipeline import Result, category_label, quelle_name, refresh_kino, stale_event_date
-from ..store import Store, now_iso
+from ..store import OPEN_STATES, Store, now_iso
 from ..wordpress import slugify
 from ..writer import split_source_suffix
 from . import costs, jobs, repo
@@ -142,7 +142,8 @@ def _scan(ctx: Kontext, items: list[sources.NewsItem] | None = None) -> dict:
                 offen = _offener_entwurf(store, z.story_id)
                 if offen:
                     store.update_draft(offen["id"], hinweise=offen["hinweise"] + [f"Neue Quelle: {publisher} – {item.url}"],
-                                       weitere_quellen=offen["weitere_quellen"] + [{"name": publisher, "url": item.url}])
+                                       weitere_quellen=offen["weitere_quellen"] + [{"name": publisher, "url": item.url}],
+                                       nur_status=OPEN_STATES)
             continue
         typ = {"kino": "kino", "event": "event"}.get(item.kind, "news")
         if typ != "kino" and bezahlt >= s.entwuerfe_tag:
@@ -369,15 +370,17 @@ def entwurf_anlegen(ctx: Kontext, story: dict, felder: dict, payload: dict, *, t
                 # Die Arbeit der Redaktion nie überschreiben: die neue Fassung liegt in den Fassungen, der Entwurf
                 # bekommt nur einen Hinweis.
                 hinweis = f"Neue Radar-Fassung vom {now_iso()[:16].replace('T', ' ')} (Story {story['id']}) – Text nicht überschrieben, siehe Fassungen"
-                ctx.store.update_draft(draft_id, hinweise=[hinweis] + [h for h in existing.get("hinweise") or []
+                ctx.store.update_draft(draft_id, nur_status=OPEN_STATES, hinweise=[hinweis] + [h for h in existing.get("hinweise") or []
                                                                        if not h.startswith("Neue Radar-Fassung")])
                 repo.fassung_speichern(ctx.store, story["id"], "entwurf_neu", {**felder, **{k: row[k] for k in repo.FASSUNG_FELDER if k in row}},
                                        von="radar", draft_id=draft_id)
                 repo.story_setzen(ctx.store, story["id"], status="fertig")
                 ctx.store.event("entwurf_nicht_ueberschrieben", id=draft_id, story=story["id"], status=existing["status"])
                 return draft_id
-            ctx.store.update_draft(draft_id, von="radar", **{k: v for k, v in row.items() if k not in ("uid", "fakten")})
-        else:
+            if not ctx.store.update_draft(draft_id, von="radar", nur_status=OPEN_STATES,
+                                          **{k: v for k, v in row.items() if k not in ("uid", "fakten")}):
+                existing = None  # inzwischen freigegeben: nicht überschreiben, wie ein schon vorhandener Entwurf
+        if existing is None or existing["status"] not in OPEN_STATES:
             ctx.store.event("entwurf_existiert", story=story["id"], uid=uid)
             repo.story_setzen(ctx.store, story["id"], status="verworfen", notiz="Entwurf zu dieser Meldung existiert schon")
             return None

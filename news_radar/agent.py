@@ -25,7 +25,7 @@ from . import prompts, sources
 from .bilder import BildPool, Transport, beitragsbild
 from .config import Settings
 from .images import save_pair
-from .store import ConflictError, Store
+from .store import OPEN_STATES, ConflictError, Store
 from .wordpress import slugify
 from .writer import Draft
 
@@ -181,10 +181,7 @@ def import_results(
             slug=stem, bild_prompt=d.bild_prompt, bild_thema=d.bild_thema, bild_suchbegriff=d.bild_suchbegriff,
             transport=transport, pool=pool,
         )
-        name, _thumb = save_pair(image, settings.bilder_dir, stem)
-        for old in (row.get("bild_datei"), (row.get("bild_datei") or "").replace(".jpg", "-thumb.jpg")):
-            if old and old != name:
-                (settings.bilder_dir / old).unlink(missing_ok=True)
+        name, thumb = save_pair(image, settings.bilder_dir, stem)
 
         fields = d.model_dump(exclude={"id"})
         fields.update(
@@ -193,7 +190,17 @@ def import_results(
             bild_datei=name, bild_credit=image.credit, bild_origin=image.origin,
             rewrite_count=int(row.get("rewrite_count") or 0) + 1,
         )
-        store.update_draft(d.id, von=von, **fields)
+        # erst schreiben (nur solange der Entwurf wartet), dann aufräumen
+        if not store.update_draft(d.id, von=von, nur_status=OPEN_STATES, **fields):
+            for neu in (name, thumb):
+                if neu != row.get("bild_datei"):
+                    (settings.bilder_dir / neu).unlink(missing_ok=True)
+            stats["fehler"].append(f"{draft_id}: inzwischen freigegeben oder geändert – nicht übernommen")
+            continue
+        for old in (row.get("bild_datei"), (row.get("bild_datei") or "").replace(".jpg", "-thumb.jpg")):
+            if old and old not in (name, thumb) and not store.db.execute(
+                    "SELECT 1 FROM drafts WHERE bild_datei = ? AND id != ?", (row.get("bild_datei"), d.id)).fetchone():
+                (settings.bilder_dir / old).unlink(missing_ok=True)
         if row["status"] != "bearbeitet":
             store.set_status(d.id, "bearbeiten", von=von)
         store.event("agent", id=d.id, aktion="geschrieben", titel=d.titel, kategorie=d.kategorie, typ=typ,

@@ -11,7 +11,7 @@ import sqlite3
 import threading
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any, Iterator
+from typing import Any, Iterable, Iterator
 
 # Lebenszyklus eines Entwurfs (Vertrag B.2.2: Freigeben, Ablehnen, Bearbeiten, Zurückstellen)
 OPEN_STATES = frozenset({"neu", "bearbeitet", "zurueckgestellt"})
@@ -288,7 +288,9 @@ class Store:
             counts[row["status"]] = row["n"]
         return counts
 
-    def update_draft(self, draft_id: int, von: str = "", **fields) -> None:
+    def update_draft(self, draft_id: int, von: str = "", nur_status: Iterable[str] | None = None, **fields) -> int:
+        """Felder setzen; gibt die Zahl der geänderten Zeilen zurück. Maschinenwege übergeben `nur_status`
+        (z. B. OPEN_STATES): die Bedingung steht im selben UPDATE, ein inzwischen freigegebener Entwurf bleibt."""
         data = _bereinigen({k: v for k, v in fields.items() if k in DRAFT_COLUMNS and k not in ("uid", "status")})
         for col in JSON_COLUMNS:
             if col in data and not isinstance(data[col], (str, type(None))):
@@ -303,7 +305,11 @@ class Store:
         if von:
             data["bearbeitet_von"] = von
         sets = ", ".join(f"{k} = ?" for k in data)
-        self._write(f"UPDATE drafts SET {sets} WHERE id = ?", (*data.values(), draft_id))
+        bedingung, extra = "", ()
+        if nur_status is not None:
+            erlaubt = tuple(nur_status)
+            bedingung, extra = f" AND status IN ({','.join('?' for _ in erlaubt)})", erlaubt
+        return self._write(f"UPDATE drafts SET {sets} WHERE id = ?{bedingung}", (*data.values(), draft_id, *extra)).rowcount
 
     def set_status(self, draft_id: int, aktion: str, von: str = "", stand: int | None = None) -> str:
         """Wendet eine Aktion der Status-Maschine an; ConflictError, wenn der Zustand nicht passt. Mit `stand` nur,
@@ -395,11 +401,13 @@ class Store:
         if row is None or row["status"] not in OPEN_STATES or row.get("fingerprint") == fingerprint:
             return False
         hinweise = row["hinweise"] + [note]
-        self._write(
-            "UPDATE drafts SET fakten_json = ?, fingerprint = ?, hinweise = ?, updated_at = ? WHERE id = ?",
-            (_dumps(facts), fingerprint, _dumps(hinweise), now_iso(), row["id"]),
+        offen = tuple(OPEN_STATES)
+        cur = self._write(  # nur, solange er noch wartet (Bedingung im selben UPDATE)
+            "UPDATE drafts SET fakten_json = ?, fingerprint = ?, hinweise = ?, updated_at = ? "
+            f"WHERE id = ? AND status IN ({','.join('?' for _ in offen)})",
+            (_dumps(facts), fingerprint, _dumps(hinweise), now_iso(), row["id"], *offen),
         )
-        return True
+        return cur.rowcount == 1
 
     def drafts_created_since(self, since_iso: str) -> int:
         return self.db.execute("SELECT COUNT(*) FROM drafts WHERE created_at >= ?", (since_iso,)).fetchone()[0]
