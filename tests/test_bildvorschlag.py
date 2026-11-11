@@ -28,9 +28,9 @@ COMMONS_SEITE = "https://commons.wikimedia.org/wiki/File:Thaipusam_Zurich_2019.j
 COMMONS_THUMB = "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Thaipusam_Zurich_2019.jpg/1600px-x.jpg"
 
 
-def jpeg(w=1600, h=1000, fmt="JPEG") -> bytes:
+def jpeg(w=1600, h=1000, fmt="JPEG", farbe=(180, 90, 40)) -> bytes:
     buf = io.BytesIO()
-    Image.new("RGB", (w, h), (180, 90, 40)).save(buf, fmt)
+    Image.new("RGB", (w, h), farbe).save(buf, fmt)
     return buf.getvalue()
 
 
@@ -779,7 +779,7 @@ def test_gleiches_bild_fuer_zwei_entwuerfe_teilt_keine_datei(settings):
         a, b = store.get_draft(did_a)["bild_datei"], store.get_draft(did_b)["bild_datei"]
         assert a != b and f"e{did_a}" in a and f"e{did_b}" in b
         assert not (settings.bilder_dir / "alt.jpg").exists()  # erst gelöscht, als niemand mehr darauf zeigte
-        e = eins(store, settings, {"story_id": sid_a, "weg": "quelle", "seite_url": DOK}, {DOK: seite(), OG: jpeg(1800)})
+        e = eins(store, settings, {"story_id": sid_a, "weg": "quelle", "seite_url": DOK}, {DOK: seite(), OG: jpeg(farbe=(20, 140, 60))})
         assert e["ergebnis"] == "gesetzt"
         assert (settings.bilder_dir / b).is_file() and not (settings.bilder_dir / a).exists()
         assert repo.asset_fuer_datei(store, b)["draft_id"] == did_b
