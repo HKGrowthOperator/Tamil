@@ -39,7 +39,8 @@ nur aus bestätigten Claims, Belege je `<p>`, Links nur auf Quellen der Story.
 - Termine: das späteste Datum im Text zählt; liegt es in der Vergangenheit → verwerfen.
 - Länge nach Stofflage (`laenge` in der Mappe, Staffel in `redaktion.md`): viel Stoff (ab acht bestätigten Aussagen
   aus zwei Quellen oder einer ergiebigen Primärquelle) Nachricht/Porträt 450–750, Kino/Event 350–550 Wörter; mittel
-  (vier bis sieben) 250–400; wenig = Kurzmeldung 80–150. Lange Beiträge: Kern im ersten Absatz, `<h2>` je Abschnitt,
+  (vier bis sieben) 250–400; wenig = Kurzmeldung 80–150; ohne Volltext Event/Kino höchstens 150–250, sonst
+  Kurzmeldung. Die Mappe nennt je Story die Staffel in `laenge` und `laenge_staffel` – genau so stuft der Import ein. Lange Beiträge: Kern im ersten Absatz, `<h2>` je Abschnitt,
   Hintergrund nur aus Claims, bei Termin/Kino ein Service-Absatz. **Nie strecken** – trägt der Stoff die Spanne
   nicht, bleibt der Text kürzer. Abweichungen und lange Texte ohne `<h2>` erzeugen Hinweise im Cockpit.
 - Stil: `news_radar/prompts/redaktion.md` (Deutsch, „ihr“-Ansprache, keine übernommenen Sätze, keine erfundenen
