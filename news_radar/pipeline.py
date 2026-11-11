@@ -189,6 +189,18 @@ def run(settings: Settings, writer: Writer | None = None, store: Store | None = 
     run_id = store.start_run(modus)
     results: list[Result] = []
     try:
+        from . import schalter
+
+        if schalter.gestoppt(store, "redaktion"):  # Stopp-Schalter: kein Abruf, kein Text; Freigegebenes geht weiter
+            log.info("Redaktion angehalten – kein Scan; nur Veröffentlichung freigegebener Entwürfe")
+            if settings.wordpress_enabled:
+                from .publisher import publish_approved
+
+                results += publish_approved(settings, store)
+            store.finish_run(run_id, gesammelt=0, relevant=0, entwuerfe=0, verworfen=0,
+                             veroeffentlicht=sum(1 for r in results if r.status == "veroeffentlicht"), fehler=0,
+                             notiz="Redaktion angehalten")
+            return results
         items = sources.fetch_all(settings, store)
         seen = store.seen_uids()
         results += refresh_kino(items, store, seen)

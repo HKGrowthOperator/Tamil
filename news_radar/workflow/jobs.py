@@ -13,6 +13,8 @@ import json
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
+from .. import schalter
+
 BACKOFF_SEKUNDEN = (60, 300, 1800)
 MAX_VERSUCHE = 3
 # Deadline je Schritt: länger als Client-Timeout × Versuche (600 s × 2) plus Abrufzeit, damit aufraeumen() keinen
@@ -59,7 +61,10 @@ def _job(row) -> dict:
 
 
 def naechster(store, worker: str = "worker", schritte: tuple[str, ...] | None = None) -> dict | None:
-    """Reserviert den dringendsten fälligen Job für diesen Worker (oder None)."""
+    """Reserviert den dringendsten fälligen Job für diesen Worker (oder None). Hält der Schalter „redaktion“ (oder
+    „alles“) an, wird kein Job übernommen."""
+    if schalter.gestoppt(store, "redaktion"):
+        return None
     now = _now()
     filt, params = "", []
     if schritte:
@@ -114,6 +119,17 @@ def fehlgeschlagen(store, job_id: int, fehler: str, worker: str | None = None) -
         (fehler[:500], _iso(now + timedelta(seconds=pause)), _iso(now), job_id, *extra),
     )
     return "offen" if cur.rowcount == 1 else "verloren"
+
+
+def angehalten(store, job_id: int, grund: str, worker: str | None = None) -> bool:
+    """Stopp-Schalter mitten im Schritt: Job zurück in die Schlange, der Versuch zählt nicht. Er beginnt wieder, sobald
+    der Schalter aus ist."""
+    filt, extra = _besitz(worker)
+    now = _iso(_now())
+    cur = store._write(
+        f"UPDATE workflow_jobs SET status = 'offen', versuche = MAX(0, versuche - 1), fehler = ?, naechster_versuch = ?, "
+        f"aktualisiert = ? WHERE id = ?{filt}", (grund[:300], now, now, job_id, *extra))
+    return cur.rowcount == 1
 
 
 BUDGET_PAUSE_SEKUNDEN = 900  # wartende Jobs frühestens nach 15 Minuten erneut versuchen (kein Leerlauf-Kreisel)
