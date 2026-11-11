@@ -1008,3 +1008,12 @@ def test_pdf_kind_bekommt_nur_eine_kleine_umgebung(monkeypatch):
     nachtrag.pdf_lesen(b"%PDF-1.4")
     assert aufruf["env"] is not None and set(aufruf["env"]) <= {"PATH", "LANG", "LC_ALL"}
     assert "geheim" not in str(aufruf["env"])
+
+
+def test_pdf_lesen_hat_eigene_frist_nach_dem_abruf(settings):
+    """Befund P3 (zweite Prüfung): die Abruf-Frist ist verbraucht, das Lesen bekommt trotzdem seine eigene Zeit."""
+    with Store(settings.db_path) as store:
+        e = nachtrag.annehmen(store, settings, {"vorschlaege": [pdf_vorschlag(PDF_URL)]}, von="test",
+                              ctx=kontext(store, settings), abruf=pdf_abruf({PDF_URL: pdf_bytes([SEITE1, SEITE2])}),
+                              frist_abruf=0.000001)["ergebnisse"][0]
+        assert e["ergebnis"] == "angelegt", e

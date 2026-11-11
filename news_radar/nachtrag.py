@@ -529,7 +529,9 @@ def _eins(store: Store, raw, nr: int, von: str, abruf: Callable, heute: date, uh
             seite = abgerufen[datei]
             if isinstance(seite, Exception):
                 raise seite
-            text, seitentitel, art = seite_lesen(seite, q.url, frist=frist)
+            # Lesen (PDF) mit eigener Frist ab jetzt (höchstens PDF_ZEIT_MAX), nur durch das Gesamtende begrenzt
+            frist_lesen = None if ende is None else time.monotonic() + (ende - uhr())
+            text, seitentitel, art = seite_lesen(seite, q.url, frist=frist_lesen)
         except Unlesbar as exc:
             uebersprungen.append({"url": q.url, "grund": str(exc)[:80]})
             continue
