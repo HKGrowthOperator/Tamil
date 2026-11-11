@@ -13,6 +13,7 @@ Warteschlange. Der Mensch gibt im Cockpit frei wie bei jedem anderen Entwurf.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
 from datetime import datetime, timezone
@@ -24,8 +25,8 @@ from pydantic import BaseModel, Field, ValidationError
 from . import prompts, sources
 from .bilder import BildPool, Transport, beitragsbild
 from .config import Settings
-from .images import save_pair
-from .store import ConflictError, Store
+from .images import datei_sicherstellen, save_pair
+from .store import OPEN_STATES, ConflictError, Store
 from .wordpress import slugify
 from .writer import Draft
 
@@ -174,17 +175,14 @@ def import_results(
             continue
         typ = "kino_termine" if row.get("typ") == "kino_termine" else d.typ
 
-        stem = f"{row['uid'][:12]}-{slugify(d.titel, 50)}-a{int(row.get('rewrite_count') or 0) + 1}"
+        stem = f"{row['uid'][:12]}-{slugify(d.titel, 50)}-e{d.id}-a{int(row.get('rewrite_count') or 0) + 1}"
         image = beitragsbild(
             settings, titel=d.titel, kategorie=d.kategorie,
             kategorie_label=next((c.label for c in settings.categories if c.slug == d.kategorie), d.kategorie),
             slug=stem, bild_prompt=d.bild_prompt, bild_thema=d.bild_thema, bild_suchbegriff=d.bild_suchbegriff,
             transport=transport, pool=pool,
         )
-        name, _thumb = save_pair(image, settings.bilder_dir, stem)
-        for old in (row.get("bild_datei"), (row.get("bild_datei") or "").replace(".jpg", "-thumb.jpg")):
-            if old and old != name:
-                (settings.bilder_dir / old).unlink(missing_ok=True)
+        name, thumb = save_pair(image, settings.bilder_dir, f"{stem}-{hashlib.sha256(image.data).hexdigest()[:8]}")
 
         fields = d.model_dump(exclude={"id"})
         fields.update(
@@ -193,9 +191,24 @@ def import_results(
             bild_datei=name, bild_credit=image.credit, bild_origin=image.origin,
             rewrite_count=int(row.get("rewrite_count") or 0) + 1,
         )
-        store.update_draft(d.id, von=von, **fields)
+        # erst schreiben (nur solange der Entwurf wartet), dann aufräumen
+        if not store.update_draft(d.id, von=von, nur_status=OPEN_STATES, bild_vorher=row.get("bild_datei"), **fields):
+            if not store.db.execute("SELECT 1 FROM drafts WHERE bild_datei = ? LIMIT 1", (name,)).fetchone():
+                for neu in (name, thumb):  # nur, wenn kein Entwurf auf die neue Datei zeigt
+                    (settings.bilder_dir / neu).unlink(missing_ok=True)
+            stats["fehler"].append(f"{draft_id}: inzwischen freigegeben oder geändert – nicht übernommen")
+            continue
+        datei_sicherstellen(image, settings.bilder_dir, name)
+        for old in (row.get("bild_datei"), (row.get("bild_datei") or "").replace(".jpg", "-thumb.jpg")):
+            if old and old not in (name, thumb) and not store.db.execute(
+                    "SELECT 1 FROM drafts WHERE bild_datei = ? AND id != ?", (row.get("bild_datei"), d.id)).fetchone():
+                (settings.bilder_dir / old).unlink(missing_ok=True)
         if row["status"] != "bearbeitet":
-            store.set_status(d.id, "bearbeiten", von=von)
+            try:
+                store.set_status(d.id, "bearbeiten", von=von)
+            except ConflictError as exc:  # inzwischen anderer Status: Eintrag melden, Import läuft weiter
+                stats["fehler"].append(f"{draft_id}: {exc}")
+                continue
         store.event("agent", id=d.id, aktion="geschrieben", titel=d.titel, kategorie=d.kategorie, typ=typ,
                     relevanz=d.relevanz, bild=image.origin, von=von)
         stats["uebernommen"] += 1

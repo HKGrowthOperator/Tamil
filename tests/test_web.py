@@ -1,5 +1,7 @@
 """Freigabe-App mit dem Flask-Test-Client: Login, CSRF, Feed, Aktionen, Bearbeiten, Bild, Direkt posten."""
 
+from stand_hilfe import stand_von
+
 import io
 import json
 
@@ -106,9 +108,13 @@ def test_feed_tabs_and_counts(client):
 def test_status_action_requires_csrf_and_follows_transitions(client):
     token = login(client)
     assert client.post("/entwurf/1/status", data={"aktion": "freigeben"}).status_code == 400
-    resp = client.post("/entwurf/1/status", data={"aktion": "freigeben", "_csrf": token, "next": "/?status=neu"})
+    from stand_hilfe import stand_aus
+
+    stand = stand_aus(client.get("/entwurf/1").get_data(as_text=True))
+    resp = client.post("/entwurf/1/status", data={"aktion": "freigeben", "_csrf": token, "next": "/?status=neu",
+                                                  "stand": stand})
     assert resp.status_code == 302 and resp.headers["Location"].endswith("/?status=neu")
-    assert client.post("/entwurf/3/status", data={"aktion": "freigeben", "_csrf": token}).status_code == 409
+    assert client.post("/entwurf/3/status", data={"aktion": "freigeben", "_csrf": token, "stand": "0"}).status_code == 409
     assert client.post("/entwurf/1/status", data={"aktion": "explodieren", "_csrf": token}).status_code == 400
     html = client.get("/?status=freigegeben").get_data(as_text=True)
     assert "Jailer 2 in Mainz" in html and "Zurückziehen" in html
@@ -167,7 +173,7 @@ def test_image_actions_card_and_upload(client, app):
 
 def test_publish_without_wordpress_marks_freigegeben(client, app):
     token = login(client)
-    resp = client.post("/entwurf/1/veroeffentlichen", data={"_csrf": token}, follow_redirects=True)
+    resp = client.post("/entwurf/1/veroeffentlichen", data={"_csrf": token, "stand": stand_von(client, 1)}, follow_redirects=True)
     assert "noch nicht angebunden" in resp.get_data(as_text=True)
     with Store(app.extensions["settings"].db_path) as store:
         assert store.get_draft(1)["status"] == "freigegeben"
@@ -177,14 +183,14 @@ def test_direct_post_and_wordpress_draft(client, app):
     token = login(client)
     wp = app.extensions["wordpress"] = FakeWP()
     assert "Direkt posten" in client.get("/").get_data(as_text=True)
-    resp = client.post("/entwurf/1/veroeffentlichen", data={"_csrf": token}, follow_redirects=True)
+    resp = client.post("/entwurf/1/veroeffentlichen", data={"_csrf": token, "stand": stand_von(client, 1)}, follow_redirects=True)
     assert "Live auf tamil.de" in resp.get_data(as_text=True)
     assert wp.posts[0]["status"] == "publish" and wp.posts[0]["media_id"] == 9
-    resp = client.post("/entwurf/2/wp-entwurf", data={"_csrf": token}, follow_redirects=True)
+    resp = client.post("/entwurf/2/wp-entwurf", data={"_csrf": token, "stand": stand_von(client, 2)}, follow_redirects=True)
     assert "WordPress-Entwurf" in resp.get_data(as_text=True) and wp.posts[1]["status"] == "draft"
     with Store(app.extensions["settings"].db_path) as store:
         assert store.get_draft(1)["status"] == "veroeffentlicht" and store.get_draft(2)["status"] == "in_wordpress"
-    assert client.post("/entwurf/1/veroeffentlichen", data={"_csrf": token}).status_code == 409
+    assert client.post("/entwurf/1/veroeffentlichen", data={"_csrf": token, "stand": stand_von(client, 1)}).status_code == 409
     html = client.get("/?status=veroeffentlicht").get_data(as_text=True)
     assert "Jailer 2 in Mainz" in html and "Pongal in Hamburg" in html
 

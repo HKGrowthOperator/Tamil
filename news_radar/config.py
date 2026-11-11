@@ -61,6 +61,56 @@ class Regions:
     ausland: list[str] = field(default_factory=list)  # Orte außerhalb von DACH (gegen das Land der Quelle)
 
 
+# Bildquellen: fest gesperrt, auch wenn jemand sie ins Register schreibt (Host selbst oder eine Subdomain davon)
+BILD_GESPERRT = ("instagram.com", "facebook.com", "fbcdn.net", "cdninstagram.com", "tiktok.com", "x.com", "twitter.com",
+                 "twimg.com", "youtube.com", "ytimg.com", "pinimg.com", "shutterstock.com", "istockphoto.com",
+                 "alamy.com", "picture-alliance.com", "keystone-sda.ch", "keystone.ch", "dpa.com", "reuters.com",
+                 "afp.com", "apnews.com", "ap.org", "epa.eu")
+BILD_GESPERRT_MARKEN = ("pinterest", "gettyimages", "imago-images")  # unter jeder Endung (pinterest.de, gettyimages.ch …)
+
+
+def bild_host_gesperrt(host: str) -> bool:
+    host = (host or "").lower().rstrip(".").removeprefix("www.")
+    if any(host == g or host.endswith("." + g) for g in BILD_GESPERRT):
+        return True
+    return any(m in host.split(".") for m in BILD_GESPERRT_MARKEN)
+
+
+GETEILTE_HOSTER = ("wp.com", "wordpress.com", "cloudfront.net", "blogspot.com", "wixstatic.com", "squarespace-cdn.com",
+                   "googleusercontent.com", "amazonaws.com", "akamaized.net")
+BILDQUELLEN_ARTEN = ("tempel", "verein", "veranstalter", "festival", "kino", "betrieb", "person", "sport")
+
+
+@dataclass
+class Bildquelle:
+    """Eintrag im Bildquellen-Register ([[bildquellen]] in sources.toml): Seiten, deren eigenes Bildmaterial tamil.de
+    mit dem eingetragenen Nachweis redaktionell verwenden darf (Entscheidung vom 11.11.2026)."""
+    host: str
+    betreiber: str
+    art: str
+    nachweis: str
+    bild_hosts: list[str] = field(default_factory=list)  # optional: eigenes CDN der Quelle (Subdomains zählen)
+
+    def __post_init__(self) -> None:
+        host = (self.host or "").strip()
+        for h in (host, *self.bild_hosts):
+            if not h or h != h.lower() or h.startswith("www.") or any(c in h for c in "/:@ "):
+                raise ValueError(f"Bildquelle: Host klein und ohne www./Pfad angeben ({h!r})")
+            if len([t for t in h.split(".") if t]) < 2:
+                raise ValueError(f"Bildquelle: Host {h} braucht mindestens zwei Namensteile (z. B. tempel.ch)")
+            if bild_host_gesperrt(h):
+                raise ValueError(f"Bildquelle: Host {h} ist gesperrt (soziales Netzwerk oder Bildagentur)")
+        if not (self.nachweis or "").strip() or not (self.betreiber or "").strip():
+            raise ValueError(f"Bildquelle {host}: Nachweis und Betreiber dürfen nicht leer sein")
+        if self.art not in BILDQUELLEN_ARTEN:
+            raise ValueError(f"Bildquelle {host}: art muss eine von {', '.join(BILDQUELLEN_ARTEN)} sein")
+        self.host, self.nachweis, self.betreiber = host, self.nachweis.strip(), self.betreiber.strip()
+        self.bild_hosts = list(self.bild_hosts)
+        for h in self.bild_hosts:  # geteilte Hoster: dort liegt Material vieler Betreiber, kein eigenes CDN
+            if any(h == g or h.endswith("." + g) for g in GETEILTE_HOSTER):
+                raise ValueError(f"Bildquelle {host}: bild_hosts {h} ist ein geteilter Hoster")
+
+
 @dataclass
 class Category:
     slug: str
@@ -92,6 +142,7 @@ class Settings:
     regions: Regions = field(default_factory=Regions)
     bezug: list[str] = field(default_factory=list)  # Begriffe mit Bezug zur tamilischen Community ([bezug] terms)
     alle_quellen: list[Source] = field(default_factory=list)  # inkl. abgeschalteter (enabled = false)
+    bildquellen: list[Bildquelle] = field(default_factory=list)  # Register für den Weg „Bild mit Nachweis“
     anthropic_model: str = "claude-opus-5-5"
     newsapi_key: str = ""
     gnews_token: str = ""
@@ -223,6 +274,7 @@ def load_settings(sources_file: Path = ROOT / "sources.toml") -> Settings:
         regions=regions,
         bezug=[t.lower() for t in raw.get("bezug", {}).get("terms", [])],
         alle_quellen=alle_quellen,
+        bildquellen=[Bildquelle(**b) for b in raw.get("bildquellen", [])],
         anthropic_model=env("RADAR_MODEL", "claude-opus-5-5"),
         newsapi_key=env("NEWSAPI_KEY", ""),
         gnews_token=env("GNEWS_TOKEN", ""),

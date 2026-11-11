@@ -172,12 +172,22 @@ def besorgen(ctx: Kontext, story: dict, felder: dict, slug: str, *, kategorie_la
 
 def speichern(ctx: Kontext, bild: Bild, stem: str, story_id: int | None) -> tuple[str, int]:
     """Bild + Vorschaubild ablegen und den Lizenz-Datensatz anlegen. (Dateiname, asset_id)"""
-    name, _thumb = images.save_pair(bild.image, ctx.settings.bilder_dir, stem)
-    asset_id = repo.asset_anlegen(
-        ctx.store, datei=name, herkunft=bild.image.origin, rechteinhaber=bild.rechteinhaber, lizenz=bild.lizenz,
-        umfang=bild.umfang, attribution=bild.attribution, ablauf=bild.ablauf, quelle_url=bild.quelle_url, ki=bild.ki,
-        story_id=story_id, daten=bild.image.data,
-    )
+    ordner = ctx.settings.bilder_dir
+    vorher = {n: (ordner / n).exists() for n in (f"{stem}.jpg", f"{stem}-thumb.jpg")} if ordner.exists() else {}
+    name, thumb = images.save_pair(bild.image, ordner, stem)
+    try:
+        asset_id = repo.asset_anlegen(
+            ctx.store, datei=name, herkunft=bild.image.origin, rechteinhaber=bild.rechteinhaber, lizenz=bild.lizenz,
+            umfang=bild.umfang, attribution=bild.attribution, ablauf=bild.ablauf, quelle_url=bild.quelle_url,
+            ki=bild.ki, story_id=story_id, daten=bild.image.data,
+        )
+    except BaseException:
+        # ohne Lizenz-Datensatz kein Bild: neu angelegte Dateien wieder weg (vorhandene gleiche Dateien bleiben)
+        for n in (name, thumb):
+            if not vorher.get(n) and not ctx.store.db.execute(
+                    "SELECT 1 FROM drafts WHERE bild_datei = ? LIMIT 1", (name,)).fetchone():
+                (ordner / n).unlink(missing_ok=True)
+        raise
     return name, asset_id
 
 

@@ -174,8 +174,10 @@ def refresh_kino(items: list[sources.NewsItem], store: Store, seen: set[str]) ->
         if store.update_kino_facts(item.uid, item.facts or {}, item.fingerprint, note):
             store.event("kino_aktualisiert", id=existing["id"], titel=existing["titel"], hinweis=note)
             results.append(Result(existing["titel"], "aktualisiert", existing["kategorie"], note=note, draft_id=existing["id"]))
-        elif existing["status"] not in ("neu", "bearbeitet", "zurueckgestellt") and existing.get("fingerprint") != item.fingerprint:
-            store.event("kino_update_ignoriert", id=existing["id"], titel=existing["titel"], status=existing["status"])
+        else:
+            jetzt = store.get_draft(existing["id"]) or existing  # Status nach dem (bedingten) Update neu lesen
+            if jetzt["status"] not in ("neu", "bearbeitet", "zurueckgestellt") and jetzt.get("fingerprint") != item.fingerprint:
+                store.event("kino_update_ignoriert", id=jetzt["id"], titel=jetzt["titel"], status=jetzt["status"])
     return results
 
 

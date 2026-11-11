@@ -24,15 +24,16 @@
     {% if can_publish and darf('freigeben') %}
       {% if wordpress_enabled and darf('veroeffentlichen') %}
       <form method="post" action="/entwurf/{{ d.id }}/veroeffentlichen" class="inline" data-confirm="Jetzt direkt auf tamil.de veröffentlichen?">
-        <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="gold" data-busy="Wird veröffentlicht …">Direkt posten</button>
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="stand" value="{{ d.stand }}"><button class="gold" data-busy="Wird veröffentlicht …">Direkt posten</button>
       </form>
       <form method="post" action="/entwurf/{{ d.id }}/wp-entwurf" class="inline">
-        <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="knopf" data-busy="Wird angelegt …">In WordPress bearbeiten</button>
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="stand" value="{{ d.stand }}"><button class="knopf" data-busy="Wird angelegt …">In WordPress bearbeiten</button>
       </form>
       {% endif %}
       {% if d.status != 'freigegeben' %}
       <form method="post" action="/entwurf/{{ d.id }}/status?next=/entwurf/{{ d.id }}" class="inline">
         <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="aktion" value="freigeben">
+        <input type="hidden" name="stand" value="{{ d.stand }}">
         <button class="primaer">Freigeben</button>
       </form>
       {% endif %}
@@ -118,12 +119,15 @@
   <h2>Kosten und Rechte</h2>
   <p>Diese Story: <b>${{ '%.3f'|format(belege.kosten.usd) }}</b> <span class="leise">· {{ belege.kosten.aufrufe }} Aufrufe{% if belege.kosten.fehlversuche %} · {{ belege.kosten.fehlversuche }} Fehlversuche{% endif %}</span></p>
   {% if belege.kosten.je_rolle %}<table class="voll kompakt">{% for r in belege.kosten.je_rolle %}<tr><td>{{ r.rolle }}</td><td class="leise">{{ r.modell or '' }}</td><td class="zahl">${{ '%.4f'|format(r.usd or 0) }}</td></tr>{% endfor %}</table>{% endif %}
-  {% if belege.asset %}<p class="leise">Bild: {{ belege.asset.herkunft }} · {{ belege.asset.rechteinhaber }} · Lizenz: {{ belege.asset.lizenz }}{% if belege.asset.ablauf %} · bis {{ belege.asset.ablauf }}{% endif %}{% if belege.asset.ki %} · <span class="badge ki">KI-Symbolbild</span>{% endif %}</p>{% endif %}
+  {% if belege.asset %}<p class="leise">Bild: {{ belege.asset.herkunft }} · {{ belege.asset.rechteinhaber }} · {% set lz0 = (belege.asset.lizenz or '').rsplit(' (', 1) %}Lizenz: {% if lz0|length == 2 and lz0[1].startswith(('http://', 'https://')) and lz0[1].endswith(')') %}<a href="{{ lz0[1][:-1]|safe_url }}" target="_blank" rel="noopener license">{{ lz0[0] }}</a>{% else %}{{ belege.asset.lizenz }}{% endif %}{% if belege.asset.ablauf %} · bis {{ belege.asset.ablauf }}{% endif %}{% if belege.asset.ki %} · <span class="badge ki">KI-Symbolbild</span>{% endif %}</p>{% endif %}
 </section>
 {% endif %}
 <section class="karte">
   <h2>Bild</h2>
-  {% if d.bild_datei %}<img class="bild" src="/bild/{{ d.bild_datei }}" alt="{{ d.bild_alt }}"><p class="leise">{% if d.bild_origin in ('ki', 'pool') and 'KI' in (d.bild_credit or '') %}<span class="badge ki">KI-Symbolbild</span> {% endif %}{{ d.bild_credit }} · {{ {'karte': 'Bildkarte', 'ki': 'KI-Bild', 'pool': 'Bildpool', 'upload': 'eigenes Bild', 'quelle': 'Bild der Quelle', 'unsplash': 'Unsplash', 'pexels': 'Pexels'}.get(d.bild_origin, d.bild_origin) }}</p>{% endif %}
+  {% if d.bild_datei %}<img class="bild" src="/bild/{{ d.bild_datei }}" alt="{{ d.bild_alt }}"><p class="leise">{% if d.bild_origin in ('ki', 'pool') and 'KI' in (d.bild_credit or '') %}<span class="badge ki">KI-Symbolbild</span> {% endif %}{{ d.bild_credit }}{% if d.bild_origin not in ('commons', 'quelle') %} · {{ {'karte': 'Bildkarte', 'ki': 'KI-Bild', 'pool': 'Bildpool', 'upload': 'eigenes Bild', 'quelle': 'Bild der Quelle', 'commons': 'Wikimedia Commons', 'unsplash': 'Unsplash', 'pexels': 'Pexels'}.get(d.bild_origin, d.bild_origin) }}{% endif %}</p>{% endif %}
+  {% set bild_asset = belege.asset if belege else None %}
+  {% if d.bild_datei and d.bild_origin in ('commons', 'quelle') %}<p class="leise"><span class="badge typ" title="Bild mit Nachweis, vom Radar geprüft">{{ 'Wikimedia Commons' if d.bild_origin == 'commons' else 'Bildquelle aus dem Register' }}</span>{% if bild_asset %}{% set lz = (bild_asset.lizenz or '').rsplit(' (', 1) %} Lizenz: {% if lz|length == 2 and lz[1].startswith(('http://', 'https://')) and lz[1].endswith(')') %}<a href="{{ lz[1][:-1]|safe_url }}" target="_blank" rel="noopener license">{{ lz[0] }}</a>{% else %}{{ bild_asset.lizenz }}{% endif %} · Rechteinhaber: {{ bild_asset.rechteinhaber }}{% if 'Hinweis von Commons' in (bild_asset.umfang or '') %} · <b>{{ bild_asset.umfang.split('; ', 1)[-1] }}</b>{% endif %}{% endif %}</p>
+  {% if bild_asset and bild_asset.quelle_url %}<p><a class="knopf" href="{{ bild_asset.quelle_url|safe_url }}" target="_blank" rel="noopener">Bildquelle öffnen</a></p>{% endif %}{% endif %}
   {% if darf('bearbeiten') %}
   <form method="post" action="/entwurf/{{ d.id }}/bild" class="bild-ki">
     <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="aktion" value="ki">
