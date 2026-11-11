@@ -7,6 +7,11 @@ arbeitstitel, datum (JJJJ-MM-TT, Tag des Ereignisses oder der Meldung), rubrik, 
 [{url, titel, herausgeber, datum, sprache, art}], optional kernfakten, bild_hinweis (nur Hinweise für den Agenten,
 nie Belege) und erzwingen (legt trotz „vielleicht schon vorhanden“ an).
 
+Nachtrag ergänzen: mit story_id (positive Ganzzahl) hängt der Vorschlag seine neuen Quellen an eine bestehende
+Nachtrag-Story im Status „recherche_erforderlich“ oder „neu“ an, an der gerade kein Job läuft (Kennungen Q<n+1> …),
+und gibt sie wieder zum Schreiben frei (Status „neu“). Adressen, die schon Beleg dieser Story sind, werden nicht
+geholt; die Titel-Ähnlichkeit wird nicht geprüft und erzwingen ignoriert. Ergebnis „ergaenzt“, ohne Neues „vorhanden“.
+
 Ergebnis je Vorschlag: angelegt · vorhanden (alle Adressen sind schon Beleg derselben Story) · vielleicht_vorhanden
 (ähnlicher Titel, gleicher oder unbekannter Ort, im selben Zeitraum) · abgelehnt · nicht_bearbeitet (Zeitlimit oder
 Stopp). Dublettenprüfung und Anlegen laufen zusammen in einer Schreibtransaktion.
@@ -78,6 +83,7 @@ class Vorschlag(BaseModel):
     kernfakten: list[str] = Field(default_factory=list, max_length=12)
     bild_hinweis: str = Field(default="", max_length=300)
     erzwingen: bool = False
+    story_id: int | None = Field(default=None, gt=0, strict=True)  # Nachtrag ergänzen statt neu anlegen
 
     @field_validator("datum")
     @classmethod
@@ -459,6 +465,91 @@ def _pruefen(raw, heute: date) -> Vorschlag:
     return v
 
 
+ERGAENZBAR = ("recherche_erforderlich", "neu")
+SCHON_BELEG = "schon Beleg dieser Story"
+
+
+def _ziel_grund(store: Store, sid: int) -> tuple[dict | None, str]:
+    """(Story, Grund) – Grund leer, wenn die Story ergänzt werden darf: Nachtrag, Status ERGAENZBAR, kein Job läuft
+    (wie agent_v2._OFFEN_SQL)."""
+    row = store.db.execute("SELECT * FROM stories WHERE id = ?", (sid,)).fetchone()
+    if row is None:
+        return None, "Story nicht gefunden"
+    story = dict(row)
+    if story["herkunft"] != "nachtrag":
+        return story, "keine Nachtrag-Story"
+    if story["status"] not in ERGAENZBAR:
+        return story, f"Story ist {story['status']}"
+    if store.db.execute("SELECT 1 FROM workflow_jobs WHERE story_id = ? AND status = 'laeuft'", (sid,)).fetchone():
+        return story, "an der Story läuft gerade ein Job"
+    return story, ""
+
+
+def _belege(store: Store, sid: int) -> set[str]:
+    """Adressen (url_norm und uid), die schon Dokument der Story sind."""
+    return {w for r in store.db.execute("SELECT url_norm, uid FROM source_documents WHERE story_id = ?", (sid,))
+            for w in r if w}
+
+
+def _schon_beleg(belege: set[str], url: str, pdf: bool = True) -> bool:
+    """Wie die Dublettenprüfung (_alle_adressen_belegt, mit Anker-Regel), nur für die genannte Story."""
+    return adresse_norm(url, pdf) in belege or _uid(url, pdf) in belege
+
+
+def _dokument(db, sid: int, doc_key: str, eintrag: tuple, ts: str) -> None:
+    q, text, seitentitel, gelesen, pdf, art = eintrag
+    # verlinkt wird die gelesene Adresse; die Ursprungsadresse bleibt als uid für die Dublettenprüfung
+    db.execute(
+        "INSERT INTO source_documents (story_id, doc_key, url, url_norm, uid, publisher, quelle, "
+        "published_at, retrieved_at, language, rights, primaer, art, titel, text, text_sha256, auszug) "
+        "VALUES (?,?,?,?,?,?, 'Nachtrag', ?,?,?, 'zitat', 1, ?, ?,?,?,?)",
+        (sid, doc_key, gelesen, adresse_norm(gelesen, pdf), _uid(q.url, pdf),
+         herausgeber(q.herausgeber, gelesen), _datum_streng(q.datum), ts, (q.sprache or "de")[:8],
+         art, seitentitel, text, hashlib.sha256(text.encode("utf-8")).hexdigest(), text[:500]))
+
+
+def _ergaenzen(store: Store, v: Vorschlag, geholt: list, heute: date) -> dict:
+    """Neue Quellen an die genannte Story hängen und sie wieder freigeben – in einer Schreibtransaktion mit erneuter
+    Prüfung von Status, Job und Belegen (zwischen erster Prüfung und hier lagen die Abrufe)."""
+    sid = v.story_id
+    hinweise = {"bezug": v.bezug, "kernfakten": v.kernfakten, "bild_hinweis": v.bild_hinweis}
+    with store.lock:
+        db = store.db
+        if db.in_transaction:
+            db.commit()
+        db.execute("BEGIN IMMEDIATE")
+        try:
+            story, grund = _ziel_grund(store, sid)
+            if grund:
+                db.rollback()
+                if story is not None and grund.startswith("Story ist "):
+                    grund = f"Story inzwischen {story['status']}"
+                return {"ergebnis": "abgelehnt", "story_id": sid, "grund": grund}
+            belege = _belege(store, sid)
+            neu = [g for g in geholt if not _schon_beleg(belege, g[0].url, g[4])
+                   and adresse_norm(g[3], g[4]) not in belege]
+            if not neu:
+                db.rollback()
+                return {"ergebnis": "vorhanden", "story_id": sid, "grund": f"schon vorhanden: Story {sid}"}
+            nummern = [int(r[0][1:]) for r in db.execute(
+                "SELECT doc_key FROM source_documents WHERE story_id = ?", (sid,)) if re.fullmatch(r"Q[0-9]+", r[0])]
+            start = max(nummern, default=0) + 1
+            ts = now_iso()
+            for n, eintrag in enumerate(neu, start):
+                _dokument(db, sid, f"Q{n}", eintrag, ts)
+            zusatz = f"Ergänzt am {heute.isoformat()}: {len(neu)} {'Quelle' if len(neu) == 1 else 'Quellen'}"
+            alt = (story.get("notiz") or "").strip()
+            notiz = f"{alt[:900 - len(zusatz) - 3]} · {zusatz}" if alt else zusatz
+            db.execute("UPDATE stories SET status = 'neu', notiz = ?, vorschlag = ?, ereignis_datum = ?, "
+                       "aktualisiert = ? WHERE id = ?",
+                       (notiz, json.dumps(hinweise, ensure_ascii=False), v.datum, ts, sid))  # Datum nur neu, wenn anders
+            db.commit()
+        except BaseException:
+            db.rollback()
+            raise
+    return {"ergebnis": "ergaenzt", "story_id": sid, "quellen_geholt": len(neu)}
+
+
 def _anlegen(store: Store, v: Vorschlag, geholt: list) -> dict:
     """Dublettenprüfung wiederholen und Story mit Dokumenten anlegen – in einer Schreibtransaktion (BEGIN IMMEDIATE),
     damit zwei gleichzeitige Aufrufe nicht beide anlegen (zwischen erster Prüfung und hier lagen die Abrufe)."""
@@ -481,15 +572,8 @@ def _anlegen(store: Store, v: Vorschlag, geholt: list) -> dict:
                 "'nachtrag', ?, ?, ?, ?)",
                 (v.arbeitstitel, v.rubrik, v.ort, 1 if v.heikel else 0, f"Nachtrag · Bezug: {v.bezug}"[:900], v.datum,
                  json.dumps(hinweise, ensure_ascii=False), ts, ts)).lastrowid
-            for n, (q, text, seitentitel, gelesen, pdf, art) in enumerate(geholt, 1):
-                # verlinkt wird die gelesene Adresse; die Ursprungsadresse bleibt als uid für die Dublettenprüfung
-                db.execute(
-                    "INSERT INTO source_documents (story_id, doc_key, url, url_norm, uid, publisher, quelle, "
-                    "published_at, retrieved_at, language, rights, primaer, art, titel, text, text_sha256, auszug) "
-                    "VALUES (?,?,?,?,?,?, 'Nachtrag', ?,?,?, 'zitat', 1, ?, ?,?,?,?)",
-                    (sid, f"Q{n}", gelesen, adresse_norm(gelesen, pdf), _uid(q.url, pdf),
-                     herausgeber(q.herausgeber, gelesen), _datum_streng(q.datum), ts, (q.sprache or "de")[:8],
-                     art, seitentitel, text, hashlib.sha256(text.encode("utf-8")).hexdigest(), text[:500]))
+            for n, eintrag in enumerate(geholt, 1):
+                _dokument(db, sid, f"Q{n}", eintrag, ts)
             db.commit()
         except BaseException:
             db.rollback()
@@ -505,15 +589,25 @@ def _eins(store: Store, raw, nr: int, von: str, abruf: Callable, heute: date, uh
         v = _pruefen(raw, heute)
     except VorschlagAbgelehnt as exc:
         return {**out, "ergebnis": "abgelehnt", "grund": str(exc)[:300]}
-    dublette = _dublette(store, v)  # vor den Abrufen: nichts holen, was schon da ist
-    if dublette:
-        return {**out, **dublette}
+    belege: set[str] = set()
+    if v.story_id:  # Nachtrag ergänzen: die Story ist genannt, keine Dublettenprüfung
+        _, grund = _ziel_grund(store, v.story_id)
+        if grund:
+            return {**out, "ergebnis": "abgelehnt", "story_id": v.story_id, "grund": grund}
+        belege = _belege(store, v.story_id)
+    else:
+        dublette = _dublette(store, v)  # vor den Abrufen: nichts holen, was schon da ist
+        if dublette:
+            return {**out, **dublette}
     geholt, uebersprungen = [], []
     abgerufen: dict[str, net.Fetched | Exception] = {}  # je Datei (ohne Anker) nur ein Abruf je Vorschlag
     je_datei: dict[str, int] = {}
     gesehen: set[str] = set()
     hinweise: list[dict] = []  # z. B. „gekürzt …“ je Quelle
     for q in v.quellen:
+        if v.story_id and _schon_beleg(belege, q.url):  # nicht noch einmal holen
+            uebersprungen.append({"url": q.url, "grund": SCHON_BELEG})
+            continue
         if adresse_norm(q.url) in gesehen:  # vor dem Abruf und Lesen; nach Umleitungen prüft die Stelle unten
             uebersprungen.append({"url": q.url, "grund": "doppelt im Vorschlag"})
             continue
@@ -552,14 +646,22 @@ def _eins(store: Store, raw, nr: int, von: str, abruf: Callable, heute: date, uh
         gelesen, pdf = seite.url or q.url, ist_pdf(seite)
         if pdf and anker_seite(q.url) > 1 and "#" not in gelesen:
             gelesen += f"#page={anker_seite(q.url)}"  # der Link führt auf die gelesene Seite
+        if v.story_id and adresse_norm(gelesen, pdf) in belege:  # nach einer Umleitung schon Beleg
+            uebersprungen.append({"url": q.url, "grund": SCHON_BELEG})
+            continue
         if any(adresse_norm(g[3], g[4]) == adresse_norm(gelesen, pdf) for g in geholt):
             uebersprungen.append({"url": q.url, "grund": "doppelt im Vorschlag"})
             continue
         geholt.append((q, text[:TEXT_MAX], seitentitel, gelesen, pdf, art))
         if hinweis:
             hinweise.append({"url": q.url, "hinweis": hinweis})
+    if v.story_id and not geholt and all(u["grund"] in (SCHON_BELEG, "doppelt im Vorschlag") for u in uebersprungen):
+        return {**out, "ergebnis": "vorhanden", "story_id": v.story_id, "grund": f"schon vorhanden: Story {v.story_id}",
+                "quellen_uebersprungen": uebersprungen}
     if not geholt:
         return {**out, "ergebnis": "abgelehnt", "grund": "keine Quelle abrufbar", "quellen_uebersprungen": uebersprungen}
+    if v.story_id:
+        return _ergaenzt_melden(store, out, v, geholt, uebersprungen, hinweise, heute, von)
     ergebnis = _anlegen(store, v, geholt)
     if ergebnis["ergebnis"] != "angelegt":
         return {**out, **ergebnis}
@@ -572,7 +674,20 @@ def _eins(store: Store, raw, nr: int, von: str, abruf: Callable, heute: date, uh
     return {**out, "quellen_hinweise": hinweise} if hinweise else out
 
 
-ERGEBNISSE = ("angelegt", "vorhanden", "vielleicht_vorhanden", "abgelehnt", "nicht_bearbeitet")
+def _ergaenzt_melden(store: Store, out: dict, v: Vorschlag, geholt: list, uebersprungen: list, hinweise: list,
+                     heute: date, von: str) -> dict:
+    ergebnis = _ergaenzen(store, v, geholt, heute)
+    if ergebnis["ergebnis"] != "ergaenzt":
+        return {**out, **ergebnis, "quellen_uebersprungen": uebersprungen}
+    sid, n = ergebnis["story_id"], ergebnis["quellen_geholt"]
+    repo.aktion(store, wer=von[:60], aktion="nachtrag_ergaenzt", story_id=sid, kanal="redaktion", ausloeser="agent",
+                notiz=f"{n} Quellen angehängt, {len(uebersprungen)} übersprungen")
+    store.event("nachtrag_ergaenzt", story=sid, quellen=n, uebersprungen=len(uebersprungen), von=von[:60])
+    out = {**out, **ergebnis, "quellen_uebersprungen": uebersprungen}
+    return {**out, "quellen_hinweise": hinweise} if hinweise else out
+
+
+ERGEBNISSE = ("angelegt", "ergaenzt", "vorhanden", "vielleicht_vorhanden", "abgelehnt", "nicht_bearbeitet")
 
 
 def annehmen(store: Store, settings: Settings, raw, *, von: str = "agent", ctx: Kontext | None = None,

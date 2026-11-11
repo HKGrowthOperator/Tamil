@@ -346,7 +346,7 @@ def main(argv: list[str] | None = None) -> int:
                 return 2
         for e in out["ergebnisse"]:
             print(f"{e['nr']:>3} {e['ergebnis']:<10} {e.get('story_id') or '':>6} {e.get('grund') or ''}")
-        print(f"{out['angelegt']} angelegt, {out['vorhanden']} schon vorhanden, {out['vielleicht_vorhanden']} vielleicht "
+        print(f"{out['angelegt']} angelegt, {out['ergaenzt']} ergänzt, {out['vorhanden']} schon vorhanden, {out['vielleicht_vorhanden']} vielleicht "
               f"vorhanden, {out['abgelehnt']} abgelehnt, {out['nicht_bearbeitet']} nicht bearbeitet")
         return 3 if out.get("angehalten") else 0
 
