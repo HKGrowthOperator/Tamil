@@ -366,7 +366,10 @@ def entwurf_anlegen(ctx: Kontext, story: dict, felder: dict, payload: dict, *, t
                                   fingerprint=fingerprint, uid=uid, docs=docs, bild=bild, versucht=versucht, name=name,
                                   asset_id=asset_id)
     except BaseException:  # Abbruch nach dem Speichern: keine Datei und kein Lizenz-Datensatz ohne Entwurf
-        _neues_bild_verwerfen(ctx, name, asset_id)
+        try:
+            _neues_bild_verwerfen(ctx, name, asset_id)
+        except Exception:  # noqa: BLE001 – das Aufräumen darf die ursprüngliche Ausnahme nicht ersetzen
+            log.exception("Aufräumen des Bildes %s fehlgeschlagen", name)
         raise
 
 

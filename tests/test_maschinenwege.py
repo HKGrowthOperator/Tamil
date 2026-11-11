@@ -272,3 +272,44 @@ def test_agent_import_name_mit_inhalts_hash(settings, tmp_path):  # noqa: F811
         name = store.get_draft(did)["bild_datei"]
         kurz = hashlib.sha256((settings.bilder_dir / name).read_bytes()).hexdigest()[:8]
         assert f"-e{did}-" in name and name.endswith(f"-{kurz}.jpg")
+
+
+
+def test_orchestrator_ausnahme_nach_festschreiben_laesst_lizenz_beim_entwurf(settings, monkeypatch):  # noqa: F811
+    import pytest
+
+    from news_radar.workflow import orchestrator, repo
+
+    with Store(settings.db_path) as store:
+        ctx, sid, felder = _orchestrator_story(store, settings)
+
+        def gesperrt(*a, **k):  # Entwurf ist schon festgeschrieben, nur das Binden scheitert
+            raise RuntimeError("database is locked")
+
+        monkeypatch.setattr(repo, "asset_draft_setzen", gesperrt)
+        with pytest.raises(RuntimeError):
+            orchestrator.entwurf_anlegen(ctx, repo.story(store, sid), felder, {}, typ="artikel", hinweise=[])
+        d = store.list_drafts("neu")[0]
+        asset = repo.asset_fuer_datei(store, d["bild_datei"])
+        assert asset is not None and asset["herkunft"] == "karte"
+        assert (settings.bilder_dir / d["bild_datei"]).is_file()
+
+
+def test_orchestrator_aufraeumen_ersetzt_die_ausnahme_nicht(settings, monkeypatch):  # noqa: F811
+    import pytest
+
+    from news_radar.workflow import orchestrator, repo
+
+    with Store(settings.db_path) as store:
+        ctx, sid, felder = _orchestrator_story(store, settings)
+
+        def abbruch(*a, **k):
+            raise SystemExit(3)
+
+        def kaputt(*a, **k):
+            raise OSError("Aufräumen geht nicht")
+
+        monkeypatch.setattr(store, "insert_draft", abbruch)
+        monkeypatch.setattr(orchestrator, "_alte_datei_aufraeumen", kaputt)
+        with pytest.raises(SystemExit):
+            orchestrator.entwurf_anlegen(ctx, repo.story(store, sid), felder, {}, typ="artikel", hinweise=[])
