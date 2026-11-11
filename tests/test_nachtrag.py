@@ -1370,3 +1370,14 @@ def test_ergaenzen_setzt_doc_key_nach_dem_hoechsten_fort(settings):
         e = annehmen(store, settings, [vorschlag(story_id=sid, quellen=[quelle(URL3)])], seiten=SEITEN3)["ergebnisse"][0]
         assert e["ergebnis"] == "ergaenzt", e
         assert [d.doc_key for d in repo.dokumente(store, sid)] == ["Q1", "Q3", "Q4"]
+
+
+def test_dokument_hinzufuegen_vergibt_doc_key_nach_dem_hoechsten(settings):
+    """Cockpit „Quelle ergänzen“: nach einer Lücke (Q1, Q3) nicht COUNT+1 = Q3 doppelt, sondern Q4."""
+    with Store(settings.db_path) as store:
+        sid = repo.story_anlegen(store, typ="news", titel="Story mit Lücke")
+        for n in (1, 2, 3):
+            repo.dokument_hinzufuegen(store, sid, url=f"https://www.example.org/bericht-{n}", text=ARTIKEL1)
+        store.db.execute("DELETE FROM source_documents WHERE story_id = ? AND doc_key = 'Q2'", (sid,))
+        store.db.commit()
+        assert repo.dokument_hinzufuegen(store, sid, url="https://www.example.org/neu", text=ARTIKEL2) == "Q4"
