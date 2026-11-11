@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 
 import pytest
 
-from news_radar import nachtrag, publisher, schalter, sources
+from news_radar import nachtrag, net, publisher, schalter, sources
 from news_radar.agent_v2 import import_daten, paket_v2
 from news_radar.agents import Kontext
 from news_radar.config import load_settings
@@ -27,7 +27,26 @@ ARTIKEL2 = ("Der Tempelverein in Hamm hat sein Gemeindehaus am 14. März 2026 ei
             "Nach Angaben des Vereins kamen rund 2000 Gäste. Die Stadt Hamm war mit dem Oberbürgermeister vertreten. "
             "Im Gemeindehaus soll ab April Tamil-Unterricht für Kinder stattfinden. "
             "Der Verein will das Haus auch für Hochzeiten und Trauerfeiern der Gemeinde öffnen.")
-SEITEN = {URL1: ARTIKEL1, URL2: ARTIKEL2}
+
+
+def html(text: str, titel: str = "Tempel eröffnet Gemeindehaus – Lokales") -> str:
+    kopf = f"<title>{titel}</title>" if titel else ""
+    return f"<html><head>{kopf}</head><body><article><p>{text}</p></article></body></html>"
+
+
+SEITEN = {URL1: html(ARTIKEL1), URL2: html(ARTIKEL2, "Tempelfest in Hamm | WA")}
+
+
+def abruf_aus(seiten, abrufe=None, umleitung=None):
+    """Fake-Transport: wie net.safe_get, aber ohne Netz (unbekannte Adresse → 404)."""
+    def abruf(url, frist=None):
+        if abrufe is not None:
+            abrufe.append(url)
+        if url not in seiten:
+            raise net.HTTPError(404, url)
+        return net.Fetched(url=(umleitung or {}).get(url, url), status=200, content=seiten[url].encode("utf-8"),
+                           content_type="text/html; charset=utf-8")
+    return abruf
 
 
 @pytest.fixture
@@ -52,19 +71,13 @@ def vorschlag(**kw) -> dict:
     return v
 
 
-def kontext(store, settings, seiten=None, abrufe=None):
-    seiten = SEITEN if seiten is None else seiten
-
-    def holen(url):
-        if abrufe is not None:
-            abrufe.append(url)
-        return seiten.get(url, "")
-    return Kontext(settings=settings, store=store, fetch_text=holen, suche=lambda q: [])
+def kontext(store, settings):
+    return Kontext(settings=settings, store=store, fetch_text=lambda url: "", suche=lambda q: [])
 
 
-def annehmen(store, settings, vorschlaege, **kw):
-    return nachtrag.annehmen(store, settings, {"vorschlaege": vorschlaege}, von="test",
-                             ctx=kontext(store, settings, **kw))
+def annehmen(store, settings, vorschlaege, seiten=None, abrufe=None, umleitung=None, **kw):
+    return nachtrag.annehmen(store, settings, {"vorschlaege": vorschlaege}, von="test", ctx=kontext(store, settings),
+                             abruf=abruf_aus(SEITEN if seiten is None else seiten, abrufe, umleitung), **kw)
 
 
 # ---- Migration ----------------------------------------------------------------------------------------
@@ -152,7 +165,7 @@ def test_interne_adresse_wird_abgelehnt_ohne_abruf(settings, url):
 
 def test_nicht_abrufbare_quellen_werden_uebersprungen_bleibt_keine_abgelehnt(settings):
     with Store(settings.db_path) as store:
-        teil = annehmen(store, settings, [vorschlag()], seiten={URL1: ARTIKEL1})["ergebnisse"][0]
+        teil = annehmen(store, settings, [vorschlag()], seiten={URL1: SEITEN[URL1]})["ergebnisse"][0]
         assert teil["ergebnis"] == "angelegt" and teil["quellen_geholt"] == 1
         assert teil["quellen_uebersprungen"][0]["url"] == URL2
         leer = annehmen(store, settings, [vorschlag(arbeitstitel="Ganz anderes Thema in Wien",
@@ -187,6 +200,24 @@ def test_stopp_redaktion_haelt_annahme_an(settings):
         with pytest.raises(schalter.Gestoppt):
             annehmen(store, settings, [vorschlag()], abrufe=abrufe)
         assert abrufe == [] and repo.stories(store) == []
+
+
+def test_titel_der_quelle_kommt_von_der_seite_nie_aus_dem_vorschlag(settings):
+    """P1: Ein erfundener Satz als Quellen-Titel darf keine Fundstelle werden."""
+    from news_radar.agents import factcheck
+    from news_radar.workflow.models import Claim
+
+    erfunden = "Der Tempel hat 5000 neue Mitglieder aufgenommen und einen Neubau angekündigt"
+    quellen = [{**vorschlag()["quellen"][0], "titel": erfunden}, {**vorschlag()["quellen"][1], "titel": erfunden}]
+    seiten = {URL1: html(ARTIKEL1, "Tempel eröffnet Gemeindehaus – Lokales"), URL2: html(ARTIKEL2, titel="")}
+    with Store(settings.db_path) as store:
+        sid = annehmen(store, settings, [vorschlag(quellen=quellen)], seiten=seiten)["ergebnisse"][0]["story_id"]
+        docs = repo.dokumente(store, sid)
+        assert [d.titel for d in docs] == ["Tempel eröffnet Gemeindehaus – Lokales", ""]
+        claim = Claim(id="C1", aussage=erfunden, art="was", kern=True, quellen=["Q1", "Q2"], fundstelle=erfunden,
+                      sicherheit=0.9)
+        assert not any(factcheck.fundstelle_belegt(claim, d) for d in docs)
+        assert erfunden not in json.dumps(paket_v2(store, settings, ctx=kontext(store, settings)), ensure_ascii=False)
 
 
 # ---- Import und Veröffentlichung ------------------------------------------------------------------------
@@ -233,7 +264,7 @@ def test_nachtrag_entwuerfe_haben_eigene_tagesgrenze(settings):
                                              quellen=[{"url": "https://www.srf.ch/filmfest", "titel": "t",
                                                        "herausgeber": "SRF", "datum": "2026-05-02", "sprache": "de",
                                                        "art": "bericht"}])],
-                 seiten={**SEITEN, "https://www.srf.ch/filmfest": ARTIKEL1.replace("Hamm", "Zürich")})
+                 seiten={**SEITEN, "https://www.srf.ch/filmfest": html(ARTIKEL1.replace("Hamm", "Zürich"))})
         stats = _schreiben(store, settings)
         assert stats["entwuerfe"] == 1 and any("Tagesgrenze" in f for f in stats["fehler"]), stats
         offen = [s for s in repo.stories(store) if s["status"] == "neu"]
@@ -245,7 +276,7 @@ def test_nachtrag_entwuerfe_haben_eigene_tagesgrenze(settings):
 def test_route_vorschlag_mit_token_stopp_und_fehlern(settings, monkeypatch):
     from news_radar.web import create_app
 
-    monkeypatch.setattr(sources, "fetch_article_text", lambda url: SEITEN.get(url, ""))
+    monkeypatch.setattr(nachtrag, "standard_abruf", abruf_aus(SEITEN))
     settings.web_user, settings.web_password, settings.web_secret = "luis", "geheim", "s3cret"
     app = create_app(settings, testing=True)
     client = app.test_client()
@@ -270,7 +301,7 @@ def test_route_vorschlag_mit_token_stopp_und_fehlern(settings, monkeypatch):
 def test_cli_agent_vorschlag(settings, monkeypatch, tmp_path, capsys):
     from news_radar.__main__ import main
 
-    monkeypatch.setattr(sources, "fetch_article_text", lambda url: SEITEN.get(url, ""))
+    monkeypatch.setattr(nachtrag, "standard_abruf", abruf_aus(SEITEN))
     monkeypatch.setenv("RADAR_DATA_DIR", str(settings.data_dir))
     datei = tmp_path / "vorschlaege.json"
     datei.write_text(json.dumps([vorschlag()]), encoding="utf-8")

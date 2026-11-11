@@ -6,8 +6,9 @@ Eingabe: {"vorschlaege": [...]} oder eine Liste. Je Vorschlag: arbeitstitel, dat
 oder der Meldung), rubrik, ort, bezug, heikel, quellen [{url, titel, herausgeber, datum, sprache, art}], optional
 kernfakten und bild_hinweis (nur Hinweise für den Agenten, nie Belege).
 
-Der Radar holt jede Quelle selbst (Kontext.text_von → net.safe_get, Stopp-Schalter vor jedem Abruf) und legt sie als
-source_documents an; der Text eines Dokuments stammt nie aus dem Vorschlag. Danach steht die Story im Agent-Export
+Der Radar holt jede Quelle selbst (net.safe_get, Stopp-Schalter vor jedem Abruf) und legt sie als source_documents
+an; Text und Titel eines Dokuments stammen nie aus dem Vorschlag, sondern aus der abgerufenen Seite (Titel aus
+og:title bzw. <title>, sonst leer) – sonst würde ein erfundener „Titel“ zur Fundstelle im Gate. Danach steht die Story im Agent-Export
 (Herkunft „nachtrag“, Status „neu“, kein Job) und läuft durch Import und Gate wie jede andere.
 """
 
@@ -17,10 +18,12 @@ import json
 import re
 from datetime import date, timedelta
 from difflib import SequenceMatcher
+from html import unescape
+from typing import Callable
 
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
-from . import net, schalter
+from . import net, schalter, sources
 from .agents import Kontext
 from .agents.research import VOLLTEXT_MIN
 from .config import Settings
@@ -86,6 +89,30 @@ class VorschlagAbgelehnt(ValueError):
     pass
 
 
+_TITEL_RES = (
+    re.compile(r'<meta[^>]+property=["\']og:title["\'][^>]+content=["\']([^"\']*)["\']', re.I),
+    re.compile(r'<meta[^>]+content=["\']([^"\']*)["\'][^>]+property=["\']og:title["\']', re.I),
+    re.compile(r"<title[^>]*>(.*?)</title\s*>", re.I | re.S),
+)
+
+
+def standard_abruf(url: str, frist: float | None = None) -> net.Fetched:
+    """Seite holen: SSRF-Schutz, Umleitungen geprüft, Größenlimit (net.safe_get)."""
+    return net.safe_get(url, accept=net.TEXT_TYPES, timeout=8, max_bytes=3_000_000)
+
+
+def seite_lesen(seite: net.Fetched) -> tuple[str, str]:
+    """(Text, Titel) der abgerufenen Seite. Der Titel kommt nur aus og:title oder <title>, sonst bleibt er leer."""
+    roh = seite.text
+    titel = ""
+    for rx in _TITEL_RES:
+        m = rx.search(roh)
+        if m and m.group(1).strip():
+            titel = sources.clean_text(unescape(m.group(1)))[:300]
+            break
+    return sources.extract_paragraphs(roh, TEXT_MAX), titel
+
+
 def _fehlertext(exc: ValidationError) -> str:
     err = exc.errors()[0]
     feld = ".".join(str(x) for x in err.get("loc", ()))
@@ -140,7 +167,7 @@ def _pruefen(raw, heute: date) -> Vorschlag:
     return v
 
 
-def _eins(ctx: Kontext, store: Store, raw, nr: int, von: str) -> dict:
+def _eins(ctx: Kontext, store: Store, raw, nr: int, von: str, abruf: Callable) -> dict:
     titel = raw.get("arbeitstitel", "") if isinstance(raw, dict) else ""
     out: dict = {"nr": nr, "arbeitstitel": str(titel)[:120]}
     try:
@@ -152,18 +179,16 @@ def _eins(ctx: Kontext, store: Store, raw, nr: int, von: str) -> dict:
         return {**out, "ergebnis": "vorhanden", "story_id": vorhanden, "grund": f"schon vorhanden: Story {vorhanden}"}
     geholt, uebersprungen = [], []
     for q in v.quellen:
-        text = ""
+        schalter.pruefen(store, "redaktion")  # unmittelbar vor dem Abruf
         try:
-            text = ctx.text_von(q.url)  # prüft den Stopp-Schalter unmittelbar vor dem Abruf
-        except schalter.Gestoppt:
-            raise
+            text, seitentitel = seite_lesen(abruf(q.url))
         except Exception as exc:  # noqa: BLE001 – eine kaputte Seite stoppt den Vorschlag nicht
-            uebersprungen.append({"url": q.url, "grund": f"{type(exc).__name__}"[:80]})
+            uebersprungen.append({"url": q.url, "grund": f"nicht abrufbar ({type(exc).__name__})"[:80]})
             continue
         if len(text or "") < VOLLTEXT_MIN:
-            uebersprungen.append({"url": q.url, "grund": "nicht abrufbar oder ohne lesbaren Text"})
+            uebersprungen.append({"url": q.url, "grund": "ohne lesbaren Text"})
             continue
-        geholt.append((q, text))
+        geholt.append((q, text, seitentitel))
     if not geholt:
         return {**out, "ergebnis": "abgelehnt", "grund": "keine Quelle abrufbar", "quellen_uebersprungen": uebersprungen}
     sid = repo.story_anlegen(store, typ="news", titel=v.arbeitstitel, kategorie=v.rubrik, ort=v.ort,
@@ -171,10 +196,10 @@ def _eins(ctx: Kontext, store: Store, raw, nr: int, von: str) -> dict:
     hinweise = {"bezug": v.bezug, "kernfakten": v.kernfakten[:12], "bild_hinweis": v.bild_hinweis[:300]}
     store._write("UPDATE stories SET herkunft = 'nachtrag', ereignis_datum = ?, vorschlag = ?, notiz = ? WHERE id = ?",
                  (v.datum, json.dumps(hinweise, ensure_ascii=False), f"Nachtrag · Bezug: {v.bezug}"[:900], sid))
-    for q, text in geholt:
+    for q, text, seitentitel in geholt:
         repo.dokument_hinzufuegen(store, sid, url=q.url, publisher=q.herausgeber[:120], quelle="Nachtrag",
                                   published_at=q.datum[:25], language=(q.sprache or "de")[:8], rights="zitat",
-                                  primaer=True, art="volltext", titel=q.titel[:300], text=text[:TEXT_MAX])
+                                  primaer=True, art="volltext", titel=seitentitel, text=text[:TEXT_MAX])
     repo.aktion(store, wer=von[:60], aktion="nachtrag_angelegt", story_id=sid, kanal="redaktion", ausloeser="agent",
                 notiz=f"{len(geholt)} Quellen geholt, {len(uebersprungen)} übersprungen")
     store.event("nachtrag", story=sid, quellen=len(geholt), uebersprungen=len(uebersprungen), von=von[:60])
@@ -182,7 +207,8 @@ def _eins(ctx: Kontext, store: Store, raw, nr: int, von: str) -> dict:
             "quellen_uebersprungen": uebersprungen}
 
 
-def annehmen(store: Store, settings: Settings, raw, *, von: str = "agent", ctx: Kontext | None = None) -> dict:
+def annehmen(store: Store, settings: Settings, raw, *, von: str = "agent", ctx: Kontext | None = None,
+             abruf: Callable | None = None) -> dict:
     """Vorschläge annehmen. Hält der Schalter „redaktion“ an, wirft schalter.Gestoppt, bevor etwas abgerufen wird."""
     schalter.pruefen(store, "redaktion")
     items = raw.get("vorschlaege") if isinstance(raw, dict) else raw
@@ -191,6 +217,7 @@ def annehmen(store: Store, settings: Settings, raw, *, von: str = "agent", ctx: 
     if len(items) > MAX_VORSCHLAEGE:
         raise ValueError(f"höchstens {MAX_VORSCHLAEGE} Vorschläge je Aufruf")
     ctx = ctx or Kontext(settings=settings, store=store)
-    ergebnisse = [_eins(ctx, store, raw_v, nr, von) for nr, raw_v in enumerate(items, 1)]
+    abruf = abruf or (lambda url, frist=None: standard_abruf(url, frist=frist))  # zur Laufzeit (austauschbar)
+    ergebnisse = [_eins(ctx, store, raw_v, nr, von, abruf) for nr, raw_v in enumerate(items, 1)]
     zaehler = {k: sum(1 for e in ergebnisse if e["ergebnis"] == k) for k in ("angelegt", "vorhanden", "abgelehnt")}
     return {"ergebnisse": ergebnisse, **zaehler}

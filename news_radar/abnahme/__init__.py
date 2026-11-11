@@ -508,6 +508,18 @@ def _website_stopp(ctx, sz: Szenario, now: datetime) -> dict:
             "protokoll_dienst": len(repo.aktionen_liste(store, aktion="veroeffentlicht", kanal="website"))}
 
 
+def _fake_abruf(sz: Szenario) -> Callable:
+    """Seiten der Szenario-Texte als HTML (Titel der Seite = Schlüssel der URL), unbekannte Adressen → 404."""
+    from .. import net
+
+    def abruf(url: str, frist: float | None = None) -> net.Fetched:
+        if url not in sz.texte:
+            raise net.HTTPError(404, url)
+        seite = f"<html><head><title>Seite {url.rsplit('/', 1)[-1]}</title></head><body><article><p>{sz.texte[url]}</p></article></body></html>"
+        return net.Fetched(url=url, status=200, content=seite.encode(), content_type="text/html; charset=utf-8")
+    return abruf
+
+
 def _vorschlaege_annehmen(ctx, sz: Szenario, now: datetime) -> Counter:
     """Nachtrag: je Runde in einstellungen["_vorschlaege"] einmal annehmen (Datum „-200d“ relativ zu heute)."""
     from ..nachtrag import annehmen
@@ -515,7 +527,8 @@ def _vorschlaege_annehmen(ctx, sz: Szenario, now: datetime) -> Counter:
     stats: Counter = Counter()
     for runde in sz.einstellungen.get("_vorschlaege", []):
         vorschlaege = [{**v, "datum": _datum(v["datum"], now)} for v in runde]
-        out = annehmen(ctx.store, ctx.settings, {"vorschlaege": vorschlaege}, von="abnahme", ctx=ctx)
+        out = annehmen(ctx.store, ctx.settings, {"vorschlaege": vorschlaege}, von="abnahme", ctx=ctx,
+                       abruf=_fake_abruf(sz))
         for e in out["ergebnisse"]:
             stats[f"nachtrag_{e['ergebnis']}"] += 1
             grund = e.get("grund") or ""
