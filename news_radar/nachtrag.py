@@ -25,10 +25,13 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import subprocess
+import sys
 import time
 from datetime import date, timedelta
 from difflib import SequenceMatcher
 from html import unescape
+from pathlib import Path
 from typing import Callable
 from urllib.parse import urlsplit
 
@@ -120,7 +123,7 @@ _TITEL_RES = (
 
 SEITE_MAX = 3_000_000  # Bytes je HTML-Seite
 PDF_MAX = 8_000_000  # Bytes je PDF-Datei
-PDF_SEITEN_MAX = 40  # gelesen ab der Anker-Seite, bis TEXT_MAX
+PDF_SEITEN_MAX = 40  # gelesen ab der Anker-Seite, bis TEXT_MAX (pdf_kind.SEITEN_MAX)
 PDF_TYPES = ("application/pdf",)
 _ANKER_RE = re.compile(r"#page=([0-9]{1,5})\Z")
 
@@ -154,56 +157,36 @@ def ist_pdf(seite: net.Fetched) -> bool:
     return seite.content_type.lower().startswith(PDF_TYPES) or seite.content[:5] == b"%PDF-"
 
 
-def _trennung(m: re.Match) -> str:
-    # „Bundes-\namt“ → „Bundesamt“; vor einem Großbuchstaben bleibt der Bindestrich („Sri-\nLanka“ → „Sri-Lanka“)
-    return m.group(1) + ("" if m.group(2).islower() else "-") + m.group(2)
+PDF_ZEIT_MAX = 20.0  # Sekunden je PDF im Kindprozess (höchstens; sonst der Rest der Frist)
+PDF_BEFEHL = [sys.executable, "-I", str(Path(__file__).with_name("pdf_kind.py"))]  # austauschbar (Tests)
 
 
-def _pdf_seite_text(roh: str) -> str:
-    t = (roh or "").replace("­", "").replace("\r\n", "\n").replace("\r", "\n")
-    t = re.sub(r"(\w)-[ \t]*\n[ \t]*(\w)", _trennung, t)
-    absaetze = (re.sub(r"\s+", " ", a).strip() for a in re.split(r"\n[ \t]*\n", t))
-    return "\n\n".join(a for a in absaetze if a)
-
-
-def pdf_lesen(daten: bytes, ab_seite: int = 1) -> tuple[str, str]:
-    """(Text, Titel) eines PDF ab `ab_seite`, höchstens PDF_SEITEN_MAX Seiten bzw. TEXT_MAX Zeichen. Titel nur aus den
-    Metadaten (/Title). Verschlüsselt, kaputt oder zu groß → Unlesbar (nie eine andere Ausnahme)."""
-    from io import BytesIO
-
+def pdf_lesen(daten: bytes, ab_seite: int = 1, frist: float | None = None) -> tuple[str, str]:
+    """(Text, Titel) eines PDF ab `ab_seite`, höchstens PDF_SEITEN_MAX Seiten bzw. TEXT_MAX Zeichen; Titel nur aus den
+    Metadaten (/Title). Gelesen wird in einem eigenen Prozess (pdf_kind.py) mit hartem Zeitlimit (Rest der Frist,
+    höchstens PDF_ZEIT_MAX) und Speichergrenze – eine präparierte Datei hält den Web-Worker nicht auf.
+    Verschlüsselt, kaputt, zu groß oder zu aufwendig → Unlesbar (nie eine andere Ausnahme)."""
     if len(daten) > PDF_MAX:
         raise Unlesbar(f"PDF zu groß (mehr als {PDF_MAX // 1_000_000} MB)")
+    zeit = PDF_ZEIT_MAX if frist is None else min(PDF_ZEIT_MAX, frist - time.monotonic())
+    if zeit <= 0:
+        raise Unlesbar("PDF zu aufwendig (Zeitlimit)")
     try:
-        from pypdf import PdfReader
-
-        reader = PdfReader(BytesIO(daten))
-        if reader.is_encrypted:
-            try:  # nur Rechte-Schutz ohne Kennwort lässt sich öffnen
-                offen = reader.decrypt("")
-            except Exception:  # noqa: BLE001
-                offen = 0
-            if not offen:
-                raise Unlesbar("PDF nicht lesbar (verschlüsselt)")
-        anzahl = len(reader.pages)
-        if ab_seite > anzahl:
-            raise Unlesbar(f"PDF nicht lesbar: keine Seite {ab_seite} (hat {anzahl})")
-        teile, laenge = [], 0
-        for i in range(ab_seite - 1, min(anzahl, ab_seite - 1 + PDF_SEITEN_MAX)):
-            t = _pdf_seite_text(reader.pages[i].extract_text() or "")
-            if t:
-                teile.append(t)
-                laenge += len(t) + 2
-            if laenge >= TEXT_MAX:
-                break
-        try:
-            titel = sources.clean_text(str((reader.metadata or {}).get("/Title") or ""))[:300]
-        except Exception:  # noqa: BLE001 – kaputte Metadaten: ohne Titel
-            titel = ""
-    except Unlesbar:
-        raise
-    except Exception:  # noqa: BLE001 – kaputte Datei: sauber abgelehnt, keine Ausnahme nach außen
-        raise Unlesbar("PDF nicht lesbar") from None
-    return "\n\n".join(teile)[:TEXT_MAX], titel
+        lauf = subprocess.run([*PDF_BEFEHL, str(max(1, ab_seite))], input=daten, capture_output=True, timeout=zeit,
+                              check=False)
+    except subprocess.TimeoutExpired:
+        raise Unlesbar("PDF zu aufwendig (Zeitlimit)") from None
+    except OSError:
+        raise Unlesbar("PDF nicht lesbar (Leser nicht startbar)") from None
+    try:
+        out = json.loads(lauf.stdout.decode("utf-8"))
+    except ValueError:
+        out = None
+    if lauf.returncode != 0 or not isinstance(out, dict):
+        raise Unlesbar("PDF zu aufwendig")  # vom Speicherlimit beendet o. Ä.
+    if out.get("fehler"):
+        raise Unlesbar(str(out["fehler"])[:120])
+    return str(out.get("text") or "")[:TEXT_MAX], sources.clean_text(str(out.get("titel") or ""))[:300]
 
 
 def _flach(s: str) -> str:
@@ -294,11 +277,11 @@ def strukturierte_angaben(roh: str) -> str:
     return f"{LD_KOPF}\n\n{text}"[:TEXT_MAX] if text else ""
 
 
-def seite_lesen(seite: net.Fetched, adresse: str = "") -> tuple[str, str]:
+def seite_lesen(seite: net.Fetched, adresse: str = "", frist: float | None = None) -> tuple[str, str]:
     """(Text, Titel) der abgerufenen Seite. Der Titel kommt nur aus og:title oder <title>, sonst bleibt er leer.
     PDF: Text ab der Seite aus dem Anker „#page=N“ der Adresse (sonst Seite 1), Titel aus den Metadaten."""
     if ist_pdf(seite):
-        return pdf_lesen(seite.content, max(1, anker_seite(adresse or seite.url)))
+        return pdf_lesen(seite.content, max(1, anker_seite(adresse or seite.url)), frist=frist)
     roh = seite.text
     titel = ""
     for rx in _TITEL_RES:
@@ -454,7 +437,7 @@ def _eins(store: Store, raw, nr: int, von: str, abruf: Callable, heute: date, uh
         frist = jetzt + frist_abruf if ende is None else min(jetzt + frist_abruf, ende)
         try:
             seite = abruf(q.url, frist=frist)
-            text, seitentitel = seite_lesen(seite, q.url)
+            text, seitentitel = seite_lesen(seite, q.url, frist=frist)
         except Unlesbar as exc:
             uebersprungen.append({"url": q.url, "grund": str(exc)[:80]})
             continue

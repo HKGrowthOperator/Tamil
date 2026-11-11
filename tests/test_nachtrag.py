@@ -763,3 +763,75 @@ def test_json_ld_nur_als_notanker_und_nur_passende_typen():
     kaputt = '<html><script type="application/ld+json">{kein json</script><body></body></html>'
     for roh in (kino_html(nur_firma), kaputt):
         assert nachtrag.seite_lesen(html_seite(roh))[0] == ""
+
+
+# ---- PDF: Zeit- und Speichergrenze (Befund P1 der Code-Prüfung) --------------------------------------------
+
+def pdf_roh(objekte: list[bytes]) -> bytes:
+    """PDF von Hand: Objekte 1…n, xref, trailer (Root = 1)."""
+    out, offs = bytearray(b"%PDF-1.4\n"), []
+    for n, o in enumerate(objekte, 1):
+        offs.append(len(out))
+        out += b"%d 0 obj\n" % n + o + b"\nendobj\n"
+    x = len(out)
+    out += b"xref\n0 %d\n0000000000 65535 f \n" % (len(objekte) + 1)
+    out += b"".join(b"%010d 00000 n \n" % o for o in offs)
+    out += b"trailer\n<< /Size %d /Root 1 0 R >>\nstartxref\n%d\n%%%%EOF\n" % (len(objekte) + 1, x)
+    return bytes(out)
+
+
+def pdf_aufwendig(mb: int, seiten: int, geteilt: bool = True) -> bytes:
+    """Wie die Proben der Prüfung: ein großer Inhaltsstrom aus Leerraum-Operatoren, von allen Seiten referenziert
+    (geteilt) oder je Seite ein eigener."""
+    import zlib
+
+    strom = zlib.compress(b"1 0 0 1 0 0 cm\n" * (mb * 1_000_000 // 15), 9)
+    s_obj = b"<< /Length %d /Filter /FlateDecode >>\nstream\n" % len(strom) + strom + b"\nendstream"
+    n_stroeme = 1 if geteilt else seiten
+    kids = " ".join(f"{3 + n_stroeme + i} 0 R" for i in range(seiten)).encode()
+    objekte = [b"<< /Type /Catalog /Pages 2 0 R >>", b"<< /Type /Pages /Kids [%s] /Count %d >>" % (kids, seiten)]
+    objekte += [s_obj] * n_stroeme
+    objekte += [b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents %d 0 R >>" % (3 + (0 if geteilt else i))
+                for i in range(seiten)]
+    return pdf_roh(objekte)
+
+
+@pytest.mark.parametrize("daten", [pdf_aufwendig(2, 40), pdf_aufwendig(10, 1), pdf_aufwendig(3, 5, geteilt=False)],
+                         ids=["2MB-40-Seiten-geteilt", "10MB-eine-Seite", "3MB-je-Seite"])
+def test_praeparierte_pdf_enden_schnell_mit_grund(settings, daten):
+    import time
+
+    t = time.monotonic()
+    with Store(settings.db_path) as store:
+        e = pdf_annehmen(store, settings, pdf_vorschlag(PDF_URL), {PDF_URL: daten})
+    grund = e["quellen_uebersprungen"][0]["grund"]
+    assert e["ergebnis"] == "abgelehnt" and (grund == "ohne lesbaren Text" or "PDF zu aufwendig" in grund), grund
+    assert time.monotonic() - t < 6
+
+
+def test_pdf_zeitlimit_beendet_den_kindprozess(monkeypatch):
+    import sys
+    import time
+
+    monkeypatch.setattr(nachtrag, "PDF_BEFEHL", [sys.executable, "-c", "import time; time.sleep(30)"])
+    monkeypatch.setattr(nachtrag, "PDF_ZEIT_MAX", 0.5)
+    t = time.monotonic()
+    with pytest.raises(nachtrag.Unlesbar, match="PDF zu aufwendig"):
+        nachtrag.pdf_lesen(pdf_bytes([SEITE1]))
+    assert time.monotonic() - t < 3
+    with pytest.raises(nachtrag.Unlesbar, match="PDF zu aufwendig"):  # Frist schon vorbei: gar nicht erst starten
+        nachtrag.pdf_lesen(pdf_bytes([SEITE1]), frist=time.monotonic() - 1)
+    monkeypatch.setattr(nachtrag, "PDF_BEFEHL", [sys.executable, "-c", "import sys; sys.exit(9)"])
+    with pytest.raises(nachtrag.Unlesbar, match="PDF zu aufwendig"):  # z. B. vom Speicherlimit beendet
+        nachtrag.pdf_lesen(pdf_bytes([SEITE1]))
+
+
+def test_pdf_mit_schleife_im_seitenbaum_endet_sauber():
+    import time
+
+    schleife = pdf_roh([b"<< /Type /Catalog /Pages 2 0 R >>", b"<< /Type /Pages /Kids [2 0 R 3 0 R] /Count 2 >>",
+                        b"<< /Type /Pages /Parent 2 0 R /Kids [2 0 R] /Count 1 >>"])
+    t = time.monotonic()
+    with pytest.raises(nachtrag.Unlesbar, match="PDF"):
+        nachtrag.pdf_lesen(schleife)
+    assert time.monotonic() - t < 6
