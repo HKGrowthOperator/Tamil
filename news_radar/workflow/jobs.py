@@ -37,9 +37,12 @@ def _now() -> datetime:
 
 def einreihen(store, story_id: int | None, schritt: str, *, prio: int = PRIO_NORMAL, key: str | None = None,
               payload: dict | None = None, verzoegerung: float = 0) -> int | None:
-    """Neuer Job; None, wenn es den Schlüssel schon gibt (idempotent)."""
+    """Neuer Job; None, wenn es den Schlüssel schon gibt (idempotent) – oder wenn die Story ein Nachtrag ist: Nachträge
+    schreibt nur der Agent-Modus, nie ein Worker mit Modell (keine Kosten auf diesem Weg)."""
     now = _now()
     key = key or f"{story_id}:{schritt}"
+    if story_id is not None and ist_nachtrag(store, story_id):
+        return None
     with store.lock:
         cur = store.db.execute(
             "INSERT OR IGNORE INTO workflow_jobs (story_id, schritt, status, prio, versuche, naechster_versuch, "
@@ -49,6 +52,13 @@ def einreihen(store, story_id: int | None, schritt: str, *, prio: int = PRIO_NOR
         )
         store.db.commit()
         return cur.lastrowid if cur.rowcount == 1 else None
+
+
+def ist_nachtrag(store, story_id: int | None) -> bool:
+    if story_id is None:
+        return False
+    row = store.db.execute("SELECT herkunft FROM stories WHERE id = ?", (story_id,)).fetchone()
+    return bool(row) and row[0] == "nachtrag"
 
 
 def _job(row) -> dict:
@@ -169,7 +179,8 @@ def aufraeumen(store) -> int:
 def erneut(store, job_id: int) -> bool:
     cur = store._write(
         "UPDATE workflow_jobs SET status = 'offen', versuche = 0, fehler = NULL, naechster_versuch = ?, aktualisiert = ? "
-        "WHERE id = ? AND status IN ('tot', 'wartet_budget')", (_iso(_now()), _iso(_now()), job_id),
+        "WHERE id = ? AND status IN ('tot', 'wartet_budget') AND NOT EXISTS (SELECT 1 FROM stories s WHERE "
+        "s.id = workflow_jobs.story_id AND s.herkunft = 'nachtrag')", (_iso(_now()), _iso(_now()), job_id),
     )
     return cur.rowcount == 1
 

@@ -240,6 +240,74 @@ def test_herausgeber_aus_dem_host_und_datum_streng(settings):
     assert nachtrag.herausgeber("Bild", "https://www.wa.de/x") == "wa.de"
 
 
+def _nachtrag_story(store, settings, status="recherche_erforderlich"):
+    sid = annehmen(store, settings, [vorschlag()])["ergebnisse"][0]["story_id"]
+    repo.story_setzen(store, sid, status=status)
+    return sid
+
+
+def _jobs(store, sid):
+    return store.db.execute("SELECT COUNT(*) FROM workflow_jobs WHERE story_id = ?", (sid,)).fetchone()[0]
+
+
+def test_nachtrag_bekommt_nie_einen_modell_job(settings):
+    """P2: Neu starten, Quelle ergänzen, Job erneut, Worker – für Nachträge kein Job, kein Modellaufruf."""
+    from news_radar.workflow import jobs, orchestrator
+    from news_radar.workflow.fake import FakeAnthropic
+
+    with Store(settings.db_path) as store:
+        sid = _nachtrag_story(store, settings)
+        assert jobs.einreihen(store, sid, "recherche") is None and _jobs(store, sid) == 0
+        assert orchestrator.neu_starten(store, sid, "Neue Quelle: Test")
+        assert _jobs(store, sid) == 0 and repo.story(store, sid)["status"] == "neu"  # zurück im Agent-Export
+        repo.story_setzen(store, sid, status="recherche_erforderlich")
+        key = orchestrator.quelle_ergaenzen(store, sid, "https://www.wdr.de/tempel-hamm", von="anna")
+        assert key == "Q3" and _jobs(store, sid) == 0 and repo.story(store, sid)["status"] == "neu"
+        # der Export holt den Volltext der ergänzten Quelle (ohne Suche nach zweiter Quelle)
+        ctx = Kontext(settings=settings, store=store, fetch_text=lambda url: ARTIKEL2 if "wdr" in url else "",
+                      suche=lambda q: (_ for _ in ()).throw(AssertionError("keine Suche")))
+        p = next(p for p in paket_v2(store, settings, ctx=ctx)["storys"] if p["story_id"] == sid)
+        assert p["dokumente"][2]["text"] == ARTIKEL2 and p["dokumente"][2]["art"] == "volltext"
+        # ein Altbestand-Job (etwa vor diesem Fix angelegt): „erneut“ geht nicht, der Worker ruft kein Modell
+        store.db.execute("INSERT INTO workflow_jobs (story_id, schritt, status, prio, versuche, naechster_versuch, "
+                         "idempotenz_key, payload, erstellt, aktualisiert) VALUES (?, 'recherche', 'tot', 0, 0, "
+                         "'2000-01-01', 'alt', '{}', '2000-01-01', '2000-01-01')", (sid,))
+        store.db.commit()
+        jid = store.db.execute("SELECT id FROM workflow_jobs WHERE story_id = ?", (sid,)).fetchone()[0]
+        assert not jobs.erneut(store, jid)
+        store.db.execute("UPDATE workflow_jobs SET status = 'offen' WHERE id = ?", (jid,))
+        store.db.commit()
+        client = FakeAnthropic()
+        orchestrator.abarbeiten(orchestrator.kontext(settings, store, client=client, fetch_text=lambda u: ARTIKEL1,
+                                                     suche=lambda q: []))
+        assert client.requests == [] and store.db.execute("SELECT COUNT(*) FROM agent_usage").fetchone()[0] == 0
+        assert store.db.execute("SELECT status FROM workflow_jobs WHERE id = ?", (jid,)).fetchone()[0] == "fertig"
+
+
+def test_scan_ordnet_nachtraegen_keine_meldung_mit_job_zu(settings):
+    from datetime import timedelta
+
+    from news_radar.agents import cluster
+    from news_radar.workflow import orchestrator
+    from news_radar.workflow.fake import FakeAnthropic
+
+    with Store(settings.db_path) as store:
+        sid = _nachtrag_story(store, settings)
+        now = datetime.now(timezone.utc)
+        aehnlich = sources.NewsItem(title="Tempel in Hamm eröffnet Gemeindehaus", url="https://www.ruhr.de/tempel",
+                                    summary="Gemeindehaus eröffnet", source="Ruhr Nachrichten",
+                                    published=now - timedelta(hours=1))
+        ctx = orchestrator.kontext(settings, store, client=FakeAnthropic(), fetch_text=lambda u: ARTIKEL1,
+                                   suche=lambda q: [])
+        assert cluster.zuordnen(ctx, [aehnlich])[0].story_id is None
+        gleich = sources.NewsItem(title="Gemeindehaus in Hamm", url=URL1, summary="x", source="Tagesschau",
+                                  published=now - timedelta(hours=1))
+        orchestrator.scan(ctx, [gleich])
+        orchestrator.abarbeiten(ctx)
+        assert _jobs(store, sid) == 0
+        assert store.db.execute("SELECT COUNT(*) FROM agent_usage WHERE story_id = ?", (sid,)).fetchone()[0] == 0
+
+
 # ---- Import und Veröffentlichung ------------------------------------------------------------------------
 
 def _ergebnis(paket: dict) -> dict:

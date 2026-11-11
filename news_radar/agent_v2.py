@@ -103,7 +103,7 @@ def paket_v2(store: Store, settings: Settings, *, limit: int = 10, ctx: Kontext 
     for story in _offene_storys(store, limit):
         nachtrag = story.get("herkunft") == "nachtrag"
         # Nachtrag: die Quellen hat der Radar beim Annehmen schon geholt; ein vergangener Termin ist hier gewollt
-        docs = repo.dokumente(store, story["id"]) if nachtrag else research.belege_sammeln(ctx, story)
+        docs = _nachtrag_volltexte(ctx, story) if nachtrag else research.belege_sammeln(ctx, story)
         vorbei = "" if nachtrag else termin_vorbei(ctx, story, docs)
         if vorbei:
             repo.story_setzen(store, story["id"], status="verworfen", notiz=f"Termin vom {vorbei} liegt zurück")
@@ -140,6 +140,26 @@ def paket_v2(store: Store, settings: Settings, *, limit: int = 10, ctx: Kontext 
         "storys": pakete,
     }
     return data
+
+
+def _nachtrag_volltexte(ctx: Kontext, story: dict):
+    """Nachtrag: nur von der Redaktion ergänzte Quellen (noch ohne Volltext) nachladen – keine Suche nach einer
+    zweiten Quelle, kein Modell."""
+    sid = story["id"]
+    for doc in repo.dokumente(ctx.store, sid):
+        if doc.art != "zusammenfassung" or not doc.url or research.ist_google(doc.url):
+            continue
+        try:
+            text = ctx.text_von(doc.url)
+        except Exception as exc:  # noqa: BLE001 – Gestoppt wird unten beim nächsten Abruf erneut geprüft
+            from . import schalter
+
+            if isinstance(exc, schalter.Gestoppt):
+                raise
+            text = ""
+        if len(text) >= research.VOLLTEXT_MIN:
+            repo.dokument_setzen(ctx.store, sid, doc.doc_key, text=text[:20000], art="volltext", primaer=True)
+    return repo.dokumente(ctx.store, sid)
 
 
 def _jobs_schliessen(store: Store, story_id: int) -> None:

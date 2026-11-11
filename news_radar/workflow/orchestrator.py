@@ -459,6 +459,14 @@ SCHRITTE: dict[str, Handler] = {
 
 def job_ausfuehren(ctx: Kontext, job: dict) -> str:
     store = ctx.store
+    if jobs.ist_nachtrag(store, job["story_id"]):
+        # Altbestand oder Umweg: ein Nachtrag läuft nie über Worker und Modell, er wartet im Agent-Export
+        store._write("UPDATE workflow_jobs SET status = 'fertig', fehler = 'Nachtrag: nur Agent-Modus', aktualisiert = ? "
+                     "WHERE id = ?", (now_iso(), job["id"]))
+        story = repo.story(store, job["story_id"])
+        if story and story["status"] not in ("fertig", "verworfen"):
+            repo.story_setzen(store, job["story_id"], status="neu")
+        return "nachtrag"
     handler = SCHRITTE.get(job["schritt"])
     if handler is None:
         jobs.fehlgeschlagen(store, job["id"], f"Unbekannter Schritt {job['schritt']}")
@@ -564,7 +572,11 @@ def lauf(settings: Settings, *, mit_jobs: bool = False, client=None, items=None,
 # ---- Eingriffe der Redaktion -------------------------------------------------------------------
 
 def _recherche_neu(store: Store, story_id: int, notiz: str) -> None:
-    """Recherche erneut einreihen; die Nutzdaten (uid, Quelle, Pressebild, Fakten) des ersten Laufs bleiben erhalten."""
+    """Recherche erneut einreihen; die Nutzdaten (uid, Quelle, Pressebild, Fakten) des ersten Laufs bleiben erhalten.
+    Ein Nachtrag bekommt keinen Job: er geht zurück in den Agent-Export (Status „neu“)."""
+    if jobs.ist_nachtrag(store, story_id):
+        repo.story_setzen(store, story_id, status="neu", notiz=notiz[:500])
+        return
     erste = store.db.execute("SELECT payload, prio FROM workflow_jobs WHERE story_id = ? AND schritt = 'recherche' "
                              "ORDER BY id LIMIT 1", (story_id,)).fetchone()
     payload = json.loads(erste["payload"]) if erste else {}
