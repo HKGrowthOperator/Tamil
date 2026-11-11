@@ -76,18 +76,27 @@ function tamil_site_seo_kuerzen( string $text, int $laenge = TAMIL_SITE_SEO_LAEN
 }
 
 /**
- * Beschreibung eines Beitrags oder einer Seite.
+ * Darf ein Beitrag Angaben für Suchmaschinen bekommen? Nur veröffentlicht und ohne Passwort. Geschützte, private und
+ * nicht veröffentlichte Beiträge bekommen keine Beschreibung, kein Bild und kein Artikel-Schema – auch nicht nach
+ * Eingabe des Passworts.
+ */
+function tamil_site_seo_oeffentlich( $post ): bool {
+	return $post instanceof WP_Post && 'publish' === $post->post_status && '' === (string) $post->post_password;
+}
+
+/**
+ * Beschreibung eines Beitrags oder einer Seite (leer, wenn er nicht öffentlich ist).
  */
 function tamil_site_seo_beschreibung_beitrag( int $post_id ): string {
+	$post = get_post( $post_id );
+	if ( ! tamil_site_seo_oeffentlich( $post ) ) {
+		return '';
+	}
 	foreach ( array( '_tamil_seo_description', 'standfirst' ) as $feld ) {
 		$wert = trim( (string) get_post_meta( $post_id, $feld, true ) );
 		if ( '' !== $wert ) {
 			return tamil_site_seo_kuerzen( $wert );
 		}
-	}
-	$post = get_post( $post_id );
-	if ( ! $post || post_password_required( $post ) ) {
-		return '';
 	}
 	$text = has_excerpt( $post ) ? $post->post_excerpt : strip_shortcodes( $post->post_content );
 	return tamil_site_seo_kuerzen( excerpt_remove_blocks( $text ) );
@@ -125,7 +134,8 @@ function tamil_site_seo_document_title( $titel ) {
 	if ( tamil_site_seo_aktiv() && is_singular() ) {
 		$eigen = tamil_site_seo_titel_feld( (int) get_queried_object_id() );
 		if ( '' !== $eigen ) {
-			return $eigen;
+			// WordPress gibt den Rückgabewert ungefiltert in <title> aus.
+			return esc_html( $eigen );
 		}
 	}
 	return $titel;
@@ -139,7 +149,7 @@ add_filter( 'pre_get_document_title', 'tamil_site_seo_document_title', 20 );
  * @return array{url:string,width:int,height:int,alt:string}|null
  */
 function tamil_site_seo_bild(): ?array {
-	if ( is_singular() && has_post_thumbnail( (int) get_queried_object_id() ) ) {
+	if ( is_singular() && tamil_site_seo_oeffentlich( get_queried_object() ) && has_post_thumbnail( (int) get_queried_object_id() ) ) {
 		$id  = (int) get_post_thumbnail_id( (int) get_queried_object_id() );
 		$src = wp_get_attachment_image_src( $id, 'tamil-og' );
 		if ( $src ) {
@@ -327,7 +337,7 @@ function tamil_site_seo_schema(): array {
 			),
 		);
 	}
-	if ( is_singular( 'post' ) && ! post_password_required() ) {
+	if ( is_singular( 'post' ) && tamil_site_seo_oeffentlich( get_queried_object() ) ) {
 		$bloecke[] = tamil_site_seo_artikel( get_queried_object() );
 	}
 	$krumen = tamil_site_seo_krumen();

@@ -178,3 +178,43 @@ def test_production_bleibt_indexierbar(wp_cli):
             " apply_filters( 'wp_sitemaps_enabled', true ), tamil_site_robots_kopfzeile() ) );")
     robots, txt, sitemap, kopf = json.loads(wp_cli(code))
     assert "noindex" not in (robots or {}) and "Disallow: /\n" not in txt and txt.startswith("X") and sitemap is True and kopf == ""
+
+
+# --- Geschützte und nicht öffentliche Beiträge, Titel aus dem Radar ------------------------------------------------
+
+
+def test_geschuetzter_beitrag_ohne_beschreibung_bild_und_schema(wp, wp_cli):
+    pid = int(wp_cli(
+        "$a = wp_insert_attachment( array( 'post_title' => 'geheim-bild', 'post_mime_type' => 'image/png', 'post_status' => 'inherit' ), false );"
+        "$p = wp_insert_post( array( 'post_title' => 'Geschützt SEO', 'post_status' => 'publish', 'post_name' => 'seo-test-geschuetzt',"
+        " 'post_password' => 'geheim', 'post_content' => '<p>Geheimer Inhalt.</p>', 'meta_input' => array( 'standfirst' => 'Geheimer Vorspann',"
+        " '_tamil_seo_description' => 'Geheime Beschreibung' ) ) ); set_post_thumbnail( $p, $a ); echo $p;"))
+    try:
+        seite = wp.get("/seo-test-geschuetzt/").text
+        kopf = seite.split("</head>")[0]
+        assert "Geheime Beschreibung" not in kopf and "Geheimer Vorspann" not in kopf
+        assert _meta(seite, "name", "description") == [] and _meta(seite, "property", "og:description") == []
+        assert "geheim-bild" not in " ".join(_meta(seite, "property", "og:image"))
+        assert "NewsArticle" not in _typen(seite)
+        # Entwürfe und private Beiträge: keine Beschreibung, kein Artikel
+        code = (f"wp_update_post( array( 'ID' => {pid}, 'post_password' => '', 'post_status' => 'draft' ) );"
+                f"$a = tamil_site_seo_beschreibung_beitrag( {pid} );"
+                f"wp_update_post( array( 'ID' => {pid}, 'post_status' => 'private' ) );"
+                f"echo wp_json_encode( array( $a, tamil_site_seo_beschreibung_beitrag( {pid} ), tamil_site_seo_oeffentlich( get_post( {pid} ) ) ) );")
+        assert json.loads(wp_cli(code)) == ["", "", False]
+    finally:
+        wp_cli(f"$t = get_post_thumbnail_id( {pid} ); wp_delete_post( {pid}, true ); if ( $t ) {{ wp_delete_attachment( $t, true ); }}")
+
+
+def test_seo_titel_wird_escaped(wp, wp_cli):
+    pid = int(wp_cli(
+        "echo wp_insert_post( array( 'post_title' => 'Titeltest', 'post_status' => 'publish', 'post_name' => 'seo-test-titel',"
+        " 'post_content' => '<p>x</p>' ) );"))
+    try:
+        wp_cli(f"update_post_meta( {pid}, '_tamil_seo_title', '</title><script>alert(1)</script>' );")
+        seite = wp.get("/seo-test-titel/").text
+        assert "<script>alert(1)</script>" not in seite
+        titel = re.search(r"<title>(.*?)</title>", seite, re.DOTALL).group(1)
+        assert "<" not in titel and "alert(1)" in html.unescape(titel)
+    finally:
+        wp_cli(f"wp_delete_post( {pid}, true );")
