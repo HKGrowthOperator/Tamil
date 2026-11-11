@@ -241,3 +241,34 @@ SZENARIEN += [
              erwartet={"entwuerfe": 0, "rolle_anzahl": {"recherche": 1}, "rollen_ohne": ["text"],
                        "jobs": {"laeuft": 0, "fertig": 1, "offen": 1, "tot": 0}, "ereignis": "schalter"}),
 ]
+
+# ---- Nachtrag (Rückblick): Vorschlag mit Quellen → Story ohne Modell → Agent-Modus → Website mit Ereignisdatum ----
+NACHTRAG_URL = "https://www.wa.de/hamm/tempel-gemeindehaus-eroeffnet-91234.html"
+NACHTRAG_QUELLE = {"url": NACHTRAG_URL, "titel": "Tempel eröffnet Gemeindehaus", "herausgeber": "Westfälischer Anzeiger",
+                   "datum": "", "sprache": "de", "art": "bericht"}
+NACHTRAG = {"arbeitstitel": "Tempel in Hamm eröffnet Gemeindehaus", "datum": "-200d", "rubrik": "community",
+            "ort": "Hamm", "bezug": "Treffpunkt der Community in NRW", "heikel": False, "quellen": [NACHTRAG_QUELLE],
+            "kernfakten": ["rund 2000 Gäste"], "bild_hinweis": "Einweihung"}
+NACHTRAG_TEXT = {NACHTRAG_URL: T.HAMM}
+INTERN = {**NACHTRAG, "arbeitstitel": "Interner Abruf", "quellen": [
+    NACHTRAG_QUELLE, {**NACHTRAG_QUELLE, "url": "http://169.254.169.254/latest/meta-data"}]}
+
+SZENARIEN += [
+    Szenario(55, "Nachtrag: Vorschlag → Story → Agent-Modus → Veröffentlichung mit Ereignisdatum und Vermerk",
+             "Nachtrag", [], texte=NACHTRAG_TEXT, nachher="nachtrag_bis_website",
+             einstellungen={"_ohne_modell": True, "_vorschlaege": [[NACHTRAG]]},
+             erwartet={"entwuerfe": 1, "aufrufe": 0, "veroeffentlicht": 1,
+                       "stats": {"nachtrag_angelegt": 1, "agent_entwuerfe": 1, "wp_posts": 1, "wp_datum_ereignis": 1,
+                                 "wp_vermerk": 1}}),
+    Szenario(56, "Nachtrag: Quelle nicht abrufbar → abgelehnt mit Grund", "Nachtrag", [], texte={},
+             nachher="nachtrag", einstellungen={"_ohne_modell": True, "_vorschlaege": [[NACHTRAG]]},
+             erwartet={"storys": 0, "aufrufe": 0, "dokumente": 0,
+                       "stats": {"nachtrag_abgelehnt": 1, "grund_nicht_abrufbar": 1}}),
+    Szenario(57, "Nachtrag: Adresse auf eine interne Adresse → abgelehnt, nichts abgerufen", "Nachtrag", [],
+             texte=NACHTRAG_TEXT, nachher="nachtrag", einstellungen={"_ohne_modell": True, "_vorschlaege": [[INTERN]]},
+             erwartet={"storys": 0, "aufrufe": 0, "dokumente": 0,
+                       "stats": {"nachtrag_abgelehnt": 1, "grund_intern": 1}}),
+    Szenario(58, "Nachtrag: derselbe Vorschlag zweimal → keine zweite Story", "Nachtrag", [], texte=NACHTRAG_TEXT,
+             nachher="nachtrag", einstellungen={"_ohne_modell": True, "_vorschlaege": [[NACHTRAG], [NACHTRAG]]},
+             erwartet={"storys": 1, "aufrufe": 0, "stats": {"nachtrag_angelegt": 1, "nachtrag_vorhanden": 1}}),
+]

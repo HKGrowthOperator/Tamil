@@ -508,7 +508,66 @@ def _website_stopp(ctx, sz: Szenario, now: datetime) -> dict:
             "protokoll_dienst": len(repo.aktionen_liste(store, aktion="veroeffentlicht", kanal="website"))}
 
 
+def _vorschlaege_annehmen(ctx, sz: Szenario, now: datetime) -> Counter:
+    """Nachtrag: je Runde in einstellungen["_vorschlaege"] einmal annehmen (Datum „-200d“ relativ zu heute)."""
+    from ..nachtrag import annehmen
+
+    stats: Counter = Counter()
+    for runde in sz.einstellungen.get("_vorschlaege", []):
+        vorschlaege = [{**v, "datum": _datum(v["datum"], now)} for v in runde]
+        out = annehmen(ctx.store, ctx.settings, {"vorschlaege": vorschlaege}, von="abnahme", ctx=ctx)
+        for e in out["ergebnisse"]:
+            stats[f"nachtrag_{e['ergebnis']}"] += 1
+            grund = e.get("grund") or ""
+            if e["ergebnis"] == "abgelehnt":
+                stats["grund_intern" if "interne Adresse" in grund else
+                      "grund_nicht_abrufbar" if "keine Quelle abrufbar" in grund else "grund_sonst"] += 1
+    return stats
+
+
+def _nachtrag(ctx, sz: Szenario, now: datetime) -> dict:
+    return dict(_vorschlaege_annehmen(ctx, sz, now))
+
+
+def _nachtrag_bis_website(ctx, sz: Szenario, now: datetime) -> dict:
+    """Vorschlag → Story → Agent-Modus (Export/Import mit Gate) → Freigabe → Plugin mit Ereignisdatum und Vermerk."""
+    from .. import publisher
+    from ..wordpress import TamilRadarClient
+
+    stats = _vorschlaege_annehmen(ctx, sz, now)
+    stats.update(_agent_v2(ctx, sz, now))
+
+    class Resp:
+        def __init__(self, data):
+            self.status_code, self._data, self.text = 201, data, ""
+
+        def json(self):
+            return self._data
+
+    class Session:
+        def __init__(self):
+            self.posts, self.headers, self.auth = [], {}, None
+
+        def request(self, method, url, timeout=None, json=None, **kw):
+            self.posts.append(json)
+            return Resp({"id": 900 + len(self.posts), "link": "https://www.tamil.de/p/", "status": "publish"})
+
+    session = Session()
+    store = ctx.store
+    for d in store.list_drafts("neu"):
+        store.set_status(d["id"], "freigeben", von="abnahme")
+    publisher.publish_approved(ctx.settings, store, wp=TamilRadarClient("https://www.tamil.de", "u", "p", session=session))
+    ereignis = {s["id"]: s["ereignis_datum"] for s in repo.stories(store) if s["herkunft"] == "nachtrag"}
+    for post in session.posts:
+        sid = post["meta"].get("radar_story_id")
+        stats["wp_posts"] += 1
+        stats["wp_datum_ereignis"] += int(bool(ereignis.get(sid)) and post.get("datum", "")[:10] == ereignis[sid])
+        stats["wp_vermerk"] += int("Nachtrag der Redaktion: Dieser Beitrag wurde im" in post["inhalt"])
+    return dict(stats)
+
+
 NACHHER: dict[str, Callable] = {
+    "nachtrag": _nachtrag, "nachtrag_bis_website": _nachtrag_bis_website,
     "scan_im_stopp": _scan_im_stopp, "website_stopp": _website_stopp,
     "kino_update": _kino_update, "kino_veroeffentlicht": _kino_nach_veroeffentlichung, "wp_timeout": _wp_timeout,
     "agent_v2": _agent_v2, "quelle_ergaenzen": _quelle_ergaenzen, "dossier": _dossier,
