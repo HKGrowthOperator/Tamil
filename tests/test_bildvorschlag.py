@@ -700,7 +700,7 @@ def test_freigabe_nur_mit_aktuellem_stand(settings):
                        follow_redirects=True)
     assert "inzwischen geändert" in resp.get_data(as_text=True)
     resp = client.post(f"/entwurf/{did}/status", data={"_csrf": token, "aktion": "freigeben"}, follow_redirects=True)
-    assert "inzwischen geändert" in resp.get_data(as_text=True)
+    assert "Diese Seite ist veraltet, bitte neu laden und noch einmal ansehen." in resp.get_data(as_text=True)
     with Store(settings.db_path) as store:
         assert store.get_draft(did)["status"] == "neu"
         aktuell = store.get_draft(did)["stand"]
@@ -721,7 +721,7 @@ def test_sammelfreigabe_gemischt(settings):
     daten = {"_csrf": token, "ids": [str(i) for i in ids], f"stand_{ids[0]}": str(staende[ids[0]]),
              f"stand_{ids[1]}": str(staende[ids[1]])}  # ids[2] ohne Stand
     html = client.post("/entwurf/sammelfreigabe", data=daten, follow_redirects=True).get_data(as_text=True)
-    assert "1 Entwurf freigegeben" in html and "inzwischen geändert" in html
+    assert "1 Entwurf freigegeben" in html and "inzwischen geändert" in html and "Seite ist veraltet" in html
     with Store(settings.db_path) as store:
         assert [store.get_draft(i)["status"] for i in ids] == ["freigegeben", "neu", "neu"]
 
@@ -733,9 +733,10 @@ def test_direkt_posten_nur_mit_aktuellem_stand(settings, route):
         alt = store.get_draft(did)["stand"]
         store.update_draft(did, titel="Vom Agenten geändert")
     client, token = _cockpit(settings)
-    for daten in ({"_csrf": token, "stand": str(alt)}, {"_csrf": token}):
+    for daten, meldung in (({"_csrf": token, "stand": str(alt)}, "inzwischen geändert"),
+                           ({"_csrf": token}, "Diese Seite ist veraltet")):
         html = client.post(f"/entwurf/{did}/{route}", data=daten, follow_redirects=True).get_data(as_text=True)
-        assert "inzwischen geändert" in html
+        assert meldung in html
         with Store(settings.db_path) as store:
             assert store.get_draft(did)["status"] == "neu"
     with Store(settings.db_path) as store:
@@ -886,3 +887,16 @@ def test_png_grenze_modi_und_thumbnail(settings):
     assert img.size[0] >= 1200 and img.size[1] >= 675 and (img.size[0] < 1500 or img.size[1] < 800)
     hoch = bildvorschlag._bild_lesen(jpeg(1000, 1900, fmt="PNG"), streng=True)
     assert hoch.size[0] >= 1200 or hoch.size == (1000, 1900)  # nie unter das Seitenformat verkleinern
+
+
+def test_bild_von_hand_loescht_keine_datei_eines_anderen_entwurfs(settings):
+    with Store(settings.db_path) as store:
+        _, did_a = story_mit_entwurf(store)
+        _, did_b = story_mit_entwurf(store, url=DOK + "-b")
+        settings.bilder_dir.mkdir(parents=True, exist_ok=True)
+        (settings.bilder_dir / "alt.jpg").write_bytes(b"x")
+    client, token = _cockpit(settings)
+    client.post(f"/entwurf/{did_a}/bild", data={"_csrf": token, "aktion": "karte"})
+    with Store(settings.db_path) as store:
+        assert store.get_draft(did_a)["bild_datei"] != "alt.jpg" and store.get_draft(did_b)["bild_datei"] == "alt.jpg"
+    assert (settings.bilder_dir / "alt.jpg").exists()

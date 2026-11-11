@@ -146,7 +146,7 @@ def set_status(draft_id: int):
         pruefe("freigeben")
         stand = _stand(request.form.get("stand"))
         if stand is None or (store.get_draft(draft_id) or {}).get("stand", stand) != stand:
-            flash(GEAENDERT, "fehler")  # ohne oder mit altem Stand: nichts ändern, noch einmal ansehen
+            flash(VERALTET if stand is None else GEAENDERT, "fehler")  # nichts ändern, noch einmal ansehen
             return redirect(url_for("ui.entwurf", draft_id=draft_id))
     try:
         neu = store.set_status(draft_id, aktion, von=_user(), stand=stand)
@@ -203,7 +203,7 @@ def sammelfreigabe():
             continue
         stand = _stand(request.form.get(f"stand_{draft_id}"))
         if stand is None or row.get("stand") != stand:
-            nicht.append(f"#{draft_id} „{row['titel'][:60]}“: {GEAENDERT}")
+            nicht.append(f"#{draft_id} „{row['titel'][:60]}“: {VERALTET if stand is None else GEAENDERT}")
             continue
         aktion = _freigeben(store, row, stand=stand)
         if not aktion:
@@ -416,7 +416,7 @@ def _publish(draft_id: int, status: str):
     row = _draft_or_404(draft_id)
     stand = _stand(request.form.get("stand"))
     if stand is None or row.get("stand") != stand:  # nur den Stand veröffentlichen, den die Seite gezeigt hat
-        flash(GEAENDERT, "fehler")
+        flash(VERALTET if stand is None else GEAENDERT, "fehler")
         return redirect(url_for("ui.entwurf", draft_id=draft_id))
     sperre = schalter.sperre(store, "website")
     if sperre is not None and status != "publish":
@@ -463,6 +463,7 @@ def _publish(draft_id: int, status: str):
 
 
 GEAENDERT = "Der Entwurf wurde inzwischen geändert, bitte noch einmal ansehen."
+VERALTET = "Diese Seite ist veraltet, bitte neu laden und noch einmal ansehen."  # Anfrage ganz ohne Stand
 
 
 def _stand(roh: str | None) -> int | None:
