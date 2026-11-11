@@ -1317,3 +1317,14 @@ def test_ergaenzen_fuehrt_hinweise_zusammen(settings):
         viele = [f"Fakt {n}" for n in range(12)]
         annehmen(store, settings, [vorschlag(story_id=sid, quellen=[quelle(URL2)], kernfakten=viele)])
         assert json.loads(repo.story(store, sid)["vorschlag"])["kernfakten"] == viele  # höchstens 12, neue zuerst
+
+
+def test_ergaenzen_heikel_stuft_nur_hoch(settings):
+    with Store(settings.db_path) as store:
+        sid = nachtrag_mit_luecke(store, settings)
+        assert repo.story(store, sid)["sensibel"] == 0
+        annehmen(store, settings, [vorschlag(story_id=sid, heikel=True, quellen=[quelle(URL3)])], seiten=SEITEN3)
+        assert repo.story(store, sid)["sensibel"] == 1
+        repo.story_setzen(store, sid, status="recherche_erforderlich")
+        e = annehmen(store, settings, [vorschlag(story_id=sid, heikel=False, quellen=[quelle(URL2)])])["ergebnisse"][0]
+        assert e["ergebnis"] == "ergaenzt" and repo.story(store, sid)["sensibel"] == 1

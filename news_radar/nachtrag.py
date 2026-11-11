@@ -581,8 +581,9 @@ def _ergaenzen(store: Store, v: Vorschlag, geholt: list, heute: date) -> dict:
             notiz = f"{alt[:900 - len(zusatz) - 3]} · {zusatz}" if alt else zusatz
             hinweise = _hinweise_zusammen(story.get("vorschlag"), v)
             # das Ereignisdatum der Story bleibt (ein Platzhalter-Datum im Vorschlag verschiebt den Beitrag nicht)
-            db.execute("UPDATE stories SET status = 'neu', notiz = ?, vorschlag = ?, aktualisiert = ? WHERE id = ?",
-                       (notiz, json.dumps(hinweise, ensure_ascii=False), ts, sid))
+            db.execute("UPDATE stories SET status = 'neu', notiz = ?, vorschlag = ?, sensibel = MAX(sensibel, ?), "
+                       "aktualisiert = ? WHERE id = ?",  # heikel stuft nur hoch, nie zurück
+                       (notiz, json.dumps(hinweise, ensure_ascii=False), 1 if v.heikel else 0, ts, sid))
             db.commit()
         except BaseException:
             db.rollback()
