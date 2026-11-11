@@ -147,10 +147,15 @@ def anker_seite(url: str) -> int:
     return int(m.group(1)) if m and int(m.group(1)) > 0 else 0
 
 
-def adresse_norm(url: str) -> str:
-    """Normalisierte Adresse; ein Seitenanker bleibt Teil davon (dieselbe Datei, andere Seite = andere Adresse)."""
+def adresse_norm(url: str, pdf: bool = True) -> str:
+    """Normalisierte Adresse. Bei PDF bleibt ein Seitenanker ab Seite 2 Teil davon (dieselbe Datei, andere Seite =
+    andere Adresse); „#page=1“ gilt wie ohne Anker, bei HTML zählt der Anker nie. Vor dem Abruf (Typ noch unbekannt)
+    wird mit pdf=True gesucht; die ankerlose Form prüft _dublette zusätzlich."""
     n = anker_seite(url)
-    return repo.normalize_url(url) + (f"#page={n}" if n else "")
+    return repo.normalize_url(url) + (f"#page={n}" if pdf and n > 1 else "")
+
+
+_OHNE_ANKER_SQL = "CASE WHEN instr({0}, '#page=') > 0 THEN substr({0}, 1, instr({0}, '#page=') - 1) ELSE {0} END"
 
 
 def ist_pdf(seite: net.Fetched) -> bool:
@@ -331,20 +336,25 @@ def _norm(titel: str) -> str:
     return " ".join(re.findall(r"\w+", (titel or "").lower()))
 
 
-def _uid(url: str) -> str:
-    return f"nachtrag:{adresse_norm(url)}"
+def _uid(url: str, pdf: bool = True) -> str:
+    return f"nachtrag:{adresse_norm(url, pdf)}"
 
 
-def _alle_adressen_belegt(store: Store, v: Vorschlag) -> int | None:
+def _alle_adressen_belegt(store: Store, v: Vorschlag, ohne_anker: bool = False) -> int | None:
     """Harte Dublette: **alle** Adressen des Vorschlags sind schon Beleg derselben Story. Eine einzelne gemeinsame
     Adresse (etwa ein Jahresbericht) reicht nicht. Vom Scan verworfene Radar-Storys zählen nicht (ein vergangenes
-    Ereignis ist dort oft als „vorbei“ verworfen worden); Nachtrag-Storys zählen in jedem Status."""
+    Ereignis ist dort oft als „vorbei“ verworfen worden); Nachtrag-Storys zählen in jedem Status.
+    `ohne_anker`: Vergleich ohne Seitenanker (dieselbe Datei, andere Seite)."""
     gemeinsam: set[int] | None = None
+    if ohne_anker:
+        bedingung = f"({_OHNE_ANKER_SQL.format('d.url_norm')} = ? OR {_OHNE_ANKER_SQL.format('d.uid')} = ?)"
+    else:
+        bedingung = "(d.url_norm = ? OR d.uid = ?)"
     for q in v.quellen:
+        schluessel = (adresse_norm(q.url, pdf=not ohne_anker), _uid(q.url, pdf=not ohne_anker))
         ids = {r[0] for r in store.db.execute(
             "SELECT DISTINCT s.id FROM source_documents d JOIN stories s ON s.id = d.story_id "
-            "WHERE (d.url_norm = ? OR d.uid = ?) AND NOT (s.herkunft = 'radar' AND s.status = 'verworfen')",
-            (adresse_norm(q.url), _uid(q.url)))}
+            f"WHERE {bedingung} AND NOT (s.herkunft = 'radar' AND s.status = 'verworfen')", schluessel)}
         gemeinsam = ids if gemeinsam is None else gemeinsam & ids
         if not gemeinsam:
             return None
@@ -373,6 +383,10 @@ def _dublette(store: Store, v: Vorschlag) -> dict | None:
     if sid:
         return {"ergebnis": "vorhanden", "story_id": sid, "grund": f"schon vorhanden: Story {sid}"}
     if not v.erzwingen:
+        sid = _alle_adressen_belegt(store, v, ohne_anker=True)
+        if sid:
+            return {"ergebnis": "vielleicht_vorhanden", "story_id": sid,
+                    "grund": f"vielleicht schon vorhanden: Story {sid} (dieselbe Adresse, andere Seite)"}
         sid = _aehnlicher_titel(store, v)
         if sid:
             return {"ergebnis": "vielleicht_vorhanden", "story_id": sid,
@@ -423,13 +437,13 @@ def _anlegen(store: Store, v: Vorschlag, geholt: list) -> dict:
                 "'nachtrag', ?, ?, ?, ?)",
                 (v.arbeitstitel, v.rubrik, v.ort, 1 if v.heikel else 0, f"Nachtrag · Bezug: {v.bezug}"[:900], v.datum,
                  json.dumps(hinweise, ensure_ascii=False), ts, ts)).lastrowid
-            for n, (q, text, seitentitel, gelesen) in enumerate(geholt, 1):
+            for n, (q, text, seitentitel, gelesen, pdf) in enumerate(geholt, 1):
                 # verlinkt wird die gelesene Adresse; die Ursprungsadresse bleibt als uid für die Dublettenprüfung
                 db.execute(
                     "INSERT INTO source_documents (story_id, doc_key, url, url_norm, uid, publisher, quelle, "
                     "published_at, retrieved_at, language, rights, primaer, art, titel, text, text_sha256, auszug) "
                     "VALUES (?,?,?,?,?,?, 'Nachtrag', ?,?,?, 'zitat', 1, 'volltext', ?,?,?,?)",
-                    (sid, f"Q{n}", gelesen, adresse_norm(gelesen), _uid(q.url),
+                    (sid, f"Q{n}", gelesen, adresse_norm(gelesen, pdf), _uid(q.url, pdf),
                      herausgeber(q.herausgeber, gelesen), _datum_streng(q.datum), ts, (q.sprache or "de")[:8],
                      seitentitel, text, hashlib.sha256(text.encode("utf-8")).hexdigest(), text[:500]))
             db.commit()
@@ -469,13 +483,13 @@ def _eins(store: Store, raw, nr: int, von: str, abruf: Callable, heute: date, uh
         if len(text or "") < VOLLTEXT_MIN:
             uebersprungen.append({"url": q.url, "grund": "ohne lesbaren Text"})
             continue
-        gelesen = seite.url or q.url
-        if anker_seite(q.url) and ist_pdf(seite) and "#" not in gelesen:
+        gelesen, pdf = seite.url or q.url, ist_pdf(seite)
+        if pdf and anker_seite(q.url) > 1 and "#" not in gelesen:
             gelesen += f"#page={anker_seite(q.url)}"  # der Link führt auf die gelesene Seite
-        if any(adresse_norm(g[3]) == adresse_norm(gelesen) for g in geholt):
+        if any(adresse_norm(g[3], g[4]) == adresse_norm(gelesen, pdf) for g in geholt):
             uebersprungen.append({"url": q.url, "grund": "doppelt im Vorschlag"})
             continue
-        geholt.append((q, text[:TEXT_MAX], seitentitel, gelesen))
+        geholt.append((q, text[:TEXT_MAX], seitentitel, gelesen, pdf))
     if not geholt:
         return {**out, "ergebnis": "abgelehnt", "grund": "keine Quelle abrufbar", "quellen_uebersprungen": uebersprungen}
     ergebnis = _anlegen(store, v, geholt)

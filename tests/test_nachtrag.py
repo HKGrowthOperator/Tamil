@@ -616,7 +616,7 @@ def pdf_abruf(dateien: dict, abrufe=None):
         ohne = url.split("#", 1)[0]
         if ohne in dateien:
             return net.Fetched(url=ohne, status=200, content=dateien[ohne], content_type="application/pdf")
-        return abruf_aus(SEITEN)(url, frist)
+        return abruf_aus(SEITEN)(ohne, frist)
     return abruf
 
 
@@ -663,7 +663,7 @@ def test_pdf_anker_page_beginnt_auf_seite_und_bleibt_in_der_adresse(settings):
                                                             arbeitstitel="Asylzahlen im ersten Halbjahr"),
                              {PDF_URL: datei})
         assert beide["ergebnis"] == "angelegt" and beide["quellen_geholt"] == 2
-        assert [d.url for d in repo.dokumente(store, beide["story_id"])] == [PDF_URL + "#page=1", PDF_URL + "#page=2"]
+        assert [d.url for d in repo.dokumente(store, beide["story_id"])] == [PDF_URL, PDF_URL + "#page=2"]  # 1 = ohne
         weg = pdf_annehmen(store, settings, pdf_vorschlag(PDF_URL + "#page=9", erzwingen=True,
                                                           arbeitstitel="Seite gibt es nicht"), {PDF_URL: datei})
         assert weg["ergebnis"] == "abgelehnt" and "keine Seite 9" in weg["quellen_uebersprungen"][0]["grund"]
@@ -851,3 +851,23 @@ def test_json_ld_ohne_schliessende_tags_ist_linear_und_begrenzt():
     assert "Film 19" in text and "Film 20" not in text  # höchstens 20 Blöcke
     gross = '<script type="application/ld+json">' + json.dumps({**film, "name": "y" * 250_000}) + "</script>"
     assert nachtrag.strukturierte_angaben(gross) == ""  # zusammen höchstens 200 KB
+
+
+def test_anker_nur_bei_pdf_und_page_1_wie_ohne_anker(settings):
+    """Befund P2: der Anker darf die Dublettenprüfung nicht aushebeln (HTML-Anker, #page=1)."""
+    anders = {"arbeitstitel": "Völlig anderes Thema aus Zürich", "ort": "Zürich"}
+    datei = pdf_bytes([SEITE1, SEITE2])
+    with Store(settings.db_path) as store:
+        html_sid = annehmen(store, settings, [vorschlag(quellen=[vorschlag()["quellen"][0]])])["ergebnisse"][0]["story_id"]
+        pdf_sid = pdf_annehmen(store, settings, pdf_vorschlag(PDF_URL), {PDF_URL: datei})["story_id"]
+        for url, sid in ((URL1 + "#page=1", html_sid), (PDF_URL + "#page=1", pdf_sid)):
+            e = pdf_annehmen(store, settings, pdf_vorschlag(url, **anders), {PDF_URL: datei})
+            assert e["ergebnis"] == "vorhanden" and e["story_id"] == sid, (url, e)
+        for url, sid in ((URL1 + "#page=2", html_sid), (PDF_URL + "#page=2", pdf_sid)):
+            e = pdf_annehmen(store, settings, pdf_vorschlag(url, **anders), {PDF_URL: datei})
+            assert e["ergebnis"] == "vielleicht_vorhanden" and e["story_id"] == sid, (url, e)
+        neu = pdf_annehmen(store, settings, pdf_vorschlag(URL1 + "#page=2", erzwingen=True, **anders), {PDF_URL: datei})
+        doc = repo.dokumente(store, neu["story_id"])[0]
+        assert neu["ergebnis"] == "angelegt" and "#page" not in store.db.execute(
+            "SELECT url_norm || uid FROM source_documents WHERE story_id = ?", (neu["story_id"],)).fetchone()[0]
+        assert doc.text == ARTIKEL1  # HTML: der Anker ändert nichts am Text
