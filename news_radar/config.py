@@ -61,6 +61,21 @@ class Regions:
     ausland: list[str] = field(default_factory=list)  # Orte außerhalb von DACH (gegen das Land der Quelle)
 
 
+# Bildquellen: fest gesperrt, auch wenn jemand sie ins Register schreibt (Host selbst oder eine Subdomain davon)
+BILD_GESPERRT = ("instagram.com", "facebook.com", "fbcdn.net", "cdninstagram.com", "tiktok.com", "x.com", "twitter.com",
+                 "twimg.com", "youtube.com", "ytimg.com", "pinimg.com", "shutterstock.com", "istockphoto.com",
+                 "alamy.com", "picture-alliance.com", "keystone-sda.ch", "keystone.ch", "dpa.com", "reuters.com",
+                 "afp.com", "apnews.com", "ap.org", "epa.eu")
+BILD_GESPERRT_MARKEN = ("pinterest", "gettyimages", "imago-images")  # unter jeder Endung (pinterest.de, gettyimages.ch …)
+
+
+def bild_host_gesperrt(host: str) -> bool:
+    host = (host or "").lower().rstrip(".").removeprefix("www.")
+    if any(host == g or host.endswith("." + g) for g in BILD_GESPERRT):
+        return True
+    return any(m in host.split(".") for m in BILD_GESPERRT_MARKEN)
+
+
 BILDQUELLEN_ARTEN = ("tempel", "verein", "veranstalter", "festival", "kino", "betrieb", "person", "sport")
 
 
@@ -79,6 +94,8 @@ class Bildquelle:
         for h in (host, *self.bild_hosts):
             if not h or h != h.lower() or h.startswith("www.") or any(c in h for c in "/:@ "):
                 raise ValueError(f"Bildquelle: Host klein und ohne www./Pfad angeben ({h!r})")
+            if bild_host_gesperrt(h):
+                raise ValueError(f"Bildquelle: Host {h} ist gesperrt (soziales Netzwerk oder Bildagentur)")
         if not (self.nachweis or "").strip() or not (self.betreiber or "").strip():
             raise ValueError(f"Bildquelle {host}: Nachweis und Betreiber dürfen nicht leer sein")
         if self.art not in BILDQUELLEN_ARTEN:

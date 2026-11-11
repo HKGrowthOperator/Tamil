@@ -32,7 +32,7 @@ from urllib.parse import unquote, urlencode, urljoin, urlsplit
 from PIL import Image, ImageOps
 
 from . import images, net, schalter
-from .config import Bildquelle, Settings
+from .config import BILD_GESPERRT, BILD_GESPERRT_MARKEN, Bildquelle, Settings, bild_host_gesperrt
 from .images import SIZE, FeaturedImage
 from .store import OPEN_STATES, Store, now_iso
 from .workflow import repo
@@ -55,12 +55,9 @@ COMMONS_MIME = ("image/jpeg", "image/png", "image/webp")
 COMMONS_API = "https://commons.wikimedia.org/w/api.php"
 COMMONS_BILDHOST = "upload.wikimedia.org"
 
-# Fest gesperrt, auch wenn jemand sie ins Register schreibt (Host selbst oder eine Subdomain davon)
-GESPERRT = ("instagram.com", "facebook.com", "fbcdn.net", "cdninstagram.com", "tiktok.com", "x.com", "twitter.com",
-            "twimg.com", "youtube.com", "ytimg.com", "pinimg.com", "shutterstock.com", "istockphoto.com", "alamy.com",
-            "picture-alliance.com", "keystone-sda.ch", "keystone.ch", "dpa.com", "reuters.com", "afp.com",
-            "apnews.com", "ap.org", "epa.eu")
-GESPERRT_MARKEN = ("pinterest", "gettyimages", "imago-images")  # unter jeder Endung (pinterest.de, gettyimages.ch …)
+# Fest gesperrt (soziale Netzwerke, Bildagenturen): Liste und Prüfung in config, damit schon das Register sie ablehnt
+GESPERRT = BILD_GESPERRT
+GESPERRT_MARKEN = BILD_GESPERRT_MARKEN
 
 AGENTUR = re.compile(
     r"(?<![a-z0-9])(dpa|keystone|sda|getty|gettyimages|reuters|afp|ap[ _-]?photo|imago|picture[ _-]?alliance|"
@@ -118,10 +115,7 @@ def _unter(host: str, basis: str) -> bool:
 
 
 def gesperrt(host: str) -> bool:
-    host = host.lower().removeprefix("www.")
-    if any(_unter(host, g) for g in GESPERRT):
-        return True
-    return any(m in host.split(".") for m in GESPERRT_MARKEN)
+    return bild_host_gesperrt(host)
 
 
 def _text(html: str) -> str:

@@ -18,7 +18,10 @@ from news_radar.workflow import repo
 DOK = "https://www.murugantemple.ch/aktuell/thaipusam-2026"
 TEMPEL = Bildquelle(host="murugantemple.ch", betreiber="Sri Sivasubramaniar Tempel Zürich", art="tempel",
                     nachweis="Foto: Sri Sivasubramaniar Tempel Zürich")
-GESPERRT_IM_REGISTER = Bildquelle(host="fbcdn.net", betreiber="Facebook", art="verein", nachweis="Foto: Facebook")
+# Am Laden vorbei ins Register geschrieben (load_settings lehnt das ab): die Prüfung beim Abruf greift trotzdem
+GESPERRT_IM_REGISTER = object.__new__(Bildquelle)
+GESPERRT_IM_REGISTER.__dict__.update(host="fbcdn.net", betreiber="Facebook", art="verein", nachweis="Foto: Facebook",
+                                     bild_hosts=[])
 OG = "https://www.murugantemple.ch/media/thaipusam-og.jpg"
 IMG = "https://www.murugantemple.ch/media/prozession-gross.jpg"
 COMMONS_SEITE = "https://commons.wikimedia.org/wiki/File:Thaipusam_Zurich_2019.jpg"
@@ -561,3 +564,15 @@ def test_register_aus_sources_toml():
         Bildquelle(host="www.example.ch", betreiber="X", art="verein", nachweis="Foto: X")
     with pytest.raises(ValueError):
         Bildquelle(host="example.ch", betreiber="X", art="verein", nachweis=" ")
+
+
+@pytest.mark.parametrize("host,bild_hosts", [("fbcdn.net", []), ("de.pinterest.com", []), ("keystone.ch", []),
+                                             ("tempel.ch", ["scontent.cdninstagram.com"])])
+def test_register_lehnt_gesperrte_hosts_beim_laden_ab(tmp_path, host, bild_hosts):
+    with pytest.raises(ValueError, match="gesperrt"):
+        Bildquelle(host=host, betreiber="X", art="verein", nachweis="Foto: X", bild_hosts=bild_hosts)
+    toml = tmp_path / "sources.toml"
+    toml.write_text(f'[[bildquellen]]\nhost = "{host}"\nbetreiber = "X"\nart = "verein"\nnachweis = "Foto: X"\n'
+                    f"bild_hosts = {json.dumps(bild_hosts)}\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="gesperrt"):
+        load_settings(toml)
