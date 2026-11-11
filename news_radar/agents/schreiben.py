@@ -18,8 +18,11 @@ from . import Kontext
 
 # Wörter im Haupttext je Längenregel (redaktion.md: Länge nach Stofflage)
 # Anweisung des Auftraggebers vom 11.11.2026: Beiträge von mehreren Minuten, wenn der belegte Stoff es trägt.
-LAENGEN = {"kurz": (80, 150), "normal": (250, 400), "lang": (450, 750), "event": (250, 400),
-           "event_lang": (350, 550), "kino": (250, 400), "kino_lang": (350, 550), "dossier": (600, 1000)}
+# event/kino = knapp (ohne Volltext), *_mittel = mittlerer Stoff, *_lang = viel Stoff.
+LAENGEN = {"kurz": (80, 150), "normal": (250, 400), "lang": (450, 750), "event": (150, 250), "kino": (150, 250),
+           "event_mittel": (250, 400), "kino_mittel": (250, 400), "event_lang": (350, 550), "kino_lang": (350, 550),
+           "dossier": (600, 1000)}
+KNAPP = ("kurz", "event", "kino")
 
 
 def stilbeispiele(typ: str, kategorie: str, n: int = 3) -> list[dict]:
@@ -47,8 +50,10 @@ def system_prompt(settings: Settings, typ: str, kategorie: str) -> str:
 def laenge_text(laenge: str, typ: str) -> str:
     lo, hi = LAENGEN.get(laenge, LAENGEN["normal"])
     zusatz = ""
-    if laenge == "kurz":
-        zusatz += " Wenig belegter Stoff: eine kurze Meldung, nichts auffüllen."
+    if laenge in KNAPP:
+        zusatz += " Wenig belegter Stoff oder kein Volltext: eine knappe Meldung, nichts auffüllen."
+        if typ in ("event", "kino"):
+            zusatz += " Wann, wo, Karten – nur, was belegt ist."
     else:
         zusatz += (" Aufbau: erster Absatz mit dem Kern (wer, was, wann, wo), dann <h2>-Zwischenüberschriften"
                    " (eine je Abschnitt, ab etwa 350 Wörtern), Hintergrund und Einordnung nur aus den Claims.")

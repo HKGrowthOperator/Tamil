@@ -66,6 +66,7 @@ tamil.de.
 | viel: acht und mehr bestätigte Aussagen aus mindestens zwei Quellen oder aus einer ergiebigen Primärquelle | 450–750 Wörter | 350–550 Wörter |
 | mittel: vier bis sieben bestätigte Aussagen | 250–400 Wörter | 250–400 Wörter |
 | wenig: unter vier bestätigten Aussagen | Kurzmeldung, 80–150 Wörter | Kurzmeldung, 80–150 Wörter |
+| ohne Volltext der Quelle (ab vier bestätigten Aussagen) | Kurzmeldung, 80–150 Wörter | knapp, 150–250 Wörter |
 
 Länge entsteht aus mehr belegten Einzelheiten und Zusammenhang, **nicht aus Wiederholung, Floskeln oder
 Vermutungen**. Wir strecken nie: Trägt der Stoff die Spanne nicht, bleibt der Text kürzer.
