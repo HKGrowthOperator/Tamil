@@ -463,18 +463,26 @@ def fetch_article_text(url: str, limit: int = 6000) -> str:
 _NOISE_START_RE = re.compile(r"<(script|style|noscript|template|svg|nav|header|footer|aside|form)\b", re.I)
 _ARTICLE_START_RE = re.compile(r"<(article)\b", re.I)
 _P_START_RE = re.compile(r"<(p)", re.I)  # wie bisher „<p[^>]*>“: auch <pre>, <param> – geschlossen mit </p>
-_SCHLUSS_WS_RE = re.compile(r"\s*>")
-_SCHLUSS_RE = re.compile(r">")
+_SCHLUSS_CACHE: dict[tuple[str, bool], re.Pattern] = {}
 
 
-def bloecke(text: str, start_re: re.Pattern, schluss_re: re.Pattern = _SCHLUSS_WS_RE, *, offen_bis_ende: bool = False):
+def _schluss_re(name: str, mit_leerraum: bool) -> re.Pattern:
+    """„</name\\s*>“ (bzw. „</name>“) für die Suche direkt im Original (re.I wie bisher, keine umgeformte Kopie)."""
+    key = (name, mit_leerraum)
+    if key not in _SCHLUSS_CACHE:
+        _SCHLUSS_CACHE[key] = re.compile("</" + re.escape(name) + (r"\s*>" if mit_leerraum else ">"), re.I)
+    return _SCHLUSS_CACHE[key]
+
+
+def bloecke(text: str, start_re: re.Pattern, mit_leerraum: bool = True, *, offen_bis_ende: bool = False):
     """Blöcke „<name …>Inhalt</name>“ in einem linearen Durchlauf: je (Anfang, Inhalt-Anfang, Inhalt-Ende, Ende).
 
-    Gleiches Ergebnis wie ein Regex „<name[^>]*>(.*?)</name\\s*>“ mit re.S über die Seite, aber ohne dessen quadratische
-    Laufzeit bei fehlenden Schluss-Tags (jedes öffnende Tag suchte bis zum Seitenende). `start_re` liefert den Namen in
-    Gruppe 1. Fehlt der Schluss: mit `offen_bis_ende` endet der Block am Seitenende, sonst ist Schluss (ein späteres
-    Tag desselben Namens fände ebenfalls keinen Schluss)."""
-    klein, pos, n = text.lower(), 0, len(text)
+    Gleiches Ergebnis wie ein Regex „<name[^>]*>(.*?)</name\\s*>“ mit re.S und re.I über die Seite, aber ohne dessen
+    quadratische Laufzeit bei fehlenden Schluss-Tags (jedes öffnende Tag suchte bis zum Seitenende). `start_re` liefert
+    den Namen in Gruppe 1. Gesucht wird nur im Original – Positionen aus einer kleingeschriebenen Kopie verrutschen
+    („İ“.lower() hat zwei Zeichen). Fehlt der Schluss: mit `offen_bis_ende` endet der Block am Seitenende, sonst ist
+    Schluss."""
+    pos, n = 0, len(text)
     while pos <= n:
         m = start_re.search(text, pos)
         if not m:
@@ -482,22 +490,13 @@ def bloecke(text: str, start_re: re.Pattern, schluss_re: re.Pattern = _SCHLUSS_W
         auf = text.find(">", m.end())
         if auf < 0:
             return
-        ziel, k, ende = "</" + m.group(1).lower(), auf + 1, None
-        while ende is None:
-            k = klein.find(ziel, k)
-            if k < 0:
-                break
-            e = schluss_re.match(klein, k + len(ziel))
-            if e:
-                ende = e.end()
-            else:
-                k += 1
-        if ende is None:
+        e = _schluss_re(m.group(1), mit_leerraum).search(text, auf + 1)
+        if e is None:
             if offen_bis_ende:
                 yield m.start(), auf + 1, n, n
             return
-        yield m.start(), auf + 1, k, ende
-        pos = ende
+        yield m.start(), auf + 1, e.start(), e.end()
+        pos = e.end()
 
 
 def ohne_rauschen(html_text: str) -> str:
@@ -522,7 +521,7 @@ def extract_paragraphs(html_text: str, limit: int = 6000) -> str:
     if artikel and artikel[2] - artikel[1] > 400:
         body = body[artikel[1]:artikel[2]]
     out: list[str] = []
-    for _, a, b, _ in bloecke(body, _P_START_RE, _SCHLUSS_RE):
+    for _, a, b, _ in bloecke(body, _P_START_RE, mit_leerraum=False):
         raw = body[a:b]
         p = clean_text(raw)
         if len(p) <= 60 or len(p) > 3000:

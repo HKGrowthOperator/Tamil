@@ -118,6 +118,7 @@ _TITEL_RES = (
     re.compile(r'<meta[^>]+property=["\']og:title["\'][^>]+content=["\']([^"\']*)["\']', re.I),
     re.compile(r'<meta[^>]+content=["\']([^"\']*)["\'][^>]+property=["\']og:title["\']', re.I),
 )
+_META_RE = re.compile(r"<meta", re.I)
 _TITLE_START_RE = re.compile(r"<(title)", re.I)  # wie bisher „<title[^>]*>“, aber linear (sources.bloecke)
 
 
@@ -126,12 +127,13 @@ def _og_titel(roh: str) -> list[str]:
     geprüft und je Tag höchstens bis kurz hinter sein Ende (ein Regex über die Rohseite wäre bei fehlendem „>“
     quadratisch)."""
     treffer: list[str | None] = [None] * len(_TITEL_RES)
-    klein, pos = roh.lower(), 0
-    while None in treffer:
-        i = klein.find("<meta", pos)
-        j = roh.find(">", i) if i >= 0 else -1
+    pos = 0
+    while None in treffer:  # nur im Original suchen: Positionen aus roh.lower() verrutschen bei „İ“
+        meta = _META_RE.search(roh, pos)
+        j = roh.find(">", meta.start()) if meta else -1
         if j < 0:
             break
+        i = meta.start()
         for n, rx in enumerate(_TITEL_RES):
             if treffer[n] is None:
                 m = rx.match(roh, i, j + 1000)
@@ -244,6 +246,8 @@ def _datum_streng(wert: str) -> str:
 
 
 LD_BLOECKE_MAX = 20
+_SCRIPT_START_RE = re.compile(r"<(script)\b", re.I)
+_LD_TYP_RE = re.compile(r"type\s*=\s*[\"']?application/ld\+json", re.I)
 LD_BYTES_MAX = 200_000  # Zeichen JSON-LD je Seite zusammen
 LD_TYPEN = {"Movie", "Event", "ScreeningEvent", "NewsArticle", "Article"}
 LD_FELDER = ("name", "description", "startDate", "endDate", "datePublished", "location.name", "location.address",
@@ -252,24 +256,20 @@ LD_KOPF = "Angaben der Seite (strukturierte Daten)"
 
 
 def _ld_bloecke(roh: str) -> list[str]:
-    """Inhalte der <script type="application/ld+json">-Blöcke – ein linearer Durchlauf mit str.find (kein Regex über
+    """Inhalte der <script type="application/ld+json">-Blöcke – linear über sources.bloecke (kein Regex über
     die Rohseite: „(.*?)</script>“ wäre bei fehlenden Schluss-Tags quadratisch). Höchstens LD_BLOECKE_MAX Blöcke und
     zusammen LD_BYTES_MAX Zeichen; ein Block darüber und alles danach wird ignoriert."""
-    klein, pos, bloecke, summe = roh.lower(), 0, [], 0
-    while len(bloecke) < LD_BLOECKE_MAX:
-        anfang = klein.find("<script", pos)
-        tag_ende = klein.find(">", anfang) if anfang >= 0 else -1
-        schluss = klein.find("</script", tag_ende) if tag_ende >= 0 else -1
-        if schluss < 0:
-            break  # kein vollständiger Block mehr
-        pos = schluss + 8
-        if re.search(r"type\s*=\s*[\"']?application/ld\+json", klein[anfang:tag_ende]):
-            inhalt = roh[tag_ende + 1:schluss]
-            summe += len(inhalt)
-            if summe > LD_BYTES_MAX:
-                break
-            bloecke.append(inhalt)
-    return bloecke
+    gefunden, summe = [], 0
+    for anfang, inhalt_anfang, inhalt_ende, _ in sources.bloecke(roh, _SCRIPT_START_RE):
+        if len(gefunden) >= LD_BLOECKE_MAX:
+            break
+        if not _LD_TYP_RE.search(roh, anfang, inhalt_anfang):
+            continue
+        summe += inhalt_ende - inhalt_anfang
+        if summe > LD_BYTES_MAX:
+            break
+        gefunden.append(roh[inhalt_anfang:inhalt_ende])
+    return gefunden
 
 
 def _ld_objekte(roh: str):

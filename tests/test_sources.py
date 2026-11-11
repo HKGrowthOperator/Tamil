@@ -285,6 +285,23 @@ def test_extract_paragraphs_gleich_wie_bisher_auf_echten_seiten():
         assert sources.extract_paragraphs(seite, 300) == _alt_extract(seite, 300)
 
 
+_ABSATZ = "<p>Dies ist ein langer Absatz mit genug Text, damit er die Mindestlänge sicher überschreitet.</p>"
+_TUERKISCH = {  # „İ“.lower() hat zwei Zeichen: Positionen aus einer kleingeschriebenen Kopie verrutschen
+    "i-im-absatz": "<p>Präsident Erdoğan besuchte heute İstanbul und traf dort Vertreter der Gemeinde.</p>"
+                   "<p>Zweiter Absatz mit genügend Text, damit er sicher über der Mindestlänge liegt, heute.</p>",
+    "i-in-navigation": "<nav>" + "İzmir İstanbul " * 50 + "</nav>" + _ABSATZ * 3,
+    "i-vor-artikel": "İ" * 600 + "<article>" + _ABSATZ * 8 + "</article>",
+    "i-vor-skript": "İ" * 300 + "<script>var a='<p>kein Absatz, aber lang genug um zu zählen, falls er durchrutscht</p>';"
+                    "</script>" + _ABSATZ * 2,
+}
+
+
+@pytest.mark.parametrize("name", sorted(_TUERKISCH))
+def test_extract_paragraphs_mit_tuerkischem_i_wie_bisher(name):
+    seite = _TUERKISCH[name]
+    assert _alt_extract(seite) and sources.extract_paragraphs(seite) == _alt_extract(seite)
+
+
 def test_extract_paragraphs_linear_bei_nicht_geschlossenen_tags():
     import time
 

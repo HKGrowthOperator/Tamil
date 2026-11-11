@@ -924,3 +924,14 @@ def test_seite_lesen_linear_bei_nicht_geschlossenen_tags():
           '<meta property="og:title" content="Erstes Muster"><title>Titel</title>')
     assert nachtrag.seite_lesen(net.Fetched(url=URL1, status=200, content=og.encode(),
                                             content_type="text/html"))[1] == "Erstes Muster"  # Reihenfolge wie bisher
+
+
+def test_tuerkisches_i_verschiebt_keine_fundstellen():
+    """Befund P1 (zweite Prüfung): „İ“.lower() hat zwei Zeichen; JSON-LD und og:title nach einem İ müssen bleiben."""
+    vorn = "<nav>" + "İstanbul İzmir " * 40 + "</nav>"
+    og = vorn + '<meta property="og:title" content="Kulturabend in İstanbul"><title>Andere</title>'
+    assert nachtrag.seite_lesen(net.Fetched(url=URL1, status=200, content=og.encode(),
+                                            content_type="text/html"))[1] == "Kulturabend in İstanbul"
+    ld = vorn + kino_html(KINO_LD)
+    assert "name: Jailer 2" in nachtrag.strukturierte_angaben(ld)
+    assert nachtrag.strukturierte_angaben(ld) == nachtrag.strukturierte_angaben(kino_html(KINO_LD))
