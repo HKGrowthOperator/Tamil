@@ -41,6 +41,7 @@ WEB_MAX_BILDER = 5
 WEB_FRIST_GESAMT = 90.0
 FRIST_ABRUF = 20.0
 MAX_BYTES = 8_000_000
+MAX_PIXEL = 40_000_000
 MIN_BREITE = 800
 MIN_KANTE = 400
 VERHAELTNIS = (0.5, 2.4)
@@ -174,18 +175,25 @@ def _abrufen(store: Store, abruf: Callable, url: str, *, bild: bool, uhr, ende, 
 
 
 def _bild_lesen(daten: bytes, *, streng: bool) -> Image.Image:
-    """Datei prüfen: JPEG, PNG oder WebP, Breite ≥ 800; streng (Quelle): kürzere Kante ≥ 400, Verhältnis 0,5–2,4."""
+    """Datei prüfen: JPEG, PNG oder WebP, Breite ≥ 800; streng (Quelle): kürzere Kante ≥ 400, Verhältnis 0,5–2,4.
+    Abmessungen werden vor dem Dekodieren geprüft (höchstens MAX_PIXEL, gegen Dekompressionsbomben); JPEGs werden per
+    draft() schon beim Dekodieren verkleinert, alles andere vor dem Zuschnitt per thumbnail()."""
     if len(daten) > MAX_BYTES:
         raise Abgelehnt(f"Bild größer als {MAX_BYTES // 1_000_000} MB")
     try:
-        img = Image.open(io.BytesIO(daten))
-        img.load()
-    except (OSError, ValueError, Image.DecompressionBombError):
-        raise Abgelehnt("Bild nicht lesbar") from None
-    if img.format not in FORMATE:
-        raise Abgelehnt(f"Dateityp nicht erlaubt ({img.format or 'unbekannt'}; nur JPEG, PNG, WebP)")
-    img = ImageOps.exif_transpose(img)
+        img = Image.open(io.BytesIO(daten), formats=sorted(FORMATE))
+    except Image.DecompressionBombError:
+        raise Abgelehnt("Bild zu groß (zu viele Pixel)") from None
+    except (OSError, ValueError):
+        raise Abgelehnt("Dateityp nicht erlaubt oder Bild nicht lesbar (nur JPEG, PNG, WebP)") from None
     breite, hoehe = img.size
+    if breite * hoehe > MAX_PIXEL:
+        raise Abgelehnt(f"Bild zu groß ({breite}×{hoehe} Pixel, höchstens {MAX_PIXEL // 1_000_000} Mio.)")
+    try:
+        if img.getexif().get(0x0112) in (5, 6, 7, 8):  # EXIF-Drehung um 90°: Breite und Höhe tauschen
+            breite, hoehe = hoehe, breite
+    except (OSError, ValueError):
+        pass
     if breite < MIN_BREITE:
         raise Abgelehnt(f"Bild zu klein ({breite} Pixel breit, mindestens {MIN_BREITE})")
     if streng:
@@ -193,6 +201,15 @@ def _bild_lesen(daten: bytes, *, streng: bool) -> Image.Image:
             raise Abgelehnt(f"Bild zu klein (kürzere Kante {min(breite, hoehe)} Pixel, mindestens {MIN_KANTE})")
         if not VERHAELTNIS[0] <= breite / hoehe <= VERHAELTNIS[1]:
             raise Abgelehnt(f"Seitenverhältnis {breite / hoehe:.2f} passt nicht (Logo, Icon oder Banner?)")
+    ziel = (SIZE[0] * 2, SIZE[1] * 2)
+    try:
+        if img.format == "JPEG":
+            img.draft("RGB", ziel)
+        img.load()
+        img = ImageOps.exif_transpose(img)
+        img.thumbnail((max(ziel) * 2, max(ziel) * 2), Image.Resampling.LANCZOS)
+    except (OSError, ValueError, Image.DecompressionBombError):
+        raise Abgelehnt("Bild nicht lesbar") from None
     return img
 
 

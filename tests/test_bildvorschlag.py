@@ -295,6 +295,24 @@ def test_quelle_abgelehnt(settings, eintrag, seiten, grund):
         assert store.get_draft(did)["bild_origin"] == "karte"
 
 
+def test_bild_zu_viele_pixel_wird_nicht_dekodiert(settings, monkeypatch):
+    buf = io.BytesIO()
+    Image.new("1", (9000, 5000)).save(buf, "PNG")  # 45 Mio. Pixel, stark komprimierbar (wenige KB)
+    assert len(buf.getvalue()) < 1_000_000
+    geladen = []
+    original = Image.Image.load
+    monkeypatch.setattr(Image.Image, "load", lambda self: geladen.append(self.size) or original(self))
+    with Store(settings.db_path) as store:
+        sid, _ = story_mit_entwurf(store)
+        e = eins(store, settings, {"story_id": sid, "weg": "quelle", "seite_url": DOK},
+                 {DOK: seite(), OG: buf.getvalue()})
+        assert e["ergebnis"] == "abgelehnt" and "zu groß" in e["grund"], e
+        assert (9000, 5000) not in geladen
+        e = eins(store, settings, {"story_id": sid, "weg": "quelle", "seite_url": DOK},
+                 {DOK: seite(), OG: jpeg(fmt="GIF")})
+        assert e["ergebnis"] == "abgelehnt" and "Dateityp" in e["grund"], e
+
+
 def test_quelle_bild_auf_eigenem_cdn_ueber_bild_hosts(settings):
     settings.bildquellen = [Bildquelle(host=TEMPEL.host, betreiber=TEMPEL.betreiber, art="tempel",
                                        nachweis=TEMPEL.nachweis, bild_hosts=["cdn.example.org"])]
