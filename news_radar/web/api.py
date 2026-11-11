@@ -49,14 +49,25 @@ def _abgewiesen():
 def agent_export():
     if not _berechtigt(g.settings.agent_token):
         return _abgewiesen()
-    from ..agent_v2 import paket_v2
+    from ..agent_v2 import ids_lesen, paket_v2, uebersicht
 
     try:
         limit = min(20, max(1, int(request.args.get("limit", 5))))
     except ValueError:
         limit = 5
+    nur = request.args.get("nur")
+    if nur not in (None, "uebersicht"):
+        return jsonify({"fehler": "nur: erlaubt ist „uebersicht“"}), 400
+    ids = None
+    if "ids" in request.args:
+        try:
+            ids = ids_lesen(request.args.get("ids", ""))
+        except ValueError as exc:
+            return jsonify({"fehler": str(exc)}), 400
     try:
-        return jsonify(paket_v2(get_store(), g.settings, limit=limit))
+        if nur == "uebersicht":  # nur die Liste, ohne Dokumente und ohne Abruf nach außen
+            return jsonify(uebersicht(get_store(), ids=ids))
+        return jsonify(paket_v2(get_store(), g.settings, limit=limit, ids=ids))
     except schalter.Gestoppt as exc:
         return _angehalten(exc)
 

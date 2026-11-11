@@ -328,3 +328,76 @@ def test_agent_api_export_and_import_need_their_own_token(app, monkeypatch):
     assert client.post("/api/agent/import", data="kein json", headers=agent, content_type="text/plain").status_code == 400
     assert client.post("/api/agent/import", json={"ergebnisse": None}, headers=agent).status_code == 400
     assert client.post("/api/agent/import", json={"ergebnisse": []}).status_code == 401
+
+
+def _offene_ids(app):
+    from news_radar.agent_v2 import fuer_agent_offen
+
+    with _store(app) as store:
+        alle = [s["id"] for s in repo.stories(store)]
+        return [i for i in alle if fuer_agent_offen(store, i)], [i for i in alle if not fuer_agent_offen(store, i)]
+
+
+def _agent_client(app):
+    app.extensions["settings"].agent_token = "agent-token-mit-genug-zeichen"
+    return app.test_client(), {"Authorization": "Bearer agent-token-mit-genug-zeichen"}
+
+
+def test_agent_export_mit_ids_liefert_genau_die_offenen_in_dieser_reihenfolge(app, monkeypatch):
+    from news_radar.agents import research
+
+    monkeypatch.setattr(research, "belege_sammeln", lambda ctx, story: [])  # kein Netz im Test
+    client, agent = _agent_client(app)
+    with _store(app) as store:  # eine zweite offene Story, damit die Reihenfolge prüfbar ist
+        jobs.einreihen(store, repo.story_anlegen(store, typ="news", titel="Zweite offene Story"), "recherche")
+    offen, zu = _offene_ids(app)
+    assert len(offen) >= 2 and zu, (offen, zu)
+    auswahl = [offen[-1], zu[0], 99999, offen[0], offen[-1]]  # fertige und fremde fallen heraus, doppelte einmal
+    resp = client.get("/api/agent/export?ids=" + ",".join(map(str, auswahl)), headers=agent)
+    assert resp.status_code == 200
+    assert [p["story_id"] for p in resp.get_json()["storys"]] == [offen[-1], offen[0]]
+    ohne = client.get("/api/agent/export?limit=1", headers=agent).get_json()  # ohne Parameter wie bisher
+    assert len(ohne["storys"]) == 1 and "regeln_recherche" in ohne
+
+
+@pytest.mark.parametrize("wert", ["abc", "", "1,,2", "1;2", "-3", "١٢", "1 ,2", "1234567890",
+                                  ",".join(str(i) for i in range(1, 22))])
+def test_agent_export_ungueltige_ids_400(app, monkeypatch, wert):
+    from news_radar.agents import research
+
+    monkeypatch.setattr(research, "belege_sammeln", lambda ctx, story: pytest.fail("kein Abruf bei 400"))
+    client, agent = _agent_client(app)
+    resp = client.get("/api/agent/export", query_string={"ids": wert}, headers=agent)
+    assert resp.status_code == 400 and resp.get_json()["fehler"]
+
+
+def test_agent_export_uebersicht_ohne_dokumente_und_ohne_abruf(app, monkeypatch):
+    from news_radar import schalter
+    from news_radar.agents import research
+
+    monkeypatch.setattr(research, "belege_sammeln", lambda ctx, story: pytest.fail("Übersicht ruft nichts ab"))
+    client, agent = _agent_client(app)
+    offen, _ = _offene_ids(app)
+    data = client.get("/api/agent/export?nur=uebersicht", headers=agent).get_json()
+    assert sorted(s["story_id"] for s in data["storys"]) == sorted(offen)
+    assert set(data["storys"][0]) == {"story_id", "typ", "herkunft", "titel", "kategorie", "ereignis_datum", "erstellt"}
+    assert "dokumente" not in data["storys"][0] and "regeln_recherche" not in data
+    assert client.get("/api/agent/export?nur=alles", headers=agent).status_code == 400
+    with _store(app) as store:
+        schalter.setzen(store, "redaktion", True, wer="test", grund="Test")
+    assert client.get("/api/agent/export?nur=uebersicht", headers=agent).status_code == 409
+
+
+def test_cli_agent_export_mit_ids(app, monkeypatch, tmp_path):
+    import json
+
+    from news_radar.__main__ import main
+    from news_radar.agents import research
+
+    monkeypatch.setattr(research, "belege_sammeln", lambda ctx, story: [])
+    monkeypatch.setenv("RADAR_DATA_DIR", str(app.extensions["settings"].data_dir))
+    offen, zu = _offene_ids(app)
+    mappe = tmp_path / "mappe.json"
+    assert main(["agent", "export", "--v2", "--file", str(mappe), "--ids", f"{zu[0]},{offen[0]}"]) == 0
+    assert [p["story_id"] for p in json.loads(mappe.read_text(encoding="utf-8"))["storys"]] == [offen[0]]
+    assert main(["agent", "export", "--v2", "--file", str(mappe), "--ids", "abc"]) == 2

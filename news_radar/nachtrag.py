@@ -13,7 +13,10 @@ Stopp). Dublettenprüfung und Anlegen laufen zusammen in einer Schreibtransaktio
 
 Der Radar holt jede Quelle selbst (net.safe_get, Stopp-Schalter vor jedem Abruf) und legt sie als source_documents
 an; Text und Titel eines Dokuments stammen nie aus dem Vorschlag, sondern aus der abgerufenen Seite (Titel aus
-og:title bzw. <title>, sonst leer) – sonst würde ein erfundener „Titel“ zur Fundstelle im Gate. Danach steht die Story im Agent-Export
+og:title bzw. <title>, sonst leer) – sonst würde ein erfundener „Titel“ zur Fundstelle im Gate. PDF-Quellen
+(Drucksachen, Urteile, Berichte) liest pypdf: höchstens 8 MB, ab der Seite aus dem Anker „#page=N“ (sonst Seite 1),
+höchstens 40 Seiten bzw. TEXT_MAX; Titel aus den PDF-Metadaten; der Anker bleibt im Link und in der Adresse für die
+Dublettenprüfung. Danach steht die Story im Agent-Export
 (Herkunft „nachtrag“, Status „neu“, kein Job) und läuft durch Import und Gate wie jede andere.
 """
 
@@ -21,11 +24,16 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
+import subprocess
+import sys
+import threading
 import time
 from datetime import date, timedelta
 from difflib import SequenceMatcher
 from html import unescape
+from pathlib import Path
 from typing import Callable
 from urllib.parse import urlsplit
 
@@ -111,13 +119,111 @@ class VorschlagAbgelehnt(ValueError):
 _TITEL_RES = (
     re.compile(r'<meta[^>]+property=["\']og:title["\'][^>]+content=["\']([^"\']*)["\']', re.I),
     re.compile(r'<meta[^>]+content=["\']([^"\']*)["\'][^>]+property=["\']og:title["\']', re.I),
-    re.compile(r"<title[^>]*>(.*?)</title\s*>", re.I | re.S),
 )
+_META_RE = re.compile(r"<meta", re.I)
+_TITLE_START_RE = re.compile(r"<(title)", re.I)  # wie bisher „<title[^>]*>“, aber linear (sources.bloecke)
+
+
+def _og_titel(roh: str) -> list[str]:
+    """og:title je Muster (erster Treffer auf der Seite, Muster in Reihenfolge) – linear: nur an „<meta“-Stellen
+    geprüft und je Tag höchstens bis kurz hinter sein Ende (ein Regex über die Rohseite wäre bei fehlendem „>“
+    quadratisch)."""
+    treffer: list[str | None] = [None] * len(_TITEL_RES)
+    pos = 0
+    while None in treffer:  # nur im Original suchen: Positionen aus roh.lower() verrutschen bei „İ“
+        meta = _META_RE.search(roh, pos)
+        j = roh.find(">", meta.start()) if meta else -1
+        if j < 0:
+            break
+        i = meta.start()
+        for n, rx in enumerate(_TITEL_RES):
+            if treffer[n] is None:
+                m = rx.match(roh, i, j + 1000)
+                if m:
+                    treffer[n] = m.group(1)
+        pos = j + 1
+    return [t for t in treffer if t is not None]
+
+
+SEITE_MAX = 3_000_000  # Bytes je HTML-Seite
+PDF_MAX = 8_000_000  # Bytes je PDF-Datei
+PDF_SEITEN_MAX = 40  # gelesen ab der Anker-Seite, bis TEXT_MAX (pdf_kind.SEITEN_MAX)
+PDF_TYPES = ("application/pdf",)
+ANKER_JE_DATEI = 2  # Quellen je Vorschlag, die auf dieselbe Datei zeigen (verschiedene Seiten)
+_ANKER_RE = re.compile(r"#page=([0-9]{1,5})\Z")
+
+
+class Unlesbar(ValueError):
+    """Die Quelle ist abgerufen, aber nicht lesbar; der Text der Ausnahme ist der Grund für den Bericht."""
 
 
 def standard_abruf(url: str, frist: float | None = None) -> net.Fetched:
-    """Seite holen: SSRF-Schutz, Umleitungen geprüft, Größenlimit (net.safe_get)."""
-    return net.safe_get(url, accept=net.TEXT_TYPES, timeout=8, max_bytes=3_000_000, frist=frist)
+    """Seite oder PDF holen: SSRF-Schutz, Umleitungen geprüft, Größenlimit (net.safe_get) schon beim Lesen nach dem
+    gemeldeten Content-Type: PDF höchstens PDF_MAX, alles andere höchstens SEITE_MAX Bytes."""
+    return net.safe_get(url, accept=net.TEXT_TYPES + PDF_TYPES, timeout=8, max_bytes=SEITE_MAX,
+                        max_bytes_je_typ={PDF_TYPES[0]: PDF_MAX}, frist=frist)
+
+
+def anker_seite(url: str) -> int:
+    """Seite aus dem Anker „#page=N“ (ab 1); 0 ohne Anker."""
+    m = _ANKER_RE.search(url or "")
+    return int(m.group(1)) if m and int(m.group(1)) > 0 else 0
+
+
+def adresse_norm(url: str, pdf: bool = True) -> str:
+    """Normalisierte Adresse. Bei PDF bleibt ein Seitenanker ab Seite 2 Teil davon (dieselbe Datei, andere Seite =
+    andere Adresse); „#page=1“ gilt wie ohne Anker, bei HTML zählt der Anker nie. Vor dem Abruf (Typ noch unbekannt)
+    wird mit pdf=True gesucht; die ankerlose Form prüft _dublette zusätzlich."""
+    n = anker_seite(url)
+    return repo.normalize_url(url) + (f"#page={n}" if pdf and n > 1 else "")
+
+
+_OHNE_ANKER_SQL = "CASE WHEN instr({0}, '#page=') > 0 THEN substr({0}, 1, instr({0}, '#page=') - 1) ELSE {0} END"
+
+
+def ist_pdf(seite: net.Fetched) -> bool:
+    return seite.content_type.lower().startswith(PDF_TYPES) or seite.content[:5] == b"%PDF-"
+
+
+PDF_ZEIT_MAX = 20.0  # Sekunden je PDF im Kindprozess (höchstens; sonst der Rest der Frist)
+PDF_BEFEHL = [sys.executable, "-I", str(Path(__file__).with_name("pdf_kind.py"))]  # austauschbar (Tests)
+PDF_PARALLEL = 2  # Kinder zugleich je Prozess (je höchstens 300 MB, pdf_kind.SPEICHER_MAX)
+_PDF_PLAETZE = threading.BoundedSemaphore(PDF_PARALLEL)
+
+
+def pdf_lesen(daten: bytes, ab_seite: int = 1, frist: float | None = None) -> tuple[str, str, str]:
+    """(Text, Titel, Hinweis „gekürzt …“ oder leer) eines PDF ab `ab_seite`, höchstens PDF_SEITEN_MAX Seiten bzw. TEXT_MAX Zeichen; Titel nur aus den
+    Metadaten (/Title). Gelesen wird in einem eigenen Prozess (pdf_kind.py) mit hartem Zeitlimit (Rest der Frist,
+    höchstens PDF_ZEIT_MAX) und Speichergrenze – eine präparierte Datei hält den Web-Worker nicht auf.
+    Verschlüsselt, kaputt, zu groß oder zu aufwendig → Unlesbar (nie eine andere Ausnahme)."""
+    if len(daten) > PDF_MAX:
+        raise Unlesbar(f"PDF zu groß (mehr als {PDF_MAX // 1_000_000} MB)")
+    ende = time.monotonic() + (PDF_ZEIT_MAX if frist is None else min(PDF_ZEIT_MAX, frist - time.monotonic()))
+    if ende <= time.monotonic() or not _PDF_PLAETZE.acquire(timeout=ende - time.monotonic()):
+        raise Unlesbar("PDF zu aufwendig (Zeitlimit)")  # höchstens PDF_PARALLEL Kinder zugleich
+    try:
+        zeit = ende - time.monotonic()
+        if zeit <= 0:
+            raise Unlesbar("PDF zu aufwendig (Zeitlimit)")
+        lauf = subprocess.run([*PDF_BEFEHL, str(max(1, ab_seite))], input=daten, stdout=subprocess.PIPE,
+                              stderr=subprocess.DEVNULL, timeout=zeit, check=False,  # Warnungen nicht sammeln
+                              env={"PATH": os.environ.get("PATH", "/usr/bin:/bin"), "LANG": "C.UTF-8"})
+    except subprocess.TimeoutExpired:
+        raise Unlesbar("PDF zu aufwendig (Zeitlimit)") from None
+    except OSError:
+        raise Unlesbar("PDF nicht lesbar (Leser nicht startbar)") from None
+    finally:
+        _PDF_PLAETZE.release()
+    try:
+        out = json.loads(lauf.stdout.decode("utf-8"))
+    except ValueError:
+        out = None
+    if lauf.returncode != 0 or not isinstance(out, dict):
+        raise Unlesbar("PDF zu aufwendig")  # vom Speicherlimit beendet o. Ä.
+    if out.get("fehler"):
+        raise Unlesbar(str(out["fehler"])[:120])
+    return (str(out.get("text") or "")[:TEXT_MAX], sources.clean_text(str(out.get("titel") or ""))[:300],
+            str(out.get("hinweis") or "")[:120])
 
 
 def _flach(s: str) -> str:
@@ -150,16 +256,114 @@ def _datum_streng(wert: str) -> str:
     return wert
 
 
-def seite_lesen(seite: net.Fetched) -> tuple[str, str]:
-    """(Text, Titel) der abgerufenen Seite. Der Titel kommt nur aus og:title oder <title>, sonst bleibt er leer."""
+LD_BLOECKE_MAX = 20
+_SCRIPT_START_RE = re.compile(r"<(script)\b", re.I)
+_LD_TYP_RE = re.compile(r"type\s*=\s*[\"']?application/ld\+json", re.I)
+LD_BYTES_MAX = 200_000  # Zeichen JSON-LD je Seite zusammen
+LD_TYPEN = {"Movie", "Event", "ScreeningEvent", "NewsArticle", "Article"}
+LD_FELDER = ("name", "description", "startDate", "endDate", "datePublished", "location.name", "location.address",
+             "director", "actor", "duration", "inLanguage", "offers.price")
+LD_KOPF = "Angaben der Seite (strukturierte Daten)"
+
+
+def _ld_bloecke(roh: str) -> list[str]:
+    """Inhalte der <script type="application/ld+json">-Blöcke – linear über sources.bloecke (kein Regex über
+    die Rohseite: „(.*?)</script>“ wäre bei fehlenden Schluss-Tags quadratisch). Höchstens LD_BLOECKE_MAX Blöcke und
+    zusammen LD_BYTES_MAX Zeichen; ein Block darüber und alles danach wird ignoriert."""
+    gefunden, summe = [], 0
+    for anfang, inhalt_anfang, inhalt_ende, _ in sources.bloecke(roh, _SCRIPT_START_RE):
+        if len(gefunden) >= LD_BLOECKE_MAX:
+            break
+        if not _LD_TYP_RE.search(roh, anfang, inhalt_anfang):
+            continue
+        summe += inhalt_ende - inhalt_anfang
+        if summe > LD_BYTES_MAX:
+            break
+        gefunden.append(roh[inhalt_anfang:inhalt_ende])
+    return gefunden
+
+
+def _ld_objekte(roh: str):
+    for block in _ld_bloecke(roh):
+        try:
+            daten = json.loads(block.strip())
+        except (ValueError, RecursionError):  # kaputt oder zu tief verschachtelt: Block überspringen
+            continue
+        stapel = daten if isinstance(daten, list) else [daten]
+        for obj in stapel:
+            if isinstance(obj, dict):
+                yield obj
+                stapel_graph = obj.get("@graph")
+                if isinstance(stapel_graph, list):
+                    yield from (o for o in stapel_graph if isinstance(o, dict))
+
+
+LD_TIEFE_MAX = 5
+
+
+def _ld_werte(wert, tiefe: int = 0) -> list[str]:
+    """Wörtliche Werte: Text und Zahlen unverändert, Personen/Orte über name, Adressen über ihre Felder; tiefer als
+    LD_TIEFE_MAX Ebenen wird nicht gelesen."""
+    if isinstance(wert, (str, int, float)) and not isinstance(wert, bool):
+        return [sources.clean_text(unescape(str(wert)))]
+    if tiefe >= LD_TIEFE_MAX:
+        return []
+    if isinstance(wert, list):
+        return [w for x in wert for w in _ld_werte(x, tiefe + 1)]
+    if isinstance(wert, dict):
+        if "name" in wert:
+            return _ld_werte(wert["name"], tiefe + 1)
+        teile = [w for k in ("streetAddress", "postalCode", "addressLocality", "addressRegion", "addressCountry")
+                 for w in _ld_werte(wert.get(k), tiefe + 1)]
+        return [" ".join(teile)] if teile else []
+    return []
+
+
+def strukturierte_angaben(roh: str) -> str:
+    """Notanker für Seiten ohne lesbaren Text: Felder aus JSON-LD (Movie, Event, ScreeningEvent, NewsArticle, Article),
+    nur wörtlich übernommene Werte, höchstens TEXT_MAX. Leer, wenn nichts Passendes da ist."""
+    zeilen = []
+    for obj in _ld_objekte(roh):
+        typ = obj.get("@type")
+        if not ({typ} if isinstance(typ, str) else set(typ) if isinstance(typ, list) else set()) & LD_TYPEN:
+            continue
+        for feld in LD_FELDER:
+            wert = obj
+            for teil in feld.split("."):
+                wert = (wert[0] if wert else None) if isinstance(wert, list) else wert
+                wert = wert.get(teil) if isinstance(wert, dict) else None
+            werte = [w for w in _ld_werte(wert) if w]
+            if werte:
+                zeilen.append(f"{feld}: {', '.join(werte)}")
+        zeilen.append("")
+    text = "\n".join(zeilen).strip()
+    return f"{LD_KOPF}\n\n{text}"[:TEXT_MAX] if text else ""
+
+
+def seite_lesen(seite: net.Fetched, adresse: str = "", frist: float | None = None) -> tuple[str, str, str, str]:
+    """(Text, Titel, Art, Hinweis) der abgerufenen Seite. Der Titel kommt nur aus og:title oder <title>, sonst bleibt er leer.
+    PDF: Text ab der Seite aus dem Anker „#page=N“ der Adresse (sonst Seite 1), Titel aus den Metadaten.
+    Art „volltext“; „daten“, wenn der Text nur aus strukturierten Angaben (JSON-LD) stammt – kein sichtbarer
+    Seitentext: Aussagen bleiben belegbar, die Längenregel macht daraus aber keinen langen Beitrag."""
+    if ist_pdf(seite):
+        text, titel, hinweis = pdf_lesen(seite.content, max(1, anker_seite(adresse or seite.url)), frist=frist)
+        return text, titel, "volltext", hinweis
     roh = seite.text
     titel = ""
-    for rx in _TITEL_RES:
-        m = rx.search(roh)
-        if m and m.group(1).strip():
-            titel = sources.clean_text(unescape(m.group(1)))[:300]
+    kandidaten = _og_titel(roh)
+    block = next(sources.bloecke(roh, _TITLE_START_RE), None)
+    if block:
+        kandidaten.append(roh[block[1]:block[2]])
+    for wert in kandidaten:
+        if wert.strip():
+            titel = sources.clean_text(unescape(wert))[:300]
             break
-    return sources.extract_paragraphs(roh, TEXT_MAX), titel
+    text = sources.extract_paragraphs(roh, TEXT_MAX)
+    if len(text or "") < VOLLTEXT_MIN:  # ohne JavaScript kein Text: strukturierte Angaben als Notanker
+        daten = strukturierte_angaben(roh)
+        if daten:
+            return daten, titel, "daten", ""
+    return text, titel, "volltext", ""
 
 
 class Zeitlimit(Exception):
@@ -176,20 +380,25 @@ def _norm(titel: str) -> str:
     return " ".join(re.findall(r"\w+", (titel or "").lower()))
 
 
-def _uid(url: str) -> str:
-    return f"nachtrag:{repo.normalize_url(url)}"
+def _uid(url: str, pdf: bool = True) -> str:
+    return f"nachtrag:{adresse_norm(url, pdf)}"
 
 
-def _alle_adressen_belegt(store: Store, v: Vorschlag) -> int | None:
+def _alle_adressen_belegt(store: Store, v: Vorschlag, ohne_anker: bool = False) -> int | None:
     """Harte Dublette: **alle** Adressen des Vorschlags sind schon Beleg derselben Story. Eine einzelne gemeinsame
     Adresse (etwa ein Jahresbericht) reicht nicht. Vom Scan verworfene Radar-Storys zählen nicht (ein vergangenes
-    Ereignis ist dort oft als „vorbei“ verworfen worden); Nachtrag-Storys zählen in jedem Status."""
+    Ereignis ist dort oft als „vorbei“ verworfen worden); Nachtrag-Storys zählen in jedem Status.
+    `ohne_anker`: Vergleich ohne Seitenanker (dieselbe Datei, andere Seite)."""
     gemeinsam: set[int] | None = None
+    if ohne_anker:
+        bedingung = f"({_OHNE_ANKER_SQL.format('d.url_norm')} = ? OR {_OHNE_ANKER_SQL.format('d.uid')} = ?)"
+    else:
+        bedingung = "(d.url_norm = ? OR d.uid = ?)"
     for q in v.quellen:
+        schluessel = (adresse_norm(q.url, pdf=not ohne_anker), _uid(q.url, pdf=not ohne_anker))
         ids = {r[0] for r in store.db.execute(
             "SELECT DISTINCT s.id FROM source_documents d JOIN stories s ON s.id = d.story_id "
-            "WHERE (d.url_norm = ? OR d.uid = ?) AND NOT (s.herkunft = 'radar' AND s.status = 'verworfen')",
-            (repo.normalize_url(q.url), _uid(q.url)))}
+            f"WHERE {bedingung} AND NOT (s.herkunft = 'radar' AND s.status = 'verworfen')", schluessel)}
         gemeinsam = ids if gemeinsam is None else gemeinsam & ids
         if not gemeinsam:
             return None
@@ -218,6 +427,10 @@ def _dublette(store: Store, v: Vorschlag) -> dict | None:
     if sid:
         return {"ergebnis": "vorhanden", "story_id": sid, "grund": f"schon vorhanden: Story {sid}"}
     if not v.erzwingen:
+        sid = _alle_adressen_belegt(store, v, ohne_anker=True)
+        if sid:
+            return {"ergebnis": "vielleicht_vorhanden", "story_id": sid,
+                    "grund": f"vielleicht schon vorhanden: Story {sid} (dieselbe Adresse, andere Seite)"}
         sid = _aehnlicher_titel(store, v)
         if sid:
             return {"ergebnis": "vielleicht_vorhanden", "story_id": sid,
@@ -268,15 +481,15 @@ def _anlegen(store: Store, v: Vorschlag, geholt: list) -> dict:
                 "'nachtrag', ?, ?, ?, ?)",
                 (v.arbeitstitel, v.rubrik, v.ort, 1 if v.heikel else 0, f"Nachtrag · Bezug: {v.bezug}"[:900], v.datum,
                  json.dumps(hinweise, ensure_ascii=False), ts, ts)).lastrowid
-            for n, (q, text, seitentitel, gelesen) in enumerate(geholt, 1):
+            for n, (q, text, seitentitel, gelesen, pdf, art) in enumerate(geholt, 1):
                 # verlinkt wird die gelesene Adresse; die Ursprungsadresse bleibt als uid für die Dublettenprüfung
                 db.execute(
                     "INSERT INTO source_documents (story_id, doc_key, url, url_norm, uid, publisher, quelle, "
                     "published_at, retrieved_at, language, rights, primaer, art, titel, text, text_sha256, auszug) "
-                    "VALUES (?,?,?,?,?,?, 'Nachtrag', ?,?,?, 'zitat', 1, 'volltext', ?,?,?,?)",
-                    (sid, f"Q{n}", gelesen, repo.normalize_url(gelesen), _uid(q.url),
+                    "VALUES (?,?,?,?,?,?, 'Nachtrag', ?,?,?, 'zitat', 1, ?, ?,?,?,?)",
+                    (sid, f"Q{n}", gelesen, adresse_norm(gelesen, pdf), _uid(q.url, pdf),
                      herausgeber(q.herausgeber, gelesen), _datum_streng(q.datum), ts, (q.sprache or "de")[:8],
-                     seitentitel, text, hashlib.sha256(text.encode("utf-8")).hexdigest(), text[:500]))
+                     art, seitentitel, text, hashlib.sha256(text.encode("utf-8")).hexdigest(), text[:500]))
             db.commit()
         except BaseException:
             db.rollback()
@@ -296,22 +509,55 @@ def _eins(store: Store, raw, nr: int, von: str, abruf: Callable, heute: date, uh
     if dublette:
         return {**out, **dublette}
     geholt, uebersprungen = [], []
+    abgerufen: dict[str, net.Fetched | Exception] = {}  # je Datei (ohne Anker) nur ein Abruf je Vorschlag
+    je_datei: dict[str, int] = {}
+    gesehen: set[str] = set()
+    hinweise: list[dict] = []  # z. B. „gekürzt …“ je Quelle
     for q in v.quellen:
+        if adresse_norm(q.url) in gesehen:  # vor dem Abruf und Lesen; nach Umleitungen prüft die Stelle unten
+            uebersprungen.append({"url": q.url, "grund": "doppelt im Vorschlag"})
+            continue
+        gesehen.add(adresse_norm(q.url))
+        datei = repo.normalize_url(q.url)
+        je_datei[datei] = je_datei.get(datei, 0) + 1
+        if je_datei[datei] > ANKER_JE_DATEI:
+            uebersprungen.append({"url": q.url, "grund": "höchstens zwei Seiten je Datei"})
+            continue
         jetzt = uhr()
         if ende is not None and jetzt >= ende:
             raise Zeitlimit
-        schalter.pruefen(store, "redaktion")  # unmittelbar vor dem Abruf
         frist = jetzt + frist_abruf if ende is None else min(jetzt + frist_abruf, ende)
+        if datei not in abgerufen:
+            schalter.pruefen(store, "redaktion")  # unmittelbar vor dem Abruf
+            try:
+                abgerufen[datei] = abruf(q.url, frist=frist)
+            except Exception as exc:  # noqa: BLE001 – unten wie jeder Abruffehler behandelt
+                abgerufen[datei] = exc
         try:
-            seite = abruf(q.url, frist=frist)
-            text, seitentitel = seite_lesen(seite)
+            seite = abgerufen[datei]
+            if isinstance(seite, Exception):
+                raise seite
+            # Lesen (PDF) mit eigener Frist ab jetzt (höchstens PDF_ZEIT_MAX), nur durch das Gesamtende begrenzt
+            frist_lesen = None if ende is None else time.monotonic() + (ende - uhr())
+            text, seitentitel, art, hinweis = seite_lesen(seite, q.url, frist=frist_lesen)
+        except Unlesbar as exc:
+            uebersprungen.append({"url": q.url, "grund": str(exc)[:80]})
+            continue
         except Exception as exc:  # noqa: BLE001 – eine kaputte Seite stoppt den Vorschlag nicht
             uebersprungen.append({"url": q.url, "grund": f"nicht abrufbar ({type(exc).__name__})"[:80]})
             continue
         if len(text or "") < VOLLTEXT_MIN:
             uebersprungen.append({"url": q.url, "grund": "ohne lesbaren Text"})
             continue
-        geholt.append((q, text[:TEXT_MAX], seitentitel, seite.url or q.url))
+        gelesen, pdf = seite.url or q.url, ist_pdf(seite)
+        if pdf and anker_seite(q.url) > 1 and "#" not in gelesen:
+            gelesen += f"#page={anker_seite(q.url)}"  # der Link führt auf die gelesene Seite
+        if any(adresse_norm(g[3], g[4]) == adresse_norm(gelesen, pdf) for g in geholt):
+            uebersprungen.append({"url": q.url, "grund": "doppelt im Vorschlag"})
+            continue
+        geholt.append((q, text[:TEXT_MAX], seitentitel, gelesen, pdf, art))
+        if hinweis:
+            hinweise.append({"url": q.url, "hinweis": hinweis})
     if not geholt:
         return {**out, "ergebnis": "abgelehnt", "grund": "keine Quelle abrufbar", "quellen_uebersprungen": uebersprungen}
     ergebnis = _anlegen(store, v, geholt)
@@ -321,8 +567,9 @@ def _eins(store: Store, raw, nr: int, von: str, abruf: Callable, heute: date, uh
     repo.aktion(store, wer=von[:60], aktion="nachtrag_angelegt", story_id=sid, kanal="redaktion", ausloeser="agent",
                 notiz=f"{len(geholt)} Quellen geholt, {len(uebersprungen)} übersprungen")
     store.event("nachtrag", story=sid, quellen=len(geholt), uebersprungen=len(uebersprungen), von=von[:60])
-    return {**out, "ergebnis": "angelegt", "story_id": sid, "quellen_geholt": len(geholt),
-            "quellen_uebersprungen": uebersprungen}
+    out = {**out, "ergebnis": "angelegt", "story_id": sid, "quellen_geholt": len(geholt),
+           "quellen_uebersprungen": uebersprungen}
+    return {**out, "quellen_hinweise": hinweise} if hinweise else out
 
 
 ERGEBNISSE = ("angelegt", "vorhanden", "vielleicht_vorhanden", "abgelehnt", "nicht_bearbeitet")

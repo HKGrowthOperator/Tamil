@@ -460,9 +460,60 @@ def fetch_article_text(url: str, limit: int = 6000) -> str:
     return extract_paragraphs(page, limit)
 
 
-_NOISE_BLOCK_RE = re.compile(
-    r"<(script|style|noscript|template|svg|nav|header|footer|aside|form)\b[^>]*>.*?</\1\s*>", re.S | re.I
-)
+_NOISE_START_RE = re.compile(r"<(script|style|noscript|template|svg|nav|header|footer|aside|form)\b", re.I)
+_ARTICLE_START_RE = re.compile(r"<(article)\b", re.I)
+_P_START_RE = re.compile(r"<(p)", re.I)  # wie bisher „<p[^>]*>“: auch <pre>, <param> – geschlossen mit </p>
+_SCHLUSS_CACHE: dict[tuple[str, bool], re.Pattern] = {}
+
+
+def _schluss_re(name: str, mit_leerraum: bool) -> re.Pattern:
+    """„</name\\s*>“ (bzw. „</name>“) für die Suche direkt im Original (re.I wie bisher, keine umgeformte Kopie)."""
+    key = (name, mit_leerraum)
+    if key not in _SCHLUSS_CACHE:
+        _SCHLUSS_CACHE[key] = re.compile("</" + re.escape(name) + (r"\s*>" if mit_leerraum else ">"), re.I)
+    return _SCHLUSS_CACHE[key]
+
+
+def bloecke(text: str, start_re: re.Pattern, mit_leerraum: bool = True):
+    """Blöcke „<name …>Inhalt</name>“ in einem linearen Durchlauf: je (Anfang, Inhalt-Anfang, Inhalt-Ende, Ende).
+
+    Gleiches Ergebnis wie re.finditer mit „<name\\b[^>]*>(.*?)</name\\s*>“ (re.S, re.I) über die Seite, aber ohne
+    dessen quadratische Laufzeit bei fehlenden Schluss-Tags. `start_re` liefert den Namen in Gruppe 1. Wie beim Regex
+    wird ein Start ohne Schluss übersprungen und weitergesucht (der Rest der Seite bleibt); linear bleibt es über eine
+    Merkliste je Name (ab dort gibt es keinen Schluss mehr) und das gemerkte nächste „>“. Gesucht wird nur im
+    Original – Positionen aus einer kleingeschriebenen Kopie verrutschen („İ“.lower() hat zwei Zeichen)."""
+    pos, n = 0, len(text)
+    kein_schluss_ab: dict[str, int] = {}
+    auf = -1
+    while pos <= n:
+        m = start_re.search(text, pos)
+        if not m:
+            return
+        if auf < m.end():
+            auf = text.find(">", m.end())
+            if auf < 0:
+                return  # kein „>“ mehr: kein Start kann mehr passen
+        name = m.group(1).lower()
+        e = None
+        if name not in kein_schluss_ab:  # die Starts kommen in steigender Folge, also auch auf + 1
+            e = _schluss_re(m.group(1), mit_leerraum).search(text, auf + 1)
+            if e is None:
+                kein_schluss_ab[name] = auf + 1
+        if e is None:
+            pos = m.start() + 1  # wie der Regex: diesen Start überspringen, weitersuchen
+            continue
+        yield m.start(), auf + 1, e.start(), e.end()
+        pos = e.end()
+
+
+def ohne_rauschen(html_text: str) -> str:
+    """Skripte, Styles, Navigation, Kopf, Fuß, Formulare usw. durch ein Leerzeichen ersetzen (linear)."""
+    teile, pos = [], 0
+    for anfang, _, _, ende in bloecke(html_text, _NOISE_START_RE):
+        teile += [html_text[pos:anfang], " "]
+        pos = ende
+    teile.append(html_text[pos:])
+    return "".join(teile)
 _CODE_HINT_RE = re.compile(r"[{};]\s*[a-z#.@-]|\bfunction\s*\(|document\.|window\.|@context|@media|\.tdi_", re.I)
 
 
@@ -472,12 +523,13 @@ def extract_paragraphs(html_text: str, limit: int = 6000) -> str:
     Bevorzugt den <article>-Block; Absätze mit CSS/JS-Mustern (viele Klammern, Semikolons, JSON-LD) fliegen raus,
     damit die Faktenbasis für Writer und Agent nicht mit Theme-Code vollläuft.
     """
-    body = _NOISE_BLOCK_RE.sub(" ", html_text)
-    m = re.search(r"<article\b[^>]*>(.*?)</article\s*>", body, flags=re.S | re.I)
-    if m and len(m.group(1)) > 400:
-        body = m.group(1)
+    body = ohne_rauschen(html_text)
+    artikel = next(bloecke(body, _ARTICLE_START_RE), None)
+    if artikel and artikel[2] - artikel[1] > 400:
+        body = body[artikel[1]:artikel[2]]
     out: list[str] = []
-    for raw in re.findall(r"<p[^>]*>(.*?)</p>", body, flags=re.S | re.I):
+    for _, a, b, _ in bloecke(body, _P_START_RE, mit_leerraum=False):
+        raw = body[a:b]
         p = clean_text(raw)
         if len(p) <= 60 or len(p) > 3000:
             continue

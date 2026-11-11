@@ -15,6 +15,11 @@ nur aus bestätigten Claims, Belege je `<p>`, Links nur auf Quellen der Story.
 - Token: Umgebungsvariable `RADAR_AGENT_TOKEN` oder eine Datei mit Rechten 600 (Pfad vom Auftraggeber der Runde). Nie
   ausgeben, nie in Dateien im Repo.
 - Mappe: `curl -fsS -H "Authorization: Bearer $RADAR_AGENT_TOKEN" "$RADAR/api/agent/export?limit=5" > <scratch>/mappe.json`
+- Arbeit aufteilen (mehrere Sitzungen gleichzeitig): erst `…/api/agent/export?nur=uebersicht` (Liste der offenen
+  Storys ohne Dokumente, kein Abruf), dann je Sitzung eigene Storys mit `…/api/agent/export?ids=3,4,5` holen (höchstens
+  20, nur offene, in dieser Reihenfolge; Fertiges oder Fremdes fällt still heraus). Lokal: `agent export --v2 --ids 3,4,5`.
+- Dokumente mit `art: "daten"` sind strukturierte Angaben einer Seite (JSON-LD), kein sichtbarer Text: Aussagen
+  daraus sind belegbar, aber die Länge bleibt knapp (Längenregel); nichts aus ihnen ausschmücken.
 - Import: `curl -fsS -X POST -H "Authorization: Bearer $RADAR_AGENT_TOKEN" -H "Content-Type: application/json" --data @<scratch>/ergebnis.json "$RADAR/api/agent/import?von=Claude%20(Research)"`
 - Kontrolle: `python tools/radar_bericht.py` (Lese-Token).
 

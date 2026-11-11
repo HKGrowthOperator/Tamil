@@ -61,9 +61,45 @@ _OFFEN_SQL = ("SELECT s.* FROM stories s WHERE s.status NOT IN ('fertig', 'verwo
               "AND NOT EXISTS (SELECT 1 FROM workflow_jobs l WHERE l.story_id = s.id AND l.status = 'laeuft')")
 
 
-def _offene_storys(store: Store, limit: int) -> list[dict]:
-    rows = store.db.execute(_OFFEN_SQL + " ORDER BY s.prioritaet DESC, s.id LIMIT ?", (limit,))
-    return [dict(r) for r in rows]
+MAX_IDS = 20  # Auswahl je Export (ids=3,4,5)
+UEBERSICHT_MAX = 200
+
+
+def _offene_storys(store: Store, limit: int, ids: list[int] | None = None) -> list[dict]:
+    """Offene Storys nach Priorität – oder genau die offenen aus `ids`, in dieser Reihenfolge (Rest fällt heraus)."""
+    if ids is None:
+        rows = store.db.execute(_OFFEN_SQL + " ORDER BY s.prioritaet DESC, s.id LIMIT ?", (limit,))
+        return [dict(r) for r in rows]
+    ids = list(dict.fromkeys(ids))[:MAX_IDS]
+    if not ids:
+        return []
+    rows = {r["id"]: dict(r) for r in store.db.execute(
+        _OFFEN_SQL + f" AND s.id IN ({','.join('?' * len(ids))})", ids)}
+    return [rows[i] for i in ids if i in rows]
+
+
+def ids_lesen(wert: str) -> list[int]:
+    """„3,4,5“ → [3, 4, 5]. Nur ASCII-Ziffern (höchstens 9 je Nummer), höchstens MAX_IDS; sonst ValueError."""
+    if not re.fullmatch(r"[0-9]{1,9}(?:,[0-9]{1,9})*", wert or ""):
+        raise ValueError("ids: durch Komma getrennte Story-Nummern erwartet (nur Ziffern)")
+    ids = [int(x) for x in wert.split(",")]
+    if len(ids) > MAX_IDS:
+        raise ValueError(f"ids: höchstens {MAX_IDS} Story-Nummern je Export")
+    return ids
+
+
+def uebersicht(store: Store, *, limit: int = UEBERSICHT_MAX, ids: list[int] | None = None) -> dict:
+    """Nur die Liste der offenen Storys – ohne Dokumente, ohne Abruf nach außen –, damit mehrere Sitzungen die Arbeit
+    aufteilen können. Hält der Schalter „redaktion“ an, wirft schalter.Gestoppt wie der Export."""
+    from . import schalter
+
+    schalter.pruefen(store, "redaktion")
+    storys = _offene_storys(store, max(1, min(limit, UEBERSICHT_MAX)), ids)
+    return {"stand": datetime.now(timezone.utc).isoformat(timespec="minutes"), "version": 2,
+            "storys": [{"story_id": s["id"], "typ": s["typ"], "herkunft": s.get("herkunft") or "radar",
+                        "titel": s["titel"], "kategorie": s["kategorie"],
+                        "ereignis_datum": s.get("ereignis_datum") or "", "erstellt": s["erstellt"]}
+                       for s in storys]}
 
 
 def fuer_agent_offen(store: Store, story_id: int) -> bool:
@@ -83,15 +119,18 @@ def absaetze_ohne_beleg(inhalt_html: str, belege, bestaetigt: set[str]) -> list[
     return [n for n in range(1, anzahl + 1) if n not in gedeckt]
 
 
-def export_v2(store: Store, settings: Settings, file: Path, *, limit: int = 10, ctx: Kontext | None = None) -> dict:
-    data = paket_v2(store, settings, limit=limit, ctx=ctx)
+def export_v2(store: Store, settings: Settings, file: Path, *, limit: int = 10, ctx: Kontext | None = None,
+              ids: list[int] | None = None) -> dict:
+    data = paket_v2(store, settings, limit=limit, ctx=ctx, ids=ids)
     file.parent.mkdir(parents=True, exist_ok=True)
     file.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
     return data
 
 
-def paket_v2(store: Store, settings: Settings, *, limit: int = 10, ctx: Kontext | None = None) -> dict:
+def paket_v2(store: Store, settings: Settings, *, limit: int = 10, ctx: Kontext | None = None,
+             ids: list[int] | None = None) -> dict:
     """Die Aufgabenmappe als dict: offene Storys mit Dokumenten (Volltext), Längenregel und allen Regeln.
+    Mit `ids` genau diese Storys, soweit offen (fuer_agent_offen), in dieser Reihenfolge.
     Hält der Schalter „redaktion“ an, wirft schalter.Gestoppt, bevor irgendetwas abgerufen wird."""
     from . import schalter
 
@@ -100,7 +139,7 @@ def paket_v2(store: Store, settings: Settings, *, limit: int = 10, ctx: Kontext 
     pakete = []
     from .workflow.orchestrator import termin_vorbei
 
-    for story in _offene_storys(store, limit):
+    for story in _offene_storys(store, limit, ids):
         nachtrag = story.get("herkunft") == "nachtrag"
         # Nachtrag: die Quellen hat der Radar beim Annehmen schon geholt; ein vergangener Termin ist hier gewollt
         docs = _nachtrag_volltexte(ctx, story) if nachtrag else research.belege_sammeln(ctx, story)

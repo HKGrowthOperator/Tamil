@@ -272,3 +272,16 @@ SZENARIEN += [
              nachher="nachtrag", einstellungen={"_ohne_modell": True, "_vorschlaege": [[NACHTRAG], [NACHTRAG]]},
              erwartet={"storys": 1, "aufrufe": 0, "stats": {"nachtrag_angelegt": 1, "nachtrag_vorhanden": 1}}),
 ]
+
+# Nummer 65: 59–64 belegt ein paralleler Auftrag; die Lücke ist gewollt
+NACHTRAG_PDF_URL = "https://dserver.bundestag.de/btd/20/999/2099999.pdf"
+NACHTRAG_PDF = {**NACHTRAG, "arbeitstitel": "Lichterfest im Tempel Hamm laut Drucksache", "quellen": [
+    {**NACHTRAG_QUELLE, "url": NACHTRAG_PDF_URL + "#page=2", "herausgeber": "Deutscher Bundestag", "art": "drucksache"}]}
+SZENARIEN += [
+    Szenario(65, "Nachtrag: PDF-Quelle mit #page=2 → Text ab Seite 2, Anker im Link → Agent-Modus → Website",
+             "Nachtrag", [], texte={NACHTRAG_PDF_URL: T.HAMM}, nachher="nachtrag_pdf",
+             einstellungen={"_ohne_modell": True, "_vorschlaege": [[NACHTRAG_PDF]]},
+             erwartet={"entwuerfe": 1, "aufrufe": 0, "veroeffentlicht": 1, "dokumente": 1,
+                       "stats": {"nachtrag_angelegt": 1, "agent_entwuerfe": 1, "wp_posts": 1, "pdf_anker": 1,
+                                 "pdf_wortlaut": 1, "pdf_titel": 1}}),
+]

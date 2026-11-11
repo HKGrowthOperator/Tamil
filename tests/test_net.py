@@ -83,6 +83,14 @@ def test_size_limit_and_content_type():
     declared = Session({"https://example.com/d": Resp(200, b"x", headers={"Content-Length": "999999"})})
     with pytest.raises(net.ResponseTooLarge):
         net.safe_get("https://example.com/d", session=declared, resolve=PUBLIC, max_bytes=1000)
+    # Grenze je Content-Type: HTML wird schon beim Lesen nach 1000 Bytes abgebrochen, PDF darf 3000
+    je_typ = {"application/pdf": 3000}
+    gross_html = Session({"https://example.com/h": Resp(200, b"x" * 2000, headers={"Content-Type": "text/html"})})
+    with pytest.raises(net.ResponseTooLarge):
+        net.safe_get("https://example.com/h", session=gross_html, resolve=PUBLIC, max_bytes=1000, max_bytes_je_typ=je_typ)
+    pdf = Session({"https://example.com/p": Resp(200, b"x" * 2000, headers={"Content-Type": "application/PDF"})})
+    assert len(net.safe_get("https://example.com/p", session=pdf, resolve=PUBLIC, max_bytes=1000,
+                            max_bytes_je_typ=je_typ).content) == 2000
     html = Session({"https://example.com/bild.jpg": Resp(200, b"<html>")})
     with pytest.raises(net.WrongContentType):
         net.safe_get("https://example.com/bild.jpg", session=html, resolve=PUBLIC, accept=net.IMAGE_TYPES)

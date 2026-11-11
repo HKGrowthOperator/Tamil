@@ -562,3 +562,507 @@ def test_cockpit_zeigt_nachtrag_und_filter_rueckblick(settings):
     assert "Nachtrag · 14.03.2026" in rueckblick and "Normale Meldung aus dem Radar" not in rueckblick
     assert "Rückblick" in feed
     assert "Nachtrag · 14.03.2026" in client.get(f"/entwurf/{did}").get_data(as_text=True)
+
+
+# ---- PDF-Quellen (Rückblick 2026: Drucksachen, Urteile, Berichte, Statistiken) ----------------------------
+
+PDF_URL = "https://dserver.bundestag.de/btd/20/123/2012345.pdf"
+SEITE1 = ["Deutscher Bundestag Drucksache 20/12345, 20. Wahlperiode.",
+          "Antwort der Bundesregierung auf die Kleine Anfrage zur Lage der tamilischen Gemeinden.",
+          "Vorbemerkung der Fragesteller: Die Fragen betreffen Abschiebungen nach Sri Lanka.",
+          "Die Bundesregierung beantwortet die Fragen im Einvernehmen mit dem Auswärtigen Amt.",
+          "Die Zahlen stammen aus dem Ausländerzentralregister zum Stichtag 30. Juni 2026."]
+SEITE2 = ["Im ersten Halbjahr 2026 stellten 412 Personen aus Sri Lanka einen Erstantrag beim Bundes-",
+          "amt für Migration und Flüchtlinge. Die Schutzquote lag bei 18,4 Prozent.",
+          "Die Zahl der Abschiebungen nach Sri-",
+          "Lanka betrug im selben Zeitraum 37, davon 21 im Rahmen von Sammelabschiebungen.",
+          "Weitere Angaben zu Dublin-Verfahren enthält die Anlage zu dieser Antwort der Bundesregierung."]
+
+
+def pdf_bytes(seiten: list[list[str]], titel: str = "", passwort: str = "") -> bytes:
+    """Kleines Text-PDF ohne Netz: eine Inhaltsdatei je Seite (Helvetica, WinAnsi), Zeilen mit T*."""
+    from io import BytesIO
+
+    from pypdf import PdfWriter
+    from pypdf.generic import DecodedStreamObject, DictionaryObject, NameObject
+
+    w = PdfWriter()
+    font = w._add_object(DictionaryObject({
+        NameObject("/Type"): NameObject("/Font"), NameObject("/Subtype"): NameObject("/Type1"),
+        NameObject("/BaseFont"): NameObject("/Helvetica"), NameObject("/Encoding"): NameObject("/WinAnsiEncoding")}))
+    for zeilen in seiten:
+        seite = w.add_blank_page(595, 842)
+        ops = ["BT /F1 10 Tf 12 TL 40 800 Td"]
+        ops += ["(" + z.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)") + ") Tj T*" for z in zeilen]
+        stream = DecodedStreamObject()
+        stream.set_data("\n".join(ops + ["ET"]).encode("cp1252"))
+        seite[NameObject("/Contents")] = w._add_object(stream)
+        seite[NameObject("/Resources")] = DictionaryObject(
+            {NameObject("/Font"): DictionaryObject({NameObject("/F1"): font})})
+    if titel:
+        w.add_metadata({"/Title": titel})
+    if passwort:
+        w.encrypt(passwort, algorithm="RC4-128")
+    buf = BytesIO()
+    w.write(buf)
+    return buf.getvalue()
+
+
+def pdf_abruf(dateien: dict, abrufe=None):
+    """Fake-Transport: PDF-Bytes je Adresse ohne Anker (wie requests: das Fragment geht nie an den Server)."""
+    def abruf(url, frist=None):
+        if abrufe is not None:
+            abrufe.append(url)
+        ohne = url.split("#", 1)[0]
+        if ohne in dateien:
+            return net.Fetched(url=ohne, status=200, content=dateien[ohne], content_type="application/pdf")
+        return abruf_aus(SEITEN)(ohne, frist)
+    return abruf
+
+
+def pdf_vorschlag(*urls, **kw) -> dict:
+    v = {"arbeitstitel": "Bundesregierung zu Abschiebungen nach Sri Lanka", "rubrik": "news", "ort": "Berlin",
+         "quellen": [{"url": u, "titel": "erfundener Titel", "herausgeber": "Deutscher Bundestag",
+                      "datum": "2026-08-01", "sprache": "de", "art": "drucksache"} for u in urls]}
+    return vorschlag(**{**v, **kw})
+
+
+def pdf_annehmen(store, settings, v, dateien):
+    return nachtrag.annehmen(store, settings, {"vorschlaege": [v]}, von="test", ctx=kontext(store, settings),
+                             abruf=pdf_abruf(dateien))["ergebnisse"][0]
+
+
+def test_pdf_quelle_wird_gelesen_titel_aus_metadaten(settings):
+    datei = pdf_bytes([SEITE1, SEITE2], titel="Drucksache 20/12345")
+    with Store(settings.db_path) as store:
+        e = pdf_annehmen(store, settings, pdf_vorschlag(PDF_URL), {PDF_URL: datei})
+        assert e["ergebnis"] == "angelegt", e
+        doc = repo.dokumente(store, e["story_id"])[0]
+        assert doc.titel == "Drucksache 20/12345" and doc.url == PDF_URL and doc.art == "volltext"
+        assert "Antwort der Bundesregierung auf die Kleine Anfrage" in doc.text
+        assert "412 Personen aus Sri Lanka" in doc.text and "\n\n" in doc.text  # Seitenwechsel als Leerzeile
+        # Silbentrennung zusammengezogen, echter Bindestrich vor Großbuchstaben bleibt
+        assert "beim Bundesamt für Migration" in doc.text and "nach Sri-Lanka betrug" in doc.text
+        assert "Bundes-" not in doc.text and "  " not in doc.text
+    assert nachtrag.pdf_lesen(pdf_bytes([SEITE1, SEITE2]))[1] == ""  # ohne Metadaten leer, nie aus dem Vorschlag
+
+
+def test_pdf_anker_page_beginnt_auf_seite_und_bleibt_in_der_adresse(settings):
+    datei = pdf_bytes([SEITE1, SEITE2, SEITE1])
+    with Store(settings.db_path) as store:
+        e = pdf_annehmen(store, settings, pdf_vorschlag(PDF_URL + "#page=2"), {PDF_URL: datei})
+        doc = repo.dokumente(store, e["story_id"])[0]
+        assert doc.url == PDF_URL + "#page=2" and doc.text.startswith("Im ersten Halbjahr 2026")
+        # dieselbe Datei, andere Seite: keine Dublette derselben Adresse
+        zwei = pdf_annehmen(store, settings, pdf_vorschlag(PDF_URL + "#page=3", erzwingen=True), {PDF_URL: datei})
+        assert zwei["ergebnis"] == "angelegt" and zwei["story_id"] != e["story_id"]
+        gleich = pdf_annehmen(store, settings, pdf_vorschlag(PDF_URL + "#page=2"), {PDF_URL: datei})
+        assert gleich["ergebnis"] == "vorhanden" and gleich["story_id"] == e["story_id"]
+        # zwei Seiten derselben Datei als Belege einer Story
+        beide = pdf_annehmen(store, settings, pdf_vorschlag(PDF_URL + "#page=1", PDF_URL + "#page=2", erzwingen=True,
+                                                            arbeitstitel="Asylzahlen im ersten Halbjahr"),
+                             {PDF_URL: datei})
+        assert beide["ergebnis"] == "angelegt" and beide["quellen_geholt"] == 2
+        assert [d.url for d in repo.dokumente(store, beide["story_id"])] == [PDF_URL, PDF_URL + "#page=2"]  # 1 = ohne
+        weg = pdf_annehmen(store, settings, pdf_vorschlag(PDF_URL + "#page=9", erzwingen=True,
+                                                          arbeitstitel="Seite gibt es nicht"), {PDF_URL: datei})
+        assert weg["ergebnis"] == "abgelehnt" and "keine Seite 9" in weg["quellen_uebersprungen"][0]["grund"]
+
+
+@pytest.mark.parametrize("daten", [b"%PDF-1.7\n kaputt \x00\x01 ohne xref", b"<<< gar kein PDF >>>"])
+def test_kaputtes_pdf_wird_mit_grund_abgelehnt(settings, daten):
+    with Store(settings.db_path) as store:
+        e = pdf_annehmen(store, settings, pdf_vorschlag(PDF_URL), {PDF_URL: daten})
+        assert e["ergebnis"] == "abgelehnt" and "keine Quelle abrufbar" in e["grund"]
+        assert "PDF nicht lesbar" in e["quellen_uebersprungen"][0]["grund"] and repo.stories(store) == []
+
+
+def test_verschluesseltes_pdf_wird_abgelehnt(settings):
+    with Store(settings.db_path) as store:
+        e = pdf_annehmen(store, settings, pdf_vorschlag(PDF_URL), {PDF_URL: pdf_bytes([SEITE1], passwort="geheim")})
+        assert e["ergebnis"] == "abgelehnt" and "PDF nicht lesbar" in e["quellen_uebersprungen"][0]["grund"]
+
+
+def test_pdf_ohne_text_uebersprungen_und_ueber_8_mb_abgelehnt(settings):
+    gross = pdf_bytes([SEITE1, SEITE2]) + b"%" + b"x" * 8_000_001
+    with Store(settings.db_path) as store:
+        e = pdf_annehmen(store, settings, pdf_vorschlag(PDF_URL), {PDF_URL: pdf_bytes([[], []])})
+        assert e["ergebnis"] == "abgelehnt" and e["quellen_uebersprungen"][0]["grund"] == "ohne lesbaren Text"
+        g = pdf_annehmen(store, settings, pdf_vorschlag(PDF_URL), {PDF_URL: gross})
+        assert g["ergebnis"] == "abgelehnt" and "zu groß" in g["quellen_uebersprungen"][0]["grund"]
+
+
+def test_standard_abruf_nimmt_pdf_bis_8_mb_an_html_bleibt_bei_3_mb(monkeypatch):
+    aufrufe = []
+
+    def fake_get(url, **kw):
+        aufrufe.append(kw)
+        return net.Fetched(url=url, status=200, content=b"<p>x</p>", content_type="text/html")
+    monkeypatch.setattr(net, "safe_get", fake_get)
+    nachtrag.standard_abruf("https://example.org/a", frist=5.0)
+    kw = aufrufe[0]  # die Grenze gilt schon beim Lesen, je gemeldetem Content-Type
+    assert kw["max_bytes"] == 3_000_000 and kw["max_bytes_je_typ"] == {"application/pdf": 8_000_000}
+    assert "application/pdf" in kw["accept"] and kw["frist"] == 5.0
+    assert all(t in kw["accept"] for t in net.TEXT_TYPES)
+
+
+def test_html_quelle_unveraendert_neben_pdf(settings):
+    with Store(settings.db_path) as store:
+        e = pdf_annehmen(store, settings, pdf_vorschlag(URL1, PDF_URL), {PDF_URL: pdf_bytes([SEITE1, SEITE2])})
+        docs = repo.dokumente(store, e["story_id"])
+        assert [d.url for d in docs] == [URL1, PDF_URL] and docs[0].text == ARTIKEL1
+        assert docs[0].titel == "Tempel eröffnet Gemeindehaus – Lokales"
+
+
+# ---- Notanker: strukturierte Angaben (JSON-LD), wenn eine Seite ohne JavaScript keinen Text hat --------------
+
+KINO_URL = "https://www.kino-beispiel.de/film/jailer-2"
+KINO_LD = {"@context": "https://schema.org", "@graph": [
+    {"@type": "Organization", "name": "Kino Beispiel GmbH"},
+    {"@type": ["Movie"], "name": "Jailer 2", "inLanguage": "ta", "duration": "PT2H48M",
+     "description": "Rajinikanth kehrt als pensionierter Gefängnisdirektor Muthuvel Pandian zurück und muss seine "
+                    "Familie vor einem alten Gegner schützen. Der Film läuft in tamilischer Originalfassung mit "
+                    "deutschen Untertiteln in ausgewählten Kinos in Deutschland, Österreich und der Schweiz.",
+     "director": {"@type": "Person", "name": "Nelson Dilipkumar"},
+     "actor": [{"@type": "Person", "name": "Rajinikanth"}, {"@type": "Person", "name": "Ramya Krishnan"}]},
+    {"@type": "ScreeningEvent", "name": "Jailer 2 (OmU)", "startDate": "2026-06-12T20:00",
+     "location": {"@type": "MovieTheater", "name": "Kino Beispiel Saal 3",
+                  "address": {"@type": "PostalAddress", "streetAddress": "Hauptstraße 1", "postalCode": "50667",
+                              "addressLocality": "Köln"}},
+     "offers": [{"@type": "Offer", "price": "14.50", "priceCurrency": "EUR"}]}]}
+
+
+def kino_html(ld, text: str = "") -> str:
+    skript = f'<script type="application/ld+json">{json.dumps(ld, ensure_ascii=False)}</script>'
+    return f"<html><head><title>Jailer 2 – Kino</title>{skript}</head><body><div id='app'></div>{text}</body></html>"
+
+
+def html_seite(roh: str) -> net.Fetched:
+    return net.Fetched(url=KINO_URL, status=200, content=roh.encode("utf-8"), content_type="text/html; charset=utf-8")
+
+
+def test_seite_ohne_text_mit_json_ld_wird_zu_strukturierten_angaben(settings):
+    v = vorschlag(arbeitstitel="Jailer 2 im Kino", rubrik="kino", ort="Köln", quellen=[
+        {"url": KINO_URL, "titel": "t", "herausgeber": "Kino", "datum": "2026-06-01", "sprache": "de", "art": "kino"}])
+    with Store(settings.db_path) as store:
+        e = annehmen(store, settings, [v], seiten={KINO_URL: kino_html(KINO_LD)})["ergebnisse"][0]
+        assert e["ergebnis"] == "angelegt", e
+        doc = repo.dokumente(store, e["story_id"])[0]
+        t = doc.text
+        assert t.startswith("Angaben der Seite (strukturierte Daten)") and doc.titel == "Jailer 2 – Kino"
+        for wert in ("Jailer 2", "Rajinikanth kehrt als pensionierter Gefängnisdirektor", "Nelson Dilipkumar",
+                     "Ramya Krishnan", "PT2H48M", "2026-06-12T20:00", "Kino Beispiel Saal 3", "Hauptstraße 1",
+                     "Köln", "14.50", "inLanguage: ta"):
+            assert wert in t, wert
+        assert "Kino Beispiel GmbH" not in t  # nur Movie, Event, ScreeningEvent, NewsArticle, Article
+        # Befund P3: kein sichtbarer Seitentext → art „daten“: Aussagen belegbar, aber kein langer Beitrag daraus
+        from news_radar.agents import factcheck
+        from news_radar.workflow.models import Claim
+
+        assert doc.art == "daten" and doc.primaer
+        claim = Claim(id="C1", aussage="Regie: Nelson Dilipkumar", art="wer", kern=True, quellen=[doc.doc_key],
+                      fundstelle="director: Nelson Dilipkumar", sicherheit=0.9)
+        assert factcheck.support(claim, {doc.doc_key: doc}, set()) == "bestaetigt"
+        verlage, primaer, volltext = factcheck.stoff([doc])
+        assert not primaer and not volltext
+        assert factcheck.laenge_fuer("kino", 10, verlage, primaer, volltext) == "kino"  # nicht kino_lang/kino_mittel
+        assert factcheck.laenge_fuer("news", 10, verlage, primaer, volltext) == "kurz"
+
+
+def test_json_ld_nur_als_notanker_und_nur_passende_typen():
+    assert nachtrag.seite_lesen(html_seite(kino_html(KINO_LD, f"<article><p>{ARTIKEL1}</p></article>")))[0] == ARTIKEL1
+    nur_firma = {"@type": "Organization", "name": "Kino Beispiel GmbH", "description": "x" * 400}
+    kaputt = '<html><script type="application/ld+json">{kein json</script><body></body></html>'
+    for roh in (kino_html(nur_firma), kaputt):
+        assert nachtrag.seite_lesen(html_seite(roh))[0] == ""
+
+
+# ---- PDF: Zeit- und Speichergrenze (Befund P1 der Code-Prüfung) --------------------------------------------
+
+def pdf_roh(objekte: list[bytes]) -> bytes:
+    """PDF von Hand: Objekte 1…n, xref, trailer (Root = 1)."""
+    out, offs = bytearray(b"%PDF-1.4\n"), []
+    for n, o in enumerate(objekte, 1):
+        offs.append(len(out))
+        out += b"%d 0 obj\n" % n + o + b"\nendobj\n"
+    x = len(out)
+    out += b"xref\n0 %d\n0000000000 65535 f \n" % (len(objekte) + 1)
+    out += b"".join(b"%010d 00000 n \n" % o for o in offs)
+    out += b"trailer\n<< /Size %d /Root 1 0 R >>\nstartxref\n%d\n%%%%EOF\n" % (len(objekte) + 1, x)
+    return bytes(out)
+
+
+def pdf_aufwendig(mb: int, seiten: int, geteilt: bool = True) -> bytes:
+    """Wie die Proben der Prüfung: ein großer Inhaltsstrom aus Leerraum-Operatoren, von allen Seiten referenziert
+    (geteilt) oder je Seite ein eigener."""
+    import zlib
+
+    strom = zlib.compress(b"1 0 0 1 0 0 cm\n" * (mb * 1_000_000 // 15), 9)
+    s_obj = b"<< /Length %d /Filter /FlateDecode >>\nstream\n" % len(strom) + strom + b"\nendstream"
+    n_stroeme = 1 if geteilt else seiten
+    kids = " ".join(f"{3 + n_stroeme + i} 0 R" for i in range(seiten)).encode()
+    objekte = [b"<< /Type /Catalog /Pages 2 0 R >>", b"<< /Type /Pages /Kids [%s] /Count %d >>" % (kids, seiten)]
+    objekte += [s_obj] * n_stroeme
+    objekte += [b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents %d 0 R >>" % (3 + (0 if geteilt else i))
+                for i in range(seiten)]
+    return pdf_roh(objekte)
+
+
+@pytest.mark.parametrize("daten", [pdf_aufwendig(2, 40), pdf_aufwendig(10, 1), pdf_aufwendig(3, 5, geteilt=False)],
+                         ids=["2MB-40-Seiten-geteilt", "10MB-eine-Seite", "3MB-je-Seite"])
+def test_praeparierte_pdf_enden_schnell_mit_grund(settings, daten):
+    import time
+
+    t = time.monotonic()
+    with Store(settings.db_path) as store:
+        e = pdf_annehmen(store, settings, pdf_vorschlag(PDF_URL), {PDF_URL: daten})
+    grund = e["quellen_uebersprungen"][0]["grund"]
+    assert e["ergebnis"] == "abgelehnt" and (grund == "ohne lesbaren Text" or "PDF zu aufwendig" in grund), grund
+    assert time.monotonic() - t < 6
+
+
+def test_pdf_zeitlimit_beendet_den_kindprozess(monkeypatch):
+    import sys
+    import time
+
+    monkeypatch.setattr(nachtrag, "PDF_BEFEHL", [sys.executable, "-c", "import time; time.sleep(30)"])
+    monkeypatch.setattr(nachtrag, "PDF_ZEIT_MAX", 0.5)
+    t = time.monotonic()
+    with pytest.raises(nachtrag.Unlesbar, match="PDF zu aufwendig"):
+        nachtrag.pdf_lesen(pdf_bytes([SEITE1]))
+    assert time.monotonic() - t < 3
+    with pytest.raises(nachtrag.Unlesbar, match="PDF zu aufwendig"):  # Frist schon vorbei: gar nicht erst starten
+        nachtrag.pdf_lesen(pdf_bytes([SEITE1]), frist=time.monotonic() - 1)
+    monkeypatch.setattr(nachtrag, "PDF_BEFEHL", [sys.executable, "-c", "import sys; sys.exit(9)"])
+    with pytest.raises(nachtrag.Unlesbar, match="PDF zu aufwendig"):  # z. B. vom Speicherlimit beendet
+        nachtrag.pdf_lesen(pdf_bytes([SEITE1]))
+
+
+def test_pdf_mit_schleife_im_seitenbaum_endet_sauber():
+    import time
+
+    schleife = pdf_roh([b"<< /Type /Catalog /Pages 2 0 R >>", b"<< /Type /Pages /Kids [2 0 R 3 0 R] /Count 2 >>",
+                        b"<< /Type /Pages /Parent 2 0 R /Kids [2 0 R] /Count 1 >>"])
+    t = time.monotonic()
+    with pytest.raises(nachtrag.Unlesbar, match="PDF"):
+        nachtrag.pdf_lesen(schleife)
+    assert time.monotonic() - t < 6
+
+
+def test_json_ld_ohne_schliessende_tags_ist_linear_und_begrenzt():
+    import time
+
+    offen = '<script type="application/ld+json">{"@type": "Movie", "name": "x"' * 10000  # ~440 KB, nie geschlossen
+    t = time.monotonic()
+    assert nachtrag.strukturierte_angaben(offen) == ""
+    assert time.monotonic() - t < 1
+    film = {"@type": "Movie", "description": "Rajinikanth kehrt als Gefängnisdirektor zurück."}
+    viele = "".join(f'<script type="application/ld+json">{json.dumps({**film, "name": f"Film {i}"})}</script>'
+                    for i in range(40))
+    text = nachtrag.strukturierte_angaben(viele)
+    assert "Film 19" in text and "Film 20" not in text  # höchstens 20 Blöcke
+    gross = '<script type="application/ld+json">' + json.dumps({**film, "name": "y" * 250_000}) + "</script>"
+    assert nachtrag.strukturierte_angaben(gross) == ""  # zusammen höchstens 200 KB
+
+
+def test_anker_nur_bei_pdf_und_page_1_wie_ohne_anker(settings):
+    """Befund P2: der Anker darf die Dublettenprüfung nicht aushebeln (HTML-Anker, #page=1)."""
+    anders = {"arbeitstitel": "Völlig anderes Thema aus Zürich", "ort": "Zürich"}
+    datei = pdf_bytes([SEITE1, SEITE2])
+    with Store(settings.db_path) as store:
+        html_sid = annehmen(store, settings, [vorschlag(quellen=[vorschlag()["quellen"][0]])])["ergebnisse"][0]["story_id"]
+        pdf_sid = pdf_annehmen(store, settings, pdf_vorschlag(PDF_URL), {PDF_URL: datei})["story_id"]
+        for url, sid in ((URL1 + "#page=1", html_sid), (PDF_URL + "#page=1", pdf_sid)):
+            e = pdf_annehmen(store, settings, pdf_vorschlag(url, **anders), {PDF_URL: datei})
+            assert e["ergebnis"] == "vorhanden" and e["story_id"] == sid, (url, e)
+        for url, sid in ((URL1 + "#page=2", html_sid), (PDF_URL + "#page=2", pdf_sid)):
+            e = pdf_annehmen(store, settings, pdf_vorschlag(url, **anders), {PDF_URL: datei})
+            assert e["ergebnis"] == "vielleicht_vorhanden" and e["story_id"] == sid, (url, e)
+        neu = pdf_annehmen(store, settings, pdf_vorschlag(URL1 + "#page=2", erzwingen=True, **anders), {PDF_URL: datei})
+        doc = repo.dokumente(store, neu["story_id"])[0]
+        assert neu["ergebnis"] == "angelegt" and "#page" not in store.db.execute(
+            "SELECT url_norm || uid FROM source_documents WHERE story_id = ?", (neu["story_id"],)).fetchone()[0]
+        assert doc.text == ARTIKEL1  # HTML: der Anker ändert nichts am Text
+
+
+def test_dieselbe_pdf_einmal_abgerufen_hoechstens_zwei_anker(settings):
+    """Befund P2: mehrere Anker auf dieselbe Datei → ein Abruf, höchstens zwei Seiten je Datei."""
+    abrufe = []
+    v = pdf_vorschlag(PDF_URL + "#page=2", PDF_URL + "#page=3", PDF_URL + "#page=1", URL1)
+    with Store(settings.db_path) as store:
+        e = nachtrag.annehmen(store, settings, {"vorschlaege": [v]}, von="test", ctx=kontext(store, settings),
+                              abruf=pdf_abruf({PDF_URL: pdf_bytes([SEITE1, SEITE2, SEITE1])}, abrufe))["ergebnisse"][0]
+        assert e["ergebnis"] == "angelegt" and e["quellen_geholt"] == 3
+        assert [a.split("#")[0] for a in abrufe] == [PDF_URL, URL1]  # die Datei nur einmal geholt
+        assert e["quellen_uebersprungen"] == [{"url": PDF_URL + "#page=1", "grund": "höchstens zwei Seiten je Datei"}]
+        assert [d.url for d in repo.dokumente(store, e["story_id"])] == [PDF_URL + "#page=2", PDF_URL + "#page=3", URL1]
+
+
+def test_tief_verschachteltes_json_ld_wird_uebersprungen():
+    """Befund P2: RecursionError beim Parsen bzw. in _ld_werte darf nicht nach außen dringen."""
+    tief = '<script type="application/ld+json">' + "[" * 100_000 + "]" * 100_000 + "</script>"
+    assert nachtrag.strukturierte_angaben(tief) == ""
+    verschachtelt = {"name": "innen"}
+    for _ in range(400):
+        verschachtelt = {"name": verschachtelt}
+    film = {"@type": "Movie", "name": "Jailer 2", "director": verschachtelt, "actor": [[[[[[["Tief"]]]]]]]}
+    text = nachtrag.strukturierte_angaben(f'<script type="application/ld+json">{json.dumps(film)}</script>')
+    assert "name: Jailer 2" in text and "innen" not in text and "Tief" not in text  # höchstens 5 Ebenen
+
+
+def test_seite_lesen_linear_bei_nicht_geschlossenen_tags():
+    import time
+
+    for roh in ("<title>offen " * 40000, '<script type="application/ld+json">{"a":1}' * 10000,
+                '<meta property="og:title" ' * 20000, '<meta content="x" property="og:title" ' * 20000):
+        t = time.monotonic()
+        nachtrag.seite_lesen(net.Fetched(url=URL1, status=200, content=roh.encode(), content_type="text/html"))
+        assert time.monotonic() - t < 1, roh[:20]
+    assert nachtrag.seite_lesen(net.Fetched(url=URL1, status=200, content=html(ARTIKEL1, "Titel &amp; mehr").encode(),
+                                            content_type="text/html"))[1] == "Titel & mehr"
+    og = ('<meta name="a" content="b"><meta content="Zweites Muster" property="og:title">'
+          '<meta property="og:title" content="Erstes Muster"><title>Titel</title>')
+    assert nachtrag.seite_lesen(net.Fetched(url=URL1, status=200, content=og.encode(),
+                                            content_type="text/html"))[1] == "Erstes Muster"  # Reihenfolge wie bisher
+
+
+def test_tuerkisches_i_verschiebt_keine_fundstellen():
+    """Befund P1 (zweite Prüfung): „İ“.lower() hat zwei Zeichen; JSON-LD und og:title nach einem İ müssen bleiben."""
+    vorn = "<nav>" + "İstanbul İzmir " * 40 + "</nav>"
+    og = vorn + '<meta property="og:title" content="Kulturabend in İstanbul"><title>Andere</title>'
+    assert nachtrag.seite_lesen(net.Fetched(url=URL1, status=200, content=og.encode(),
+                                            content_type="text/html"))[1] == "Kulturabend in İstanbul"
+    ld = vorn + kino_html(KINO_LD)
+    assert "name: Jailer 2" in nachtrag.strukturierte_angaben(ld)
+    assert nachtrag.strukturierte_angaben(ld) == nachtrag.strukturierte_angaben(kino_html(KINO_LD))
+
+
+def test_hoechstens_zwei_pdf_kinder_gleichzeitig(monkeypatch):
+    """Befund P2 (zweite Prüfung): je Kind bis 300 MB, also höchstens zwei zugleich; wer in der Frist nicht
+    drankommt, bekommt „PDF zu aufwendig“."""
+    import subprocess
+    import threading
+    import time
+
+    from news_radar import pdf_kind
+
+    assert pdf_kind.SPEICHER_MAX == 300 * 1024 * 1024
+    stand = {"jetzt": 0, "max": 0}
+    sperre = threading.Lock()
+
+    def fake_run(befehl, **kw):
+        with sperre:
+            stand["jetzt"] += 1
+            stand["max"] = max(stand["max"], stand["jetzt"])
+        time.sleep(0.2)
+        with sperre:
+            stand["jetzt"] -= 1
+        return subprocess.CompletedProcess(befehl, 0, stdout=b'{"text": "x", "titel": ""}', stderr=None)
+    monkeypatch.setattr(nachtrag.subprocess, "run", fake_run)
+    faeden = [threading.Thread(target=nachtrag.pdf_lesen, args=(b"%PDF-1.4",)) for _ in range(6)]
+    for f in faeden:
+        f.start()
+    for f in faeden:
+        f.join()
+    assert stand["max"] == 2
+    belegt = [nachtrag._PDF_PLAETZE.acquire() for _ in range(nachtrag.PDF_PARALLEL)]
+    try:
+        t = time.monotonic()
+        with pytest.raises(nachtrag.Unlesbar, match="PDF zu aufwendig"):
+            nachtrag.pdf_lesen(b"%PDF-1.4", frist=time.monotonic() + 0.3)
+        assert time.monotonic() - t < 1.5
+    finally:
+        for _ in belegt:
+            nachtrag._PDF_PLAETZE.release()
+
+
+def _aufruf_merken(monkeypatch) -> dict:
+    import subprocess
+
+    aufruf = {}
+
+    def fake_run(befehl, **kw):
+        aufruf.update(kw)
+        return subprocess.CompletedProcess(befehl, 0, stdout=b'{"text": "x", "titel": ""}', stderr=None)
+    monkeypatch.setattr(nachtrag.subprocess, "run", fake_run)
+    return aufruf
+
+
+def test_pdf_kind_stderr_verworfen_und_warnungen_aus(monkeypatch):
+    """Befund P2 (zweite Prüfung): stderr des Kindes (pypdf-Warnungen, 15 MB) nicht im Web-Worker sammeln."""
+    import subprocess
+
+    aufruf = _aufruf_merken(monkeypatch)
+    nachtrag.pdf_lesen(b"%PDF-1.4")
+    assert aufruf["stderr"] is subprocess.DEVNULL and aufruf["stdout"] is subprocess.PIPE
+    assert "capture_output" not in aufruf
+    quelle = (nachtrag.Path(nachtrag.__file__).with_name("pdf_kind.py")).read_text(encoding="utf-8")
+    assert "logging.disable(logging.WARNING)" in quelle
+
+
+def test_pdf_kind_bekommt_nur_eine_kleine_umgebung(monkeypatch):
+    """Befund P3 (zweite Prüfung): keine Geheimnisse aus der Umgebung des Web-Prozesses im Kind."""
+    monkeypatch.setenv("RADAR_AGENT_TOKEN", "geheim-nicht-ins-kind")
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "geheim-auch-nicht")
+    aufruf = _aufruf_merken(monkeypatch)
+    nachtrag.pdf_lesen(b"%PDF-1.4")
+    assert aufruf["env"] is not None and set(aufruf["env"]) <= {"PATH", "LANG", "LC_ALL"}
+    assert "geheim" not in str(aufruf["env"])
+
+
+def test_pdf_lesen_hat_eigene_frist_nach_dem_abruf(settings):
+    """Befund P3 (zweite Prüfung): die Abruf-Frist ist verbraucht, das Lesen bekommt trotzdem seine eigene Zeit."""
+    with Store(settings.db_path) as store:
+        e = nachtrag.annehmen(store, settings, {"vorschlaege": [pdf_vorschlag(PDF_URL)]}, von="test",
+                              ctx=kontext(store, settings), abruf=pdf_abruf({PDF_URL: pdf_bytes([SEITE1, SEITE2])}),
+                              frist_abruf=0.000001)["ergebnisse"][0]
+        assert e["ergebnis"] == "angelegt", e
+
+
+def test_doppelte_adresse_wird_vor_dem_lesen_erkannt(settings, monkeypatch):
+    gelesen = []
+    echt = nachtrag.pdf_lesen
+    monkeypatch.setattr(nachtrag, "pdf_lesen", lambda daten, ab_seite=1, frist=None: (gelesen.append(ab_seite)
+                                                                                      or echt(daten, ab_seite, frist)))
+    with Store(settings.db_path) as store:
+        e = pdf_annehmen(store, settings, pdf_vorschlag(PDF_URL + "#page=2", PDF_URL + "#page=2"),
+                         {PDF_URL: pdf_bytes([SEITE1, SEITE2])})
+    assert e["ergebnis"] == "angelegt" and gelesen == [2]
+    assert e["quellen_uebersprungen"] == [{"url": PDF_URL + "#page=2", "grund": "doppelt im Vorschlag"}]
+
+
+def _pdf_text_und_schwer(seiten: list) -> bytes:
+    """Seiten aus Textzeilen (Liste) oder einem schweren Strom (Zahl = MB Leerraum-Operatoren)."""
+    import zlib
+
+    objekte = [b"<< /Type /Catalog /Pages 2 0 R >>", b"", b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>"]
+    for s in seiten:
+        if isinstance(s, list):
+            ops = b"BT /F1 10 Tf 12 TL 40 800 Td " + b" ".join(b"(" + z.encode("latin-1") + b") Tj T*" for z in s) + b" ET"
+            objekte.append(b"<< /Length %d >>\nstream\n" % len(ops) + ops + b"\nendstream")
+        else:
+            roh = zlib.compress(b"1 0 0 1 0 0 cm\n" * (s * 1_000_000 // 15), 9)
+            objekte.append(b"<< /Length %d /Filter /FlateDecode >>\nstream\n" % len(roh) + roh + b"\nendstream")
+    erste = len(objekte) + 1
+    for n in range(len(seiten)):
+        objekte.append(b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >>"
+                       b" /Contents %d 0 R >>" % (4 + n))
+    kids = " ".join(f"{erste + n} 0 R" for n in range(len(seiten))).encode()
+    objekte[1] = b"<< /Type /Pages /Kids [%s] /Count %d >>" % (kids, len(seiten))
+    return pdf_roh(objekte)
+
+
+def test_pdf_zu_aufwendige_seite_kuerzt_lueckenlos_mit_hinweis(settings):
+    """Befund P3 (zweite Prüfung): nie still Seiten überspringen. Gelesen wird ein lückenloser Anfang bis vor die
+    erste zu aufwendige Seite, mit Hinweis „gekürzt“; ist schon die Startseite zu aufwendig: abgelehnt."""
+    zeilen = [z.replace("ä", "ae").replace("ü", "ue") for z in SEITE1]
+    datei = _pdf_text_und_schwer([zeilen, 3, ["Diese Seite nach der schweren darf nicht im Text stehen."]])
+    with Store(settings.db_path) as store:
+        e = pdf_annehmen(store, settings, pdf_vorschlag(PDF_URL), {PDF_URL: datei})
+        assert e["ergebnis"] == "angelegt", e
+        text = repo.dokumente(store, e["story_id"])[0].text
+        assert "Kleine Anfrage" in text and "nach der schweren" not in text
+        assert e["quellen_hinweise"] == [{"url": PDF_URL, "hinweis": "gekürzt: gelesen bis Seite 1, Seite 2 zu aufwendig"}]
+        schwer = pdf_annehmen(store, settings, pdf_vorschlag(PDF_URL + "#page=2", erzwingen=True,
+                                                             arbeitstitel="Nur die schwere Seite"), {PDF_URL: datei})
+        assert schwer["ergebnis"] == "abgelehnt" and "PDF zu aufwendig" in schwer["quellen_uebersprungen"][0]["grund"]
