@@ -1066,3 +1066,318 @@ def test_pdf_zu_aufwendige_seite_kuerzt_lueckenlos_mit_hinweis(settings):
         schwer = pdf_annehmen(store, settings, pdf_vorschlag(PDF_URL + "#page=2", erzwingen=True,
                                                              arbeitstitel="Nur die schwere Seite"), {PDF_URL: datei})
         assert schwer["ergebnis"] == "abgelehnt" and "PDF zu aufwendig" in schwer["quellen_uebersprungen"][0]["grund"]
+
+
+# ---- Nachtrag ergänzen (story_id) -------------------------------------------------------------------------
+
+URL3 = "https://www.wdr.de/nachrichten/tempel-hamm-gemeindehaus-gaeste-100.html"
+ARTIKEL3 = ("Zur Eröffnung des Gemeindehauses am Sri-Kamadchi-Ampal-Tempel in Hamm kamen nach Zählung der Polizei "
+            "rund 2500 Menschen. Der Bau hat nach Angaben des Tempelvereins 1,2 Millionen Euro gekostet, finanziert "
+            "fast vollständig aus Spenden der Gemeinde. Im Erdgeschoss liegen ein Saal für 400 Personen und eine "
+            "Küche, im Obergeschoss sechs Unterrichtsräume für Tamil, Musik und Tanz.")
+SEITEN3 = {**SEITEN, URL3: html(ARTIKEL3, "Tempel Hamm: Gemeindehaus eröffnet - WDR")}
+
+
+def nachtrag_mit_luecke(store, settings, quellen=None, status="recherche_erforderlich"):
+    """Nachtrag-Story, deren Import an fehlenden Kernfakten gescheitert ist."""
+    quellen = quellen or [vorschlag()["quellen"][0]]
+    sid = annehmen(store, settings, [vorschlag(quellen=quellen)])["ergebnisse"][0]["story_id"]
+    repo.story_setzen(store, sid, status=status, notiz="Fehlt: Zahl der Gäste laut Polizei")
+    return sid
+
+
+def quelle(url, **kw):
+    return {"url": url, "titel": "t", "herausgeber": "WDR", "datum": "2026-03-15", "sprache": "de", "art": "bericht",
+            **kw}
+
+
+def test_ergaenzen_haengt_neue_quellen_an_und_gibt_die_story_wieder_frei(settings):
+    with Store(settings.db_path) as store:
+        sid = nachtrag_mit_luecke(store, settings)
+        abrufe = []
+        out = annehmen(store, settings, [vorschlag(
+            story_id=sid, arbeitstitel="Ganz anderer Arbeitstitel ohne Ähnlichkeit", datum="2026-03-15",
+            quellen=[quelle(URL1), quelle(URL2), quelle(URL3)], kernfakten=["rund 2500 Menschen laut Polizei"],
+            bezug="Neuer Bezug", bild_hinweis="Saal", erzwingen=True)], seiten=SEITEN3, abrufe=abrufe)
+        e = out["ergebnisse"][0]
+        assert e["ergebnis"] == "ergaenzt" and e["story_id"] == sid and e["quellen_geholt"] == 2, e
+        assert e["quellen_uebersprungen"] == [{"url": URL1, "grund": "schon Beleg dieser Story"}]
+        assert out["ergaenzt"] == 1 and out["angelegt"] == 0 and len(repo.stories(store)) == 1
+        assert URL1 not in abrufe  # schon Beleg: nicht noch einmal geholt
+        s = repo.story(store, sid)
+        heute = kontext(store, settings).uhr().date().isoformat()
+        assert s["status"] == "neu" and s["ereignis_datum"] == "2026-03-14"  # Datum der Story bleibt
+        assert e["hinweis"] == "Datum der Story bleibt 2026-03-14"
+        assert s["titel"] == "Tempel in Hamm eröffnet Gemeindehaus"  # der Arbeitstitel ändert die Story nicht
+        assert s["notiz"].startswith("Fehlt: Zahl der Gäste laut Polizei")
+        assert f"Ergänzt am {heute}: 2 Quellen" in s["notiz"]
+        docs = repo.dokumente(store, sid)
+        assert [d.doc_key for d in docs] == ["Q1", "Q2", "Q3"]
+        assert [d.text for d in docs] == [ARTIKEL1, ARTIKEL2, ARTIKEL3]
+        assert docs[2].titel == "Tempel Hamm: Gemeindehaus eröffnet - WDR" and docs[2].publisher == "WDR"
+        zeile = store.db.execute("SELECT * FROM editorial_actions WHERE aktion = 'nachtrag_ergaenzt'").fetchone()
+        assert zeile["story_id"] == sid and zeile["wer"] == "test" and zeile["kanal"] == "redaktion"
+        mappe = paket_v2(store, settings, ctx=kontext(store, settings))
+        p = next(p for p in mappe["storys"] if p["story_id"] == sid)
+        assert [d["doc_key"] for d in p["dokumente"]] == ["Q1", "Q2", "Q3"]
+        h = p["vorschlag_hinweise"]
+        assert h["kernfakten"] == ["rund 2500 Menschen laut Polizei", "Eröffnung am 14. März 2026", "rund 2000 Gäste"]
+        assert h["bezug"] == "Neuer Bezug"
+        assert h["bild_hinweis"] == "Saal"
+
+
+def test_ergaenzen_ohne_neue_quelle_ist_vorhanden_und_holt_nichts(settings):
+    with Store(settings.db_path) as store:
+        sid = nachtrag_mit_luecke(store, settings, quellen=vorschlag()["quellen"])
+        abrufe = []
+        e = annehmen(store, settings, [vorschlag(story_id=sid, datum="2026-03-20")], abrufe=abrufe)["ergebnisse"][0]
+        assert e["ergebnis"] == "vorhanden" and e["story_id"] == sid and abrufe == []
+        assert [u["grund"] for u in e["quellen_uebersprungen"]] == ["schon Beleg dieser Story"] * 2
+        s = repo.story(store, sid)
+        assert s["status"] == "recherche_erforderlich" and s["ereignis_datum"] == "2026-03-14"
+
+
+@pytest.mark.parametrize("status", ["fertig", "verworfen", "geschrieben", "neu"])
+def test_ergaenzen_nur_bei_recherche_noetig_oder_neu(settings, status):
+    with Store(settings.db_path) as store:
+        sid = nachtrag_mit_luecke(store, settings, status=status)
+        abrufe = []
+        e = annehmen(store, settings, [vorschlag(story_id=sid, quellen=[quelle(URL3)])], seiten=SEITEN3,
+                     abrufe=abrufe)["ergebnisse"][0]
+        assert e["ergebnis"] == "abgelehnt" and e["grund"] == "Story nicht ergänzbar" and abrufe == []
+        log = [json.loads(z["data"]) for z in store.db.execute(
+            "SELECT data FROM log WHERE event = 'nachtrag_ergaenzen_abgelehnt'")]
+        assert log == [{"story": sid, "grund": f"Story ist {status}", "von": "test"}]
+        assert len(repo.dokumente(store, sid)) == 1
+
+
+def test_ergaenzen_nicht_bei_vorhandenem_entwurf(settings):
+    """Nur „Recherche nötig“ ohne Entwurf: sonst könnte ein gleichzeitiger Import die neue Quelle am Gate vorbei
+    unter „weitere Quellen“ führen."""
+    with Store(settings.db_path) as store:
+        sid = nachtrag_mit_luecke(store, settings)
+        store.insert_draft({"uid": "entwurf-1", "titel": "Entwurf", "story_id": sid})
+        abrufe = []
+        e = annehmen(store, settings, [vorschlag(story_id=sid, quellen=[quelle(URL3)])], seiten=SEITEN3,
+                     abrufe=abrufe)["ergebnisse"][0]
+        assert e["ergebnis"] == "abgelehnt" and abrufe == [] and len(repo.dokumente(store, sid)) == 1, e
+
+
+def test_ergaenzen_unbekannte_fremde_oder_beschaeftigte_story_wird_abgelehnt(settings):
+    with Store(settings.db_path) as store:
+        radar = repo.story_anlegen(store, typ="news", titel="Story vom Scan")
+        repo.story_setzen(store, radar, status="recherche_erforderlich")
+        sid = nachtrag_mit_luecke(store, settings)
+        ts = "2026-03-20T10:00:00+00:00"
+        store.db.execute("INSERT INTO workflow_jobs (story_id, schritt, status, naechster_versuch, erstellt, "
+                         "aktualisiert) VALUES (?, 'recherche', 'laeuft', ?, ?, ?)", (sid, ts, ts, ts))
+        store.db.commit()
+        abrufe = []
+        gruende = {}
+        for ziel in (99999, radar, sid, 0, "7", True):
+            e = annehmen(store, settings, [vorschlag(story_id=ziel, quellen=[quelle(URL3)])], seiten=SEITEN3,
+                         abrufe=abrufe)["ergebnisse"][0]
+            assert e["ergebnis"] == "abgelehnt", (ziel, e)
+            gruende[repr(ziel)] = e["grund"]
+        assert gruende["99999"] == gruende[repr(radar)] == "Story nicht ergänzbar"  # einheitlich nach außen
+        details = {json.loads(z["data"])["grund"] for z in store.db.execute(
+            "SELECT data FROM log WHERE event = 'nachtrag_ergaenzen_abgelehnt'")}
+        assert {"Story nicht gefunden", "keine Nachtrag-Story"} <= details
+        assert "läuft gerade ein Job" in gruende[repr(sid)]
+        assert all(g.startswith("story_id") for k, g in gruende.items() if k in ("0", "'7'", "True")), gruende
+        assert abrufe == [] and len(repo.dokumente(store, sid)) == 1
+
+
+def test_ergaenzen_status_aendert_sich_waehrend_der_abrufe_nichts_geschrieben(settings):
+    with Store(settings.db_path) as store:
+        sid = nachtrag_mit_luecke(store, settings)
+        basis = abruf_aus(SEITEN3)
+
+        def abruf(url, frist=None):  # während der Abrufe erzeugt ein Import einen Entwurf
+            repo.story_setzen(store, sid, status="geschrieben")
+            return basis(url, frist)
+        e = nachtrag.annehmen(store, settings, {"vorschlaege": [vorschlag(story_id=sid, quellen=[quelle(URL3)])]},
+                              von="test", ctx=kontext(store, settings), abruf=abruf)["ergebnisse"][0]
+        assert e["ergebnis"] == "abgelehnt" and e["grund"] == "Story inzwischen geschrieben"
+        s = repo.story(store, sid)
+        assert s["status"] == "geschrieben" and "Ergänzt" not in s["notiz"] and len(repo.dokumente(store, sid)) == 1
+        assert store.db.execute(
+            "SELECT COUNT(*) FROM editorial_actions WHERE aktion = 'nachtrag_ergaenzt'").fetchone()[0] == 0
+
+
+def test_ergaenzen_pdf_mit_anker_wird_angehaengt_gleiche_seite_uebersprungen(settings):
+    datei = pdf_bytes([SEITE1, SEITE2, SEITE1])
+    with Store(settings.db_path) as store:
+        sid = pdf_annehmen(store, settings, pdf_vorschlag(PDF_URL + "#page=2"), {PDF_URL: datei})["story_id"]
+        repo.story_setzen(store, sid, status="recherche_erforderlich", notiz="Fehlt: Zahl")
+        e = pdf_annehmen(store, settings, pdf_vorschlag(PDF_URL + "#page=2", PDF_URL + "#page=3", story_id=sid),
+                         {PDF_URL: datei})
+        assert e["ergebnis"] == "ergaenzt" and e["quellen_geholt"] == 1 and "hinweis" not in e, e
+        assert e["quellen_uebersprungen"] == [{"url": PDF_URL + "#page=2", "grund": "schon Beleg dieser Story"}]
+        docs = repo.dokumente(store, sid)
+        assert [(d.doc_key, d.url) for d in docs] == [("Q1", PDF_URL + "#page=2"), ("Q2", PDF_URL + "#page=3")]
+        assert docs[1].text.startswith("Deutscher Bundestag")
+
+
+def test_ergaenzen_haelt_beim_stopp_an(settings):
+    with Store(settings.db_path) as store:
+        sid = nachtrag_mit_luecke(store, settings)
+        schalter.setzen(store, "redaktion", True, wer="anna", grund="Prüfen")
+        abrufe = []
+        with pytest.raises(schalter.Gestoppt):
+            annehmen(store, settings, [vorschlag(story_id=sid, quellen=[quelle(URL3)])], seiten=SEITEN3, abrufe=abrufe)
+        assert abrufe == [] and len(repo.dokumente(store, sid)) == 1
+
+
+def test_ergaenzen_ueber_route_und_cli(settings, monkeypatch, tmp_path, capsys):
+    from news_radar.__main__ import main
+    from news_radar.web import create_app
+
+    monkeypatch.setattr(nachtrag, "standard_abruf", abruf_aus(SEITEN3))
+    monkeypatch.setenv("RADAR_DATA_DIR", str(settings.data_dir))
+    with Store(settings.db_path) as store:
+        sid = nachtrag_mit_luecke(store, settings)
+    settings.web_user, settings.web_password, settings.web_secret = "luis", "geheim", "s3cret"
+    settings.agent_token = "agent-token-mit-genug-zeichen"
+    client = create_app(settings, testing=True).test_client()
+    resp = client.post("/api/agent/vorschlag", json={"vorschlaege": [vorschlag(story_id=sid, quellen=[quelle(URL3)])]},
+                       headers={"Authorization": "Bearer agent-token-mit-genug-zeichen"})
+    data = resp.get_json()
+    assert resp.status_code == 200 and data["ergaenzt"] == 1 and data["ergebnisse"][0]["ergebnis"] == "ergaenzt"
+    with Store(settings.db_path) as store:
+        repo.story_setzen(store, sid, status="recherche_erforderlich")
+    datei = tmp_path / "v.json"
+    datei.write_text(json.dumps([vorschlag(story_id=sid, quellen=[quelle(URL2)])]), encoding="utf-8")
+    assert main(["agent", "vorschlag", "--datei", str(datei)]) == 0
+    assert "1 ergänzt" in capsys.readouterr().out
+    with Store(settings.db_path) as store:
+        assert [d.doc_key for d in repo.dokumente(store, sid)] == ["Q1", "Q2", "Q3"]
+
+
+def test_ergaenzen_riesige_story_id_wird_abgelehnt_und_der_stapel_laeuft_weiter(settings):
+    with Store(settings.db_path) as store:
+        sid = nachtrag_mit_luecke(store, settings)
+        out = annehmen(store, settings, [vorschlag(story_id=2**63, quellen=[quelle(URL3)]),
+                                         vorschlag(story_id=2**31, quellen=[quelle(URL3)]),
+                                         vorschlag(story_id=sid, quellen=[quelle(URL3)])], seiten=SEITEN3)
+        e = out["ergebnisse"]
+        assert [x["ergebnis"] for x in e] == ["abgelehnt", "abgelehnt", "ergaenzt"], e
+        assert e[0]["grund"].startswith("story_id") and e[1]["grund"].startswith("story_id")
+
+
+def test_ergaenzen_zaehlt_vorhandene_seiten_derselben_datei_mit(settings):
+    datei = pdf_bytes([SEITE1, SEITE2, SEITE1, SEITE2])
+    with Store(settings.db_path) as store:
+        sid = pdf_annehmen(store, settings, pdf_vorschlag(PDF_URL + "#page=2"), {PDF_URL: datei})["story_id"]
+        repo.story_setzen(store, sid, status="recherche_erforderlich")
+        e = pdf_annehmen(store, settings, pdf_vorschlag(PDF_URL + "#page=3", story_id=sid), {PDF_URL: datei})
+        assert e["ergebnis"] == "ergaenzt", e
+        repo.story_setzen(store, sid, status="recherche_erforderlich")
+        abrufe = []
+        e = nachtrag.annehmen(store, settings, {"vorschlaege": [pdf_vorschlag(PDF_URL + "#page=4", story_id=sid)]},
+                              von="test", ctx=kontext(store, settings), abruf=pdf_abruf({PDF_URL: datei}, abrufe))
+        e = e["ergebnisse"][0]
+        assert e["ergebnis"] == "abgelehnt" and abrufe == [], e
+        assert e["quellen_uebersprungen"] == [{"url": PDF_URL + "#page=4", "grund": "höchstens zwei Seiten je Datei"}]
+        assert len(repo.dokumente(store, sid)) == 2
+
+
+def test_ergaenzen_hoechstens_zehn_dokumente_je_story(settings):
+    with Store(settings.db_path) as store:
+        sid = nachtrag_mit_luecke(store, settings)
+        for n in range(8):
+            repo.dokument_hinzufuegen(store, sid, url=f"https://www.example.org/bericht-{n}", text=ARTIKEL1)
+        e = annehmen(store, settings, [vorschlag(story_id=sid, quellen=[quelle(URL3), quelle(URL2)])],
+                     seiten=SEITEN3)["ergebnisse"][0]
+        assert e["ergebnis"] == "ergaenzt" and e["quellen_geholt"] == 1, e
+        assert e["quellen_uebersprungen"] == [{"url": URL2, "grund": "höchstens 10 Dokumente je Story"}]
+        repo.story_setzen(store, sid, status="recherche_erforderlich")
+        abrufe = []
+        e = annehmen(store, settings, [vorschlag(story_id=sid, quellen=[quelle(URL2)])], seiten=SEITEN3,
+                     abrufe=abrufe)["ergebnisse"][0]
+        assert e["ergebnis"] == "abgelehnt" and abrufe == [] and len(repo.dokumente(store, sid)) == 10
+
+
+def test_ergaenzen_seitengrenze_auch_in_der_schreibtransaktion(settings):
+    datei = pdf_bytes([SEITE1, SEITE2, SEITE1, SEITE2, SEITE1])
+    with Store(settings.db_path) as store:
+        sid = pdf_annehmen(store, settings, pdf_vorschlag(PDF_URL + "#page=2"), {PDF_URL: datei})["story_id"]
+        repo.story_setzen(store, sid, status="recherche_erforderlich")
+        basis = pdf_abruf({PDF_URL: datei})
+
+        def abruf(url, frist=None):  # ein gleichzeitiger Aufruf hängt Seite 5 an
+            repo.dokument_hinzufuegen(store, sid, url=PDF_URL + "#page=5", text="x" * 400)
+            return basis(url, frist)
+        e = nachtrag.annehmen(store, settings, {"vorschlaege": [pdf_vorschlag(PDF_URL + "#page=3", story_id=sid)]},
+                              von="test", ctx=kontext(store, settings), abruf=abruf)["ergebnisse"][0]
+        assert e["ergebnis"] == "abgelehnt" and "höchstens zwei Seiten je Datei" in e["grund"], e
+        assert [d.url for d in repo.dokumente(store, sid)] == [PDF_URL + "#page=2", PDF_URL + "#page=5"]
+
+
+def test_ergaenzen_fuehrt_hinweise_zusammen(settings):
+    with Store(settings.db_path) as store:
+        sid = nachtrag_mit_luecke(store, settings)
+        e = annehmen(store, settings, [vorschlag(story_id=sid, quellen=[quelle(URL3)], bezug="", bild_hinweis="",
+                                                 kernfakten=["rund 2500 Menschen", "rund 2000 Gäste"])],
+                     seiten=SEITEN3)["ergebnisse"][0]
+        assert e["ergebnis"] == "ergaenzt", e
+        h = json.loads(repo.story(store, sid)["vorschlag"])
+        assert h["bezug"] == "Größter Hindu-Tempel Deutschlands, Treffpunkt der Community"
+        assert h["bild_hinweis"] == "Foto der Einweihung"
+        assert h["kernfakten"] == ["rund 2500 Menschen", "rund 2000 Gäste", "Eröffnung am 14. März 2026"]
+        repo.story_setzen(store, sid, status="recherche_erforderlich")
+        viele = [f"Fakt {n}" for n in range(12)]
+        annehmen(store, settings, [vorschlag(story_id=sid, quellen=[quelle(URL2)], kernfakten=viele)])
+        assert json.loads(repo.story(store, sid)["vorschlag"])["kernfakten"] == viele  # höchstens 12, neue zuerst
+
+
+def test_ergaenzen_heikel_stuft_nur_hoch(settings):
+    with Store(settings.db_path) as store:
+        sid = nachtrag_mit_luecke(store, settings)
+        assert repo.story(store, sid)["sensibel"] == 0
+        annehmen(store, settings, [vorschlag(story_id=sid, heikel=True, quellen=[quelle(URL3)])], seiten=SEITEN3)
+        assert repo.story(store, sid)["sensibel"] == 1
+        repo.story_setzen(store, sid, status="recherche_erforderlich")
+        e = annehmen(store, settings, [vorschlag(story_id=sid, heikel=False, quellen=[quelle(URL2)])])["ergebnisse"][0]
+        assert e["ergebnis"] == "ergaenzt" and repo.story(store, sid)["sensibel"] == 1
+
+
+def test_ergaenzen_job_beginnt_waehrend_der_abrufe_nichts_geschrieben(settings):
+    with Store(settings.db_path) as store:
+        sid = nachtrag_mit_luecke(store, settings)
+        basis = abruf_aus(SEITEN3)
+
+        def abruf(url, frist=None):  # ein Worker greift die Story zwischen erster Prüfung und Transaktion
+            ts = "2026-03-20T10:00:00+00:00"
+            store.db.execute("INSERT INTO workflow_jobs (story_id, schritt, status, naechster_versuch, erstellt, "
+                             "aktualisiert) VALUES (?, 'recherche', 'laeuft', ?, ?, ?)", (sid, ts, ts, ts))
+            store.db.commit()
+            return basis(url, frist)
+        e = nachtrag.annehmen(store, settings, {"vorschlaege": [vorschlag(story_id=sid, quellen=[quelle(URL3)])]},
+                              von="test", ctx=kontext(store, settings), abruf=abruf)["ergebnisse"][0]
+        assert e["ergebnis"] == "abgelehnt" and e["grund"] == "an der Story läuft gerade ein Job", e
+        s = repo.story(store, sid)
+        assert s["status"] == "recherche_erforderlich" and len(repo.dokumente(store, sid)) == 1
+
+
+def test_ergaenzen_setzt_doc_key_nach_dem_hoechsten_fort(settings):
+    with Store(settings.db_path) as store:
+        sid = nachtrag_mit_luecke(store, settings)
+        for n in (2, 3):
+            repo.dokument_hinzufuegen(store, sid, url=f"https://www.example.org/bericht-{n}", text=ARTIKEL1)
+        store.db.execute("DELETE FROM source_documents WHERE story_id = ? AND doc_key = 'Q2'", (sid,))
+        store.db.commit()
+        e = annehmen(store, settings, [vorschlag(story_id=sid, quellen=[quelle(URL3)])], seiten=SEITEN3)["ergebnisse"][0]
+        assert e["ergebnis"] == "ergaenzt", e
+        assert [d.doc_key for d in repo.dokumente(store, sid)] == ["Q1", "Q3", "Q4"]
+
+
+def test_dokument_hinzufuegen_vergibt_doc_key_nach_dem_hoechsten(settings):
+    """Cockpit „Quelle ergänzen“: nach einer Lücke (Q1, Q3) nicht COUNT+1 = Q3 doppelt, sondern Q4."""
+    with Store(settings.db_path) as store:
+        sid = repo.story_anlegen(store, typ="news", titel="Story mit Lücke")
+        for n in (1, 2, 3):
+            repo.dokument_hinzufuegen(store, sid, url=f"https://www.example.org/bericht-{n}", text=ARTIKEL1)
+        store.db.execute("DELETE FROM source_documents WHERE story_id = ? AND doc_key = 'Q2'", (sid,))
+        store.db.commit()
+        assert repo.dokument_hinzufuegen(store, sid, url="https://www.example.org/neu", text=ARTIKEL2) == "Q4"

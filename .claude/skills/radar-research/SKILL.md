@@ -38,6 +38,16 @@ nur aus bestätigten Claims, Belege je `<p>`, Links nur auf Quellen der Story.
 4. `python tools/radar_bericht.py` → Entwürfe mit Hinweisen prüfen (Länge, Quellenzeile, Copydesk).
 5. Bericht an Luis: Tabelle Story · Ergebnis · Titel/Grund · Hinweise.
 
+## Nachtrag ergänzen
+
+Fehlen einer Nachtrag-Story (Herkunft `nachtrag`, Status „Recherche nötig“) Kernfakten, keine neue Story vorschlagen:
+denselben Vorschlag mit `"story_id": <Nummer>` und den neuen Quellen an `POST /api/agent/vorschlag` schicken (oder
+`agent vorschlag --datei`). Der Radar holt nur Adressen, die noch nicht Beleg der Story sind, hängt sie an (Q<n+1> …),
+gibt die Story wieder frei (Status „neu“) und führt die Hinweise zusammen (leeres `bezug`/`bild_hinweis` behält den
+alten Wert; `kernfakten` aus neu und alt ohne Doppel, neue zuerst, höchstens 12). Antwort
+`ergaenzt`; `vorhanden` heißt: keine neue Quelle; `abgelehnt` nennt den Grund („Story nicht ergänzbar“: unbekannt,
+keine Nachtrag-Story, nicht „Recherche nötig“ oder schon ein Entwurf; oder „Job läuft“; Einzelheiten im Ereignislog). Danach die Story im nächsten Export neu schreiben – alle Dokumente sind dabei.
+
 ## Stolperfallen
 
 - Fundstellen müssen **wörtlich** im Dokument stehen, sonst verwirft das Gate den Claim.

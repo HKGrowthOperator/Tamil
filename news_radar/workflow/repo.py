@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Any, Iterable
@@ -121,7 +122,10 @@ def dokument_hinzufuegen(store, story_id: int, *, url: str = "", uid: str = "", 
         if store.db.execute("SELECT 1 FROM source_documents WHERE story_id = ? AND url_norm = ?",
                             (story_id, url_norm)).fetchone():
             return None
-        n = store.db.execute("SELECT COUNT(*) FROM source_documents WHERE story_id = ?", (story_id,)).fetchone()[0]
+        # höchste Nummer plus eins (COUNT+1 vergäbe nach einer Lücke eine Kennung doppelt)
+        n = max((int(r[0][1:]) for r in store.db.execute(
+            "SELECT doc_key FROM source_documents WHERE story_id = ?", (story_id,)) if re.fullmatch(r"Q[0-9]+", r[0])),
+            default=0)
         key = f"Q{n + 1}"
         store.db.execute(
             "INSERT INTO source_documents (story_id, doc_key, url, url_norm, uid, publisher, quelle, published_at, "
