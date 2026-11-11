@@ -15,15 +15,16 @@ import json
 import logging
 import threading
 import time
+import hashlib
 from collections import Counter
 from datetime import date, datetime, timedelta, timezone
 from typing import Any, Callable
 
-from .. import filtering, notify, schalter, sources
+from .. import filtering, images, notify, schalter, sources
 from ..agents import Kontext, cluster, copydesk, factcheck, media, relevance, research, schreiben, seo
 from ..config import Settings
 from ..pipeline import Result, category_label, quelle_name, refresh_kino, stale_event_date
-from ..store import Store, now_iso
+from ..store import OPEN_STATES, Store, now_iso
 from ..wordpress import slugify
 from ..writer import split_source_suffix
 from . import costs, jobs, repo
@@ -142,7 +143,8 @@ def _scan(ctx: Kontext, items: list[sources.NewsItem] | None = None) -> dict:
                 offen = _offener_entwurf(store, z.story_id)
                 if offen:
                     store.update_draft(offen["id"], hinweise=offen["hinweise"] + [f"Neue Quelle: {publisher} – {item.url}"],
-                                       weitere_quellen=offen["weitere_quellen"] + [{"name": publisher, "url": item.url}])
+                                       weitere_quellen=offen["weitere_quellen"] + [{"name": publisher, "url": item.url}],
+                                       nur_status=OPEN_STATES)
             continue
         typ = {"kino": "kino", "event": "event"}.get(item.kind, "news")
         if typ != "kino" and bezahlt >= s.entwuerfe_tag:
@@ -323,6 +325,24 @@ def _quelle(ctx: Kontext, name: str):
     return by_name.get(name) or by_name.get((name or "").split(" · ")[0])
 
 
+def _neues_bild_verwerfen(ctx: Kontext, name: str, asset_id: int) -> None:
+    """Nicht übernommenes Bild: den ungebundenen Lizenz-Datensatz entfernen, Datei und Vorschaubild nur, wenn kein
+    Entwurf darauf zeigt (bei gleichen Bytes ist es dieselbe Datei wie die des bestehenden Entwurfs)."""
+    # Zeigt schon ein Entwurf auf die Datei (festgeschrieben, nur das Binden fehlte), bleibt der Datensatz: sonst
+    # hätte der Entwurf ein Bild ohne Lizenz und ohne KI-Kennzeichnung.
+    ctx.store._write("DELETE FROM assets WHERE id = ? AND draft_id IS NULL AND NOT EXISTS "
+                     "(SELECT 1 FROM drafts WHERE drafts.bild_datei = assets.datei)", (asset_id,))
+    _alte_datei_aufraeumen(ctx, name, "")
+
+
+def _alte_datei_aufraeumen(ctx: Kontext, datei: str | None, neu: str) -> None:
+    if not datei or datei == neu or ctx.store.db.execute(
+            "SELECT 1 FROM drafts WHERE bild_datei = ? LIMIT 1", (datei,)).fetchone():
+        return
+    for pfad in (datei, datei.replace(".jpg", "-thumb.jpg")):
+        (ctx.settings.bilder_dir / pfad).unlink(missing_ok=True)
+
+
 def entwurf_anlegen(ctx: Kontext, story: dict, felder: dict, payload: dict, *, typ: str, hinweise: list[str],
                     fakten: dict | None = None, fingerprint: str = "") -> int | None:
     """Bild besorgen, Entwurf in die Warteschlange (Status „neu“), Lizenz und Fassung verknüpfen."""
@@ -336,7 +356,29 @@ def entwurf_anlegen(ctx: Kontext, story: dict, felder: dict, payload: dict, *, t
     label = category_label(s, felder.get("kategorie") or "news")
     bild, versucht = media.besorgen(ctx, story, felder, stem, kategorie_label=label,
                                     quelle=_quelle(ctx, payload.get("quelle", "")), quelle_bild=payload.get("quelle_bild", ""))
-    name, asset_id = media.speichern(ctx, bild, stem, story["id"])
+    # Eindeutiger Name (Entwurf, falls schon da, und Inhalts-Hash): nie die Datei eines anderen Entwurfs überschreiben
+    vorhanden = ctx.store.draft_by_uid(uid)
+    eindeutig = f"{stem}-e{vorhanden['id']}" if vorhanden else f"{stem}-u{hashlib.sha256(uid.encode()).hexdigest()[:6]}"
+    eindeutig += "-" + hashlib.sha256(bild.image.data).hexdigest()[:8]
+    name, asset_id = media.speichern(ctx, bild, eindeutig, story["id"])
+    try:
+        return _entwurf_eintragen(ctx, story, felder, payload, typ=typ, hinweise=hinweise, fakten=fakten,
+                                  fingerprint=fingerprint, uid=uid, docs=docs, bild=bild, versucht=versucht, name=name,
+                                  asset_id=asset_id)
+    except BaseException:  # Abbruch nach dem Speichern: keine Datei und kein Lizenz-Datensatz ohne Entwurf
+        try:
+            _neues_bild_verwerfen(ctx, name, asset_id)
+        except Exception:  # noqa: BLE001 – das Aufräumen darf die ursprüngliche Ausnahme nicht ersetzen
+            log.exception("Aufräumen des Bildes %s fehlgeschlagen", name)
+        raise
+
+
+def _entwurf_eintragen(ctx: Kontext, story: dict, felder: dict, payload: dict, *, typ: str, hinweise: list[str],
+                       fakten: dict | None, fingerprint: str, uid: str, docs: list, bild: media.Bild, versucht: list,
+                       name: str, asset_id: int) -> int | None:
+    """Entwurf anlegen oder einen wartenden aktualisieren; Lizenz und Fassung verknüpfen (Bild liegt schon)."""
+    s = ctx.settings
+    primaer = docs[0] if docs else None
     weitere = [{"name": d.publisher or d.quelle, "url": d.url} for d in docs[1:] if d.url and not d.url.endswith("#daten")]
     if story.get("sensibel"):
         hinweise = ["Sensibles Thema: vor der Freigabe eine zweite Person lesen lassen"] + \
@@ -369,18 +411,27 @@ def entwurf_anlegen(ctx: Kontext, story: dict, felder: dict, payload: dict, *, t
                 # Die Arbeit der Redaktion nie überschreiben: die neue Fassung liegt in den Fassungen, der Entwurf
                 # bekommt nur einen Hinweis.
                 hinweis = f"Neue Radar-Fassung vom {now_iso()[:16].replace('T', ' ')} (Story {story['id']}) – Text nicht überschrieben, siehe Fassungen"
-                ctx.store.update_draft(draft_id, hinweise=[hinweis] + [h for h in existing.get("hinweise") or []
+                ctx.store.update_draft(draft_id, nur_status=OPEN_STATES, hinweise=[hinweis] + [h for h in existing.get("hinweise") or []
                                                                        if not h.startswith("Neue Radar-Fassung")])
-                repo.fassung_speichern(ctx.store, story["id"], "entwurf_neu", {**felder, **{k: row[k] for k in repo.FASSUNG_FELDER if k in row}},
+                repo.fassung_speichern(ctx.store, story["id"], "entwurf_neu", {**felder, **{k: row[k] for k in repo.FASSUNG_FELDER if k in row},
+                                                                     "bild_datei": ""},  # Bild wird verworfen
                                        von="radar", draft_id=draft_id)
                 repo.story_setzen(ctx.store, story["id"], status="fertig")
                 ctx.store.event("entwurf_nicht_ueberschrieben", id=draft_id, story=story["id"], status=existing["status"])
+                _neues_bild_verwerfen(ctx, name, asset_id)
                 return draft_id
-            ctx.store.update_draft(draft_id, von="radar", **{k: v for k, v in row.items() if k not in ("uid", "fakten")})
-        else:
+            if not ctx.store.update_draft(draft_id, von="radar", nur_status=OPEN_STATES,
+                                          bild_vorher=existing.get("bild_datei"),
+                                          **{k: v for k, v in row.items() if k not in ("uid", "fakten")}):
+                existing = None  # inzwischen freigegeben oder anderes Bild: nicht überschreiben
+            else:
+                _alte_datei_aufraeumen(ctx, existing.get("bild_datei"), name)
+        if existing is None or existing["status"] not in OPEN_STATES:
+            _neues_bild_verwerfen(ctx, name, asset_id)
             ctx.store.event("entwurf_existiert", story=story["id"], uid=uid)
             repo.story_setzen(ctx.store, story["id"], status="verworfen", notiz="Entwurf zu dieser Meldung existiert schon")
             return None
+    images.datei_sicherstellen(bild.image, s.bilder_dir, name)  # Datei gehört jetzt sicher zum Entwurf
     repo.asset_draft_setzen(ctx.store, asset_id, draft_id)
     # Fassung „entwurf“ = genau das, was in der Warteschlange liegt (inkl. Bild) – derselbe Hash wie bei der Freigabe
     endfassung = {**felder, **{k: row[k] for k in repo.FASSUNG_FELDER if k in row}}

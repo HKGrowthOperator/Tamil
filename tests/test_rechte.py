@@ -139,7 +139,10 @@ def test_redaktion_darf_weder_benutzer_noch_erneut_noch_export(app):
     assert priya.post("/nutzer", data={"_csrf": token, "name": "x", "passwort": "langes-passwort"}).status_code == 403
     assert priya.post("/job/1/erneut", data={"_csrf": token}).status_code == 403
     assert priya.get("/protokoll.jsonl").status_code == 403
-    assert priya.post("/entwurf/1/status", data={"_csrf": token, "aktion": "freigeben"}).status_code == 302
+    from stand_hilfe import stand_aus
+
+    stand = stand_aus(priya.get("/entwurf/1").get_data(as_text=True))
+    assert priya.post("/entwurf/1/status", data={"_csrf": token, "aktion": "freigeben", "stand": stand}).status_code == 302
     assert "Benutzer" not in priya.get("/").get_data(as_text=True).split("<main")[0]
 
 

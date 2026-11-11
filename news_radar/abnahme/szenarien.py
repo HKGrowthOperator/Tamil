@@ -302,3 +302,50 @@ SZENARIEN += [
                                  "uebersprungen_schon_beleg": 1, "status_neu": 1, "export_dokumente": 2,
                                  "notiz_alt_und_ergaenzt": 1, "agent_entwuerfe": 1}}),
 ]
+
+# ---- Bild mit Nachweis: Agent schlägt ein echtes Bild vor, der Radar prüft Herkunft und Rechte selbst ----
+TEMPEL_URL = "https://www.hindutempel-wuppertal.de/aktuell/gemeindehaus"
+TEMPEL_OG = "https://www.hindutempel-wuppertal.de/media/gemeindehaus.jpg"
+COMMONS_SEITE = "https://commons.wikimedia.org/wiki/File:Hindu_Tempel_Hamm.jpg"
+COMMONS_BILD = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Hindu_Tempel_Hamm.jpg/1600px-x.jpg"
+BILD_NACHTRAG = {**NACHTRAG, "quellen": [NACHTRAG_QUELLE, {**NACHTRAG_QUELLE, "url": TEMPEL_URL,
+                                                           "herausgeber": "Hindu-Tempel"}]}
+BILD_TEXTE = {NACHTRAG_URL: T.HAMM, TEMPEL_URL: T.HAMM}
+TEMPEL_HTML = (f'<html><head><meta property="og:image" content="{TEMPEL_OG}"></head><body><figure>'
+               '<img src="/media/einweihung.jpg" alt="Einweihung"><figcaption>Foto: dpa</figcaption></figure>'
+               "</body></html>")
+# Seite ohne Agentur-Nachweis (für den Erfolgsfall); TEMPEL_HTML trägt „Foto: dpa“ an einem anderen Bild
+TEMPEL_HTML_EIGEN = TEMPEL_HTML.replace("Foto: dpa", "Foto: Tempelverein")
+BILD_BASIS = {"_ohne_modell": True, "_vorschlaege": [[BILD_NACHTRAG]]}
+
+SZENARIEN += [
+    Szenario(59, "Bild mit Nachweis (Commons, CC BY-SA): Lizenz-Datensatz, Nachweis am Entwurf, Protokoll", "Bild", [],
+             texte=BILD_TEXTE, nachher="bild_vorschlag",
+             einstellungen={**BILD_BASIS, "_bilder": [{"weg": "commons", "seite_url": COMMONS_SEITE,
+                                                       "alt": "Hindu-Tempel in Hamm"}],
+                            "_bild_seiten": {"API": f"commons:CC BY-SA 4.0|{COMMONS_BILD}",
+                                             COMMONS_BILD: "jpeg:1600x1066"}},
+             erwartet={"aufrufe": 0, "bild": "commons",
+                       "stats": {"bild_gesetzt": 1, "asset_commons": 1, "nachweis_am_entwurf": 1,
+                                 "protokoll_bild": 1}}),
+    Szenario(60, "Bild aus gelisteter Quelle (og:image): Nachweis aus dem Register, nicht aus dem Vorschlag", "Bild", [],
+             texte=BILD_TEXTE, nachher="bild_vorschlag",
+             einstellungen={**BILD_BASIS, "_bilder": [{"weg": "quelle", "seite_url": TEMPEL_URL,
+                                                       "nachweis": "Foto: erfunden"}],
+                            "_bild_seiten": {TEMPEL_URL: TEMPEL_HTML_EIGEN, TEMPEL_OG: "jpeg:1600x900"}},
+             erwartet={"aufrufe": 0, "bild": "quelle",
+                       "stats": {"bild_gesetzt": 1, "asset_quelle": 1, "nachweis_am_entwurf": 1, "protokoll_bild": 1}}),
+    Szenario(61, "Bildvorschläge abgelehnt (Agenturbild, NC-Lizenz, Host nicht im Register, interne Adresse): "
+                 "Bildkarte bleibt, nichts Internes abgerufen", "Bild", [], texte=BILD_TEXTE, nachher="bild_vorschlag",
+             einstellungen={**BILD_BASIS, "_bilder": [
+                 {"weg": "quelle", "seite_url": TEMPEL_URL,
+                  "bild_url": "https://www.hindutempel-wuppertal.de/media/einweihung.jpg"},
+                 {"weg": "commons", "seite_url": COMMONS_SEITE},
+                 {"weg": "quelle", "seite_url": NACHTRAG_URL},
+                 {"weg": "quelle", "seite_url": TEMPEL_URL, "bild_url": "http://169.254.169.254/latest/meta-data"}],
+                 "_bild_seiten": {TEMPEL_URL: TEMPEL_HTML, "API": f"commons:CC BY-NC-SA 4.0|{COMMONS_BILD}",
+                                  COMMONS_BILD: "jpeg:1600x1066"}},
+             erwartet={"aufrufe": 0, "bild": "karte",
+                       "stats": {"bild_abgelehnt": 4, "bild_gesetzt": 0, "grund_agentur": 1, "grund_lizenz": 1,
+                                 "grund_register": 1, "grund_intern": 1, "abrufe_intern": 0, "protokoll_bild": 0}}),
+]

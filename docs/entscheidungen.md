@@ -5,6 +5,17 @@ Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
 ## 11.11.2026
 
+- **Bild mit Nachweis (`POST /api/agent/bild`):** Ein Agent darf für einen wartenden Entwurf ein Bild vorschlagen, der
+  Radar prüft Herkunft und Rechte selbst und setzt Nachweis und Lizenz aus Commons bzw. dem Register, nie aus dem
+  Vorschlag. Erlaubt: Wikimedia Commons nur mit Lizenz-Adresse bei creativecommons.org (CC BY, CC BY-SA; nichts mit NC
+  oder ND) und eigenes Material von Hosts aus dem Register `[[bildquellen]]` (Tempel, Vereine, Veranstalter, Kinos;
+  Plakate gehören dem Verleih), nur wenn die Seite ein Beleg der Story ist. Abgelehnt: Agenturbilder, Logos, Banner,
+  Bilder auf fremden CDNs, soziale Netzwerke, KI-Bilder. · Hauptsitzung nach vier unabhängigen Code-Prüfungen · Luis
+  will „überall Bilder“, aber keine fremden Fotos ohne Recht.
+- **Freigabe gilt nur für den gesehenen Stand:** Jeder Entwurf trägt einen Zähler `stand` (Migration 6, Trigger bei
+  jeder inhaltlichen Änderung). Freigabe, Sammelfreigabe und Veröffentlichen nehmen den Stand mit, den die Redaktion
+  gesehen hat; hat sich der Entwurf inzwischen geändert (z. B. ein Bild kam dazu), wird die Freigabe abgelehnt
+  („veraltet“). Belege und Claims zählen den Stand bewusst nicht, weil sie den Text nicht ändern. · Hauptsitzung
 - **Rückblick 2026:** Die Website bekommt die wichtigsten Ereignisse des Jahres 2026 aus der tamilischen Community in
   Deutschland, Österreich und der Schweiz als neu geschriebene Beiträge; der Altbestand bleibt unverändert stehen.
   Neueste zuerst. · Luis („komplett auffrischen, nur mit Daten aus 2026, die aktuellen nach oben, nichts löschen“)

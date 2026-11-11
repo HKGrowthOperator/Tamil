@@ -2,7 +2,8 @@
 `<RADAR_AGENT_TOKEN>`.
 Agent-Modus übers Netz: GET /api/agent/export und POST /api/agent/import mit `Bearer <RADAR_AGENT_TOKEN>` – dieselbe
 Aufgabenmappe und derselbe Import wie `agent export/import --v2`, mit allen Gates. POST /api/agent/vorschlag nimmt
-Nachtrag-Vorschläge mit Quellen an (`nachtrag.annehmen`, kein Modell).
+Nachtrag-Vorschläge mit Quellen an (`nachtrag.annehmen`, kein Modell); POST /api/agent/bild setzt ein Bild mit
+Nachweis an einem wartenden Entwurf (`bildvorschlag.annehmen`, kein Modell).
 
 Nur lesen, kein Login, keine Änderungen. Ohne RADAR_LESE_TOKEN und RADAR_AGENT_TOKEN gibt es den Endpunkt nicht (404).
 Er liefert Storys, Quellen-Dokumente, Claims, Entwürfe, Fassungen mit Belegen, Kosten je Aufruf, Warteschlange und
@@ -120,6 +121,29 @@ def agent_vorschlag():
     except ValueError as exc:
         return jsonify({"fehler": str(exc)}), 400
     get_store().event("agent_api_vorschlag", von=von, **{k: v for k, v in out.items() if isinstance(v, int)})
+    if out.get("angehalten"):  # mitten im Stapel angehalten: 409, mit den bis dahin erzielten Ergebnissen
+        return jsonify({"fehler": "Redaktion angehalten", **out["angehalten"], **out}), 409
+    return jsonify(out)
+
+
+@api.post("/api/agent/bild")
+def agent_bild():
+    """Bild mit Nachweis: der Radar prüft Herkunft und Rechte selbst, holt das Bild und setzt es am wartenden Entwurf."""
+    if not _berechtigt(g.settings.agent_token):
+        return _abgewiesen()
+    from ..bildvorschlag import WEB_FRIST_GESAMT, WEB_MAX_BILDER, annehmen
+
+    raw = request.get_json(silent=True)
+    if raw is None:
+        return jsonify({"fehler": "JSON erwartet"}), 400
+    von = str(request.args.get("von") or "claude-code")
+    try:
+        out = annehmen(get_store(), g.settings, raw, von=von, max_bilder=WEB_MAX_BILDER, frist_gesamt=WEB_FRIST_GESAMT)
+    except schalter.Gestoppt as exc:
+        return _angehalten(exc)
+    except ValueError as exc:
+        return jsonify({"fehler": str(exc)}), 400
+    get_store().event("agent_api_bild", von=von, **{k: v for k, v in out.items() if isinstance(v, int)})
     if out.get("angehalten"):  # mitten im Stapel angehalten: 409, mit den bis dahin erzielten Ergebnissen
         return jsonify({"fehler": "Redaktion angehalten", **out["angehalten"], **out}), 409
     return jsonify(out)

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import hashlib
 import re
 from datetime import datetime, timezone
 from urllib.parse import urlsplit
@@ -140,12 +141,20 @@ def set_status(draft_id: int):
     aktion = request.form.get("aktion", "")
     if aktion not in TRANSITIONS:
         abort(400)
+    store = get_store()
+    stand = None
     if aktion in ("freigeben", "erneut"):
         pruefe("freigeben")
-    store = get_store()
+        stand = _stand(request.form.get("stand"))
+        if stand is None or (store.get_draft(draft_id) or {}).get("stand", stand) != stand:
+            flash(VERALTET if stand is None else GEAENDERT, "fehler")  # nichts ändern, noch einmal ansehen
+            return redirect(url_for("ui.entwurf", draft_id=draft_id))
     try:
-        neu = store.set_status(draft_id, aktion, von=_user())
+        neu = store.set_status(draft_id, aktion, von=_user(), stand=stand)
     except ConflictError as exc:
+        if stand is not None and (store.get_draft(draft_id) or {}).get("stand") != stand:
+            flash(GEAENDERT, "fehler")
+            return redirect(url_for("ui.entwurf", draft_id=draft_id))
         return render_template("fehler.html", titel="Zustand hat sich geändert", text=str(exc), draft_id=draft_id), 409
     store.event("aktion", id=draft_id, aktion=aktion, status=neu, von=_user())
     row = store.get_draft(draft_id)
@@ -193,9 +202,15 @@ def sammelfreigabe():
         if row["status"] not in OPEN_STATES and row["status"] != "fehler":
             nicht.append(f"#{draft_id} „{row['titel'][:60]}“: Status „{STATUS_LABELS.get(row['status'], row['status'])}“")
             continue
-        aktion = _freigeben(store, row)
+        stand = _stand(request.form.get(f"stand_{draft_id}"))
+        if stand is None or row.get("stand") != stand:
+            nicht.append(f"#{draft_id} „{row['titel'][:60]}“: {VERALTET if stand is None else GEAENDERT}")
+            continue
+        aktion = _freigeben(store, row, stand=stand)
         if not aktion:
-            nicht.append(f"#{draft_id} „{row['titel'][:60]}“: Zustand hat sich gerade geändert")
+            geaendert = (store.get_draft(draft_id) or {}).get("stand") != stand
+            nicht.append(f"#{draft_id} „{row['titel'][:60]}“: "
+                         + (GEAENDERT if geaendert else "Zustand hat sich gerade geändert"))
             continue
         store.event("aktion", id=draft_id, aktion=aktion, status="freigegeben", von=_user(), sammel=True)
         if sperre is not None:
@@ -328,6 +343,9 @@ def zuruecksetzen(draft_id: int):
 def bild(draft_id: int):
     store = get_store()
     row = _draft_or_404(draft_id)
+    if row["status"] not in OPEN_STATES:  # sonst ginge ein ungesehenes Bild ohne neue Freigabe hinaus
+        flash("Freigegebene Entwürfe zuerst zurückstellen, dann das Bild ersetzen.", "fehler")
+        return redirect(url_for("ui.entwurf", draft_id=draft_id))
     settings = _settings()
     aktion = request.form.get("aktion", "karte")
     stem_base = (row.get("bild_datei") or f"{row['uid'][:12]}-{slugify(row['titel'], 50)}.jpg").removesuffix(".jpg")
@@ -335,6 +353,7 @@ def bild(draft_id: int):
     version = sum(1 for e in store.iter_log(event="bild") if e.get("id") == draft_id) + 2
     stem = f"{stem_base}-{version}"
     label = next((c.label for c in settings.categories if c.slug == row["kategorie"]), row["kategorie"])
+    felder: dict = {}  # Bildfelder (Prompt, Thema, Suchbegriff) gehen mit dem bedingten Bild-UPDATE zusammen
     try:
         if aktion == "upload":
             file = request.files.get("datei")
@@ -355,7 +374,7 @@ def bild(draft_id: int):
                 return redirect(url_for("ui.entwurf", draft_id=draft_id))
             prompt = prompts.bild_prompt_bauen(motiv, thema)
             image = bilder.from_gemini(prompt, settings, stem, current_app.extensions.get("bild_transport"))
-            store.update_draft(draft_id, bild_prompt=motiv, bild_thema=thema)
+            felder = {"bild_prompt": motiv, "bild_thema": thema}
             if image is None:
                 flash("Die Bild-KI hat kein Bild geliefert (Protokoll prüfen) – Bild unverändert.", "fehler")
                 return redirect(url_for("ui.entwurf", draft_id=draft_id))
@@ -367,24 +386,38 @@ def bild(draft_id: int):
             if image is None:
                 flash(f"Im Bildpool „{thema or '–'}“ liegt noch kein Bild – Bild unverändert.", "fehler")
                 return redirect(url_for("ui.entwurf", draft_id=draft_id))
-            store.update_draft(draft_id, bild_thema=thema)
+            felder = {"bild_thema": thema}
         elif aktion == "stock":
             query = request.form.get("suchbegriff", "").strip() or row.get("bild_suchbegriff") or row["titel"]
             image = images.featured_image(settings, query, row["titel"], label, stem)
             if image.origin == "karte":
                 flash("Kein Stockfoto gefunden (oder kein Unsplash/Pexels-Schlüssel) – Bildkarte erzeugt.", "fehler")
-            store.update_draft(draft_id, bild_suchbegriff=query)
+            felder = {"bild_suchbegriff": query}
         else:
             image = images.branded_card(row["titel"], label, stem, row.get("kategorie") or "")
     except Exception as exc:  # noqa: BLE001
         log.exception("Bild fehlgeschlagen")
         flash(f"Bild fehlgeschlagen: {str(exc)[:200]}", "fehler")
         return redirect(url_for("ui.entwurf", draft_id=draft_id))
-    name, _thumb = images.save_pair(image, settings.bilder_dir, stem)
-    for old in (row.get("bild_datei"), (row.get("bild_datei") or "").replace(".jpg", "-thumb.jpg")):
-        if old and old != name:
+    # Eindeutiger Name je Entwurf und Inhalt: nie die Datei eines anderen Entwurfs überschreiben
+    basis = re.sub(r"(?:-e\d+)?-(?:\d+|[0-9a-f]{8})$", "", stem_base)
+    name, _thumb = images.save_pair(image, settings.bilder_dir,
+                                    f"{basis}-e{draft_id}-{hashlib.sha256(image.data).hexdigest()[:8]}")
+    # erst schreiben, dann aufräumen (und nie eine Datei löschen, auf die ein anderer Entwurf zeigt)
+    if not store.update_draft(draft_id, von=_user(), nur_status=OPEN_STATES, bild_vorher=row.get("bild_datei"),
+                              bild_datei=name, bild_credit=image.credit, bild_origin=image.origin, **felder):
+        # inzwischen freigegeben oder anderes Bild: nichts ändern, neue Datei nur weg, wenn niemand darauf zeigt
+        if not store.db.execute("SELECT 1 FROM drafts WHERE bild_datei = ? LIMIT 1", (name,)).fetchone():
+            for neu in (name, _thumb):
+                (settings.bilder_dir / neu).unlink(missing_ok=True)
+        flash(GEAENDERT, "fehler")
+        return redirect(url_for("ui.entwurf", draft_id=draft_id))
+    images.datei_sicherstellen(image, settings.bilder_dir, name)
+    andere = row.get("bild_datei") and store.db.execute(
+        "SELECT 1 FROM drafts WHERE bild_datei = ? AND id != ? LIMIT 1", (row["bild_datei"], draft_id)).fetchone()
+    for old in (() if andere else (row.get("bild_datei"), (row.get("bild_datei") or "").replace(".jpg", "-thumb.jpg"))):
+        if old and old not in (name, _thumb):
             (settings.bilder_dir / old).unlink(missing_ok=True)
-    store.update_draft(draft_id, von=_user(), bild_datei=name, bild_credit=image.credit, bild_origin=image.origin)
     store.event("bild", id=draft_id, aktion=aktion, origin=image.origin, von=_user())
     _protokoll("bild", row, notiz=aktion)
     flash("Bild ersetzt.", "ok")
@@ -398,6 +431,10 @@ def _publish(draft_id: int, status: str):
 
     store = get_store()
     row = _draft_or_404(draft_id)
+    stand = _stand(request.form.get("stand"))
+    if stand is None or row.get("stand") != stand:  # nur den Stand veröffentlichen, den die Seite gezeigt hat
+        flash(VERALTET if stand is None else GEAENDERT, "fehler")
+        return redirect(url_for("ui.entwurf", draft_id=draft_id))
     sperre = schalter.sperre(store, "website")
     if sperre is not None and status != "publish":
         # „In WordPress bearbeiten“ ist kein Freigeben: im Stopp bleibt der Status, sonst ginge der Text später live
@@ -406,14 +443,18 @@ def _publish(draft_id: int, status: str):
                                           "Einschalten erneut wählen."), "fehler")
         return redirect(url_for("ui.entwurf", draft_id=draft_id))
     if sperre is not None:  # Freigeben von Hand geht, übertragen nicht: der Entwurf wartet auf den nächsten Lauf
-        _freigeben_wartend(store, row, sperre)
+        _freigeben_wartend(store, row, sperre, stand=stand)
         return redirect(url_for("ui.entwurf", draft_id=draft_id))
     wp = _wordpress()
     if wp is None:
         flash("WordPress ist noch nicht angebunden (WP_URL, WP_USER, WP_APP_PASSWORD in .env). Der Entwurf bleibt freigegeben.", "fehler")
-        _freigeben(store, row)
+        if not _freigeben(store, row, stand=stand) and (store.get_draft(draft_id) or {}).get("stand") != stand:
+            flash(GEAENDERT, "fehler")
         return redirect(url_for("ui.entwurf", draft_id=draft_id))
-    claimed = store.claim_draft(draft_id, von=_user())
+    claimed = store.claim_draft(draft_id, von=_user(), stand=stand)
+    if claimed is None and (store.get_draft(draft_id) or {}).get("stand") != stand:
+        flash(GEAENDERT, "fehler")
+        return redirect(url_for("ui.entwurf", draft_id=draft_id))
     if claimed is None:
         return render_template("fehler.html", titel="Schon unterwegs", text="Dieser Entwurf wird gerade veröffentlicht oder ist schon veröffentlicht.", draft_id=draft_id), 409
     try:
@@ -438,14 +479,24 @@ def _publish(draft_id: int, status: str):
     return redirect(url_for("ui.entwurf", draft_id=draft_id))
 
 
-def _freigeben(store, row: dict) -> str:
+GEAENDERT = "Der Entwurf wurde inzwischen geändert, bitte noch einmal ansehen."
+VERALTET = "Diese Seite ist veraltet, bitte neu laden und noch einmal ansehen."  # Anfrage ganz ohne Stand
+
+
+def _stand(roh: str | None) -> int | None:
+    """Stand des Entwurfs, den die Seite gezeigt hat (Formularfeld); None, wenn er fehlt oder ungültig ist."""
+    roh = (roh or "").strip()
+    return int(roh) if roh.isascii() and roh.isdecimal() and len(roh) < 12 else None
+
+
+def _freigeben(store, row: dict, stand: int | None = None) -> str:
     """Offenen Entwurf freigeben, einen mit Fehler erneut freigeben (mit Protokollzeile). Gibt die tatsächliche
     Aktion zurück („freigeben“ oder „erneut“); leer, wenn er es schon war oder nicht freigebbar ist."""
     aktion = "erneut" if row["status"] == "fehler" else "freigeben"
     if row["status"] not in OPEN_STATES and row["status"] != "fehler":
         return ""
     try:
-        store.set_status(row["id"], aktion, von=_user())
+        store.set_status(row["id"], aktion, von=_user(), stand=stand)
     except ConflictError:
         return ""
     _protokoll(aktion, row, fassung=repo.fassung_hash(row))
@@ -458,10 +509,10 @@ def _wartet(row: dict, sperre: dict) -> None:
                notiz=f"Schalter „{sperre['kanal']}“ angehalten seit {sperre['seit']}")
 
 
-def _freigeben_wartend(store, row: dict, sperre: dict, schon_frei: bool = False) -> None:
+def _freigeben_wartend(store, row: dict, sperre: dict, schon_frei: bool = False, stand: int | None = None) -> None:
     """Website angehalten: freigeben, nicht übertragen, und dem Menschen sagen, warum und wie es weitergeht."""
     if not schon_frei:
-        _freigeben(store, row)
+        _freigeben(store, row, stand=stand)
     jetzt = store.get_draft(row["id"])["status"]
     if jetzt != "freigegeben":  # ehrlich bleiben: was nicht freigegeben ist, wartet auch nicht
         flash(_angehalten_meldung(sperre, f"Nichts wurde übertragen; der Entwurf steht auf "

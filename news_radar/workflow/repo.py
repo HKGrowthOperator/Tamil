@@ -240,7 +240,9 @@ def asset_draft_setzen(store, asset_id: int, draft_id: int) -> None:
 
 
 def asset_fuer_datei(store, datei: str) -> dict | None:
-    row = store.db.execute("SELECT * FROM assets WHERE datei = ? ORDER BY id DESC LIMIT 1", (datei,)).fetchone()
+    # gebundene Datensätze vor verwaisten (ein abgebrochener Lauf darf die Lizenz einer Datei nicht überdecken)
+    row = store.db.execute("SELECT * FROM assets WHERE datei = ? ORDER BY draft_id IS NULL, id DESC LIMIT 1",
+                           (datei,)).fetchone()
     return dict(row) if row else None
 
 

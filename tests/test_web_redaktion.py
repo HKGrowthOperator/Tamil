@@ -57,7 +57,9 @@ def test_draft_shows_evidence_costs_license_and_approval_is_audited(app):
     html = client.get("/entwurf/1").get_data(as_text=True)
     assert "Belege" in html and "Faktenmatrix" in html and "Primärquelle" in html and "Faktencheck" in html
     assert "Kosten und Rechte" in html and "Lizenz: eigene Grafik" in html and "Als Dossier recherchieren" in html
-    client.post("/entwurf/1/status", data={"aktion": "freigeben", "_csrf": token})
+    from stand_hilfe import stand_aus
+
+    client.post("/entwurf/1/status", data={"aktion": "freigeben", "_csrf": token, "stand": stand_aus(html)})
     with Store(app.extensions["settings"].db_path) as store:
         aktion = repo.aktionen(store, 1)[-1]
         row = store.get_draft(1)

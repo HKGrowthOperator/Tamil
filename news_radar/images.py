@@ -7,7 +7,9 @@ from __future__ import annotations
 
 import io
 import logging
+import os
 import re
+import tempfile
 import textwrap
 from dataclasses import dataclass
 from pathlib import Path
@@ -195,11 +197,35 @@ def save_pair(image: FeaturedImage, folder: Path, stem: str) -> tuple[str, str]:
     stem = re.sub(r"[^A-Za-z0-9._-]+", "-", stem).strip("-.") or "bild"
     folder.mkdir(parents=True, exist_ok=True)
     name, thumb = f"{stem}.jpg", f"{stem}-thumb.jpg"
-    (folder / name).write_bytes(image.data)
+    _schreiben(folder / name, image.data)
     img = Image.open(io.BytesIO(image.data))
     img.thumbnail((400, 400))
-    (folder / thumb).write_bytes(_encode(img, quality=80))
+    _schreiben(folder / thumb, _encode(img, quality=80))
     return name, thumb
+
+
+def datei_sicherstellen(image: FeaturedImage, folder: Path, name: str) -> None:
+    """Nach dem Festschreiben am Entwurf: Fehlt die Datei (ein anderer Lauf hat die gleich benannte, als vorhanden
+    übersprungene Datei inzwischen aufgeräumt), wird sie neu geschrieben."""
+    if not (folder / name).is_file() or not (folder / name.replace(".jpg", "-thumb.jpg")).is_file():
+        save_pair(image, folder, name.removesuffix(".jpg"))
+
+
+def _schreiben(pfad: Path, daten: bytes) -> None:
+    """Nie in place überschreiben (sonst ist die Datei eines freigegebenen Entwurfs kurz leer): gleicher Inhalt →
+    nichts tun, sonst über eine temporäre Datei im selben Ordner und os.replace."""
+    if pfad.is_file() and pfad.read_bytes() == daten:
+        return
+    # eindeutiger Temp-Name je Aufruf (nicht nur je Prozess): zwei Threads kollidieren sonst
+    fd, tmp_name = tempfile.mkstemp(dir=pfad.parent, prefix=f".{pfad.name}.", suffix=".tmp")
+    tmp = Path(tmp_name)
+    try:
+        os.fchmod(fd, 0o644)  # mkstemp legt 0600 an; Cockpit und Publisher lesen als anderer Nutzer als ein root-Befehl
+        with os.fdopen(fd, "wb") as f:
+            f.write(daten)
+        os.replace(tmp, pfad)
+    finally:
+        tmp.unlink(missing_ok=True)
 
 
 def load_image(path: Path, credit: str = "", origin: str = "datei") -> FeaturedImage:

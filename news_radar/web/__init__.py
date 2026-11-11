@@ -22,7 +22,8 @@ from ..store import Store
 
 PUBLIC_ENDPOINTS = {"ui.login", "ui.gesund", "ui.manifest", "ui.service_worker", "static",
                     # prüfen ihr eigenes Bearer-Token (RADAR_LESE_TOKEN bzw. RADAR_AGENT_TOKEN), kein Cookie, kein CSRF
-                    "api.bericht", "api.agent_export", "api.agent_import", "api.agent_vorschlag"}
+                    "api.bericht", "api.agent_export", "api.agent_import", "api.agent_vorschlag",
+                    "api.agent_bild"}
 MIN_PASSWORT = 12
 
 

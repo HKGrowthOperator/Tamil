@@ -563,3 +563,35 @@ def test_same_scan_item_follows_story_the_model_chose(settings, monkeypatch):
         urls = {d.url for d in repo.dokumente(store, alt)}
         storys = len(repo.stories(store, None, limit=50))
     assert "https://www.wn.de/b" in urls and storys == 1
+
+
+@pytest.mark.parametrize("rennen", [False, True])
+def test_neue_quelle_aendert_freigegebenen_entwurf_nicht(settings, monkeypatch, rennen):
+    """Freigegeben, dann kommt eine neue Quelle: kein Hinweis am freigegebenen Entwurf, kein Fehler – auch wenn die
+    Freigabe genau zwischen dem Lesen des offenen Entwurfs und dem Schreiben passiert."""
+    from news_radar.workflow import orchestrator
+
+    a = meldung("Tamilisches Lichterfest im Tempel Hamm am 14. November", "Fest", url="https://www.ruhrnachrichten.de/a")
+    lauf(settings, [a], texte={a.url: ARTIKEL})
+    with Store(settings.db_path) as store:
+        draft = store.list_drafts("neu")[0]
+        if not rennen:
+            store.set_status(draft["id"], "freigeben", von="luis")
+    if rennen:
+        echt = orchestrator._offener_entwurf
+
+        def lesen_dann_freigeben(store, story_id):
+            row = echt(store, story_id)
+            if row:
+                store.set_status(row["id"], "freigeben", von="luis")
+            return row
+
+        monkeypatch.setattr(orchestrator, "_offener_entwurf", lesen_dann_freigeben)
+    b = meldung("Tamilisches Lichterfest im Tempel Hamm am 14. November!", "Fest", url="https://www.wa.de/hamm/b",
+                source="Lokalzeitung")
+    stats, _ = lauf(settings, [b])
+    assert stats.get("angereichert") == 1 and not stats.get("fehler")
+    with Store(settings.db_path) as store:
+        d = store.get_draft(draft["id"])
+        assert d["status"] == "freigegeben" and d["hinweise"] == draft["hinweise"]
+        assert d["weitere_quellen"] == draft["weitere_quellen"]
