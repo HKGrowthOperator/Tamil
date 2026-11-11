@@ -764,3 +764,33 @@ def test_migration_6_mit_bestehenden_entwuerfen(settings, monkeypatch):
         assert store.get_draft(did)["stand"] == 1
         store.set_status(did, "freigeben", stand=1)  # Statuswechsel zählt den Stand nicht hoch
         assert store.get_draft(did)["stand"] == 1 and store.get_draft(did)["status"] == "freigegeben"
+
+
+def test_gleiches_bild_fuer_zwei_entwuerfe_teilt_keine_datei(settings):
+    with Store(settings.db_path) as store:
+        sid_a, did_a = story_mit_entwurf(store)
+        sid_b, did_b = story_mit_entwurf(store, url=DOK + "-b")
+        settings.bilder_dir.mkdir(parents=True, exist_ok=True)
+        (settings.bilder_dir / "alt.jpg").write_bytes(b"x")  # beide Entwürfe zeigen anfangs auf dieselbe Datei
+        commons = {"API": commons_api(), COMMONS_THUMB: jpeg()}
+        for sid in (sid_a, sid_b):
+            assert eins(store, settings, {"story_id": sid, "weg": "commons", "seite_url": COMMONS_SEITE},
+                        commons)["ergebnis"] == "gesetzt"
+        a, b = store.get_draft(did_a)["bild_datei"], store.get_draft(did_b)["bild_datei"]
+        assert a != b and f"e{did_a}" in a and f"e{did_b}" in b
+        assert not (settings.bilder_dir / "alt.jpg").exists()  # erst gelöscht, als niemand mehr darauf zeigte
+        e = eins(store, settings, {"story_id": sid_a, "weg": "quelle", "seite_url": DOK}, {DOK: seite(), OG: jpeg(1800)})
+        assert e["ergebnis"] == "gesetzt"
+        assert (settings.bilder_dir / b).is_file() and not (settings.bilder_dir / a).exists()
+        assert repo.asset_fuer_datei(store, b)["draft_id"] == did_b
+        assert repo.asset_fuer_datei(store, store.get_draft(did_a)["bild_datei"])["draft_id"] == did_a
+
+
+def test_alte_datei_bleibt_wenn_ein_anderer_entwurf_darauf_zeigt(settings):
+    with Store(settings.db_path) as store:
+        sid_a, did_a = story_mit_entwurf(store)
+        sid_b, did_b = story_mit_entwurf(store, url=DOK + "-b")
+        settings.bilder_dir.mkdir(parents=True, exist_ok=True)
+        (settings.bilder_dir / "alt.jpg").write_bytes(b"x")
+        eins(store, settings, {"story_id": sid_a, "weg": "quelle", "seite_url": DOK}, {DOK: seite(), OG: jpeg()})
+        assert (settings.bilder_dir / "alt.jpg").exists() and store.get_draft(did_b)["bild_datei"] == "alt.jpg"

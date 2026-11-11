@@ -530,8 +530,9 @@ def _setzen(store: Store, settings: Settings, entwurf: dict, story_id: int, weg:
             alt: str | None, von: str) -> dict:
     data = images._encode(ImageOps.fit(bild["img"].convert("RGB"), SIZE, Image.Resampling.LANCZOS))
     basis = (entwurf.get("bild_datei") or f"{(entwurf.get('uid') or 'bild')[:12]}-{entwurf['id']}.jpg")
-    basis = re.sub(r"-(?:\d+|[0-9a-f]{8})$", "", basis.removesuffix(".jpg"))
-    stem = f"{basis}-{hashlib.sha256(data).hexdigest()[:8]}"
+    basis = re.sub(r"(?:-e\d+)?-(?:\d+|[0-9a-f]{8})$", "", basis.removesuffix(".jpg"))
+    # Entwurfsnummer fest im Namen: zwei Entwürfe teilen nie eine Datei (und nie einen Lizenz-Datensatz)
+    stem = f"{basis}-e{entwurf['id']}-{hashlib.sha256(data).hexdigest()[:8]}"
     fi = FeaturedImage(data, f"{stem}.jpg", "image/jpeg", bild["nachweis"], weg)
     name, thumb = images.save_pair(fi, settings.bilder_dir, stem)
     felder = {"bild_datei": name, "bild_credit": bild["nachweis"], "bild_origin": weg}
@@ -576,7 +577,9 @@ def _setzen(store: Store, settings: Settings, entwurf: dict, story_id: int, weg:
                         (settings.bilder_dir / neu).unlink(missing_ok=True)
     if not gesetzt:
         raise Abgelehnt("Entwurf hat sich während des Abrufs geändert (freigegeben oder anderes Bild)")
-    for alt_pfad in (alt_datei, (alt_datei or "").replace(".jpg", "-thumb.jpg")):
+    andere = alt_datei and store.db.execute(  # nie eine Datei löschen, auf die ein anderer Entwurf zeigt
+        "SELECT 1 FROM drafts WHERE bild_datei = ? AND id != ? LIMIT 1", (alt_datei, entwurf["id"])).fetchone()
+    for alt_pfad in (() if andere else (alt_datei, (alt_datei or "").replace(".jpg", "-thumb.jpg"))):
         if alt_pfad and alt_pfad not in (name, thumb):
             (settings.bilder_dir / alt_pfad).unlink(missing_ok=True)
     # Protokoll ohne Personendaten: Host, Asset-Nummer und kurzer Hash; die volle Adresse steht im Lizenz-Datensatz
