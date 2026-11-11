@@ -1121,7 +1121,8 @@ def test_ergaenzen_haengt_neue_quellen_an_und_gibt_die_story_wieder_frei(setting
         p = next(p for p in mappe["storys"] if p["story_id"] == sid)
         assert [d["doc_key"] for d in p["dokumente"]] == ["Q1", "Q2", "Q3"]
         h = p["vorschlag_hinweise"]
-        assert h["kernfakten"] == ["rund 2500 Menschen laut Polizei"] and h["bezug"] == "Neuer Bezug"
+        assert h["kernfakten"] == ["rund 2500 Menschen laut Polizei", "Eröffnung am 14. März 2026", "rund 2000 Gäste"]
+        assert h["bezug"] == "Neuer Bezug"
         assert h["bild_hinweis"] == "Saal"
 
 
@@ -1299,3 +1300,20 @@ def test_ergaenzen_seitengrenze_auch_in_der_schreibtransaktion(settings):
                               von="test", ctx=kontext(store, settings), abruf=abruf)["ergebnisse"][0]
         assert e["ergebnis"] == "abgelehnt" and "höchstens zwei Seiten je Datei" in e["grund"], e
         assert [d.url for d in repo.dokumente(store, sid)] == [PDF_URL + "#page=2", PDF_URL + "#page=5"]
+
+
+def test_ergaenzen_fuehrt_hinweise_zusammen(settings):
+    with Store(settings.db_path) as store:
+        sid = nachtrag_mit_luecke(store, settings)
+        e = annehmen(store, settings, [vorschlag(story_id=sid, quellen=[quelle(URL3)], bezug="", bild_hinweis="",
+                                                 kernfakten=["rund 2500 Menschen", "rund 2000 Gäste"])],
+                     seiten=SEITEN3)["ergebnisse"][0]
+        assert e["ergebnis"] == "ergaenzt", e
+        h = json.loads(repo.story(store, sid)["vorschlag"])
+        assert h["bezug"] == "Größter Hindu-Tempel Deutschlands, Treffpunkt der Community"
+        assert h["bild_hinweis"] == "Foto der Einweihung"
+        assert h["kernfakten"] == ["rund 2500 Menschen", "rund 2000 Gäste", "Eröffnung am 14. März 2026"]
+        repo.story_setzen(store, sid, status="recherche_erforderlich")
+        viele = [f"Fakt {n}" for n in range(12)]
+        annehmen(store, settings, [vorschlag(story_id=sid, quellen=[quelle(URL2)], kernfakten=viele)])
+        assert json.loads(repo.story(store, sid)["vorschlag"])["kernfakten"] == viele  # höchstens 12, neue zuerst

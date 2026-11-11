@@ -521,11 +521,24 @@ def _dokument(db, sid: int, doc_key: str, eintrag: tuple, ts: str) -> None:
          art, seitentitel, text, hashlib.sha256(text.encode("utf-8")).hexdigest(), text[:500]))
 
 
+def _hinweise_zusammen(alt_json: str | None, v: Vorschlag) -> dict:
+    """Hinweise der Story mit denen des Vorschlags: leere Felder behalten den alten Wert, Kernfakten aus neu und alt
+    ohne Doppel (neue zuerst, höchstens 12)."""
+    try:
+        alt = json.loads(alt_json or "{}")
+    except ValueError:
+        alt = {}
+    alt = alt if isinstance(alt, dict) else {}
+    alte_fakten = [k for k in alt.get("kernfakten") or [] if isinstance(k, str)]
+    return {"bezug": v.bezug or str(alt.get("bezug") or ""),
+            "kernfakten": list(dict.fromkeys([*v.kernfakten, *alte_fakten]))[:12],
+            "bild_hinweis": v.bild_hinweis or str(alt.get("bild_hinweis") or "")}
+
+
 def _ergaenzen(store: Store, v: Vorschlag, geholt: list, heute: date) -> dict:
     """Neue Quellen an die genannte Story hängen und sie wieder freigeben – in einer Schreibtransaktion mit erneuter
     Prüfung von Status, Job und Belegen (zwischen erster Prüfung und hier lagen die Abrufe)."""
     sid = v.story_id
-    hinweise = {"bezug": v.bezug, "kernfakten": v.kernfakten, "bild_hinweis": v.bild_hinweis}
     with store.lock:
         db = store.db
         if db.in_transaction:
@@ -566,6 +579,7 @@ def _ergaenzen(store: Store, v: Vorschlag, geholt: list, heute: date) -> dict:
             zusatz = f"Ergänzt am {heute.isoformat()}: {len(neu)} {'Quelle' if len(neu) == 1 else 'Quellen'}"
             alt = (story.get("notiz") or "").strip()
             notiz = f"{alt[:900 - len(zusatz) - 3]} · {zusatz}" if alt else zusatz
+            hinweise = _hinweise_zusammen(story.get("vorschlag"), v)
             # das Ereignisdatum der Story bleibt (ein Platzhalter-Datum im Vorschlag verschiebt den Beitrag nicht)
             db.execute("UPDATE stories SET status = 'neu', notiz = ?, vorschlag = ?, aktualisiert = ? WHERE id = ?",
                        (notiz, json.dumps(hinweise, ensure_ascii=False), ts, sid))
