@@ -1340,3 +1340,33 @@ def test_ergaenzen_heikel_stuft_nur_hoch(settings):
         repo.story_setzen(store, sid, status="recherche_erforderlich")
         e = annehmen(store, settings, [vorschlag(story_id=sid, heikel=False, quellen=[quelle(URL2)])])["ergebnisse"][0]
         assert e["ergebnis"] == "ergaenzt" and repo.story(store, sid)["sensibel"] == 1
+
+
+def test_ergaenzen_job_beginnt_waehrend_der_abrufe_nichts_geschrieben(settings):
+    with Store(settings.db_path) as store:
+        sid = nachtrag_mit_luecke(store, settings)
+        basis = abruf_aus(SEITEN3)
+
+        def abruf(url, frist=None):  # ein Worker greift die Story zwischen erster Prüfung und Transaktion
+            ts = "2026-03-20T10:00:00+00:00"
+            store.db.execute("INSERT INTO workflow_jobs (story_id, schritt, status, naechster_versuch, erstellt, "
+                             "aktualisiert) VALUES (?, 'recherche', 'laeuft', ?, ?, ?)", (sid, ts, ts, ts))
+            store.db.commit()
+            return basis(url, frist)
+        e = nachtrag.annehmen(store, settings, {"vorschlaege": [vorschlag(story_id=sid, quellen=[quelle(URL3)])]},
+                              von="test", ctx=kontext(store, settings), abruf=abruf)["ergebnisse"][0]
+        assert e["ergebnis"] == "abgelehnt" and e["grund"] == "an der Story läuft gerade ein Job", e
+        s = repo.story(store, sid)
+        assert s["status"] == "recherche_erforderlich" and len(repo.dokumente(store, sid)) == 1
+
+
+def test_ergaenzen_setzt_doc_key_nach_dem_hoechsten_fort(settings):
+    with Store(settings.db_path) as store:
+        sid = nachtrag_mit_luecke(store, settings)
+        for n in (2, 3):
+            repo.dokument_hinzufuegen(store, sid, url=f"https://www.example.org/bericht-{n}", text=ARTIKEL1)
+        store.db.execute("DELETE FROM source_documents WHERE story_id = ? AND doc_key = 'Q2'", (sid,))
+        store.db.commit()
+        e = annehmen(store, settings, [vorschlag(story_id=sid, quellen=[quelle(URL3)])], seiten=SEITEN3)["ergebnisse"][0]
+        assert e["ergebnis"] == "ergaenzt", e
+        assert [d.doc_key for d in repo.dokumente(store, sid)] == ["Q1", "Q3", "Q4"]
