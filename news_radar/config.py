@@ -133,6 +133,7 @@ class Settings:
     budget_warnung: float = 0.8
     parallel_jobs: int = 2
     entwuerfe_tag: int = 5  # Pilot: höchstens so viele neue bezahlte Storys je Tag
+    nachtrag_entwuerfe_tag: int = 60  # Rückblick: höchstens so viele Nachtrag-Entwürfe je Tag (eigene Grenze)
     bild_reihenfolge: tuple[str, ...] = BILD_REIHENFOLGE
     ki_bilder_je_artikel: int = 1
     recherche_google_news: bool = True  # zweite Quelle über Google-News-RSS suchen (siehe robots-Hinweis im Register)
@@ -260,6 +261,7 @@ def load_settings(sources_file: Path = ROOT / "sources.toml") -> Settings:
         budget_warnung=_float("RADAR_BUDGET_WARNUNG", 0.8),
         parallel_jobs=max(1, _int("RADAR_PARALLEL_JOBS", 2)),
         entwuerfe_tag=_int("RADAR_ENTWUERFE_TAG", 5),
+        nachtrag_entwuerfe_tag=_int("RADAR_NACHTRAG_TAG", 60),
         bild_reihenfolge=_reihenfolge(env("BILD_REIHENFOLGE", "")),
         ki_bilder_je_artikel=_int("RADAR_KI_BILDER_JE_ARTIKEL", 1),
         recherche_google_news=(env("RADAR_RECHERCHE_GOOGLE_NEWS", "1") or "1") not in ("0", "nein", "false"),

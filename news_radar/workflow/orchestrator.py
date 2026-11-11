@@ -343,6 +343,7 @@ def entwurf_anlegen(ctx: Kontext, story: dict, felder: dict, payload: dict, *, t
             [h for h in hinweise if not h.startswith("Sensibles Thema")]
     row = {
         "uid": uid, "typ": typ, "story_id": story["id"],
+        "herkunft": story.get("herkunft") or "radar", "ereignis_datum": story.get("ereignis_datum") or "",
         "quelle_name": primaer.publisher if primaer else "", "quelle_url": primaer.url if primaer else "",
         "quelle_datum": primaer.published_at if primaer else "", "quelle_sprache": primaer.language if primaer else "de",
         "quelle_bild": payload.get("quelle_bild", ""), "weitere_quellen": weitere,

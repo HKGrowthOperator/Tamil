@@ -114,8 +114,9 @@ def main(argv: list[str] | None = None) -> int:
     exp = sub.add_parser("export")
     exp.add_argument("--file", default="radar-protokoll.jsonl")
     agent = sub.add_parser("agent", help="Agent-Modus: Aufgabenmappe exportieren / fertige Beiträge importieren")
-    agent.add_argument("aktion", choices=("export", "import"))
-    agent.add_argument("--file", required=True, help="Aufgabenmappe (export) bzw. Ergebnis-JSON (import)")
+    agent.add_argument("aktion", choices=("export", "import", "vorschlag"))
+    agent.add_argument("--file", help="Aufgabenmappe (export) bzw. Ergebnis-JSON (import)")
+    agent.add_argument("--datei", help="vorschlag: JSON mit Nachtrag-Vorschlägen (Liste oder {\"vorschlaege\": [...]})")
     agent.add_argument("--limit", type=int, default=20, help="export: höchstens so viele Entwürfe")
     agent.add_argument("--alle", action="store_true", help="export: auch Entwürfe, die keine Rohfassung sind")
     agent.add_argument("--status", default="neu", help="export: Status der Entwürfe (kommagetrennt)")
@@ -305,6 +306,28 @@ def main(argv: list[str] | None = None) -> int:
             print(f"Redaktion angehalten (Schalter „{sperre['kanal']}“ seit {sperre['seit']}): {sperre['grund']} – "
                   "nichts exportiert oder importiert.", file=sys.stderr)
             return 3
+
+    if args.cmd == "agent" and args.aktion == "vorschlag":
+        from .nachtrag import annehmen
+
+        if not (args.datei or args.file):
+            print("agent vorschlag braucht --datei <json>", file=sys.stderr)
+            return 2
+        raw = json.loads(Path(args.datei or args.file).read_text(encoding="utf-8"))
+        with Store(settings.db_path) as store:
+            try:
+                out = annehmen(store, settings, raw, von=args.von)
+            except ValueError as exc:
+                print(f"Vorschläge abgewiesen: {exc}", file=sys.stderr)
+                return 2
+        for e in out["ergebnisse"]:
+            print(f"{e['nr']:>3} {e['ergebnis']:<10} {e.get('story_id') or '':>6} {e.get('grund') or ''}")
+        print(f"{out['angelegt']} angelegt, {out['vorhanden']} schon vorhanden, {out['abgelehnt']} abgelehnt")
+        return 0
+
+    if args.cmd == "agent" and not args.file:
+        print("agent export/import braucht --file", file=sys.stderr)
+        return 2
 
     if args.cmd == "agent" and args.v2:
         from .agent_v2 import export_v2, import_v2

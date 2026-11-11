@@ -1,6 +1,7 @@
 """Lesezugang für Auswertungen (Pilot): GET /api/bericht mit `Authorization: Bearer <RADAR_LESE_TOKEN>`.
 Agent-Modus übers Netz: GET /api/agent/export und POST /api/agent/import mit `Bearer <RADAR_AGENT_TOKEN>` – dieselbe
-Aufgabenmappe und derselbe Import wie `agent export/import --v2`, mit allen Gates.
+Aufgabenmappe und derselbe Import wie `agent export/import --v2`, mit allen Gates. POST /api/agent/vorschlag nimmt
+Nachtrag-Vorschläge mit Quellen an (`nachtrag.annehmen`, kein Modell).
 
 Nur lesen, kein Login, keine Änderungen. Ohne RADAR_LESE_TOKEN gibt es den Endpunkt nicht (404). Er liefert Storys,
 Quellen-Dokumente, Claims, Entwürfe, Fassungen mit Belegen, Kosten je Aufruf, Warteschlange und Budget – nie Benutzer,
@@ -79,6 +80,28 @@ def agent_import():
     get_store().event("agent_api", von=von, **{k: v for k, v in stats.items() if k != "fehler"},
                       fehler=len(stats["fehler"]))
     return jsonify(stats)
+
+
+@api.post("/api/agent/vorschlag")
+def agent_vorschlag():
+    """Nachtrag: Vorschläge mit Quellen annehmen – der Radar holt die Quellen selbst, legt Storys an, kein Modell."""
+    if not _berechtigt(g.settings.agent_token):
+        return _abgewiesen()
+    from ..nachtrag import annehmen
+
+    raw = request.get_json(silent=True)
+    if raw is None:
+        return jsonify({"fehler": "JSON erwartet"}), 400
+    von = str(request.args.get("von") or "claude-code")[:60]
+    try:
+        out = annehmen(get_store(), g.settings, raw, von=von)
+    except schalter.Gestoppt as exc:
+        return _angehalten(exc)
+    except ValueError as exc:
+        return jsonify({"fehler": str(exc)}), 400
+    get_store().event("agent_api_vorschlag", von=von, angelegt=out["angelegt"], vorhanden=out["vorhanden"],
+                      abgelehnt=out["abgelehnt"])
+    return jsonify(out)
 
 
 @api.get("/api/bericht")

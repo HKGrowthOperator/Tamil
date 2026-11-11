@@ -39,6 +39,8 @@ bestätigte Claims – ein Absatz ohne solchen Beleg schickt die Story auf „Re
 Antwort: {"ergebnisse": [{"story_id": …, "claims": [...], "widersprueche": [...], "beitrag": {...}} oder
 {"story_id": …, "verwerfen": "Grund"}]}. Fehlen belastbare Belege für die Kernaussagen, schreibe keinen Beitrag,
 sondern liefere nur die Claims und unter "fehlend" was fehlt: der Radar setzt die Story dann auf „Recherche nötig“.
+Nachtrag ("herkunft": "nachtrag"): Rückblick auf ein Ereignis vom "ereignis_datum" – in der Vergangenheit erzählen.
+"vorschlag_hinweise" (bezug, kernfakten, bild_hinweis) sind nur Hinweise: belegt ist allein, was in den Dokumenten steht.
 """
 
 
@@ -51,9 +53,11 @@ class AgentErgebnis(BaseModel):
     beitrag: TextErgebnis | None = None
 
 
-_OFFEN_SQL = ("SELECT DISTINCT s.* FROM stories s JOIN workflow_jobs j ON j.story_id = s.id "
-              "WHERE j.schritt = 'recherche' AND j.status IN ('offen', 'wartet_budget', 'tot') "
-              "AND s.status NOT IN ('fertig', 'verworfen') "
+# Offen für den Agenten: eine Story mit offener Recherche – oder ein Nachtrag im Status „neu“ (ohne Job, damit kein
+# Worker und kein Modell daran geht)
+_OFFEN_SQL = ("SELECT s.* FROM stories s WHERE s.status NOT IN ('fertig', 'verworfen') "
+              "AND (EXISTS (SELECT 1 FROM workflow_jobs j WHERE j.story_id = s.id AND j.schritt = 'recherche' "
+              "AND j.status IN ('offen', 'wartet_budget', 'tot')) OR (s.herkunft = 'nachtrag' AND s.status = 'neu')) "
               "AND NOT EXISTS (SELECT 1 FROM workflow_jobs l WHERE l.story_id = s.id AND l.status = 'laeuft')")
 
 
@@ -97,22 +101,32 @@ def paket_v2(store: Store, settings: Settings, *, limit: int = 10, ctx: Kontext 
     from .workflow.orchestrator import termin_vorbei
 
     for story in _offene_storys(store, limit):
-        docs = research.belege_sammeln(ctx, story)
-        vorbei = termin_vorbei(ctx, story, docs)
+        nachtrag = story.get("herkunft") == "nachtrag"
+        # Nachtrag: die Quellen hat der Radar beim Annehmen schon geholt; ein vergangener Termin ist hier gewollt
+        docs = repo.dokumente(store, story["id"]) if nachtrag else research.belege_sammeln(ctx, story)
+        vorbei = "" if nachtrag else termin_vorbei(ctx, story, docs)
         if vorbei:
             repo.story_setzen(store, story["id"], status="verworfen", notiz=f"Termin vom {vorbei} liegt zurück")
             _jobs_schliessen(store, story["id"])
             continue
         bestaetigt_moeglich = any(d.primaer or d.art == "volltext" for d in docs)
-        pakete.append({
+        paket = {
             "story_id": story["id"], "typ": story["typ"], "titel": story["titel"], "kategorie": story["kategorie"],
-            "ort": story["ort"], "relevanz": story["relevanz"],
+            "ort": story["ort"], "relevanz": story["relevanz"], "herkunft": story.get("herkunft") or "radar",
             "laenge": schreiben.laenge_text(
                 story.get("laenge") or {"event": "event", "kino": "kino", "dossier": "dossier"}.get(
                     story["typ"], "normal" if bestaetigt_moeglich else "kurz"), story["typ"]),
             "dokumente": [d.model_dump() for d in docs],
             "quellen": schreiben.quellen_liste(docs),
-        })
+        }
+        if nachtrag:
+            paket["ereignis_datum"] = story.get("ereignis_datum") or ""
+            paket["vorschlag_hinweise"] = {
+                **json.loads(story.get("vorschlag") or "{}"),
+                "achtung": "Hinweise aus dem Vorschlag, keine Belege: jede Aussage im Text braucht einen bestätigten "
+                           "Claim aus den Dokumenten.",
+            }
+        pakete.append(paket)
     data = {
         "stand": datetime.now(timezone.utc).isoformat(timespec="minutes"),
         "version": 2,
@@ -173,6 +187,12 @@ def _import_eins(ctx: Kontext, store: Store, settings: Settings, item, von: str,
         stats["fehler"].append(f"{e.story_id}: Story ist {story['status']} oder läuft gerade – nicht aus dem Export, "
                                "nichts geändert")
         return
+    if story.get("herkunft") == "nachtrag" and e.beitrag is not None and not e.verwerfen:
+        grenze = settings.nachtrag_entwuerfe_tag
+        if nachtrag_entwuerfe_heute(store) >= grenze:
+            stats["fehler"].append(f"{e.story_id}: Tagesgrenze für Nachtrag-Entwürfe ({grenze}) erreicht – Story bleibt "
+                                   "offen, nichts geändert")
+            return
     usage_protokollieren(store, rolle="agent", provider="claude-code", modell=von, story_id=e.story_id, status="ok")
     _jobs_schliessen(store, e.story_id)
     if e.verwerfen:
@@ -213,6 +233,13 @@ def _import_eins(ctx: Kontext, store: Store, settings: Settings, item, von: str,
     if draft_id:
         stats["entwuerfe"] += 1
         store.event("agent", story=e.story_id, aktion="geschrieben", id=draft_id, titel=felder["titel"], von=von)
+
+
+def nachtrag_entwuerfe_heute(store: Store) -> int:
+    """Nachtrag-Entwürfe seit Mitternacht (UTC) – eigene Grenze, zählt nicht gegen RADAR_ENTWUERFE_TAG."""
+    heute = datetime.now(timezone.utc).date().isoformat()
+    return store.db.execute("SELECT COUNT(*) FROM drafts WHERE herkunft = 'nachtrag' AND created_at >= ?",
+                            (heute,)).fetchone()[0]
 
 
 def jobs_offen(store: Store) -> int:

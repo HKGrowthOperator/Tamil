@@ -35,12 +35,13 @@ DRAFT_COLUMNS = (
     "schlagworte", "seo_titel", "meta_beschreibung", "bild_datei", "bild_credit", "bild_alt",
     "bild_suchbegriff", "bild_origin", "bild_thema", "bild_prompt", "event_datum", "event_ort", "ticket_url",
     "fakten_json", "fingerprint", "hinweise", "original_json", "rewrite_count", "wp_post_id", "wp_link", "fehler",
-    "bearbeitet_von", "freigegeben_at", "veroeffentlicht_at", "story_id",
+    "bearbeitet_von", "freigegeben_at", "veroeffentlicht_at", "story_id", "herkunft", "ereignis_datum",
 )
 # Spalten, die nach der ersten Version dazukamen (ALTER TABLE für bestehende Datenbanken)
 ADDED_COLUMNS = (("quelle_bild", "TEXT"), ("bild_thema", "TEXT"), ("bild_prompt", "TEXT"))
 # Nicht in den Prototyp-Export (intern bzw. WordPress-spezifisch)
-EXPORT_SKIP = ("original_json", "fingerprint", "fakten_json", "wp_post_id", "wp_link", "bearbeitet_von", "fehler")
+EXPORT_SKIP = ("original_json", "fingerprint", "fakten_json", "wp_post_id", "wp_link", "bearbeitet_von", "fehler",
+               "herkunft", "ereignis_datum")
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS seen (
@@ -266,14 +267,19 @@ class Store:
     def draft_by_uid(self, uid: str) -> dict | None:
         return row_to_draft(self.db.execute("SELECT * FROM drafts WHERE uid = ?", (uid,)).fetchone())
 
-    def list_drafts(self, status: str | None = None, limit: int = 100, offset: int = 0) -> list[dict]:
+    def list_drafts(self, status: str | None = None, limit: int = 100, offset: int = 0,
+                    herkunft: str | None = None) -> list[dict]:
+        """Entwürfe je Status; `herkunft` („nachtrag“) filtert auf den Rückblick."""
         order = "dach_bezug DESC, relevanz DESC, created_at DESC" if status == "neu" else "updated_at DESC"
+        where, params = [], []
         if status:
-            rows = self.db.execute(
-                f"SELECT * FROM drafts WHERE status = ? ORDER BY {order} LIMIT ? OFFSET ?", (status, limit, offset)
-            )
-        else:
-            rows = self.db.execute(f"SELECT * FROM drafts ORDER BY {order} LIMIT ? OFFSET ?", (limit, offset))
+            where.append("status = ?")
+            params.append(status)
+        if herkunft:
+            where.append("herkunft = ?")
+            params.append(herkunft)
+        sql = "SELECT * FROM drafts" + (f" WHERE {' AND '.join(where)}" if where else "")
+        rows = self.db.execute(f"{sql} ORDER BY {order} LIMIT ? OFFSET ?", (*params, limit, offset))
         return [row_to_draft(r) for r in rows]
 
     def counts_by_status(self) -> dict[str, int]:
