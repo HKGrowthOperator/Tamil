@@ -1,7 +1,7 @@
 """Quellen aus der Inventur 11.11.2026 gegen die an dem Tag gespeicherten Seiten (gekürzt) – ohne Netz.
 
-Kinoreihen und -programme laufen über den Kino-Weg (ein Eintrag je Film und Kinowoche, Anbieter zusammengelegt),
-nicht als einzelne Termine."""
+Die Kino-Seiten (Anbieter "html") sind zurückgestellt (Prüfung 11.11.2026) und aus; ihre Fixture-Tests prüfen den
+Anbieter mit fester Uhr, damit er bei einer späteren Wiederaufnahme belegt bleibt."""
 
 from datetime import date, datetime, timezone
 from pathlib import Path
@@ -15,6 +15,9 @@ from news_radar.kino_providers import Show
 
 FIX = Path(__file__).parent / "fixtures"
 TZ = kp.TZ
+STAND = datetime(2026, 11, 11, 12, tzinfo=TZ)  # Abruf der Fixtures
+KINO_HTML = ("Filmkunstkinos Düsseldorf · Kino aus Indien", "Mathäser Filmpalast München",
+             "Babylon Berlin · IndoGerman Film", "dein-dein · Tamil Films in Germany")
 
 
 class Antwort:
@@ -48,16 +51,17 @@ def _seite(monkeypatch, datei):
     monkeypatch.setattr(sources.requests, "get", lambda url, **kw: Antwort(datei))
 
 
-def test_kinoquellen_laufen_ueber_den_kino_weg(settings):
-    for name in ("Filmkunstkinos Düsseldorf · Kino aus Indien", "Mathäser Filmpalast München",
-                 "Babylon Berlin · IndoGerman Film", "dein-dein · Tamil Films in Germany"):
+def test_kino_html_quellen_sind_zurueckgestellt(settings):
+    for name in KINO_HTML:
         q = _quelle(settings, name)
+        assert not q.enabled and "Kino-HTML-Weg zurückgestellt" in q.notiz, name
         assert q.type == "kino" and q.provider == "html" and q.selectors, name
+    assert not any(q.provider == "html" for q in settings.sources)
 
 
 def test_filmkunstkinos_nur_tamilische_vorstellungen(monkeypatch, settings):
     _seite(monkeypatch, "filmkunstkinos_indien.html")
-    shows = kp.PROVIDERS["html"](_quelle(settings, "Filmkunstkinos Düsseldorf · Kino aus Indien"), settings)
+    shows = kp.fetch_html_kino(_quelle(settings, "Filmkunstkinos Düsseldorf · Kino aus Indien"), settings, now=STAND)
     assert sorted(s.film for s in shows) == ["OM", "Sirai"]  # die Hindi-Vorstellung fällt heraus
     om = next(s for s in shows if s.film == "OM")
     assert om.start.strftime("%Y-%m-%d %H:%M") == "2026-11-21 12:00" and om.stadt == "Düsseldorf"
@@ -69,25 +73,27 @@ def test_filmkunstkinos_nur_tamilische_vorstellungen(monkeypatch, settings):
 
 def test_mathaeser_nur_der_tamilische_film(monkeypatch, settings):
     _seite(monkeypatch, "mathaeser_programm.html")
-    shows = kp.PROVIDERS["html"](_quelle(settings, "Mathäser Filmpalast München"), settings)
+    shows = kp.fetch_html_kino(_quelle(settings, "Mathäser Filmpalast München"), settings, now=STAND)
     assert [s.film for s in shows] == ["Scene"] and shows[0].stadt == "München"
     assert shows[0].start.date() == date(2026, 11, 16)
 
 
 def test_babylon_telugu_fassung_kommt_nicht_durch(monkeypatch, settings):
     _seite(monkeypatch, "babylon_indogerman.html")
-    assert kp.PROVIDERS["html"](_quelle(settings, "Babylon Berlin · IndoGerman Film"), settings) == []
+    assert kp.fetch_html_kino(_quelle(settings, "Babylon Berlin · IndoGerman Film"), settings, now=STAND) == []
 
 
 def test_dein_dein_aus_bis_luis_entscheidet(monkeypatch, settings):
     q = _quelle(settings, "dein-dein · Tamil Films in Germany")
     assert not q.enabled and "KI-Crawler" in q.notiz
     _seite(monkeypatch, "deindein_tamil_films.html")
-    shows = kp.PROVIDERS["html"](q, settings)
+    shows = kp.fetch_html_kino(q, settings, now=STAND)
     assert [s.film for s in shows] == ["Scene", "Ramayana: Rise of a Legend", "OM: Chapter 1"]
     assert shows[0].stadt == "Nuremberg"
 
 
+@pytest.mark.xfail(strict=True, reason="film_key bleibt unverändert (Prüfung 11.11.2026): Abschneiden nach „:“/„ - “ "
+                   "legte verschiedene Filme zusammen (Ponniyin Selvan: Part 1/2, KGF: Chapter 1/2)")
 def test_derselbe_film_aus_drei_quellen_ist_ein_kino_eintrag():
     """Live 11.11.: „OM“ (Filmkunstkinos), „OM: Chapter 1“ (dein-dein), „IndoGerman Film: OM - Chapter 1: Udhiram …“
     (Babylon) – derselbe Film in derselben Kinowoche → ein Eintrag mit drei Kinos, nicht drei Storys."""
@@ -139,3 +145,10 @@ def test_quellen_pruefen_warnt_vor_veralteter_jahreszahl(monkeypatch, settings):
     src = Source(name="Reihe", type="html", url="https://example.com/reihe-2026/")
     p = quellencheck.pruefe_quelle(src, settings, None, datetime(2027, 1, 5, tzinfo=timezone.utc))
     assert "2026" in p.warnung
+
+
+def test_film_key_legt_verschiedene_filme_nicht_zusammen():
+    """Prüfung 11.11.2026: Teile einer Reihe und Vorpremieren sind eigene Filme (eigene Kino-Storys)."""
+    assert kp.film_key("Ponniyin Selvan: Part 1") != kp.film_key("Ponniyin Selvan: Part 2")
+    assert kp.film_key("KGF: Chapter 1") != kp.film_key("KGF: Chapter 2")
+    assert kp.film_key("Sneak Preview: Coolie") != kp.film_key("Sneak Preview: Jailer 2")

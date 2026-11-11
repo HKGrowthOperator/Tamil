@@ -66,15 +66,8 @@ def clean_film_title(title: str) -> str:
     return t
 
 
-# Reihentitel vor dem Film („IndoGerman Film: OM …“) und Untertitel nach „:“ bzw. „ - “ gehören nicht zum Schlüssel:
-# Kinos schreiben „OM“, „OM: Chapter 1“ oder „OM - Chapter 1: Udhiram …“ für denselben Film (Fund 11.11.2026).
-_REIHE_RE = re.compile(r"^\s*(?:indogerman\s+film|kino\s+aus\s+indien)\s*:\s*", re.I)
-_UNTERTITEL_RE = re.compile(r"\s*(?::|\s[-–]\s)")
-
-
 def film_key(title: str) -> str:
-    haupt = _UNTERTITEL_RE.split(_REIHE_RE.sub("", clean_film_title(title)), maxsplit=1)[0]
-    return slugify(haupt.lower(), 60)
+    return slugify(clean_film_title(title).lower(), 60)
 
 
 def kino_week(d: date) -> tuple[int, int]:
@@ -184,9 +177,13 @@ def fetch_cineplexx(source: Source, settings: Settings, http=requests) -> list[S
     return shows
 
 
-def fetch_html_kino(source: Source, settings: Settings, http=None) -> list[Show]:
+def fetch_html_kino(source: Source, settings: Settings, http=None, now: datetime | None = None) -> list[Show]:
     """Kinoseite oder Filmreihe mit CSS-Selektoren (wie Quellentyp html): eine Vorstellung je Eintrag, nur Einträge,
-    die „Tamil“ nennen (Titel, Sprachangabe). `params.kino`/`params.stadt` benennen das Haus, sonst der Ort-Selektor."""
+    die „Tamil“ nennen (Titel, Sprachangabe). `params.kino`/`params.stadt` benennen das Haus, sonst der Ort-Selektor.
+
+    Zurückgestellt (Prüfung 11.11.2026), keine Quelle nutzt den Anbieter: Spielorte springen zwischen Scans
+    (anderer Takt als kinoheld/CineStar), die Tamil-Erkennung über den ganzen Eintrag ist zu weit, und Seiten ohne
+    Uhrzeit ergeben 00:00."""
     from urllib.parse import urljoin
 
     from bs4 import BeautifulSoup
@@ -195,7 +192,7 @@ def fetch_html_kino(source: Source, settings: Settings, http=None) -> list[Show]
     from .dates import parse_de_datetime
 
     soup = BeautifulSoup(quellen._get(source.url).text, "html.parser")
-    sel, now = source.selectors, datetime.now(TZ)
+    sel, now = source.selectors, now or datetime.now(TZ)
     shows = []
     for node in soup.select(sel.get("item", "article")):
         film = quellen._select_text(node, sel.get("title", "h2"))
