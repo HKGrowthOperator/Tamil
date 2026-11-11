@@ -9,7 +9,7 @@ Passwörter, Tokens und Schlüssel liegen ausschließlich in den Coolify-Variabl
 |---|---|
 | Oberfläche / API | `https://coolify.167.233.76.202.sslip.io` · API `…/api/v1` |
 | Quelle | GitHub-App-Source `52`, Repo `HKGrowthOperator/Tamil`, Branch `claude/radar-multiagent` (nach dem Merge von PR #2: `main`) |
-| API-Token | nie in Dateien, Ausgaben oder im Chat. Weg (Tor B2): A-Eintrag `coolify.hk-growthoperator.de` auf den Coolify-Server, die Adresse in Coolify als Instanz-Adresse eintragen, ein Token mit den Rechten lesen, schreiben und deployen (kein Root) anlegen und über das sichere Formular der Sitzung hinterlegen. Das Formular nimmt nur echte Hostnamen an, nicht die sslip-Adresse. Danach `COOLIFY_URL=https://coolify.hk-growthoperator.de` und ein Platzhalter als `COOLIFY_TOKEN`; der Sitzungs-Proxy setzt den echten Wert ein. Der alte Root-Token ist zu widerrufen |
+| API-Token | nie in Dateien im Repo, Ausgaben oder Docs; `tools/coolify.py` liest ihn nur aus `COOLIFY_TOKEN`. **Stand 11.11.2026:** Die Einrichtung der Website lief auf Anweisung von Luis mit zwei Tokens, die er im Chat gezeigt hat („TAMIL“ nur lesen, „Forever“ mit Root-Rechten). Beide gelten als offengelegt und sind nach der Einrichtung zu widerrufen (Tor B2). **Zielzustand:** A-Eintrag `coolify.hk-growthoperator.de` auf den Coolify-Server, die Adresse in Coolify als Instanz-Adresse, ein Token mit den Rechten lesen, schreiben und deployen (kein Root), hinterlegt über das sichere Formular der Sitzung (es nimmt nur echte Hostnamen an, nicht die sslip-Adresse); dann `COOLIFY_URL=https://coolify.hk-growthoperator.de` und ein Platzhalter als `COOLIFY_TOKEN` |
 | Werkzeug | `tools/coolify.py` (Status, Deploy und Warten, Logs, Variablen setzen ohne Ausgabe, Volumes) |
 
 ### App „tamil.de“ – News-Radar und Cockpit
@@ -22,7 +22,8 @@ Passwörter, Tokens und Schlüssel liegen ausschließlich in den Coolify-Variabl
 | Prozess | `python -m news_radar dienst` (gunicorn, Worker, Scan alle 3 Min., Digest 08:00, Sicherung 03:00) |
 | Volume | `/app/data` (SQLite, Bilder, `backup/`) |
 | Variablen (gesetzt) | `RADAR_WORKFLOW`, `RADAR_BUDGET_TAG_USD`, `RADAR_BUDGET_MONAT_USD`, `RADAR_ENTWUERFE_TAG`, `RADAR_KI_BILDER_JE_ARTIKEL`, `RADAR_PROXY_HOPS`, `RADAR_WEB_URL`, `WEB_USER`, `WEB_PASSWORD`, `WEB_SECRET`, `RADAR_LESE_TOKEN`, `RADAR_AGENT_TOKEN` |
-| Variablen (offen) | `ANTHROPIC_API_KEY` (Tor B1, trägt Luis ein) · `WP_URL`, `WP_USER`, `WP_APP_PASSWORD`, `WP_POST_STATUS=publish` (nach `/website-live`) |
+| Variablen (seit 11.11.2026) | `WP_URL` (die Vorschau-Adresse der Website), `WP_USER` (`ki-agent`), `WP_APP_PASSWORD`, `WP_POST_STATUS` (`publish`): Freigegebenes erscheint beim nächsten Lauf auf der Website |
+| Variablen (offen) | `ANTHROPIC_API_KEY` (Tor B1, trägt Luis ein) |
 | Variablen (optional, Standard im Code) | `RADAR_EVENT_MAX_ALTER_TAGE` (30: Termin-Berichte, die laut Quelle älter sind und kein Datum in der Zukunft nennen, fallen im Vorfilter heraus; Laufnotiz `termin_veraltet`) |
 | Lesezugriff | `GET /api/bericht` mit `Authorization: Bearer $RADAR_LESE_TOKEN` |
 | Agent-Modus | `GET /api/agent/export`, `POST /api/agent/import` mit `Bearer $RADAR_AGENT_TOKEN` |
@@ -31,12 +32,14 @@ Passwörter, Tokens und Schlüssel liegen ausschließlich in den Coolify-Variabl
 
 | | |
 |---|---|
-| UUID | wird bei `/website-live` angelegt und hier eingetragen (Stand 10.11.2026: noch nicht angelegt, wartet auf den Coolify-Zugang, Tor B2) |
-| Domain | `https://tamil-web.167.233.76.202.sslip.io` (vorerst; eigene Subdomain später) |
-| Build | `wordpress/Dockerfile`, Build-Kontext Repo-Root, Port 80, Healthcheck `/wp-login.php` |
-| Volumes | `/var/www/html/wp-content/uploads`, `/var/www/html/wp-content/database` |
-| Variablen | `WP_URL_PUBLIC`, `WP_ADMIN_USER` (luis), `WP_ADMIN_PASSWORD`, `RADAR_APP_PASSWORD` (= `WP_APP_PASSWORD` im Radar), `MIGRATION_APP_PASSWORD`, `RADAR_COCKPIT_URL`, optional `WP_ENVIRONMENT_TYPE` |
+| UUID | `exmew1h1b2tzc0csay3dzr2g` (angelegt am 11.11.2026; Projekt und Server wie der Radar) |
+| Domain | `https://tamil-web.167.233.76.202.sslip.io` (Vorschau-Adresse und Testsystem nach §9 des Vertrags, bis die Domain tamil.de umgeschaltet wird, Tor B3) |
+| Build | `wordpress/Dockerfile`, Build-Kontext Repo-Root, Port 80, Healthcheck `/wp-login.php` (Start 90 s, alle 10 s, 15 Versuche: der erste Start richtet WordPress ein) |
+| Volumes | `…-tamil-web-uploads` → `/var/www/html/wp-content/uploads`, `…-tamil-web-database` → `/var/www/html/wp-content/database` |
+| Variablen | `WP_URL_PUBLIC`, `WP_ADMIN_USER` (luis), `WP_ADMIN_PASSWORD`, `RADAR_APP_PASSWORD` (= `WP_APP_PASSWORD` im Radar), `RADAR_COCKPIT_URL`, optional `WP_ENVIRONMENT_TYPE`. `MIGRATION_APP_PASSWORD` nur für die Dauer einer Übernahme setzen; ohne die Variable entfernt der nächste Start das Anwendungspasswort „migration“ |
 | Start | `wordpress/docker/start.sh`: Code frisch aus dem Image, wp-config aus Variablen, Erstinstallation, Nutzer `ki-agent` mit Anwendungspasswort |
+| Inhalt | Altbestand übernommen am 11.11.2026 mit `tools/migration.py` (532 Beiträge, 7 Seiten, 1445 Medien, 25 Weiterleitungen); Prüfliste in `docs/abnahme/2026-11-11-uebernahme.md` |
+| Anmeldung | `/wp-login.php`, Benutzer aus `WP_ADMIN_USER`; das Passwort liest Luis in Coolify bei den Variablen der App nach |
 
 ## Deploy
 

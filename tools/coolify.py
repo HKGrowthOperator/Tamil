@@ -31,7 +31,7 @@ import urllib.request
 from pathlib import Path
 
 BASIS = os.environ.get("COOLIFY_URL", "https://coolify.167.233.76.202.sslip.io").rstrip("/") + "/api/v1"
-APPS = {"tamil.de (Radar + Cockpit)": "igq37g4vbxzhw5u19efuk9ip"}  # tamil-web wird nach dem Anlegen ergänzt
+APPS = {"tamil.de (Radar + Cockpit)": "igq37g4vbxzhw5u19efuk9ip", "tamil-web (Website)": "exmew1h1b2tzc0csay3dzr2g"}
 GEHEIM = ("value", "real_value", "token", "password", "secret", "key", "private", "webhook", "sealed")
 ENDE = {"finished", "failed", "cancelled-by-user", "cancelled", "error"}
 
