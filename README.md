@@ -68,7 +68,7 @@ python -m news_radar kosten            # Kosten je Rolle/Modell/Tag, Budgetstand
 python -m news_radar bericht --woche   # Annahmequote, „Recherche nötig“, Kosten je Entwurf, Fehler
 python -m news_radar dossier --entwurf 12   # Entwurf als Dossier recherchieren (Opus)
 python -m news_radar nutzer anlegen priya --rolle redaktion
-python -m news_radar abnahme           # 51 Szenarien mit FakeClaude, Kriterien K1–K9 → data/abnahme-bericht.md
+python -m news_radar abnahme           # alle Szenarien mit FakeClaude, Kriterien K1–K9 → data/abnahme-bericht.md
 python -m news_radar bewertung vergleich --anzahl 10   # Sonnet gegen Opus blind (braucht Schlüssel)
 python -m news_radar sicherung erstellen|pruefen|wiederherstellen --datum 2026-11-08
 ```
