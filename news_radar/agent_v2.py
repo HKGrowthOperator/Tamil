@@ -112,6 +112,9 @@ def paket_v2(store: Store, settings: Settings, *, limit: int = 10, ctx: Kontext 
                     story["typ"], "normal" if bestaetigt_moeglich else "kurz"), story["typ"]),
             "dokumente": [d.model_dump() for d in docs],
             "quellen": schreiben.quellen_liste(docs),
+            # Stilbeispiele aus dem Altbestand passend zur Art (Nachricht, Kino, Event, Porträt, Küche)
+            "stilbeispiele": [{k: b.get(k) for k in ("title", "art", "woerter", "text")}
+                              for b in schreiben.stilbeispiele(story["typ"], story["kategorie"] or "", n=2)],
         })
     data = {
         "stand": datetime.now(timezone.utc).isoformat(timespec="minutes"),

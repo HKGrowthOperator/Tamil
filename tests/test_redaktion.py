@@ -211,6 +211,9 @@ def test_without_api_key_scan_runs_and_agent_mode_v2_finishes_the_story(settings
         mappe = export_v2(store, settings, tmp_path / "m.json", ctx=Kontext(settings, store, fetch_text=lambda u: ARTIKEL,
                                                                           suche=lambda q: []))
         paket = mappe["storys"][0]
+        from news_radar import stilbeispiele
+        assert len(paket["stilbeispiele"]) == 2 and paket["stilbeispiele"][0]["art"] == stilbeispiele.art_fuer(
+            paket["typ"], paket["kategorie"] or "") and paket["stilbeispiele"][0]["text"]
         dokus = "<dokumente>\n" + json.dumps(paket["dokumente"]) + "\n</dokumente>"
         rech = recherche(dokus, "", {})
         claims = [c for c in rech["claims"]]

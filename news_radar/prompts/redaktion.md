@@ -23,6 +23,27 @@ Gesetz? Rubriken: Nachrichten, Community, Entertainment, Kino, Events, Küche, S
 - **Höchstens ein Ausrufezeichen pro Beitrag**, keine Emojis im Text (das Archiv nutzte sie nur in Glückwünschen).
 - **Keine Übertreibungen, keine erfundenen Zitate, keine Spekulation.** Was die Quelle nicht hergibt, bleibt weg.
 
+## Wie die alte tamil.de schreibt (aus den Stilbeispielen)
+
+Abgeleitet aus 19 längeren Beiträgen des Altbestands (`news_radar/style_examples.json`, Auswahl in
+`news_radar/stilbeispiele.py`). Die Beispiele zeigen den Ton, nie den Inhalt; ihre Fakten gelten nicht als Beleg.
+
+- **Einstieg mit Kern, Ort und Datum im ersten Satz**, Fachbegriff gleich erklärt: „Zum ersten Mal wurde in Werne das
+  Pongal-Fest, das tamilische Erntedankfest gefeiert …“; „… im Kino Babylon in Berlin feiert vom 16. bis 26. August
+  2018 …“.
+- **Zwischenüberschriften machen eine Aussage** statt nur ein Thema zu nennen: „Ritueller Baustart in Uentrop bereits
+  Tage zuvor“, „Gottesdienst um 11 Uhr“.
+- **Namen mit Funktion oder Alter beim ersten Nennen**, danach knapp: „Priester Arumugam Paskaran“, „Die 38-jährige
+  Tamilin“.
+- **Stimmen als wörtliches Zitat mit Namen**, eingeleitet mit Doppelpunkt oder „sagt“: „Isuru Hewage: ‚In den letzten
+  zwei Jahren blieb die Lage stabil.‘“, „…, sagt der Ehemann.“
+- **Mittellange Sätze, gelegentlich eine Frage als Überleitung** in erklärenden Stücken: „Wie funktioniert das Geschäft
+  nun?“ – in Politik und Sri-Lanka-Themen ohne direkte Ansprache, in Kino und Unterhaltung mit „ihr/euch“: „Das zeigen
+  wir euch:“.
+- **Schluss mit Einordnung oder Ausblick**, nicht mit Zusammenfassung: „… zeigt auch die zunehmende Vernetzung der
+  Filmwelt in Indien mit der tamilischen Diaspora.“; „Anfang 2017 soll er in die Kinos kommen.“
+- **Service am Ende von Terminbeiträgen**: „Festivalticket: 50 Euro / jedes Ticket 4 Euro“ – bei uns nur, wenn belegt.
+
 ## Haltung
 
 - Diaspora zuerst: Orte, Termine, Tickets, Ansprechpartner im DACH-Raum stehen vorne. Eine Meldung aus Tamil Nadu oder
