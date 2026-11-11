@@ -135,3 +135,50 @@ def test_orchestrator_menschlich_bearbeitet_laesst_kein_neues_bild_zurueck(setti
         assert _bildstand(store, settings, did) == vorher
         assert sorted(p.name for p in settings.bilder_dir.iterdir()) == dateien
         assert store.db.execute("SELECT COUNT(*) FROM assets WHERE draft_id IS NULL").fetchone()[0] == 0
+
+
+
+def test_agent_import_eindeutiger_name_und_conflict_nur_fuer_den_eintrag(settings, tmp_path, monkeypatch):  # noqa: F811
+    from news_radar.store import ConflictError
+
+    with Store(settings.db_path) as store:
+        a = store.insert_draft(_row("u1", "Tempelfest Hamm"))
+        b = store.insert_draft(_row("u2", "Tempelfest Hamm"))
+        echt = store.set_status
+
+        def set_status(draft_id, aktion, **kw):
+            if draft_id == a and aktion == "bearbeiten":
+                raise ConflictError("Zustand hat sich geändert")
+            return echt(draft_id, aktion, **kw)
+
+        monkeypatch.setattr(store, "set_status", set_status)
+        datei = tmp_path / "ergebnis.json"
+        datei.write_text(json.dumps({"ergebnisse": [_fertig(a, "Gleicher Titel"), _fertig(b, "Gleicher Titel")]}),
+                         encoding="utf-8")
+        stats = agent.import_results(store, settings, datei)
+        assert stats["uebernommen"] == 1 and len(stats["fehler"]) == 1 and str(a) in stats["fehler"][0]
+        da, db_ = store.get_draft(a)["bild_datei"], store.get_draft(b)["bild_datei"]
+        assert da != db_ and f"-e{a}-" in da and f"-e{b}-" in db_
+        assert store.get_draft(b)["status"] == "bearbeitet"
+
+
+def test_kino_update_ignoriert_wird_protokolliert(settings, monkeypatch):  # noqa: F811
+    from news_radar import pipeline
+
+    with Store(settings.db_path) as store:
+        did = store.insert_draft(_row("kino:1", "Jailer 2", typ="kino_termine", fingerprint="a",
+                                      fakten={"kinos": [{"kino": "A"}]}))
+        echt = store.update_kino_facts
+
+        def freigeben_dann_update(*args, **kw):  # Freigabe zwischen Lesen und bedingtem Update
+            store.set_status(did, "freigeben")
+            return echt(*args, **kw)
+
+        monkeypatch.setattr(store, "update_kino_facts", freigeben_dann_update)
+
+        class Item:
+            uid, fingerprint, facts, kind = "kino:1", "b", {"kinos": [{"kino": "B"}]}, "kino"
+
+        pipeline.refresh_kino([Item()], store, {"kino:1"})
+        assert any(e.get("id") == did for e in store.iter_log(event="kino_update_ignoriert"))
+        assert store.get_draft(did)["fingerprint"] == "a"

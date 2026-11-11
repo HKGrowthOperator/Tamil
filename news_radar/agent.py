@@ -174,7 +174,7 @@ def import_results(
             continue
         typ = "kino_termine" if row.get("typ") == "kino_termine" else d.typ
 
-        stem = f"{row['uid'][:12]}-{slugify(d.titel, 50)}-a{int(row.get('rewrite_count') or 0) + 1}"
+        stem = f"{row['uid'][:12]}-{slugify(d.titel, 50)}-e{d.id}-a{int(row.get('rewrite_count') or 0) + 1}"
         image = beitragsbild(
             settings, titel=d.titel, kategorie=d.kategorie,
             kategorie_label=next((c.label for c in settings.categories if c.slug == d.kategorie), d.kategorie),
@@ -202,7 +202,11 @@ def import_results(
                     "SELECT 1 FROM drafts WHERE bild_datei = ? AND id != ?", (row.get("bild_datei"), d.id)).fetchone():
                 (settings.bilder_dir / old).unlink(missing_ok=True)
         if row["status"] != "bearbeitet":
-            store.set_status(d.id, "bearbeiten", von=von)
+            try:
+                store.set_status(d.id, "bearbeiten", von=von)
+            except ConflictError as exc:  # inzwischen anderer Status: Eintrag melden, Import läuft weiter
+                stats["fehler"].append(f"{draft_id}: {exc}")
+                continue
         store.event("agent", id=d.id, aktion="geschrieben", titel=d.titel, kategorie=d.kategorie, typ=typ,
                     relevanz=d.relevanz, bild=image.origin, von=von)
         stats["uebernommen"] += 1
