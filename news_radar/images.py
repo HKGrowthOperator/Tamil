@@ -9,6 +9,7 @@ import io
 import logging
 import os
 import re
+import tempfile
 import textwrap
 from dataclasses import dataclass
 from pathlib import Path
@@ -208,9 +209,12 @@ def _schreiben(pfad: Path, daten: bytes) -> None:
     nichts tun, sonst über eine temporäre Datei im selben Ordner und os.replace."""
     if pfad.is_file() and pfad.read_bytes() == daten:
         return
-    tmp = pfad.with_name(f".{pfad.name}.{os.getpid()}.tmp")
+    # eindeutiger Temp-Name je Aufruf (nicht nur je Prozess): zwei Threads kollidieren sonst
+    fd, tmp_name = tempfile.mkstemp(dir=pfad.parent, prefix=f".{pfad.name}.", suffix=".tmp")
+    tmp = Path(tmp_name)
     try:
-        tmp.write_bytes(daten)
+        with os.fdopen(fd, "wb") as f:
+            f.write(daten)
         os.replace(tmp, pfad)
     finally:
         tmp.unlink(missing_ok=True)

@@ -313,3 +313,37 @@ def test_orchestrator_aufraeumen_ersetzt_die_ausnahme_nicht(settings, monkeypatc
         monkeypatch.setattr(orchestrator, "_alte_datei_aufraeumen", kaputt)
         with pytest.raises(SystemExit):
             orchestrator.entwurf_anlegen(ctx, repo.story(store, sid), felder, {}, typ="artikel", hinweise=[])
+
+
+
+def test_schreiben_zwei_threads_gleichzeitig(tmp_path):
+    import threading
+
+    from news_radar import images
+
+    daten, fehler = b"x" * 2_000_000, []
+
+    def lauf(pfad, schranke):
+        schranke.wait()
+        try:
+            images._schreiben(pfad, daten)
+        except Exception as exc:  # noqa: BLE001
+            fehler.append(type(exc).__name__)
+
+    for i in range(60):
+        pfad, schranke = tmp_path / f"b{i}.jpg", threading.Barrier(2)
+        laeufe = [threading.Thread(target=lauf, args=(pfad, schranke)) for _ in range(2)]
+        [t.start() for t in laeufe]
+        [t.join() for t in laeufe]
+        assert pfad.read_bytes() == daten
+    assert fehler == []
+    assert sorted(p.name for p in tmp_path.iterdir()) == sorted(f"b{i}.jpg" for i in range(60))
+
+
+def test_save_pair_anderer_inhalt_neue_inode(tmp_path):
+    from news_radar import images
+
+    name, _ = images.save_pair(branded_card("Titel", "Community", "x", "community"), tmp_path, "datei")
+    inode = (tmp_path / name).stat().st_ino
+    images.save_pair(branded_card("Anderer Titel", "Kultur", "x", "kultur"), tmp_path, "datei")
+    assert (tmp_path / name).stat().st_ino != inode  # ersetzt, nicht in place überschrieben
