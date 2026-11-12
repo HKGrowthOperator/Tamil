@@ -47,3 +47,14 @@ def test_deutsch_und_gegenproben_unveraendert(text, erwartet):
 
 def test_ungueltige_stunde_mit_pm_faellt_auf_bisherige_regel_zurueck():
     assert _zeit("7.11.2026 18:00 p.m.") == ("2026-11-07 18:00", True)  # 18 p.m. gibt es nicht: 24-h-Zeit gilt
+
+
+@pytest.mark.parametrize("text, erwartet", [
+    ("7.11.2026 6–9 pm", ("2026-11-07 18:00", True)),
+    ("7.11.2026 6-9 PM", ("2026-11-07 18:00", True)),
+    ("7.11.2026 6 – 9 p.m.", ("2026-11-07 18:00", True)),
+    ("7.11.2026 9–11 a.m.", ("2026-11-07 09:00", True)),
+    ("7.11.2026 6:00 – 9:30 p.m.", ("2026-11-07 06:00", True)),  # wie bisher: erste Zeit mit Doppelpunkt
+])
+def test_spanne_ohne_doppelpunkt_beginn_mit_gemeinsamem_zusatz(text, erwartet):
+    assert _zeit(text) == erwartet
