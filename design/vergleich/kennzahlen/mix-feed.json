@@ -1,6 +1,6 @@
 {
   "slug": "mix-feed",
-  "stand": "2026-11-12T15:28",
+  "stand": "2026-11-12T15:29",
   "groesster_massstab": 1.03,
   "handy": {
     "kopfleiste_hoehe": 149,
@@ -23,13 +23,8 @@
         "text": "Deepavali 2026: Lichterfest in Berlin, B"
       },
       {
-        "px": 28,
-        "anzahl": 2,
-        "text": "15."
-      },
-      {
         "px": 24,
-        "anzahl": 3,
+        "anzahl": 5,
         "text": "Diese Woche"
       },
       {
@@ -46,6 +41,11 @@
         "px": 19,
         "anzahl": 2,
         "text": "Deepavali-Feier des Düsseldorf Tamil San"
+      },
+      {
+        "px": 18,
+        "anzahl": 12,
+        "text": "Zum Inhalt"
       }
     ],
     "versalien_ueber_14px": 0,
@@ -132,18 +132,13 @@
         "text": "Deepavali 2026: Lichterfest in Berlin, B"
       },
       {
-        "px": 28,
-        "anzahl": 2,
-        "text": "15."
-      },
-      {
         "px": 26,
         "anzahl": 1,
         "text": "Diese Woche"
       },
       {
         "px": 24,
-        "anzahl": 4,
+        "anzahl": 6,
         "text": "11"
       },
       {
@@ -155,6 +150,11 @@
         "px": 20,
         "anzahl": 1,
         "text": "INAIVU in Zürich: Benefizabend mit Musik"
+      },
+      {
+        "px": 19,
+        "anzahl": 10,
+        "text": "Deepavali-Feier des Düsseldorf Tamil San"
       }
     ],
     "versalien_ueber_14px": 0,
