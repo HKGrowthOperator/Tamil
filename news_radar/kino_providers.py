@@ -354,7 +354,16 @@ def merge_kino_items(items: list[NewsItem]) -> list[NewsItem]:
     return others + list(merged.values())
 
 
-def _noch_aktuell(k: dict, now: datetime, aktiv) -> dict | None:
+def _wochen_ende(woche: str) -> str:
+    """„2026-W47“ (Kinowoche, Donnerstag bis Mittwoch) → letzter Tag als „JJJJ-MM-TT“; sonst ""."""
+    try:
+        jahr, nummer = woche.split("-W")
+        return (date.fromisocalendar(int(jahr), int(nummer), 4) + timedelta(days=6)).isoformat()
+    except (AttributeError, ValueError):
+        return ""
+
+
+def _noch_aktuell(k: dict, now: datetime, aktiv, bis: str = "") -> dict | None:
     """Ein bleibender Spielort nur mit aktiver Quelle und künftigem Termin (bzw. Laufzeit ab heute oder später)."""
     if aktiv is not None and k.get("quelle") not in aktiv:
         return None
@@ -368,8 +377,9 @@ def _noch_aktuell(k: dict, now: datetime, aktiv) -> dict | None:
             termine.append(t)
     if termine:
         return {**k, "termine": termine}
-    if not k.get("termine") and (k.get("von") or "") >= now.astimezone(TZ).date().isoformat():
-        return k
+    heute = now.astimezone(TZ).date().isoformat()
+    if not k.get("termine") and k.get("von") and (k["von"] >= heute or bis >= heute):
+        return k  # Laufzeit „ab“: bleibt, solange die Kinowoche des Entwurfs läuft
     return None
 
 
@@ -387,7 +397,8 @@ def vereinige_fakten(alt: dict, item: NewsItem, now: datetime | None = None) -> 
     now, aktiv = now or datetime.now(TZ), getattr(item, "quellen_aktiv", None)
     bleiben = [k for k in (alt or {}).get("kinos") or []
                if k.get("quelle") and k["quelle"] not in gelaufen and (k.get("kino"), k.get("stadt")) not in gemeldet]
-    bleiben = [k for k in (_noch_aktuell(k, now, aktiv) for k in bleiben) if k]
+    bis = _wochen_ende(str((alt or {}).get("woche") or neu.get("woche") or ""))
+    bleiben = [k for k in (_noch_aktuell(k, now, aktiv, bis) for k in bleiben) if k]
     if not bleiben:
         return neu, fingerprint
     kinos = sorted((neu.get("kinos") or []) + bleiben, key=lambda k: (k.get("stadt") or "", k.get("kino") or ""))

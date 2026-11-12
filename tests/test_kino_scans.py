@@ -121,7 +121,8 @@ def test_kino_traegt_seine_quelle():
 def test_bleibende_spielorte_ohne_kuenftigen_termin_oder_aktive_quelle_fallen_weg():
     jetzt = datetime.now(kp.TZ)
     gestern, morgen = (jetzt - timedelta(days=1)).isoformat(timespec="minutes"), _termin(19).isoformat(timespec="minutes")
-    alt = {"kinos": [
+    woche = kp.kino_week(jetzt.date())
+    alt = {"woche": f"{woche[0]}-W{woche[1]:02d}", "kinos": [
         {"kino": "Vorbei", "stadt": "A", "quelle": "Selten", "termine": [gestern]},
         {"kino": "Teils", "stadt": "B", "quelle": "Selten", "termine": [gestern, morgen]},
         {"kino": "Laeuft", "stadt": "C", "quelle": "Selten", "termine": [], "von": (jetzt - timedelta(days=3)).date().isoformat()},
@@ -133,5 +134,16 @@ def test_bleibende_spielorte_ohne_kuenftigen_termin_oder_aktive_quelle_fallen_we
                            quellen_gelaufen=frozenset({"Oft"}), quellen_aktiv=frozenset({"Oft", "Selten"}))
     fakten, _ = kp.vereinige_fakten(alt, neu)
     kinos = {k["kino"]: k for k in fakten["kinos"]}
-    assert sorted(kinos) == ["Bald", "Neu", "Teils"]
+    assert sorted(kinos) == ["Bald", "Laeuft", "Neu", "Teils"]  # „Laeuft“: Kinowoche des Entwurfs läuft noch
     assert kinos["Teils"]["termine"] == [morgen]  # vergangene Vorstellung gestrichen
+
+
+def test_laufzeit_ab_faellt_nach_der_kinowoche_weg():
+    jetzt = datetime.now(kp.TZ)
+    alt = {"woche": "2026-W01", "kinos": [{"kino": "Laeuft", "stadt": "C", "quelle": "Selten", "termine": [],
+                                           "von": (jetzt - timedelta(days=3)).date().isoformat()}]}
+    neu = sources.NewsItem("t", "https://x.example/k", "", "Kinoprogramm", jetzt, kind="kino",
+                           facts={"kinos": [{"kino": "Neu", "stadt": "F", "quelle": "Oft", "termine": []}]},
+                           quellen_gelaufen=frozenset({"Oft"}), quellen_aktiv=frozenset({"Oft", "Selten"}))
+    fakten, _ = kp.vereinige_fakten(alt, neu)
+    assert [k["kino"] for k in fakten["kinos"]] == ["Neu"]
