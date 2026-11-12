@@ -3,6 +3,15 @@
 Neueste oben. Format: Datum · Entscheidung · wer · warum. Was hier steht, gilt, bis ein neuerer Eintrag es ändert.
 Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
+## 12.11.2026
+
+- **Design: Mischung aus `klar2` und den Gen-Z-/Feed-Entwürfen, überall Bilder.** Das Live-Design (Runde 2) ist für
+  Luis „hässlich und klassisch“; frühere Entwürfe fand er besser. Zwei Probeseiten (`mix-ordnung`, `mix-feed`), dann
+  entscheidet Luis (G3). Jeder Anreißer mit Bild (nur mit Nachweis). Die Haltung „im Zweifel leiser“ aus Runde 2 gilt
+  für diese Runde nicht mehr; die Verbotsliste (`abgelehnt.md`) gilt weiter. · Luis · `docs/abnahme/2026-11-12-design-luis.md`
+- **Schreib-Automatik später:** Kein Anthropic-Schlüssel und keine tägliche Routine vorerst; der Radar scannt weiter, das
+  Schreiben bleibt manuell über den Agent-Modus. · Luis
+
 ## 11.11.2026
 
 - **Bild mit Nachweis (`POST /api/agent/bild`):** Ein Agent darf für einen wartenden Entwurf ein Bild vorschlagen, der
