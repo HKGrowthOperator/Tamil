@@ -199,11 +199,9 @@ def fetch_cineplexx(source: Source, settings: Settings, http=requests) -> list[S
 
 def fetch_html_kino(source: Source, settings: Settings, http=None, now: datetime | None = None) -> list[Show]:
     """Kinoseite oder Filmreihe mit CSS-Selektoren (wie Quellentyp html): eine Vorstellung je Eintrag, nur Einträge,
-    die „Tamil“ nennen (Titel, Sprachangabe). `params.kino`/`params.stadt` benennen das Haus, sonst der Ort-Selektor.
-
-    Zurückgestellt (Prüfung 11.11.2026), keine Quelle nutzt den Anbieter: Spielorte springen zwischen Scans
-    (anderer Takt als kinoheld/CineStar), die Tamil-Erkennung über den ganzen Eintrag ist zu weit, und Seiten ohne
-    Uhrzeit ergeben 00:00."""
+    deren Titel oder Sprachangabe (Selektor `sprache`) eine tamilische Fassung nennt (`ist_tamil_fassung`).
+    `params.kino`/`params.stadt` benennen das Haus, sonst der Ort-Selektor. Nennt die Seite nur den Tag, wird daraus
+    eine Laufzeit ab diesem Tag (`von`), keine Vorstellung um 00:00."""
     from urllib.parse import urljoin
 
     from bs4 import BeautifulSoup

@@ -467,16 +467,17 @@ max_items = 2
 interval_minutes = 180
 selectors = { item = "article.event-card", title = "h3", link = "h3 a::attr(href)", date = ".card-meta .pill", ort = "p.muted" }
 
-# Kino: Reihen und Programme mit Selektoren (provider = "html") – zurückgestellt (Prüfung 11.11.2026), alle aus
+# Kino: Reihen und Programme mit Selektoren (provider = "html"); Tamil nur über Titel oder Selektor `sprache`,
+# Spielorte bleiben über Scans erhalten, bis die eigene Quelle sie nicht mehr meldet (Prüfung 11.11.2026, behoben)
 [[source]]
 name = "Filmkunstkinos Düsseldorf · Kino aus Indien"
-enabled = false
+enabled = true
 prioritaet = "B"
 betreiber = "Metropol Düsseldorfer Filmkunstkino GmbH"
 robots = "erlaubt"
 paywall = false
 bild_nutzen = false
-notiz = "aus: Kino-HTML-Weg zurückgestellt, siehe Prüfung 11.11.: Spielorte springen zwischen Scans (unterschiedlicher Takt zu kinoheld/CineStar), Tamil-Erkennung über die Beschreibung zu weit, Mathäser ohne Uhrzeit → 00:00. Inventur 11.11.2026: eine Seite mit allen Vorstellungen der Reihe samt Sprache; Adresse trägt die Jahreszahl – im Januar auf …-2027 umstellen; antwortete einmal mit 429, deshalb langes Intervall; Plakate sind Verleihmaterial"
+notiz = "Inventur 11.11.2026: eine Seite mit allen Vorstellungen der Reihe samt Sprache; Adresse trägt die Jahreszahl – im Januar auf …-2027 umstellen; antwortete einmal mit 429, deshalb langes Intervall; Plakate sind Verleihmaterial"
 rechtlich_geprueft = ""
 type = "kino"
 provider = "html"
@@ -495,7 +496,7 @@ betreiber = "dein-dein.com"
 robots = "erlaubt"
 paywall = false
 bild_nutzen = false
-notiz = "aus: Kino-HTML-Weg zurückgestellt, siehe Prüfung 11.11.: Spielorte springen zwischen Scans (unterschiedlicher Takt zu kinoheld/CineStar), Tamil-Erkennung über die Beschreibung zu weit, Mathäser ohne Uhrzeit → 00:00. Außerdem: robots.txt sperrt KI-Crawler (ClaudeBot, GPTBot u. a.) ausdrücklich, erlaubt nur „*“ – Entscheidung Luis offen. Inventur 11.11.2026: tamilische Filme mit Vorstellungen in deutschen Kinos; Spielzeiten beim Kino prüfen; Betreiber nicht geprüft"
+notiz = "aus: robots.txt sperrt KI-Crawler (ClaudeBot, GPTBot u. a.) ausdrücklich, erlaubt nur „*“ – Entscheidung Luis offen. Inventur 11.11.2026: tamilische Filme mit Vorstellungen in deutschen Kinos; Spielzeiten beim Kino prüfen; Betreiber nicht geprüft"
 rechtlich_geprueft = ""
 type = "kino"
 provider = "html"
@@ -507,13 +508,13 @@ selectors = { item = "section[aria-label='Indian film snapshot'] article", title
 
 [[source]]
 name = "Mathäser Filmpalast München"
-enabled = false
+enabled = true
 prioritaet = "C"
 betreiber = "Kinopolis Management Multiplex GmbH"
 robots = "erlaubt"
 paywall = false
 bild_nutzen = false
-notiz = "aus: Kino-HTML-Weg zurückgestellt, siehe Prüfung 11.11.: Spielorte springen zwischen Scans (unterschiedlicher Takt zu kinoheld/CineStar), Tamil-Erkennung über die Beschreibung zu weit, Mathäser ohne Uhrzeit → 00:00. Inventur 11.11.2026: Programmseite nennt die Sprache im Titel („Scene (Tamil)“); große Seite (~900 KB); möglicherweise doppelt zu kinoheld"
+notiz = "Inventur 11.11.2026: Programmseite nennt die Sprache im Titel („Scene (Tamil)“); große Seite (~900 KB); möglicherweise doppelt zu kinoheld"
 rechtlich_geprueft = ""
 type = "kino"
 provider = "html"
@@ -526,13 +527,13 @@ selectors = { item = "section.movie", title = "h2 a", link = "h2 a::attr(href)",
 
 [[source]]
 name = "Babylon Berlin · IndoGerman Film"
-enabled = false
+enabled = true
 prioritaet = "C"
 betreiber = "Neue Babylon Berlin GmbH"
 robots = "erlaubt"
 paywall = false
 bild_nutzen = false
-notiz = "aus: Kino-HTML-Weg zurückgestellt, siehe Prüfung 11.11.: Spielorte springen zwischen Scans (unterschiedlicher Takt zu kinoheld/CineStar), Tamil-Erkennung über die Beschreibung zu weit, Mathäser ohne Uhrzeit → 00:00. Inventur 11.11.2026: Reihe indischer Filme in Originalsprache; Sprache je Film steht in der Beschreibung („[Telugu]“) – nur tamilische Fassungen kommen durch"
+notiz = "Inventur 11.11.2026: Reihe indischer Filme in Originalsprache; Sprache je Film steht in der Beschreibung („[Telugu]“) – Selektor sprache liest dort nur die Sprachmarke, nur tamilische Fassungen kommen durch"
 rechtlich_geprueft = ""
 type = "kino"
 provider = "html"
