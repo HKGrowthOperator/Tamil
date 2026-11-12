@@ -61,9 +61,24 @@ _STADT_GLEICH = {"munich": "münchen", "muenchen": "münchen", "cologne": "köln
 
 
 def _kuerzel(titel: str) -> set[str]:
-    """Vereinskürzel im Titel (MTS, FTS, BTS): 2–5 Großbuchstaben, keine bekannten Wörter."""
+    """Vereinskürzel im Titel (MTS, FTS, BTS): 2–5 Großbuchstaben, keine bekannten Wörter. Steht der ganze Titel in
+    Großbuchstaben („TAMIL NEW YEAR“, „ONAM 2026“), zählen nur Wörter ohne Selbstlaut (MTS, STCC)."""
+    gross = not re.search(r"[a-zäöüß]", titel)
     return {w.lower() for w in re.findall(r"\b[A-ZÄÖÜ]{2,5}\b", titel)
-            if w.lower() not in _FUELL and w.lower() not in _STOP and w.lower() not in _GLEICH}
+            if not (gross and re.search(r"[AEIOUÄÖÜY]", w))
+            and w.lower() not in _FUELL and w.lower() not in _STOP and w.lower() not in _GLEICH}
+
+
+_VEREIN_RE = re.compile(r"\b([A-ZÄÖÜ])[^\W\d_]*\s+(?:Tamil|TAMIL)\s+([A-ZÄÖÜ])[^\W\d_]*")
+
+
+def _vereine(titel: str, quellen: tuple[str, ...] = ()) -> set[str]:
+    """Hinweise auf den Verein: Kürzel im Titel und die Anfangsbuchstaben von „<Ort> Tamil <Wort>“ in Titel und
+    Quellennamen („München Tamil Sangam · Termine“ → mts)."""
+    hinweise = _kuerzel(titel)
+    for text in (titel, *quellen):
+        hinweise |= {f"{a}t{b}".lower() for a, b in _VEREIN_RE.findall(text or "")}
+    return hinweise
 
 
 def titel_kern(titel: str) -> set[str]:
@@ -80,7 +95,9 @@ def _stadt(ort: str) -> str:
     return "" if ort in _LAENDER else _STADT_GLEICH.get(ort, ort)
 
 
-_STRASSE = re.compile(r"(straße|strasse|str\.|platz|weg|allee|gasse|ring|damm|ufer|chaussee)\b|\d", re.I)
+# Straße: Hausnummer, „straße“/„str.“ oder eines dieser Wörter für sich („Am Ring“, „Wiener Platz“). Orte, die nur
+# so enden (Pöring, Neuring), bleiben Orte.
+_STRASSE = re.compile(r"\d|straße|strasse|\bstr\.|(?:^|\s)(platz|weg|allee|gasse|ring|damm|ufer|chaussee)\b", re.I)
 
 
 def _ortsteile(voll: str) -> list[str]:
@@ -120,27 +137,30 @@ def termin_widerspruch(a: NewsItem, b: NewsItem) -> bool:
         a.ort, (a.facts or {}).get("event_ort", ""), b.ort, (b.facts or {}).get("event_ort", ""))
 
 
-def _titel_gleich(a: str, b: str, ohne_ort: bool = False) -> bool:
+def _titel_gleich(a: str, b: str) -> bool:
     ka, kb = titel_kern(a), titel_kern(b)
     if not ka or not kb:
         return False
     if _kuerzel_widerspruch(a, b):
         return False  # MTS ≠ BTS; ein Kürzel nur auf einer Seite stört nicht
-    if ka == kb or len(ka & kb) / len(ka | kb) >= 0.6:
-        return True
-    klein = min(ka, kb, key=len)
-    if ohne_ort and len(klein) < 2:
-        return False  # ohne Ort trägt ein einzelnes Wort („deepavali“) keine Teilmenge
-    return ka <= kb or kb <= ka
+    return ka == kb or len(ka & kb) / len(ka | kb) >= 0.6 or ka <= kb or kb <= ka
 
 
 def _datum(item: NewsItem) -> str:
     return str((item.facts or {}).get("event_datum") or "")[:10]
 
 
-def _passt(titel_a: str, ort_a: str, voll_a: str, titel_b: str, ort_b: str, voll_b: str) -> bool:
+def _passt(titel_a: str, ort_a: str, voll_a: str, titel_b: str, ort_b: str, voll_b: str,
+           quellen_a: tuple[str, ...] = (), quellen_b: tuple[str, ...] = ()) -> bool:
     ohne_ort = not _stadt(ort_a) or not _stadt(ort_b)
-    return _titel_gleich(titel_a, titel_b, ohne_ort) and ort_vertraeglich(ort_a, voll_a, ort_b, voll_b)
+    if not (_titel_gleich(titel_a, titel_b) and ort_vertraeglich(ort_a, voll_a, ort_b, voll_b)):
+        return False
+    if ohne_ort and len(titel_kern(titel_a) & titel_kern(titel_b)) < 2:
+        # Ohne Ort trägt ein einzelnes gemeinsames Kernwort („Deepavali“) allein nicht, weder gleich noch als Teilmenge –
+        # das Fest ist am selben Tag in vielen Städten. Es braucht denselben Verein auf beiden Seiten
+        # (Kürzel MTS ↔ Quelle „München Tamil Sangam · Termine“, oder „Hamburg Tamil Sangam“ im Titel ↔ HTS).
+        return bool(_vereine(titel_a, quellen_a) & _vereine(titel_b, quellen_b))
+    return True
 
 
 def gleicher_termin(a: NewsItem, b: NewsItem) -> bool:
@@ -148,7 +168,7 @@ def gleicher_termin(a: NewsItem, b: NewsItem) -> bool:
     if a.kind != "event" or b.kind != "event" or not _datum(a) or _datum(a) != _datum(b):
         return False
     return _passt(a.title, a.ort, (a.facts or {}).get("event_ort", ""),
-                  b.title, b.ort, (b.facts or {}).get("event_ort", ""))
+                  b.title, b.ort, (b.facts or {}).get("event_ort", ""), (a.source,), (b.source,))
 
 
 def _termin_story(store, item: NewsItem) -> int | None:
@@ -159,10 +179,13 @@ def _termin_story(store, item: NewsItem) -> int | None:
         return None
     praefix = f"event:{datum}:"
     rows = store.db.execute(
-        "SELECT id, titel, ort FROM stories WHERE typ = 'event' AND status != 'verworfen' "
-        "AND substr(schluessel, 1, ?) = ?", (len(praefix), praefix)).fetchall()
+        "SELECT s.id, s.titel, s.ort, (SELECT group_concat(d.quelle, char(10)) FROM source_documents d "
+        "WHERE d.story_id = s.id) FROM stories s WHERE s.typ = 'event' AND s.status != 'verworfen' "
+        "AND substr(s.schluessel, 1, ?) = ?", (len(praefix), praefix)).fetchall()
     voll = (item.facts or {}).get("event_ort", "")
-    treffer = [sid for sid, titel, ort in rows if _passt(item.title, item.ort, voll, titel or "", ort or "", ort or "")]
+    treffer = [sid for sid, titel, ort, quellen in rows
+               if _passt(item.title, item.ort, voll, titel or "", ort or "", ort or "",
+                         (item.source,), tuple((quellen or "").split("\n")))]
     return treffer[0] if len(treffer) == 1 else None
 
 

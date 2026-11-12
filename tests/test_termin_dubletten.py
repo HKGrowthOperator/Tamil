@@ -180,6 +180,11 @@ def _mit_ort(titel, stadt, voll, datum="2026-11-21", url="https://x.example/neu"
     return item
 
 
+def _aus_quelle(item, quelle):
+    item.source = quelle
+    return item
+
+
 def _story(store, item, status="neu"):
     return repo.story_anlegen(store, typ="event", titel=item.title, ort=item.ort, schluessel=cluster.schluessel(item),
                               status=status)
@@ -238,11 +243,85 @@ def test_verworfene_story_zieht_keinen_termin_an(monkeypatch, settings):
 
 
 def test_kuerzel_nur_auf_einer_seite_stoert_nicht(settings):
-    a = _mit_ort("Diwali-2026", "Neukeferloh", "Bürgerhaus Neukeferloh, Neukeferloh")
+    # Seit der Folgearbeit P3 braucht ein Kernwort ohne Ort einen Vereinshinweis: der Kalender trägt ihn als Quelle
+    # („München Tamil Sangam“ ↔ MTS), wie im Live-Fall. Ohne diesen Hinweis: test_ein_kernwort_ohne_ort_ohne_…
+    a = _aus_quelle(_mit_ort("Diwali-2026", "Neukeferloh", "Bürgerhaus Neukeferloh, Neukeferloh"),
+                    "München Tamil Sangam · Termine")
     b = _ohne_ort("MTS Diwali 2026", url="https://x.example/b")
     assert cluster.gleicher_termin(a, b)
     assert not cluster.gleicher_termin(_ohne_ort("FTS Diwali 2026", url="https://x.example/f"), b)
     with Store(settings.db_path) as store:
         assert _bezug_im_scan(settings, store, [a], b) == 0
         sid = _story(store, a)
+        repo.dokument_hinzufuegen(store, sid, url=a.url, quelle=a.source)
         assert cluster._termin_story(store, b) == sid
+
+
+# ---- Folgearbeit P3 (Gegenprüfung von fd1aba5) -----------------------------------------------------------------------
+# 1. Ein Kernwort ohne Ort reicht allein nicht: Deepavali ist an einem Tag in vielen Städten. Zusammengelegt wird nur
+#    mit einem Vereinshinweis auf beiden Seiten (Kürzel „MTS“ ↔ Quelle „München Tamil Sangam“, oder dasselbe Kürzel).
+# 2. Orte mit Endungen wie -ring, -weg, -damm sind keine Straßen (Pöring, Zorneding).
+# 3. Titel ganz in Großbuchstaben: „ONAM“, „NEW“, „THAI“ sind keine Vereinskürzel.
+
+def test_ein_kernwort_ohne_ort_ohne_vereinshinweis_bleibt_getrennt(settings):
+    berlin = _mit_ort("Deepavali", "Berlin", "Berlin, Deutschland", url="https://x.example/b")
+    neu = _ohne_ort("Diwali 2026")
+    assert not cluster.gleicher_termin(berlin, neu) and not cluster.gleicher_termin(neu, berlin)
+    with Store(settings.db_path) as store:
+        assert _bezug_im_scan(settings, store, [berlin], neu) is None
+        _story(store, berlin)
+        assert cluster._termin_story(store, neu) is None
+
+
+def test_ein_kernwort_ohne_ort_mit_vereinshinweis_der_quelle(settings):
+    kalender = _aus_quelle(_mit_ort("Diwali-2026", "Neukeferloh", "Bürgerhaus Neukeferloh, Neukeferloh"),
+                           "München Tamil Sangam · Termine")
+    vizha_mts = _ohne_ort("MTS Diwali 2026", url="https://x.example/v")
+    vizha_bts = _ohne_ort("BTS Diwali 2026", url="https://x.example/w")
+    assert cluster.gleicher_termin(kalender, vizha_mts) and cluster.gleicher_termin(vizha_mts, kalender)
+    assert not cluster.gleicher_termin(kalender, vizha_bts)
+    with Store(settings.db_path) as store:
+        assert _bezug_im_scan(settings, store, [kalender], vizha_mts) == 0
+        sid = _story(store, kalender)
+        repo.dokument_hinzufuegen(store, sid, url=kalender.url, quelle=kalender.source)
+        assert cluster._termin_story(store, vizha_mts) == sid
+        assert cluster._termin_story(store, vizha_bts) is None
+
+
+def test_vereinsname_im_titel_zaehlt_als_hinweis():
+    a = _mit_ort("Deepavali Feier des Hamburg Tamil Sangam", "Hamburg", "Hamburg, Deutschland")
+    assert cluster.gleicher_termin(a, _ohne_ort("HTS Deepavali 2026", url="https://x.example/h"))
+    assert not cluster.gleicher_termin(a, _ohne_ort("MTS Deepavali 2026", url="https://x.example/m"))
+
+
+@pytest.mark.parametrize("voll_a", ["Pfarrsaal, Pöring, Zorneding", "Gasthof, Pöring-Nord, Zorneding"])
+def test_orte_mit_strassenendung_sind_keine_strassen(voll_a):
+    # Pöring ist ein Ortsteil von Zorneding: steht der Ortsteil im vollen Ort der anderen Seite, ist es derselbe Termin
+    a = _mit_ort("Deepavali 2026", "Zorneding", voll_a)
+    b = _mit_ort("Deepavali Feier", "Pöring", "Pfarrheim St. Martin, Pöring")
+    assert cluster.ort_vertraeglich(a.ort, a.facts["event_ort"], b.ort, b.facts["event_ort"])
+    assert cluster.gleicher_termin(a, b)
+
+
+def test_strassen_bleiben_strassen():
+    # Gegenprobe: Hausnummer oder „-straße“ machen einen Ortsbestandteil weiterhin zur Straße
+    assert not cluster.ort_vertraeglich("Offenbach", "Frankfurter Ring 5, Offenbach", "Frankfurt", "Frankfurt")
+    assert not cluster.ort_vertraeglich("München", "Wiener Platz 1, München", "Wien", "Wien, Österreich")
+    assert cluster._ortsteile("Saal, Am Ring, Neuring") == ["saal", "neuring"]
+
+
+@pytest.mark.parametrize("gross,klein", [
+    ("ONAM 2026", "Onam Feier 2026"),
+    ("TAMIL NEW YEAR 2026", "MTS Tamil New Year 2026"),
+    ("THAI PONGAL VIZHA", "Thai Pongal Vizha 2026"),
+])
+def test_titel_in_grossbuchstaben(gross, klein):
+    a = _mit_ort(gross, "München", "München, Deutschland")
+    b = _mit_ort(klein, "München", "Saal, München", url="https://x.example/k")
+    assert cluster.gleicher_termin(a, b) and cluster.gleicher_termin(b, a)
+
+
+def test_kuerzel_in_grossbuchstaben_titeln_bleiben_kuerzel():
+    a = _mit_ort("MTS DIWALI 2026", "München", "München, Deutschland")
+    b = _mit_ort("BTS DIWALI 2026", "München", "München, Deutschland", url="https://x.example/b")
+    assert cluster._kuerzel(a.title) == {"mts"} and not cluster.gleicher_termin(a, b)
