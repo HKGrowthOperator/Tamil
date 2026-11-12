@@ -92,9 +92,11 @@ def clean_text(value: str) -> str:
 # Doppelpunkt vor der Nummer steht („Mala: 0176 …“) oder einem Kontakt-Wort folgt („Kontakt: Mala 0176 …“).
 _TELEFON = (r"(?:(?<![\w+@/.])(?:\+|00)\d{1,3}(?:[ ./-]?\(0\))?(?:[ ./-]?\d{1,5}){2,6}"
             r"|(?<![\w+@/.])0\d{2,5}(?:[ ./-]?\d{2,8}){1,4})(?!\w)")
-_EMAIL = r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+"
+# Laufzeit: Muster nur am Wortanfang und possessiv (*+, ++), sonst quadratisch auf langem Text ohne Leerzeichen
+# (Gegenprüfung 12.11.: 60 000 Zeichen 16 s); die Aufrufer kürzen zusätzlich vorher auf 3000 Zeichen.
+_EMAIL = r"(?<![\w.+-])[\w.+-]++@[\w-]++(?:\.[\w-]++)+"
 _KONTAKT_WORT = r"\b(?:Kontakte?|Contacts?|Tel\.?|Telefon|Phone|Mobil|Handy|WhatsApp|E-?Mail|Email)"
-_NAME = r"[A-ZÄÖÜ][\w-]*(?: [A-ZÄÖÜ][\w-]*)?"
+_NAME = r"(?<![\w-])[A-ZÄÖÜ][\w-]*+(?: [A-ZÄÖÜ][\w-]*+)?"
 _KONTAKT_RE = re.compile(
     rf"{_KONTAKT_WORT}\s*:?\s*{_NAME}\s+(?P<a>{_TELEFON})"
     rf"|(?:{_KONTAKT_WORT}\s*:?\s*)?(?:{_NAME}\s*:\s*)?(?:(?P<b>{_TELEFON})|{_EMAIL})")
@@ -113,7 +115,7 @@ def ohne_kontakte(text: str) -> str:
     if neu == text:
         return text
     neu = _KONTAKT_REST_RE.sub(" ", neu)  # „Contacts:“ ohne Kontakte
-    neu = re.sub(r"(?:\s*•)+\s*$", "", re.sub(r"(?:\s*•\s*){2,}", " • ", neu))
+    neu = re.sub(r"(?<![\s•])(?:\s*+•)++\s*+$", "", re.sub(r"(?<![\s•])(?:\s*+•\s*+){2,}+", " • ", neu))
     neu = re.sub(r"\s+([.,;:!?])", r"\1", re.sub(r"\s+", " ", neu))
     return neu.strip(" •·–-,;")
 
@@ -381,7 +383,8 @@ def fetch_tribe_events(source: Source, settings: Settings, now: datetime | None 
         wann = start.strftime("%d.%m.%Y") + ("" if ev.get("all_day") else start.strftime(", %H:%M Uhr"))
         if letzter_tag > start.date():
             wann += letzter_tag.strftime(" bis %d.%m.%Y")
-        summary = " · ".join(p for p in (wann, ohne_kontakte(clean_text(ev.get("description") or ""))[:900], ort) if p)
+        beschreibung = ohne_kontakte(clean_text(ev.get("description") or "")[:3000])[:900]  # erst kürzen (Laufzeit)
+        summary = " · ".join(p for p in (wann, beschreibung, ort) if p)
         item = NewsItem(
             title=title, url=url, summary=summary[:1200], source=source.name, published=now,
             language=source.language, kind="event", ort=venue.get("city") or "",
@@ -518,7 +521,8 @@ def jsonld_termin(text: str, url: str, source: Source, settings: Settings, now: 
     wann = start.strftime("%d.%m.%Y") + ("" if ohne_zeit else start.strftime(", %H:%M Uhr"))
     if letzter_tag > start.date():
         wann += letzter_tag.strftime(" bis %d.%m.%Y")
-    teile_summary = (wann, _ld_text(ev.get("alternateName")), ohne_kontakte(_ld_text(ev.get("description")))[:900], ort)
+    beschreibung = ohne_kontakte(_ld_text(ev.get("description"))[:3000])[:900]  # erst kürzen (Laufzeit)
+    teile_summary = (wann, _ld_text(ev.get("alternateName")), beschreibung, ort)
     item = NewsItem(
         title=title, url=url, summary=" · ".join(p for p in teile_summary if p)[:1200], source=source.name,
         published=now, language=source.language, kind="event", ort=stadt,

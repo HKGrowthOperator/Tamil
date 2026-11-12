@@ -400,3 +400,48 @@ def test_land_als_name(settings, land, name):
 def test_land_als_name_ausserhalb_dach(settings):
     text = _zuerich().replace('"addressCountry":"CH"', '"addressCountry":"Sweden"')
     assert sources.jsonld_termin(text, ZUERICH_URL, _quelle(settings), settings, now=STAND) is None
+
+
+# ---- Gegenprüfung von 69e232d: Laufzeit des Kontaktfilters, Varianten der Gedenk-Namen ------------------------------
+
+@pytest.mark.parametrize("text", [
+    "a" * 200_000,  # ohne Leerzeichen
+    "a." * 50_000,
+    "A" * 200_000,  # Namensmuster („Name: 0176 …“)
+    "0176 1234567 " + " •" * 50_000,  # Aufräumen nach einem Treffer
+    "1." * 100_000,
+    "+1 " * 60_000,
+], ids=["a200k", "a-punkt50k", "A200k", "bullets50k", "1-punkt100k", "plus1-60k"])
+def test_kontaktfilter_laeuft_linear(text):
+    import time
+
+    t0 = time.perf_counter()
+    sources.ohne_kontakte(text)
+    assert time.perf_counter() - t0 < 0.5
+
+
+def test_beschreibung_wird_vor_dem_kontaktfilter_gekuerzt(settings, monkeypatch):
+    laengen = []
+    echt = sources.ohne_kontakte
+
+    def messen(text):
+        laengen.append(len(text))
+        return echt(text)
+
+    monkeypatch.setattr(sources, "ohne_kontakte", messen)
+    text = _zuerich().replace('"description":"Festival:', '"description":"' + "x" * 20_000 + ' Festival:')
+    item = sources.jsonld_termin(text, ZUERICH_URL, _quelle(settings), settings, now=STAND)
+    assert item is not None and laengen and max(laengen) <= 3000
+
+
+@pytest.mark.parametrize("titel", [
+    "கேணல் கிட்டுவின் நினைவாக உதைபந்தாட்டம்",  # Genitiv
+    "கிட்டுவுக்கு வணக்கம்",  # Dativ
+    "Tamilselvan Memorial Cup", "Tamil Selvan Cup", "Tamilchelvan Gedenkturnier", "Thamil Selvan Trophy",
+])
+def test_varianten_der_gedenk_namen(settings, titel):
+    from news_radar import filtering
+
+    item = sources.NewsItem(title=titel, url="https://x.example/1", summary="", source="Test", published=STAND,
+                            kind="event")
+    assert filtering.gedenktermin(item, settings)

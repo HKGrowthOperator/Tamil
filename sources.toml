@@ -809,8 +809,11 @@ termine = ["maaveerar", "maveerar", "mahaveerar", "mahaaveerar", "mavirar", "maa
            "heldentag",
            # Namen von LTTE-Gedenkanlässen (Entscheidung 12.11.2026: Vizha-Probe zeigte Gedenkturniere ohne die
            # Begriffe oben, z. B. „BR.S.P. Thamilselvan Memorial Cup“)
-           "thamilselvan", "தமிழ்ச்செல்வன்", "brigadier", "பிரிகேடியர்", "thileepan", "திலீபன்", "annai poopathi",
-           "annai poopathy", "அன்னை பூபதி", "prabhakaran", "பிரபாகரன்"]  # Wortanfang, ohne Formatzeichen, Apostrophe und Diakritika; „national heroes“ nicht bei „Museum“ im Titel
+           "thamilselvan", "tamilselvan", "tamil selvan", "tamilchelvan", "thamil selvan", "தமிழ்ச்செல்வன்",
+           "brigadier", "பிரிகேடியர்", "thileepan", "திலீபன்", "annai poopathi", "annai poopathy", "அன்னை பூபதி",
+           "prabhakaran", "பிரபாகரன்",
+           # Kasusformen von கிட்டு (கிட்டுவின், கிட்டுவுக்கு); das Verb கிட்டும் trifft nicht (கிட்டு selbst: termine_wort)
+           "கிட்டுவ"]  # Wortanfang, ohne Formatzeichen, Apostrophe und Diakritika; „national heroes“ nicht bei „Museum“ im Titel
 # wie `termine`, aber nur als ganzes Wort: „Kittu“, nicht „Kittur“; „கிட்டு“, nicht „கிட்டும்“ (Verb „wird zuteil“)
 termine_wort = ["kittu", "kiddu", "கிட்டு"]
 
