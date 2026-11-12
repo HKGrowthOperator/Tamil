@@ -20,6 +20,9 @@ MONTHS = {
 }
 _MONTH_RE = "|".join(sorted(MONTHS, key=len, reverse=True))
 _TIME_RE = re.compile(r"(?<!\d)(\d{1,2})[:.](\d{2})(?:\s*uhr)?", re.I)
+# 12-Stunden-Uhrzeit: „6:00 p.m.“, „6:30 P.M.“, „6 pm“, „10 AM“. Ohne Punkte nur „pm“, „AM“, „PM“ – das kleine
+# „am“ ist im Deutschen eine Präposition („10:30 am Bahnhof“) und bleibt außen vor.
+_AMPM_RE = re.compile(r"(?<![\d:.])(\d{1,2})(?:[:.](\d{2}))?\s*(?:([aApP])\.\s?[mM]\.?|(AM|PM|pm)(?![A-Za-z]))")
 _ISO_RE = re.compile(r"(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2}))?")
 _NUMERIC_RE = re.compile(r"(?<!\d)(\d{1,2})\.(\d{1,2})\.(\d{2,4})(?!\d)")
 _NUMERIC_NOYEAR_RE = re.compile(r"(?<!\d)(\d{1,2})\.(\d{1,2})\.(?!\d)")
@@ -89,7 +92,13 @@ def parse_de_termin(text: str, now: datetime | None = None) -> tuple[datetime | 
     hat_zeit = False
     # Uhrzeit nur nach dem Datum suchen, damit „7.11.“ nicht als 7:11 gelesen wird
     tail = t[m.end():] if "m" in locals() and m else t
-    if tm := _TIME_RE.search(tail):
+    tm = _TIME_RE.search(tail)
+    ap = _AMPM_RE.search(tail)
+    if ap and (tm is None or ap.start() <= tm.start()) and 1 <= int(ap.group(1)) <= 12 and int(ap.group(2) or 0) <= 59:
+        nachmittag = (ap.group(3) or ap.group(4)).lower().startswith("p")
+        hour, minute = int(ap.group(1)) % 12 + (12 if nachmittag else 0), int(ap.group(2) or 0)
+        hat_zeit = True
+    elif tm:
         hour, minute = int(tm.group(1)), int(tm.group(2))
         hat_zeit = True
         if hour > 23 or minute > 59:
