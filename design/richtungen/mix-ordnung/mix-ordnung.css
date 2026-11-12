@@ -34,15 +34,18 @@
   --linie-dunkel: oklch(0.36 0.010 255);
   --flaeche-dunkel: oklch(0.26 0.012 255);
   /* der einzige Verlauf: unter Schrift im Bild, von durchsichtig nach Tinte */
-  /* höchstens 0,7 Deckkraft, nur so hoch wie Dachzeile und Titel */
+  /* gestuft, damit keine Kante entsteht; beginnt 64 px über der Dachzeile und erreicht 0,72 kurz vor ihr */
   --verlauf: linear-gradient(to bottom,
     oklch(0.21 0.012 255 / 0) 0,
-    oklch(0.21 0.012 255 / 0.62) 36px,
-    oklch(0.21 0.012 255 / 0.7) 100%);
+    oklch(0.21 0.012 255 / 0.25) 22px,
+    oklch(0.21 0.012 255 / 0.55) 42px,
+    oklch(0.21 0.012 255 / 0.72) 60px,
+    oklch(0.21 0.012 255 / 0.72) 100%);
   --verlauf-kurz: linear-gradient(to bottom,
     oklch(0.21 0.012 255 / 0) 0,
-    oklch(0.21 0.012 255 / 0.64) 20px,
-    oklch(0.21 0.012 255 / 0.7) 100%);
+    oklch(0.21 0.012 255 / 0.3) 12px,
+    oklch(0.21 0.012 255 / 0.6) 26px,
+    oklch(0.21 0.012 255 / 0.72) 100%);
 
   --schrift: "Libre Franklin", "Noto Sans Tamil", "Tamil Sangam MN", system-ui, sans-serif;
   --rand: 16px;
@@ -191,6 +194,12 @@ a:focus-visible, input:focus-visible, textarea:focus-visible, button:focus-visib
 
 .r83 { aspect-ratio: 8 / 3; }
 .r32 { aspect-ratio: 3 / 2; }
+@media (max-width: 599px) {
+  .r32 { aspect-ratio: 4 / 3; }
+  /* Platz für die zweite Schlagzeile im ersten Bildschirm: der Vorspann steht im Artikel */
+  .aufmacher .vorspann--unter { display: none; }
+  .artikel__bild img { aspect-ratio: 4 / 3; }
+}
 .r169 { aspect-ratio: 16 / 9; }
 
 .meta {
@@ -243,7 +252,7 @@ a:focus-visible, input:focus-visible, textarea:focus-visible, button:focus-visib
 .imbild {
   position: absolute;
   left: 0; right: 0; bottom: 0;
-  padding: 40px var(--rand) 14px;
+  padding: 64px var(--rand) 14px;
   background-image: var(--verlauf);
   color: var(--hell);
 }
@@ -281,6 +290,7 @@ a:focus-visible, input:focus-visible, textarea:focus-visible, button:focus-visib
 }
 .zeile .rahmen { grid-column: 2; grid-row: 1; margin-top: 3px; }
 .zeile__text { grid-column: 1; grid-row: 1; }
+.zeile .anr > .nachweis { grid-column: 1 / -1; grid-row: 2; margin-top: 6px; text-align: right; }
 .zeile .titel { font-size: 17px; line-height: 1.3; font-weight: 600; }
 .zeile .vorspann { display: none; }
 
@@ -295,7 +305,7 @@ a:focus-visible, input:focus-visible, textarea:focus-visible, button:focus-visib
 .buehne { padding-top: 0; }
 .aufmacher .rahmen { margin-inline: calc(-1 * var(--rand)); }
 .aufmacher .rahmen img { object-position: 50% 30%; }
-.aufmacher .imbild { padding-top: 48px; }
+.aufmacher .imbild { padding-top: 72px; }
 .aufmacher .nachweis { margin-top: 6px; }
 .aufmacher.aufmacher--rubrik .titel { font-size: 26px; letter-spacing: -0.015em; text-wrap: wrap; }
 .aufmacher .titel {
@@ -413,7 +423,7 @@ a:focus-visible, input:focus-visible, textarea:focus-visible, button:focus-visib
 /* ---------- Küche ---------- */
 
 .kueche__raster { display: grid; gap: 12px; }
-.kueche .kachel--klein .imbild { padding-top: 34px; background-image: var(--verlauf-kurz); }
+.kueche .kachel--klein .imbild { padding-top: 64px; }
 .kueche .kachel--klein .titel { font-size: 18px; }
 
 /* ---------- Fuß ---------- */
@@ -469,8 +479,10 @@ a:focus-visible, input:focus-visible, textarea:focus-visible, button:focus-visib
 }
 .termin__tag { display: block; font-size: 24px; font-weight: 700; }
 .termin__monat { display: block; margin-top: 2px; font-size: 13px; color: var(--leise); }
-.termin .rahmen { grid-column: 2; margin-bottom: 10px; }
-.termin__text { grid-column: 2; }
+.termin .rahmen { grid-column: 2; grid-row: 1; }
+.termin .anr > .nachweis { grid-column: 2; grid-row: 2; margin: 6px 0 10px; }
+.termin__text { grid-column: 2; grid-row: 3; }
+.termin__datum { grid-row: 1 / 4; }
 .termin .titel { font-size: 19px; line-height: 1.25; }
 .termin__ort { margin-top: 4px; font-size: 15px; color: var(--leise); }
 .termine__art { margin-top: 4px; color: var(--leise); }
@@ -605,12 +617,13 @@ a:focus-visible, input:focus-visible, textarea:focus-visible, button:focus-visib
   .zeile .vorspann { display: block; }
   .liste--gross .zeile .anr { grid-template-columns: 240px minmax(0, 1fr); }
   .liste--gross .zeile .rahmen { grid-column: 1; }
-  .liste--gross .zeile .zeile__text { grid-column: 2; }
+  .liste--gross .zeile .zeile__text { grid-column: 2; grid-row: 1 / 3; }
+  .liste--gross .zeile .anr > .nachweis { grid-column: 1; text-align: left; }
   .kacheln li { flex-basis: 170px; }
   .buehne { padding-top: 20px; }
   .aufmacher .rahmen { margin-inline: 0; }
   .aufmacher .titel { font-size: 34px; line-height: 1.1; }
-  .aufmacher .imbild { padding: 64px 28px 20px; }
+  .aufmacher .imbild { padding: 80px 28px 20px; }
   .aufmacher.aufmacher--rubrik .titel { font-size: 34px; }
   .meldungen ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 24px; }
   .meldungen .zeile { border-top: 1px solid var(--linie); }
@@ -627,7 +640,8 @@ a:focus-visible, input:focus-visible, textarea:focus-visible, button:focus-visib
   .termin__datum { grid-row: 1; }
   .demnaechst.termin .anr { grid-template-columns: 72px minmax(0, 1fr); }
   .termin .rahmen { grid-column: 2; margin: 0; }
-  .termin__text { grid-column: 3; }
+  .termin .anr > .nachweis { margin-bottom: 0; }
+  .termin__text { grid-column: 3; grid-row: 1 / 3; }
   .kontakt__bild .rahmen { margin-inline: 0; }
   .artikel { max-width: 760px; margin: 0 auto; padding-top: 32px; }
   .artikel__bild { margin-inline: 0; }
@@ -662,6 +676,18 @@ a:focus-visible, input:focus-visible, textarea:focus-visible, button:focus-visib
   }
 }
 
+/* bis 1023 px: Titel der kleinen Küchen-Kacheln unter dem Bild */
+@media (max-width: 1023px) {
+  .kueche .kachel--klein .anr { display: flex; flex-direction: column; }
+  .kueche .kachel--klein .rahmen { display: contents; }
+  .kueche .kachel--klein .rahmen img { order: 1; aspect-ratio: 16 / 9; height: auto; }
+  .kueche .kachel--klein .anr:hover .rahmen img { transform: none; }
+  .kueche .kachel--klein .anr > .nachweis { order: 2; }
+  .kueche .kachel--klein .imbild { order: 3; position: static; padding: 8px 0 0; background: none; color: var(--tinte); }
+  .kueche .kachel--klein .imbild .meta { color: var(--leise); }
+  .kueche .kachel--klein .imbild .meta__rubrik { color: var(--rot); }
+}
+
 /* ---------- Desktop ---------- */
 
 @media (min-width: 1024px) {
@@ -690,7 +716,7 @@ a:focus-visible, input:focus-visible, textarea:focus-visible, button:focus-visib
     padding-top: 20px;
   }
   .aufmacher .rahmen { aspect-ratio: 3 / 2; }
-  .aufmacher .imbild { padding: 72px 32px 24px; }
+  .aufmacher .imbild { padding: 88px 32px 24px; }
   .aufmacher .titel { font-size: 40px; line-height: 1.1; letter-spacing: -0.015em; max-width: 17em; }
   .aufmacher .vorspann--voll { display: block; margin-top: 6px; max-width: 44em; font-size: 17px; }
   .aufmacher .vorspann--unter { display: none; }
@@ -700,6 +726,7 @@ a:focus-visible, input:focus-visible, textarea:focus-visible, button:focus-visib
   .buehne__liste .zeile .anr { grid-template-columns: 120px minmax(0, 1fr); column-gap: 14px; padding: 12px 0; }
   .buehne__liste .zeile .rahmen { grid-column: 1; margin-top: 2px; }
   .buehne__liste .zeile__text { grid-column: 2; }
+  .buehne__liste .zeile .anr > .nachweis { text-align: left; }
   .buehne__liste .zeile .vorspann { display: none; }
 
   .meldungen { margin-top: 14px; }
@@ -708,6 +735,7 @@ a:focus-visible, input:focus-visible, textarea:focus-visible, button:focus-visib
   .meldungen .zeile .anr { grid-template-columns: 120px minmax(0, 1fr); padding: 12px 0 0; }
   .meldungen .zeile .rahmen { grid-column: 1; margin-top: 2px; }
   .meldungen .zeile__text { grid-column: 2; }
+  .meldungen .zeile .anr > .nachweis { text-align: left; }
   .meldungen .titel { font-size: 17px; line-height: 1.28; }
 
   .kacheln {
@@ -738,6 +766,7 @@ a:focus-visible, input:focus-visible, textarea:focus-visible, button:focus-visib
   .weitere__liste .zeile .anr { grid-template-columns: 160px minmax(0, 1fr); column-gap: 20px; }
   .weitere__liste .zeile .rahmen { grid-column: 1; margin-top: 0; }
   .weitere__liste .zeile__text { grid-column: 2; }
+  .weitere__liste .zeile .anr > .nachweis { text-align: left; }
   .weitere__liste .zeile .vorspann { display: none; }
   .weitere__liste .titel { font-size: 18px; line-height: 1.28; }
   .stueck .titel { font-size: 24px; line-height: 1.18; }
@@ -773,7 +802,7 @@ a:focus-visible, input:focus-visible, textarea:focus-visible, button:focus-visib
   .kueche .kachel--gross .imbild { padding: 64px 28px 22px; }
   .kueche .kachel--gross .titel { font-size: 26px; }
   .kueche .kachel--klein { grid-column: 2; }
-  .kueche .kachel--klein .imbild { padding: 30px 16px 10px; }
+  .kueche .kachel--klein .imbild { padding: 30px 16px 10px; background-image: var(--verlauf-kurz); }
   .kueche .kachel--klein .meta { margin-bottom: 2px; }
   .kueche .kachel--klein .nachweis { margin-top: 4px; }
 

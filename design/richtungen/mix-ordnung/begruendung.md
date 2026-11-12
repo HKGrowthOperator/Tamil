@@ -18,3 +18,8 @@
 - P1-2/P1-3: Unter dem Rubrikstreifen steht ein Nachweis (Sport mit Commons-Angabe), bei jedem Altbestand-Bild „Bild: Archiv tamil.de“. Die große Kino-Kachel ist jetzt „Sardar 2“ (Commons), Kanguva ist klein.
 - P1-4/P1-5: Rubrik-Aufmacher am Handy 26 px, „Hamm-Uentrop“ geschützt, ohne Zeilenausgleich: 3 Zeilen. Vorschaubilder am Handy 96 px: höchstens 4 Zeilen auf allen Seiten.
 - P2-3: Koovagam-Festfoto (Menschenmenge) als Nebenstück im ersten Bildschirm; „Weitere Geschichten“ beginnt mit INAIVU (Tänzerin).
+
+## Überarbeitung (Kritik r2)
+
+- P1-1: Verlauf gestuft 0 → 0,25 → 0,55 → 0,72 über 60 px ab 64 px über der Dachzeile. Am Handy sind Aufmacher und alle 3:2-Bilder 4:3 (weiterhin drei Formate je Breite), der Kurzvorspann entfällt dort. Kleine Küchen-Kacheln haben bis 1023 px den Titel unter dem Bild. Kleinster Kontrast der Bildschrift 6,08 (Handy) und 4,84 (Desktop).
+- P2-1: Bildnachweis überall direkt unter dem Bild bzw. Vorschaubild, an dessen Kante ausgerichtet, nicht mehr in der Textspalte.
