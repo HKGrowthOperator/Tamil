@@ -461,7 +461,13 @@ def _ld_zeit(roh) -> tuple[datetime | None, bool]:
     return (dt.replace(tzinfo=TZ) if dt.tzinfo is None else dt.astimezone(TZ)), ganztags
 
 
+_LAND_CODES = {"GERMANY": "DE", "DEUTSCHLAND": "DE", "SWITZERLAND": "CH", "SCHWEIZ": "CH", "SUISSE": "CH",
+               "AUSTRIA": "AT", "ÖSTERREICH": "AT"}
+
+
 def _ld_text(wert) -> str:
+    if isinstance(wert, list):  # mehrere Angaben („name“: […]) → die erste
+        wert = next((w for w in wert if isinstance(w, (str, dict))), "")
     if isinstance(wert, dict):
         wert = wert.get("name") or ""
     return clean_text(str(wert or ""))
@@ -479,9 +485,11 @@ def jsonld_termin(text: str, url: str, source: Source, settings: Settings, now: 
     now = now or datetime.now(timezone.utc)
     heute = now.astimezone(TZ).date()
     laender = {str(x).upper() for x in source.params.get("laender", ["DE", "AT", "CH"])}
-    ev = next((d for d in _jsonld(text) if any(t.endswith("Event") or t == "Festival" for t in _typen(d))), None)
-    if ev is None:
+    events = [d for d in _jsonld(text) if any(t.endswith("Event") or t == "Festival" for t in _typen(d))]
+    if not events:
         return None
+    # mehrere Event-Objekte (z. B. ähnliche Termine): das mit der URL der Seite, sonst das erste
+    ev = next((d for d in events if normalize_url(str(d.get("url") or "")) == normalize_url(url)), events[0])
     if any(s in str(ev.get("eventStatus") or "") for s in _ABGESAGT):  # abgesagt, verschoben, nur online
         return None
     title = _ld_text(ev.get("name"))
@@ -497,6 +505,7 @@ def jsonld_termin(text: str, url: str, source: Source, settings: Settings, now: 
     ort_ld = ort_ld if isinstance(ort_ld, dict) else {}
     adresse = ort_ld.get("address") if isinstance(ort_ld.get("address"), dict) else {}
     land = _ld_text(adresse.get("addressCountry")).upper()
+    land = _LAND_CODES.get(land, land)  # „Germany“, „Schweiz“ … → Code
     if land not in laender:
         return None
     stadt = _ld_text(adresse.get("addressLocality"))

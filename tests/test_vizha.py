@@ -368,3 +368,35 @@ def test_eigene_frist_bleibt_unter_dem_sammelbudget(settings, monkeypatch, budge
     with pytest.raises(RuntimeError):
         sources.FETCHERS["jsonld_events"](_quelle(settings), settings, now=STAND)
     assert fristen and all(f == 1000.0 + frist for f in fristen)
+
+
+def test_mehrere_events_das_der_seite_gewinnt(settings):
+    """Ein weiteres Event-Objekt vor dem eigentlichen (z. B. „ähnliche Termine“) verdrängt den Termin der Seite nicht."""
+    fremd = (FIX / "vizha_event_duesseldorf_deepavali.html").read_text(encoding="utf-8")
+    block = fremd[fremd.index('<script type="application/ld+json">'):fremd.index("</script>") + len("</script>")]
+    text = _zuerich().replace("</title>", "</title>\n" + block, 1)
+    item = sources.jsonld_termin(text, ZUERICH_URL, _quelle(settings), settings, now=STAND)
+    assert item.title == "Zurich Tamil Sangam Deepavali Celebration 2026"
+
+
+def test_name_als_liste(settings):
+    text = _zuerich().replace('"name":"Zurich Tamil Sangam Deepavali Celebration 2026"',
+                              '"name":["Zurich Tamil Sangam Deepavali Celebration 2026","Deepavali Zürich"]', 1)
+    item = sources.jsonld_termin(text, ZUERICH_URL, _quelle(settings), settings, now=STAND)
+    assert item.title == "Zurich Tamil Sangam Deepavali Celebration 2026"
+
+
+@pytest.mark.parametrize("land, name", [
+    ('"Switzerland"', "Schweiz"), ('"Schweiz"', "Schweiz"), ('"Germany"', "Deutschland"),
+    ('"Deutschland"', "Deutschland"), ('"Österreich"', "Österreich"), ('"Austria"', "Österreich"),
+    ('{"@type":"Country","name":"Switzerland"}', "Schweiz"),
+])
+def test_land_als_name(settings, land, name):
+    text = _zuerich().replace('"addressCountry":"CH"', f'"addressCountry":{land}')
+    item = sources.jsonld_termin(text, ZUERICH_URL, _quelle(settings), settings, now=STAND)
+    assert item is not None and item.facts["event_ort"].endswith(", " + name)
+
+
+def test_land_als_name_ausserhalb_dach(settings):
+    text = _zuerich().replace('"addressCountry":"CH"', '"addressCountry":"Sweden"')
+    assert sources.jsonld_termin(text, ZUERICH_URL, _quelle(settings), settings, now=STAND) is None
