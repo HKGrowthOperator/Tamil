@@ -1,6 +1,6 @@
 # Rückblick 2026: Stand der Beiträge
 
-Stand: 2026-11-12, 17:36 Uhr (UTC), gelesen aus dem Live-Radar (`/api/bericht`). Auftrag und Regeln: `docs/entscheidungen.md` (11.11.2026). Arbeitsstand, kein Abnahmeprotokoll: Die Texte sind geschrieben und vom Radar gegen die Belege geprüft (Gate), **freigegeben und veröffentlicht ist davon noch nichts**. Freigabe im Cockpit unter dem Filter „Rückblick“; Freigeben veröffentlicht sofort.
+Stand: 2026-11-12, 18:03 Uhr (UTC), gelesen aus dem Live-Radar (`/api/bericht`). Auftrag und Regeln: `docs/entscheidungen.md` (11.11.2026). Arbeitsstand, kein Abnahmeprotokoll: Die Texte sind geschrieben und vom Radar gegen die Belege geprüft (Gate), **freigegeben und veröffentlicht ist davon noch nichts**. Freigabe im Cockpit unter dem Filter „Rückblick“; Freigeben veröffentlicht sofort.
 
 ## Zahlen
 
@@ -24,7 +24,7 @@ Wörter ohne Quellenzeile. „Vor der Freigabe“ stammt aus den Berichten der R
 | 2026-11-07 | 108 | 68 | Deepavali 2026: Tamilische Vereine luden in fünf Städten zum Lichterfest | 448 | Commons | Ankündigungen: „Der German Tamil Sangam feierte …“ vor der Freigabe in „lud … ein“ ändern (Durchführung nicht belegt); München Tamil Sangam ohne Datum und Ort |
 | 2026-10-25 | 32 | 8 | Karate in der Schweiz: Zweimal Bronze in Sursee, Shihan-Titel in Zürich | 400 | Commons | Schreibweisen aus dem Tamil prüfen („Yathusalini Sripalan“, „Shwapthesh“); „erstmals an einen Nicht-Japaner“ nur laut Vanakkam London |
 | 2026-10-24 | 102 | 63 | Erstmals in Deutschland angekündigt: Yuvan Shankar Raja in der Grugahalle Essen | 104 | Commons | Ankündigung; ob das Konzert stattfand, nicht belegt; Veranstalter, Uhrzeit und Preis weggelassen |
-| 2026-10-23 | 107 | 67 | Tamilische Küche zum Kennenlernen: Benefiz-Länderabend in Luzern, Kulturtag in Basel | 93 | Commons | Kochkurs Grenchen ohne Dokument, weggelassen; Uhrzeiten weggelassen |
+| 2026-10-23 | 107 | 67 | Tamilische Küche zum Kennenlernen: Benefiz-Länderabend in Luzern, Kulturtag in Basel | 93 | Commons | Kochkurs Grenchen ohne Dokument, weggelassen; Uhrzeiten weggelassen; „Gekocht haben …“/„auf den Tisch kamen …“ vor der Freigabe als Ankündigung formulieren (Durchführung nicht belegt) |
 | 2026-10-22 | 33 | 6 | Vaani Vizha: In den Tamilalayams schrieben Kinder ihren ersten Buchstaben | 356 | Commons | Kein Kalenderdatum im Text (nur in der Adresse der Quelle) |
 | 2026-10-17 | 82 | 40 | Erkelenz, Aarburg, Oberhausen: Drei tamilische Bühnenabende im Oktober angekündigt | 108 | Bildkarte |  |
 | 2026-09-26 | 104 | 64 | „Tamil Founders 2026“ in Wuppertal: Keynotes, Panels und Networking | 93 | Commons | Angesetzter Termin; Sprecher und Firmen aus den Hinweisen nicht belegt und weggelassen |
