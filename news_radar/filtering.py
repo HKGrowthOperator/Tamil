@@ -93,6 +93,25 @@ def hat_bezug(item: NewsItem, settings: Settings) -> bool:
     return any(_contains(text, term, suffix=2) for term in settings.bezug)
 
 
+def ohne_dach_grund(item: NewsItem, settings: Settings, source: Source | None) -> str:
+    """Warum eine Nachricht ohne DACH-Bezug keine Story wird: „fremdes_kino“, „ausland“ oder „“ (bleibt).
+
+    Gilt nur für Nachrichten (kind = news) mit `dach_score` 0 aus Quellen ohne Land (Google News, Tamil Guardian,
+    The Hindu, Lankasri). Fremdes Kino: mehr Begriffe aus [bezug] fremdkino als aus [bezug] terms (Tollywood-Bilanz,
+    die Kollywood nur nennt). Ausland: ein Ort aus [regions] ausland oder eine Region aus [regions] herkunft (Sri Lanka,
+    Tamil Nadu) – außer bei Kino und Entertainment, die als Kollywood-Meldungen gewollt sind (Fund 12.11.)."""
+    if item.kind != "news" or item.dach_score > 0 or (source and source.country):
+        return ""
+    text = f"{item.title} {item.summary}"
+    fremd = sum(1 for t in settings.fremdkino if _contains(text, t, suffix=2))
+    if fremd and fremd > sum(1 for t in settings.bezug if _contains(text, t, suffix=2)):
+        return "fremdes_kino"
+    if guess_category(item, settings) in ("kino", "entertainment"):
+        return ""
+    orte = settings.regions.ausland + settings.regions.herkunft
+    return "ausland" if any(_contains(text, t) for t in orte) else ""
+
+
 _APOSTROPHE = str.maketrans("", "", "'’ʼ‘`´")
 _BESITZ_S_RE = re.compile(r"['’ʼ‘`´]s\b", re.I)  # „Maaveerar's Day“ → „Maaveerar Day“
 
@@ -161,7 +180,8 @@ def select(
     """Die relevantesten neuen Meldungen, DACH zuerst, dann nach Punkten und Datum.
 
     `zaehler` (optional) zählt, was herausfällt: `termin_veraltet` (alter Bericht aus einer Termin-Quelle),
-    `ausland` (Termin an einem Ort außerhalb von DACH) und `ohne_bezug` (Quelle mit bezug_noetig, aber kein Begriff
+    `ausland` (Termin an einem Ort außerhalb von DACH, Nachricht aus dem Ausland ohne DACH-Bezug), `fremdes_kino`
+    (Telugu, Bollywood … ohne DACH-Bezug) und `ohne_bezug` (Quelle mit bezug_noetig, aber kein Begriff
     aus [bezug])."""
     now = now or datetime.now(timezone.utc)
     zaehler = zaehler if zaehler is not None else Counter()
@@ -195,6 +215,10 @@ def select(
             item.dach_score = max(item.dach_score, 1)
         if source and source.bezug_noetig and not hat_bezug(item, settings):
             zaehler["ohne_bezug"] += 1  # allgemeine Meldung der Quelle ohne tamilischen Bezug (Entscheidung 09.11.)
+            continue
+        grund = ohne_dach_grund(item, settings, source)
+        if grund:
+            zaehler[grund] += 1  # Nachricht aus dem Ausland oder aus fremdem Kino ohne DACH-Bezug (Fund 12.11.)
             continue
         needed = None
         if source and source.min_score is not None:

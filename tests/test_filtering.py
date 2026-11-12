@@ -243,3 +243,27 @@ def test_bezug_noetig_nur_fuer_die_markierte_quelle(settings):
     kino.published = FUND - timedelta(hours=1)
     assert filtering.select([kino], settings, set(), [], now=FUND) == []
     assert relevance.grauzone([kino], settings, set(), set(), FUND) == []
+
+
+# ---- Live-Fund 12.11.2026: Meldungen ohne DACH-Bezug wurden Storys (89, 91, 92) ----
+
+FUND_1211 = json.loads((Path(__file__).parent / "fixtures" / "radar_ohne_dach_2026-11-12.json").read_text("utf-8"))
+
+
+def _fund_items(gruppe):
+    return [item(f["title"], f["summary"], source=f["source"]) for f in FUND_1211[gruppe]]
+
+
+def test_fund_1211_ausland_und_fremdes_kino_ohne_dach_fallen_heraus(settings):
+    """Tamil Nadu (Wirtschaft), Sri Lanka (Politik) und Telugu-Kino ohne DACH-Ort sind keine Story; Kollywood und die
+    Gegenproben mit DACH-Bezug bleiben."""
+    raus, kollywood, durch = _fund_items("raus"), _fund_items("kollywood"), _fund_items("durch")
+    zaehler = Counter()
+    picked = filtering.select(raus + kollywood + durch, settings, set(), [], now=NOW, zaehler=zaehler)
+    titel = {p.title for p in picked}
+    assert titel.isdisjoint(i.title for i in raus)
+    assert {i.title for i in durch} <= titel
+    # Kollywood ohne DACH bleibt (Rubrik Entertainment), auch wenn „Tamil Nadu“ im Text steht
+    assert {i.title for i in kollywood} <= titel
+    assert zaehler["ausland"] == 2 and zaehler["fremdes_kino"] == 1
+

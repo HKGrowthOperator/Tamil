@@ -1,0 +1,36 @@
+{
+  "_hinweis": "Live-Fund 12.11.2026: Storys 89, 91, 92 (raus) und 74, 88, 90 (Kollywood, bleiben) mit den Titeln aus dem Cockpit. Zusammenfassungen im Format der Feeds (Google News: Titel + Verlag; Tamil Guardian: Anriss), nicht wörtlich gesichert. Gegenproben ausgedacht.",
+  "raus": [
+    {"story": 89, "title": "CII underlines role of airports for Tamil Nadu to achieve $1.5 trillion …",
+     "summary": "CII underlines role of airports for Tamil Nadu to achieve $1.5 trillion economy  The Hindu",
+     "source": "Google News DACH · The Hindu"},
+    {"story": 91, "title": "Sri Lanka looks to cash in on Navy’s armed security business as Tamil …",
+     "summary": "Sri Lanka looks to cash in on Navy’s armed security business as Tamil fishermen remain under watch",
+     "source": "Tamil Guardian"},
+    {"story": 92, "title": "Tollywood Box Office: The Year Telugu Cinema Fell Behind Bollywood and …",
+     "summary": "Tollywood Box Office: The Year Telugu Cinema Fell Behind Bollywood and Kollywood  TrackTollywood",
+     "source": "Google News EN · Kollywood · TrackTollywood"}
+  ],
+  "kollywood": [
+    {"story": 74, "title": "Scene Box Office: Suriya’s film grosses 170 crore …",
+     "summary": "Scene Box Office: Suriya’s film grosses 170 crore worldwide, strong run in Tamil Nadu  Cinema Express",
+     "source": "Google News EN · Kollywood · Cinema Express"},
+    {"story": 88, "title": "Scene box office day 5 …",
+     "summary": "Scene box office day 5: Suriya film holds in Tamil Nadu, Kollywood trade reports  Sacnilk",
+     "source": "Google News EN · Kollywood · Sacnilk"},
+    {"story": 90, "title": "Appa Kutty Trailer …",
+     "summary": "Appa Kutty Trailer: Tamil cinema family drama out on YouTube  Kollywood Updates",
+     "source": "Google News EN · Kollywood · Kollywood Updates"}
+  ],
+  "durch": [
+    {"title": "Tamilische Community in Zürich feiert Lichterfest",
+     "summary": "Hunderte Tamilinnen und Tamilen kamen in Zürich zusammen  Tages-Anzeiger",
+     "source": "Google News DACH · Tages-Anzeiger"},
+    {"title": "Jailer 2 in deutschen Kinos",
+     "summary": "Der Rajinikanth-Film startet in tamilischer Originalfassung  Kino-Zeit",
+     "source": "Google News DACH · Kino-Zeit"},
+    {"title": "Schweiz: Abschiebungen nach Sri Lanka",
+     "summary": "Tamilische Asylsuchende fürchten Rückführung nach Sri Lanka  SRF",
+     "source": "Google News DACH · SRF"}
+  ]
+}

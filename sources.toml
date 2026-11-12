@@ -652,6 +652,11 @@ ausland = ["Kanada", "Canada", "Canadian", "கனடா", "கனடிய", "T
            # der Diaspora und würden echte Schweizer Termine ohne bekannte Stadt still herauswerfen.
            "Kilinochchi", "கிளிநொச்சி", "யாழ்.", "Kataragama", "கதிர்காமம்", "Mullaitivu", "முல்லைத்தீவு",
            "Batticaloa", "மட்டக்களப்பு", "Trincomalee", "திருகோணமலை", "Vavuniya", "வவுனியா", "Mannar", "மன்னார்"]
+# Länder und Regionen der Herkunft – nur für Nachrichten aus Quellen ohne Land (Google News, Tamil Guardian, The Hindu,
+# Lankasri): ohne DACH-Bezug fallen sie heraus (Fund 12.11.: Wirtschaft in Tamil Nadu, Marine in Sri Lanka als Story).
+# Termine und DACH-Quellen bleiben unberührt (Entscheidung 09.11.), Kino und Entertainment ebenso (Rubrik Kollywood).
+herkunft = ["Sri Lanka", "Sri Lankan", "இலங்கை", "Tamil Nadu", "தமிழ்நாடு", "தமிழகம்", "Indien", "India", "Indian",
+            "இந்தியா"]
 
 # ---- Bezug zur tamilischen Community (Quellen mit bezug_noetig = true) ----
 # Mindestens einer dieser Begriffe muss in Titel oder Text stehen. Keine Ortsnamen: „சுவிஸ்“, „Zürich“ oder
@@ -662,6 +667,9 @@ terms = ["tamil", "tamilisch", "tamilen", "tamilin", "eelam", "kollywood", "raji
          "ilaiyaraaja", "pongal", "deepavali", "diwali", "thaipusam", "navaratri", "bharatanatyam", "kamadchi",
          "murugan", "hindu", "தமிழ்", "ஈழ", "இந்து", "கோவில்", "கோயில்", "அம்மன்", "முருகன்", "பொங்கல்",
          "தீபாவளி", "நவராத்திரி", "தைப்பூசம்", "பரதநாட்டியம்", "அரங்கேற்றம்"]
+# Anderes indisches Kino: Nennt eine Nachricht ohne DACH-Bezug mehr dieser Begriffe als Begriffe aus terms, fällt sie
+# heraus (Fund 12.11.: Tollywood-Kassenbilanz, die Kollywood nur zum Vergleich nennt).
+fremdkino = ["telugu", "tollywood", "bollywood", "malayalam", "mollywood", "kannada", "sandalwood"]
 
 # ---- Stichwort-Gewichte (klein geschrieben; Treffer im Titel zählen doppelt) ----
 [keywords]
