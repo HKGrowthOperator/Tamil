@@ -5,6 +5,11 @@ Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
 ## 12.11.2026
 
+- **Deutschsprachiger Text gilt für die Ausland-Regel als DACH-Presse:** Deutschsprachige Auslandsnachrichten (z. B.
+  tagesschau zu Tamil Nadu) bleiben deshalb vorerst drin, wie vor der Regel. · Hauptsitzung · Ohne Anthropic-Schlüssel
+  gibt es keine Grauzonen-Entscheidung; die Redaktion lehnt im Cockpit ab. Wieder ansehen mit Tor B1.
+- **Der Verlagsname am Ende von Titel/Anriss ist kein Inhalt:** Er zählt für die Ausland-Regel weder als Bezug noch als
+  DACH-Hinweis; in `score_item` und `hat_bezug` zählt er vorerst weiter. · Hauptsitzung
 - **Kollywood und Stars gelten für die Ausland-Regel als Kino/Entertainment:** Nachrichten ohne DACH-Bezug aus der
   Kollywood-Quelle (`kollywood = true`) oder mit einem Begriff aus `[bezug] kollywood` (Kollywood, Rajinikanth, Vijay,
   Ilaiyaraaja …) fallen nicht als „ausland“ heraus, auch wenn die Stichwörter der Kategorien „news“ ergeben. ·
