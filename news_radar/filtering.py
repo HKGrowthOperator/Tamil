@@ -82,9 +82,18 @@ def similar(a: str, b: str, threshold: float = 0.82) -> bool:
     return SequenceMatcher(None, a.lower(), b.lower()).ratio() >= threshold
 
 
+def quelle_nach_name(name: str, quellen: list[Source]) -> Source | None:
+    """Quelle zu einem Meldungsnamen: exakt oder „<Quelle> · <Verlag>“, der längste bekannte Name gewinnt.
+
+    Quellennamen enthalten selbst „ · “ („Google News EN · Kollywood“); ein bloßes Präfix („Google News EN“) trifft
+    nichts (Review 12.11.: max_items griff für Google-News-Meldungen mit Verlag nicht)."""
+    name = name or ""
+    treffer = [q for q in quellen if name == q.name or name.startswith(f"{q.name} · ")]
+    return max(treffer, key=lambda q: len(q.name), default=None)
+
+
 def quelle_fuer(item: NewsItem, settings: Settings) -> Source | None:
-    by_name = {s.name: s for s in settings.sources}
-    return by_name.get(item.source) or by_name.get(item.source.split(" · ")[0])
+    return quelle_nach_name(item.source, settings.sources)
 
 
 def hat_bezug(item: NewsItem, settings: Settings) -> bool:
@@ -186,7 +195,6 @@ def select(
     now = now or datetime.now(timezone.utc)
     zaehler = zaehler if zaehler is not None else Counter()
     cutoff = now - timedelta(hours=settings.max_age_hours)
-    by_name: dict[str, Source] = {s.name: s for s in settings.sources}
     per_source: dict[str, int] = {}
     picked: list[NewsItem] = []
     titles = list(recent_titles)
@@ -198,7 +206,7 @@ def select(
             continue
         if any(_contains(text, term) for term in settings.blocklist):
             continue
-        source = by_name.get(item.source) or by_name.get(item.source.split(" · ")[0])
+        source = quelle_nach_name(item.source, settings.sources)
         if source and source.kind != "news" and item.kind == "news":
             item.kind = source.kind
         if termin_veraltet(item, settings, now):

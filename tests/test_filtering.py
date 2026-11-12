@@ -263,7 +263,20 @@ def test_fund_1211_ausland_und_fremdes_kino_ohne_dach_fallen_heraus(settings):
     titel = {p.title for p in picked}
     assert titel.isdisjoint(i.title for i in raus)
     assert {i.title for i in durch} <= titel
-    # Kollywood ohne DACH bleibt (Rubrik Entertainment), auch wenn „Tamil Nadu“ im Text steht
-    assert {i.title for i in kollywood} <= titel
+    # Kollywood ohne DACH bleibt (Rubrik Entertainment), auch wenn „Tamil Nadu“ im Text steht; je Quelle max_items (2)
+    assert len(titel & {i.title for i in kollywood}) == 2
     assert zaehler["ausland"] == 2 and zaehler["fremdes_kino"] == 1
 
+
+
+def test_quelle_mit_punkt_im_namen_und_verlag_wird_gefunden(settings):
+    """Review 12.11.: „Google News EN · Kollywood · Verlag“ wurde als „Google News EN“ gesucht und nicht gefunden –
+    max_items (2) griff nicht. Zuordnung über den längsten bekannten Namen, kein Treffer über ein bloßes Präfix."""
+    titel = ["Rajinikanth begins shooting in Mysuru", "Anirudh tops the charts again", "Kollywood box office weekend"]
+    kollywood = [item(t, "Tamil cinema", source=f"Google News EN · Kollywood · Verlag {n}") for n, t in enumerate(titel)]
+    assert filtering.quelle_fuer(kollywood[0], settings).name == "Google News EN · Kollywood"
+    assert filtering.quelle_fuer(item("x", source="Google News EN"), settings) is None
+    assert filtering.quelle_fuer(item("x", source="Google News DACH · NZZ"), settings).name == "Google News DACH"
+    assert filtering.quelle_fuer(item("x", source="Google News ENX · Kollywood"), settings) is None
+    picked = filtering.select(kollywood, settings, set(), [], now=NOW)
+    assert len(picked) == 2

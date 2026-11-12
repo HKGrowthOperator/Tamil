@@ -14,7 +14,7 @@ import logging
 import re
 from typing import Any
 
-from .. import prompts, schalter
+from .. import filtering, prompts, schalter
 from ..config import Source
 from ..sources import NewsItem, clean_text
 from ..workflow import repo
@@ -38,8 +38,7 @@ def quelle_vertrauenswuerdig(source: Source | None) -> bool:
 
 
 def _register(ctx: Kontext, item: NewsItem) -> Source | None:
-    by_name = {s.name: s for s in ctx.settings.alle_quellen}
-    return by_name.get(item.source) or by_name.get(item.source.split(" · ")[0])
+    return filtering.quelle_nach_name(item.source, ctx.settings.alle_quellen)
 
 
 def dokumente_aus_meldung(ctx: Kontext, story_id: int, item: NewsItem, publisher: str) -> list[str]:
