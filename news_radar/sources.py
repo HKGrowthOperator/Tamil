@@ -426,7 +426,8 @@ def fetch_html(source: Source, settings: Settings) -> list[NewsItem]:
         if not title or not link:
             continue
         date_txt = _select_text(node, sel.get("date", ""))
-        ort = _select_text(node, sel.get("ort", ""))
+        # params.ort: fester Ort für Seiten eines einzigen Hauses (Tempel), die ihn je Termin nicht nennen
+        ort = _select_text(node, sel.get("ort", "")) or str(source.params.get("ort", ""))
         when = parse_de_datetime(date_txt, now.astimezone()) if date_txt else None
         summary_parts = [p for p in (date_txt, _select_text(node, sel.get("summary", "")), ort) if p]
         items.append(NewsItem(
