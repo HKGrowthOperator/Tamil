@@ -141,6 +141,7 @@ class Settings:
     categories: list[Category]
     regions: Regions = field(default_factory=Regions)
     bezug: list[str] = field(default_factory=list)  # Begriffe mit Bezug zur tamilischen Community ([bezug] terms)
+    blocklist_termine: list[str] = field(default_factory=list)  # Termine, die nie automatisch zur Story werden
     alle_quellen: list[Source] = field(default_factory=list)  # inkl. abgeschalteter (enabled = false)
     bildquellen: list[Bildquelle] = field(default_factory=list)  # Register für den Weg „Bild mit Nachweis“
     anthropic_model: str = "claude-opus-5-5"
@@ -270,6 +271,7 @@ def load_settings(sources_file: Path = ROOT / "sources.toml") -> Settings:
         data_dir=Path(env("RADAR_DATA_DIR")).expanduser() if env("RADAR_DATA_DIR") else ROOT / "data",
         keywords={k.lower(): int(v) for k, v in raw.get("keywords", {}).items()},
         blocklist=[t.lower() for t in raw.get("blocklist", {}).get("terms", [])],
+        blocklist_termine=[t.lower() for t in raw.get("blocklist", {}).get("termine", [])],
         categories=categories,
         regions=regions,
         bezug=[t.lower() for t in raw.get("bezug", {}).get("terms", [])],

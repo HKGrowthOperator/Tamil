@@ -296,6 +296,42 @@ def fetch_wp_json(source: Source, settings: Settings) -> list[NewsItem]:
     return items
 
 
+@fetcher("tribe_events")
+def fetch_tribe_events(source: Source, settings: Settings, now: datetime | None = None) -> list[NewsItem]:
+    """Kalender des WordPress-Plugins „The Events Calendar“ (/wp-json/tribe/events/v1/events): ein Termin je
+    Eintrag, nur ab heute (in der Anfrage und noch einmal beim Lesen), ohne Gedenktermine aus [blocklist] termine."""
+    from .dates import TZ
+    from .filtering import gedenktermin  # zirkulären Import vermeiden
+
+    now = now or datetime.now(timezone.utc)
+    heute = now.astimezone(TZ).date()
+    params = {"per_page": 30, **source.params, "start_date": heute.isoformat()}
+    resp = _get(f"{source.url.rstrip('/')}/wp-json/tribe/events/v1/events", params=params)
+    items = []
+    for ev in resp.json().get("events") or []:
+        title, url = clean_text(ev.get("title") or ""), ev.get("url") or ""
+        try:
+            start = datetime.strptime((ev.get("start_date") or "")[:16], "%Y-%m-%d %H:%M")
+        except ValueError:
+            continue
+        if not title or not url or start.date() < heute:
+            continue
+        venue = ev.get("venue") if isinstance(ev.get("venue"), dict) else {}
+        ort = ", ".join(v for v in (venue.get("venue"), venue.get("address"), venue.get("city")) if v)
+        wann = start.strftime("%d.%m.%Y") + ("" if ev.get("all_day") else start.strftime(", %H:%M Uhr"))
+        summary = " · ".join(p for p in (wann, clean_text(ev.get("description") or "")[:900], ort) if p)
+        item = NewsItem(
+            title=title, url=url, summary=summary[:1200], source=source.name, published=now,
+            language=source.language, kind="event", ort=venue.get("city") or "",
+            facts={"event_datum": start.date().isoformat(), "event_ort": ort},
+        )
+        if gedenktermin(item, settings):  # Gedenken mit LTTE-Bezug ([blocklist] termine): nie automatisch
+            log.info("%s: Gedenktermin ausgelassen: %s", source.name, title)
+            continue
+        items.append(item)
+    return items
+
+
 # ---- HTML-Seiten mit Selektoren -----------------------------------------------------
 
 def _select_text(node, selector: str) -> str:

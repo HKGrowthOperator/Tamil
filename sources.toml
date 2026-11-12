@@ -395,6 +395,24 @@ max_items = 3
 # ---- Aus der Quellen-Inventur 11.11.2026 (live geprüft: erreichbar, robots erlaubt, Einträge mit Datum) ----
 # Tempel und Vereine: Ankündigungen als Termine (echtes Datum → Altersgrenze für Berichte aus dem Archiv gilt)
 [[source]]
+name = "Sri Navadurga Devi Tempel Wuppertal · Termine"
+prioritaet = "B"
+betreiber = "Hindu-Tempel Wuppertal (Sri Navathurgadevi Tempel), Hünefeldstraße 63B"
+robots = "erlaubt"
+paywall = false
+bild_nutzen = false
+notiz = "Inventur 11.11.2026: Terminkalender (The Events Calendar, /wp-json/tribe/events/v1/events), 20 Termine 2026 bis Tempelfest 31.5.–2.6.; nur kommende Termine; Gedenktermine aus [blocklist] termine werden nie automatisch zur Story"
+rechtlich_geprueft = ""
+type = "tribe_events"
+url = "https://hindutempel-wuppertal.de"
+language = "de"
+kind = "event"
+country = "DE"
+min_score = 0
+max_items = 1
+interval_minutes = 720
+
+[[source]]
 name = "Sivan Kovil Glattbrugg"
 prioritaet = "B"
 betreiber = "Saiva Tamil Sangam (Arulmigu Sivan Kovil), Glattbrugg"
@@ -695,6 +713,8 @@ terms = ["tamil", "tamilisch", "tamilen", "tamilin", "eelam", "kollywood", "raji
 # Ausschluss: Meldungen mit diesen Begriffen werden verworfen
 [blocklist]
 terms = ["horoskop", "casino", "betting", "wetten", "porn", "obituary", "todesanzeige", "sponsored", "anzeige:"]
+# Termine (kind = event) mit diesen Begriffen werden nie automatisch zur Story: Gedenken mit LTTE-Bezug
+termine = ["maaveerar", "maveerar", "mahaveerar", "மாவீரர்", "heroes day"]
 
 # Ziel-Kategorien (Slug in WordPress) + Stichwörter für die Zuordnung. Die KI wählt final eine davon.
 [categories.news]

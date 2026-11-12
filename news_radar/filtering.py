@@ -92,6 +92,14 @@ def hat_bezug(item: NewsItem, settings: Settings) -> bool:
     return any(_contains(text, term, suffix=2) for term in settings.bezug)
 
 
+def gedenktermin(item: NewsItem, settings: Settings) -> bool:
+    """Termin (kein Bericht), der einen Begriff aus [blocklist] termine nennt – z. B. Maaveerar-Gedenken mit
+    LTTE-Bezug. Gilt für Kalender, die jeden Termin automatisch liefern (tribe_events); Ankündigungen eines
+    Veranstalters laufen weiter über den normalen Weg mit Recherche (Abnahme-Szenarien 22/23)."""
+    text = f"{item.title} {item.summary}".lower()
+    return item.kind == "event" and any(_contains(text, t) for t in settings.blocklist_termine)
+
+
 def termin_veraltet(item: NewsItem, settings: Settings, now: datetime) -> bool:
     """Alter Bericht statt Termin: laut Quelle älter als `event_max_alter_tage` und kein Datum in der Zukunft.
 
