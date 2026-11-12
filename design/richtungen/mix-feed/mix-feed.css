@@ -170,7 +170,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .karte--aufmacher .karte__text { padding-bottom: 22px; }
 .karte--aufmacher .karte__teaser { display: none; padding-inline: var(--rand); max-width: 34em; }
 .karte--klein .karte__titel { font-size: 18px; line-height: 1.25; }
-.karte--klein .karte__text { padding: 64px 14px 14px; }
+.karte--klein .karte__text { padding: 60px 14px 14px; }
 
 /* randlos am Handy */
 .start__auf, .start__kacheln > .karte, .community__gross, .rubrik__auf, .rubrik__gross {
@@ -248,7 +248,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .start { padding-top: 0; }
 .start__kacheln { display: grid; gap: 24px; margin-top: 16px; }
 /* erste Karte am Handy quer, damit ihre Schlagzeile noch in den ersten Bildschirm passt */
-.start__kacheln .karte--erste .karte__flaeche { aspect-ratio: 3 / 2; }
+.start__kacheln .karte--erste .karte__flaeche, .start__kacheln .karte--zweite .karte__flaeche { aspect-ratio: 3 / 2; }
 .karte--feed .karte__titel { font-size: 22px; }
 .start__streifen .karte__titel { font-size: 19px; }
 .start__streifen .karte__text { padding: 56px 14px 14px; }
@@ -409,7 +409,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   .karte--aufmacher .karte__titel { font-size: 34px; }
   .karte--aufmacher .karte__teaser { display: block; }
   .start__kacheln { grid-template-columns: 1fr 1fr; }
-  .start__kacheln .karte--erste .karte__flaeche { aspect-ratio: 4 / 5; }
+  .start__kacheln .karte--erste .karte__flaeche, .start__kacheln .karte--zweite .karte__flaeche { aspect-ratio: 4 / 5; }
   .start__kacheln > .karte { margin-inline: 0; }
   .start__kacheln > .karte .nachweis { padding-inline: 0; }
   .start__streifen { display: contents; }
@@ -454,15 +454,32 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
     display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 24px;
     padding-top: 16px; align-items: start;
   }
-  .start__auf { grid-column: 1 / 7; }
-  .start .karte--aufmacher .karte__flaeche { aspect-ratio: 1 / 1; }
+  .start__auf { grid-column: 1 / 9; }
+  .start .karte--aufmacher .karte__flaeche { aspect-ratio: 3 / 2; }
   .karte--aufmacher .karte__titel { font-size: 40px; line-height: 1.1; }
   .karte--aufmacher .karte__text { padding: 64px 32px 28px; }
-  .start__kacheln { grid-column: 7 / 13; margin-top: 0; column-gap: 24px; row-gap: 16px; }
+  /* rechts: eine Bildkarte mit Titel im Bild, darunter drei Meldungen mit kleinem Bild (dieselben Karten wie am Handy) */
+  .start__kacheln { grid-column: 9 / 13; margin-top: 0; grid-template-columns: minmax(0, 1fr); gap: 0; }
   .start__streifen { display: contents; }
-  .start__kacheln .karte__flaeche, .start__kacheln .karte--erste .karte__flaeche { aspect-ratio: 1 / 1; }
-  .start__kacheln .karte__titel, .start__streifen .karte__titel { font-size: 19px; }
-  .start__kacheln .karte__text, .start__streifen .karte__text { padding: 56px 16px 16px; }
+  .start__kacheln .karte--erste { margin-bottom: 8px; }
+  .start__kacheln .karte--erste .karte__flaeche { aspect-ratio: 3 / 2; }
+  .start__kacheln .karte--erste .karte__titel { font-size: 20px; }
+  .start__kacheln .karte--erste .karte__text { padding: 48px 18px 16px; }
+  .start__kacheln .karte--zweite, .start__streifen .karte { padding: 12px 0; border-top: 1px solid var(--linie); }
+  .start__kacheln .karte--zweite .karte__flaeche, .start__streifen .karte .karte__flaeche {
+    aspect-ratio: auto; overflow: visible; background: none; color: var(--tinte);
+    grid-template: auto / minmax(0, 1fr) 128px; column-gap: 14px;
+  }
+  .start__kacheln .karte--zweite .karte__flaeche > img, .start__streifen .karte .karte__flaeche > img {
+    grid-area: 1 / 2; height: auto; aspect-ratio: 3 / 2; align-self: start;
+  }
+  .start__kacheln .karte--zweite .karte__text, .start__streifen .karte .karte__text {
+    grid-area: 1 / 1; align-self: start; padding: 0; background: none;
+  }
+  .start__kacheln .karte--zweite .dach, .start__streifen .karte .dach { color: var(--leise); }
+  .start__kacheln .karte--zweite .dach__rubrik, .start__streifen .karte .dach__rubrik { color: var(--rot); }
+  .start__kacheln .karte--zweite .karte__titel, .start__streifen .karte .karte__titel { font-size: 17px; line-height: 1.28; }
+  .start__kacheln .karte--zweite:hover .karte__flaeche > img, .start__streifen .karte:hover .karte__flaeche > img { transform: none; }
 
   .meldungen__liste { display: grid; grid-template-columns: 1fr 1fr; column-gap: 48px; }
   .meldungen .zeile { border-bottom: 1px solid var(--linie); }
@@ -486,10 +503,10 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 
   /* Community: breite Karte links, zwei Karten rechts untereinander */
   .community__raster { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 24px; align-items: start; }
-  .community__gross { grid-column: 1 / 9; }
+  .community__gross { grid-column: 1 / 7; }
   .community__gross .karte__flaeche { aspect-ratio: 3 / 2; }
-  .community__klein { grid-column: 9 / 13; margin-top: 0; grid-template-columns: 1fr; row-gap: 20px; }
-  .community__klein .karte__flaeche { aspect-ratio: 3 / 2; }
+  .community__klein { grid-column: 7 / 13; margin-top: 0; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .community__klein .karte__flaeche { aspect-ratio: 4 / 5; }
 
   /* Küche: breite Kachel 3:2 und zwei Hochformate 4:5, gleich hoch */
   .kueche__reihe { grid-template-columns: 1.875fr 1fr 1fr; gap: 24px; }

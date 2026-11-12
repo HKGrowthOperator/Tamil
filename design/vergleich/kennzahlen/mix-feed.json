@@ -1,6 +1,6 @@
 {
   "slug": "mix-feed",
-  "stand": "2026-11-12T15:51",
+  "stand": "2026-11-12T16:01",
   "groesster_massstab": 1.03,
   "handy": {
     "kopfleiste_hoehe": 149,
@@ -75,7 +75,7 @@
         "element": "section#diese-woche.woche",
         "breite": 390,
         "hoehe": 1529,
-        "oben": 2618
+        "oben": 2391
       }
     ],
     "fest_stehend": [
@@ -91,7 +91,7 @@
       "animationen": 0,
       "endlos": 0
     },
-    "seitenhoehe": 6043,
+    "seitenhoehe": 5816,
     "ueberlauf": 0,
     "bewegung_bei_reduziert": {
       "uebergaenge": 0,
@@ -101,7 +101,7 @@
     },
     "helle_schrift": {
       "anzahl": 71,
-      "kleinster_kontrast": 4.66,
+      "kleinster_kontrast": 4.59,
       "unter_4_5": []
     },
     "farbanteil_ohne_bilder": {
@@ -113,8 +113,8 @@
   },
   "desktop": {
     "kopfleiste_hoehe": 165,
-    "erste_schlagzeile_ab": 360,
-    "schlagzeilen_ganz_sichtbar": 5,
+    "erste_schlagzeile_ab": 353,
+    "schlagzeilen_ganz_sichtbar": 4,
     "schlagzeilen_seite": 16,
     "max_zeilen_schlagzeile": 4,
     "groesste_schrift": {
@@ -122,8 +122,8 @@
       "text": "Deepavali 2026: Lichterfest in Berlin, B"
     },
     "groesste_rote_schrift": {
-      "px": 0,
-      "text": ""
+      "px": 13,
+      "text": "Kultur"
     },
     "schriftgroessen_seite": [
       {
@@ -147,14 +147,14 @@
         "text": "Nachrichten"
       },
       {
-        "px": 19,
-        "anzahl": 13,
+        "px": 20,
+        "anzahl": 1,
         "text": "Koovagam-Fest im Film: „Bride of Aravan“"
       },
       {
-        "px": 18,
-        "anzahl": 8,
-        "text": "Zum Inhalt"
+        "px": 19,
+        "anzahl": 9,
+        "text": "„Scene“"
       }
     ],
     "versalien_ueber_14px": 0,
@@ -169,7 +169,7 @@
     "gedreht": 0,
     "schriftbreite_verstellt": 0,
     "bilder_ueber_natuerlicher_breite": [
-      "bilder/rb-71.jpg (803 px gezeigt, 1280 px vorhanden)"
+      "bilder/rb-30.jpg (803 px gezeigt, 1280 px vorhanden)"
     ],
     "bilder_ueber_dateibreite": [],
     "anreisser": 16,
@@ -186,7 +186,7 @@
         "element": "section#diese-woche.woche",
         "breite": 1280,
         "hoehe": 897,
-        "oben": 1302
+        "oben": 1353
       }
     ],
     "fest_stehend": [
@@ -202,7 +202,7 @@
       "animationen": 0,
       "endlos": 0
     },
-    "seitenhoehe": 3679,
+    "seitenhoehe": 3567,
     "ueberlauf": 0,
     "bewegung_bei_reduziert": {
       "uebergaenge": 0,
@@ -211,14 +211,14 @@
       "endlos": 0
     },
     "helle_schrift": {
-      "anzahl": 80,
-      "kleinster_kontrast": 4.82,
+      "anzahl": 71,
+      "kleinster_kontrast": 4.54,
       "unter_4_5": []
     },
     "farbanteil_ohne_bilder": {
-      "bunt": 0,
-      "rot": 0,
-      "dunkel": 0.0544
+      "bunt": 0.0002,
+      "rot": 0.0002,
+      "dunkel": 0.0569
     },
     "seitenfehler": []
   }
