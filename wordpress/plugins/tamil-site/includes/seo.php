@@ -197,26 +197,71 @@ function tamil_site_seo_url(): string {
 }
 
 /**
- * Herausgeber (die Website) für das Artikel-Schema.
+ * Logo des Herausgebers: eigenes Logo aus dem Customizer, sonst das, was das Theme meldet (Filter
+ * tamil_site_seo_logo), sonst das Website-Icon.
+ *
+ * @return array{url:string,width:int,height:int}|null
+ */
+function tamil_site_seo_logo(): ?array {
+	$id  = (int) get_theme_mod( 'custom_logo' );
+	$src = $id ? wp_get_attachment_image_src( $id, 'full' ) : false;
+	if ( $src ) {
+		return array(
+			'url'    => (string) $src[0],
+			'width'  => (int) $src[1],
+			'height' => (int) $src[2],
+		);
+	}
+	$icon = (string) get_site_icon_url( 512 );
+	$logo = '' !== $icon ? array(
+		'url'    => $icon,
+		'width'  => 512,
+		'height' => 512,
+	) : null;
+	/**
+	 * Logo für das Schema, wenn kein eigenes Logo gesetzt ist (das Theme meldet seine Wortmarke).
+	 *
+	 * @param array{url:string,width:int,height:int}|null $logo Website-Icon oder null.
+	 */
+	$logo = apply_filters( 'tamil_site_seo_logo', $logo );
+	return is_array( $logo ) && ! empty( $logo['url'] ) ? $logo : null;
+}
+
+/**
+ * Herausgeber (die Website) für das Artikel-Schema: ein Nachrichtenmedium mit fester Kennung und Logo.
  *
  * @return array<string,mixed>
  */
 function tamil_site_seo_herausgeber(): array {
 	$org  = array(
-		'@type' => 'Organization',
+		'@type' => 'NewsMediaOrganization',
+		'@id'   => home_url( '/#organization' ),
 		'name'  => wp_strip_all_tags( (string) get_bloginfo( 'name' ) ),
 		'url'   => home_url( '/' ),
 	);
-	$logo = (int) get_theme_mod( 'custom_logo' );
-	$src  = $logo ? wp_get_attachment_image_src( $logo, 'full' ) : false;
-	$url  = $src ? (string) $src[0] : (string) get_site_icon_url( 512 );
-	if ( '' !== $url ) {
+	$logo = tamil_site_seo_logo();
+	if ( $logo ) {
 		$org['logo'] = array(
-			'@type' => 'ImageObject',
-			'url'   => $url,
+			'@type'  => 'ImageObject',
+			'url'    => $logo['url'],
+			'width'  => (int) $logo['width'],
+			'height' => (int) $logo['height'],
 		);
 	}
 	return $org;
+}
+
+/**
+ * Name in der Autorenzeile. Steht so sichtbar im Artikel, im Schema und im Feed – nie ein Anmeldename.
+ */
+function tamil_site_seo_autor_name(): string {
+	/**
+	 * Name in der Autorenzeile (das Theme meldet seinen Customizer-Wert).
+	 *
+	 * @param string $name Standard: „Redaktion <Name der Website>“.
+	 */
+	$name = (string) apply_filters( 'tamil_site_seo_autor_name', 'Redaktion ' . wp_strip_all_tags( (string) get_bloginfo( 'name' ) ) );
+	return '' !== trim( $name ) ? $name : wp_strip_all_tags( (string) get_bloginfo( 'name' ) );
 }
 
 /**
@@ -225,10 +270,8 @@ function tamil_site_seo_herausgeber(): array {
  * @return array<string,mixed>
  */
 function tamil_site_seo_artikel( WP_Post $post ): array {
-	$autor_id = (int) $post->post_author;
-	$autor    = get_userdata( $autor_id );
-	// Beiträge des Radars (Rolle radar) und ohne Autor erscheinen unter der Redaktion, nicht unter einem Benutzernamen.
-	$person     = $autor && ! in_array( 'radar', (array) $autor->roles, true );
+	// Autor wie in der sichtbaren Autorenzeile (die Redaktion), nie der Benutzer, unter dem der Beitrag angelegt ist:
+	// der Altbestand läuft auf einem Benutzer, Radar-Beiträge auf dem Benutzer des Radars.
 	$daten      = array(
 		'@context'         => 'https://schema.org',
 		'@type'            => 'NewsArticle',
@@ -238,12 +281,11 @@ function tamil_site_seo_artikel( WP_Post $post ): array {
 		'dateModified'     => (string) get_post_modified_time( 'c', true, $post ),
 		'mainEntityOfPage' => (string) get_permalink( $post ),
 		'inLanguage'       => str_replace( '_', '-', get_locale() ),
-		'author'           => $person
-			? array(
-				'@type' => 'Person',
-				'name'  => $autor->display_name,
-			)
-			: tamil_site_seo_herausgeber(),
+		'author'           => array(
+			'@type' => 'Organization',
+			'name'  => tamil_site_seo_autor_name(),
+			'url'   => home_url( '/' ),
+		),
 		'publisher'        => tamil_site_seo_herausgeber(),
 	);
 	$kategorien = get_the_category( $post->ID );
@@ -446,9 +488,9 @@ function tamil_site_seo_robots( array $robots ): array {
 	/**
 	 * Aktuelle Seite aus dem Index nehmen.
 	 *
-	 * @param bool $nicht Standard: nur Suchergebnisse.
+	 * @param bool $nicht Standard: Suchergebnisse und Schlagwörter mit zu wenigen Beiträgen.
 	 */
-	if ( apply_filters( 'tamil_site_nicht_indexieren', is_search() ) ) {
+	if ( apply_filters( 'tamil_site_nicht_indexieren', is_search() || tamil_site_seo_duennes_archiv() ) ) {
 		$robots['noindex'] = true;
 		$robots['follow']  = true;
 		unset( $robots['max-image-preview'] );
@@ -456,3 +498,112 @@ function tamil_site_seo_robots( array $robots ): array {
 	return $robots;
 }
 add_filter( 'wp_robots', 'tamil_site_seo_robots', 20 );
+
+/**
+ * Mindestzahl an Beiträgen, ab der ein Schlagwort in den Index und in die Sitemap kommt.
+ */
+function tamil_site_seo_schlagwort_minimum(): int {
+	/**
+	 * Mindestzahl Beiträge je Schlagwort.
+	 *
+	 * @param int $minimum Standard 3.
+	 */
+	return max( 1, (int) apply_filters( 'tamil_site_seo_schlagwort_minimum', 3 ) );
+}
+
+/**
+ * Ist die aktuelle Seite ein Schlagwort mit zu wenigen Beiträgen? (Altbestand: 219 von 269 Schlagwörtern haben genau
+ * einen Beitrag – solche Seiten sind für Suchmaschinen dünn.)
+ */
+function tamil_site_seo_duennes_archiv(): bool {
+	if ( ! is_tag() ) {
+		return false;
+	}
+	$term = get_queried_object();
+	return $term instanceof WP_Term && (int) $term->count < tamil_site_seo_schlagwort_minimum();
+}
+
+/**
+ * Sitemap von WordPress: keine Benutzer (Autorenarchive gibt es nicht, siehe autoren.php).
+ *
+ * @param WP_Sitemaps_Provider|mixed $provider Anbieter.
+ * @param string                     $name     Name des Anbieters.
+ * @return WP_Sitemaps_Provider|mixed|false
+ */
+function tamil_site_seo_sitemap_anbieter( $provider, $name ) {
+	return 'users' === $name ? false : $provider;
+}
+add_filter( 'wp_sitemaps_add_provider', 'tamil_site_seo_sitemap_anbieter', 10, 2 );
+
+/**
+ * Sitemap von WordPress: Schlagwörter nur ab der Mindestzahl an Beiträgen; Rubriken bleiben vollständig.
+ *
+ * @param array<string,mixed> $args     Abfrage für get_terms().
+ * @param string              $taxonomy Taxonomie.
+ * @return array<string,mixed>
+ */
+function tamil_site_seo_sitemap_schlagwoerter( $args, $taxonomy ): array {
+	$args = (array) $args;
+	if ( 'post_tag' !== $taxonomy ) {
+		return $args;
+	}
+	$minimum = tamil_site_seo_schlagwort_minimum();
+	$duenn   = array();
+	foreach ( get_terms(
+		array(
+			'taxonomy'   => 'post_tag',
+			'hide_empty' => false,
+			'number'     => 0,
+		)
+	) as $term ) {
+		if ( $term instanceof WP_Term && (int) $term->count < $minimum ) {
+			$duenn[] = (int) $term->term_id;
+		}
+	}
+	if ( $duenn ) {
+		$args['exclude'] = array_values( array_unique( array_merge( array_map( 'intval', (array) ( $args['exclude'] ?? array() ) ), $duenn ) ) );
+	}
+	return $args;
+}
+add_filter( 'wp_sitemaps_taxonomies_query_args', 'tamil_site_seo_sitemap_schlagwoerter', 10, 2 );
+
+/**
+ * Kanonische Adresse für Startseite, Rubriken und Schlagwörter (auch Folgeseiten verweisen auf sich selbst).
+ * Einzelseiten bekommen sie weiter von WordPress (rel_canonical), Suchergebnisse keine.
+ */
+function tamil_site_seo_canonical_url(): string {
+	if ( is_singular() || is_search() || is_404() ) {
+		return '';
+	}
+	if ( is_front_page() || is_home() ) {
+		$basis = home_url( '/' );
+	} elseif ( is_category() || is_tag() || is_tax() ) {
+		$link  = get_term_link( get_queried_object() );
+		$basis = is_wp_error( $link ) ? '' : (string) $link;
+	} else {
+		return '';
+	}
+	$seite = max( 1, (int) get_query_var( 'paged' ) );
+	if ( '' === $basis || 1 === $seite ) {
+		return $basis;
+	}
+	global $wp_rewrite;
+	if ( $wp_rewrite instanceof WP_Rewrite && $wp_rewrite->using_permalinks() ) {
+		return trailingslashit( $basis ) . user_trailingslashit( $wp_rewrite->pagination_base . '/' . $seite, 'paged' );
+	}
+	return add_query_arg( 'paged', $seite, $basis );
+}
+
+/**
+ * <link rel="canonical"> im Kopf für die Übersichtsseiten.
+ */
+function tamil_site_seo_canonical(): void {
+	if ( ! tamil_site_seo_aktiv() || is_admin() || is_feed() ) {
+		return;
+	}
+	$url = tamil_site_seo_canonical_url();
+	if ( '' !== $url ) {
+		printf( '<link rel="canonical" href="%s">' . "\n", esc_url( $url ) );
+	}
+}
+add_action( 'wp_head', 'tamil_site_seo_canonical', 6 );

@@ -97,3 +97,35 @@ function tamil_event_schema_ausgeben(): void {
 	echo '<script type="application/ld+json">' . wp_json_encode( $data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP ) . "</script>\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 }
 add_action( 'wp_head', 'tamil_event_schema_ausgeben', 20 );
+
+/**
+ * Wortmarke des Themes als Logo des Herausgebers im Artikel-Schema (Plugin tamil-site), solange im Customizer kein
+ * eigenes Logo gesetzt ist. Ändert nichts am Aussehen.
+ *
+ * @param array{url:string,width:int,height:int}|null $logo Website-Icon oder null.
+ * @return array{url:string,width:int,height:int}|null
+ */
+function tamil_schema_logo( $logo ) {
+	$datei = TAMIL_THEME_DIR . '/assets/img/logo.png';
+	$masse = is_readable( $datei ) ? wp_getimagesize( $datei ) : false;
+	if ( ! $masse ) {
+		return $logo;
+	}
+	return array(
+		'url'    => get_theme_file_uri( 'assets/img/logo.png' ),
+		'width'  => (int) $masse[0],
+		'height' => (int) $masse[1],
+	);
+}
+add_filter( 'tamil_site_seo_logo', 'tamil_schema_logo' );
+
+/**
+ * Autorenzeile des Themes (Customizer „Autorenbox: Name“) auch im Schema und im Feed.
+ *
+ * @param string $name Standard des Plugins.
+ */
+function tamil_schema_autor_name( $name ): string {
+	$eigen = function_exists( 'tamil_opt' ) ? trim( tamil_opt( 'autor_name' ) ) : '';
+	return '' !== $eigen ? $eigen : (string) $name;
+}
+add_filter( 'tamil_site_seo_autor_name', 'tamil_schema_autor_name' );

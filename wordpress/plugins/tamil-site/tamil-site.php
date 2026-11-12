@@ -25,6 +25,7 @@ require_once TAMIL_SITE_DIR . 'includes/queries.php';
 require_once TAMIL_SITE_DIR . 'includes/ads.php';
 require_once TAMIL_SITE_DIR . 'includes/redirects.php';
 require_once TAMIL_SITE_DIR . 'includes/seo.php';
+require_once TAMIL_SITE_DIR . 'includes/autoren.php';
 require_once TAMIL_SITE_DIR . 'includes/indexierung.php';
 require_once TAMIL_SITE_DIR . 'includes/leistung.php';
 require_once TAMIL_SITE_DIR . 'includes/consent.php';

@@ -86,7 +86,7 @@ def test_radar_beitrag_beschreibung_og_twitter_und_artikel_schema(wp, wp_cli, ra
     a = artikel[0]
     assert a["headline"] == "Radar-Beitrag für SEO" and a["description"] == "Beschreibung vom Radar für die Suche."
     assert a["mainEntityOfPage"].endswith(f"/seo-test-{radar_beitrag['radar_uid']}/") and a["image"]
-    assert a["datePublished"] and a["publisher"]["@type"] == "Organization"
+    assert a["datePublished"] and a["publisher"]["@type"] == "NewsMediaOrganization"
     krumen = [d for d in _jsonld(seite) if d.get("@type") == "BreadcrumbList"]
     assert len(krumen) == 1 and [e["position"] for e in krumen[0]["itemListElement"]] == [1, 2, 3]
     assert krumen[0]["itemListElement"][1]["name"] == "Kino"
@@ -218,3 +218,102 @@ def test_seo_titel_wird_escaped(wp, wp_cli):
         assert "<" not in titel and "alert(1)" in html.unescape(titel)
     finally:
         wp_cli(f"wp_delete_post( {pid}, true );")
+
+
+# --- Prüfung 12.11.2026 (claude-seo, Abgleich mit Merzenich Aktuell): Autor, Herausgeber, Canonical, dünne Seiten ----
+
+
+@pytest.fixture
+def admin_beitraege(wp_cli):
+    """Zwei Beiträge des Admins (wie der übernommene Altbestand, der unter einem Benutzer läuft) mit einem Schlagwort,
+    das nur einmal vorkommt, und eines, das dreimal vorkommt."""
+    ids = json.loads(wp_cli(
+        "$ids = array(); foreach ( array( 1, 2, 3 ) as $n ) { $ids[] = wp_insert_post( array( 'post_title' => \"SEO Altbestand $n\","
+        " 'post_status' => 'publish', 'post_author' => 1, 'post_name' => \"seo-test-alt-$n\", 'post_content' => '<p>Text</p>',"
+        " 'tags_input' => 1 === $n ? array( 'seo-einzeln', 'seo-dreimal' ) : array( 'seo-dreimal' ) ) ); }"
+        " echo wp_json_encode( $ids );"))
+    yield ids
+    wp_cli("foreach ( " + json.dumps(ids).replace("[", "array(").replace("]", ")") + " as $i ) { wp_delete_post( $i, true ); }"
+           " foreach ( array( 'seo-einzeln', 'seo-dreimal' ) as $s ) { $t = get_term_by( 'slug', $s, 'post_tag' );"
+           " if ( $t ) { wp_delete_term( $t->term_id, 'post_tag' ); } }")
+
+
+def test_autor_im_schema_wie_die_autorenzeile(wp, admin_beitraege):
+    seite = wp.get("/seo-test-alt-1/").text
+    autor = [d for d in _jsonld(seite) if d.get("@type") == "NewsArticle"][0]["author"]
+    # sichtbar steht „Redaktion Tamil.de“ (Customizer autor_name); nie ein Anmeldename
+    assert autor["name"] == "Redaktion Tamil.de" and autor["@type"] == "Organization"
+    assert "<strong>Redaktion Tamil.de</strong>" in seite
+    assert '"name":"admin"' not in seite
+
+
+def test_feed_ohne_anmeldenamen(wp, admin_beitraege):
+    feed = wp.get("/feed/").text
+    autoren = set(re.findall(r"<dc:creator><!\[CDATA\[(.*?)\]\]></dc:creator>", feed))
+    assert autoren == {"Redaktion Tamil.de"}
+
+
+def test_benutzerliste_nur_fuer_angemeldete(wp, wp_admin, admin_beitraege):
+    for pfad in ("/wp-json/wp/v2/users", "/wp-json/wp/v2/users/1"):
+        r = wp.get(pfad)
+        assert r.status_code == 401 and "admin" not in r.text, pfad
+    assert wp.get("/wp-json/wp/v2/users", auth=wp_admin).status_code == 200
+    assert wp.get("/wp-json/wp/v2/users/me", auth=wp.auth).json()["slug"] == "ki-agent"  # Radar prüft so seine Rechte
+
+
+def test_oembed_ohne_anmeldenamen(wp, admin_beitraege):
+    r = wp.get("/wp-json/oembed/1.0/embed", params={"url": URL + "/seo-test-alt-1/"})
+    assert r.status_code == 200
+    daten = r.json()
+    assert daten["author_name"] == "Redaktion Tamil.de" and daten["author_url"].rstrip("/") == URL
+
+
+def test_autorenarchiv_leitet_auf_die_startseite(wp, admin_beitraege):
+    for pfad in ("/author/admin/", "/?author=1"):
+        r = wp.get(pfad, allow_redirects=False)
+        assert r.status_code == 301 and r.headers["Location"].rstrip("/") == URL, pfad
+
+
+def test_herausgeber_mit_logo_und_kennung(wp, admin_beitraege):
+    a = [d for d in _jsonld(wp.get("/seo-test-alt-1/").text) if d.get("@type") == "NewsArticle"][0]
+    p = a["publisher"]
+    assert p["@type"] == "NewsMediaOrganization" and p["@id"] == URL + "/#organization" and p["name"]
+    logo = p["logo"]
+    assert logo["width"] >= 112 and logo["height"] >= 112  # Theme-Logo 300 × 121
+    r = requests.get(logo["url"], timeout=30)
+    assert r.status_code == 200 and r.headers["Content-Type"].startswith("image/")
+
+
+def _canonical(seite: str) -> list[str]:
+    return [html.unescape(m) for m in re.findall(r'<link rel=["\']canonical["\'] href=["\']([^"\']+)', seite)]
+
+
+def test_canonical_fuer_startseite_rubrik_und_folgeseite(wp, wp_cli, admin_beitraege):
+    assert _canonical(wp.get("/").text) == [URL + "/"]
+    assert _canonical(wp.get("/tag/seo-dreimal/").text) == [URL + "/tag/seo-dreimal/"]
+    alt = wp_cli("echo get_option( 'posts_per_page' );").strip()
+    wp_cli("update_option( 'posts_per_page', 1 );")
+    try:
+        assert _canonical(wp.get("/tag/seo-dreimal/page/2/").text) == [URL + "/tag/seo-dreimal/page/2/"]
+    finally:
+        wp_cli(f"update_option( 'posts_per_page', {int(alt)} );")
+    assert len(_canonical(wp.get("/seo-test-alt-1/").text)) == 1  # Einzelseiten: weiter das eine von WordPress
+    assert _canonical(wp.get("/?s=seo").text) == []
+
+
+def test_duenne_schlagwoerter_noindex_und_nicht_in_der_sitemap(wp_cli, admin_beitraege):
+    code = ("add_filter( 'tamil_site_indexierbar', '__return_true' ); $r = array();"
+            " foreach ( array( 'seo-einzeln', 'seo-dreimal' ) as $s ) { query_posts( array( 'tag' => $s ) );"
+            " $r[ $s ] = apply_filters( 'wp_robots', array() ); wp_reset_query(); }"
+            " $r['users'] = apply_filters( 'wp_sitemaps_add_provider', new stdClass(), 'users' );"
+            " $r['posts'] = (bool) apply_filters( 'wp_sitemaps_add_provider', new stdClass(), 'posts' );"
+            " $args = apply_filters( 'wp_sitemaps_taxonomies_query_args', array(), 'post_tag' );"
+            " $r['exclude'] = array_map( function ( $id ) { return get_term( $id )->slug; }, $args['exclude'] ?? array() );"
+            " $r['kategorien'] = apply_filters( 'wp_sitemaps_taxonomies_query_args', array(), 'category' );"
+            " echo wp_json_encode( $r );")
+    r = json.loads(wp_cli(code))
+    assert r["seo-einzeln"].get("noindex") is True and r["seo-einzeln"].get("follow") is True
+    assert "noindex" not in r["seo-dreimal"]
+    assert r["users"] is False and r["posts"] is True
+    assert "seo-einzeln" in r["exclude"] and "seo-dreimal" not in r["exclude"]
+    assert r["kategorien"] == []  # Rubriken bleiben vollständig
