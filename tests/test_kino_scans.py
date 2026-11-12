@@ -23,10 +23,11 @@ def settings(monkeypatch, tmp_path):
     return s
 
 
-def _termin(tage: int) -> datetime:
-    """Eine Vorstellung morgen bzw. übermorgen – liegt sicher in dieser oder der nächsten Kinowoche."""
-    jetzt = datetime.now(kp.TZ).replace(hour=19, minute=30, second=0, microsecond=0)
-    return jetzt + timedelta(days=tage)
+def _termin(stunde: int) -> datetime:
+    """Vorstellungen morgen zu verschiedenen Uhrzeiten: derselbe Tag liegt immer in genau einer Kinowoche, und morgen
+    immer in dieser oder der nächsten (die Aggregation rechnet mit der echten Uhr)."""
+    morgen = datetime.now(kp.TZ).replace(minute=0, second=0, microsecond=0) + timedelta(days=1)
+    return morgen.replace(hour=stunde)
 
 
 class Programm:
@@ -52,8 +53,8 @@ def _kinos(store, uid):
 
 
 def test_spielort_bleibt_bis_die_eigene_quelle_ihn_nicht_mehr_meldet(settings, monkeypatch):
-    stuendlich = Programm([kp.Show("Jailer 2", "CineStar Mainz", "Mainz", "DE", start=_termin(1))])
-    selten = Programm([kp.Show("Jailer 2", "Atelier", "Düsseldorf", "DE", start=_termin(2))])
+    stuendlich = Programm([kp.Show("Jailer 2", "CineStar Mainz", "Mainz", "DE", start=_termin(19))])
+    selten = Programm([kp.Show("Jailer 2", "Atelier", "Düsseldorf", "DE", start=_termin(21))])
     monkeypatch.setitem(kp.PROVIDERS, "kinoheld", stuendlich)
     monkeypatch.setitem(kp.PROVIDERS, "html", selten)
     html_quelle = Source(name="Filmkunstkinos", type="kino", url="https://filmkunst.example/", provider="html",
@@ -68,7 +69,7 @@ def test_spielort_bleibt_bis_die_eigene_quelle_ihn_nicht_mehr_meldet(settings, m
                                 fingerprint=item.fingerprint, hinweise=[]))
 
         # Scan 2: die HTML-Quelle ist nicht fällig (720 Min.), kinoheld meldet zusätzlich Bremen
-        stuendlich.shows.append(kp.Show("Jailer 2", "CineStar Bremen", "Bremen", "DE", start=_termin(1)))
+        stuendlich.shows.append(kp.Show("Jailer 2", "CineStar Bremen", "Bremen", "DE", start=_termin(20)))
         _scan(settings, store)
         assert _kinos(store, item.uid) == ["Atelier", "CineStar Bremen", "CineStar Mainz"]
         hinweise = store.draft_by_uid(item.uid)["hinweise"]
@@ -94,6 +95,6 @@ def test_spielort_bleibt_bis_die_eigene_quelle_ihn_nicht_mehr_meldet(settings, m
 
 
 def test_kino_traegt_seine_quelle():
-    [item] = kp.aggregate_shows([kp.Show("Jailer 2", "Atelier", "Düsseldorf", "DE", start=_termin(1))],
+    [item] = kp.aggregate_shows([kp.Show("Jailer 2", "Atelier", "Düsseldorf", "DE", start=_termin(19))],
                                 quelle="Filmkunstkinos")
     assert item.facts["kinos"][0]["quelle"] == "Filmkunstkinos"
