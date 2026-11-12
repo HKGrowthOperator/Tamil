@@ -144,7 +144,7 @@ def _kino(item: NewsItem, settings: Settings, source: Source | None, text: str) 
     Nadu Chief Minister“ und „Ilaiyaraaja honoured by India“."""
     if source and source.kollywood:
         return True
-    if any(_contains(text, t, suffix=2) for t in settings.kollywood):
+    if any(_contains(text, t) for t in settings.kollywood):  # ganzes Wort: „vijay“ trifft nicht „Vijayan“
         return True
     return guess_category(item, settings) in ("kino", "entertainment")
 

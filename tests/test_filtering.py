@@ -347,3 +347,23 @@ def test_fund_1211_genf_ist_dach_hinweis(settings):
                  source="Tamil Guardian")]
     picked, zaehler = _einzeln(genf, settings)
     assert [p.title for p in picked] == [i.title for i in genf] and zaehler["ausland"] == 0
+
+
+def test_fund_1211_starnamen_nur_als_ganzes_wort(settings):
+    """Zweite Prüfung 12.11.: „vijay“ traf „Vijayan“, „ajith“ srilankische Namen. Für die Kollywood-Ausnahme zählen
+    Starnamen nur als ganzes Wort, Ajith nur als „Ajith Kumar“; score_item bleibt unverändert."""
+    raus = [item("Kerala CM Pinarayi Vijayan writes to Tamil Nadu on Mullaperiyar dam",
+                 "Kerala CM Pinarayi Vijayan writes to Tamil Nadu on Mullaperiyar dam  The Hindu",
+                 source="Google News DACH · The Hindu"),
+            item("Ajith Nivard Cabraal indicted over bond scam",
+                 "Former Central Bank governor of Sri Lanka Ajith Nivard Cabraal indicted", source="Tamil Guardian"),
+            item("DIG Ajith Rohana orders crackdown in Jaffna",
+                 "Police DIG Ajith Rohana orders crackdown on protests in Jaffna", source="Tamil Guardian")]
+    for i in raus:
+        assert filtering.ohne_dach_grund(i, settings, filtering.quelle_fuer(i, settings)) == "ausland", i.title
+    star = item("Rajinikanth meets Tamil Nadu Chief Minister", "Rajinikanth meets Tamil Nadu Chief Minister",
+                source="Tamil Guardian")
+    assert filtering.ohne_dach_grund(star, settings, filtering.quelle_fuer(star, settings)) == ""
+    ajith = item("Ajith Kumar meets Tamil Nadu Chief Minister", "Ajith Kumar meets Tamil Nadu Chief Minister",
+                 source="Tamil Guardian")
+    assert filtering.ohne_dach_grund(ajith, settings, filtering.quelle_fuer(ajith, settings)) == ""

@@ -684,8 +684,9 @@ fremdkino = ["telugu", "tollywood", "bollywood", "malayalam", "mollywood", "kann
 # Kollywood und Stars (aus der vorhandenen Starliste in [keywords] und [categories]): Nennt eine Nachricht ohne
 # DACH-Bezug einen davon, gilt sie für die Ausland-Regel als Kino/Entertainment und bleibt (Entscheidung 12.11.:
 # „Rajinikanth meets Tamil Nadu Chief Minister“, „Ilaiyaraaja honoured by India“). Ebenso alles aus einer Quelle mit
-# kollywood = true.
-kollywood = ["kollywood", "tamil cinema", "rajinikanth", "vijay", "ajith", "suriya", "anirudh", "a.r. rahman",
+# kollywood = true. Nur ganze Wörter („vijay“ trifft nicht „Vijayan“), Ajith nur als „ajith kumar“: „Ajith“ ist auch
+# ein häufiger Vorname in Sri Lanka (Ajith Rohana, Ajith Nivard Cabraal; zweite Prüfung 12.11.).
+kollywood = ["kollywood", "tamil cinema", "rajinikanth", "vijay", "ajith kumar", "suriya", "anirudh", "a.r. rahman",
              "ilaiyaraaja"]
 
 # ---- Stichwort-Gewichte (klein geschrieben; Treffer im Titel zählen doppelt) ----
