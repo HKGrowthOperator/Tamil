@@ -46,6 +46,26 @@ def is_tamil(*texts: str) -> bool:
     return any(TAMIL_RE.search(t or "") for t in texts)
 
 
+# Kino-HTML: „Tamil“ als Sprachangabe, nicht als Ortsname („Tamil Nadu“) oder beiläufige Nennung in einer Beschreibung
+_TAMIL = r"tamil(?:isch(?:e[nr]?)?)?\b(?!\s*-?\s*nadu)"
+_FASSUNG = r"(?:om(?:e)?u|ov|omdu|original\w*|version|fassung|subs?|ut)"
+_TAMIL_FASSUNG_RE = re.compile(
+    rf"[\(\[]\s*{_TAMIL}(?:[\s,/]+{_FASSUNG})*\s*\\?[\)\]]"  # (Tamil), [Tamil], (Tamil OmeU), \[Tamil\]
+    rf"|\b{_TAMIL}\s+{_FASSUNG}\b"  # Tamil version, Tamil OmU, tamil Original
+    rf"|\b(?:ov|om(?:e)?u|original(?:fassung|version)?|sprache|language)\s*[:\-–]?\s*{_TAMIL}",  # OV Tamil, Sprache: Tamil
+    re.I,
+)
+_NUR_TAMIL_RE = re.compile(rf"\W*{_TAMIL}\W*", re.I)
+
+
+def ist_tamil_fassung(titel: str, sprache: str = "") -> bool:
+    """Tamilische Vorstellung laut Titel oder Sprachangabe (Selektor `sprache`), nie über die Beschreibung."""
+    sprache = (sprache or "").strip()
+    if sprache and _NUR_TAMIL_RE.fullmatch(sprache):  # Sprachfeld enthält nur „Tamil“
+        return True
+    return any(_TAMIL_FASSUNG_RE.search(t or "") for t in (titel, sprache))
+
+
 # Zusätze der Kinoprogramme, die keinen eigenen Film bezeichnen: „SCENE , FSK folgt“, „… /engl. Untertitel“, „(3D)“
 _ZUSATZ_RE = re.compile(
     r"\s*[,/\-–(\[]*\s*(?:fsk\s*(?:folgt|ab\s*\d+|\d+)|(?:mit\s+)?(?:engl(?:isch(?:en?)?)?\.?|dt\.?|deutsch(?:en?)?)\s*"
@@ -196,7 +216,7 @@ def fetch_html_kino(source: Source, settings: Settings, http=None, now: datetime
     shows = []
     for node in soup.select(sel.get("item", "article")):
         film = quellen._select_text(node, sel.get("title", "h2"))
-        if not film or not is_tamil(node.get_text(" ")):
+        if not film or not ist_tamil_fassung(film, quellen._select_text(node, sel.get("sprache", ""))):
             continue
         link = quellen._select_text(node, sel.get("link", "a::attr(href)"))
         datum = quellen._select_text(node, sel.get("date", ""))

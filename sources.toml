@@ -485,7 +485,7 @@ country = "DE"
 max_items = 1
 interval_minutes = 720
 params = { kino = "Filmkunstkinos Düsseldorf", stadt = "Düsseldorf" }
-selectors = { item = "#event-container article", title = ".event-small--title", link = "a::attr(href)", date = ".event-small--date" }
+selectors = { item = "#event-container article", title = ".event-small--title", link = "a::attr(href)", date = ".event-small--date", sprache = ".event-small--title span::attr(title)" }
 
 [[source]]
 name = "dein-dein · Tamil Films in Germany"
@@ -503,7 +503,7 @@ url = "https://dein-dein.com/germany/tamil-films"
 country = "DE"
 max_items = 1
 interval_minutes = 360
-selectors = { item = "section[aria-label='Indian film snapshot'] article", title = "h3", link = "a::attr(href)", date = "time", ort = "p span:not([aria-hidden])" }
+selectors = { item = "section[aria-label='Indian film snapshot'] article", title = "h3", link = "a::attr(href)", date = "time", ort = "p span:not([aria-hidden])", sprache = ".ui-kicker" }
 
 [[source]]
 name = "Mathäser Filmpalast München"
@@ -541,7 +541,7 @@ country = "DE"
 max_items = 1
 interval_minutes = 360
 params = { kino = "Babylon", stadt = "Berlin" }
-selectors = { item = ".blog .items-leading > div, .blog .items-row .item", title = "h2", link = "h2 a::attr(href)", date = ".first_showtime" }
+selectors = { item = ".blog .items-leading > div, .blog .items-row .item", title = "h2", link = "h2 a::attr(href)", date = ".first_showtime", sprache = "p:not(.readmore)" }
 
 # Medien und Behörden: nur mit tamilischem Bezug
 [[source]]
