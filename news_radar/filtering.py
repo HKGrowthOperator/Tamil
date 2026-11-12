@@ -94,13 +94,14 @@ def hat_bezug(item: NewsItem, settings: Settings) -> bool:
 
 
 _APOSTROPHE = str.maketrans("", "", "'’ʼ‘`´")
+_BESITZ_S_RE = re.compile(r"['’ʼ‘`´]s\b", re.I)  # „Maaveerar's Day“ → „Maaveerar Day“
 
 
 def _ohne_zeichen(text: str) -> str:
     """Kleinbuchstaben ohne Apostrophe und ohne Diakritika („Māvīrar Nāḷ“ → „mavirar nal“, „Heroes’“ → „heroes“);
     tamilische Schrift bleibt unverändert (Vokalzeichen und Pulli sind dort Teil der Buchstaben)."""
     out = []
-    for c in text.translate(_APOSTROPHE).lower():
+    for c in _BESITZ_S_RE.sub("", text).translate(_APOSTROPHE).lower():
         if "\u0b80" <= c <= "\u0bff":
             out.append(c)
         else:

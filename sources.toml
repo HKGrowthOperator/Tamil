@@ -714,7 +714,7 @@ terms = ["tamil", "tamilisch", "tamilen", "tamilin", "eelam", "kollywood", "raji
 [blocklist]
 terms = ["horoskop", "casino", "betting", "wetten", "porn", "obituary", "todesanzeige", "sponsored", "anzeige:"]
 # Termine (kind = event) mit diesen Begriffen werden nie automatisch zur Story: Gedenken mit LTTE-Bezug
-termine = ["maaveerar", "maveerar", "mahaveerar", "mahaaveerar", "mavirar", "மாவீரர்", "heroes day", "national heroes",
+termine = ["maaveerar", "maveerar", "mahaveerar", "mahaaveerar", "mavirar", "மாவீரர்", "heroes day", "national heroes day",
            "heldengedenktag", "heldentag"]  # verglichen ohne Apostrophe und Diakritika
 
 # Ziel-Kategorien (Slug in WordPress) + Stichwörter für die Zuordnung. Die KI wählt final eine davon.

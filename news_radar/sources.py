@@ -345,11 +345,13 @@ def fetch_tribe_events(source: Source, settings: Settings, now: datetime | None 
         venue = ev.get("venue") if isinstance(ev.get("venue"), dict) else {}
         ort = ", ".join(v for v in (venue.get("venue"), venue.get("address"), venue.get("city")) if v)
         wann = start.strftime("%d.%m.%Y") + ("" if ev.get("all_day") else start.strftime(", %H:%M Uhr"))
+        if ende.date() > start.date():
+            wann += ende.strftime(" bis %d.%m.%Y")
         summary = " · ".join(p for p in (wann, clean_text(ev.get("description") or "")[:900], ort) if p)
         item = NewsItem(
             title=title, url=url, summary=summary[:1200], source=source.name, published=now,
             language=source.language, kind="event", ort=venue.get("city") or "",
-            facts={"event_datum": start.date().isoformat(), "event_ort": ort},
+            facts={"event_datum": start.date().isoformat(), "event_ort": ort, "event_ende": ende.date().isoformat()},
         )
         if gedenktermin(item, settings):  # Gedenken mit LTTE-Bezug ([blocklist] termine): nie automatisch
             log.info("%s: Gedenktermin ausgelassen: %s", source.name, title)

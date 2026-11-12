@@ -125,3 +125,23 @@ def test_iso_datum_mit_t_wird_gelesen(settings, monkeypatch):
                                       "start_date": "2026-05-31T10:00:00", "all_day": False}])
     [item] = sources.FETCHERS["tribe_events"](quelle, settings, now=VOR_DEM_FEST)
     assert item.facts["event_datum"] == "2026-05-31" and "10:00" in item.summary
+
+
+@pytest.mark.parametrize("titel", ["Maaveerar's Day", "Mahaveerar’s Naal", "Heroes’ Day"])
+def test_gedenk_sperre_mit_besitz_s(settings, titel):
+    item = sources.NewsItem(titel, "https://x.example/g", "", "q", VOR_DEM_FEST, kind="event")
+    assert filtering.gedenktermin(item, settings), titel
+
+
+def test_national_heroes_museum_ist_kein_gedenktermin(settings):
+    item = sources.NewsItem("Ausflug ins National Heroes Museum", "https://x.example/m", "", "q", VOR_DEM_FEST,
+                            kind="event")
+    assert not filtering.gedenktermin(item, settings)
+
+
+def test_kalender_nennt_ende_mehrtaegiger_termine(settings, monkeypatch):
+    quelle = _kalender(monkeypatch, [{"title": "Tempelfest", "url": "https://tempel.example/fest/",
+                                      "start_date": "2026-05-22 00:00:00", "end_date": "2026-06-02 23:59:59",
+                                      "all_day": True}])
+    [item] = sources.FETCHERS["tribe_events"](quelle, settings, now=datetime(2026, 5, 25, 9, tzinfo=timezone.utc))
+    assert item.facts["event_ende"] == "2026-06-02" and "bis 02.06.2026" in item.summary
