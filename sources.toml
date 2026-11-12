@@ -485,6 +485,45 @@ max_items = 2
 interval_minutes = 180
 selectors = { item = "article.event-card", title = "h3", link = "h3 a::attr(href)", date = ".card-meta .pill", ort = "p.muted" }
 
+# Rückblick-Recherche 12.11.2026 (live geprüft: erreichbar, robots erlaubt, keine Anmeldung, Termine mit Datum und Ort)
+[[source]]
+name = "München Tamil Sangam · Termine"
+prioritaet = "B"
+betreiber = "München Tamil Sangam e.V."
+robots = "erlaubt"
+paywall = false
+bild_nutzen = false
+notiz = "Rückblick 12.11.2026: Terminkalender (The Events Calendar, /wp-json/tribe/events/v1/events), 2026 zwei Termine (Kodai Vizha 16.5., Diwali 21.11. Bürgerhaus Neukeferloh); nur kommende Termine"
+rechtlich_geprueft = ""
+type = "tribe_events"
+url = "https://muenchentamilsangam.org"
+language = "en"
+kind = "event"
+country = "DE"
+min_score = 0
+max_items = 1
+interval_minutes = 720
+
+[[source]]
+name = "Sri Meenadchi Ambal Tempel Backnang · Termine"
+prioritaet = "B"
+betreiber = "Sri Lanka Cultural Forum (Sri Meenadchi Ambal Tempel), Sulzbacher Str. 56, Backnang"
+robots = "erlaubt"
+paywall = false
+bild_nutzen = false
+notiz = "Rückblick 12.11.2026: Seite „Zukünftige Veranstaltungen“ (Elementor-Liste, je Termin article.mel-card, Datum englisch „November 13, 2026 6:00 p.m.“); viele Pooja- und Fastentage (Kandasashti, Thiruvempavai) – Feste redaktionell auswählen; Ort ist immer der Tempel"
+rechtlich_geprueft = ""
+type = "html"
+url = "https://srimeenadchiambal.com/de/zukuenftige-veranstaltungen/"
+language = "de"
+kind = "event"
+country = "DE"
+min_score = 0
+max_items = 1
+interval_minutes = 720
+params = { ort = "Sri Meenadchi Ambal Tempel, Sulzbacher Str. 56, 71522 Backnang" }
+selectors = { item = "article.mel-card", title = ".mel-title", link = ".mel-title a::attr(href)", date = ".mel-date" }
+
 # Kino: Reihen und Programme mit Selektoren (provider = "html"); Tamil nur über Titel oder Selektor `sprache`,
 # Spielorte bleiben über Scans erhalten, bis die eigene Quelle sie nicht mehr meldet (Prüfung 11.11.2026, behoben)
 [[source]]

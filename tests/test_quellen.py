@@ -25,9 +25,9 @@ INVENTUR_2026_11 = {
 }
 
 
-def test_register_has_31_active_of_40_and_disabled_sources_have_a_reason():
+def test_register_has_33_active_of_42_and_disabled_sources_have_a_reason():
     s = load_settings()
-    assert len(s.alle_quellen) == 40 and len(s.sources) == 31
+    assert len(s.alle_quellen) == 42 and len(s.sources) == 33
     assert all(q.notiz for q in s.alle_quellen if not q.enabled)
     assert {q.prioritaet for q in s.alle_quellen} <= {"A", "B", "C"}
     assert not any(q.bild_nutzen for q in s.alle_quellen)  # ohne dokumentierte Erlaubnis keine Pressebilder
