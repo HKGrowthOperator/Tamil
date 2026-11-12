@@ -126,6 +126,18 @@ def dach_hinweis(text: str, regions: Regions) -> bool:
     return False
 
 
+def _ohne_verlag(item: NewsItem, source: Source | None) -> str:
+    """Titel und Text ohne den Verlagsanhang von Google News („… - The Hindu“, „…  The Hindu“): Der Verlag steht im
+    Quellennamen nach der Quelle („Google News EN · Kollywood · The Hindu“) und ist kein Inhalt (Prüfung 12.11.: „The
+    Hindu“ zählte als tamilischer Bezug „hindu“)."""
+    title, summary = item.title, item.summary
+    verlag = item.source[len(source.name) + 3:].strip() if source and item.source.startswith(f"{source.name} · ") else ""
+    if verlag:
+        title = re.sub(rf"\s*[-–—|]?\s*{re.escape(verlag)}\s*$", "", title)
+        summary = re.sub(rf"\s*{re.escape(verlag)}\s*$", "", summary)
+    return f"{title} {summary}"
+
+
 def ohne_dach_grund(item: NewsItem, settings: Settings, source: Source | None) -> str:
     """Warum eine Nachricht ohne DACH-Bezug keine Story wird: „fremdes_kino“, „ausland“ oder „“ (bleibt).
 
@@ -137,7 +149,7 @@ def ohne_dach_grund(item: NewsItem, settings: Settings, source: Source | None) -
     gewollt sind (Fund 12.11.)."""
     if item.kind != "news" or item.dach_score > 0 or (source and source.country):
         return ""
-    text = f"{item.title} {item.summary}"
+    text = _ohne_verlag(item, source)
     if dach_hinweis(text, settings.regions) or deutschsprachig(text):
         return ""
     fremd = sum(1 for t in settings.fremdkino if _contains(text, t, suffix=2))

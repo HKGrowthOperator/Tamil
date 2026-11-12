@@ -307,6 +307,12 @@ def test_fund_1211_ausland_bleibt_draussen_trotz_hinweisen(settings):
     assert picked == [] and zaehler["ausland"] == 2 and zaehler["fremdes_kino"] == 1
 
 
+def test_fund_1211_verlagsname_ist_kein_bezug(settings):
+    """P3b: „The Hindu“ im Google-News-Anriss ist der Verlag, kein tamilischer Bezug („hindu“ in [bezug] terms)."""
+    picked, zaehler = _einzeln(_fund_items("fremdes_kino_verlag"), settings)
+    assert picked == [] and zaehler["fremdes_kino"] == 1
+
+
 def test_fund_1211_grauzone_wendet_ausland_regel_an(settings):
     """P2: Was select als Ausland verwirft, geht auch bei Score 2–3 nicht über die Grauzone an Haiku."""
     grau = _fund_items("grauzone_raus")
