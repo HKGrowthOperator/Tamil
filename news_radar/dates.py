@@ -22,9 +22,29 @@ _MONTH_RE = "|".join(sorted(MONTHS, key=len, reverse=True))
 _TIME_RE = re.compile(r"(?<!\d)(\d{1,2})[:.](\d{2})(?:\s*uhr)?", re.I)
 # 12-Stunden-Uhrzeit: „6:00 p.m.“, „6:30 P.M.“, „6 pm“, „10 AM“. Ohne Punkte nur „pm“, „AM“, „PM“ – das kleine
 # „am“ ist im Deutschen eine Präposition („10:30 am Bahnhof“) und bleibt außen vor. Spanne ohne Doppelpunkt
-# („6–9 pm“): Beginn ist die erste Stunde mit dem gemeinsamen Zusatz.
+# („6–9 pm“): Beginn ist die erste Stunde mit dem gemeinsamen Zusatz; über Mittag („11–1 pm“) am Vormittag.
 _AMPM_RE = re.compile(r"(?<![\d:.])(?:(\d{1,2})\s*[–—-]\s*)?(\d{1,2})(?:[:.](\d{2}))?\s*"
                       r"(?:([aApP])\.\s?[mM]\.?|(AM|PM|pm)(?![A-Za-z]))")
+# Zahl vor dem Bindestrich gehört zu solch einem Wort („Saal 2 – 6 pm“, „Tag 1 - 6 pm“): keine Spanne
+_NUMMERN_WORT_RE = re.compile(r"(?:saal|tag|day|halle|hall|raum|room|zimmer|nr|no|bühne|stage|gate|tor|platz|"
+                              r"gleis|block|haus|teil|runde|level|ebene|stock|eingang|sektor|court|feld)\.?\s*$", re.I)
+
+
+def _ampm_zeit(ap: re.Match, davor: str) -> tuple[int, int] | None:
+    """(Stunde, Minute) im 24-Stunden-Format aus einem _AMPM_RE-Treffer; None, wenn ungültig."""
+    nachmittag = (ap.group(4) or ap.group(5)).lower().startswith("p")
+    ende, minuten = int(ap.group(2)), int(ap.group(3) or 0)
+    if not 1 <= ende <= 12 or minuten > 59:
+        return None
+    ende24 = ende % 12 + (12 if nachmittag else 0)
+    if ap.group(1) and not _NUMMERN_WORT_RE.search(davor):
+        anfang = int(ap.group(1))
+        if 1 <= anfang <= 12:
+            vormittag = nachmittag and (anfang % 12 > ende % 12 or ende == 12)  # „11–1 pm“, „11-12 pm“
+            anfang24 = anfang % 12 + (12 if nachmittag and not vormittag else 0)
+            if anfang24 * 60 < ende24 * 60 + minuten and ende24 - anfang24 <= 12:  # plausibel: Beginn vor Ende
+                return anfang24, 0
+    return ende24, minuten
 _ISO_RE = re.compile(r"(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2}))?")
 _NUMERIC_RE = re.compile(r"(?<!\d)(\d{1,2})\.(\d{1,2})\.(\d{2,4})(?!\d)")
 _NUMERIC_NOYEAR_RE = re.compile(r"(?<!\d)(\d{1,2})\.(\d{1,2})\.(?!\d)")
@@ -96,13 +116,9 @@ def parse_de_termin(text: str, now: datetime | None = None) -> tuple[datetime | 
     tail = t[m.end():] if "m" in locals() and m else t
     tm = _TIME_RE.search(tail)
     ap = _AMPM_RE.search(tail)
-    if ap and ap.group(1):  # Spanne „6–9 pm“: Beginn zur vollen Stunde
-        stunde, minuten = int(ap.group(1)), 0
-    elif ap:
-        stunde, minuten = int(ap.group(2)), int(ap.group(3) or 0)
-    if ap and (tm is None or ap.start() <= tm.start()) and 1 <= stunde <= 12 and minuten <= 59:
-        nachmittag = (ap.group(4) or ap.group(5)).lower().startswith("p")
-        hour, minute = stunde % 12 + (12 if nachmittag else 0), minuten
+    zwoelf = _ampm_zeit(ap, tail[:ap.start()]) if ap and (tm is None or ap.start() <= tm.start()) else None
+    if zwoelf:
+        hour, minute = zwoelf
         hat_zeit = True
     elif tm:
         hour, minute = int(tm.group(1)), int(tm.group(2))

@@ -54,7 +54,26 @@ def test_ungueltige_stunde_mit_pm_faellt_auf_bisherige_regel_zurueck():
     ("7.11.2026 6-9 PM", ("2026-11-07 18:00", True)),
     ("7.11.2026 6 – 9 p.m.", ("2026-11-07 18:00", True)),
     ("7.11.2026 9–11 a.m.", ("2026-11-07 09:00", True)),
-    ("7.11.2026 6:00 – 9:30 p.m.", ("2026-11-07 06:00", True)),  # wie bisher: erste Zeit mit Doppelpunkt
+    ("7.11.2026 12–3 pm", ("2026-11-07 12:00", True)),
+    # über Mittag: Beginn am Vormittag
+    ("7.11.2026 11–1 pm", ("2026-11-07 11:00", True)),
+    ("7.11.2026 10-2 PM", ("2026-11-07 10:00", True)),
+    ("7.11.2026 11-12 pm", ("2026-11-07 11:00", True)),
+    # erste Zahl keine 12-Stunden-Zeit: wie früher die zweite Zahl mit Zusatz
+    ("7.11.2026 15 - 6 pm", ("2026-11-07 18:00", True)),
+    ("7.11.2026 13-9 pm", ("2026-11-07 21:00", True)),
+    ("7.11.2026 0-9 pm", ("2026-11-07 21:00", True)),
+    # Zahl gehört zu einem Wort davor (Saal 2, Tag 1, Nr. 3): keine Spanne
+    ("7.11.2026 Saal 2 – 6 pm", ("2026-11-07 18:00", True)),
+    ("7.11.2026 Tag 1 - 6 pm", ("2026-11-07 18:00", True)),
+    ("7.11.2026 Halle 3-7 p.m.", ("2026-11-07 19:00", True)),
+    ("7.11.2026 Nr. 4 – 8 PM", ("2026-11-07 20:00", True)),
 ])
 def test_spanne_ohne_doppelpunkt_beginn_mit_gemeinsamem_zusatz(text, erwartet):
     assert _zeit(text) == erwartet
+
+
+@pytest.mark.xfail(strict=True, reason="Spanne mit Doppelpunkt: Die erste Zeit gilt als 24-Stunden-Zeit (06:00), "
+                   "der gemeinsame Zusatz „p.m.“ am Ende wird nicht übernommen. Richtig wäre 18:00; offen.")
+def test_spanne_mit_doppelpunkt_uebernimmt_gemeinsamen_zusatz():
+    assert _zeit("7.11.2026 6:00 – 9:30 p.m.") == ("2026-11-07 18:00", True)
