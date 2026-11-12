@@ -61,7 +61,7 @@ def test_extract_paragraphs_drops_theme_code_and_navigation():
 
 
 def test_registry_contains_all_types():
-    assert set(sources.FETCHERS) == {"rss", "newsapi", "gnews", "gnews_region", "wp_json", "html", "kino"}
+    assert set(sources.FETCHERS) == {"rss", "newsapi", "gnews", "gnews_region", "wp_json", "html", "kino", "tribe_events"}
 
 
 def test_rss_uses_entry_source_as_publisher(monkeypatch):
@@ -343,3 +343,24 @@ def test_extract_paragraphs_linear_bei_nicht_geschlossenen_tags():
         t = time.monotonic()
         sources.extract_paragraphs(roh)
         assert time.monotonic() - t < 1, roh[:20]
+
+
+def test_teilausfall_haelt_den_takt_ein(monkeypatch, settings, tmp_path):
+    """Nach einem Teilausfall ist die Quelle erst nach interval_minutes wieder fällig (sonst Dauerabruf)."""
+    from news_radar.store import Store
+
+    store = Store(tmp_path / "r.sqlite")
+    settings.sources = [Source(name="CineStar", type="rss", url="https://a", interval_minutes=60)]
+    aufrufe = []
+
+    def teil(source, s):
+        aufrufe.append(source.name)
+        raise sources.Teilausfall([], "Haus ohne Antwort")
+
+    monkeypatch.setitem(sources.FETCHERS, "rss", teil)
+    sources.fetch_all(settings, store)
+    sources.fetch_all(settings, store)
+    assert aufrufe == ["CineStar"]
+    status = {s["name"]: s for s in store.source_status_all()}["CineStar"]
+    assert status["last_try"] and not status["last_ok"] and "Teilausfall" in status["error_msg"]
+    store.close()

@@ -1,7 +1,8 @@
 """Quellen aus der Inventur 11.11.2026 gegen die an dem Tag gespeicherten Seiten (gekürzt) – ohne Netz.
 
-Die Kino-Seiten (Anbieter "html") sind zurückgestellt (Prüfung 11.11.2026) und aus; ihre Fixture-Tests prüfen den
-Anbieter mit fester Uhr, damit er bei einer späteren Wiederaufnahme belegt bleibt."""
+Die Kino-Seiten (Anbieter "html") laufen nach den Korrekturen zur Prüfung 11.11.2026 wieder (dein-dein bleibt aus);
+ihre Fixture-Tests prüfen den Anbieter mit fester Uhr. Weitere Funde der Prüfung: tests/test_kino_html.py,
+tests/test_kino_scans.py."""
 
 from datetime import date, datetime, timezone
 from pathlib import Path
@@ -51,12 +52,17 @@ def _seite(monkeypatch, datei):
     monkeypatch.setattr(sources.requests, "get", lambda url, **kw: Antwort(datei))
 
 
-def test_kino_html_quellen_sind_zurueckgestellt(settings):
+def test_kino_html_quellen_wieder_an_ausser_dein_dein(settings):
+    """Nach den Korrekturen zur Prüfung 11.11.2026 laufen Filmkunstkinos, Mathäser und Babylon wieder; dein-dein
+    bleibt aus, bis Luis über robots.txt entschieden hat."""
+    an = {q.name for q in settings.sources if q.provider == "html"}
+    assert an == set(KINO_HTML) - {"dein-dein · Tamil Films in Germany"}
     for name in KINO_HTML:
         q = _quelle(settings, name)
-        assert not q.enabled and "Kino-HTML-Weg zurückgestellt" in q.notiz, name
         assert q.type == "kino" and q.provider == "html" and q.selectors, name
-    assert not any(q.provider == "html" for q in settings.sources)
+        assert "zurückgestellt" not in q.notiz, name
+    for name in ("Filmkunstkinos Düsseldorf · Kino aus Indien", "Babylon Berlin · IndoGerman Film"):
+        assert _quelle(settings, name).selectors.get("sprache"), name  # Sprache steht nicht im Titel
 
 
 def test_filmkunstkinos_nur_tamilische_vorstellungen(monkeypatch, settings):
@@ -75,7 +81,7 @@ def test_mathaeser_nur_der_tamilische_film(monkeypatch, settings):
     _seite(monkeypatch, "mathaeser_programm.html")
     shows = kp.fetch_html_kino(_quelle(settings, "Mathäser Filmpalast München"), settings, now=STAND)
     assert [s.film for s in shows] == ["Scene"] and shows[0].stadt == "München"
-    assert shows[0].start.date() == date(2026, 11, 16)
+    assert shows[0].start is None and shows[0].von == date(2026, 11, 16)  # nur der Tag, keine Uhrzeit
 
 
 def test_babylon_telugu_fassung_kommt_nicht_durch(monkeypatch, settings):

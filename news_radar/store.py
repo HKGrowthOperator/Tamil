@@ -399,8 +399,10 @@ class Store:
             (now_iso(), draft_id),
         )
 
-    def update_kino_facts(self, uid: str, facts: dict, fingerprint: str, note: str) -> bool:
-        """Aktualisiert die Spielorte eines offenen Kino-Entwurfs, wenn sich etwas geändert hat."""
+    def update_kino_facts(self, uid: str, facts: dict, fingerprint: str, note: str,
+                          alt_fingerprint: str | None = None) -> bool:
+        """Aktualisiert die Spielorte eines offenen Kino-Entwurfs, wenn sich etwas geändert hat. Mit
+        `alt_fingerprint` nur, solange der Entwurf noch auf dem Stand ist, von dem aus gerechnet wurde."""
         row = self.draft_by_uid(uid)
         if row is None or row["status"] not in OPEN_STATES or row.get("fingerprint") == fingerprint:
             return False
@@ -408,8 +410,10 @@ class Store:
         offen = tuple(OPEN_STATES)
         cur = self._write(  # nur, solange er noch wartet (Bedingung im selben UPDATE)
             "UPDATE drafts SET fakten_json = ?, fingerprint = ?, hinweise = ?, updated_at = ? "
-            f"WHERE id = ? AND status IN ({','.join('?' for _ in offen)})",
-            (_dumps(facts), fingerprint, _dumps(hinweise), now_iso(), row["id"], *offen),
+            f"WHERE id = ? AND status IN ({','.join('?' for _ in offen)})"
+            + (" AND fingerprint IS ?" if alt_fingerprint is not None else ""),
+            (_dumps(facts), fingerprint, _dumps(hinweise), now_iso(), row["id"], *offen,
+             *((alt_fingerprint,) if alt_fingerprint is not None else ())),
         )
         return cur.rowcount == 1
 
@@ -448,6 +452,22 @@ class Store:
             "paused_until = excluded.paused_until, err_count = err_count + 1",
             (name, now_iso(), message[:300], paused),
         )
+
+    def source_partial(self, name: str, message: str) -> None:
+        """Teilausfall: Fehler vermerken und den Abruf zeitlich festhalten (last_try), damit der Takt gilt."""
+        ts = now_iso()
+        self._write(
+            "INSERT INTO source_status (name, last_try, last_error, error_msg, err_count) VALUES (?,?,?,?,1) "
+            "ON CONFLICT(name) DO UPDATE SET last_try = excluded.last_try, last_error = excluded.last_error, "
+            "error_msg = excluded.error_msg, err_count = err_count + 1",
+            (name, ts, ts, message[:300]),
+        )
+
+    def source_last_run(self, name: str) -> datetime | None:
+        """Letzter Abruf, der den Takt startet: erfolgreich (last_ok) oder mit Teilausfall (last_try)."""
+        row = self.db.execute("SELECT last_ok, last_try FROM source_status WHERE name = ?", (name,)).fetchone()
+        werte = [datetime.fromisoformat(v) for v in (row or ()) if v]
+        return max(werte) if werte else None
 
     def source_last_ok(self, name: str) -> datetime | None:
         row = self.db.execute("SELECT last_ok FROM source_status WHERE name = ?", (name,)).fetchone()

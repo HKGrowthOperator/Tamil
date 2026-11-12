@@ -74,6 +74,38 @@ def test_cinestar_filters_tamil_and_aggregates(settings):
     assert len(week42.facts["kinos"]) == 3 and week42.facts["kinos"][0]["stadt"] <= week42.facts["kinos"][1]["stadt"]
 
 
+def test_cinestar_teilausfall_eines_hauses_meldet_die_quelle_als_teilausfall(settings):
+    """Prüfung 11.11.2026: Fällt ein Haus aus, darf die Quelle nicht als „gelaufen“ gelten – sonst verlieren offene
+    Entwürfe die Spielorte dieses Hauses. Die übrigen Häuser liefern trotzdem."""
+    class Http(FakeHttp):
+        def get(self, url, **kw):
+            if "/api/cinema/30/" in url:
+                raise ConnectionError("Haus 30 antwortet nicht")
+            return super().get(url, **kw)
+
+    http = Http({"/api/cinema/12/show/": "cinestar_shows_12.json", "/api/cinema/15/show/": "cinestar_shows_15.json",
+                 "/api/cinema/": "cinestar_cinemas.json"})
+    src = Source(name="CineStar", type="kino", provider="cinestar", params={"cinemas": [12, 15, 30]})
+    with pytest.raises(kp.Teilausfall) as fehler:
+        kp.fetch_cinestar(src, settings, http=http)
+    assert len(fehler.value.shows) == 2 and "Karlsruhe" in str(fehler.value)
+
+
+def test_kinoheld_an_der_obergrenze_ist_ein_teilausfall(settings):
+    """Bei genau so vielen Treffern wie angefragt ist die Liste womöglich abgeschnitten → nichts abziehen."""
+    daten = json.loads((FIX / "kinoheld_search.json").read_text(encoding="utf-8"))
+    treffer = [r for r in daten["data"]["search"] if r.get("__typename") == "Show"]
+    daten["data"]["search"] = (treffer * 1000)[:kp.KINOHELD_LIMIT]
+
+    class Http(FakeHttp):
+        def post(self, url, **kw):
+            return self._resp(daten)
+
+    with pytest.raises(kp.Teilausfall) as fehler:
+        kp.fetch_kinoheld(Source(name="kinoheld", type="kino", provider="kinoheld"), settings, http=Http({}))
+    assert fehler.value.shows
+
+
 def test_kinoheld_parses_shows(settings):
     http = FakeHttp({"graphql": "kinoheld_search.json"})
     shows = kp.fetch_kinoheld(Source(name="kinoheld", type="kino", provider="kinoheld"), settings, http=http)
@@ -118,3 +150,29 @@ def test_film_title_notes_do_not_split_one_film_into_several_posts():
     assert film_key("Ramayana: Rise of a Legend /engl. Untertitel") == film_key("Ramayana: Rise Of A Legend")
     assert clean_film_title("Coolie - mit engl. Untertiteln") == "Coolie" and clean_film_title("Kanguva (3D)") == "Kanguva"
     assert clean_film_title("Leo (FSK 16)") == "Leo"
+
+
+def test_laufzeit_ohne_uhrzeit_im_fingerprint_und_frueheste_zuerst():
+    def item(*von):
+        shows = [kp.Show("Scene", "Mathäser", "München", "DE", von=d) for d in von]
+        [i] = kp.aggregate_shows(shows, NOW)
+        return i
+
+    beide = item(date(2026, 10, 18), date(2026, 10, 16))
+    assert beide.facts["kinos"][0]["von"] == "2026-10-16"
+    assert item(date(2026, 10, 16)).fingerprint != item(date(2026, 10, 17)).fingerprint
+
+
+def test_kinoheld_100_treffer_sind_ein_teilausfall(settings):
+    """Ob die Schnittstelle mehr als 100 liefert, ist ungeprüft: bei 100 bleibt es Teilausfall (dank last_try im Takt)."""
+    assert kp.KINOHELD_LIMIT == 100 and "limit: 100" in kp.KINOHELD_QUERY
+    daten = json.loads((FIX / "kinoheld_search.json").read_text(encoding="utf-8"))
+    treffer = [r for r in daten["data"]["search"] if r.get("__typename") == "Show"]
+    daten["data"]["search"] = (treffer * 100)[:100]
+
+    class Http(FakeHttp):
+        def post(self, url, **kw):
+            return self._resp(daten)
+
+    with pytest.raises(kp.Teilausfall):
+        kp.fetch_kinoheld(Source(name="kinoheld", type="kino", provider="kinoheld"), settings, http=Http({}))

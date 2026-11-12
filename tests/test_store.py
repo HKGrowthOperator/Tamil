@@ -193,3 +193,11 @@ def test_migration_v2_on_fresh_and_existing_database(tmp_path):
         assert store.db.execute("PRAGMA user_version").fetchone()[0] == schema.LATEST
         store.http_cache_save({"https://x/feed": ('"e1"', "Mon")})
         assert store.http_cache_load() == {"https://x/feed": ('"e1"', "Mon")}
+
+
+def test_update_kino_facts_prueft_den_alten_fingerprint(store):
+    """Zwei gleichzeitige Scans: wer von einem veralteten Stand aus rechnet, schreibt nicht über den anderen."""
+    store.insert_draft(draft(typ="kino_termine", fingerprint="f1"))
+    assert store.update_kino_facts("u1", {"kinos": [1, 2]}, "f2", "a", alt_fingerprint="f1") is True
+    assert store.update_kino_facts("u1", {"kinos": [1, 3]}, "f3", "b", alt_fingerprint="f1") is False  # veraltet
+    assert store.get_draft(1)["fingerprint"] == "f2"

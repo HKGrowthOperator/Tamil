@@ -395,6 +395,24 @@ max_items = 3
 # ---- Aus der Quellen-Inventur 11.11.2026 (live geprüft: erreichbar, robots erlaubt, Einträge mit Datum) ----
 # Tempel und Vereine: Ankündigungen als Termine (echtes Datum → Altersgrenze für Berichte aus dem Archiv gilt)
 [[source]]
+name = "Sri Navadurga Devi Tempel Wuppertal · Termine"
+prioritaet = "B"
+betreiber = "Hindu-Tempel Wuppertal (Sri Navathurgadevi Tempel), Hünefeldstraße 63B"
+robots = "erlaubt"
+paywall = false
+bild_nutzen = false
+notiz = "Inventur 11.11.2026: Terminkalender (The Events Calendar, /wp-json/tribe/events/v1/events), 20 Termine 2026 bis Tempelfest 31.5.–2.6.; nur kommende Termine; Gedenktermine aus [blocklist] termine werden nie automatisch zur Story"
+rechtlich_geprueft = ""
+type = "tribe_events"
+url = "https://hindutempel-wuppertal.de"
+language = "de"
+kind = "event"
+country = "DE"
+min_score = 0
+max_items = 1
+interval_minutes = 720
+
+[[source]]
 name = "Sivan Kovil Glattbrugg"
 prioritaet = "B"
 betreiber = "Saiva Tamil Sangam (Arulmigu Sivan Kovil), Glattbrugg"
@@ -467,16 +485,17 @@ max_items = 2
 interval_minutes = 180
 selectors = { item = "article.event-card", title = "h3", link = "h3 a::attr(href)", date = ".card-meta .pill", ort = "p.muted" }
 
-# Kino: Reihen und Programme mit Selektoren (provider = "html") – zurückgestellt (Prüfung 11.11.2026), alle aus
+# Kino: Reihen und Programme mit Selektoren (provider = "html"); Tamil nur über Titel oder Selektor `sprache`,
+# Spielorte bleiben über Scans erhalten, bis die eigene Quelle sie nicht mehr meldet (Prüfung 11.11.2026, behoben)
 [[source]]
 name = "Filmkunstkinos Düsseldorf · Kino aus Indien"
-enabled = false
+enabled = true
 prioritaet = "B"
 betreiber = "Metropol Düsseldorfer Filmkunstkino GmbH"
 robots = "erlaubt"
 paywall = false
 bild_nutzen = false
-notiz = "aus: Kino-HTML-Weg zurückgestellt, siehe Prüfung 11.11.: Spielorte springen zwischen Scans (unterschiedlicher Takt zu kinoheld/CineStar), Tamil-Erkennung über die Beschreibung zu weit, Mathäser ohne Uhrzeit → 00:00. Inventur 11.11.2026: eine Seite mit allen Vorstellungen der Reihe samt Sprache; Adresse trägt die Jahreszahl – im Januar auf …-2027 umstellen; antwortete einmal mit 429, deshalb langes Intervall; Plakate sind Verleihmaterial"
+notiz = "Inventur 11.11.2026: eine Seite mit allen Vorstellungen der Reihe samt Sprache; Adresse trägt die Jahreszahl – im Januar auf …-2027 umstellen; antwortete einmal mit 429, deshalb langes Intervall; Plakate sind Verleihmaterial"
 rechtlich_geprueft = ""
 type = "kino"
 provider = "html"
@@ -485,7 +504,7 @@ country = "DE"
 max_items = 1
 interval_minutes = 720
 params = { kino = "Filmkunstkinos Düsseldorf", stadt = "Düsseldorf" }
-selectors = { item = "#event-container article", title = ".event-small--title", link = "a::attr(href)", date = ".event-small--date" }
+selectors = { item = "#event-container article", title = ".event-small--title", link = "a::attr(href)", date = ".event-small--date", sprache = ".event-small--title span::attr(title)", behaelter = "#event-container" }
 
 [[source]]
 name = "dein-dein · Tamil Films in Germany"
@@ -495,7 +514,7 @@ betreiber = "dein-dein.com"
 robots = "erlaubt"
 paywall = false
 bild_nutzen = false
-notiz = "aus: Kino-HTML-Weg zurückgestellt, siehe Prüfung 11.11.: Spielorte springen zwischen Scans (unterschiedlicher Takt zu kinoheld/CineStar), Tamil-Erkennung über die Beschreibung zu weit, Mathäser ohne Uhrzeit → 00:00. Außerdem: robots.txt sperrt KI-Crawler (ClaudeBot, GPTBot u. a.) ausdrücklich, erlaubt nur „*“ – Entscheidung Luis offen. Inventur 11.11.2026: tamilische Filme mit Vorstellungen in deutschen Kinos; Spielzeiten beim Kino prüfen; Betreiber nicht geprüft"
+notiz = "aus: robots.txt sperrt KI-Crawler (ClaudeBot, GPTBot u. a.) ausdrücklich, erlaubt nur „*“ – Entscheidung Luis offen. Inventur 11.11.2026: tamilische Filme mit Vorstellungen in deutschen Kinos; Spielzeiten beim Kino prüfen; Betreiber nicht geprüft"
 rechtlich_geprueft = ""
 type = "kino"
 provider = "html"
@@ -503,17 +522,17 @@ url = "https://dein-dein.com/germany/tamil-films"
 country = "DE"
 max_items = 1
 interval_minutes = 360
-selectors = { item = "section[aria-label='Indian film snapshot'] article", title = "h3", link = "a::attr(href)", date = "time", ort = "p span:not([aria-hidden])" }
+selectors = { item = "section[aria-label='Indian film snapshot'] article", title = "h3", link = "a::attr(href)", date = "time", ort = "p span:not([aria-hidden])", sprache = ".ui-kicker" }
 
 [[source]]
 name = "Mathäser Filmpalast München"
-enabled = false
+enabled = true
 prioritaet = "C"
 betreiber = "Kinopolis Management Multiplex GmbH"
 robots = "erlaubt"
 paywall = false
 bild_nutzen = false
-notiz = "aus: Kino-HTML-Weg zurückgestellt, siehe Prüfung 11.11.: Spielorte springen zwischen Scans (unterschiedlicher Takt zu kinoheld/CineStar), Tamil-Erkennung über die Beschreibung zu weit, Mathäser ohne Uhrzeit → 00:00. Inventur 11.11.2026: Programmseite nennt die Sprache im Titel („Scene (Tamil)“); große Seite (~900 KB); möglicherweise doppelt zu kinoheld"
+notiz = "Inventur 11.11.2026: Programmseite nennt die Sprache im Titel („Scene (Tamil)“); große Seite (~900 KB); möglicherweise doppelt zu kinoheld"
 rechtlich_geprueft = ""
 type = "kino"
 provider = "html"
@@ -526,13 +545,13 @@ selectors = { item = "section.movie", title = "h2 a", link = "h2 a::attr(href)",
 
 [[source]]
 name = "Babylon Berlin · IndoGerman Film"
-enabled = false
+enabled = true
 prioritaet = "C"
 betreiber = "Neue Babylon Berlin GmbH"
 robots = "erlaubt"
 paywall = false
 bild_nutzen = false
-notiz = "aus: Kino-HTML-Weg zurückgestellt, siehe Prüfung 11.11.: Spielorte springen zwischen Scans (unterschiedlicher Takt zu kinoheld/CineStar), Tamil-Erkennung über die Beschreibung zu weit, Mathäser ohne Uhrzeit → 00:00. Inventur 11.11.2026: Reihe indischer Filme in Originalsprache; Sprache je Film steht in der Beschreibung („[Telugu]“) – nur tamilische Fassungen kommen durch"
+notiz = "Inventur 11.11.2026: Reihe indischer Filme in Originalsprache; Sprache je Film steht in der Beschreibung („[Telugu]“) – Selektor sprache liest dort nur die Sprachmarke, nur tamilische Fassungen kommen durch"
 rechtlich_geprueft = ""
 type = "kino"
 provider = "html"
@@ -541,7 +560,7 @@ country = "DE"
 max_items = 1
 interval_minutes = 360
 params = { kino = "Babylon", stadt = "Berlin" }
-selectors = { item = ".blog .items-leading > div, .blog .items-row .item", title = "h2", link = "h2 a::attr(href)", date = ".first_showtime" }
+selectors = { item = ".blog .items-leading > div, .blog .items-row .item", title = "h2", link = "h2 a::attr(href)", date = ".first_showtime", sprache = "p:not(.readmore)", behaelter = ".blog" }
 
 # Medien und Behörden: nur mit tamilischem Bezug
 [[source]]
@@ -694,6 +713,10 @@ terms = ["tamil", "tamilisch", "tamilen", "tamilin", "eelam", "kollywood", "raji
 # Ausschluss: Meldungen mit diesen Begriffen werden verworfen
 [blocklist]
 terms = ["horoskop", "casino", "betting", "wetten", "porn", "obituary", "todesanzeige", "sponsored", "anzeige:"]
+# Termine (kind = event) mit diesen Begriffen werden nie automatisch zur Story: Gedenken mit LTTE-Bezug
+termine = ["maaveerar", "maveerar", "mahaveerar", "mahaaveerar", "mavirar", "maavirar", "மாவீரர்", "heroes day",
+           "national heroes", "heroes remembrance", "heroes commemoration", "heldengedenktag", "helden-gedenktag",
+           "heldentag"]  # Wortanfang, ohne Formatzeichen, Apostrophe und Diakritika; „national heroes“ nicht bei „Museum“ im Titel
 
 # Ziel-Kategorien (Slug in WordPress) + Stichwörter für die Zuordnung. Die KI wählt final eine davon.
 [categories.news]

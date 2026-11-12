@@ -40,6 +40,15 @@ class RateLimited(Exception):
     """HTTP 429 – Quelle eine Weile in Ruhe lassen."""
 
 
+class Teilausfall(Exception):
+    """Quelle lieferte nur einen Teil (z. B. ein Kino ohne Antwort): Meldungen gelten, die Quelle zählt nicht als
+    vollständig gelaufen."""
+
+    def __init__(self, items: list, grund: str):
+        super().__init__(grund)
+        self.items = items
+
+
 @dataclass
 class NewsItem:
     title: str
@@ -61,6 +70,10 @@ class NewsItem:
     # Echtes Veröffentlichungsdatum laut Quelle (None = unbekannt). Bei Termin-Quellen ist `published` der
     # Abrufzeitpunkt (Sortierung); erst dieses Feld zeigt, dass ein „neuer“ Treffer ein alter Bericht aus dem Archiv ist.
     source_published: datetime | None = None
+    # Kino: Namen der Quellen, die in diesem Scan erfolgreich gelaufen sind (None = unbekannt). Nur sie dürfen einen
+    # Spielort aus einem offenen Kino-Entwurf abziehen (kino_providers.vereinige_fakten).
+    quellen_gelaufen: frozenset[str] | None = None
+    quellen_aktiv: frozenset[str] | None = None  # eingeschaltete Quellen; Spielorte abgeschalteter fallen weg
 
     @property
     def uid(self) -> str:
@@ -293,6 +306,62 @@ def fetch_wp_json(source: Source, settings: Settings) -> list[NewsItem]:
     return items
 
 
+def _kalender_zeit(roh) -> datetime | None:
+    """„2026-05-31 10:00:00“ oder ISO „2026-05-31T10:00:00“ → naive Ortszeit; sonst None (mit Rohwert im Log)."""
+    roh = str(roh or "").strip()
+    if not roh:
+        return None
+    try:
+        return datetime.strptime(roh[:16], "%Y-%m-%d %H:%M")
+    except ValueError:
+        pass
+    try:
+        return datetime.fromisoformat(roh).replace(tzinfo=None)
+    except ValueError:
+        log.debug("Kalender: Datum nicht lesbar: %r", roh)
+        return None
+
+
+@fetcher("tribe_events")
+def fetch_tribe_events(source: Source, settings: Settings, now: datetime | None = None) -> list[NewsItem]:
+    """Kalender des WordPress-Plugins „The Events Calendar“ (/wp-json/tribe/events/v1/events): ein Termin je
+    Eintrag, nur ab heute (in der Anfrage und noch einmal beim Lesen), ohne Gedenktermine aus [blocklist] termine."""
+    from .dates import TZ
+    from .filtering import gedenktermin  # zirkulären Import vermeiden
+
+    now = now or datetime.now(timezone.utc)
+    heute = now.astimezone(TZ).date()
+    params = {"per_page": 30, **source.params, "start_date": heute.isoformat()}
+    resp = _get(f"{source.url.rstrip('/')}/wp-json/tribe/events/v1/events", params=params)
+    items = []
+    for ev in resp.json().get("events") or []:
+        title, url = clean_text(ev.get("title") or ""), ev.get("url") or ""
+        start = _kalender_zeit(ev.get("start_date"))
+        if start is None:
+            continue
+        ende = _kalender_zeit(ev.get("end_date")) or start
+        # Ende um Mitternacht gehört zum Vortag („bis 23.5. 00:00“ = bis 22.5.)
+        letzter_tag = (ende - timedelta(seconds=1)).date() if ende > start else start.date()
+        if not title or not url or letzter_tag < heute:  # laufende mehrtägige Termine bleiben
+            continue
+        venue = ev.get("venue") if isinstance(ev.get("venue"), dict) else {}
+        ort = ", ".join(v for v in (venue.get("venue"), venue.get("address"), venue.get("city")) if v)
+        wann = start.strftime("%d.%m.%Y") + ("" if ev.get("all_day") else start.strftime(", %H:%M Uhr"))
+        if letzter_tag > start.date():
+            wann += letzter_tag.strftime(" bis %d.%m.%Y")
+        summary = " · ".join(p for p in (wann, clean_text(ev.get("description") or "")[:900], ort) if p)
+        item = NewsItem(
+            title=title, url=url, summary=summary[:1200], source=source.name, published=now,
+            language=source.language, kind="event", ort=venue.get("city") or "",
+            facts={"event_datum": start.date().isoformat(), "event_ort": ort, "event_ende": letzter_tag.isoformat()},
+        )
+        if gedenktermin(item, settings):  # Gedenken mit LTTE-Bezug ([blocklist] termine): nie automatisch
+            log.info("%s: Gedenktermin ausgelassen: %s", source.name, title)
+            continue
+        items.append(item)
+    return items
+
+
 # ---- HTML-Seiten mit Selektoren -----------------------------------------------------
 
 def _select_text(node, selector: str) -> str:
@@ -393,7 +462,7 @@ def _due(source: Source, store, now: datetime, paused: set[str]) -> bool:
     if source.name in paused:
         return False
     if source.interval_minutes and store is not None:
-        last = store.source_last_ok(source.name)
+        last = store.source_last_run(source.name)
         if last and now - last < timedelta(minutes=source.interval_minutes):
             return False
     return True
@@ -417,36 +486,49 @@ def fetch_all(settings: Settings, store=None) -> list[NewsItem]:
         except Exception:  # noqa: BLE001 - z. B. Store schon geschlossen, Lauf lief weiter
             log.debug("Quellen-Status nicht gespeichert", exc_info=True)
 
-    def safe(source: Source) -> list[NewsItem]:
+    def safe(source: Source) -> tuple[list[NewsItem], bool]:
+        """Meldungen der Quelle und ob sie vollständig gelaufen ist."""
         try:
             items = fetch_source(source, settings)
             log.info("%-34s %3d Meldungen", source.name, len(items))
             record(store.source_ok, source.name, len(items))
-            return items
+            return items, True
+        except Teilausfall as teil:
+            log.warning("Quelle nur teilweise: %s (%s)", source.name, teil)
+            record(store.source_partial, source.name, f"Teilausfall: {teil}")
+            return teil.items, False
         except RateLimited as exc:
             log.warning("Quelle pausiert 30 Min. (429): %s", source.name)
             record(store.source_failed, source.name, f"429 {exc}", pause_minutes=30)
         except Exception as exc:  # noqa: BLE001 - Quelle ausfallen lassen, Rest weiterlaufen lassen
             log.warning("Quelle fehlgeschlagen: %s (%s)", source.name, exc)
             record(store.source_failed, source.name, str(exc))
-        return []
+        return [], False
 
     items: list[NewsItem] = []
+    gelaufen: set[str] = set()
     if not due:
         return items
     pool = ThreadPoolExecutor(max_workers=8)
     futures = {pool.submit(safe, s): s for s in due}
     try:
         for fut in as_completed(futures, timeout=settings.fetch_seconds):
-            items += fut.result()
+            ergebnis, vollstaendig = fut.result()
+            if vollstaendig:
+                gelaufen.add(futures[fut].name)
+            items += ergebnis
     except TimeoutError:
         late = [futures[f].name for f in futures if not f.done()]
         log.warning("Sammel-Zeitbudget (%ss) erreicht, ausstehend: %s", settings.fetch_seconds, ", ".join(late))
     finally:
         pool.shutdown(wait=False, cancel_futures=True)
     record(store.http_cache_save, dict(CONDITIONAL.changed))
-    items = [it for it in items if it.title and it.url]
-    return merge_kino_items(items)
+    items = merge_kino_items([it for it in items if it.title and it.url])
+    for it in items:
+        if it.kind == "kino":
+            it.quellen_gelaufen = frozenset(gelaufen)
+            it.quellen_aktiv = frozenset(s.name for s in settings.sources)
+    return items
 
 
 def fetch_article_text(url: str, limit: int = 6000) -> str:

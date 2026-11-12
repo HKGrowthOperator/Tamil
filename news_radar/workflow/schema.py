@@ -154,7 +154,9 @@ V6 = [
     "CREATE TRIGGER IF NOT EXISTS drafts_stand AFTER UPDATE OF " + ", ".join(DRAFT_INHALT) + " ON drafts "
     "BEGIN UPDATE drafts SET stand = stand + 1 WHERE id = NEW.id; END",
 ]
-MIGRATIONS: dict[int, list[str]] = {2: V2, 3: V3, 4: V4, 5: V5, 6: V6}
+# Letzter Abruf mit Teilausfall: zählt für den Takt (interval_minutes) wie last_ok, ohne als Erfolg zu gelten
+V7 = ["ALTER TABLE source_status ADD COLUMN last_try TEXT"]
+MIGRATIONS: dict[int, list[str]] = {2: V2, 3: V3, 4: V4, 5: V5, 6: V6, 7: V7}
 LATEST = max(MIGRATIONS)
 
 

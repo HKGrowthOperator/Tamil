@@ -16,6 +16,7 @@ from . import dates, filtering, notify, schalter, sources
 from .config import Settings
 from .bilder import beitragsbild
 from .images import save_pair
+from .kino_providers import vereinige_fakten
 from .store import Store
 from .wordpress import slugify
 from .writer import Draft, Writer, split_source_suffix
@@ -166,17 +167,18 @@ def refresh_kino(items: list[sources.NewsItem], store: Store, seen: set[str]) ->
         existing = store.draft_by_uid(item.uid)
         if not existing:
             continue
+        facts, fingerprint = vereinige_fakten(existing["fakten"], item)
         old = {k.get("kino") for k in existing["fakten"].get("kinos", [])}
-        new = {k.get("kino") for k in (item.facts or {}).get("kinos", [])}
+        new = {k.get("kino") for k in facts.get("kinos", [])}
         added, removed = sorted(new - old), sorted(old - new)
         parts = [f"+{k}" for k in added] + [f"−{k}" for k in removed]
         note = f"Aktualisiert {datetime.now(timezone.utc):%d.%m.}: " + (", ".join(parts) if parts else "Termine aktualisiert")
-        if store.update_kino_facts(item.uid, item.facts or {}, item.fingerprint, note):
+        if store.update_kino_facts(item.uid, facts, fingerprint, note, alt_fingerprint=existing.get("fingerprint")):
             store.event("kino_aktualisiert", id=existing["id"], titel=existing["titel"], hinweis=note)
             results.append(Result(existing["titel"], "aktualisiert", existing["kategorie"], note=note, draft_id=existing["id"]))
         else:
             jetzt = store.get_draft(existing["id"]) or existing  # Status nach dem (bedingten) Update neu lesen
-            if jetzt["status"] not in ("neu", "bearbeitet", "zurueckgestellt") and jetzt.get("fingerprint") != item.fingerprint:
+            if jetzt["status"] not in ("neu", "bearbeitet", "zurueckgestellt") and jetzt.get("fingerprint") != fingerprint:
                 store.event("kino_update_ignoriert", id=jetzt["id"], titel=jetzt["titel"], status=jetzt["status"])
     return results
 
