@@ -62,6 +62,7 @@ class Regions:
     ausland: list[str] = field(default_factory=list)  # Orte außerhalb von DACH (gegen das Land der Quelle)
     herkunft: list[str] = field(default_factory=list)  # Länder/Regionen (Sri Lanka, Tamil Nadu): nur für Nachrichten
     dach_hinweise: list[str] = field(default_factory=list)  # German, Schweizer, ஜேர்மனி …: nur gegen die Ausland-Regel
+    dach_hinweise_wort: list[str] = field(default_factory=list)  # wie dach_hinweise, nur als ganzes Wort (Sion)
 
 
 # Bildquellen: fest gesperrt, auch wenn jemand sie ins Register schreibt (Host selbst oder eine Subdomain davon)
@@ -267,6 +268,7 @@ def load_settings(sources_file: Path = ROOT / "sources.toml") -> Settings:
         ausland=list(reg.get("ausland", [])),
         herkunft=list(reg.get("herkunft", [])),
         dach_hinweise=list(reg.get("dach_hinweise", [])),
+        dach_hinweise_wort=list(reg.get("dach_hinweise_wort", [])),
     )
     categories = [
         Category(slug=slug, label=c["label"], hints=[h.lower() for h in c.get("hints", [])])

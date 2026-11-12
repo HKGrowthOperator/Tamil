@@ -667,7 +667,12 @@ dach_hinweise = ["deutsch", "german", "österreich", "oesterreich", "austria", "
                  "ஜேர்மன்", "ஜெர்மன்", "யேர்மன்", "சுவிஸ்", "சுவிற்சர்லாந்", "சுவிட்சர்லாந்", "ஆஸ்திரிய",
                  "ஒஸ்ரிய", "ஒஸ்திரிய",
                  # Genf (UNHRC, Kundgebungen der Diaspora) – nicht in [regions.staedte], damit das Ranking gleich bleibt
-                 "genf", "geneva", "genève", "geneve", "ஜெனீவா"]
+                 "genf", "geneva", "genève", "geneve", "ஜெனீவா",
+                 # Romandie mit großer tamilischer Community (Freiburg im Breisgau ist ohnehin DACH)
+                 "lausanne", "fribourg", "freiburg", "neuchâtel", "neuchatel", "yverdon", "bienne", "vevey",
+                 "montreux", "renens", "romandie", "suisse"]
+# Wie dach_hinweise, aber nur als ganzes Wort: „sion“ als Wortanfang träfe „Sionist“ und „Sionkowski“.
+dach_hinweise_wort = ["sion"]
 
 # ---- Bezug zur tamilischen Community (Quellen mit bezug_noetig = true) ----
 # Mindestens einer dieser Begriffe muss in Titel oder Text stehen. Keine Ortsnamen: „சுவிஸ்“, „Zürich“ oder

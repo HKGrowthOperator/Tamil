@@ -375,3 +375,19 @@ def test_fund_1211_tamile_einzahl_ist_deutsch(settings):
                   "Abgewiesener Tamile in Sri Lanka verhaftet  20 Minuten", source="Google News DACH · 20 Minuten")
     picked, zaehler = _einzeln([tamile], settings)
     assert [p.title for p in picked] == [tamile.title] and zaehler["ausland"] == 0
+
+
+def test_fund_1211_romandie_ist_dach_hinweis(settings):
+    """Dritte Prüfung 12.11.: Orte der Romandie mit großer tamilischer Community zählen für die Ausland-Regel als DACH
+    (nicht im Ranking). „Sion“ nur als ganzes Wort: als Wortanfang träfe es „Sionist“ und „Sionkowski“."""
+    bleiben = [item("Tamil association in Lausanne celebrates Pongal", "Tamil families from Sri Lanka gathered",
+                    source="Tamil Guardian"),
+               item("Tamil temple opens in Sion", "Tamils from Sri Lanka built the temple in Sion",
+                    source="Tamil Guardian"),
+               item("Tamils of Suisse romande protest Sri Lanka visit", "Tamils from Fribourg and Neuchâtel joined",
+                    source="Tamil Guardian")]
+    picked, zaehler = _einzeln(bleiben, settings)
+    assert [p.title for p in picked] == [i.title for i in bleiben] and zaehler["ausland"] == 0
+    for t in ("Sionist groups protest Sri Lanka visit", "Sionkowski urges Sri Lanka to act"):
+        raus = item(t, t, source="Tamil Guardian")
+        assert filtering.ohne_dach_grund(raus, settings, None) == "ausland", t

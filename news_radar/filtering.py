@@ -123,7 +123,7 @@ def dach_hinweis(text: str, regions: Regions) -> bool:
                 return True
         elif re.search(rf"(?<![\w]){re.escape(t)}", text, re.I):  # Wortanfang: deutsch → deutsche, Deutschland
             return True
-    return False
+    return any(_contains(text, t) for t in regions.dach_hinweise_wort)  # ganzes Wort: „Sion“, nicht „Sionist“
 
 
 def _ohne_verlag(item: NewsItem, source: Source | None) -> str:
