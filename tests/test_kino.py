@@ -74,6 +74,38 @@ def test_cinestar_filters_tamil_and_aggregates(settings):
     assert len(week42.facts["kinos"]) == 3 and week42.facts["kinos"][0]["stadt"] <= week42.facts["kinos"][1]["stadt"]
 
 
+def test_cinestar_teilausfall_eines_hauses_meldet_die_quelle_als_teilausfall(settings):
+    """Prüfung 11.11.2026: Fällt ein Haus aus, darf die Quelle nicht als „gelaufen“ gelten – sonst verlieren offene
+    Entwürfe die Spielorte dieses Hauses. Die übrigen Häuser liefern trotzdem."""
+    class Http(FakeHttp):
+        def get(self, url, **kw):
+            if "/api/cinema/30/" in url:
+                raise ConnectionError("Haus 30 antwortet nicht")
+            return super().get(url, **kw)
+
+    http = Http({"/api/cinema/12/show/": "cinestar_shows_12.json", "/api/cinema/15/show/": "cinestar_shows_15.json",
+                 "/api/cinema/": "cinestar_cinemas.json"})
+    src = Source(name="CineStar", type="kino", provider="cinestar", params={"cinemas": [12, 15, 30]})
+    with pytest.raises(kp.Teilausfall) as fehler:
+        kp.fetch_cinestar(src, settings, http=http)
+    assert len(fehler.value.shows) == 2 and "Karlsruhe" in str(fehler.value)
+
+
+def test_kinoheld_an_der_obergrenze_ist_ein_teilausfall(settings):
+    """Bei genau so vielen Treffern wie angefragt ist die Liste womöglich abgeschnitten → nichts abziehen."""
+    daten = json.loads((FIX / "kinoheld_search.json").read_text(encoding="utf-8"))
+    treffer = [r for r in daten["data"]["search"] if r.get("__typename") == "Show"]
+    daten["data"]["search"] = (treffer * 100)[:100]
+
+    class Http(FakeHttp):
+        def post(self, url, **kw):
+            return self._resp(daten)
+
+    with pytest.raises(kp.Teilausfall) as fehler:
+        kp.fetch_kinoheld(Source(name="kinoheld", type="kino", provider="kinoheld"), settings, http=Http({}))
+    assert fehler.value.shows
+
+
 def test_kinoheld_parses_shows(settings):
     http = FakeHttp({"graphql": "kinoheld_search.json"})
     shows = kp.fetch_kinoheld(Source(name="kinoheld", type="kino", provider="kinoheld"), settings, http=http)

@@ -40,6 +40,15 @@ class RateLimited(Exception):
     """HTTP 429 – Quelle eine Weile in Ruhe lassen."""
 
 
+class Teilausfall(Exception):
+    """Quelle lieferte nur einen Teil (z. B. ein Kino ohne Antwort): Meldungen gelten, die Quelle zählt nicht als
+    vollständig gelaufen."""
+
+    def __init__(self, items: list, grund: str):
+        super().__init__(grund)
+        self.items = items
+
+
 @dataclass
 class NewsItem:
     title: str
@@ -456,20 +465,24 @@ def fetch_all(settings: Settings, store=None) -> list[NewsItem]:
         except Exception:  # noqa: BLE001 - z. B. Store schon geschlossen, Lauf lief weiter
             log.debug("Quellen-Status nicht gespeichert", exc_info=True)
 
-    def safe(source: Source) -> list[NewsItem] | None:
-        """Meldungen der Quelle; None, wenn sie ausgefallen ist."""
+    def safe(source: Source) -> tuple[list[NewsItem], bool]:
+        """Meldungen der Quelle und ob sie vollständig gelaufen ist."""
         try:
             items = fetch_source(source, settings)
             log.info("%-34s %3d Meldungen", source.name, len(items))
             record(store.source_ok, source.name, len(items))
-            return items
+            return items, True
+        except Teilausfall as teil:
+            log.warning("Quelle nur teilweise: %s (%s)", source.name, teil)
+            record(store.source_failed, source.name, f"Teilausfall: {teil}")
+            return teil.items, False
         except RateLimited as exc:
             log.warning("Quelle pausiert 30 Min. (429): %s", source.name)
             record(store.source_failed, source.name, f"429 {exc}", pause_minutes=30)
         except Exception as exc:  # noqa: BLE001 - Quelle ausfallen lassen, Rest weiterlaufen lassen
             log.warning("Quelle fehlgeschlagen: %s (%s)", source.name, exc)
             record(store.source_failed, source.name, str(exc))
-        return None
+        return [], False
 
     items: list[NewsItem] = []
     gelaufen: set[str] = set()
@@ -479,10 +492,10 @@ def fetch_all(settings: Settings, store=None) -> list[NewsItem]:
     futures = {pool.submit(safe, s): s for s in due}
     try:
         for fut in as_completed(futures, timeout=settings.fetch_seconds):
-            ergebnis = fut.result()
-            if ergebnis is not None:
+            ergebnis, vollstaendig = fut.result()
+            if vollstaendig:
                 gelaufen.add(futures[fut].name)
-                items += ergebnis
+            items += ergebnis
     except TimeoutError:
         late = [futures[f].name for f in futures if not f.done()]
         log.warning("Sammel-Zeitbudget (%ss) erreicht, ausstehend: %s", settings.fetch_seconds, ", ".join(late))

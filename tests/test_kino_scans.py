@@ -94,6 +94,24 @@ def test_spielort_bleibt_bis_die_eigene_quelle_ihn_nicht_mehr_meldet(settings, m
         assert "−Atelier" in store.draft_by_uid(item.uid)["hinweise"][-1]
 
 
+def test_teilausfall_liefert_neue_spielorte_zieht_aber_nichts_ab(settings, monkeypatch):
+    """Ein Haus der Quelle fiel aus (kp.Teilausfall): neue Spielorte kommen dazu, bisherige der Quelle bleiben."""
+    programm = Programm([kp.Show("Jailer 2", "CineStar Bremen", "Bremen", "DE", start=_termin(19))])
+    monkeypatch.setitem(kp.PROVIDERS, "cinestar", programm)
+    settings.sources = [Source(name="CineStar", type="kino", provider="cinestar")]
+    with Store(settings.db_path) as store:
+        [item] = sources.fetch_all(settings, store)
+        store.insert_draft(_row(item.uid, item.title, typ="kino_termine", fakten=item.facts,
+                                fingerprint=item.fingerprint, hinweise=[]))
+        programm.fehler = kp.Teilausfall([kp.Show("Jailer 2", "CineStar Mainz", "Mainz", "DE", start=_termin(20))],
+                                         "CineStar Bremen")
+        [neu] = _scan(settings, store)
+        assert neu.quellen_gelaufen == frozenset()  # Quelle gilt nicht als gelaufen
+        assert _kinos(store, item.uid) == ["CineStar Bremen", "CineStar Mainz"]
+        status = {s["name"]: s for s in store.source_status_all()}
+        assert "Teilausfall" in (status["CineStar"]["error_msg"] or "")
+
+
 def test_kino_traegt_seine_quelle():
     [item] = kp.aggregate_shows([kp.Show("Jailer 2", "Atelier", "Düsseldorf", "DE", start=_termin(19))],
                                 quelle="Filmkunstkinos")

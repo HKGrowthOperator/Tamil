@@ -29,6 +29,15 @@ _VERSION_RE = re.compile(
 )
 
 
+class Teilausfall(Exception):
+    """Der Anbieter hat geliefert, aber nicht vollständig (ein Haus ohne Antwort, Trefferliste an der Obergrenze).
+    Die Vorstellungen gelten, die Quelle zählt aber nicht als „gelaufen“: sie zieht keine Spielorte ab."""
+
+    def __init__(self, shows: list, grund: str):
+        super().__init__(grund)
+        self.shows = shows
+
+
 @dataclass
 class Show:
     film: str
@@ -113,12 +122,14 @@ def fetch_cinestar(source: Source, settings: Settings, http=requests) -> list[Sh
     if wanted:
         cinemas = [c for c in cinemas if c["id"] in wanted]
     shows: list[Show] = []
+    ausgefallen: list[str] = []
 
     def one(cinema: dict) -> list[Show]:
         try:
             data = http.get(f"{base}/api/cinema/{cinema['id']}/show/", headers=headers, timeout=6).json()
         except Exception as exc:  # noqa: BLE001 - ein Kino fällt aus, die anderen laufen weiter
             log.debug("CineStar %s: %s", cinema.get("name"), exc)
+            ausgefallen.append(str(cinema.get("name") or cinema.get("id")))
             return []
         out = []
         for s in data:
@@ -139,11 +150,14 @@ def fetch_cinestar(source: Source, settings: Settings, http=requests) -> list[Sh
     with ThreadPoolExecutor(max_workers=6) as pool:
         for batch in pool.map(one, cinemas):
             shows += batch
+    if ausgefallen:
+        raise Teilausfall(shows, "ohne Antwort: " + ", ".join(sorted(ausgefallen)))
     return shows
 
 
-KINOHELD_QUERY = """{ search(query: "tamil", limit: 100) { __typename ... on Show { id name beginning
-  cinema { id name city { name } } movie { id title } } } }"""
+KINOHELD_LIMIT = 100
+KINOHELD_QUERY = """{ search(query: "tamil", limit: %d) { __typename ... on Show { id name beginning
+  cinema { id name city { name } } movie { id title } } } }""" % KINOHELD_LIMIT
 
 
 def fetch_kinoheld(source: Source, settings: Settings, http=requests) -> list[Show]:
@@ -151,7 +165,8 @@ def fetch_kinoheld(source: Source, settings: Settings, http=requests) -> list[Sh
     resp = http.post(url, json={"query": KINOHELD_QUERY}, headers={"User-Agent": USER_AGENT}, timeout=15)
     resp.raise_for_status()
     shows = []
-    for r in resp.json().get("data", {}).get("search", []) or []:
+    treffer = resp.json().get("data", {}).get("search", []) or []
+    for r in treffer:
         if r.get("__typename") != "Show" or not is_tamil(r.get("name")):
             continue
         try:
@@ -161,6 +176,8 @@ def fetch_kinoheld(source: Source, settings: Settings, http=requests) -> list[Sh
         cinema = r.get("cinema") or {}
         shows.append(Show(clean_film_title(r["name"]), cinema.get("name", "?"), (cinema.get("city") or {}).get("name", ""),
                           "DE", start=start, url="https://www.kinoheld.de/", provider="kinoheld"))
+    if len(treffer) >= KINOHELD_LIMIT:  # Liste womöglich abgeschnitten → nichts abziehen
+        raise Teilausfall(shows, f"{len(treffer)} Treffer = Obergrenze")
     return shows
 
 
@@ -339,4 +356,10 @@ def fetch_kino(source: Source, settings: Settings) -> list[NewsItem]:
     provider = PROVIDERS.get(source.provider)
     if provider is None:
         raise ValueError(f"Unbekannter Kino-Anbieter: {source.provider}")
-    return aggregate_shows(provider(source, settings), quelle=source.name)
+    try:
+        shows = provider(source, settings)
+    except Teilausfall as teil:
+        from .sources import Teilausfall as QuellenTeilausfall
+
+        raise QuellenTeilausfall(aggregate_shows(teil.shows, quelle=source.name), str(teil)) from teil
+    return aggregate_shows(shows, quelle=source.name)
