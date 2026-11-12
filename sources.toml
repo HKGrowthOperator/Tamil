@@ -665,7 +665,9 @@ herkunft = ["Sri Lanka", "Sri Lankan", "இலங்கை", "Tamil Nadu", "த�
 # ஆஸ்திரேலியா (Australien), „austria“ nicht Australia.
 dach_hinweise = ["deutsch", "german", "österreich", "oesterreich", "austria", "schweiz", "swiss", "switzerland",
                  "ஜேர்மன்", "ஜெர்மன்", "யேர்மன்", "சுவிஸ்", "சுவிற்சர்லாந்", "சுவிட்சர்லாந்", "ஆஸ்திரிய",
-                 "ஒஸ்ரிய", "ஒஸ்திரிய"]
+                 "ஒஸ்ரிய", "ஒஸ்திரிய",
+                 # Genf (UNHRC, Kundgebungen der Diaspora) – nicht in [regions.staedte], damit das Ranking gleich bleibt
+                 "genf", "geneva", "genève", "geneve", "ஜெனீவா"]
 
 # ---- Bezug zur tamilischen Community (Quellen mit bezug_noetig = true) ----
 # Mindestens einer dieser Begriffe muss in Titel oder Text stehen. Keine Ortsnamen: „சுவிஸ்“, „Zürich“ oder

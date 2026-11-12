@@ -335,3 +335,15 @@ def test_fund_1211_grauzone_wendet_ausland_regel_an(settings):
     picked, zaehler = _einzeln(grau, settings)
     assert picked == [] and zaehler["ausland"] == 2
     assert relevance.grauzone(_fund_items("grauzone_raus"), settings, set(), set(), NOW) == []
+
+
+def test_fund_1211_genf_ist_dach_hinweis(settings):
+    """Zweite Prüfung 12.11.: Genf steht nicht in [regions.staedte] (Ranking), ist für die Ausland-Regel aber DACH –
+    UNHRC-Sitzungen zu Sri Lanka mit Kundgebungen der Diaspora."""
+    genf = [item("Tamils rally in Geneva as UNHRC debates Sri Lanka",
+                 "Hundreds of Tamils gathered at the Broken Chair in Geneva", source="Tamil Guardian"),
+            item("Volker Turk urges Sri Lanka to act on accountability",
+                 "The UN rights chief told the Human Rights Council in Geneva that Sri Lanka must act",
+                 source="Tamil Guardian")]
+    picked, zaehler = _einzeln(genf, settings)
+    assert [p.title for p in picked] == [i.title for i in genf] and zaehler["ausland"] == 0
