@@ -38,6 +38,7 @@ class Source:
     country: str = ""  # DE | CH | AT, wenn die Quelle eindeutig ein Land abdeckt
     min_score: int | None = None  # Überschreibt die Stichwort-Schwelle (0 = vertrauenswürdige Quelle)
     bezug_noetig: bool = False  # jede Meldung braucht einen Begriff aus [bezug] (Ortsnamen zählen nicht)
+    kollywood: bool = False  # Kollywood-Quelle: ihre Nachrichten gelten für die Ausland-Regel als Kino/Entertainment
     max_items: int = 3  # höchstens so viele Treffer je Lauf
     interval_minutes: int = 0  # 0 = bei jedem Lauf abfragen
     # Register (Blueprint): Status, Rechte, Betreiber – `quellen pruefen` schreibt die Messwerte dazu
@@ -59,6 +60,9 @@ class Regions:
     aliases: dict[str, list[str]] = field(default_factory=dict)  # Stadt -> andere Schreibweisen
     exakt: set[str] = field(default_factory=set)  # nur mit Großbuchstabe matchen (Essen, Hamm, Bern)
     ausland: list[str] = field(default_factory=list)  # Orte außerhalb von DACH (gegen das Land der Quelle)
+    herkunft: list[str] = field(default_factory=list)  # Länder/Regionen (Sri Lanka, Tamil Nadu): nur für Nachrichten
+    dach_hinweise: list[str] = field(default_factory=list)  # German, Schweizer, ஜேர்மனி …: nur gegen die Ausland-Regel
+    dach_hinweise_wort: list[str] = field(default_factory=list)  # wie dach_hinweise, nur als ganzes Wort (Sion)
 
 
 # Bildquellen: fest gesperrt, auch wenn jemand sie ins Register schreibt (Host selbst oder eine Subdomain davon)
@@ -141,6 +145,8 @@ class Settings:
     categories: list[Category]
     regions: Regions = field(default_factory=Regions)
     bezug: list[str] = field(default_factory=list)  # Begriffe mit Bezug zur tamilischen Community ([bezug] terms)
+    fremdkino: list[str] = field(default_factory=list)  # anderes indisches Kino (Telugu, Bollywood) ([bezug] fremdkino)
+    kollywood: list[str] = field(default_factory=list)  # Kollywood und Stars ([bezug] kollywood): Kino für die Ausland-Regel
     blocklist_termine: list[str] = field(default_factory=list)  # Termine, die nie automatisch zur Story werden
     alle_quellen: list[Source] = field(default_factory=list)  # inkl. abgeschalteter (enabled = false)
     bildquellen: list[Bildquelle] = field(default_factory=list)  # Register für den Weg „Bild mit Nachweis“
@@ -260,6 +266,9 @@ def load_settings(sources_file: Path = ROOT / "sources.toml") -> Settings:
         aliases={k: list(v) for k, v in reg.get("aliases", {}).items()},
         exakt=set(reg.get("exakt", [])),
         ausland=list(reg.get("ausland", [])),
+        herkunft=list(reg.get("herkunft", [])),
+        dach_hinweise=list(reg.get("dach_hinweise", [])),
+        dach_hinweise_wort=list(reg.get("dach_hinweise_wort", [])),
     )
     categories = [
         Category(slug=slug, label=c["label"], hints=[h.lower() for h in c.get("hints", [])])
@@ -275,6 +284,8 @@ def load_settings(sources_file: Path = ROOT / "sources.toml") -> Settings:
         categories=categories,
         regions=regions,
         bezug=[t.lower() for t in raw.get("bezug", {}).get("terms", [])],
+        fremdkino=[t.lower() for t in raw.get("bezug", {}).get("fremdkino", [])],
+        kollywood=[t.lower() for t in raw.get("bezug", {}).get("kollywood", [])],
         alle_quellen=alle_quellen,
         bildquellen=[Bildquelle(**b) for b in raw.get("bildquellen", [])],
         anthropic_model=env("RADAR_MODEL", "claude-opus-5-5"),

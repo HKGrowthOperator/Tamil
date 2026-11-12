@@ -302,6 +302,7 @@ type = "rss"
 url = "https://news.google.com/rss/search?q=(kollywood+OR+%22tamil+cinema%22)+when:2d&hl=en-IN&gl=IN&ceid=IN:en"
 language = "en"
 max_items = 2
+kollywood = true  # Ausland-Regel: Treffer gelten als Kino/Entertainment ([bezug] kollywood, Entscheidung 12.11.)
 
 [[source]]
 name = "The Hindu · Tamil Nadu"
@@ -652,6 +653,26 @@ ausland = ["Kanada", "Canada", "Canadian", "கனடா", "கனடிய", "T
            # der Diaspora und würden echte Schweizer Termine ohne bekannte Stadt still herauswerfen.
            "Kilinochchi", "கிளிநொச்சி", "யாழ்.", "Kataragama", "கதிர்காமம்", "Mullaitivu", "முல்லைத்தீவு",
            "Batticaloa", "மட்டக்களப்பு", "Trincomalee", "திருகோணமலை", "Vavuniya", "வவுனியா", "Mannar", "மன்னார்"]
+# Länder und Regionen der Herkunft – nur für Nachrichten aus Quellen ohne Land (Google News, Tamil Guardian, The Hindu,
+# Lankasri): ohne DACH-Bezug fallen sie heraus (Fund 12.11.: Wirtschaft in Tamil Nadu, Marine in Sri Lanka als Story).
+# Termine und DACH-Quellen bleiben unberührt (Entscheidung 09.11.), Kino und Entertainment ebenso (Rubrik Kollywood).
+herkunft = ["Sri Lanka", "Sri Lankan", "இலங்கை", "Tamil Nadu", "தமிழ்நாடு", "தமிழகம்", "Indien", "India", "Indian",
+            "இந்தியா"]
+# Hinweise auf DACH nur gegen diese Regel (nicht im Ranking, dafür [regions.laender]): Nennt eine Nachricht einen davon,
+# fällt sie nicht als „ausland“ oder „fremdes_kino“ heraus (Prüfung 12.11.: „German court halts deportation of Tamil to
+# Sri Lanka“, „ஜேர்மனியில் இலங்கை தமிழர் கைது“). Lateinisch am Wortanfang („deutsch“ trifft deutsche, Deutschland;
+# „schweiz“ trifft Schweizer), Tamil-Schrift als Teilstring („ஜேர்மன்“ trifft ஜேர்மனியில்). „ஆஸ்திரிய“ trifft nicht
+# ஆஸ்திரேலியா (Australien), „austria“ nicht Australia.
+dach_hinweise = ["deutsch", "german", "österreich", "oesterreich", "austria", "schweiz", "swiss", "switzerland",
+                 "ஜேர்மன்", "ஜெர்மன்", "யேர்மன்", "சுவிஸ்", "சுவிற்சர்லாந்", "சுவிட்சர்லாந்", "ஆஸ்திரிய",
+                 "ஒஸ்ரிய", "ஒஸ்திரிய",
+                 # Genf (UNHRC, Kundgebungen der Diaspora) – nicht in [regions.staedte], damit das Ranking gleich bleibt
+                 "genf", "geneva", "genève", "geneve", "ஜெனீவா",
+                 # Romandie mit großer tamilischer Community (Freiburg im Breisgau ist ohnehin DACH)
+                 "lausanne", "fribourg", "freiburg", "neuchâtel", "neuchatel", "yverdon", "bienne", "vevey",
+                 "montreux", "renens", "romandie", "suisse"]
+# Wie dach_hinweise, aber nur als ganzes Wort: „sion“ als Wortanfang träfe „Sionist“ und „Sionkowski“.
+dach_hinweise_wort = ["sion"]
 
 # ---- Bezug zur tamilischen Community (Quellen mit bezug_noetig = true) ----
 # Mindestens einer dieser Begriffe muss in Titel oder Text stehen. Keine Ortsnamen: „சுவிஸ்“, „Zürich“ oder
@@ -662,6 +683,16 @@ terms = ["tamil", "tamilisch", "tamilen", "tamilin", "eelam", "kollywood", "raji
          "ilaiyaraaja", "pongal", "deepavali", "diwali", "thaipusam", "navaratri", "bharatanatyam", "kamadchi",
          "murugan", "hindu", "தமிழ்", "ஈழ", "இந்து", "கோவில்", "கோயில்", "அம்மன்", "முருகன்", "பொங்கல்",
          "தீபாவளி", "நவராத்திரி", "தைப்பூசம்", "பரதநாட்டியம்", "அரங்கேற்றம்"]
+# Anderes indisches Kino: Nennt eine Nachricht ohne DACH-Bezug mehr dieser Begriffe als Begriffe aus terms, fällt sie
+# heraus (Fund 12.11.: Tollywood-Kassenbilanz, die Kollywood nur zum Vergleich nennt).
+fremdkino = ["telugu", "tollywood", "bollywood", "malayalam", "mollywood", "kannada", "sandalwood"]
+# Kollywood und Stars (aus der vorhandenen Starliste in [keywords] und [categories]): Nennt eine Nachricht ohne
+# DACH-Bezug einen davon, gilt sie für die Ausland-Regel als Kino/Entertainment und bleibt (Entscheidung 12.11.:
+# „Rajinikanth meets Tamil Nadu Chief Minister“, „Ilaiyaraaja honoured by India“). Ebenso alles aus einer Quelle mit
+# kollywood = true. Nur ganze Wörter („vijay“ trifft nicht „Vijayan“), Ajith nur als „ajith kumar“: „Ajith“ ist auch
+# ein häufiger Vorname in Sri Lanka (Ajith Rohana, Ajith Nivard Cabraal; zweite Prüfung 12.11.).
+kollywood = ["kollywood", "tamil cinema", "rajinikanth", "vijay", "ajith kumar", "suriya", "anirudh", "a.r. rahman",
+             "ilaiyaraaja"]
 
 # ---- Stichwort-Gewichte (klein geschrieben; Treffer im Titel zählen doppelt) ----
 [keywords]

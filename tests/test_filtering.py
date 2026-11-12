@@ -243,3 +243,151 @@ def test_bezug_noetig_nur_fuer_die_markierte_quelle(settings):
     kino.published = FUND - timedelta(hours=1)
     assert filtering.select([kino], settings, set(), [], now=FUND) == []
     assert relevance.grauzone([kino], settings, set(), set(), FUND) == []
+
+
+# ---- Live-Fund 12.11.2026: Meldungen ohne DACH-Bezug wurden Storys (89, 91, 92) ----
+
+FUND_1211 = json.loads((Path(__file__).parent / "fixtures" / "radar_ohne_dach_2026-11-12.json").read_text("utf-8"))
+
+
+def _fund_items(gruppe):
+    return [item(f["title"], f["summary"], source=f["source"]) for f in FUND_1211[gruppe]]
+
+
+def test_fund_1211_ausland_und_fremdes_kino_ohne_dach_fallen_heraus(settings):
+    """Tamil Nadu (Wirtschaft), Sri Lanka (Politik) und Telugu-Kino ohne DACH-Ort sind keine Story; Kollywood und die
+    Gegenproben mit DACH-Bezug bleiben."""
+    raus, kollywood, durch = _fund_items("raus"), _fund_items("kollywood"), _fund_items("durch")
+    zaehler = Counter()
+    picked = filtering.select(raus + kollywood + durch, settings, set(), [], now=NOW, zaehler=zaehler)
+    titel = {p.title for p in picked}
+    assert titel.isdisjoint(i.title for i in raus)
+    assert {i.title for i in durch} <= titel
+    # Kollywood ohne DACH bleibt (Rubrik Entertainment), auch wenn „Tamil Nadu“ im Text steht; je Quelle max_items (2)
+    assert len(titel & {i.title for i in kollywood}) == 2
+    assert zaehler["ausland"] == 2 and zaehler["fremdes_kino"] == 1
+
+
+
+def test_quelle_mit_punkt_im_namen_und_verlag_wird_gefunden(settings):
+    """Review 12.11.: „Google News EN · Kollywood · Verlag“ wurde als „Google News EN“ gesucht und nicht gefunden –
+    max_items (2) griff nicht. Zuordnung über den längsten bekannten Namen, kein Treffer über ein bloßes Präfix."""
+    titel = ["Rajinikanth begins shooting in Mysuru", "Anirudh tops the charts again", "Kollywood box office weekend"]
+    kollywood = [item(t, "Tamil cinema", source=f"Google News EN · Kollywood · Verlag {n}") for n, t in enumerate(titel)]
+    assert filtering.quelle_fuer(kollywood[0], settings).name == "Google News EN · Kollywood"
+    assert filtering.quelle_fuer(item("x", source="Google News EN"), settings) is None
+    assert filtering.quelle_fuer(item("x", source="Google News DACH · NZZ"), settings).name == "Google News DACH"
+    assert filtering.quelle_fuer(item("x", source="Google News ENX · Kollywood"), settings) is None
+    picked = filtering.select(kollywood, settings, set(), [], now=NOW)
+    assert len(picked) == 2
+
+
+# ---- Prüfung 12.11.2026: Nachbesserung der Ausland-Regel (P1–P3) ----
+
+def _einzeln(items, settings):
+    """Jede Meldung für sich durch select (max_items je Quelle und Dubletten spielen hier keine Rolle)."""
+    zaehler = Counter()
+    picked = [p for i in items for p in filtering.select([i], settings, set(), [], now=NOW, zaehler=zaehler)]
+    return picked, zaehler
+
+
+def test_fund_1211_diaspora_ohne_dach_ort_bleibt(settings):
+    """P1: Adjektive und Varianten (German, Austrian, Schweizer), tamilische Schreibweisen (ஜேர்மனி) und deutschsprachige
+    Treffer aus Google News DACH sind für die Ausland-Regel ein DACH-Hinweis – ohne [regions] laender zu ändern."""
+    diaspora = _fund_items("diaspora")
+    picked, zaehler = _einzeln(diaspora, settings)
+    assert [p.title for p in picked] == [i.title for i in diaspora]
+    assert zaehler["ausland"] == 0
+    assert all(p.dach_score == 0 for p in picked)  # Ranking unverändert: nur die Ausland-Regel kennt die Hinweise
+
+
+def test_fund_1211_ausland_bleibt_draussen_trotz_hinweisen(settings):
+    """Gegenprobe zu P1: Die bisherigen Ausland-Fälle (englisch, ohne DACH-Hinweis) fallen weiter heraus."""
+    picked, zaehler = _einzeln(_fund_items("raus"), settings)
+    assert picked == [] and zaehler["ausland"] == 2 and zaehler["fremdes_kino"] == 1
+
+
+def test_fund_1211_kollywood_quelle_und_stars_gelten_als_kino(settings):
+    """P3a (Entscheidung 12.11.): Kollywood-Quelle oder Kollywood-/Star-Begriff reicht für die Kino-Ausnahme, auch wenn
+    guess_category „news“ ergibt."""
+    kollywood = _fund_items("kollywood_ohne_hinweis")
+    assert all(filtering.guess_category(i, settings) == "news" for i in kollywood)
+    picked, zaehler = _einzeln(kollywood, settings)
+    assert [p.title for p in picked] == [i.title for i in kollywood]
+    assert zaehler["ausland"] == 0
+    # Star ohne Kollywood-Quelle: ebenfalls Kino; ohne Star und ohne Kollywood-Quelle bleibt es Ausland
+    star = item("Ilaiyaraaja honoured by India", "Ilaiyaraaja honoured by India  DT Next", source="Tamil Guardian")
+    assert filtering.ohne_dach_grund(star, settings, filtering.quelle_fuer(star, settings)) == ""
+    politik = item("Chief Minister honoured by India", "Tamil Nadu Chief Minister honoured", source="Tamil Guardian")
+    assert filtering.ohne_dach_grund(politik, settings, filtering.quelle_fuer(politik, settings)) == "ausland"
+
+
+def test_fund_1211_verlagsname_ist_kein_bezug(settings):
+    """P3b: „The Hindu“ im Google-News-Anriss ist der Verlag, kein tamilischer Bezug („hindu“ in [bezug] terms)."""
+    picked, zaehler = _einzeln(_fund_items("fremdes_kino_verlag"), settings)
+    assert picked == [] and zaehler["fremdes_kino"] == 1
+
+
+def test_fund_1211_grauzone_wendet_ausland_regel_an(settings):
+    """P2: Was select als Ausland verwirft, geht auch bei Score 2–3 nicht über die Grauzone an Haiku."""
+    grau = _fund_items("grauzone_raus")
+    assert all(2 <= filtering.score_item(i, settings.keywords) <= 3 for i in grau)
+    picked, zaehler = _einzeln(grau, settings)
+    assert picked == [] and zaehler["ausland"] == 2
+    assert relevance.grauzone(_fund_items("grauzone_raus"), settings, set(), set(), NOW) == []
+
+
+def test_fund_1211_genf_ist_dach_hinweis(settings):
+    """Zweite Prüfung 12.11.: Genf steht nicht in [regions.staedte] (Ranking), ist für die Ausland-Regel aber DACH –
+    UNHRC-Sitzungen zu Sri Lanka mit Kundgebungen der Diaspora."""
+    genf = [item("Tamils rally in Geneva as UNHRC debates Sri Lanka",
+                 "Hundreds of Tamils gathered at the Broken Chair in Geneva", source="Tamil Guardian"),
+            item("Volker Turk urges Sri Lanka to act on accountability",
+                 "The UN rights chief told the Human Rights Council in Geneva that Sri Lanka must act",
+                 source="Tamil Guardian")]
+    picked, zaehler = _einzeln(genf, settings)
+    assert [p.title for p in picked] == [i.title for i in genf] and zaehler["ausland"] == 0
+
+
+def test_fund_1211_starnamen_nur_als_ganzes_wort(settings):
+    """Zweite Prüfung 12.11.: „vijay“ traf „Vijayan“, „ajith“ srilankische Namen. Für die Kollywood-Ausnahme zählen
+    Starnamen nur als ganzes Wort, Ajith nur als „Ajith Kumar“; score_item bleibt unverändert."""
+    raus = [item("Kerala CM Pinarayi Vijayan writes to Tamil Nadu on Mullaperiyar dam",
+                 "Kerala CM Pinarayi Vijayan writes to Tamil Nadu on Mullaperiyar dam  The Hindu",
+                 source="Google News DACH · The Hindu"),
+            item("Ajith Nivard Cabraal indicted over bond scam",
+                 "Former Central Bank governor of Sri Lanka Ajith Nivard Cabraal indicted", source="Tamil Guardian"),
+            item("DIG Ajith Rohana orders crackdown in Jaffna",
+                 "Police DIG Ajith Rohana orders crackdown on protests in Jaffna", source="Tamil Guardian")]
+    for i in raus:
+        assert filtering.ohne_dach_grund(i, settings, filtering.quelle_fuer(i, settings)) == "ausland", i.title
+    star = item("Rajinikanth meets Tamil Nadu Chief Minister", "Rajinikanth meets Tamil Nadu Chief Minister",
+                source="Tamil Guardian")
+    assert filtering.ohne_dach_grund(star, settings, filtering.quelle_fuer(star, settings)) == ""
+    ajith = item("Ajith Kumar meets Tamil Nadu Chief Minister", "Ajith Kumar meets Tamil Nadu Chief Minister",
+                 source="Tamil Guardian")
+    assert filtering.ohne_dach_grund(ajith, settings, filtering.quelle_fuer(ajith, settings)) == ""
+
+
+def test_fund_1211_tamile_einzahl_ist_deutsch(settings):
+    """Zweite Prüfung 12.11.: „Tamile“ (Einzahl) ist ein deutsches Wort; die Meldung bleibt als DACH-Presse drin."""
+    tamile = item("Abgewiesener Tamile in Sri Lanka verhaftet",
+                  "Abgewiesener Tamile in Sri Lanka verhaftet  20 Minuten", source="Google News DACH · 20 Minuten")
+    picked, zaehler = _einzeln([tamile], settings)
+    assert [p.title for p in picked] == [tamile.title] and zaehler["ausland"] == 0
+
+
+def test_fund_1211_romandie_ist_dach_hinweis(settings):
+    """Dritte Prüfung 12.11.: Orte der Romandie mit großer tamilischer Community zählen für die Ausland-Regel als DACH
+    (nicht im Ranking). „Sion“ nur als ganzes Wort: als Wortanfang träfe es „Sionist“ und „Sionkowski“."""
+    bleiben = [item("Tamil association in Lausanne celebrates Pongal", "Tamil families from Sri Lanka gathered",
+                    source="Tamil Guardian"),
+               item("Tamil temple opens in Sion", "Tamils from Sri Lanka built the temple in Sion",
+                    source="Tamil Guardian"),
+               item("Tamils of Suisse romande protest Sri Lanka visit", "Tamils from Fribourg and Neuchâtel joined",
+                    source="Tamil Guardian")]
+    picked, zaehler = _einzeln(bleiben, settings)
+    assert [p.title for p in picked] == [i.title for i in bleiben] and zaehler["ausland"] == 0
+    for t in ("Sionist groups protest Sri Lanka visit", "Sionkowski urges Sri Lanka to act"):
+        raus = item(t, t, source="Tamil Guardian")
+        assert filtering.ohne_dach_grund(raus, settings, None) == "ausland", t

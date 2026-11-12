@@ -54,6 +54,9 @@ def grauzone(items: list[NewsItem], settings: Settings, seen: set[str], ausgewae
             continue  # ohne tamilischen Bezug auch keine zweite Chance über Haiku
         score = filtering.score_item(item, settings.keywords)
         dach, ort = filtering.dach_score(item, settings.regions)
+        item.dach_score = dach
+        if filtering.ohne_dach_grund(item, settings, quelle):
+            continue  # Ausland oder fremdes Kino ohne DACH-Bezug: auch keine zweite Chance (Prüfung 12.11.)
         schwelle = settings.min_score_dach if dach > 0 else settings.min_score
         if score > 0 and schwelle - GRAUZONE <= score < schwelle:  # ohne jedes Stichwort keine Grauzone
             item.score, item.dach_score, item.ort = score, dach, ort

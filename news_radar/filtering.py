@@ -82,15 +82,94 @@ def similar(a: str, b: str, threshold: float = 0.82) -> bool:
     return SequenceMatcher(None, a.lower(), b.lower()).ratio() >= threshold
 
 
+def quelle_nach_name(name: str, quellen: list[Source]) -> Source | None:
+    """Quelle zu einem Meldungsnamen: exakt oder „<Quelle> · <Verlag>“, der längste bekannte Name gewinnt.
+
+    Quellennamen enthalten selbst „ · “ („Google News EN · Kollywood“); ein bloßes Präfix („Google News EN“) trifft
+    nichts (Review 12.11.: max_items griff für Google-News-Meldungen mit Verlag nicht)."""
+    name = name or ""
+    treffer = [q for q in quellen if name == q.name or name.startswith(f"{q.name} · ")]
+    return max(treffer, key=lambda q: len(q.name), default=None)
+
+
 def quelle_fuer(item: NewsItem, settings: Settings) -> Source | None:
-    by_name = {s.name: s for s in settings.sources}
-    return by_name.get(item.source) or by_name.get(item.source.split(" · ")[0])
+    return quelle_nach_name(item.source, settings.sources)
 
 
 def hat_bezug(item: NewsItem, settings: Settings) -> bool:
     """Nennt die Meldung einen Begriff mit Bezug zur tamilischen Community ([bezug] in sources.toml)?"""
     text = f"{item.title} {item.summary}".lower()
     return any(_contains(text, term, suffix=2) for term in settings.bezug)
+
+
+_DEUTSCH_RE = re.compile(
+    r"\b(?:und|oder|das|dem|nach|mit|für|vom|zum|zur|bei|über|gegen|sich|ist|sind|wird|werden|nicht|auch|ein|eine|"
+    r"einer|einen|wie|auf|im|tamilisch\w*|tamile|tamilen|tamilin\w*)\b|[äöüß]", re.I)
+
+
+def deutschsprachig(text: str) -> bool:
+    """Deutscher Text? Ein Funktionswort, das es im Englischen nicht gibt („nach“, „mit“, „wie“; bewusst nicht „die“,
+    „in“, „an“, „von“, „aus“), ein deutsches Wort für Tamilen/tamilisch oder ein Umlaut. Englische und tamilische
+    Meldungen treffen das nicht."""
+    return _DEUTSCH_RE.search(text) is not None
+
+
+def dach_hinweis(text: str, regions: Regions) -> bool:
+    """Nennt der Text DACH als Adjektiv oder Variante ([regions] dach_hinweise: German, Austrian, Schweizer, ஜேர்மனி)?
+    Nur für die Ausland-Regel; das Ranking zählt weiter nur [regions.laender] und Städte."""
+    for t in regions.dach_hinweise:
+        if _TAMIL_SCRIPT.search(t):
+            if _contains(text, t):
+                return True
+        elif re.search(rf"(?<![\w]){re.escape(t)}", text, re.I):  # Wortanfang: deutsch → deutsche, Deutschland
+            return True
+    return any(_contains(text, t) for t in regions.dach_hinweise_wort)  # ganzes Wort: „Sion“, nicht „Sionist“
+
+
+def _ohne_verlag(item: NewsItem, source: Source | None) -> str:
+    """Titel und Text ohne den Verlagsanhang von Google News („… - The Hindu“, „…  The Hindu“): Der Verlag steht im
+    Quellennamen nach der Quelle („Google News EN · Kollywood · The Hindu“) und ist kein Inhalt (Prüfung 12.11.: „The
+    Hindu“ zählte als tamilischer Bezug „hindu“)."""
+    title, summary = item.title, item.summary
+    verlag = item.source[len(source.name) + 3:].strip() if source and item.source.startswith(f"{source.name} · ") else ""
+    if verlag:
+        title = re.sub(rf"\s*[-–—|]?\s*{re.escape(verlag)}\s*$", "", title)
+        summary = re.sub(rf"\s*{re.escape(verlag)}\s*$", "", summary)
+    return f"{title} {summary}"
+
+
+def _kino(item: NewsItem, settings: Settings, source: Source | None, text: str) -> bool:
+    """Kino/Entertainment für die Ausland-Regel: Kategorie-Hinweise, eine Quelle mit `kollywood = true` oder ein Begriff
+    aus [bezug] kollywood (Stars). Entscheidung 12.11.: guess_category allein ergab „news“ für „Rajinikanth meets Tamil
+    Nadu Chief Minister“ und „Ilaiyaraaja honoured by India“."""
+    if source and source.kollywood:
+        return True
+    if any(_contains(text, t) for t in settings.kollywood):  # ganzes Wort: „vijay“ trifft nicht „Vijayan“
+        return True
+    return guess_category(item, settings) in ("kino", "entertainment")
+
+
+def ohne_dach_grund(item: NewsItem, settings: Settings, source: Source | None) -> str:
+    """Warum eine Nachricht ohne DACH-Bezug keine Story wird: „fremdes_kino“, „ausland“ oder „“ (bleibt).
+
+    Gilt nur für Nachrichten (kind = news) mit `dach_score` 0 aus Quellen ohne Land (Google News, Tamil Guardian,
+    The Hindu, Lankasri). Ein DACH-Hinweis (German, Schweizer, ஜேர்மனி) oder deutscher Text (deutschsprachige Presse
+    ist DACH-Presse) zählt als DACH-Bezug (Prüfung 12.11.). Fremdes Kino: mehr Begriffe aus [bezug] fremdkino als aus
+    [bezug] terms (Tollywood-Bilanz, die Kollywood nur nennt). Ausland: ein Ort aus [regions] ausland oder eine Region
+    aus [regions] herkunft (Sri Lanka, Tamil Nadu) – außer bei Kino und Entertainment (Kategorie, Kollywood-Quelle oder
+    Star, siehe `_kino`), die als Kollywood-Meldungen gewollt sind (Fund und Entscheidung 12.11.)."""
+    if item.kind != "news" or item.dach_score > 0 or (source and source.country):
+        return ""
+    text = _ohne_verlag(item, source)
+    if dach_hinweis(text, settings.regions) or deutschsprachig(text):
+        return ""
+    fremd = sum(1 for t in settings.fremdkino if _contains(text, t, suffix=2))
+    if fremd and fremd > sum(1 for t in settings.bezug if _contains(text, t, suffix=2)):
+        return "fremdes_kino"
+    if _kino(item, settings, source, text):
+        return ""
+    orte = settings.regions.ausland + settings.regions.herkunft
+    return "ausland" if any(_contains(text, t) for t in orte) else ""
 
 
 _APOSTROPHE = str.maketrans("", "", "'’ʼ‘`´")
@@ -161,12 +240,12 @@ def select(
     """Die relevantesten neuen Meldungen, DACH zuerst, dann nach Punkten und Datum.
 
     `zaehler` (optional) zählt, was herausfällt: `termin_veraltet` (alter Bericht aus einer Termin-Quelle),
-    `ausland` (Termin an einem Ort außerhalb von DACH) und `ohne_bezug` (Quelle mit bezug_noetig, aber kein Begriff
+    `ausland` (Termin an einem Ort außerhalb von DACH, Nachricht aus dem Ausland ohne DACH-Bezug), `fremdes_kino`
+    (Telugu, Bollywood … ohne DACH-Bezug) und `ohne_bezug` (Quelle mit bezug_noetig, aber kein Begriff
     aus [bezug])."""
     now = now or datetime.now(timezone.utc)
     zaehler = zaehler if zaehler is not None else Counter()
     cutoff = now - timedelta(hours=settings.max_age_hours)
-    by_name: dict[str, Source] = {s.name: s for s in settings.sources}
     per_source: dict[str, int] = {}
     picked: list[NewsItem] = []
     titles = list(recent_titles)
@@ -178,7 +257,7 @@ def select(
             continue
         if any(_contains(text, term) for term in settings.blocklist):
             continue
-        source = by_name.get(item.source) or by_name.get(item.source.split(" · ")[0])
+        source = quelle_nach_name(item.source, settings.sources)
         if source and source.kind != "news" and item.kind == "news":
             item.kind = source.kind
         if termin_veraltet(item, settings, now):
@@ -195,6 +274,10 @@ def select(
             item.dach_score = max(item.dach_score, 1)
         if source and source.bezug_noetig and not hat_bezug(item, settings):
             zaehler["ohne_bezug"] += 1  # allgemeine Meldung der Quelle ohne tamilischen Bezug (Entscheidung 09.11.)
+            continue
+        grund = ohne_dach_grund(item, settings, source)
+        if grund:
+            zaehler[grund] += 1  # Nachricht aus dem Ausland oder aus fremdem Kino ohne DACH-Bezug (Fund 12.11.)
             continue
         needed = None
         if source and source.min_score is not None:

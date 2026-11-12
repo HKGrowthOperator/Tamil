@@ -321,8 +321,7 @@ def schritt_seo(ctx: Kontext, job: dict) -> list[tuple[str, dict]]:
 
 
 def _quelle(ctx: Kontext, name: str):
-    by_name = {q.name: q for q in ctx.settings.alle_quellen}
-    return by_name.get(name) or by_name.get((name or "").split(" · ")[0])
+    return filtering.quelle_nach_name(name, ctx.settings.alle_quellen)
 
 
 def _neues_bild_verwerfen(ctx: Kontext, name: str, asset_id: int) -> None:
