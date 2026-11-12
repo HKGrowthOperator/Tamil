@@ -166,7 +166,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .karte--aufmacher .karte__flaeche { aspect-ratio: 1 / 1; }
 .karte--aufmacher .karte__titel { font-size: 30px; line-height: 1.12; letter-spacing: -0.005em; }
 .karte--aufmacher .karte__text { padding-bottom: 22px; }
-.karte--aufmacher .karte__teaser { padding-inline: var(--rand); max-width: 34em; }
+.karte--aufmacher .karte__teaser { display: none; padding-inline: var(--rand); max-width: 34em; }
 .karte--klein .karte__titel { font-size: 18px; line-height: 1.25; }
 .karte--klein .karte__text { padding: 64px 14px 14px; }
 
@@ -244,7 +244,9 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 
 /* Startseite */
 .start { padding-top: 0; }
-.start__kacheln { display: grid; gap: 24px; margin-top: 24px; }
+.start__kacheln { display: grid; gap: 24px; margin-top: 16px; }
+/* erste Karte am Handy quer, damit ihre Schlagzeile noch in den ersten Bildschirm passt */
+.start__kacheln .karte--erste .karte__flaeche { aspect-ratio: 3 / 2; }
 .karte--feed .karte__titel { font-size: 22px; }
 .start__streifen .karte__titel { font-size: 19px; }
 .start__streifen .karte__text { padding: 56px 14px 14px; }
@@ -330,11 +332,11 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 
 /* ---------- Artikel ---------- */
 
-.artikel__rahmen { overflow: hidden; aspect-ratio: 4 / 3; background: var(--flaeche); max-height: 72svh; }
+.artikel__rahmen { overflow: hidden; aspect-ratio: 3 / 2; background: var(--flaeche); }
 .artikel__rahmen img { width: 100%; height: 100%; object-fit: cover; }
 .artikel__bildzeile { font-size: 14px; line-height: 1.45; color: var(--leise); padding: 8px var(--rand) 0; max-width: 760px; margin: 0 auto; }
 .artikel__bildzeile .nachweis { display: inline; font-size: 13px; margin: 0; }
-.artikel__spalte { max-width: calc(68ch + 2 * var(--rand)); margin: 0 auto; padding: 24px var(--rand) 0; }
+.artikel__spalte { max-width: calc(720px + 2 * var(--rand)); margin: 0 auto; padding: 24px var(--rand) 0; }
 .artikel__titel { font-size: 30px; line-height: 1.15; font-weight: 700; text-wrap: balance; letter-spacing: -0.005em; }
 .artikel__vorspann { font-size: 20px; line-height: 1.45; font-weight: 500; margin-top: 14px; }
 .artikel__meta {
@@ -347,6 +349,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .artikel__teilen:hover { color: var(--rot); }
 .artikel__text { margin-top: 24px; }
+.artikel__text p, .artikel__vorspann { max-width: 34em; }
 .artikel__text p { font-size: 19px; line-height: 1.65; margin-bottom: 1.1em; }
 .artikel__hinweis { font-size: 14px; color: var(--leise); border-top: 1px solid var(--linie); padding-top: 12px; margin-top: 8px; }
 .streifen--mehr .karte__flaeche { aspect-ratio: 4 / 5; }
@@ -400,17 +403,25 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 @media (min-width: 640px) {
   :root { --rand: 24px; --luft: 48px; }
   .streifen__teil { flex-basis: 42%; }
-  .streifen--plakate .streifen__teil { flex-basis: 30%; }
-  .karte--aufmacher .karte__flaeche { height: clamp(440px, 62vw, 620px); }
+  .karte--aufmacher .karte__flaeche { aspect-ratio: 3 / 2; }
   .karte--aufmacher .karte__titel { font-size: 34px; }
-  .weitere__raster, .rubrik__mitte { grid-template-columns: 1fr 1fr; column-gap: 24px; }
-  .weitere__gross, .rubrik__gross { grid-column: 1 / -1; }
+  .karte--aufmacher .karte__teaser { display: block; }
+  .start__kacheln { grid-template-columns: 1fr 1fr; }
+  .start__kacheln .karte--erste .karte__flaeche { aspect-ratio: 4 / 5; }
+  .start__kacheln > .karte { margin-inline: 0; }
+  .start__kacheln > .karte .nachweis { padding-inline: 0; }
+  .start__streifen { display: contents; }
+  .rubrik__mitte { grid-template-columns: 1fr 1fr; column-gap: 24px; }
+  .rubrik__gross { grid-column: 1 / -1; }
   .vergangen__liste { grid-template-columns: 1fr 1fr; }
-  .zeile { grid-template-columns: 1fr 160px; }
+  .zeile { grid-template-columns: minmax(0, 1fr) 160px; }
+  .meldungen__liste { display: grid; grid-template-columns: 1fr 1fr; column-gap: 32px; }
+  .meldungen .zeile { border-bottom: 1px solid var(--linie); }
 }
 
 /* =========================================================
    Desktop: dichtes Bildraster mit unterschiedlichen Kachelgrößen
+   Bildformate auf der ganzen Probe: 1:1, 4:5, 3:2
    ========================================================= */
 
 @media (min-width: 1024px) {
@@ -418,18 +429,18 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   .kopfzeile__hinweise { display: flex; align-items: center; gap: 16px; margin: 0; }
   .kopfzeile__hinweise strong { color: var(--tinte); font-weight: 600; }
   .kopfzeile__hinweise a + a { border-left: 1px solid var(--linie); padding-left: 16px; min-height: 20px; }
-  .kopf__logo img { height: 58px; }
+  .kopf__logo img { height: 56px; }
   .kopf__logo { padding: 8px 0; }
 
   /* kein randloses Bild am Desktop */
-  .start__auf, .start__karte, .community__gross, .weitere__gross, .rubrik__auf, .rubrik__gross { margin-inline: 0; }
-  .start__auf .nachweis, .start__karte .nachweis, .community__gross .nachweis, .weitere__gross .nachweis,
-  .rubrik__auf .nachweis, .rubrik__gross .nachweis, .start__auf .karte__teaser, .rubrik__auf .karte__teaser { padding-inline: 0; }
+  .start__auf, .community__gross, .rubrik__auf, .rubrik__gross { margin-inline: 0; }
+  .start__auf .nachweis, .community__gross .nachweis, .rubrik__auf .nachweis, .rubrik__gross .nachweis,
+  .start__auf .karte__teaser, .rubrik__auf .karte__teaser { padding-inline: 0; }
 
-  .karte__text { padding: 88px 24px 22px; }
+  .karte__text { padding: 64px 24px 22px; }
   .karte__titel { font-size: 24px; }
   .karte--klein .karte__titel { font-size: 19px; }
-  .karte--klein .karte__text { padding: 64px 16px 16px; }
+  .karte--klein .karte__text { padding: 56px 16px 16px; }
 
   /* Streifen werden am Desktop zu festen Reihen */
   .streifen {
@@ -438,52 +449,50 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   }
   .streifen__teil { min-width: 0; }
 
-  /* Start: Aufmacher 8 Spalten, rechts Bildkarte und drei Meldungen */
+  /* Start: Bildraster. Aufmacher quadratisch links, rechts 2 × 2 quadratische Bildkacheln mit Titel im Bild */
   .start {
     display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 24px;
-    padding-top: 24px; align-items: start;
+    padding-top: 16px; align-items: start;
   }
-  .start__auf { grid-column: 1 / 9; grid-row: 1 / 3; }
-  .karte--aufmacher .karte__flaeche { height: auto; aspect-ratio: 3 / 2; }
+  .start__auf { grid-column: 1 / 7; }
+  .start .karte--aufmacher .karte__flaeche { aspect-ratio: 1 / 1; }
   .karte--aufmacher .karte__titel { font-size: 40px; line-height: 1.1; }
-  .karte--aufmacher .karte__text { padding: 120px 32px 28px; }
-  .karte--aufmacher .karte__teaser { display: block; }
-  .start__karte { grid-column: 9 / 13; grid-row: 1; margin-top: 0; }
-  .start__karte .karte__flaeche { aspect-ratio: 16 / 10; }
-  .start__karte .karte__titel { font-size: 20px; }
-  .start__karte .karte__text { padding: 56px 18px 16px; }
-  .start__aktuell { grid-column: 9 / 13; grid-row: 2; margin-top: 4px; align-self: start; }
-  .start__aktuell .zeile { grid-template-columns: 1fr 104px; gap: 14px; padding: 12px 0; }
-  .start__aktuell .zeile:last-child { border-bottom: 0; }
-  .start__aktuell .zeile__titel { font-size: 17px; }
+  .karte--aufmacher .karte__text { padding: 96px 32px 28px; }
+  .start__kacheln { grid-column: 7 / 13; margin-top: 0; column-gap: 24px; row-gap: 16px; }
+  .start__kacheln .karte__flaeche, .start__kacheln .karte--erste .karte__flaeche { aspect-ratio: 1 / 1; }
+  .start__kacheln .karte__titel, .start__streifen .karte__titel { font-size: 19px; }
+  .start__kacheln .karte__text, .start__streifen .karte__text { padding: 56px 16px 16px; }
 
-  /* Diese Woche: fünf Plakate in einer Reihe, Termine daneben zweispaltig */
+  .meldungen__liste { column-gap: 48px; }
+  .meldungen .zeile { grid-template-columns: minmax(0, 1fr) 128px; }
+
+  /* Diese Woche: Kino-Leitstück links, rechts Radar-Liste und zwei Kino-Beiträge */
   .woche { padding: 36px 0 44px; }
   .woche__titel { font-size: 26px; }
-  .streifen--plakate { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .kino {
+    grid-template-columns: 1fr 1fr; column-gap: 32px; row-gap: 24px;
+    grid-template-areas: "leit liste" "leit mehr";
+    align-items: start;
+  }
+  .kino__leit { grid-area: leit; }
+  .kino .karte__titel { font-size: 24px; }
+  .kinoliste { grid-area: liste; }
+  .kinoliste ul { display: grid; grid-template-columns: 1fr 1fr; column-gap: 24px; }
+  .kino__mehr { grid-area: mehr; grid-template-columns: 1fr 1fr; gap: 24px; }
   .termine { display: grid; grid-template-columns: 1fr 1fr; column-gap: 40px; }
   .termin { grid-template-columns: 84px 1fr; }
 
-  /* Community: hohe Karte links, 2 × 2 rechts */
-  .community__raster { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 24px; }
-  .community__gross { grid-column: 1 / 6; }
-  .community__gross { display: flex; flex-direction: column; }
-  .community__gross .karte__flaeche { aspect-ratio: auto; flex: 1 1 0; min-height: 0; }
-  .community__klein { grid-column: 6 / 13; margin-top: 0; grid-template-columns: 1fr 1fr; row-gap: 24px; align-content: start; }
+  /* Community: breite Karte links, zwei Karten rechts untereinander */
+  .community__raster { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 24px; align-items: start; }
+  .community__gross { grid-column: 1 / 9; }
+  .community__gross .karte__flaeche { aspect-ratio: 3 / 2; }
+  .community__klein { grid-column: 9 / 13; margin-top: 0; grid-template-columns: 1fr; row-gap: 20px; }
   .community__klein .karte__flaeche { aspect-ratio: 3 / 2; }
 
-  /* Küche: eine Reihe, die erste Kachel doppelt breit */
-  .kueche__reihe { grid-template-columns: 1.7fr 1.2fr 1.2fr 0.9fr; }
-  .kueche__reihe .karte__flaeche { aspect-ratio: auto; height: 380px; }
-
-  /* Weitere: breite Karte und drei Nebenstücke */
-  .weitere__raster { grid-template-columns: 1.6fr 1fr 1fr 1fr; column-gap: 24px; }
-  .weitere__gross { grid-column: auto; margin: 0; }
-  .weitere__gross .karte__flaeche { aspect-ratio: 4 / 5; }
-  .weitere__stueck { grid-column: auto; padding: 0; border: 0; }
-  .weitere__stueck .stueck__bild { aspect-ratio: 4 / 5; }
-  .weitere__stueck .stueck__titel { font-size: 18px; }
-  .weitere__stueck .stueck__teaser { display: none; }
+  /* Küche: breite Kachel 3:2 und zwei Hochformate 4:5, gleich hoch */
+  .kueche__reihe { grid-template-columns: 1.875fr 1fr 1fr; gap: 24px; }
+  .kueche__reihe .karte__flaeche { aspect-ratio: 4 / 5; }
+  .kueche__reihe .kueche__erste .karte__flaeche { aspect-ratio: 3 / 2; }
 
   /* Rubrik */
   .seitenkopf { padding-top: 32px; padding-bottom: 24px; }
@@ -491,33 +500,31 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   .rubrik__oben { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 24px; align-items: start; }
   .rubrik__auf { grid-column: 1 / 9; }
   .rubrik__neben { grid-column: 9 / 13; margin-top: 0; grid-template-columns: 1fr; }
-  .rubrik__neben .karte__flaeche { aspect-ratio: 16 / 10; }
+  .rubrik__neben .karte__flaeche { aspect-ratio: 3 / 2; }
   .rubrik__mitte { grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 24px; }
   .rubrik__gross { grid-column: 1 / 7; margin: 0; }
-  .rubrik__gross .karte__flaeche { aspect-ratio: 4 / 3; }
+  .rubrik__gross .karte__flaeche { aspect-ratio: 3 / 2; }
   .rubrik__stueck { grid-column: span 3; padding: 0; border: 0; }
   .archiv__liste { display: grid; grid-template-columns: 1fr 1fr; column-gap: 40px; }
-  .archiv .zeile { grid-template-columns: 1fr 180px; }
+  .archiv .zeile { grid-template-columns: minmax(0, 1fr) 180px; }
 
   /* Termine zurückliegend: Monat links, Beiträge rechts */
   .vergangen__monat { display: grid; grid-template-columns: 200px 1fr; gap: 24px; border-bottom: 1px solid var(--linie); padding: 8px 0 28px; margin: 0; }
   .vergangen__titel { padding: 0; font-size: 17px; color: var(--tinte); align-self: start; }
   .vergangen__liste { grid-template-columns: repeat(3, minmax(0, 1fr)); border: 0; padding: 0; }
 
-  /* Artikel */
-  .artikel__bild { max-width: calc(1040px + 2 * var(--rand)); margin: 24px auto 0; padding: 0 var(--rand); }
-  .artikel__rahmen { aspect-ratio: 5 / 2; max-height: none; }
+  /* Artikel: Bild so breit wie die Textspalte, 3:2 */
+  .artikel__bild { max-width: calc(720px + 2 * var(--rand)); margin: 24px auto 0; padding: 0 var(--rand); }
   .artikel__bildzeile { padding: 8px 0 0; max-width: none; }
-  .artikel__spalte { padding-top: 32px; }
+  .artikel__spalte { padding-top: 28px; }
   .artikel__titel { font-size: 40px; }
   .artikel__vorspann { font-size: 21px; }
   .artikel__text p { font-size: 20px; }
   .streifen--mehr { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .streifen--mehr .karte__flaeche { aspect-ratio: 3 / 4; }
 
   /* Suche, Kontakt */
   .suche { max-width: calc(820px + 2 * var(--rand)); }
-  .suche .zeile { grid-template-columns: 1fr 220px; gap: 24px; }
+  .suche .zeile { grid-template-columns: minmax(0, 1fr) 220px; gap: 24px; }
   .suche .zeile__titel { font-size: 20px; }
   .kontakt__raster { grid-template-columns: 5fr 7fr; gap: 56px; }
 
@@ -531,6 +538,5 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; scroll-behavior: auto !important; }
-  .karte:hover .karte__flaeche > img, .zeile:hover .zeile__bild img, .stueck:hover .stueck__bild img,
-  .plakat:hover .plakat__bild img { transform: none; }
+  .karte:hover .karte__flaeche > img, .zeile:hover .zeile__bild img, .stueck:hover .stueck__bild img { transform: none; }
 }
