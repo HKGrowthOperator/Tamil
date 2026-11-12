@@ -98,8 +98,10 @@ _BESITZ_S_RE = re.compile(r"['’ʼ‘`´]s\b", re.I)  # „Maaveerar's Day“ �
 
 
 def _ohne_zeichen(text: str) -> str:
-    """Kleinbuchstaben ohne Apostrophe und ohne Diakritika („Māvīrar Nāḷ“ → „mavirar nal“, „Heroes’“ → „heroes“);
-    tamilische Schrift bleibt unverändert (Vokalzeichen und Pulli sind dort Teil der Buchstaben)."""
+    """Kleinbuchstaben ohne Formatzeichen (ZWJ, ZWNJ, ZWSP, weiches Trennzeichen), Apostrophe und Diakritika
+    („Māvīrar Nāḷ“ → „mavirar nal“, „Heroes’“ → „heroes“); tamilische Schrift bleibt sonst unverändert (Vokalzeichen
+    und Pulli sind dort Teil der Buchstaben)."""
+    text = "".join(c for c in text if unicodedata.category(c) != "Cf")
     out = []
     for c in _BESITZ_S_RE.sub("", text).translate(_APOSTROPHE).lower():
         if "\u0b80" <= c <= "\u0bff":
@@ -113,8 +115,19 @@ def gedenktermin(item: NewsItem, settings: Settings) -> bool:
     """Termin (kein Bericht), der einen Begriff aus [blocklist] termine nennt – z. B. Maaveerar-Gedenken mit
     LTTE-Bezug. Gilt für Kalender, die jeden Termin automatisch liefern (tribe_events); Ankündigungen eines
     Veranstalters laufen weiter über den normalen Weg mit Recherche (Abnahme-Szenarien 22/23)."""
+    if item.kind != "event":
+        return False
     text = _ohne_zeichen(f"{item.title} {item.summary}")
-    return item.kind == "event" and any(_contains(text, _ohne_zeichen(t)) for t in settings.blocklist_termine)
+    museum = "museum" in _ohne_zeichen(item.title)
+    for begriff in (_ohne_zeichen(t) for t in settings.blocklist_termine):
+        if begriff == "national heroes" and museum:
+            continue  # „National Heroes Museum“ ist kein Gedenktermin
+        if _TAMIL_SCRIPT.search(begriff):
+            if begriff.rstrip("\u0bcd") in text:
+                return True
+        elif re.search(r"(?<![^\W_])" + re.escape(begriff), text):  # Wortanfang: „Maaveerarnaal“, „Maaveerars Day“
+            return True
+    return False
 
 
 def termin_veraltet(item: NewsItem, settings: Settings, now: datetime) -> bool:

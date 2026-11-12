@@ -145,3 +145,30 @@ def test_kalender_nennt_ende_mehrtaegiger_termine(settings, monkeypatch):
                                       "all_day": True}])
     [item] = sources.FETCHERS["tribe_events"](quelle, settings, now=datetime(2026, 5, 25, 9, tzinfo=timezone.utc))
     assert item.facts["event_ende"] == "2026-06-02" and "bis 02.06.2026" in item.summary
+
+
+@pytest.mark.parametrize("titel", ["Tamil National Heroes Commemoration", "National Heroes Remembrance",
+                                   "Heroes Remembrance Day", "மா\u200dவீரர் நாள்", "Maa\u00adveerar",
+                                   "Maaveerars Day", "Maaveerarnaal", "Maavirar Naal", "Helden-Gedenktag 2026",
+                                   "Ma\u200bveerar"])
+def test_gedenk_sperre_runde_4_gesperrt(settings, titel):
+    item = sources.NewsItem(titel, "https://x.example/g", "", "q", VOR_DEM_FEST, kind="event")
+    assert filtering.gedenktermin(item, settings), titel
+
+
+@pytest.mark.parametrize("titel", ["National Heroes Museum", "Helden der Kindheit", "Superheroes Day"])
+def test_gedenk_sperre_runde_4_frei(settings, titel):
+    item = sources.NewsItem(titel, "https://x.example/f", "", "q", VOR_DEM_FEST, kind="event")
+    assert not filtering.gedenktermin(item, settings), titel
+
+
+def test_kalender_ende_um_mitternacht_gehoert_zum_vortag(settings, monkeypatch):
+    quelle = _kalender(monkeypatch, [{"title": "Abendpuja", "url": "https://tempel.example/abend/",
+                                      "start_date": "2026-05-22 18:00:00", "end_date": "2026-05-23 00:00:00",
+                                      "all_day": False},
+                                     {"title": "Fest", "url": "https://tempel.example/fest2/",
+                                      "start_date": "2026-05-22 00:00:00", "end_date": "2026-05-25 00:00:00",
+                                      "all_day": True}])
+    abend, fest = sources.FETCHERS["tribe_events"](quelle, settings, now=VOR_DEM_FEST)
+    assert abend.facts["event_ende"] == "2026-05-22" and "bis" not in abend.summary
+    assert fest.facts["event_ende"] == "2026-05-24" and "bis 24.05.2026" in fest.summary
