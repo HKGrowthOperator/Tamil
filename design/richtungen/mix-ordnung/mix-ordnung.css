@@ -1,0 +1,795 @@
+/* tamil.de – Probeseite „mix-ordnung“
+   Ordnung von klar2 (Libre Franklin, Farbwerte, Kopf mit dunklem Rubrikband, Dachzeile „Rubrik | Datum“),
+   aber das Bild trägt jede Fläche. Wirkung aus Fotografie, Bildgrößen, Rhythmus und Weißraum, nicht aus Farbe.
+   Kein JavaScript. Drei Bildformate: 4:3, 3:2, 16:9. */
+
+@font-face {
+  font-family: "Libre Franklin";
+  src: url("schriften/libre-franklin-latin-wght-normal.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Libre Franklin";
+  src: url("schriften/libre-franklin-latin-ext-wght-normal.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+:root {
+  --grund: oklch(0.985 0.002 250);
+  --flaeche: oklch(0.962 0.003 250);
+  --tinte: oklch(0.21 0.012 255);
+  --leise: oklch(0.45 0.012 255);
+  --linie: oklch(0.88 0.004 250);
+  --rot: oklch(0.508 0.177 25.6);
+  --hell: oklch(0.985 0.002 250);
+  --hell-leise: oklch(0.82 0.006 250);
+  --linie-dunkel: oklch(0.36 0.010 255);
+  --flaeche-dunkel: oklch(0.26 0.012 255);
+  /* der einzige Verlauf: unter Schrift im Bild, von durchsichtig nach Tinte */
+  --verlauf: linear-gradient(to bottom,
+    oklch(0.21 0.012 255 / 0) 0,
+    oklch(0.21 0.012 255 / 0.76) 56px,
+    oklch(0.21 0.012 255 / 0.92) 100%);
+  --verlauf-kurz: linear-gradient(to bottom,
+    oklch(0.21 0.012 255 / 0) 0,
+    oklch(0.21 0.012 255 / 0.82) 24px,
+    oklch(0.21 0.012 255 / 0.93) 100%);
+
+  --schrift: "Libre Franklin", "Noto Sans Tamil", "Tamil Sangam MN", system-ui, sans-serif;
+  --rand: 16px;
+  --breite: 1280px;
+  --zoom: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; scroll-padding-top: 56px; }
+
+body {
+  margin: 0;
+  background: var(--grund);
+  color: var(--tinte);
+  font-family: var(--schrift);
+  font-size: 17px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+:lang(ta) { font-family: "Noto Sans Tamil", "Tamil Sangam MN", "Latha", sans-serif; }
+
+h1, h2, h3, p, ul, ol, figure, dl, dd { margin: 0; }
+ul, ol { padding: 0; list-style: none; }
+img { display: block; max-width: 100%; height: auto; }
+a { color: inherit; text-decoration: none; }
+a:focus-visible, input:focus-visible, textarea:focus-visible, button:focus-visible {
+  outline: 2px solid var(--tinte);
+  outline-offset: 3px;
+}
+
+.zusammen { white-space: nowrap; }
+.nur-vorlesen {
+  position: absolute;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.innen {
+  max-width: var(--breite);
+  margin: 0 auto;
+  padding: 0 var(--rand);
+}
+
+/* ---------- Kopf ---------- */
+
+.kopf__innen {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "datum suche" "logo logo";
+  align-items: center;
+  column-gap: 16px;
+}
+.kopf__datum {
+  grid-area: datum;
+  font-size: 13px;
+  line-height: 1.3;
+  color: var(--leise);
+}
+.kopf__hinweise { display: none; }
+.kopf__suche {
+  grid-area: suche;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding-left: 12px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.kopf__suche svg { width: 16px; height: 16px; flex: none; }
+.kopf__suche:hover, .kopf__hinweise a:hover { color: var(--rot); }
+.kopf__logo {
+  grid-area: logo;
+  display: block;
+  width: max-content;
+  padding: 2px 0 8px;
+}
+.kopf__logo img { height: 46px; width: auto; }
+
+.band {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--tinte);
+}
+.band ul {
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;
+  max-width: var(--breite);
+  margin: 0 auto;
+  padding: 0 4px;
+  scroll-snap-type: x proximity;
+  scroll-padding-inline: 4px 50%;
+}
+.band ul::-webkit-scrollbar { display: none; }
+.band li { scroll-snap-align: start; }
+.band a {
+  position: relative;
+  display: block;
+  padding: 0 12px;
+  line-height: 46px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--hell-leise);
+  white-space: nowrap;
+}
+.band a:hover { color: var(--hell); }
+.band a[aria-current] { color: var(--hell); font-weight: 600; }
+.band a[aria-current]::after {
+  content: "";
+  position: absolute;
+  left: 12px; right: 12px; bottom: 0;
+  height: 3px;
+  background: var(--rot);
+}
+.band a:focus-visible { outline-color: var(--hell); outline-offset: -4px; }
+
+/* ---------- Bausteine ---------- */
+
+.anr { display: block; }
+.anr:hover .titel {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.14em;
+}
+
+.rahmen {
+  position: relative;
+  overflow: hidden;
+  background: var(--flaeche);
+}
+.rahmen img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: var(--zoom);
+}
+.anr:hover .rahmen img { transform: scale(1.03); }
+
+.r83 { aspect-ratio: 8 / 3; }
+.r32 { aspect-ratio: 3 / 2; }
+.r169 { aspect-ratio: 16 / 9; }
+
+.meta {
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--leise);
+  margin-bottom: 6px;
+}
+.meta__rubrik { color: var(--rot); font-weight: 600; }
+.meta__rubrik::after {
+  content: "";
+  display: inline-block;
+  width: 1px;
+  height: 0.95em;
+  margin: 0 8px;
+  background: currentColor;
+  opacity: 0.7;
+  vertical-align: -0.12em;
+}
+
+.titel {
+  font-weight: 650;
+  text-wrap: balance;
+  hyphens: manual;
+}
+.vorspann { margin-top: 8px; font-size: 16px; line-height: 1.5; }
+
+/* Bildnachweis: direkt unter dem Bild bzw. als letzte Zeile im Bild */
+.nachweis {
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--leise);
+}
+
+.block-titel {
+  font-size: 20px;
+  line-height: 1.25;
+  font-weight: 700;
+  border-top: 1px solid var(--tinte);
+  padding-top: 12px;
+  margin-bottom: 16px;
+}
+.block-titel a:hover { color: var(--rot); }
+.block {
+  margin-top: 48px;
+}
+
+/* Titel im Bild: auf dem Verlauf, Dachzeile hell, weil Rot auf Dunkel zu schwach ist */
+.imbild {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  padding: 64px var(--rand) 14px;
+  background-image: var(--verlauf);
+  color: var(--hell);
+}
+.imbild .meta, .imbild .nachweis { color: var(--hell-leise); }
+.imbild .meta__rubrik { color: var(--hell); }
+.imbild .nachweis { margin-top: 8px; }
+.imbild .vorspann { color: var(--hell); }
+
+.imbild-anr:focus-visible, .kacheln a:focus-visible { outline: none; }
+.imbild-anr:focus-visible .rahmen::after,
+.kacheln a:focus-visible .rahmen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border: 3px solid var(--tinte);
+  outline: 2px solid var(--hell);
+  outline-offset: -5px;
+}
+
+/* Kachel: Bild mit Titel im Bild */
+.kachel .titel { font-size: 20px; line-height: 1.2; }
+.kachel--gross .titel { font-size: 22px; line-height: 1.18; }
+.kachel__unter { padding-top: 12px; }
+
+/* Zeile: kleines Bild neben dem Text */
+.zeile + .zeile { border-top: 1px solid var(--linie); }
+.zeile .anr {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 112px;
+  column-gap: 14px;
+  align-items: start;
+  padding: 14px 0;
+}
+.zeile .rahmen { grid-column: 2; grid-row: 1; margin-top: 3px; }
+.zeile__text { grid-column: 1; grid-row: 1; }
+.zeile .titel { font-size: 17px; line-height: 1.3; font-weight: 600; }
+.zeile .vorspann { display: none; }
+
+/* Stück: großes Bild über dem Text */
+.stueck .rahmen { margin-bottom: 6px; }
+.stueck .meta { margin-top: 8px; }
+.stueck .titel { font-size: 21px; line-height: 1.2; }
+.stueck .nachweis { margin-top: 0; }
+
+/* ---------- Bühne: Aufmacher und zwei Bildkacheln ---------- */
+
+.buehne { padding-top: 0; }
+.aufmacher .rahmen { margin-inline: calc(-1 * var(--rand)); }
+.aufmacher .rahmen img { object-position: 50% 30%; }
+.aufmacher .imbild { padding-top: 96px; }
+.aufmacher .titel {
+  font-size: 30px;
+  line-height: 1.12;
+  letter-spacing: -0.012em;
+}
+.aufmacher .vorspann--bild { display: none; }
+.aufmacher .vorspann--unter { margin-top: 12px; font-size: 17px; }
+.buehne__seite { display: grid; gap: 12px; margin-top: 20px; }
+
+.meldungen { margin-top: 20px; border-top: 1px solid var(--linie); }
+
+/* Bis 1023 px stehen Titel der beiden Bühnenkacheln unter dem Bild: das Foto bleibt frei */
+@media (max-width: 1023px) {
+  .buehne__seite .rahmen { aspect-ratio: auto; overflow: visible; background: none; }
+  .buehne__seite .rahmen img { aspect-ratio: 3 / 2; height: auto; }
+  .buehne__seite .anr:hover .rahmen img { transform: none; }
+  .buehne__seite .imbild { position: static; padding: 10px 0 4px; background: none; color: var(--tinte); }
+  .buehne__seite .imbild .meta, .buehne__seite .imbild .nachweis { color: var(--leise); }
+  .buehne__seite .imbild .meta__rubrik { color: var(--rot); }
+  .buehne__seite .imbild .nachweis { margin-top: 6px; }
+}
+
+/* Nachweis unter dem Bild statt im Bild */
+.nachweis--unter { margin-top: 6px; }
+
+/* ---------- Rubrikkacheln (Navigation) ---------- */
+
+.kacheln { margin-top: 32px; }
+.kacheln ul {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin: -5px calc(-1 * var(--rand));
+  padding: 5px var(--rand);
+  scroll-padding-inline: var(--rand) 50%;
+  scroll-snap-type: x proximity;
+}
+.kacheln ul::-webkit-scrollbar { display: none; }
+.kacheln li { flex: 0 0 150px; scroll-snap-align: start; }
+.kacheln a { position: relative; display: block; }
+.kacheln .rahmen { display: block; aspect-ratio: 16 / 9; }
+.kacheln a:hover .rahmen img { transform: scale(1.03); }
+.kachel__name {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  padding: 26px 10px 7px;
+  background-image: var(--verlauf-kurz);
+  color: var(--hell);
+  font-size: 15px;
+  line-height: 1.25;
+  font-weight: 600;
+}
+.kacheln a:hover .kachel__name { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.14em; }
+
+/* ---------- Weitere Geschichten: ein großes Stück und eine Liste ---------- */
+
+.weitere__liste { margin-top: 8px; border-top: 1px solid var(--linie); }
+
+/* ---------- Diese Woche (dunkel): Kino als Plakatwand ---------- */
+
+.woche {
+  margin-top: 56px;
+  background: var(--tinte);
+  color: var(--hell);
+  padding: 28px 0 44px;
+}
+.woche a:focus-visible { outline-color: var(--hell); }
+.woche__titel {
+  font-size: 22px;
+  line-height: 1.2;
+  font-weight: 700;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--linie-dunkel);
+  margin-bottom: 20px;
+}
+.woche__titel a:hover { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.14em; }
+.woche .meta, .woche .nachweis { color: var(--hell-leise); }
+.woche .meta__rubrik { color: var(--hell); }
+.wand { display: grid; gap: 20px; }
+.wand .kachel--gross .rahmen img { object-position: 46% 45%; }
+/* p9697 trägt unten links eine eingebrannte Bildzeile: Bild höher als der Rahmen und oben angelegt */
+.rahmen--ohne-zeile img { height: auto; object-position: 50% 0; }
+.woche__art {
+  font-size: 13px;
+  line-height: 1.35;
+  font-weight: 600;
+  color: var(--hell-leise);
+  margin: 28px 0 10px;
+}
+.spielorte { display: grid; gap: 10px; }
+.grafik { background: var(--flaeche-dunkel); }
+.grafik .anr { height: 100%; padding: 16px 16px 18px; }
+.grafik .titel { font-size: 20px; line-height: 1.2; }
+.grafik__zahl {
+  margin-top: 6px;
+  font-size: 18px;
+  line-height: 1.3;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.grafik__orte {
+  margin-top: 6px;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--hell-leise);
+}
+.grafik__text { margin-top: 8px; font-size: 16px; line-height: 1.5; max-width: 36em; }
+.woche__mehr {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: 16px;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+/* ---------- Küche ---------- */
+
+.kueche__raster { display: grid; gap: 12px; }
+.kueche .kachel--klein .imbild { padding-top: 34px; background-image: var(--verlauf-kurz); }
+.kueche .kachel--klein .titel { font-size: 18px; }
+
+/* ---------- Fuß ---------- */
+
+.fuss {
+  margin-top: 64px;
+  border-top: 1px solid var(--tinte);
+  padding: 24px 0 40px;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--leise);
+}
+.fuss__logo img { height: 40px; width: auto; }
+.fuss__satz { margin-top: 10px; max-width: 34em; }
+.fuss ul { display: flex; flex-wrap: wrap; column-gap: 20px; margin-top: 12px; }
+.fuss li a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--tinte);
+}
+.fuss li a:hover { color: var(--rot); }
+
+/* ---------- Seitenkopf für Rubrik, Termine, Suche, Kontakt ---------- */
+
+.seitenkopf { padding-top: 24px; padding-bottom: 8px; }
+.seitenkopf__titel {
+  font-size: 28px;
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.seitenkopf__zeile { margin-top: 6px; font-size: 15px; color: var(--leise); }
+
+/* Rubrikliste mit größerem Bild */
+.liste--gross .zeile .anr { grid-template-columns: minmax(0, 1fr) 128px; }
+
+/* ---------- Termine ---------- */
+
+.termin .anr {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  column-gap: 14px;
+  padding: 16px 0;
+}
+.termin + .termin { border-top: 1px solid var(--linie); }
+.termin__datum {
+  grid-row: 1 / 3;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+}
+.termin__tag { display: block; font-size: 24px; font-weight: 700; }
+.termin__monat { display: block; margin-top: 2px; font-size: 13px; color: var(--leise); }
+.termin .rahmen { grid-column: 2; margin-bottom: 10px; }
+.termin__text { grid-column: 2; }
+.termin .titel { font-size: 19px; line-height: 1.25; }
+.termin__ort { margin-top: 4px; font-size: 15px; color: var(--leise); }
+.demnaechst { background: var(--flaeche); }
+.demnaechst .anr { padding: 18px 16px 20px; }
+.demnaechst .titel { font-size: 21px; line-height: 1.2; }
+.demnaechst .grafik__zahl { font-size: 18px; }
+.demnaechst .grafik__orte { color: var(--leise); }
+
+/* ---------- Suche ---------- */
+
+.suchfeld { display: flex; gap: 8px; margin-top: 16px; max-width: 640px; }
+.suchfeld input {
+  flex: 1;
+  min-width: 0;
+  min-height: 48px;
+  padding: 0 14px;
+  font: inherit;
+  font-size: 18px;
+  color: var(--tinte);
+  background: var(--grund);
+  border: 1px solid var(--leise);
+  border-radius: 2px;
+}
+.knopf {
+  min-height: 48px;
+  padding: 0 18px;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--hell);
+  background: var(--tinte);
+  border: 0;
+  border-radius: 2px;
+  cursor: pointer;
+}
+.knopf:hover { background: oklch(0.3 0.012 255); }
+.treffer mark { background: none; color: inherit; font-weight: 750; }
+
+/* ---------- Kontakt ---------- */
+
+.kontakt { display: grid; gap: 32px; margin-top: 20px; }
+.kontakt__bild .rahmen { margin-inline: calc(-1 * var(--rand)); }
+.kontakt__daten dt { font-size: 13px; color: var(--leise); margin-top: 14px; }
+.kontakt__daten dd { font-size: 18px; line-height: 1.45; }
+.kontakt__daten a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+.kontakt__daten a:hover { color: var(--rot); }
+.beispiel { font-size: 13px; color: var(--leise); }
+.formular { display: grid; gap: 16px; max-width: 560px; }
+.formular label { display: block; font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+.formular input, .formular textarea {
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 14px;
+  font: inherit;
+  font-size: 18px;
+  color: var(--tinte);
+  background: var(--grund);
+  border: 1px solid var(--leise);
+  border-radius: 2px;
+}
+.formular textarea { min-height: 160px; resize: vertical; }
+.formular .knopf { justify-self: start; }
+.formular__hinweis { font-size: 14px; color: var(--leise); }
+
+/* ---------- Artikel ---------- */
+
+.artikel { padding: 20px var(--rand) 0; }
+.artikel .meta { margin-bottom: 8px; }
+.artikel__titel {
+  font-size: 28px;
+  line-height: 1.14;
+  font-weight: 650;
+  letter-spacing: -0.012em;
+  text-wrap: balance;
+  hyphens: manual;
+}
+.artikel__vorspann {
+  margin-top: 12px;
+  font-size: 19px;
+  line-height: 1.45;
+  font-weight: 500;
+}
+.artikel__leiste {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  column-gap: 16px;
+  margin-top: 16px;
+  border-top: 1px solid var(--linie);
+  font-size: 14px;
+  line-height: 1.35;
+  color: var(--leise);
+}
+.artikel__teilen {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--tinte);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+.artikel__teilen:hover { color: var(--rot); }
+.artikel__bild { margin: 8px calc(-1 * var(--rand)) 0; }
+.artikel__bild img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; object-position: 50% 30%; }
+.artikel__bild figcaption {
+  padding: 8px var(--rand) 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--leise);
+}
+.artikel__bild figcaption a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
+.artikel__bild figcaption a:hover { color: var(--rot); }
+.artikel__text {
+  margin-top: 24px;
+  font-size: 18px;
+  line-height: 1.6;
+}
+.artikel__text p + p { margin-top: 1em; }
+.artikel__ende { margin-top: 28px; border-top: 1px solid var(--linie); }
+
+/* ---------- ab 600 px ---------- */
+
+@media (min-width: 600px) {
+  :root { --rand: 24px; }
+  .kopf__logo img { height: 52px; }
+  .zeile .anr { grid-template-columns: minmax(0, 1fr) 160px; column-gap: 20px; }
+  .zeile .vorspann { display: block; }
+  .liste--gross .zeile .anr { grid-template-columns: 240px minmax(0, 1fr); }
+  .liste--gross .zeile .rahmen { grid-column: 1; }
+  .liste--gross .zeile .zeile__text { grid-column: 2; }
+  .kacheln li { flex-basis: 170px; }
+  .aufmacher .rahmen { margin-inline: 0; }
+  .aufmacher .titel { font-size: 34px; line-height: 1.1; }
+  .aufmacher .imbild { padding: 110px 28px 20px; }
+  .buehne__seite { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .meldungen ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 24px; }
+  .meldungen .zeile { border-top: 1px solid var(--linie); }
+  .meldungen .zeile:nth-child(-n+2) { border-top: 0; }
+  .meldungen .zeile .anr { grid-template-columns: minmax(0, 1fr) 120px; column-gap: 14px; }
+  .meldungen .zeile .vorspann { display: none; }
+  .wand { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .wand .kachel--gross { grid-column: 1 / -1; }
+  .spielorte { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .spielorte .grafik--termin { grid-column: 1 / -1; }
+  .kueche__raster { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .kueche .kachel--gross { grid-column: 1 / -1; }
+  .termin .anr { grid-template-columns: 72px 240px minmax(0, 1fr); column-gap: 20px; }
+  .termin__datum { grid-row: 1; }
+  .termin .rahmen { grid-column: 2; margin: 0; }
+  .termin__text { grid-column: 3; }
+  .kontakt__bild .rahmen { margin-inline: 0; }
+  .artikel { max-width: 760px; margin: 0 auto; padding-top: 32px; }
+  .artikel__bild { margin-inline: 0; }
+  .artikel__bild figcaption { padding-inline: 0; }
+}
+
+@media (min-width: 800px) {
+  .kopf__hinweise {
+    grid-area: hinw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    min-width: 0;
+    font-size: 13px;
+    line-height: 1.3;
+    color: var(--leise);
+    white-space: nowrap;
+  }
+  .kopf__hinweise strong { color: var(--tinte); font-weight: 600; }
+  .kopf__hinweise a { display: inline-flex; align-items: center; min-height: 44px; color: var(--tinte); }
+  .kopf__hinweise a + a::before {
+    content: "";
+    width: 1px;
+    height: 0.95em;
+    margin-right: 14px;
+    background: var(--linie);
+  }
+  .kopf__innen {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas: "datum hinw suche" "logo logo logo";
+  }
+}
+
+/* ---------- Desktop ---------- */
+
+@media (min-width: 1024px) {
+  :root { --rand: 40px; }
+
+  /* Kopf in einer Zeile: Logo links, Datum und Hinweise, Suche rechts */
+  .kopf__innen {
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    grid-template-areas: "logo datum hinw suche";
+    column-gap: 28px;
+    min-height: 76px;
+  }
+  .kopf__logo { padding: 9px 0; }
+  .kopf__logo img { height: 58px; }
+  .kopf__hinweise { justify-content: flex-end; }
+  .band ul { padding: 0 calc(var(--rand) - 14px); overflow: visible; }
+  .band a { padding: 0 14px; line-height: 46px; font-size: 16px; }
+  .band a[aria-current]::after { left: 14px; right: 14px; }
+
+  /* Bühne über die volle Breite: Aufmacher 3:2 und zwei Bildkacheln 3:2, beide Seiten enden auf einer Linie
+     (797 + 16 + 387 = 1200; 797 / 1,5 = 2 × 387 / 1,5 + 16) */
+  .buehne {
+    display: grid;
+    grid-template-columns: minmax(0, 797fr) minmax(0, 387fr);
+    column-gap: 16px;
+    padding-top: 20px;
+  }
+  .aufmacher .rahmen { aspect-ratio: 3 / 2; }
+  .aufmacher .imbild { padding: 140px 32px 22px; }
+  .aufmacher .titel { font-size: 40px; line-height: 1.1; letter-spacing: -0.015em; max-width: 17em; }
+  .aufmacher .vorspann--bild { display: block; margin-top: 10px; max-width: 40em; font-size: 17px; }
+  .aufmacher .vorspann--unter { display: none; }
+  .buehne__seite { grid-template-columns: none; gap: 16px; margin-top: 0; }
+  .buehne__seite .imbild { padding: 56px 20px 14px; }
+  .buehne__seite .titel { font-size: 20px; }
+
+  .meldungen { margin-top: 14px; }
+  .meldungen ul { grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 32px; }
+  .meldungen .zeile, .meldungen .zeile:nth-child(-n+2) { border-top: 0; }
+  .meldungen .zeile .anr { grid-template-columns: 120px minmax(0, 1fr); padding: 12px 0 0; }
+  .meldungen .zeile .rahmen { grid-column: 1; margin-top: 2px; }
+  .meldungen .zeile__text { grid-column: 2; }
+  .meldungen .titel { font-size: 17px; line-height: 1.28; }
+
+  .kacheln {
+    margin-top: 40px;
+    padding: 20px 0;
+    border-top: 1px solid var(--linie);
+    border-bottom: 1px solid var(--linie);
+  }
+  .kacheln ul {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 16px;
+    overflow: visible;
+    margin: 0;
+    padding: 0;
+  }
+  .kachel__name { font-size: 16px; padding: 26px 12px 9px; }
+
+  .block { margin-top: 56px; }
+  .weitere__raster {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: 40px;
+    align-items: start;
+  }
+  .weitere__liste { margin-top: 0; border-top: 0; }
+  .weitere__liste .zeile:first-child .anr { padding-top: 0; }
+  .weitere__liste .zeile .anr { grid-template-columns: 160px minmax(0, 1fr); column-gap: 20px; }
+  .weitere__liste .zeile .rahmen { grid-column: 1; margin-top: 0; }
+  .weitere__liste .zeile__text { grid-column: 2; }
+  .weitere__liste .zeile .vorspann { display: none; }
+  .weitere__liste .titel { font-size: 18px; line-height: 1.28; }
+  .stueck .titel { font-size: 24px; line-height: 1.18; }
+  .stueck .vorspann { font-size: 17px; }
+
+  .woche { margin-top: 72px; padding: 36px 0 52px; }
+  .woche__titel { font-size: 24px; margin-bottom: 24px; }
+  /* Plakatwand: Kanguva groß (3:2), rechts „Sardar 2“ (16:9) und „Rathamaarey“ (8:3) */
+  .wand {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    column-gap: 24px;
+    row-gap: 24px;
+  }
+  .wand .kachel--gross { grid-column: 1; grid-row: 1 / 3; }
+  .wand .kachel--gross .imbild { padding: 120px 28px 22px; }
+  .wand .kachel--gross .titel { font-size: 26px; line-height: 1.16; max-width: 22em; }
+  .wand .kachel { align-self: start; }
+  .wand .kachel .imbild { padding-inline: 20px; }
+  .spielorte { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+  .spielorte .grafik--termin { grid-column: auto; }
+  .grafik .anr { padding: 18px 20px 20px; }
+
+  /* Küche: 862 + 16 + 322 = 1200; links 3:2 (862 × 575), rechts drei 16:9 (322 × 181) mit 16 px Abstand */
+  .kueche__raster {
+    grid-template-columns: minmax(0, 862fr) minmax(0, 322fr);
+    column-gap: 16px;
+    row-gap: 16px;
+  }
+  .kueche .kachel--gross { grid-column: 1; grid-row: 1 / 4; }
+  .kueche .kachel--gross .imbild { padding: 120px 28px 22px; }
+  .kueche .kachel--gross .titel { font-size: 26px; }
+  .kueche .kachel--klein { grid-column: 2; }
+  .kueche .kachel--klein .imbild { padding: 30px 16px 10px; }
+  .kueche .kachel--klein .meta { margin-bottom: 2px; }
+  .kueche .kachel--klein .nachweis { margin-top: 4px; }
+
+  .fuss { margin-top: 88px; padding: 32px 0 56px; }
+  .fuss__innen { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 48px; align-items: start; }
+  .fuss ul { justify-content: flex-end; margin-top: 0; }
+
+  .seitenkopf { padding-top: 40px; padding-bottom: 12px; }
+  .seitenkopf__titel { font-size: 34px; }
+  .liste--gross .zeile .anr { grid-template-columns: 320px minmax(0, 1fr); column-gap: 28px; padding: 20px 0; }
+  .liste--gross .titel { font-size: 21px; line-height: 1.22; }
+  .liste--gross .vorspann { font-size: 17px; max-width: 36em; }
+  .termin .anr { grid-template-columns: 96px 320px minmax(0, 1fr); column-gap: 28px; padding: 20px 0; }
+  .termin .titel { font-size: 21px; }
+  .kontakt { grid-template-columns: minmax(0, 480px) minmax(0, 1fr); column-gap: 64px; align-items: start; }
+
+  .artikel { max-width: 1120px; padding: 48px var(--rand) 0; }
+  .artikel__kopf, .artikel__text, .artikel__ende { max-width: 600px; margin-inline: auto; }
+  .artikel__titel { font-size: 38px; line-height: 1.1; letter-spacing: -0.015em; }
+  .artikel__vorspann { font-size: 20px; margin-top: 14px; }
+  .artikel__bild { margin-top: 16px; }
+  .artikel__bild figcaption { max-width: 600px; margin-inline: auto; }
+  .artikel__text { margin-top: 36px; font-size: 19px; line-height: 1.6; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  .anr:hover .rahmen img, .kacheln a:hover .rahmen img { transform: none; }
+}

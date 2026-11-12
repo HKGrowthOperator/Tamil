@@ -1,0 +1,536 @@
+/* tamil.de – Probeseite „mix-feed“
+   App-artiger Bild-Feed mit der Schrift, den Farbwerten und der Lesbarkeit von „klar2“.
+   Wucht aus Fotos und Flächenaufteilung, nicht aus Rot oder Schriftgröße.
+   Wischen nur mit CSS (scroll-snap), kein JavaScript. */
+
+@font-face {
+  font-family: "Libre Franklin";
+  src: url("schriften/libre-franklin-latin-wght-normal.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Libre Franklin";
+  src: url("schriften/libre-franklin-latin-ext-wght-normal.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+:root {
+  --grund: oklch(0.985 0.002 250);
+  --flaeche: oklch(0.962 0.003 250);
+  --tinte: oklch(0.21 0.012 255);
+  --leise: oklch(0.45 0.012 255);
+  --linie: oklch(0.88 0.004 250);
+  --rot: oklch(0.508 0.177 25.6);
+  --hell: oklch(0.985 0.002 250);
+  --hell-leise: oklch(0.82 0.006 250);
+  --linie-dunkel: oklch(0.36 0.010 255);
+  --flaeche-dunkel: oklch(0.26 0.012 255);
+  /* der einzige Verlauf: unter Schrift im Bild, von durchsichtig nach Tinte */
+  --verlauf: linear-gradient(to bottom,
+    oklch(0.21 0.012 255 / 0) 0,
+    oklch(0.21 0.012 255 / 0.78) 64px,
+    oklch(0.21 0.012 255 / 0.92) 100%);
+
+  --schrift: "Libre Franklin", "Noto Sans Tamil", "Tamil Sangam MN", system-ui, sans-serif;
+  --rand: 16px;
+  --breite: 1280px;
+  --luft: 40px;
+  --zoom: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; scroll-padding-top: 56px; }
+body {
+  margin: 0;
+  background: var(--grund);
+  color: var(--tinte);
+  font-family: var(--schrift);
+  font-size: 18px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+:lang(ta) { font-family: "Noto Sans Tamil", "Tamil Sangam MN", "Latha", sans-serif; }
+h1, h2, h3, h4, p, ul, dl, dd, figure { margin: 0; }
+ul { padding: 0; list-style: none; }
+img { display: block; max-width: 100%; height: auto; }
+a { color: inherit; text-decoration: none; }
+a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--tinte);
+  outline-offset: 3px;
+}
+
+.nur-vorlesen {
+  position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+}
+.sprung {
+  position: absolute; left: 8px; top: -60px; z-index: 30;
+  padding: 10px 14px; background: var(--tinte); color: var(--hell); font-weight: 600;
+}
+.sprung:focus { top: 8px; }
+
+.innen { max-width: var(--breite); margin: 0 auto; padding: 0 var(--rand); }
+
+/* ---------- Kopf (wie klar2) ---------- */
+
+.kopfzeile { border-bottom: 1px solid var(--linie); }
+.kopfzeile__innen {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  min-height: 44px; font-size: 13px; line-height: 1.3; color: var(--leise);
+}
+.kopfzeile__hinweise { display: none; }
+.kopfzeile a { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; color: var(--tinte); }
+.kopfzeile a:hover { color: var(--rot); }
+.kopfzeile__suche { font-size: 14px; font-weight: 600; padding-left: 12px; }
+.kopfzeile__suche svg { width: 16px; height: 16px; flex: none; }
+.kopf__logo { display: block; width: max-content; padding: 6px 0; }
+.kopf__logo img { height: 44px; width: auto; }
+
+.band { position: sticky; top: 0; z-index: 10; background: var(--tinte); }
+.band ul {
+  display: flex; overflow-x: auto; scrollbar-width: none;
+  max-width: var(--breite); margin: 0 auto; padding: 0 4px;
+  scroll-snap-type: x proximity; scroll-padding-inline: 4px 50%;
+}
+.band ul::-webkit-scrollbar { display: none; }
+.band li { scroll-snap-align: start; }
+.band a {
+  position: relative; display: block; padding: 0 12px; line-height: 48px;
+  font-size: 15px; font-weight: 500; color: var(--hell-leise); white-space: nowrap;
+}
+.band a:hover { color: var(--hell); }
+.band a[aria-current] { color: var(--hell); font-weight: 600; }
+.band a[aria-current]::after {
+  content: ""; position: absolute; left: 12px; right: 12px; bottom: 0; height: 3px; background: var(--rot);
+}
+.band a:focus-visible { outline-color: var(--hell); outline-offset: -4px; }
+
+/* ---------- Dachzeile und Bildnachweis: ein Format überall ---------- */
+
+.dach { font-size: 13px; line-height: 1.35; color: var(--leise); margin-bottom: 6px; }
+.dach__rubrik { color: var(--rot); font-weight: 600; }
+.dach__rubrik::after, .dach__datum + .dach__ort::before {
+  content: ""; display: inline-block; width: 1px; height: 0.95em; margin: 0 8px;
+  background: currentColor; opacity: 0.7; vertical-align: -0.12em;
+}
+.nachweis { font-size: 12px; line-height: 1.35; color: var(--leise); margin-top: 6px; }
+
+/* ---------- Bildkarte: Titel im Bild ---------- */
+
+.karte { position: relative; }
+.karte__flaeche {
+  position: relative;
+  display: grid;
+  grid-template: 1fr / 1fr;
+  overflow: hidden;
+  aspect-ratio: 4 / 5;
+  background: var(--flaeche-dunkel);
+  color: var(--hell);
+}
+.karte__flaeche > img {
+  grid-area: 1 / 1;
+  width: 100%; height: 100%; min-height: 0;
+  object-fit: cover;
+  transition: var(--zoom);
+}
+.karte__text {
+  grid-area: 1 / 1;
+  align-self: end;
+  padding: 72px var(--rand) 18px;
+  background-image: var(--verlauf);
+}
+.karte .dach { color: var(--hell-leise); }
+.karte .dach__rubrik { color: var(--hell); }
+.karte__titel {
+  font-size: 22px; line-height: 1.2; font-weight: 650; text-wrap: balance; hyphens: manual;
+}
+.karte__titel a::after { content: ""; position: absolute; inset: 0; z-index: 1; }
+.karte__titel a:focus-visible { outline: none; }
+.karte__flaeche:has(a:focus-visible)::after {
+  content: ""; position: absolute; inset: 0; z-index: 2;
+  border: 3px solid var(--tinte); outline: 2px solid var(--hell); outline-offset: -5px;
+}
+.karte:hover .karte__flaeche > img { transform: scale(1.03); }
+.karte:hover .karte__titel a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.14em; }
+.karte__teaser { font-size: 18px; line-height: 1.5; margin-top: 10px; max-width: 62ch; }
+
+/* Aufmacher: füllt am Handy den ersten Bildschirm, die nächste Geschichte schaut darunter hervor */
+.karte--aufmacher .karte__flaeche { aspect-ratio: auto; height: clamp(420px, calc(100svh - 336px), 620px); }
+.karte--aufmacher .karte__titel { font-size: 30px; line-height: 1.12; letter-spacing: -0.005em; }
+.karte--aufmacher .karte__text { padding-bottom: 22px; }
+.karte--aufmacher .karte__teaser { display: none; }
+.karte--klein .karte__titel { font-size: 18px; line-height: 1.25; }
+.karte--klein .karte__text { padding: 64px 14px 14px; }
+
+/* randlos am Handy */
+.start__auf, .start__karte, .community__gross, .weitere__gross, .rubrik__auf, .rubrik__gross {
+  margin-inline: calc(-1 * var(--rand));
+}
+.start__auf .nachweis, .start__karte .nachweis, .community__gross .nachweis, .weitere__gross .nachweis,
+.rubrik__auf .nachweis, .rubrik__gross .nachweis, .start__auf .karte__teaser, .rubrik__auf .karte__teaser {
+  padding-inline: var(--rand);
+}
+
+/* ---------- Meldung mit kleinem Bild ---------- */
+
+.zeile {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 112px;
+  gap: 14px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--linie);
+}
+.zeile__bild { overflow: hidden; aspect-ratio: 4 / 3; background: var(--flaeche); align-self: start; }
+.zeile__bild img { width: 100%; height: 100%; object-fit: cover; transition: var(--zoom); }
+.zeile__titel { font-size: 18px; line-height: 1.28; font-weight: 650; text-wrap: balance; }
+.zeile__titel a::after { content: ""; position: absolute; inset: 0; }
+.zeile:hover .zeile__titel a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.14em; }
+.zeile:hover .zeile__bild img { transform: scale(1.03); }
+.zeile__teaser { font-size: 17px; line-height: 1.5; margin-top: 6px; }
+
+/* ---------- Nebenstück: Bild oben, Text darunter ---------- */
+
+.stueck { position: relative; }
+.stueck__bild { overflow: hidden; aspect-ratio: 3 / 2; background: var(--flaeche); }
+.stueck__bild img { width: 100%; height: 100%; object-fit: cover; transition: var(--zoom); }
+.stueck .nachweis { margin: 6px 0 10px; }
+.stueck__titel { font-size: 20px; line-height: 1.24; font-weight: 650; text-wrap: balance; }
+.stueck__titel a::after { content: ""; position: absolute; inset: 0; }
+.stueck:hover .stueck__titel a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.14em; }
+.stueck:hover .stueck__bild img { transform: scale(1.03); }
+.stueck__teaser { font-size: 17px; line-height: 1.5; margin-top: 8px; }
+
+/* ---------- Wischstreifen ---------- */
+
+.streifen {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--rand);
+  margin-inline: calc(-1 * var(--rand));
+  padding: 0 var(--rand) 6px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--linie) transparent;
+}
+.streifen__teil { flex: 0 0 72%; scroll-snap-align: start; }
+.streifen:focus-visible { outline-offset: -2px; }
+
+/* ---------- Blöcke ---------- */
+
+.block { margin-top: var(--luft); }
+.block__kopf {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+  border-top: 1px solid var(--tinte); padding-top: 12px; margin-bottom: 14px;
+}
+.block__titel { font-size: 22px; line-height: 1.2; font-weight: 700; }
+.block__mehr { font-size: 15px; font-weight: 600; min-height: 44px; display: inline-flex; align-items: center; }
+.block__mehr:hover, .woche__alle:hover { color: var(--rot); text-decoration: underline; text-underline-offset: 0.18em; }
+
+/* Startseite */
+.start { padding-top: 0; }
+.start__aktuell { margin-top: 4px; }
+.start__karte { margin-top: 24px; }
+.start__karte .karte__titel { font-size: 22px; }
+
+/* Community: große Karte, dann Streifen */
+.community__klein { margin-top: 20px; }
+.community__klein .karte__flaeche { aspect-ratio: 4 / 5; }
+
+/* Küche: Streifen mit quadratischeren Kacheln */
+.kueche__reihe .karte__flaeche { aspect-ratio: 4 / 5; }
+
+/* Weitere Geschichten */
+.weitere__raster { display: grid; gap: 0; }
+.weitere__gross { margin-bottom: 8px; }
+.weitere__stueck { padding: 20px 0; border-bottom: 1px solid var(--linie); }
+
+/* ---------- Diese Woche (dunkel) ---------- */
+
+.woche { background: var(--tinte); color: var(--hell); margin-top: var(--luft); padding: 28px 0 36px; }
+.woche__kopf { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+.woche__titel { font-size: 24px; line-height: 1.2; font-weight: 700; }
+.woche__alle { font-size: 15px; font-weight: 600; color: var(--hell); min-height: 44px; display: inline-flex; align-items: center; }
+.woche__alle:hover { color: var(--hell); }
+.woche__unter {
+  font-size: 13px; line-height: 1.3; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--hell-leise); margin: 20px 0 12px; padding-top: 12px; border-top: 1px solid var(--linie-dunkel);
+}
+.woche a:focus-visible, .woche .streifen:focus-visible { outline-color: var(--hell); }
+.woche .nachweis { color: var(--hell-leise); }
+.woche .dach { color: var(--hell-leise); }
+.woche .dach__rubrik { color: var(--hell); }
+.woche .streifen { scrollbar-color: var(--linie-dunkel) transparent; }
+
+/* Plakat-Streifen */
+.streifen--plakate .streifen__teil { flex-basis: 58%; }
+.plakat { position: relative; }
+.plakat__bild, .plakat__grafik { aspect-ratio: 2 / 3; overflow: hidden; background: var(--flaeche-dunkel); }
+.plakat__bild img { width: 100%; height: 100%; object-fit: cover; transition: var(--zoom); }
+.plakat:hover .plakat__bild img { transform: scale(1.03); }
+.plakat .nachweis { margin: 6px 0 8px; }
+.plakat__titel { font-size: 17px; line-height: 1.3; font-weight: 600; text-wrap: balance; }
+.plakat__titel a::after, .plakat__film a::after { content: ""; position: absolute; inset: 0; }
+.plakat:hover .plakat__titel a, .plakat:hover .plakat__film a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.14em; }
+.plakat__grafik {
+  display: flex; flex-direction: column; justify-content: flex-end; gap: 10px;
+  padding: 18px 16px;
+  border-top: 3px solid var(--rot);
+}
+.plakat__marke { font-size: 13px; line-height: 1.3; color: var(--hell-leise); margin-bottom: auto; }
+.plakat__film { font-size: 22px; line-height: 1.2; font-weight: 700; text-wrap: balance; }
+.plakat__zahl { font-size: 17px; line-height: 1.2; color: var(--hell-leise); }
+.plakat__zahl span { font-size: 28px; font-weight: 700; color: var(--hell); }
+.plakat__orte { font-size: 15px; line-height: 1.4; color: var(--hell-leise); }
+
+/* Termine */
+.termine { border-top: 1px solid var(--linie-dunkel); }
+.termin {
+  position: relative; display: grid; grid-template-columns: 76px 1fr; gap: 16px;
+  padding: 16px 0; border-bottom: 1px solid var(--linie-dunkel);
+}
+.termine { border-top: 0; }
+.termin__datum { display: flex; flex-direction: column; line-height: 1.15; }
+.termin__tag { font-size: 28px; font-weight: 700; }
+.termin__monat { font-size: 15px; font-weight: 600; }
+.termin__wochentag { font-size: 13px; color: var(--hell-leise); margin-top: 2px; }
+.termin__titel { font-size: 19px; line-height: 1.25; font-weight: 650; }
+.termin__titel a::after { content: ""; position: absolute; inset: 0; }
+.termin:hover .termin__titel a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.14em; }
+.termin__ort { font-size: 15px; color: var(--hell-leise); margin-top: 4px; }
+.termin__info { font-size: 17px; line-height: 1.5; margin-top: 6px; color: var(--hell); }
+
+/* ---------- Seitenkopf (Rubrik, Termine, Suche, Kontakt) ---------- */
+
+.seitenkopf { padding-top: 24px; padding-bottom: 20px; }
+.seitenkopf__titel { font-size: 30px; line-height: 1.15; font-weight: 700; }
+.seitenkopf__text { font-size: 18px; line-height: 1.5; color: var(--leise); margin-top: 8px; max-width: 60ch; }
+
+/* Rubrik */
+.rubrik__neben { margin-top: 20px; }
+.rubrik__neben .karte__flaeche { aspect-ratio: 4 / 5; }
+.rubrik__mitte { display: grid; gap: 0; }
+.rubrik__gross { margin-bottom: 8px; }
+.rubrik__stueck { padding: 20px 0; border-bottom: 1px solid var(--linie); }
+
+/* Termine: zurückliegend */
+.vergangen__monat { margin-bottom: 8px; }
+.vergangen__titel { font-size: 15px; line-height: 1.3; font-weight: 700; padding: 14px 0 10px; color: var(--leise); }
+.vergangen__liste { display: grid; gap: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--linie); }
+.vergangen__stueck .stueck__titel { font-size: 19px; }
+
+/* ---------- Artikel ---------- */
+
+.artikel__rahmen { overflow: hidden; aspect-ratio: 4 / 3; background: var(--flaeche); max-height: 72svh; }
+.artikel__rahmen img { width: 100%; height: 100%; object-fit: cover; }
+.artikel__bildzeile { font-size: 14px; line-height: 1.45; color: var(--leise); padding: 8px var(--rand) 0; max-width: 760px; margin: 0 auto; }
+.artikel__bildzeile .nachweis { display: inline; font-size: 13px; margin: 0; }
+.artikel__spalte { max-width: calc(68ch + 2 * var(--rand)); margin: 0 auto; padding: 24px var(--rand) 0; }
+.artikel__titel { font-size: 30px; line-height: 1.15; font-weight: 700; text-wrap: balance; letter-spacing: -0.005em; }
+.artikel__vorspann { font-size: 20px; line-height: 1.45; font-weight: 500; margin-top: 14px; }
+.artikel__meta {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 16px;
+  font-size: 15px; color: var(--leise); margin-top: 18px; padding: 4px 0; border-block: 1px solid var(--linie);
+}
+.artikel__teilen {
+  display: inline-flex; align-items: center; min-height: 44px; font-weight: 600; color: var(--tinte);
+  text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em;
+}
+.artikel__teilen:hover { color: var(--rot); }
+.artikel__text { margin-top: 24px; }
+.artikel__text p { font-size: 19px; line-height: 1.65; margin-bottom: 1.1em; }
+.artikel__hinweis { font-size: 14px; color: var(--leise); border-top: 1px solid var(--linie); padding-top: 12px; margin-top: 8px; }
+.streifen--mehr .karte__flaeche { aspect-ratio: 4 / 5; }
+
+/* ---------- Suche ---------- */
+
+.suche { padding-top: 24px; }
+.suche__form { display: flex; gap: 8px; margin-top: 14px; }
+.suche__form input, .kontakt__form input, .kontakt__form textarea {
+  font: inherit; font-size: 18px; color: var(--tinte); background: #fff; border: 1px solid var(--leise);
+  border-radius: 2px; padding: 10px 12px; min-height: 48px; width: 100%;
+}
+.suche__form button, .kontakt__form button {
+  font: inherit; font-size: 17px; font-weight: 600; color: var(--hell); background: var(--tinte);
+  border: 0; border-radius: 2px; padding: 0 20px; min-height: 48px; cursor: pointer;
+}
+.suche__form button:hover, .kontakt__form button:hover { background: oklch(0.32 0.012 255); }
+.suche__zahl { font-size: 15px; color: var(--leise); margin: 18px 0 4px; padding-bottom: 10px; border-bottom: 1px solid var(--tinte); }
+.suche .zeile__titel { font-size: 20px; }
+
+/* ---------- Kontakt ---------- */
+
+.kontakt__kopf { padding-inline: 0; }
+.kontakt__raster { display: grid; gap: 32px; }
+.kontakt__daten { display: grid; grid-template-columns: 1fr; border-top: 1px solid var(--tinte); }
+.kontakt__daten dt { font-size: 13px; font-weight: 600; color: var(--leise); padding-top: 14px; }
+.kontakt__daten dd { font-size: 18px; padding: 2px 0 14px; border-bottom: 1px solid var(--linie); }
+.kontakt__daten a { text-decoration: underline; text-underline-offset: 0.2em; display: inline-flex; min-height: 44px; align-items: center; }
+.platzhalter { font-size: 13px; color: var(--leise); border: 1px solid var(--linie); padding: 0 6px; margin-left: 6px; }
+.kontakt__form { display: grid; gap: 6px; }
+.kontakt__formtitel { font-size: 20px; font-weight: 700; margin-bottom: 8px; padding-top: 12px; border-top: 1px solid var(--tinte); }
+.kontakt__form label { font-size: 15px; font-weight: 600; margin-top: 8px; }
+.kontakt__form button { justify-self: start; margin-top: 14px; }
+.kontakt__hinweis { font-size: 14px; color: var(--leise); }
+
+/* ---------- Fuß ---------- */
+
+.fuss { margin-top: 56px; border-top: 1px solid var(--linie); padding: 28px 0 40px; }
+.fuss__innen { display: grid; gap: 16px; }
+.fuss__logo img { height: 36px; width: auto; }
+.fuss__logo { width: max-content; }
+.fuss__links { display: flex; flex-wrap: wrap; column-gap: 20px; }
+.fuss__links a { display: inline-flex; min-height: 44px; align-items: center; font-size: 16px; font-weight: 500; }
+.fuss__links a:hover { color: var(--rot); }
+.fuss__hinweis { font-size: 14px; line-height: 1.5; color: var(--leise); max-width: 70ch; }
+
+/* =========================================================
+   Tablet
+   ========================================================= */
+
+@media (min-width: 640px) {
+  :root { --rand: 24px; --luft: 48px; }
+  .streifen__teil { flex-basis: 42%; }
+  .streifen--plakate .streifen__teil { flex-basis: 30%; }
+  .karte--aufmacher .karte__flaeche { height: clamp(440px, 62vw, 620px); }
+  .karte--aufmacher .karte__titel { font-size: 34px; }
+  .weitere__raster, .rubrik__mitte { grid-template-columns: 1fr 1fr; column-gap: 24px; }
+  .weitere__gross, .rubrik__gross { grid-column: 1 / -1; }
+  .vergangen__liste { grid-template-columns: 1fr 1fr; }
+  .zeile { grid-template-columns: 1fr 160px; }
+}
+
+/* =========================================================
+   Desktop: dichtes Bildraster mit unterschiedlichen Kachelgrößen
+   ========================================================= */
+
+@media (min-width: 1024px) {
+  :root { --rand: 32px; --luft: 56px; }
+  .kopfzeile__hinweise { display: flex; align-items: center; gap: 16px; margin: 0; }
+  .kopfzeile__hinweise strong { color: var(--tinte); font-weight: 600; }
+  .kopfzeile__hinweise a + a { border-left: 1px solid var(--linie); padding-left: 16px; min-height: 20px; }
+  .kopf__logo img { height: 58px; }
+  .kopf__logo { padding: 8px 0; }
+
+  /* kein randloses Bild am Desktop */
+  .start__auf, .start__karte, .community__gross, .weitere__gross, .rubrik__auf, .rubrik__gross { margin-inline: 0; }
+  .start__auf .nachweis, .start__karte .nachweis, .community__gross .nachweis, .weitere__gross .nachweis,
+  .rubrik__auf .nachweis, .rubrik__gross .nachweis, .start__auf .karte__teaser, .rubrik__auf .karte__teaser { padding-inline: 0; }
+
+  .karte__text { padding: 88px 24px 22px; }
+  .karte__titel { font-size: 24px; }
+  .karte--klein .karte__titel { font-size: 19px; }
+  .karte--klein .karte__text { padding: 64px 16px 16px; }
+
+  /* Streifen werden am Desktop zu festen Reihen */
+  .streifen {
+    margin-inline: 0; padding: 0; overflow: visible; scroll-snap-type: none;
+    display: grid; gap: 20px;
+  }
+  .streifen__teil { min-width: 0; }
+
+  /* Start: Aufmacher 8 Spalten, rechts Bildkarte und drei Meldungen */
+  .start {
+    display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 24px;
+    padding-top: 24px; align-items: start;
+  }
+  .start__auf { grid-column: 1 / 9; grid-row: 1 / 3; }
+  .karte--aufmacher .karte__flaeche { height: auto; aspect-ratio: 3 / 2; }
+  .karte--aufmacher .karte__titel { font-size: 40px; line-height: 1.1; }
+  .karte--aufmacher .karte__text { padding: 120px 32px 28px; }
+  .karte--aufmacher .karte__teaser { display: block; }
+  .start__karte { grid-column: 9 / 13; grid-row: 1; margin-top: 0; }
+  .start__karte .karte__flaeche { aspect-ratio: 16 / 10; }
+  .start__karte .karte__titel { font-size: 20px; }
+  .start__karte .karte__text { padding: 56px 18px 16px; }
+  .start__aktuell { grid-column: 9 / 13; grid-row: 2; margin-top: 4px; align-self: start; }
+  .start__aktuell .zeile { grid-template-columns: 1fr 104px; gap: 14px; padding: 12px 0; }
+  .start__aktuell .zeile:last-child { border-bottom: 0; }
+  .start__aktuell .zeile__titel { font-size: 17px; }
+
+  /* Diese Woche: fünf Plakate in einer Reihe, Termine daneben zweispaltig */
+  .woche { padding: 36px 0 44px; }
+  .woche__titel { font-size: 26px; }
+  .streifen--plakate { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .termine { display: grid; grid-template-columns: 1fr 1fr; column-gap: 40px; }
+  .termin { grid-template-columns: 84px 1fr; }
+
+  /* Community: hohe Karte links, 2 × 2 rechts */
+  .community__raster { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 24px; }
+  .community__gross { grid-column: 1 / 6; }
+  .community__gross .karte__flaeche { aspect-ratio: auto; height: 100%; min-height: 560px; }
+  .community__gross { display: flex; flex-direction: column; }
+  .community__gross .karte__flaeche { flex: 1; }
+  .community__klein { grid-column: 6 / 13; margin-top: 0; grid-template-columns: 1fr 1fr; row-gap: 20px; }
+  .community__klein .karte__flaeche { aspect-ratio: 3 / 2; }
+
+  /* Küche: eine Reihe, die erste Kachel doppelt breit */
+  .kueche__reihe { grid-template-columns: 2fr 1fr 1fr 1fr 1fr; }
+  .kueche__reihe .karte__flaeche { aspect-ratio: auto; height: 340px; }
+
+  /* Weitere: breite Karte und drei Nebenstücke */
+  .weitere__raster { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 24px; }
+  .weitere__gross { grid-column: 1 / 7; margin: 0; }
+  .weitere__gross .karte__flaeche { aspect-ratio: 4 / 3; }
+  .weitere__stueck { grid-column: span 2; padding: 0; border: 0; }
+  .weitere__stueck .stueck__bild { aspect-ratio: 4 / 5; }
+  .weitere__stueck .stueck__titel { font-size: 18px; }
+  .weitere__stueck .stueck__teaser { font-size: 16px; }
+
+  /* Rubrik */
+  .seitenkopf { padding-top: 32px; padding-bottom: 24px; }
+  .seitenkopf__titel { font-size: 34px; }
+  .rubrik__oben { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 24px; align-items: start; }
+  .rubrik__auf { grid-column: 1 / 9; }
+  .rubrik__neben { grid-column: 9 / 13; margin-top: 0; grid-template-columns: 1fr; }
+  .rubrik__neben .karte__flaeche { aspect-ratio: 16 / 10; }
+  .rubrik__mitte { grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 24px; }
+  .rubrik__gross { grid-column: 1 / 7; margin: 0; }
+  .rubrik__gross .karte__flaeche { aspect-ratio: 4 / 3; }
+  .rubrik__stueck { grid-column: span 3; padding: 0; border: 0; }
+  .archiv__liste { display: grid; grid-template-columns: 1fr 1fr; column-gap: 40px; }
+  .archiv .zeile { grid-template-columns: 1fr 180px; }
+
+  /* Termine zurückliegend: Monat links, Beiträge rechts */
+  .vergangen__monat { display: grid; grid-template-columns: 200px 1fr; gap: 24px; border-bottom: 1px solid var(--linie); padding: 8px 0 28px; margin: 0; }
+  .vergangen__titel { padding: 0; font-size: 17px; color: var(--tinte); }
+  .vergangen__liste { grid-template-columns: repeat(3, minmax(0, 1fr)); border: 0; padding: 0; }
+
+  /* Artikel */
+  .artikel__bild { max-width: var(--breite); margin: 24px auto 0; padding: 0 var(--rand); }
+  .artikel__rahmen { aspect-ratio: 2 / 1; max-height: none; }
+  .artikel__bildzeile { padding: 8px 0 0; max-width: none; }
+  .artikel__spalte { padding-top: 32px; }
+  .artikel__titel { font-size: 40px; }
+  .artikel__vorspann { font-size: 21px; }
+  .artikel__text p { font-size: 20px; }
+  .streifen--mehr { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .streifen--mehr .karte__flaeche { aspect-ratio: 3 / 4; }
+
+  /* Suche, Kontakt */
+  .suche { max-width: calc(820px + 2 * var(--rand)); }
+  .suche .zeile { grid-template-columns: 1fr 220px; gap: 24px; }
+  .kontakt__raster { grid-template-columns: 5fr 7fr; gap: 56px; }
+
+  .fuss__innen { grid-template-columns: auto 1fr; align-items: center; column-gap: 40px; }
+  .fuss__hinweis { grid-column: 1 / -1; }
+}
+
+@media (min-width: 1024px) and (hover: hover) {
+  .streifen { scrollbar-width: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; scroll-behavior: auto !important; }
+  .karte:hover .karte__flaeche > img, .zeile:hover .zeile__bild img, .stueck:hover .stueck__bild img,
+  .plakat:hover .plakat__bild img { transform: none; }
+}
