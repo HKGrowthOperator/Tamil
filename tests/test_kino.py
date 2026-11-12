@@ -95,7 +95,7 @@ def test_kinoheld_an_der_obergrenze_ist_ein_teilausfall(settings):
     """Bei genau so vielen Treffern wie angefragt ist die Liste womöglich abgeschnitten → nichts abziehen."""
     daten = json.loads((FIX / "kinoheld_search.json").read_text(encoding="utf-8"))
     treffer = [r for r in daten["data"]["search"] if r.get("__typename") == "Show"]
-    daten["data"]["search"] = (treffer * 100)[:100]
+    daten["data"]["search"] = (treffer * 1000)[:kp.KINOHELD_LIMIT]
 
     class Http(FakeHttp):
         def post(self, url, **kw):
@@ -161,3 +161,17 @@ def test_laufzeit_ohne_uhrzeit_im_fingerprint_und_frueheste_zuerst():
     beide = item(date(2026, 10, 18), date(2026, 10, 16))
     assert beide.facts["kinos"][0]["von"] == "2026-10-16"
     assert item(date(2026, 10, 16)).fingerprint != item(date(2026, 10, 17)).fingerprint
+
+
+def test_kinoheld_100_treffer_sind_vollstaendig(settings):
+    """Die alte Grenze 100 war Alltag (Dauer-Teilausfall); erst die angehobene Grenze gilt als abgeschnitten."""
+    assert kp.KINOHELD_LIMIT >= 500 and f"limit: {kp.KINOHELD_LIMIT}" in kp.KINOHELD_QUERY
+    daten = json.loads((FIX / "kinoheld_search.json").read_text(encoding="utf-8"))
+    treffer = [r for r in daten["data"]["search"] if r.get("__typename") == "Show"]
+    daten["data"]["search"] = (treffer * 100)[:100]
+
+    class Http(FakeHttp):
+        def post(self, url, **kw):
+            return self._resp(daten)
+
+    assert kp.fetch_kinoheld(Source(name="kinoheld", type="kino", provider="kinoheld"), settings, http=Http({}))
