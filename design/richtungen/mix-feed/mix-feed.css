@@ -96,8 +96,8 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .band { position: sticky; top: 0; z-index: 10; background: var(--tinte); }
 .band ul {
   display: flex; overflow-x: auto; scrollbar-width: none;
-  max-width: var(--breite); margin: 0 auto; padding: 0 4px;
-  scroll-snap-type: x proximity; scroll-padding-inline: 4px 50%;
+  max-width: var(--breite); margin: 0 auto; padding: 0 calc(var(--rand) - 12px);
+  scroll-snap-type: x proximity; scroll-padding-inline: calc(var(--rand) - 12px) 50%;
 }
 .band ul::-webkit-scrollbar { display: none; }
 .band li { scroll-snap-align: start; }
@@ -120,7 +120,8 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   content: ""; display: inline-block; width: 1px; height: 0.95em; margin: 0 8px;
   background: currentColor; opacity: 0.7; vertical-align: -0.12em;
 }
-.nachweis { font-size: 12px; line-height: 1.35; color: var(--leise); margin-top: 6px; }
+.nachweis { font-size: 12px; line-height: 1.35; color: var(--leise); margin-top: 5px; }
+.nachweis__lizenz { white-space: nowrap; }
 
 /* ---------- Bildkarte: Titel im Bild ---------- */
 
@@ -143,7 +144,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .karte__text {
   grid-area: 1 / 1;
   align-self: end;
-  padding: 72px var(--rand) 18px;
+  padding: 56px var(--rand) 18px;
   background-image: var(--verlauf);
 }
 .karte .dach { color: var(--hell-leise); }
@@ -162,19 +163,19 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .karte__teaser { font-size: 18px; line-height: 1.5; margin-top: 10px; max-width: 62ch; }
 
 /* Aufmacher: füllt am Handy den ersten Bildschirm, die nächste Geschichte schaut darunter hervor */
-.karte--aufmacher .karte__flaeche { aspect-ratio: auto; height: clamp(420px, calc(100svh - 336px), 620px); }
+.karte--aufmacher .karte__flaeche { aspect-ratio: 1 / 1; }
 .karte--aufmacher .karte__titel { font-size: 30px; line-height: 1.12; letter-spacing: -0.005em; }
 .karte--aufmacher .karte__text { padding-bottom: 22px; }
-.karte--aufmacher .karte__teaser { display: none; }
+.karte--aufmacher .karte__teaser { padding-inline: var(--rand); max-width: 34em; }
 .karte--klein .karte__titel { font-size: 18px; line-height: 1.25; }
 .karte--klein .karte__text { padding: 64px 14px 14px; }
 
 /* randlos am Handy */
-.start__auf, .start__karte, .community__gross, .weitere__gross, .rubrik__auf, .rubrik__gross {
+.start__auf, .start__kacheln > .karte, .community__gross, .rubrik__auf, .rubrik__gross {
   margin-inline: calc(-1 * var(--rand));
 }
-.start__auf .nachweis, .start__karte .nachweis, .community__gross .nachweis, .weitere__gross .nachweis,
-.rubrik__auf .nachweis, .rubrik__gross .nachweis, .start__auf .karte__teaser, .rubrik__auf .karte__teaser {
+.start__auf .nachweis, .start__kacheln > .karte .nachweis, .community__gross .nachweis,
+.rubrik__auf .nachweis, .rubrik__gross .nachweis, .rubrik__auf .karte__teaser {
   padding-inline: var(--rand);
 }
 
@@ -183,23 +184,23 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .zeile {
   position: relative;
   display: grid;
-  grid-template-columns: 1fr 100px;
+  grid-template-columns: minmax(0, 1fr) min(112px, 28vw);
   gap: 12px;
   padding: 16px 0;
   border-bottom: 1px solid var(--linie);
 }
-.zeile__bild { overflow: hidden; aspect-ratio: 4 / 3; background: var(--flaeche); align-self: start; }
+.zeile__bild { overflow: hidden; aspect-ratio: 3 / 2; background: var(--flaeche); align-self: start; }
 .zeile__bild img { width: 100%; height: 100%; object-fit: cover; transition: var(--zoom); }
 .zeile__titel { font-size: 18px; line-height: 1.28; font-weight: 650; text-wrap: balance; }
-.karte__titel a, .plakat__titel a, .plakat__film a, .zeile__titel a, .stueck__titel a, .termin__titel a {
+.karte__titel a, .zeile__titel a, .stueck__titel a, .termin__titel a {
   /* Tippfläche mindestens 44 px hoch, ohne den Satz zu verschieben */
   display: block; padding-block: 11px; margin-block: -11px;
 }
-.karte__titel, .plakat__titel, .plakat__film, .zeile__titel, .stueck__titel, .termin__titel { display: flow-root; }
+.karte__titel, .zeile__titel, .stueck__titel, .termin__titel { display: flow-root; }
 .zeile__titel a::after { content: ""; position: absolute; inset: 0; }
 .zeile:hover .zeile__titel a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.14em; }
 .zeile:hover .zeile__bild img { transform: scale(1.03); }
-.zeile__teaser { font-size: 17px; line-height: 1.5; margin-top: 6px; }
+.zeile__teaser { font-size: 18px; line-height: 1.5; margin-top: 6px; }
 
 /* ---------- Nebenstück: Bild oben, Text darunter ---------- */
 
@@ -211,7 +212,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .stueck__titel a::after { content: ""; position: absolute; inset: 0; }
 .stueck:hover .stueck__titel a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.14em; }
 .stueck:hover .stueck__bild img { transform: scale(1.03); }
-.stueck__teaser { font-size: 17px; line-height: 1.5; margin-top: 8px; }
+.stueck__teaser { font-size: 18px; line-height: 1.5; margin-top: 8px; }
 
 /* ---------- Wischstreifen ---------- */
 
@@ -243,9 +244,11 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 
 /* Startseite */
 .start { padding-top: 0; }
-.start__aktuell { margin-top: 4px; }
-.start__karte { margin-top: 24px; }
-.start__karte .karte__titel { font-size: 22px; }
+.start__kacheln { display: grid; gap: 24px; margin-top: 24px; }
+.karte--feed .karte__titel { font-size: 22px; }
+.start__streifen .karte__titel { font-size: 19px; }
+.start__streifen .karte__text { padding: 56px 14px 14px; }
+.meldungen .zeile:last-child { border-bottom: 0; }
 
 /* Community: große Karte, dann Streifen */
 .community__klein { margin-top: 20px; }
@@ -255,9 +258,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .kueche__reihe .karte__flaeche { aspect-ratio: 4 / 5; }
 
 /* Weitere Geschichten */
-.weitere__raster { display: grid; gap: 0; }
-.weitere__gross { margin-bottom: 8px; }
-.weitere__stueck { padding: 20px 0; border-bottom: 1px solid var(--linie); }
+
 
 /* ---------- Diese Woche (dunkel) ---------- */
 
@@ -276,27 +277,19 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .woche .dach__rubrik { color: var(--hell); }
 .woche .streifen { scrollbar-color: var(--linie-dunkel) transparent; }
 
-/* Plakat-Streifen */
-.streifen--plakate .streifen__teil { flex-basis: 66%; }
-.plakat { position: relative; }
-.plakat--radar { align-self: start; }
-.plakat__bild, .plakat__grafik { aspect-ratio: 2 / 3; overflow: hidden; background: var(--flaeche-dunkel); }
-.plakat__bild img { width: 100%; height: 100%; object-fit: cover; transition: var(--zoom); }
-.plakat:hover .plakat__bild img { transform: scale(1.03); }
-.plakat .nachweis { margin: 6px 0 8px; }
-.plakat__titel { font-size: 17px; line-height: 1.3; font-weight: 600; text-wrap: balance; }
-.plakat__titel a::after, .plakat__film a::after { content: ""; position: absolute; inset: 0; }
-.plakat:hover .plakat__titel a, .plakat:hover .plakat__film a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.14em; }
-.plakat__grafik {
-  display: flex; flex-direction: column; justify-content: flex-end; gap: 10px;
-  padding: 18px 16px;
-  border-top: 3px solid var(--rot);
-}
-.plakat__marke { font-size: 13px; line-height: 1.3; color: var(--hell-leise); margin-bottom: auto; }
-.plakat__film { font-size: 22px; line-height: 1.2; font-weight: 700; text-wrap: balance; }
-.plakat__zahl { font-size: 17px; line-height: 1.2; color: var(--hell-leise); }
-.plakat__zahl span { font-size: 24px; font-weight: 700; color: var(--hell); }
-.plakat__orte { font-size: 15px; line-height: 1.4; color: var(--hell-leise); }
+/* Im Kino: ein Leitstück mit Bild, Radar-Filme als schmale Liste, zwei Kino-Beiträge im Streifen */
+.kino { display: grid; gap: 20px; }
+.kino .karte__flaeche { aspect-ratio: 3 / 2; }
+.kino .karte__titel { font-size: 21px; }
+.kinoliste { border-top: 3px solid var(--rot); padding-top: 10px; }
+.kinoliste__kopf { font-size: 13px; line-height: 1.3; color: var(--hell-leise); }
+.kinoliste__film { padding: 12px 0; border-bottom: 1px solid var(--linie-dunkel); }
+.kinoliste__titel { font-size: 19px; line-height: 1.25; font-weight: 650; }
+.kinoliste__zahl { font-size: 16px; color: var(--hell-leise); margin-top: 2px; }
+.kinoliste__zahl strong { color: var(--hell); font-weight: 700; }
+.kinoliste__orte { font-size: 15px; line-height: 1.4; color: var(--hell-leise); }
+.kino__mehr .stueck__titel { font-size: 17px; }
+.kino__mehr .stueck__titel a:focus-visible { outline-color: var(--hell); }
 
 /* Termine */
 .termine { border-top: 1px solid var(--linie-dunkel); }
@@ -313,7 +306,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .termin__titel a::after { content: ""; position: absolute; inset: 0; }
 .termin:hover .termin__titel a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.14em; }
 .termin__ort { font-size: 15px; color: var(--hell-leise); margin-top: 4px; }
-.termin__info { font-size: 17px; line-height: 1.5; margin-top: 6px; color: var(--hell); }
+.termin__info { font-size: 18px; line-height: 1.5; margin-top: 6px; color: var(--hell); }
 
 /* ---------- Seitenkopf (Rubrik, Termine, Suche, Kontakt) ---------- */
 
