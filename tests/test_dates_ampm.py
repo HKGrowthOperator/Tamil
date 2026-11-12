@@ -98,3 +98,15 @@ def test_spanne_mit_doppelpunkt_uebernimmt_gemeinsamen_zusatz():
 ])
 def test_spanne_mit_doppelpunkt_weitere_faelle(text, erwartet):
     assert _zeit(text) == erwartet
+
+
+@pytest.mark.parametrize("text,erwartet", [
+    # Befund der Code-Prüfung: „12:30 pm“ ist nie Mitternacht
+    ("14.01.2027 Pongal-Pooja 7:00 – 12:30 pm", ("2027-01-14 07:00", True)),
+    ("14.01.2027 7–12:30 pm", ("2027-01-14 07:00", True)),
+    # Spanne mit Doppelpunkt bis „12:00 PM“: keine Abend-Annahme, die erste Zeit gilt wie vor der Änderung
+    ("7.11.2026 8:00 – 12:00 PM", ("2026-11-07 08:00", True)),
+    ("7.11.2026 6:00 – 12:00 pm", ("2026-11-07 06:00", True)),
+])
+def test_mittag_ist_nicht_mitternacht(text, erwartet):
+    assert _zeit(text) == erwartet

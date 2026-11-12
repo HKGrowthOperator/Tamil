@@ -34,14 +34,17 @@ _NUMMERN_WORT_RE = re.compile(r"\b(?:saal|tag|day|halle|hall|raum|room|zimmer|nr
 _SPANNE_VOR_RE = re.compile(r"(?<![\d:.])(\d{1,2})[:.](\d{2})\s*[–—-]\s*$")
 
 
-def _spanne_anfang(anfang: int, anfang_min: int, ende: int, minuten: int, nachmittag: bool) -> tuple[int, int] | None:
+def _spanne_anfang(anfang: int, anfang_min: int, ende: int, minuten: int, nachmittag: bool,
+                   mitternacht: bool = True) -> tuple[int, int] | None:
     """Beginn einer Spanne, deren Zusatz nur am Ende steht („6–9 pm“, „6:30 – 9:30 p.m.“), im 24-Stunden-Format;
-    None, wenn die erste Zahl keine 12-Stunden-Zeit sein kann oder der Beginn nicht vor dem Ende liegt."""
+    None, wenn die erste Zahl keine 12-Stunden-Zeit sein kann oder der Beginn nicht vor dem Ende liegt.
+    `mitternacht=False`: keine Abend-Annahme „bis 12 pm = bis Mitternacht“ (Spannen mit Doppelpunkt)."""
     if not 1 <= anfang <= 12 or anfang_min > 59:
         return None
     ende24 = ende % 12 + (12 if nachmittag else 0)
-    # „6–12 pm“: Abend bis Mitternacht; „11–1 pm“, „10–12 pm“: Vormittag (bei Ende 12 erst ab 9 Uhr)
-    bis_mitternacht = nachmittag and ende == 12 and anfang < 9
+    # „6–12 pm“: Abend bis Mitternacht; „11–1 pm“, „10–12 pm“: Vormittag (bei Ende 12 erst ab 9 Uhr).
+    # „12:30 pm“ ist immer Mittag, nie Mitternacht.
+    bis_mitternacht = mitternacht and nachmittag and ende == 12 and minuten == 0 and anfang < 9
     vormittag = nachmittag and anfang % 12 > ende % 12 and not bis_mitternacht
     anfang24 = anfang % 12 + (12 if nachmittag and not vormittag else 0)
     ende_spanne = 24 if bis_mitternacht else ende24
@@ -62,7 +65,7 @@ def _ampm_zeit(ap: re.Match, davor: str) -> tuple[int, int] | None:
             return beginn
     elif not ap.group(1) and (sp := _SPANNE_VOR_RE.search(davor)):
         # None: die erste Zeit gilt für sich, z. B. „18:00 – 9:30 p.m.“
-        return _spanne_anfang(int(sp.group(1)), int(sp.group(2)), ende, minuten, nachmittag)
+        return _spanne_anfang(int(sp.group(1)), int(sp.group(2)), ende, minuten, nachmittag, mitternacht=False)
     return ende % 12 + (12 if nachmittag else 0), minuten
 
 

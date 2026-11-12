@@ -60,24 +60,33 @@ _STADT_GLEICH = {"munich": "münchen", "muenchen": "münchen", "cologne": "köln
                  "duesseldorf": "düsseldorf", "dusseldorf": "düsseldorf"}
 
 
+# Kurze Wörter, die in Titeln ganz in Großbuchstaben Inhalt sind, keine Kürzel („TAMIL NEW YEAR“)
+_KURZWORT = {"new", "day", "eid", "sri", "art", "cup", "run", "fun", "tag"}
+
+
 def _kuerzel(titel: str) -> set[str]:
     """Vereinskürzel im Titel (MTS, FTS, BTS): 2–5 Großbuchstaben, keine bekannten Wörter. Steht der ganze Titel in
-    Großbuchstaben („TAMIL NEW YEAR“, „ONAM 2026“), zählen nur Wörter ohne Selbstlaut (MTS, STCC)."""
+    Großbuchstaben („TAMIL NEW YEAR“, „ONAM 2026“), sind Wörter mit Selbstlaut ab vier Buchstaben Inhalt (ONAM, THAI,
+    YEAR); kürzere bleiben Kürzel (TYO, ATS), außer bekannten Wörtern wie NEW."""
     gross = not re.search(r"[a-zäöüß]", titel)
     return {w.lower() for w in re.findall(r"\b[A-ZÄÖÜ]{2,5}\b", titel)
-            if not (gross and re.search(r"[AEIOUÄÖÜY]", w))
+            if not (gross and re.search(r"[AEIOUÄÖÜY]", w) and (len(w) >= 4 or w.lower() in _KURZWORT))
             and w.lower() not in _FUELL and w.lower() not in _STOP and w.lower() not in _GLEICH}
 
 
-_VEREIN_RE = re.compile(r"\b([A-ZÄÖÜ])[^\W\d_]*\s+(?:Tamil|TAMIL)\s+([A-ZÄÖÜ])[^\W\d_]*")
+# „<Ort> Tamil <Vereinswort>“ (München Tamil Sangam, German Tamil Sangam): Portale wie „Swiss Tamil Info“ sind keine
+# Vereine und geben keinen Hinweis
+_VEREIN_RE = re.compile(r"\b([A-ZÄÖÜ])[^\W\d_]*\s+(?:Tamil|TAMIL)\s+([^\W\d_]+)")
+_VEREINSWORT = {"sangam", "sangham", "sangamam", "verein", "kulturverein", "association", "mandram", "manram",
+                "society", "union", "club", "mandapam"}
 
 
 def _vereine(titel: str, quellen: tuple[str, ...] = ()) -> set[str]:
-    """Hinweise auf den Verein: Kürzel im Titel und die Anfangsbuchstaben von „<Ort> Tamil <Wort>“ in Titel und
+    """Hinweise auf den Verein: Kürzel im Titel und die Anfangsbuchstaben von „<Ort> Tamil <Vereinswort>“ in Titel und
     Quellennamen („München Tamil Sangam · Termine“ → mts)."""
     hinweise = _kuerzel(titel)
     for text in (titel, *quellen):
-        hinweise |= {f"{a}t{b}".lower() for a, b in _VEREIN_RE.findall(text or "")}
+        hinweise |= {f"{a}t{b[0]}".lower() for a, b in _VEREIN_RE.findall(text or "") if b.lower() in _VEREINSWORT}
     return hinweise
 
 

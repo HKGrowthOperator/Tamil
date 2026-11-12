@@ -7,7 +7,8 @@ Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
 - **Termin-Abgleich ohne Ort braucht einen Vereinshinweis:** Fehlt auf einer Seite die Stadt und teilen beide Titel nur
   ein Kernwort („Deepavali“), werden sie nur zusammengelegt, wenn derselbe Verein dahintersteht (Kürzel „MTS“ ↔ Quelle
-  „München Tamil Sangam · Termine“, oder „Hamburg Tamil Sangam“ im Titel ↔ „HTS“). Ortsnamen auf -ring, -weg, -damm
+  „München Tamil Sangam · Termine“, oder „Hamburg Tamil Sangam“ im Titel ↔ „HTS“; Portale wie „Swiss Tamil Info“
+  sind keine Vereine). Ortsnamen auf -ring, -weg, -damm
   sind keine Straßen mehr; in Titeln ganz in Großbuchstaben zählen nur Wörter ohne Selbstlaut als Kürzel. · Hauptsitzung
   (Folgearbeit P3 aus PR #4) · Deepavali ist am selben Tag in vielen Städten; lieber eine Dublette als zwei Feste in
   einer Story. Bekannte Grenze: ein Fest mit zwei gemeinsamen Kernwörtern („Thai Pongal“) ohne Ort wird weiter

@@ -325,3 +325,21 @@ def test_kuerzel_in_grossbuchstaben_titeln_bleiben_kuerzel():
     a = _mit_ort("MTS DIWALI 2026", "München", "München, Deutschland")
     b = _mit_ort("BTS DIWALI 2026", "München", "München, Deutschland", url="https://x.example/b")
     assert cluster._kuerzel(a.title) == {"mts"} and not cluster.gleicher_termin(a, b)
+
+
+# ---- Befunde der Code-Prüfung (Folgearbeit P3) -------------------------------------------------------------------------
+
+def test_portalname_ist_kein_verein():
+    # „Swiss Tamil Info“ ist ein Portal, kein Verein: kein Hinweis „sti“, keine Zusammenlegung über die Quelle
+    a = _aus_quelle(_mit_ort("Deepavali 2026", "Zürich", "Zürich, Schweiz"), "Swiss Tamil Info · Events")
+    b = _aus_quelle(_ohne_ort("Deepavali Abend Bern", url="https://x.example/s"), "Swiss Tamil Info · Events")
+    assert cluster._vereine(a.title, (a.source,)) == set()
+    assert not cluster.gleicher_termin(a, b)
+    assert cluster._vereine("Deepavali", ("Düsseldorf Tamil Sangam · Termine",)) == {"dts"}
+
+
+def test_kurze_kuerzel_in_grossbuchstaben_bleiben_kuerzel():
+    a = _mit_ort("TYO DEEPAVALI 2026", "München", "München, Deutschland")
+    b = _mit_ort("BTS Deepavali 2026", "München", "München, Deutschland", url="https://x.example/b")
+    assert cluster._kuerzel(a.title) == {"tyo"} and not cluster.gleicher_termin(a, b)
+    assert cluster._kuerzel("TAMIL NEW YEAR 2026") == set()
