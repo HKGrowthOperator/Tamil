@@ -34,14 +34,15 @@
   --linie-dunkel: oklch(0.36 0.010 255);
   --flaeche-dunkel: oklch(0.26 0.012 255);
   /* der einzige Verlauf: unter Schrift im Bild, von durchsichtig nach Tinte */
+  /* höchstens 0,7 Deckkraft, nur so hoch wie Dachzeile und Titel */
   --verlauf: linear-gradient(to bottom,
     oklch(0.21 0.012 255 / 0) 0,
-    oklch(0.21 0.012 255 / 0.76) 56px,
-    oklch(0.21 0.012 255 / 0.92) 100%);
+    oklch(0.21 0.012 255 / 0.62) 36px,
+    oklch(0.21 0.012 255 / 0.7) 100%);
   --verlauf-kurz: linear-gradient(to bottom,
     oklch(0.21 0.012 255 / 0) 0,
-    oklch(0.21 0.012 255 / 0.82) 24px,
-    oklch(0.21 0.012 255 / 0.93) 100%);
+    oklch(0.21 0.012 255 / 0.64) 20px,
+    oklch(0.21 0.012 255 / 0.7) 100%);
 
   --schrift: "Libre Franklin", "Noto Sans Tamil", "Tamil Sangam MN", system-ui, sans-serif;
   --rand: 16px;
@@ -242,11 +243,12 @@ a:focus-visible, input:focus-visible, textarea:focus-visible, button:focus-visib
 .imbild {
   position: absolute;
   left: 0; right: 0; bottom: 0;
-  padding: 64px var(--rand) 14px;
+  padding: 40px var(--rand) 14px;
   background-image: var(--verlauf);
   color: var(--hell);
 }
-.imbild .meta, .imbild .nachweis { color: var(--hell-leise); }
+/* im Bild volle Helligkeit auch für das Datum: Kontrast ≥ 4,5 : 1 bei Verlauf ≤ 0,7 */
+.imbild .meta, .imbild .nachweis { color: var(--hell); }
 .imbild .meta__rubrik { color: var(--hell); }
 .imbild .nachweis { margin-top: 8px; }
 .imbild .vorspann { color: var(--hell); }
@@ -272,7 +274,7 @@ a:focus-visible, input:focus-visible, textarea:focus-visible, button:focus-visib
 .zeile + .zeile { border-top: 1px solid var(--linie); }
 .zeile .anr {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 112px;
+  grid-template-columns: minmax(0, 1fr) 96px;
   column-gap: 14px;
   align-items: start;
   padding: 14px 0;
@@ -293,28 +295,21 @@ a:focus-visible, input:focus-visible, textarea:focus-visible, button:focus-visib
 .buehne { padding-top: 0; }
 .aufmacher .rahmen { margin-inline: calc(-1 * var(--rand)); }
 .aufmacher .rahmen img { object-position: 50% 30%; }
-.aufmacher .imbild { padding-top: 96px; }
+.aufmacher .imbild { padding-top: 48px; }
+.aufmacher .nachweis { margin-top: 6px; }
+.aufmacher--rubrik .titel { font-size: 26px; letter-spacing: -0.015em; text-wrap: wrap; }
 .aufmacher .titel {
   font-size: 30px;
   line-height: 1.12;
   letter-spacing: -0.012em;
 }
-.aufmacher .vorspann--bild { display: none; }
-.aufmacher .vorspann--unter { margin-top: 12px; font-size: 17px; }
-.buehne__seite { display: grid; gap: 12px; margin-top: 20px; }
+.aufmacher .vorspann--voll { display: none; }
+.aufmacher .vorspann--unter { margin-top: 8px; font-size: 17px; }
+.buehne__seite { margin-top: 20px; }
+.buehne__liste { margin-top: 6px; border-top: 1px solid var(--linie); }
+.kacheln__nachweis { margin-top: 8px; }
 
 .meldungen { margin-top: 20px; border-top: 1px solid var(--linie); }
-
-/* Bis 1023 px stehen Titel der beiden Bühnenkacheln unter dem Bild: das Foto bleibt frei */
-@media (max-width: 1023px) {
-  .buehne__seite .rahmen { aspect-ratio: auto; overflow: visible; background: none; }
-  .buehne__seite .rahmen img { aspect-ratio: 3 / 2; height: auto; }
-  .buehne__seite .anr:hover .rahmen img { transform: none; }
-  .buehne__seite .imbild { position: static; padding: 10px 0 4px; background: none; color: var(--tinte); }
-  .buehne__seite .imbild .meta, .buehne__seite .imbild .nachweis { color: var(--leise); }
-  .buehne__seite .imbild .meta__rubrik { color: var(--rot); }
-  .buehne__seite .imbild .nachweis { margin-top: 6px; }
-}
 
 /* Nachweis unter dem Bild statt im Bild */
 .nachweis--unter { margin-top: 6px; }
@@ -456,7 +451,7 @@ a:focus-visible, input:focus-visible, textarea:focus-visible, button:focus-visib
 .seitenkopf__zeile { margin-top: 6px; font-size: 15px; color: var(--leise); }
 
 /* Rubrikliste mit größerem Bild */
-.liste--gross .zeile .anr { grid-template-columns: minmax(0, 1fr) 128px; }
+.liste--gross .zeile .anr { grid-template-columns: minmax(0, 1fr) 96px; }
 
 /* ---------- Termine ---------- */
 
@@ -615,8 +610,8 @@ a:focus-visible, input:focus-visible, textarea:focus-visible, button:focus-visib
   .buehne { padding-top: 20px; }
   .aufmacher .rahmen { margin-inline: 0; }
   .aufmacher .titel { font-size: 34px; line-height: 1.1; }
-  .aufmacher .imbild { padding: 110px 28px 20px; }
-  .buehne__seite { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .aufmacher .imbild { padding: 64px 28px 20px; }
+  .aufmacher--rubrik .titel { font-size: 34px; }
   .meldungen ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 24px; }
   .meldungen .zeile { border-top: 1px solid var(--linie); }
   .meldungen .zeile:nth-child(-n+2) { border-top: 0; }
@@ -695,13 +690,17 @@ a:focus-visible, input:focus-visible, textarea:focus-visible, button:focus-visib
     padding-top: 20px;
   }
   .aufmacher .rahmen { aspect-ratio: 3 / 2; }
-  .aufmacher .imbild { padding: 140px 32px 22px; }
+  .aufmacher .imbild { padding: 72px 32px 24px; }
   .aufmacher .titel { font-size: 40px; line-height: 1.1; letter-spacing: -0.015em; max-width: 17em; }
-  .aufmacher .vorspann--bild { display: block; margin-top: 10px; max-width: 40em; font-size: 17px; }
+  .aufmacher .vorspann--voll { display: block; margin-top: 6px; max-width: 44em; font-size: 17px; }
   .aufmacher .vorspann--unter { display: none; }
-  .buehne__seite { grid-template-columns: none; gap: 16px; margin-top: 0; }
-  .buehne__seite .imbild { padding: 56px 20px 14px; }
-  .buehne__seite .titel { font-size: 20px; }
+  .buehne__seite { margin-top: 0; }
+  .buehne__seite .stueck .titel { font-size: 20px; line-height: 1.2; }
+  .buehne__liste { margin-top: 10px; }
+  .buehne__liste .zeile .anr { grid-template-columns: 120px minmax(0, 1fr); column-gap: 14px; padding: 12px 0; }
+  .buehne__liste .zeile .rahmen { grid-column: 1; margin-top: 2px; }
+  .buehne__liste .zeile__text { grid-column: 2; }
+  .buehne__liste .zeile .vorspann { display: none; }
 
   .meldungen { margin-top: 14px; }
   .meldungen ul { grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 32px; }
@@ -754,7 +753,7 @@ a:focus-visible, input:focus-visible, textarea:focus-visible, button:focus-visib
     row-gap: 24px;
   }
   .wand .kachel--gross { grid-column: 1; grid-row: 1 / 3; }
-  .wand .kachel--gross .imbild { padding: 120px 28px 22px; }
+  .wand .kachel--gross .imbild { padding: 64px 28px 22px; }
   .wand .kachel--gross .titel { font-size: 26px; line-height: 1.16; max-width: 22em; }
   .wand .kachel { align-self: start; }
   .wand .kachel .imbild { padding-inline: 20px; }
@@ -764,14 +763,14 @@ a:focus-visible, input:focus-visible, textarea:focus-visible, button:focus-visib
   .demnaechst.termin .anr { grid-template-columns: 96px minmax(0, 1fr); padding: 24px 28px; }
   .grafik .anr { padding: 18px 20px 20px; }
 
-  /* Küche: 862 + 16 + 322 = 1200; links 3:2 (862 × 575), rechts drei 16:9 (322 × 181) mit 16 px Abstand */
+  /* Küche: 883 + 16 + 301 = 1200; links 3:2 plus Nachweis, rechts drei 16:9 plus Nachweis, Unterkanten etwa gleich */
   .kueche__raster {
-    grid-template-columns: minmax(0, 862fr) minmax(0, 322fr);
+    grid-template-columns: minmax(0, 883fr) minmax(0, 301fr);
     column-gap: 16px;
     row-gap: 16px;
   }
   .kueche .kachel--gross { grid-column: 1; grid-row: 1 / 4; }
-  .kueche .kachel--gross .imbild { padding: 120px 28px 22px; }
+  .kueche .kachel--gross .imbild { padding: 64px 28px 22px; }
   .kueche .kachel--gross .titel { font-size: 26px; }
   .kueche .kachel--klein { grid-column: 2; }
   .kueche .kachel--klein .imbild { padding: 30px 16px 10px; }

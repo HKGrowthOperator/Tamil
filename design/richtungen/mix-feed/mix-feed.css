@@ -72,9 +72,9 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .sprung {
   position: absolute; left: 8px; top: -60px; z-index: 30;
-  padding: 10px 14px; background: var(--tinte); color: var(--hell); font-weight: 600;
+  padding: 10px 14px; color: var(--hell); font-weight: 600;
 }
-.sprung:focus { top: 8px; }
+.sprung:focus { top: 8px; background: var(--tinte); }
 
 .innen { max-width: var(--breite); margin: 0 auto; padding: 0 var(--rand); }
 
@@ -131,7 +131,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   grid-template: 1fr / 1fr;
   overflow: hidden;
   aspect-ratio: 4 / 5;
-  background: var(--flaeche-dunkel);
+  background: var(--flaeche);
   color: var(--hell);
 }
 .karte__flaeche > img {
@@ -183,8 +183,8 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .zeile {
   position: relative;
   display: grid;
-  grid-template-columns: 1fr 112px;
-  gap: 14px;
+  grid-template-columns: 1fr 100px;
+  gap: 12px;
   padding: 16px 0;
   border-bottom: 1px solid var(--linie);
 }
@@ -195,6 +195,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   /* Tippfläche mindestens 44 px hoch, ohne den Satz zu verschieben */
   display: block; padding-block: 11px; margin-block: -11px;
 }
+.karte__titel, .plakat__titel, .plakat__film, .zeile__titel, .stueck__titel, .termin__titel { display: flow-root; }
 .zeile__titel a::after { content: ""; position: absolute; inset: 0; }
 .zeile:hover .zeile__titel a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.14em; }
 .zeile:hover .zeile__bild img { transform: scale(1.03); }
@@ -226,7 +227,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   scrollbar-width: thin;
   scrollbar-color: var(--linie) transparent;
 }
-.streifen__teil { flex: 0 0 72%; scroll-snap-align: start; }
+.streifen__teil { flex: 0 0 78%; scroll-snap-align: start; }
 .streifen:focus-visible { outline-offset: -2px; }
 
 /* ---------- Blöcke ---------- */
@@ -276,7 +277,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .woche .streifen { scrollbar-color: var(--linie-dunkel) transparent; }
 
 /* Plakat-Streifen */
-.streifen--plakate .streifen__teil { flex-basis: 58%; }
+.streifen--plakate .streifen__teil { flex-basis: 66%; }
 .plakat { position: relative; }
 .plakat--radar { align-self: start; }
 .plakat__bild, .plakat__grafik { aspect-ratio: 2 / 3; overflow: hidden; background: var(--flaeche-dunkel); }
@@ -294,7 +295,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .plakat__marke { font-size: 13px; line-height: 1.3; color: var(--hell-leise); margin-bottom: auto; }
 .plakat__film { font-size: 22px; line-height: 1.2; font-weight: 700; text-wrap: balance; }
 .plakat__zahl { font-size: 17px; line-height: 1.2; color: var(--hell-leise); }
-.plakat__zahl span { font-size: 28px; font-weight: 700; color: var(--hell); }
+.plakat__zahl span { font-size: 24px; font-weight: 700; color: var(--hell); }
 .plakat__orte { font-size: 15px; line-height: 1.4; color: var(--hell-leise); }
 
 /* Termine */
@@ -371,7 +372,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .suche__form button:hover, .kontakt__form button:hover { background: oklch(0.32 0.012 255); }
 .suche__zahl { font-size: 15px; color: var(--leise); margin: 18px 0 4px; padding-bottom: 10px; border-bottom: 1px solid var(--tinte); }
-.suche .zeile__titel { font-size: 20px; }
+
 
 /* ---------- Kontakt ---------- */
 
@@ -507,7 +508,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 
   /* Termine zurückliegend: Monat links, Beiträge rechts */
   .vergangen__monat { display: grid; grid-template-columns: 200px 1fr; gap: 24px; border-bottom: 1px solid var(--linie); padding: 8px 0 28px; margin: 0; }
-  .vergangen__titel { padding: 0; font-size: 17px; color: var(--tinte); }
+  .vergangen__titel { padding: 0; font-size: 17px; color: var(--tinte); align-self: start; }
   .vergangen__liste { grid-template-columns: repeat(3, minmax(0, 1fr)); border: 0; padding: 0; }
 
   /* Artikel */
@@ -524,6 +525,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   /* Suche, Kontakt */
   .suche { max-width: calc(820px + 2 * var(--rand)); }
   .suche .zeile { grid-template-columns: 1fr 220px; gap: 24px; }
+  .suche .zeile__titel { font-size: 20px; }
   .kontakt__raster { grid-template-columns: 5fr 7fr; gap: 56px; }
 
   .fuss__innen { grid-template-columns: auto 1fr; align-items: center; column-gap: 40px; }
