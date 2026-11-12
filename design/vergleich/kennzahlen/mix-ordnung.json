@@ -1,0 +1,234 @@
+{
+  "slug": "mix-ordnung",
+  "stand": "2026-11-12T15:13",
+  "groesster_massstab": 1.03,
+  "handy": {
+    "kopfleiste_hoehe": 150,
+    "erste_schlagzeile_ab": 270,
+    "schlagzeilen_ganz_sichtbar": 2,
+    "schlagzeilen_seite": 22,
+    "max_zeilen_schlagzeile": 4,
+    "groesste_schrift": {
+      "px": 30,
+      "text": "Deepavali 2026: Lichterfest in Berlin, B"
+    },
+    "groesste_rote_schrift": {
+      "px": 13,
+      "text": "Kultur"
+    },
+    "schriftgroessen_seite": [
+      {
+        "px": 30,
+        "anzahl": 1,
+        "text": "Deepavali 2026: Lichterfest in Berlin, B"
+      },
+      {
+        "px": 22,
+        "anzahl": 5,
+        "text": "Diese Woche"
+      },
+      {
+        "px": 21,
+        "anzahl": 1,
+        "text": "Koovagam-Fest im Film: „Bride of Aravan“"
+      },
+      {
+        "px": 20,
+        "anzahl": 9,
+        "text": "Vaani Vizha: In den Tamilalayams schrieb"
+      },
+      {
+        "px": 18,
+        "anzahl": 6,
+        "text": "11 Kinos in Deutschland"
+      },
+      {
+        "px": 17,
+        "anzahl": 8,
+        "text": "Am 8. November war Deepavali."
+      }
+    ],
+    "versalien_ueber_14px": 0,
+    "schriftfamilien": [
+      "Libre Franklin"
+    ],
+    "groesster_radius": {
+      "px": 0,
+      "element": ""
+    },
+    "schatten": 0,
+    "gedreht": 0,
+    "schriftbreite_verstellt": 0,
+    "bilder_ueber_natuerlicher_breite": [],
+    "bilder_ueber_dateibreite": [],
+    "anreisser": 22,
+    "anreisser_ohne_bild": [],
+    "anreisser_mit_grafik": [
+      "Scene",
+      "Ramayana: Rise of a Legend",
+      "Diwali in Basel"
+    ],
+    "dunkle_flaechen": [
+      {
+        "element": "nav.band",
+        "breite": 390,
+        "hoehe": 46,
+        "oben": 104
+      },
+      {
+        "element": "section#diese-woche.woche",
+        "breite": 390,
+        "hoehe": 1355,
+        "oben": 1933
+      }
+    ],
+    "fest_stehend": [
+      {
+        "element": "nav.band",
+        "art": "sticky",
+        "hoehe": 46
+      }
+    ],
+    "bewegung": {
+      "uebergaenge": 25,
+      "laengster_uebergang_s": 0.35,
+      "animationen": 0,
+      "endlos": 0
+    },
+    "seitenhoehe": 5808,
+    "ueberlauf": 0,
+    "bewegung_bei_reduziert": {
+      "uebergaenge": 0,
+      "laengster_uebergang_s": 0,
+      "animationen": 0,
+      "endlos": 0
+    },
+    "helle_schrift": {
+      "anzahl": 48,
+      "kleinster_kontrast": 5.9,
+      "unter_4_5": []
+    },
+    "farbanteil_ohne_bilder": {
+      "bunt": 0.0004,
+      "rot": 0.0004,
+      "dunkel": 0.0621
+    },
+    "seitenfehler": []
+  },
+  "desktop": {
+    "kopfleiste_hoehe": 122,
+    "erste_schlagzeile_ab": 272,
+    "schlagzeilen_ganz_sichtbar": 6,
+    "schlagzeilen_seite": 22,
+    "max_zeilen_schlagzeile": 3,
+    "groesste_schrift": {
+      "px": 40,
+      "text": "Deepavali 2026: Lichterfest in Berlin, B"
+    },
+    "groesste_rote_schrift": {
+      "px": 13,
+      "text": "Community"
+    },
+    "schriftgroessen_seite": [
+      {
+        "px": 40,
+        "anzahl": 1,
+        "text": "Deepavali 2026: Lichterfest in Berlin, B"
+      },
+      {
+        "px": 26,
+        "anzahl": 4,
+        "text": "Kanguva – Ein tamilisches"
+      },
+      {
+        "px": 24,
+        "anzahl": 2,
+        "text": "Diese Woche"
+      },
+      {
+        "px": 20,
+        "anzahl": 9,
+        "text": "Vaani Vizha: In den Tamilalayams schrieb"
+      },
+      {
+        "px": 18,
+        "anzahl": 10,
+        "text": "11 Kinos in Deutschland"
+      },
+      {
+        "px": 17,
+        "anzahl": 5,
+        "text": "Am 8. November war Deepavali. Ein Blick "
+      }
+    ],
+    "versalien_ueber_14px": 0,
+    "schriftfamilien": [
+      "Libre Franklin"
+    ],
+    "groesster_radius": {
+      "px": 0,
+      "element": ""
+    },
+    "schatten": 0,
+    "gedreht": 0,
+    "schriftbreite_verstellt": 0,
+    "bilder_ueber_natuerlicher_breite": [
+      "bilder/rb-30.jpg (797 px gezeigt, 1280 px vorhanden)",
+      "bilder/rb-48.jpg (862 px gezeigt, 1280 px vorhanden)"
+    ],
+    "bilder_ueber_dateibreite": [],
+    "anreisser": 22,
+    "anreisser_ohne_bild": [],
+    "anreisser_mit_grafik": [
+      "Scene",
+      "Ramayana: Rise of a Legend",
+      "Diwali in Basel"
+    ],
+    "dunkle_flaechen": [
+      {
+        "element": "nav.band",
+        "breite": 1280,
+        "hoehe": 46,
+        "oben": 76
+      },
+      {
+        "element": "section#diese-woche.woche",
+        "breite": 1280,
+        "hoehe": 906,
+        "oben": 1072
+      }
+    ],
+    "fest_stehend": [
+      {
+        "element": "nav.band",
+        "art": "sticky",
+        "hoehe": 46
+      }
+    ],
+    "bewegung": {
+      "uebergaenge": 25,
+      "laengster_uebergang_s": 0.35,
+      "animationen": 0,
+      "endlos": 0
+    },
+    "seitenhoehe": 3555,
+    "ueberlauf": 0,
+    "bewegung_bei_reduziert": {
+      "uebergaenge": 0,
+      "laengster_uebergang_s": 0,
+      "animationen": 0,
+      "endlos": 0
+    },
+    "helle_schrift": {
+      "anzahl": 66,
+      "kleinster_kontrast": 5.58,
+      "unter_4_5": []
+    },
+    "farbanteil_ohne_bilder": {
+      "bunt": 0.0005,
+      "rot": 0.0005,
+      "dunkel": 0.0567
+    },
+    "seitenfehler": []
+  }
+}
