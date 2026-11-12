@@ -26,7 +26,7 @@ _TIME_RE = re.compile(r"(?<!\d)(\d{1,2})[:.](\d{2})(?:\s*uhr)?", re.I)
 _AMPM_RE = re.compile(r"(?<![\d:.])(?:(\d{1,2})\s*[–—-]\s*)?(\d{1,2})(?:[:.](\d{2}))?\s*"
                       r"(?:([aApP])\.\s?[mM]\.?|(AM|PM|pm)(?![A-Za-z]))")
 # Zahl vor dem Bindestrich gehört zu solch einem Wort („Saal 2 – 6 pm“, „Tag 1 - 6 pm“): keine Spanne
-_NUMMERN_WORT_RE = re.compile(r"(?:saal|tag|day|halle|hall|raum|room|zimmer|nr|no|bühne|stage|gate|tor|platz|"
+_NUMMERN_WORT_RE = re.compile(r"\b(?:saal|tag|day|halle|hall|raum|room|zimmer|nr|no|bühne|stage|gate|tor|platz|"
                               r"gleis|block|haus|teil|runde|level|ebene|stock|eingang|sektor|court|feld)\.?\s*$", re.I)
 
 
@@ -40,11 +40,16 @@ def _ampm_zeit(ap: re.Match, davor: str) -> tuple[int, int] | None:
     if ap.group(1) and not _NUMMERN_WORT_RE.search(davor):
         anfang = int(ap.group(1))
         if 1 <= anfang <= 12:
-            vormittag = nachmittag and (anfang % 12 > ende % 12 or ende == 12)  # „11–1 pm“, „11-12 pm“
+            # „6–12 pm“: Abend bis Mitternacht; „11–1 pm“, „10–12 pm“: Vormittag (bei Ende 12 erst ab 9 Uhr)
+            bis_mitternacht = nachmittag and ende == 12 and anfang < 9
+            vormittag = nachmittag and anfang % 12 > ende % 12 and not bis_mitternacht
             anfang24 = anfang % 12 + (12 if nachmittag and not vormittag else 0)
-            if anfang24 * 60 < ende24 * 60 + minuten and ende24 - anfang24 <= 12:  # plausibel: Beginn vor Ende
+            ende_spanne = 24 if bis_mitternacht else ende24
+            if anfang24 * 60 < ende_spanne * 60 + minuten and ende_spanne - anfang24 <= 12:  # Beginn vor Ende
                 return anfang24, 0
     return ende24, minuten
+
+
 _ISO_RE = re.compile(r"(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2}))?")
 _NUMERIC_RE = re.compile(r"(?<!\d)(\d{1,2})\.(\d{1,2})\.(\d{2,4})(?!\d)")
 _NUMERIC_NOYEAR_RE = re.compile(r"(?<!\d)(\d{1,2})\.(\d{1,2})\.(?!\d)")

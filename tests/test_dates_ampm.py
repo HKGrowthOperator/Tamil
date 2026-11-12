@@ -68,6 +68,16 @@ def test_ungueltige_stunde_mit_pm_faellt_auf_bisherige_regel_zurueck():
     ("7.11.2026 Tag 1 - 6 pm", ("2026-11-07 18:00", True)),
     ("7.11.2026 Halle 3-7 p.m.", ("2026-11-07 19:00", True)),
     ("7.11.2026 Nr. 4 – 8 PM", ("2026-11-07 20:00", True)),
+    ("7.11.2026 Saal2 – 6 pm", ("2026-11-07 18:00", True)),
+    # Wort endet nur auf so ein Wort (Samstag, Nachmittag): Spanne bleibt
+    ("7.11.2026 Samstag 6–9 pm", ("2026-11-07 18:00", True)),
+    ("7.11.2026 Friday 6-9 pm", ("2026-11-07 18:00", True)),
+    ("7.11.2026 Nachmittag 2–5 pm", ("2026-11-07 14:00", True)),
+    ("7.11.2026 Gemeindehaus 6-9 pm", ("2026-11-07 18:00", True)),
+    # Ende „12 pm“: ab 9 Uhr Vormittag bis Mittag, sonst Abend bis Mitternacht
+    ("7.11.2026 10–12 pm", ("2026-11-07 10:00", True)),
+    ("7.11.2026 6–12 pm", ("2026-11-07 18:00", True)),
+    ("7.11.2026 8-12 PM", ("2026-11-07 20:00", True)),
 ])
 def test_spanne_ohne_doppelpunkt_beginn_mit_gemeinsamem_zusatz(text, erwartet):
     assert _zeit(text) == erwartet
