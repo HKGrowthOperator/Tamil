@@ -165,3 +165,84 @@ def test_anderer_tag_findet_keine_story(monkeypatch, settings):
         repo.story_anlegen(store, typ="event", titel=a.title, ort=a.ort, schluessel=cluster.schluessel(a))
         spaeter = termin("MTS Diwali 2026", "2026-11-28", "Neukeferloh", "https://x.example/n")
         assert cluster._termin_story(store, spaeter) is None  # (die Titelähnlichkeit danach bleibt unverändert)
+
+
+# ---- Befunde der unabhängigen Prüfung von b24ad9c: kein Übermerging -------------------------------------------------
+# Jeder Fall wird zweimal geprüft: gegen bestehende Storys (_termin_story) und im selben Scan (bezug).
+
+def _ohne_ort(titel, datum="2026-11-21", url="https://x.example/neu"):
+    return termin(titel, datum, "", url)
+
+
+def _mit_ort(titel, stadt, voll, datum="2026-11-21", url="https://x.example/neu"):
+    item = termin(titel, datum, stadt, url)
+    item.facts["event_ort"] = voll
+    return item
+
+
+def _story(store, item, status="neu"):
+    return repo.story_anlegen(store, typ="event", titel=item.title, ort=item.ort, schluessel=cluster.schluessel(item),
+                              status=status)
+
+
+def _bezug_im_scan(settings, store, vorher: list, neu):
+    return cluster.zuordnen(_kontext(settings, store), [*vorher, neu])[-1].bezug
+
+
+NEGATIV = {
+    # ohne Ort, nur ein Kernwort: keine Teilmengenregel gegen einen längeren Titel aus einer anderen Stadt
+    "leerer Ort gegen andere Stadt": (
+        [("Diwali Thiruvizha 2026 Berlin Tamil Sangam", "Berlin", "Berlin, Deutschland")],
+        _ohne_ort("Deepavali 2026")),
+    # ohne Ort und zwei passende Termine an dem Tag: mehrdeutig → keine Zuordnung
+    "zwei Kandidaten": (
+        [("Deepavali", "Stuttgart", "Stuttgart, Deutschland"), ("Deepavali", "Berlin", "Berlin, Deutschland")],
+        _ohne_ort("Diwali 2026")),
+    # Stadt nur im Straßennamen oder als Wortteil („Frankfurter Straße“, „Wiener Platz“)
+    "Stadt im Straßennamen": (
+        [("Deepavali Feier", "Frankfurt", "Saalbau, Frankfurt, Deutschland")],
+        _mit_ort("Deepavali 2026", "Offenbach", "Stadthalle, Frankfurter Straße 5, 63065 Offenbach, Deutschland")),
+    "Wiener Platz": (
+        [("Deepavali Feier", "Wien", "Wien, Österreich")],
+        _mit_ort("Deepavali 2026", "München", "Gasthaus am Platz, Wiener Platz 1, München, Deutschland")),
+    # verschiedene Vereinskürzel, eine Seite ohne Ort
+    "verschiedene Kürzel": (
+        [("BTS Diwali 2026", "Berlin", "Berlin, Deutschland")],
+        _ohne_ort("MTS Diwali 2026")),
+}
+
+
+@pytest.mark.parametrize("fall", sorted(NEGATIV))
+def test_kein_uebermerging_gegen_bestehende_storys(settings, fall):
+    vorher, neu = NEGATIV[fall]
+    with Store(settings.db_path) as store:
+        for n, (titel, stadt, voll) in enumerate(vorher):
+            _story(store, _mit_ort(titel, stadt, voll, url=f"https://x.example/{n}"))
+        assert cluster._termin_story(store, neu) is None
+
+
+@pytest.mark.parametrize("fall", sorted(NEGATIV))
+def test_kein_uebermerging_im_selben_scan(settings, fall):
+    vorher, neu = NEGATIV[fall]
+    alt = [_mit_ort(titel, stadt, voll, url=f"https://x.example/{n}") for n, (titel, stadt, voll) in enumerate(vorher)]
+    with Store(settings.db_path) as store:
+        assert _bezug_im_scan(settings, store, alt, neu) is None
+
+
+def test_verworfene_story_zieht_keinen_termin_an(monkeypatch, settings):
+    a = mts_kalender(monkeypatch, settings)
+    b = vizha(settings, "MTS Diwali 2026", "2026-11-21", "Neukeferloh", "Bürgerhaus Neukeferloh")
+    with Store(settings.db_path) as store:
+        _story(store, a, status="verworfen")
+        assert cluster._termin_story(store, b) is None
+
+
+def test_kuerzel_nur_auf_einer_seite_stoert_nicht(settings):
+    a = _mit_ort("Diwali-2026", "Neukeferloh", "Bürgerhaus Neukeferloh, Neukeferloh")
+    b = _ohne_ort("MTS Diwali 2026", url="https://x.example/b")
+    assert cluster.gleicher_termin(a, b)
+    assert not cluster.gleicher_termin(_ohne_ort("FTS Diwali 2026", url="https://x.example/f"), b)
+    with Store(settings.db_path) as store:
+        assert _bezug_im_scan(settings, store, [a], b) == 0
+        sid = _story(store, a)
+        assert cluster._termin_story(store, b) == sid

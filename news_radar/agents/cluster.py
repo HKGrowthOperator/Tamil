@@ -50,7 +50,7 @@ def aehnlichkeit(a: str, b: str) -> float:
 
 # Termin-Abgleich zwischen Quellen: „Diwali-2026“ (Vereinskalender) = „MTS Diwali 2026“ (Vizha)
 _FUELL = {"celebration", "celebrations", "feier", "feiern", "festival", "fest", "lights", "lichter", "lichterfest",
-          "event", "events", "programm", "e.v", "sangam", "verein", "association"}
+          "event", "events", "programm", "sangam", "verein", "association"}
 _GLEICH = {"diwali": "deepavali", "deepawali": "deepavali", "dipavali": "deepavali", "deepavaly": "deepavali",
            "dipawali": "deepavali", "தீபாவளி": "deepavali"}
 _LAENDER = {"deutschland", "germany", "de", "österreich", "oesterreich", "austria", "at", "schweiz", "switzerland",
@@ -60,10 +60,16 @@ _STADT_GLEICH = {"munich": "münchen", "muenchen": "münchen", "cologne": "köln
                  "duesseldorf": "düsseldorf", "dusseldorf": "düsseldorf"}
 
 
+def _kuerzel(titel: str) -> set[str]:
+    """Vereinskürzel im Titel (MTS, FTS, BTS): 2–5 Großbuchstaben, keine bekannten Wörter."""
+    return {w.lower() for w in re.findall(r"\b[A-ZÄÖÜ]{2,5}\b", titel)
+            if w.lower() not in _FUELL and w.lower() not in _STOP and w.lower() not in _GLEICH}
+
+
 def titel_kern(titel: str) -> set[str]:
     """Kennwörter eines Termintitels: klein, ohne Jahreszahlen, Satzzeichen, Füllwörter und Vereinskürzel (MTS, FTS);
     Diwali/Deepavali/Deepawali gelten als ein Wort."""
-    kuerzel = {w.lower() for w in re.findall(r"\b[A-ZÄÖÜ]{2,5}\b", titel) if not w.isdigit()}
+    kuerzel = _kuerzel(titel)
     roh = re.findall(r"[^\W\d_]+", titel.lower())
     return {_GLEICH.get(w, w) for w in roh
             if len(w) >= 3 and w not in kuerzel and w not in _FUELL and w not in _STOP}
@@ -74,48 +80,90 @@ def _stadt(ort: str) -> str:
     return "" if ort in _LAENDER else _STADT_GLEICH.get(ort, ort)
 
 
+_STRASSE = re.compile(r"(straße|strasse|str\.|platz|weg|allee|gasse|ring|damm|ufer|chaussee)\b|\d", re.I)
+
+
+def _ortsteile(voll: str) -> list[str]:
+    """Bestandteile eines vollen Orts ohne Straßenangaben und Postleitzahl: „Bürgerhaus Neukeferloh, Leonhard-Stadler-
+    Straße 12, Neukeferloh“ → [„bürgerhaus neukeferloh“, „neukeferloh“]."""
+    teile = [re.sub(r"^\d{4,5}\s+", "", t.strip().lower()) for t in (voll or "").split(",")]
+    return [t for t in teile if t and not _STRASSE.search(t)]
+
+
+def _stadt_in(stadt: str, voll: str) -> bool:
+    muster = re.compile(rf"\b{re.escape(stadt)}\b")
+    return any(muster.search(t) for t in _ortsteile(voll))
+
+
 def ort_vertraeglich(ort_a: str, voll_a: str, ort_b: str, voll_b: str) -> bool:
-    """Gleiche Stadt, eine Seite ohne Stadt (leer oder nur Land) oder die Stadt der einen Seite steht im vollen Ort der
-    anderen (Gemeinde Grasbrunn ↔ „Bürgerhaus Neukeferloh“)."""
+    """Gleiche Stadt, eine Seite ohne Stadt (leer oder nur Land) oder die Stadt der einen Seite steht als ganzes Wort
+    in einem Ortsbestandteil der anderen (Gemeinde Grasbrunn ↔ „Bürgerhaus Neukeferloh“), nie in einem Straßennamen."""
     a, b = _stadt(ort_a), _stadt(ort_b)
     if not a or not b or a == b:
         return True
-    return a in (voll_b or "").lower() or b in (voll_a or "").lower()
+    return _stadt_in(a, voll_b) or _stadt_in(b, voll_a)
 
 
-def _titel_gleich(a: str, b: str) -> bool:
+def _kuerzel_widerspruch(a: str, b: str) -> bool:
+    ka, kb = _kuerzel(a), _kuerzel(b)
+    return bool(ka and kb and not ka & kb)
+
+
+def termin_widerspruch(a: NewsItem, b: NewsItem) -> bool:
+    """Zwei Termine sind sicher verschieden: andere Vereinskürzel (MTS ≠ BTS) oder derselbe Tag in unverträglichen
+    Städten. Bremst auch die allgemeine Titelähnlichkeit („Deepavali“ in Stuttgart ≠ „Deepavali“ in Berlin)."""
+    if a.kind != "event" or b.kind != "event":
+        return False
+    if _kuerzel_widerspruch(a.title, b.title):
+        return True
+    return bool(_datum(a)) and _datum(a) == _datum(b) and not ort_vertraeglich(
+        a.ort, (a.facts or {}).get("event_ort", ""), b.ort, (b.facts or {}).get("event_ort", ""))
+
+
+def _titel_gleich(a: str, b: str, ohne_ort: bool = False) -> bool:
     ka, kb = titel_kern(a), titel_kern(b)
     if not ka or not kb:
         return False
-    return ka <= kb or kb <= ka or len(ka & kb) / len(ka | kb) >= 0.6
+    if _kuerzel_widerspruch(a, b):
+        return False  # MTS ≠ BTS; ein Kürzel nur auf einer Seite stört nicht
+    if ka == kb or len(ka & kb) / len(ka | kb) >= 0.6:
+        return True
+    klein = min(ka, kb, key=len)
+    if ohne_ort and len(klein) < 2:
+        return False  # ohne Ort trägt ein einzelnes Wort („deepavali“) keine Teilmenge
+    return ka <= kb or kb <= ka
 
 
 def _datum(item: NewsItem) -> str:
     return str((item.facts or {}).get("event_datum") or "")[:10]
 
 
+def _passt(titel_a: str, ort_a: str, voll_a: str, titel_b: str, ort_b: str, voll_b: str) -> bool:
+    ohne_ort = not _stadt(ort_a) or not _stadt(ort_b)
+    return _titel_gleich(titel_a, titel_b, ohne_ort) and ort_vertraeglich(ort_a, voll_a, ort_b, voll_b)
+
+
 def gleicher_termin(a: NewsItem, b: NewsItem) -> bool:
     """Zwei Termin-Meldungen meinen denselben Termin: gleiches Datum, gleicher Titelkern, verträglicher Ort."""
     if a.kind != "event" or b.kind != "event" or not _datum(a) or _datum(a) != _datum(b):
         return False
-    return (_titel_gleich(a.title, b.title)
-            and ort_vertraeglich(a.ort, (a.facts or {}).get("event_ort", ""),
-                                 b.ort, (b.facts or {}).get("event_ort", "")))
+    return _passt(a.title, a.ort, (a.facts or {}).get("event_ort", ""),
+                  b.title, b.ort, (b.facts or {}).get("event_ort", ""))
 
 
 def _termin_story(store, item: NewsItem) -> int | None:
-    """Bestehende Termin-Story am selben Tag mit gleichem Titelkern und verträglichem Ort (neueste zuerst)."""
+    """Die eine bestehende Termin-Story am selben Tag mit gleichem Titelkern und verträglichem Ort. Mehrere Kandidaten
+    = mehrdeutig, dann keine (lieber eine Dublette als zwei Termine in einer Story); verworfene zählen nicht."""
     datum = _datum(item)
     if item.kind != "event" or not datum:
         return None
+    praefix = f"event:{datum}:"
     rows = store.db.execute(
-        "SELECT id, titel, ort FROM stories WHERE typ = 'event' AND schluessel LIKE ? AND herkunft != 'nachtrag' "
-        "ORDER BY id DESC", (f"event:{datum}:%",)).fetchall()
-    for sid, titel, ort in rows:
-        voll = (item.facts or {}).get("event_ort", "")
-        if _titel_gleich(item.title, titel or "") and ort_vertraeglich(item.ort, voll, ort or "", ort or ""):
-            return sid
-    return None
+        "SELECT id, titel, ort FROM stories WHERE typ = 'event' AND status != 'verworfen' "
+        "AND substr(schluessel, 1, ?) = ?", (len(praefix), praefix)).fetchall()
+    voll = (item.facts or {}).get("event_ort", "")
+    treffer = [sid for sid, titel, ort in rows if _passt(item.title, item.ort, voll, titel or "", ort or "", ort or "")]
+    return treffer[0] if len(treffer) == 1 else None
 
 
 def schluessel(item: NewsItem) -> str:
@@ -153,10 +201,14 @@ def zuordnen(ctx: Kontext, items: list[NewsItem], tage: int = 7) -> list[Zuordnu
             ergebnis.append(Zuordnung(item, None, "neue Kinowoche"))
             continue
         # Meldungen desselben Scans, die der Vorfilter nicht zusammengelegt hat (z. B. „… (verschoben)“)
-        frueher = next((i for i, z in enumerate(ergebnis) if z.story_id is None and z.bezug is None
-                        and z.item.kind == item.kind and ((key and schluessel(z.item) == key)
-                                                          or gleicher_termin(item, z.item)
-                                                          or aehnlichkeit(item.title, z.item.title) >= SICHER)), None)
+        offen = [i for i, z in enumerate(ergebnis)
+                 if z.story_id is None and z.bezug is None and z.item.kind == item.kind]
+        frueher = next((i for i in offen if not termin_widerspruch(item, ergebnis[i].item)
+                        and ((key and schluessel(ergebnis[i].item) == key)
+                             or aehnlichkeit(item.title, ergebnis[i].item.title) >= SICHER)), None)
+        if frueher is None:  # gleicher Termin aus einer anderen Quelle, nur wenn eindeutig
+            termine = [i for i in offen if gleicher_termin(item, ergebnis[i].item)]
+            frueher = termine[0] if len(termine) == 1 else None
         if frueher is not None:
             ergebnis.append(Zuordnung(item, None, "gleiche Story wie eine Meldung desselben Scans", bezug=frueher))
             continue
@@ -164,6 +216,8 @@ def zuordnen(ctx: Kontext, items: list[NewsItem], tage: int = 7) -> list[Zuordnu
         for s in bestehend:
             if s["typ"] in ("kino", "dossier") or s["status"] == "verworfen" or s.get("herkunft") == "nachtrag":
                 continue
+            if item.kind == "event" and _kuerzel_widerspruch(item.title, s.get("titel") or ""):
+                continue  # MTS-Termin ≠ BTS-Termin, auch bei fast gleichem Titel
             w = aehnlichkeit(item.title, s.get("titel") or "")
             if w > wert:
                 best, wert = s, w
