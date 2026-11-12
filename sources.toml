@@ -507,13 +507,12 @@ interval_minutes = 720
 
 [[source]]
 name = "Vizha · Termine DACH"
-enabled = false
 prioritaet = "B"
 betreiber = "Vizha (vizha.app), Veranstaltungskalender der tamilischen Diaspora"
 robots = "erlaubt"
 paywall = false
 bild_nutzen = false
-notiz = "Prüfung 12.11.2026: kein Feed/ICS; Länderseiten /de/events und /ch/events nennen die kommenden Termine (JSON-LD ItemList, auf der DE-Liste auch Schweden), je Terminseite JSON-LD Event mit startDate (UTC) und addressCountry; /at/events gibt 404 (AT-Termine nur, wenn sie auf einer der Listen stehen). Je Lauf höchstens 40 Terminseiten, nur DE/AT/CH, Gedenktermine aus [blocklist] termine nie automatisch. Aus, bis entschieden ist, ob Gedenk-Turniere ohne Sperrbegriff (z. B. „Brigadier S.P. Thamilselvan Memorial Cup“, Dormagen 21.11.) gesperrt werden; Dubletten mit Vereinskalendern (München Tamil Sangam) möglich."
+notiz = "Prüfung 12.11.2026: kein Feed/ICS; Länderseiten /de/events und /ch/events nennen die kommenden Termine (JSON-LD ItemList, auf der DE-Liste auch Schweden), je Terminseite JSON-LD Event mit startDate (UTC) und addressCountry; /at/events gibt 404 (AT-Termine nur, wenn sie auf einer der Listen stehen). Je Lauf höchstens 40 Terminseiten, nur DE/AT/CH, Gedenktermine aus [blocklist] termine nie automatisch (Sperrliste am 12.11. um Thamilselvan, Kiddu u. a. erweitert; Probe danach: 28 Termine ohne Gedenkbezug, 3 gesperrt). Dubletten mit Vereinskalendern (München Tamil Sangam) möglich."
 rechtlich_geprueft = ""
 type = "jsonld_events"
 url = "https://vizha.app"
@@ -807,7 +806,13 @@ terms = ["horoskop", "casino", "betting", "wetten", "porn", "obituary", "todesan
 # Termine (kind = event) mit diesen Begriffen werden nie automatisch zur Story: Gedenken mit LTTE-Bezug
 termine = ["maaveerar", "maveerar", "mahaveerar", "mahaaveerar", "mavirar", "maavirar", "மாவீரர்", "heroes day",
            "national heroes", "heroes remembrance", "heroes commemoration", "heldengedenktag", "helden-gedenktag",
-           "heldentag"]  # Wortanfang, ohne Formatzeichen, Apostrophe und Diakritika; „national heroes“ nicht bei „Museum“ im Titel
+           "heldentag",
+           # Namen von LTTE-Gedenkanlässen (Entscheidung 12.11.2026: Vizha-Probe zeigte Gedenkturniere ohne die
+           # Begriffe oben, z. B. „BR.S.P. Thamilselvan Memorial Cup“)
+           "thamilselvan", "தமிழ்ச்செல்வன்", "brigadier", "பிரிகேடியர்", "thileepan", "திலீபன்", "annai poopathi",
+           "annai poopathy", "அன்னை பூபதி", "prabhakaran", "பிரபாகரன்"]  # Wortanfang, ohne Formatzeichen, Apostrophe und Diakritika; „national heroes“ nicht bei „Museum“ im Titel
+# wie `termine`, aber nur als ganzes Wort: „Kittu“, nicht „Kittur“; „கிட்டு“, nicht „கிட்டும்“ (Verb „wird zuteil“)
+termine_wort = ["kittu", "kiddu", "கிட்டு"]
 
 # Ziel-Kategorien (Slug in WordPress) + Stichwörter für die Zuordnung. Die KI wählt final eine davon.
 [categories.news]

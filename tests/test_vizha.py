@@ -70,7 +70,7 @@ def _quelle(settings, **params) -> Source:
 def test_vizha_ist_registriert(settings):
     q = next(q for q in settings.alle_quellen if q.name == VIZHA)
     assert (q.type, q.url, q.kind, q.country) == ("jsonld_events", "https://vizha.app", "event", "")
-    assert q.robots == "erlaubt" and q.betreiber and q.notiz and q.interval_minutes == 360
+    assert q.enabled and q.robots == "erlaubt" and q.betreiber and q.notiz and q.interval_minutes == 360
     assert q.params["listen"] == ["/de/events", "/ch/events"]
     assert q.params["laender"] == ["DE", "AT", "CH"] and q.params["max_abrufe"] == 40
     assert "jsonld_events" in sources.FETCHERS
@@ -173,3 +173,49 @@ def test_mitternacht_gilt_als_termin_ohne_uhrzeit(settings):
     url = "https://vizha.app/events/zurich-tamil-sangam-deepavali-celebration-2026"
     item = sources.jsonld_termin(text, url, _quelle(settings), settings, now=STAND)
     assert item.facts["event_datum"] == "2026-11-15" and item.summary.startswith("15.11.2026 · ")
+
+
+# ---- Gedenkturniere ohne die alten Sperrbegriffe (Vizha-Probe 12.11.2026, Entscheidung Hauptsitzung) ----------
+
+GEDENKTURNIERE = {
+    "vizha_event_dormagen_thamilselvan_cup.html": "https://vizha.app/events/br-s-p-thamilselvan-memorial-cup-2026",
+    "vizha_event_rafz_kiddu_cup.html": "https://vizha.app/events/colonel-kiddu-cup-2027-adults-2027",
+    "vizha_event_seon_kiddu_cup_junior.html": "https://vizha.app/events/colonel-kiddu-cup-junior-2027",
+}
+
+
+@pytest.mark.parametrize("datei", sorted(GEDENKTURNIERE))
+def test_gedenkturniere_werden_nie_automatisch_story(settings, datei):
+    text = (FIX / datei).read_text(encoding="utf-8")
+    assert sources.jsonld_termin(text, GEDENKTURNIERE[datei], _quelle(settings), settings, now=STAND) is None
+    # Gegenprobe: ohne die Namen wäre es ein gewöhnliches Turnier in DACH
+    ohne = (text.replace("Thamilselvan", "Rhein").replace("Kiddu", "Winter").replace("BR.S.P.", "")
+            .replace("பிரிகேடியர் சு.ப. தமிழ்ச்செல்வன் ", ""))
+    assert sources.jsonld_termin(ohne, GEDENKTURNIERE[datei], _quelle(settings), settings, now=STAND) is not None
+
+
+def test_deepavali_und_cricket_ohne_gedenkbezug_bleiben(settings):
+    zuerich = (FIX / "vizha_event_zurich_deepavali.html").read_text(encoding="utf-8")
+    url = "https://vizha.app/events/zurich-tamil-sangam-deepavali-celebration-2026"
+    assert sources.jsonld_termin(zuerich, url, _quelle(settings), settings, now=STAND) is not None
+    cricket = (FIX / "vizha_event_manchester_cricket.html").read_text(encoding="utf-8")
+    url = "https://vizha.app/events/nta-40th-anniversary-inter-region-indoor-cricket-championshi-2026"
+    vorher = datetime(2026, 10, 20, 12, tzinfo=timezone.utc)
+    assert sources.jsonld_termin(cricket, url, _quelle(settings, laender=["GB"]), settings, now=vorher) is not None
+
+
+def test_kittu_nur_als_ganzes_wort(settings):
+    """„கிட்டு“/„Kittu“ trifft nur als ganzes Wort: „கிட்டும்“ („wird zuteil“) ist ein gewöhnliches Verb, „Kittur“ ein
+    Ort."""
+    from news_radar import filtering
+
+    def termin(titel):
+        return sources.NewsItem(title=titel, url="https://x.example/1", summary="", source="Test",
+                                published=STAND, kind="event")
+
+    assert filtering.gedenktermin(termin("கேணல் கிட்டு வெற்றிக் கிண்ணம் 2027"), settings)
+    assert filtering.gedenktermin(termin("Colonel Kittu Cup 2027"), settings)
+    assert filtering.gedenktermin(termin("Annai Poopathy Memorial Day"), settings)
+    assert filtering.gedenktermin(termin("திலீபன் நினைவு நாள்"), settings)
+    assert not filtering.gedenktermin(termin("தீபாவளி 2026 – எல்லோருக்கும் பரிசு கிட்டும்"), settings)
+    assert not filtering.gedenktermin(termin("Kittur Rani Chennamma – Tanzabend"), settings)

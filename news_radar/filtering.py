@@ -206,6 +206,11 @@ def gedenktermin(item: NewsItem, settings: Settings) -> bool:
                 return True
         elif re.search(r"(?<![^\W_])" + re.escape(begriff), text):  # Wortanfang: „Maaveerarnaal“, „Maaveerars Day“
             return True
+    # Ganzes Wort ([blocklist] termine_wort): „Kittu“, nicht „Kittur“; „கிட்டு“, nicht „கிட்டும்“ (Verb). Tamilische
+    # Vokalzeichen sind für `\w` keine Buchstaben, deshalb zählt der ganze Tamil-Block als Wortinneres.
+    for begriff in (_ohne_zeichen(t) for t in settings.blocklist_termine_wort):
+        if re.search(rf"(?<![\w\u0b80-\u0bff]){re.escape(begriff)}(?![\w\u0b80-\u0bff])", text):
+            return True
     return False
 
 

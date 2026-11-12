@@ -88,7 +88,7 @@ def test_costs_sources_queue_pages_and_csv(app):
     csv = client.get("/kosten.csv")
     assert csv.mimetype == "text/csv" and "kosten_usd" in csv.get_data(as_text=True)
     quellen = client.get("/quellen").get_data(as_text=True)
-    assert "32 von 43 Quellen aktiv" in quellen and "verboten" in quellen
+    assert "33 von 43 Quellen aktiv" in quellen and "verboten" in quellen
     schlange = client.get("/warteschlange?status=tot").get_data(as_text=True)
     assert "Kaputte Story" in schlange and "Erneut" in schlange
     resp = client.post("/job/9999/erneut", data={"_csrf": token}, follow_redirects=True)
