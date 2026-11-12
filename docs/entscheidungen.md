@@ -5,6 +5,25 @@ Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
 ## 12.11.2026
 
+- **Termin-Abgleich ohne Ort braucht einen Vereinshinweis:** Fehlt auf einer Seite die Stadt und teilen beide Titel nur
+  ein Kernwort („Deepavali“), werden sie nur zusammengelegt, wenn derselbe Verein dahintersteht (Kürzel „MTS“ ↔ Quelle
+  „München Tamil Sangam · Termine“, oder „Hamburg Tamil Sangam“ im Titel ↔ „HTS“). Ortsnamen auf -ring, -weg, -damm
+  sind keine Straßen mehr; in Titeln ganz in Großbuchstaben zählen nur Wörter ohne Selbstlaut als Kürzel. · Hauptsitzung
+  (Folgearbeit P3 aus PR #4) · Deepavali ist am selben Tag in vielen Städten; lieber eine Dublette als zwei Feste in
+  einer Story. Bekannte Grenze: ein Fest mit zwei gemeinsamen Kernwörtern („Thai Pongal“) ohne Ort wird weiter
+  zusammengelegt.
+- **Film-Reihentitel bleibt getrennt (xfail bleibt):** „OM“ und „OM: Chapter 1“ werden nicht automatisch ein Film. ·
+  Hauptsitzung · Bestätigt die Prüfung vom 11.11.; „Kantara“ und „Kantara: Chapter 1“ sind verschiedene Filme.
+- **Nach außen schreibt immer die Redaktion:** Schema (`NewsArticle.author`), Feed (`dc:creator`) und oEmbed nennen den
+  Namen der Autorenzeile („Redaktion Tamil.de“), nie einen Anmeldenamen. Autorenarchive leiten auf die Startseite,
+  `/wp/v2/users` nur für Angemeldete. Abschalten über den Filter `tamil_site_autorenarchive`, sobald es Profile gibt
+  (Lückenliste Nr. 1). · Hauptsitzung nach SEO-Prüfung · Bisher standen dort „luis“, „News-Radar“ und `ki-agent`.
+- **Schlagwörter unter drei Beiträgen: noindex,follow und nicht in der Sitemap;** Benutzer nicht in der Sitemap,
+  Rubriken vollständig. Herausgeber als `NewsMediaOrganization` mit Logo; Canonical für Start, Rubrik, Schlagwort. ·
+  Hauptsitzung · F0 Punkt 2. Die Sitemap selbst bleibt die von WordPress.
+- **Google-News-Sitemap: Vorschlag, nicht gebaut.** F0 sagt „Die Sitemap kommt weiter aus WordPress“. Eine eigene
+  News-Sitemap (Beiträge der letzten 48 Stunden, wie bei Merzenich Aktuell) braucht das Ja von Luis. · Hauptsitzung
+
 - **Gedenk-Sperre um Namen von LTTE-Gedenkanlässen erweitert, Terminquelle Vizha an:** `[blocklist] termine` nennt
   zusätzlich Thamilselvan, Brigadier (பிரிகேடியர்), Thileepan, Annai Poopathi/Poopathy, Prabhakaran (jeweils auch in
   Tamil-Schrift); Kittu/Kiddu/கிட்டு stehen in `termine_wort` und treffen nur als ganzes Wort (nicht „Kittur“, nicht
