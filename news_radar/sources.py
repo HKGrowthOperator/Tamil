@@ -458,7 +458,7 @@ def _due(source: Source, store, now: datetime, paused: set[str]) -> bool:
     if source.name in paused:
         return False
     if source.interval_minutes and store is not None:
-        last = store.source_last_ok(source.name)
+        last = store.source_last_run(source.name)
         if last and now - last < timedelta(minutes=source.interval_minutes):
             return False
     return True
@@ -491,7 +491,7 @@ def fetch_all(settings: Settings, store=None) -> list[NewsItem]:
             return items, True
         except Teilausfall as teil:
             log.warning("Quelle nur teilweise: %s (%s)", source.name, teil)
-            record(store.source_failed, source.name, f"Teilausfall: {teil}")
+            record(store.source_partial, source.name, f"Teilausfall: {teil}")
             return teil.items, False
         except RateLimited as exc:
             log.warning("Quelle pausiert 30 Min. (429): %s", source.name)
