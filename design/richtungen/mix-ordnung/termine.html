@@ -43,14 +43,14 @@
     </header>
   </div>
 
-  <section class="woche" id="diese-woche" aria-labelledby="t-woche">
+  <section class="woche woche--seite" id="diese-woche" aria-labelledby="t-woche">
   <div class="innen">
     <h2 class="woche__titel" id="t-woche">Diese Woche im Kino</h2>
     <div class="wand" id="kino">
       <article class="kachel kachel--gross">
         <a class="anr imbild-anr" href="#">
           <div class="rahmen r32">
-            <img src="bilder/p9711.jpg" width="1600" height="840" loading="lazy" alt="Filmszene: ein Krieger mit Fellumhang und Halsketten vor Fackeln und erhobenen Hörnern, vorn ein Feuer.">
+            <img src="bilder/p9711.jpg" width="1600" height="840" alt="Filmszene: ein Krieger mit Fellumhang und Halsketten vor Fackeln und erhobenen Hörnern, vorn ein Feuer.">
             <div class="imbild">
               <p class="meta"><span class="meta__rubrik">Kino</span><time datetime="2024-11-06">6. November 2024</time></p>
               <h3 class="titel">Kanguva – Ein tamilisches <span class="zusammen">Kino-Highlight</span> ab 14.&nbsp;November in Deutschland</h3>
@@ -61,7 +61,7 @@
       <article class="kachel">
         <a class="anr imbild-anr" href="#">
           <div class="rahmen r169">
-            <img src="bilder/rb-84.jpg" width="1280" height="853" loading="lazy" style="object-position: 50% 22%" alt="Der Schauspieler Karthi bei der Musikvorstellung zum Film Nenjil Thunivirunthal, 2017 (Archivbild)">
+            <img src="bilder/rb-84.jpg" width="1280" height="853" style="object-position: 50% 22%" alt="Der Schauspieler Karthi bei der Musikvorstellung zum Film Nenjil Thunivirunthal, 2017 (Archivbild)">
             <div class="imbild">
               <p class="meta"><span class="meta__rubrik">Kino</span><time datetime="2026-09-10">10. September 2026</time></p>
               <h3 class="titel">„Sardar 2“ mit Karthi: Deutscher Kinostart war für den 10. September geführt</h3>
@@ -73,7 +73,7 @@
       <article class="kachel">
         <a class="anr" href="#">
           <div class="rahmen r83 rahmen--ohne-zeile">
-            <img src="bilder/p9697.jpg" width="1600" height="680" loading="lazy" alt="Vier Männer stehen nebeneinander vor einer grauen Wand: das Team von „Rathamaarey“ mit Rajinikanth, Zweiter von rechts.">
+            <img src="bilder/p9697.jpg" width="1600" height="680" alt="Vier Männer stehen nebeneinander vor einer grauen Wand: das Team von „Rathamaarey“ mit Rajinikanth, Zweiter von rechts.">
           </div>
           <div class="kachel__unter">
             <p class="meta"><span class="meta__rubrik">Kino</span><time datetime="2024-10-13">13. Oktober 2024</time></p>
@@ -83,7 +83,7 @@
       </article>
     </div>
     <p class="woche__art" id="t-spielorte">Spielorte diese Woche</p>
-    <ul class="spielorte" aria-labelledby="t-spielorte">
+    <ul class="spielorte spielorte--zwei" aria-labelledby="t-spielorte">
         <li class="grafik" data-grafik="kino"><a class="anr" href="#">
           <h3 class="titel">Scene</h3>
           <p class="grafik__zahl">11 Kinos in Deutschland</p>
@@ -102,12 +102,15 @@
   <div class="innen">
     <section class="block" id="termine" aria-labelledby="t-termine">
       <h2 class="block-titel" id="t-termine">Termine</h2>
-      <div class="demnaechst" data-grafik="termin"><a class="anr" href="#">
-        <p class="meta"><span class="meta__rubrik">Demnächst</span><time datetime="2026-11-21">Samstag, 21. November 2026</time></p>
-        <h3 class="titel">Diwali in Basel</h3>
-        <p class="grafik__zahl"><time datetime="2026-11-21">Samstag, 21. November 2026</time></p>
-        <p class="grafik__orte">Aula Lysbüchel, Basel · Basel Tamil Sangam</p>
-        <p class="grafik__text">Der Basel Tamil Sangam lädt Familien zur Diwali-Feier in die Aula Lysbüchel ein. Mitglieder erhalten Tickets günstiger.</p>
+      <p class="woche__art termine__art">Demnächst</p>
+      <div class="demnaechst termin" data-grafik="termin"><a class="anr" href="#">
+        <p class="termin__datum"><time datetime="2026-11-21"><span class="termin__tag">21.</span><span class="termin__monat">November 2026</span></time></p>
+        <div class="termin__text">
+          <h3 class="titel">Diwali in Basel</h3>
+          <p class="grafik__zahl">Samstag, 21. November 2026</p>
+          <p class="termin__ort">Aula Lysbüchel, Basel · Basel Tamil Sangam</p>
+          <p class="grafik__text">Der Basel Tamil Sangam lädt Familien zur Diwali-Feier in die Aula Lysbüchel ein. Mitglieder erhalten Tickets günstiger.</p>
+        </div>
       </a></div>
     </section>
 
@@ -116,7 +119,7 @@
       <ul>
         <li class="termin"><a class="anr" href="artikel.html">
           <p class="termin__datum"><time datetime="2026-11-08"><span class="termin__tag">8.</span><span class="termin__monat">November 2026</span></time></p>
-          <div class="rahmen r169"><img src="bilder/rb-30.jpg" width="1280" height="960" loading="lazy" alt="Der Sri-Ganesha-Hindutempel in der Berliner Hasenheide, aufgenommen im Juni 2026"></div>
+          <div class="rahmen r169"><img src="bilder/rb-30.jpg" width="1280" height="960" alt="Der Sri-Ganesha-Hindutempel in der Berliner Hasenheide, aufgenommen im Juni 2026"></div>
           <div class="termin__text">
             <p class="meta"><span class="meta__rubrik">Events</span><time datetime="2026-11-08">8. November 2026</time></p>
             <h3 class="titel">Deepavali 2026: Lichterfest in Berlin, Bayern und Düsseldorf</h3>
@@ -125,7 +128,7 @@
           </div>
         </a></li><li class="termin"><a class="anr" href="#">
           <p class="termin__datum"><time datetime="2026-08-22"><span class="termin__tag">22.</span><span class="termin__monat">August 2026</span></time></p>
-          <div class="rahmen r169"><img src="bilder/rb-83.jpg" width="1280" height="1920" loading="lazy" style="object-position: 50% 20%" alt="Die Bharatanatyam-Tänzerin Amrutha Naresh Rao bei einem Auftritt in Bangalore (Symbolbild)"></div>
+          <div class="rahmen r169"><img src="bilder/rb-83.jpg" width="1280" height="1920" style="object-position: 50% 20%" alt="Die Bharatanatyam-Tänzerin Amrutha Naresh Rao bei einem Auftritt in Bangalore (Symbolbild)"></div>
           <div class="termin__text">
             <p class="meta"><span class="meta__rubrik">Kultur</span><time datetime="2026-08-22">22. August 2026</time></p>
             <h3 class="titel">INAIVU in Zürich: Benefizabend mit Musik und Tanz für Sehbehinderte in Sri Lanka</h3>
@@ -134,7 +137,7 @@
           </div>
         </a></li><li class="termin"><a class="anr" href="#">
           <p class="termin__datum"><time datetime="2026-07-25"><span class="termin__tag">25.</span><span class="termin__monat">Juli 2026</span></time></p>
-          <div class="rahmen r169"><img src="bilder/rb-43.jpg" width="1280" height="960" loading="lazy" alt="Geschmückter Festwagen beim Koothandavar-Fest in Koovagam, Tamil Nadu, davor eine Menschenmenge von hinten (Archivbild 2023)"></div>
+          <div class="rahmen r169"><img src="bilder/rb-43.jpg" width="1280" height="960" alt="Geschmückter Festwagen beim Koothandavar-Fest in Koovagam, Tamil Nadu, davor eine Menschenmenge von hinten (Archivbild 2023)"></div>
           <div class="termin__text">
             <p class="meta"><span class="meta__rubrik">Events</span><time datetime="2026-07-25">25. Juli 2026</time></p>
             <h3 class="titel">Koovagam-Fest im Film: „Bride of Aravan“ beim Indischen Filmfestival Stuttgart</h3>
@@ -143,7 +146,7 @@
           </div>
         </a></li><li class="termin"><a class="anr" href="#">
           <p class="termin__datum"><time datetime="2026-06-27"><span class="termin__tag">27.</span><span class="termin__monat">Juni 2026</span></time></p>
-          <div class="rahmen r169"><img src="bilder/rb-76.jpg" width="1280" height="720" loading="lazy" alt="Innenraum des Arulmigu Sivan Kovil in Glattbrugg (Archivbild 2021)"></div>
+          <div class="rahmen r169"><img src="bilder/rb-76.jpg" width="1280" height="720" alt="Innenraum des Arulmigu Sivan Kovil in Glattbrugg (Archivbild 2021)"></div>
           <div class="termin__text">
             <p class="meta"><span class="meta__rubrik">Community</span><time datetime="2026-06-27">27. Juni 2026</time></p>
             <h3 class="titel">Mahotsavam im Sivan Kovil Glattbrugg: zwölf Festtage, Wagenfest am 27. Juni</h3>
@@ -152,7 +155,7 @@
           </div>
         </a></li><li class="termin"><a class="anr" href="#">
           <p class="termin__datum"><time datetime="2026-06-26"><span class="termin__tag">26.</span><span class="termin__monat">Juni 2026</span></time></p>
-          <div class="rahmen r169"><img src="bilder/rb-78.jpg" width="1280" height="923" loading="lazy" alt="Die Hauptwache in Frankfurt am Main (Archivbild)"></div>
+          <div class="rahmen r169"><img src="bilder/rb-78.jpg" width="1280" height="923" alt="Die Hauptwache in Frankfurt am Main (Archivbild)"></div>
           <div class="termin__text">
             <p class="meta"><span class="meta__rubrik">Events</span><time datetime="2026-06-26">26. Juni 2026</time></p>
             <h3 class="titel">Frankfurt, Duisburg, Dortmund: Drei tamilische Straßenfeste für 2026 angekündigt</h3>
@@ -161,7 +164,7 @@
           </div>
         </a></li><li class="termin"><a class="anr" href="#">
           <p class="termin__datum"><time datetime="2026-06-20"><span class="termin__tag">20.</span><span class="termin__monat">Juni 2026</span></time></p>
-          <div class="rahmen r169"><img src="bilder/rb-48.jpg" width="1280" height="1309" loading="lazy" alt="Vegetarisches Essen nach Art Tamil Nadus auf einem Bananenblatt, die einzelnen Gerichte beschriftet (Symbolbild)"></div>
+          <div class="rahmen r169"><img src="bilder/rb-48.jpg" width="1280" height="1309" alt="Vegetarisches Essen nach Art Tamil Nadus auf einem Bananenblatt, die einzelnen Gerichte beschriftet (Symbolbild)"></div>
           <div class="termin__text">
             <p class="meta"><span class="meta__rubrik">Küche</span><time datetime="2026-06-20">20. Juni 2026</time></p>
             <h3 class="titel">München: Namma Tamil Nadu Food Fest mit sechs Regionalküchen</h3>
@@ -170,7 +173,7 @@
           </div>
         </a></li><li class="termin"><a class="anr" href="#">
           <p class="termin__datum"><time datetime="2026-05-17"><span class="termin__tag">17.</span><span class="termin__monat">Mai 2026</span></time></p>
-          <div class="rahmen r169"><img src="bilder/rb-80.jpg" width="1280" height="853" loading="lazy" alt="Blick auf das Städtchen Leuk im Wallis (Archivbild)"></div>
+          <div class="rahmen r169"><img src="bilder/rb-80.jpg" width="1280" height="853" alt="Blick auf das Städtchen Leuk im Wallis (Archivbild)"></div>
           <div class="termin__text">
             <p class="meta"><span class="meta__rubrik">Community</span><time datetime="2026-05-17">17. Mai 2026</time></p>
             <h3 class="titel">Leuk: Tausende tamilische Katholiken feierten Lourdes-Fest und 20 Jahre Mission Aargau</h3>
@@ -186,7 +189,7 @@
 <footer class="fuss">
   <div class="innen fuss__innen">
     <div>
-      <a class="fuss__logo" href="index.html"><img src="bilder/logo.png" width="300" height="121" alt="tamil.de – zur Startseite" loading="lazy"></a>
+      <a class="fuss__logo" href="index.html"><img src="bilder/logo.png" width="300" height="121" alt="tamil.de – zur Startseite"></a>
       <p class="fuss__satz">Nachrichten, Kino und Community für Tamilen in DE, AT und CH</p>
     </div>
     <ul aria-label="Service">

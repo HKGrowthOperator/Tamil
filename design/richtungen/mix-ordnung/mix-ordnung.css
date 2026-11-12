@@ -81,6 +81,7 @@ a:focus-visible, input:focus-visible, textarea:focus-visible, button:focus-visib
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
+  font-size: 1rem;
 }
 
 .innen {
@@ -110,7 +111,8 @@ a:focus-visible, input:focus-visible, textarea:focus-visible, button:focus-visib
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-height: 44px;
+  min-height: 48px;
+  min-width: 48px;
   padding-left: 12px;
   font-size: 14px;
   font-weight: 600;
@@ -368,6 +370,7 @@ a:focus-visible, input:focus-visible, textarea:focus-visible, button:focus-visib
   border-bottom: 1px solid var(--linie-dunkel);
   margin-bottom: 20px;
 }
+.woche__titel a { display: inline-flex; align-items: center; min-height: 44px; }
 .woche__titel a:hover { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.14em; }
 .woche .meta, .woche .nachweis { color: var(--hell-leise); }
 .woche .meta__rubrik { color: var(--hell); }
@@ -428,13 +431,15 @@ a:focus-visible, input:focus-visible, textarea:focus-visible, button:focus-visib
   line-height: 1.45;
   color: var(--leise);
 }
+.fuss__logo { display: inline-flex; align-items: center; min-height: 48px; }
 .fuss__logo img { height: 40px; width: auto; }
 .fuss__satz { margin-top: 10px; max-width: 34em; }
 .fuss ul { display: flex; flex-wrap: wrap; column-gap: 20px; margin-top: 12px; }
 .fuss li a {
   display: inline-flex;
   align-items: center;
-  min-height: 44px;
+  min-height: 48px;
+  min-width: 48px;
   color: var(--tinte);
 }
 .fuss li a:hover { color: var(--rot); }
@@ -473,11 +478,13 @@ a:focus-visible, input:focus-visible, textarea:focus-visible, button:focus-visib
 .termin__text { grid-column: 2; }
 .termin .titel { font-size: 19px; line-height: 1.25; }
 .termin__ort { margin-top: 4px; font-size: 15px; color: var(--leise); }
+.termine__art { margin-top: 4px; color: var(--leise); }
 .demnaechst { background: var(--flaeche); }
 .demnaechst .anr { padding: 18px 16px 20px; }
+.demnaechst .termin__text { grid-column: 2; grid-row: 1; }
 .demnaechst .titel { font-size: 21px; line-height: 1.2; }
-.demnaechst .grafik__zahl { font-size: 18px; }
-.demnaechst .grafik__orte { color: var(--leise); }
+.demnaechst .grafik__zahl { font-size: 17px; margin-top: 4px; }
+.woche--seite { margin-top: 24px; }
 
 /* ---------- Suche ---------- */
 
@@ -515,7 +522,7 @@ a:focus-visible, input:focus-visible, textarea:focus-visible, button:focus-visib
 .kontakt__bild .rahmen { margin-inline: calc(-1 * var(--rand)); }
 .kontakt__daten dt { font-size: 13px; color: var(--leise); margin-top: 14px; }
 .kontakt__daten dd { font-size: 18px; line-height: 1.45; }
-.kontakt__daten a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+.kontakt__daten a { display: inline-flex; align-items: center; min-height: 44px; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
 .kontakt__daten a:hover { color: var(--rot); }
 .beispiel { font-size: 13px; color: var(--leise); }
 .formular { display: grid; gap: 16px; max-width: 560px; }
@@ -584,7 +591,7 @@ a:focus-visible, input:focus-visible, textarea:focus-visible, button:focus-visib
   line-height: 1.45;
   color: var(--leise);
 }
-.artikel__bild figcaption a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
+.artikel__bild figcaption a { display: inline-flex; align-items: center; min-height: 44px; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
 .artikel__bild figcaption a:hover { color: var(--rot); }
 .artikel__text {
   margin-top: 24px;
@@ -605,6 +612,7 @@ a:focus-visible, input:focus-visible, textarea:focus-visible, button:focus-visib
   .liste--gross .zeile .rahmen { grid-column: 1; }
   .liste--gross .zeile .zeile__text { grid-column: 2; }
   .kacheln li { flex-basis: 170px; }
+  .buehne { padding-top: 20px; }
   .aufmacher .rahmen { margin-inline: 0; }
   .aufmacher .titel { font-size: 34px; line-height: 1.1; }
   .aufmacher .imbild { padding: 110px 28px 20px; }
@@ -622,6 +630,7 @@ a:focus-visible, input:focus-visible, textarea:focus-visible, button:focus-visib
   .kueche .kachel--gross { grid-column: 1 / -1; }
   .termin .anr { grid-template-columns: 72px 240px minmax(0, 1fr); column-gap: 20px; }
   .termin__datum { grid-row: 1; }
+  .demnaechst.termin .anr { grid-template-columns: 72px minmax(0, 1fr); }
   .termin .rahmen { grid-column: 2; margin: 0; }
   .termin__text { grid-column: 3; }
   .kontakt__bild .rahmen { margin-inline: 0; }
@@ -751,6 +760,8 @@ a:focus-visible, input:focus-visible, textarea:focus-visible, button:focus-visib
   .wand .kachel .imbild { padding-inline: 20px; }
   .spielorte { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
   .spielorte .grafik--termin { grid-column: auto; }
+  .spielorte--zwei { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .demnaechst.termin .anr { grid-template-columns: 96px minmax(0, 1fr); padding: 24px 28px; }
   .grafik .anr { padding: 18px 20px 20px; }
 
   /* Küche: 862 + 16 + 322 = 1200; links 3:2 (862 × 575), rechts drei 16:9 (322 × 181) mit 16 px Abstand */

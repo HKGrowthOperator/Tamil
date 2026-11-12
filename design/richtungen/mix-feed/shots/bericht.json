@@ -1,9 +1,9 @@
 {
-  "stand": "2026-11-12T15:03:16.235Z",
+  "stand": "2026-11-12T15:08:17.015Z",
   "ergebnisse": [
     {
       "ziel": "design/richtungen/mix-feed/index.html",
-      "url": "http://127.0.0.1:44417/design/richtungen/mix-feed/index.html",
+      "url": "http://127.0.0.1:35215/design/richtungen/mix-feed/index.html",
       "breite": 390,
       "status": 200,
       "datei": "design/richtungen/mix-feed/shots/design-richtungen-mix-feed-index-390.png",
@@ -19,18 +19,13 @@
       "konsole": [],
       "bilder": [],
       "schriften": [],
-      "tippflaechen": [
-        "a „„Scene““ 86×26",
-        "a „Payasam“ 78×21",
-        "a „Biryani“ 60×21",
-        "a „“ 89×36"
-      ],
+      "tippflaechen": [],
       "tamil_ohne_lang": 0,
       "fehler": 0
     },
     {
       "ziel": "design/richtungen/mix-feed/artikel.html",
-      "url": "http://127.0.0.1:44417/design/richtungen/mix-feed/artikel.html",
+      "url": "http://127.0.0.1:35215/design/richtungen/mix-feed/artikel.html",
       "breite": 390,
       "status": 200,
       "datei": "design/richtungen/mix-feed/shots/design-richtungen-mix-feed-artikel-390.png",
@@ -43,15 +38,13 @@
       "konsole": [],
       "bilder": [],
       "schriften": [],
-      "tippflaechen": [
-        "a „“ 89×36"
-      ],
+      "tippflaechen": [],
       "tamil_ohne_lang": 0,
       "fehler": 0
     },
     {
       "ziel": "design/richtungen/mix-feed/rubrik.html",
-      "url": "http://127.0.0.1:44417/design/richtungen/mix-feed/rubrik.html",
+      "url": "http://127.0.0.1:35215/design/richtungen/mix-feed/rubrik.html",
       "breite": 390,
       "status": 200,
       "datei": "design/richtungen/mix-feed/shots/design-richtungen-mix-feed-rubrik-390.png",
@@ -65,15 +58,13 @@
       "konsole": [],
       "bilder": [],
       "schriften": [],
-      "tippflaechen": [
-        "a „“ 89×36"
-      ],
+      "tippflaechen": [],
       "tamil_ohne_lang": 0,
       "fehler": 0
     },
     {
       "ziel": "design/richtungen/mix-feed/termine.html",
-      "url": "http://127.0.0.1:44417/design/richtungen/mix-feed/termine.html",
+      "url": "http://127.0.0.1:35215/design/richtungen/mix-feed/termine.html",
       "breite": 390,
       "status": 200,
       "datei": "design/richtungen/mix-feed/shots/design-richtungen-mix-feed-termine-390.png",
@@ -88,16 +79,13 @@
       "konsole": [],
       "bilder": [],
       "schriften": [],
-      "tippflaechen": [
-        "a „„Scene““ 86×26",
-        "a „“ 89×36"
-      ],
+      "tippflaechen": [],
       "tamil_ohne_lang": 0,
       "fehler": 0
     },
     {
       "ziel": "design/richtungen/mix-feed/suche.html",
-      "url": "http://127.0.0.1:44417/design/richtungen/mix-feed/suche.html",
+      "url": "http://127.0.0.1:35215/design/richtungen/mix-feed/suche.html",
       "breite": 390,
       "status": 200,
       "datei": "design/richtungen/mix-feed/shots/design-richtungen-mix-feed-suche-390.png",
@@ -109,15 +97,13 @@
       "konsole": [],
       "bilder": [],
       "schriften": [],
-      "tippflaechen": [
-        "a „“ 89×36"
-      ],
+      "tippflaechen": [],
       "tamil_ohne_lang": 0,
       "fehler": 0
     },
     {
       "ziel": "design/richtungen/mix-feed/kontakt.html",
-      "url": "http://127.0.0.1:44417/design/richtungen/mix-feed/kontakt.html",
+      "url": "http://127.0.0.1:35215/design/richtungen/mix-feed/kontakt.html",
       "breite": 390,
       "status": 200,
       "datei": "design/richtungen/mix-feed/shots/design-richtungen-mix-feed-kontakt-390.png",
@@ -129,15 +115,13 @@
       "konsole": [],
       "bilder": [],
       "schriften": [],
-      "tippflaechen": [
-        "a „“ 89×36"
-      ],
+      "tippflaechen": [],
       "tamil_ohne_lang": 0,
       "fehler": 0
     },
     {
       "ziel": "design/richtungen/mix-feed/index.html",
-      "url": "http://127.0.0.1:44417/design/richtungen/mix-feed/index.html",
+      "url": "http://127.0.0.1:35215/design/richtungen/mix-feed/index.html",
       "breite": 820,
       "status": 200,
       "datei": "design/richtungen/mix-feed/shots/design-richtungen-mix-feed-index-820.png",
@@ -153,18 +137,13 @@
       "konsole": [],
       "bilder": [],
       "schriften": [],
-      "tippflaechen": [
-        "a „„Scene““ 86×26",
-        "a „Payasam“ 78×21",
-        "a „Biryani“ 60×21",
-        "a „“ 89×36"
-      ],
+      "tippflaechen": [],
       "tamil_ohne_lang": 0,
       "fehler": 0
     },
     {
       "ziel": "design/richtungen/mix-feed/artikel.html",
-      "url": "http://127.0.0.1:44417/design/richtungen/mix-feed/artikel.html",
+      "url": "http://127.0.0.1:35215/design/richtungen/mix-feed/artikel.html",
       "breite": 820,
       "status": 200,
       "datei": "design/richtungen/mix-feed/shots/design-richtungen-mix-feed-artikel-820.png",
@@ -176,15 +155,13 @@
       "konsole": [],
       "bilder": [],
       "schriften": [],
-      "tippflaechen": [
-        "a „“ 89×36"
-      ],
+      "tippflaechen": [],
       "tamil_ohne_lang": 0,
       "fehler": 0
     },
     {
       "ziel": "design/richtungen/mix-feed/rubrik.html",
-      "url": "http://127.0.0.1:44417/design/richtungen/mix-feed/rubrik.html",
+      "url": "http://127.0.0.1:35215/design/richtungen/mix-feed/rubrik.html",
       "breite": 820,
       "status": 200,
       "datei": "design/richtungen/mix-feed/shots/design-richtungen-mix-feed-rubrik-820.png",
@@ -197,16 +174,13 @@
       "konsole": [],
       "bilder": [],
       "schriften": [],
-      "tippflaechen": [
-        "a „Berlin: Sri Ganesha Hindu Temp“ 633×26",
-        "a „“ 89×36"
-      ],
+      "tippflaechen": [],
       "tamil_ohne_lang": 0,
       "fehler": 0
     },
     {
       "ziel": "design/richtungen/mix-feed/termine.html",
-      "url": "http://127.0.0.1:44417/design/richtungen/mix-feed/termine.html",
+      "url": "http://127.0.0.1:35215/design/richtungen/mix-feed/termine.html",
       "breite": 820,
       "status": 200,
       "datei": "design/richtungen/mix-feed/shots/design-richtungen-mix-feed-termine-820.png",
@@ -220,16 +194,13 @@
       "konsole": [],
       "bilder": [],
       "schriften": [],
-      "tippflaechen": [
-        "a „„Scene““ 86×26",
-        "a „“ 89×36"
-      ],
+      "tippflaechen": [],
       "tamil_ohne_lang": 0,
       "fehler": 0
     },
     {
       "ziel": "design/richtungen/mix-feed/suche.html",
-      "url": "http://127.0.0.1:44417/design/richtungen/mix-feed/suche.html",
+      "url": "http://127.0.0.1:35215/design/richtungen/mix-feed/suche.html",
       "breite": 820,
       "status": 200,
       "datei": "design/richtungen/mix-feed/shots/design-richtungen-mix-feed-suche-820.png",
@@ -241,15 +212,13 @@
       "konsole": [],
       "bilder": [],
       "schriften": [],
-      "tippflaechen": [
-        "a „“ 89×36"
-      ],
+      "tippflaechen": [],
       "tamil_ohne_lang": 0,
       "fehler": 0
     },
     {
       "ziel": "design/richtungen/mix-feed/kontakt.html",
-      "url": "http://127.0.0.1:44417/design/richtungen/mix-feed/kontakt.html",
+      "url": "http://127.0.0.1:35215/design/richtungen/mix-feed/kontakt.html",
       "breite": 820,
       "status": 200,
       "datei": "design/richtungen/mix-feed/shots/design-richtungen-mix-feed-kontakt-820.png",
@@ -261,23 +230,20 @@
       "konsole": [],
       "bilder": [],
       "schriften": [],
-      "tippflaechen": [
-        "a „“ 89×36"
-      ],
+      "tippflaechen": [],
       "tamil_ohne_lang": 0,
       "fehler": 0
     },
     {
       "ziel": "design/richtungen/mix-feed/index.html",
-      "url": "http://127.0.0.1:44417/design/richtungen/mix-feed/index.html",
+      "url": "http://127.0.0.1:35215/design/richtungen/mix-feed/index.html",
       "breite": 1280,
       "status": 200,
       "datei": "design/richtungen/mix-feed/shots/design-richtungen-mix-feed-index-1280.png",
       "kacheln": [
         "design/richtungen/mix-feed/shots/design-richtungen-mix-feed-index-1280-k0.png",
         "design/richtungen/mix-feed/shots/design-richtungen-mix-feed-index-1280-k1.png",
-        "design/richtungen/mix-feed/shots/design-richtungen-mix-feed-index-1280-k2.png",
-        "design/richtungen/mix-feed/shots/design-richtungen-mix-feed-index-1280-k3.png"
+        "design/richtungen/mix-feed/shots/design-richtungen-mix-feed-index-1280-k2.png"
       ],
       "ueberlauf": 0,
       "konsole": [],
@@ -289,7 +255,7 @@
     },
     {
       "ziel": "design/richtungen/mix-feed/artikel.html",
-      "url": "http://127.0.0.1:44417/design/richtungen/mix-feed/artikel.html",
+      "url": "http://127.0.0.1:35215/design/richtungen/mix-feed/artikel.html",
       "breite": 1280,
       "status": 200,
       "datei": "design/richtungen/mix-feed/shots/design-richtungen-mix-feed-artikel-1280.png",
@@ -307,7 +273,7 @@
     },
     {
       "ziel": "design/richtungen/mix-feed/rubrik.html",
-      "url": "http://127.0.0.1:44417/design/richtungen/mix-feed/rubrik.html",
+      "url": "http://127.0.0.1:35215/design/richtungen/mix-feed/rubrik.html",
       "breite": 1280,
       "status": 200,
       "datei": "design/richtungen/mix-feed/shots/design-richtungen-mix-feed-rubrik-1280.png",
@@ -325,7 +291,7 @@
     },
     {
       "ziel": "design/richtungen/mix-feed/termine.html",
-      "url": "http://127.0.0.1:44417/design/richtungen/mix-feed/termine.html",
+      "url": "http://127.0.0.1:35215/design/richtungen/mix-feed/termine.html",
       "breite": 1280,
       "status": 200,
       "datei": "design/richtungen/mix-feed/shots/design-richtungen-mix-feed-termine-1280.png",
@@ -345,7 +311,7 @@
     },
     {
       "ziel": "design/richtungen/mix-feed/suche.html",
-      "url": "http://127.0.0.1:44417/design/richtungen/mix-feed/suche.html",
+      "url": "http://127.0.0.1:35215/design/richtungen/mix-feed/suche.html",
       "breite": 1280,
       "status": 200,
       "datei": "design/richtungen/mix-feed/shots/design-richtungen-mix-feed-suche-1280.png",
@@ -363,7 +329,7 @@
     },
     {
       "ziel": "design/richtungen/mix-feed/kontakt.html",
-      "url": "http://127.0.0.1:44417/design/richtungen/mix-feed/kontakt.html",
+      "url": "http://127.0.0.1:35215/design/richtungen/mix-feed/kontakt.html",
       "breite": 1280,
       "status": 200,
       "datei": "design/richtungen/mix-feed/shots/design-richtungen-mix-feed-kontakt-1280.png",

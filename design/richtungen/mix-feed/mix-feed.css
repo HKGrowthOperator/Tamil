@@ -191,6 +191,10 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .zeile__bild { overflow: hidden; aspect-ratio: 4 / 3; background: var(--flaeche); align-self: start; }
 .zeile__bild img { width: 100%; height: 100%; object-fit: cover; transition: var(--zoom); }
 .zeile__titel { font-size: 18px; line-height: 1.28; font-weight: 650; text-wrap: balance; }
+.karte__titel a, .plakat__titel a, .plakat__film a, .zeile__titel a, .stueck__titel a, .termin__titel a {
+  /* Tippfläche mindestens 44 px hoch, ohne den Satz zu verschieben */
+  display: block; padding-block: 11px; margin-block: -11px;
+}
 .zeile__titel a::after { content: ""; position: absolute; inset: 0; }
 .zeile:hover .zeile__titel a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.14em; }
 .zeile:hover .zeile__bild img { transform: scale(1.03); }
@@ -274,6 +278,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 /* Plakat-Streifen */
 .streifen--plakate .streifen__teil { flex-basis: 58%; }
 .plakat { position: relative; }
+.plakat--radar { align-self: start; }
 .plakat__bild, .plakat__grafik { aspect-ratio: 2 / 3; overflow: hidden; background: var(--flaeche-dunkel); }
 .plakat__bild img { width: 100%; height: 100%; object-fit: cover; transition: var(--zoom); }
 .plakat:hover .plakat__bild img { transform: scale(1.03); }
@@ -313,6 +318,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 
 .seitenkopf { padding-top: 24px; padding-bottom: 20px; }
 .seitenkopf__titel { font-size: 30px; line-height: 1.15; font-weight: 700; }
+.seitenkopf + .woche { margin-top: 8px; }
 .seitenkopf__text { font-size: 18px; line-height: 1.5; color: var(--leise); margin-top: 8px; max-width: 60ch; }
 
 /* Rubrik */
@@ -387,7 +393,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .fuss { margin-top: 56px; border-top: 1px solid var(--linie); padding: 28px 0 40px; }
 .fuss__innen { display: grid; gap: 16px; }
 .fuss__logo img { height: 36px; width: auto; }
-.fuss__logo { width: max-content; }
+.fuss__logo { width: max-content; display: block; padding: 4px 0; }
 .fuss__links { display: flex; flex-wrap: wrap; column-gap: 20px; }
 .fuss__links a { display: inline-flex; min-height: 44px; align-items: center; font-size: 16px; font-weight: 500; }
 .fuss__links a:hover { color: var(--rot); }
@@ -467,24 +473,23 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   /* Community: hohe Karte links, 2 × 2 rechts */
   .community__raster { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 24px; }
   .community__gross { grid-column: 1 / 6; }
-  .community__gross .karte__flaeche { aspect-ratio: auto; height: 100%; min-height: 560px; }
   .community__gross { display: flex; flex-direction: column; }
-  .community__gross .karte__flaeche { flex: 1; }
-  .community__klein { grid-column: 6 / 13; margin-top: 0; grid-template-columns: 1fr 1fr; row-gap: 20px; }
+  .community__gross .karte__flaeche { aspect-ratio: auto; flex: 1 1 0; min-height: 0; }
+  .community__klein { grid-column: 6 / 13; margin-top: 0; grid-template-columns: 1fr 1fr; row-gap: 24px; align-content: start; }
   .community__klein .karte__flaeche { aspect-ratio: 3 / 2; }
 
   /* Küche: eine Reihe, die erste Kachel doppelt breit */
-  .kueche__reihe { grid-template-columns: 2fr 1fr 1fr 1fr 1fr; }
-  .kueche__reihe .karte__flaeche { aspect-ratio: auto; height: 340px; }
+  .kueche__reihe { grid-template-columns: 1.7fr 1.2fr 1.2fr 0.9fr; }
+  .kueche__reihe .karte__flaeche { aspect-ratio: auto; height: 380px; }
 
   /* Weitere: breite Karte und drei Nebenstücke */
-  .weitere__raster { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 24px; }
-  .weitere__gross { grid-column: 1 / 7; margin: 0; }
-  .weitere__gross .karte__flaeche { aspect-ratio: 4 / 3; }
-  .weitere__stueck { grid-column: span 2; padding: 0; border: 0; }
+  .weitere__raster { grid-template-columns: 1.6fr 1fr 1fr 1fr; column-gap: 24px; }
+  .weitere__gross { grid-column: auto; margin: 0; }
+  .weitere__gross .karte__flaeche { aspect-ratio: 4 / 5; }
+  .weitere__stueck { grid-column: auto; padding: 0; border: 0; }
   .weitere__stueck .stueck__bild { aspect-ratio: 4 / 5; }
   .weitere__stueck .stueck__titel { font-size: 18px; }
-  .weitere__stueck .stueck__teaser { font-size: 16px; }
+  .weitere__stueck .stueck__teaser { display: none; }
 
   /* Rubrik */
   .seitenkopf { padding-top: 32px; padding-bottom: 24px; }
@@ -506,8 +511,8 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   .vergangen__liste { grid-template-columns: repeat(3, minmax(0, 1fr)); border: 0; padding: 0; }
 
   /* Artikel */
-  .artikel__bild { max-width: var(--breite); margin: 24px auto 0; padding: 0 var(--rand); }
-  .artikel__rahmen { aspect-ratio: 2 / 1; max-height: none; }
+  .artikel__bild { max-width: calc(1040px + 2 * var(--rand)); margin: 24px auto 0; padding: 0 var(--rand); }
+  .artikel__rahmen { aspect-ratio: 5 / 2; max-height: none; }
   .artikel__bildzeile { padding: 8px 0 0; max-width: none; }
   .artikel__spalte { padding-top: 32px; }
   .artikel__titel { font-size: 40px; }
