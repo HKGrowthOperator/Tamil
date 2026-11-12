@@ -362,6 +362,179 @@ def fetch_tribe_events(source: Source, settings: Settings, now: datetime | None 
     return items
 
 
+# ---- Terminseiten mit JSON-LD (schema.org Event, z. B. Vizha) --------------------------------------
+
+_JSONLD_RE = re.compile(r"<script[^>]+type=[\"']application/ld\+json[\"'][^>]*>(.*?)</script>", re.S | re.I)
+_HREF_RE = re.compile(r"href=[\"']([^\"'#?]+)[\"']", re.I)
+_JAHR_RE = re.compile(r"(?<!\d)(20\d\d)(?!\d)")
+
+
+def _jsonld(text: str) -> list[dict]:
+    """Alle JSON-LD-Objekte einer Seite (Listen und @graph aufgelöst); kaputte Blöcke werden übersprungen."""
+    out: list[dict] = []
+    for block in _JSONLD_RE.findall(text):
+        try:
+            data = json.loads(block)
+        except ValueError:
+            continue
+        stapel = data if isinstance(data, list) else [data]
+        for d in stapel:
+            if isinstance(d, dict):
+                out.append(d)
+                out += [g for g in d.get("@graph") or [] if isinstance(g, dict)]
+    return out
+
+
+def _typen(d: dict) -> list[str]:
+    t = d.get("@type") or []
+    return [t] if isinstance(t, str) else [x for x in t if isinstance(x, str)]
+
+
+def termin_links(text: str, basis: str, muster: str) -> list[str]:
+    """Links auf Terminseiten einer Listenseite (gleicher Host, Pfad beginnt mit `muster`): die ItemList aus dem
+    JSON-LD (bei Vizha nur kommende Termine, nach Datum), sonst alle passenden Links der Seite."""
+    host = urlsplit(basis).netloc
+
+    def passend(urls) -> list[str]:
+        out = []
+        for u in urls:
+            voll = urljoin(basis, str(u or ""))
+            teile = urlsplit(voll)
+            if teile.netloc == host and teile.path.startswith(muster) and len(teile.path) > len(muster) \
+                    and voll not in out:
+                out.append(voll)
+        return out
+
+    for d in _jsonld(text):
+        haupt = d.get("mainEntity") if isinstance(d.get("mainEntity"), dict) else d
+        if "ItemList" in _typen(haupt):
+            elemente = [e for e in haupt.get("itemListElement") or [] if isinstance(e, dict)]
+            return passend(e.get("url") or (e.get("item") if isinstance(e.get("item"), str) else "") for e in elemente)
+    return passend(_HREF_RE.findall(text))
+
+
+def _ld_zeit(roh) -> tuple[datetime | None, bool]:
+    """ISO-Zeit aus JSON-LD → (Ortszeit Europe/Berlin, ganztägig). Ohne Zeitzone gilt die Angabe als Ortszeit."""
+    from .dates import TZ
+
+    roh = str(roh or "").strip()
+    if not roh:
+        return None, False
+    try:
+        dt = datetime.fromisoformat(roh.replace("Z", "+00:00"))
+    except ValueError:
+        log.debug("JSON-LD: Datum nicht lesbar: %r", roh)
+        return None, False
+    ganztags = len(roh) == 10
+    return (dt.replace(tzinfo=TZ) if dt.tzinfo is None else dt.astimezone(TZ)), ganztags
+
+
+def _ld_text(wert) -> str:
+    if isinstance(wert, dict):
+        wert = wert.get("name") or ""
+    return clean_text(str(wert or ""))
+
+
+def jsonld_termin(text: str, url: str, source: Source, settings: Settings, now: datetime | None = None):
+    """Ein Termin aus dem JSON-LD (Typ Event) einer Terminseite oder None: kein Event, kein Datum, vorbei, Land nicht
+    in `params.laender` (Vorgabe DE/AT/CH) oder Gedenktermin aus [blocklist] termine (nie automatisch zur Story)."""
+    from .dates import TZ
+    from .filtering import gedenktermin  # zirkulären Import vermeiden
+
+    now = now or datetime.now(timezone.utc)
+    heute = now.astimezone(TZ).date()
+    laender = {str(x).upper() for x in source.params.get("laender", ["DE", "AT", "CH"])}
+    ev = next((d for d in _jsonld(text) if any(t.endswith("Event") or t == "Festival" for t in _typen(d))), None)
+    if ev is None:
+        return None
+    title = _ld_text(ev.get("name"))
+    start, ganztags = _ld_zeit(ev.get("startDate"))
+    if not title or start is None:
+        return None
+    ende = _ld_zeit(ev.get("endDate"))[0] or start
+    letzter_tag = (ende - timedelta(seconds=1)).date() if ende > start else start.date()
+    if letzter_tag < heute:
+        return None
+    ort_ld = ev.get("location")
+    ort_ld = next((o for o in ort_ld if isinstance(o, dict)), {}) if isinstance(ort_ld, list) else ort_ld
+    ort_ld = ort_ld if isinstance(ort_ld, dict) else {}
+    adresse = ort_ld.get("address") if isinstance(ort_ld.get("address"), dict) else {}
+    land = _ld_text(adresse.get("addressCountry")).upper()
+    if land not in laender:
+        return None
+    stadt = _ld_text(adresse.get("addressLocality"))
+    teile: list[str] = []
+    for teil in (_ld_text(ort_ld.get("name")), _ld_text(adresse.get("streetAddress")), stadt):
+        if teil and not any(teil in t for t in teile):  # „Hamm Temple“ + „Hamm Temple, Germany“ → einmal
+            teile = [t for t in teile if t not in teil] + [teil]
+    ort = ", ".join(teile + [COUNTRY_NAMES.get(land, land)])
+    ohne_zeit = ganztags or (start.hour, start.minute) == (0, 0)  # 00:00 Ortszeit = Uhrzeit offen (Probe 12.11.)
+    wann = start.strftime("%d.%m.%Y") + ("" if ohne_zeit else start.strftime(", %H:%M Uhr"))
+    if letzter_tag > start.date():
+        wann += letzter_tag.strftime(" bis %d.%m.%Y")
+    teile_summary = (wann, _ld_text(ev.get("alternateName")), _ld_text(ev.get("description"))[:900], ort)
+    item = NewsItem(
+        title=title, url=url, summary=" · ".join(p for p in teile_summary if p)[:1200], source=source.name,
+        published=now, language=source.language, kind="event", ort=stadt,
+        facts={"event_datum": start.date().isoformat(), "event_ort": ort, "event_ende": letzter_tag.isoformat()},
+    )
+    if gedenktermin(item, settings):  # Gedenken mit LTTE-Bezug ([blocklist] termine): nie automatisch
+        log.info("%s: Gedenktermin ausgelassen: %s", source.name, title)
+        return None
+    return item
+
+
+@fetcher("jsonld_events")
+def fetch_jsonld_events(source: Source, settings: Settings, now: datetime | None = None) -> list[NewsItem]:
+    """Terminkalender ohne Feed (z. B. Vizha): Listenseiten (`params.listen`, relativ zu `url`) nennen die Termine,
+    jede Terminseite trägt JSON-LD vom Typ Event. Je Lauf höchstens `params.max_abrufe` Terminseiten (im Wechsel
+    aus den Listen, nächster Termin zuerst); Links, deren Slug auf ein vergangenes Jahr endet, werden nicht geholt.
+    Ergebnis nach Datum sortiert. Fehlen Seiten, gelten die übrigen Termine (Teilausfall)."""
+    now = now or datetime.now(timezone.utc)
+    p = source.params
+    muster = str(p.get("link_muster", "/events/"))
+    frist = time.monotonic() + float(p.get("frist_sekunden", 45))
+    listen, fehler = [], []
+    for pfad in p.get("listen") or [""]:
+        adresse = urljoin(source.url.rstrip("/") + "/", str(pfad).lstrip("/"))
+        try:
+            listen.append(termin_links(_get(adresse, frist=frist).text, adresse, muster))
+        except (requests.RequestException, ValueError) as exc:  # HTTP-Fehler, Zeitlimit, gesperrte Adresse
+            fehler.append(f"Liste {pfad}: {exc}")
+    if not listen:
+        raise RuntimeError("; ".join(fehler) or "keine Liste")
+    kandidaten: list[str] = []
+    for runde in range(max((len(liste) for liste in listen), default=0)):  # im Wechsel aus den Listen
+        for liste in listen:
+            if runde < len(liste) and liste[runde] not in kandidaten:
+                kandidaten.append(liste[runde])
+    jahr = now.astimezone(timezone.utc).year
+    # Das Jahr des Termins steht als letzte Jahreszahl im Slug („…-countdown-to-2027-2026“, „…-aarau-2026-2“)
+    kandidaten = [u for u in kandidaten if not (jahre := _JAHR_RE.findall(urlsplit(u).path)) or int(jahre[-1]) >= jahr]
+    max_abrufe = int(p.get("max_abrufe", 40))
+    if len(kandidaten) > max_abrufe:
+        log.info("%s: %d Terminseiten, abgerufen werden %d", source.name, len(kandidaten), max_abrufe)
+    items, seiten_fehler = [], 0
+    for url in kandidaten[:max_abrufe]:
+        try:
+            item = jsonld_termin(_get(url, frist=frist).text, url, source, settings, now=now)
+        except net.Zeitlimit:
+            fehler.append("Zeitlimit")
+            break
+        except (requests.RequestException, ValueError) as exc:  # HTTP-Fehler, gesperrte Adresse, zu groß
+            seiten_fehler += 1
+            log.debug("%s: %s", source.name, exc)
+            continue
+        if item is not None:
+            items.append(item)
+    items.sort(key=lambda i: (i.facts["event_datum"], i.title))
+    if seiten_fehler:
+        fehler.append(f"{seiten_fehler} Terminseiten nicht abrufbar")
+    if fehler:
+        raise Teilausfall(items, "; ".join(fehler))
+    return items
+
+
 # ---- HTML-Seiten mit Selektoren -----------------------------------------------------
 
 def _select_text(node, selector: str) -> str:
