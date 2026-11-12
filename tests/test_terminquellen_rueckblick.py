@@ -43,7 +43,7 @@ def settings(monkeypatch):
 
 
 def _quelle(settings, name):
-    return next(q for q in settings.sources if q.name == name)
+    return next(q for q in settings.alle_quellen if q.name == name)
 
 
 def _seite(monkeypatch, datei, typ):
@@ -82,6 +82,15 @@ def test_backnang_ist_registriert(settings):
     assert (q.type, q.country, q.kind) == ("html", "DE", "event")
     assert q.url == "https://srimeenadchiambal.com/de/zukuenftige-veranstaltungen/"
     assert q.robots == "erlaubt" and q.betreiber and q.prioritaet in {"A", "B", "C"}
+
+
+def test_backnang_vorerst_aus(settings):
+    """Aus bis zur Entscheidung über die Gedenktermin-Sperre für alle Terminquellen und bis eine Festauswahl gesetzt
+    ist (sonst wird jeder Pooja-Tag Story). Der Parser bleibt getestet."""
+    q = _quelle(settings, BACKNANG)
+    assert q.enabled is False and "Festauswahl" in q.notiz and "[blocklist] termine" in q.notiz
+    assert BACKNANG not in {x.name for x in settings.sources}
+    assert MTS in {x.name for x in settings.sources}
 
 
 def test_backnang_termine_mit_datum_und_ort(monkeypatch, settings):

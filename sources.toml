@@ -506,12 +506,13 @@ interval_minutes = 720
 
 [[source]]
 name = "Sri Meenadchi Ambal Tempel Backnang · Termine"
+enabled = false
 prioritaet = "B"
 betreiber = "Sri Lanka Cultural Forum (Sri Meenadchi Ambal Tempel), Sulzbacher Str. 56, Backnang"
 robots = "erlaubt"
 paywall = false
 bild_nutzen = false
-notiz = "Rückblick 12.11.2026: Seite „Zukünftige Veranstaltungen“ (Elementor-Liste, je Termin article.mel-card, Datum englisch „November 13, 2026 6:00 p.m.“); viele Pooja- und Fastentage (Kandasashti, Thiruvempavai) – Feste redaktionell auswählen; Ort ist immer der Tempel"
+notiz = "Rückblick 12.11.2026: Seite „Zukünftige Veranstaltungen“ (Elementor-Liste, je Termin article.mel-card, Datum englisch „November 13, 2026 6:00 p.m.“); viele Pooja- und Fastentage (Kandasashti, Thiruvempavai) – Feste redaktionell auswählen; Ort ist immer der Tempel. Aus bis zur Entscheidung, ob die Gedenktermin-Sperre ([blocklist] termine) für alle Terminquellen gilt (heute nur tribe_events), und bis eine Festauswahl gesetzt ist (sonst wird jeder Pooja-Tag Story)."
 rechtlich_geprueft = ""
 type = "html"
 url = "https://srimeenadchiambal.com/de/zukuenftige-veranstaltungen/"
