@@ -86,6 +86,40 @@ def clean_text(value: str) -> str:
     return re.sub(r"\s+", " ", html.unescape(_TAG_RE.sub(" ", value or ""))).strip()
 
 
+# Kontaktangaben in Termin-Anrissen (Live-Probe 12.11.: „Contacts: • Name: 0176-…“). Telefon: international (+41,
+# 0049 …, auch „(0)“) oder national mit 0 und Vorwahl, Gruppen getrennt durch Leerzeichen . / -; erst ab 8 Ziffern
+# eine Nummer (keine Daten, Uhrzeiten, Preise, Postleitzahlen). Ein Name direkt davor zählt mit, wenn er mit
+# Doppelpunkt vor der Nummer steht („Mala: 0176 …“) oder einem Kontakt-Wort folgt („Kontakt: Mala 0176 …“).
+_TELEFON = (r"(?:(?<![\w+@/.])(?:\+|00)\d{1,3}(?:[ ./-]?\(0\))?(?:[ ./-]?\d{1,5}){2,6}"
+            r"|(?<![\w+@/.])0\d{2,5}(?:[ ./-]?\d{2,8}){1,4})(?!\w)")
+# Laufzeit: Muster nur am Wortanfang und possessiv (*+, ++), sonst quadratisch auf langem Text ohne Leerzeichen
+# (Gegenprüfung 12.11.: 60 000 Zeichen 16 s); die Aufrufer kürzen zusätzlich vorher auf 3000 Zeichen.
+_EMAIL = r"(?<![\w.+-])[\w.+-]++@[\w-]++(?:\.[\w-]++)+"
+_KONTAKT_WORT = r"\b(?:Kontakte?|Contacts?|Tel\.?|Telefon|Phone|Mobil|Handy|WhatsApp|E-?Mail|Email)"
+_NAME = r"(?<![\w-])[A-ZÄÖÜ][\w-]*+(?: [A-ZÄÖÜ][\w-]*+)?"
+_KONTAKT_RE = re.compile(
+    rf"{_KONTAKT_WORT}\s*:?\s*{_NAME}\s+(?P<a>{_TELEFON})"
+    rf"|(?:{_KONTAKT_WORT}\s*:?\s*)?(?:{_NAME}\s*:\s*)?(?:(?P<b>{_TELEFON})|{_EMAIL})")
+_KONTAKT_REST_RE = re.compile(rf"{_KONTAKT_WORT}\s*:\s*(?=[•|,;]|$)")
+
+
+def ohne_kontakte(text: str) -> str:
+    """Telefonnummern, E-Mail-Adressen und die Kontaktnamen direkt davor aus einem Anriss entfernen."""
+    def ersetzen(m: re.Match) -> str:
+        nummer = m.group("a") or m.group("b")
+        if nummer and len(re.sub(r"\D", "", nummer)) < 8:
+            return m.group(0)
+        return " "
+
+    neu = _KONTAKT_RE.sub(ersetzen, text or "")
+    if neu == text:
+        return text
+    neu = _KONTAKT_REST_RE.sub(" ", neu)  # „Contacts:“ ohne Kontakte
+    neu = re.sub(r"(?<![\s•])(?:\s*+•)++\s*+$", "", re.sub(r"(?<![\s•])(?:\s*+•\s*+){2,}+", " • ", neu))
+    neu = re.sub(r"\s+([.,;:!?])", r"\1", re.sub(r"\s+", " ", neu))
+    return neu.strip(" •·–-,;")
+
+
 def normalize_url(url: str) -> str:
     parts = urlsplit(url.strip())
     query = urlencode(sorted((k, v) for k, v in parse_qsl(parts.query) if k.lower() not in _TRACKING))
@@ -349,7 +383,8 @@ def fetch_tribe_events(source: Source, settings: Settings, now: datetime | None 
         wann = start.strftime("%d.%m.%Y") + ("" if ev.get("all_day") else start.strftime(", %H:%M Uhr"))
         if letzter_tag > start.date():
             wann += letzter_tag.strftime(" bis %d.%m.%Y")
-        summary = " · ".join(p for p in (wann, clean_text(ev.get("description") or "")[:900], ort) if p)
+        beschreibung = ohne_kontakte(clean_text(ev.get("description") or "")[:3000])[:900]  # erst kürzen (Laufzeit)
+        summary = " · ".join(p for p in (wann, beschreibung, ort) if p)
         item = NewsItem(
             title=title, url=url, summary=summary[:1200], source=source.name, published=now,
             language=source.language, kind="event", ort=venue.get("city") or "",
@@ -359,6 +394,224 @@ def fetch_tribe_events(source: Source, settings: Settings, now: datetime | None 
             log.info("%s: Gedenktermin ausgelassen: %s", source.name, title)
             continue
         items.append(item)
+    return items
+
+
+# ---- Terminseiten mit JSON-LD (schema.org Event, z. B. Vizha) --------------------------------------
+
+_JSONLD_RE = re.compile(r"<script[^>]+type=[\"']application/ld\+json[\"'][^>]*>(.*?)</script>", re.S | re.I)
+_HREF_RE = re.compile(r"href=[\"']([^\"'#?]+)[\"']", re.I)
+_JAHR_RE = re.compile(r"(?<!\d)(20\d\d)(?!\d)")
+
+
+def _jsonld(text: str) -> list[dict]:
+    """Alle JSON-LD-Objekte einer Seite (Listen und @graph aufgelöst); kaputte Blöcke werden übersprungen."""
+    out: list[dict] = []
+    for block in _JSONLD_RE.findall(text):
+        try:
+            data = json.loads(block)
+        except ValueError:
+            continue
+        stapel = data if isinstance(data, list) else [data]
+        for d in stapel:
+            if isinstance(d, dict):
+                out.append(d)
+                out += [g for g in d.get("@graph") or [] if isinstance(g, dict)]
+    return out
+
+
+def _typen(d: dict) -> list[str]:
+    t = d.get("@type") or []
+    return [t] if isinstance(t, str) else [x for x in t if isinstance(x, str)]
+
+
+def termin_links(text: str, basis: str, muster: str) -> list[str]:
+    """Links auf Terminseiten einer Listenseite (gleicher Host, Pfad beginnt mit `muster`): die ItemList aus dem
+    JSON-LD (bei Vizha nur kommende Termine, nach Datum), sonst alle passenden Links der Seite."""
+    host = urlsplit(basis).netloc
+
+    def passend(urls) -> list[str]:
+        out = []
+        for u in urls:
+            voll = urljoin(basis, str(u or ""))
+            teile = urlsplit(voll)
+            if teile.netloc == host and teile.path.startswith(muster) and len(teile.path) > len(muster) \
+                    and voll not in out:
+                out.append(voll)
+        return out
+
+    for d in _jsonld(text):
+        haupt = d.get("mainEntity") if isinstance(d.get("mainEntity"), dict) else d
+        if "ItemList" in _typen(haupt):
+            elemente = [e for e in haupt.get("itemListElement") or [] if isinstance(e, dict)]
+            return passend(e.get("url") or (e.get("item") if isinstance(e.get("item"), str) else "") for e in elemente)
+    return passend(_HREF_RE.findall(text))
+
+
+def _ld_zeit(roh) -> tuple[datetime | None, bool]:
+    """ISO-Zeit aus JSON-LD → (Ortszeit Europe/Berlin, ganztägig). Ohne Zeitzone gilt die Angabe als Ortszeit."""
+    from .dates import TZ
+
+    roh = str(roh or "").strip()
+    if not roh:
+        return None, False
+    try:
+        dt = datetime.fromisoformat(roh.replace("Z", "+00:00"))
+    except ValueError:
+        log.debug("JSON-LD: Datum nicht lesbar: %r", roh)
+        return None, False
+    ganztags = len(roh) == 10
+    return (dt.replace(tzinfo=TZ) if dt.tzinfo is None else dt.astimezone(TZ)), ganztags
+
+
+_LAND_CODES = {"GERMANY": "DE", "DEUTSCHLAND": "DE", "SWITZERLAND": "CH", "SCHWEIZ": "CH", "SUISSE": "CH",
+               "AUSTRIA": "AT", "ÖSTERREICH": "AT"}
+
+
+def _ld_text(wert) -> str:
+    if isinstance(wert, list):  # mehrere Angaben („name“: […]) → die erste
+        wert = next((w for w in wert if isinstance(w, (str, dict))), "")
+    if isinstance(wert, dict):
+        wert = wert.get("name") or ""
+    return clean_text(str(wert or ""))
+
+
+_ABGESAGT = ("EventCancelled", "EventPostponed", "EventMovedOnline")
+
+
+def jsonld_termin(text: str, url: str, source: Source, settings: Settings, now: datetime | None = None):
+    """Ein Termin aus dem JSON-LD (Typ Event) einer Terminseite oder None: kein Event, abgesagt/verschoben/nur online,
+    kein Datum, vorbei, Land nicht in `params.laender` (Vorgabe DE/AT/CH) oder Gedenktermin aus [blocklist] termine (nie automatisch zur Story)."""
+    from .dates import TZ
+    from .filtering import gedenktermin  # zirkulären Import vermeiden
+
+    now = now or datetime.now(timezone.utc)
+    heute = now.astimezone(TZ).date()
+    laender = {str(x).upper() for x in source.params.get("laender", ["DE", "AT", "CH"])}
+    events = [d for d in _jsonld(text) if any(t.endswith("Event") or t == "Festival" for t in _typen(d))]
+    if not events:
+        return None
+    # mehrere Event-Objekte (z. B. ähnliche Termine): das mit der URL der Seite, sonst das erste
+    ev = next((d for d in events if normalize_url(str(d.get("url") or "")) == normalize_url(url)), events[0])
+    if any(s in str(ev.get("eventStatus") or "") for s in _ABGESAGT):  # abgesagt, verschoben, nur online
+        return None
+    title = _ld_text(ev.get("name"))
+    start, ganztags = _ld_zeit(ev.get("startDate"))
+    if not title or start is None:
+        return None
+    ende = _ld_zeit(ev.get("endDate"))[0] or start
+    letzter_tag = (ende - timedelta(seconds=1)).date() if ende > start else start.date()
+    if letzter_tag < heute:
+        return None
+    ort_ld = ev.get("location")
+    ort_ld = next((o for o in ort_ld if isinstance(o, dict)), {}) if isinstance(ort_ld, list) else ort_ld
+    ort_ld = ort_ld if isinstance(ort_ld, dict) else {}
+    adresse = ort_ld.get("address") if isinstance(ort_ld.get("address"), dict) else {}
+    land = _ld_text(adresse.get("addressCountry")).upper()
+    land = _LAND_CODES.get(land, land)  # „Germany“, „Schweiz“ … → Code
+    if land not in laender:
+        return None
+    stadt = _ld_text(adresse.get("addressLocality"))
+    teile: list[str] = []
+    for teil in (_ld_text(ort_ld.get("name")), _ld_text(adresse.get("streetAddress")), stadt):
+        if teil and not any(teil in t for t in teile):  # „Hamm Temple“ + „Hamm Temple, Germany“ → einmal
+            teile = [t for t in teile if t not in teil] + [teil]
+    ort = ", ".join(teile + [COUNTRY_NAMES.get(land, land)])
+    ohne_zeit = ganztags or (start.hour, start.minute) == (0, 0)  # 00:00 Ortszeit = Uhrzeit offen (Probe 12.11.)
+    wann = start.strftime("%d.%m.%Y") + ("" if ohne_zeit else start.strftime(", %H:%M Uhr"))
+    if letzter_tag > start.date():
+        wann += letzter_tag.strftime(" bis %d.%m.%Y")
+    beschreibung = ohne_kontakte(_ld_text(ev.get("description"))[:3000])[:900]  # erst kürzen (Laufzeit)
+    teile_summary = (wann, _ld_text(ev.get("alternateName")), beschreibung, ort)
+    item = NewsItem(
+        title=title, url=url, summary=" · ".join(p for p in teile_summary if p)[:1200], source=source.name,
+        published=now, language=source.language, kind="event", ort=stadt,
+        facts={"event_datum": start.date().isoformat(), "event_ort": ort, "event_ende": letzter_tag.isoformat()},
+    )
+    # Gedenken mit LTTE-Bezug ([blocklist] termine): nie automatisch. Geprüft wird der volle Text vor dem Kürzen,
+    # samt Stichwörtern und Namen von Veranstalter und Mitwirkenden.
+    voll = [_ld_text(ev.get("alternateName")), _ld_text(ev.get("description"))]
+    for feld in ("keywords", "organizer", "performer"):
+        werte = ev.get(feld)
+        voll += [_ld_text(w) for w in (werte if isinstance(werte, list) else [werte])]
+    pruefung = NewsItem(title=title, url=url, summary=" · ".join(v for v in voll if v), source=source.name,
+                        published=now, kind="event")
+    if gedenktermin(item, settings) or gedenktermin(pruefung, settings):
+        log.info("%s: Gedenktermin ausgelassen: %s", source.name, title)
+        return None
+    return item
+
+
+@fetcher("jsonld_events")
+def fetch_jsonld_events(source: Source, settings: Settings, now: datetime | None = None) -> list[NewsItem]:
+    """Terminkalender ohne Feed (z. B. Vizha): Listenseiten (`params.listen`, relativ zu `url`) nennen die Termine,
+    jede Terminseite trägt JSON-LD vom Typ Event. Je Lauf höchstens `params.max_abrufe` Terminseiten (im Wechsel
+    aus den Listen, nächster Termin zuerst); Links, deren Slug auf ein vergangenes Jahr endet, werden nicht geholt.
+    Ergebnis nach Datum sortiert. Fehlen Seiten, gelten die übrigen Termine (Teilausfall)."""
+    now = now or datetime.now(timezone.utc)
+    p = source.params
+    muster = str(p.get("link_muster", "/events/"))
+    # fetch_all verwirft eine Quelle, die nach fetch_seconds noch läuft: eigene Frist mindestens 15 s früher (ein
+    # hängender Einzelabruf darf bis TIMEOUT = 12 s dauern), höchstens frist_sekunden (45), mindestens 5 s
+    sekunden = max(5.0, min(float(p.get("frist_sekunden", 45)), settings.fetch_seconds - 15))
+    frist = time.monotonic() + sekunden
+    host = urlsplit(source.url).netloc
+
+    def eigene_seite(resp: net.Fetched) -> bool:
+        """Nach Weiterleitungen noch https auf dem Host der Quelle?"""
+        ziel = urlsplit(resp.url)
+        return ziel.scheme == "https" and ziel.netloc == host
+
+    listen, fehler = [], []
+    for pfad in p.get("listen") or [""]:
+        adresse = urljoin(source.url.rstrip("/") + "/", str(pfad).lstrip("/"))
+        try:
+            resp = _get(adresse, frist=frist)
+        except (requests.RequestException, ValueError) as exc:  # HTTP-Fehler, Zeitlimit, gesperrte Adresse
+            fehler.append(f"Liste {pfad}: {exc}")
+            continue
+        if not eigene_seite(resp):
+            fehler.append(f"Liste {pfad}: Weiterleitung auf {resp.url}")
+            continue
+        listen.append(termin_links(resp.text, adresse, muster))
+    if not listen:
+        raise RuntimeError("; ".join(fehler) or "keine Liste")
+    kandidaten: list[str] = []
+    for runde in range(max((len(liste) for liste in listen), default=0)):  # im Wechsel aus den Listen
+        for liste in listen:
+            if runde < len(liste) and liste[runde] not in kandidaten:
+                kandidaten.append(liste[runde])
+    jahr = now.astimezone(timezone.utc).year
+    # Das Jahr des Termins steht als letzte Jahreszahl im Slug („…-countdown-to-2027-2026“, „…-aarau-2026-2“)
+    kandidaten = [u for u in kandidaten if not (jahre := _JAHR_RE.findall(urlsplit(u).path)) or int(jahre[-1]) >= jahr]
+    max_abrufe = int(p.get("max_abrufe", 40))
+    if len(kandidaten) > max_abrufe:
+        log.info("%s: %d Terminseiten, abgerufen werden %d", source.name, len(kandidaten), max_abrufe)
+    items, seiten_fehler = [], 0
+    for url in kandidaten[:max_abrufe]:
+        try:
+            resp = _get(url, frist=frist)
+        except RateLimited:
+            fehler.append("429")  # nicht weiter anfragen; die schon gelesenen Termine gelten
+            break
+        except net.Zeitlimit:
+            fehler.append("Zeitlimit")
+            break
+        except (requests.RequestException, ValueError) as exc:  # HTTP-Fehler, gesperrte Adresse, zu groß
+            seiten_fehler += 1
+            log.debug("%s: %s", source.name, exc)
+            continue
+        if not eigene_seite(resp):
+            log.info("%s: %s leitet auf %s weiter – übersprungen", source.name, url, resp.url)
+            continue
+        item = jsonld_termin(resp.text, url, source, settings, now=now)
+        if item is not None:
+            items.append(item)
+    items.sort(key=lambda i: (i.facts["event_datum"], i.title))
+    if seiten_fehler:
+        fehler.append(f"{seiten_fehler} Terminseiten nicht abrufbar")
+    if fehler:
+        raise Teilausfall(items, "; ".join(fehler))
     return items
 
 

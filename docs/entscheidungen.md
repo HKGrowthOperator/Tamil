@@ -5,6 +5,13 @@ Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
 ## 12.11.2026
 
+- **Gedenk-Sperre um Namen von LTTE-Gedenkanlässen erweitert, Terminquelle Vizha an:** `[blocklist] termine` nennt
+  zusätzlich Thamilselvan, Brigadier (பிரிகேடியர்), Thileepan, Annai Poopathi/Poopathy, Prabhakaran (jeweils auch in
+  Tamil-Schrift); Kittu/Kiddu/கிட்டு stehen in `termine_wort` und treffen nur als ganzes Wort (nicht „Kittur“, nicht
+  das Verb „கிட்டும்“). Gesperrt wird nur die automatische Story; eine Redaktion kann solche Termine weiter von Hand
+  bearbeiten. · Hauptsitzung · Die Vizha-Probe zeigte drei Gedenkturniere ohne Sperrbegriff (Thamilselvan Memorial
+  Cup Dormagen, Colonel Kiddu Cup Rafz, Kiddu Cup Junior Seon); nach der Erweiterung blieben 28 Termine ohne
+  Gedenkbezug, daher läuft „Vizha · Termine DACH“.
 - **Ausland-Regel: Genf und Romandie zählen als DACH-Hinweis, Ajith nur als „Ajith Kumar“:** Genf/Geneva/Genève/ஜெனீவா
   (UN-Menschenrechtsrat, Kundgebungen) und Orte der Romandie (Lausanne, Fribourg, Neuchâtel, Sion als ganzes Wort …)
   halten eine Meldung drin; in der Kollywood-Ausnahme zählen Starnamen nur als ganze Wörter. Bekannte Restfälle, die

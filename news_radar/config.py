@@ -148,6 +148,7 @@ class Settings:
     fremdkino: list[str] = field(default_factory=list)  # anderes indisches Kino (Telugu, Bollywood) ([bezug] fremdkino)
     kollywood: list[str] = field(default_factory=list)  # Kollywood und Stars ([bezug] kollywood): Kino für die Ausland-Regel
     blocklist_termine: list[str] = field(default_factory=list)  # Termine, die nie automatisch zur Story werden
+    blocklist_termine_wort: list[str] = field(default_factory=list)  # wie blocklist_termine, nur als ganzes Wort
     alle_quellen: list[Source] = field(default_factory=list)  # inkl. abgeschalteter (enabled = false)
     bildquellen: list[Bildquelle] = field(default_factory=list)  # Register für den Weg „Bild mit Nachweis“
     anthropic_model: str = "claude-opus-5-5"
@@ -281,6 +282,7 @@ def load_settings(sources_file: Path = ROOT / "sources.toml") -> Settings:
         keywords={k.lower(): int(v) for k, v in raw.get("keywords", {}).items()},
         blocklist=[t.lower() for t in raw.get("blocklist", {}).get("terms", [])],
         blocklist_termine=[t.lower() for t in raw.get("blocklist", {}).get("termine", [])],
+        blocklist_termine_wort=[t.lower() for t in raw.get("blocklist", {}).get("termine_wort", [])],
         categories=categories,
         regions=regions,
         bezug=[t.lower() for t in raw.get("bezug", {}).get("terms", [])],

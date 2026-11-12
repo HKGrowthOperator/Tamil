@@ -61,7 +61,8 @@ def test_extract_paragraphs_drops_theme_code_and_navigation():
 
 
 def test_registry_contains_all_types():
-    assert set(sources.FETCHERS) == {"rss", "newsapi", "gnews", "gnews_region", "wp_json", "html", "kino", "tribe_events"}
+    assert set(sources.FETCHERS) == {"rss", "newsapi", "gnews", "gnews_region", "wp_json", "html", "kino", "tribe_events",
+                                     "jsonld_events"}
 
 
 def test_rss_uses_entry_source_as_publisher(monkeypatch):
