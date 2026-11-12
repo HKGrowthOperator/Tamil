@@ -307,6 +307,21 @@ def test_fund_1211_ausland_bleibt_draussen_trotz_hinweisen(settings):
     assert picked == [] and zaehler["ausland"] == 2 and zaehler["fremdes_kino"] == 1
 
 
+def test_fund_1211_kollywood_quelle_und_stars_gelten_als_kino(settings):
+    """P3a (Entscheidung 12.11.): Kollywood-Quelle oder Kollywood-/Star-Begriff reicht für die Kino-Ausnahme, auch wenn
+    guess_category „news“ ergibt."""
+    kollywood = _fund_items("kollywood_ohne_hinweis")
+    assert all(filtering.guess_category(i, settings) == "news" for i in kollywood)
+    picked, zaehler = _einzeln(kollywood, settings)
+    assert [p.title for p in picked] == [i.title for i in kollywood]
+    assert zaehler["ausland"] == 0
+    # Star ohne Kollywood-Quelle: ebenfalls Kino; ohne Star und ohne Kollywood-Quelle bleibt es Ausland
+    star = item("Ilaiyaraaja honoured by India", "Ilaiyaraaja honoured by India  DT Next", source="Tamil Guardian")
+    assert filtering.ohne_dach_grund(star, settings, filtering.quelle_fuer(star, settings)) == ""
+    politik = item("Chief Minister honoured by India", "Tamil Nadu Chief Minister honoured", source="Tamil Guardian")
+    assert filtering.ohne_dach_grund(politik, settings, filtering.quelle_fuer(politik, settings)) == "ausland"
+
+
 def test_fund_1211_verlagsname_ist_kein_bezug(settings):
     """P3b: „The Hindu“ im Google-News-Anriss ist der Verlag, kein tamilischer Bezug („hindu“ in [bezug] terms)."""
     picked, zaehler = _einzeln(_fund_items("fremdes_kino_verlag"), settings)

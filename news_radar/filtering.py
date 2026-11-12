@@ -138,6 +138,17 @@ def _ohne_verlag(item: NewsItem, source: Source | None) -> str:
     return f"{title} {summary}"
 
 
+def _kino(item: NewsItem, settings: Settings, source: Source | None, text: str) -> bool:
+    """Kino/Entertainment für die Ausland-Regel: Kategorie-Hinweise, eine Quelle mit `kollywood = true` oder ein Begriff
+    aus [bezug] kollywood (Stars). Entscheidung 12.11.: guess_category allein ergab „news“ für „Rajinikanth meets Tamil
+    Nadu Chief Minister“ und „Ilaiyaraaja honoured by India“."""
+    if source and source.kollywood:
+        return True
+    if any(_contains(text, t, suffix=2) for t in settings.kollywood):
+        return True
+    return guess_category(item, settings) in ("kino", "entertainment")
+
+
 def ohne_dach_grund(item: NewsItem, settings: Settings, source: Source | None) -> str:
     """Warum eine Nachricht ohne DACH-Bezug keine Story wird: „fremdes_kino“, „ausland“ oder „“ (bleibt).
 
@@ -145,8 +156,8 @@ def ohne_dach_grund(item: NewsItem, settings: Settings, source: Source | None) -
     The Hindu, Lankasri). Ein DACH-Hinweis (German, Schweizer, ஜேர்மனி) oder deutscher Text (deutschsprachige Presse
     ist DACH-Presse) zählt als DACH-Bezug (Prüfung 12.11.). Fremdes Kino: mehr Begriffe aus [bezug] fremdkino als aus
     [bezug] terms (Tollywood-Bilanz, die Kollywood nur nennt). Ausland: ein Ort aus [regions] ausland oder eine Region
-    aus [regions] herkunft (Sri Lanka, Tamil Nadu) – außer bei Kino und Entertainment, die als Kollywood-Meldungen
-    gewollt sind (Fund 12.11.)."""
+    aus [regions] herkunft (Sri Lanka, Tamil Nadu) – außer bei Kino und Entertainment (Kategorie, Kollywood-Quelle oder
+    Star, siehe `_kino`), die als Kollywood-Meldungen gewollt sind (Fund und Entscheidung 12.11.)."""
     if item.kind != "news" or item.dach_score > 0 or (source and source.country):
         return ""
     text = _ohne_verlag(item, source)
@@ -155,7 +166,7 @@ def ohne_dach_grund(item: NewsItem, settings: Settings, source: Source | None) -
     fremd = sum(1 for t in settings.fremdkino if _contains(text, t, suffix=2))
     if fremd and fremd > sum(1 for t in settings.bezug if _contains(text, t, suffix=2)):
         return "fremdes_kino"
-    if guess_category(item, settings) in ("kino", "entertainment"):
+    if _kino(item, settings, source, text):
         return ""
     orte = settings.regions.ausland + settings.regions.herkunft
     return "ausland" if any(_contains(text, t) for t in orte) else ""

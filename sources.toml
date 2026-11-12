@@ -302,6 +302,7 @@ type = "rss"
 url = "https://news.google.com/rss/search?q=(kollywood+OR+%22tamil+cinema%22)+when:2d&hl=en-IN&gl=IN&ceid=IN:en"
 language = "en"
 max_items = 2
+kollywood = true  # Ausland-Regel: Treffer gelten als Kino/Entertainment ([bezug] kollywood, Entscheidung 12.11.)
 
 [[source]]
 name = "The Hindu · Tamil Nadu"
@@ -678,6 +679,12 @@ terms = ["tamil", "tamilisch", "tamilen", "tamilin", "eelam", "kollywood", "raji
 # Anderes indisches Kino: Nennt eine Nachricht ohne DACH-Bezug mehr dieser Begriffe als Begriffe aus terms, fällt sie
 # heraus (Fund 12.11.: Tollywood-Kassenbilanz, die Kollywood nur zum Vergleich nennt).
 fremdkino = ["telugu", "tollywood", "bollywood", "malayalam", "mollywood", "kannada", "sandalwood"]
+# Kollywood und Stars (aus der vorhandenen Starliste in [keywords] und [categories]): Nennt eine Nachricht ohne
+# DACH-Bezug einen davon, gilt sie für die Ausland-Regel als Kino/Entertainment und bleibt (Entscheidung 12.11.:
+# „Rajinikanth meets Tamil Nadu Chief Minister“, „Ilaiyaraaja honoured by India“). Ebenso alles aus einer Quelle mit
+# kollywood = true.
+kollywood = ["kollywood", "tamil cinema", "rajinikanth", "vijay", "ajith", "suriya", "anirudh", "a.r. rahman",
+             "ilaiyaraaja"]
 
 # ---- Stichwort-Gewichte (klein geschrieben; Treffer im Titel zählen doppelt) ----
 [keywords]

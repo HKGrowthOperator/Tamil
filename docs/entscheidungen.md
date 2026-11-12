@@ -5,6 +5,11 @@ Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
 ## 12.11.2026
 
+- **Kollywood und Stars gelten für die Ausland-Regel als Kino/Entertainment:** Nachrichten ohne DACH-Bezug aus der
+  Kollywood-Quelle (`kollywood = true`) oder mit einem Begriff aus `[bezug] kollywood` (Kollywood, Rajinikanth, Vijay,
+  Ilaiyaraaja …) fallen nicht als „ausland“ heraus, auch wenn die Stichwörter der Kategorien „news“ ergeben. ·
+  Hauptsitzung nach unabhängiger Prüfung · „Rajinikanth meets Tamil Nadu Chief Minister“ und „Ilaiyaraaja honoured by
+  India“ fielen sonst heraus.
 - **Design: Mischung aus `klar2` und den Gen-Z-/Feed-Entwürfen, überall Bilder.** Das Live-Design (Runde 2) ist für
   Luis „hässlich und klassisch“; frühere Entwürfe fand er besser. Zwei Probeseiten (`mix-ordnung`, `mix-feed`), dann
   entscheidet Luis (G3). Jeder Anreißer mit Bild (nur mit Nachweis). Die Haltung „im Zweifel leiser“ aus Runde 2 gilt
