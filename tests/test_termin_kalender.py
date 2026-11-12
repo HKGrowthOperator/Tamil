@@ -89,3 +89,12 @@ def test_gedenk_sperre_gilt_nur_fuer_termine(settings):
     """Nachrichten über das Gedenken (Bericht, Polizei, Gericht) bleiben dem normalen Weg überlassen."""
     meldung = sources.NewsItem("Polizei prüft Maaveerar-Veranstaltung", "https://x.example/2", "", "q", VOR_DEM_FEST)
     assert not filtering.gedenktermin(meldung, settings)
+
+
+@pytest.mark.parametrize("titel", ["Heroes' Day 2026", "Heroes’ Day in Hamm", "Mahaaveerar Thinam", "Māvīrar Nāḷ",
+                                   "Heldengedenktag der Tamilen", "Maaveerar Naal", "மாவீரர் நாள் நினைவு",
+                                   "National Heroes Day", "Tamilischer Heldentag"])
+def test_gedenk_sperre_trifft_schreibweisen(settings, titel):
+    """Prüfung von 28122c7: Apostrophe und Diakritika dürfen die Sperre nicht umgehen."""
+    item = sources.NewsItem(titel, "https://x.example/g", "", "q", VOR_DEM_FEST, kind="event")
+    assert filtering.gedenktermin(item, settings), titel

@@ -9,6 +9,7 @@ Begriff mit tamilischem Bezug.
 from __future__ import annotations
 
 import re
+import unicodedata
 from collections import Counter
 from datetime import date, datetime, timedelta, timezone
 from difflib import SequenceMatcher
@@ -92,12 +93,27 @@ def hat_bezug(item: NewsItem, settings: Settings) -> bool:
     return any(_contains(text, term, suffix=2) for term in settings.bezug)
 
 
+_APOSTROPHE = str.maketrans("", "", "'’ʼ‘`´")
+
+
+def _ohne_zeichen(text: str) -> str:
+    """Kleinbuchstaben ohne Apostrophe und ohne Diakritika („Māvīrar Nāḷ“ → „mavirar nal“, „Heroes’“ → „heroes“);
+    tamilische Schrift bleibt unverändert (Vokalzeichen und Pulli sind dort Teil der Buchstaben)."""
+    out = []
+    for c in text.translate(_APOSTROPHE).lower():
+        if "\u0b80" <= c <= "\u0bff":
+            out.append(c)
+        else:
+            out.append("".join(x for x in unicodedata.normalize("NFKD", c) if not unicodedata.combining(x)))
+    return "".join(out)
+
+
 def gedenktermin(item: NewsItem, settings: Settings) -> bool:
     """Termin (kein Bericht), der einen Begriff aus [blocklist] termine nennt – z. B. Maaveerar-Gedenken mit
     LTTE-Bezug. Gilt für Kalender, die jeden Termin automatisch liefern (tribe_events); Ankündigungen eines
     Veranstalters laufen weiter über den normalen Weg mit Recherche (Abnahme-Szenarien 22/23)."""
-    text = f"{item.title} {item.summary}".lower()
-    return item.kind == "event" and any(_contains(text, t) for t in settings.blocklist_termine)
+    text = _ohne_zeichen(f"{item.title} {item.summary}")
+    return item.kind == "event" and any(_contains(text, _ohne_zeichen(t)) for t in settings.blocklist_termine)
 
 
 def termin_veraltet(item: NewsItem, settings: Settings, now: datetime) -> bool:
