@@ -209,7 +209,7 @@ def fetch_html_kino(source: Source, settings: Settings, http=None, now: datetime
     from bs4 import BeautifulSoup
 
     from . import sources as quellen
-    from .dates import parse_de_datetime
+    from .dates import parse_de_termin
 
     soup = BeautifulSoup(quellen._get(source.url).text, "html.parser")
     sel, now = source.selectors, now or datetime.now(TZ)
@@ -221,9 +221,11 @@ def fetch_html_kino(source: Source, settings: Settings, http=None, now: datetime
         link = quellen._select_text(node, sel.get("link", "a::attr(href)"))
         datum = quellen._select_text(node, sel.get("date", ""))
         ort = quellen._select_text(node, sel.get("ort", ""))
+        termin, hat_zeit = parse_de_termin(datum, now)
         shows.append(Show(clean_film_title(film), source.params.get("kino") or ort or source.name,
                           source.params.get("stadt") or ort, source.country or "DE",
-                          start=parse_de_datetime(datum, now) if datum else None,
+                          start=termin if hat_zeit else None,  # ohne Uhrzeit: Laufzeit „ab Datum“, nie 00:00
+                          von=termin.date() if termin and not hat_zeit else None,
                           url=urljoin(source.url, link) if link else source.url, provider="html"))
     return shows
 

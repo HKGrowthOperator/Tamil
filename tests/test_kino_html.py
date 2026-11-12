@@ -81,3 +81,22 @@ def test_babylon_tamilische_fassung_kommt_ueber_die_sprachangabe(monkeypatch, se
     shows = kp.fetch_html_kino(_quelle(settings, BABYLON), settings, now=STAND)
     assert [(s.kino, s.stadt) for s in shows] == [("Babylon", "Berlin")]
     assert shows[0].start == datetime(2026, 11, 21, 13, 0, tzinfo=kp.TZ)
+
+
+def test_seite_ohne_uhrzeit_ergibt_laufzeit_ab_datum(monkeypatch, settings):
+    """Mathäser nennt je Film nur den Tag („Mo. 16.11.“) → `von` statt einer Vorstellung um 00:00."""
+    from news_radar.render import render_kino_liste
+
+    _seite(monkeypatch, (FIX / "mathaeser_programm.html").read_bytes())
+    [show] = kp.fetch_html_kino(_quelle(settings, "Mathäser Filmpalast München"), settings, now=STAND)
+    assert show.start is None and show.von == datetime(2026, 11, 16).date()
+    [item] = kp.aggregate_shows([show], now=datetime(2026, 11, 13, 9, tzinfo=kp.TZ))
+    html = render_kino_liste(item.facts)
+    assert "00:00" not in html and "ab " in html and "16.11" in html
+
+
+def test_seite_mit_uhrzeit_bleibt_eine_vorstellung(monkeypatch, settings):
+    _seite(monkeypatch, (FIX / "filmkunstkinos_indien.html").read_bytes())
+    shows = kp.fetch_html_kino(_quelle(settings, "Filmkunstkinos Düsseldorf · Kino aus Indien"), settings, now=STAND)
+    om = next(s for s in shows if s.film == "OM")
+    assert om.start == datetime(2026, 11, 21, 12, 0, tzinfo=kp.TZ) and om.von is None

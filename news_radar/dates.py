@@ -41,8 +41,13 @@ def _year_for(month: int, day: int, now: date) -> int:
 
 def parse_de_datetime(text: str, now: datetime | None = None) -> datetime | None:
     """„Sa, 7.11.2026 19:30“, „7. November 2026“, „Okt 17“, „07.11.26“, ISO, heute/morgen → datetime (Europe/Berlin)."""
+    return parse_de_termin(text, now)[0]
+
+
+def parse_de_termin(text: str, now: datetime | None = None) -> tuple[datetime | None, bool]:
+    """Wie parse_de_datetime, dazu, ob der Text eine Uhrzeit nennt (sonst steht 00:00 nur als Platzhalter)."""
     if not text:
-        return None
+        return None, False
     now = now or datetime.now(TZ)
     today = now.date()
     t = text.strip()
@@ -53,9 +58,9 @@ def parse_de_datetime(text: str, now: datetime | None = None) -> datetime | None
         year, month, day = int(m.group(1)), int(m.group(2)), int(m.group(3))
         hour, minute = (int(m.group(4)), int(m.group(5))) if m.group(4) else (0, 0)
         try:
-            return datetime(year, month, day, hour, minute, tzinfo=TZ)
+            return datetime(year, month, day, hour, minute, tzinfo=TZ), bool(m.group(4))
         except ValueError:
-            return None
+            return None, False
     if "übermorgen" in low:
         d = today + timedelta(days=2)
         day, month, year = d.day, d.month, d.year
@@ -78,19 +83,22 @@ def parse_de_datetime(text: str, now: datetime | None = None) -> datetime | None
         day, month = int(m.group(1)), int(m.group(2))
         year = _year_for(month, day, today)
     if day is None:
-        return None
+        return None, False
 
     hour = minute = 0
+    hat_zeit = False
     # Uhrzeit nur nach dem Datum suchen, damit „7.11.“ nicht als 7:11 gelesen wird
     tail = t[m.end():] if "m" in locals() and m else t
     if tm := _TIME_RE.search(tail):
         hour, minute = int(tm.group(1)), int(tm.group(2))
+        hat_zeit = True
         if hour > 23 or minute > 59:
             hour = minute = 0
+            hat_zeit = False
     try:
-        return datetime(year, month, day, hour, minute, tzinfo=TZ)
+        return datetime(year, month, day, hour, minute, tzinfo=TZ), hat_zeit
     except ValueError:
-        return None
+        return None, False
 
 
 def parse_de_date(text: str, now: datetime | None = None) -> date | None:

@@ -75,7 +75,7 @@ def test_mathaeser_nur_der_tamilische_film(monkeypatch, settings):
     _seite(monkeypatch, "mathaeser_programm.html")
     shows = kp.fetch_html_kino(_quelle(settings, "Mathäser Filmpalast München"), settings, now=STAND)
     assert [s.film for s in shows] == ["Scene"] and shows[0].stadt == "München"
-    assert shows[0].start.date() == date(2026, 11, 16)
+    assert shows[0].start is None and shows[0].von == date(2026, 11, 16)  # nur der Tag, keine Uhrzeit
 
 
 def test_babylon_telugu_fassung_kommt_nicht_durch(monkeypatch, settings):
