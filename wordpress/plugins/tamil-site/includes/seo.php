@@ -551,9 +551,10 @@ function tamil_site_seo_sitemap_schlagwoerter( $args, $taxonomy ): array {
 	$duenn   = array();
 	foreach ( get_terms(
 		array(
-			'taxonomy'   => 'post_tag',
-			'hide_empty' => false,
-			'number'     => 0,
+			'taxonomy'               => 'post_tag',
+			'hide_empty'             => false,
+			'number'                 => 0,
+			'update_term_meta_cache' => false,
 		)
 	) as $term ) {
 		if ( $term instanceof WP_Term && (int) $term->count < $minimum ) {
@@ -568,15 +569,20 @@ function tamil_site_seo_sitemap_schlagwoerter( $args, $taxonomy ): array {
 add_filter( 'wp_sitemaps_taxonomies_query_args', 'tamil_site_seo_sitemap_schlagwoerter', 10, 2 );
 
 /**
- * Kanonische Adresse für Startseite, Rubriken und Schlagwörter (auch Folgeseiten verweisen auf sich selbst).
+ * Kanonische Adresse für Startseite, Beitragsseite, Rubriken und Schlagwörter (Folgeseiten verweisen auf sich selbst).
+ * Die Startseite blättert nicht (front-page.php zeigt immer dasselbe): /page/2/ verweist auf die Startseite.
  * Einzelseiten bekommen sie weiter von WordPress (rel_canonical), Suchergebnisse keine.
  */
 function tamil_site_seo_canonical_url(): string {
 	if ( is_singular() || is_search() || is_404() ) {
 		return '';
 	}
-	if ( is_front_page() || is_home() ) {
-		$basis = home_url( '/' );
+	if ( is_front_page() ) {
+		return home_url( '/' );
+	}
+	if ( is_home() ) {
+		$blog  = (int) get_option( 'page_for_posts' );
+		$basis = $blog ? (string) get_permalink( $blog ) : home_url( '/' );
 	} elseif ( is_category() || is_tag() || is_tax() ) {
 		$link  = get_term_link( get_queried_object() );
 		$basis = is_wp_error( $link ) ? '' : (string) $link;

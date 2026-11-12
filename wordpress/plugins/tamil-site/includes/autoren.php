@@ -60,7 +60,8 @@ function tamil_site_benutzer_rest( $ergebnis, $server, $request ) {
 		return $ergebnis;
 	}
 	$route = untrailingslashit( (string) $request->get_route() );
-	if ( preg_match( '#^/wp/v2/users(/|$)#', $route ) && ! is_user_logged_in() ) {
+	// Groß- und Kleinschreibung egal: WordPress ordnet Routen ohne Rücksicht darauf zu (/wp/v2/Users).
+	if ( preg_match( '#^/wp/v2/users(/|$)#i', $route ) && ! is_user_logged_in() ) {
 		return new WP_Error( 'rest_not_logged_in', __( 'Nur für angemeldete Benutzer.', 'tamil-site' ), array( 'status' => 401 ) );
 	}
 	return $ergebnis;

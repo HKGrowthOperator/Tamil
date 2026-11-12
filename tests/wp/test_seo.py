@@ -317,3 +317,28 @@ def test_duenne_schlagwoerter_noindex_und_nicht_in_der_sitemap(wp_cli, admin_bei
     assert r["users"] is False and r["posts"] is True
     assert "seo-einzeln" in r["exclude"] and "seo-dreimal" not in r["exclude"]
     assert r["kategorien"] == []  # Rubriken bleiben vollständig
+
+
+def test_benutzerliste_auch_nicht_ueber_andere_schreibweisen(wp, admin_beitraege):
+    for pfad, params in (("/wp-json/wp/v2/Users", None), ("/wp-json/wp/v2/USERS/1", None),
+                         ("/", {"rest_route": "/wp/v2/Users"}), ("/", {"rest_route": "/WP/V2/users"})):
+        r = wp.get(pfad, params=params)
+        assert r.status_code == 401 and "admin" not in r.text, (pfad, params)
+
+
+def test_canonical_startseite_folgeseite_und_beitragsseite(wp_cli):
+    code = ("$r = array(); query_posts( array( 'paged' => 2 ) ); $GLOBALS['wp_query']->is_home = true;"
+            " $r['start2'] = tamil_site_seo_canonical_url(); wp_reset_query();"
+            " $seite = wp_insert_post( array( 'post_title' => 'Aktuelles', 'post_type' => 'page', 'post_status' => 'publish',"
+            " 'post_name' => 'seo-test-aktuelles' ) ); $start = wp_insert_post( array( 'post_title' => 'Start', 'post_type' => 'page',"
+            " 'post_status' => 'publish', 'post_name' => 'seo-test-start' ) );"
+            " add_filter( 'pre_option_show_on_front', function () { return 'page'; } );"
+            " add_filter( 'pre_option_page_for_posts', function () use ( $seite ) { return $seite; } );"
+            " add_filter( 'pre_option_page_on_front', function () use ( $start ) { return $start; } );"
+            " query_posts( array( 'page_id' => $seite ) ); $q = $GLOBALS['wp_query']; $q->is_page = false; $q->is_singular = false;"
+            " $q->is_home = true; $q->queried_object = get_post( $seite ); $q->queried_object_id = $seite;"
+            " $r['blog'] = tamil_site_seo_canonical_url(); $q->set( 'paged', 3 ); $r['blog3'] = tamil_site_seo_canonical_url();"
+            " wp_reset_query(); wp_delete_post( $seite, true ); wp_delete_post( $start, true ); echo wp_json_encode( $r );")
+    r = json.loads(wp_cli(code))
+    assert r["start2"] == URL + "/"  # die Startseite blättert nicht: /page/2/ ist dieselbe Seite
+    assert r["blog"] == URL + "/seo-test-aktuelles/" and r["blog3"] == URL + "/seo-test-aktuelles/page/3/"
