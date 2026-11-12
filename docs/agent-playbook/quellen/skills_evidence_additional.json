@@ -1,0 +1,74 @@
+{
+  "additional_repositories": [
+    {
+      "repository": "HKGrowthOperator/promptfoo",
+      "commit": "a9aacede5c3f84150d999bfbeadbbf39834370ea",
+      "read_paths": [
+        "README.md"
+      ],
+      "scope": "README-only purpose classification",
+      "installation_verified": false
+    },
+    {
+      "repository": "HKGrowthOperator/crawl4ai",
+      "commit": "862f6bccb9c063f49b9d42701baa0eea17a4993f",
+      "read_paths": [
+        "README.md"
+      ],
+      "scope": "README-only purpose classification",
+      "installation_verified": false
+    },
+    {
+      "repository": "HKGrowthOperator/Agent-Reach",
+      "commit": "7a38047acf26a729cbb27851e3cb81639da86b29",
+      "read_paths": [
+        "README.md"
+      ],
+      "scope": "README-only purpose classification",
+      "installation_verified": false
+    },
+    {
+      "repository": "HKGrowthOperator/ruflo",
+      "commit": "16a55f7a537c4a405e448e59859866eebbdd45a0",
+      "read_paths": [
+        "README.md"
+      ],
+      "scope": "README-only purpose classification",
+      "installation_verified": false
+    },
+    {
+      "repository": "HKGrowthOperator/claude-code-best-practice",
+      "commit": "eab161ca5284aa0c88aa44ec4f371e73a356acef",
+      "read_paths": [
+        "README.md"
+      ],
+      "scope": "README-only purpose classification",
+      "installation_verified": false
+    },
+    {
+      "repository": "HKGrowthOperator/awesome-claude-code",
+      "commit": "614f102accbcd48206d63a21df64adc984026b40",
+      "read_paths": [
+        "README.md"
+      ],
+      "scope": "README-only purpose classification",
+      "installation_verified": false
+    }
+  ],
+  "project_binding": {
+    "repo": "HKGrowthOperator/Tamil",
+    "commit": "181c8337bd47e9ebf284f584501d64e5136d9726",
+    "read_paths": [
+      "DESIGN.md",
+      ".claude/rules/design.md",
+      ".claude/skills/tamil-marke/SKILL.md",
+      ".claude/skills/tamil-richtung/SKILL.md",
+      ".claude/skills/impeccable/HERKUNFT.md"
+    ],
+    "tree_counts": {
+      "agents": 11,
+      "skill_md": 12
+    },
+    "runtime_recognition_verified": false
+  }
+}
