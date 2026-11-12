@@ -173,7 +173,7 @@ def refresh_kino(items: list[sources.NewsItem], store: Store, seen: set[str]) ->
         added, removed = sorted(new - old), sorted(old - new)
         parts = [f"+{k}" for k in added] + [f"−{k}" for k in removed]
         note = f"Aktualisiert {datetime.now(timezone.utc):%d.%m.}: " + (", ".join(parts) if parts else "Termine aktualisiert")
-        if store.update_kino_facts(item.uid, facts, fingerprint, note):
+        if store.update_kino_facts(item.uid, facts, fingerprint, note, alt_fingerprint=existing.get("fingerprint")):
             store.event("kino_aktualisiert", id=existing["id"], titel=existing["titel"], hinweis=note)
             results.append(Result(existing["titel"], "aktualisiert", existing["kategorie"], note=note, draft_id=existing["id"]))
         else:

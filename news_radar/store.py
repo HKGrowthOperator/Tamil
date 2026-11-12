@@ -399,8 +399,10 @@ class Store:
             (now_iso(), draft_id),
         )
 
-    def update_kino_facts(self, uid: str, facts: dict, fingerprint: str, note: str) -> bool:
-        """Aktualisiert die Spielorte eines offenen Kino-Entwurfs, wenn sich etwas geändert hat."""
+    def update_kino_facts(self, uid: str, facts: dict, fingerprint: str, note: str,
+                          alt_fingerprint: str | None = None) -> bool:
+        """Aktualisiert die Spielorte eines offenen Kino-Entwurfs, wenn sich etwas geändert hat. Mit
+        `alt_fingerprint` nur, solange der Entwurf noch auf dem Stand ist, von dem aus gerechnet wurde."""
         row = self.draft_by_uid(uid)
         if row is None or row["status"] not in OPEN_STATES or row.get("fingerprint") == fingerprint:
             return False
@@ -408,8 +410,10 @@ class Store:
         offen = tuple(OPEN_STATES)
         cur = self._write(  # nur, solange er noch wartet (Bedingung im selben UPDATE)
             "UPDATE drafts SET fakten_json = ?, fingerprint = ?, hinweise = ?, updated_at = ? "
-            f"WHERE id = ? AND status IN ({','.join('?' for _ in offen)})",
-            (_dumps(facts), fingerprint, _dumps(hinweise), now_iso(), row["id"], *offen),
+            f"WHERE id = ? AND status IN ({','.join('?' for _ in offen)})"
+            + (" AND fingerprint IS ?" if alt_fingerprint is not None else ""),
+            (_dumps(facts), fingerprint, _dumps(hinweise), now_iso(), row["id"], *offen,
+             *((alt_fingerprint,) if alt_fingerprint is not None else ())),
         )
         return cur.rowcount == 1
 
