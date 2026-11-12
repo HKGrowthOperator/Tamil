@@ -1,10 +1,10 @@
 {
   "slug": "mix-ordnung",
-  "stand": "2026-11-12T15:29",
+  "stand": "2026-11-12T15:51",
   "groesster_massstab": 1.03,
   "handy": {
     "kopfleiste_hoehe": 150,
-    "erste_schlagzeile_ab": 295,
+    "erste_schlagzeile_ab": 328,
     "schlagzeilen_ganz_sichtbar": 2,
     "schlagzeilen_seite": 23,
     "max_zeilen_schlagzeile": 4,
@@ -44,8 +44,8 @@
       },
       {
         "px": 17,
-        "anzahl": 12,
-        "text": "Am 8. November war Deepavali."
+        "anzahl": 11,
+        "text": "Vaani Vizha: In den Tamilalayams schrieb"
       }
     ],
     "versalien_ueber_14px": 0,
@@ -78,8 +78,8 @@
       {
         "element": "section#diese-woche.woche",
         "breite": 390,
-        "hoehe": 1401,
-        "oben": 1855
+        "hoehe": 1431,
+        "oben": 1787
       }
     ],
     "fest_stehend": [
@@ -95,7 +95,7 @@
       "animationen": 0,
       "endlos": 0
     },
-    "seitenhoehe": 5844,
+    "seitenhoehe": 5949,
     "ueberlauf": 0,
     "bewegung_bei_reduziert": {
       "uebergaenge": 0,
@@ -104,14 +104,14 @@
       "endlos": 0
     },
     "helle_schrift": {
-      "anzahl": 50,
-      "kleinster_kontrast": 5.45,
+      "anzahl": 41,
+      "kleinster_kontrast": 6.08,
       "unter_4_5": []
     },
     "farbanteil_ohne_bilder": {
       "bunt": 0.0005,
       "rot": 0.0005,
-      "dunkel": 0.0638
+      "dunkel": 0.0622
     },
     "seitenfehler": []
   },
@@ -196,7 +196,7 @@
         "element": "section#diese-woche.woche",
         "breite": 1280,
         "hoehe": 913,
-        "oben": 1228
+        "oben": 1177
       }
     ],
     "fest_stehend": [
@@ -212,7 +212,7 @@
       "animationen": 0,
       "endlos": 0
     },
-    "seitenhoehe": 3753,
+    "seitenhoehe": 3739,
     "ueberlauf": 0,
     "bewegung_bei_reduziert": {
       "uebergaenge": 0,
@@ -222,7 +222,7 @@
     },
     "helle_schrift": {
       "anzahl": 59,
-      "kleinster_kontrast": 5.47,
+      "kleinster_kontrast": 4.84,
       "unter_4_5": []
     },
     "farbanteil_ohne_bilder": {
