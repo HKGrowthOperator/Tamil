@@ -515,7 +515,15 @@ def jsonld_termin(text: str, url: str, source: Source, settings: Settings, now: 
         published=now, language=source.language, kind="event", ort=stadt,
         facts={"event_datum": start.date().isoformat(), "event_ort": ort, "event_ende": letzter_tag.isoformat()},
     )
-    if gedenktermin(item, settings):  # Gedenken mit LTTE-Bezug ([blocklist] termine): nie automatisch
+    # Gedenken mit LTTE-Bezug ([blocklist] termine): nie automatisch. Geprüft wird der volle Text vor dem Kürzen,
+    # samt Stichwörtern und Namen von Veranstalter und Mitwirkenden.
+    voll = [_ld_text(ev.get("alternateName")), _ld_text(ev.get("description"))]
+    for feld in ("keywords", "organizer", "performer"):
+        werte = ev.get(feld)
+        voll += [_ld_text(w) for w in (werte if isinstance(werte, list) else [werte])]
+    pruefung = NewsItem(title=title, url=url, summary=" · ".join(v for v in voll if v), source=source.name,
+                        published=now, kind="event")
+    if gedenktermin(item, settings) or gedenktermin(pruefung, settings):
         log.info("%s: Gedenktermin ausgelassen: %s", source.name, title)
         return None
     return item

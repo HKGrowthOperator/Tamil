@@ -280,3 +280,21 @@ def test_abgesagt_verschoben_oder_online_ist_kein_termin(settings, status):
 def test_neu_angesetzt_bleibt_termin(settings):
     text = _zuerich().replace("https://schema.org/EventScheduled", "https://schema.org/EventRescheduled")
     assert sources.jsonld_termin(text, ZUERICH_URL, _quelle(settings), settings, now=STAND) is not None
+
+
+@pytest.mark.parametrize("ersetzen", [
+    # Sperrbegriff hinter Zeichen 900 der Beschreibung (der Anriss kürzt dort)
+    ('"description":"Festival:', '"description":"' + "Kulturprogramm mit Tanz und Musik. " * 30
+     + 'Maaveerar Naal. Festival:'),
+    ('"alternateName":', '"keywords":"maaveerar","alternateName":'),
+    ('"alternateName":', '"keywords":["sports","Maaveerar"],"alternateName":'),
+    ('"alternateName":', '"organizer":{"@type":"Organization","name":"Maaveerar Committee"},"alternateName":'),
+    ('"alternateName":', '"performer":[{"@type":"Person","name":"Band"},{"@type":"PerformingGroup",'
+                         '"name":"Heroes Day Choir"}],"alternateName":'),
+])
+def test_gedenk_sperre_prueft_den_vollen_text(settings, ersetzen):
+    alt, neu = ersetzen
+    text = _zuerich()
+    assert alt in text
+    item = sources.jsonld_termin(text.replace(alt, neu, 1), ZUERICH_URL, _quelle(settings), settings, now=STAND)
+    assert item is None
