@@ -104,7 +104,7 @@ def hat_bezug(item: NewsItem, settings: Settings) -> bool:
 
 _DEUTSCH_RE = re.compile(
     r"\b(?:und|oder|das|dem|nach|mit|für|vom|zum|zur|bei|über|gegen|sich|ist|sind|wird|werden|nicht|auch|ein|eine|"
-    r"einer|einen|wie|auf|im|tamilisch\w*|tamilen|tamilin\w*)\b|[äöüß]", re.I)
+    r"einer|einen|wie|auf|im|tamilisch\w*|tamile|tamilen|tamilin\w*)\b|[äöüß]", re.I)
 
 
 def deutschsprachig(text: str) -> bool:

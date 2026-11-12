@@ -367,3 +367,11 @@ def test_fund_1211_starnamen_nur_als_ganzes_wort(settings):
     ajith = item("Ajith Kumar meets Tamil Nadu Chief Minister", "Ajith Kumar meets Tamil Nadu Chief Minister",
                  source="Tamil Guardian")
     assert filtering.ohne_dach_grund(ajith, settings, filtering.quelle_fuer(ajith, settings)) == ""
+
+
+def test_fund_1211_tamile_einzahl_ist_deutsch(settings):
+    """Zweite Prüfung 12.11.: „Tamile“ (Einzahl) ist ein deutsches Wort; die Meldung bleibt als DACH-Presse drin."""
+    tamile = item("Abgewiesener Tamile in Sri Lanka verhaftet",
+                  "Abgewiesener Tamile in Sri Lanka verhaftet  20 Minuten", source="Google News DACH · 20 Minuten")
+    picked, zaehler = _einzeln([tamile], settings)
+    assert [p.title for p in picked] == [tamile.title] and zaehler["ausland"] == 0
