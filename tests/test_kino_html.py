@@ -100,3 +100,25 @@ def test_seite_mit_uhrzeit_bleibt_eine_vorstellung(monkeypatch, settings):
     shows = kp.fetch_html_kino(_quelle(settings, "Filmkunstkinos Düsseldorf · Kino aus Indien"), settings, now=STAND)
     om = next(s for s in shows if s.film == "OM")
     assert om.start == datetime(2026, 11, 21, 12, 0, tzinfo=kp.TZ) and om.von is None
+
+
+def test_seitenumbau_ohne_treffer_ist_ein_fehler(monkeypatch, settings):
+    """Findet der Eintrags-Selektor nichts, ist die Seite umgebaut: Ausnahme statt [] (sonst fielen alle Spielorte
+    der Quelle still weg)."""
+    _seite(monkeypatch, b"<!doctype html><html><body><main><p>Programm folgt</p></main></body></html>")
+    with pytest.raises(ValueError, match="Selektor"):
+        kp.fetch_html_kino(_quelle(settings, "Mathäser Filmpalast München"), settings, now=STAND)
+
+
+@pytest.mark.parametrize("sprache", [
+    "Telugu-Remake des tamilischen Originals, (OmeU) [Telugu]",
+    "(OmeU) [Telugu], basiert auf der Tamil Version von 2019",
+    "Original Tamil-Hit, hier in der Telugu-Fassung",
+    "(Hindi) nach dem Tamil Original",
+])
+def test_sprachmarke_in_klammern_entscheidet(sprache):
+    assert not kp.ist_tamil_fassung("IndoGerman Film: OM", sprache)
+
+
+def test_tamilische_klammermarke_neben_anderen_klammern():
+    assert kp.ist_tamil_fassung("IndoGerman Film: OM", "(OmeU) [Tamil], Telugu-Fassung folgt")

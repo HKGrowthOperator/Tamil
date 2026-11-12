@@ -56,7 +56,7 @@ def is_tamil(*texts: str) -> bool:
 
 
 # Kino-HTML: „Tamil“ als Sprachangabe, nicht als Ortsname („Tamil Nadu“) oder beiläufige Nennung in einer Beschreibung
-_TAMIL = r"tamil(?:isch(?:e[nr]?)?)?\b(?!\s*-?\s*nadu)"
+_TAMIL = r"tamil(?:isch(?:e[nr]?)?)?\b(?!\s*-?\s*nadu)(?![-‐])"
 _FASSUNG = r"(?:om(?:e)?u|ov|omdu|original\w*|version|fassung|subs?|ut)"
 _TAMIL_FASSUNG_RE = re.compile(
     rf"[\(\[]\s*{_TAMIL}(?:[\s,/]+{_FASSUNG})*\s*\\?[\)\]]"  # (Tamil), [Tamil], (Tamil OmeU), \[Tamil\]
@@ -65,6 +65,14 @@ _TAMIL_FASSUNG_RE = re.compile(
     re.I,
 )
 _NUR_TAMIL_RE = re.compile(rf"\W*{_TAMIL}\W*", re.I)
+_SPRACHEN = {"tamil", "tamilisch", "telugu", "hindi", "malayalam", "kannada", "bengali", "bengalisch", "marathi",
+             "punjabi", "gujarati", "urdu", "englisch", "english", "deutsch", "sinhala", "singhalesisch"}
+_KLAMMER_RE = re.compile(r"[\(\[]\s*([a-zäöü]+)[^\)\]]*[\)\]]", re.I)
+
+
+def _klammer_sprachen(text: str) -> set[str]:
+    """Sprachen, die in Klammern stehen: „(OmeU) [Telugu]“ → {"telugu"} („OmeU“ ist keine Sprache)."""
+    return {m.group(1).lower() for m in _KLAMMER_RE.finditer(text or "")} & _SPRACHEN
 
 
 def ist_tamil_fassung(titel: str, sprache: str = "") -> bool:
@@ -72,7 +80,14 @@ def ist_tamil_fassung(titel: str, sprache: str = "") -> bool:
     sprache = (sprache or "").strip()
     if sprache and _NUR_TAMIL_RE.fullmatch(sprache):  # Sprachfeld enthält nur „Tamil“
         return True
-    return any(_TAMIL_FASSUNG_RE.search(t or "") for t in (titel, sprache))
+    for text in (titel, sprache):
+        if klammer := _klammer_sprachen(text):  # eine Sprachmarke in Klammern entscheidet allein
+            if any(s.startswith("tamil") for s in klammer):
+                return True
+            continue
+        if _TAMIL_FASSUNG_RE.search(text or ""):
+            return True
+    return False
 
 
 # Zusätze der Kinoprogramme, die keinen eigenen Film bezeichnen: „SCENE , FSK folgt“, „… /engl. Untertitel“, „(3D)“
@@ -229,7 +244,10 @@ def fetch_html_kino(source: Source, settings: Settings, http=None, now: datetime
     soup = BeautifulSoup(quellen._get(source.url).text, "html.parser")
     sel, now = source.selectors, now or datetime.now(TZ)
     shows = []
-    for node in soup.select(sel.get("item", "article")):
+    knoten = soup.select(sel.get("item", "article"))
+    if not knoten:  # Seite umgebaut: Fehler statt [] – sonst fielen alle Spielorte der Quelle still weg
+        raise ValueError(f"Selektor {sel.get('item', 'article')!r} findet keinen Eintrag auf {source.url}")
+    for node in knoten:
         film = quellen._select_text(node, sel.get("title", "h2"))
         if not film or not ist_tamil_fassung(film, quellen._select_text(node, sel.get("sprache", ""))):
             continue
@@ -267,7 +285,8 @@ def _week_overlaps(week: tuple[int, int], von: date, bis: date) -> bool:
 
 
 def _fingerprint(kinos: list[dict]) -> str:
-    parts = sorted(f"{k.get('kino')}/{k.get('stadt')}/" + ",".join(t[:10] for t in k.get("termine") or []) for k in kinos)
+    parts = sorted(f"{k.get('kino')}/{k.get('stadt')}/" + ",".join(t[:10] for t in k.get("termine") or [])
+                   + (f"/ab {k['von']}" if k.get("von") else "") for k in kinos)
     return hashlib.sha1("|".join(parts).encode()).hexdigest()
 
 
@@ -291,7 +310,7 @@ def aggregate_shows(shows: list[Show], now: datetime | None = None, quelle: str 
             if s.start:
                 k["termine"].append(s.start.isoformat(timespec="minutes"))
             elif s.von:
-                k["von"] = s.von.isoformat()
+                k["von"] = min(k.get("von") or s.von.isoformat(), s.von.isoformat())
     items = []
     for (key, (year, week)), g in groups.items():
         kinos = sorted(g["kinos"].values(), key=lambda k: (k["stadt"], k["kino"]))
@@ -333,19 +352,40 @@ def merge_kino_items(items: list[NewsItem]) -> list[NewsItem]:
     return others + list(merged.values())
 
 
-def vereinige_fakten(alt: dict, item: NewsItem) -> tuple[dict, str]:
+def _noch_aktuell(k: dict, now: datetime, aktiv) -> dict | None:
+    """Ein bleibender Spielort nur mit aktiver Quelle und künftigem Termin (bzw. Laufzeit ab heute oder später)."""
+    if aktiv is not None and k.get("quelle") not in aktiv:
+        return None
+    termine = []
+    for t in k.get("termine") or []:
+        try:
+            zeit = datetime.fromisoformat(t)
+        except ValueError:
+            continue
+        if (zeit if zeit.tzinfo else zeit.replace(tzinfo=TZ)) >= now:
+            termine.append(t)
+    if termine:
+        return {**k, "termine": termine}
+    if not k.get("termine") and (k.get("von") or "") >= now.astimezone(TZ).date().isoformat():
+        return k
+    return None
+
+
+def vereinige_fakten(alt: dict, item: NewsItem, now: datetime | None = None) -> tuple[dict, str]:
     """Spielorte eines offenen Entwurfs mit einem neuen Scan vereinigen (Prüfung 11.11.2026, P1).
 
     Ein bisheriger Spielort bleibt, solange seine Quelle in diesem Scan nicht gelaufen ist (nicht fällig, pausiert,
-    ausgefallen) und der Scan ihn nicht selbst neu meldet. Spielorte ohne Quelle (ältere Entwürfe) und Scans ohne
+    ausgefallen) und der Scan ihn nicht selbst neu meldet – aber nur mit aktiver Quelle und künftigem Termin. Spielorte ohne Quelle (ältere Entwürfe) und Scans ohne
     Angabe der gelaufenen Quellen ersetzen wie bisher."""
     neu, fingerprint = item.facts or {}, item.fingerprint
     gelaufen = getattr(item, "quellen_gelaufen", None)
     if gelaufen is None:
         return neu, fingerprint
     gemeldet = {(k.get("kino"), k.get("stadt")) for k in neu.get("kinos") or []}
+    now, aktiv = now or datetime.now(TZ), getattr(item, "quellen_aktiv", None)
     bleiben = [k for k in (alt or {}).get("kinos") or []
                if k.get("quelle") and k["quelle"] not in gelaufen and (k.get("kino"), k.get("stadt")) not in gemeldet]
+    bleiben = [k for k in (_noch_aktuell(k, now, aktiv) for k in bleiben) if k]
     if not bleiben:
         return neu, fingerprint
     kinos = sorted((neu.get("kinos") or []) + bleiben, key=lambda k: (k.get("stadt") or "", k.get("kino") or ""))

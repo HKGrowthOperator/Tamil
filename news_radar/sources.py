@@ -73,6 +73,7 @@ class NewsItem:
     # Kino: Namen der Quellen, die in diesem Scan erfolgreich gelaufen sind (None = unbekannt). Nur sie dürfen einen
     # Spielort aus einem offenen Kino-Entwurf abziehen (kino_providers.vereinige_fakten).
     quellen_gelaufen: frozenset[str] | None = None
+    quellen_aktiv: frozenset[str] | None = None  # eingeschaltete Quellen; Spielorte abgeschalteter fallen weg
 
     @property
     def uid(self) -> str:
@@ -522,6 +523,7 @@ def fetch_all(settings: Settings, store=None) -> list[NewsItem]:
     for it in items:
         if it.kind == "kino":
             it.quellen_gelaufen = frozenset(gelaufen)
+            it.quellen_aktiv = frozenset(s.name for s in settings.sources)
     return items
 
 

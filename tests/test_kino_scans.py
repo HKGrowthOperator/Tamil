@@ -116,3 +116,22 @@ def test_kino_traegt_seine_quelle():
     [item] = kp.aggregate_shows([kp.Show("Jailer 2", "Atelier", "Düsseldorf", "DE", start=_termin(19))],
                                 quelle="Filmkunstkinos")
     assert item.facts["kinos"][0]["quelle"] == "Filmkunstkinos"
+
+
+def test_bleibende_spielorte_ohne_kuenftigen_termin_oder_aktive_quelle_fallen_weg():
+    jetzt = datetime.now(kp.TZ)
+    gestern, morgen = (jetzt - timedelta(days=1)).isoformat(timespec="minutes"), _termin(19).isoformat(timespec="minutes")
+    alt = {"kinos": [
+        {"kino": "Vorbei", "stadt": "A", "quelle": "Selten", "termine": [gestern]},
+        {"kino": "Teils", "stadt": "B", "quelle": "Selten", "termine": [gestern, morgen]},
+        {"kino": "Laeuft", "stadt": "C", "quelle": "Selten", "termine": [], "von": (jetzt - timedelta(days=3)).date().isoformat()},
+        {"kino": "Bald", "stadt": "D", "quelle": "Selten", "termine": [], "von": (jetzt + timedelta(days=2)).date().isoformat()},
+        {"kino": "Abgeschaltet", "stadt": "E", "quelle": "Aus", "termine": [morgen]},
+    ]}
+    neu = sources.NewsItem("t", "https://x.example/k", "", "Kinoprogramm", datetime.now(kp.TZ), kind="kino",
+                           facts={"kinos": [{"kino": "Neu", "stadt": "F", "quelle": "Oft", "termine": [morgen]}]},
+                           quellen_gelaufen=frozenset({"Oft"}), quellen_aktiv=frozenset({"Oft", "Selten"}))
+    fakten, _ = kp.vereinige_fakten(alt, neu)
+    kinos = {k["kino"]: k for k in fakten["kinos"]}
+    assert sorted(kinos) == ["Bald", "Neu", "Teils"]
+    assert kinos["Teils"]["termine"] == [morgen]  # vergangene Vorstellung gestrichen

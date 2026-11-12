@@ -150,3 +150,14 @@ def test_film_title_notes_do_not_split_one_film_into_several_posts():
     assert film_key("Ramayana: Rise of a Legend /engl. Untertitel") == film_key("Ramayana: Rise Of A Legend")
     assert clean_film_title("Coolie - mit engl. Untertiteln") == "Coolie" and clean_film_title("Kanguva (3D)") == "Kanguva"
     assert clean_film_title("Leo (FSK 16)") == "Leo"
+
+
+def test_laufzeit_ohne_uhrzeit_im_fingerprint_und_frueheste_zuerst():
+    def item(*von):
+        shows = [kp.Show("Scene", "Mathäser", "München", "DE", von=d) for d in von]
+        [i] = kp.aggregate_shows(shows, NOW)
+        return i
+
+    beide = item(date(2026, 10, 18), date(2026, 10, 16))
+    assert beide.facts["kinos"][0]["von"] == "2026-10-16"
+    assert item(date(2026, 10, 16)).fingerprint != item(date(2026, 10, 17)).fingerprint
