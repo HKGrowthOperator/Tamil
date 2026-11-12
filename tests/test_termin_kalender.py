@@ -98,3 +98,30 @@ def test_gedenk_sperre_trifft_schreibweisen(settings, titel):
     """Prüfung von 28122c7: Apostrophe und Diakritika dürfen die Sperre nicht umgehen."""
     item = sources.NewsItem(titel, "https://x.example/g", "", "q", VOR_DEM_FEST, kind="event")
     assert filtering.gedenktermin(item, settings), titel
+
+
+def _kalender(monkeypatch, events):
+    import json
+
+    class Roh(Antwort):
+        def __init__(self):
+            self.status_code, self.headers = 200, {"Content-Type": "application/json"}
+            self.content = json.dumps({"events": events}).encode()
+
+    monkeypatch.setattr(sources.requests, "get", lambda url, **kw: Roh())
+    return Source(name="Kalender", type="tribe_events", url="https://tempel.example", country="DE", kind="event")
+
+
+def test_laufender_mehrtaegiger_termin_bleibt(settings, monkeypatch):
+    quelle = _kalender(monkeypatch, [{"title": "Tempelfest", "url": "https://tempel.example/fest/",
+                                      "start_date": "2026-05-22 00:00:00", "end_date": "2026-06-02 23:59:59",
+                                      "all_day": True}])
+    items = sources.FETCHERS["tribe_events"](quelle, settings, now=datetime(2026, 5, 25, 9, tzinfo=timezone.utc))
+    assert [i.title for i in items] == ["Tempelfest"]
+
+
+def test_iso_datum_mit_t_wird_gelesen(settings, monkeypatch):
+    quelle = _kalender(monkeypatch, [{"title": "Prozession", "url": "https://tempel.example/p/",
+                                      "start_date": "2026-05-31T10:00:00", "all_day": False}])
+    [item] = sources.FETCHERS["tribe_events"](quelle, settings, now=VOR_DEM_FEST)
+    assert item.facts["event_datum"] == "2026-05-31" and "10:00" in item.summary

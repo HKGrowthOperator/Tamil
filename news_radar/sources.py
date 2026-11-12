@@ -305,6 +305,22 @@ def fetch_wp_json(source: Source, settings: Settings) -> list[NewsItem]:
     return items
 
 
+def _kalender_zeit(roh) -> datetime | None:
+    """„2026-05-31 10:00:00“ oder ISO „2026-05-31T10:00:00“ → naive Ortszeit; sonst None (mit Rohwert im Log)."""
+    roh = str(roh or "").strip()
+    if not roh:
+        return None
+    try:
+        return datetime.strptime(roh[:16], "%Y-%m-%d %H:%M")
+    except ValueError:
+        pass
+    try:
+        return datetime.fromisoformat(roh).replace(tzinfo=None)
+    except ValueError:
+        log.debug("Kalender: Datum nicht lesbar: %r", roh)
+        return None
+
+
 @fetcher("tribe_events")
 def fetch_tribe_events(source: Source, settings: Settings, now: datetime | None = None) -> list[NewsItem]:
     """Kalender des WordPress-Plugins „The Events Calendar“ (/wp-json/tribe/events/v1/events): ein Termin je
@@ -319,11 +335,11 @@ def fetch_tribe_events(source: Source, settings: Settings, now: datetime | None 
     items = []
     for ev in resp.json().get("events") or []:
         title, url = clean_text(ev.get("title") or ""), ev.get("url") or ""
-        try:
-            start = datetime.strptime((ev.get("start_date") or "")[:16], "%Y-%m-%d %H:%M")
-        except ValueError:
+        start = _kalender_zeit(ev.get("start_date"))
+        if start is None:
             continue
-        if not title or not url or start.date() < heute:
+        ende = _kalender_zeit(ev.get("end_date")) or start
+        if not title or not url or ende.date() < heute:  # laufende mehrtägige Termine bleiben
             continue
         venue = ev.get("venue") if isinstance(ev.get("venue"), dict) else {}
         ort = ", ".join(v for v in (venue.get("venue"), venue.get("address"), venue.get("city")) if v)
