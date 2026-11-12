@@ -5,6 +5,15 @@ Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
 ## 12.11.2026
 
+- **Ausland-Regel: Genf und Romandie zählen als DACH-Hinweis, Ajith nur als „Ajith Kumar“:** Genf/Geneva/Genève/ஜெனீவா
+  (UN-Menschenrechtsrat, Kundgebungen) und Orte der Romandie (Lausanne, Fribourg, Neuchâtel, Sion als ganzes Wort …)
+  halten eine Meldung drin; in der Kollywood-Ausnahme zählen Starnamen nur als ganze Wörter. Bekannte Restfälle, die
+  durchkommen und im Cockpit abgelehnt werden: „ajith“ über die Kino-Hinweise der Kategorien, „Geneva Conventions“,
+  „Credit Suisse“, Sion in Mumbai, TVK-Politik über „Vijay“; die Schreibweise ஜெனிவா fehlt noch. · Hauptsitzung nach
+  drei Prüfrunden · Gegenüber dem Stand vor der Regel ist keiner davon ein Rückschritt.
+- **Terminquelle Tempel Backnang vorerst aus:** Die Gedenktermin-Sperre (`[blocklist] termine`) wirkt heute nur bei
+  `tribe_events`-Quellen; ob sie für alle Terminquellen gilt, entscheidet Luis (ändert Abnahme-Szenarien 15, 22–26).
+  München Tamil Sangam (`tribe_events`) läuft. · Hauptsitzung nach unabhängiger Prüfung
 - **Deutschsprachiger Text gilt für die Ausland-Regel als DACH-Presse:** Deutschsprachige Auslandsnachrichten (z. B.
   tagesschau zu Tamil Nadu) bleiben deshalb vorerst drin, wie vor der Regel. · Hauptsitzung · Ohne Anthropic-Schlüssel
   gibt es keine Grauzonen-Entscheidung; die Redaktion lehnt im Cockpit ab. Wieder ansehen mit Tor B1.
