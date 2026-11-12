@@ -83,7 +83,18 @@ def test_spanne_ohne_doppelpunkt_beginn_mit_gemeinsamem_zusatz(text, erwartet):
     assert _zeit(text) == erwartet
 
 
-@pytest.mark.xfail(strict=True, reason="Spanne mit Doppelpunkt: Die erste Zeit gilt als 24-Stunden-Zeit (06:00), "
-                   "der gemeinsame Zusatz „p.m.“ am Ende wird nicht übernommen. Richtig wäre 18:00; offen.")
 def test_spanne_mit_doppelpunkt_uebernimmt_gemeinsamen_zusatz():
     assert _zeit("7.11.2026 6:00 – 9:30 p.m.") == ("2026-11-07 18:00", True)
+
+
+@pytest.mark.parametrize("text,erwartet", [
+    ("7.11.2026 6:30 – 9:30 p.m.", ("2026-11-07 18:30", True)),
+    ("7.11.2026 10:00 - 2:00 PM", ("2026-11-07 10:00", True)),       # über Mittag: Vormittag
+    ("7.11.2026 11:00–12:30 pm", ("2026-11-07 11:00", True)),
+    ("7.11.2026 7:30 – 11 p.m.", ("2026-11-07 19:30", True)),
+    ("7.11.2026 18:00 – 9:30 p.m.", ("2026-11-07 18:00", True)),     # erste Zeit schon 24-Stunden
+    ("7.11.2026 6:00 – 9:30 a.m.", ("2026-11-07 06:00", True)),
+    ("7.11.2026 6:00 Einlass, Beginn 7 pm", ("2026-11-07 06:00", True)),  # keine Spanne: erste Zeit gilt wie bisher
+])
+def test_spanne_mit_doppelpunkt_weitere_faelle(text, erwartet):
+    assert _zeit(text) == erwartet

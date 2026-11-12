@@ -30,24 +30,40 @@ _NUMMERN_WORT_RE = re.compile(r"\b(?:saal|tag|day|halle|hall|raum|room|zimmer|nr
                               r"gleis|block|haus|teil|runde|level|ebene|stock|eingang|sektor|court|feld)\.?\s*$", re.I)
 
 
+# Spanne mit Doppelpunkt und gemeinsamem Zusatz am Ende („6:00 – 9:30 p.m.“): die erste Zeit direkt vor dem Treffer
+_SPANNE_VOR_RE = re.compile(r"(?<![\d:.])(\d{1,2})[:.](\d{2})\s*[–—-]\s*$")
+
+
+def _spanne_anfang(anfang: int, anfang_min: int, ende: int, minuten: int, nachmittag: bool) -> tuple[int, int] | None:
+    """Beginn einer Spanne, deren Zusatz nur am Ende steht („6–9 pm“, „6:30 – 9:30 p.m.“), im 24-Stunden-Format;
+    None, wenn die erste Zahl keine 12-Stunden-Zeit sein kann oder der Beginn nicht vor dem Ende liegt."""
+    if not 1 <= anfang <= 12 or anfang_min > 59:
+        return None
+    ende24 = ende % 12 + (12 if nachmittag else 0)
+    # „6–12 pm“: Abend bis Mitternacht; „11–1 pm“, „10–12 pm“: Vormittag (bei Ende 12 erst ab 9 Uhr)
+    bis_mitternacht = nachmittag and ende == 12 and anfang < 9
+    vormittag = nachmittag and anfang % 12 > ende % 12 and not bis_mitternacht
+    anfang24 = anfang % 12 + (12 if nachmittag and not vormittag else 0)
+    ende_spanne = 24 if bis_mitternacht else ende24
+    if anfang24 * 60 + anfang_min < ende_spanne * 60 + minuten and ende_spanne - anfang24 <= 12:  # Beginn vor Ende
+        return anfang24, anfang_min
+    return None
+
+
 def _ampm_zeit(ap: re.Match, davor: str) -> tuple[int, int] | None:
-    """(Stunde, Minute) im 24-Stunden-Format aus einem _AMPM_RE-Treffer; None, wenn ungültig."""
+    """(Stunde, Minute) im 24-Stunden-Format aus einem _AMPM_RE-Treffer; None, wenn ungültig. Steht direkt davor eine
+    Zeit mit Doppelpunkt und Strich („6:00 – 9:30 p.m.“), gilt der Zusatz auch für sie und sie ist der Beginn."""
     nachmittag = (ap.group(4) or ap.group(5)).lower().startswith("p")
     ende, minuten = int(ap.group(2)), int(ap.group(3) or 0)
     if not 1 <= ende <= 12 or minuten > 59:
         return None
-    ende24 = ende % 12 + (12 if nachmittag else 0)
     if ap.group(1) and not _NUMMERN_WORT_RE.search(davor):
-        anfang = int(ap.group(1))
-        if 1 <= anfang <= 12:
-            # „6–12 pm“: Abend bis Mitternacht; „11–1 pm“, „10–12 pm“: Vormittag (bei Ende 12 erst ab 9 Uhr)
-            bis_mitternacht = nachmittag and ende == 12 and anfang < 9
-            vormittag = nachmittag and anfang % 12 > ende % 12 and not bis_mitternacht
-            anfang24 = anfang % 12 + (12 if nachmittag and not vormittag else 0)
-            ende_spanne = 24 if bis_mitternacht else ende24
-            if anfang24 * 60 < ende_spanne * 60 + minuten and ende_spanne - anfang24 <= 12:  # Beginn vor Ende
-                return anfang24, 0
-    return ende24, minuten
+        if beginn := _spanne_anfang(int(ap.group(1)), 0, ende, minuten, nachmittag):
+            return beginn
+    elif not ap.group(1) and (sp := _SPANNE_VOR_RE.search(davor)):
+        # None: die erste Zeit gilt für sich, z. B. „18:00 – 9:30 p.m.“
+        return _spanne_anfang(int(sp.group(1)), int(sp.group(2)), ende, minuten, nachmittag)
+    return ende % 12 + (12 if nachmittag else 0), minuten
 
 
 _ISO_RE = re.compile(r"(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2}))?")
@@ -121,7 +137,10 @@ def parse_de_termin(text: str, now: datetime | None = None) -> tuple[datetime | 
     tail = t[m.end():] if "m" in locals() and m else t
     tm = _TIME_RE.search(tail)
     ap = _AMPM_RE.search(tail)
-    zwoelf = _ampm_zeit(ap, tail[:ap.start()]) if ap and (tm is None or ap.start() <= tm.start()) else None
+    # 12-Stunden-Zeit, wenn sie zuerst kommt oder die erste Zeit als Beginn ihrer Spanne mitliest („6:00 – 9:30 p.m.“)
+    spanne = bool(ap and tm and ap.start() > tm.start() and not ap.group(1)
+                  and (sp := _SPANNE_VOR_RE.search(tail[:ap.start()])) and sp.start() == tm.start())
+    zwoelf = _ampm_zeit(ap, tail[:ap.start()]) if ap and (tm is None or ap.start() <= tm.start() or spanne) else None
     if zwoelf:
         hour, minute = zwoelf
         hat_zeit = True
