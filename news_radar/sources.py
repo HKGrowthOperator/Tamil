@@ -61,6 +61,9 @@ class NewsItem:
     # Echtes Veröffentlichungsdatum laut Quelle (None = unbekannt). Bei Termin-Quellen ist `published` der
     # Abrufzeitpunkt (Sortierung); erst dieses Feld zeigt, dass ein „neuer“ Treffer ein alter Bericht aus dem Archiv ist.
     source_published: datetime | None = None
+    # Kino: Namen der Quellen, die in diesem Scan erfolgreich gelaufen sind (None = unbekannt). Nur sie dürfen einen
+    # Spielort aus einem offenen Kino-Entwurf abziehen (kino_providers.vereinige_fakten).
+    quellen_gelaufen: frozenset[str] | None = None
 
     @property
     def uid(self) -> str:
@@ -417,7 +420,8 @@ def fetch_all(settings: Settings, store=None) -> list[NewsItem]:
         except Exception:  # noqa: BLE001 - z. B. Store schon geschlossen, Lauf lief weiter
             log.debug("Quellen-Status nicht gespeichert", exc_info=True)
 
-    def safe(source: Source) -> list[NewsItem]:
+    def safe(source: Source) -> list[NewsItem] | None:
+        """Meldungen der Quelle; None, wenn sie ausgefallen ist."""
         try:
             items = fetch_source(source, settings)
             log.info("%-34s %3d Meldungen", source.name, len(items))
@@ -429,24 +433,31 @@ def fetch_all(settings: Settings, store=None) -> list[NewsItem]:
         except Exception as exc:  # noqa: BLE001 - Quelle ausfallen lassen, Rest weiterlaufen lassen
             log.warning("Quelle fehlgeschlagen: %s (%s)", source.name, exc)
             record(store.source_failed, source.name, str(exc))
-        return []
+        return None
 
     items: list[NewsItem] = []
+    gelaufen: set[str] = set()
     if not due:
         return items
     pool = ThreadPoolExecutor(max_workers=8)
     futures = {pool.submit(safe, s): s for s in due}
     try:
         for fut in as_completed(futures, timeout=settings.fetch_seconds):
-            items += fut.result()
+            ergebnis = fut.result()
+            if ergebnis is not None:
+                gelaufen.add(futures[fut].name)
+                items += ergebnis
     except TimeoutError:
         late = [futures[f].name for f in futures if not f.done()]
         log.warning("Sammel-Zeitbudget (%ss) erreicht, ausstehend: %s", settings.fetch_seconds, ", ".join(late))
     finally:
         pool.shutdown(wait=False, cancel_futures=True)
     record(store.http_cache_save, dict(CONDITIONAL.changed))
-    items = [it for it in items if it.title and it.url]
-    return merge_kino_items(items)
+    items = merge_kino_items([it for it in items if it.title and it.url])
+    for it in items:
+        if it.kind == "kino":
+            it.quellen_gelaufen = frozenset(gelaufen)
+    return items
 
 
 def fetch_article_text(url: str, limit: int = 6000) -> str:

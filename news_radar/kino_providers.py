@@ -230,12 +230,13 @@ def _week_overlaps(week: tuple[int, int], von: date, bis: date) -> bool:
 
 
 def _fingerprint(kinos: list[dict]) -> str:
-    parts = sorted(f"{k['kino']}/{k['stadt']}/" + ",".join(t[:10] for t in k.get("termine") or []) for k in kinos)
+    parts = sorted(f"{k.get('kino')}/{k.get('stadt')}/" + ",".join(t[:10] for t in k.get("termine") or []) for k in kinos)
     return hashlib.sha1("|".join(parts).encode()).hexdigest()
 
 
-def aggregate_shows(shows: list[Show], now: datetime | None = None) -> list[NewsItem]:
-    """Ein NewsItem je Film und Kinowoche (diese und nächste Woche)."""
+def aggregate_shows(shows: list[Show], now: datetime | None = None, quelle: str = "") -> list[NewsItem]:
+    """Ein NewsItem je Film und Kinowoche (diese und nächste Woche). `quelle` (Name in sources.toml) steht an jedem
+    Spielort, damit ein späterer Scan weiß, welche Quelle ihn abziehen darf."""
     now = now or datetime.now(timezone.utc)
     this_week = kino_week(now.astimezone(TZ).date())
     next_week = kino_week(date.fromisocalendar(this_week[0], this_week[1], 4) + timedelta(days=7))
@@ -248,6 +249,8 @@ def aggregate_shows(shows: list[Show], now: datetime | None = None) -> list[News
         for week in _weeks_of(s, weeks):
             g = groups.setdefault((key, week), {"film": clean_film_title(s.film), "kinos": {}})
             k = g["kinos"].setdefault((s.kino, s.stadt), {"kino": s.kino, "stadt": s.stadt, "land": s.land, "termine": [], "url": s.url})
+            if quelle:
+                k["quelle"] = quelle
             if s.start:
                 k["termine"].append(s.start.isoformat(timespec="minutes"))
             elif s.von:
@@ -293,8 +296,27 @@ def merge_kino_items(items: list[NewsItem]) -> list[NewsItem]:
     return others + list(merged.values())
 
 
+def vereinige_fakten(alt: dict, item: NewsItem) -> tuple[dict, str]:
+    """Spielorte eines offenen Entwurfs mit einem neuen Scan vereinigen (Prüfung 11.11.2026, P1).
+
+    Ein bisheriger Spielort bleibt, solange seine Quelle in diesem Scan nicht gelaufen ist (nicht fällig, pausiert,
+    ausgefallen) und der Scan ihn nicht selbst neu meldet. Spielorte ohne Quelle (ältere Entwürfe) und Scans ohne
+    Angabe der gelaufenen Quellen ersetzen wie bisher."""
+    neu, fingerprint = item.facts or {}, item.fingerprint
+    gelaufen = getattr(item, "quellen_gelaufen", None)
+    if gelaufen is None:
+        return neu, fingerprint
+    gemeldet = {(k.get("kino"), k.get("stadt")) for k in neu.get("kinos") or []}
+    bleiben = [k for k in (alt or {}).get("kinos") or []
+               if k.get("quelle") and k["quelle"] not in gelaufen and (k.get("kino"), k.get("stadt")) not in gemeldet]
+    if not bleiben:
+        return neu, fingerprint
+    kinos = sorted((neu.get("kinos") or []) + bleiben, key=lambda k: (k.get("stadt") or "", k.get("kino") or ""))
+    return {**neu, "kinos": kinos}, _fingerprint(kinos)
+
+
 def fetch_kino(source: Source, settings: Settings) -> list[NewsItem]:
     provider = PROVIDERS.get(source.provider)
     if provider is None:
         raise ValueError(f"Unbekannter Kino-Anbieter: {source.provider}")
-    return aggregate_shows(provider(source, settings))
+    return aggregate_shows(provider(source, settings), quelle=source.name)
