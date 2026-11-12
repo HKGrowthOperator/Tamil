@@ -16,3 +16,6 @@ wordpress/dist/
 
 # Arbeitskopien der Agents (isolation: worktree)
 .claude/worktrees/
+
+# Prüf-Screenshots der Designproben (groß, jederzeit neu erzeugbar)
+design/richtungen/*/shots/
