@@ -499,8 +499,12 @@ def jsonld_termin(text: str, url: str, source: Source, settings: Settings, now: 
     start, ganztags = _ld_zeit(ev.get("startDate"))
     if not title or start is None:
         return None
-    ende = _ld_zeit(ev.get("endDate"))[0] or start
-    letzter_tag = (ende - timedelta(seconds=1)).date() if ende > start else start.date()
+    ende, ende_ganztags = _ld_zeit(ev.get("endDate"))
+    ende = ende or start
+    if ende_ganztags:  # Ende als reines Datum („2026-11-22“) schließt den Tag ein
+        letzter_tag = max(ende.date(), start.date())
+    else:  # Ende mit Uhrzeit: 00:00 gehört nicht mehr zum Termin
+        letzter_tag = (ende - timedelta(seconds=1)).date() if ende > start else start.date()
     if letzter_tag < heute:
         return None
     ort_ld = ev.get("location")
