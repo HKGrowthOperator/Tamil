@@ -170,7 +170,7 @@ def fetch_cinestar(source: Source, settings: Settings, http=requests) -> list[Sh
     return shows
 
 
-KINOHELD_LIMIT = 500  # 100 wurde im Alltag erreicht (Dauer-Teilausfall); erst diese Grenze gilt als abgeschnitten
+KINOHELD_LIMIT = 100  # ob die Schnittstelle mehr liefert, ist ungeprüft; an der Grenze Teilausfall (im Takt dank last_try)
 KINOHELD_QUERY = """{ search(query: "tamil", limit: %d) { __typename ... on Show { id name beginning
   cinema { id name city { name } } movie { id title } } } }""" % KINOHELD_LIMIT
 
