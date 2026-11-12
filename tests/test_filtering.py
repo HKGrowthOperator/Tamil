@@ -305,3 +305,12 @@ def test_fund_1211_ausland_bleibt_draussen_trotz_hinweisen(settings):
     """Gegenprobe zu P1: Die bisherigen Ausland-Fälle (englisch, ohne DACH-Hinweis) fallen weiter heraus."""
     picked, zaehler = _einzeln(_fund_items("raus"), settings)
     assert picked == [] and zaehler["ausland"] == 2 and zaehler["fremdes_kino"] == 1
+
+
+def test_fund_1211_grauzone_wendet_ausland_regel_an(settings):
+    """P2: Was select als Ausland verwirft, geht auch bei Score 2–3 nicht über die Grauzone an Haiku."""
+    grau = _fund_items("grauzone_raus")
+    assert all(2 <= filtering.score_item(i, settings.keywords) <= 3 for i in grau)
+    picked, zaehler = _einzeln(grau, settings)
+    assert picked == [] and zaehler["ausland"] == 2
+    assert relevance.grauzone(_fund_items("grauzone_raus"), settings, set(), set(), NOW) == []
