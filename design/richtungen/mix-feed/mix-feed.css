@@ -36,8 +36,9 @@
   /* der einzige Verlauf: unter Schrift im Bild, von durchsichtig nach Tinte */
   --verlauf: linear-gradient(to bottom,
     oklch(0.21 0.012 255 / 0) 0,
-    oklch(0.21 0.012 255 / 0.78) 64px,
-    oklch(0.21 0.012 255 / 0.92) 100%);
+    oklch(0.21 0.012 255 / 0.32) 24px,
+    oklch(0.21 0.012 255 / 0.74) 52px,
+    oklch(0.21 0.012 255 / 0.88) 100%);
 
   --schrift: "Libre Franklin", "Noto Sans Tamil", "Tamil Sangam MN", system-ui, sans-serif;
   --rand: 16px;
@@ -129,7 +130,8 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .karte__flaeche {
   position: relative;
   display: grid;
-  grid-template: 1fr / 1fr;
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+  min-height: 0;
   overflow: hidden;
   aspect-ratio: 4 / 5;
   background: var(--flaeche);
@@ -184,7 +186,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .zeile {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) min(112px, 28vw);
+  grid-template-columns: minmax(0, 1fr) min(100px, 26vw);
   gap: 12px;
   padding: 16px 0;
   border-bottom: 1px solid var(--linie);
@@ -415,8 +417,6 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   .rubrik__gross { grid-column: 1 / -1; }
   .vergangen__liste { grid-template-columns: 1fr 1fr; }
   .zeile { grid-template-columns: minmax(0, 1fr) 160px; }
-  .meldungen__liste { display: grid; grid-template-columns: 1fr 1fr; column-gap: 32px; }
-  .meldungen .zeile { border-bottom: 1px solid var(--linie); }
 }
 
 /* =========================================================
@@ -457,13 +457,15 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   .start__auf { grid-column: 1 / 7; }
   .start .karte--aufmacher .karte__flaeche { aspect-ratio: 1 / 1; }
   .karte--aufmacher .karte__titel { font-size: 40px; line-height: 1.1; }
-  .karte--aufmacher .karte__text { padding: 96px 32px 28px; }
+  .karte--aufmacher .karte__text { padding: 64px 32px 28px; }
   .start__kacheln { grid-column: 7 / 13; margin-top: 0; column-gap: 24px; row-gap: 16px; }
+  .start__streifen { display: contents; }
   .start__kacheln .karte__flaeche, .start__kacheln .karte--erste .karte__flaeche { aspect-ratio: 1 / 1; }
   .start__kacheln .karte__titel, .start__streifen .karte__titel { font-size: 19px; }
   .start__kacheln .karte__text, .start__streifen .karte__text { padding: 56px 16px 16px; }
 
-  .meldungen__liste { column-gap: 48px; }
+  .meldungen__liste { display: grid; grid-template-columns: 1fr 1fr; column-gap: 48px; }
+  .meldungen .zeile { border-bottom: 1px solid var(--linie); }
   .meldungen .zeile { grid-template-columns: minmax(0, 1fr) 128px; }
 
   /* Diese Woche: Kino-Leitstück links, rechts Radar-Liste und zwei Kino-Beiträge */

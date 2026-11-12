@@ -1,20 +1,20 @@
 {
   "slug": "mix-feed",
-  "stand": "2026-11-12T15:29",
+  "stand": "2026-11-12T15:49",
   "groesster_massstab": 1.03,
   "handy": {
     "kopfleiste_hoehe": 149,
-    "erste_schlagzeile_ab": 534,
+    "erste_schlagzeile_ab": 416,
     "schlagzeilen_ganz_sichtbar": 2,
-    "schlagzeilen_seite": 18,
+    "schlagzeilen_seite": 16,
     "max_zeilen_schlagzeile": 4,
     "groesste_schrift": {
       "px": 30,
       "text": "Deepavali 2026: Lichterfest in Berlin, B"
     },
     "groesste_rote_schrift": {
-      "px": 13,
-      "text": "Nachrichten"
+      "px": 0,
+      "text": ""
     },
     "schriftgroessen_seite": [
       {
@@ -24,23 +24,23 @@
       },
       {
         "px": 24,
-        "anzahl": 5,
+        "anzahl": 3,
         "text": "Diese Woche"
       },
       {
         "px": 22,
-        "anzahl": 8,
-        "text": "INAIVU in Zürich: Benefizabend mit Musik"
+        "anzahl": 6,
+        "text": "Koovagam-Fest im Film: „Bride of Aravan“"
       },
       {
-        "px": 20,
-        "anzahl": 3,
-        "text": "Ranjan Neelakandan: Schweizer Talent mit"
+        "px": 21,
+        "anzahl": 1,
+        "text": "„Sardar 2“ mit Karthi: Deutscher Kinosta"
       },
       {
         "px": 19,
-        "anzahl": 2,
-        "text": "Deepavali-Feier des Düsseldorf Tamil San"
+        "anzahl": 6,
+        "text": "Frankfurt, Duisburg, Dortmund: Drei tami"
       },
       {
         "px": 18,
@@ -61,7 +61,7 @@
     "schriftbreite_verstellt": 0,
     "bilder_ueber_natuerlicher_breite": [],
     "bilder_ueber_dateibreite": [],
-    "anreisser": 18,
+    "anreisser": 16,
     "anreisser_ohne_bild": [],
     "anreisser_mit_grafik": [],
     "dunkle_flaechen": [
@@ -74,8 +74,8 @@
       {
         "element": "section#diese-woche.woche",
         "breite": 390,
-        "hoehe": 1148,
-        "oben": 1818
+        "hoehe": 1529,
+        "oben": 2618
       }
     ],
     "fest_stehend": [
@@ -86,12 +86,12 @@
       }
     ],
     "bewegung": {
-      "uebergaenge": 21,
+      "uebergaenge": 18,
       "laengster_uebergang_s": 0.35,
       "animationen": 0,
       "endlos": 0
     },
-    "seitenhoehe": 7051,
+    "seitenhoehe": 6043,
     "ueberlauf": 0,
     "bewegung_bei_reduziert": {
       "uebergaenge": 0,
@@ -100,30 +100,30 @@
       "endlos": 0
     },
     "helle_schrift": {
-      "anzahl": 52,
-      "kleinster_kontrast": 5.11,
+      "anzahl": 71,
+      "kleinster_kontrast": 4.66,
       "unter_4_5": []
     },
     "farbanteil_ohne_bilder": {
-      "bunt": 0.0008,
-      "rot": 0.0008,
-      "dunkel": 0.0617
+      "bunt": 0,
+      "rot": 0,
+      "dunkel": 0.0527
     },
     "seitenfehler": []
   },
   "desktop": {
-    "kopfleiste_hoehe": 167,
-    "erste_schlagzeile_ab": 346,
-    "schlagzeilen_ganz_sichtbar": 4,
-    "schlagzeilen_seite": 18,
+    "kopfleiste_hoehe": 165,
+    "erste_schlagzeile_ab": 360,
+    "schlagzeilen_ganz_sichtbar": 5,
+    "schlagzeilen_seite": 16,
     "max_zeilen_schlagzeile": 4,
     "groesste_schrift": {
       "px": 40,
       "text": "Deepavali 2026: Lichterfest in Berlin, B"
     },
     "groesste_rote_schrift": {
-      "px": 13,
-      "text": "Nachrichten"
+      "px": 0,
+      "text": ""
     },
     "schriftgroessen_seite": [
       {
@@ -138,23 +138,23 @@
       },
       {
         "px": 24,
-        "anzahl": 6,
-        "text": "11"
+        "anzahl": 4,
+        "text": "„Sardar 2“ mit Karthi: Deutscher Kinosta"
       },
       {
         "px": 22,
-        "anzahl": 5,
-        "text": "„Scene“"
-      },
-      {
-        "px": 20,
-        "anzahl": 1,
-        "text": "INAIVU in Zürich: Benefizabend mit Musik"
+        "anzahl": 3,
+        "text": "Nachrichten"
       },
       {
         "px": 19,
-        "anzahl": 10,
-        "text": "Deepavali-Feier des Düsseldorf Tamil San"
+        "anzahl": 13,
+        "text": "Koovagam-Fest im Film: „Bride of Aravan“"
+      },
+      {
+        "px": 18,
+        "anzahl": 8,
+        "text": "Zum Inhalt"
       }
     ],
     "versalien_ueber_14px": 0,
@@ -169,10 +169,10 @@
     "gedreht": 0,
     "schriftbreite_verstellt": 0,
     "bilder_ueber_natuerlicher_breite": [
-      "bilder/rb-30.jpg (803 px gezeigt, 1280 px vorhanden)"
+      "bilder/rb-71.jpg (803 px gezeigt, 1280 px vorhanden)"
     ],
     "bilder_ueber_dateibreite": [],
-    "anreisser": 18,
+    "anreisser": 16,
     "anreisser_ohne_bild": [],
     "anreisser_mit_grafik": [],
     "dunkle_flaechen": [
@@ -180,13 +180,13 @@
         "element": "nav.band",
         "breite": 1280,
         "hoehe": 48,
-        "oben": 119
+        "oben": 117
       },
       {
         "element": "section#diese-woche.woche",
         "breite": 1280,
-        "hoehe": 881,
-        "oben": 956
+        "hoehe": 897,
+        "oben": 1302
       }
     ],
     "fest_stehend": [
@@ -197,12 +197,12 @@
       }
     ],
     "bewegung": {
-      "uebergaenge": 21,
+      "uebergaenge": 18,
       "laengster_uebergang_s": 0.35,
       "animationen": 0,
       "endlos": 0
     },
-    "seitenhoehe": 3890,
+    "seitenhoehe": 3679,
     "ueberlauf": 0,
     "bewegung_bei_reduziert": {
       "uebergaenge": 0,
@@ -211,14 +211,14 @@
       "endlos": 0
     },
     "helle_schrift": {
-      "anzahl": 83,
-      "kleinster_kontrast": 5.36,
+      "anzahl": 80,
+      "kleinster_kontrast": 4.82,
       "unter_4_5": []
     },
     "farbanteil_ohne_bilder": {
-      "bunt": 0.0006,
-      "rot": 0.0006,
-      "dunkel": 0.0576
+      "bunt": 0,
+      "rot": 0,
+      "dunkel": 0.0544
     },
     "seitenfehler": []
   }
