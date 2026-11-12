@@ -306,7 +306,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .termine { border-top: 0; }
 .termin__datum { display: flex; flex-direction: column; line-height: 1.15; }
-.termin__tag { font-size: 28px; font-weight: 700; }
+.termin__tag { font-size: 24px; font-weight: 700; }
 .termin__monat { font-size: 15px; font-weight: 600; }
 .termin__wochentag { font-size: 13px; color: var(--hell-leise); margin-top: 2px; }
 .termin__titel { font-size: 19px; line-height: 1.25; font-weight: 650; }

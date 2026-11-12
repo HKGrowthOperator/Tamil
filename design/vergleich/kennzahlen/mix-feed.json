@@ -1,13 +1,13 @@
 {
   "slug": "mix-feed",
-  "stand": "2026-11-12T15:25",
+  "stand": "2026-11-12T15:28",
   "groesster_massstab": 1.03,
   "handy": {
     "kopfleiste_hoehe": 149,
-    "erste_schlagzeile_ab": 523,
+    "erste_schlagzeile_ab": 534,
     "schlagzeilen_ganz_sichtbar": 2,
     "schlagzeilen_seite": 18,
-    "max_zeilen_schlagzeile": 6,
+    "max_zeilen_schlagzeile": 4,
     "groesste_schrift": {
       "px": 30,
       "text": "Deepavali 2026: Lichterfest in Berlin, B"
@@ -24,12 +24,12 @@
       },
       {
         "px": 28,
-        "anzahl": 4,
-        "text": "11"
+        "anzahl": 2,
+        "text": "15."
       },
       {
         "px": 24,
-        "anzahl": 1,
+        "anzahl": 3,
         "text": "Diese Woche"
       },
       {
@@ -66,94 +66,16 @@
     "anreisser_mit_grafik": [],
     "dunkle_flaechen": [
       {
-        "element": "a.sprung",
-        "breite": 120,
-        "hoehe": 47,
-        "oben": -60
-      },
-      {
         "element": "nav.band",
         "breite": 390,
         "hoehe": 48,
         "oben": 101
       },
       {
-        "element": "div.karte__flaeche",
-        "breite": 390,
-        "hoehe": 508,
-        "oben": 149
-      },
-      {
-        "element": "div.karte__flaeche",
-        "breite": 390,
-        "hoehe": 488,
-        "oben": 1291
-      },
-      {
         "element": "section#diese-woche.woche",
         "breite": 390,
-        "hoehe": 1143,
-        "oben": 1841
-      },
-      {
-        "element": "div.karte__flaeche",
-        "breite": 390,
-        "hoehe": 488,
-        "oben": 3095
-      },
-      {
-        "element": "div.karte__flaeche",
-        "breite": 258,
-        "hoehe": 322,
-        "oben": 3625
-      },
-      {
-        "element": "div.karte__flaeche",
-        "breite": 258,
-        "hoehe": 322,
-        "oben": 3625
-      },
-      {
-        "element": "div.karte__flaeche",
-        "breite": 258,
-        "hoehe": 322,
-        "oben": 3625
-      },
-      {
-        "element": "div.karte__flaeche",
-        "breite": 258,
-        "hoehe": 322,
-        "oben": 3625
-      },
-      {
-        "element": "div.karte__flaeche",
-        "breite": 258,
-        "hoehe": 322,
-        "oben": 4085
-      },
-      {
-        "element": "div.karte__flaeche",
-        "breite": 258,
-        "hoehe": 322,
-        "oben": 4085
-      },
-      {
-        "element": "div.karte__flaeche",
-        "breite": 258,
-        "hoehe": 322,
-        "oben": 4085
-      },
-      {
-        "element": "div.karte__flaeche",
-        "breite": 258,
-        "hoehe": 322,
-        "oben": 4085
-      },
-      {
-        "element": "div.karte__flaeche",
-        "breite": 390,
-        "hoehe": 488,
-        "oben": 4545
+        "hoehe": 1148,
+        "oben": 1818
       }
     ],
     "fest_stehend": [
@@ -169,7 +91,7 @@
       "animationen": 0,
       "endlos": 0
     },
-    "seitenhoehe": 7016,
+    "seitenhoehe": 7051,
     "ueberlauf": 0,
     "bewegung_bei_reduziert": {
       "uebergaenge": 0,
@@ -178,23 +100,23 @@
       "endlos": 0
     },
     "helle_schrift": {
-      "anzahl": 53,
-      "kleinster_kontrast": 5.69,
+      "anzahl": 52,
+      "kleinster_kontrast": 5.11,
       "unter_4_5": []
     },
     "farbanteil_ohne_bilder": {
       "bunt": 0.0008,
       "rot": 0.0008,
-      "dunkel": 0.6354
+      "dunkel": 0.0617
     },
     "seitenfehler": []
   },
   "desktop": {
     "kopfleiste_hoehe": 167,
-    "erste_schlagzeile_ab": 335,
+    "erste_schlagzeile_ab": 346,
     "schlagzeilen_ganz_sichtbar": 4,
     "schlagzeilen_seite": 18,
-    "max_zeilen_schlagzeile": 5,
+    "max_zeilen_schlagzeile": 4,
     "groesste_schrift": {
       "px": 40,
       "text": "Deepavali 2026: Lichterfest in Berlin, B"
@@ -211,8 +133,8 @@
       },
       {
         "px": 28,
-        "anzahl": 4,
-        "text": "11"
+        "anzahl": 2,
+        "text": "15."
       },
       {
         "px": 26,
@@ -221,8 +143,8 @@
       },
       {
         "px": 24,
-        "anzahl": 2,
-        "text": "Steinmeier beim Tempelfest in Hamm-Uentr"
+        "anzahl": 4,
+        "text": "11"
       },
       {
         "px": 22,
@@ -255,94 +177,16 @@
     "anreisser_mit_grafik": [],
     "dunkle_flaechen": [
       {
-        "element": "a.sprung",
-        "breite": 120,
-        "hoehe": 47,
-        "oben": -60
-      },
-      {
         "element": "nav.band",
         "breite": 1280,
         "hoehe": 48,
         "oben": 119
       },
       {
-        "element": "div.karte__flaeche",
-        "breite": 803,
-        "hoehe": 535,
-        "oben": 191
-      },
-      {
-        "element": "div.karte__flaeche",
-        "breite": 389,
-        "hoehe": 243,
-        "oben": 191
-      },
-      {
         "element": "section#diese-woche.woche",
         "breite": 1280,
         "hoehe": 881,
         "oben": 956
-      },
-      {
-        "element": "div.karte__flaeche",
-        "breite": 493,
-        "hoehe": 499,
-        "oben": 1964
-      },
-      {
-        "element": "div.karte__flaeche",
-        "breite": 340,
-        "hoehe": 226,
-        "oben": 1964
-      },
-      {
-        "element": "div.karte__flaeche",
-        "breite": 340,
-        "hoehe": 226,
-        "oben": 1964
-      },
-      {
-        "element": "div.karte__flaeche",
-        "breite": 340,
-        "hoehe": 226,
-        "oben": 2237
-      },
-      {
-        "element": "div.karte__flaeche",
-        "breite": 340,
-        "hoehe": 226,
-        "oben": 2237
-      },
-      {
-        "element": "div.karte__flaeche",
-        "breite": 393,
-        "hoehe": 380,
-        "oben": 2595
-      },
-      {
-        "element": "div.karte__flaeche",
-        "breite": 277,
-        "hoehe": 380,
-        "oben": 2595
-      },
-      {
-        "element": "div.karte__flaeche",
-        "breite": 277,
-        "hoehe": 380,
-        "oben": 2595
-      },
-      {
-        "element": "div.karte__flaeche",
-        "breite": 208,
-        "hoehe": 380,
-        "oben": 2595
-      },
-      {
-        "element": "div.karte__flaeche",
-        "breite": 398,
-        "hoehe": 497,
-        "oben": 3122
       }
     ],
     "fest_stehend": [
@@ -374,7 +218,7 @@
     "farbanteil_ohne_bilder": {
       "bunt": 0.0006,
       "rot": 0.0006,
-      "dunkel": 0.5414
+      "dunkel": 0.0576
     },
     "seitenfehler": []
   }

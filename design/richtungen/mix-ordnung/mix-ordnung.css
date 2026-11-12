@@ -297,7 +297,7 @@ a:focus-visible, input:focus-visible, textarea:focus-visible, button:focus-visib
 .aufmacher .rahmen img { object-position: 50% 30%; }
 .aufmacher .imbild { padding-top: 48px; }
 .aufmacher .nachweis { margin-top: 6px; }
-.aufmacher--rubrik .titel { font-size: 26px; letter-spacing: -0.015em; text-wrap: wrap; }
+.aufmacher.aufmacher--rubrik .titel { font-size: 26px; letter-spacing: -0.015em; text-wrap: wrap; }
 .aufmacher .titel {
   font-size: 30px;
   line-height: 1.12;
@@ -611,7 +611,7 @@ a:focus-visible, input:focus-visible, textarea:focus-visible, button:focus-visib
   .aufmacher .rahmen { margin-inline: 0; }
   .aufmacher .titel { font-size: 34px; line-height: 1.1; }
   .aufmacher .imbild { padding: 64px 28px 20px; }
-  .aufmacher--rubrik .titel { font-size: 34px; }
+  .aufmacher.aufmacher--rubrik .titel { font-size: 34px; }
   .meldungen ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 24px; }
   .meldungen .zeile { border-top: 1px solid var(--linie); }
   .meldungen .zeile:nth-child(-n+2) { border-top: 0; }
