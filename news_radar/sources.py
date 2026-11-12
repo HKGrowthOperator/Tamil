@@ -538,14 +538,29 @@ def fetch_jsonld_events(source: Source, settings: Settings, now: datetime | None
     now = now or datetime.now(timezone.utc)
     p = source.params
     muster = str(p.get("link_muster", "/events/"))
-    frist = time.monotonic() + float(p.get("frist_sekunden", 45))
+    # fetch_all verwirft eine Quelle, die nach fetch_seconds noch läuft: eigene Frist mindestens 15 s früher (ein
+    # hängender Einzelabruf darf bis TIMEOUT = 12 s dauern), höchstens frist_sekunden (45), mindestens 5 s
+    sekunden = max(5.0, min(float(p.get("frist_sekunden", 45)), settings.fetch_seconds - 15))
+    frist = time.monotonic() + sekunden
+    host = urlsplit(source.url).netloc
+
+    def eigene_seite(resp: net.Fetched) -> bool:
+        """Nach Weiterleitungen noch https auf dem Host der Quelle?"""
+        ziel = urlsplit(resp.url)
+        return ziel.scheme == "https" and ziel.netloc == host
+
     listen, fehler = [], []
     for pfad in p.get("listen") or [""]:
         adresse = urljoin(source.url.rstrip("/") + "/", str(pfad).lstrip("/"))
         try:
-            listen.append(termin_links(_get(adresse, frist=frist).text, adresse, muster))
+            resp = _get(adresse, frist=frist)
         except (requests.RequestException, ValueError) as exc:  # HTTP-Fehler, Zeitlimit, gesperrte Adresse
             fehler.append(f"Liste {pfad}: {exc}")
+            continue
+        if not eigene_seite(resp):
+            fehler.append(f"Liste {pfad}: Weiterleitung auf {resp.url}")
+            continue
+        listen.append(termin_links(resp.text, adresse, muster))
     if not listen:
         raise RuntimeError("; ".join(fehler) or "keine Liste")
     kandidaten: list[str] = []
@@ -562,7 +577,10 @@ def fetch_jsonld_events(source: Source, settings: Settings, now: datetime | None
     items, seiten_fehler = [], 0
     for url in kandidaten[:max_abrufe]:
         try:
-            item = jsonld_termin(_get(url, frist=frist).text, url, source, settings, now=now)
+            resp = _get(url, frist=frist)
+        except RateLimited:
+            fehler.append("429")  # nicht weiter anfragen; die schon gelesenen Termine gelten
+            break
         except net.Zeitlimit:
             fehler.append("Zeitlimit")
             break
@@ -570,6 +588,10 @@ def fetch_jsonld_events(source: Source, settings: Settings, now: datetime | None
             seiten_fehler += 1
             log.debug("%s: %s", source.name, exc)
             continue
+        if not eigene_seite(resp):
+            log.info("%s: %s leitet auf %s weiter – übersprungen", source.name, url, resp.url)
+            continue
+        item = jsonld_termin(resp.text, url, source, settings, now=now)
         if item is not None:
             items.append(item)
     items.sort(key=lambda i: (i.facts["event_datum"], i.title))

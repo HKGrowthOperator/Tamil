@@ -298,3 +298,73 @@ def test_gedenk_sperre_prueft_den_vollen_text(settings, ersetzen):
     assert alt in text
     item = sources.jsonld_termin(text.replace(alt, neu, 1), ZUERICH_URL, _quelle(settings), settings, now=STAND)
     assert item is None
+
+
+DUESSELDORF_URL = "https://vizha.app/events/dusseldorf-tamil-sangam-deepavali-2026"
+PECHU_URL = "https://vizha.app/events/pechu-potti-2026-zurich-2026"
+
+
+class Sonderantwort(Antwort):
+    def __init__(self, status: int, location: str = ""):
+        super().__init__(None)
+        self.status_code = status
+        if location:
+            self.headers = {**self.headers, "Location": location}
+
+
+def _netz(monkeypatch, sonder: dict):
+    aufrufe = []
+
+    def get(url, **kw):
+        aufrufe.append(url)
+        if url in sonder:
+            return sonder[url]
+        return Antwort(SEITEN.get(url))
+
+    monkeypatch.setattr(sources.requests, "get", get)
+    return aufrufe
+
+
+def test_429_bei_einer_terminseite_bricht_ab_und_behaelt_die_gelesenen(settings, monkeypatch):
+    aufrufe = _netz(monkeypatch, {PECHU_URL: Sonderantwort(429)})
+    with pytest.raises(sources.Teilausfall) as teil:
+        sources.FETCHERS["jsonld_events"](_quelle(settings), settings, now=STAND)
+    assert [i.title for i in teil.value.items] == ["Düsseldorf Tamil Sangam Deepavali 2026"]
+    assert "429" in str(teil.value)
+    assert aufrufe[2:] == [DUESSELDORF_URL, PECHU_URL]  # danach nichts mehr
+
+
+def test_weiterleitung_auf_fremden_host_wird_uebersprungen(settings, monkeypatch):
+    fremd = "https://fremd.example/events/dusseldorf"
+    _netz(monkeypatch, {DUESSELDORF_URL: Sonderantwort(301, fremd),
+                        fremd: Antwort("vizha_event_duesseldorf_deepavali.html")})
+    with pytest.raises(sources.Teilausfall) as teil:  # Pechu Potti: 404
+        sources.FETCHERS["jsonld_events"](_quelle(settings, max_abrufe=2), settings, now=STAND)
+    assert teil.value.items == []
+
+
+def test_weiterleitung_auf_http_wird_uebersprungen(settings, monkeypatch):
+    unsicher = "http://vizha.app/events/dusseldorf-tamil-sangam-deepavali-2026"
+    _netz(monkeypatch, {DUESSELDORF_URL: Sonderantwort(301, unsicher),
+                        unsicher: Antwort("vizha_event_duesseldorf_deepavali.html")})
+    with pytest.raises(sources.Teilausfall) as teil:
+        sources.FETCHERS["jsonld_events"](_quelle(settings, max_abrufe=2), settings, now=STAND)
+    assert teil.value.items == []
+
+
+@pytest.mark.parametrize("budget, frist", [(60, 45), (40, 25), (10, 5)])
+def test_eigene_frist_bleibt_unter_dem_sammelbudget(settings, monkeypatch, budget, frist):
+    """`fetch_all` verwirft eine Quelle, die nach `fetch_seconds` noch läuft: Die Frist des Kalenders endet mindestens
+    15 s vorher (ein hängender Einzelabruf darf bis TIMEOUT = 12 s dauern), höchstens nach 45 s, mindestens 5 s."""
+    fristen = []
+
+    def get(url, **kw):
+        fristen.append(kw.get("frist"))
+        raise sources.net.HTTPError(404, url)
+
+    monkeypatch.setattr(sources, "_get", get)
+    monkeypatch.setattr(sources.time, "monotonic", lambda: 1000.0)
+    settings.fetch_seconds = budget
+    with pytest.raises(RuntimeError):
+        sources.FETCHERS["jsonld_events"](_quelle(settings), settings, now=STAND)
+    assert fristen and all(f == 1000.0 + frist for f in fristen)
