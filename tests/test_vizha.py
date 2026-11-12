@@ -260,3 +260,23 @@ def test_kontakte_werden_entfernt(roh, rein):
 ])
 def test_kontaktfilter_laesst_daten_zeiten_preise_und_plz(text):
     assert sources.ohne_kontakte(text) == text
+
+
+# ---- Befunde der unabhängigen Prüfung von 3a50746 ------------------------------------------------------------------
+
+ZUERICH_URL = "https://vizha.app/events/zurich-tamil-sangam-deepavali-celebration-2026"
+
+
+def _zuerich() -> str:
+    return (FIX / "vizha_event_zurich_deepavali.html").read_text(encoding="utf-8")
+
+
+@pytest.mark.parametrize("status", ["EventCancelled", "EventPostponed", "EventMovedOnline"])
+def test_abgesagt_verschoben_oder_online_ist_kein_termin(settings, status):
+    text = _zuerich().replace("https://schema.org/EventScheduled", f"https://schema.org/{status}")
+    assert sources.jsonld_termin(text, ZUERICH_URL, _quelle(settings), settings, now=STAND) is None
+
+
+def test_neu_angesetzt_bleibt_termin(settings):
+    text = _zuerich().replace("https://schema.org/EventScheduled", "https://schema.org/EventRescheduled")
+    assert sources.jsonld_termin(text, ZUERICH_URL, _quelle(settings), settings, now=STAND) is not None

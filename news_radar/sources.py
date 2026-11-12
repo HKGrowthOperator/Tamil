@@ -467,9 +467,12 @@ def _ld_text(wert) -> str:
     return clean_text(str(wert or ""))
 
 
+_ABGESAGT = ("EventCancelled", "EventPostponed", "EventMovedOnline")
+
+
 def jsonld_termin(text: str, url: str, source: Source, settings: Settings, now: datetime | None = None):
-    """Ein Termin aus dem JSON-LD (Typ Event) einer Terminseite oder None: kein Event, kein Datum, vorbei, Land nicht
-    in `params.laender` (Vorgabe DE/AT/CH) oder Gedenktermin aus [blocklist] termine (nie automatisch zur Story)."""
+    """Ein Termin aus dem JSON-LD (Typ Event) einer Terminseite oder None: kein Event, abgesagt/verschoben/nur online,
+    kein Datum, vorbei, Land nicht in `params.laender` (Vorgabe DE/AT/CH) oder Gedenktermin aus [blocklist] termine (nie automatisch zur Story)."""
     from .dates import TZ
     from .filtering import gedenktermin  # zirkulären Import vermeiden
 
@@ -478,6 +481,8 @@ def jsonld_termin(text: str, url: str, source: Source, settings: Settings, now: 
     laender = {str(x).upper() for x in source.params.get("laender", ["DE", "AT", "CH"])}
     ev = next((d for d in _jsonld(text) if any(t.endswith("Event") or t == "Festival" for t in _typen(d))), None)
     if ev is None:
+        return None
+    if any(s in str(ev.get("eventStatus") or "") for s in _ABGESAGT):  # abgesagt, verschoben, nur online
         return None
     title = _ld_text(ev.get("name"))
     start, ganztags = _ld_zeit(ev.get("startDate"))
