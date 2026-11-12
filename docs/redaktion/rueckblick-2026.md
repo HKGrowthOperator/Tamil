@@ -1,6 +1,6 @@
 # Rückblick 2026: Stand der Beiträge
 
-Stand: 2026-11-12, 16:27 Uhr (UTC), gelesen aus dem Live-Radar (`/api/bericht`). Auftrag und Regeln: `docs/entscheidungen.md` (11.11.2026). Arbeitsstand, kein Abnahmeprotokoll: Die Texte sind geschrieben und vom Radar gegen die Belege geprüft (Gate), **freigegeben und veröffentlicht ist davon noch nichts**. Freigabe im Cockpit unter dem Filter „Rückblick“; Freigeben veröffentlicht sofort.
+Stand: 2026-11-12, 17:36 Uhr (UTC), gelesen aus dem Live-Radar (`/api/bericht`). Auftrag und Regeln: `docs/entscheidungen.md` (11.11.2026). Arbeitsstand, kein Abnahmeprotokoll: Die Texte sind geschrieben und vom Radar gegen die Belege geprüft (Gate), **freigegeben und veröffentlicht ist davon noch nichts**. Freigabe im Cockpit unter dem Filter „Rückblick“; Freigeben veröffentlicht sofort.
 
 ## Zahlen
 
@@ -21,7 +21,7 @@ Wörter ohne Quellenzeile. „Vor der Freigabe“ stammt aus den Berichten der R
 | Ereignis | Story | Entwurf | Titel | Wörter | Bild | Vor der Freigabe |
 |---|---|---|---|---|---|---|
 | 2026-11-08 | 30 | 7 | Deepavali 2026: Lichterfest in Berlin, Bayern und Düsseldorf | 485 | Commons | Berlin ohne Datum (nicht belegt); Düsseldorf am 15.11. als Einladung formuliert; gleiches Tempelbild wie Story 49 |
-| 2026-11-07 | 108 | 68 | Deepavali 2026: Tamilische Vereine luden in fünf Städten zum Lichterfest | 448 | Commons |  |
+| 2026-11-07 | 108 | 68 | Deepavali 2026: Tamilische Vereine luden in fünf Städten zum Lichterfest | 448 | Commons | Ankündigungen: „Der German Tamil Sangam feierte …“ vor der Freigabe in „lud … ein“ ändern (Durchführung nicht belegt); München Tamil Sangam ohne Datum und Ort |
 | 2026-10-25 | 32 | 8 | Karate in der Schweiz: Zweimal Bronze in Sursee, Shihan-Titel in Zürich | 400 | Commons | Schreibweisen aus dem Tamil prüfen („Yathusalini Sripalan“, „Shwapthesh“); „erstmals an einen Nicht-Japaner“ nur laut Vanakkam London |
 | 2026-10-24 | 102 | 63 | Erstmals in Deutschland angekündigt: Yuvan Shankar Raja in der Grugahalle Essen | 104 | Commons | Ankündigung; ob das Konzert stattfand, nicht belegt; Veranstalter, Uhrzeit und Preis weggelassen |
 | 2026-10-23 | 107 | 67 | Tamilische Küche zum Kennenlernen: Benefiz-Länderabend in Luzern, Kulturtag in Basel | 93 | Commons | Kochkurs Grenchen ohne Dokument, weggelassen; Uhrzeiten weggelassen |
@@ -30,7 +30,7 @@ Wörter ohne Quellenzeile. „Vor der Freigabe“ stammt aus den Berichten der R
 | 2026-09-26 | 104 | 64 | „Tamil Founders 2026“ in Wuppertal: Keynotes, Panels und Networking | 93 | Commons | Angesetzter Termin; Sprecher und Firmen aus den Hinweisen nicht belegt und weggelassen |
 | 2026-09-20 | 105 | 65 | Sportherbst in der Schweiz: Leichtathletik in Basel, Hallenfussball in Rafz und Buttikon | 136 | Commons | Ankündigungen ohne Ergebnisse; Uhrzeiten weggelassen (nur UTC-Zeitstempel) |
 | 2026-09-18 | 37 | 12 | Bremen: Vater und Sohn eröffneten das Ceylon Palace mit Küche aus Sri Lanka | 381 | Commons | Sensibel: zweite Person lesen; Symbolbild Kottu |
-| 2026-09-12 | 106 | 66 | Bharatanatyam: Tanztheater „RAKTI“ in Köln, Jubiläumsabend mit Live-Orchester in Spiez | 195 | Commons | Kürzer als die Längenstufe (alle 15 Aussagen verwendet); Mitwirkende nicht als Tamilen bezeichnet |
+| 2026-09-12 | 106 | 66 | Bharatanatyam: Tanztheater „RAKTI“ in Köln, Jubiläumsabend mit Live-Orchester in Spiez | 195 | Commons | Kürzer als die Längenstufe (alle 15 Aussagen verwendet); Mitwirkende nicht als Tamilen bezeichnet; Leerzeichen vor dem Punkt nach „13 Euro“ entfernen |
 | 2026-09-10 | 84 | 50 | „Sardar 2“ mit Karthi: Deutscher Kinostart war für den 10. September geführt | 90 | Commons | Nur der Startplan der SPIO: ob und wo der Film lief, ist nicht belegt; Nachweis enthält eine Adresse (so von Commons) |
 | 2026-09-07 | 38 | 13 | Emsdetten: Tamilischer Kultur- und Sportverein stellt sich im Integrationsbeirat vor | 282 | Commons |  |
 | 2026-09-02 | 39 | 14 | Zürich: Kündigung trifft Restaurant Maneez und tamilische Läden im Kreis 5 | 529 | Commons | Heikel (Flucht, Kündigung): zweite Person lesen; offen, ob das Lokal inzwischen geschlossen hat; Symbolbild Kottu (anderes Foto als 37) |
