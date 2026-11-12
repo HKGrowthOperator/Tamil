@@ -133,3 +133,16 @@ def test_leere_aber_gueltige_reihenseite_ist_kein_fehler(monkeypatch, settings):
     _seite(monkeypatch, b"<html><body><main>Neue Seite</main></body></html>")
     with pytest.raises(ValueError, match="Selektor"):
         kp.fetch_html_kino(quelle, settings, now=STAND)
+
+
+def test_babylon_behaelter_mit_inhalt_aber_ohne_eintraege_ist_umgebaut(monkeypatch, settings):
+    """Der Eintrags-Selektor passt nicht mehr, der Behälter enthält aber Links und Text → Seite umgebaut."""
+    seite = (FIX / "babylon_indogerman.html").read_bytes().replace(b"items-leading", b"artikel-liste")
+    _seite(monkeypatch, seite)
+    with pytest.raises(ValueError, match="Selektor"):
+        kp.fetch_html_kino(_quelle(settings, BABYLON), settings, now=STAND)
+
+
+def test_babylon_leerer_behaelter_ist_keine_vorstellung(monkeypatch, settings):
+    _seite(monkeypatch, b'<html><body><div class="blog"><div class="category-desc clearfix"></div></div></body></html>')
+    assert kp.fetch_html_kino(_quelle(settings, BABYLON), settings, now=STAND) == []
