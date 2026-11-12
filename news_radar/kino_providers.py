@@ -245,6 +245,8 @@ def fetch_html_kino(source: Source, settings: Settings, http=None, now: datetime
     sel, now = source.selectors, now or datetime.now(TZ)
     shows = []
     knoten = soup.select(sel.get("item", "article"))
+    if not knoten and sel.get("behaelter") and soup.select_one(sel["behaelter"]):
+        return []  # Behälter da, aber leer: die Reihe hat gerade keine Vorstellungen
     if not knoten:  # Seite umgebaut: Fehler statt [] – sonst fielen alle Spielorte der Quelle still weg
         raise ValueError(f"Selektor {sel.get('item', 'article')!r} findet keinen Eintrag auf {source.url}")
     for node in knoten:

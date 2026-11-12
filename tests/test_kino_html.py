@@ -122,3 +122,14 @@ def test_sprachmarke_in_klammern_entscheidet(sprache):
 
 def test_tamilische_klammermarke_neben_anderen_klammern():
     assert kp.ist_tamil_fassung("IndoGerman Film: OM", "(OmeU) [Tamil], Telugu-Fassung folgt")
+
+
+def test_leere_aber_gueltige_reihenseite_ist_kein_fehler(monkeypatch, settings):
+    """Behälter da, aber leer (Reihe pausiert) → []; fehlt auch der Behälter, ist die Seite umgebaut."""
+    quelle = _quelle(settings, "Filmkunstkinos Düsseldorf · Kino aus Indien")
+    assert quelle.selectors.get("behaelter")
+    _seite(monkeypatch, b'<html><body><div id="event-container"><div class="col-group"></div></div></body></html>')
+    assert kp.fetch_html_kino(quelle, settings, now=STAND) == []
+    _seite(monkeypatch, b"<html><body><main>Neue Seite</main></body></html>")
+    with pytest.raises(ValueError, match="Selektor"):
+        kp.fetch_html_kino(quelle, settings, now=STAND)

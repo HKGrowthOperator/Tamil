@@ -504,7 +504,7 @@ country = "DE"
 max_items = 1
 interval_minutes = 720
 params = { kino = "Filmkunstkinos Düsseldorf", stadt = "Düsseldorf" }
-selectors = { item = "#event-container article", title = ".event-small--title", link = "a::attr(href)", date = ".event-small--date", sprache = ".event-small--title span::attr(title)" }
+selectors = { item = "#event-container article", title = ".event-small--title", link = "a::attr(href)", date = ".event-small--date", sprache = ".event-small--title span::attr(title)", behaelter = "#event-container" }
 
 [[source]]
 name = "dein-dein · Tamil Films in Germany"
@@ -560,7 +560,7 @@ country = "DE"
 max_items = 1
 interval_minutes = 360
 params = { kino = "Babylon", stadt = "Berlin" }
-selectors = { item = ".blog .items-leading > div, .blog .items-row .item", title = "h2", link = "h2 a::attr(href)", date = ".first_showtime", sprache = "p:not(.readmore)" }
+selectors = { item = ".blog .items-leading > div, .blog .items-row .item", title = "h2", link = "h2 a::attr(href)", date = ".first_showtime", sprache = "p:not(.readmore)", behaelter = ".blog" }
 
 # Medien und Behörden: nur mit tamilischem Bezug
 [[source]]
