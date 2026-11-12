@@ -102,16 +102,44 @@ def hat_bezug(item: NewsItem, settings: Settings) -> bool:
     return any(_contains(text, term, suffix=2) for term in settings.bezug)
 
 
+_DEUTSCH_RE = re.compile(
+    r"\b(?:und|oder|das|dem|nach|mit|für|vom|zum|zur|bei|über|gegen|sich|ist|sind|wird|werden|nicht|auch|ein|eine|"
+    r"einer|einen|wie|auf|im|tamilisch\w*|tamilen|tamilin\w*)\b|[äöüß]", re.I)
+
+
+def deutschsprachig(text: str) -> bool:
+    """Deutscher Text? Ein Funktionswort, das es im Englischen nicht gibt („nach“, „mit“, „wie“; bewusst nicht „die“,
+    „in“, „an“, „von“, „aus“), ein deutsches Wort für Tamilen/tamilisch oder ein Umlaut. Englische und tamilische
+    Meldungen treffen das nicht."""
+    return _DEUTSCH_RE.search(text) is not None
+
+
+def dach_hinweis(text: str, regions: Regions) -> bool:
+    """Nennt der Text DACH als Adjektiv oder Variante ([regions] dach_hinweise: German, Austrian, Schweizer, ஜேர்மனி)?
+    Nur für die Ausland-Regel; das Ranking zählt weiter nur [regions.laender] und Städte."""
+    for t in regions.dach_hinweise:
+        if _TAMIL_SCRIPT.search(t):
+            if _contains(text, t):
+                return True
+        elif re.search(rf"(?<![\w]){re.escape(t)}", text, re.I):  # Wortanfang: deutsch → deutsche, Deutschland
+            return True
+    return False
+
+
 def ohne_dach_grund(item: NewsItem, settings: Settings, source: Source | None) -> str:
     """Warum eine Nachricht ohne DACH-Bezug keine Story wird: „fremdes_kino“, „ausland“ oder „“ (bleibt).
 
     Gilt nur für Nachrichten (kind = news) mit `dach_score` 0 aus Quellen ohne Land (Google News, Tamil Guardian,
-    The Hindu, Lankasri). Fremdes Kino: mehr Begriffe aus [bezug] fremdkino als aus [bezug] terms (Tollywood-Bilanz,
-    die Kollywood nur nennt). Ausland: ein Ort aus [regions] ausland oder eine Region aus [regions] herkunft (Sri Lanka,
-    Tamil Nadu) – außer bei Kino und Entertainment, die als Kollywood-Meldungen gewollt sind (Fund 12.11.)."""
+    The Hindu, Lankasri). Ein DACH-Hinweis (German, Schweizer, ஜேர்மனி) oder deutscher Text (deutschsprachige Presse
+    ist DACH-Presse) zählt als DACH-Bezug (Prüfung 12.11.). Fremdes Kino: mehr Begriffe aus [bezug] fremdkino als aus
+    [bezug] terms (Tollywood-Bilanz, die Kollywood nur nennt). Ausland: ein Ort aus [regions] ausland oder eine Region
+    aus [regions] herkunft (Sri Lanka, Tamil Nadu) – außer bei Kino und Entertainment, die als Kollywood-Meldungen
+    gewollt sind (Fund 12.11.)."""
     if item.kind != "news" or item.dach_score > 0 or (source and source.country):
         return ""
     text = f"{item.title} {item.summary}"
+    if dach_hinweis(text, settings.regions) or deutschsprachig(text):
+        return ""
     fremd = sum(1 for t in settings.fremdkino if _contains(text, t, suffix=2))
     if fremd and fremd > sum(1 for t in settings.bezug if _contains(text, t, suffix=2)):
         return "fremdes_kino"

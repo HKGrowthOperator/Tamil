@@ -32,5 +32,26 @@
     {"title": "Schweiz: Abschiebungen nach Sri Lanka",
      "summary": "Tamilische Asylsuchende fürchten Rückführung nach Sri Lanka  SRF",
      "source": "Google News DACH · SRF"}
+  ],
+  "_hinweis_pruefung": "Unabhängige Prüfung 12.11.2026, mit echter sources.toml nachgestellt (Titel und Anrisse ausgedacht, im Muster der Feeds): diaspora = Diaspora-Meldungen ohne DACH-Ort aus [regions], die vor d0f436f durchkamen und bleiben müssen (P1); kollywood_ohne_hinweis = Kollywood-Quelle bzw. Star ohne Kino-Hinweiswort (P3a); fremdes_kino_verlag = fremdes Kino, dessen einziger Bezug der Verlagsname ist (P3b); grauzone_raus = Ausland-Meldungen mit Score 2-3, die nicht über die Grauzone an Haiku gehen dürfen (P2).",
+  "diaspora": [
+    {"title": "German court halts deportation of Tamil to Sri Lanka",
+     "summary": "A German administrative court halted the deportation of a Tamil man to Sri Lanka",
+     "source": "Tamil Guardian"},
+    {"title": "Austrian authorities deport Tamil to Sri Lanka",
+     "summary": "Austrian police deported a Tamil asylum seeker",
+     "source": "Google News DACH"},
+    {"title": "Schweizer Gericht stoppt Ausschaffung nach Sri Lanka",
+     "summary": "Schweizer Gericht stoppt Ausschaffung eines Tamilen nach Sri Lanka  SRF",
+     "source": "Google News DACH · SRF"},
+    {"title": "Tamilen fürchten Ausschaffung nach Sri Lanka",
+     "summary": "Tamilen fürchten Ausschaffung nach Sri Lanka  Tages-Anzeiger",
+     "source": "Google News DACH · Tages-Anzeiger"},
+    {"title": "Diwali: Tamilische Hindus feiern wie in Indien",
+     "summary": "Tamilische Hindus feiern Diwali wie in Indien  SRF",
+     "source": "Google News DACH · SRF"},
+    {"title": "ஜேர்மனியில் இலங்கை தமிழர் கைது",
+     "summary": "ஜேர்மனியில் வசிக்கும் இலங்கை தமிழர் ஒருவர்",
+     "source": "Lankasri"}
   ]
 }

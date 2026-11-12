@@ -280,3 +280,28 @@ def test_quelle_mit_punkt_im_namen_und_verlag_wird_gefunden(settings):
     assert filtering.quelle_fuer(item("x", source="Google News ENX · Kollywood"), settings) is None
     picked = filtering.select(kollywood, settings, set(), [], now=NOW)
     assert len(picked) == 2
+
+
+# ---- Prüfung 12.11.2026: Nachbesserung der Ausland-Regel (P1–P3) ----
+
+def _einzeln(items, settings):
+    """Jede Meldung für sich durch select (max_items je Quelle und Dubletten spielen hier keine Rolle)."""
+    zaehler = Counter()
+    picked = [p for i in items for p in filtering.select([i], settings, set(), [], now=NOW, zaehler=zaehler)]
+    return picked, zaehler
+
+
+def test_fund_1211_diaspora_ohne_dach_ort_bleibt(settings):
+    """P1: Adjektive und Varianten (German, Austrian, Schweizer), tamilische Schreibweisen (ஜேர்மனி) und deutschsprachige
+    Treffer aus Google News DACH sind für die Ausland-Regel ein DACH-Hinweis – ohne [regions] laender zu ändern."""
+    diaspora = _fund_items("diaspora")
+    picked, zaehler = _einzeln(diaspora, settings)
+    assert [p.title for p in picked] == [i.title for i in diaspora]
+    assert zaehler["ausland"] == 0
+    assert all(p.dach_score == 0 for p in picked)  # Ranking unverändert: nur die Ausland-Regel kennt die Hinweise
+
+
+def test_fund_1211_ausland_bleibt_draussen_trotz_hinweisen(settings):
+    """Gegenprobe zu P1: Die bisherigen Ausland-Fälle (englisch, ohne DACH-Hinweis) fallen weiter heraus."""
+    picked, zaehler = _einzeln(_fund_items("raus"), settings)
+    assert picked == [] and zaehler["ausland"] == 2 and zaehler["fremdes_kino"] == 1

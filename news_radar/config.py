@@ -60,6 +60,7 @@ class Regions:
     exakt: set[str] = field(default_factory=set)  # nur mit Großbuchstabe matchen (Essen, Hamm, Bern)
     ausland: list[str] = field(default_factory=list)  # Orte außerhalb von DACH (gegen das Land der Quelle)
     herkunft: list[str] = field(default_factory=list)  # Länder/Regionen (Sri Lanka, Tamil Nadu): nur für Nachrichten
+    dach_hinweise: list[str] = field(default_factory=list)  # German, Schweizer, ஜேர்மனி …: nur gegen die Ausland-Regel
 
 
 # Bildquellen: fest gesperrt, auch wenn jemand sie ins Register schreibt (Host selbst oder eine Subdomain davon)
@@ -263,6 +264,7 @@ def load_settings(sources_file: Path = ROOT / "sources.toml") -> Settings:
         exakt=set(reg.get("exakt", [])),
         ausland=list(reg.get("ausland", [])),
         herkunft=list(reg.get("herkunft", [])),
+        dach_hinweise=list(reg.get("dach_hinweise", [])),
     )
     categories = [
         Category(slug=slug, label=c["label"], hints=[h.lower() for h in c.get("hints", [])])
