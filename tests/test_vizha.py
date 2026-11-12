@@ -445,3 +445,26 @@ def test_varianten_der_gedenk_namen(settings, titel):
     item = sources.NewsItem(title=titel, url="https://x.example/1", summary="", source="Test", published=STAND,
                             kind="event")
     assert filtering.gedenktermin(item, settings)
+
+
+# ---- endDate ohne Uhrzeit ------------------------------------------------------------------------------------------
+
+def test_enddatum_ohne_uhrzeit_schliesst_den_tag_ein(settings):
+    """Ende als reines Datum („2026-11-22“) schließt den Tag ein, nicht den Vortag."""
+    text = (FIX / "vizha_event_duesseldorf_deepavali.html").read_text(encoding="utf-8")
+    quelle = _quelle(settings)
+    mehrtaegig = text.replace("2026-11-15T21:00:00.000Z", "2026-11-22")
+    item = sources.jsonld_termin(mehrtaegig, DUESSELDORF_URL, quelle, settings, now=STAND)
+    assert item.facts["event_ende"] == "2026-11-22"
+    assert "bis 22.11.2026" in item.summary
+    # eintägig als reines Datum: Ende = derselbe Tag
+    eintaegig = text.replace("2026-11-15T21:00:00.000Z", "2026-11-15")
+    item = sources.jsonld_termin(eintaegig, DUESSELDORF_URL, quelle, settings, now=STAND)
+    assert item.facts["event_ende"] == "2026-11-15"
+    # Ende mit Uhrzeit bleibt wie gehabt (exklusiv um Mitternacht)
+    mitternacht = text.replace("2026-11-15T21:00:00.000Z", "2026-11-22T00:00:00+01:00")
+    item = sources.jsonld_termin(mitternacht, DUESSELDORF_URL, quelle, settings, now=STAND)
+    assert item.facts["event_ende"] == "2026-11-21"
+    # ein vergangener Termin mit reinem Enddatum heute gilt noch
+    gestern = text.replace("2026-11-15T12:30:00.000Z", "2026-11-11").replace("2026-11-15T21:00:00.000Z", "2026-11-12")
+    assert sources.jsonld_termin(gestern, DUESSELDORF_URL, quelle, settings, now=STAND) is not None
