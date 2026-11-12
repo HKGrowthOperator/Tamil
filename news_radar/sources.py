@@ -86,6 +86,38 @@ def clean_text(value: str) -> str:
     return re.sub(r"\s+", " ", html.unescape(_TAG_RE.sub(" ", value or ""))).strip()
 
 
+# Kontaktangaben in Termin-Anrissen (Live-Probe 12.11.: „Contacts: • Name: 0176-…“). Telefon: international (+41,
+# 0049 …, auch „(0)“) oder national mit 0 und Vorwahl, Gruppen getrennt durch Leerzeichen . / -; erst ab 8 Ziffern
+# eine Nummer (keine Daten, Uhrzeiten, Preise, Postleitzahlen). Ein Name direkt davor zählt mit, wenn er mit
+# Doppelpunkt vor der Nummer steht („Mala: 0176 …“) oder einem Kontakt-Wort folgt („Kontakt: Mala 0176 …“).
+_TELEFON = (r"(?:(?<![\w+@/.])(?:\+|00)\d{1,3}(?:[ ./-]?\(0\))?(?:[ ./-]?\d{1,5}){2,6}"
+            r"|(?<![\w+@/.])0\d{2,5}(?:[ ./-]?\d{2,8}){1,4})(?!\w)")
+_EMAIL = r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+"
+_KONTAKT_WORT = r"\b(?:Kontakte?|Contacts?|Tel\.?|Telefon|Phone|Mobil|Handy|WhatsApp|E-?Mail|Email)"
+_NAME = r"[A-ZÄÖÜ][\w-]*(?: [A-ZÄÖÜ][\w-]*)?"
+_KONTAKT_RE = re.compile(
+    rf"{_KONTAKT_WORT}\s*:?\s*{_NAME}\s+(?P<a>{_TELEFON})"
+    rf"|(?:{_KONTAKT_WORT}\s*:?\s*)?(?:{_NAME}\s*:\s*)?(?:(?P<b>{_TELEFON})|{_EMAIL})")
+_KONTAKT_REST_RE = re.compile(rf"{_KONTAKT_WORT}\s*:\s*(?=[•|,;]|$)")
+
+
+def ohne_kontakte(text: str) -> str:
+    """Telefonnummern, E-Mail-Adressen und die Kontaktnamen direkt davor aus einem Anriss entfernen."""
+    def ersetzen(m: re.Match) -> str:
+        nummer = m.group("a") or m.group("b")
+        if nummer and len(re.sub(r"\D", "", nummer)) < 8:
+            return m.group(0)
+        return " "
+
+    neu = _KONTAKT_RE.sub(ersetzen, text or "")
+    if neu == text:
+        return text
+    neu = _KONTAKT_REST_RE.sub(" ", neu)  # „Contacts:“ ohne Kontakte
+    neu = re.sub(r"(?:\s*•)+\s*$", "", re.sub(r"(?:\s*•\s*){2,}", " • ", neu))
+    neu = re.sub(r"\s+([.,;:!?])", r"\1", re.sub(r"\s+", " ", neu))
+    return neu.strip(" •·–-,;")
+
+
 def normalize_url(url: str) -> str:
     parts = urlsplit(url.strip())
     query = urlencode(sorted((k, v) for k, v in parse_qsl(parts.query) if k.lower() not in _TRACKING))
@@ -349,7 +381,7 @@ def fetch_tribe_events(source: Source, settings: Settings, now: datetime | None 
         wann = start.strftime("%d.%m.%Y") + ("" if ev.get("all_day") else start.strftime(", %H:%M Uhr"))
         if letzter_tag > start.date():
             wann += letzter_tag.strftime(" bis %d.%m.%Y")
-        summary = " · ".join(p for p in (wann, clean_text(ev.get("description") or "")[:900], ort) if p)
+        summary = " · ".join(p for p in (wann, ohne_kontakte(clean_text(ev.get("description") or ""))[:900], ort) if p)
         item = NewsItem(
             title=title, url=url, summary=summary[:1200], source=source.name, published=now,
             language=source.language, kind="event", ort=venue.get("city") or "",
@@ -472,7 +504,7 @@ def jsonld_termin(text: str, url: str, source: Source, settings: Settings, now: 
     wann = start.strftime("%d.%m.%Y") + ("" if ohne_zeit else start.strftime(", %H:%M Uhr"))
     if letzter_tag > start.date():
         wann += letzter_tag.strftime(" bis %d.%m.%Y")
-    teile_summary = (wann, _ld_text(ev.get("alternateName")), _ld_text(ev.get("description"))[:900], ort)
+    teile_summary = (wann, _ld_text(ev.get("alternateName")), ohne_kontakte(_ld_text(ev.get("description")))[:900], ort)
     item = NewsItem(
         title=title, url=url, summary=" · ".join(p for p in teile_summary if p)[:1200], source=source.name,
         published=now, language=source.language, kind="event", ort=stadt,

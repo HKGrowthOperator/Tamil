@@ -219,3 +219,44 @@ def test_kittu_nur_als_ganzes_wort(settings):
     assert filtering.gedenktermin(termin("திலீபன் நினைவு நாள்"), settings)
     assert not filtering.gedenktermin(termin("தீபாவளி 2026 – எல்லோருக்கும் பரிசு கிட்டும்"), settings)
     assert not filtering.gedenktermin(termin("Kittur Rani Chennamma – Tanzabend"), settings)
+
+
+# ---- Keine Telefonnummern, E-Mail-Adressen und Kontaktnamen im Anriss (Live-Probe 12.11.: Vanakkam Europa 2027) ----
+
+def test_vanakkam_europa_ohne_kontakte(settings):
+    """Echter Fall mit erfundenen Namen und Nummern im gleichen Format („• Name: 0176-12345678“)."""
+    text = (FIX / "vizha_event_dortmund_vanakkam_europa.html").read_text(encoding="utf-8")
+    item = sources.jsonld_termin(text, "https://vizha.app/events/vanakkam-europa-2027", _quelle(settings), settings,
+                                 now=STAND)
+    for weg in ("0157", "0176", "12345678", "Anbu", "Mala", "Kumar", "Contacts"):
+        assert weg not in item.summary, weg
+    # der Rest bleibt: Adresse mit PLZ und Hausnummern-Spanne, Website, Uhrzeit, Ort
+    assert "Address: Burgweg 16-22, 44145 Dortmund, Germany" in item.summary
+    assert "Website: https://www.vanakkameuropa.de" in item.summary and "2:30 PM CET" in item.summary
+    assert item.summary.startswith("01.01.2027, 14:30 Uhr")
+
+
+@pytest.mark.parametrize("roh, rein", [
+    ("Infos unter +41 79 123 45 67.", "Infos unter."),
+    ("Anmeldung bei +49 (0)176 1234 5678 oder vor Ort", "Anmeldung bei oder vor Ort"),
+    ("Tickets 0041 79 123 45 67 · Eintritt frei", "Tickets · Eintritt frei"),
+    ("Eintritt frei. Kontakt: Mala 0176 1234567", "Eintritt frei."),
+    ("Kontakt: Mala Kumar: 0176/1234567", ""),
+    ("Fragen an info@verein.example oder vor Ort", "Fragen an oder vor Ort"),
+    ("Eintritt frei. E-Mail: kasse@verein.example", "Eintritt frei."),
+    ("Hotline 044.123.45.67, sonst +94 77 123 4567", "Hotline, sonst"),
+    ("Tel. +44 20 7946 0958", ""),
+])
+def test_kontakte_werden_entfernt(roh, rein):
+    assert sources.ohne_kontakte(roh) == rein
+
+
+@pytest.mark.parametrize("text", [
+    "Am 15.11.2026 um 18:30 Uhr in 8302 Kloten, Eintritt CHF 25.–",
+    "Samstag 05.12.2026, 08:00 Uhr, Burgweg 16-22, 44145 Dortmund",
+    "Preisgeld 1.000 €, Startgebühr 100 €, Kategorien U09, U11, U13 (CHF 75/team)",
+    "Zeitraum 2026-11-14 bis 2026-11-15, Saal 2, Instagram: @vanakkam_europa",
+    "01067 Dresden, Hausnummer 12/14",
+])
+def test_kontaktfilter_laesst_daten_zeiten_preise_und_plz(text):
+    assert sources.ohne_kontakte(text) == text
