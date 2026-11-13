@@ -448,7 +448,8 @@ Schreibrecht auf Meta: `edit_posts` bzw. `edit_post`. Termin-Felder pflegt die R
 | `tamil_site_zustimmung` | Texte des Cookie-Hinweises: `titel`, `text`, `notwendig`, `externe_medien`, `statistik`, `fassung` | Administrator |
 | `tamil_site_seo` | SEO-Einstellungen | Administrator |
 | `tamil_site_redirects`, `tamil_site_redirects_csv` | Weiterleitungen | Administrator, REST |
-| `tamil_site_datenversion`, `tamil_site_upgrade_fehler` | Upgrade-Routine (Datenversion 1) | Maschine |
+| `tamil_site_datenversion`, `tamil_site_upgrade_fehler` | Upgrade-Routine (Datenversion 4; Schritte 2 Einsendungen F1, 3 Werbung F3, 4 Verzeichnis F2) | Maschine |
+| `tamil_site_werbung_deinstallation_loeschen` | ausdrücklich gesetzt: Deinstallation löscht auch bezahlte Werbebuchungen (Standard: nicht gesetzt) | Administrator (WP-CLI) |
 | `tamil_radar_settings` | `cockpit_url` | Administrator |
 | `tamil_radar_version` | Plugin-Version | Maschine |
 
@@ -675,6 +676,11 @@ eingeschalteter Zustimmung durch die Eigenanzeige ersetzt.
 
 **Aktiv-Funktion (genau eine):** aktiv ⇔ `zahlung = bezahlt` ∧ `pruefung = freigegeben` ∧ `pausiert = nein` ∧
 `start ≤ heute ≤ ende` (und nicht vorzeitig beendet). Alle Anzeigen fragen nur diese Funktion.
+
+**Deinstallation:** Gibt es bezahlte oder erstattete Buchungen, bleiben `tamil_werbebuchungen` und
+`tamil_werbeprotokoll` beim Löschen des Plugins stehen (steuerliche Aufbewahrung); nie bezahlte Buchungen und die
+Betriebstabellen (`tamil_werbetage`, `tamil_werbestatistik`, `tamil_stripe_ereignisse`) werden entfernt. Alles löschen
+nur mit der Option `tamil_site_werbung_deinstallation_loeschen` (nach dem Export). Hinweis in wp-admin unter Werbung.
 
 ### Status-Maschine Buchung
 
