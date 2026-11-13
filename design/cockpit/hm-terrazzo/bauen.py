@@ -75,7 +75,7 @@ def seite(datei: str, titel: str, aktiv: str, inhalt: str) -> None:
   <div class="container kopf__zeile">
     <a class="kopf__marke" href="uebersicht.html"><img src="../../inhalte/logo.png" width="300" height="121" alt="tamil.de"><span>Redaktion</span></a>
     <div class="kopf__stand"><span>Radar läuft, letzter Lauf <span class="code">21:37</span>, nächster <span class="code">21:40</span></span>
-      <span>angemeldet als a.beispiel</span>
+      <span class="kopf__wer">angemeldet als a.beispiel</span>
       <form method="post" action="uebersicht.html"><button class="knopf knopf--zweit" type="submit">Abmelden</button></form></div>
   </div>
   <div class="container"><nav aria-label="Cockpit">{nav(aktiv)}<details class="menue"><summary>Menü</summary>{nav(aktiv)}</details></nav></div>
@@ -103,7 +103,7 @@ def kopf(titel: str, satz: str, pfad: str = "", rechts: str = "") -> str:
 # ------------------------------------------------------------------ Übersicht
 def uebersicht() -> None:
     zeilen = []
-    zeilen.append('<tr aria-current="true"><td data-l="Code"><span class="code">E-7</span></td>'
+    zeilen.append('<tr><td data-l="Code"><span class="code">E-7</span></td>'
                   f'<td><a href="entwurf-lizenz-fehlt.html">{e(BEITRAG[30]["titel"])}</a><span class="unter">Entwurf, Story 30, 485 Wörter</span></td>'
                   '<td data-l="Stand"><span class="wort-fehler">Lizenz fehlt</span></td></tr>')
     for nr, t in RADAR:
@@ -245,6 +245,7 @@ def entwurf(lizenz_fehlt: bool) -> None:
     <h2 class="entwurf__titel" id="t-h">{e(b['titel'])}</h2>
     <p class="entwurf__teaser">{e(b['teaser'])}</p>
     <div class="block">{bild}</div>
+    {rechts_bild}
     <div class="block"><div class="block__kopf"><h2>Text und Aussagen</h2><span class="leise">links der Absatz, rechts was der Radar darin belegt hat</span></div>
       <div class="fuge-oben">{absaetze}</div></div>
     <div class="block"><h2>Quellen</h2><table class="spec spec--knapp"><thead><tr><th>Code</th><th>Quelle</th><th>Art</th></tr></thead><tbody>{quellen}</tbody></table></div>
@@ -264,7 +265,6 @@ def entwurf(lizenz_fehlt: bool) -> None:
     <div class="block"><h3>Vor der Freigabe</h3><ul class="hinweise">{hinweise}</ul>
       <p class="leise klein nach-xs">Aus dem Bericht der Redakteure; C3 ist nur teilweise belegt.</p></div>
     <div class="block"><h3>Faktencheck</h3><dl class="satz"><dt>Aussagen</dt><dd><span class="code">6</span></dd><dt>belegt</dt><dd><span class="code">3</span></dd><dt>teilweise</dt><dd><span class="code">1</span> (C3)</dd><dt>Hintergrund</dt><dd><span class="code">2</span></dd><dt>sensibel</dt><dd>nein</dd></dl></div>
-    {rechts_bild}
     <form class="karte" method="post" action="entwurf.html" aria-labelledby="fr-h">
       <h3 id="fr-h">Freigabe</h3>{freigabe}
     </form>

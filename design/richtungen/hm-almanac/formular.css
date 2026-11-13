@@ -10,9 +10,9 @@
 /* Hallmark · dismissed 58 · a form counts every label as a word; the head holds the headline and one sentence */
 /* Hallmark · dismissed 44b · a form page has no hero action, the submit sits at the form's end where the reader arrives after filling it */
 
-.kopfzeile { padding-block: var(--space-2xl) var(--space-xl); align-items: end; }
+.kopfzeile { padding-block: var(--space-xl) var(--space-head-after); align-items: end; }
 .kopfzeile__text { grid-column: 1 / span 8; display: flex; flex-direction: column; gap: var(--space-md); }
-.kopfzeile h1 { font-size: var(--text-display-s); max-width: 22ch; letter-spacing: -0.03em; line-height: 1.02; }
+.kopfzeile h1 { font-size: var(--text-display-s); max-width: 26ch; letter-spacing: -0.02em; line-height: 1.1; }
 
 .formular-seite { align-items: start; border-top: var(--rule-bar) solid var(--color-ink); padding-block-start: var(--space-xl); }
 .formular { grid-column: 1 / span 7; display: flex; flex-direction: column; gap: var(--space-xl); }

@@ -8,9 +8,9 @@
 /* Hallmark · dismissed 58 · the window holds the dated sheet of four festivals with its source line, counted at 85 */
 /* Hallmark · dismissed 77 · a calendar page: the coming dates, the year as one chart, one festival report and the footer; the material holds no further dated festivals */
 
-.kopfzeile { padding-block: var(--space-2xl) var(--space-xl); align-items: end; }
+.kopfzeile { padding-block: var(--space-xl) var(--space-head-after); align-items: end; }
 .kopfzeile__text { grid-column: 1 / span 8; display: flex; flex-direction: column; gap: var(--space-md); }
-.kopfzeile h1 { font-size: var(--text-display-s); max-width: 24ch; letter-spacing: -0.03em; line-height: 1.02; }
+.kopfzeile h1 { font-size: var(--text-display-s); max-width: 26ch; letter-spacing: -0.02em; line-height: 1.1; }
 .kopfzeile__aktion { grid-column: 1 / span 8; justify-content: flex-start; }
 .bogen .tafel .zu { width: 6rem; }
 

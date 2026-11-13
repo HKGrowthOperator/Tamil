@@ -1,0 +1,563 @@
+{
+  "stand": "2026-11-13T21:27:41.671Z",
+  "ergebnisse": [
+    {
+      "ziel": "http://127.0.0.1:8947/cockpit/hm-terrazzo/uebersicht.html",
+      "url": "http://127.0.0.1:8947/cockpit/hm-terrazzo/uebersicht.html",
+      "breite": 390,
+      "status": 200,
+      "datei": "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-uebersicht-390.png",
+      "kacheln": [
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-uebersicht-390-k0.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-uebersicht-390-k1.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-uebersicht-390-k2.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-uebersicht-390-k3.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-uebersicht-390-k4.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [
+        "a „Zum Inhalt“ 119×43",
+        "a „„OM“ im Kino: 12 Spielorte in “ 347×22",
+        "a „Pongal-Feier des Beispiel-Vere“ 339×22",
+        "a „Tamil Sangam Düsseldorf“ 210×22",
+        "a „Beispiel Feinkost GmbH, In-Art“ 284×22",
+        "a „Alle Entwürfe“ 112×27",
+        "a „Quellen ansehen“ 140×22"
+      ],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8947/cockpit/hm-terrazzo/entwurf.html",
+      "url": "http://127.0.0.1:8947/cockpit/hm-terrazzo/entwurf.html",
+      "breite": 390,
+      "status": 200,
+      "datei": "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-entwurf-390.png",
+      "kacheln": [
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-entwurf-390-k0.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-entwurf-390-k1.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-entwurf-390-k2.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-entwurf-390-k3.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-entwurf-390-k4.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-entwurf-390-k5.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [
+        "a „Zum Inhalt“ 119×43",
+        "a „CC BY-SA 4.0“ 118×22",
+        "a „Commons-Seite der Datei“ 217×22"
+      ],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8947/cockpit/hm-terrazzo/entwurf-lizenz-fehlt.html",
+      "url": "http://127.0.0.1:8947/cockpit/hm-terrazzo/entwurf-lizenz-fehlt.html",
+      "breite": 390,
+      "status": 200,
+      "datei": "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-entwurf-lizenz-fehlt-390.png",
+      "kacheln": [
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-entwurf-lizenz-fehlt-390-k0.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-entwurf-lizenz-fehlt-390-k1.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-entwurf-lizenz-fehlt-390-k2.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-entwurf-lizenz-fehlt-390-k3.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-entwurf-lizenz-fehlt-390-k4.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-entwurf-lizenz-fehlt-390-k5.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [
+        "a „Zum Inhalt“ 119×43",
+        "input „“ 1×1",
+        "input „“ 1×1",
+        "input „“ 20×20"
+      ],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8947/cockpit/hm-terrazzo/eingang.html",
+      "url": "http://127.0.0.1:8947/cockpit/hm-terrazzo/eingang.html",
+      "breite": 390,
+      "status": 200,
+      "datei": "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-eingang-390.png",
+      "kacheln": [
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-eingang-390-k0.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-eingang-390-k1.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-eingang-390-k2.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-eingang-390-k3.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [
+        "a „Zum Inhalt“ 119×43",
+        "a „Hinweis: neue Tamilschule im B“ 336×22",
+        "a „Frage zu einem Bildnachweis“ 243×22",
+        "a „Navarathri-Abend, 3.10.2026“ 241×22",
+        "a „a.beispiel@example.org“ 198×22"
+      ],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8947/cockpit/hm-terrazzo/eingang-kooperation.html",
+      "url": "http://127.0.0.1:8947/cockpit/hm-terrazzo/eingang-kooperation.html",
+      "breite": 390,
+      "status": 200,
+      "datei": "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-eingang-kooperation-390.png",
+      "kacheln": [
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-eingang-kooperation-390-k0.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-eingang-kooperation-390-k1.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [
+        "a „Zum Inhalt“ 119×43"
+      ],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8947/cockpit/hm-terrazzo/social.html",
+      "url": "http://127.0.0.1:8947/cockpit/hm-terrazzo/social.html",
+      "breite": 390,
+      "status": 200,
+      "datei": "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-social-390.png",
+      "kacheln": [
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-social-390-k0.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-social-390-k1.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-social-390-k2.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-social-390-k3.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [
+        "a „Zum Inhalt“ 119×43"
+      ],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8947/cockpit/hm-terrazzo/verzeichnis.html",
+      "url": "http://127.0.0.1:8947/cockpit/hm-terrazzo/verzeichnis.html",
+      "breite": 390,
+      "status": 200,
+      "datei": "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-verzeichnis-390.png",
+      "kacheln": [
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-verzeichnis-390-k0.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-verzeichnis-390-k1.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-verzeichnis-390-k2.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-verzeichnis-390-k3.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [
+        "a „Zum Inhalt“ 119×43",
+        "a „Tamil Sangam Düsseldorf“ 210×22",
+        "a „Sivaalayam München“ 178×22",
+        "input „“ 1×1",
+        "input „“ 1×1",
+        "input „“ 1×1",
+        "input „“ 1×1",
+        "input „“ 1×1",
+        "input „“ 1×1",
+        "input „“ 1×1",
+        "input „“ 1×1",
+        "input „“ 1×1",
+        "input „“ 1×1",
+        "a „b.beispiel@example.org“ 198×22"
+      ],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8947/cockpit/hm-terrazzo/buchungen.html",
+      "url": "http://127.0.0.1:8947/cockpit/hm-terrazzo/buchungen.html",
+      "breite": 390,
+      "status": 200,
+      "datei": "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-buchungen-390.png",
+      "kacheln": [
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-buchungen-390-k0.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-buchungen-390-k1.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-buchungen-390-k2.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-buchungen-390-k3.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [
+        "a „Zum Inhalt“ 119×43",
+        "a „Beispiel Verlag GmbH“ 177×22",
+        "a „Muster Events GbR“ 162×22",
+        "a „Beispiel Feinkost GmbH“ 197×22",
+        "a „Beispiel Reisen GmbH“ 182×22",
+        "a „Muster Studio“ 119×22",
+        "a „Beispiel Kino GmbH“ 162×22",
+        "a „https://example.org/angebot“ 242×22",
+        "a „c.beispiel@example.org“ 198×22"
+      ],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8947/cockpit/hm-terrazzo/uebersicht.html",
+      "url": "http://127.0.0.1:8947/cockpit/hm-terrazzo/uebersicht.html",
+      "breite": 820,
+      "status": 200,
+      "datei": "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-uebersicht-820.png",
+      "kacheln": [
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-uebersicht-820-k0.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-uebersicht-820-k1.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-uebersicht-820-k2.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [
+        "a „Zum Inhalt“ 110×40",
+        "a „Deepavali 2026: Lichterfest in“ 449×21",
+        "a „„OM“ im Kino: 12 Spielorte in “ 308×21",
+        "a „„Jailer 2“ am 15. November zum“ 514×21",
+        "a „Pongal-Feier des Beispiel-Vere“ 302×21",
+        "a „„Jailer 2“ am 15. November zum“ 514×21",
+        "a „Tamil Sangam Düsseldorf“ 187×21",
+        "a „Beispiel Feinkost GmbH, In-Art“ 252×21",
+        "a „Alle Entwürfe“ 100×24",
+        "a „Quellen ansehen“ 124×21"
+      ],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8947/cockpit/hm-terrazzo/entwurf.html",
+      "url": "http://127.0.0.1:8947/cockpit/hm-terrazzo/entwurf.html",
+      "breite": 820,
+      "status": 200,
+      "datei": "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-entwurf-820.png",
+      "kacheln": [
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-entwurf-820-k0.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-entwurf-820-k1.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-entwurf-820-k2.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-entwurf-820-k3.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [
+        "a „Zum Inhalt“ 110×40",
+        "a „CC BY-SA 4.0“ 104×21",
+        "a „Commons-Seite der Datei“ 193×21"
+      ],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8947/cockpit/hm-terrazzo/entwurf-lizenz-fehlt.html",
+      "url": "http://127.0.0.1:8947/cockpit/hm-terrazzo/entwurf-lizenz-fehlt.html",
+      "breite": 820,
+      "status": 200,
+      "datei": "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-entwurf-lizenz-fehlt-820.png",
+      "kacheln": [
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-entwurf-lizenz-fehlt-820-k0.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-entwurf-lizenz-fehlt-820-k1.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-entwurf-lizenz-fehlt-820-k2.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-entwurf-lizenz-fehlt-820-k3.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [
+        "a „Zum Inhalt“ 110×40",
+        "input „“ 1×1",
+        "input „“ 1×1",
+        "input „“ 20×20"
+      ],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8947/cockpit/hm-terrazzo/eingang.html",
+      "url": "http://127.0.0.1:8947/cockpit/hm-terrazzo/eingang.html",
+      "breite": 820,
+      "status": 200,
+      "datei": "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-eingang-820.png",
+      "kacheln": [
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-eingang-820-k0.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-eingang-820-k1.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [
+        "a „Zum Inhalt“ 110×40",
+        "a „Frage zu einem Bildnachweis“ 216×21",
+        "a „Navarathri-Abend, 3.10.2026“ 215×21",
+        "a „a.beispiel@example.org“ 176×21"
+      ],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8947/cockpit/hm-terrazzo/eingang-kooperation.html",
+      "url": "http://127.0.0.1:8947/cockpit/hm-terrazzo/eingang-kooperation.html",
+      "breite": 820,
+      "status": 200,
+      "datei": "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-eingang-kooperation-820.png",
+      "kacheln": [
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-eingang-kooperation-820-k0.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [
+        "a „Zum Inhalt“ 110×40"
+      ],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8947/cockpit/hm-terrazzo/social.html",
+      "url": "http://127.0.0.1:8947/cockpit/hm-terrazzo/social.html",
+      "breite": 820,
+      "status": 200,
+      "datei": "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-social-820.png",
+      "kacheln": [
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-social-820-k0.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-social-820-k1.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [
+        "a „Zum Inhalt“ 110×40"
+      ],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8947/cockpit/hm-terrazzo/verzeichnis.html",
+      "url": "http://127.0.0.1:8947/cockpit/hm-terrazzo/verzeichnis.html",
+      "breite": 820,
+      "status": 200,
+      "datei": "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-verzeichnis-820.png",
+      "kacheln": [
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-verzeichnis-820-k0.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-verzeichnis-820-k1.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [
+        "a „Zum Inhalt“ 110×40",
+        "a „Tamil Sangam Düsseldorf“ 187×21",
+        "a „Sivaalayam München“ 158×21",
+        "input „“ 1×1",
+        "input „“ 1×1",
+        "input „“ 1×1",
+        "input „“ 1×1",
+        "input „“ 1×1",
+        "input „“ 1×1",
+        "input „“ 1×1",
+        "input „“ 1×1",
+        "input „“ 1×1",
+        "input „“ 1×1",
+        "a „b.beispiel@example.org“ 176×21"
+      ],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8947/cockpit/hm-terrazzo/buchungen.html",
+      "url": "http://127.0.0.1:8947/cockpit/hm-terrazzo/buchungen.html",
+      "breite": 820,
+      "status": 200,
+      "datei": "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-buchungen-820.png",
+      "kacheln": [
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-buchungen-820-k0.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-buchungen-820-k1.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-buchungen-820-k2.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [
+        "a „Zum Inhalt“ 110×40",
+        "a „https://example.org/angebot“ 216×21",
+        "a „c.beispiel@example.org“ 176×21"
+      ],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8947/cockpit/hm-terrazzo/uebersicht.html",
+      "url": "http://127.0.0.1:8947/cockpit/hm-terrazzo/uebersicht.html",
+      "breite": 1280,
+      "status": 200,
+      "datei": "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-uebersicht-1280.png",
+      "kacheln": [
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-uebersicht-1280-k0.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-uebersicht-1280-k1.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8947/cockpit/hm-terrazzo/entwurf.html",
+      "url": "http://127.0.0.1:8947/cockpit/hm-terrazzo/entwurf.html",
+      "breite": 1280,
+      "status": 200,
+      "datei": "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-entwurf-1280.png",
+      "kacheln": [
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-entwurf-1280-k0.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-entwurf-1280-k1.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-entwurf-1280-k2.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8947/cockpit/hm-terrazzo/entwurf-lizenz-fehlt.html",
+      "url": "http://127.0.0.1:8947/cockpit/hm-terrazzo/entwurf-lizenz-fehlt.html",
+      "breite": 1280,
+      "status": 200,
+      "datei": "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-entwurf-lizenz-fehlt-1280.png",
+      "kacheln": [
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-entwurf-lizenz-fehlt-1280-k0.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-entwurf-lizenz-fehlt-1280-k1.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-entwurf-lizenz-fehlt-1280-k2.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8947/cockpit/hm-terrazzo/eingang.html",
+      "url": "http://127.0.0.1:8947/cockpit/hm-terrazzo/eingang.html",
+      "breite": 1280,
+      "status": 200,
+      "datei": "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-eingang-1280.png",
+      "kacheln": [
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-eingang-1280-k0.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-eingang-1280-k1.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8947/cockpit/hm-terrazzo/eingang-kooperation.html",
+      "url": "http://127.0.0.1:8947/cockpit/hm-terrazzo/eingang-kooperation.html",
+      "breite": 1280,
+      "status": 200,
+      "datei": "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-eingang-kooperation-1280.png",
+      "kacheln": [
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-eingang-kooperation-1280-k0.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8947/cockpit/hm-terrazzo/social.html",
+      "url": "http://127.0.0.1:8947/cockpit/hm-terrazzo/social.html",
+      "breite": 1280,
+      "status": 200,
+      "datei": "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-social-1280.png",
+      "kacheln": [
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-social-1280-k0.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-social-1280-k1.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8947/cockpit/hm-terrazzo/verzeichnis.html",
+      "url": "http://127.0.0.1:8947/cockpit/hm-terrazzo/verzeichnis.html",
+      "breite": 1280,
+      "status": 200,
+      "datei": "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-verzeichnis-1280.png",
+      "kacheln": [
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-verzeichnis-1280-k0.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-verzeichnis-1280-k1.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8947/cockpit/hm-terrazzo/buchungen.html",
+      "url": "http://127.0.0.1:8947/cockpit/hm-terrazzo/buchungen.html",
+      "breite": 1280,
+      "status": 200,
+      "datei": "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-buchungen-1280.png",
+      "kacheln": [
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-buchungen-1280-k0.png",
+        "design/cockpit/hm-terrazzo/shots/cockpit-hm-terrazzo-buchungen-1280-k1.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    }
+  ],
+  "fehler": 0
+}

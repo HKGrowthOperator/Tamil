@@ -68,7 +68,9 @@ main { padding-block: var(--space-xl) var(--space-2xl); }
 .feld:first-child { padding-right: var(--space-xl); }
 .felder--voll .feld { padding-right: 0; }
 .felder + .felder { margin-top: var(--space-xl); }
-.block + .block { margin-top: var(--space-xl); }
+.block { margin-top: var(--space-xl); }
+.feld > .block:first-child, .feld > h2 + .block, .feld > .block__kopf + .block { margin-top: 0; }
+.feld > h2 { margin-bottom: var(--space-md); }
 .block > h2, .block > h3 { margin-bottom: var(--space-sm); }
 .block__kopf { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-md); flex-wrap: wrap; margin-bottom: var(--space-sm); }
 .block__kopf h2 { margin: 0; }
@@ -134,6 +136,7 @@ legend { padding: 0; font-weight: 500; margin-bottom: var(--space-2xs); }
 .zellen--filter a[aria-current="page"] .code { color: var(--color-paper); }
 
 /* Die Entscheidungskarte: die eine weiße Karte je Vorgang, harte Kante, harter Versatz */
+.feld > .karte:first-child { margin-top: 0; }
 .karte { background: var(--color-plate); border: var(--rule-bar) solid var(--color-ink); box-shadow: var(--shadow-card); padding: var(--space-lg); margin: var(--space-lg) var(--space-md) var(--space-md) 0; }
 .karte > h2, .karte > h3 { margin-bottom: var(--space-xs); }
 .karte .grund { margin-top: var(--space-xs); color: var(--color-ink-2); font-size: var(--text-sm); }
@@ -198,6 +201,8 @@ details.auf > div { padding-bottom: var(--space-md); }
   .spec td { display: block; border: 0; padding: var(--space-3xs) 0; }
   .spec td.zahl { text-align: left; }
   .spec td[data-l]::before { content: attr(data-l) ": "; color: var(--color-muted); }
+  .spec td[data-l="Code"]::before { content: none; }
+  .kopf__wer { display: none; }
   .zellen label, .zellen--filter a { padding-inline: var(--space-sm); }
 }
 
@@ -210,3 +215,8 @@ details.auf > div { padding-bottom: var(--space-md); }
 .fuge-oben { border-top: var(--rule-bar) solid var(--color-ink); }
 .mass--728 { width: 728px; aspect-ratio: 728 / 90; }
 .mass--300 { width: 300px; aspect-ratio: 300 / 250; }
+
+/* Tippflächen unter 60rem: jeder Link im Inhalt trägt 44 px Höhe */
+@media (max-width: 60rem) {
+  main a:not(.knopf), .banner a { display: inline-flex; align-items: center; min-height: var(--control-touch); }
+}

@@ -10,9 +10,9 @@
 /* Hallmark · dismissed 58 · the rate card counts six places in five columns as words; the booking form counts its labels */
 /* Hallmark · dismissed 52 · the five steps of the booking have a real order (choose, date, details, artwork, pay), the numerals are that order */
 
-.kopfzeile { padding-block: var(--space-2xl) var(--space-xl); align-items: end; row-gap: var(--space-lg); }
+.kopfzeile { padding-block: var(--space-xl) var(--space-head-after); align-items: end; row-gap: var(--space-lg); }
 .kopfzeile__text { grid-column: 1 / span 8; display: flex; flex-direction: column; gap: var(--space-md); }
-.kopfzeile h1 { font-size: var(--text-display-s); max-width: 22ch; letter-spacing: -0.03em; line-height: 1.02; }
+.kopfzeile h1 { font-size: var(--text-display-s); max-width: 26ch; letter-spacing: -0.02em; line-height: 1.1; }
 .kopfzeile__aktion { grid-column: 9 / span 4; justify-content: flex-end; }
 
 /* the rate card */
