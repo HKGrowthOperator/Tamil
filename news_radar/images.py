@@ -48,7 +48,13 @@ class FeaturedImage:
     filename: str
     mime: str
     credit: str
-    origin: str  # unsplash | pexels | karte
+    origin: str  # unsplash | pexels | karte | ki | pool | upload | archiv | quelle
+    # Angaben für den Lizenz-Datensatz (lizenz.datensatz); leer, wenn die Quelle sie nicht liefert
+    urheber: str = ""
+    quelle_url: str = ""   # Seite, auf der das Bild steht (Fotoseite bei Stock)
+    bild_url: str = ""     # Adresse der abgerufenen Bilddatei
+    prompt: str = ""       # KI: endgültiger Prompt (nur als Hash im Datensatz)
+    modell: str = ""       # KI: Modell-ID
 
 
 def _font(size: int, schnitt: str = "ExtraBold") -> ImageFont.ImageFont:
@@ -144,7 +150,8 @@ def from_unsplash(query: str, key: str, slug: str) -> FeaturedImage | None:
     requests.get(photo["links"]["download_location"], headers={"Authorization": f"Client-ID {key}"}, timeout=10)
     data = _download(photo["urls"]["regular"])
     credit = f"Foto: {photo['user']['name']} / Unsplash"
-    return FeaturedImage(data, f"{slug}.jpg", "image/jpeg", credit, "unsplash")
+    return FeaturedImage(data, f"{slug}.jpg", "image/jpeg", credit, "unsplash", urheber=photo["user"]["name"],
+                         quelle_url=(photo.get("links") or {}).get("html", ""), bild_url=photo["urls"]["regular"])
 
 
 def from_pexels(query: str, key: str, slug: str) -> FeaturedImage | None:
@@ -160,7 +167,9 @@ def from_pexels(query: str, key: str, slug: str) -> FeaturedImage | None:
         return None
     photo = photos[0]
     data = _download(photo["src"]["large2x"])
-    return FeaturedImage(data, f"{slug}.jpg", "image/jpeg", f"Foto: {photo['photographer']} / Pexels", "pexels")
+    return FeaturedImage(data, f"{slug}.jpg", "image/jpeg", f"Foto: {photo['photographer']} / Pexels", "pexels",
+                         urheber=photo["photographer"], quelle_url=photo.get("url") or "",
+                         bild_url=photo["src"]["large2x"])
 
 
 def featured_image(settings: Settings, query: str, title: str, category_label: str, slug: str) -> FeaturedImage:
@@ -182,8 +191,9 @@ def _encode(img: Image.Image, quality: int = 86) -> bytes:
     return buf.getvalue()
 
 
-def from_upload(data: bytes, slug: str, credit: str = "Foto: Tamil.de") -> FeaturedImage:
-    """Eigenes Bild der Redaktion: auf 1200×675 zuschneiden, neu kodieren (EXIF weg)."""
+def from_upload(data: bytes, slug: str, credit: str = "") -> FeaturedImage:
+    """Eigenes Bild der Redaktion: auf 1200×675 zuschneiden, neu kodieren (EXIF weg). Kein Standardnachweis: Rechte
+    und Nachweis trägt die Redaktion im Formular „Lizenz eintragen“ ein (Spezifikation Bilder 3.4)."""
     img = ImageOps.exif_transpose(Image.open(io.BytesIO(data)))
     fitted = ImageOps.fit(img, SIZE, Image.Resampling.LANCZOS)
     return FeaturedImage(_encode(fitted), f"{slug}.jpg", "image/jpeg", credit, "upload")

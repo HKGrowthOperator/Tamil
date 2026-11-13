@@ -156,7 +156,26 @@ V6 = [
 ]
 # Letzter Abruf mit Teilausfall: zählt für den Takt (interval_minutes) wie last_ok, ohne als Erfolg zu gelten
 V7 = ["ALTER TABLE source_status ADD COLUMN last_try TEXT"]
-MIGRATIONS: dict[int, list[str]] = {2: V2, 3: V3, 4: V4, 5: V5, 6: V6, 7: V7}
+# V9: Lizenz-Datensatz je Bild (docs/spezifikation/bilder-und-lizenzen.md, Abschnitt 3.1). `umfang` bleibt die Spalte
+# aus V2, gilt ab jetzt als kommagetrennte Menge aus website, social, print (`lizenz.umfang_text`); Altbestand mit
+# Freitext gilt als unvollständig, bis die Nachführung oder die Redaktion den Datensatz ergänzt. Nummer 8 hält eine
+# parallele Spur frei.
+V9 = [
+    "ALTER TABLE assets ADD COLUMN urheber TEXT",
+    "ALTER TABLE assets ADD COLUMN lizenz_kuerzel TEXT",      # Positivliste lizenz.KUERZEL (eigen, cc-by-4.0 …)
+    "ALTER TABLE assets ADD COLUMN lizenz_url TEXT",
+    "ALTER TABLE assets ADD COLUMN bild_url TEXT",            # Adresse der abgerufenen Bilddatei
+    "ALTER TABLE assets ADD COLUMN bearbeitung TEXT",         # keine | zugeschnitten | eingepasst | Logo-Leiste | KI-Hinweis
+    "ALTER TABLE assets ADD COLUMN beleg TEXT",               # wie die Lizenz geprüft wurde (Abruf, Register, Datei)
+    "ALTER TABLE assets ADD COLUMN geprueft_von TEXT",        # dienst | agent:<name> | Benutzername
+    "ALTER TABLE assets ADD COLUMN geprueft_am TEXT",
+    "ALTER TABLE assets ADD COLUMN ki_modell TEXT",
+    "ALTER TABLE assets ADD COLUMN prompt_hash TEXT",
+    "ALTER TABLE assets ADD COLUMN alt TEXT",
+    "ALTER TABLE assets ADD COLUMN fokus TEXT",               # x,y in Prozent
+    "CREATE INDEX IF NOT EXISTS assets_draft ON assets(draft_id, datei)",
+]
+MIGRATIONS: dict[int, list[str]] = {2: V2, 3: V3, 4: V4, 5: V5, 6: V6, 7: V7, 9: V9}
 LATEST = max(MIGRATIONS)
 
 

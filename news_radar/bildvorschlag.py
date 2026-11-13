@@ -35,6 +35,7 @@ from urllib.parse import unquote, urlencode, urljoin, urlsplit
 from PIL import Image, ImageOps
 
 from . import images, net, schalter
+from . import lizenz as lizenz_mod
 from .config import BILD_GESPERRT, BILD_GESPERRT_MARKEN, Bildquelle, Settings, bild_host_gesperrt
 from .images import SIZE, FeaturedImage
 from .store import OPEN_STATES, Store, now_iso
@@ -53,7 +54,7 @@ MIN_KANTE = 400
 VERHAELTNIS = (0.5, 2.4)
 ALT_MAX = 160
 WEGE = ("commons", "quelle")
-UMFANG = "Online-Veröffentlichung auf tamil.de; Zuschnitt auf das Seitenformat"
+UMFANG = "website,social,print"  # höchster Umfang bei CC und gemeinfrei (Spezifikation Bilder 3.2); Menge, kein Freitext
 FORMATE = {"JPEG", "PNG", "WEBP"}
 COMMONS_MIME = ("image/jpeg", "image/png", "image/webp")
 COMMONS_API = "https://commons.wikimedia.org/w/api.php"
@@ -384,8 +385,12 @@ def _commons(eintrag: dict, abrufen: Callable) -> dict:
         raise Abgelehnt("Bild leitet weg von Wikimedia um")
     img = _bild_lesen(got.content, streng=False)
     hinweis = ", ".join(t for t in re.split(r"[|,]\s*", _text(_ext(meta, "Restrictions"))) if t)[:200]
+    kuerzel = lizenz_mod.kuerzel_aus_url(lizenz_url)
+    # Hinweis von Commons (Persönlichkeitsrechte, Marken …): kein Social (2.3); der Wortlaut steht im Beleg
     return {"img": img, "nachweis": nachweis, "lizenz": lizenz, "rechteinhaber": artist or "gemeinfrei",
-            "umfang": f"{UMFANG}; Hinweis von Commons: {hinweis}" if hinweis else UMFANG,
+            "urheber": artist, "lizenz_kuerzel": kuerzel, "lizenz_url": lizenz_kanonisch(lizenz_url),
+            "umfang": "website" if hinweis else lizenz_mod.umfang_fuer(kuerzel),
+            "beleg": f"commons-api {now_iso()}" + (f"; Hinweis von Commons: {hinweis}" if hinweis else ""),
             "quelle_url": eintrag["seite_url"].strip(), "bild_url": bild_url}
 
 
@@ -544,7 +549,10 @@ def _quelle(store: Store, settings: Settings, eintrag: dict, story_id: int, abru
     else:
         rechteinhaber = quelle.betreiber
         lizenz = f"Material der Quelle ({quelle.art}), redaktionelle Nutzung mit Bildnachweis; keine ausdrückliche Lizenz"
+    # ohne schriftliche Erlaubnis: presse-redaktionell, nur Website (2.2); Beleg ist die Fassung des Registers
     return {"img": img, "nachweis": quelle.nachweis, "rechteinhaber": rechteinhaber, "lizenz": lizenz,
+            "lizenz_kuerzel": "presse-redaktionell", "umfang": "website",
+            "beleg": f"Bildquellen-Register {quelle.host} (sources.toml {settings.register_fassung()}) {now_iso()}",
             "quelle_url": eintrag["seite_url"].strip(), "bild_url": bild_url}
 
 
@@ -552,7 +560,8 @@ def _quelle(store: Store, settings: Settings, eintrag: dict, story_id: int, abru
 
 def _wartender_entwurf(store: Store, story_id: int) -> dict:
     rows = [dict(r) for r in store.db.execute(
-        "SELECT id, status, uid, titel, bild_datei FROM drafts WHERE story_id = ? ORDER BY id DESC", (story_id,))]
+        "SELECT id, status, uid, titel, bild_datei, bild_alt FROM drafts WHERE story_id = ? ORDER BY id DESC",
+        (story_id,))]
     offen = [r for r in rows if r["status"] in OPEN_STATES]
     if offen:
         return offen[0]
@@ -585,12 +594,14 @@ def _setzen(store: Store, settings: Settings, entwurf: dict, story_id: int, weg:
             if db.in_transaction:
                 db.commit()
             db.execute("BEGIN IMMEDIATE")
-            asset_id = db.execute(
-                "INSERT INTO assets (datei, sha256, herkunft, rechteinhaber, lizenz, umfang, attribution, ablauf, "
-                "quelle_url, ki, story_id, draft_id, erstellt) VALUES (?,?,?,?,?,?,?,'',?,0,?,?,?)",
-                (name, hashlib.sha256(data).hexdigest(), weg, bild["rechteinhaber"], bild["lizenz"],
-                 bild.get("umfang") or UMFANG,
-                 bild["nachweis"], bild["quelle_url"], story_id, entwurf["id"], now_iso())).lastrowid
+            asset_id = repo.asset_einfuegen(db, repo.asset_werte(
+                datei=name, herkunft=weg, daten=data, story_id=story_id, draft_id=entwurf["id"],
+                rechteinhaber=bild["rechteinhaber"], lizenz=bild["lizenz"], umfang=bild.get("umfang") or "",
+                attribution=bild["nachweis"], quelle_url=bild["quelle_url"], urheber=bild.get("urheber") or "",
+                lizenz_kuerzel=bild.get("lizenz_kuerzel") or "", lizenz_url=bild.get("lizenz_url") or "",
+                bild_url=bild.get("bild_url") or "", bearbeitung="zugeschnitten", beleg=bild.get("beleg") or "",
+                geprueft_von=f"agent:{von}", geprueft_am=now_iso(),
+                alt=alt if alt is not None else entwurf.get("bild_alt") or ""))
             cur = db.execute(
                 f"UPDATE drafts SET {sets}, updated_at = ?, bearbeitet_von = ? "
                 f"WHERE id = ? AND status IN ({marks}) AND bild_datei IS ?",
