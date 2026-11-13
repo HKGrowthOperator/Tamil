@@ -578,3 +578,32 @@ def test_nachfuehrung_schreibt_nur_vollstaendige_datensaetze(tmp_path):
         store.db.commit()
         lizenz.nachfuehren(store, settings)
         assert vorher and repo.asset_fuer_entwurf(store, kid, name)["geprueft_am"] == "2026-01-01T00:00:00+00:00"
+
+
+# ---- P2: Prüfsumme gegen die Datei, P3: KI-Bild ohne Freigabe ----------------------------------------
+
+def test_pruefsumme_der_datei_muss_zum_datensatz_passen(tmp_path):
+    settings = load_settings()
+    settings.data_dir = tmp_path
+    with Store(settings.db_path) as store:
+        did, name, img = _entwurf_mit_karte(store, settings)
+        lizenz.anlegen(store, datei=name, daten=img.data, draft_id=did, felder=lizenz.datensatz(img, titel="Tempelfest"))
+        assert lizenz.sperre(store, store.get_draft(did), settings) == ""
+        (settings.bilder_dir / name).write_bytes(branded_card("Anderes Bild", "News", "x").data)  # Datei getauscht
+        assert lizenz.sperre(store, store.get_draft(did), settings) == "Lizenz fehlt: Prüfsumme"
+        with pytest.raises(lizenz.LizenzFehlt, match="Prüfsumme"):
+            publisher.publish_draft(store.get_draft(did), settings, FakeWP(), store, status="publish")
+
+
+def test_ki_bild_ohne_freigabe_gesperrt(tmp_path):
+    settings = load_settings()
+    settings.data_dir = tmp_path
+    with Store(settings.db_path) as store:
+        did, name, img = _entwurf_mit_karte(store, settings, alt="Symbolbild: leerer Kinosaal")
+        ki = images.FeaturedImage(img.data, name, "image/jpeg", lizenz.KI_CREDIT, "ki", prompt="Empty hall",
+                                  modell="gemini-nano-banana-2.1")
+        lizenz.anlegen(store, datei=name, daten=img.data, draft_id=did, felder=lizenz.datensatz(ki))
+        settings.bild_ki_freigabe = False
+        assert "KI-Kennzeichen" in lizenz.sperre(store, store.get_draft(did), settings)
+        settings.bild_ki_freigabe = True
+        assert lizenz.sperre(store, store.get_draft(did), settings) == ""

@@ -182,7 +182,7 @@ def publish_draft(row: dict, settings: Settings, wp: WordPress | TamilRadarClien
     """
     status = status or settings.wp_post_status
     schalter.pruefen(store, "website")  # unmittelbar vor dem ersten Aufruf an WordPress
-    asset = lizenz.pruefen_fuer_wp(store, row)  # LizenzFehlt: nichts gesendet
+    asset = lizenz.pruefen_fuer_wp(store, row, settings)  # LizenzFehlt: nichts gesendet
     row = {**row, **lizenz_meta(asset)}
     if isinstance(wp, TamilRadarClient):
         return publish_via_plugin(row, settings, wp, store, status)

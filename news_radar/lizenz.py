@@ -67,7 +67,8 @@ FELDNAMEN = {"datensatz": "Datensatz", "sha256": "Prüfsumme", "herkunft": "Herk
              "umfang": "Umfang", "website": "Umfang Website", "attribution": "Nachweis", "ablauf": "Ablauf",
              "quelle_url": "Quelle", "bild_url": "Bildadresse", "bearbeitung": "Bearbeitung", "beleg": "Beleg",
              "geprueft_von": "Geprüft von", "geprueft_am": "Geprüft am", "ki": "KI-Kennzeichen",
-             "ki_modell": "KI-Modell", "prompt_hash": "Prompt", "alt": "Alt-Text"}
+             "ki_modell": "KI-Modell", "prompt_hash": "Prompt", "alt": "Alt-Text",
+             "ki_freigabe": "KI-Kennzeichen (KI-Bilder nicht freigegeben, BILD_KI_FREIGABE)"}
 
 
 def art(kuerzel: str) -> Art | None:
@@ -244,17 +245,25 @@ def vollstaendig(asset: dict | None) -> bool:
     return not fehlend(asset)
 
 
-def luecken(store, row: dict) -> list[str]:
-    """Was am Bild eines Entwurfs fehlt (Schlüssel aus FELDNAMEN); leer, wenn er kein Bild hat oder alles stimmt."""
+def luecken(store, row: dict, settings) -> list[str]:
+    """Was am Bild eines Entwurfs fehlt (Schlüssel aus FELDNAMEN); leer, wenn er kein Bild hat oder alles stimmt.
+    Mit den Einstellungen: Prüfsumme gegen die Datei auf der Platte, KI-Bilder nur mit BILD_KI_FREIGABE (4.1)."""
     if not row.get("bild_datei"):
         return []
     asset = asset_fuer(store, row)
     out = fehlend(asset)
     if asset and "umfang" not in out and "website" not in umfang_menge(asset.get("umfang")):
         out.append("website")
+    if asset and asset.get("sha256"):
+        pfad = settings.bilder_dir / row["bild_datei"]
+        if pfad.is_file() and hashlib.sha256(pfad.read_bytes()).hexdigest() != asset["sha256"]:
+            out.append("sha256")  # die Datei ist nicht die, für die der Datensatz gilt
+    if asset and (str(asset.get("ki") or "0") not in ("0", "") or asset.get("herkunft") in ("ki", "pool")) \
+            and not settings.bild_ki_freigabe:
+        out.append("ki_freigabe")
     if alt_fehler(row.get("bild_alt"), row.get("titel") or ""):
         out.append("alt")
-    return out
+    return list(dict.fromkeys(out))
 
 
 def asset_fuer(store, row: dict) -> dict | None:
@@ -267,9 +276,9 @@ def meldung(luecken_: list[str]) -> str:
     return "Lizenz fehlt: " + ", ".join(FELDNAMEN.get(f, f) for f in luecken_)
 
 
-def sperre(store, row: dict) -> str:
+def sperre(store, row: dict, settings) -> str:
     """Gate für Freigabe und Sammelfreigabe (3.3): leer = frei, sonst „Lizenz fehlt: <Feld>, …“."""
-    fehlt = luecken(store, row)
+    fehlt = luecken(store, row, settings)
     return meldung(fehlt) if fehlt else ""
 
 
@@ -277,9 +286,9 @@ class LizenzFehlt(RuntimeError):
     """Unmittelbar vor dem Senden an WordPress: Datensatz unvollständig – nichts gesendet."""
 
 
-def pruefen_fuer_wp(store, row: dict) -> dict | None:
+def pruefen_fuer_wp(store, row: dict, settings) -> dict | None:
     """Wirft LizenzFehlt („Lizenz unvollständig: …“); gibt sonst den Datensatz (oder None ohne Bild) zurück."""
-    fehlt = luecken(store, row)
+    fehlt = luecken(store, row, settings)
     if fehlt:
         raise LizenzFehlt("Lizenz unvollständig: " + ", ".join(FELDNAMEN.get(f, f) for f in fehlt))
     return asset_fuer(store, row) if row.get("bild_datei") else None

@@ -149,7 +149,7 @@ def set_status(draft_id: int):
         if stand is None or (store.get_draft(draft_id) or {}).get("stand", stand) != stand:
             flash(VERALTET if stand is None else GEAENDERT, "fehler")  # nichts ändern, noch einmal ansehen
             return redirect(url_for("ui.entwurf", draft_id=draft_id))
-        gesperrt = lizenz.sperre(store, _draft_or_404(draft_id))
+        gesperrt = lizenz.sperre(store, _draft_or_404(draft_id), _settings())
         if gesperrt:  # Gate (Spezifikation Bilder 3.3): ohne vollständigen Lizenz-Datensatz keine Freigabe
             flash(f"{gesperrt}. Bitte „Lizenz eintragen“ – Freigabe gesperrt.", "fehler")
             return redirect(url_for("ui.entwurf", draft_id=draft_id))
@@ -210,7 +210,7 @@ def sammelfreigabe():
         if stand is None or row.get("stand") != stand:
             nicht.append(f"#{draft_id} „{row['titel'][:60]}“: {VERALTET if stand is None else GEAENDERT}")
             continue
-        gesperrt = lizenz.sperre(store, row)
+        gesperrt = lizenz.sperre(store, row, _settings())
         if gesperrt:
             nicht.append(f"#{draft_id} „{row['titel'][:60]}“: {gesperrt}")
             continue
@@ -275,7 +275,7 @@ def entwurf(draft_id: int):
     from .redaktion import belege_fuer
 
     asset = lizenz.asset_fuer(store, row) if row.get("bild_datei") else None
-    luecken = lizenz.luecken(store, row)
+    luecken = lizenz.luecken(store, row, settings)
     return render_template("entwurf.html", d=row, labels=STATUS_LABELS, categories=settings.categories,
                            belege=belege_fuer(store, row),
                            can_publish=row["status"] in PUBLISHABLE, open_states=OPEN_STATES,
@@ -447,7 +447,7 @@ def bild(draft_id: int):
             (settings.bilder_dir / old).unlink(missing_ok=True)
     store.event("bild", id=draft_id, aktion=aktion, origin=image.origin, von=_user(), asset=asset_id)
     _protokoll("bild", row, notiz=f"{aktion}: Asset {asset_id}")
-    fehlt = lizenz.sperre(store, store.get_draft(draft_id) or row)
+    fehlt = lizenz.sperre(store, store.get_draft(draft_id) or row, _settings())
     flash("Bild ersetzt." + (f" {fehlt} – bitte „Lizenz eintragen“." if fehlt else ""), "fehler" if fehlt else "ok")
     return redirect(url_for("ui.entwurf", draft_id=draft_id))
 
@@ -534,7 +534,7 @@ def lizenz_eintragen(draft_id: int):
     store.event("lizenz", id=draft_id, asset=asset_id, kuerzel=felder["lizenz_kuerzel"], von=_user())
     _protokoll("lizenz", row, fassung=repo.fassung_hash(store.get_draft(draft_id)),
                notiz=f"Lizenz eingetragen: {felder['lizenz_kuerzel']}, Umfang {felder['umfang']}, Asset {asset_id}")
-    fehlt = lizenz.sperre(store, store.get_draft(draft_id) or row)
+    fehlt = lizenz.sperre(store, store.get_draft(draft_id) or row, _settings())
     flash("Lizenz eingetragen." + (f" Noch offen: {fehlt}" if fehlt else ""), "fehler" if fehlt else "ok")
     return zurueck
 
@@ -550,7 +550,7 @@ def _publish(draft_id: int, status: str):
     if stand is None or row.get("stand") != stand:  # nur den Stand veröffentlichen, den die Seite gezeigt hat
         flash(VERALTET if stand is None else GEAENDERT, "fehler")
         return redirect(url_for("ui.entwurf", draft_id=draft_id))
-    gesperrt = lizenz.sperre(store, row)
+    gesperrt = lizenz.sperre(store, row, _settings())
     if gesperrt:
         flash(f"{gesperrt}. Bitte „Lizenz eintragen“ – nichts übertragen, nichts freigegeben.", "fehler")
         return redirect(url_for("ui.entwurf", draft_id=draft_id))
@@ -619,7 +619,7 @@ def _freigeben(store, row: dict, stand: int | None = None) -> str:
     aktion = "erneut" if row["status"] == "fehler" else "freigeben"
     if row["status"] not in OPEN_STATES and row["status"] != "fehler":
         return ""
-    if lizenz.sperre(store, store.get_draft(row["id"]) or row):  # Gate auf jedem Freigabeweg
+    if lizenz.sperre(store, store.get_draft(row["id"]) or row, _settings()):  # Gate auf jedem Freigabeweg
         return ""
     try:
         store.set_status(row["id"], aktion, von=_user(), stand=stand)
