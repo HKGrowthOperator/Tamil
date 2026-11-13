@@ -65,7 +65,7 @@ def seite(datei, titel, beschreibung, aktiv, inhalt, js=False):
 {mehr}
 </ul></details></li>
 </ul></nav>
-<div class="lage"><span><b>Radar läuft</b>, alle 3 Minuten</span><span class="lage__lauf">letzter Lauf <time datetime="2026-11-13T18:55">18:55</time></span><span>Redaktion A</span><button class="btn btn--quiet" type="button">Abmelden</button></div>
+<div class="lage"><span><b>Radar läuft</b><span class="lage__lauf">, letzter Lauf <time datetime="2026-11-13T18:55">18:55</time></span></span><span class="lage__wer">Redaktion A</span><button class="btn btn--text" type="button">Abmelden</button></div>
 <details class="menue"><summary>Menü</summary>
 <div class="menue__panel"><nav aria-label="Bereiche, Handy"><ul>
 {menue}
@@ -138,10 +138,10 @@ def uebersicht():
                 ("eingang", "Abholen der Einsendungen"), ("verzeichnis", "Verzeichnis-Einsendungen"),
                 ("instagram", "Trockenmodus, keine Konten"), ("facebook", "Trockenmodus, keine Konten"), ("whatsapp", "nur Entwürfe")]
     sz = "\n".join(
-        f'<tr><td><span class="titel">{k}</span><span class="unter">{u}</span></td><td><span class="zustand">läuft</span></td>'
+        f'<tr><td><span class="titel">{k}</span><span class="unter">{u}</span></td><td class="ecke"><span class="zustand">läuft</span></td>'
         f'<td class="aktion"><a href="/schalter?kanal={k}">Anhalten</a></td></tr>' for k, u in schalter)
     laeufe = "\n".join(
-        f'<tr><td class="num" data-l="Lauf">#{lid}</td><td data-l="Start"><time datetime="2026-11-12T{z}">{z}</time></td>'
+        f'<tr><td class="num l" data-l="Lauf">#{lid}</td><td data-l="Start"><time datetime="2026-11-12T{z}">{z}</time></td>'
         f'<td class="num" data-l="gesammelt">{g}</td><td class="num" data-l="relevant">{r}</td>'
         f'<td class="num" data-l="Entwürfe">0</td><td class="num" data-l="Fehler">0</td></tr>'
         for lid, z, g, r in reversed(LAEUFE[-8:]))
@@ -200,7 +200,7 @@ def uebersicht():
 <div class="nur-klein">{chart(360, 220, 34, 8, 24, 36, (1601, 1613))}</div>
 <figcaption>Meist 72 bis 86 Meldungen je Lauf, je Lauf 3 bis 5 relevant. Aussortiert im letzten Lauf: Termin vorbei 3, ohne Bezug 10, Ausland 11, Tageslimit 3.</figcaption>
 </figure>
-<table class="tafel tafel--dicht tafel--stapel abschnitt">
+<table class="tafel tafel--dicht tafel--stapel abschnitt tafel--schmal">
 <caption>Die letzten acht Läufe</caption>
 <thead><tr><th scope="col">Lauf</th><th scope="col">Start</th><th scope="col" class="r">gesammelt</th><th scope="col" class="r">relevant</th><th scope="col" class="r">Entwürfe</th><th scope="col" class="r">Fehler</th></tr></thead>
 <tbody>
@@ -624,9 +624,9 @@ def social():
 <table class="tafel tafel--dicht tafel--stapel">
 <thead><tr><th scope="col">Kanal</th><th scope="col">Stand</th><th scope="col" class="r">Aktion</th></tr></thead>
 <tbody>
-<tr><td><span class="titel">Instagram</span><span class="unter">Trockenmodus</span></td><td><span class="zustand">läuft</span></td><td class="aktion"><a href="/schalter?kanal=instagram">Anhalten</a></td></tr>
-<tr><td><span class="titel">Facebook</span><span class="unter">Trockenmodus</span></td><td><span class="zustand">läuft</span></td><td class="aktion"><a href="/schalter?kanal=facebook">Anhalten</a></td></tr>
-<tr><td><span class="titel">WhatsApp</span><span class="unter">nur Entwürfe</span></td><td><span class="zustand">läuft</span></td><td class="aktion"><a href="/schalter?kanal=whatsapp">Anhalten</a></td></tr>
+<tr><td><span class="titel">Instagram</span><span class="unter">Trockenmodus</span></td><td class="ecke"><span class="zustand">läuft</span></td><td class="aktion"><a href="/schalter?kanal=instagram">Anhalten</a></td></tr>
+<tr><td><span class="titel">Facebook</span><span class="unter">Trockenmodus</span></td><td class="ecke"><span class="zustand">läuft</span></td><td class="aktion"><a href="/schalter?kanal=facebook">Anhalten</a></td></tr>
+<tr><td><span class="titel">WhatsApp</span><span class="unter">nur Entwürfe</span></td><td class="ecke"><span class="zustand">läuft</span></td><td class="aktion"><a href="/schalter?kanal=whatsapp">Anhalten</a></td></tr>
 </tbody>
 </table>
 </section>

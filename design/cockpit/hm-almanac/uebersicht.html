@@ -31,7 +31,7 @@
 <li><a href="/nutzer">Benutzer</a></li>
 </ul></details></li>
 </ul></nav>
-<div class="lage"><span><b>Radar läuft</b>, alle 3 Minuten</span><span class="lage__lauf">letzter Lauf <time datetime="2026-11-13T18:55">18:55</time></span><span>Redaktion A</span><button class="btn btn--quiet" type="button">Abmelden</button></div>
+<div class="lage"><span><b>Radar läuft</b><span class="lage__lauf">, letzter Lauf <time datetime="2026-11-13T18:55">18:55</time></span></span><span class="lage__wer">Redaktion A</span><button class="btn btn--text" type="button">Abmelden</button></div>
 <details class="menue"><summary>Menü</summary>
 <div class="menue__panel"><nav aria-label="Bereiche, Handy"><ul>
 <li><a href="uebersicht.html" aria-current="page"><span>Übersicht</span></a></li>
@@ -82,14 +82,14 @@
 <table class="tafel tafel--dicht tafel--stapel">
 <thead><tr><th scope="col">Kanal</th><th scope="col">Stand</th><th scope="col" class="r">Aktion</th></tr></thead>
 <tbody>
-<tr><td><span class="titel">alles</span><span class="unter">jeden Kanal</span></td><td><span class="zustand">läuft</span></td><td class="aktion"><a href="/schalter?kanal=alles">Anhalten</a></td></tr>
-<tr><td><span class="titel">redaktion</span><span class="unter">Scan, Agenten, Abrufe</span></td><td><span class="zustand">läuft</span></td><td class="aktion"><a href="/schalter?kanal=redaktion">Anhalten</a></td></tr>
-<tr><td><span class="titel">website</span><span class="unter">Übertragung nach WordPress</span></td><td><span class="zustand">läuft</span></td><td class="aktion"><a href="/schalter?kanal=website">Anhalten</a></td></tr>
-<tr><td><span class="titel">eingang</span><span class="unter">Abholen der Einsendungen</span></td><td><span class="zustand">läuft</span></td><td class="aktion"><a href="/schalter?kanal=eingang">Anhalten</a></td></tr>
-<tr><td><span class="titel">verzeichnis</span><span class="unter">Verzeichnis-Einsendungen</span></td><td><span class="zustand">läuft</span></td><td class="aktion"><a href="/schalter?kanal=verzeichnis">Anhalten</a></td></tr>
-<tr><td><span class="titel">instagram</span><span class="unter">Trockenmodus, keine Konten</span></td><td><span class="zustand">läuft</span></td><td class="aktion"><a href="/schalter?kanal=instagram">Anhalten</a></td></tr>
-<tr><td><span class="titel">facebook</span><span class="unter">Trockenmodus, keine Konten</span></td><td><span class="zustand">läuft</span></td><td class="aktion"><a href="/schalter?kanal=facebook">Anhalten</a></td></tr>
-<tr><td><span class="titel">whatsapp</span><span class="unter">nur Entwürfe</span></td><td><span class="zustand">läuft</span></td><td class="aktion"><a href="/schalter?kanal=whatsapp">Anhalten</a></td></tr>
+<tr><td><span class="titel">alles</span><span class="unter">jeden Kanal</span></td><td class="ecke"><span class="zustand">läuft</span></td><td class="aktion"><a href="/schalter?kanal=alles">Anhalten</a></td></tr>
+<tr><td><span class="titel">redaktion</span><span class="unter">Scan, Agenten, Abrufe</span></td><td class="ecke"><span class="zustand">läuft</span></td><td class="aktion"><a href="/schalter?kanal=redaktion">Anhalten</a></td></tr>
+<tr><td><span class="titel">website</span><span class="unter">Übertragung nach WordPress</span></td><td class="ecke"><span class="zustand">läuft</span></td><td class="aktion"><a href="/schalter?kanal=website">Anhalten</a></td></tr>
+<tr><td><span class="titel">eingang</span><span class="unter">Abholen der Einsendungen</span></td><td class="ecke"><span class="zustand">läuft</span></td><td class="aktion"><a href="/schalter?kanal=eingang">Anhalten</a></td></tr>
+<tr><td><span class="titel">verzeichnis</span><span class="unter">Verzeichnis-Einsendungen</span></td><td class="ecke"><span class="zustand">läuft</span></td><td class="aktion"><a href="/schalter?kanal=verzeichnis">Anhalten</a></td></tr>
+<tr><td><span class="titel">instagram</span><span class="unter">Trockenmodus, keine Konten</span></td><td class="ecke"><span class="zustand">läuft</span></td><td class="aktion"><a href="/schalter?kanal=instagram">Anhalten</a></td></tr>
+<tr><td><span class="titel">facebook</span><span class="unter">Trockenmodus, keine Konten</span></td><td class="ecke"><span class="zustand">läuft</span></td><td class="aktion"><a href="/schalter?kanal=facebook">Anhalten</a></td></tr>
+<tr><td><span class="titel">whatsapp</span><span class="unter">nur Entwürfe</span></td><td class="ecke"><span class="zustand">läuft</span></td><td class="aktion"><a href="/schalter?kanal=whatsapp">Anhalten</a></td></tr>
 </tbody>
 </table>
 <details class="schalter-form">
@@ -124,18 +124,18 @@
 <div class="nur-klein"><svg class="chart" viewBox="0 0 360 220" role="img" aria-label="Diagramm: gesammelte Meldungen je Lauf, Lauf 1600 bis 1619, meist 72 bis 86, Spitzen 169 und 158"><line class="gitter" x1="34" x2="352" y1="139.6" y2="139.6"/><text x="26" y="143.6" text-anchor="end">50</text><line class="gitter" x1="34" x2="352" y1="95.1" y2="95.1"/><text x="26" y="99.1" text-anchor="end">100</text><line class="gitter" x1="34" x2="352" y1="50.7" y2="50.7"/><text x="26" y="54.7" text-anchor="end">150</text><line class="achse" x1="34" x2="352" y1="184" y2="184"/><polyline class="series" points="34.0,117.3 50.7,33.8 67.5,116.4 84.2,118.2 100.9,117.3 117.7,115.6 134.4,112.0 151.2,120.0 167.9,107.6 184.6,119.1 201.4,92.4 218.1,115.6 234.8,115.6 251.6,43.6 268.3,120.0 285.1,118.2 301.8,119.1 318.5,119.1 335.3,117.3 352.0,115.6"/><circle class="punkt" cx="50.7" cy="33.8" r="3.5"/><text x="50.7" y="23.8" text-anchor="middle">169</text><circle class="punkt" cx="251.6" cy="43.6" r="3.5"/><text x="251.6" y="33.6" text-anchor="middle">158</text><text class="lbl" x="34.0" y="204" text-anchor="start">#1600, 18:04</text><text class="lbl" x="352.0" y="204" text-anchor="end">#1619, 18:55</text></svg></div>
 <figcaption>Meist 72 bis 86 Meldungen je Lauf, je Lauf 3 bis 5 relevant. Aussortiert im letzten Lauf: Termin vorbei 3, ohne Bezug 10, Ausland 11, Tageslimit 3.</figcaption>
 </figure>
-<table class="tafel tafel--dicht tafel--stapel abschnitt">
+<table class="tafel tafel--dicht tafel--stapel abschnitt tafel--schmal">
 <caption>Die letzten acht Läufe</caption>
 <thead><tr><th scope="col">Lauf</th><th scope="col">Start</th><th scope="col" class="r">gesammelt</th><th scope="col" class="r">relevant</th><th scope="col" class="r">Entwürfe</th><th scope="col" class="r">Fehler</th></tr></thead>
 <tbody>
-<tr><td class="num" data-l="Lauf">#1619</td><td data-l="Start"><time datetime="2026-11-12T18:55">18:55</time></td><td class="num" data-l="gesammelt">77</td><td class="num" data-l="relevant">3</td><td class="num" data-l="Entwürfe">0</td><td class="num" data-l="Fehler">0</td></tr>
-<tr><td class="num" data-l="Lauf">#1618</td><td data-l="Start"><time datetime="2026-11-12T18:52">18:52</time></td><td class="num" data-l="gesammelt">75</td><td class="num" data-l="relevant">3</td><td class="num" data-l="Entwürfe">0</td><td class="num" data-l="Fehler">0</td></tr>
-<tr><td class="num" data-l="Lauf">#1617</td><td data-l="Start"><time datetime="2026-11-12T18:49">18:49</time></td><td class="num" data-l="gesammelt">73</td><td class="num" data-l="relevant">3</td><td class="num" data-l="Entwürfe">0</td><td class="num" data-l="Fehler">0</td></tr>
-<tr><td class="num" data-l="Lauf">#1616</td><td data-l="Start"><time datetime="2026-11-12T18:48">18:48</time></td><td class="num" data-l="gesammelt">73</td><td class="num" data-l="relevant">3</td><td class="num" data-l="Entwürfe">0</td><td class="num" data-l="Fehler">0</td></tr>
-<tr><td class="num" data-l="Lauf">#1615</td><td data-l="Start"><time datetime="2026-11-12T18:45">18:45</time></td><td class="num" data-l="gesammelt">74</td><td class="num" data-l="relevant">3</td><td class="num" data-l="Entwürfe">0</td><td class="num" data-l="Fehler">0</td></tr>
-<tr><td class="num" data-l="Lauf">#1614</td><td data-l="Start"><time datetime="2026-11-12T18:42">18:42</time></td><td class="num" data-l="gesammelt">72</td><td class="num" data-l="relevant">3</td><td class="num" data-l="Entwürfe">0</td><td class="num" data-l="Fehler">0</td></tr>
-<tr><td class="num" data-l="Lauf">#1613</td><td data-l="Start"><time datetime="2026-11-12T18:39">18:39</time></td><td class="num" data-l="gesammelt">158</td><td class="num" data-l="relevant">3</td><td class="num" data-l="Entwürfe">0</td><td class="num" data-l="Fehler">0</td></tr>
-<tr><td class="num" data-l="Lauf">#1612</td><td data-l="Start"><time datetime="2026-11-12T18:36">18:36</time></td><td class="num" data-l="gesammelt">77</td><td class="num" data-l="relevant">3</td><td class="num" data-l="Entwürfe">0</td><td class="num" data-l="Fehler">0</td></tr>
+<tr><td class="num l" data-l="Lauf">#1619</td><td data-l="Start"><time datetime="2026-11-12T18:55">18:55</time></td><td class="num" data-l="gesammelt">77</td><td class="num" data-l="relevant">3</td><td class="num" data-l="Entwürfe">0</td><td class="num" data-l="Fehler">0</td></tr>
+<tr><td class="num l" data-l="Lauf">#1618</td><td data-l="Start"><time datetime="2026-11-12T18:52">18:52</time></td><td class="num" data-l="gesammelt">75</td><td class="num" data-l="relevant">3</td><td class="num" data-l="Entwürfe">0</td><td class="num" data-l="Fehler">0</td></tr>
+<tr><td class="num l" data-l="Lauf">#1617</td><td data-l="Start"><time datetime="2026-11-12T18:49">18:49</time></td><td class="num" data-l="gesammelt">73</td><td class="num" data-l="relevant">3</td><td class="num" data-l="Entwürfe">0</td><td class="num" data-l="Fehler">0</td></tr>
+<tr><td class="num l" data-l="Lauf">#1616</td><td data-l="Start"><time datetime="2026-11-12T18:48">18:48</time></td><td class="num" data-l="gesammelt">73</td><td class="num" data-l="relevant">3</td><td class="num" data-l="Entwürfe">0</td><td class="num" data-l="Fehler">0</td></tr>
+<tr><td class="num l" data-l="Lauf">#1615</td><td data-l="Start"><time datetime="2026-11-12T18:45">18:45</time></td><td class="num" data-l="gesammelt">74</td><td class="num" data-l="relevant">3</td><td class="num" data-l="Entwürfe">0</td><td class="num" data-l="Fehler">0</td></tr>
+<tr><td class="num l" data-l="Lauf">#1614</td><td data-l="Start"><time datetime="2026-11-12T18:42">18:42</time></td><td class="num" data-l="gesammelt">72</td><td class="num" data-l="relevant">3</td><td class="num" data-l="Entwürfe">0</td><td class="num" data-l="Fehler">0</td></tr>
+<tr><td class="num l" data-l="Lauf">#1613</td><td data-l="Start"><time datetime="2026-11-12T18:39">18:39</time></td><td class="num" data-l="gesammelt">158</td><td class="num" data-l="relevant">3</td><td class="num" data-l="Entwürfe">0</td><td class="num" data-l="Fehler">0</td></tr>
+<tr><td class="num l" data-l="Lauf">#1612</td><td data-l="Start"><time datetime="2026-11-12T18:36">18:36</time></td><td class="num" data-l="gesammelt">77</td><td class="num" data-l="relevant">3</td><td class="num" data-l="Entwürfe">0</td><td class="num" data-l="Fehler">0</td></tr>
 </tbody>
 </table>
 <div class="leer abschnitt">
