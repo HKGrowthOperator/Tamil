@@ -45,6 +45,18 @@ function tamil_site_stripe_testmodus(): bool {
 }
 
 /**
+ * Darf mit diesem Schlüssel eine Zahlung starten? Im Testmodus immer; mit einem echten Schlüssel erst, wenn die
+ * Verkaufsbedingungen veröffentlicht sind und ihre Fassung gesetzt ist.
+ */
+function tamil_site_stripe_checkout_erlaubt( string $schluessel ): bool {
+	if ( str_starts_with( $schluessel, 'sk_test_' ) ) {
+		return true;
+	}
+	$seite = get_page_by_path( 'werbebedingungen', OBJECT, 'page' );
+	return '' !== tamil_site_werbung_angebote()['bedingungen_fassung'] && $seite instanceof WP_Post && 'publish' === $seite->post_status;
+}
+
+/**
  * Aufruf der Stripe-API. Prüft unmittelbar davor den Schalter „werbung“ (Stopp-Schalter dieses Bausteins).
  *
  * @param string              $methode     GET oder POST.
@@ -97,8 +109,12 @@ function tamil_site_stripe_aufruf( string $methode, string $pfad, array $daten =
  * @return array<string,mixed>|WP_Error Session (id, url).
  */
 function tamil_site_stripe_checkout( array $b, string $seite ) {
-	$f    = tamil_site_werbung_formate()[ $b['platz'] ];
-	$name = sprintf(
+	if ( ! tamil_site_stripe_checkout_erlaubt( tamil_site_stripe_wert( 'STRIPE_SECRET_KEY' ) ) ) {
+		return new WP_Error( 'bedingungen', __( 'Echte Zahlungen erst mit veröffentlichten Verkaufsbedingungen.', 'tamil-site' ) );
+	}
+	$versuch = tamil_site_werbung_protokoll_anzahl( (int) $b['id'], 'Zahlung bei Stripe gestartet' ) + 1;
+	$f       = tamil_site_werbung_formate()[ $b['platz'] ];
+	$name    = sprintf(
 		/* translators: 1: Platz, 2: Tage, 3: Startdatum */
 		__( 'Werbeplatz %1$s, %2$d Tage ab %3$s', 'tamil-site' ),
 		$f['name'],
@@ -140,7 +156,7 @@ function tamil_site_stripe_checkout( array $b, string $seite ) {
 			// kleinster erlaubter Wert ist 30 Minuten; die Tage bleiben 35 Minuten reserviert
 			'expires_at'           => time() + 31 * MINUTE_IN_SECONDS,
 		),
-		'checkout-' . $b['nummer']
+		'checkout-' . $b['nummer'] . '-' . $versuch
 	);
 }
 
@@ -158,11 +174,16 @@ function tamil_site_stripe_abgleich( array $b ): bool {
 		tamil_site_werbung_protokoll( (int) $b['id'], 'website', 'Abgleich mit Stripe gescheitert: ' . $session->get_error_message() );
 		return false;
 	}
-	if ( 'expired' === ( $session['status'] ?? '' ) ) {
-		tamil_site_werbung_zahlung_abbrechen( $b, 'stripe', 'Zahlung abgelaufen (Abgleich)' );
+	try {
+		if ( 'expired' === ( $session['status'] ?? '' ) ) {
+			tamil_site_werbung_zahlung_abbrechen( $b, 'stripe', 'Zahlung abgelaufen (Abgleich)' );
+			return false;
+		}
+		return 'bezahlt' === tamil_site_werbung_zahlung_bestaetigen( $b, $session, 'Abgleich' );
+	} catch ( Throwable $e ) {
+		tamil_site_werbung_warnung( (int) $b['id'], 'Abgleich mit Stripe nicht gespeichert – bitte prüfen' );
 		return false;
 	}
-	return tamil_site_werbung_zahlung_bestaetigen( $b, $session, 'Abgleich' );
 }
 
 /**
@@ -224,23 +245,27 @@ function tamil_site_stripe_signatur_gueltig( string $rohtext, string $kopf, stri
 }
 
 /**
- * Ereignis-ID merken. false = schon bekannt (Dublette).
+ * Ist die Ereignis-ID schon verarbeitet?
+ */
+function tamil_site_stripe_ereignis_bekannt( string $id ): bool {
+	global $wpdb;
+	return (bool) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i WHERE ereignis_id = %s', tamil_site_werbung_tabelle( 'ereignisse' ), $id ) );
+}
+
+/**
+ * Ereignis-ID als verarbeitet festschreiben (erst nach erfolgreicher Verarbeitung). false nur bei einem Fehler der
+ * Datenbank; eine gleichzeitig schon gespeicherte ID zählt als gemerkt.
  */
 function tamil_site_stripe_ereignis_merken( string $id, string $typ ): bool {
 	global $wpdb;
-	return 1 === (int) $wpdb->query( $wpdb->prepare( 'INSERT IGNORE INTO %i (ereignis_id, typ, empfangen_at) VALUES (%s, %s, %s)', tamil_site_werbung_tabelle( 'ereignisse' ), $id, $typ, gmdate( 'Y-m-d H:i:s' ) ) );
+	$ok = $wpdb->query( $wpdb->prepare( 'INSERT IGNORE INTO %i (ereignis_id, typ, empfangen_at) VALUES (%s, %s, %s)', tamil_site_werbung_tabelle( 'ereignisse' ), $id, $typ, gmdate( 'Y-m-d H:i:s' ) ) );
+	return false !== $ok;
 }
 
 /**
- * Ereignis-ID wieder vergessen (die Verarbeitung ist gescheitert, Stripe soll erneut senden).
- */
-function tamil_site_stripe_ereignis_vergessen( string $id ): void {
-	global $wpdb;
-	$wpdb->delete( tamil_site_werbung_tabelle( 'ereignisse' ), array( 'ereignis_id' => $id ) );
-}
-
-/**
- * Ein geprüftes Ereignis verarbeiten.
+ * Ein geprüftes Ereignis verarbeiten. Wirft eine Ausnahme, wenn etwas nicht gespeichert werden konnte oder eine
+ * bezahlte Zahlung nicht übernommen werden kann: Dann antwortet der Webhook 500, die Ereignis-ID bleibt ungemerkt und
+ * Stripe sendet erneut.
  *
  * @param array<string,mixed> $ereignis Ereignis von Stripe.
  * @return string Kurzbeschreibung (für die Antwort).
@@ -251,39 +276,54 @@ function tamil_site_stripe_verarbeiten( array $ereignis ): string {
 	$objekt = (array) ( $ereignis['data']['object'] ?? array() );
 	if ( str_starts_with( $typ, 'checkout.session.' ) ) {
 		$b = tamil_site_werbung_buchung_nach_nummer( (string) ( $objekt['client_reference_id'] ?? '' ) );
-		if ( ! $b || (string) ( $objekt['id'] ?? '' ) !== $b['stripe_session'] ) {
+		if ( ! $b ) {
 			return 'unbekannt';
 		}
-		switch ( $typ ) {
-			case 'checkout.session.completed':
-			case 'checkout.session.async_payment_succeeded':
-				return tamil_site_werbung_zahlung_bestaetigen( $b, $objekt, 'Meldung ' . $typ ) ? 'bezahlt' : 'unveraendert';
-			case 'checkout.session.async_payment_failed':
-				return tamil_site_werbung_zahlung_abbrechen( $b, 'stripe', 'Zahlung fehlgeschlagen' ) ? 'frei' : 'unveraendert';
-			case 'checkout.session.expired':
-				return tamil_site_werbung_zahlung_abbrechen( $b, 'stripe', 'Zahlung abgelaufen' ) ? 'frei' : 'unveraendert';
+		if ( 'checkout.session.completed' === $typ || 'checkout.session.async_payment_succeeded' === $typ ) {
+			$ergebnis = tamil_site_werbung_zahlung_bestaetigen( $b, $objekt, 'Meldung ' . $typ );
+			if ( 'fehler' === $ergebnis ) {
+				throw new RuntimeException( 'Zahlung zu ' . esc_html( $b['nummer'] ) . ' nicht übernommen' );
+			}
+			return 'bezahlt' === $ergebnis ? 'bezahlt' : 'unveraendert';
+		}
+		if ( (string) ( $objekt['id'] ?? '' ) !== $b['stripe_session'] ) {
+			return 'unbekannt';
+		}
+		if ( 'checkout.session.async_payment_failed' === $typ ) {
+			return tamil_site_werbung_zahlung_abbrechen( $b, 'stripe', 'Zahlung fehlgeschlagen' ) ? 'frei' : 'unveraendert';
+		}
+		if ( 'checkout.session.expired' === $typ ) {
+			return tamil_site_werbung_zahlung_abbrechen( $b, 'stripe', 'Zahlung abgelaufen' ) ? 'frei' : 'unveraendert';
 		}
 		return 'ignoriert';
 	}
-	if ( 'charge.refunded' === $typ || 'refund.updated' === $typ || 'refund.failed' === $typ ) {
-		$pi = (string) ( $objekt['payment_intent'] ?? '' );
-		$id = (int) $wpdb->get_var( $wpdb->prepare( 'SELECT id FROM %i WHERE stripe_zahlung = %s AND stripe_zahlung <> %s', tamil_site_werbung_tabelle( 'buchungen' ), $pi, '' ) );
-		if ( ! $id ) {
-			return 'unbekannt';
-		}
-		$voll   = 'charge.refunded' === $typ && (int) ( $objekt['amount_refunded'] ?? 0 ) >= (int) ( $objekt['amount'] ?? PHP_INT_MAX );
-		$fertig = 'refund.updated' === $typ && 'succeeded' === ( $objekt['status'] ?? '' );
-		if ( $voll || $fertig ) {
-			$neu = (int) $wpdb->query( $wpdb->prepare( "UPDATE %i SET zahlung = 'erstattet', warnung = '' WHERE id = %d AND zahlung = 'bezahlt'", tamil_site_werbung_tabelle( 'buchungen' ), $id ) );
-			if ( 1 === $neu ) {
-				tamil_site_werbung_protokoll( $id, 'stripe', 'erstattet (Meldung ' . $typ . ')' );
-			}
-			return 'erstattet';
-		}
-		if ( 'refund.failed' === $typ || 'failed' === ( $objekt['status'] ?? '' ) ) {
-			tamil_site_werbung_warnung( $id, 'Erstattung bei Stripe gescheitert – bitte in Stripe prüfen' );
-			return 'warnung';
-		}
+	if ( ! in_array( $typ, array( 'charge.refunded', 'refund.updated', 'refund.failed' ), true ) ) {
+		return 'ignoriert';
+	}
+	$pi = (string) ( $objekt['payment_intent'] ?? '' );
+	$b  = '' !== $pi ? $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM %i WHERE stripe_zahlung = %s', tamil_site_werbung_tabelle( 'buchungen' ), $pi ), ARRAY_A ) : null;
+	if ( ! $b ) {
+		return 'unbekannt';
+	}
+	$id = (int) $b['id'];
+	if ( 'charge.refunded' === $typ ) {
+		$erstattet = (int) ( $objekt['amount_refunded'] ?? 0 );
+	} elseif ( 'refund.failed' === $typ || 'failed' === ( $objekt['status'] ?? '' ) ) {
+		tamil_site_werbung_warnung( $id, 'Erstattung bei Stripe gescheitert – bitte in Stripe prüfen' );
+		return 'warnung';
+	} elseif ( 'succeeded' === ( $objekt['status'] ?? '' ) ) {
+		$erstattet = (int) ( $objekt['amount'] ?? 0 );
+	} else {
+		return 'ignoriert';
+	}
+	// Gemessen am Betrag der Buchung: nur eine volle Erstattung beendet die Anzeige.
+	if ( $erstattet >= (int) $b['betrag'] ) {
+		tamil_site_werbung_als_erstattet( $id, 'Meldung ' . $typ );
+		return 'erstattet';
+	}
+	if ( $erstattet > 0 ) {
+		tamil_site_werbung_protokoll( $id, 'stripe', 'Teilerstattung ' . tamil_site_werbung_betrag_text( $erstattet ) . ' gemeldet (' . $typ . '), Anzeige läuft weiter' );
+		return 'teilerstattung';
 	}
 	return 'ignoriert';
 }
@@ -306,16 +346,20 @@ function tamil_site_stripe_webhook( WP_REST_Request $request ): WP_REST_Response
 	if ( '' === $id ) {
 		return new WP_REST_Response( array( 'fehler' => 'inhalt' ), 400 );
 	}
-	if ( ! tamil_site_stripe_ereignis_merken( $id, substr( (string) ( $ereignis['type'] ?? '' ), 0, 80 ) ) ) {
+	if ( tamil_site_stripe_ereignis_bekannt( $id ) ) {
 		return new WP_REST_Response( array( 'ergebnis' => 'doppelt' ), 200 );
 	}
 	try {
 		$ergebnis = tamil_site_stripe_verarbeiten( $ereignis );
 	} catch ( Throwable $e ) {
-		tamil_site_stripe_ereignis_vergessen( $id );
 		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Fehler gehört ins Server-Log
 		error_log( 'tamil-site: Stripe-Meldung nicht verarbeitet: ' . $e->getMessage() );
 		return new WP_REST_Response( array( 'fehler' => 'verarbeitung' ), 500 );
+	}
+	// Erst jetzt festschreiben: Eine gescheiterte Verarbeitung wird von Stripe wiederholt. Die Verarbeitung ist
+	// idempotent, eine gleichzeitige Zweitzustellung ändert nichts doppelt.
+	if ( ! tamil_site_stripe_ereignis_merken( $id, substr( (string) ( $ereignis['type'] ?? '' ), 0, 80 ) ) ) {
+		return new WP_REST_Response( array( 'fehler' => 'speichern' ), 500 );
 	}
 	return new WP_REST_Response( array( 'ergebnis' => $ergebnis ), 200 );
 }

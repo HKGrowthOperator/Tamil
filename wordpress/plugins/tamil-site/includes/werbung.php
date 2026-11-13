@@ -34,6 +34,21 @@ define( 'TAMIL_SITE_WERBUNG_MAX_BYTES', 500 * 1024 );
 define( 'TAMIL_SITE_WERBUNG_HORIZONT_TAGE', 365 );
 
 /**
+ * Höchstens so viele offene (reservierte, unbezahlte) Buchungen zugleich, über alle Besucher.
+ */
+define( 'TAMIL_SITE_WERBUNG_MAX_OFFEN', 20 );
+
+/**
+ * Höchstens so viele Reservierungen je Verbindung (IP-Hash) in einer Stunde.
+ */
+define( 'TAMIL_SITE_WERBUNG_DROSSEL', 5 );
+
+/**
+ * Nach so vielen Tagen werden die Personendaten nie bezahlter Buchungen geleert.
+ */
+define( 'TAMIL_SITE_WERBUNG_FRIST_UNBEZAHLT_TAGE', 30 );
+
+/**
  * Tabellenname.
  *
  * @param string $name buchungen, tage, statistik, protokoll, ereignisse.
@@ -465,7 +480,8 @@ function tamil_site_werbung_wer(): string {
 }
 
 /**
- * Belegt alle Tage der Buchung (aufsteigend). Scheitert ein Tag, werden die eigenen Tage wieder frei.
+ * Belegt alle Tage der Buchung (aufsteigend). Tage, die schon dieser Buchung gehören, zählen als belegt. Scheitert ein
+ * Tag, werden die eigenen Tage wieder frei.
  *
  * @param array<string,mixed> $b Buchung.
  */
@@ -473,7 +489,10 @@ function tamil_site_werbung_tage_belegen( array $b ): bool {
 	global $wpdb;
 	$tabelle = tamil_site_werbung_tabelle( 'tage' );
 	for ( $tag = (string) $b['start']; $tag <= (string) $b['ende']; $tag = tamil_site_werbung_plus_tage( $tag, 1 ) ) {
-		$ok = (int) $wpdb->query( $wpdb->prepare( 'INSERT IGNORE INTO %i (platz, tag, buchung_id) VALUES (%s, %s, %d)', $tabelle, $b['platz'], $tag, (int) $b['id'] ) );
+		$ok = $wpdb->query( $wpdb->prepare( 'INSERT IGNORE INTO %i (platz, tag, buchung_id) VALUES (%s, %s, %d)', $tabelle, $b['platz'], $tag, (int) $b['id'] ) );
+		if ( 0 === $ok ) {
+			$ok = (int) $wpdb->get_var( $wpdb->prepare( 'SELECT buchung_id FROM %i WHERE platz = %s AND tag = %s', $tabelle, $b['platz'], $tag ) ) === (int) $b['id'] ? 1 : 0;
+		}
 		if ( 1 !== $ok ) {
 			tamil_site_werbung_tage_freigeben( (int) $b['id'] );
 			return false;
@@ -509,11 +528,96 @@ function tamil_site_werbung_aufraeumen(): int {
 		$geaendert = (int) $wpdb->query( $wpdb->prepare( "UPDATE %i SET zahlung = 'fehlgeschlagen' WHERE id = %d AND zahlung = 'offen' AND reserviert_bis < %s", $tabelle, (int) $id, $jetzt ) );
 		if ( 1 === $geaendert ) {
 			tamil_site_werbung_tage_freigeben( (int) $id );
-			tamil_site_werbung_protokoll( (int) $id, 'website', 'Reservierung ohne Zahlung abgelaufen, Tage frei' );
+			tamil_site_werbung_bilder_loeschen( (int) $id );
+			tamil_site_werbung_protokoll( (int) $id, 'website', 'Reservierung ohne Zahlung abgelaufen, Tage frei, Werbemittel gelöscht' );
 			++$frei;
 		}
 	}
+	// Nie bezahlte Buchungen: Personendaten nach der Frist leeren (bezahlte bleiben für das Steuerrecht).
+	$frist = gmdate( 'Y-m-d H:i:s', time() - TAMIL_SITE_WERBUNG_FRIST_UNBEZAHLT_TAGE * DAY_IN_SECONDS );
+	$alt   = $wpdb->get_col( $wpdb->prepare( "SELECT id FROM %i WHERE zahlung = 'fehlgeschlagen' AND erstellt_at < %s AND ( firma <> '' OR email <> '' OR ansprechperson <> '' )", $tabelle, $frist ) );
+	foreach ( $alt as $id ) {
+		tamil_site_werbung_bilder_loeschen( (int) $id );
+		$geleert = $wpdb->query(
+			$wpdb->prepare(
+				"UPDATE %i SET firma = '', ansprechperson = '', rechnungsadresse = '', email = '', telefon = '', ust_id = '', kunden_hash = '' WHERE id = %d AND zahlung = 'fehlgeschlagen'",
+				$tabelle,
+				(int) $id
+			)
+		);
+		if ( 1 === $geleert ) {
+			tamil_site_werbung_protokoll( (int) $id, 'website', 'Personendaten gelöscht (nie bezahlt, Frist ' . TAMIL_SITE_WERBUNG_FRIST_UNBEZAHLT_TAGE . ' Tage)' );
+		}
+	}
 	return $frei;
+}
+
+/**
+ * Datei eines Werbemittels löschen (Pfad relativ zu uploads/).
+ */
+function tamil_site_werbung_datei_loeschen( string $relativ ): void {
+	if ( '' !== $relativ && ! str_contains( $relativ, '..' ) ) {
+		wp_delete_file( trailingslashit( wp_get_upload_dir()['basedir'] ) . $relativ );
+	}
+}
+
+/**
+ * Werbemittel einer nie bezahlten Buchung löschen und die Felder leeren.
+ */
+function tamil_site_werbung_bilder_loeschen( int $id ): void {
+	global $wpdb;
+	$b = tamil_site_werbung_buchung( $id );
+	if ( ! $b || in_array( $b['zahlung'], array( 'bezahlt', 'erstattet' ), true ) ) {
+		return;
+	}
+	tamil_site_werbung_datei_loeschen( (string) $b['werbemittel_desktop'] );
+	tamil_site_werbung_datei_loeschen( (string) $b['werbemittel_mobil'] );
+	$wpdb->update(
+		tamil_site_werbung_tabelle( 'buchungen' ),
+		array(
+			'werbemittel_desktop' => '',
+			'werbemittel_mobil'   => '',
+		),
+		array( 'id' => $id )
+	);
+}
+
+/**
+ * Reservierung bis zum Ablauf der Stripe-Session (plus Puffer) verlängern – nur anheben und nur, solange die Buchung
+ * offen und noch reserviert ist.
+ *
+ * @param int $id  Buchung.
+ * @param int $bis Unix-Zeit.
+ */
+function tamil_site_werbung_reservierung_verlaengern( int $id, int $bis ): bool {
+	global $wpdb;
+	$neu = $wpdb->query(
+		$wpdb->prepare(
+			"UPDATE %i SET reserviert_bis = %s WHERE id = %d AND zahlung = 'offen' AND reserviert_bis >= %s AND reserviert_bis < %s",
+			tamil_site_werbung_tabelle( 'buchungen' ),
+			gmdate( 'Y-m-d H:i:s', $bis ),
+			$id,
+			gmdate( 'Y-m-d H:i:s' ),
+			gmdate( 'Y-m-d H:i:s', $bis )
+		)
+	);
+	return 1 === $neu;
+}
+
+/**
+ * Zahl der offenen, noch reservierten Buchungen.
+ */
+function tamil_site_werbung_offene(): int {
+	global $wpdb;
+	return (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM %i WHERE zahlung = 'offen' AND reserviert_bis >= %s", tamil_site_werbung_tabelle( 'buchungen' ), gmdate( 'Y-m-d H:i:s' ) ) );
+}
+
+/**
+ * Wie oft steht ein Eintrag schon im Protokoll der Buchung (Versuchszähler für Idempotenzschlüssel)?
+ */
+function tamil_site_werbung_protokoll_anzahl( int $id, string $was ): int {
+	global $wpdb;
+	return (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i WHERE buchung_id = %d AND was = %s', tamil_site_werbung_tabelle( 'protokoll' ), $id, $was ) );
 }
 
 /**
@@ -588,6 +692,9 @@ function tamil_site_werbung_reservieren( array $d ) {
 		return new WP_Error( 'start', __( 'Dieser Starttag ist nicht wählbar.', 'tamil-site' ) );
 	}
 	tamil_site_werbung_aufraeumen();
+	if ( tamil_site_werbung_offene() >= TAMIL_SITE_WERBUNG_MAX_OFFEN ) {
+		return new WP_Error( 'voll', __( 'Gerade sind zu viele offene Buchungen in Bearbeitung. Bitte in einer halben Stunde erneut versuchen.', 'tamil-site' ) );
+	}
 	$token = bin2hex( random_bytes( 24 ) );
 	$zeile = array(
 		'platz'               => $platz,
@@ -638,43 +745,55 @@ function tamil_site_werbung_reservieren( array $d ) {
  * @param array<string,mixed> $b       Buchung.
  * @param array<string,mixed> $session Checkout-Session von Stripe.
  * @param string              $quelle  Meldung oder Abgleich.
+ * @return string bezahlt (neu übernommen), schon (nichts zu tun), offen (nicht bezahlt) oder fehler (bezahlt, aber
+ *                nicht übernehmbar – die Warnung ist gesetzt, ein Mensch muss handeln).
  */
-function tamil_site_werbung_zahlung_bestaetigen( array $b, array $session, string $quelle ): bool {
+function tamil_site_werbung_zahlung_bestaetigen( array $b, array $session, string $quelle ): string {
 	global $wpdb;
 	$id = (int) $b['id'];
-	if ( (string) ( $session['id'] ?? '' ) !== (string) $b['stripe_session'] || 'paid' !== ( $session['payment_status'] ?? '' ) ) {
-		return false;
+	if ( 'paid' !== ( $session['payment_status'] ?? '' ) ) {
+		return 'offen';
+	}
+	if ( (string) ( $session['id'] ?? '' ) !== (string) $b['stripe_session'] ) {
+		tamil_site_werbung_warnung( $id, 'Zahlung zu einer anderen Checkout-Session (' . sanitize_text_field( (string) ( $session['id'] ?? '' ) ) . ') eingegangen – bitte in Stripe prüfen' );
+		return 'fehler';
 	}
 	if ( (int) ( $session['amount_total'] ?? -1 ) !== (int) $b['betrag'] || strtolower( (string) ( $session['currency'] ?? '' ) ) !== $b['waehrung'] ) {
 		tamil_site_werbung_warnung( $id, 'Betrag oder Währung der Zahlung passt nicht zur Buchung – bitte in Stripe prüfen' );
-		return false;
+		return 'fehler';
 	}
 	$pi      = $session['payment_intent'] ?? '';
 	$pi      = is_array( $pi ) ? (string) ( $pi['id'] ?? '' ) : (string) $pi;
 	$beleg   = is_array( $session['payment_intent'] ?? null ) ? (string) ( $session['payment_intent']['latest_charge']['receipt_url'] ?? '' ) : '';
 	$tabelle = tamil_site_werbung_tabelle( 'buchungen' );
-	$neu     = (int) $wpdb->query( $wpdb->prepare( "UPDATE %i SET zahlung = 'bezahlt', stripe_zahlung = %s, beleg_url = %s WHERE id = %d AND zahlung = 'offen'", $tabelle, $pi, esc_url_raw( $beleg ), $id ) );
+	$neu     = $wpdb->query( $wpdb->prepare( "UPDATE %i SET zahlung = 'bezahlt', stripe_zahlung = %s, beleg_url = %s WHERE id = %d AND zahlung = 'offen'", $tabelle, $pi, esc_url_raw( $beleg ), $id ) );
 	if ( 1 === $neu ) {
 		tamil_site_werbung_protokoll( $id, 'stripe', 'bezahlt (' . $quelle . ')' );
-		return true;
+		return 'bezahlt';
 	}
-	$jetzt = tamil_site_werbung_buchung( $id );
+	$jetzt = false === $neu ? null : tamil_site_werbung_buchung( $id );
+	if ( $jetzt && in_array( $jetzt['zahlung'], array( 'bezahlt', 'erstattet' ), true ) ) {
+		return 'schon';
+	}
 	if ( $jetzt && 'fehlgeschlagen' === $jetzt['zahlung'] ) {
 		// Zahlung kam nach Ablauf der Reservierung: Tage erneut belegen, sonst muss ein Mensch erstatten.
 		$frei = tamil_site_werbung_tage_belegen( $jetzt );
-		$neu  = (int) $wpdb->query( $wpdb->prepare( "UPDATE %i SET zahlung = 'bezahlt', stripe_zahlung = %s, beleg_url = %s WHERE id = %d AND zahlung = 'fehlgeschlagen'", $tabelle, $pi, esc_url_raw( $beleg ), $id ) );
+		$neu  = $wpdb->query( $wpdb->prepare( "UPDATE %i SET zahlung = 'bezahlt', stripe_zahlung = %s, beleg_url = %s WHERE id = %d AND zahlung = 'fehlgeschlagen'", $tabelle, $pi, esc_url_raw( $beleg ), $id ) );
 		if ( 1 === $neu ) {
 			tamil_site_werbung_protokoll( $id, 'stripe', 'bezahlt nach Ablauf der Reservierung (' . $quelle . ')' );
 			if ( ! $frei ) {
 				tamil_site_werbung_warnung( $id, 'Zahlung nach Ablauf der Reservierung, Tage inzwischen vergeben – bitte erstatten' );
+			} elseif ( '' === $jetzt['werbemittel_desktop'] ) {
+				tamil_site_werbung_warnung( $id, 'Zahlung nach Ablauf der Reservierung, Werbemittel schon gelöscht – neu einreichen lassen oder erstatten' );
 			}
-			return true;
+			return 'bezahlt';
 		}
 		if ( $frei ) {
 			tamil_site_werbung_tage_freigeben( $id );
 		}
 	}
-	return false;
+	tamil_site_werbung_warnung( $id, 'Bezahlte Zahlung konnte nicht übernommen werden – bitte in Stripe prüfen' );
+	return 'fehler';
 }
 
 /**
@@ -684,12 +803,34 @@ function tamil_site_werbung_zahlung_bestaetigen( array $b, array $session, strin
  */
 function tamil_site_werbung_zahlung_abbrechen( array $b, string $wer, string $grund ): bool {
 	global $wpdb;
-	$neu = (int) $wpdb->query( $wpdb->prepare( "UPDATE %i SET zahlung = 'fehlgeschlagen' WHERE id = %d AND zahlung = 'offen'", tamil_site_werbung_tabelle( 'buchungen' ), (int) $b['id'] ) );
+	$neu = $wpdb->query( $wpdb->prepare( "UPDATE %i SET zahlung = 'fehlgeschlagen' WHERE id = %d AND zahlung = 'offen'", tamil_site_werbung_tabelle( 'buchungen' ), (int) $b['id'] ) );
+	if ( false === $neu ) {
+		throw new RuntimeException( 'Buchung ' . (int) $b['id'] . ': Abbruch nicht gespeichert' );
+	}
 	if ( 1 !== $neu ) {
 		return false;
 	}
 	tamil_site_werbung_tage_freigeben( (int) $b['id'] );
-	tamil_site_werbung_protokoll( (int) $b['id'], $wer, $grund . ', Tage frei' );
+	tamil_site_werbung_bilder_loeschen( (int) $b['id'] );
+	tamil_site_werbung_protokoll( (int) $b['id'], $wer, $grund . ', Tage frei, Werbemittel gelöscht' );
+	return true;
+}
+
+/**
+ * Volle Erstattung übernehmen: Zahlung „erstattet“, Tage ab morgen frei (die Anzeige endet sofort, weil die
+ * Aktiv-Funktion „bezahlt“ verlangt).
+ */
+function tamil_site_werbung_als_erstattet( int $id, string $quelle ): bool {
+	global $wpdb;
+	$neu = $wpdb->query( $wpdb->prepare( "UPDATE %i SET zahlung = 'erstattet', warnung = '' WHERE id = %d AND zahlung = 'bezahlt'", tamil_site_werbung_tabelle( 'buchungen' ), $id ) );
+	if ( false === $neu ) {
+		throw new RuntimeException( 'Buchung ' . (int) $id . ': Erstattung nicht gespeichert' );
+	}
+	if ( 1 !== $neu ) {
+		return false;
+	}
+	tamil_site_werbung_tage_freigeben( $id, tamil_site_werbung_heute() );
+	tamil_site_werbung_protokoll( $id, 'stripe', 'erstattet (' . $quelle . '), Tage ab morgen frei' );
 	return true;
 }
 
@@ -759,6 +900,7 @@ function tamil_site_werbung_erstatten( int $id ): bool {
 		tamil_site_werbung_warnung( $id, 'Erstattung nicht möglich: Zahlung bei Stripe unbekannt – bitte in Stripe erstatten' );
 		return false;
 	}
+	$versuch = tamil_site_werbung_protokoll_anzahl( $id, 'Erstattung über Stripe angefordert' ) + 1;
 	tamil_site_werbung_protokoll( $id, tamil_site_werbung_wer(), 'Erstattung über Stripe angefordert' );
 	$antwort = tamil_site_stripe_aufruf(
 		'POST',
@@ -767,7 +909,7 @@ function tamil_site_werbung_erstatten( int $id ): bool {
 			'payment_intent' => $b['stripe_zahlung'],
 			'metadata'       => array( 'buchung' => $b['nummer'] ),
 		),
-		'erstattung-' . $b['nummer']
+		'erstattung-' . $b['nummer'] . '-' . $versuch
 	);
 	if ( is_wp_error( $antwort ) ) {
 		tamil_site_werbung_warnung( $id, 'Erstattung gescheitert: ' . $antwort->get_error_message() );
@@ -775,8 +917,12 @@ function tamil_site_werbung_erstatten( int $id ): bool {
 	}
 	$status = (string) ( $antwort['status'] ?? '' );
 	if ( 'succeeded' === $status ) {
-		$wpdb->query( $wpdb->prepare( "UPDATE %i SET zahlung = 'erstattet', warnung = '' WHERE id = %d AND zahlung = 'bezahlt'", tamil_site_werbung_tabelle( 'buchungen' ), $id ) );
-		tamil_site_werbung_protokoll( $id, 'stripe', 'erstattet' );
+		try {
+			tamil_site_werbung_als_erstattet( $id, 'Antwort auf die Erstattung' );
+		} catch ( Throwable $e ) {
+			tamil_site_werbung_warnung( $id, 'Erstattung bei Stripe erfolgt, aber nicht gespeichert – bitte prüfen' );
+			return false;
+		}
 		return true;
 	}
 	if ( 'pending' === $status || 'requires_action' === $status ) {

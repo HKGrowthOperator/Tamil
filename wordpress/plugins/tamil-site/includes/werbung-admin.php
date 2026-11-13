@@ -65,7 +65,9 @@ function tamil_site_werbung_admin_seite(): void {
 	foreach ( $staende as $schluessel => $name ) {
 		echo ' | <li><a href="' . esc_url( tamil_site_werbung_admin_url( array( 'stand' => $schluessel ) ) ) . '"' . ( $filter === $schluessel ? ' class="current"' : '' ) . '>' . esc_html( $name ) . '</a></li>';
 	}
-	echo '</ul><table class="widefat striped"><thead><tr><th>' . esc_html__( 'Nummer', 'tamil-site' ) . '</th><th>' . esc_html__( 'Platz', 'tamil-site' ) . '</th><th>' . esc_html__( 'Zeitraum', 'tamil-site' ) . '</th><th>' . esc_html__( 'Firma', 'tamil-site' ) . '</th><th>' . esc_html__( 'Betrag', 'tamil-site' ) . '</th><th>' . esc_html__( 'Stand', 'tamil-site' ) . '</th><th>' . esc_html__( 'Warnung', 'tamil-site' ) . '</th></tr></thead><tbody>';
+	/* translators: %d: Tage */
+	echo '</ul><p class="description" style="clear:both">' . esc_html( sprintf( __( 'Nie bezahlte Buchungen: Die Werbemittel werden gelöscht, sobald die Reservierung verfällt; die Personendaten nach %d Tagen. Bezahlte Buchungen bleiben für die steuerliche Aufbewahrung.', 'tamil-site' ), TAMIL_SITE_WERBUNG_FRIST_UNBEZAHLT_TAGE ) ) . '</p>';
+	echo '<table class="widefat striped"><thead><tr><th>' . esc_html__( 'Nummer', 'tamil-site' ) . '</th><th>' . esc_html__( 'Platz', 'tamil-site' ) . '</th><th>' . esc_html__( 'Zeitraum', 'tamil-site' ) . '</th><th>' . esc_html__( 'Firma', 'tamil-site' ) . '</th><th>' . esc_html__( 'Betrag', 'tamil-site' ) . '</th><th>' . esc_html__( 'Stand', 'tamil-site' ) . '</th><th>' . esc_html__( 'Warnung', 'tamil-site' ) . '</th></tr></thead><tbody>';
 	$anzahl = 0;
 	foreach ( $zeilen as $b ) {
 		$stand = tamil_site_werbung_stand( $b );
@@ -250,17 +252,24 @@ function tamil_site_werbung_admin_export(): void {
 add_action( 'admin_post_tamil_wb_export', 'tamil_site_werbung_admin_export' );
 
 /**
- * Euro-Eingabe („1.250,50“ oder „1250.5“) in Cent; leer = 0 (Preis folgt).
+ * Euro-Eingabe in Cent; leer = 0 (Preis folgt), unlesbar = null.
+ * Deutsche Schreibweise: Punkt mit genau drei Ziffern danach trennt Tausender („1.250“ = 1250 €), Komma trennt Cent
+ * („1.250,50“). Ein Punkt mit einer oder zwei Ziffern danach gilt als Dezimalpunkt („12.50“).
  */
-function tamil_site_werbung_cent( string $eingabe ): int {
-	$eingabe = trim( str_replace( array( '€', ' ' ), '', $eingabe ) );
+function tamil_site_werbung_cent( string $eingabe ): ?int {
+	$eingabe = trim( str_replace( array( '€', ' ', "\u{00A0}" ), '', $eingabe ) );
 	if ( '' === $eingabe ) {
 		return 0;
 	}
-	if ( str_contains( $eingabe, ',' ) ) {
-		$eingabe = str_replace( array( '.', ',' ), array( '', '.' ), $eingabe );
+	if ( preg_match( '/^(\d{1,3}(?:\.\d{3})+)(?:,(\d{1,2}))?$/', $eingabe, $m ) || preg_match( '/^(\d+)(?:,(\d{1,2}))?$/', $eingabe, $m ) ) {
+		$euro = (int) str_replace( '.', '', $m[1] );
+		$cent = isset( $m[2] ) ? (int) str_pad( $m[2], 2, '0' ) : 0;
+		return $euro * 100 + $cent;
 	}
-	return is_numeric( $eingabe ) ? max( 0, (int) round( (float) $eingabe * 100 ) ) : 0;
+	if ( preg_match( '/^(\d+)\.(\d{1,2})$/', $eingabe, $m ) ) {
+		return (int) $m[1] * 100 + (int) str_pad( $m[2], 2, '0' );
+	}
+	return null;
 }
 
 /**
@@ -276,6 +285,12 @@ function tamil_site_werbung_admin_angebote(): void {
 	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- nur Anzeige der Rückmeldung
 	if ( isset( $_GET['gespeichert'] ) ) {
 		echo '<div class="notice notice-success"><p>' . esc_html__( 'Gespeichert.', 'tamil-site' ) . '</p></div>';
+	}
+	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- nur Anzeige der Rückmeldung
+	$ungueltig = isset( $_GET['ungueltig'] ) ? absint( $_GET['ungueltig'] ) : 0;
+	if ( $ungueltig ) {
+		/* translators: %d: Anzahl */
+		echo '<div class="notice notice-error"><p>' . esc_html( sprintf( _n( '%d Preis war nicht lesbar und wurde nicht übernommen (bisheriger Wert bleibt). Beispiele: 1.250 oder 1.250,50 oder 99,90.', '%d Preise waren nicht lesbar und wurden nicht übernommen (bisherige Werte bleiben). Beispiele: 1.250 oder 1.250,50 oder 99,90.', $ungueltig, 'tamil-site' ), $ungueltig ) ) . '</p></div>';
 	}
 	echo '<p>' . esc_html__( 'Preise in Euro inklusive Umsatzsteuer. Ein leeres Feld heißt „Preis folgt“: Dann ist die Laufzeit an diesem Platz nicht buchbar. Je Platz läuft zur selben Zeit eine Anzeige (exklusiv); Wechsel mehrerer Anzeigen ist nicht Teil dieses Bausteins.', 'tamil-site' ) . '</p>';
 	echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
@@ -314,13 +329,20 @@ function tamil_site_werbung_admin_angebote_speichern(): void {
 	$laufzeiten = isset( $_POST['laufzeiten'] ) ? sanitize_text_field( wp_unslash( $_POST['laufzeiten'] ) ) : '';
 	$laufzeiten = array_values( array_unique( array_filter( array_map( 'absint', explode( ',', $laufzeiten ) ), static fn( $t ) => $t >= 1 && $t <= 365 ) ) );
 	sort( $laufzeiten );
-	$plaetze = array();
+	$plaetze   = array();
+	$ungueltig = 0;
+	$bisher    = tamil_site_werbung_angebote();
 	// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- jedes Feld wird unten einzeln bereinigt
 	$roh = isset( $_POST['plaetze'] ) && is_array( $_POST['plaetze'] ) ? wp_unslash( $_POST['plaetze'] ) : array();
 	foreach ( array_keys( tamil_site_werbung_formate() ) as $platz ) {
 		$preise = array();
 		foreach ( $laufzeiten as $tage ) {
-			$preise[ $tage ] = tamil_site_werbung_cent( sanitize_text_field( (string) ( $roh[ $platz ]['preise'][ $tage ] ?? '' ) ) );
+			$cent = tamil_site_werbung_cent( sanitize_text_field( (string) ( $roh[ $platz ]['preise'][ $tage ] ?? '' ) ) );
+			if ( null === $cent ) {
+				++$ungueltig; // unlesbar: bisherigen Preis behalten
+				$cent = (int) ( $bisher['plaetze'][ $platz ]['preise'][ $tage ] ?? 0 );
+			}
+			$preise[ $tage ] = $cent;
 		}
 		$plaetze[ $platz ] = array(
 			'aktiv'  => ! empty( $roh[ $platz ]['aktiv'] ),
@@ -337,7 +359,7 @@ function tamil_site_werbung_admin_angebote_speichern(): void {
 		),
 		false
 	);
-	wp_safe_redirect( add_query_arg( array( 'page' => 'tamil-werbung-angebote', 'gespeichert' => 1 ), admin_url( 'admin.php' ) ) ); // phpcs:ignore WordPress.Arrays.ArrayDeclarationSpacing.AssociativeArrayFound
+	wp_safe_redirect( add_query_arg( array( 'page' => 'tamil-werbung-angebote', 'gespeichert' => 1, 'ungueltig' => $ungueltig ), admin_url( 'admin.php' ) ) ); // phpcs:ignore WordPress.Arrays.ArrayDeclarationSpacing.AssociativeArrayFound
 	exit;
 }
 add_action( 'admin_post_tamil_wb_angebote', 'tamil_site_werbung_admin_angebote_speichern' );

@@ -96,6 +96,46 @@ function tamil_site_werbung_cookie_buchung( string $nummer ): ?array {
 }
 
 /**
+ * Cookie mit dem Geheimnis des Kundenlinks (statt des Tokens in der Adresse).
+ */
+const TAMIL_SITE_WERBUNG_KUNDE_COOKIE = 'tamil_wb_kunde';
+
+/**
+ * Geheimnis in ein Cookie legen und auf die Übersicht ohne Token in der Adresse weiterleiten.
+ */
+function tamil_site_werbung_kunde_merken( string $token ): void {
+	setcookie(
+		TAMIL_SITE_WERBUNG_KUNDE_COOKIE,
+		$token,
+		array(
+			'expires'  => time() + 30 * DAY_IN_SECONDS,
+			'path'     => COOKIEPATH ? COOKIEPATH : '/',
+			'secure'   => is_ssl(),
+			'httponly' => true,
+			'samesite' => 'Lax',
+		)
+	);
+	tamil_site_werbung_weiter( add_query_arg( 'wb', 'uebersicht', tamil_site_werbung_seite_url() ) );
+}
+
+/**
+ * Geheimnis des Kundenlinks aus dem Cookie (leer, wenn keins).
+ */
+function tamil_site_werbung_kunde_token(): string {
+	$wert = isset( $_COOKIE[ TAMIL_SITE_WERBUNG_KUNDE_COOKIE ] ) ? sanitize_key( wp_unslash( $_COOKIE[ TAMIL_SITE_WERBUNG_KUNDE_COOKIE ] ) ) : '';
+	return preg_match( '/^[a-f0-9]{48}$/', $wert ) ? $wert : '';
+}
+
+/**
+ * Schlüssel der Drossel für diese Verbindung: Hash der Adresse (REMOTE_ADDR; hinter dem Proxy setzt mod_remoteip die
+ * Adresse des Besuchers), nie die Adresse selbst.
+ */
+function tamil_site_werbung_drossel_schluessel(): string {
+	$ip = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
+	return 'tamil_wb_res_' . substr( hash_hmac( 'sha256', $ip, wp_salt( 'nonce' ) ), 0, 32 );
+}
+
+/**
  * Formulare und Rückkehr von Stripe verarbeiten, bevor die Seite ausgegeben wird.
  */
 function tamil_site_werbung_anfrage(): void {
@@ -125,6 +165,10 @@ function tamil_site_werbung_anfrage(): void {
 			tamil_site_werbung_post_wiederfinden();
 		}
 		return;
+	}
+	$token = tamil_site_werbung_get( 'buchung' );
+	if ( '' !== $token && tamil_site_werbung_buchung_nach_token( $token ) ) {
+		tamil_site_werbung_kunde_merken( $token );
 	}
 	$wb = tamil_site_werbung_get( 'wb' );
 	if ( 'rueckkehr' === $wb ) {
@@ -200,16 +244,15 @@ function tamil_site_werbung_datei_speichern( array $datei ): string {
 	return $relativ;
 }
 
-function tamil_site_werbung_datei_loeschen( string $relativ ): void {
-	if ( '' !== $relativ ) {
-		wp_delete_file( trailingslashit( wp_get_upload_dir()['basedir'] ) . $relativ );
-	}
-}
-
 /**
  * Schritte 3 und 4: Kundendaten und Werbemittel; reserviert die Tage.
  */
 function tamil_site_werbung_post_buchen(): void {
+	$drossel = tamil_site_werbung_drossel_schluessel();
+	if ( (int) get_transient( $drossel ) >= TAMIL_SITE_WERBUNG_DROSSEL ) {
+		tamil_site_werbung_zustand( array( 'fehler' => array( __( 'Zu viele Buchungen von dieser Verbindung. Bitte in einer Stunde erneut versuchen.', 'tamil-site' ) ) ) );
+		return;
+	}
 	$d      = array(
 		'platz'            => sanitize_key( tamil_site_werbung_post( 'platz' ) ),
 		'laufzeit'         => absint( tamil_site_werbung_post( 'laufzeit' ) ),
@@ -286,6 +329,7 @@ function tamil_site_werbung_post_buchen(): void {
 		return;
 	}
 	[ $b, $token ] = $ergebnis;
+	set_transient( $drossel, (int) get_transient( $drossel ) + 1, HOUR_IN_SECONDS );
 	tamil_site_werbung_cookie_setzen( $b['nummer'], $token, 2 * HOUR_IN_SECONDS );
 	tamil_site_werbung_weiter(
 		add_query_arg(
@@ -319,8 +363,9 @@ function tamil_site_werbung_post_bezahlen(): void {
 	}
 	global $wpdb;
 	$fassung = tamil_site_werbung_angebote()['bedingungen_fassung'];
+	$fehler  = __( 'Die Zahlung kann gerade nicht gestartet werden. Bitte in einigen Minuten erneut versuchen.', 'tamil-site' );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- eigene Tabelle
-	$wpdb->update(
+	$ok = $wpdb->update(
 		tamil_site_werbung_tabelle( 'buchungen' ),
 		array(
 			'bedingungen_fassung' => '' !== $fassung ? $fassung : 'Entwurf',
@@ -328,6 +373,10 @@ function tamil_site_werbung_post_bezahlen(): void {
 		),
 		array( 'id' => (int) $b['id'] )
 	);
+	if ( false === $ok ) {
+		tamil_site_werbung_zustand( array( 'fehler' => array( $fehler ) ) );
+		return;
+	}
 	tamil_site_werbung_protokoll( (int) $b['id'], 'kunde', 'Bedingungen angenommen (Fassung ' . ( '' !== $fassung ? $fassung : 'Entwurf' ) . ')' );
 	$session = null;
 	if ( '' !== $b['stripe_session'] ) {
@@ -338,11 +387,19 @@ function tamil_site_werbung_post_bezahlen(): void {
 		$session = tamil_site_stripe_checkout( $b, tamil_site_werbung_seite_url() );
 		if ( is_wp_error( $session ) || empty( $session['id'] ) || empty( $session['url'] ) ) {
 			tamil_site_werbung_protokoll( (int) $b['id'], 'website', 'Zahlung konnte nicht gestartet werden' . ( is_wp_error( $session ) ? ': ' . $session->get_error_message() : '' ) );
-			tamil_site_werbung_zustand( array( 'fehler' => array( __( 'Die Zahlung kann gerade nicht gestartet werden. Bitte in einigen Minuten erneut versuchen.', 'tamil-site' ) ) ) );
+			tamil_site_werbung_zustand( array( 'fehler' => array( $fehler ) ) );
 			return;
 		}
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- eigene Tabelle
-		$wpdb->update( tamil_site_werbung_tabelle( 'buchungen' ), array( 'stripe_session' => (string) $session['id'] ), array( 'id' => (int) $b['id'] ) );
+		// Session nur merken, solange die Buchung noch offen ist; sonst die Session bei Stripe gleich beenden.
+		$gemerkt = $wpdb->query( $wpdb->prepare( "UPDATE %i SET stripe_session = %s WHERE id = %d AND zahlung = 'offen'", tamil_site_werbung_tabelle( 'buchungen' ), (string) $session['id'], (int) $b['id'] ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- eigene Tabelle
+		$bis     = (int) ( $session['expires_at'] ?? 0 );
+		$bis     = ( $bis > time() ? $bis : time() + 31 * MINUTE_IN_SECONDS ) + 5 * MINUTE_IN_SECONDS;
+		if ( 1 !== $gemerkt || ! tamil_site_werbung_reservierung_verlaengern( (int) $b['id'], $bis ) ) {
+			tamil_site_stripe_aufruf( 'POST', 'checkout/sessions/' . rawurlencode( (string) $session['id'] ) . '/expire', array(), 'ablauf-' . $session['id'] );
+			tamil_site_werbung_protokoll( (int) $b['id'], 'website', 'Zahlung nicht gestartet: Reservierung nicht mehr gültig oder nicht gespeichert' );
+			tamil_site_werbung_zustand( array( 'fehler' => array( __( 'Die Reservierung ist abgelaufen; die Tage sind wieder frei. Bitte neu buchen.', 'tamil-site' ) ) ) );
+			return;
+		}
 		tamil_site_werbung_protokoll( (int) $b['id'], 'kunde', 'Zahlung bei Stripe gestartet' );
 	}
 	add_filter( 'allowed_redirect_hosts', 'tamil_site_werbung_stripe_host' );
@@ -377,7 +434,7 @@ function tamil_site_werbung_post_wiederfinden(): void {
 		if ( $b && '' !== $email && hash_equals( strtolower( (string) $b['email'] ), strtolower( $email ) ) ) {
 			$token = tamil_site_werbung_neues_token( (int) $b['id'] );
 			tamil_site_werbung_protokoll( (int) $b['id'], 'kunde', 'Kundenlink neu ausgegeben (Buchungsnummer und E-Mail)' );
-			tamil_site_werbung_weiter( add_query_arg( 'buchung', $token, tamil_site_werbung_seite_url() ) );
+			tamil_site_werbung_kunde_merken( $token );
 		}
 	}
 	tamil_site_werbung_zustand(
@@ -397,11 +454,20 @@ function tamil_site_werbung_rueckkehr(): void {
 	if ( ! $b ) {
 		return;
 	}
-	tamil_site_stripe_abgleich( $b );
-	$paar = tamil_site_werbung_cookie_buchung( $nummer );
+	$paar   = tamil_site_werbung_cookie_buchung( $nummer );
+	$frisch = (string) $b['erstellt_at'] > gmdate( 'Y-m-d H:i:s', time() - DAY_IN_SECONDS );
+	if ( $paar && ( 'offen' === $b['zahlung'] || ( 'fehlgeschlagen' === $b['zahlung'] && $frisch ) ) ) {
+		tamil_site_stripe_abgleich( $b );
+	} elseif ( ! $paar && 'offen' === $b['zahlung'] ) {
+		$sperre = 'tamil_wb_abgleich_' . md5( $nummer );
+		if ( ! get_transient( $sperre ) ) {
+			set_transient( $sperre, 1, MINUTE_IN_SECONDS );
+			tamil_site_stripe_abgleich( $b );
+		}
+	}
 	if ( $paar ) {
 		tamil_site_werbung_cookie_setzen( $nummer, '', -HOUR_IN_SECONDS );
-		tamil_site_werbung_weiter( add_query_arg( 'buchung', $paar[1], tamil_site_werbung_seite_url() ) );
+		tamil_site_werbung_kunde_merken( $paar[1] );
 	}
 	tamil_site_werbung_zustand(
 		array(
@@ -456,6 +522,9 @@ function tamil_site_werbung_shortcode(): string {
 	}
 	if ( '' !== $token ) {
 		$out .= tamil_site_werbung_html_kunde( $token );
+	} elseif ( 'uebersicht' === $wb ) {
+		$kunde = tamil_site_werbung_kunde_token();
+		$out  .= '' !== $kunde ? tamil_site_werbung_html_kunde( $kunde ) : '<p>' . esc_html__( 'In diesem Browser ist keine Buchung gespeichert.', 'tamil-site' ) . '</p>' . tamil_site_werbung_html_wiederfinden();
 	} elseif ( 'buchen' === $wb ) {
 		$out .= tamil_site_werbung_html_buchen();
 	} elseif ( 'zusammenfassung' === $wb ) {

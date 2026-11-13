@@ -46,6 +46,36 @@ function tamil_site_werbung_statistik( int $buchung ): array {
 }
 
 /**
+ * Ist der Aufrufer erkennbar ein Bot (Suchmaschine, Vorschau, Abruf-Werkzeug)?
+ */
+function tamil_site_werbung_bot(): bool {
+	$ua = isset( $_SERVER['HTTP_USER_AGENT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '';
+	return '' === $ua || (bool) preg_match( '/bot\b|bot\/|crawl|spider|slurp|facebookexternalhit|preview|headless|lighthouse|monitor|curl\/|wget\//i', $ua );
+}
+
+/**
+ * Zählt höchstens einmal je Besucher, Buchung, Art und Tag. Erkennung über einen Hash aus Adresse und Tagessalz in
+ * einem Transient (läuft nach einem Tag ab); gespeichert wird weder die Adresse noch der Hash in der Statistik.
+ *
+ * @param string $feld einblendungen oder klicks.
+ */
+function tamil_site_werbung_zaehlen_einmal( int $buchung, string $feld ): bool {
+	if ( tamil_site_werbung_bot() ) {
+		return false;
+	}
+	$tag   = tamil_site_werbung_heute();
+	$ip    = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
+	$salz  = hash_hmac( 'sha256', $tag, wp_salt( 'nonce' ) );
+	$marke = 'tamil_wb_z_' . substr( hash_hmac( 'sha256', $ip . '|' . $buchung . '|' . $feld, $salz ), 0, 32 );
+	if ( get_transient( $marke ) ) {
+		return false;
+	}
+	set_transient( $marke, 1, DAY_IN_SECONDS );
+	tamil_site_werbung_zaehlen( $buchung, $feld, $tag );
+	return true;
+}
+
+/**
  * POST /wp-json/tamil-site/v1/werbung/einblendung (buchung=ID)
  */
 function tamil_site_werbung_rest_einblendung( WP_REST_Request $request ): WP_REST_Response {
@@ -53,7 +83,7 @@ function tamil_site_werbung_rest_einblendung( WP_REST_Request $request ): WP_RES
 	if ( ! tamil_site_funktion_an( 'werbung' ) || ! $b || ! tamil_site_werbung_aktiv( $b ) ) {
 		return new WP_REST_Response( null, 204 );
 	}
-	tamil_site_werbung_zaehlen( (int) $b['id'], 'einblendungen' );
+	tamil_site_werbung_zaehlen_einmal( (int) $b['id'], 'einblendungen' );
 	return new WP_REST_Response( null, 204 );
 }
 
@@ -61,14 +91,12 @@ function tamil_site_werbung_rest_einblendung( WP_REST_Request $request ): WP_RES
  * GET /wp-json/tamil-site/v1/werbung/klick/<id> – zählt und leitet zur Zieladresse weiter.
  */
 function tamil_site_werbung_rest_klick( WP_REST_Request $request ): WP_REST_Response {
-	$b      = tamil_site_werbung_buchung( absint( $request['id'] ) );
-	$ziel   = home_url( '/' );
-	$zaehlt = tamil_site_funktion_an( 'werbung' ) && $b && tamil_site_werbung_aktiv( $b );
-	if ( $b && 'bezahlt' === $b['zahlung'] && 'freigegeben' === $b['pruefung'] && '' !== $b['ziel_url'] ) {
-		$ziel = (string) $b['ziel_url']; // geprüfte Adresse des Kunden; Links aus zwischengespeicherten Seiten sollen weiter funktionieren
-	}
-	if ( $zaehlt ) {
-		tamil_site_werbung_zaehlen( (int) $b['id'], 'klicks' );
+	$b    = tamil_site_werbung_buchung( absint( $request['id'] ) );
+	$ziel = home_url( '/' );
+	// Nur eine aktive Buchung führt zum Kunden; sonst (pausiert, beendet, erstattet …) zur Startseite.
+	if ( tamil_site_funktion_an( 'werbung' ) && $b && tamil_site_werbung_aktiv( $b ) && '' !== $b['ziel_url'] ) {
+		$ziel = (string) $b['ziel_url'];
+		tamil_site_werbung_zaehlen_einmal( (int) $b['id'], 'klicks' );
 	}
 	$antwort = new WP_REST_Response( null, 302 );
 	$antwort->header( 'Location', esc_url_raw( $ziel ) );
