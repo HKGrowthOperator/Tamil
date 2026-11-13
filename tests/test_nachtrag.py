@@ -418,7 +418,8 @@ def _ergebnis(paket: dict) -> dict:
     beitrag = fake_mod.text("<story>\n" + json.dumps({"titel": paket["titel"], "ort": paket["ort"],
                                                        "kategorie": paket["kategorie"]})
                             + "\n</story>\n<claims>\n" + json.dumps(dokus["claims"]) + "\n</claims>", "", {})
-    return {"story_id": paket["story_id"], "claims": dokus["claims"], "widersprueche": [], "beitrag": beitrag}
+    return {"story_id": paket["story_id"], "claims": dokus["claims"], "widersprueche": [], "beitrag": beitrag,
+            "pruefung": fake_mod.pruefung_block(beitrag, dokus["claims"])}
 
 
 def _schreiben(store, settings):

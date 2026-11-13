@@ -820,6 +820,9 @@ def neu_starten(store: Store, story_id: int, notiz: str) -> bool:
     if jobs.offen_fuer_story(store, story_id):
         return False  # die laufende Nachrecherche bzw. Recherche liest das neue Dokument ohnehin
     _recherche_neu(store, story_id, notiz)
+    # protokolliert; die Runden der Nachrecherche zählen über alle Neustarts (höchstens zwei je Story)
+    store.event("neu_gestartet", story=story_id, vorher=story["status"], grund=notiz[:200],
+                runden_nachrecherche=nachrecherche.runden(store, story_id))
     return True
 
 

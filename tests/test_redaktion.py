@@ -8,7 +8,7 @@ from news_radar import sources
 from news_radar.config import load_settings
 from news_radar.store import Store
 from news_radar.workflow import jobs, orchestrator, repo
-from news_radar.workflow.fake import FakeAnthropic, faktencheck as fake_faktencheck
+from news_radar.workflow.fake import FakeAnthropic, faktencheck as fake_faktencheck, pruefung_block
 
 NOW = datetime.now(timezone.utc)
 ARTIKEL = ("Die tamilische Gemeinde in Hamm feiert am Samstag, 14. November, ihr Lichterfest im Sri-Kamadchi-Ampal-Tempel. "
@@ -221,7 +221,8 @@ def test_without_api_key_scan_runs_and_agent_mode_v2_finishes_the_story(settings
         beitrag = text("<story>\n" + json.dumps({"titel": paket["titel"], "ort": "Hamm"}) + "\n</story>\n<claims>\n"
                        + json.dumps(claims) + "\n</claims>", "", {})
         (tmp_path / "e.json").write_text(json.dumps({"ergebnisse": [
-            {"story_id": paket["story_id"], "claims": claims, "widersprueche": [], "beitrag": beitrag}]}))
+            {"story_id": paket["story_id"], "claims": claims, "widersprueche": [], "beitrag": beitrag,
+             "pruefung": pruefung_block(beitrag, claims)}]}))
         stats = import_v2(store, settings, tmp_path / "e.json", von="cloud-sitzung",
                           ctx=Kontext(settings, store, fetch_text=lambda u: ""))
         draft = store.list_drafts("neu")[0]
@@ -491,7 +492,8 @@ def test_agent_import_only_touches_exported_stories_and_survives_bad_input(setti
         datei = tmp_path / "e.json"
         datei.write_text(json.dumps({"ergebnisse": [
             {"story_id": "kaputt"},  # Validierungsfehler: der Rest der Datei läuft trotzdem
-            {"story_id": sid, "claims": claims, "widersprueche": [], "beitrag": beitrag}]}))
+            {"story_id": sid, "claims": claims, "widersprueche": [], "beitrag": beitrag,
+             "pruefung": pruefung_block(beitrag, claims)}]}))
         kw = {"von": "cloud-sitzung", "ctx": Kontext(settings, store, fetch_text=lambda u: "")}
         erst = import_v2(store, settings, datei, **kw)
         assert erst["entwuerfe"] == 1 and len(erst["fehler"]) == 1
@@ -521,7 +523,8 @@ def test_agent_import_needs_evidence_for_every_paragraph(settings, tmp_path, mon
         paket, claims, beitrag = _agent_paket(settings, store, tmp_path)
         beitrag["inhalt_html"] += "<p>Ein Satz, den keine Quelle trägt.</p>"
         (tmp_path / "e.json").write_text(json.dumps({"ergebnisse": [
-            {"story_id": paket["story_id"], "claims": claims, "widersprueche": [], "beitrag": beitrag}]}))
+            {"story_id": paket["story_id"], "claims": claims, "widersprueche": [], "beitrag": beitrag,
+             "pruefung": pruefung_block(beitrag, claims)}]}))
         stats = import_v2(store, settings, tmp_path / "e.json", ctx=Kontext(settings, store, fetch_text=lambda u: ""))
         story = repo.story(store, paket["story_id"])
         assert store.list_drafts("neu") == []

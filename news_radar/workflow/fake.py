@@ -152,6 +152,19 @@ def pruefer(user: str, system: str, req: dict) -> dict:
             "grund": "Keine Kernaussage ist belegt, auch die Nachrecherche fand keinen Bericht mit dem Ereignis."}
 
 
+def pruefung_block(beitrag: dict, claims: list[dict], pruefer: str = "pruefer-agent-1") -> dict:
+    """„pruefung“-Block für den Agent-Import (Tests, Abnahme): Satzurteile wie die zweite KI, andere Instanz."""
+    from datetime import datetime, timezone
+
+    user = (f"<entwurf>\n{json.dumps({'inhalt_html': beitrag.get('inhalt_html', '')}, ensure_ascii=False)}\n</entwurf>\n"
+            f"<claims>\n{json.dumps(claims, ensure_ascii=False)}\n</claims>")
+    saetze = faktencheck(user, "", {})["saetze"] or [  # Beitrag ohne Satz im Haupttext: die Prüfung sagt es
+        {"nr": 1, "satz": "(kein Satz im Haupttext)", "urteil": "kein_fakt", "claim_ids": [], "fundstelle": "",
+         "kern": False}]
+    return {"pruefer": pruefer, "zeitpunkt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            "urteil": "importieren", "befunde": [], "saetze": saetze}
+
+
 def lektorat(user: str, system: str, req: dict) -> dict:
     return {"hinweise": []}
 

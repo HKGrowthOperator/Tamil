@@ -15,7 +15,8 @@ from __future__ import annotations
 import json
 import logging
 import re
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
+from typing import Literal
 from pathlib import Path
 
 from pydantic import BaseModel, Field, ValidationError
@@ -37,12 +38,14 @@ nur aus Claims, die nach den Gate-Regeln bestätigt sind (Primärquelle: Volltex
 oder zwei verschiedene Verlage). Länge nach "laenge". Zu jedem <p>-Absatz (ab 1) die Claim-IDs in "belege", nur
 bestätigte Claims – ein Absatz ohne solchen Beleg schickt die Story in die Nachrecherche.
 Antwort: {"ergebnisse": [{"story_id": …, "claims": [...], "widersprueche": [...], "beitrag": {...},
-"pruefung": {"von": "…", "saetze": [...]}} oder {"story_id": …, "verwerfen": "Grund"} oder
+"pruefung": {"pruefer", "autor", "zeitpunkt", "urteil", "befunde", "saetze"}} oder {"story_id": …, "verwerfen": "Grund"} oder
 {"story_id": …, "neue_quellen": ["https://…"]}]}. Nur diese drei Antworten gibt es: Beitrag, Verwerfen mit Grund oder
 neue Quellen (der Radar liest sie selbst; nie soziale Netzwerke, keine Paywall). Nichts bleibt offen.
-"pruefung": eine zweite KI aus frischem Kontext (eigener Agent, kennt deine Begründung nicht) prüft jeden Satz des
-Beitrags gegen die Dokumente (urteil gedeckt/ungedeckt/widerspruch/kein_fakt, kern true/false); ungedeckte Nebensätze
-streicht der Radar, eine ungedeckte Kernaussage schickt die Story in die Nachrecherche.
+"pruefung" (Pflicht für jeden Beitrag): eine zweite KI aus frischem Kontext – eine andere Instanz als du ("pruefer"
+≠ Autor), kennt deine Begründung nicht – prüft jeden Satz gegen die Dokumente ("saetze": urteil gedeckt/ungedeckt/
+widerspruch/kein_fakt, kern) und meldet "zeitpunkt" (ISO 8601 mit Zeitzone), "urteil" (importieren/nicht_importieren)
+und "befunde" (schwere P1/P2/P3, behoben). Ohne Block, bei "nicht_importieren" oder offenen P1/P2 weist der Import ab.
+Ungedeckte Nebensätze streicht der Radar, eine ungedeckte Kernaussage schickt die Story in die Nachrecherche.
 "nachrecherche": Storys, deren Kernaussagen noch nicht belegt sind. Suche mit "suchanfragen" nach Belegen für
 "fehlend" (Seiten der Veranstalter und Vereine, Berichte registrierter Medien) und liefere "neue_quellen" – oder,
 wenn die bestätigten Aussagen tragen, einen Beitrag nur aus ihnen (notfalls Kurzmeldung). Bei "letzte_runde": true
@@ -52,10 +55,49 @@ Nachtrag ("herkunft": "nachtrag"): Rückblick auf ein Ereignis vom "ereignis_dat
 """
 
 
+class Befund(BaseModel):
+    schwere: Literal["P1", "P2", "P3"]
+    beschreibung: str
+    satz: str = ""
+    behoben: bool = False
+
+
 class AgentPruefung(BaseModel):
-    """Zweite KI im Agent-Modus: ein eigener Agent aus frischem Kontext, Satz für Satz gegen die Dokumente."""
-    von: str = ""
+    """Zweite KI im Agent-Modus (Pflicht für jeden Beitrag, Entscheidung Luis 13.11.2026): eine andere Instanz aus
+    frischem Kontext prüft Satz für Satz gegen die Dokumente."""
+    pruefer: str = ""  # Kennung der prüfenden Instanz – nie die schreibende (?von= bzw. autor)
+    autor: str = ""  # optional: Kennung der schreibenden Instanz, wenn sie von ?von= abweicht
+    zeitpunkt: str = ""  # ISO 8601 mit Zeitzone
+    urteil: Literal["importieren", "nicht_importieren"]
+    befunde: list[Befund] = Field(default_factory=list)
     saetze: list[SatzUrteil] = Field(default_factory=list)
+
+
+PRUEFUNG_ALTER_MAX = timedelta(days=3)
+
+
+def pruefung_fehler(p: AgentPruefung | None, von: str) -> str:
+    """Leer, wenn der Block eine gültige Prüfung durch eine andere Instanz belegt – sonst der Grund der Abweisung."""
+    if p is None:
+        return "Beitrag ohne „pruefung“-Block abgewiesen: jeden Beitrag prüft eine zweite KI (andere Instanz)"
+    pruefer_ = p.pruefer.strip().lower()
+    if not pruefer_ or pruefer_ in {von.strip().lower(), p.autor.strip().lower()}:
+        return "pruefung.pruefer muss eine andere Instanz als der Autor sein"
+    try:
+        zeit = datetime.fromisoformat(p.zeitpunkt.strip().replace("Z", "+00:00"))
+    except ValueError:
+        return "pruefung.zeitpunkt ist kein Zeitpunkt (ISO 8601 mit Zeitzone)"
+    jetzt = datetime.now(timezone.utc)
+    if zeit.tzinfo is None or zeit > jetzt + timedelta(minutes=10) or zeit < jetzt - PRUEFUNG_ALTER_MAX:
+        return "pruefung.zeitpunkt fehlt die Zeitzone, liegt in der Zukunft oder ist älter als drei Tage"
+    if p.urteil == "nicht_importieren":
+        return "Prüfer: nicht importieren"
+    offen = [b for b in p.befunde if b.schwere in ("P1", "P2") and not b.behoben]
+    if offen:
+        return "offene Befunde " + "; ".join(f"{b.schwere}: {b.beschreibung[:100]}" for b in offen)
+    if not p.saetze:
+        return "pruefung.saetze leer: die Satzprüfung fehlt"
+    return ""
 
 
 class AgentErgebnis(BaseModel):
@@ -295,6 +337,11 @@ def _import_eins(ctx: Kontext, store: Store, settings: Settings, item, von: str,
         stats["fehler"].append(f"{e.story_id}: Import nur mit Beitrag, Verwerfen oder neue Quellen – nichts geändert "
                                "(Fehlstellen allein halten keine Story offen)")
         return
+    if e.beitrag is not None and not e.verwerfen:
+        grund = pruefung_fehler(e.pruefung, von)
+        if grund:
+            stats["fehler"].append(f"{e.story_id}: {grund} – nichts geändert")
+            return
     usage_protokollieren(store, rolle="agent", provider="claude-code", modell=von, story_id=e.story_id, status="ok")
     if e.verwerfen:
         _jobs_schliessen(store, e.story_id)
@@ -336,18 +383,19 @@ def _import_eins(ctx: Kontext, store: Store, settings: Settings, item, von: str,
     if kurzmeldung:
         hinweise.append("Kurzmeldung nur aus belegten Aussagen (nach zwei Runden Nachrecherche)")
         hinweise += [f"Nicht im Text, weil nicht belegt: {c.aussage[:120]}" for c in kurzmeldung]
-    if e.pruefung is not None and e.pruefung.saetze:
-        felder, gestrichen, probleme = pruefer.pruefung_anwenden(felder, e.pruefung.saetze)
-        if probleme:
-            _nicht_belegt(store, story, ["Zweite KI: " + "; ".join(u.satz[:120] for u in probleme)], e.fehlend,
-                          gruende + [f"Zweite KI: nicht gedeckt – {u.satz[:120]}" for u in probleme], stats)
-            return
-        hinweise.insert(0, f"Geprüft von zweiter KI ({e.pruefung.von or 'Agent-Modus'}): {len(e.pruefung.saetze)} "
-                           "Sätze gegen die Dokumente geprüft, " + (f"{len(gestrichen)} gestrichen" if gestrichen
-                                                                    else "alle gedeckt"))
-        hinweise += [f"Zweite KI hat gestrichen: „{s[:160]}“" for s in gestrichen]
-    else:
-        hinweise.append("Ohne zweite KI-Prüfung: die Research-Sitzung hat keine Satzprüfung mitgeliefert")
+    pr = e.pruefung  # Pflicht, oben geprüft (andere Instanz, Zeitpunkt, Urteil, keine offenen P1/P2)
+    felder, gestrichen, probleme = pruefer.pruefung_anwenden(felder, pr.saetze)
+    if probleme:
+        _nicht_belegt(store, story, ["Zweite KI: " + "; ".join(u.satz[:120] for u in probleme)], e.fehlend,
+                      gruende + [f"Zweite KI: nicht gedeckt – {u.satz[:120]}" for u in probleme], stats)
+        return
+    repo.fassung_speichern(store, e.story_id, "pruefung", {**felder, "pruefung": pr.model_dump()}, von=pr.pruefer)
+    hinweise.insert(0, f"Geprüft von zweiter KI ({pr.pruefer}, {pr.zeitpunkt[:16].replace('T', ' ')}): "
+                       f"{len(pr.saetze)} Sätze gegen die Dokumente geprüft, "
+                       + (f"{len(gestrichen)} gestrichen" if gestrichen else "alle gedeckt"))
+    hinweise += [f"Zweite KI hat gestrichen: „{s[:160]}“" for s in gestrichen]
+    hinweise += [f"Prüfer-Befund ({b.schwere}{', behoben' if b.behoben else ''}): {b.beschreibung[:160]}"
+                 for b in pr.befunde]
     hinweise += [f"Recherche: Claim verworfen – {v}" for v in verworfen]
     hinweise += copydesk.pruefen(felder, [c for c in g.claims if c.id in bestaetigt], docs, g.laenge,
                                  settings.category_slugs())

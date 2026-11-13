@@ -270,7 +270,9 @@ def test_ohne_modell_import_scheitert_am_gate_nachrecherche_und_eigene_liste_im_
         beitrag = fake_mod.text("<story>\n" + json.dumps({"titel": p["titel"]}) + "\n</story>\n<claims>\n[]\n</claims>",
                                 "", {})
         stats = import_daten(store, settings, {"ergebnisse": [{"story_id": sid, "claims": [], "beitrag": beitrag,
-                                                               "fehlend": ["Bericht des Vereins"]}]}, ctx=ctx)
+                                                               "fehlend": ["Bericht des Vereins"],
+                                                               "pruefung": fake_mod.pruefung_block(beitrag, [])}]},
+                             ctx=ctx)
         assert stats["nachrecherche"] == 1 and repo.story(store, sid)["status"] == "recherche_erforderlich"
         orchestrator.abarbeiten(ctx)  # ohne Modell: nur die Nachrecherche (sucht, kein Aufruf)
         mappe = paket_v2(store, settings, ctx=ctx)
@@ -306,7 +308,8 @@ def test_ohne_modell_letzte_runde_kurzmeldung_oder_verworfen(settings):
         sid = repo.stories(store)[0]["id"]
         beitrag = fake_mod.text("<story>\n{}\n</story>\n<claims>\n[]\n</claims>", "", {})
         for _ in range(3):
-            import_daten(store, settings, {"ergebnisse": [{"story_id": sid, "claims": [], "beitrag": beitrag}]},
+            import_daten(store, settings, {"ergebnisse": [{"story_id": sid, "claims": [], "beitrag": beitrag,
+                                                           "pruefung": fake_mod.pruefung_block(beitrag, [])}]},
                          ctx=ctx)
             orchestrator.abarbeiten(ctx)
         story = repo.story(store, sid)
@@ -359,3 +362,69 @@ def test_cockpit_reiter_in_nachrecherche_ohne_aufforderung_zur_quelle(settings):
     html = admin.get("/recherche").get_data(as_text=True)
     assert f"/story/{sid}/quelle" in html and "<details" in html
     assert "In Nachrecherche" in admin.get("/").get_data(as_text=True)
+
+
+# ---- Agent-Modus: Prüfung durch eine andere Instanz ist Pflicht (Entscheidung Luis, 13.11.2026) ---------------
+
+def _hamm_offen(settings, store):
+    ctx = _ohne_modell(settings, store, texte={"https://www.ruhrnachrichten.de/hamm/lichterfest": HAMM})
+    orchestrator.scan(ctx, [hamm()])
+    p = paket_v2(store, settings, ctx=ctx)["storys"][0]
+    claims = fake_mod.recherche("<dokumente>\n" + json.dumps(p["dokumente"]) + "\n</dokumente>", "", {})["claims"]
+    beitrag = fake_mod.text("<story>\n" + json.dumps({"titel": p["titel"]}) + "\n</story>\n<claims>\n"
+                            + json.dumps(claims) + "\n</claims>", "", {})
+    return ctx, p["story_id"], claims, beitrag
+
+
+@pytest.mark.parametrize("aenderung, fehler", [
+    (None, "ohne „pruefung“"),
+    ({"pruefer": "cloud-sitzung"}, "andere Instanz"),
+    ({"pruefer": ""}, "andere Instanz"),
+    ({"urteil": "nicht_importieren"}, "nicht importieren"),
+    ({"befunde": [{"schwere": "P2", "beschreibung": "Datum fehlt im Beleg", "satz": "x"}]}, "offene Befunde"),
+    ({"zeitpunkt": "gestern"}, "zeitpunkt"),
+    ({"zeitpunkt": "2099-01-01T00:00:00+00:00"}, "zeitpunkt"),
+    ({"saetze": []}, "saetze"),
+])
+def test_import_ohne_gueltige_pruefung_wird_abgewiesen(settings, aenderung, fehler):
+    with Store(settings.db_path) as store:
+        ctx, sid, claims, beitrag = _hamm_offen(settings, store)
+        eintrag = {"story_id": sid, "claims": claims, "beitrag": beitrag}
+        if aenderung is not None:
+            eintrag["pruefung"] = {**fake_mod.pruefung_block(beitrag, claims), **aenderung}
+        stats = import_daten(store, settings, {"ergebnisse": [eintrag]}, von="cloud-sitzung", ctx=ctx)
+        assert stats["entwuerfe"] == 0 and store.list_drafts() == []
+        assert stats["fehler"] and fehler in stats["fehler"][0], stats["fehler"]
+        assert repo.story(store, sid)["status"] == "neu" and jobs.offen_fuer_story(store, sid)  # nichts geändert
+
+
+def test_import_mit_pruefung_einer_anderen_instanz_legt_entwurf_an(settings):
+    with Store(settings.db_path) as store:
+        ctx, sid, claims, beitrag = _hamm_offen(settings, store)
+        block = {**fake_mod.pruefung_block(beitrag, claims, pruefer="pruefer-agent-2"),
+                 "befunde": [{"schwere": "P3", "beschreibung": "Komma im Teaser", "satz": ""},
+                             {"schwere": "P1", "beschreibung": "Zahl war falsch", "satz": "", "behoben": True}]}
+        stats = import_daten(store, settings, {"ergebnisse": [{"story_id": sid, "claims": claims, "beitrag": beitrag,
+                                                               "pruefung": block}]}, von="cloud-sitzung", ctx=ctx)
+        draft = store.list_drafts()[0]
+        fassung = [v for v in repo.fassungen(store, story_id=sid) if v["rolle"] == "pruefung"]
+    assert stats["entwuerfe"] == 1, stats
+    assert any(h.startswith("Geprüft von zweiter KI (pruefer-agent-2") for h in draft["hinweise"])
+    assert any("Komma im Teaser" in h for h in draft["hinweise"])
+    assert fassung and fassung[0]["inhalt"]["pruefung"]["pruefer"] == "pruefer-agent-2"
+
+
+def test_verwerfen_braucht_keine_pruefung(settings):
+    with Store(settings.db_path) as store:
+        ctx, sid, _, _ = _hamm_offen(settings, store)
+        stats = import_daten(store, settings, {"ergebnisse": [{"story_id": sid, "verwerfen": "Dublette"}]}, ctx=ctx)
+        assert stats["verworfen"] == 1 and repo.story(store, sid)["status"] == "verworfen"
+
+
+def test_neustart_einer_verworfenen_story_wird_protokolliert(settings):
+    with Store(settings.db_path) as store:
+        sid = repo.story_anlegen(store, typ="news", titel="Story")
+        repo.story_setzen(store, sid, status="verworfen", notiz="Zweite KI: verworfen – kein Beleg")
+        assert orchestrator.neu_starten(store, sid, "Neue Quelle: WDR")
+        neu = ereignisse(store, "neu_gestartet")
+    assert neu and neu[0]["story"] == sid and neu[0]["vorher"] == "verworfen" and "WDR" in neu[0]["grund"]

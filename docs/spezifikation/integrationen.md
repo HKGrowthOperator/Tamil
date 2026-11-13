@@ -67,6 +67,21 @@ muss. Bildquellen und Lizenzen im Einzelnen: `bilder-und-lizenzen.md`.
 | Stand | gebaut; Schlüssel fehlt (Tor B1). Bis dahin schreibt eine Claude-Sitzung im Agent-Modus (`/api/agent/export`, `/api/agent/import`, `RADAR_AGENT_TOKEN`) ohne API-Kosten (Entscheidung 12.11.: Schreib-Automatik später) |
 | KBS liefert | Freigabe der Modellkosten (Zuarbeit Nr. 12); den Schlüssel trägt Luis in Coolify ein |
 
+### Agent-Import: Block `pruefung` (Entscheidung Luis, 13.11.2026)
+
+Im Agent-Modus prüft die Research-Sitzung jeden Beitrag durch eine zweite KI aus frischem Kontext und liefert dazu in
+`POST /api/agent/import` je Beitrag den Block `pruefung`:
+
+```json
+{"pruefer": "claude-code/pruefer-1", "autor": "claude-code/redakteur-1",
+ "zeitpunkt": "2026-11-13T21:40:00+00:00", "urteil": "importieren",
+ "befunde": [{"schwere": "P3", "beschreibung": "Teaser etwas lang", "satz": "", "behoben": false}],
+ "saetze": [{"nr": 1, "satz": "Der Verein erhielt am Freitag den Integrationspreis.", "urteil": "gedeckt",
+             "claim_ids": ["C1"], "fundstelle": "hat am Freitag den Integrationspreis", "kern": true}]}
+```
+
+Pflicht für jeden Beitrag (Verwerfen braucht keine): eine andere Instanz als der Autor (`pruefer` ≠ `?von=` und ≠ `autor`), `zeitpunkt` ISO 8601 mit Zeitzone, nicht in der Zukunft, höchstens drei Tage alt, `urteil` `importieren` oder `nicht_importieren`, `befunde` mit `schwere` P1/P2/P3 und `behoben`, `saetze` nicht leer (`urteil` gedeckt/ungedeckt/widerspruch/kein_fakt, `kern`). Abgewiesen – nichts geändert – ohne Block, bei gleicher Instanz, ungültigem Zeitpunkt, `nicht_importieren`, offenen P1/P2 oder leeren `saetze`. Danach streicht der Radar ungedeckte Nebensätze; eine ungedeckte Kernaussage schickt die Story in die Nachrecherche. Der Block wird als Fassung `pruefung` gespeichert, der Entwurf trägt „Geprüft von zweiter KI (Prüfer, Zeitpunkt)“ und die Befunde als Hinweise.
+
 ## 5. Google Gemini (KI-Symbolbilder)
 
 | Punkt | Festlegung |

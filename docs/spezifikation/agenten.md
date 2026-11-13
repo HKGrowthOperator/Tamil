@@ -262,10 +262,9 @@ Erreichen: neue bezahlte Jobs warten (`wartet_budget`), Freigabe und Übertragun
   Worker; jeder Absatz braucht Belege aus bestätigten Claims; scheitert das, geht die Story in die Nachrecherche
   (höchstens zwei Runden), danach Kurzmeldung aus bestätigten Claims (Regeln wie beim Prüfer) oder verworfen mit Grund.
   `neue_quellen` (höchstens 5): der Radar liest jede selbst, nie soziale Netzwerke, keine Google-Adressen, keine
-  Paywall, nur mit genug Text; die Story bleibt danach im Export. `pruefung` (`von`, `saetze[]`): Satzprüfung einer
-  zweiten KI aus frischem Kontext (eigener Agent der Sitzung); ungedeckte Nebensätze werden gestrichen, eine ungedeckte
-  Kernaussage schickt die Story in die Nachrecherche; ohne `pruefung` trägt der Entwurf den Hinweis „Ohne zweite
-  KI-Prüfung“. Links nur auf Story-Quellen; Lektorat- und SEO-Regeln; Bildkette; Entwurf mit Hinweis „Agent-Modus“.
+  Paywall, nur mit genug Text; die Story bleibt danach im Export. `pruefung` (Pflicht für jeden Beitrag; Format und Regeln in
+  `integrationen.md`, Abschnitt „Agent-Import: Block pruefung“): Satzprüfung einer zweiten KI aus frischem Kontext durch
+  eine andere Instanz; ohne gültigen Block, bei `nicht_importieren` oder offenen P1/P2 wird der Beitrag abgewiesen. Links nur auf Story-Quellen; Lektorat- und SEO-Regeln; Bildkette; Entwurf mit Hinweis „Agent-Modus“.
   Nachtrag-Entwürfe höchstens `RADAR_NACHTRAG_TAG` je Tag.
 - **Kosten:** in `agent_usage` als Provider `claude-code`, Rolle `agent`, 0 $ (die Sitzung rechnet über das Abo ab).
 - **Protokoll:** `agent_usage`, `log` `agent` (geschrieben/verworfen), `editorial_actions` (Auslöser `agent`).

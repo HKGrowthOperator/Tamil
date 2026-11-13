@@ -460,7 +460,8 @@ def _agent_v2(ctx, sz: Szenario, now: datetime) -> dict:
         dokus = fake_mod.recherche("<dokumente>\n" + json.dumps(p["dokumente"]) + "\n</dokumente>", "", {})
         beitrag = fake_mod.text("<story>\n" + json.dumps({"titel": p["titel"], "ort": p["ort"]}) + "\n</story>\n<claims>\n"
                                 + json.dumps(dokus["claims"]) + "\n</claims>", "", {})
-        ergebnisse.append({"story_id": p["story_id"], "claims": dokus["claims"], "widersprueche": [], "beitrag": beitrag})
+        ergebnisse.append({"story_id": p["story_id"], "claims": dokus["claims"], "widersprueche": [], "beitrag": beitrag,
+                           "pruefung": fake_mod.pruefung_block(beitrag, dokus["claims"], pruefer="abnahme-pruefer")})
     (tmp / "e.json").write_text(json.dumps({"ergebnisse": ergebnisse}), encoding="utf-8")
     stats = import_v2(ctx.store, ctx.settings, tmp / "e.json", von="cloud-sitzung", ctx=ctx)
     return {"agent_entwuerfe": stats["entwuerfe"]}
@@ -481,7 +482,8 @@ def _ergaenzen_scan(ctx, sz: Szenario, now: datetime) -> dict:
     store = ctx.store
     sid = repo.stories(store)[0]["id"]
     leer = fake_mod.text("<story>\n{}\n</story>\n<claims>\n[]\n</claims>", "", {})
-    import_daten(store, ctx.settings, {"ergebnisse": [{"story_id": sid, "claims": [], "beitrag": leer}]}, ctx=ctx)
+    import_daten(store, ctx.settings, {"ergebnisse": [{"story_id": sid, "claims": [], "beitrag": leer,
+                                                       "pruefung": fake_mod.pruefung_block(leer, [])}]}, ctx=ctx)
     orchestrator.abarbeiten(ctx)  # ohne Modell: nur die Nachrecherche
     stats: Counter = Counter()
     stats["in_nachrecherche"] += int(repo.story(store, sid)["status"] == "recherche_erforderlich")
@@ -507,7 +509,8 @@ def _agent_nachrecherche(ctx, sz: Szenario, now: datetime) -> dict:
     sid = repo.stories(store)[0]["id"]
     leer = fake_mod.text("<story>\n{}\n</story>\n<claims>\n[]\n</claims>", "", {})
     import_daten(store, ctx.settings, {"ergebnisse": [{"story_id": sid, "claims": [], "beitrag": leer,
-                                                       "fehlend": ["Bericht des Vereins"]}]}, ctx=ctx)
+                                                       "fehlend": ["Bericht des Vereins"],
+                                                       "pruefung": fake_mod.pruefung_block(leer, [])}]}, ctx=ctx)
     orchestrator.abarbeiten(ctx)
     mappe = paket_v2(store, ctx.settings, ctx=ctx)
     stats: Counter = Counter()
