@@ -1,0 +1,52 @@
+{
+ "einsendungen": [
+  {
+   "id": 41,
+   "vorgangsnummer": "T261113-K7M3Q",
+   "art": "event",
+   "status": "eingegangen",
+   "eingang_at": "2026-11-13T19:42:10+00:00",
+   "abgeholt_at": null,
+   "abgeschlossen_at": null,
+   "name": "Erika Beispiel",
+   "email": "erika@example.test",
+   "telefon": "+49 30 1234567",
+   "einwilligung": true,
+   "einwilligung_fassung": "KBS-Entwurf 1",
+   "felder": {
+    "titel": "Pongal-Fest Testverein",
+    "beginn": "2027-01-16T18:30:00+01:00",
+    "ende": "2027-01-16T22:00:00+01:00",
+    "ort": "Gemeindesaal, Beispielstraße 1",
+    "stadt": "Essen",
+    "land": "DE",
+    "veranstalter": "Testverein e. V.",
+    "beschreibung": "Tanz, Musik und Essen. Alle Familien sind willkommen.",
+    "eintritt": "10 Euro, Kinder frei",
+    "ticket_link": "https://tickets.example.test/pongal"
+   },
+   "bild": null
+  },
+  {
+   "id": 42,
+   "vorgangsnummer": "T261113-P2W9D",
+   "art": "kooperation",
+   "status": "eingegangen",
+   "eingang_at": "2026-11-13T19:55:01+00:00",
+   "abgeholt_at": null,
+   "abgeschlossen_at": null,
+   "name": "Max Muster",
+   "email": "max@example.test",
+   "telefon": "",
+   "einwilligung": true,
+   "einwilligung_fassung": "KBS-Entwurf 1",
+   "felder": {
+    "organisation": "Kulturhaus Beispiel",
+    "anliegen": "Wir möchten gemeinsam eine Lesereihe veranstalten."
+   },
+   "bild": null
+  }
+ ],
+ "weiter": 42,
+ "mehr": false
+}

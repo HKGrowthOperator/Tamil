@@ -86,8 +86,15 @@ def render_event_box(row: dict) -> str:
     rows = []
     if row.get("event_datum"):
         rows.append(f"<p><strong>Wann:</strong> {html.escape(format_date_de(row['event_datum']))}</p>")
+    fakten = row.get("fakten") or {}
+    if fakten.get("event_ende"):
+        rows.append(f"<p><strong>Bis:</strong> {html.escape(format_date_de(fakten['event_ende'], with_time=True))}</p>")
     if row.get("event_ort"):
         rows.append(f"<p><strong>Wo:</strong> {html.escape(row['event_ort'])}</p>")
+    if fakten.get("event_veranstalter"):
+        rows.append(f"<p><strong>Veranstalter:</strong> {html.escape(str(fakten['event_veranstalter']))}</p>")
+    if fakten.get("event_preis"):
+        rows.append(f"<p><strong>Eintritt:</strong> {html.escape(str(fakten['event_preis']))}</p>")
     if row.get("ticket_url"):
         rows.append(f"<p>{_link(row['ticket_url'], 'Tickets')}</p>")
     if not rows:

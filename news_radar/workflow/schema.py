@@ -204,7 +204,40 @@ V9 = [
     "ALTER TABLE assets ADD COLUMN fokus TEXT",               # x,y in Prozent
     "CREATE INDEX IF NOT EXISTS assets_draft ON assets(draft_id, datei)",
 ]
-MIGRATIONS: dict[int, list[str]] = {2: V2, 3: V3, 4: V4, 5: V5, 6: V6, 7: V7, 8: V8, 9: V9}
+# V11: Eingang (Festlegung F1) – abgeholte Einsendungen der Website mit Status, Hinweisen des Agenten, Entwurf und
+# Notiz der Redaktion; `wp_status` ist der zuletzt von WordPress bestätigte Status (Abgleich nach unklarem Ausgang).
+# Personendaten (name, email, telefon) nur hier; Löschung 90 Tage nach Abschluss, Spam nach 7 Tagen, auf der Website
+# nicht mehr vorhanden (wp_status „fehlt“) nach 30 Tagen (eingang.loeschen). `entwurf` hält JSON {"regeln": Entwurf aus
+# den Feldern, "modell": geprüfter Vorschlag oder null}; `wp_status` kann zusätzlich „abgewiesen“ (dauerhafte 4xx) sein.
+# 10 bleibt frei (die Recherche braucht keine Migration); V12 holt V8 und V9 für frühe V11-Datenbanken nach.
+V11 = [
+    """CREATE TABLE IF NOT EXISTS einsendungen (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        wp_id INTEGER NOT NULL UNIQUE,          -- id auf der Website (Cursor)
+        vorgangsnummer TEXT NOT NULL UNIQUE,    -- T261113-K7M3Q
+        art TEXT NOT NULL,                      -- event | beitrag | kooperation | werbung | kontakt
+        status TEXT NOT NULL DEFAULT 'abgeholt',-- abgeholt | vorbereitet | uebernommen | erledigt | abgelehnt | spam
+        wp_status TEXT,                         -- zuletzt bestätigt: eingegangen | abgeholt | Abschluss | fehlt
+        eingang_at TEXT, abgeholt_at TEXT NOT NULL, vorbereitet_at TEXT, abgeschlossen_at TEXT,
+        name TEXT, email TEXT, telefon TEXT,
+        einwilligung INTEGER NOT NULL DEFAULT 0, einwilligung_fassung TEXT,
+        felder TEXT NOT NULL DEFAULT '{}',      -- JSON je Art
+        bild TEXT,                              -- JSON: typ, groesse, sha256, recht_bestaetigt (ohne Datei)
+        zusammenfassung TEXT,
+        hinweise TEXT NOT NULL DEFAULT '[]',    -- JSON-Liste
+        dublette_von TEXT,                      -- story:12 | entwurf:5 | einsendung:T…
+        entwurf TEXT,                           -- JSON: titel, teaser, absaetze, quelle (regeln | modell)
+        entwurf_id INTEGER,                     -- Entwurf nach „übernehmen“
+        notiz TEXT, bearbeitet_von TEXT,
+        versuche INTEGER NOT NULL DEFAULT 0,
+        aktualisiert TEXT NOT NULL)""",
+    "CREATE INDEX IF NOT EXISTS einsendungen_status ON einsendungen(status, eingang_at)",
+    "CREATE TABLE IF NOT EXISTS eingang_stand (schluessel TEXT PRIMARY KEY, wert TEXT)",  # Cursor der Abholung
+]
+# V12: Datenbanken, die V11 vor V8 und V9 bekommen haben (Eingang-Zweig bis 5aab944, user_version 11), holen Social
+# und Lizenzen nach. Alles idempotent: CREATE … IF NOT EXISTS, ADD COLUMN wird übersprungen, wenn die Spalte da ist.
+V12 = [*V8, *V9]
+MIGRATIONS: dict[int, list[str]] = {2: V2, 3: V3, 4: V4, 5: V5, 6: V6, 7: V7, 8: V8, 9: V9, 11: V11, 12: V12}
 LATEST = max(MIGRATIONS)
 
 

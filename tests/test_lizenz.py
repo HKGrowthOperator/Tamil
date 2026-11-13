@@ -30,7 +30,7 @@ def test_migration_9_ergaenzt_assets_und_behaelt_altbestand(tmp_path):
         store.db.execute("PRAGMA user_version = 7")
         store.db.commit()
     with Store(pfad) as store:
-        assert store.db.execute("PRAGMA user_version").fetchone()[0] == schema.LATEST == 9
+        assert store.db.execute("PRAGMA user_version").fetchone()[0] == schema.LATEST >= 9
         spalten = {r[1] for r in store.db.execute("PRAGMA table_info(assets)")}
         assert {"urheber", "lizenz_kuerzel", "lizenz_url", "bild_url", "bearbeitung", "beleg", "geprueft_von",
                 "geprueft_am", "ki_modell", "prompt_hash", "alt", "fokus"} <= spalten

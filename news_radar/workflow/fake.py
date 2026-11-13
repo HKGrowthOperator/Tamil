@@ -153,9 +153,23 @@ def seo(user: str, system: str, req: dict) -> dict:
             "bild_alt": f"Symbolbild: {titel}"[:120]}
 
 
+def eingang(user: str, system: str, req: dict) -> dict:
+    """Einsendung (F1): Zusammenfassung und Entwurf nur aus den Feldern im Block <einsendung>."""
+    e = block(user, "einsendung") or {}
+    f = e.get("felder") or {}
+    titel = f.get("titel") or f.get("thema") or ""
+    text = f.get("beschreibung") or f.get("text") or f.get("anliegen") or f.get("nachricht") or ""
+    erster = (_saetze(text) or [text])[0]
+    ort = ", ".join(x for x in (f.get("stadt"), f.get("land")) if x)
+    zusammen = (titel or erster[:120]) + (f" ({ort})" if ort else "")  # nur Wörter aus der Einsendung
+    entwurf = e.get("art") in ("event", "beitrag")
+    return {"zusammenfassung": zusammen, "titel": titel if entwurf else "", "teaser": erster[:220] if entwurf else "",
+            "absaetze": [text] if entwurf and text else []}
+
+
 STANDARD: dict[str, Responder] = {
     "signal": signal, "cluster": cluster, "recherche": recherche, "text": text, "dossier": text,
-    "faktencheck": faktencheck, "lektorat": lektorat, "seo": seo,
+    "faktencheck": faktencheck, "lektorat": lektorat, "seo": seo, "eingang": eingang,
 }
 
 

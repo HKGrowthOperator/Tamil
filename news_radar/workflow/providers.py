@@ -28,9 +28,9 @@ T = TypeVar("T", bound=BaseModel)
 FALLBACK_BETA = "server-side-fallback-2026-07-01"
 # Effort und Ausgabegrenze je Rolle: billige Rollen knapp, Text und Dossier mit Luft für Thinking
 EFFORT = {"signal": "low", "cluster": "low", "lektorat": "low", "seo": "low", "recherche": "medium",
-          "faktencheck": "medium", "text": "medium", "dossier": "high"}
+          "faktencheck": "medium", "text": "medium", "dossier": "high", "eingang": "low"}
 MAX_TOKENS = {"signal": 4000, "cluster": 2000, "lektorat": 4000, "seo": 3000, "recherche": 12000,
-              "faktencheck": 12000, "text": 16000, "dossier": 32000}
+              "faktencheck": 12000, "text": 16000, "dossier": 32000, "eingang": 3000}
 OHNE_FALLBACK = ("claude-haiku",)  # für Haiku gibt es keinen serverseitigen Fallback
 
 
@@ -149,9 +149,11 @@ class Claude:
         retries: int | None = None,
         cache: bool = True,
         schema: dict | None = None,
+        kanal: str = "redaktion",
     ) -> Antwort:
         """Ruft Claude mit strukturiertem Output auf. BudgetErschoepft, wenn das Budget den Aufruf nicht trägt;
-        API-Fehler werden protokolliert und weitergereicht (der Job-Runner entscheidet über Wiederholung)."""
+        API-Fehler werden protokolliert und weitergereicht (der Job-Runner entscheidet über Wiederholung). `kanal` ist
+        der Stopp-Schalter, der unmittelbar vor dem Aufruf geprüft wird (Redaktion; der Eingang hat seinen eigenen)."""
         modell = modell or self.settings.modell_fuer(rolle)
         max_tokens = max_tokens or MAX_TOKENS.get(rolle, 8000)
         version = prompt_version(system)
@@ -187,7 +189,7 @@ class Claude:
             client = client.with_options(**opts)
         try:
             # Stopp-Schalter unmittelbar vor dem Aufruf nach außen: wirft Gestoppt, kein Aufruf, keine Kosten
-            schalter.pruefen(self.store, "redaktion")
+            schalter.pruefen(self.store, kanal)
             t0 = time.monotonic()
             try:
                 response = client.beta.messages.create(**kwargs)
