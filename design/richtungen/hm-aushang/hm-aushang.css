@@ -5,6 +5,10 @@
 /* Hallmark · waive 22 · ink and greys at zero chroma · a notice board is printed in plain black, the logo red is the only hue */
 /* Hallmark · waive 49b · headline links run two to four lines on a phone · a story title on the community board is the link and keeps its full wording */
 /* Hallmark · dismissed 58 · the home page lists the week's notices and the hero head is the article's own eight-word title; these are headlines set as the editors wrote them, not marketing copy */
+/* Hallmark · waive 44c · sub-pages open on a banner head and their list starts above the fold · a calendar, a cinema list, a directory and a form are scanned, only the home page takes the full stage */
+/* Hallmark · waive 79 · page heads of the sub-pages are banners with the list right under them · the gap on the second community page is the banner's own air, never filled with copy */
+/* Hallmark · waive 77 · the Impressum and the list of mentions on a directory profile are short reference blocks · they carry legal and source facts, not a display section */
+/* Hallmark · waive 71 · board rows set each title at the top of its own ruled row beside its date · the rule above a notice is its edge, the space below belongs to the place line and the share link */
 /* Hallmark · swap: draw dealt Split Studio, built as Aushang rows (the material is a board of dated notices); the banner does not retract, the page stays still */
 @import url("./tokens.css");
 @import url("./base.css");
@@ -283,7 +287,7 @@ a:hover { text-decoration-color: var(--color-accent); }
 .legende { font-size: var(--text-sm); }
 .vorgang { display: grid; gap: var(--space-xs); justify-items: start; margin-top: var(--space-xl); }
 .vorgang-label { font-size: var(--text-sm); color: var(--color-ink-2); }
-.vorgang .figur { font-size: var(--text-figure); font-weight: 700; line-height: 1.1; }
+.vorgang .figur { font-size: var(--text-figure); font-weight: 700; line-height: 1.1; padding: var(--space-xs) var(--space-md); }
 
 /* ---------- Monate im Festkalender */
 .monate ul { display: flex; flex-wrap: wrap; column-gap: var(--space-lg); margin: 0 0 var(--space-xl); padding: 0; list-style: none; }

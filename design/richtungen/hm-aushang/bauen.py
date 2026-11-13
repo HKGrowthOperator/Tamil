@@ -267,8 +267,8 @@ def artikel(sid, name):
     body = (f'<article class="artikel"><header class="artikel-kopf"><div class="container">'
             f'<h1>{e(b["titel"])}</h1><p class="lead">{e(b["teaser"])}</p>'
             f'<div class="aktionen aktionen--artikel"><a class="btn btn--still" href="{e(wa(b["titel"]))}">Per WhatsApp schicken</a>'
-            f'<p class="meta"><time datetime="{d.isoformat()}">{datum_lang(d)}</time>{(", " + e(fest)) if fest else ""}<br>{e(b["ort"])}</p></div></div></header>'
-            f'<div class="container">{figur(b, "bild bild--artikel", prio=True, sizes="(min-width: 64rem) 66vw, 100vw")}</div>'
+            f'<p class="meta"><time datetime="{d.isoformat()}">{datum_lang(d)}</time>{(", " + e(fest)) if fest else ""}<br>{e(b["ort"])}</p></div>'
+            f'{figur(b, "bild bild--artikel", prio=True, sizes="(min-width: 64rem) 66vw, 100vw")}</div></header>'
             f'<div class="container artikel-raster"><div class="text">{"".join(absz)}'
             f'<p class="teilen-zeile"><a class="btn" href="{e(wa(b["titel"]))}">Per WhatsApp schicken</a></p></div>{kal}</div></article>'
             + weiter)
@@ -390,7 +390,7 @@ def kino():
              f'<div class="paar paar--5-7">{figur(BEI[84], "bild bild--hoch", sizes="(min-width: 64rem) 40vw, 100vw", fakt="Karthi, Hauptdarsteller von „Sardar 2“.")}'
              f'<ol class="tafel tafel--knapp">{"".join(notiz(d, t, None, link_zu(sid)) for d, sid, t in jahr)}</ol></div></div></section>')
     seite("kino.html", "Tamilisches Kino diese Woche | tamil.de", "Welcher tamilische Film in welcher Stadt läuft.", kopf_ + liste + rueck,
-          aktiv="Kino", skript=True)
+          aktiv="Kino", skript=True, extra_css="wortlaut.css")
 
 
 # ---------------------------------------------------------------- Verzeichnis
@@ -554,15 +554,15 @@ def einreichen():
     # Zustand nach dem Absenden
     danke = (f'<section class="seitenkopf" aria-labelledby="h-dk"><div class="container kopfblock kopfblock--geteilt">'
              f'<h1 id="h-dk">Danke, die Redaktion meldet sich.</h1>'
-             f'<div><p class="lead">Ihr Termin ist eingegangen und wird geprüft. Bitte notieren Sie die Vorgangsnummer.</p>'
-             f'<p class="vorgang"><span class="vorgang-label">Vorgangsnummer</span><span class="figur fill">T-2026-0000</span></p>'
-             f'<p class="hinweis-satz">Ansicht nach dem Absenden. In dieser Probe ist das Formular nicht angeschlossen; die Nummer ist ein Platzhalter.</p></div></div></section>'
-             f'<section class="abschnitt abschnitt--direkt" aria-labelledby="h-dw"><div class="container paar paar--5-7">'
-             f'<div class="kopfblock kopfblock--seite"><h2 id="h-dw">Wie es weitergeht</h2></div>'
+             f'<p class="lead">Ihr Termin ist eingegangen und wird geprüft. Bitte notieren Sie die Vorgangsnummer.</p></div></section>'
+             f'<section class="abschnitt abschnitt--direkt" aria-labelledby="h-dw"><div class="container paar paar--4-8">'
+             f'<div><p class="vorgang"><span class="vorgang-label">Vorgangsnummer</span><span class="figur fill">T-2026-0000</span></p>'
+             f'<p class="hinweis-satz">Ansicht nach dem Absenden. In dieser Probe ist das Formular nicht angeschlossen; die Nummer ist ein Platzhalter.</p></div>'
+             f'<div><h2 id="h-dw" class="visually-hidden">Wie es weitergeht</h2>'
              f'<ol class="schritte"><li><strong>Prüfung.</strong> Die Redaktion liest Datum, Ort und Angaben.</li>'
              f'<li><strong>Freigabe.</strong> Erst danach steht der Termin im Festkalender.</li>'
-             f'<li><strong>Rückfrage.</strong> Fehlt etwas, meldet sich die Redaktion von Hand; automatische E-Mails gibt es nicht.</li></ol></div></section>'
-             f'<section class="abschnitt" aria-label="Weiter"><div class="container"><p class="weiter"><a href="termine.html">Zum Festkalender</a><a href="einreichen.html">Weiteren Termin einreichen</a></p></div></section>')
+             f'<li><strong>Rückfrage.</strong> Fehlt etwas, meldet sich die Redaktion von Hand; automatische E-Mails gibt es nicht.</li></ol>'
+             f'<p class="weiter"><a href="termine.html">Zum Festkalender</a><a href="einreichen.html">Weiteren Termin einreichen</a></p></div></div></section>')
     seite("einreichen-danke.html", "Termin eingegangen | tamil.de", "Bestätigung nach dem Einreichen eines Termins.", danke)
 
 
