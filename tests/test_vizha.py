@@ -485,3 +485,9 @@ def test_veranstalter_sperre_nur_als_ganzes_wort(settings):
     text = _zuerich().replace('"alternateName":', '"organizer":{"@type":"Organization","name":"ASTCCO"},'
                               '"alternateName":', 1)
     assert sources.jsonld_termin(text, ZUERICH_URL, _quelle(settings), settings, now=STAND) is not None
+
+
+def test_gesperrter_veranstalter_im_beschreibungstext(settings):
+    """Prüfung 13.11.: Vizha nennt den Veranstalter im Text („organised by …“), nicht im Feld organizer."""
+    text = _zuerich().replace('"description":"', '"description":"Pechu Potti organised by STCC. ', 1)
+    assert sources.jsonld_termin(text, ZUERICH_URL, _quelle(settings), settings, now=STAND) is None

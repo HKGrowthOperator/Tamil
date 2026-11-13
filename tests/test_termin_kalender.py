@@ -188,3 +188,28 @@ def test_gedenk_sperre_gilt_fuer_alle_terminquellen(settings):
     gewaehlt = filtering.select([termin, fest], settings, set(), [], now=jetzt, zaehler=zaehler)
     assert [i.title for i in gewaehlt] == ["Deepavali-Feier in Bern"]
     assert zaehler["gedenktermin"] == 1
+
+
+def test_nachricht_ueber_ein_gedenken_kommt_weiter_durch(settings):
+    from collections import Counter
+
+    jetzt = datetime(2026, 11, 13, 9, tzinfo=timezone.utc)
+    bericht = sources.NewsItem("Polizei Bern prüft Maaveerar-Veranstaltung", "https://x.example/polizei",
+                               "Tamilen in Bern", "Swiss Tamil Info · Schweiz", jetzt, ort="Bern")
+    zaehler = Counter()
+    gewaehlt = filtering.select([bericht], settings, set(), [], now=jetzt, zaehler=zaehler)
+    assert zaehler["gedenktermin"] == 0
+    assert [i.kind for i in gewaehlt] in ([], ["news"])  # andere Regeln (Bezug) dürfen greifen, die Gedenk-Sperre nicht
+
+
+def test_gedenk_sperre_greift_wenn_kind_erst_aus_der_quelle_kommt(settings):
+    """Feed-Eintrag ohne eigene Art (news) aus einer Terminquelle: select setzt kind=event und sperrt dann."""
+    from collections import Counter
+
+    jetzt = datetime(2026, 11, 13, 9, tzinfo=timezone.utc)
+    item = sources.NewsItem("Maaveerar Naal 2026 in Zürich", "https://x.example/zh", "27. November, Zürich",
+                            "Swiss Tamil Info · Events", jetzt, ort="Zürich")
+    assert item.kind == "news"
+    zaehler = Counter()
+    assert filtering.select([item], settings, set(), [], now=jetzt, zaehler=zaehler) == []
+    assert zaehler["gedenktermin"] == 1

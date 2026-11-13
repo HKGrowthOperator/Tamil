@@ -193,7 +193,7 @@ def _ohne_zeichen(text: str) -> str:
 def gedenktermin(item: NewsItem, settings: Settings) -> bool:
     """Termin (kein Bericht), der einen Begriff aus [blocklist] termine nennt – z. B. Maaveerar-Gedenken mit
     LTTE-Bezug. Gilt für alle Terminquellen (Entscheidung Luis 13.11.2026): Kalender lassen solche Termine schon beim
-    Abruf weg, `select` sortiert sie aus allen übrigen Quellen aus (Abnahme-Szenario 67)."""
+    Abruf weg, `select` sortiert sie aus allen übrigen Quellen aus (Abnahme-Szenario 75)."""
     if item.kind != "event":
         return False
     text = _ohne_zeichen(f"{item.title} {item.summary}")

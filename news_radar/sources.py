@@ -543,8 +543,8 @@ def jsonld_termin(text: str, url: str, source: Source, settings: Settings, now: 
     if gedenktermin(item, settings) or gedenktermin(pruefung, settings):
         log.info("%s: Gedenktermin ausgelassen: %s", source.name, title)
         return None
-    werte = ev.get("organizer")
-    if veranstalter_gesperrt([_ld_text(w) for w in (werte if isinstance(werte, list) else [werte])], settings):
+    # Vizha nennt den Veranstalter meist nur im Text („organised by …“), selten im Feld organizer: alles prüfen
+    if veranstalter_gesperrt([title, *voll], settings):
         log.info("%s: Veranstalter gesperrt, ausgelassen: %s", source.name, title)
         return None
     return item

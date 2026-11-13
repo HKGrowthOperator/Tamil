@@ -103,9 +103,25 @@ def test_backnang_an_mit_festauswahl(settings):
 def test_festauswahl_laesst_pooja_tage_weg(monkeypatch, settings):
     _seite(monkeypatch, "srimeenadchiambal_zukunft.html", "text/html; charset=UTF-8")
     q = _quelle(settings, BACKNANG)
-    assert sources.FETCHERS["html"](q, settings) == []  # nur Skandashashti, Fasten, Thiruvempavai: kein Fest
-    q.params = {**q.params, "nur_titel": ["Sarvalaya Deepam"]}
+    # nur das Lichterfest (Sarvalaya Deepam); Skandashashti-, Fasten- und Thiruvempavai-Tage fallen weg
     assert [i.title for i in sources.FETCHERS["html"](q, settings)] == ["சர்வாலய தீபம்/Sarvalaya Deepam"]
+
+
+@pytest.mark.parametrize("titel, fest", [
+    ("கார்த்திகை விரதம்/Karthigai Fasting", False),
+    ("சங்கடஹர சதுர்த்தி/Sankatahara Chaturthi", False),
+    ("ஆங்கிலப் புத்தாண்டு/English New Year", False),
+    ("கார்த்திகை தீபம்/Karthigai Deepam", True),
+    ("மகா சிவராத்திரி/Maha Shivaratri", True),
+    ("ஆடிப்பூரம்/Aadi Pooram", True),
+    ("Kumbabhishekam 2027", True),
+    ("விநாயகர் சதுர்த்தி/Vinayagar Chaturthi", True),
+    ("சித்திரைப் புத்தாண்டு/Tamil New Year", True),
+    ("தீபாவளி/Deepavali Pooja", True),
+])
+def test_festauswahl_trifft_feste_nicht_monatstage(settings, titel, fest):
+    nur = [t.lower() for t in _quelle(settings, BACKNANG).params["nur_titel"]]
+    assert any(t in titel.lower() for t in nur) is fest, titel
 
 
 def test_backnang_termine_mit_datum_und_ort(monkeypatch, settings):
