@@ -26,6 +26,7 @@ require_once TAMIL_RADAR_DIR . 'includes/seo.php';
 require_once TAMIL_RADAR_DIR . 'includes/rest.php';
 require_once TAMIL_RADAR_DIR . 'includes/admin.php';
 require_once TAMIL_RADAR_DIR . 'includes/dashboard.php';
+require_once TAMIL_RADAR_DIR . 'includes/verzeichnis.php';
 
 /**
  * Aktivierung: Rolle anlegen, Version merken, Permalinks auffrischen.

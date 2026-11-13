@@ -29,6 +29,10 @@ require_once TAMIL_SITE_DIR . 'includes/indexierung.php';
 require_once TAMIL_SITE_DIR . 'includes/leistung.php';
 require_once TAMIL_SITE_DIR . 'includes/consent.php';
 require_once TAMIL_SITE_DIR . 'includes/admin.php';
+require_once TAMIL_SITE_DIR . 'includes/verzeichnis.php';
+require_once TAMIL_SITE_DIR . 'includes/verzeichnis-formular.php';
+require_once TAMIL_SITE_DIR . 'includes/verzeichnis-ansicht.php';
+require_once TAMIL_SITE_DIR . 'includes/verzeichnis-admin.php';
 
 register_activation_hook( __FILE__, 'flush_rewrite_rules' );
 register_deactivation_hook( __FILE__, 'flush_rewrite_rules' );
