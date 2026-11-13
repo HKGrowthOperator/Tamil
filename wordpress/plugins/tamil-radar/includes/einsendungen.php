@@ -9,7 +9,9 @@
  *
  * Recht: tamil_einsendungen_abholen (nur Rolle „radar“, vergeben über die Upgrade-Routine von tamil-site).
  * Daten und Prüfungen liegen im Plugin tamil-site (includes/einsendungen.php); fehlt es, antworten die Routen 503.
- * Funktionsschalter „einreichungen“ aus: 503 tamil_funktion_aus. Beschreibung: docs/spezifikation/integrationen.md §3.
+ * Der Funktionsschalter „einreichungen“ steuert nur das Annehmen auf der Website: Abholen, Status und Bild bleiben
+ * erreichbar, damit vorhandene Einsendungen auch nach dem Ausschalten abgeschlossen werden können.
+ * Beschreibung: docs/spezifikation/integrationen.md §3.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -86,14 +88,11 @@ function tamil_radar_einsendungen_routen(): void {
 add_action( 'rest_api_init', 'tamil_radar_einsendungen_routen' );
 
 /**
- * Ist alles da (tamil-site mit Tabelle, Schalter an)? Sonst ein Fehler mit 503.
+ * Ist tamil-site mit Tabelle da? Sonst ein Fehler mit 503.
  */
 function tamil_radar_einsendungen_bereit(): ?WP_Error {
-	if ( ! function_exists( 'tamil_site_einsendung_liste' ) || ! function_exists( 'tamil_site_funktion_an' ) || tamil_site_datenversion() < 2 ) {
+	if ( ! function_exists( 'tamil_site_einsendung_liste' ) || ! function_exists( 'tamil_site_datenversion' ) || tamil_site_datenversion() < 2 ) {
 		return new WP_Error( 'tamil_site_fehlt', __( 'Einsendungen sind auf dieser Website nicht eingerichtet (Plugin tamil-site).', 'tamil-radar' ), array( 'status' => 503 ) );
-	}
-	if ( ! tamil_site_funktion_an( 'einreichungen' ) ) {
-		return new WP_Error( 'tamil_funktion_aus', __( 'Die Funktion „Einreichungen“ ist ausgeschaltet.', 'tamil-radar' ), array( 'status' => 503 ) );
 	}
 	return null;
 }

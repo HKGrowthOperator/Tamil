@@ -22,7 +22,7 @@ define( 'TAMIL_SITE_EINSENDUNG_MAX_LINKS', 3 );
 /** Größte Bilddatei in Byte (5 MB). */
 define( 'TAMIL_SITE_EINSENDUNG_BILD_BYTES', 5 * 1024 * 1024 );
 /** Größtes Bild in Pixeln (Schutz des Arbeitsspeichers beim Neuspeichern). */
-define( 'TAMIL_SITE_EINSENDUNG_BILD_PIXEL', 25000000 );
+define( 'TAMIL_SITE_EINSENDUNG_BILD_PIXEL', 16000000 );
 
 /**
  * Felder je Art. Typen: text, textarea, email, tel, url, datetime, land.
@@ -125,33 +125,123 @@ function tamil_site_einsendung_laender(): array {
 }
 
 /**
- * Einwilligungstext und Fassung (gepflegt unter Werkzeuge → Einsendungen; bis KBS liefert: vorläufige Fassung).
+ * Vorläufige Fassung der Einwilligung, bis KBS den Text liefert.
  *
  * @return array{text:string,fassung:string}
  */
-function tamil_site_einsendung_einwilligung(): array {
-	$standard    = array(
-		'text'    => __( 'Vorläufige Fassung. Ich willige ein, dass Tamil.de meine Angaben speichert, um meine Einsendung zu bearbeiten und mich bei Rückfragen zu kontaktieren. Die Angaben werden 90 Tage nach Abschluss gelöscht.', 'tamil-site' ),
+function tamil_site_einsendung_einwilligung_standard(): array {
+	return array(
+		'text'    => 'Vorläufige Fassung. Ich willige ein, dass Tamil.de meine Angaben speichert, um meine Einsendung zu bearbeiten und mich bei Rückfragen zu kontaktieren. Die Angaben werden 90 Tage nach Abschluss gelöscht.',
 		'fassung' => '2026-11-vorlaeufig',
 	);
-	$gespeichert = get_option( 'tamil_site_einsendungen', array() );
+}
+
+/**
+ * Gültiger Einwilligungstext und seine Fassung (gepflegt unter Werkzeuge → Einsendungen).
+ *
+ * Der Standardtext ist bewusst nicht übersetzbar: Eine Übersetzung änderte den Text, ohne die Fassung zu ändern.
+ *
+ * @param mixed $gespeichert Gespeicherter Stand (Standard: Option tamil_site_einsendungen).
+ * @return array{text:string,fassung:string}
+ */
+function tamil_site_einsendung_einwilligung( $gespeichert = null ): array {
+	$standard    = tamil_site_einsendung_einwilligung_standard();
+	$gespeichert = null === $gespeichert ? get_option( 'tamil_site_einsendungen', array() ) : $gespeichert;
 	$gespeichert = is_array( $gespeichert ) ? array_filter( array_map( 'strval', $gespeichert ), 'strlen' ) : array();
 	return array_merge( $standard, array_intersect_key( $gespeichert, $standard ) );
 }
 
 /**
- * Bereinigung für die Einstellungen (Einwilligungstext und Fassung).
+ * Archiv: Fassung → Text und Zeitpunkt der Ablage. Belegt, welchem Text eine gespeicherte Fassung entspricht.
+ * Einträge werden nie geändert oder gelöscht (auch nicht von der Löschfrist; sie enthalten keine Personendaten).
+ *
+ * @return array<string,array{text:string,seit:string}>
+ */
+function tamil_site_einsendung_fassungen(): array {
+	$archiv   = get_option( 'tamil_site_einsendungen_fassungen', array() );
+	$archiv   = is_array( $archiv ) ? $archiv : array();
+	$standard = tamil_site_einsendung_einwilligung_standard();
+	if ( ! isset( $archiv[ $standard['fassung'] ] ) ) {
+		$archiv[ $standard['fassung'] ] = array(
+			'text' => $standard['text'],
+			'seit' => '',
+		);
+	}
+	return $archiv;
+}
+
+/**
+ * Legt eine Fassung im Archiv ab. Gibt false zurück, wenn die Fassung schon mit einem anderen Text belegt ist.
+ */
+function tamil_site_einsendung_fassung_archivieren( string $fassung, string $text ): bool {
+	$archiv = tamil_site_einsendung_fassungen();
+	if ( isset( $archiv[ $fassung ] ) ) {
+		return $archiv[ $fassung ]['text'] === $text;
+	}
+	$gespeichert             = get_option( 'tamil_site_einsendungen_fassungen', array() );
+	$gespeichert             = is_array( $gespeichert ) ? $gespeichert : array();
+	$gespeichert[ $fassung ] = array(
+		'text' => $text,
+		'seit' => gmdate( 'c' ),
+	);
+	return update_option( 'tamil_site_einsendungen_fassungen', $gespeichert, false );
+}
+
+/**
+ * Bereinigung für die Einstellungen (Einwilligungstext und Fassung). Ein geänderter Text braucht eine neue Fassung,
+ * und eine Fassung steht immer für genau einen Text; sonst bleibt der alte Stand mit einer Fehlermeldung stehen.
+ * Der neue Stand wird im Archiv abgelegt.
  *
  * @param mixed $input Formularwerte.
  * @return array{text:string,fassung:string}
  */
 function tamil_site_sanitize_einsendungen( $input ): array {
-	$input = is_array( $input ) ? $input : array();
-	return array(
+	$input   = is_array( $input ) ? $input : array();
+	$neu     = array(
 		'text'    => sanitize_textarea_field( (string) ( $input['text'] ?? '' ) ),
 		'fassung' => substr( sanitize_key( str_replace( '.', '-', (string) ( $input['fassung'] ?? '' ) ) ), 0, 40 ),
 	);
+	$alt_roh = get_option( 'tamil_site_einsendungen', array() );
+	$alt     = tamil_site_einsendung_einwilligung( $alt_roh );
+	$wirksam = tamil_site_einsendung_einwilligung( $neu );
+	$archiv  = tamil_site_einsendung_fassungen();
+	$fehler  = '';
+	if ( $wirksam['text'] !== $alt['text'] && $wirksam['fassung'] === $alt['fassung'] ) {
+		$fehler = __( 'Der Einwilligungstext wurde geändert: Bitte eine neue Fassung angeben. Der bisherige Stand bleibt.', 'tamil-site' );
+	} elseif ( isset( $archiv[ $wirksam['fassung'] ] ) && $archiv[ $wirksam['fassung'] ]['text'] !== $wirksam['text'] ) {
+		$fehler = __( 'Diese Fassung gibt es schon mit einem anderen Text: Bitte eine neue Fassung angeben. Der bisherige Stand bleibt.', 'tamil-site' );
+	}
+	if ( '' !== $fehler ) {
+		if ( function_exists( 'add_settings_error' ) ) {
+			add_settings_error( 'tamil_site_einsendungen', 'fassung', $fehler );
+		}
+		$alt_roh = is_array( $alt_roh ) ? $alt_roh : array();
+		return array(
+			'text'    => (string) ( $alt_roh['text'] ?? '' ),
+			'fassung' => (string) ( $alt_roh['fassung'] ?? '' ),
+		);
+	}
+	tamil_site_einsendung_fassung_archivieren( $wirksam['fassung'], $wirksam['text'] );
+	return $neu;
 }
+
+/**
+ * Einstellung registrieren (bei init, damit jede Änderung der Option durch die Prüfung geht, nicht nur über
+ * options.php).
+ */
+function tamil_site_einsendungen_einstellung(): void {
+	register_setting(
+		'tamil_site_einsendungen',
+		'tamil_site_einsendungen',
+		array(
+			'type'              => 'array',
+			'sanitize_callback' => 'tamil_site_sanitize_einsendungen',
+			'default'           => array(),
+			'show_in_rest'      => false,
+		)
+	);
+}
+add_action( 'init', 'tamil_site_einsendungen_einstellung' );
 
 /**
  * Zeitstempel für das Formular (Unixzeit plus Prüfsumme, damit niemand ihn vordatiert).
@@ -184,15 +274,28 @@ function tamil_site_einsendung_zeit_pruefen( string $wert, ?int $jetzt = null ):
 }
 
 /**
- * Adresse des Besuchers. Hinter einem Proxy (Traefik in Coolify) zählt der Eintrag aus X-Forwarded-For, den der
- * vertrauenswürdige Proxy angehängt hat: TAMIL_PROXY_ANZAHL in wp-config.php = Zahl der Proxys vor WordPress.
+ * Adresse des Besuchers. Hinter Proxys (Traefik in Coolify) zählt der Eintrag aus X-Forwarded-For, den der äußerste
+ * vertrauenswürdige Proxy angehängt hat: TAMIL_PROXY_ANZAHL in wp-config.php = Zahl der Proxys vor WordPress
+ * (wordpress/docker/start.sh schreibt sie aus der gleichnamigen Variable). Einträge davor kann der Besucher fälschen
+ * und werden nie genommen. 0 (Standard): REMOTE_ADDR.
+ *
+ * @param int|null    $proxys Zahl der Proxys (Standard: TAMIL_PROXY_ANZAHL oder 0).
+ * @param string|null $remote REMOTE_ADDR (Standard: aus dem Aufruf).
+ * @param string|null $kette  X-Forwarded-For (Standard: aus dem Aufruf).
  */
-function tamil_site_einsendung_client_ip(): string {
-	$ip     = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
-	$proxys = defined( 'TAMIL_PROXY_ANZAHL' ) ? (int) TAMIL_PROXY_ANZAHL : 0;
-	if ( $proxys > 0 && isset( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
-		$kette = array_values( array_filter( array_map( 'trim', explode( ',', sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) ) ) ) );
-		$wahl  = $kette[ count( $kette ) - $proxys ] ?? '';
+function tamil_site_einsendung_client_ip( ?int $proxys = null, ?string $remote = null, ?string $kette = null ): string {
+	$proxys = $proxys ?? ( defined( 'TAMIL_PROXY_ANZAHL' ) ? (int) TAMIL_PROXY_ANZAHL : 0 );
+	if ( null === $remote ) {
+		$remote = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
+	}
+	if ( null === $kette ) {
+		$kette = isset( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) : '';
+	}
+	$ip = filter_var( $remote, FILTER_VALIDATE_IP ) ? $remote : '';
+	if ( $proxys > 0 && '' !== $kette ) {
+		$eintraege = array_values( array_filter( array_map( 'trim', explode( ',', $kette ) ), 'strlen' ) );
+		$index     = count( $eintraege ) - $proxys;
+		$wahl      = $index >= 0 ? $eintraege[ $index ] : '';
 		if ( filter_var( $wahl, FILTER_VALIDATE_IP ) ) {
 			$ip = $wahl;
 		}
@@ -201,10 +304,25 @@ function tamil_site_einsendung_client_ip(): string {
 }
 
 /**
- * Nicht rückrechenbarer Wert der Adresse (HMAC mit dem geheimen Salz der Installation).
+ * Für die Drossel maßgebliches Netz: IPv4 unverändert, IPv6 auf /64 gekürzt (ein Anschluss bekommt meist ein ganzes
+ * /64), IPv4 in IPv6 (::ffff:a.b.c.d) als IPv4.
+ */
+function tamil_site_einsendung_ip_netz( string $ip ): string {
+	if ( ! filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 ) ) {
+		return $ip;
+	}
+	$bin = (string) inet_pton( $ip );
+	if ( str_starts_with( $bin, str_repeat( "\0", 10 ) . "\xff\xff" ) ) {
+		return (string) inet_ntop( substr( $bin, 12 ) );
+	}
+	return inet_ntop( substr( $bin, 0, 8 ) . str_repeat( "\0", 8 ) ) . '/64';
+}
+
+/**
+ * Nicht rückrechenbarer Wert der Adresse bzw. des /64-Netzes (HMAC mit dem geheimen Salz der Installation).
  */
 function tamil_site_einsendung_ip_hash( string $ip ): string {
-	return hash_hmac( 'sha256', $ip, wp_salt( 'nonce' ) );
+	return hash_hmac( 'sha256', tamil_site_einsendung_ip_netz( $ip ), wp_salt( 'nonce' ) );
 }
 
 /**
@@ -215,6 +333,21 @@ function tamil_site_einsendung_drossel_zaehler( string $ip_hash ): int {
 	$t = tamil_site_einsendung_tabelle();
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- eigene Tabelle
 	return (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$t} WHERE ip_hash = %s AND eingang_at >= %s", $ip_hash, gmdate( 'Y-m-d H:i:s', time() - HOUR_IN_SECONDS ) ) );
+}
+
+/**
+ * Datum und Uhrzeit aus dem Formular (2027-01-16T18:30 oder 2027-01-16 18:30) in der Zeitzone der Website. Nur
+ * gültige Angaben: Was PHP stillschweigend umrechnen würde (30. Februar, 25:00, Uhrzeit in der Lücke der
+ * Zeitumstellung), ergibt null.
+ */
+function tamil_site_einsendung_datum( string $wert ): ?DateTimeImmutable {
+	foreach ( array( 'Y-m-d\TH:i', 'Y-m-d H:i' ) as $format ) {
+		$zeit = DateTimeImmutable::createFromFormat( '!' . $format, $wert, wp_timezone() );
+		if ( $zeit && $zeit->format( $format ) === $wert ) {
+			return $zeit;
+		}
+	}
+	return null;
 }
 
 /**
@@ -274,12 +407,9 @@ function tamil_site_einsendung_werte_pruefen( string $art, array $roh ): array {
 				$wert = $sauber;
 				break;
 			case 'datetime':
-				$zeit = DateTimeImmutable::createFromFormat( '!Y-m-d\TH:i', $wert, wp_timezone() );
+				$zeit = tamil_site_einsendung_datum( $wert );
 				if ( ! $zeit ) {
-					$zeit = DateTimeImmutable::createFromFormat( '!Y-m-d H:i', $wert, wp_timezone() );
-				}
-				if ( ! $zeit ) {
-					$fehler[ $key ] = __( 'Bitte Datum und Uhrzeit vollständig angeben.', 'tamil-site' );
+					$fehler[ $key ] = __( 'Bitte ein gültiges Datum mit Uhrzeit angeben.', 'tamil-site' );
 				} else {
 					$wert = $zeit->format( 'c' );
 				}
@@ -342,7 +472,7 @@ function tamil_site_einsendung_bild_annehmen( array $datei, bool $hochgeladen = 
 		return $falsch;
 	}
 	if ( $info[0] < 1 || $info[1] < 1 || $info[0] * $info[1] > TAMIL_SITE_EINSENDUNG_BILD_PIXEL ) {
-		return new WP_Error( 'bild', __( 'Das Bild hat zu viele Pixel (höchstens 25 Megapixel).', 'tamil-site' ) );
+		return new WP_Error( 'bild', __( 'Das Bild hat zu viele Pixel (höchstens 16 Megapixel).', 'tamil-site' ) );
 	}
 	if ( ! function_exists( 'imagecreatefromjpeg' ) ) {
 		return new WP_Error( 'bild', __( 'Bilder können derzeit nicht angenommen werden.', 'tamil-site' ) );
@@ -460,9 +590,11 @@ function tamil_site_einsendung_annehmen( string $art ) {
 	if ( 'schnell' === tamil_site_einsendung_zeit_pruefen( $zeit ) ) {
 		return array_merge( $gepr, array( 'meldung' => $nicht . ' ' . __( 'Sie kam schneller, als ein Mensch tippen kann. Bitte sendet sie noch einmal ab.', 'tamil-site' ) ) );
 	}
-	$ip_hash = tamil_site_einsendung_ip_hash( tamil_site_einsendung_client_ip() );
+	// Die Vorprüfung spart die Bildverarbeitung; verbindlich ist die Zählung nach dem Einfügen (tamil_site_einsendung_speichern).
+	$ip_hash  = tamil_site_einsendung_ip_hash( tamil_site_einsendung_client_ip() );
+	$zu_viele = $nicht . ' ' . __( 'Von eurem Anschluss kamen in der letzten Stunde zu viele Einsendungen. Bitte versucht es später noch einmal.', 'tamil-site' );
 	if ( tamil_site_einsendung_drossel_zaehler( $ip_hash ) >= TAMIL_SITE_EINSENDUNG_JE_STUNDE ) {
-		return array_merge( $gepr, array( 'meldung' => $nicht . ' ' . __( 'Von eurem Anschluss kamen in der letzten Stunde zu viele Einsendungen. Bitte versucht es später noch einmal.', 'tamil-site' ) ) );
+		return array_merge( $gepr, array( 'meldung' => $zu_viele ) );
 	}
 
 	$fehler       = $gepr['fehler'];
@@ -472,6 +604,9 @@ function tamil_site_einsendung_annehmen( string $art ) {
 		$fehler['einwilligung'] = __( 'Ohne Einwilligung können wir die Einsendung nicht annehmen.', 'tamil-site' );
 	} elseif ( $fassung !== $einwilligung['fassung'] ) {
 		$fehler['einwilligung'] = __( 'Der Text der Einwilligung hat sich geändert. Bitte lest ihn und bestätigt ihn noch einmal.', 'tamil-site' );
+	} elseif ( ! tamil_site_einsendung_fassung_archivieren( $einwilligung['fassung'], $einwilligung['text'] ) ) {
+		// Fassung im Archiv mit anderem Text: Die gespeicherte Fassung belegte den Text nicht, also nicht annehmen.
+		$fehler['einwilligung'] = __( 'Die Einwilligung kann gerade nicht angenommen werden. Bitte versucht es später noch einmal.', 'tamil-site' );
 	}
 
 	$bild  = null;
@@ -507,13 +642,15 @@ function tamil_site_einsendung_annehmen( string $art ) {
 			'bild'                  => $bild,
 			'bild_recht_bestaetigt' => $recht,
 			'ip_hash'               => $ip_hash,
-		)
+		),
+		TAMIL_SITE_EINSENDUNG_JE_STUNDE
 	);
 	if ( is_wp_error( $vorgang ) ) {
 		if ( $bild ) {
 			wp_delete_file( tamil_site_einsendung_bildordner() . $bild['datei'] );
 		}
-		return array_merge( $gepr, array( 'meldung' => $vorgang->get_error_message() ) );
+		$meldung = 'tamil_einsendung_drossel' === $vorgang->get_error_code() ? $zu_viele : $vorgang->get_error_message();
+		return array_merge( $gepr, array( 'meldung' => $meldung ) );
 	}
 	return $vorgang;
 }

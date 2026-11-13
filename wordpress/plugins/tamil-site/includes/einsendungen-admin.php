@@ -12,19 +12,6 @@ function tamil_site_einsendungen_admin_menu(): void {
 }
 add_action( 'admin_menu', 'tamil_site_einsendungen_admin_menu' );
 
-function tamil_site_einsendungen_einstellungen(): void {
-	register_setting(
-		'tamil_site_einsendungen',
-		'tamil_site_einsendungen',
-		array(
-			'type'              => 'array',
-			'sanitize_callback' => 'tamil_site_sanitize_einsendungen',
-			'default'           => array(),
-		)
-	);
-}
-add_action( 'admin_init', 'tamil_site_einsendungen_einstellungen' );
-
 /**
  * Seite: Liste (neueste zuerst, 50 je Seite) oder eine Einsendung im Einzelnen.
  */
@@ -63,7 +50,8 @@ function tamil_site_einsendungen_seite(): void {
 		$gepflegt     = (array) get_option( 'tamil_site_einsendungen', array() );
 		?>
 		<h2><?php esc_html_e( 'Einwilligung in den Formularen', 'tamil-site' ); ?></h2>
-		<p class="description"><?php esc_html_e( 'Text und Fassung liefert KBS. Leer lassen = vorläufige Fassung. Gespeichert wird bei jeder Einsendung die Fassung, der zugestimmt wurde.', 'tamil-site' ); ?></p>
+		<p class="description"><?php esc_html_e( 'Text und Fassung liefert KBS. Leer lassen = vorläufige Fassung. Gespeichert wird bei jeder Einsendung die Fassung, der zugestimmt wurde. Ein geänderter Text braucht eine neue Fassung; jede Fassung wird mit ihrem Text unten archiviert.', 'tamil-site' ); ?></p>
+		<?php settings_errors( 'tamil_site_einsendungen' ); ?>
 		<form method="post" action="options.php">
 			<?php settings_fields( 'tamil_site_einsendungen' ); ?>
 			<table class="form-table" role="presentation">
@@ -78,6 +66,23 @@ function tamil_site_einsendungen_seite(): void {
 			</table>
 			<?php submit_button(); ?>
 		</form>
+		<h3><?php esc_html_e( 'Archiv der Fassungen', 'tamil-site' ); ?></h3>
+		<table class="widefat striped">
+			<thead><tr>
+				<th scope="col"><?php esc_html_e( 'Fassung', 'tamil-site' ); ?></th>
+				<th scope="col"><?php esc_html_e( 'Abgelegt', 'tamil-site' ); ?></th>
+				<th scope="col"><?php esc_html_e( 'Text', 'tamil-site' ); ?></th>
+			</tr></thead>
+			<tbody>
+			<?php foreach ( tamil_site_einsendung_fassungen() as $tamil_fassung => $tamil_eintrag ) : ?>
+				<tr>
+					<td><?php echo esc_html( (string) $tamil_fassung ); ?></td>
+					<td><?php echo esc_html( '' !== $tamil_eintrag['seit'] ? wp_date( 'j.n.Y H:i', (int) strtotime( $tamil_eintrag['seit'] ) ) : '–' ); ?></td>
+					<td><?php echo esc_html( $tamil_eintrag['text'] ); ?></td>
+				</tr>
+			<?php endforeach; ?>
+			</tbody>
+		</table>
 	</div>
 	<?php
 }

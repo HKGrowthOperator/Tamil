@@ -14,6 +14,7 @@ delete_option( 'tamil_site_datenversion' );
 delete_option( 'tamil_site_seo' );
 delete_option( 'tamil_site_zustimmung' );
 delete_option( 'tamil_site_einsendungen' );
+delete_option( 'tamil_site_einsendungen_fassungen' );
 wp_clear_scheduled_hook( 'tamil_site_einsendungen_aufraeumen' );
 
 global $wpdb;

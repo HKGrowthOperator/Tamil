@@ -8,7 +8,8 @@
  *
  * Daten (docs/spezifikation/datenmodell.md §12): eine eigene Tabelle, nicht öffentlich; Bilder in einem eigenen
  * Ordner unter uploads/ mit zufälligem Namen und Sperre für den Webserver. Löschung 90 Tage nach Abschluss
- * (übernommen, erledigt, abgelehnt), Spam nach 7 Tagen, IP-Hash nach 24 Stunden. Das Protokoll enthält keine Namen
+ * (übernommen, erledigt, abgelehnt), Spam nach 7 Tagen, nie abgeschlossene Einsendungen 90 Tage nach Eingang
+ * (Höchstfrist), IP-Hash nach 24 Stunden. Das Protokoll enthält keine Namen
  * oder Kontaktdaten, nur Vorgangsnummer, Aktion und wer (Benutzername, „website“ oder „cron“); Frist 12 Monate (F0).
  */
 
@@ -16,6 +17,8 @@ defined( 'ABSPATH' ) || exit;
 
 /** Löschfrist nach Abschluss (übernommen, erledigt, abgelehnt), in Tagen. */
 define( 'TAMIL_SITE_EINSENDUNG_FRIST_TAGE', 90 );
+/** Höchstfrist für nie abgeschlossene Einsendungen, in Tagen nach Eingang. */
+define( 'TAMIL_SITE_EINSENDUNG_HOECHST_TAGE', 90 );
 /** Löschfrist für Spam, in Tagen. */
 define( 'TAMIL_SITE_EINSENDUNG_SPAM_TAGE', 7 );
 /** So lange bleibt der IP-Hash (nur für die Drossel), in Stunden. */
@@ -225,11 +228,16 @@ function tamil_site_einsendung_vorgangsnummer_gueltig( string $wert ): bool {
 /**
  * Speichert eine geprüfte Einsendung. Die Vorgangsnummer wird bei Kollision neu gezogen.
  *
- * @param array<string,mixed> $daten art, name, email, telefon, felder (array), einwilligung_fassung, bild (array|null),
- *                                   bild_recht_bestaetigt, ip_hash.
+ * Drossel ohne Rennen: erst einfügen, dann zählen. Liegen mit dieser Zeile mehr als $drossel Einsendungen desselben
+ * IP-Hashes in der letzten Stunde vor (gezählt bis zur eigenen id, damit bei gleichzeitigen Aufrufen die früheren
+ * gewinnen), wird die Zeile wieder gelöscht und die Einsendung abgelehnt.
+ *
+ * @param array<string,mixed> $daten   art, name, email, telefon, felder (array), einwilligung_fassung, bild (array|null),
+ *                                     bild_recht_bestaetigt, ip_hash.
+ * @param int                 $drossel Höchstzahl je Stunde und IP-Hash (0 = keine Drossel).
  * @return string|WP_Error Vorgangsnummer.
  */
-function tamil_site_einsendung_speichern( array $daten ) {
+function tamil_site_einsendung_speichern( array $daten, int $drossel = 0 ) {
 	global $wpdb;
 	$bild  = is_array( $daten['bild'] ?? null ) ? $daten['bild'] : null;
 	$zeile = array(
@@ -256,11 +264,27 @@ function tamil_site_einsendung_speichern( array $daten ) {
 		$ok = $wpdb->insert( tamil_site_einsendung_tabelle(), $zeile );
 		$wpdb->suppress_errors( false );
 		if ( $ok ) {
+			$id = (int) $wpdb->insert_id;
+			if ( $drossel > 0 && tamil_site_einsendung_drossel_bis( $zeile['ip_hash'], $id ) > $drossel ) {
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- eigene Tabelle
+				$wpdb->delete( tamil_site_einsendung_tabelle(), array( 'id' => $id ) );
+				return new WP_Error( 'tamil_einsendung_drossel', __( 'Zu viele Einsendungen in der letzten Stunde.', 'tamil-site' ) );
+			}
 			tamil_site_einsendung_protokoll( 'eingang', $zeile['vorgangsnummer'], $zeile['art'], 'website' );
 			return $zeile['vorgangsnummer'];
 		}
 	}
 	return new WP_Error( 'tamil_einsendung_speichern', __( 'Die Einsendung konnte nicht gespeichert werden.', 'tamil-site' ) );
+}
+
+/**
+ * Einsendungen desselben IP-Hashes in der letzten Stunde bis einschließlich id $bis.
+ */
+function tamil_site_einsendung_drossel_bis( string $ip_hash, int $bis ): int {
+	global $wpdb;
+	$t = tamil_site_einsendung_tabelle();
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- eigene Tabelle
+	return (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$t} WHERE ip_hash = %s AND eingang_at >= %s AND id <= %d", $ip_hash, gmdate( 'Y-m-d H:i:s', time() - HOUR_IN_SECONDS ), $bis ) );
 }
 
 /**
@@ -368,12 +392,15 @@ function tamil_site_einsendung_status_setzen( string $vorgang, string $neu ) {
 		$set = 'status = %s, abgeschlossen_at = %s';
 	}
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- eigene Tabelle, Platzhalter für die Ausgangsstatus
-	$geaendert = (int) $wpdb->query( $wpdb->prepare( "UPDATE {$t} SET {$set} WHERE vorgangsnummer = %s AND status IN ({$platz})", array_merge( array( $neu, $jetzt, $vorgang ), $von ) ) );
-	$zeile     = tamil_site_einsendung_zeile( $vorgang );
+	$geaendert = $wpdb->query( $wpdb->prepare( "UPDATE {$t} SET {$set} WHERE vorgangsnummer = %s AND status IN ({$platz})", array_merge( array( $neu, $jetzt, $vorgang ), $von ) ) );
+	if ( false === $geaendert ) {
+		return new WP_Error( 'tamil_einsendung_db', __( 'Der Status konnte nicht gespeichert werden.', 'tamil-site' ), array( 'status' => 500 ) );
+	}
+	$zeile = tamil_site_einsendung_zeile( $vorgang );
 	if ( ! $zeile ) {
 		return new WP_Error( 'tamil_einsendung_fehlt', __( 'Einsendung nicht gefunden.', 'tamil-site' ), array( 'status' => 404 ) );
 	}
-	if ( $geaendert > 0 ) {
+	if ( (int) $geaendert > 0 ) {
 		tamil_site_einsendung_protokoll( 'status', $vorgang, 'nach=' . $neu );
 		return tamil_site_einsendung_ausgabe( $zeile );
 	}
@@ -416,11 +443,12 @@ function tamil_site_einsendung_bild( string $vorgang ): ?array {
 }
 
 /**
- * Löschfrist: abgeschlossene Einsendungen nach 90 Tagen, Spam nach 7 Tagen (mit Bild), IP-Hash nach 24 Stunden,
- * Protokoll nach 12 Monaten. Schreibt eine Protokollzeile mit den Zählern.
+ * Löschfrist: abgeschlossene Einsendungen nach 90 Tagen, Spam nach 7 Tagen, nie abgeschlossene 90 Tage nach Eingang
+ * (jeweils mit Bild), IP-Hash nach 24 Stunden, Protokoll nach 12 Monaten. Schreibt je gelöschter Einsendung und für
+ * den Lauf eine Protokollzeile.
  *
  * @param int|null $jetzt Zeitpunkt (Unix, für Tests).
- * @return array{geloescht:int,spam:int,ip_hash:int,protokoll:int}
+ * @return array{geloescht:int,spam:int,offen:int,ip_hash:int,protokoll:int}
  */
 function tamil_site_einsendungen_aufraeumen( ?int $jetzt = null ): array {
 	global $wpdb;
@@ -429,16 +457,18 @@ function tamil_site_einsendungen_aufraeumen( ?int $jetzt = null ): array {
 	$p       = tamil_site_einsendung_protokoll_tabelle();
 	$grenze  = gmdate( 'Y-m-d H:i:s', $jetzt - TAMIL_SITE_EINSENDUNG_FRIST_TAGE * DAY_IN_SECONDS );
 	$spam    = gmdate( 'Y-m-d H:i:s', $jetzt - TAMIL_SITE_EINSENDUNG_SPAM_TAGE * DAY_IN_SECONDS );
+	$hoechst = gmdate( 'Y-m-d H:i:s', $jetzt - TAMIL_SITE_EINSENDUNG_HOECHST_TAGE * DAY_IN_SECONDS );
 	$ip      = gmdate( 'Y-m-d H:i:s', $jetzt - TAMIL_SITE_EINSENDUNG_IP_STUNDEN * HOUR_IN_SECONDS );
 	$prot    = gmdate( 'Y-m-d H:i:s', strtotime( '-' . TAMIL_SITE_EINSENDUNG_PROTOKOLL_MONATE . ' months', $jetzt ) );
 	$zaehler = array(
 		'geloescht' => 0,
 		'spam'      => 0,
+		'offen'     => 0,
 		'ip_hash'   => 0,
 		'protokoll' => 0,
 	);
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- eigene Tabelle
-	$faellig = (array) $wpdb->get_results( $wpdb->prepare( "SELECT id, vorgangsnummer, status, bild_datei FROM {$t} WHERE abgeschlossen_at IS NOT NULL AND ( ( status IN ('uebernommen','erledigt','abgelehnt') AND abgeschlossen_at < %s ) OR ( status = 'spam' AND abgeschlossen_at < %s ) )", $grenze, $spam ), ARRAY_A );
+	$faellig = (array) $wpdb->get_results( $wpdb->prepare( "SELECT id, vorgangsnummer, status, bild_datei FROM {$t} WHERE ( status IN ('uebernommen','erledigt','abgelehnt') AND abgeschlossen_at < %s ) OR ( status = 'spam' AND abgeschlossen_at < %s ) OR ( status IN ('eingegangen','abgeholt') AND eingang_at < %s )", $grenze, $spam, $hoechst ), ARRAY_A );
 	foreach ( $faellig as $z ) {
 		if ( '' !== (string) $z['bild_datei'] ) {
 			$pfad = tamil_site_einsendung_bildordner() . basename( (string) $z['bild_datei'] );
@@ -448,8 +478,9 @@ function tamil_site_einsendungen_aufraeumen( ?int $jetzt = null ): array {
 		}
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- eigene Tabelle
 		if ( $wpdb->delete( $t, array( 'id' => (int) $z['id'] ) ) ) {
-			++$zaehler[ 'spam' === $z['status'] ? 'spam' : 'geloescht' ];
-			tamil_site_einsendung_protokoll( 'geloescht', (string) $z['vorgangsnummer'], 'Frist ' . $z['status'], 'cron' );
+			$offen = in_array( $z['status'], array( 'eingegangen', 'abgeholt' ), true );
+			++$zaehler[ $offen ? 'offen' : ( 'spam' === $z['status'] ? 'spam' : 'geloescht' ) ];
+			tamil_site_einsendung_protokoll( 'geloescht', (string) $z['vorgangsnummer'], ( $offen ? 'Hoechstfrist ' : 'Frist ' ) . $z['status'], 'cron' );
 		}
 	}
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- eigene Tabelle
@@ -459,7 +490,7 @@ function tamil_site_einsendungen_aufraeumen( ?int $jetzt = null ): array {
 	tamil_site_einsendung_protokoll(
 		'loeschfrist',
 		'',
-		sprintf( 'geloescht=%d spam=%d ip_hash=%d protokoll=%d', $zaehler['geloescht'], $zaehler['spam'], $zaehler['ip_hash'], $zaehler['protokoll'] ),
+		sprintf( 'geloescht=%d spam=%d offen=%d ip_hash=%d protokoll=%d', $zaehler['geloescht'], $zaehler['spam'], $zaehler['offen'], $zaehler['ip_hash'], $zaehler['protokoll'] ),
 		'cron'
 	);
 	return $zaehler;
