@@ -338,7 +338,9 @@ def test_dienst_plan_holt_mit_wordpress_ab_und_loescht_taeglich(settings):
 
     assert "eingang" not in [e.name for e in dienst.plan(settings, env={})]
     settings.wp_url, settings.wp_user, settings.wp_app_password = "https://www.tamil.test", "ki-agent", "pw"
-    plan = {e.name: e for e in dienst.plan(settings, env={})}
+    # Funktionsschalter: im Echtbetrieb aus, bis Auftragsverarbeitung und Rechtstexte vorliegen
+    assert "eingang" not in [e.name for e in dienst.plan(settings, env={})]
+    plan = {e.name: e for e in dienst.plan(settings, env={"RADAR_EINGANG": "an"})}
     assert plan["eingang"].args == ("eingang", "lauf") and plan["eingang"].kanaele == ("eingang",)
     assert plan["eingang"].regel.alle == 180
     assert plan["eingang-frist"].args == ("eingang", "loeschen") and plan["eingang-frist"].kanaele == ()
