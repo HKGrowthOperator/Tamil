@@ -62,6 +62,20 @@ RUN { \
         echo 'expose_php = Off'; \
     } > /usr/local/etc/php/conf.d/tamil.ini
 
+# Besucheradresse hinter Traefik: mod_remoteip wertet X-Forwarded-For aus, Proxys in privaten Netzen gelten als
+# vertraut. Wie im Basis-Image, hier ausdrücklich festgelegt, weil die Drossel der Einsendungen (Plugin tamil-site)
+# auf REMOTE_ADDR = Besucher baut.
+RUN a2enmod remoteip \
+    && { \
+        echo 'RemoteIPHeader X-Forwarded-For'; \
+        echo 'RemoteIPInternalProxy 10.0.0.0/8'; \
+        echo 'RemoteIPInternalProxy 172.16.0.0/12'; \
+        echo 'RemoteIPInternalProxy 192.168.0.0/16'; \
+        echo 'RemoteIPInternalProxy 169.254.0.0/16'; \
+        echo 'RemoteIPInternalProxy 127.0.0.0/8'; \
+    } > /etc/apache2/conf-available/remoteip.conf \
+    && a2enconf remoteip
+
 # Apache: Datenbank-Ordner und eingesandte Bilder (Plugin tamil-site) nie ausliefern, in Uploads kein PHP ausführen,
 # Server-Version nicht verraten
 RUN { \

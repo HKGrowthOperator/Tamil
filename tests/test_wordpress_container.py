@@ -48,3 +48,21 @@ def test_apache_sperrt_eingesandte_bilder():
     block = re.search(r"<Directory /var/www/html/wp-content/uploads/tamil-einsendungen>'; \\\s*echo '\s*Require all denied'",
                       DOCKERFILE)
     assert block, "Apache-Sperre für uploads/tamil-einsendungen fehlt"
+
+
+def test_apache_loest_x_forwarded_for_selbst_auf():
+    """Hinter Traefik setzt mod_remoteip REMOTE_ADDR auf den Besucher (private Netze sind vertraute Proxys)."""
+    assert "a2enmod remoteip" in DOCKERFILE and "a2enconf remoteip" in DOCKERFILE
+    assert "echo 'RemoteIPHeader X-Forwarded-For'" in DOCKERFILE
+    for netz in ("10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "127.0.0.0/8"):
+        assert f"echo 'RemoteIPInternalProxy {netz}'" in DOCKERFILE
+    # keine öffentlichen Netze als vertraut (sonst wäre die Adresse fälschbar)
+    assert "RemoteIPTrustedProxy" not in DOCKERFILE
+
+
+def test_proxy_anzahl_nicht_fuer_traefik_empfohlen():
+    betrieb = (ROOT / "docs/betrieb.md").read_text(encoding="utf-8")
+    integration = (ROOT / "docs/spezifikation/integrationen.md").read_text(encoding="utf-8")
+    for text in (START, betrieb, integration):
+        assert "Coolify/Traefik: 1" not in text and "in Coolify `1` setzen" not in text and "in Coolify 1" not in text
+    assert "vor** Traefik" in betrieb and "Standard 0" in betrieb
