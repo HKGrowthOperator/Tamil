@@ -58,6 +58,21 @@ andere kippen. Bilder: erster Bildschirm Desktop (1280) und Handy (390) im Ordne
 - **Brauchbar bleibt:** der ruhige, gut lesbare Artikel; Kino und Termine als nüchterne Liste mit Ort und Datum;
   Teilen über WhatsApp als schlichter Link.
 
+## Runden 5–7 – „klar“, „klar2“, „mix-ordnung“, „mix-feed“ (`design/richtungen/`, 10.–12.11.2026)
+
+- **Was es war:** große, ruhige Nachrichtenmarke nach Brief 2/2.1: Libre Franklin, kühles Weiß, Rot als Akzent,
+  dunkles Rubrikband, Aufmacher mit Titel im Bild, Rubrikkacheln, dunkler Kino-Bereich, „Diese Woche“-Band; die
+  Mischungen dazu mit mehr Bildwucht (Feed) oder mehr Ordnung.
+- **Urteil (Luis, 13.11.2026):** „komplett generisch“, „generischer AI-Slop“, „katastrophal“, für Website und
+  Dashboard. Der Auftraggeber zahlt 28.000 € netto.
+- **Warum:** Jedes Element kam aus dem Werkzeugkasten „Nachrichtenportal“: Dachzeile über jeder Überschrift,
+  Versal-Labels mit Sperrung, Metazeilen mit „·“, gleich große Kartenraster, Bildkacheln mit dunklem Verlauf,
+  „Diese Woche“-Bänder. Messbare Kriterien wurden erfüllt, aber nichts an der Seite gehörte nur tamil.de.
+- **Neue Verbote (zusätzlich zu Runde 1–4):** Dachzeilen, Versal-Labels (auch für Rubriken), „·“-Metazeilen,
+  Kartenraster gleicher Größe, Verlauf-Bildkacheln mit Titel im Bild, „Diese Woche“-Bänder, Rubrikkacheln.
+- **Seitdem gilt:** `design/brief-v3.md` und der Hallmark-Floor (geht den Punkten unten vor, wo sie sich
+  widersprechen).
+
 ## Was daraus folgt
 
 1. Ziel ist eine **große, ruhige Nachrichtenmarke** (Vorbilder mit Messwerten: `design/referenzen/news-marken.md`).

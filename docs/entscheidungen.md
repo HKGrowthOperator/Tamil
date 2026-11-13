@@ -3,6 +3,29 @@
 Neueste oben. Format: Datum · Entscheidung · wer · warum. Was hier steht, gilt, bis ein neuerer Eintrag es ändert.
 Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
+## 13.11.2026
+
+- **Design aller bisherigen Runden abgelehnt, Neugestaltung mit Hallmark:** `mix-ordnung`, `mix-feed` und alles davor
+  gelten als „komplett generisch“. Neuer Brief `design/brief-v3.md`; gestaltet wird mit dem Hallmark-Skill (Floor,
+  Reflex-Gates, `sloplint --render`, Prüfung aus frischem Kontext). Der Hallmark-Floor geht den alten Regeln aus
+  `tamil-marke`/`tamil-richtung` vor (keine Dachzeilen, keine Versal-Labels, keine „·“-Metazeilen). Website **und**
+  Cockpit werden neu gestaltet. · Luis · „generischer AI-Slop“, der Auftrag hat Gewicht.
+- **Neugestaltung auf Anordnung von Luis, ohne Umweg über `/design-runde`:** Die Hauptsitzung baut die erste Probe
+  selbst (die Sitzung stand im Planmodus, Hintergrund-Agenten durften nicht schreiben); die Prüfung kommt trotzdem
+  aus frischem Kontext (`design/kritik/hm-eigen-r1.md`). Abnahme durch den Auftraggeber bleibt Tor G4. · Luis
+  („alles selber entscheiden“), Hauptsitzung
+- **Erste Probe „Tagesblatt“ (`design/richtungen/hm-eigen/`):** Das Datum ist die Hauptfigur wie im tamilischen
+  Küchenkalender; Rot (Logo-Rot) nur für Sonntage, Festtage, Logo, einen Primärknopf und den Fokus; Bananenblatt-Grün
+  nur für den Kino-Bereich; Rethink Sans und Golos Text (OFL, selbst gehostet). · Hauptsitzung
+- **Vertrag ohne weitere Festlegungsrunde bauen:** „Alle Sachen, die im Vertrag drinstehen“ gilt als Ja zu F4
+  (Instagram, Facebook, WhatsApp-Entwurf; Trockenmodus bis Konten von KBS und Freigabe des Regelwerks) und als Ja
+  zum Bau von F0–F3 auf dem Testsystem mit den Vorschlägen der Festlegungen; im Echtbetrieb bleiben neue Funktionen
+  per Schalter aus, bis Auftragsverarbeitung und Rechtstexte vorliegen. · Luis
+- **Lizenzpflicht für jedes Bild:** vollständiger Lizenz-Datensatz oder keine Freigabe; fehlt er, trägt die Redaktion
+  ihn im Cockpit ein. Reihenfolge der Quellen und Felder in `docs/spezifikation/bilder-und-lizenzen.md`. · Luis
+- **Software-Spezifikation** `docs/spezifikation/` ist ab jetzt die Grundlage für alle Bausteine (Felder,
+  Statusmaschinen, Agenten, Automationen, Integrationen). · Luis („die ganze Software definieren“)
+
 ## 12.11.2026
 
 - **Gedenk-Sperre um Namen von LTTE-Gedenkanlässen erweitert, Terminquelle Vizha an:** `[blocklist] termine` nennt
