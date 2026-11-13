@@ -77,6 +77,12 @@ def test_muenchen_tamil_sangam_nur_kommende_termine_mit_ort(monkeypatch, setting
     assert diwali.summary.startswith("21.11.2026, 10:30 Uhr")
 
 
+def _ohne_auswahl(settings):
+    q = _quelle(settings, BACKNANG)
+    q.params = {k: v for k, v in q.params.items() if k != "nur_titel"}
+    return q
+
+
 def test_backnang_ist_registriert(settings):
     q = _quelle(settings, BACKNANG)
     assert (q.type, q.country, q.kind) == ("html", "DE", "event")
@@ -84,18 +90,27 @@ def test_backnang_ist_registriert(settings):
     assert q.robots == "erlaubt" and q.betreiber and q.prioritaet in {"A", "B", "C"}
 
 
-def test_backnang_vorerst_aus(settings):
-    """Aus bis zur Entscheidung über die Gedenktermin-Sperre für alle Terminquellen und bis eine Festauswahl gesetzt
-    ist (sonst wird jeder Pooja-Tag Story). Der Parser bleibt getestet."""
+def test_backnang_an_mit_festauswahl(settings):
+    """Seit 13.11. an (Gedenk-Sperre gilt für alle Terminquellen); nur große Feste werden Story, keine Pooja- und
+    Fastentage (params.nur_titel)."""
     q = _quelle(settings, BACKNANG)
-    assert q.enabled is False and "Festauswahl" in q.notiz and "[blocklist] termine" in q.notiz
-    assert BACKNANG not in {x.name for x in settings.sources}
+    assert q.enabled is True and BACKNANG in {x.name for x in settings.sources}
+    nur = [t.lower() for t in q.params["nur_titel"]]
+    assert "deepavali" in nur and "pongal" in nur and "தீபாவளி" in nur
     assert MTS in {x.name for x in settings.sources}
+
+
+def test_festauswahl_laesst_pooja_tage_weg(monkeypatch, settings):
+    _seite(monkeypatch, "srimeenadchiambal_zukunft.html", "text/html; charset=UTF-8")
+    q = _quelle(settings, BACKNANG)
+    assert sources.FETCHERS["html"](q, settings) == []  # nur Skandashashti, Fasten, Thiruvempavai: kein Fest
+    q.params = {**q.params, "nur_titel": ["Sarvalaya Deepam"]}
+    assert [i.title for i in sources.FETCHERS["html"](q, settings)] == ["சர்வாலய தீபம்/Sarvalaya Deepam"]
 
 
 def test_backnang_termine_mit_datum_und_ort(monkeypatch, settings):
     _seite(monkeypatch, "srimeenadchiambal_zukunft.html", "text/html; charset=UTF-8")
-    items = sources.FETCHERS["html"](_quelle(settings, BACKNANG), settings)
+    items = sources.FETCHERS["html"](_ohne_auswahl(settings), settings)
     assert len(items) == 9
     assert [(i.title, i.facts["event_datum"]) for i in items[:4]] == [
         ("கந்தசஷ்டி 5ம் நாள்/Skandashashti is the 5th day", "2026-11-13"),
@@ -115,6 +130,6 @@ def test_backnang_termine_mit_datum_und_ort(monkeypatch, settings):
 def test_backnang_vergangener_termin_gilt_als_veraltet(monkeypatch, settings):
     """Die Seite zeigt nur Kommendes; bleibt ein Termin stehen, sortiert die Pipeline ihn nach dem Tag aus."""
     _seite(monkeypatch, "srimeenadchiambal_zukunft.html", "text/html; charset=UTF-8")
-    items = sources.FETCHERS["html"](_quelle(settings, BACKNANG), settings)
+    items = sources.FETCHERS["html"](_ohne_auswahl(settings), settings)
     assert pipeline.stale_event_date(items[0], "", settings, now=STAND) == ""
     assert pipeline.stale_event_date(items[0], "", settings, now=datetime(2026, 12, 1, tzinfo=timezone.utc)) == "2026-11-13"

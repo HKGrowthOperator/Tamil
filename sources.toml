@@ -526,13 +526,13 @@ params = { listen = ["/de/events", "/ch/events"], laender = ["DE", "AT", "CH"], 
 
 [[source]]
 name = "Sri Meenadchi Ambal Tempel Backnang · Termine"
-enabled = false
+enabled = true
 prioritaet = "B"
 betreiber = "Sri Lanka Cultural Forum (Sri Meenadchi Ambal Tempel), Sulzbacher Str. 56, Backnang"
 robots = "erlaubt"
 paywall = false
 bild_nutzen = false
-notiz = "Rückblick 12.11.2026: Seite „Zukünftige Veranstaltungen“ (Elementor-Liste, je Termin article.mel-card, Datum englisch „November 13, 2026 6:00 p.m.“); viele Pooja- und Fastentage (Kandasashti, Thiruvempavai) – Feste redaktionell auswählen; Ort ist immer der Tempel. Aus bis zur Entscheidung, ob die Gedenktermin-Sperre ([blocklist] termine) für alle Terminquellen gilt (heute nur tribe_events), und bis eine Festauswahl gesetzt ist (sonst wird jeder Pooja-Tag Story)."
+notiz = "Rückblick 12.11.2026: Seite „Zukünftige Veranstaltungen“ (Elementor-Liste, je Termin article.mel-card, Datum englisch „November 13, 2026 6:00 p.m.“); viele Pooja- und Fastentage (Kandasashti, Thiruvempavai); Ort ist immer der Tempel. An seit 13.11.2026 (Gedenk-Sperre gilt für alle Terminquellen, Entscheidung Luis) mit Festauswahl params.nur_titel: nur große Feste werden Story."
 rechtlich_geprueft = ""
 type = "html"
 url = "https://srimeenadchiambal.com/de/zukuenftige-veranstaltungen/"
@@ -542,7 +542,7 @@ country = "DE"
 min_score = 0
 max_items = 1
 interval_minutes = 720
-params = { ort = "Sri Meenadchi Ambal Tempel, Sulzbacher Str. 56, 71522 Backnang" }
+params = { ort = "Sri Meenadchi Ambal Tempel, Sulzbacher Str. 56, 71522 Backnang", nur_titel = ["Deepavali", "Diwali", "தீபாவளி", "Pongal", "பொங்கல்", "Navaratri", "நவராத்திரி", "Thaipusam", "தைப்பூசம்", "Mahotsav", "மகோற்சவ", "Thiruvizha", "திருவிழா", "Kumbabishekam", "கும்பாபிஷேக", "Puthandu", "புத்தாண்டு", "Neujahr", "Karthigai", "கார்த்திகை"] }
 selectors = { item = "article.mel-card", title = ".mel-title", link = ".mel-title a::attr(href)", date = ".mel-date" }
 
 # Kino: Reihen und Programme mit Selektoren (provider = "html"); Tamil nur über Titel oder Selektor `sprache`,
@@ -568,13 +568,13 @@ selectors = { item = "#event-container article", title = ".event-small--title", 
 
 [[source]]
 name = "dein-dein · Tamil Films in Germany"
-enabled = false
+enabled = true
 prioritaet = "C"
 betreiber = "dein-dein.com"
 robots = "erlaubt"
 paywall = false
 bild_nutzen = false
-notiz = "aus: robots.txt sperrt KI-Crawler (ClaudeBot, GPTBot u. a.) ausdrücklich, erlaubt nur „*“ – Entscheidung Luis offen. Inventur 11.11.2026: tamilische Filme mit Vorstellungen in deutschen Kinos; Spielzeiten beim Kino prüfen; Betreiber nicht geprüft"
+notiz = "an seit 13.11.2026 (Entscheidung Luis): robots.txt sperrt namentlich KI-Crawler (ClaudeBot, GPTBot u. a.) und erlaubt allgemeine Abrufe („*“); der Radar ruft mit eigener Kennung ab und nur die eine Programmseite. Inventur 11.11.2026: tamilische Filme mit Vorstellungen in deutschen Kinos; Spielzeiten beim Kino prüfen; Betreiber nicht geprüft"
 rechtlich_geprueft = ""
 type = "kino"
 provider = "html"
@@ -802,6 +802,9 @@ kollywood = ["kollywood", "tamil cinema", "rajinikanth", "vijay", "ajith kumar",
 
 # Ausschluss: Meldungen mit diesen Begriffen werden verworfen
 [blocklist]
+# Veranstalter, deren Termine nie automatisch zur Story werden (ganzes Wort; Entscheidung Luis 13.11.2026: STCC,
+# Redewettbewerbe „Pechu Potti“ über Vizha)
+veranstalter = ["STCC"]
 terms = ["horoskop", "casino", "betting", "wetten", "porn", "obituary", "todesanzeige", "sponsored", "anzeige:"]
 # Termine (kind = event) mit diesen Begriffen werden nie automatisch zur Story: Gedenken mit LTTE-Bezug
 termine = ["maaveerar", "maveerar", "mahaveerar", "mahaaveerar", "mavirar", "maavirar", "மாவீரர்", "heroes day",

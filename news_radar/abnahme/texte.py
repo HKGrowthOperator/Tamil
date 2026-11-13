@@ -52,5 +52,8 @@ LANG = ("Der Tamil Cricket Club Frankfurt hat am Sonntag die deutsche Meistersch
 
 KURZ = "Tamilisches Fest in Dortmund am Wochenende. Mehr Infos folgen."
 
-ZUSAMMENFASSUNG_VERANSTALTER = ("Am Samstag, 21. November, findet in Bern das Maaveerar-Gedenken statt. "
+ZUSAMMENFASSUNG_GEDENKEN = ("Am Samstag, 21. November, findet in Bern das Maaveerar-Gedenken statt. "
+                            "Beginn ist um 15 Uhr in der Festhalle Bern.")
+
+ZUSAMMENFASSUNG_VERANSTALTER = ("Am Samstag, 21. November, findet in Bern der Kulturabend des Vereins Tamil Bern statt. "
                                 "Beginn ist um 15 Uhr in der Festhalle Bern. Veranstalter ist der Verein Tamil Bern.")

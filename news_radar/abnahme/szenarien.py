@@ -33,7 +33,7 @@ def event(titel: str, url: str, quelle: str, datum: str, event_ort: str = "", zu
     return M(titel, url, quelle=quelle, art="event", fakten=fakten, zusammenfassung=zusammenfassung, **kw)
 
 
-BERN = event("Maaveerar-Gedenken in Bern", "https://swisstamilinfo.ch/bern-gedenken", "Swiss Tamil Info · Events",
+BERN = event("Kulturabend des Vereins Tamil Bern", "https://swisstamilinfo.ch/bern-kulturabend", "Swiss Tamil Info · Events",
              "+12d", "Festhalle Bern", T.ZUSAMMENFASSUNG_VERANSTALTER, ort="Bern")
 
 SZENARIEN: list[Szenario] = [
@@ -98,7 +98,7 @@ SZENARIEN: list[Szenario] = [
              vorlauf=[HAMM], texte=HAMM_TEXT, fake={"cluster": "ja"},
              erwartet={"storys": 1, "stats": {"angereichert": 1}, "rollen_mit": ["cluster"]}),
     Szenario(15, "Termin mit gleichem Schlüssel aus zweiter Quelle reichert an", "Cluster",
-             [{**BERN, "url": "https://eventfrog.ch/bern-gedenken", "quelle": "Eventfrog CH"}], vorlauf=[BERN],
+             [{**BERN, "url": "https://eventfrog.ch/bern-kulturabend", "quelle": "Eventfrog CH"}], vorlauf=[BERN],
              erwartet={"storys": 1, "entwuerfe": 1, "stats": {"angereichert": 1}}),
     Szenario(16, "Pilotgrenze: höchstens eine bezahlte Story am Tag", "Budget",
              [HAMM, M("Tamilische Schule in Köln feiert Jubiläum", "https://ksta.example/schule", quelle="KStA",
@@ -127,7 +127,7 @@ SZENARIEN: list[Szenario] = [
              erwartet={"entwuerfe": 1, "typ": "event", "laenge": "event"}),
     Szenario(23, "Termin verschoben: Quellen widersprechen sich", "Event",
              [BERN, {**BERN, "url": "https://eventfrog.ch/bern-verschoben", "quelle": "Eventfrog CH",
-                     "titel": "Maaveerar-Gedenken in Bern (verschoben)"}],
+                     "titel": "Kulturabend des Vereins Tamil Bern (verschoben)"}],
              fake={"recherche": "widerspruch"},
              erwartet={"entwuerfe": 0, "status": {"recherche_erforderlich": 1}, "hinweis": "Widerspruch"}),
     Szenario(24, "Termin in der Vergangenheit wird verworfen", "Event", [{**BERN, "fakten": {"event_datum": "-10d"}}],
@@ -348,4 +348,13 @@ SZENARIEN += [
              erwartet={"aufrufe": 0, "bild": "karte",
                        "stats": {"bild_abgelehnt": 4, "bild_gesetzt": 0, "grund_agentur": 1, "grund_lizenz": 1,
                                  "grund_register": 1, "grund_intern": 1, "abrufe_intern": 0, "protokoll_bild": 0}}),
+]
+
+# Nummer 75 (67–74 frei für parallele Spuren): Gedenk-Sperre gilt seit 13.11.2026 für alle Terminquellen
+# (Entscheidung Luis), nicht nur für Kalender-Schnittstellen. Ein Termin aus einem Feed wird nie automatisch Story.
+GEDENKEN = event("Maaveerar-Gedenken in Bern", "https://swisstamilinfo.ch/bern-gedenken", "Swiss Tamil Info · Events",
+                 "+12d", "Festhalle Bern", T.ZUSAMMENFASSUNG_GEDENKEN, ort="Bern")
+SZENARIEN += [
+    Szenario(75, "Gedenktermin aus einer Feed-Quelle wird nie automatisch zur Story", "Event", [GEDENKEN],
+             erwartet={"storys": 0, "aufrufe": 0, "stats": {"gedenktermin": 1}}),
 ]

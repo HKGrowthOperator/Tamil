@@ -483,7 +483,7 @@ def jsonld_termin(text: str, url: str, source: Source, settings: Settings, now: 
     """Ein Termin aus dem JSON-LD (Typ Event) einer Terminseite oder None: kein Event, abgesagt/verschoben/nur online,
     kein Datum, vorbei, Land nicht in `params.laender` (Vorgabe DE/AT/CH) oder Gedenktermin aus [blocklist] termine (nie automatisch zur Story)."""
     from .dates import TZ
-    from .filtering import gedenktermin  # zirkulären Import vermeiden
+    from .filtering import gedenktermin, veranstalter_gesperrt  # zirkulären Import vermeiden
 
     now = now or datetime.now(timezone.utc)
     heute = now.astimezone(TZ).date()
@@ -542,6 +542,10 @@ def jsonld_termin(text: str, url: str, source: Source, settings: Settings, now: 
                         published=now, kind="event")
     if gedenktermin(item, settings) or gedenktermin(pruefung, settings):
         log.info("%s: Gedenktermin ausgelassen: %s", source.name, title)
+        return None
+    werte = ev.get("organizer")
+    if veranstalter_gesperrt([_ld_text(w) for w in (werte if isinstance(werte, list) else [werte])], settings):
+        log.info("%s: Veranstalter gesperrt, ausgelassen: %s", source.name, title)
         return None
     return item
 
@@ -676,11 +680,15 @@ def fetch_html(source: Source, settings: Settings) -> list[NewsItem]:
     if source.params.get("json_pattern"):
         return _html_json_items(soup, source, now)
     sel = source.selectors
+    # params.nur_titel: nur Einträge, deren Titel einen dieser Begriffe enthält (Festauswahl einer Tempelseite)
+    nur = [str(t).lower() for t in source.params.get("nur_titel", [])]
     items = []
     for node in soup.select(sel.get("item", "article")):
         title = _select_text(node, sel.get("title", "h2"))
         link = _select_text(node, sel.get("link", "a::attr(href)")) or (node.get("href") or "")
         if not title or not link:
+            continue
+        if nur and not any(t in title.lower() for t in nur):
             continue
         date_txt = _select_text(node, sel.get("date", ""))
         # params.ort: fester Ort für Seiten eines einzigen Hauses (Tempel), die ihn je Termin nicht nennen

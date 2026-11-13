@@ -192,8 +192,8 @@ def _ohne_zeichen(text: str) -> str:
 
 def gedenktermin(item: NewsItem, settings: Settings) -> bool:
     """Termin (kein Bericht), der einen Begriff aus [blocklist] termine nennt – z. B. Maaveerar-Gedenken mit
-    LTTE-Bezug. Gilt für Kalender, die jeden Termin automatisch liefern (tribe_events); Ankündigungen eines
-    Veranstalters laufen weiter über den normalen Weg mit Recherche (Abnahme-Szenarien 22/23)."""
+    LTTE-Bezug. Gilt für alle Terminquellen (Entscheidung Luis 13.11.2026): Kalender lassen solche Termine schon beim
+    Abruf weg, `select` sortiert sie aus allen übrigen Quellen aus (Abnahme-Szenario 67)."""
     if item.kind != "event":
         return False
     text = _ohne_zeichen(f"{item.title} {item.summary}")
@@ -211,6 +211,16 @@ def gedenktermin(item: NewsItem, settings: Settings) -> bool:
     for begriff in (_ohne_zeichen(t) for t in settings.blocklist_termine_wort):
         if re.search(rf"(?<![\w\u0b80-\u0bff]){re.escape(begriff)}(?![\w\u0b80-\u0bff])", text):
             return True
+    return False
+
+
+def veranstalter_gesperrt(namen: list[str], settings: Settings) -> bool:
+    """Ein Name aus [blocklist] veranstalter steht als ganzes Wort in einem der Veranstalternamen (Entscheidung Luis
+    13.11.: Termine des Veranstalters STCC kommen nicht automatisch)."""
+    for name in (_ohne_zeichen(n) for n in namen if n):
+        for begriff in (_ohne_zeichen(t) for t in settings.blocklist_veranstalter):
+            if re.search(rf"(?<![\w\u0b80-\u0bff]){re.escape(begriff)}(?![\w\u0b80-\u0bff])", name):
+                return True
     return False
 
 
@@ -267,6 +277,9 @@ def select(
             item.kind = source.kind
         if termin_veraltet(item, settings, now):
             zaehler["termin_veraltet"] += 1
+            continue
+        if gedenktermin(item, settings):  # gilt seit 13.11. für alle Terminquellen (Entscheidung Luis), nicht nur Kalender
+            zaehler["gedenktermin"] += 1
             continue
         item.score = score_item(item, settings.keywords)
         item.dach_score, item.ort = dach_score(item, settings.regions)

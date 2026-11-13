@@ -468,3 +468,20 @@ def test_enddatum_ohne_uhrzeit_schliesst_den_tag_ein(settings):
     # ein vergangener Termin mit reinem Enddatum heute gilt noch
     gestern = text.replace("2026-11-15T12:30:00.000Z", "2026-11-11").replace("2026-11-15T21:00:00.000Z", "2026-11-12")
     assert sources.jsonld_termin(gestern, DUESSELDORF_URL, quelle, settings, now=STAND) is not None
+
+
+@pytest.mark.parametrize("veranstalter", [
+    '{"@type":"Organization","name":"STCC"}',
+    '[{"@type":"Organization","name":"Band"},{"@type":"Organization","name":"STCC Schweiz"}]',
+    '{"@type":"Organization","name":"stcc"}',
+])
+def test_gesperrter_veranstalter_wird_nie_automatisch_story(settings, veranstalter):
+    """Entscheidung Luis 13.11.: Termine des Veranstalters STCC („Pechu Potti“) kommen nicht automatisch."""
+    text = _zuerich().replace('"alternateName":', f'"organizer":{veranstalter},"alternateName":', 1)
+    assert sources.jsonld_termin(text, ZUERICH_URL, _quelle(settings), settings, now=STAND) is None
+
+
+def test_veranstalter_sperre_nur_als_ganzes_wort(settings):
+    text = _zuerich().replace('"alternateName":', '"organizer":{"@type":"Organization","name":"ASTCCO"},'
+                              '"alternateName":', 1)
+    assert sources.jsonld_termin(text, ZUERICH_URL, _quelle(settings), settings, now=STAND) is not None
