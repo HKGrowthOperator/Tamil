@@ -442,6 +442,18 @@ def test_nachtrag_entwurf_traegt_ereignisdatum_und_wird_mit_datum_und_vermerk_ve
         assert "datum" not in normal and "Nachtrag der Redaktion" not in normal["inhalt"]
 
 
+def test_aktueller_nachtrag_bekommt_keinen_rueckblick_vermerk():
+    """Ein Nachtrag zu einem Ereignis der letzten 14 Tage (oder einem kommenden Termin) ist kein Rückblick:
+    kein Vermerk „für den Rückblick … geschrieben“. Ältere Ereignisse behalten ihn."""
+    jetzt = datetime(2026, 11, 14, 8, 0, tzinfo=timezone.utc)
+    row = {"herkunft": "nachtrag", "titel": "Scene in Kloten", "inhalt_html": "<p>Text</p>"}
+    for datum in ("2026-11-13", "2026-11-01", "2026-11-21"):
+        inhalt = publisher.inhalt_fuer_wp({**row, "ereignis_datum": datum}, jetzt)
+        assert "Nachtrag der Redaktion" not in inhalt, datum
+    alt = publisher.inhalt_fuer_wp({**row, "ereignis_datum": "2026-10-30"}, jetzt)
+    assert "Rückblick auf das Jahr 2026" in alt
+
+
 def test_ohne_plugin_wird_ein_nachtrag_nicht_veroeffentlicht(settings):
     """P3: Der alte REST-Weg kennt kein Ereignisdatum – lieber klar ablehnen als mit heutigem Datum senden."""
     class CoreWP:
