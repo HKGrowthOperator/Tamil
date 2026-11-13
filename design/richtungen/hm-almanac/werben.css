@@ -23,7 +23,8 @@
 .karte .hinweis { display: block; font: 400 var(--text-sm)/1.4 var(--font-body); color: var(--color-muted); }
 .karte .m { white-space: nowrap; text-align: right; }
 .karte td.m .num { color: var(--color-ink); }
-.karte .preis { text-align: right; white-space: nowrap; }
+.karte .preis { text-align: center; white-space: nowrap; }
+.karte thead .preis { text-align: center; }
 
 /* the order of a booking */
 .ablauf-sek { align-items: start; margin-block-start: var(--section-gap-s); padding-block-start: var(--space-2xl); border-top: var(--rule-bar) solid var(--color-rule-2); row-gap: var(--space-xl); }
@@ -39,7 +40,7 @@
 .danach h3 { font-size: var(--text-title); }
 
 /* booking */
-.schrittleiste { grid-column: 9 / span 4; justify-self: end; }
+.schrittleiste { grid-column: 8 / span 5; justify-self: end; }
 .schrittleiste ol { display: flex; flex-wrap: wrap; gap: 0 var(--space-xs); margin: 0; padding: 0; list-style: none; counter-reset: s; }
 .schrittleiste li { counter-increment: s; }
 .schrittleiste a { display: inline-flex; align-items: center; gap: var(--space-2xs); min-height: 44px; padding-inline: var(--space-xs); font-size: var(--text-sm); }

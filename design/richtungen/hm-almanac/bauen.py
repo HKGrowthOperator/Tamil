@@ -367,7 +367,7 @@ def verzeichnis():
     zeilen = []
     for name, art, kat, stadt, region, land, sid in VZ:
         nm = f'<a href="verzeichnis-eintrag.html">{e(name)}</a>' if name == "Ceylon Palace" else e(name)
-        ort = f"{e(stadt)}, {LAND[land]}" if stadt else f"Kanton {e(region)}, {LAND[land]}"
+        ort = e(stadt) if stadt else f"Kanton {e(region)}"
         if sid:
             bd = datum(BEI[sid])
             ber = f'<a href="{link(sid)}"><time class="num" datetime="{bd.isoformat()}">{kurz(bd)}</time><span class="visually-hidden"> {e(BEI[sid]["titel"])}</span></a>'
@@ -389,7 +389,7 @@ def verzeichnis():
   <section class="container grid vz" aria-label="Suche und Liste">
     <form class="filter" action="verzeichnis.html" method="get" role="search" aria-label="Verzeichnis durchsuchen" data-filter>
       <div class="feld">
-        <label for="q">Name oder Stichwort</label>
+        <label for="q">Suche</label>
         <input id="q" name="q" type="search" autocomplete="off">
       </div>
       <fieldset class="seg seg--art">
@@ -417,7 +417,7 @@ def verzeichnis():
         </tbody>
       </table>
       <p class="sheet__leer" data-leer hidden>Für diese Auswahl gibt es noch keinen Eintrag. <a href="kontakt.html?anliegen=verzeichnis">Eintrag vorschlagen</a></p>
-      <p class="sheet__note">Dienstleister: noch kein Eintrag. Premium-Einträge stünden oben und trügen das Wort Premium; bisher hat kein Eintrag Premium.</p>
+      <p class="sheet__note">Dienstleister: noch kein Eintrag. Premium stünde oben; bisher hat kein Eintrag Premium.</p>
     </figure>
   </section>'''
     seite("verzeichnis.html", "Verzeichnis: Tempel, Vereine und Geschäfte | tamil.de",
@@ -438,28 +438,28 @@ def verzeichnis_eintrag():
         <p class="lead">Restaurant mit Küche aus Sri Lanka in Bremen, geführt von Suthakar Thiruchelvam und seinem Sohn Anoj.</p>
         <p class="actions"><a class="btn btn--primary" href="kontakt.html?anliegen=verzeichnis&amp;eintrag=ceylon-palace">Änderung melden</a><a class="share" href="{e(wa("Ceylon Palace, Restaurant mit Küche aus Sri Lanka in Bremen, im Verzeichnis"))}">Per WhatsApp teilen</a></p>
       </div>
-      <p class="profil-kopf__hinweis">Muster: So erscheint die Markierung Premium. Setzen darf sie allein die Verwaltung; für das Ceylon Palace ist nichts entschieden.</p>
+      <p class="profil-kopf__hinweis">Muster der Markierung; Premium setzt allein die Verwaltung.</p>
     </div>
   </section>
 
   <section class="container grid profil" aria-label="Angaben">
     <figure class="sheet angaben" aria-labelledby="a-titel">
-      <figcaption class="sheet__head"><span class="sheet__title" id="a-titel">Angaben</span><span class="sheet__stand">Kontakt fehlt noch</span></figcaption>
+      <figcaption class="sheet__head"><span class="sheet__title" id="a-titel">Angaben</span></figcaption>
       <table class="tafel tafel--dl">
         <tbody>
           <tr><th scope="row">Art</th><td>Business</td></tr>
           <tr><th scope="row">Kategorie</th><td>Restaurant und Imbiss</td></tr>
-          <tr><th scope="row">Adresse</th><td>{fehlt("folgt vom Inhaber")}</td></tr>
-          <tr><th scope="row">Ort</th><td>{fehlt("PLZ folgt")} Bremen</td></tr>
+          <tr><th scope="row">Adresse</th><td>{fehlt("fehlt")}</td></tr>
+          <tr><th scope="row">Ort</th><td>{fehlt("PLZ fehlt")} Bremen</td></tr>
           <tr><th scope="row">Bundesland</th><td>Bremen</td></tr>
           <tr><th scope="row">Land</th><td>Deutschland</td></tr>
-          <tr><th scope="row">Telefon</th><td>{fehlt("folgt vom Inhaber")}</td></tr>
-          <tr><th scope="row">E-Mail</th><td>{fehlt("folgt vom Inhaber")}</td></tr>
-          <tr><th scope="row">Website</th><td>{fehlt("folgt vom Inhaber")}</td></tr>
-          <tr><th scope="row">Öffnungszeiten</th><td>{fehlt("folgt vom Inhaber")}</td></tr>
+          <tr><th scope="row">Telefon</th><td>{fehlt("fehlt")}</td></tr>
+          <tr><th scope="row">E-Mail</th><td>{fehlt("fehlt")}</td></tr>
+          <tr><th scope="row">Website</th><td>{fehlt("fehlt")}</td></tr>
+          <tr><th scope="row">Öffnungszeiten</th><td>{fehlt("fehlt")}</td></tr>
         </tbody>
       </table>
-      <p class="sheet__note">Öffentlich wird nur, was der Inhaber als öffentlich freigibt; die Redaktion prüft jede Angabe.</p>
+      <p class="sheet__note">Die Angaben trägt der Inhaber ein.</p>
     </figure>
     <div class="profil__text">
       <h2>Über das Restaurant</h2>
@@ -492,7 +492,7 @@ FALLE = '<div class="falle" aria-hidden="true"><label for="{p}-web">Nicht ausfü
 
 def feld(p, name, label, typ="text", pflicht=False, extra="", hilfe="", auto=""):
     req = " required" if pflicht else ""
-    stern = '<span class="pflicht">Pflicht</span>' if pflicht else '<span class="frei">freiwillig</span>'
+    stern = "" if pflicht else '<span class="frei">freiwillig</span>'
     ac = f' autocomplete="{auto}"' if auto else ""
     hid = f"{p}-{name}-hilfe"
     hin = f'<p class="hinweis-feld">{hilfe}</p>' if hilfe else ""
@@ -519,6 +519,7 @@ def einreichen():
   <section class="container grid formular-seite">
     <form class="formular" action="einreichen-danke.html" method="get" data-form data-danke="einreichen-danke.html" novalidate aria-labelledby="titel">
       <p class="formular__fehler" data-fehler tabindex="-1" hidden></p>
+      <p class="legende-satz">Felder ohne Zusatz sind nötig.</p>
       <fieldset>
         <legend>Der Termin</legend>
         {feld(p, "titel", "Titel", pflicht=True)}
@@ -530,7 +531,7 @@ def einreichen():
           {feld(p, "ende-datum", "Ende, Datum", "date")}
           {feld(p, "ende-zeit", "Ende, Uhrzeit", "time")}
         </div>
-        {feld(p, "veranstalter", "Veranstalter", pflicht=True, hilfe="Verein, Tempel oder Person, die einlädt.")}
+        {feld(p, "veranstalter", "Veranstalter", pflicht=True, hilfe="Verein, Tempel oder Person.")}
         {feld(p, "beschreibung", "Beschreibung", "textarea", True, hilfe="Was erwartet die Gäste? Höchstens drei Links.")}
       </fieldset>
       <fieldset>
@@ -539,7 +540,7 @@ def einreichen():
         <div class="reihe">
           {feld(p, "stadt", "Stadt", pflicht=True, auto="address-level2")}
           <fieldset class="seg seg--klein" aria-describedby="t-land-hilfe">
-            <legend>Land <span class="pflicht">Pflicht</span></legend>
+            <legend>Land</legend>
             {laender}
             <p class="hilfe" id="t-land-hilfe" aria-live="polite"></p>
           </fieldset>
@@ -575,11 +576,11 @@ def einreichen():
       <figure class="sheet">
         <figcaption class="sheet__head"><span class="sheet__title" id="r-danach">Was danach passiert</span></figcaption>
         <ol class="ablauf">
-          <li>Die Redaktion sieht Ihre Angaben im Eingang.</li>
-          <li>Sie prüft Datum und Ort und fragt bei Bedarf nach.</li>
-          <li>Nach der Freigabe steht der Termin im <a href="termine.html">Festkalender</a>, mit Ort, Eintritt und Veranstalter.</li>
+          <li><span>Die Redaktion sieht Ihre Angaben.</span></li>
+          <li><span>Sie prüft Datum und Ort.</span></li>
+          <li><span>Nach der Freigabe steht er im <a href="termine.html">Festkalender</a>.</span></li>
         </ol>
-        <p class="sheet__note">Es geht keine automatische E-Mail hinaus. Jeder Termin wird einzeln eingereicht.</p>
+        <p class="sheet__note">Es geht keine automatische E-Mail hinaus.</p>
       </figure>
     </aside>
   </section>'''
@@ -612,9 +613,9 @@ def einreichen():
     <aside class="rand" aria-labelledby="r-danach">
       <h2 id="r-danach" class="rand__h">Was jetzt passiert</h2>
       <ol class="ablauf">
-        <li>Die Redaktion prüft Datum und Ort und fragt bei Bedarf nach.</li>
-        <li>Nach der Freigabe steht der Termin im Festkalender.</li>
-        <li>Nach 90 Tagen löscht tamil.de Ihre Kontaktdaten.</li>
+        <li><span>Die Redaktion prüft Datum und Ort und fragt bei Bedarf nach.</span></li>
+        <li><span>Nach der Freigabe steht der Termin im Festkalender.</span></li>
+        <li><span>Nach 90 Tagen löscht tamil.de Ihre Kontaktdaten.</span></li>
       </ol>
     </aside>
   </section>'''
@@ -636,6 +637,7 @@ def kontakt():
   <section class="container grid formular-seite">
     <form class="formular" action="kontakt.html" method="get" data-form novalidate aria-labelledby="f-titel" id="nachricht">
       <p class="formular__fehler" data-fehler tabindex="-1" hidden></p>
+      <p class="legende-satz">Felder ohne Zusatz sind nötig.</p>
       <fieldset>
         <legend id="f-titel">Ihre Nachricht</legend>
         <div class="feld"><label for="k-anliegen">Worum geht es <span class="frei">freiwillig</span></label><select id="k-anliegen" name="anliegen" data-anliegen><option value="">Bitte wählen</option><option value="hinweis">Hinweis auf ein Thema</option><option value="frage">Frage an die Redaktion</option><option value="kooperation">Kooperation</option><option value="werbung">Werbeanfrage</option><option value="verzeichnis">Verzeichnis: Eintrag vorschlagen oder ändern</option></select></div>
@@ -657,14 +659,14 @@ def kontakt():
         <figcaption class="sheet__head"><span class="sheet__title" id="r-wege">Andere Wege</span></figcaption>
         <table class="tafel tafel--dl">
           <tbody>
-            <tr><th scope="row">E-Mail</th><td><span class="fill">Adresse der Redaktion folgt von KBS</span></td></tr>
-            <tr><th scope="row">WhatsApp</th><td><span class="fill">Nummer folgt von KBS</span></td></tr>
-            <tr><th scope="row">Anschrift</th><td>KBS Digitalmedia <span class="fill">Anschrift folgt mit dem Impressum</span></td></tr>
-            <tr><th scope="row">Werbung</th><td><a href="werben.html">Werbeplätze und Buchung</a></td></tr>
-            <tr><th scope="row">Verzeichnis</th><td><a href="verzeichnis.html">Eintrag vorschlagen oder ändern</a></td></tr>
+            <tr><th scope="row">E-Mail</th><td><span class="fill">folgt von KBS</span></td></tr>
+            <tr><th scope="row">WhatsApp</th><td><span class="fill">folgt von KBS</span></td></tr>
+            <tr><th scope="row">Anschrift</th><td>KBS Digitalmedia <span class="fill">folgt</span></td></tr>
+            <tr><th scope="row">Werbung</th><td><a href="werben.html">Werben</a></td></tr>
+            <tr><th scope="row">Einträge</th><td><a href="verzeichnis.html">Verzeichnis</a></td></tr>
           </tbody>
         </table>
-        <p class="sheet__note">Die Redaktion antwortet von Hand, meist innerhalb weniger Tage. Es geht keine automatische E-Mail hinaus.</p>
+        <p class="sheet__note">Die Redaktion antwortet von Hand.</p>
       </figure>
     </aside>
   </section>'''
@@ -693,9 +695,9 @@ def mass(t):
 
 def werben():
     zeilen = "".join(
-        f'<tr><th scope="row">{n}<span class="hinweis">{w}</span></th><td class="m">{mass(dd)}</td><td class="m">{mass(hh)}</td>'
-        + "".join('<td class="preis"><span class="fill">Preis folgt</span></td>' for _ in LAUF)
-        + f'<td class="m"><time class="num" datetime="{FRUEH.isoformat()}">{kurz(FRUEH)}</time></td></tr>'
+        f'<tr><th scope="row">{n}<span class="hinweis">{w}</span></th><td class="m" data-l="Desktop">{mass(dd)}</td><td class="m" data-l="Handy">{mass(hh)}</td>'
+        + '<td class="preis" data-l="Preis"><span class="fill">folgt</span></td>'
+        + f'<td class="m" data-l="Start ab"><time class="num" datetime="{FRUEH.isoformat()}">{kurz(FRUEH)}</time></td></tr>'
         for k, n, w, dd, hh in PLAETZE)
     main = f'''  <section class="hero" aria-labelledby="titel">
     <div class="container grid kopfzeile">
@@ -707,37 +709,37 @@ def werben():
     </div>
   </section>
 
-  <section class="container plaetze" aria-labelledby="p-titel">
+  <section class="container plaetze">
     <figure class="sheet" aria-labelledby="p-titel">
       <figcaption class="sheet__head">
         <span class="sheet__title" id="p-titel">Werbeplätze und Preise</span>
-        <span class="sheet__stand">Maße in Pixeln, Preise je Laufzeit</span>
+        <span class="sheet__stand">Maße in Pixeln</span>
       </figcaption>
       <div class="tafel-rahmen" tabindex="0" role="region" aria-labelledby="p-titel">
       <table class="karte">
-        <thead><tr><th scope="col">Platz</th><th scope="col" class="m">Desktop</th><th scope="col" class="m">Handy</th>{"".join(f'<th scope="col" class="preis">{t} Tage</th>' for t in LAUF)}<th scope="col" class="m">Frühester Start</th></tr></thead>
+        <thead><tr><th scope="col">Platz</th><th scope="col" class="m">Desktop</th><th scope="col" class="m">Handy</th><th scope="col" class="preis">Preis je <span class="num">7</span>, <span class="num">14</span>, <span class="num">30</span> Tage</th><th scope="col" class="m">Start ab</th></tr></thead>
         <tbody>{zeilen}</tbody>
       </table>
       </div>
-      <p class="sheet__note">Preise, Laufzeiten und Bedingungen legt KBS fest. Je Platz läuft eine Anzeige zur selben Zeit; zwischen Buchung und Start liegen zwei Werktage für die Prüfung.</p>
+      <p class="sheet__note">Preise und Bedingungen legt KBS fest. Je Platz läuft eine Anzeige zur selben Zeit.</p>
     </figure>
   </section>
 
   <section class="container grid ablauf-sek" aria-labelledby="a-titel">
     <div class="ablauf-sek__kopf">
       <h2 id="a-titel">So läuft eine Buchung</h2>
-      <p class="lead">Ohne Konto und ohne Vertrag am Telefon, bezahlt über Stripe.</p>
+      <p class="lead">Ohne Konto, bezahlt über Stripe; jede Anzeige prüft KBS vor dem Start.</p>
     </div>
     <ol class="schritte">
-      <li><h3>Platz und Laufzeit wählen</h3><p>Sieben, 14 oder 30 Tage auf einem der sechs Plätze.</p></li>
-      <li><h3>Startdatum wählen</h3><p>Belegte Tage sind gesperrt; die gewählten Tage bleiben 35 Minuten für Sie reserviert.</p></li>
-      <li><h3>Angaben zur Firma</h3><p>Firma, Ansprechperson, Rechnungsadresse und E-Mail; USt-ID freiwillig.</p></li>
-      <li><h3>Werbemittel hochladen</h3><p>Je ein Bild für Desktop und Handy in den Maßen des Platzes, JPEG oder PNG, dazu die Zieladresse.</p></li>
-      <li><h3>Prüfen und bezahlen</h3><p>Zusammenfassung, Bedingungen annehmen, Zahlung bei Stripe.</p></li>
+      <li><h3>Platz und Laufzeit wählen</h3><p>Sieben, 14 oder 30 Tage.</p></li>
+      <li><h3>Startdatum wählen</h3><p>Belegte Tage sind gesperrt.</p></li>
+      <li><h3>Angaben zur Firma</h3><p>Für die Rechnung.</p></li>
+      <li><h3>Werbemittel hochladen</h3><p>Ein Bild je Größe, JPEG oder PNG.</p></li>
+      <li><h3>Prüfen und bezahlen</h3><p>Bei Stripe.</p></li>
     </ol>
     <div class="danach">
       <h3>Nach der Zahlung</h3>
-      <p>KBS prüft das Werbemittel und gibt es frei oder lehnt mit Grund ab; bei Ablehnung kommt der volle Betrag zurück. Die Anzeige läuft nur, wenn sie bezahlt, geprüft und im gebuchten Zeitraum ist. Den Stand zeigt ein geheimer Link zur Buchung, mit Einblendungen und Klicks.</p>
+      <p>KBS prüft jedes Werbemittel; bei Ablehnung kommt der volle Betrag zurück. Den Stand mit Einblendungen und Klicks zeigt ein geheimer Link zur Buchung.</p>
       <p class="actions"><a class="btn btn--primary" href="buchen.html">Platz buchen</a></p>
     </div>
   </section>'''
@@ -786,7 +788,7 @@ def buchen():
         <h1 id="titel">Werbeplatz buchen</h1>
         <p class="lead">Fünf Schritte auf einer Seite; bezahlt wird am Ende bei Stripe.</p>
       </div>
-      <nav class="kopfzeile__aktion schrittleiste" aria-label="Schritte der Buchung">
+      <nav class="schrittleiste" aria-label="Schritte der Buchung">
         <ol>
           <li><a href="#s1">Platz</a></li><li><a href="#s2">Start</a></li><li><a href="#s3">Angaben</a></li><li><a href="#s4">Werbemittel</a></li><li><a href="#s5">Bezahlen</a></li>
         </ol>
@@ -796,6 +798,7 @@ def buchen():
 
   <form class="container buchung" action="buchen.html" method="get" data-form novalidate aria-labelledby="titel">
     <p class="formular__fehler" data-fehler tabindex="-1" hidden></p>
+    <p class="legende-satz">Felder ohne Zusatz sind nötig.</p>
     <section class="schritt grid" id="s1" aria-labelledby="s1-h">
       <h2 id="s1-h" class="schritt__h"><span class="num">1</span> Platz und Laufzeit</h2>
       <div class="schritt__inhalt">

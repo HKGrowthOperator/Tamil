@@ -18,7 +18,7 @@
 .seg--art label .num { color: inherit; opacity: 0.8; }
 .vz__liste { grid-column: 5 / span 8; }
 .vz__liste .tafel td { padding-block: var(--space-md); }
-.vz__liste .tafel td.was { font-weight: 600; }
+.vz__liste .tafel td.was { font-weight: 600; width: 34%; }
 .vz__liste .tafel .hinweis { display: block; }
 .vz__liste .tafel .zu a { display: inline-flex; align-items: center; min-height: 44px; }
 .sheet__leer { padding-block: var(--space-lg); color: var(--color-ink-2); }
@@ -37,7 +37,7 @@
 .profil__text { grid-column: 7 / span 6; display: flex; flex-direction: column; gap: var(--space-lg); }
 .profil__text h2 { font-size: var(--text-2xl); }
 .profil__text > p { font-size: var(--text-prose); line-height: 1.6; }
-.profil__h { padding-block-start: var(--space-lg); border-top: var(--rule-bar) solid var(--color-rule-2); }
+.profil__h { max-width: none; padding-block-start: var(--space-lg); border-top: var(--rule-bar) solid var(--color-rule-2); }
 .weiter__liste { margin: 0; padding: 0; list-style: none; }
 .weiter__liste li { display: grid; grid-template-columns: 5rem minmax(0, 1fr); gap: var(--space-md); align-items: baseline; }
 .weiter__liste a { font: 600 var(--text-title)/1.25 var(--font-display); letter-spacing: var(--tracking-display); }

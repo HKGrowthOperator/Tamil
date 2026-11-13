@@ -307,8 +307,8 @@ def datei(fid, label, pflicht=False, hilfe=""):
     frei = "" if pflicht else ' <span class="frei">(freiwillig)</span>'
     req = ' required aria-required="true"' if pflicht else ""
     return (f'<div class="feld"><span class="label" id="{fid}-l">{label}{frei}</span>'
-            f'<label class="datei" for="{fid}"><span>Bild auswählen</span></label>'
-            f'<input class="datei-input" id="{fid}" name="{fid}" type="file" accept="image/jpeg,image/png"{req} aria-labelledby="{fid}-l" aria-describedby="{fid}-h">'
+            f'<span class="datei"><span aria-hidden="true">Bild auswählen</span>'
+            f'<input class="datei-input" id="{fid}" name="{fid}" type="file" accept="image/jpeg,image/png"{req} aria-labelledby="{fid}-l" aria-describedby="{fid}-h"></span>'
             f'<p class="hilfe" id="{fid}-h">{hilfe}</p></div>')
 
 
@@ -509,8 +509,8 @@ def zaehl(**kw):
 regionen = {}
 for v in VERZ:
     regionen.setdefault(v["land"], set()).add(v["region"])
-art_seg = (f'<input type="radio" name="art" id="art-alle" value="" checked><label for="art-alle">Alle ({len(VERZ)})</label>'
-           + "".join(f'<input type="radio" name="art" id="art-{a.lower()}" value="{a.lower()}"><label for="art-{a.lower()}">{a} ({zaehl(art=a)})</label>' for a in ARTEN))
+art_seg = (f'<span class="opt"><input type="radio" name="art" id="art-alle" value="" checked><label for="art-alle">Alle ({len(VERZ)})</label></span>'
+           + "".join(f'<span class="opt"><input type="radio" name="art" id="art-{a.lower()}" value="{a.lower()}"><label for="art-{a.lower()}">{a} ({zaehl(art=a)})</label></span>' for a in ARTEN))
 land_ops = ['<option value="">Alle Länder</option>'] + [f'<option value="{c}">{n} ({zaehl(land=c)})</option>' for c, n in LAENDER.items()]
 reg_ops = ['<option value="">Alle</option>'] + [
     f'<optgroup label="{LAENDER[c]}">' + "".join(f'<option>{e(r)}</option>' for r in sorted(regionen[c])) + '</optgroup>'
@@ -668,7 +668,7 @@ platz_radios = "".join(
     f'<label for="pl-{k}"><span class="wahl-titel">{n}</span><span class="wahl-text">{e(wo)}, {fmt(d, m)}</span></label></div>'
     for k, n, wo, d, m in PLAETZE)
 lauf_radios = "".join(
-    f'<input type="radio" name="laufzeit" id="lz-{t}" value="{t}"{" checked" if t == 14 else ""}><label for="lz-{t}">{t} Tage</label>'
+    f'<span class="opt"><input type="radio" name="laufzeit" id="lz-{t}" value="{t}"{" checked" if t == 14 else ""}><label for="lz-{t}">{t} Tage</label></span>'
     for t in (7, 14, 30))
 BELEGT = {dt.date(2026, 12, d) for d in list(range(1, 8)) + list(range(19, 27))}
 tage_kal = []

@@ -14,7 +14,7 @@
 .formular { grid-column: 1 / span 7; display: flex; flex-direction: column; gap: var(--space-xl); }
 .formular > fieldset { margin: 0; padding: 0; border: 0; min-width: 0; display: flex; flex-direction: column; gap: var(--space-lg); }
 .formular > fieldset + fieldset { padding-block-start: var(--space-xl); border-top: var(--rule-hair) solid var(--color-rule-2); }
-.formular > fieldset > legend { padding: 0; margin-block-end: var(--space-lg); font: 600 var(--text-xl)/1.2 var(--font-display); letter-spacing: var(--tracking-display); color: var(--color-ink); float: left; width: 100%; }
+.formular > fieldset > legend { padding: 0; margin-block-end: 0; font: 600 var(--text-xl)/1.2 var(--font-display); letter-spacing: var(--tracking-display); color: var(--color-ink); float: left; width: 100%; }
 .formular > fieldset > legend + * { clear: both; }
 .reihe { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-lg) var(--gap-columns); align-items: start; }
 

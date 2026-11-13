@@ -45,13 +45,14 @@ a:hover { text-decoration-thickness: 2px; }
 .marke span { font-weight: 600; color: var(--color-ink-2); }
 .heute { margin: 0; }
 .heute time { display: inline-grid; grid-template-columns: auto auto; align-items: center; column-gap: var(--space-xs); }
-.heute .ziffer { font-family: var(--font-display); font-weight: 800; font-size: var(--text-3xl); line-height: 1; letter-spacing: -0.03em; font-variant-numeric: tabular-nums lining-nums; color: var(--color-ink); }
+.heute .ziffer { font-family: var(--font-display); font-weight: 700; font-size: var(--text-3xl); line-height: 1; letter-spacing: -0.03em; font-variant-numeric: tabular-nums lining-nums; color: var(--color-ink); }
 .heute .datum { font-size: var(--text-sm); line-height: 1.25; color: var(--color-ink-2); }
 .radar { margin: 0; color: var(--color-ink-2); font-size: var(--text-sm); }
 .radar b { color: var(--color-ok); font-weight: 600; }
 .wer { display: flex; align-items: center; gap: var(--space-sm); margin-left: auto; font-size: var(--text-sm); }
 .wer form { margin: 0; }
 .menue { display: none; }
+.menue-ab { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-sm); margin-top: var(--space-sm); padding-top: var(--space-sm); border-top: 1px solid var(--color-rule); }
 
 /* Banner für angehaltene Kanäle */
 .banner { padding: var(--space-sm) var(--gutter); background: var(--color-paper-3); border-bottom: 1px solid var(--color-rule); }
@@ -76,7 +77,7 @@ a:hover { text-decoration-thickness: 2px; }
 .zurueck { display: inline-flex; align-items: center; min-height: 44px; margin-bottom: var(--space-2xs); font-size: var(--text-sm); }
 
 /* Knöpfe in acht Zuständen */
-.knopf { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-xs); min-height: var(--control); padding: 0 var(--space-md); border: 1px solid var(--color-rule-strong); border-radius: var(--radius-card); background: var(--color-paper); color: var(--color-ink); font: 500 var(--text-ui)/1.2 var(--font-body); text-decoration: none; white-space: nowrap; cursor: pointer; transition: background-color var(--dur-micro) var(--ease-out), border-color var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out); }
+.knopf { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-xs); min-height: var(--control); padding: 0 var(--space-md); border: 1px solid var(--color-rule-strong); border-radius: var(--radius-card); background: var(--color-paper); color: var(--color-ink); font: 400 var(--text-ui)/1.2 var(--font-body); text-decoration: none; white-space: nowrap; cursor: pointer; transition: background-color var(--dur-micro) var(--ease-out), border-color var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out); }
 .knopf:hover { background: var(--color-paper-2); border-color: var(--color-ink-2); }
 .knopf:active { transform: translateY(1px); }
 .knopf:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
@@ -104,6 +105,9 @@ a:hover { text-decoration-thickness: 2px; }
 .block > header a { font-size: var(--text-sm); font-weight: 600; display: inline-flex; align-items: center; min-height: 44px; }
 .spalten { display: grid; grid-template-columns: minmax(0, 8fr) minmax(0, 4fr); gap: var(--space-xl); align-items: start; }
 .spalten > aside { position: sticky; top: var(--space-md); }
+.spalten > aside .daten { grid-template-columns: minmax(0, 1fr); gap: 0; }
+.spalten > aside .daten dd { margin-bottom: var(--space-xs); }
+@media (max-width: 75rem) { .spalten { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--space-lg); } }
 
 /* Signatur: die Tagesliste */
 .tagesliste { list-style: none; margin: 0; padding: 0; }
@@ -114,6 +118,8 @@ a:hover { text-decoration-thickness: 2px; }
 .tagesliste .tag.ohne { font-size: var(--text-sm); color: var(--color-muted); line-height: 1.25; padding-top: var(--space-2xs); }
 .tagesliste .was { display: grid; gap: var(--space-3xs); min-width: 0; }
 .tagesliste .was a, .tagesliste .titel { font-weight: 600; text-decoration: none; }
+.tagesliste .was a, .tabelle td.kopf a, .daten a, .stand dd a { display: inline-flex; align-items: center; min-height: 44px; }
+.stand dd a { min-width: 44px; }
 .tagesliste .was a:hover { text-decoration: underline; }
 .tagesliste .was p { color: var(--color-ink-2); font-size: var(--text-sm); }
 .tagesliste .tun { align-self: center; }
@@ -142,12 +148,13 @@ a:hover { text-decoration-thickness: 2px; }
 .tabelle tr[aria-current="true"] td { background: var(--color-paper-2); }
 .tabelle tr[aria-current="true"] td:first-child { padding-left: var(--space-sm); }
 .tabelle .warnung { color: var(--color-halt); font-weight: 600; }
+.tabelle td.nw { white-space: nowrap; }
 
 /* Formularfelder */
-.feld { display: grid; gap: var(--space-2xs); margin-bottom: var(--space-md); }
+.feld { display: grid; gap: var(--space-2xs); margin-bottom: var(--space-md); min-width: 0; }
 .feld > span, .feld legend { font-weight: 600; }
 .feld small { color: var(--color-muted); font-size: var(--text-sm); min-height: 1lh; }
-.feld input, .feld select, .feld textarea { width: 100%; min-height: var(--control); padding: var(--space-xs) var(--space-sm); border: 1px solid var(--color-rule-strong); border-radius: var(--radius-card); background: var(--color-paper); color: var(--color-ink); font-size: max(16px, var(--text-ui)); }
+.feld input, .feld select, .feld textarea { width: 100%; min-width: 0; min-height: var(--control); padding: var(--space-xs) var(--space-sm); border: 1px solid var(--color-rule-strong); border-radius: var(--radius-card); background: var(--color-paper); color: var(--color-ink); font-size: max(16px, var(--text-ui)); }
 .feld textarea { line-height: 1.5; resize: vertical; }
 .feld input:focus-visible, .feld select:focus-visible, .feld textarea:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
 .feld input:disabled, .feld textarea:disabled { opacity: 0.55; cursor: not-allowed; }
@@ -155,10 +162,16 @@ a:hover { text-decoration-thickness: 2px; }
 .feld .fehler { color: var(--color-halt); font-weight: 600; font-size: var(--text-sm); }
 .zwei { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 var(--space-md); }
 fieldset.feld { border: 0; padding: 0; margin-inline: 0; }
-.wahl { display: flex; flex-wrap: wrap; gap: var(--space-2xs) var(--space-lg); }
-.wahl label { display: inline-flex; align-items: center; gap: var(--space-xs); min-height: 44px; cursor: pointer; }
-.wahl input { width: 20px; height: 20px; accent-color: var(--color-ink); margin: 0; }
-.wahl input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.wahl { display: flex; flex-wrap: wrap; gap: var(--space-2xs) var(--space-md); border: 0; padding: 0; margin: 0; min-width: 0; }
+.wahl label { position: relative; display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; padding-right: var(--space-xs); cursor: pointer; }
+.wahl input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.wahl span { display: inline-flex; align-items: center; gap: var(--space-xs); }
+.wahl span::before { content: ""; flex: none; width: 20px; height: 20px; border: 2px solid var(--color-ink-2); border-radius: 50%; background: var(--color-paper); transition: border-color var(--dur-micro) var(--ease-out); }
+.wahl input[type="checkbox"] + span::before { border-radius: var(--radius-card); }
+.wahl label:hover span::before { border-color: var(--color-ink); }
+.wahl input:checked + span::before { background: var(--color-ink); border-color: var(--color-ink); box-shadow: inset 0 0 0 3px var(--color-paper); }
+.wahl input:focus-visible + span { outline: 2px solid var(--color-focus); outline-offset: 4px; }
+.wahl input:disabled + span { opacity: 0.55; cursor: not-allowed; }
 
 /* Reiter als Filter (Zustand in der Adresse) */
 .reiter { display: flex; gap: var(--space-2xs); overflow-x: auto; margin: 0 0 var(--space-lg); padding: 0; list-style: none; border-bottom: 1px solid var(--color-rule); }
@@ -188,7 +201,7 @@ fieldset.feld { border: 0; padding: 0; margin-inline: 0; }
 .belege li { display: grid; grid-template-columns: 2.5rem minmax(0, 1fr); gap: var(--space-xs); }
 .belege .id { font-variant-numeric: tabular-nums; color: var(--color-muted); }
 .belege .st { font-weight: 600; }
-@media (min-width: 75rem) {
+@media (min-width: 100rem) {
   .beitrag { max-width: none; }
   .absatz { grid-template-columns: minmax(0, 1fr) 17rem; gap: var(--space-lg); }
 }
@@ -217,13 +230,14 @@ details.aufklapp[open] > summary { margin-bottom: var(--space-sm); }
 .vergleich td.alt { color: var(--color-ink-2); }
 .vergleich td.neu { font-weight: 600; }
 .vergleich td.gleich { color: var(--color-muted); font-weight: 400; }
-.vergleich .wahl label { min-height: 40px; }
+.vergleich .wahl { flex-wrap: nowrap; gap: var(--space-2xs) var(--space-sm); }
 
 /* Buchungen */
 .werbemittel { display: grid; gap: var(--space-md); }
+.werbemittel figcaption { margin-top: var(--space-2xs); }
 .flaeche { display: grid; place-content: center; text-align: center; padding: var(--space-sm); border: 1px dashed var(--color-rule-strong); color: var(--color-ink-2); font-size: var(--text-sm); background: var(--color-paper-2); max-width: 100%; }
 .flaeche.desktop { aspect-ratio: 970 / 250; width: min(100%, 970px); }
-.flaeche.mobil { aspect-ratio: 300 / 250; width: min(100%, 300px); }
+.flaeche.mobil { aspect-ratio: 320 / 100; width: min(100%, 320px); }
 .pruefliste { list-style: none; margin: 0; padding: 0; }
 .pruefliste li { display: grid; grid-template-columns: 6.5rem minmax(0, 1fr); gap: var(--space-sm); padding-block: var(--space-xs); border-bottom: 1px solid var(--color-rule); }
 
@@ -261,7 +275,9 @@ details.aufklapp[open] > summary { margin-bottom: var(--space-sm); }
 @media (max-width: 60rem) {
   .rahmen { grid-template-columns: minmax(0, 1fr); }
   .seitenleiste { display: none; }
-  .menue { display: block; order: 5; width: 100%; }
+  .menue { display: block; order: 3; margin-left: auto; }
+  .menue[open] { width: 100%; margin-left: 0; }
+  .wer { display: none; }
   .menue > summary { display: inline-flex; align-items: center; min-height: 44px; padding: 0 var(--space-md); border: 1px solid var(--color-rule-strong); border-radius: var(--radius-card); cursor: pointer; font-weight: 600; }
   .menue[open] > summary { margin-bottom: var(--space-xs); }
   .menue h2 { margin-inline: 0; }
@@ -269,7 +285,6 @@ details.aufklapp[open] > summary { margin-bottom: var(--space-sm); }
   .menue .ziele a { padding-inline: 0; }
   .leiste { gap: var(--space-xs) var(--space-md); }
   .radar { order: 4; width: 100%; }
-  .wer { margin-left: auto; }
   .spalten, .karenz { grid-template-columns: minmax(0, 1fr); }
   .spalten > aside { position: static; }
   .haupt { padding-top: var(--space-lg); }
@@ -277,15 +292,18 @@ details.aufklapp[open] > summary { margin-bottom: var(--space-sm); }
 @media (max-width: 40rem) {
   .marke img { width: 80px; }
   .marke span { display: none; }
-  .wer span { display: none; }
   .zwei { grid-template-columns: minmax(0, 1fr); }
-  .tagesliste > li { grid-template-columns: 3rem minmax(0, 1fr); }
-  .tagesliste .tun { grid-column: 2; }
+  .tagesliste > li { grid-template-columns: 4rem minmax(0, 1fr); column-gap: var(--space-sm); }
+  .tagesliste .tun { grid-column: 2; justify-self: start; margin-top: var(--space-2xs); }
+  .seitenkopf { padding-bottom: var(--space-md); margin-bottom: var(--space-lg); }
   .daten { grid-template-columns: minmax(0, 1fr); }
   .daten dd { margin-bottom: var(--space-xs); }
   .social-bild { grid-template-columns: 6rem minmax(0, 1fr); }
   .social-bild img { width: 6rem; }
   .pruefliste li { grid-template-columns: minmax(0, 1fr); gap: 0; }
+}
+
+@media (max-width: 60rem) {
   /* Tabellen als beschriftete Blöcke; Name und Aktion bleiben sichtbar */
   .tabelle.stapel thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
   .tabelle.stapel, .tabelle.stapel tbody, .tabelle.stapel tr, .tabelle.stapel td { display: block; width: 100%; }
@@ -298,6 +316,10 @@ details.aufklapp[open] > summary { margin-bottom: var(--space-sm); }
   .tabelle.stapel tr[aria-current="true"] { background: var(--color-paper-2); padding-inline: var(--space-sm); }
   .tabelle.stapel tr[aria-current="true"] td { background: transparent; }
   .tabelle.stapel tr[aria-current="true"] td:first-child { padding-left: 0; }
+  .tabelle.stapel td.tun { display: block; }
+  .tabelle.stapel td.tun::before { content: none; }
+  .tabelle.stapel td.tun .aktionen { justify-content: flex-start; margin-top: var(--space-xs); }
+  .knopf { white-space: normal; text-align: center; }
 }
 
 @media (prefers-reduced-motion: reduce) {
