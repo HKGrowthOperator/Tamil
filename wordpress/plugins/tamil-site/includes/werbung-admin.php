@@ -40,6 +40,16 @@ function tamil_site_werbung_admin_hinweise(): string {
 }
 
 /**
+ * Was beim Löschen des Plugins mit den Buchungen geschieht (uninstall.php).
+ */
+function tamil_site_werbung_deinstallation_hinweis(): string {
+	if ( get_option( 'tamil_site_werbung_deinstallation_loeschen', false ) ) {
+		return __( 'Achtung: Die Option tamil_site_werbung_deinstallation_loeschen ist gesetzt. Beim Löschen des Plugins werden alle Werbebuchungen gelöscht, auch die bezahlten. Vorher exportieren.', 'tamil-site' );
+	}
+	return __( 'Beim Löschen des Plugins bleiben bezahlte und erstattete Buchungen samt Protokoll für die steuerliche Aufbewahrung in der Datenbank (Tabellen tamil_werbebuchungen und tamil_werbeprotokoll); nie bezahlte Buchungen werden entfernt. Ganz löschen nur nach dem Export mit der Option tamil_site_werbung_deinstallation_loeschen.', 'tamil-site' );
+}
+
+/**
  * Buchungsliste oder Einzelansicht.
  */
 function tamil_site_werbung_admin_seite(): void {
@@ -67,6 +77,7 @@ function tamil_site_werbung_admin_seite(): void {
 	}
 	/* translators: %d: Tage */
 	echo '</ul><p class="description" style="clear:both">' . esc_html( sprintf( __( 'Nie bezahlte Buchungen: Die Werbemittel werden gelöscht, sobald die Reservierung verfällt; die Personendaten nach %d Tagen. Bezahlte Buchungen bleiben für die steuerliche Aufbewahrung.', 'tamil-site' ), TAMIL_SITE_WERBUNG_FRIST_UNBEZAHLT_TAGE ) ) . '</p>';
+	echo '<p class="description">' . esc_html( tamil_site_werbung_deinstallation_hinweis() ) . '</p>';
 	echo '<table class="widefat striped"><thead><tr><th>' . esc_html__( 'Nummer', 'tamil-site' ) . '</th><th>' . esc_html__( 'Platz', 'tamil-site' ) . '</th><th>' . esc_html__( 'Zeitraum', 'tamil-site' ) . '</th><th>' . esc_html__( 'Firma', 'tamil-site' ) . '</th><th>' . esc_html__( 'Betrag', 'tamil-site' ) . '</th><th>' . esc_html__( 'Stand', 'tamil-site' ) . '</th><th>' . esc_html__( 'Warnung', 'tamil-site' ) . '</th></tr></thead><tbody>';
 	$anzahl = 0;
 	foreach ( $zeilen as $b ) {
