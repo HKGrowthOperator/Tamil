@@ -34,13 +34,13 @@ h1, h2, h3 { color: var(--color-ink); font-weight: 600; }
 a { color: var(--color-ink); text-decoration-color: var(--color-accent); text-underline-offset: 0.15em; transition: text-decoration-color var(--dur-micro) var(--ease-out); }
 a:hover { text-decoration-thickness: 2px; }
 a:active { color: var(--color-accent-2); }
-.num { font-family: var(--font-body); font-variant-numeric: tabular-nums lining-nums; font-weight: 500; }
+.num { font-family: var(--font-body); font-variant-numeric: tabular-nums lining-nums; }
 .muted { color: var(--color-muted); }
 time { font-variant-numeric: tabular-nums; }
 
 /* skip link */
 .skip { position: absolute; left: var(--space-md); top: calc(-1 * var(--space-3xl)); z-index: var(--z-toast); padding: var(--space-xs) var(--space-md); background: var(--color-ink); color: var(--color-paper); }
-.skip:focus-visible { top: var(--space-md); outline-color: var(--color-sheet); }
+.skip:focus-visible { top: var(--space-md); outline-color: var(--color-focus); }
 
 /* the banner over the bar */
 .banner { background: var(--color-paper-2); color: var(--color-ink); font-size: var(--text-sm); border-bottom: var(--rule-hair) solid var(--color-rule); }
@@ -209,7 +209,7 @@ time { font-variant-numeric: tabular-nums; }
 .photo > img { width: 100%; height: 100%; object-fit: cover; }
 
 /* Kritik r1: Tippflaechen der Links in Tabellen, Zeitleiste und Bildnachweisen 44 px, ohne den Satz zu verschieben */
-.tafel td a, .leiste a.n, .zeilen a.titel, .pic figcaption small a, .bild figcaption small a { display: inline-block; padding-block: 11px; margin-block: -11px; }
+.tafel td a, .leiste a.n, .zeilen a.titel, .pic figcaption small a, .bild figcaption small a { display: inline-block; padding-block: var(--space-sm); margin-block: calc(-1 * var(--space-sm)); }
 .pic figcaption small { display: block; margin-top: var(--space-2xs); color: var(--color-muted); font-size: var(--text-sm); }
 .sheet__note--links { display: flex; flex-wrap: wrap; gap: var(--space-xs) var(--space-lg); }
 .sheet__note a, .share-zeile a { display: inline-flex; align-items: center; min-height: 44px; }

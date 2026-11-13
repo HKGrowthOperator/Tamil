@@ -91,7 +91,7 @@ main { padding-block: var(--space-xl) var(--space-2xl); }
 /* Datensatz als Liste: Feld links, Wert rechts */
 .satz { display: grid; grid-template-columns: minmax(0, 11rem) minmax(0, 1fr); margin: 0; border-top: var(--rule-hair) solid var(--color-ink); }
 .satz dt, .satz dd { margin: 0; padding: var(--space-xs) 0; border-bottom: var(--rule-hair) solid var(--color-rule); }
-.satz dt { color: var(--color-muted); font-size: var(--text-sm); padding-top: calc(var(--space-xs) + 2px); padding-right: var(--space-sm); }
+.satz dt { color: var(--color-muted); font-size: var(--text-sm); padding-right: var(--space-sm); }
 .satz dd { overflow-wrap: anywhere; }
 
 /* Meldung im Fluss: Feld paper-2 mit Linie oben, das Wort trägt den Zustand */
@@ -103,8 +103,12 @@ main { padding-block: var(--space-xl) var(--space-2xl); }
 .hinweise li:first-child { border-top: var(--rule-hair) solid var(--color-ink); }
 
 /* ------------------------------------------------ Bedienung */
-.knopf { display: inline-flex; align-items: center; justify-content: center; min-height: var(--control); padding: 0 var(--space-md); border: 0; border-radius: var(--radius-pill); background: var(--color-ink); color: var(--color-paper); font-weight: 500; text-decoration: none; cursor: pointer; transition: background-color var(--dur-micro) var(--ease-out), color var(--dur-micro) var(--ease-out); }
+.knopf { white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; min-height: var(--control); padding: 0 var(--space-md); border: 0; border-radius: var(--radius-pill); background: var(--color-ink); color: var(--color-paper); font-weight: 500; text-decoration: none; cursor: pointer; transition: background-color var(--dur-micro) var(--ease-out), color var(--dur-micro) var(--ease-out); }
 .knopf:hover { background: var(--color-ink-2); }
+.knopf:active { background: var(--color-ink); transform: translateY(1px); }
+.knopf--zweit:active, .knopf--leise:active { background: var(--color-paper-3); }
+.zellen label:active, .zellen--filter a:active { background: var(--color-paper-3); }
+b, strong { font-weight: 600; }
 .knopf--zweit { background: transparent; color: var(--color-ink); box-shadow: inset 0 0 0 var(--rule-bar) var(--color-ink); }
 .knopf--zweit:hover { background: var(--color-paper-2); }
 .knopf--leise { background: transparent; color: var(--color-ink); text-decoration: underline; text-decoration-thickness: 1px; padding-inline: var(--space-xs); }
@@ -121,7 +125,7 @@ textarea.eingabe { min-height: 7.5rem; line-height: 1.5; resize: vertical; }
 fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
 legend { padding: 0; font-weight: 500; margin-bottom: var(--space-2xs); }
 .haken { display: flex; gap: var(--space-sm); align-items: flex-start; min-height: var(--control-touch); padding-block: var(--space-xs); }
-.haken input { width: 20px; height: 20px; margin: 2px 0 0; accent-color: var(--color-ink); flex: none; }
+.haken input { width: 20px; height: 20px; margin: var(--space-3xs) 0 0; accent-color: var(--color-ink); flex: none; }
 
 /* Auswahl als randscharfe Zellen, aneinanderstoßend; die gewählte Zelle ist Tinte */
 .zellen { display: inline-flex; flex-wrap: wrap; }
@@ -171,7 +175,7 @@ details.auf > div { padding-bottom: var(--space-md); }
 .wa-text { background: var(--color-plate); border: var(--rule-hair) solid var(--color-ink); padding: var(--space-md); white-space: pre-line; font-size: var(--text-reading); line-height: 1.5; max-width: 52ch; }
 
 .fuss { border-top: var(--rule-bar) solid var(--color-ink); margin-top: var(--space-2xl); padding-block: var(--space-md) var(--space-xl); font-size: var(--text-sm); color: var(--color-ink-2); }
-.fuss p { max-width: 90ch; }
+.fuss p { max-width: 75ch; }
 
 /* ------------------------------------------------ Schmal */
 @media (max-width: 60rem) {
@@ -196,7 +200,7 @@ details.auf > div { padding-bottom: var(--space-md); }
   .satz { grid-template-columns: minmax(0, 1fr); }
   .satz dt { border-bottom: 0; padding-bottom: 0; }
   .karte { padding: var(--space-md); margin-right: var(--space-sm); box-shadow: 8px 8px 0 var(--color-paper-3); }
-  .spec thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .spec thead { display: none; }
   .spec tr { display: block; padding-block: var(--space-sm); border-bottom: var(--rule-hair) solid var(--color-rule); }
   .spec td { display: block; border: 0; padding: var(--space-3xs) 0; }
   .spec td.zahl { text-align: left; }
@@ -218,5 +222,5 @@ details.auf > div { padding-bottom: var(--space-md); }
 
 /* Tippflächen unter 60rem: jeder Link im Inhalt trägt 44 px Höhe */
 @media (max-width: 60rem) {
-  main a:not(.knopf), .banner a { display: inline-flex; align-items: center; min-height: var(--control-touch); }
+  .spec a, .satz a, .hinweise a, .meldung a, .block__kopf a, .pfad a, .banner a { display: inline-flex; align-items: center; min-height: var(--control-touch); max-width: 100%; overflow-wrap: anywhere; }
 }

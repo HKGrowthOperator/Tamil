@@ -1,0 +1,499 @@
+{
+  "stand": "2026-11-13T21:31:21.287Z",
+  "ergebnisse": [
+    {
+      "ziel": "http://127.0.0.1:8948/cockpit/hm-aushang/uebersicht.html",
+      "url": "http://127.0.0.1:8948/cockpit/hm-aushang/uebersicht.html",
+      "breite": 390,
+      "status": 200,
+      "datei": "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-uebersicht-390.png",
+      "kacheln": [
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-uebersicht-390-k0.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-uebersicht-390-k1.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-uebersicht-390-k2.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-uebersicht-390-k3.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-uebersicht-390-k4.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-uebersicht-390-k5.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-uebersicht-390-k6.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [
+        "a „Zum Inhalt“ 1×1",
+        "a „Zeitplan“ 74×27",
+        "a „Eingang“ 71×27"
+      ],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8948/cockpit/hm-aushang/entwurf.html",
+      "url": "http://127.0.0.1:8948/cockpit/hm-aushang/entwurf.html",
+      "breite": 390,
+      "status": 200,
+      "datei": "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-entwurf-390.png",
+      "kacheln": [
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-entwurf-390-k0.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-entwurf-390-k1.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-entwurf-390-k2.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-entwurf-390-k3.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-entwurf-390-k4.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [
+        "a „Zum Inhalt“ 1×1",
+        "a „Wikimedia Commons“ 166×17"
+      ],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8948/cockpit/hm-aushang/entwurf-lizenz-fehlt.html",
+      "url": "http://127.0.0.1:8948/cockpit/hm-aushang/entwurf-lizenz-fehlt.html",
+      "breite": 390,
+      "status": 200,
+      "datei": "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-entwurf-lizenz-fehlt-390.png",
+      "kacheln": [
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-entwurf-lizenz-fehlt-390-k0.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-entwurf-lizenz-fehlt-390-k1.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-entwurf-lizenz-fehlt-390-k2.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-entwurf-lizenz-fehlt-390-k3.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-entwurf-lizenz-fehlt-390-k4.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-entwurf-lizenz-fehlt-390-k5.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-entwurf-lizenz-fehlt-390-k6.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [
+        "a „Zum Inhalt“ 1×1",
+        "input „“ 20×20",
+        "input „“ 20×20",
+        "input „“ 20×20",
+        "input „“ 20×20"
+      ],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8948/cockpit/hm-aushang/eingang.html",
+      "url": "http://127.0.0.1:8948/cockpit/hm-aushang/eingang.html",
+      "breite": 390,
+      "status": 200,
+      "datei": "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-eingang-390.png",
+      "kacheln": [
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-eingang-390-k0.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-eingang-390-k1.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-eingang-390-k2.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-eingang-390-k3.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [
+        "a „Zum Inhalt“ 1×1",
+        "a „example.org/pongal“ 222×24",
+        "a „a.beispiel@example.org“ 120×24"
+      ],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8948/cockpit/hm-aushang/social.html",
+      "url": "http://127.0.0.1:8948/cockpit/hm-aushang/social.html",
+      "breite": 390,
+      "status": 200,
+      "datei": "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-social-390.png",
+      "kacheln": [
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-social-390-k0.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-social-390-k1.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-social-390-k2.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-social-390-k3.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [
+        "a „Zum Inhalt“ 1×1"
+      ],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8948/cockpit/hm-aushang/verzeichnis.html",
+      "url": "http://127.0.0.1:8948/cockpit/hm-aushang/verzeichnis.html",
+      "breite": 390,
+      "status": 200,
+      "datei": "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-verzeichnis-390.png",
+      "kacheln": [
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-verzeichnis-390-k0.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-verzeichnis-390-k1.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-verzeichnis-390-k2.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-verzeichnis-390-k3.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [
+        "a „Zum Inhalt“ 1×1",
+        "input „“ 20×20",
+        "input „“ 20×20",
+        "input „“ 20×20",
+        "input „“ 20×20",
+        "input „“ 20×20",
+        "input „“ 20×20",
+        "input „“ 20×20",
+        "input „“ 20×20",
+        "input „“ 20×20",
+        "input „“ 20×20",
+        "input „“ 20×20",
+        "input „“ 20×20",
+        "input „“ 20×20",
+        "input „“ 20×20"
+      ],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8948/cockpit/hm-aushang/buchungen.html",
+      "url": "http://127.0.0.1:8948/cockpit/hm-aushang/buchungen.html",
+      "breite": 390,
+      "status": 200,
+      "datei": "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-buchungen-390.png",
+      "kacheln": [
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-buchungen-390-k0.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-buchungen-390-k1.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-buchungen-390-k2.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-buchungen-390-k3.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [
+        "a „Zum Inhalt“ 1×1",
+        "a „c.beispiel@example.org“ 120×24",
+        "a „example.org/angebot“ 222×24",
+        "input „“ 20×20",
+        "input „“ 20×20"
+      ],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8948/cockpit/hm-aushang/uebersicht.html",
+      "url": "http://127.0.0.1:8948/cockpit/hm-aushang/uebersicht.html",
+      "breite": 820,
+      "status": 200,
+      "datei": "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-uebersicht-820.png",
+      "kacheln": [
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-uebersicht-820-k0.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-uebersicht-820-k1.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-uebersicht-820-k2.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-uebersicht-820-k3.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [
+        "a „Zum Inhalt“ 1×1",
+        "a „Zeitplan“ 74×27",
+        "a „Eingang“ 71×27"
+      ],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8948/cockpit/hm-aushang/entwurf.html",
+      "url": "http://127.0.0.1:8948/cockpit/hm-aushang/entwurf.html",
+      "breite": 820,
+      "status": 200,
+      "datei": "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-entwurf-820.png",
+      "kacheln": [
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-entwurf-820-k0.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-entwurf-820-k1.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-entwurf-820-k2.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-entwurf-820-k3.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [
+        "a „Zum Inhalt“ 1×1",
+        "a „Wikimedia Commons“ 166×17"
+      ],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8948/cockpit/hm-aushang/entwurf-lizenz-fehlt.html",
+      "url": "http://127.0.0.1:8948/cockpit/hm-aushang/entwurf-lizenz-fehlt.html",
+      "breite": 820,
+      "status": 200,
+      "datei": "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-entwurf-lizenz-fehlt-820.png",
+      "kacheln": [
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-entwurf-lizenz-fehlt-820-k0.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-entwurf-lizenz-fehlt-820-k1.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-entwurf-lizenz-fehlt-820-k2.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-entwurf-lizenz-fehlt-820-k3.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [
+        "a „Zum Inhalt“ 1×1",
+        "input „“ 20×20",
+        "input „“ 20×20",
+        "input „“ 20×20",
+        "input „“ 20×20"
+      ],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8948/cockpit/hm-aushang/eingang.html",
+      "url": "http://127.0.0.1:8948/cockpit/hm-aushang/eingang.html",
+      "breite": 820,
+      "status": 200,
+      "datei": "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-eingang-820.png",
+      "kacheln": [
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-eingang-820-k0.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-eingang-820-k1.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-eingang-820-k2.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [
+        "a „Zum Inhalt“ 1×1",
+        "a „example.org/pongal“ 162×17",
+        "a „a.beispiel@example.org“ 194×17"
+      ],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8948/cockpit/hm-aushang/social.html",
+      "url": "http://127.0.0.1:8948/cockpit/hm-aushang/social.html",
+      "breite": 820,
+      "status": 200,
+      "datei": "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-social-820.png",
+      "kacheln": [
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-social-820-k0.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-social-820-k1.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-social-820-k2.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [
+        "a „Zum Inhalt“ 1×1"
+      ],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8948/cockpit/hm-aushang/verzeichnis.html",
+      "url": "http://127.0.0.1:8948/cockpit/hm-aushang/verzeichnis.html",
+      "breite": 820,
+      "status": 200,
+      "datei": "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-verzeichnis-820.png",
+      "kacheln": [
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-verzeichnis-820-k0.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-verzeichnis-820-k1.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [
+        "a „Zum Inhalt“ 1×1",
+        "input „“ 20×20",
+        "input „“ 20×20",
+        "input „“ 20×20",
+        "input „“ 20×20",
+        "input „“ 20×20",
+        "input „“ 20×20",
+        "input „“ 20×20",
+        "input „“ 20×20",
+        "input „“ 20×20",
+        "input „“ 20×20",
+        "input „“ 20×20",
+        "input „“ 20×20",
+        "input „“ 20×20",
+        "input „“ 20×20"
+      ],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8948/cockpit/hm-aushang/buchungen.html",
+      "url": "http://127.0.0.1:8948/cockpit/hm-aushang/buchungen.html",
+      "breite": 820,
+      "status": 200,
+      "datei": "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-buchungen-820.png",
+      "kacheln": [
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-buchungen-820-k0.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-buchungen-820-k1.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-buchungen-820-k2.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [
+        "a „Zum Inhalt“ 1×1",
+        "a „c.beispiel@example.org“ 194×17",
+        "a „example.org/angebot“ 176×17",
+        "input „“ 20×20",
+        "input „“ 20×20"
+      ],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8948/cockpit/hm-aushang/uebersicht.html",
+      "url": "http://127.0.0.1:8948/cockpit/hm-aushang/uebersicht.html",
+      "breite": 1280,
+      "status": 200,
+      "datei": "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-uebersicht-1280.png",
+      "kacheln": [
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-uebersicht-1280-k0.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-uebersicht-1280-k1.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-uebersicht-1280-k2.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8948/cockpit/hm-aushang/entwurf.html",
+      "url": "http://127.0.0.1:8948/cockpit/hm-aushang/entwurf.html",
+      "breite": 1280,
+      "status": 200,
+      "datei": "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-entwurf-1280.png",
+      "kacheln": [
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-entwurf-1280-k0.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-entwurf-1280-k1.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-entwurf-1280-k2.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8948/cockpit/hm-aushang/entwurf-lizenz-fehlt.html",
+      "url": "http://127.0.0.1:8948/cockpit/hm-aushang/entwurf-lizenz-fehlt.html",
+      "breite": 1280,
+      "status": 200,
+      "datei": "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-entwurf-lizenz-fehlt-1280.png",
+      "kacheln": [
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-entwurf-lizenz-fehlt-1280-k0.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-entwurf-lizenz-fehlt-1280-k1.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-entwurf-lizenz-fehlt-1280-k2.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8948/cockpit/hm-aushang/eingang.html",
+      "url": "http://127.0.0.1:8948/cockpit/hm-aushang/eingang.html",
+      "breite": 1280,
+      "status": 200,
+      "datei": "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-eingang-1280.png",
+      "kacheln": [
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-eingang-1280-k0.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-eingang-1280-k1.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8948/cockpit/hm-aushang/social.html",
+      "url": "http://127.0.0.1:8948/cockpit/hm-aushang/social.html",
+      "breite": 1280,
+      "status": 200,
+      "datei": "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-social-1280.png",
+      "kacheln": [
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-social-1280-k0.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-social-1280-k1.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8948/cockpit/hm-aushang/verzeichnis.html",
+      "url": "http://127.0.0.1:8948/cockpit/hm-aushang/verzeichnis.html",
+      "breite": 1280,
+      "status": 200,
+      "datei": "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-verzeichnis-1280.png",
+      "kacheln": [
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-verzeichnis-1280-k0.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-verzeichnis-1280-k1.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8948/cockpit/hm-aushang/buchungen.html",
+      "url": "http://127.0.0.1:8948/cockpit/hm-aushang/buchungen.html",
+      "breite": 1280,
+      "status": 200,
+      "datei": "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-buchungen-1280.png",
+      "kacheln": [
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-buchungen-1280-k0.png",
+        "design/cockpit/hm-aushang/shots/cockpit-hm-aushang-buchungen-1280-k1.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    }
+  ],
+  "fehler": 0
+}

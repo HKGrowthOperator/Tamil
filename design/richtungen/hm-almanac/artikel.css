@@ -3,6 +3,7 @@
  * axes: mid/grotesk-sans/chromatic-magenta (accent re-hued to the logo red) · posture: restrained · contrast: pass · fold: pass · v2.0.0 */
 /* Hallmark · pre-emit critique: P4 H5 E4 S4 R5 V4 · weakest: S, a report page is the most common page there is; the sheet of dates in the margin ties the text to the calendar and the share sits beside it */
 @import url("./almanac.css");
+/* Hallmark · waive 78 · the head Mehr zu Tempeln und Festen and the follow-up heads render at 36px under the 42px article head · headlines are capped at 44px on the desktop by decision of the main session after critique r1, so every section head sits one step under the page head */
 /* Hallmark · waive 49b · the wrapping links are report headlines in a dated list of three, two lines at 1440 · a Rückblick headline is the report's own title and cannot be cut to fit one phone line */
 /* Hallmark · dismissed 25 · the footer line under the logo is one sentence of five words, set as a caption beside the index columns */
 /* Hallmark · dismissed 77 · a report page, counted as head with picture, text with its margin sheet, the next reads and the footer */

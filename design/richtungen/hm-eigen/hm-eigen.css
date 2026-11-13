@@ -500,3 +500,4 @@ ol.stand li.jetzt { color: var(--color-ink); font-weight: var(--weight-head); te
 .filter-mehr[open] { padding-bottom: var(--space-md); }
 .seg input:disabled + label { opacity: 0.55; cursor: not-allowed; }
 .seg input:disabled { cursor: not-allowed; }
+.feld input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), .feld select { height: 48px; line-height: 1.2; }

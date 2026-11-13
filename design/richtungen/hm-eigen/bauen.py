@@ -550,7 +550,7 @@ filter_form = (f'<form class="filter" action="verzeichnis.html" method="get" rol
 sortiert = sorted(VERZ, key=lambda v: (not v.get("premium"), v["name"].lower()))
 eintraege = "".join(
     f'<li{" class=\"premium\"" if v.get("premium") else ""}><div class="e-name"><h2><a href="{eintrag_datei(v)}">{e(v["name"])}</a></h2>'
-    f'<p class="meta">{v["art"]}, {e(v["kat"])}</p></div><p class="e-ort">{e(v["stadt"])}<small>{e(v["region"])}, {LAENDER[v["land"]]}</small></p>'
+    f'<p class="meta">{v["art"]}, {e(v["kat"])}</p></div><p class="e-ort">{e(v["stadt"])}<small>{e(", ".join(x for x in (v["region"], LAENDER[v["land"]]) if x != v["stadt"]))}</small></p>'
     f'{"<p class=\"e-marke\">Premium</p>" if v.get("premium") else ""}</li>' for v in sortiert)
 verz_body = (seitenkopf("Verzeichnis", "Tempel, Vereine, Geschäfte und Dienstleister der tamilischen Community in Deutschland, Österreich und der Schweiz.",
                         '<p class="aktionen"><a class="textlink" href="kontakt.html">Eintrag vorschlagen</a></p>')

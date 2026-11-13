@@ -592,7 +592,7 @@ def einreichen():
     <div class="container grid kopfzeile">
       <div class="kopfzeile__text">
         <h1 id="titel">Danke, die Redaktion meldet sich.</h1>
-        <p class="lead">Ihr Termin ist angekommen und wartet im Eingang der Redaktion.</p>
+        <p class="lead">Ihr Termin ist angekommen.</p>
         <p class="actions"><a class="btn btn--primary" href="termine.html">Zum Festkalender</a><a class="btn" href="einreichen.html">Weiteren Termin einreichen</a></p>
       </div>
     </div>
@@ -608,12 +608,12 @@ def einreichen():
           <tr><th scope="row">Stand</th><td>eingegangen</td></tr>
         </tbody>
       </table>
-      <p class="sheet__note">Bitte die Vorgangsnummer notieren, falls Sie nachfragen. Eine Bestätigung per E-Mail gibt es nicht.</p>
+      <p class="sheet__note">Eine Bestätigung per E-Mail gibt es nicht.</p>
     </figure>
     <aside class="rand" aria-labelledby="r-danach">
       <h2 id="r-danach" class="rand__h">Was jetzt passiert</h2>
       <ol class="ablauf">
-        <li><span>Die Redaktion prüft Datum und Ort und fragt bei Bedarf nach.</span></li>
+        <li><span>Die Redaktion prüft Datum und Ort.</span></li>
         <li><span>Nach der Freigabe steht der Termin im Festkalender.</span></li>
         <li><span>Nach 90 Tagen löscht tamil.de Ihre Kontaktdaten.</span></li>
       </ol>
@@ -800,7 +800,7 @@ def buchen():
     <p class="formular__fehler" data-fehler tabindex="-1" hidden></p>
     <p class="legende-satz">Felder ohne Zusatz sind nötig.</p>
     <section class="schritt grid" id="s1" aria-labelledby="s1-h">
-      <h2 id="s1-h" class="schritt__h"><span class="num">1</span> Platz und Laufzeit</h2>
+      <h2 id="s1-h" class="schritt__h"><span class="nr">1</span> Platz und Laufzeit</h2>
       <div class="schritt__inhalt">
         <fieldset class="wahl wahl--platz"><legend class="visually-hidden">Platz</legend>{plaetze}</fieldset>
         <fieldset class="seg"><legend>Laufzeit</legend>{laufz}</fieldset>
@@ -808,7 +808,7 @@ def buchen():
     </section>
 
     <section class="schritt grid" id="s2" aria-labelledby="s2-h">
-      <h2 id="s2-h" class="schritt__h"><span class="num">2</span> Startdatum</h2>
+      <h2 id="s2-h" class="schritt__h"><span class="nr">2</span> Startdatum</h2>
       <div class="schritt__inhalt">
         <fieldset class="kalender"><legend class="visually-hidden">Startdatum</legend>
           {monat(2026, 11, start, lauf, "start")}
@@ -820,7 +820,7 @@ def buchen():
     </section>
 
     <section class="schritt grid" id="s3" aria-labelledby="s3-h">
-      <h2 id="s3-h" class="schritt__h"><span class="num">3</span> Ihre Angaben</h2>
+      <h2 id="s3-h" class="schritt__h"><span class="nr">3</span> Ihre Angaben</h2>
       <div class="schritt__inhalt">
         <div class="reihe">{feld(p, "firma", "Firma", pflicht=True, auto="organization")}{feld(p, "person", "Ansprechperson", pflicht=True, auto="name")}</div>
         {feld(p, "adresse", "Rechnungsadresse", "textarea", True)}
@@ -830,7 +830,7 @@ def buchen():
     </section>
 
     <section class="schritt grid" id="s4" aria-labelledby="s4-h">
-      <h2 id="s4-h" class="schritt__h"><span class="num">4</span> Werbemittel</h2>
+      <h2 id="s4-h" class="schritt__h"><span class="nr">4</span> Werbemittel</h2>
       <div class="schritt__inhalt">
         <div class="reihe">
           {feld(p, "desktop", "Bild für Desktop", "file", True, ' accept="image/jpeg,image/png"', 'Leaderboard: <span class="num">728 × 90</span> Pixel, JPEG oder PNG.')}
@@ -842,7 +842,7 @@ def buchen():
     </section>
 
     <section class="schritt grid" id="s5" aria-labelledby="s5-h">
-      <h2 id="s5-h" class="schritt__h"><span class="num">5</span> Prüfen und bezahlen</h2>
+      <h2 id="s5-h" class="schritt__h"><span class="nr">5</span> Prüfen und bezahlen</h2>
       <div class="schritt__inhalt">
         <figure class="sheet">
           <figcaption class="sheet__head"><span class="sheet__title">Ihre Buchung</span><span class="sheet__stand">reserviert für 35 Minuten</span></figcaption>
