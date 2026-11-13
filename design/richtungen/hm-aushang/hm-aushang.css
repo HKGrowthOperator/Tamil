@@ -3,6 +3,8 @@
  * axes: light/grotesk-sans/chromatic-red · posture: restrained · contrast: pass · fold: pass · v2.0.0 */
 /* Hallmark · pre-emit critique: P4 H4 E4 S4 R5 V4 · weakest: S, a ruled news list fits any paper; the date block, the next date in logo red and the WhatsApp line on every notice make it the community board */
 /* Hallmark · waive 22 · ink and greys at zero chroma · a notice board is printed in plain black, the logo red is the only hue */
+/* Hallmark · waive 49b · headline links run two to four lines on a phone · a story title on the community board is the link and keeps its full wording */
+/* Hallmark · dismissed 58 · the hero head is the article's own title, eight words, set as the editors wrote it */
 /* Hallmark · swap: draw dealt Split Studio, built as Aushang rows (the material is a board of dated notices); the banner does not retract, the page stays still */
 @import url("./tokens.css");
 @import url("./base.css");
@@ -16,7 +18,7 @@ body { font-size: var(--text-md); line-height: 1.6; color: var(--color-ink-2); f
 h1, h2, h3 { color: var(--color-ink); }
 h1 { font-size: var(--text-display); line-height: 1.04; max-width: 18ch; }
 h2 { line-height: 1.08; }
-h3 { letter-spacing: -0.01em; line-height: 1.25; }
+h3 { letter-spacing: -0.01em; line-height: 1.3; }
 a { color: var(--color-ink); font-weight: 600; text-decoration-color: var(--color-rule); transition: text-decoration-color var(--dur-micro) var(--ease-out), color var(--dur-micro) var(--ease-out); }
 a:hover { text-decoration-color: var(--color-accent); }
 :focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
@@ -36,7 +38,8 @@ a:hover { text-decoration-color: var(--color-accent); }
 .btn--still { background: var(--color-paper-2); color: var(--color-ink); border-color: var(--color-muted); }
 .btn--still:hover { background: var(--color-paper-3); border-color: var(--color-ink); }
 .aktionen { display: flex; flex-wrap: wrap; gap: var(--space-sm); margin-top: var(--space-xl); }
-.weiter { display: flex; flex-wrap: wrap; column-gap: var(--space-xl); margin-top: var(--space-lg); }
+.weiter { display: flex; flex-wrap: wrap; column-gap: var(--space-lg); margin-top: var(--space-lg); }
+.weiter a { white-space: nowrap; }
 .weiter a, .teilen, .zurueck a { display: inline-flex; align-items: center; min-height: 44px; }
 
 /* ---------- Kopf: Aushangzeile über der Leiste */
@@ -56,7 +59,7 @@ a:hover { text-decoration-color: var(--color-accent); }
 .menue summary { display: inline-flex; align-items: center; min-height: 48px; padding: 0 var(--space-lg); border: 1px solid var(--color-muted); border-radius: var(--radius-control); background: var(--color-paper-2); color: var(--color-ink); font-weight: 600; cursor: pointer; list-style: none; }
 .menue summary::-webkit-details-marker { display: none; }
 .menue summary:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
-.menue nav { position: absolute; right: 0; top: calc(100% + var(--space-xs)); z-index: var(--z-dropdown); min-width: 17rem; padding: var(--space-sm) var(--space-lg); background: var(--color-paper); border: 1px solid var(--color-rule); border-radius: var(--radius-card); box-shadow: var(--shadow-card); }
+.menue nav { position: absolute; right: 0; top: calc(100% + var(--space-xs)); z-index: var(--z-dropdown); min-width: 17rem; padding: var(--space-sm) var(--space-lg); background: var(--color-paper); border: 1px solid var(--color-ink); border-radius: var(--radius-card); }
 .menue ul { margin: 0; padding: 0; list-style: none; }
 .menue li + li { border-top: 1px solid var(--color-rule-2); }
 .menue a { width: 100%; }
@@ -68,11 +71,11 @@ a:hover { text-decoration-color: var(--color-accent); }
 /* ---------- Abschnitte */
 .abschnitt { padding-top: var(--section-gap); }
 .abschnitt--direkt { padding-top: var(--space-2xl); }
-.abschnitt--knapp { padding-top: var(--space-3xl); }
+.abschnitt--knapp { padding-top: var(--section-gap-s); }
 .abschnitt--well { margin-top: var(--section-gap-s); padding-block: var(--section-gap-s); background: var(--color-paper-2); border-block: 1px solid var(--color-rule); }
 .kopfblock { margin-bottom: var(--space-2xl); }
 .kopfblock .lead { margin-top: var(--space-md); }
-.kopfblock--geteilt { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); column-gap: var(--gap-columns); align-items: end; }
+.kopfblock--geteilt { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); column-gap: var(--space-2xl); align-items: end; }
 .kopfblock--geteilt .lead { margin-top: 0; }
 .kopfblock--seite { margin-bottom: 0; }
 .paar { display: grid; gap: var(--space-2xl); align-items: start; }
@@ -146,12 +149,12 @@ a:hover { text-decoration-color: var(--color-accent); }
 .orte { margin: var(--space-lg) 0 0; padding: 0; list-style: none; columns: 2; column-gap: var(--space-lg); }
 .orte li { padding-block: var(--space-2xs); break-inside: avoid; }
 .staedte { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--color-ink); }
-.stadt { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 7fr) minmax(0, 1fr); column-gap: var(--gap-columns); align-items: baseline; padding-block: var(--space-lg); border-bottom: 1px solid var(--color-rule); }
+.stadt { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 7fr) minmax(0, 1fr); column-gap: var(--space-lg); align-items: baseline; padding-block: var(--space-lg); border-bottom: 1px solid var(--color-rule); }
 .stadt-name { font-size: var(--text-2xl); }
 .stadt-film { font-size: var(--text-title); font-weight: 700; color: var(--color-ink); }
 .stadt .notiz-ort { margin-top: var(--space-2xs); }
 .stadt .zustand { grid-column: auto; }
-.kopfblock--filter { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 24rem); column-gap: var(--gap-columns); align-items: end; }
+.kopfblock--filter { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 24rem); column-gap: var(--space-2xl); align-items: end; }
 
 /* ---------- Anzeige: gekennzeichnet und untergeordnet */
 .anzeige { max-width: 970px; margin-inline: auto; }
@@ -207,7 +210,7 @@ a:hover { text-decoration-color: var(--color-accent); }
 .hilfe { min-height: 1lh; margin-top: var(--space-2xs); font-size: var(--text-sm); color: var(--color-muted); }
 .hilfe--form { color: var(--color-ink); font-weight: 600; }
 .feld--check { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-sm); align-items: start; }
-.feld--check input { width: 24px; height: 24px; margin: 2px 0 0; accent-color: var(--color-ink); }
+.feld--check input { width: 24px; height: 24px; margin: var(--space-3xs) 0 0; accent-color: var(--color-ink); }
 .feld--check label { font-weight: 400; color: var(--color-ink-2); margin: 0; }
 .feld--check input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 .seg { display: flex; flex-wrap: wrap; gap: var(--space-xs); margin: 0; padding: 0; border: 0; min-width: 0; }
@@ -232,14 +235,14 @@ a:hover { text-decoration-color: var(--color-accent); }
 .schritte strong { color: var(--color-ink); }
 .schritte--klein > li { padding-left: 3rem; min-height: 0; }
 .schritte--klein > li::before { font-size: var(--text-xl); }
-.schritte--quer { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--gap-columns); }
+.schritte--quer { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--space-lg); }
 .schritte--quer > li { padding: var(--space-md) 0 0; border-top: 1px solid var(--color-ink); }
 .schritte--quer > li::before { position: static; display: block; margin-bottom: var(--space-md); }
 .schritte--quer strong { display: block; margin-bottom: var(--space-2xs); }
 
 /* ---------- Werben und Buchen */
 .plaetze { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--color-ink); }
-.platz { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 6fr) minmax(0, 3fr); grid-template-rows: auto 1fr; column-gap: var(--gap-columns); padding-block: var(--space-xl); border-bottom: 1px solid var(--color-rule); }
+.platz { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 6fr) minmax(0, 3fr); grid-template-rows: auto 1fr; column-gap: var(--space-lg); padding-block: var(--space-xl); border-bottom: 1px solid var(--color-rule); }
 .platz h3 { font-size: var(--text-title); }
 .platz-wo { grid-column: 1; margin-top: var(--space-xs); }
 .platz .masse { grid-column: 2; grid-row: 1 / span 2; }
@@ -269,7 +272,7 @@ a:hover { text-decoration-color: var(--color-accent); }
 .kalender caption { text-align: left; font-size: var(--text-lg); font-weight: 700; color: var(--color-ink); padding-bottom: var(--space-sm); }
 .kalender th { padding-block: var(--space-xs); font-size: var(--text-sm); font-weight: 400; color: var(--color-ink-2); }
 .kalender abbr { text-decoration: none; }
-.kalender td { padding: 2px; text-align: center; }
+.kalender td { padding: var(--space-3xs); text-align: center; }
 .kalender input { position: absolute; opacity: 0; width: 1px; height: 1px; }
 .kalender label { display: flex; align-items: center; justify-content: center; min-height: 44px; border: 1px solid var(--color-rule); border-radius: var(--radius-control); color: var(--color-ink); font-weight: 600; cursor: pointer; }
 .kalender label:hover { border-color: var(--color-ink); }
@@ -291,7 +294,7 @@ a:hover { text-decoration-color: var(--color-accent); }
 
 /* ---------- Rubrik */
 .rubrik-liste { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--color-ink); }
-.rubrik-zeile { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); column-gap: var(--gap-columns); padding-block: var(--space-xl); border-bottom: 1px solid var(--color-rule); }
+.rubrik-zeile { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); column-gap: var(--space-2xl); padding-block: var(--space-xl); border-bottom: 1px solid var(--color-rule); }
 .rubrik-text { display: grid; grid-template-columns: 9.5rem minmax(0, 1fr); column-gap: var(--space-lg); align-content: start; }
 .rubrik-zeile h3 { font-size: var(--text-title); max-width: 34ch; }
 .rubrik-liste + .tafel { margin-top: var(--space-2xl); }
@@ -302,7 +305,7 @@ a:hover { text-decoration-color: var(--color-accent); }
 
 /* ---------- Fuß */
 .fuss { margin-top: var(--section-gap); border-top: 1px solid var(--color-ink); padding-block: var(--space-2xl) var(--space-3xl); }
-.fuss-innen { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 5fr) minmax(0, 4fr); gap: var(--gap-columns); align-items: start; }
+.fuss-innen { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 5fr) minmax(0, 4fr); gap: var(--space-2xl); align-items: start; }
 .fuss .logo img { height: 40px; }
 .fuss-satz { color: var(--color-ink-2); max-width: 52ch; }
 .fuss-links { margin: 0; padding: 0; list-style: none; columns: 2; column-gap: var(--space-lg); }

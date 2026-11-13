@@ -216,13 +216,13 @@ def startseite():
                  f'<p class="lead">Tempel, Vereine und Schulen der Gemeinden in diesem Jahr.</p></div>'
                  f'<div class="paar paar--7-5"><ol class="tafel">{"".join(notiz(datum_iso(i), BEI[i]["titel"], BEI[i]["ort"], link_zu(i)) for i in c_ids)}</ol>'
                  f'{figur(BEI[71], "bild bild--hoch", sizes="(min-width: 64rem) 40vw, 100vw", fakt="Sri-Kamadchi-Ampal-Tempel, Hamm-Uentrop.")}</div>'
-                 f'<p class="weiter"><a href="rubrik.html">Alle Beiträge aus der Community</a></p></div></section>')
+                 f'<p class="weiter"><a href="rubrik.html">Alle Community-Beiträge</a></p></div></section>')
 
     werbung = (f'<div class="abschnitt abschnitt--knapp"><div class="container">'
                f'{anzeige("billboard", "einreichen.html", "Event melden: Dein Fest im Kalender", "Vereine und Tempel tragen ihre Termine selbst ein.")}</div></div>')
 
-    k_ids = [37, 62, 39]
-    ku_ids = [33, 83, 67, 78]
+    k_ids = [37, 62]
+    ku_ids = [33, 83, 67]
     rubriken = (f'<section class="abschnitt" aria-labelledby="h-rub"><div class="container">'
                 f'<div class="kopfblock"><h2 id="h-rub">Küche, Kultur und Sport</h2></div>'
                 f'<div class="paar paar--7-5"><div id="kueche" class="spalte">{figur(BEI[48], "bild bild--breit", sizes="(min-width: 64rem) 55vw, 100vw")}'
