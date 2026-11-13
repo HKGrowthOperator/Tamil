@@ -16,7 +16,13 @@ from test_eingang import EVENT, JETZT, abholen_und_vorbereiten, claude, client, 
 
 GEGENBEISPIELE = ["Eintritt 18 Euro", "Kinder 1 Euro", "Freitag, 16. Juni", "fünfhundert Gäste werden erwartet",
                   "Infos auf testverein-essen.de", "Das Fest findet in der Zeche Zollverein in Gelsenkirchen statt",
-                  "Es spricht Dr. Kumar Rajan", "Anmeldung: info [at] testverein punkt de"]
+                  "Es spricht Dr. Kumar Rajan", "Anmeldung: info [at] testverein punkt de",
+                  # Gegenprüfung: Positivliste statt Negativliste
+                  "Der Eintritt ist frei.", "Eintritt gratis.", "Für Kinder kostenlos.", "Das Fest ist ausverkauft.",
+                  "Das Fest findet heute statt", "Wir treffen uns morgen abend", "am dritten advent",
+                  "Das zehnte Fest.", "Wir feiern Pongal in köln.", "Es singt குமார் ராஜன்.",
+                  "Infos auf testverein-essen.nl", "Treffpunkt ist gelsenkirchen", "es spricht kumar rajan",
+                  "am elf uhr", "erste Ausgabe"]
 
 
 def _einsendung(**felder):
@@ -25,7 +31,7 @@ def _einsendung(**felder):
 
 def modell_antwort(**ueber):
     def antwort(user, system, req):
-        out = {"zusammenfassung": "Termin Pongal-Fest Testverein in Essen", "titel": "Pongal-Fest Testverein in Essen",
+        out = {"zusammenfassung": "Pongal-Fest Testverein in Essen", "titel": "Pongal-Fest Testverein in Essen",
                "teaser": "Tanz, Musik und Essen.", "absaetze": ["Alle Familien sind willkommen."]}
         out.update(ueber)
         return out
@@ -42,7 +48,7 @@ def test_gegenbeispiele_gelten_als_erfunden(text):
 def test_angaben_aus_der_einsendung_sind_erlaubt():
     erlaubt = eingang.erlaubter_text(_einsendung())
     texte = ["Pongal-Fest Testverein in Essen am Samstag, 16. Januar 2027, 18:30 Uhr.",
-             "Der Eintritt kostet 10 Euro, Kinder frei. Veranstalter ist der Testverein e. V.",
+             "Testverein e. V.: 10 Euro, Kinder frei.", "TANZ und musik – alle familien sind willkommen.",
              "Tanz, Musik und Essen im Gemeindesaal, Beispielstraße 1."]
     assert eingang.fremde_angaben(texte, erlaubt) == []
     assert eingang.fremde_angaben(["9" * 5000], erlaubt)  # sehr lange Ziffernfolge: als Text, ohne int()
@@ -131,7 +137,7 @@ def test_bild_mit_recht_wird_neu_gespeichert_mit_lizenz_datensatz(settings, stor
     assert asset["lizenz_kuerzel"] == "nutzungsrecht" and lizenz.umfang_menge(asset["umfang"]) == {"website"}
     assert "Bestätigung im Formular" in asset["beleg"] and "Fassung KBS-Entwurf 1" in asset["beleg"]
     assert asset["geprueft_von"] == "priya" and "Erika" not in json.dumps(asset, ensure_ascii=False)
-    assert lizenz.sperre(store, d) == ""  # die Freigabe sperrt das Bild nicht
+    assert lizenz.sperre(store, d, settings) == ""  # die Freigabe sperrt das Bild nicht
 
 
 @pytest.mark.parametrize("fall", ["recht", "pruefsumme", "typ", "gif", "gross", "bombe"])
@@ -282,3 +288,80 @@ def test_cockpit_formular_aus_feldern_vorschlag_nur_per_knopf(settings, store, w
     r = c.post(f"/eingang/{v}/uebernehmen", data={"_csrf": token, "vorlage": "modell"})
     assert r.status_code == 302
     assert store.list_drafts("neu")[0]["titel"] == "Pongal-Fest Testverein in Essen"
+
+
+# ---- Gegenprüfung ------------------------------------------------------------------------------------------------
+
+def test_vorschlag_wird_markiert_statt_behauptet(settings, store, wp):
+    erlaubt = eingang.erlaubter_text(_einsendung())
+    html = str(eingang.markieren("Tanz in köln <b>", erlaubt))
+    assert '<mark title="nicht in der Einsendung">köln</mark>' in html and "&lt;b&gt;" in html
+    assert "<mark" not in str(eingang.markieren("Tanz, Musik und Essen.", erlaubt))
+    from pathlib import Path
+
+    vorlage = (Path(eingang.__file__).parent / "web/templates/einsendung.html").read_text(encoding="utf-8")
+    assert "steht in der Einsendung; sonst" not in vorlage
+
+
+def test_alte_zeile_mit_modell_entwurf_nimmt_den_entwurf_aus_den_feldern(store, wp):
+    v = wp.einreichen("event", EVENT)
+    abholen_und_vorbereiten(store, wp)
+    alt = {"titel": "Erfundener Titel", "teaser": "x", "absaetze": ["Rund 500 Gäste"], "quelle": "modell"}
+    store._write("UPDATE einsendungen SET entwurf = ? WHERE vorgangsnummer = ?", (json.dumps(alt), v))
+    e = eingang.holen(store, v)
+    assert e["entwurf"]["quelle"] == "regeln" and e["entwurf"]["titel"] == EVENT["titel"]
+    assert e["modell_vorschlag"] is None
+
+
+def test_migration_12_holt_social_und_lizenz_nach(tmp_path, monkeypatch):
+    from news_radar.workflow import schema
+
+    pfad = tmp_path / "alt.sqlite"
+    monkeypatch.setattr(schema, "MIGRATIONS", {k: v for k, v in schema.MIGRATIONS.items() if k not in (8, 9, 12)})
+    Store(pfad).close()  # Stand 5aab944: V11 ohne V8 und V9
+    monkeypatch.undo()
+    with Store(pfad) as st:
+        assert st.db.execute("PRAGMA user_version").fetchone()[0] == schema.LATEST >= 12
+        tabellen = {r[0] for r in st.db.execute("SELECT name FROM sqlite_master WHERE type = 'table'")}
+        assert {"social_beitraege", "social_stand", "social_regelwerk", "einsendungen"} <= tabellen
+        assert {"lizenz_kuerzel", "beleg", "geprueft_von"} <= {r[1] for r in st.db.execute("PRAGMA table_info(assets)")}
+    assert 10 not in schema.MIGRATIONS
+    with Store(tmp_path / "neu.sqlite") as st:  # frisch: V8, V9, V11 und V12 laufen durch, ohne Fehler
+        assert st.db.execute("PRAGMA user_version").fetchone()[0] == schema.LATEST
+
+
+def test_entwurf_wird_entfernt_wenn_der_lizenzdatensatz_scheitert(settings, store, wp, monkeypatch):
+    v = wp.einreichen("event", EVENT, bild=bild())
+    abholen_und_vorbereiten(store, wp)
+
+    def kaputt(*a, **kw):
+        raise RuntimeError("Lizenz nicht gespeichert")
+    monkeypatch.setattr(lizenz, "anlegen", kaputt)
+    with pytest.raises(RuntimeError):
+        eingang.uebernehmen(store, settings, v, von="priya", client=client(wp), felder={})
+    assert store.list_drafts() == [] and not list(settings.bilder_dir.glob("einsendung-*"))
+    assert store.db.execute("SELECT COUNT(*) FROM assets").fetchone()[0] == 0
+    assert eingang.holen(store, v)["status"] == "vorbereitet"
+
+
+def test_bild_wird_nach_exif_ausrichtung_gedreht():
+    img = Image.new("RGB", (300, 200), (180, 40, 42))
+    ex = Image.Exif()
+    ex[0x0112] = 6  # Orientation: um 90° drehen
+    buf = io.BytesIO()
+    img.save(buf, "JPEG", exif=ex)
+    neu = eingang.bild_neu_speichern(buf.getvalue())
+    with Image.open(io.BytesIO(neu)) as jetzt:
+        assert jetzt.size == (200, 300) and not jetzt.getexif()
+    assert eingang.BILD_MAX_PIXEL == 25_000_000
+
+
+def test_maskierung_ort_bleibt_handles_und_at_punkt_werden_maskiert():
+    e = {"art": "event", "felder": {**EVENT, "ort": "Gemeindesaal, Beispielstraße 1, 45127 Essen",
+                                    "beschreibung": "Ruf an: 0201 12345. Code 1234567. Folgt @testverein_essen "
+                                                    "oder schreibt info at testverein punkt de."}}
+    felder, gefunden = eingang.felder_maskiert(e)
+    assert gefunden and felder["ort"] == "Gemeindesaal, Beispielstraße 1, 45127 Essen"
+    b = felder["beschreibung"]
+    assert "[Telefon]" in b and "0201" not in b and "1234567" in b  # 7 Ziffern ohne Vorwahl bleiben
+    assert "@testverein_essen" not in b and "testverein punkt de" not in b

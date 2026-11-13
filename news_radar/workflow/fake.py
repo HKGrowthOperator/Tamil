@@ -161,7 +161,7 @@ def eingang(user: str, system: str, req: dict) -> dict:
     text = f.get("beschreibung") or f.get("text") or f.get("anliegen") or f.get("nachricht") or ""
     erster = (_saetze(text) or [text])[0]
     ort = ", ".join(x for x in (f.get("stadt"), f.get("land")) if x)
-    zusammen = f"{e.get('art', 'Einsendung').title()}: {titel or erster[:120]}" + (f" ({ort})" if ort else "")
+    zusammen = (titel or erster[:120]) + (f" ({ort})" if ort else "")  # nur Wörter aus der Einsendung
     entwurf = e.get("art") in ("event", "beitrag")
     return {"zusammenfassung": zusammen, "titel": titel if entwurf else "", "teaser": erster[:220] if entwurf else "",
             "absaetze": [text] if entwurf and text else []}

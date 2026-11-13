@@ -67,7 +67,8 @@ def liste():
 def einsendung(vorgang: str):
     e = _oder_404(vorgang)
     entwurf = e["entwurf"] or eingang.regel_vorbereitung(e)[1]  # das Formular immer aus den Feldern
-    return render_template("einsendung.html", e=e, vorschlag=entwurf, modell=e.get("modell_vorschlag"), felder=eingang.FELDER[e["art"]],
+    return render_template("einsendung.html", e=e, vorschlag=entwurf, modell=e.get("modell_vorschlag"),
+                           markieren=eingang.markieren, erlaubt=eingang.erlaubter_text(e), felder=eingang.FELDER[e["art"]],
                            arten=eingang.ARTEN, status_label=eingang.STATUS_LABEL, vermerk=eingang.VERMERK,
                            mailto=mailto(e) if darf("eingang_entscheiden") else "",
                            datum_text=eingang.datum_text, lokal=eingang._lokal,

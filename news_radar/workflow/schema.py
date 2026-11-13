@@ -206,8 +206,10 @@ V9 = [
 ]
 # V11: Eingang (Festlegung F1) – abgeholte Einsendungen der Website mit Status, Hinweisen des Agenten, Entwurf und
 # Notiz der Redaktion; `wp_status` ist der zuletzt von WordPress bestätigte Status (Abgleich nach unklarem Ausgang).
-# Personendaten (name, email, telefon) nur hier; Löschung 90 Tage nach Abschluss, Spam nach 7 Tagen (eingang.loeschen).
-# 10 ist für die Recherche reserviert.
+# Personendaten (name, email, telefon) nur hier; Löschung 90 Tage nach Abschluss, Spam nach 7 Tagen, auf der Website
+# nicht mehr vorhanden (wp_status „fehlt“) nach 30 Tagen (eingang.loeschen). `entwurf` hält JSON {"regeln": Entwurf aus
+# den Feldern, "modell": geprüfter Vorschlag oder null}; `wp_status` kann zusätzlich „abgewiesen“ (dauerhafte 4xx) sein.
+# 10 bleibt frei (die Recherche braucht keine Migration); V12 holt V8 und V9 für frühe V11-Datenbanken nach.
 V11 = [
     """CREATE TABLE IF NOT EXISTS einsendungen (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -232,7 +234,10 @@ V11 = [
     "CREATE INDEX IF NOT EXISTS einsendungen_status ON einsendungen(status, eingang_at)",
     "CREATE TABLE IF NOT EXISTS eingang_stand (schluessel TEXT PRIMARY KEY, wert TEXT)",  # Cursor der Abholung
 ]
-MIGRATIONS: dict[int, list[str]] = {2: V2, 3: V3, 4: V4, 5: V5, 6: V6, 7: V7, 8: V8, 9: V9, 11: V11}
+# V12: Datenbanken, die V11 vor V8 und V9 bekommen haben (Eingang-Zweig bis 5aab944, user_version 11), holen Social
+# und Lizenzen nach. Alles idempotent: CREATE … IF NOT EXISTS, ADD COLUMN wird übersprungen, wenn die Spalte da ist.
+V12 = [*V8, *V9]
+MIGRATIONS: dict[int, list[str]] = {2: V2, 3: V3, 4: V4, 5: V5, 6: V6, 7: V7, 8: V8, 9: V9, 11: V11, 12: V12}
 LATEST = max(MIGRATIONS)
 
 

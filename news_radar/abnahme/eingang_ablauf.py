@@ -48,7 +48,7 @@ def bis_kalender(ctx, sz, now: datetime) -> dict:
     d = store.get_draft(did)
     out["vermerk"] = int(eingang.VERMERK in d["hinweise"])
     out["wp_uebernommen"] = int(wp.zeile(v)["status"] == "uebernommen")
-    out["bild_ohne_sperre"] = int(bool(d["bild_datei"]) and lizenz.sperre(store, d) == "")
+    out["bild_ohne_sperre"] = int(bool(d["bild_datei"]) and lizenz.sperre(store, d, ctx.settings) == "")
     store.set_status(did, "freigeben", von="priya")
     publisher.publish_approved(ctx.settings, store, wp=c)
     out["veroeffentlicht_wp"] = len(wp.beitraege)

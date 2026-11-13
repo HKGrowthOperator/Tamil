@@ -27,6 +27,7 @@ import io
 import json
 import logging
 import re
+import unicodedata
 from collections import Counter
 from datetime import datetime, timedelta, timezone
 from typing import Any
@@ -77,7 +78,7 @@ FRIST_TAGE, SPAM_TAGE = 90, 7
 MAX_FELD, MAX_NOTIZ, MAX_VERSUCHE = 5000, 1000, 3
 BILD_MAX = 5 * 1024 * 1024
 BILD_TYPEN = ("image/jpeg", "image/png")
-BILD_MAX_PIXEL = 40_000_000  # eigene Grenze gegen Dekomprimierungsbomben (vor dem Dekodieren geprüft)
+BILD_MAX_PIXEL = 25_000_000  # eigene Grenze gegen Dekomprimierungsbomben (vor dem Dekodieren geprüft)
 BILD_KANTE = 2400            # längste Kante nach dem Neuspeichern
 FEHLT_TAGE = 30              # auf der Website nicht mehr vorhanden: Kopie im Radar 30 Tage nach dem Vermerk löschen
 EVENT_DATUM_RE = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}")
@@ -117,6 +118,9 @@ def _zeile(row) -> dict | None:
     # des Modells steht daneben und gilt nur auf ausdrücklichen Klick
     if isinstance(entwurf, dict) and "regeln" in entwurf:
         e["entwurf"], e["modell_vorschlag"] = entwurf.get("regeln"), entwurf.get("modell")
+    elif isinstance(entwurf, dict) and entwurf.get("quelle") == "modell":
+        # Zeile aus der Zeit vor der Positivliste: Modelltext verwerfen, Entwurf aus den Feldern
+        e["entwurf"], e["modell_vorschlag"] = regel_vorbereitung(e)[1], None
     else:
         e["entwurf"], e["modell_vorschlag"] = entwurf, None
     e["einwilligung"] = bool(e.get("einwilligung"))
@@ -472,18 +476,26 @@ def regel_vorbereitung(e: dict) -> tuple[str, dict | None]:
 
 _MAIL_FREI = re.compile(r"[\w.+-]+\s*(?:@|[\[(]\s*(?:at|ät)\s*[\])])\s*[\w-]+"
                         r"(?:\s*(?:\.|[\[(]\s*(?:dot|punkt)\s*[\])]|\s(?:dot|punkt)\s)\s*[\w-]+)+", re.I)
+_MAIL_WORTE = re.compile(r"[\w.+-]+\s+(?:at|ät)\s+[\w-]+(?:\s+(?:dot|punkt)\s+[\w-]+)+", re.I)  # info at x punkt de
+_HANDLE = re.compile(r"(?<!\w)@[\w.]{2,}")
 _TELEFON = re.compile(r"(?<![\w.])(?:\+|00)?\d[\d \t/().-]{5,}\d(?!\w)")
 _DATUMSARTIG = re.compile(r"\d{1,2}\.\s?\d{1,2}\.\s?\d{2,4}|\d{4}-\d{2}-\d{2}")
-OHNE_MASKE = ("beginn", "ende", "ticket_link", "link")  # Datum und Adressen: keine Kontaktdaten, bleiben wörtlich
+# Datum, Adressen und Ort bleiben wörtlich: keine Kontaktdaten (Postleitzahl und Hausnummer sind keine Telefonnummer)
+OHNE_MASKE = ("beginn", "ende", "ticket_link", "link", "ort", "stadt", "land")
 
 
 def kontakt_maskieren(text: str) -> tuple[str, bool]:
-    """E-Mail-Adressen (auch „[at]“) und Telefonnummern im Freitext durch [E-Mail] und [Telefon] ersetzen."""
+    """E-Mail-Adressen (auch „[at]“ und „at … punkt“), Konten (@name) und Telefonnummern im Freitext ersetzen.
+    Telefon heißt: mindestens 8 Ziffern oder eine Vorwahl (+, 00, 0) mit mindestens 6 Ziffern, kein Datum."""
     neu = _MAIL_FREI.sub("[E-Mail]", text or "")
+    neu = _MAIL_WORTE.sub("[E-Mail]", neu)
+    neu = _HANDLE.sub("[Konto]", neu)
 
     def telefon(m: re.Match) -> str:
         roh = m.group(0)
-        if _DATUMSARTIG.fullmatch(roh.strip()) or sum(c.isdigit() for c in roh) < 7:
+        ziffern = sum(c.isdigit() for c in roh)
+        vorwahl = roh.lstrip().startswith(("+", "0"))
+        if _DATUMSARTIG.fullmatch(roh.strip()) or not (ziffern >= 8 or (vorwahl and ziffern >= 6)):
             return roh
         return "[Telefon]"
 
@@ -502,32 +514,56 @@ def felder_maskiert(e: dict) -> tuple[dict, bool]:
     return out, gefunden
 
 
-# ---- Erfindungsschutz -------------------------------------------------------------------------------------------------
+# ---- Erfindungsschutz (Positivliste) ----------------------------------------------------------------------------------
+#
+# Jedes Inhaltswort ab 4 Zeichen – in jeder Schreibung und Schrift – muss (als Stamm) in der Einsendung stehen oder ein
+# Funktionswort aus FREIE_WOERTER sein. Zahlen gelten nur zusammen mit einem Nachbarwort aus der Einsendung; Zahlwörter,
+# Ordnungszahlen, Wochentage und Monate nur, wenn sie selbst in der Einsendung stehen; kurze großgeschriebene Wörter
+# (Namen, Kürzel) ebenso. Links, Domains und E-Mail-Spuren nur, wenn sie wörtlich in der Einsendung stehen.
 
 _URL = re.compile(r"(?:https?://|www\.)[^\s\"'<>]+", re.I)
-_DOMAIN = re.compile(r"\b[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9-]+)*\.(?:de|ch|at|li|com|org|net|info|eu|io|lk|in|"
-                     r"tv|app|biz|me|online|shop|event|events|tamil|berlin|koeln|wien|swiss)\b", re.I)
+_DOMAIN = re.compile(r"(?<![\w@.-])[\w-]+(?:\.[\w-]+)*\.[^\W\d_]{2,}(?![\w-])")
 _MAIL_SPUR = re.compile(r"@|[\[(]\s*(?:at|ät)\s*[\])]|\s(?:at|ät)\s+\S+\s+(?:dot|punkt)\b", re.I)
-_TOKEN = re.compile(r"[^\W_]+")
-_ZAHLWORT = re.compile(r"(?:null|eins|zwei|drei|vier|fünf|sechs|sieben|acht|neun|zehn|elf|zwölf|sechzehn|siebzehn|"
-                       r"zwanzig|dreißig|dreissig|vierzig|fünfzig|sechzig|siebzig|achtzig|neunzig|hundert|tausend|"
+_ZAHLWORT = re.compile(r"(?:null|eins|zwei|drei|vier|fuenf|sechs|sieben|acht|neun|zehn|elf|zwoelf|sechzehn|siebzehn|"
+                       r"zwanzig|dreissig|vierzig|fuenfzig|sechzig|siebzig|achtzig|neunzig|hundert|tausend|"
                        r"dutzend|million|milliarde|ein|und)+(?:e|en|n|s)?")
-_NUR_ARTIKEL = {"ein", "eine", "einen", "einem", "einer", "eines", "und", "eins", "einer"}
-_KALENDER = {w.lower() for w in WOCHENTAGE + MONATE} | {"sonnabend", "jänner", "feber"}
-# Wörter, die keine Angabe tragen (Satzanfang, Redaktionssprache): großgeschrieben erlaubt, auch wenn sie nicht in der
-# Einsendung stehen. Namen, Orte, Titel und Fachbegriffe gehören nicht hierher.
+_ORDINAL = re.compile(r"(?:erst|zweit|dritt|viert|fuenft|sechst|siebt|siebent|acht|neunt|zehnt|elft|zwoelft|\w+zehnt|"
+                      r"\w+zigst|\w*hundertst|\w*tausendst|\w+ssigst)(?:e|en|er|es|em)")
+_NUR_ARTIKEL = {"ein", "eine", "einen", "einem", "einer", "eines", "und", "eins"}
+# feste, kleine Liste: Wörter ohne eigene Angabe (Artikel, Pronomen, Präpositionen, Bindewörter, Hilfsverben)
 FREIE_WOERTER = {
-    "der", "die", "das", "den", "dem", "des", "ein", "eine", "einen", "einem", "einer", "am", "im", "in", "an", "mit",
-    "bei", "für", "auf", "zum", "zur", "um", "von", "vom", "ab", "bis", "und", "oder", "auch", "es", "sie", "er", "wir",
-    "ihr", "hier", "dort", "dazu", "danach", "außerdem", "zudem", "wer", "wie", "was", "wann", "wo", "nach", "vor",
-    "über", "unter", "neben", "so", "dann", "jetzt", "alle", "dabei", "darum", "dafür", "gemeinsam", "geplant",
-    "event", "termin", "veranstaltung", "veranstalter", "veranstalterin", "eintritt", "tickets", "ticket", "uhr",
-    "beginn", "ende", "ort", "programm", "abend", "nachmittag", "vormittag", "fest", "feier", "besucher",
-    "besucherinnen", "gäste", "familien", "kinder", "erwachsene", "infos", "informationen", "einladung", "verein",
-    "gemeinde", "community", "tamil", "tamilen", "tamilinnen", "tamilische", "tamilischen", "diaspora", "thema",
-    "hinweis", "nachricht", "anfrage", "kooperation", "werbung", "werbeanfrage", "kontakt", "einsendung", "einsender",
-    "beitrag", "vorschlag", "organisation", "firma", "anliegen", "zusammenfassung", "themenvorschlag",
+    "eine", "einen", "einem", "einer", "eines", "dass", "diese", "dieser", "dieses", "diesem", "diesen", "sind",
+    "wird", "werden", "wurde", "wurden", "sein", "seine", "seiner", "seinen", "ihre", "ihrer", "ihren", "ihrem",
+    "unser", "unsere", "unseren", "auch", "sowie", "oder", "aber", "dann", "dort", "hier", "dazu", "danach", "damit",
+    "dabei", "mehr", "alle", "allen", "aller", "alles", "jede", "jeden", "jeder", "jedes", "nach", "ueber", "unter",
+    "neben", "zwischen", "beim", "durch", "gegen", "ohne", "sich", "ihnen", "euch", "wenn", "weil", "also", "noch",
+    "schon", "sehr", "sowohl", "findet", "statt", "kann", "koennen", "soll", "sollen", "gibt", "haben", "denen",
+    "deren", "dessen", "welche", "welcher", "welches", "werden", "steht", "stehen",
 }
+KURZ_FREI = {"der", "die", "das", "den", "dem", "des", "ein", "am", "im", "in", "an", "um", "ab", "es", "er", "sie",
+             "wir", "ihr", "und", "so", "wo", "wie", "was", "wer", "mit", "bei", "zum", "zur", "von", "vom", "auf",
+             "aus", "bis", "für", "fuer", "uhr", "ist", "hat", "zu", "ja", "nur", "man"}
+_UMLAUT = str.maketrans({"ä": "ae", "ö": "oe", "ü": "ue", "ß": "ss"})
+
+
+def _norm_wort(wort: str) -> str:
+    return unicodedata.normalize("NFC", wort).casefold().translate(_UMLAUT)
+
+
+def _laeufe(text: str) -> list[tuple[str, bool]]:
+    """Text in Läufe zerlegen: (Teil, ist_wort). Wort = Buchstaben, Zeichen-Marken und Ziffern jeder Schrift."""
+    out: list[tuple[str, bool]] = []
+    for ch in text or "":
+        wort = unicodedata.category(ch)[0] in "LMN"
+        if out and out[-1][1] == wort:
+            out[-1] = (out[-1][0] + ch, wort)
+        else:
+            out.append((ch, wort))
+    return out
+
+
+def _woerter(text: str) -> list[str]:
+    return [t for t, wort in _laeufe(text) if wort]
 
 
 def erlaubter_text(e: dict) -> str:
@@ -545,44 +581,72 @@ def _stamm(wort: str) -> str:
     return wort
 
 
+class _Pruefung:
+    def __init__(self, erlaubt: str):
+        self.klein = erlaubt.lower()
+        tokens = [_norm_wort(t) for t in _woerter(erlaubt)]
+        self.woerter = set(tokens)
+        self.staemme = {_stamm(t) for t in tokens}
+        self.paare = set(zip(tokens, tokens[1:]))
+
+    def fremd(self, folge: list[str], i: int) -> bool:
+        """Ist das i-te Wort der Folge eine Angabe, die nicht in der Einsendung steht?"""
+        roh = folge[i]
+        w = _norm_wort(roh)
+        if w.isdigit():
+            vor = _norm_wort(folge[i - 1]) if i else None
+            nach = _norm_wort(folge[i + 1]) if i + 1 < len(folge) else None
+            return not ((vor, w) in self.paare or (w, nach) in self.paare
+                        or (vor is None and nach is None and w in self.woerter))
+        if w in self.woerter or _stamm(w) in self.staemme:
+            return False
+        if (_ZAHLWORT.fullmatch(w) and w not in _NUR_ARTIKEL) or _ORDINAL.fullmatch(w) or w in _KALENDER:
+            return True
+        if any(c.isdigit() for c in w):
+            return True
+        if len(roh) >= 4:
+            return w not in FREIE_WOERTER
+        return roh[:1].isupper() and w not in KURZ_FREI
+
+
+_KALENDER = {_norm_wort(w) for w in WOCHENTAGE + MONATE} | {"sonnabend", "jaenner", "feber"}
+
+
 def fremde_angaben(texte: list[str], erlaubt: str) -> list[str]:
-    """Fundstellen im Modelltext, die nicht in der Einsendung stehen („nichts Erfundenes“): Zahlen (nur zusammen mit
-    einem Nachbarwort aus der Einsendung, als Text verglichen), Zahlwörter, Wochentage und Monate, Links und Domains,
-    E-Mail-Spuren (auch verschleiert) und großgeschriebene Wörter (Namen, Orte, Titel). Leer = nichts gefunden."""
-    erlaubt_klein = erlaubt.lower()
-    tokens = _TOKEN.findall(erlaubt_klein)
-    woerter, staemme = set(tokens), {_stamm(t) for t in tokens}
-    paare = set(zip(tokens, tokens[1:]))
+    """Fundstellen im Modelltext, die nicht in der Einsendung stehen („nichts Erfundenes“, Positivliste).
+    Leer = nichts gefunden."""
+    pruefung = _Pruefung(erlaubt)
     fremd: list[str] = []
     for t in texte:
         for url in _URL.findall(t):
             url = url.rstrip(".,;:!?)")
-            if url.lower() not in erlaubt_klein:
+            if url.lower() not in pruefung.klein:
                 fremd.append(url[:60])
         ohne_url = _URL.sub(" ", t)
-        fremd += [m.group(0) for m in _DOMAIN.finditer(ohne_url) if m.group(0).lower() not in erlaubt_klein]
+        fremd += [m.group(0) for m in _DOMAIN.finditer(ohne_url) if m.group(0).lower() not in pruefung.klein]
         if _MAIL_SPUR.search(ohne_url):
             fremd.append("E-Mail-Adresse")
-        folge = _TOKEN.findall(ohne_url)
-        for i, roh in enumerate(folge):
-            w = roh.lower()
-            if w.isdigit():
-                vor = folge[i - 1].lower() if i else None
-                nach = folge[i + 1].lower() if i + 1 < len(folge) else None
-                if not ((vor, w) in paare or (w, nach) in paare or (vor is None and nach is None and w in woerter)):
-                    fremd.append(roh[:20])
-                continue
-            if any(c.isdigit() for c in w):
-                if w not in woerter:
-                    fremd.append(roh[:20])
-                continue
-            if w in woerter:
-                continue
-            if (_ZAHLWORT.fullmatch(w) and w not in _NUR_ARTIKEL) or w in _KALENDER:
-                fremd.append(roh)
-            elif roh[:1].isupper() and w not in FREIE_WOERTER and _stamm(w) not in staemme:
-                fremd.append(roh)
+        folge = _woerter(ohne_url)
+        fremd += [folge[i][:30] for i in range(len(folge)) if pruefung.fremd(folge, i)]
     return list(dict.fromkeys(fremd))
+
+
+def markieren(text: str, erlaubt: str):
+    """Text für das Cockpit: maskiert (escaped), Wörter ohne Gegenstück in der Einsendung als <mark>."""
+    from markupsafe import Markup, escape
+
+    pruefung = _Pruefung(erlaubt)
+    laeufe = _laeufe(text)
+    folge = [t for t, wort in laeufe if wort]
+    teile, i = [], 0
+    for teil, wort in laeufe:
+        if wort:
+            teile.append(Markup('<mark title="nicht in der Einsendung">{}</mark>').format(teil)
+                         if pruefung.fremd(folge, i) else escape(teil))
+            i += 1
+        else:
+            teile.append(escape(teil))
+    return Markup("").join(teile)
 
 
 # ---- Modell (Rolle „eingang“) ---------------------------------------------------------------------------------------
@@ -719,7 +783,7 @@ def bild_neu_speichern(roh: bytes) -> bytes | str:
     ohne Metadaten (kein EXIF, kein GPS, kein Farbprofil). Gibt die Daten oder den Grund der Ablehnung zurück."""
     import warnings
 
-    from PIL import Image
+    from PIL import Image, ImageOps
 
     try:
         with warnings.catch_warnings():
@@ -729,7 +793,7 @@ def bild_neu_speichern(roh: bytes) -> bytes | str:
                 if breite * hoehe > BILD_MAX_PIXEL:
                     return "zu viele Bildpunkte"
                 img.load()
-                rgb = img.convert("RGB")
+                rgb = ImageOps.exif_transpose(img).convert("RGB")  # Ausrichtung übernehmen, bevor EXIF wegfällt
     except (Image.DecompressionBombError, Image.DecompressionBombWarning):
         return "zu viele Bildpunkte"
     except Exception:  # noqa: BLE001 – kein lesbares JPEG oder PNG
@@ -859,6 +923,7 @@ def uebernehmen(store, settings, vorgang: str, *, von: str, felder: dict, client
     if cur.rowcount != 1:
         raise Konflikt(f"Einsendung {vorgang} ist nicht (mehr) vorbereitet")
     pfad = settings.bilder_dir / bild[1] if isinstance(bild, tuple) else None
+    did = None
     try:
         if pfad is not None:
             settings.bilder_dir.mkdir(parents=True, exist_ok=True)
@@ -870,6 +935,9 @@ def uebernehmen(store, settings, vorgang: str, *, von: str, felder: dict, client
             lizenz.anlegen(store, datei=bild[1], daten=bild[0], draft_id=did,
                            felder=_bild_lizenz(e, von=von, verkleinert=bild[2]))
     except BaseException:
+        if did is not None:  # Entwurf ohne Lizenz-Datensatz darf nicht stehen bleiben
+            store._write("DELETE FROM assets WHERE draft_id = ?", (did,))
+            store._write("DELETE FROM drafts WHERE id = ?", (did,))
         if pfad is not None:
             pfad.unlink(missing_ok=True)
         store._write("UPDATE einsendungen SET status = 'vorbereitet', abgeschlossen_at = NULL WHERE id = ?", (e["id"],))

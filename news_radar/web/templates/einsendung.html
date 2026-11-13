@@ -71,10 +71,10 @@
 {% if modell %}
 <section class="karte">
   <h2>Vorschlag des Agenten <small class="leise">nur auf Klick, geprüft gegen die Einsendung</small></h2>
-  <p class="leise">Der Agent hat den Text umformuliert. Jede Zahl, jedes Datum, jeder Name und jede Adresse darin steht in der Einsendung; sonst wäre der Vorschlag verworfen worden. Bitte trotzdem lesen.</p>
-  <p><b>{{ modell.titel }}</b></p>
-  {% if modell.teaser %}<p>{{ modell.teaser }}</p>{% endif %}
-  {% for a in modell.absaetze %}<p>{{ a }}</p>{% endfor %}
+  <p class="leise">Der Agent hat den Text umformuliert. Wörter, die nicht in der Einsendung stehen, sind markiert. Der Radar prüft das nur nach Regeln: Bitte jeden Satz mit den Angaben oben vergleichen.</p>
+  <p><b>{{ markieren(modell.titel, erlaubt) }}</b></p>
+  {% if modell.teaser %}<p>{{ markieren(modell.teaser, erlaubt) }}</p>{% endif %}
+  {% for a in modell.absaetze %}<p>{{ markieren(a, erlaubt) }}</p>{% endfor %}
   <form method="post" action="/eingang/{{ e.vorgangsnummer }}/uebernehmen" data-confirm="Mit dem Vorschlag des Agenten übernehmen? Danach gilt der normale Freigabeweg.">
     <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="vorlage" value="modell">
     <button>Mit diesem Vorschlag übernehmen</button>
