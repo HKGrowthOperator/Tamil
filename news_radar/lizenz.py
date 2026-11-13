@@ -17,7 +17,7 @@ import hashlib
 import re
 from dataclasses import dataclass
 from datetime import date
-from urllib.parse import quote, urlsplit
+from urllib.parse import urlsplit
 
 from .store import OPEN_STATES, now_iso
 
@@ -336,39 +336,50 @@ def anlegen(store, *, datei: str, daten: bytes, felder: dict, story_id: int | No
 
 # ---- Nachführung des Altbestands -------------------------------------------------------------------
 
-def _commons_ergaenzen(asset: dict) -> dict | None:
-    """Commons-Datensatz aus dem Agent-Weg vor V9: Lizenztext „<Kurzname> (<Adresse>)“, Rechteinhaber = Urheber."""
+def _belegte_bild_url(store, asset: dict, row: dict) -> str:
+    """Die abgerufene Bildadresse, belegt durch die Protokollzeile „bild“ dieses Datensatzes (Asset-Nummer und Hash
+    der Adresse): nur `quelle_bild` des Entwurfs kommt als Kandidat in Frage. Ohne Treffer leer – nichts ableiten."""
+    from .bildvorschlag import adress_hash
+
+    kandidat = (row.get("quelle_bild") or "").strip()
+    if not kandidat.startswith("https://"):
+        return ""
+    treffer = store.db.execute(
+        "SELECT 1 FROM editorial_actions WHERE draft_id = ? AND aktion = 'bild' AND notiz LIKE ?",
+        (row["id"], f"%Asset {asset['id']},%#{adress_hash(kandidat)}%")).fetchone()
+    return kandidat if treffer else ""
+
+
+def _commons_ergaenzen(store, asset: dict, row: dict) -> dict | None:
+    """Commons-Datensatz aus dem Agent-Weg vor V9: Lizenztext „<Kurzname> (<Adresse>)“, Rechteinhaber = Urheber,
+    Bildadresse nur aus dem Protokoll belegt."""
     m = re.fullmatch(r"(.+) \((https://creativecommons\.org/[^)\s]+)\)", (asset.get("lizenz") or "").strip())
     kuerzel = kuerzel_aus_url(m.group(2)) if m else ""
     seite = asset.get("quelle_url") or ""
-    datei = re.match(r"https://commons\.wikimedia\.org/wiki/File:(.+)$", seite)
-    if not kuerzel or not datei or not asset.get("attribution"):
+    if not kuerzel or not re.match(r"https://commons\.wikimedia\.org/wiki/File:.+$", seite) \
+            or not asset.get("attribution"):
         return None
     urheber = "" if asset.get("rechteinhaber") in ("", "gemeinfrei") else asset["rechteinhaber"]
     if art(kuerzel).nennung and not urheber:
         return None
+    bild_url = _belegte_bild_url(store, asset, row)
+    if not bild_url:
+        return None
     hinweis = "Hinweis von Commons" in (asset.get("umfang") or "")
     return {"urheber": urheber, "lizenz_kuerzel": kuerzel, "lizenz_url": m.group(2),
-            "umfang": umfang_text({"website"} if hinweis else art(kuerzel).hoechst),
-            # Dateiseite und Datei sind auf Commons eindeutig verknüpft: Special:FilePath liefert genau diese Datei
-            "bild_url": "https://commons.wikimedia.org/wiki/Special:FilePath/" + quote(datei.group(1), safe=""),
+            "umfang": umfang_text({"website"} if hinweis else art(kuerzel).hoechst), "bild_url": bild_url,
             "bearbeitung": "zugeschnitten",
             "beleg": f"nachgeführt aus Commons-Angaben vom {asset.get('erstellt', '')[:16]} (Datensatz {asset['id']})"}
 
 
 def _register_ergaenzen(store, asset: dict, row: dict) -> dict | None:
-    """Register-Datensatz (Weg „quelle“) vor V9: Bildadresse nur, wenn `quelle_bild` des Entwurfs dieselbe Adresse
-    ist, die laut Protokoll abgerufen wurde (gleicher Hash) – sonst bleibt der Datensatz offen."""
-    from .bildvorschlag import adress_hash
-
-    kandidat = (row.get("quelle_bild") or "").strip()
-    if not kandidat or not asset.get("attribution") or not asset.get("rechteinhaber") or not asset.get("quelle_url"):
+    """Register-Datensatz (Weg „quelle“) vor V9: Bildadresse nur, wenn sie laut Protokoll abgerufen wurde."""
+    if not asset.get("attribution") or not asset.get("rechteinhaber") or not asset.get("quelle_url"):
         return None
-    h = adress_hash(kandidat)
-    if not store.db.execute("SELECT 1 FROM editorial_actions WHERE draft_id = ? AND aktion = 'bild' AND notiz LIKE ?",
-                            (row["id"], f"%Asset {asset['id']},%#{h}%")).fetchone():
+    bild_url = _belegte_bild_url(store, asset, row)
+    if not bild_url:
         return None
-    return {"lizenz_kuerzel": "presse-redaktionell", "umfang": "website", "bild_url": kandidat,
+    return {"lizenz_kuerzel": "presse-redaktionell", "umfang": "website", "bild_url": bild_url,
             "bearbeitung": "zugeschnitten",
             "beleg": f"nachgeführt aus Register-Angaben vom {asset.get('erstellt', '')[:16]} (Datensatz {asset['id']})"}
 
@@ -391,7 +402,7 @@ def nachfuehren(store, settings, *, von: str = "nachfuehrung") -> dict:
             continue
         neu: dict | None = None
         if asset and asset.get("herkunft") == "commons":
-            neu = _commons_ergaenzen(asset)
+            neu = _commons_ergaenzen(store, asset, row)
         elif asset and asset.get("herkunft") in ("quelle", "register"):
             neu = _register_ergaenzen(store, asset, row)
         elif asset and asset.get("herkunft") == "karte" or (asset is None and row.get("bild_origin") == "karte"):

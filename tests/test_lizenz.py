@@ -400,6 +400,16 @@ def test_nachfuehrung_ergaenzt_nur_vollstaendige_angaben(tmp_path):
                   umfang="Online-Veröffentlichung auf tamil.de; Zuschnitt auf das Seitenformat",
                   attribution="Foto: Max Muster / Wikimedia Commons, CC BY-SA 4.0",
                   quelle_url="https://commons.wikimedia.org/wiki/File:Hindu_Tempel_Hamm.jpg")
+        # Commons mit belegter Bildadresse: quelle_bild ist laut Protokoll (Asset und Hash) die abgerufene Datei
+        c2_bild = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Tempel.jpg/1920px-Tempel.jpg"
+        c2_id, c2_name = entwurf("commons-belegt", "commons", quelle_bild=c2_bild)
+        c2_asset = alt_asset(c2_name, c2_id, herkunft="commons", rechteinhaber="Max Muster",
+                             lizenz="CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)", umfang="x",
+                             attribution="Foto: Max Muster / Wikimedia Commons, CC BY 4.0",
+                             quelle_url="https://commons.wikimedia.org/wiki/File:Tempel.jpg")
+        store.db.execute("INSERT INTO editorial_actions (ts, wer, aktion, draft_id, notiz) VALUES (?,?,?,?,?)",
+                         ("2026-11-12T10:00:00+00:00", "agent", "bild", c2_id,
+                          f"Bild mit Nachweis (commons): Asset {c2_asset}, upload.wikimedia.org, #{adress_hash(c2_bild)}"))
         bild = "https://tempel-hamm.de/wp-content/uploads/fest.jpg"
         r_id, r_name = entwurf("register", "quelle", quelle_bild=bild)
         r_asset = alt_asset(r_name, r_id, herkunft="quelle", rechteinhaber="Tempel Hamm", lizenz="Material der Quelle",
@@ -420,10 +430,12 @@ def test_nachfuehrung_ergaenzt_nur_vollstaendige_angaben(tmp_path):
         store.db.commit()
 
         z = lizenz.nachfuehren(store, settings)
-        assert z == {"ergaenzt": 2, "karte": 1, "offen": 2, "schon": 0}
+        assert z == {"ergaenzt": 2, "karte": 1, "offen": 3, "schon": 0}
         c = repo.asset_fuer_entwurf(store, c_id, c_name)
-        assert c["lizenz_kuerzel"] == "cc-by-sa-4.0" and c["urheber"] == "Max Muster" and lizenz.fehlend(c) == []
-        assert c["umfang"] == "website,social,print" and c["bild_url"].endswith("Special:FilePath/Hindu_Tempel_Hamm.jpg")
+        assert not c["lizenz_kuerzel"] and not c["bild_url"]  # abgerufene Adresse nicht belegt: offen, nichts abgeleitet
+        c2 = repo.asset_fuer_entwurf(store, c2_id, c2_name)
+        assert c2["lizenz_kuerzel"] == "cc-by-4.0" and c2["urheber"] == "Max Muster" and lizenz.fehlend(c2) == []
+        assert c2["umfang"] == "website,social,print" and c2["bild_url"] == c2_bild
         r = repo.asset_fuer_entwurf(store, r_id, r_name)
         assert r["lizenz_kuerzel"] == "presse-redaktionell" and r["umfang"] == "website" and r["bild_url"] == bild
         x = repo.asset_fuer_entwurf(store, x_id, x_name)
