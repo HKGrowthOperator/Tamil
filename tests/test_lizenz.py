@@ -542,3 +542,39 @@ def test_ki_bild_traegt_digital_source_type_in_xmp(tmp_path):
     with Image.open(io.BytesIO(img.data)) as geladen:
         assert geladen.size == images.SIZE and not geladen.getexif()  # sonst keine Metadaten (Ortsdaten)
     assert b"trainedAlgorithmicMedia" not in branded_card("x", "News", "x").data
+
+
+def test_nachfuehrung_schreibt_nur_vollstaendige_datensaetze(tmp_path):
+    """P3: Fehlt danach noch etwas (hier die Prüfsumme, weil die Datei fehlt), bleibt der Datensatz unberührt; ein
+    zweiter Lauf setzt `geprueft_am` nicht neu."""
+    from news_radar.bildvorschlag import adress_hash
+
+    settings = load_settings()
+    settings.data_dir = tmp_path
+    bild = "https://tempel-hamm.de/wp-content/uploads/fest.jpg"
+    with Store(settings.db_path) as store:
+        did = store.insert_draft(dict(uid="r", typ="artikel", titel="r", teaser="T", inhalt_html="<p>T</p>",
+                                      kategorie="community", relevanz=8, bild_datei="fehlt.jpg", bild_origin="quelle",
+                                      bild_alt="Gopuram vor Himmel", quelle_bild=bild))
+        aid = store.db.execute(
+            "INSERT INTO assets (datei, herkunft, draft_id, erstellt, sha256, rechteinhaber, lizenz, umfang, attribution, "
+            "quelle_url) VALUES ('fehlt.jpg', 'quelle', ?, '2026-11-12T10:00:00+00:00', '', 'Tempel Hamm', 'Material', "
+            "'x', 'Foto: Tempel Hamm', 'https://tempel-hamm.de/fest')", (did,)).lastrowid
+        store.db.execute("INSERT INTO editorial_actions (ts, wer, aktion, draft_id, notiz) VALUES (?,?,?,?,?)",
+                         ("2026-11-12T10:00:00+00:00", "agent", "bild", did,
+                          f"Bild mit Nachweis (quelle): Asset {aid}, tempel-hamm.de, #{adress_hash(bild)}"))
+        store.db.commit()
+        assert lizenz.nachfuehren(store, settings)["offen"] == 1
+        a = dict(store.db.execute("SELECT * FROM assets WHERE id = ?", (aid,)).fetchone())
+        assert a["lizenz_kuerzel"] is None and a["geprueft_am"] is None and a["bild_url"] is None
+
+        name, _ = save_pair(branded_card("k", "Community", "k"), settings.bilder_dir, "k-x")
+        kid = store.insert_draft(dict(uid="k", typ="artikel", titel="k", teaser="T", inhalt_html="<p>T</p>",
+                                      kategorie="community", relevanz=8, bild_datei=name, bild_origin="karte",
+                                      bild_alt="Grafik mit der Überschrift: k"))
+        lizenz.nachfuehren(store, settings)
+        vorher = repo.asset_fuer_entwurf(store, kid, name)["geprueft_am"]
+        store.db.execute("UPDATE assets SET geprueft_am = '2026-01-01T00:00:00+00:00' WHERE draft_id = ?", (kid,))
+        store.db.commit()
+        lizenz.nachfuehren(store, settings)
+        assert vorher and repo.asset_fuer_entwurf(store, kid, name)["geprueft_am"] == "2026-01-01T00:00:00+00:00"

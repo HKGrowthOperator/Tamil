@@ -427,13 +427,13 @@ def nachfuehren(store, settings, *, von: str = "nachfuehrung") -> dict:
                 neu["sha256"] = hashlib.sha256(pfad.read_bytes()).hexdigest()
         if not asset.get("alt") and row.get("bild_alt"):
             neu["alt"] = row["bild_alt"]
+        if fehlend({**asset, **neu}):  # nur schreiben, was danach vollständig ist; sonst bleibt alles unberührt
+            zaehler["offen"] += 1
+            continue
         sets = ", ".join(f"{k} = ?" for k in neu)
         store._write(f"UPDATE assets SET {sets}, draft_id = COALESCE(draft_id, ?) WHERE id = ?",
                      (*neu.values(), row["id"], asset["id"]))
-        if fehlend({**asset, **neu}):
-            zaehler["offen"] += 1
-        else:
-            zaehler["ergaenzt"] += 1
+        zaehler["ergaenzt"] += 1
     return zaehler
 
 
