@@ -100,14 +100,14 @@ def karte_url(ort):
     return "https://www.openstreetmap.org/search?query=" + urllib.parse.quote(ort)
 
 
-def zettel(k, klein=False):
+def zettel(k, klein=False, mit_wer=True):
     """Der Aushang: ein Zettel mit Datum, Titel, Ort, wie lange er noch hängt, und dem Abreißstreifen."""
     naechster = k["d"] == NAECHSTER
     tage = (k["d"] - HEUTE).days
     haengt = "Hängt bis heute" if tage == 0 else ("Hängt noch einen Tag" if tage == 1 else f"Hängt noch {tage} Tage")
     zeit = f', {k["zeit"]}' if k["zeit"] else ""
     titel = f'<a href="{e(k["href"])}">{e(k["titel"])}</a>' if k["href"] else e(k["titel"])
-    wer = f'{e(k["wer"])}<br>' if k["wer"] else ""
+    wer = f'{e(k["wer"])}<br>' if k["wer"] and mit_wer else ""
     text = f'{k["titel"]}, {datum_lang(k["d"], False)}{zeit}, {k["ort"]}'
     return (f'<li class="zettel{" zettel--naechster" if naechster else ""}{" zettel--klein" if klein else ""}">'
             f'<div class="zettel-kopf"><time class="zettel-datum" datetime="{k["d"].isoformat()}">{datum_lang(k["d"], False)}{zeit}</time>'
@@ -215,10 +215,10 @@ def startseite():
              f'<article class="aufmacher-stueck">'
              f'<h1 id="h-auf" class="aufmacher-titel"><a href="artikel.html">{e(a["titel"])}</a></h1>'
              f'<p class="lead">Tempel und Vereine feierten am 8.\u00a0November, Düsseldorf folgt am\u00a015.</p>'
-             f'<p class="meta">Sonntag, 8.\u00a0November\u00a02026 <a class="textlink" href="{e(wa(a["titel"]))}">Per WhatsApp schicken</a></p>'
+             f'<p class="meta"><a class="textlink" href="{e(wa(a["titel"]))}">Per WhatsApp schicken</a></p>'
              f'{figur(a, "bild bild--aufmacher", prio=True, sizes="(min-width: 64rem) 55vw, 100vw", fakt="Sri Ganesha Hindu Temple, Berlin.")}</article>'
              f'<aside class="brett" aria-labelledby="h-brett"><h2 id="h-brett" class="brett-titel">Am Brett</h2>'
-             f'<ol class="zettel-liste">{"".join(zettel(k) for k in KOMMEND)}</ol>'
+             f'<ol class="zettel-liste">{"".join(zettel(k, mit_wer=False) for k in KOMMEND)}</ol>'
              f'<p class="weiter"><a href="termine.html">Festkalender</a><a href="einreichen.html">Termin einreichen</a></p></aside>'
              f'</div></section>')
 
@@ -600,16 +600,16 @@ def werben():
             f'<ol class="plaetze">{zeilen}</ol></div></section>'
             f'<section class="abschnitt" aria-labelledby="h-ab"><div class="container">'
             f'<div class="kopfblock"><h2 id="h-ab">So läuft eine Buchung</h2></div>'
-            f'<ol class="schritte schritte--quer"><li><strong>Platz und Laufzeit</strong> 7, 14 oder 30 Tage, nach Vorschlag.</li>'
-            f'<li><strong>Startdatum</strong> Belegte Tage sind gesperrt.</li><li><strong>Ihre Angaben</strong> Firma, Rechnungsadresse, E-Mail.</li>'
-            f'<li><strong>Werbemittel</strong> Bild für Desktop und Handy, dazu die Zieladresse.</li>'
-            f'<li><strong>Bezahlen</strong> Bei Stripe; die Tage sind 35 Minuten reserviert.</li></ol></div></section>'
+            f'<ol class="schritte schritte--quer"><li><strong>Platz und Laufzeit</strong> 7, 14 oder 30 Tage.</li>'
+            f'<li><strong>Startdatum</strong> Belegtes ist gesperrt.</li><li><strong>Ihre Angaben</strong> Firma und Adresse.</li>'
+            f'<li><strong>Werbemittel</strong> Bild und Zieladresse.</li>'
+            f'<li><strong>Bezahlen</strong> Bei Stripe.</li></ol></div></section>'
             f'<section class="abschnitt" aria-labelledby="h-da"><div class="container paar paar--5-7">'
             f'<div class="kopfblock kopfblock--seite"><h2 id="h-da">Nach der Zahlung</h2></div>'
-            f'<dl class="angaben angaben--gross"><div><dt>Prüfung</dt><dd>KBS prüft jedes Werbemittel vor dem Start und gibt es frei oder lehnt mit Grund ab.</dd></div>'
-            f'<div><dt>Ablehnung</dt><dd>Der volle Betrag wird über Stripe erstattet, die Tage sind wieder frei.</dd></div>'
-            f'<div><dt>Laufzeit</dt><dd>Die Anzeige startet und endet nach Datum; danach steht wieder die Eigenanzeige.</dd></div>'
-            f'<div><dt>Übersicht</dt><dd>Ein geheimer Link zeigt Prüfung, Zahlung, Einblendungen und Klicks, ohne Konto.</dd></div></dl></div></section>')
+            f'<dl class="angaben angaben--gross"><div><dt>Prüfung</dt><dd>KBS prüft jedes Werbemittel vor dem Start.</dd></div>'
+            f'<div><dt>Ablehnung</dt><dd>Volle Erstattung, die Tage werden frei.</dd></div>'
+            f'<div><dt>Laufzeit</dt><dd>Start und Ende folgen dem Datum.</dd></div>'
+            f'<div><dt>Übersicht</dt><dd>Ein geheimer Link zeigt Stand, Einblendungen und Klicks.</dd></div></dl></div></section>')
     seite("werben.html", "Werben auf tamil.de", "Werbeplätze, Maße und Ablauf der Buchung auf tamil.de.", body)
 
 

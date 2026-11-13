@@ -3,7 +3,8 @@
  * axes: mid/grotesk-sans/chromatic-magenta (accent re-hued to the logo red) · posture: restrained · contrast: pass · fold: pass · v2.0.0 */
 /* Hallmark · pre-emit critique: P4 H4 E4 S4 R5 V4 · weakest: E, the source names five cities for eleven cinemas; the gap is said in one line under the sheet, nothing is filled in */
 @import url("./almanac.css");
-/* Hallmark · waive 78 · the sheet titles Spielorte, Nach Film and Kinojahr render at 31px to 36px under the 42px page head · headlines are capped at 44px on the desktop by decision of the main session after critique r1, so every section head sits one step under the page head */
+/* Hallmark · dismissed 58 · the window at y 1300 holds the dated rows of the Kinojahr sheet, eight films with their festival and place, counted at 84 */
+/* Hallmark · waive 78 · the sheet titles Spielorte, Nach Film and Kinojahr render at 31px to 36px under the 42px page head · on the cinema page the head Tamilisches Kino nach Stadt is capped at 44px, the sheet titles sit one or two steps under it */
 /* Hallmark · waive 59 · 40px between the head and the city sheet under the firm rule · the sheet of cities is what the head Tamilisches Kino nach Stadt names, a wider gap would part them */
 /* Hallmark · waive 49b · the links are the report title about Koovagam and the film title Sardar 2 in the Kinojahr · a report headline and a film title are their own words and wrap on a phone */
 

@@ -1,5 +1,5 @@
 {
-  "stand": "2026-11-13T21:31:21.287Z",
+  "stand": "2026-11-13T21:37:06.452Z",
   "ergebnisse": [
     {
       "ziel": "http://127.0.0.1:8948/cockpit/hm-aushang/uebersicht.html",
@@ -21,9 +21,7 @@
       "bilder": [],
       "schriften": [],
       "tippflaechen": [
-        "a „Zum Inhalt“ 1×1",
-        "a „Zeitplan“ 74×27",
-        "a „Eingang“ 71×27"
+        "a „Zum Inhalt“ 1×1"
       ],
       "tamil_ohne_lang": 0,
       "fehler": 0
@@ -46,8 +44,7 @@
       "bilder": [],
       "schriften": [],
       "tippflaechen": [
-        "a „Zum Inhalt“ 1×1",
-        "a „Wikimedia Commons“ 166×17"
+        "a „Zum Inhalt“ 1×1"
       ],
       "tamil_ohne_lang": 0,
       "fehler": 0
@@ -98,9 +95,7 @@
       "bilder": [],
       "schriften": [],
       "tippflaechen": [
-        "a „Zum Inhalt“ 1×1",
-        "a „example.org/pongal“ 222×24",
-        "a „a.beispiel@example.org“ 120×24"
+        "a „Zum Inhalt“ 1×1"
       ],
       "tamil_ohne_lang": 0,
       "fehler": 0
@@ -181,8 +176,6 @@
       "schriften": [],
       "tippflaechen": [
         "a „Zum Inhalt“ 1×1",
-        "a „c.beispiel@example.org“ 120×24",
-        "a „example.org/angebot“ 222×24",
         "input „“ 20×20",
         "input „“ 20×20"
       ],
@@ -206,9 +199,7 @@
       "bilder": [],
       "schriften": [],
       "tippflaechen": [
-        "a „Zum Inhalt“ 1×1",
-        "a „Zeitplan“ 74×27",
-        "a „Eingang“ 71×27"
+        "a „Zum Inhalt“ 1×1"
       ],
       "tamil_ohne_lang": 0,
       "fehler": 0
@@ -230,8 +221,7 @@
       "bilder": [],
       "schriften": [],
       "tippflaechen": [
-        "a „Zum Inhalt“ 1×1",
-        "a „Wikimedia Commons“ 166×17"
+        "a „Zum Inhalt“ 1×1"
       ],
       "tamil_ohne_lang": 0,
       "fehler": 0
@@ -278,9 +268,7 @@
       "bilder": [],
       "schriften": [],
       "tippflaechen": [
-        "a „Zum Inhalt“ 1×1",
-        "a „example.org/pongal“ 162×17",
-        "a „a.beispiel@example.org“ 194×17"
+        "a „Zum Inhalt“ 1×1"
       ],
       "tamil_ohne_lang": 0,
       "fehler": 0
@@ -357,8 +345,6 @@
       "schriften": [],
       "tippflaechen": [
         "a „Zum Inhalt“ 1×1",
-        "a „c.beispiel@example.org“ 194×17",
-        "a „example.org/angebot“ 176×17",
         "input „“ 20×20",
         "input „“ 20×20"
       ],

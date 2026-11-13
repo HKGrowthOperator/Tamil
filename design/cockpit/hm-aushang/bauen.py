@@ -339,7 +339,8 @@ def entwurf(lizenz_fehlt: bool) -> None:
         formular = ""
         bildunterschrift = e(b["nachweis"])
 
-    status = "neu, Stand 3" if not lizenz_fehlt else "bearbeitet, Stand 4"
+    status = "Neu, Stand 3" if not lizenz_fehlt else "Bearbeitet, Stand 4"
+    stand = "4" if lizenz_fehlt else "3"
     vorn = " vorn" if lizenz_fehlt else ""
     datei = "entwurf-lizenz-fehlt.html" if lizenz_fehlt else "entwurf.html"
     andere = ('<a href="entwurf.html">Zustand mit Lizenz</a>' if lizenz_fehlt else '<a href="entwurf-lizenz-fehlt.html">Zustand „Lizenz fehlt“</a>')
@@ -362,15 +363,15 @@ def entwurf(lizenz_fehlt: bool) -> None:
       <h2 id="h-bearb">Bearbeiten</h2>
       <details class="mehrteil"><summary>Titel, Vorspann und Rubrik ändern</summary>
         <form action="/entwurf/7/speichern" method="post">
-          <input type="hidden" name="stand" value="3">
+          <input type="hidden" name="stand" value="{stand}">
           <div class="feld"><label for="e-titel">Titel, höchstens 90 Zeichen</label><input id="e-titel" name="titel" type="text" maxlength="90" value="{e(b['titel'])}"></div>
           <div class="feld"><label for="e-teaser">Vorspann, höchstens 220 Zeichen</label><textarea id="e-teaser" name="teaser" maxlength="220">{e(b['teaser'])}</textarea></div>
           <div class="feld"><label for="e-alt">Alternativtext, höchstens 125 Zeichen</label><input id="e-alt" name="bild_alt" type="text" maxlength="125" value="{e(b['alt'])}"></div>
           <div class="knoepfe"><button type="submit" class="knopf">Speichern</button></div>
         </form>
       </details>
-      <details class="mehrteil"><summary>Fassungen (3)</summary>
-        {tabelle(["Stand", "Wann", "Wer"], [["3", "12. Nov., 18:03 Uhr", "radar"], ["2", "12. Nov., 17:51 Uhr", "radar, Gate"], ["1", "12. Nov., 17:40 Uhr", "agent"]])}
+      <details class="mehrteil"><summary>Fassungen ({stand})</summary>
+        {tabelle(["Stand", "Wann", "Wer"], ([["4", "13. Nov., 13:58 Uhr", "redaktion1, Bild hochgeladen"]] if lizenz_fehlt else []) + [["3", "12. Nov., 18:03 Uhr", "radar"], ["2", "12. Nov., 17:51 Uhr", "radar, Gate"], ["1", "12. Nov., 17:40 Uhr", "agent"]])}
       </details>
     </section>
   </div>
@@ -381,7 +382,7 @@ def entwurf(lizenz_fehlt: bool) -> None:
       <p class="klein" style="margin-top: var(--space-sm)">Vor der Freigabe, aus dem Bericht des Redakteurs:</p>
       <ul>{hinweise}</ul>
       <form action="/entwurf/7/freigeben" method="post">
-        <input type="hidden" name="stand" value="3">
+        <input type="hidden" name="stand" value="{stand}">
         <div class="knoepfe">{freigabe_knopf}<button type="submit" formaction="/entwurf/7/zurueck" class="knopf still">Zurückstellen</button></div>
         {sperre}
         <p class="klein leise" style="margin-top: var(--space-xs)">Freigeben veröffentlicht sofort auf tamil.de. Gilt nur für den gesehenen Stand.</p>
@@ -483,7 +484,7 @@ def social() -> None:
     b = BEITRAG["49"]
     text = f"{b['titel']}\n\n{b['teaser']}\n\nMehr auf tamil.de: https://tamil.de/berlin-sri-ganesha-hindu-temple-geweiht/"
     regeln = [("R1", "Rubrik Community, nicht heikel"), ("R2", "kein heikles Thema"), ("R3", "veröffentlicht heute 14:10 Uhr, jünger als 48 Stunden"),
-              ("R4", "Bild CC BY-SA, Recht für soziale Netze nicht eingetragen: Bildkarte"), ("R5", "zweiter Beitrag heute, letzter um 12:50 Uhr"),
+              ("R4", "Bild CC BY-SA, Recht für soziale Netze im Datensatz: ja"), ("R5", "zweiter Beitrag heute, letzter um 12:50 Uhr"),
               ("R6", "außerhalb der Ruhezeit"), ("R7", "noch nie auf Instagram"), ("R8", "kein KI-Bild"), ("R9", "kein Altbestand")]
     regeln_html = "".join(f"<li><b>{r}</b><span>erfüllt: {e(t)}</span></li>" for r, t in regeln)
     von_hand = [
@@ -501,7 +502,7 @@ def social() -> None:
         "Facebook": [["12:51", "Entwurf 12, Ceylon Palace Bremen", "trocken gesendet", "folgt Instagram"]],
         "WhatsApp": [["12:02", "Entwurf 12, Ceylon Palace Bremen", "gepostet", "von redaktion1 markiert"]],
     }
-    hist_html = "".join(f'<div class="abschnitt" style="margin-top: var(--space-xl)">{tabelle(["Zeit", "Beitrag", "Stand", "Grund"], r, caption=k)}</div>' for k, r in hist.items())
+    hist_html = "".join(f'<div class="abschnitt hist" style="margin-top: var(--space-xl)">{tabelle(["Zeit", "Beitrag", "Stand", "Grund"], r, caption=k)}</div>' for k, r in hist.items())
     inhalt = f"""
 <div class="seitenkopf"><div><h1>Social</h1><p>Regelwerk Fassung 1 vom 13. November 2026. Trockenmodus, bis KBS die Fassung freigibt: alles läuft bis vor den letzten Aufruf an Meta.</p></div>
 <p class="klein"><a href="/social/regelwerk">Regelwerk lesen</a></p></div>
@@ -519,7 +520,7 @@ def social() -> None:
       <details class="mehrteil"><summary>Regelprüfung R1 bis R9: alle erfüllt</summary><ul class="regeln">{regeln_html}</ul></details>
     </div>
     <figure class="vorschau"><div class="flaeche"><img class="foto" src="{BILD}{b['bild']}" alt="{e(b['alt'])}" width="960" height="1280"><div class="leiste-logo"><img src="{LOGO}" alt="tamil.de" width="300" height="121"></div></div>
-      <figcaption>Vorschau 1080 × 1350. Ohne Social-Recht geht stattdessen die Bildkarte. {e(b['nachweis'])}</figcaption></figure>
+      <figcaption>Vorschau 1080 × 1350, Foto mit schmaler Logo-Leiste. {e(b['nachweis'])}</figcaption></figure>
   </div>
 </section>
 

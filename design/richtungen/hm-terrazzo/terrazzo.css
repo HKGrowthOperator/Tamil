@@ -159,7 +159,7 @@ a:focus-visible, button:focus-visible, input:focus-visible + label, summary:focu
 .stadtliste li { padding: var(--space-sm) var(--space-lg) var(--space-sm) 0; font-weight: 500; font-size: var(--text-title); }
 .seitenkopf--suche .filter { margin-top: var(--space-lg); }
 .monatsleiste { display: flex; flex-wrap: wrap; gap: 0 var(--space-lg); margin: 0 0 var(--space-xl); padding: 0; list-style: none; border-top: var(--rule-hair) solid var(--color-rule); border-bottom: var(--rule-hair) solid var(--color-rule); }
-.monatsleiste a { display: inline-flex; align-items: center; min-height: 44px; font-weight: 500; text-decoration: none; }
+.monatsleiste a { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; font-weight: 500; text-decoration: none; }
 .monatsleiste a:hover { text-decoration: underline; text-decoration-color: var(--color-accent); }
 
 /* ------------------------------------------------ Spezifikationstabelle (Termine, Kino, Verzeichnis, Plätze) */
@@ -263,7 +263,7 @@ a:focus-visible, button:focus-visible, input:focus-visible + label, summary:focu
 .ort__felder { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-md); margin-top: var(--space-xs); }
 @media (min-width: 48rem) { .ort__felder { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .filter__fuss { display: flex; justify-content: flex-start; }
-.premium { margin-left: var(--space-sm); color: var(--color-accent); font-size: var(--text-label); font-weight: 650; }
+.premium { margin-left: var(--space-sm); color: var(--color-accent); font-size: var(--text-label); font-weight: 600; }
 .premium-zeile .premium { margin-left: 0; }
 .spec .ist-premium td { border-top: var(--rule-bar) solid var(--color-ink); border-bottom-width: var(--rule-bar); border-bottom-color: var(--color-ink); }
 .leer { display: flex; flex-direction: column; gap: var(--space-sm); margin-top: var(--space-2xl); padding-top: var(--space-xl); border-top: var(--rule-bar) solid var(--color-ink); max-width: 60ch; }
@@ -364,7 +364,7 @@ input:disabled, select:disabled, textarea:disabled { opacity: 0.55; cursor: not-
 @media (min-width: 60rem) { .buchung-raster { grid-template-columns: minmax(0, 3fr) minmax(0, 9fr); } .schrittfolge { position: sticky; top: var(--space-xl); } }
 .schrittfolge ol { list-style: none; margin: 0; padding: 0; border-top: var(--rule-bar) solid var(--color-ink); }
 .schrittfolge a { display: flex; align-items: center; gap: var(--space-sm); min-height: 48px; border-bottom: var(--rule-hair) solid var(--color-rule); font-weight: 500; font-size: var(--text-label); text-decoration: none; }
-.schrittfolge a[aria-current] { font-weight: 650; box-shadow: inset 0 calc(-1 * var(--rule-bar)) 0 var(--color-ink); }
+.schrittfolge a[aria-current] { font-weight: 600; box-shadow: inset 0 calc(-1 * var(--rule-bar)) 0 var(--color-ink); }
 .schrittfolge a:hover { background: var(--color-paper-2); }
 .buchung .gruppe { scroll-margin-top: var(--space-md); }
 .kalender-paar { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-xl); }
@@ -424,3 +424,5 @@ input:disabled, select:disabled, textarea:disabled { opacity: 0.55; cursor: not-
 .feld > .titel + .meta, .feld > .titel + .reihe__text { margin-top: calc(-1 * var(--space-xs)); }
 .spec__titel a.textlink { display: flex; width: fit-content; text-decoration: underline; text-decoration-color: var(--color-muted); }
 .seitenkopf--werben .feld:first-child { justify-content: center; }
+th, caption, legend, dt, b, strong { font-weight: 500; }
+.gruppe legend, .monat__kopf { font-weight: var(--display-weight); }

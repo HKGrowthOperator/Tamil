@@ -368,7 +368,8 @@ a:hover { text-decoration-color: var(--color-accent); }
 .start { padding-block: var(--space-xl) 0; }
 .start-raster { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--space-2xl); align-items: start; }
 .aufmacher-stueck { display: flex; flex-direction: column; }
-.aufmacher-stueck .bild { order: -1; margin-bottom: var(--space-lg); }
+.aufmacher-stueck .bild { margin-top: var(--space-lg); }
+.brett { padding-top: var(--space-xs); }
 .aufmacher-stueck .rahmen { aspect-ratio: 16 / 9; }
 .aufmacher-titel { font-size: var(--text-display-s); max-width: 22ch; line-height: 1.08; }
 .aufmacher-titel a { text-decoration: none; font-weight: inherit; }
@@ -413,7 +414,6 @@ a:hover { text-decoration-color: var(--color-accent); }
 @media (max-width: 60rem) {
   .start-raster, .film-zeile { grid-template-columns: minmax(0, 1fr); row-gap: var(--space-xs); }
   .start-raster { row-gap: var(--space-xl); }
-  .aufmacher-stueck .bild { order: 0; margin: var(--space-lg) 0 0; }
   .filter { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 40rem) {

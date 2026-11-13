@@ -69,7 +69,7 @@ p + p { margin-top: var(--space-xs); }
 .aufklapp > summary::after { content: ""; width: 7px; height: 7px; margin-left: var(--space-xs); border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: translateY(-2px) rotate(45deg); }
 .aufklapp[open] > summary::after { transform: translateY(2px) rotate(-135deg); }
 .aufklapp > summary:hover { background: var(--color-paper-2); }
-.aufklapp-liste { position: absolute; right: 0; top: calc(100% + var(--space-2xs)); z-index: var(--z-dropdown); min-width: 14rem; margin: 0; padding: var(--space-xs) 0; list-style: none; background: var(--color-paper); border: 1px solid var(--color-muted); border-radius: var(--radius-card); }
+.aufklapp-liste { position: absolute; right: 0; top: calc(100% + var(--space-2xs)); z-index: var(--z-dropdown); min-width: 14rem; margin: 0; padding: var(--space-xs) 0; list-style: none; background: var(--color-paper-2); border: 1px solid var(--color-muted); border-radius: var(--radius-card); }
 .aufklapp-liste .wer { padding: var(--space-xs) var(--space-md); }
 .menue-ziele { margin: 0; padding: 0; list-style: none; }
 .aufklapp-liste a { display: flex; align-items: center; justify-content: space-between; min-height: 44px; padding: 0 var(--space-md); text-decoration: none; }
@@ -251,4 +251,9 @@ details.mehrteil > summary:hover { text-decoration: underline; text-decoration-c
 .fuss { border-top: 1px solid var(--color-rule); }
 .fuss p { max-width: var(--container); margin-inline: auto; padding: var(--space-lg) var(--gutter); font-size: var(--text-sm); color: var(--color-ink-2); }
 .kopfzeile > a, .seitenkopf .klein a { display: inline-flex; align-items: center; min-height: 44px; }
-.tabelle td a, .datensatz dd a { display: inline-block; padding-block: 12px; margin-block: -12px; }
+.tabelle td a, .datensatz dd a { display: inline-block; padding-block: var(--space-sm); margin-block: calc(-1 * var(--space-sm)); }
+.abschnitt > h2 { max-width: none; }
+.hist .tabelle { table-layout: fixed; }
+.hist .tabelle th:first-child { width: 6rem; }
+.hist .tabelle th:nth-child(2) { width: 42%; }
+@media (max-width: 40rem) { .hist .tabelle th:first-child, .hist .tabelle th:nth-child(2) { width: auto; } }

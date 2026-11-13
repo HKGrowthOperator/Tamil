@@ -202,7 +202,7 @@ def nachricht(sid):
 
 
 hero = (f'<section class="feldplan" aria-label="Aufmacher und Nachrichten"><div class="container feldreihe feldreihe--8-4">'
-        f'<article class="feld aufmacher" aria-labelledby="a-h">{figur(a, "bild--3-2", lazy=False, fakt=False, href="artikel.html")}'
+        f'<article class="feld aufmacher" aria-labelledby="a-h">{figur(a, "bild--16-9", lazy=False, fakt=False, href="artikel.html")}'
         f'<h1 id="a-h"><a href="artikel.html">{e(a["titel"])}</a></h1>'
         f'<p class="lead aufmacher__lead">{e(a["teaser"])}</p>'
         f'<div class="aufmacher__fuss">{meta(a)}<a class="textlink" href="{e(wa(a["titel"]))}">Per WhatsApp schicken</a></div></article>'

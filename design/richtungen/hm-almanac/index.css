@@ -3,7 +3,7 @@
  * axes: mid/grotesk-sans/chromatic-magenta (accent re-hued to the logo red) · posture: restrained · contrast: pass · fold: pass · v2.0.0 */
 /* Hallmark · pre-emit critique: P4 H4 E4 S5 R4 V5 · weakest: H, a sheet above the head competes with it; the head sits alone on the base row at the display size and the sheet keeps to one weight of type */
 @import url("./almanac.css");
-/* Hallmark · waive 78 · the section heads Im Kino, Steinmeier and Das Jahr 2026 render at 36px under the 42px head line · headlines are capped at 44px on the desktop by decision of the main session after critique r1, so every section head sits one step under the page head */
+/* Hallmark · waive 78 · the section heads Im Kino, Steinmeier and Das Jahr 2026 render at 36px under the 42px head line · on the start page the head line Die nächsten Feste is capped at 44px by the main session, the section heads sit one step under it */
 /* Hallmark · waive 44c · the hero holds the head line, the dated sheet of the next festivals and the first report with its photograph beside it · the Kalenderblatt is the head of the start page by decision of the critique r1, the photograph sits beside the sheet, not centred on the head line */
 /* Hallmark · hero-review: fix · 5 findings · 1 resolved 2 partial 2 kept by choice (sheet as hero visual, dated head) · finish-review: subagent (claude -p, sonnet, fresh context) · 8 findings · 3 resolved 5 partial · gap: none */
 /* Hallmark · dismissed 58 · the page count includes all four year tabs, one of which shows at a time; the 91-word window is six report headlines over the footer index */
