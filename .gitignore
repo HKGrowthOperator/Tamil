@@ -21,4 +21,5 @@ wordpress/dist/
 design/richtungen/*/shots/
 
 # Hallmark-Prüfbilder (lokal, werden bei jedem sloplint --render neu erzeugt)
-.hallmark/shots/
+**/.hallmark/shots/
+/.hallmark/
