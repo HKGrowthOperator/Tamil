@@ -311,7 +311,7 @@ input:disabled, select:disabled, textarea:disabled { opacity: 0.55; cursor: not-
 .haken input:focus-visible + label::before { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .haken input[aria-invalid] + label::before { border-color: var(--color-error); }
 .falle { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
-.falle input { width: 1px; height: 1px; padding: 0; border: 0; }
+.falle input[type="text"] { width: 1px; height: 1px; min-height: 0; padding: 0; border: 0; }
 .formular__fuss { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-sm); padding-top: var(--space-lg); border-top: var(--rule-bar) solid var(--color-ink); }
 
 .wahl { margin: 0; padding: 0; border: 0; min-width: 0; }
@@ -392,6 +392,10 @@ input:disabled, select:disabled, textarea:disabled { opacity: 0.55; cursor: not-
 
 @media (max-width: 40rem) {
   .kopfblock { grid-template-columns: minmax(0, 1fr); }
+  .aufmacher { padding-bottom: var(--space-lg); }
+  .abschnitt { padding-block: var(--space-xl); }
+  .abschnitt--fuge { padding-top: 0; }
+  .seitenkopf { padding-top: var(--space-xl); }
   .filter { padding: var(--space-lg); }
   .formular, .quittung { padding: var(--space-lg); }
 }

@@ -90,8 +90,8 @@ def figur(b, cls="bild", prio=False, sizes="(min-width: 64rem) 50vw, 100vw", fak
 def datumsblock(d, extra=None, naechster=False):
     zusatz = f"<span>{e(extra)}</span>" if extra else ""
     return (f'<time class="datum{" datum--naechster" if naechster else ""}" datetime="{d.isoformat()}">'
-            f'<span class="ziffer">{d.day}</span><span class="monat">{MONATE[d.month - 1]}</span>'
-            f'<span class="wochentag">{TAGE[d.weekday()]}</span>{zusatz}</time>')
+            f'<span class="ziffer">{d.day}</span><span class="mw"><span class="monat">{MONATE[d.month - 1]}</span>'
+            f'<span class="wochentag">{TAGE[d.weekday()]}</span>{zusatz}</span></time>')
 
 
 def notiz(d, titel, ort=None, href=None, teilen=False, zustand=None, rot=False, fest=None, klasse=""):

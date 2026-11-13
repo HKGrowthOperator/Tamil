@@ -196,10 +196,10 @@ def artikel(b):
             zeilen.append(f'<tr><td class="tag">{TAGE[nd.weekday()]} <time class="num" datetime="{nd.isoformat()}">{kurz(nd)}</time></td>'
                           f'<td><a href="{link(nb["story_id"])}">{e(nb["titel"])}</a></td></tr>')
     gleich = [x for x in sorted(RB, key=lambda x: x["datum"], reverse=True) if x["kategorie"] == b["kategorie"] and x is not b]
-    if len(gleich) >= 2:
+    if len(gleich) >= 3:
         weiter_titel, weiter = f"Mehr aus {rub}", gleich[:3]
     else:
-        weiter_titel = "Mehr aus dem Rückblick"
+        weiter_titel = "Weiterlesen im Rückblick"
         weiter = (gleich + [x for x in sorted(RB, key=lambda x: abs((datum(x) - d).days)) if x is not b and x not in gleich])[:3]
     weiter_li = "".join(
         f'<li><time class="num" datetime="{x["datum"]}">{kurz(datum(x))}</time><a href="{link(x["story_id"])}">{e(x["titel"])}</a></li>' for x in weiter)
