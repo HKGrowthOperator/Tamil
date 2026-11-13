@@ -43,6 +43,7 @@ def settings(monkeypatch, tmp_path):
     s = load_settings()
     s.data_dir = tmp_path
     s.bild_retry_pause = 0
+    s.bild_ki_freigabe = True  # diese Tests prüfen die KI-Kette selbst; ohne Freigabe: tests/test_lizenz.py
     return s
 
 

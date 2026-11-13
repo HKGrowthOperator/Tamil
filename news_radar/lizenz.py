@@ -299,7 +299,7 @@ def datensatz(image, *, titel: str = "", von: str = "dienst", alt: str = "") -> 
     basis = {"geprueft_von": von, "geprueft_am": jetzt}
     if origin == "karte":
         return {"herkunft": "karte", **basis, "rechteinhaber": "Tamil.de", "lizenz_kuerzel": "tamil-grafik",
-                "lizenz": lizenz_name("tamil-grafik"), "umfang": umfang_fuer("tamil-grafik"),
+                "lizenz": "eigene Grafik", "umfang": umfang_fuer("tamil-grafik"),
                 "attribution": KARTE_CREDIT, "bearbeitung": "keine", "beleg": "eigene Grafik (images.branded_card)",
                 "alt": alt_fuer_karte(titel) if titel else alt}
     if origin in ("ki", "pool"):

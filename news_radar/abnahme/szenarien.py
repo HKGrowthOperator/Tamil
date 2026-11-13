@@ -222,9 +222,19 @@ SZENARIEN: list[Szenario] = [
 
 # Bildrechte: KI-Bild mit Budget und Lizenz (ersetzt kein Szenario, läuft als 51 mit, wenn ausdrücklich gewählt)
 BILD = Szenario(51, "KI-Symbolbild mit Lizenz-Datensatz und Kosten", "Bild", [HAMM], texte=HAMM_TEXT,
-                einstellungen={"gemini_key": "test", "bild_reihenfolge": ("archiv", "quelle", "ki", "karte")},
+                einstellungen={"gemini_key": "test", "bild_ki_freigabe": True,
+                               "bild_reihenfolge": ("archiv", "quelle", "ki", "karte")},
                 fake={"bild_prompt": True}, erwartet={"entwuerfe": 1, "bild": "ki", "kosten_min": 0.0336})
 SZENARIEN.append(BILD)
+
+# ---- Lizenz-Datensatz je Bild (Spezifikation Bilder 3, Entscheidung „Ja zu allem“ vom 13.11.2026) ----
+SZENARIEN.append(Szenario(
+    70, "Lizenz-Gate: KI aus trotz Schlüssel → Bildkarte mit Datensatz; Upload ohne Lizenz gesperrt, nach Eintrag "
+        "veröffentlicht", "Bild", [HAMM], texte=HAMM_TEXT, nachher="lizenz_gate",
+    einstellungen={"gemini_key": "test"}, fake={"bild_prompt": True},
+    erwartet={"entwuerfe": 1,
+              "stats": {"erst_karte": 1, "karte_vollstaendig": 1, "ki_aufrufe": 0, "freigabe_gesperrt": 1, "wp_ohne_lizenz": 0,
+                        "lizenz_fehlt_protokoll": 1, "formular_ok": 1, "wp_mit_lizenz": 1, "meta_lizenz": 1}}))
 
 # ---- Stopp-Schalter (Vertrag B1.1, §8, Test T7) ----
 SZENARIEN += [
@@ -327,14 +337,15 @@ SZENARIEN += [
                                              COMMONS_BILD: "jpeg:1600x1066"}},
              erwartet={"aufrufe": 0, "bild": "commons",
                        "stats": {"bild_gesetzt": 1, "asset_commons": 1, "nachweis_am_entwurf": 1,
-                                 "protokoll_bild": 1}}),
+                                 "protokoll_bild": 1, "lizenz_vollstaendig": 1}}),
     Szenario(60, "Bild aus gelisteter Quelle (og:image): Nachweis aus dem Register, nicht aus dem Vorschlag", "Bild", [],
              texte=BILD_TEXTE, nachher="bild_vorschlag",
              einstellungen={**BILD_BASIS, "_bilder": [{"weg": "quelle", "seite_url": TEMPEL_URL,
                                                        "nachweis": "Foto: erfunden"}],
                             "_bild_seiten": {TEMPEL_URL: TEMPEL_HTML_EIGEN, TEMPEL_OG: "jpeg:1600x900"}},
              erwartet={"aufrufe": 0, "bild": "quelle",
-                       "stats": {"bild_gesetzt": 1, "asset_quelle": 1, "nachweis_am_entwurf": 1, "protokoll_bild": 1}}),
+                       "stats": {"bild_gesetzt": 1, "asset_quelle": 1, "nachweis_am_entwurf": 1, "protokoll_bild": 1,
+                                 "lizenz_vollstaendig": 1}}),
     Szenario(61, "Bildvorschläge abgelehnt (Agenturbild, NC-Lizenz, Host nicht im Register, interne Adresse): "
                  "Bildkarte bleibt, nichts Internes abgerufen", "Bild", [], texte=BILD_TEXTE, nachher="bild_vorschlag",
              einstellungen={**BILD_BASIS, "_bilder": [
