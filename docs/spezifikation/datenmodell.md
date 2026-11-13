@@ -688,7 +688,7 @@ stateDiagram-v2
 Fehler bei Zahlung oder Erstattung stehen als Warnung in der Buchungsliste und gehen an einen Menschen. Eine gefälschte
 oder doppelte Zahlungsmeldung ändert nichts (Signatur, Kennung der Meldung nur einmal).
 
-## 15. Social-Beitrag (F4) – spezifiziert (in Bau)
+## 15. Social-Beitrag (F4) – gebaut im Trockenmodus (Migration 8, `news_radar/social/`)
 
 Quelle: `festlegung-social.md`. Daten im Radar (Cockpit hält Agenten, Freigabe, Protokoll).
 
