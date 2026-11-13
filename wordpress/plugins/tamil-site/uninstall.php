@@ -39,3 +39,10 @@ foreach ( array( 'tamil_werbebuchungen', 'tamil_werbetage', 'tamil_werbestatisti
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange -- Deinstallation entfernt die eigenen Tabellen
 	$wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %i', $wpdb->prefix . $tamil_site_tabelle ) );
 }
+
+// Verzeichnis (F2): Einsendungen mit Personendaten und Protokoll entfernen; Einträge (Beitragstyp) bleiben.
+$tamil_site_vz_tabellen = array( $wpdb->prefix . 'tamil_vz_einsendungen', $wpdb->prefix . 'tamil_vz_protokoll' );
+foreach ( $tamil_site_vz_tabellen as $tamil_site_vz_tabelle ) {
+	$wpdb->query( "DROP TABLE IF EXISTS {$tamil_site_vz_tabelle}" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- eigene Tabellen bei der Deinstallation
+}
+wp_clear_scheduled_hook( 'tamil_site_vz_aufraeumen' );

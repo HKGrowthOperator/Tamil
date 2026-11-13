@@ -72,6 +72,35 @@ Prüfungen in `tamil-site/includes/einsendungen*.php`). WordPress ruft den Radar
 | Variablen | Website: `TAMIL_PROXY_ANZAHL` (zusätzliche Proxys **vor** Traefik, z. B. Cloudflare; Standard 0, hinter Traefik allein 0 lassen. Apache (`mod_remoteip`, Basis-Image und `wordpress/Dockerfile`) setzt hinter Traefik schon die Adresse des Besuchers als `REMOTE_ADDR`; jeder Wert über 0 nimmt einen Eintrag aus dem restlichen `X-Forwarded-For` und macht die Adresse fälschbar, wenn davor kein weiterer Proxy steht). `wordpress/docker/start.sh` schreibt sie als Konstante in `wp-config.php`. Die Drossel nimmt `REMOTE_ADDR`; IPv6 zählt je /64 |
 | Stand | Website gebaut und lokal geprüft; Radar-Seite offen |
 
+### Verzeichnis (F2)
+
+Der Radar holt Einsendungen ab, liest Einträge für den Vergleich alt/neu und schreibt nach der Freigabe im Cockpit
+genau die freigegebenen Werte. WordPress ruft den Radar nie auf und verschickt keine E-Mail.
+Code: `wordpress/plugins/tamil-radar/includes/verzeichnis.php` (Routen), Logik und Prüfungen in
+`wordpress/plugins/tamil-site/includes/verzeichnis.php`.
+
+| Punkt | Festlegung |
+|---|---|
+| Recht | `tamil_verzeichnis_pflegen`, nur Rolle „Radar“ (Upgrade-Routine, Datenversion 4). Administratoren haben es nicht; der Beitragstyp ist nicht über `/wp/v2` erreichbar |
+| Schalter | `verzeichnis` (Standard aus). Aus oder Plugin `tamil-site` fehlt: `503` mit `tamil_funktion_aus` bzw. `tamil_site_fehlt` |
+| `GET /verzeichnis/einsendungen?nach=<id>&anzahl=<1..100>` | Einsendungen mit `id > nach`, aufsteigend; Antwort `{einsendungen: [...], naechster: <id>}`. `naechster` ist der nächste Cursor |
+| `GET /verzeichnis/einsendung/{vorgang}` | eine Einsendung: `typ` (`neu`, `aenderung`, `entfernen`), `eintrag_id`, `status`, `einsender {name, email}`, `berechtigung`, `felder {feld: {wert, oeffentlich}}` (bei Änderungen nur geänderte Felder), `anmerkung`, `einwilligung {erteilt, fassung}`, `regeln {fehlt[], formfehler[], dubletten[{eintrag_id, grund}]}` (feste Regeln, ohne Modell), `pruefung` (Ablage des Agenten), `entscheidung` |
+| `POST /verzeichnis/einsendung/{vorgang}/status` | `{"status": "geprueft" \| "abgelehnt", "pruefung": {…}}`; `freigegeben` setzt nur die Freigabe. Abgeschlossene Einsendungen: `409 tamil_vz_status_konflikt` |
+| `GET /verzeichnis/eintraege?nach=&anzahl=` | alle Einträge (veröffentlicht und entfernt) mit Cursor, für die Dublettenprüfung |
+| `GET /verzeichnis/eintrag/{id}` | `{id, felder, premium, status (veroeffentlicht \| entfernt), stand, link, geaendert}`; `stand` ist die Prüfsumme über Felder und Status |
+| `POST /verzeichnis/eintrag` | `{"einsendung": "V…", "felder": {…}}` → `201`; Einsendung vom Typ `neu`. Wiederholt: `200` mit `bereits: true`, kein zweiter Eintrag |
+| `POST /verzeichnis/eintrag/{id}` | `{"einsendung", "stand", "felder"}`; Einsendung vom Typ `aenderung` zu diesem Eintrag; schreibt nur die übergebenen Felder |
+| Werte nur aus der Einsendung | Geschrieben werden nur Felder, die in der Einsendung stehen, und `kategorie` (sonst `400 tamil_vz_nicht_eingesandt`, `data.felder`). Weicht ein Wert vom eingesandten ab, steht der Feldname in `entscheidung.abweichend` und im Protokoll („abweichend: <Feld>“), nie der Wert. Hat der Einsender ein Feld nicht zur Veröffentlichung freigegeben, wird jeder nicht leere Wert dafür abgewiesen; „Änderung melden“ mit entferntem Haken bei einem gezeigten Wert ist eine Änderung auf leer |
+| Wiederanlauf | Bricht eine Freigabe nach dem Beanspruchen ab (`freigegeben`, `entscheidung` leer), antwortet dieselbe Freigabe 120 Sekunden lang `409 tamil_vz_in_arbeit` und läuft danach mit denselben Werten erneut (ohne `stand`-Prüfung); ein schon angelegter Eintrag wird über die Vorgangsnummer gefunden, nicht doppelt angelegt |
+| `POST /verzeichnis/eintrag/{id}/entfernen` | `{"einsendung", "stand"}`; Einsendung vom Typ `entfernen`; Eintrag wird Entwurf (nicht gelöscht) |
+| Felder | `name`, `art` (`business`, `dienstleister`, `verein`, `tempel`), `kategorie` (Slug, passend zur Art), `beschreibung` (≤ 600), `adresse`, `plz` (DE 5, AT/CH 4 Ziffern), `stadt`, `land` (`DE`, `AT`, `CH`), `bundesland_kanton` (Liste je Land), `telefon`, `email`, `website` (http/https), `oeffnungszeiten` |
+| Fehler | `400 tamil_vz_unbekannte_felder` (`data.felder`), `400 tamil_vz_ungueltig` (`data.fehler`), `400 tamil_vz_unvollstaendig` (`data.fehlt`, Pflicht: Name, Art, PLZ, Stadt, Land, ein Kontaktweg), `403 tamil_vz_premium_verboten`, `404 tamil_vz_einsendung_fehlt` / `tamil_vz_eintrag_fehlt`, `409 tamil_vz_falsche_einsendung` (Typ oder Eintrag passt nicht), `409 tamil_vz_abgelehnt`, `409 tamil_vz_stand` (seit dem Lesen geändert; `data.stand`), `400 tamil_vz_nicht_eingesandt` (`data.felder`), `409 tamil_vz_nicht_oeffentlich` (`data.feld`: der Einsender hat das Feld nicht zur Veröffentlichung freigegeben), `409 tamil_vz_in_arbeit` / `tamil_vz_gesperrt` (gleichzeitige Freigabe) |
+| Nebenläufigkeit | Jede Einsendung wird genau einmal freigegeben (bedingtes UPDATE auf den Status); Änderungen am selben Eintrag laufen unter einer Sperre (auch die Eingabemaske in wp-admin) und nur gegen den gelesenen `stand`; Art und Kategorie werden auch bei Teiländerungen gegeneinander geprüft |
+| Premium | nur ein Administrator in wp-admin; weder Formular noch diese Routen setzen es |
+| Protokoll | Tabelle `tamil_vz_protokoll`: Zeit, wer (Benutzername, `website`, `cron`), Aktion, Vorgangsnummer, Eintrag, Feldnamen; keine Inhalte oder Personendaten; Frist 12 Monate |
+| Testmodus | `tests/wp/test_verzeichnis.py` gegen das lokale WordPress |
+| Stand | gebaut auf der Website; die Gegenseite im Radar (Abholen, Prüfung durch den Agenten, Cockpit alt/neu) fehlt noch |
+
 ## 4. Anthropic (Agenten-Redaktion)
 
 | Punkt | Festlegung |
