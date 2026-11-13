@@ -294,8 +294,8 @@ def textfeld(fid, label, pflicht=True, hilfe="", zeilen=6):
             f'<p class="hilfe" id="{fid}-h">{hilfe}</p></div>')
 
 
-def auswahl(fid, label, optionen, pflicht=True, hilfe=""):
-    frei = "" if pflicht else ' <span class="frei">(freiwillig)</span>'
+def auswahl(fid, label, optionen, pflicht=True, hilfe="", zusatz=True):
+    frei = "" if pflicht or not zusatz else ' <span class="frei">(freiwillig)</span>'
     req = ' required aria-required="true"' if pflicht else ""
     ops = "".join(o if o.startswith("<") else f'<option>{e(o)}</option>' for o in optionen)
     return (f'<div class="feld"><label for="{fid}">{label}{frei}</label><span class="select">'
@@ -307,8 +307,8 @@ def datei(fid, label, pflicht=False, hilfe=""):
     frei = "" if pflicht else ' <span class="frei">(freiwillig)</span>'
     req = ' required aria-required="true"' if pflicht else ""
     return (f'<div class="feld"><span class="label" id="{fid}-l">{label}{frei}</span>'
-            f'<label class="datei" for="{fid}"><span>Bild auswählen</span></label>'
-            f'<input class="datei-input" id="{fid}" name="{fid}" type="file" accept="image/jpeg,image/png"{req} aria-labelledby="{fid}-l" aria-describedby="{fid}-h">'
+            f'<span class="datei"><span aria-hidden="true">Bild auswählen</span>'
+            f'<input class="datei-input" id="{fid}" name="{fid}" type="file" accept="image/jpeg,image/png"{req} aria-labelledby="{fid}-l" aria-describedby="{fid}-h"></span>'
             f'<p class="hilfe" id="{fid}-h">{hilfe}</p></div>')
 
 
@@ -438,8 +438,8 @@ for rname, datei_name, ids, satz in RUBRIKEN:
                 return f'<a href="{f}"{" aria-current=\"page\"" if k == n else ""}>Seite {k}</a>'
             vor = (f'<a class="textlink" href="{datei_name if n - 1 == 1 else datei_name.replace(".html", f"-{n-1}.html")}">Neuere Beiträge</a>' if n > 1 else "")
             nach = (f'<a class="textlink" href="{datei_name.replace(".html", f"-{n+1}.html")}">Ältere Beiträge</a>' if n < len(seiten) else "")
-            nav = (f'<nav class="seiten" aria-label="Seiten"><div class="wrap"><p>Seite {n} von {len(seiten)}</p>'
-                   f'<div class="seiten-links">{vor}{"".join(seite_link(k) for k in range(1, len(seiten) + 1))}{nach}</div></div></nav>')
+            nav = (f'<nav class="seiten" aria-label="Seiten"><div class="wrap"><div class="seiten-zeile"><p>Seite {n} von {len(seiten)}</p>'
+                   f'<div class="seiten-links">{vor}{"".join(seite_link(k) for k in range(1, len(seiten) + 1))}{nach}</div></div></div></nav>')
         titel = rname if n == 1 else f"{rname}, Seite {n}"
         schreib(fname, f"{titel} | tamil.de", satz, seitenkopf(titel, e(satz)) + lead + rest + nav, rname)
 
@@ -509,8 +509,8 @@ def zaehl(**kw):
 regionen = {}
 for v in VERZ:
     regionen.setdefault(v["land"], set()).add(v["region"])
-art_seg = (f'<input type="radio" name="art" id="art-alle" value="" checked><label for="art-alle">Alle ({len(VERZ)})</label>'
-           + "".join(f'<input type="radio" name="art" id="art-{a.lower()}" value="{a.lower()}"><label for="art-{a.lower()}">{a} ({zaehl(art=a)})</label>' for a in ARTEN))
+art_seg = (f'<span class="opt"><input type="radio" name="art" id="art-alle" value="" checked><label for="art-alle">Alle ({len(VERZ)})</label></span>'
+           + "".join(f'<span class="opt"><input type="radio" name="art" id="art-{a.lower()}" value="{a.lower()}"><label for="art-{a.lower()}">{a} ({zaehl(art=a)})</label></span>' for a in ARTEN))
 land_ops = ['<option value="">Alle Länder</option>'] + [f'<option value="{c}">{n} ({zaehl(land=c)})</option>' for c, n in LAENDER.items()]
 reg_ops = ['<option value="">Alle</option>'] + [
     f'<optgroup label="{LAENDER[c]}">' + "".join(f'<option>{e(r)}</option>' for r in sorted(regionen[c])) + '</optgroup>'
@@ -522,8 +522,8 @@ filter_form = (f'<form class="filter" action="verzeichnis.html" method="get" rol
                f'<p class="hilfe" id="q-h">Zum Beispiel Tempel, Zürich oder Tamilschule.</p></div>'
                f'<fieldset class="seg"><legend>Art</legend>{art_seg}</fieldset>'
                f'<fieldset class="ort"><legend>Ort</legend><div class="ort-felder">'
-               f'{auswahl("land", "Land", land_ops, pflicht=False)}{auswahl("region", "Bundesland oder Kanton", reg_ops, pflicht=False)}'
-               f'{auswahl("stadt", "Stadt", stadt_ops, pflicht=False)}</div></fieldset>'
+               f'{auswahl("land", "Land", land_ops, pflicht=False, zusatz=False)}{auswahl("region", "Bundesland oder Kanton", reg_ops, pflicht=False, zusatz=False)}'
+               f'{auswahl("stadt", "Stadt", stadt_ops, pflicht=False, zusatz=False)}</div></fieldset>'
                f'<p class="filter-fuss"><button class="knopf knopf-leise" type="submit">Filter anwenden</button>'
                f'<a class="textlink" href="verzeichnis.html">Filter zurücksetzen</a></p></form>')
 sortiert = sorted(VERZ, key=lambda v: (not v.get("premium"), v["name"].lower()))
@@ -548,7 +548,7 @@ for v in VERZ:
     lage = e(v["lage"]) if v.get("lage") else '<span class="fill">Adresse folgt</span>'
     prem = '<p class="e-marke">Premium <span class="klein">(Darstellungsbeispiel, nicht vergeben)</span></p>' if v.get("premium") else ""
     angaben = (f'<dl class="angaben"><div><dt>Art</dt><dd>{v["art"]}, {e(v["kat"])}</dd></div>'
-               f'<div><dt>Ort</dt><dd>{e(v["stadt"])}, {e(v["region"])}, {LAENDER[v["land"]]}</dd></div>'
+               f'<div><dt>Ort</dt><dd>{e(", ".join(dict.fromkeys([v["stadt"], v["region"], LAENDER[v["land"]]])))}</dd></div>'
                f'<div><dt>Adresse</dt><dd>{lage}</dd></div>'
                f'<div><dt>Telefon, E-Mail, Website</dt><dd><span class="fill">Kontaktdaten folgen, wenn der Eintrag sie freigibt</span></dd></div>'
                f'<div><dt>Öffnungszeiten</dt><dd>nicht angegeben</dd></div></dl>')
@@ -668,7 +668,7 @@ platz_radios = "".join(
     f'<label for="pl-{k}"><span class="wahl-titel">{n}</span><span class="wahl-text">{e(wo)}, {fmt(d, m)}</span></label></div>'
     for k, n, wo, d, m in PLAETZE)
 lauf_radios = "".join(
-    f'<input type="radio" name="laufzeit" id="lz-{t}" value="{t}"{" checked" if t == 14 else ""}><label for="lz-{t}">{t} Tage</label>'
+    f'<span class="opt"><input type="radio" name="laufzeit" id="lz-{t}" value="{t}"{" checked" if t == 14 else ""}><label for="lz-{t}">{t} Tage</label></span>'
     for t in (7, 14, 30))
 BELEGT = {dt.date(2026, 12, d) for d in list(range(1, 8)) + list(range(19, 27))}
 tage_kal = []
@@ -717,7 +717,7 @@ buchen_form = (
     + haken("bedingungen", "Ich habe die Verkaufsbedingungen gelesen und nehme sie an.",
             hilfe="Die Verkaufsbedingungen liefert KBS; bis dahin ist hier kein Text verlinkt.")
     + '<p class="hilfe">Die Tage sind ab jetzt 35 Minuten reserviert. Bezahlt wird bei Stripe; danach kommen Sie hierher zurück.</p>'
-    '<p class="absenden"><button class="knopf" type="submit">Weiter zur Zahlung bei Stripe</button></p></fieldset></form>')
+    '<p class="absenden"><button class="knopf" type="submit">Zur Zahlung bei Stripe</button></p></fieldset></form>')
 schritt_nav = '<nav class="schritte" aria-label="Schritte der Buchung"><ol>' + "".join(f'<li><a href="#{i}">{t}</a></li>' for i, t in schritte) + '</ol></nav>'
 schreib("buchen.html", "Werbeplatz buchen | tamil.de", "Einen Werbeplatz auf tamil.de buchen.",
         seitenkopf("Werbeplatz buchen", "In fünf Schritten zur Anzeige. Die Werte unten sind Beispiele, bis KBS Preise und Termine liefert.")

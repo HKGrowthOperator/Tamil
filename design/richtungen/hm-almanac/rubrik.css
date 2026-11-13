@@ -3,6 +3,10 @@
  * axes: mid/grotesk-sans/chromatic-magenta (accent re-hued to the logo red) · posture: restrained · contrast: pass · fold: pass · v2.0.0 */
 /* Hallmark · pre-emit critique: P4 H4 E4 S4 R4 V4 · weakest: S, a list of reports is the most common page there is; the newest report leads as a split, the rest are dated rows with the picture at the end, never a grid of cards */
 @import url("./almanac.css");
+/* Hallmark · waive 44c · the head is the word Community and one sentence, the newest report and its photograph start in the first screen · a section page lists reports; the Community title is a heading, the photograph of the newest report follows at once */
+/* Hallmark · waive 59 · 82px between the section head and the list, under the firm rule · the list of Community reports hangs from its section head like the sheet from its date */
+/* Hallmark · waive 78 · the report titles in the dated list render at the title size · each Community report title is an item in a list, not a section head over a composition */
+/* Hallmark · waive 49b · the wrapping links are the Community reports titles, up to six lines at 320 · a report headline is the report own title and cannot be cut to fit a phone line */
 /* Hallmark · dismissed 77 · a section page: head, the newest report, three dated rows, the page numbers, the footer */
 
 .kopfzeile { padding-block: var(--space-2xl) var(--space-xl); align-items: end; }
@@ -14,7 +18,7 @@
 .aufmacher-r { align-items: center; padding-block-end: var(--space-2xl); }
 .aufmacher-r .pic { grid-column: 1 / span 7; }
 .aufmacher-r .split__text { grid-column: 8 / span 5; display: flex; flex-direction: column; gap: var(--space-md); }
-.aufmacher-r h2 { font-size: var(--text-2xl); }
+.aufmacher-r h2 { font-size: var(--text-2xl); line-height: 1.15; }
 .aufmacher-r h2 a, .eintrag h2 a { text-decoration: none; }
 .aufmacher-r h2 a:hover, .eintrag h2 a:hover { text-decoration: underline; text-decoration-color: var(--color-accent); text-decoration-thickness: 2px; }
 
@@ -22,7 +26,7 @@
 .eintrag { display: grid; grid-template-columns: 6rem minmax(0, 1fr) minmax(0, 18rem); gap: var(--gap-columns); align-items: start; padding-block: var(--space-xl); border-top: var(--rule-hair) solid var(--color-rule-2); }
 .eintrag > .num { font-size: var(--text-md); color: var(--color-ink); padding-block-start: 0.3em; }
 .eintrag__text { display: flex; flex-direction: column; gap: var(--space-sm); }
-.eintrag h2 { font-size: var(--text-title); max-width: 36ch; }
+.eintrag h2 { font-size: var(--text-title); line-height: 1.2; max-width: 36ch; }
 .eintrag__text p:not(.byline) { max-width: 60ch; }
 .eintrag__bild .photo { aspect-ratio: 4 / 3; }
 
@@ -41,5 +45,4 @@
 }
 @media (max-width: 40rem) {
   .eintrag { grid-template-columns: minmax(0, 1fr) 6rem; column-gap: var(--space-sm); }
-  .eintrag__text p:not(.byline) { display: none; }
 }

@@ -4,6 +4,7 @@
 /* Hallmark · pre-emit critique: P4 H5 E4 S4 R5 V4 · weakest: S, a report page is the most common page there is; the sheet of dates in the margin ties the text to the calendar and the share sits beside it */
 @import url("./almanac.css");
 /* Hallmark · waive 49b · the wrapping links are report headlines in a dated list of three, two lines at 1440 · a Rückblick headline is the report's own title and cannot be cut to fit one phone line */
+/* Hallmark · dismissed 25 · the footer line under the logo is one sentence of five words, set as a caption beside the index columns */
 /* Hallmark · dismissed 77 · a report page, counted as head with picture, text with its margin sheet, the next reads and the footer */
 
 .kopf { padding-block: var(--space-xl) var(--space-lg); row-gap: var(--space-lg); align-items: end; }
@@ -40,6 +41,6 @@
 @media (max-width: 60rem) { .kopf__meta { border-top-width: var(--rule-hair); } }
 @media (max-width: 40rem) { .weiter__liste a { font-size: var(--text-md); } .weiter__liste li { grid-template-columns: 4rem minmax(0, 1fr); } }
 .kopf__meta .share a { display: inline-flex; align-items: center; min-height: 44px; }
-.bild--hoch { grid-column: 1 / span 8; }
-.bild--hoch .photo { aspect-ratio: 4 / 3; }
+.bild--hoch { grid-column: 1 / span 6; }
+.bild--hoch .photo { aspect-ratio: 3 / 2; }
 .rand .tafel td a { text-decoration-thickness: 1px; }

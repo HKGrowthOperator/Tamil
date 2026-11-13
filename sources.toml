@@ -542,7 +542,7 @@ country = "DE"
 min_score = 0
 max_items = 1
 interval_minutes = 720
-params = { ort = "Sri Meenadchi Ambal Tempel, Sulzbacher Str. 56, 71522 Backnang", nur_titel = ["Deepavali", "Diwali", "தீபாவளி", "Pongal", "பொங்கல்", "Navaratri", "நவராத்திரி", "Thaipusam", "தைப்பூசம்", "Mahotsav", "மகோற்சவ", "Thiruvizha", "திருவிழா", "Kumbabishekam", "கும்பாபிஷேக", "Puthandu", "புத்தாண்டு", "Neujahr", "Karthigai", "கார்த்திகை"] }
+params = { ort = "Sri Meenadchi Ambal Tempel, Sulzbacher Str. 56, 71522 Backnang", nur_titel = ["Deepavali", "Diwali", "தீபாவளி", "Pongal", "பொங்கல்", "Navaratri", "நவராத்திரி", "Thaipusam", "தைப்பூசம்", "Mahotsav", "மகோற்சவ", "Thiruvizha", "திருவிழா", "Kumbabishekam", "Kumbabhishekam", "கும்பாபிஷேக", "Puthandu", "சித்திரைப் புத்தாண்டு", "தமிழ்ப் புத்தாண்டு", "Tamil New Year", "Tamilisches Neujahr", "Karthigai Deepam", "கார்த்திகை தீபம்", "திருக்கார்த்திகை", "Sarvalaya Deepam", "சர்வாலய தீபம்", "Shivaratri", "சிவராத்திரி", "Aadi Pooram", "ஆடிப்பூரம்", "Vinayagar Chaturthi", "Vinayaka Chaturthi", "Ganesh Chaturthi", "விநாயகர் சதுர்த்தி"] }
 selectors = { item = "article.mel-card", title = ".mel-title", link = ".mel-title a::attr(href)", date = ".mel-date" }
 
 # Kino: Reihen und Programme mit Selektoren (provider = "html"); Tamil nur über Titel oder Selektor `sprache`,

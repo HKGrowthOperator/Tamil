@@ -3,6 +3,11 @@
  * axes: mid/grotesk-sans/chromatic-magenta (accent re-hued to the logo red) · posture: restrained · contrast: pass · fold: pass · v2.0.0 */
 /* Hallmark · pre-emit critique: P4 H4 E4 S4 R5 V4 · weakest: E, twelve entries without contact details; the column "Im Bericht" turns the gap into the line's own proof, and every missing field says so in a marked placeholder */
 @import url("./almanac.css");
+/* Hallmark · waive 44c · the directory head is a title and one sentence, the filter and the sheet start in the first screen · a directory is found by its filter and list; the head over them names the page, not a stage */
+/* Hallmark · waive 59 · 40px between the directory head and the filter, 82px on the profile · the filter and the sheet of entries hang from the directory head by its rule */
+/* Hallmark · waive 78 · the profile heads Über das Restaurant and In Berichten render at 31px · they are item titles beside the Angaben sheet of the Ceylon Palace, not section heads */
+/* Hallmark · waive 49b · the wrapping links are the name Ceylon Palace and the title of its report in Bremen · a report headline and an entry name are their own words and wrap on a phone */
+/* Hallmark · dismissed 77 · a directory page: head, filter beside the sheet of entries, the footer */
 /* Hallmark · dismissed 58 · the filter form counts its labels and options as words; the window holds the head, the filter and the first rows of the sheet */
 
 .kopfzeile { padding-block: var(--space-2xl) var(--space-xl); align-items: end; row-gap: var(--space-lg); }
@@ -18,7 +23,7 @@
 .seg--art label .num { color: inherit; opacity: 0.8; }
 .vz__liste { grid-column: 5 / span 8; }
 .vz__liste .tafel td { padding-block: var(--space-md); }
-.vz__liste .tafel td.was { font-weight: 600; }
+.vz__liste .tafel td.was { font-weight: 600; width: 34%; }
 .vz__liste .tafel .hinweis { display: block; }
 .vz__liste .tafel .zu a { display: inline-flex; align-items: center; min-height: 44px; }
 .sheet__leer { padding-block: var(--space-lg); color: var(--color-ink-2); }
@@ -37,7 +42,7 @@
 .profil__text { grid-column: 7 / span 6; display: flex; flex-direction: column; gap: var(--space-lg); }
 .profil__text h2 { font-size: var(--text-2xl); }
 .profil__text > p { font-size: var(--text-prose); line-height: 1.6; }
-.profil__h { padding-block-start: var(--space-lg); border-top: var(--rule-bar) solid var(--color-rule-2); }
+.profil__h { max-width: none; padding-block-start: var(--space-lg); border-top: var(--rule-bar) solid var(--color-rule-2); }
 .weiter__liste { margin: 0; padding: 0; list-style: none; }
 .weiter__liste li { display: grid; grid-template-columns: 5rem minmax(0, 1fr); gap: var(--space-md); align-items: baseline; }
 .weiter__liste a { font: 600 var(--text-title)/1.25 var(--font-display); letter-spacing: var(--tracking-display); }

@@ -71,7 +71,7 @@ def seite(datei: str, titel: str, beschreibung: str, aktiv: str, inhalt: str, sk
   <p class="heute"><time datetime="2026-11-13"><span class="ziffer">13</span><span class="datum">Freitag<br>November 2026</span></time></p>
   <p class="radar"><b>Radar läuft.</b> Letzter Lauf 9:33 Uhr mit 2 neuen Meldungen, der nächste um 9:36 Uhr.</p>
   <div class="wer"><span>redaktion1</span><form action="/logout" method="post"><button type="submit" class="knopf still">Abmelden</button></form></div>
-  <details class="menue"><summary>Menü</summary><nav aria-label="Cockpit, mobil">{ziele(aktiv)}</nav></details>
+  <details class="menue"><summary>Menü</summary><nav aria-label="Cockpit, mobil">{ziele(aktiv)}</nav><form class="menue-ab" action="/logout" method="post"><p class="klein leise">Angemeldet als redaktion1</p><button type="submit" class="knopf">Abmelden</button></form></details>
 </header>
 <div class="banner" role="status"><p><b>Angehalten: Instagram und Facebook.</b> Grund: Das Regelwerk Social, Fassung 1, wartet auf die Freigabe durch KBS. Bearbeiten und Freigeben von Hand gehen weiter. <a href="uebersicht.html#schalter">Schalter ansehen</a></p></div>
 <div class="rahmen">
@@ -145,7 +145,7 @@ def uebersicht() -> None:
   <ul class="tagesliste">
     <li>{tag("12", "Do, Nov.", "2026-11-12")}<div class="was"><a href="verzeichnis.html">Verzeichnis: Restaurant Ceylon Palace, Bremen</a><p>Neuer Eintrag. Hinweis: mögliche Dublette von Eintrag V-0031.</p></div><a class="knopf tun" href="verzeichnis.html">Prüfen</a></li>
     <li>{tag("11", "Mi, Nov.", "2026-11-11")}<div class="was"><a href="buchungen.html">Werbemittel: Buchung W-2026-0007, Billboard</a><p>Bezahlt, wartet auf die Prüfung. Start am 16. November.</p></div><a class="knopf tun" href="buchungen.html">Prüfen</a></li>
-    <li>{tag("10", "Di, Nov.", "2026-11-10")}<div class="was"><a href="buchungen.html?buchung=W-2026-0005">Erstattung fehlgeschlagen: W-2026-0005</a><p class="warnung-text">Geht an einen Menschen. Stripe meldet einen Fehler bei der Rückzahlung.</p></div><a class="knopf tun" href="buchungen.html?buchung=W-2026-0005">Ansehen</a></li>
+    <li>{tag("10", "Di, Nov.", "2026-11-10")}<div class="was"><a class="code" href="buchungen.html?buchung=W-2026-0005">Erstattung fehlgeschlagen: W-2026-0005</a><p class="warnung-text">Geht an einen Menschen. Stripe meldet einen Fehler bei der Rückzahlung.</p></div><a class="knopf tun" href="buchungen.html?buchung=W-2026-0005">Ansehen</a></li>
   </ul>
 </section>
 </div>
@@ -225,7 +225,7 @@ def entwurf(lizenz_fehlt: bool) -> None:
     quellen = "".join(f"<li><b>{k}</b> {e(n)}<br><span class=\"klein leise\">{e(m)}</span></li>" for k, n, m in QUELLEN)
 
     if lizenz_fehlt:
-        meldung = """<div class="meldung" role="status"><h2>Bild ohne Lizenz-Datensatz</h2><p>Der Abruf bei Wikimedia Commons ist um 17:41 Uhr fehlgeschlagen (Zeitüberschreitung). Ohne Datensatz geht kein Bild nach WordPress. Lizenz eintragen, erneut abrufen oder die Bildkarte nehmen; erst dann lässt sich freigeben.</p></div>"""
+        meldung = """<div class="meldung" role="status"><h2>Bild ohne Lizenz-Datensatz</h2><p>Der Abruf bei Wikimedia Commons ist um 17:41 Uhr fehlgeschlagen (Zeitüberschreitung). Ohne Datensatz geht kein Bild nach WordPress. Lizenz eintragen, erneut abrufen oder die Bildkarte nehmen; erst dann lässt sich freigeben.</p><p><a href="#h-liz">Zum Formular „Lizenz eintragen“</a></p></div>"""
         freigabe_knopf = '<button type="submit" class="knopf" disabled aria-describedby="frei-grund">Freigeben</button><p class="klein leise" id="frei-grund">Freigeben geht erst mit Lizenz-Datensatz.</p>'
         bild = f"""<section class="seite-teil" aria-labelledby="h-bild">
   <h2 id="h-bild">Bild</h2>
@@ -233,7 +233,7 @@ def entwurf(lizenz_fehlt: bool) -> None:
   <dl class="daten klein">
     <dt>Rechteinhaber</dt><dd class="fehlt">fehlt</dd>
     <dt>Lizenz</dt><dd class="fehlt">fehlt</dd>
-    <dt>Quelle</dt><dd><a href="{e(b['quelle_bild'])}">Seite bei Wikimedia Commons</a></dd>
+    <dt>Quelle</dt><dd><a href="{e(b['quelle_bild'])}">bei Commons</a></dd>
   </dl>
 </section>
 <section class="seite-teil" aria-labelledby="h-liz">
@@ -248,9 +248,9 @@ def entwurf(lizenz_fehlt: bool) -> None:
     </div>
     <label class="feld"><span>Lizenz-Adresse</span><input name="lizenz_url" type="url" inputmode="url" autocomplete="off" placeholder="https://creativecommons.org/licenses/by-sa/4.0/"><small></small></label>
     <label class="feld"><span>Umfang</span><input name="umfang" value="Online-Veröffentlichung auf tamil.de" autocomplete="off"><small></small></label>
-    <fieldset class="feld"><legend>Auch in sozialen Netzen nutzen?</legend><div class="wahl"><label><input type="radio" name="social" value="ja"> ja</label><label><input type="radio" name="social" value="nein" checked> nein, dann Bildkarte</label></div><small>Regel R4 im Regelwerk Social.</small></fieldset>
+    <fieldset class="feld"><legend>Auch in sozialen Netzen nutzen?</legend><div class="wahl"><label><input type="radio" name="social" value="ja"><span>ja</span></label><label><input type="radio" name="social" value="nein" checked><span>nein, dann Bildkarte</span></label></div><small>Regel R4 im Regelwerk Social.</small></fieldset>
     <label class="feld"><span>Bildnachweis (Pflicht)</span><input name="attribution" required autocomplete="off" placeholder="Foto: Name / Wikimedia Commons, Lizenz"><small>Steht unter dem Bild auf tamil.de.</small></label>
-    <div class="wahl"><label><input type="checkbox" name="ki" value="1"> Das Bild ist KI-generiert</label></div>
+    <div class="wahl"><label><input type="checkbox" name="ki" value="1"><span>Das Bild ist KI-generiert</span></label></div>
     <div class="aktionen formende"><button type="submit" class="knopf primaer">Lizenz speichern</button><button type="submit" class="knopf" formaction="/entwurf/7/lizenz/abrufen">Bei Commons erneut abrufen</button><button type="submit" class="knopf" formaction="/entwurf/7/bild/karte" formnovalidate>Bildkarte nehmen</button></div>
   </form>
 </section>"""
@@ -258,7 +258,7 @@ def entwurf(lizenz_fehlt: bool) -> None:
         zustand = '<p class="st halt">Bild ohne Lizenz</p>'
     else:
         meldung = ""
-        freigabe_knopf = '<button type="submit" class="knopf primaer">Freigeben und veröffentlichen</button>'
+        freigabe_knopf = '<button type="submit" class="knopf primaer">Freigeben</button><p class="klein leise">Freigeben veröffentlicht sofort auf tamil.de.</p>'
         bild = f"""<section class="seite-teil" aria-labelledby="h-bild">
   <h2 id="h-bild">Bild</h2>
   <figure class="bild"><img src="bilder/rb-30.jpg" alt="{e(b['alt'])}" width="1280" height="960"><figcaption>{e(b['nachweis'])}</figcaption></figure>
@@ -269,7 +269,7 @@ def entwurf(lizenz_fehlt: bool) -> None:
     <dt>Umfang</dt><dd>Online-Veröffentlichung auf tamil.de</dd>
     <dt>Soziale Netze</dt><dd>nein, dort die Bildkarte</dd>
     <dt>KI-Bild</dt><dd>nein</dd>
-    <dt>Quelle</dt><dd><a href="{e(b['quelle_bild'])}">Seite bei Wikimedia Commons</a></dd>
+    <dt>Quelle</dt><dd><a href="{e(b['quelle_bild'])}">bei Commons</a></dd>
   </dl>
   <p class="klein leise">Dasselbe Tempelbild steht schon an Story 49. <a href="entwurf-lizenz-fehlt.html">Zustand „Lizenz fehlt“ ansehen</a></p>
 </section>"""
@@ -356,7 +356,7 @@ def eingang() -> None:
         ("E-0412", "Termin", "Diwali in Basel", "13.11., 7:58 Uhr", "vorbereitet", "wartet", "mögliche Dublette", True),
         ("E-0411", "Termin", "Laternenabend der Tamilschule Beispielstadt", "12.11., 21:40 Uhr", "vorbereitet", "wartet", "Datum in der Vergangenheit", False),
         ("E-0410", "Beitrag", "Neue Räume für die Tamilschule Beispielstadt", "12.11., 18:05 Uhr", "vorbereitet", "wartet", "", False),
-        ("E-0409", "Werbung", "Beispiel Catering GmbH, Leaderboard im Dezember", "12.11., 10:22 Uhr", "vorbereitet", "wartet", "", False),
+        ("E-0409", "Werbung", "Leaderboard im Dezember", "12.11., 10:22 Uhr", "vorbereitet", "wartet", "", False),
         ("E-0408", "Kontakt", "Frage zum Kinoprogramm in Wien", "11.11., 16:30 Uhr", "vorbereitet", "wartet", "", False),
         ("E-0405", "Termin", "Pongal-Treffen in Chennai", "10.11., 12:14 Uhr", "abgelehnt", "halt", "Ort außerhalb von DE, AT, CH", False),
     ]
@@ -364,7 +364,7 @@ def eingang() -> None:
     for nr, art, betreff, zeit, st, kl, hinweis, aktiv in zeilen:
         cur = ' aria-current="true"' if aktiv else ""
         h = f'<span class="warnung">{hinweis}</span>' if hinweis else '<span class="leise">keine</span>'
-        rows.append(f'<tr{cur}><td class="kopf"><a href="eingang.html?vorgang={nr}">{art}: {e(betreff)}</a></td><td data-l="Vorgang" class="zahl">{nr}</td><td data-l="Eingang">{zeit}</td><td data-l="Stand"><span class="st {kl}">{st}</span></td><td data-l="Hinweise">{h}</td></tr>')
+        rows.append(f'<tr{cur}><td class="kopf"><a href="eingang.html?vorgang={nr}">{e(betreff)}</a></td><td data-l="Art">{art}</td><td data-l="Eingang" class="nw">{zeit}</td><td data-l="Stand"><span class="st {kl}">{st}</span></td><td data-l="Hinweise">{h}</td></tr>')
     inhalt = f"""
 <header class="seitenkopf"><div><h1>Eingang</h1><p class="unter">Einsendungen von tamil.de. Der Agent prüft und bereitet vor; entscheiden und antworten tut die Redaktion.</p></div></header>
 <ul class="reiter" aria-label="Nach Art filtern">
@@ -377,7 +377,7 @@ def eingang() -> None:
   <li><a href="eingang.html?stand=erledigt">Erledigt und abgelehnt</a></li>
 </ul>
 <table class="tabelle stapel liste-eingang">
-  <thead><tr><th>Einsendung</th><th>Vorgang</th><th>Eingang</th><th>Stand</th><th>Hinweise des Agenten</th></tr></thead>
+  <thead><tr><th>Einsendung</th><th>Art</th><th>Eingang</th><th>Stand</th><th>Hinweise des Agenten</th></tr></thead>
   <tbody>{''.join(rows)}</tbody>
 </table>
 
@@ -474,8 +474,8 @@ def social() -> None:
   <table class="tabelle stapel">
     <thead><tr><th>Beitrag</th><th>Kanal</th><th>Grund</th><th class="r">Entscheidung</th></tr></thead>
     <tbody>
-      <tr><td class="kopf">Bundestagsdrucksache: 14 Abschiebungen nach Sri Lanka im ersten Halbjahr 2026</td><td data-l="Kanal">Instagram, Facebook</td><td data-l="Grund">R2: heikles Thema (Politik). Geht nie automatisch.</td><td data-l="Entscheidung" class="r"><form class="aktionen" action="/social/116" method="post"><button type="submit" class="knopf" name="aktion" value="freigeben">Trotzdem vorbereiten</button><button type="submit" class="knopf gefahr" name="aktion" value="verwerfen">Verwerfen</button></form></td></tr>
-      <tr><td class="kopf">Erstmals in Deutschland angekündigt: Yuvan Shankar Raja in der Grugahalle Essen</td><td data-l="Kanal">Instagram, Facebook</td><td data-l="Grund">R4: Bild ohne Recht für soziale Netze.</td><td data-l="Entscheidung" class="r"><form class="aktionen" action="/social/117" method="post"><button type="submit" class="knopf" name="aktion" value="karte">Mit Bildkarte vorbereiten</button><button type="submit" class="knopf gefahr" name="aktion" value="verwerfen">Verwerfen</button></form></td></tr>
+      <tr><td class="kopf">Bundestagsdrucksache: 14 Abschiebungen nach Sri Lanka im ersten Halbjahr 2026</td><td data-l="Kanal">Instagram, Facebook</td><td data-l="Grund">R2: heikles Thema (Politik). Geht nie automatisch.</td><td data-l="Entscheidung" class="r tun"><form class="aktionen" action="/social/116" method="post"><button type="submit" class="knopf" name="aktion" value="freigeben">Trotzdem vorbereiten</button><button type="submit" class="knopf gefahr" name="aktion" value="verwerfen">Verwerfen</button></form></td></tr>
+      <tr><td class="kopf">Erstmals in Deutschland angekündigt: Yuvan Shankar Raja in der Grugahalle Essen</td><td data-l="Kanal">Instagram, Facebook</td><td data-l="Grund">R4: Bild ohne Recht für soziale Netze.</td><td data-l="Entscheidung" class="r tun"><form class="aktionen" action="/social/117" method="post"><button type="submit" class="knopf" name="aktion" value="karte">Mit Bildkarte vorbereiten</button><button type="submit" class="knopf gefahr" name="aktion" value="verwerfen">Verwerfen</button></form></td></tr>
     </tbody>
   </table>
 </section>
@@ -508,13 +508,12 @@ def social() -> None:
   <table class="tabelle stapel">
     <thead><tr><th>Beitrag</th><th>Stand</th><th>Zeit</th><th>Regelwerk</th><th>Bei Instagram</th></tr></thead>
     <tbody>
-      <tr><td class="kopf">Vaani Vizha: In den Tamilalayams schrieben Kinder ihren ersten Buchstaben</td><td data-l="Stand"><span class="st wartet">Karenz</span></td><td data-l="Zeit">13.11., 9:31 Uhr</td><td data-l="Regelwerk">Fassung 1</td><td data-l="Bei Instagram" class="leise">noch nicht</td></tr>
-      <tr><td class="kopf">Bundestagsdrucksache: 14 Abschiebungen nach Sri Lanka im ersten Halbjahr 2026</td><td data-l="Stand"><span class="st wartet">von Hand</span></td><td data-l="Zeit">13.11., 9:05 Uhr</td><td data-l="Regelwerk">Fassung 1</td><td data-l="Bei Instagram" class="leise">noch nicht</td></tr>
-      <tr><td class="kopf">Sri Lanka erlässt Reisenden aus Deutschland, Österreich und der Schweiz die Visagebühr</td><td data-l="Stand"><span class="st halt">angehalten</span></td><td data-l="Zeit">13.11., 8:40 Uhr</td><td data-l="Regelwerk">Fassung 1</td><td data-l="Bei Instagram">Trockenmodus: Kanal angehalten</td></tr>
-      <tr><td class="kopf">Berlin: Sri Ganesha Hindu Temple an der Hasenheide geweiht</td><td data-l="Stand"><span class="st">gestoppt</span></td><td data-l="Zeit">12.11., 19:12 Uhr</td><td data-l="Regelwerk">Fassung 1</td><td data-l="Bei Instagram">in der Karenz gestoppt von redaktion1</td></tr>
+      <tr><td class="kopf">Vaani Vizha: In den Tamilalayams schrieben Kinder ihren ersten Buchstaben</td><td data-l="Stand"><span class="st wartet">Karenz</span></td><td data-l="Zeit" class="nw">13.11., 9:31 Uhr</td><td data-l="Regelwerk" class="nw">Fassung 1</td><td data-l="Bei Instagram" class="leise">noch nicht</td></tr>
+      <tr><td class="kopf">Bundestagsdrucksache: 14 Abschiebungen nach Sri Lanka im ersten Halbjahr 2026</td><td data-l="Stand"><span class="st wartet">von Hand</span></td><td data-l="Zeit" class="nw">13.11., 9:05 Uhr</td><td data-l="Regelwerk" class="nw">Fassung 1</td><td data-l="Bei Instagram" class="leise">noch nicht</td></tr>
+      <tr><td class="kopf">Sri Lanka erlässt Reisenden aus Deutschland, Österreich und der Schweiz die Visagebühr</td><td data-l="Stand"><span class="st halt">angehalten</span></td><td data-l="Zeit" class="nw">13.11., 8:40 Uhr</td><td data-l="Regelwerk" class="nw">Fassung 1</td><td data-l="Bei Instagram">Trockenmodus: Kanal angehalten</td></tr>
+      <tr><td class="kopf">Berlin: Sri Ganesha Hindu Temple an der Hasenheide geweiht</td><td data-l="Stand"><span class="st">gestoppt</span></td><td data-l="Zeit" class="nw">12.11., 19:12 Uhr</td><td data-l="Regelwerk" class="nw">Fassung 1</td><td data-l="Bei Instagram">in der Karenz gestoppt von redaktion1</td></tr>
     </tbody>
   </table>
-  <div class="meldung ruhig klein-meldung"><h2>Facebook pausiert</h2><p>Falls Meta einen Zugang sperrt oder er abläuft, pausiert der Kanal und hier steht der Grund. Wartende Beiträge bleiben stehen und gehen nach dem Abgleich weiter.</p></div>
 </section>
 """
     seite("social.html", "Social", "Social-Historie je Kanal, Karenz, Entscheidungen von Hand und WhatsApp-Entwurf.", "social", inhalt, skript=True)
@@ -540,8 +539,8 @@ def verzeichnis() -> None:
             rows.append(f'<tr><td class="kopf">{feld}</td><td data-l="Bisher (V-0031)" class="alt">{e(alt)}</td><td data-l="Einsendung" class="neu gleich">{e(neu)}</td><td data-l="Entscheidung">{wahl}</td></tr>')
         else:
             wahl = (f'<fieldset class="wahl"><legend class="visually-hidden">{feld}</legend>'
-                    f'<label><input type="radio" name="f{i}" value="neu" checked> neu</label>'
-                    f'<label><input type="radio" name="f{i}" value="alt"> bisher</label></fieldset>')
+                    f'<label><input type="radio" name="f{i}" value="neu" checked><span>neu</span></label>'
+                    f'<label><input type="radio" name="f{i}" value="alt"><span>bisher</span></label></fieldset>')
             rows.append(f'<tr><td class="kopf">{feld}</td><td data-l="Bisher (V-0031)" class="alt">{e(alt)}</td><td data-l="Einsendung" class="neu">{e(neu)}</td><td data-l="Entscheidung">{wahl}</td></tr>')
     inhalt = f"""
 <header class="seitenkopf"><div><h1>Verzeichnis</h1><p class="unter">Einsendungen für das Verzeichnis. Öffentlich wird nur, was freigegeben ist; Premium setzt allein der Administrator in WordPress.</p></div></header>
@@ -553,8 +552,8 @@ def verzeichnis() -> None:
 <table class="tabelle stapel">
   <thead><tr><th>Einsendung</th><th>Typ</th><th>Art und Ort</th><th>Eingang</th><th>Hinweise</th></tr></thead>
   <tbody>
-    <tr aria-current="true"><td class="kopf"><a href="verzeichnis.html?vorgang=VE-0019">Restaurant Ceylon Palace</a></td><td data-l="Typ">neu</td><td data-l="Art und Ort">Business, Bremen</td><td data-l="Eingang">12.11., 14:02 Uhr</td><td data-l="Hinweise"><span class="warnung">mögliche Dublette von V-0031</span></td></tr>
-    <tr><td class="kopf"><a href="verzeichnis.html?vorgang=VE-0018">Sri Kamadchi Ampal Tempel</a></td><td data-l="Typ">Änderung</td><td data-l="Art und Ort">Tempel, Hamm</td><td data-l="Eingang">11.11., 9:47 Uhr</td><td data-l="Hinweise">Telefon geändert</td></tr>
+    <tr aria-current="true"><td class="kopf"><a href="verzeichnis.html?vorgang=VE-0019">Restaurant Ceylon Palace</a></td><td data-l="Typ">neu</td><td data-l="Art und Ort">Business, Bremen</td><td data-l="Eingang" class="nw">12.11., 14:02 Uhr</td><td data-l="Hinweise"><span class="warnung">mögliche Dublette von V-0031</span></td></tr>
+    <tr><td class="kopf"><a href="verzeichnis.html?vorgang=VE-0018">Sri Kamadchi Ampal Tempel</a></td><td data-l="Typ">Änderung</td><td data-l="Art und Ort">Tempel, Hamm</td><td data-l="Eingang" class="nw">11.11., 9:47 Uhr</td><td data-l="Hinweise">Telefon geändert</td></tr>
   </tbody>
 </table>
 
@@ -571,7 +570,7 @@ def verzeichnis() -> None:
   <dt>Premium</dt><dd>nein, setzt nur der Administrator in WordPress</dd>
   <dt>Einwilligung</dt><dd>ja, Fassung vom 1. November 2026</dd>
 </dl>
-<div class="aktionen formende"><button type="submit" class="knopf primaer" name="ergebnis" value="aenderung">Als Änderung an V-0031 freigeben</button><button type="submit" class="knopf" name="ergebnis" value="neu">Als neuen Eintrag freigeben</button><button type="submit" class="knopf gefahr" name="ergebnis" value="ablehnen">Ablehnen</button></div>
+<div class="aktionen formende"><button type="submit" class="knopf primaer" name="ergebnis" value="aenderung">Als Änderung freigeben</button><button type="submit" class="knopf" name="ergebnis" value="neu">Als neuen Eintrag freigeben</button><button type="submit" class="knopf gefahr" name="ergebnis" value="ablehnen">Ablehnen</button></div>
 </form>
 </section>
 """
@@ -589,13 +588,13 @@ def buchungen() -> None:
   <li><a href="buchungen.html?stand=warnung">Mit Warnung <span class="n">1</span></a></li>
 </ul>
 <table class="tabelle stapel">
-  <thead><tr><th>Buchung</th><th>Platz</th><th>Zeitraum</th><th>Stand</th><th class="r">Einblendungen</th><th class="r">Klicks</th></tr></thead>
+  <thead><tr><th>Buchung</th><th>Kunde</th><th>Platz</th><th>Zeitraum</th><th>Stand</th><th class="r">Einblendungen</th><th class="r">Klicks</th></tr></thead>
   <tbody>
-    <tr aria-current="true"><td class="kopf"><a href="buchungen.html?buchung=W-2026-0007">W-2026-0007, Beispiel Reisen GmbH</a></td><td data-l="Platz">Billboard</td><td data-l="Zeitraum">16.11. bis 29.11.</td><td data-l="Stand"><span class="st wartet">bezahlt, in Prüfung</span></td><td data-l="Einblendungen" class="r zahl">0</td><td data-l="Klicks" class="r zahl">0</td></tr>
-    <tr><td class="kopf"><a href="buchungen.html?buchung=W-2026-0006">W-2026-0006, Musterkino Beispielstadt</a></td><td data-l="Platz">Leaderboard</td><td data-l="Zeitraum">9.11. bis 15.11.</td><td data-l="Stand"><span class="st ok">läuft</span></td><td data-l="Einblendungen" class="r zahl">4.812</td><td data-l="Klicks" class="r zahl">37</td></tr>
-    <tr><td class="kopf"><a href="buchungen.html?buchung=W-2026-0005">W-2026-0005, Beispiel Handel KG</a></td><td data-l="Platz">Im Artikel</td><td data-l="Zeitraum">abgelehnt am 10.11.</td><td data-l="Stand"><span class="warnung">Erstattung fehlgeschlagen</span></td><td data-l="Einblendungen" class="r zahl">0</td><td data-l="Klicks" class="r zahl">0</td></tr>
-    <tr><td class="kopf"><a href="buchungen.html?buchung=W-2026-0004">W-2026-0004, Beispiel Reisen GmbH</a></td><td data-l="Platz">Seitenspalte</td><td data-l="Zeitraum">26.10. bis 8.11.</td><td data-l="Stand"><span class="st">beendet</span></td><td data-l="Einblendungen" class="r zahl">9.640</td><td data-l="Klicks" class="r zahl">71</td></tr>
-    <tr><td class="kopf"><a href="buchungen.html?buchung=W-2026-0008">W-2026-0008, Beispiel Catering GmbH</a></td><td data-l="Platz">Fuß</td><td data-l="Zeitraum">1.12. bis 7.12.</td><td data-l="Stand"><span class="st wartet">reserviert bis 9:52 Uhr</span></td><td data-l="Einblendungen" class="r zahl">0</td><td data-l="Klicks" class="r zahl">0</td></tr>
+    <tr aria-current="true"><td class="kopf"><a class="code" href="buchungen.html?buchung=W-2026-0007">W-2026-0007</a></td><td data-l="Kunde">Beispiel Reisen GmbH</td><td data-l="Platz">Billboard</td><td data-l="Zeitraum" class="nw">16.11. bis 29.11.</td><td data-l="Stand"><span class="st wartet">bezahlt, in Prüfung</span></td><td data-l="Einblendungen" class="r zahl">0</td><td data-l="Klicks" class="r zahl">0</td></tr>
+    <tr><td class="kopf"><a class="code" href="buchungen.html?buchung=W-2026-0006">W-2026-0006</a></td><td data-l="Kunde">Musterkino Beispielstadt</td><td data-l="Platz">Leaderboard</td><td data-l="Zeitraum" class="nw">9.11. bis 15.11.</td><td data-l="Stand"><span class="st ok">läuft</span></td><td data-l="Einblendungen" class="r zahl">4.812</td><td data-l="Klicks" class="r zahl">37</td></tr>
+    <tr><td class="kopf"><a class="code" href="buchungen.html?buchung=W-2026-0005">W-2026-0005</a></td><td data-l="Kunde">Beispiel Handel KG</td><td data-l="Platz">Im Artikel</td><td data-l="Zeitraum" class="nw">abgelehnt am 10.11.</td><td data-l="Stand"><span class="warnung">Erstattung fehlgeschlagen</span></td><td data-l="Einblendungen" class="r zahl">0</td><td data-l="Klicks" class="r zahl">0</td></tr>
+    <tr><td class="kopf"><a class="code" href="buchungen.html?buchung=W-2026-0004">W-2026-0004</a></td><td data-l="Kunde">Beispiel Reisen GmbH</td><td data-l="Platz">Seitenspalte</td><td data-l="Zeitraum" class="nw">26.10. bis 8.11.</td><td data-l="Stand"><span class="st">beendet</span></td><td data-l="Einblendungen" class="r zahl">9.640</td><td data-l="Klicks" class="r zahl">71</td></tr>
+    <tr><td class="kopf"><a class="code" href="buchungen.html?buchung=W-2026-0008">W-2026-0008</a></td><td data-l="Kunde">Beispiel Catering GmbH</td><td data-l="Platz">Fuß</td><td data-l="Zeitraum" class="nw">1.12. bis 7.12.</td><td data-l="Stand"><span class="st wartet">reserviert bis 9:52 Uhr</span></td><td data-l="Einblendungen" class="r zahl">0</td><td data-l="Klicks" class="r zahl">0</td></tr>
   </tbody>
 </table>
 
@@ -606,8 +605,8 @@ def buchungen() -> None:
   <section class="seite-teil" aria-labelledby="h-wm">
     <h3 id="h-wm" class="teil-kopf">Werbemittel</h3>
     <div class="werbemittel">
-      <div><div class="flaeche desktop">Werbemittel Desktop, 970 × 250 erwartet<br>Datei billboard-desktop.jpg (Beispiel, Vorschau nicht enthalten)</div></div>
-      <div><div class="flaeche mobil">Werbemittel Handy, 300 × 250 erwartet<br>Datei billboard-mobil.jpg (Beispiel)</div></div>
+      <figure class="bild"><div class="flaeche desktop">Werbemittel Desktop, geliefert 970 × 250<br>billboard-desktop.jpg (Beispiel, Vorschau nicht enthalten)</div><figcaption>Desktop, erwartet 970 × 250</figcaption></figure>
+      <figure class="bild"><div class="flaeche mobil">Werbemittel Handy, geliefert 320 × 100<br>billboard-mobil.jpg (Beispiel)</div><figcaption>Handy, erwartet 300 × 250</figcaption></figure>
     </div>
   </section>
   <section class="seite-teil" aria-labelledby="h-tech">

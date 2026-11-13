@@ -3,6 +3,10 @@
  * axes: mid/grotesk-sans/chromatic-magenta (accent re-hued to the logo red) · posture: restrained · contrast: pass · fold: pass · v2.0.0 */
 /* Hallmark · pre-emit critique: P4 H4 E3 S4 R5 V4 · weakest: E, a rate card without prices; the gaps are marked once per cell and the sheet says who fills them, nothing is guessed */
 @import url("./almanac.css");
+/* Hallmark · waive 44c · the head is a title, one sentence and two actions; the rate card starts in the first screen · the rate card of the six Werbeplätze is the page; the head names it and offers the booking */
+/* Hallmark · waive 59 · 40px between head and rate card, 82px between the steps of the Buchung · the steps of a booking follow one another like a form, each under a firm rule */
+/* Hallmark · waive 78 · the step heads of the booking render at 25px · the five booking steps Platz, Startdatum, Angaben, Werbemittel, Bezahlen are form steps beside their fields */
+/* Hallmark · dismissed 77 · the Werben page: head, rate card, the order of a booking, the footer */
 /* Hallmark · dismissed 58 · the rate card counts six places in five columns as words; the booking form counts its labels */
 /* Hallmark · dismissed 52 · the five steps of the booking have a real order (choose, date, details, artwork, pay), the numerals are that order */
 
@@ -23,7 +27,8 @@
 .karte .hinweis { display: block; font: 400 var(--text-sm)/1.4 var(--font-body); color: var(--color-muted); }
 .karte .m { white-space: nowrap; text-align: right; }
 .karte td.m .num { color: var(--color-ink); }
-.karte .preis { text-align: right; white-space: nowrap; }
+.karte .preis { text-align: center; white-space: nowrap; }
+.karte thead .preis { text-align: center; }
 
 /* the order of a booking */
 .ablauf-sek { align-items: start; margin-block-start: var(--section-gap-s); padding-block-start: var(--space-2xl); border-top: var(--rule-bar) solid var(--color-rule-2); row-gap: var(--space-xl); }
@@ -39,7 +44,7 @@
 .danach h3 { font-size: var(--text-title); }
 
 /* booking */
-.schrittleiste { grid-column: 9 / span 4; justify-self: end; }
+.schrittleiste { grid-column: 8 / span 5; justify-self: end; }
 .schrittleiste ol { display: flex; flex-wrap: wrap; gap: 0 var(--space-xs); margin: 0; padding: 0; list-style: none; counter-reset: s; }
 .schrittleiste li { counter-increment: s; }
 .schrittleiste a { display: inline-flex; align-items: center; gap: var(--space-2xs); min-height: 44px; padding-inline: var(--space-xs); font-size: var(--text-sm); }
@@ -88,6 +93,15 @@
   .kalender { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 40rem) {
+  .tafel-rahmen { overflow: visible; }
+  .karte { min-width: 0; }
+  .karte thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .karte, .karte tbody { display: block; }
+  .karte tr { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-xs) var(--space-md); padding-block: var(--space-md); border-top: var(--rule-hair) solid var(--color-rule); }
+  .karte tbody tr:first-child { border-top: 0; }
+  .karte th[scope="row"] { grid-column: 1 / -1; padding: 0; border: 0; }
+  .karte td { display: flex; flex-direction: column; padding: 0; border: 0; text-align: left !important; }
+  .karte td::before { content: attr(data-l); font-size: var(--text-sm); color: var(--color-muted); }
   .reihe { grid-template-columns: minmax(0, 1fr); }
   .wahl label { grid-template-columns: minmax(0, 1fr); gap: var(--space-2xs); }
   .pl-mass { text-align: left; }

@@ -96,7 +96,7 @@ def kopf(aktiv=""):
 
 
 def fuss(nachweise):
-    nw = "".join(f'<li>{e(b["alt"])}: {e(b["nachweis"])} (<a href="{e(b.get("quelle_bild", ""))}">Quelle</a>)</li>' for b in nachweise)
+    nw = "".join(f'<li>{e(b["alt"])}: {e(b["nachweis"])}. <a href="{e(b.get("quelle_bild", ""))}">Quelle</a></li>' for b in nachweise)
     nw_block = (f'<div class="fuss__nachweise"><h2 class="fuss__kopf">Bildnachweise</h2><ul>{nw}</ul></div>' if nachweise else "")
     links = [("Nachrichten", "index.html#nachrichten"), ("Community", "rubrik.html"), ("Kultur", "index.html#kultur"), ("Küche", "index.html#kueche"),
              ("Festkalender", "termine.html"), ("Kino", "kino.html"), ("Verzeichnis", "verzeichnis.html"),
@@ -223,7 +223,7 @@ seite("index.html", "tamil.de | Nachrichten, Termine und Kino der tamilischen Co
       hero + termine + nachrichten + kino + gemeinde + werbung + kueche, [a, BEI[85], BEI[71], BEI[62]])
 
 # ---------------------------------------------------------------- Artikel
-WEITER = {30: (49, 76, 33)}
+WEITER = {30: (71, 76, 33)}
 
 
 def artikel(sid, name):
@@ -443,15 +443,16 @@ def profil(v):
               else '<p>Mehr dazu: <a class="textlink" href="termine.html">Festkalender 2026</a></p>')
     gleiche = [w for w in VZ if w["art"] == v["art"] and w is not v][:4]
     weitere = "".join(f'<li><a href="{vz_href(w)}">{e(w["name"])}</a><span class="meta">{e(w["stadt"])}, {LAND[w["land"]]}</span></li>' for w in gleiche)
-    body = (f'<article class="profil"><div class="container"><p class="brotkrumen"><a href="verzeichnis.html">Verzeichnis</a></p></div>'
+    akt = (f'<div class="aktionen"><a class="btn btn--zweit" href="kontakt.html#nachricht">Änderung melden</a>'
+           f'<a class="textlink" href="{e(wa(v["name"] + ", " + v["stadt"]))}">Per WhatsApp schicken</a></div>')
+    body = (f'<section class="profil" aria-labelledby="pr-h"><div class="container"><p class="brotkrumen"><a href="verzeichnis.html">Verzeichnis</a></p></div>'
             f'<div class="container feldreihe feldreihe--7-5 profil__raster">'
-            f'<div class="feld"><h1>{e(v["name"])}</h1>{prem}<p class="lead">{e(v["text"])}</p>'
+            f'<div class="feld"><h1 id="pr-h">{e(v["name"])}</h1>{prem}<p class="lead">{e(v["text"])}</p>{akt}'
             f'<dl class="angaben"><div><dt>Art</dt><dd>{v["art"]}</dd></div><div><dt>Kategorie</dt><dd>{e(v["kat"])}</dd></div>'
             f'<div><dt>Ort</dt><dd>{e(v["stadt"])}, {e(v["region"])}, {LAND[v["land"]]}</dd></div>'
             f'<div><dt>Adresse und Kontakt</dt><dd><span class="fill">Folgen, sobald die Einrichtung sie einreicht</span></dd></div></dl>'
-            f'<div class="aktionen"><a class="btn btn--zweit" href="kontakt.html#nachricht">Änderung melden</a>'
-            f'<a class="textlink" href="{e(wa(v["name"] + ", " + v["stadt"]))}">Per WhatsApp schicken</a></div>{quelle}</div>'
-            f'<div class="feld">{bild}</div></div></article>'
+            f'{quelle}</div>'
+            f'<div class="feld">{bild}</div></div></section>'
             f'<section class="abschnitt abschnitt--fuge" aria-labelledby="wt-h"><div class="container feldreihe feldreihe--5-7">'
             f'<div class="feld"><h2 id="wt-h">Weitere Einträge: {v["art"]}</h2></div><div class="feld"><ul class="verweise">{weitere}</ul>'
             f'<a class="textlink" href="verzeichnis.html">Ganzes Verzeichnis</a></div></div></section>')
@@ -508,17 +509,18 @@ schritte_ein = ('<ol class="schritte"><li><span class="schritte__titel">Sie schi
                 '<li><span class="schritte__titel">Die Redaktion prüft</span><span>Datum, Ort und mögliche Doppelungen; bei Fragen meldet sie sich.</span></li>'
                 '<li><span class="schritte__titel">Der Termin steht im Kalender</span><span>Mit Ort, Eintritt und Veranstalter.</span></li></ol>')
 
-ein_body = (f'<section class="abschnitt abschnitt--formular" aria-labelledby="ein-h"><div class="container formular-raster">'
-            f'<div class="formular-raster__text"><h1 id="ein-h">Termin einreichen</h1>'
-            f'<p class="lead">Tempelfest, Vereinsfest, Konzert oder Turnier: kostenlos melden, die Redaktion trägt es in den Festkalender ein.</p>'
-            f'{schritte_ein}<p class="meta">Es geht keine automatische E-Mail hinaus. Ihre Angaben werden 90 Tage nach Abschluss gelöscht.</p></div>'
+ein_body = (f'<section class="seitenkopf"><div class="container seitenkopf__raster"><h1 id="ein-h">Termin einreichen</h1>'
+            f'<div><p class="lead">Tempelfest, Vereinsfest, Konzert oder Turnier: kostenlos melden, die Redaktion trägt es in den Festkalender ein.</p></div></div></section>'
+            f'<section class="abschnitt abschnitt--formular" aria-label="Formular"><div class="container formular-raster">'
+            f'<div class="formular-raster__text"><h2 class="rand__kopf">So geht es weiter</h2>{schritte_ein}<p class="meta">Es geht keine automatische E-Mail hinaus. Ihre Angaben werden 90 Tage nach Abschluss gelöscht.</p></div>'
             f'{termin_form}</div></section>')
 seite("einreichen.html", "Termin einreichen | tamil.de", "Einen Termin der tamilischen Community für den Festkalender von tamil.de melden.", ein_body,
       aktiv="Einreichen", skript=True)
 
-best_body = (f'<section class="abschnitt abschnitt--formular" aria-labelledby="b-h"><div class="container formular-raster">'
-             f'<div class="formular-raster__text"><h1 id="b-h">Danke, die Redaktion meldet sich.</h1>'
-             f'<p class="lead">Ihr Termin ist angekommen. Bitte notieren Sie die Vorgangsnummer, falls Sie nachfragen möchten.</p></div>'
+best_body = (f'<section class="seitenkopf"><div class="container seitenkopf__raster"><h1 id="b-h">Danke, die Redaktion meldet sich.</h1>'
+             f'<div><p class="lead">Ihr Termin ist angekommen. Bitte notieren Sie die Vorgangsnummer, falls Sie nachfragen möchten.</p></div></div></section>'
+             f'<section class="abschnitt abschnitt--formular" aria-label="Vorgang"><div class="container formular-raster">'
+             f'<div class="formular-raster__text"><p class="meta">Diese Seite zeigt die Website nach dem Absenden. Es geht keine E-Mail hinaus.</p></div>'
              f'<div class="karte quittung"><p class="quittung__label">Vorgangsnummer</p>'
              f'<p class="quittung__nummer"><span class="fill">Vergibt die Website beim Absenden</span></p>'
              f'<ol class="schritte"><li><span class="schritte__titel">Angekommen</span><span>Heute, {datum_lang(HEUTE)}.</span></li>'
@@ -654,9 +656,10 @@ kontakt_form = ('<form class="karte formular" id="nachricht" action="" method="p
                 + FALLE + EINWILLIGUNG.replace('id="einwilligung"', 'id="k-einwilligung"').replace('for="einwilligung"', 'for="k-einwilligung"').replace("die Einsendung zu prüfen", "meine Nachricht zu beantworten")
                 + '<div class="formular__fuss"><button class="btn btn--primaer" type="submit">Nachricht senden</button>'
                 + '<p class="eingabe__hilfe" data-hilfe aria-live="polite"></p></div></form>')
-kontakt_body = (f'<section class="abschnitt abschnitt--formular" aria-labelledby="ko-h"><div class="container formular-raster">'
-                f'<div class="formular-raster__text"><h1 id="ko-h">Kontakt</h1>'
-                f'<p class="lead">Hinweise, Fragen und Kritik an die Redaktion. Geantwortet wird von Hand.</p>'
+kontakt_body = (f'<section class="seitenkopf"><div class="container seitenkopf__raster"><h1 id="ko-h">Kontakt</h1>'
+                f'<div><p class="lead">Hinweise, Fragen und Kritik an die Redaktion. Geantwortet wird von Hand.</p></div></div></section>'
+                f'<section class="abschnitt abschnitt--formular" aria-label="Kontaktwege und Formular"><div class="container formular-raster">'
+                f'<div class="formular-raster__text">'
                 f'<dl class="angaben"><div><dt>E-Mail, Telefon und WhatsApp der Redaktion</dt><dd><span class="fill">Folgen von KBS Digitalmedia</span></dd></div>'
                 f'<div><dt>Herausgeber</dt><dd>KBS Digitalmedia; Anschrift im Impressum</dd></div></dl>'
                 f'<h2 class="rand__kopf">Für bestimmte Anliegen</h2><ul class="verweise">'

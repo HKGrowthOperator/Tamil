@@ -32,13 +32,14 @@
   <section class="container grid formular-seite">
     <form class="formular" action="kontakt.html" method="get" data-form novalidate aria-labelledby="f-titel" id="nachricht">
       <p class="formular__fehler" data-fehler tabindex="-1" hidden></p>
+      <p class="legende-satz">Felder ohne Zusatz sind nötig.</p>
       <fieldset>
         <legend id="f-titel">Ihre Nachricht</legend>
         <div class="feld"><label for="k-anliegen">Worum geht es <span class="frei">freiwillig</span></label><select id="k-anliegen" name="anliegen" data-anliegen><option value="">Bitte wählen</option><option value="hinweis">Hinweis auf ein Thema</option><option value="frage">Frage an die Redaktion</option><option value="kooperation">Kooperation</option><option value="werbung">Werbeanfrage</option><option value="verzeichnis">Verzeichnis: Eintrag vorschlagen oder ändern</option></select></div>
-        <div class="feld"><label for="k-nachricht">Nachricht <span class="pflicht">Pflicht</span></label><p class="hinweis-feld">Höchstens drei Links.</p><textarea id="k-nachricht" name="nachricht" rows="6" required aria-describedby="k-nachricht-hilfe"></textarea><p class="hilfe" id="k-nachricht-hilfe" aria-live="polite"></p></div>
+        <div class="feld"><label for="k-nachricht">Nachricht </label><p class="hinweis-feld">Höchstens drei Links.</p><textarea id="k-nachricht" name="nachricht" rows="6" required aria-describedby="k-nachricht-hilfe"></textarea><p class="hilfe" id="k-nachricht-hilfe" aria-live="polite"></p></div>
         <div class="reihe">
-          <div class="feld"><label for="k-name">Name <span class="pflicht">Pflicht</span></label><input id="k-name" name="name" type="text" required autocomplete="name" aria-describedby="k-name-hilfe"><p class="hilfe" id="k-name-hilfe" aria-live="polite"></p></div>
-          <div class="feld"><label for="k-email">E-Mail <span class="pflicht">Pflicht</span></label><input id="k-email" name="email" type="email" required autocomplete="email" aria-describedby="k-email-hilfe"><p class="hilfe" id="k-email-hilfe" aria-live="polite"></p></div>
+          <div class="feld"><label for="k-name">Name </label><input id="k-name" name="name" type="text" required autocomplete="name" aria-describedby="k-name-hilfe"><p class="hilfe" id="k-name-hilfe" aria-live="polite"></p></div>
+          <div class="feld"><label for="k-email">E-Mail </label><input id="k-email" name="email" type="email" required autocomplete="email" aria-describedby="k-email-hilfe"><p class="hilfe" id="k-email-hilfe" aria-live="polite"></p></div>
         </div>
         <div class="feld"><label for="k-telefon">Telefon <span class="frei">freiwillig</span></label><input id="k-telefon" name="telefon" type="tel" autocomplete="tel" aria-describedby="k-telefon-hilfe"><p class="hilfe" id="k-telefon-hilfe" aria-live="polite"></p></div>
         <div class="feld feld--check">
@@ -57,14 +58,14 @@
         <figcaption class="sheet__head"><span class="sheet__title" id="r-wege">Andere Wege</span></figcaption>
         <table class="tafel tafel--dl">
           <tbody>
-            <tr><th scope="row">E-Mail</th><td><span class="fill">Adresse der Redaktion folgt von KBS</span></td></tr>
-            <tr><th scope="row">WhatsApp</th><td><span class="fill">Nummer folgt von KBS</span></td></tr>
-            <tr><th scope="row">Anschrift</th><td>KBS Digitalmedia <span class="fill">Anschrift folgt mit dem Impressum</span></td></tr>
-            <tr><th scope="row">Werbung</th><td><a href="werben.html">Werbeplätze und Buchung</a></td></tr>
-            <tr><th scope="row">Verzeichnis</th><td><a href="verzeichnis.html">Eintrag vorschlagen oder ändern</a></td></tr>
+            <tr><th scope="row">E-Mail</th><td><span class="fill">folgt von KBS</span></td></tr>
+            <tr><th scope="row">WhatsApp</th><td><span class="fill">folgt von KBS</span></td></tr>
+            <tr><th scope="row">Anschrift</th><td>KBS Digitalmedia <span class="fill">folgt</span></td></tr>
+            <tr><th scope="row">Werbung</th><td><a href="werben.html">Werben</a></td></tr>
+            <tr><th scope="row">Einträge</th><td><a href="verzeichnis.html">Verzeichnis</a></td></tr>
           </tbody>
         </table>
-        <p class="sheet__note">Die Redaktion antwortet von Hand, meist innerhalb weniger Tage. Es geht keine automatische E-Mail hinaus.</p>
+        <p class="sheet__note">Die Redaktion antwortet von Hand.</p>
       </figure>
     </aside>
   </section>

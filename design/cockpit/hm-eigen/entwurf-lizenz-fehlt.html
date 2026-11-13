@@ -17,7 +17,7 @@
   <p class="heute"><time datetime="2026-11-13"><span class="ziffer">13</span><span class="datum">Freitag<br>November 2026</span></time></p>
   <p class="radar"><b>Radar läuft.</b> Letzter Lauf 9:33 Uhr mit 2 neuen Meldungen, der nächste um 9:36 Uhr.</p>
   <div class="wer"><span>redaktion1</span><form action="/logout" method="post"><button type="submit" class="knopf still">Abmelden</button></form></div>
-  <details class="menue"><summary>Menü</summary><nav aria-label="Cockpit, mobil"><h2>Arbeit</h2><ul class="ziele"><li><a href="uebersicht.html"><span>Übersicht</span></a></li><li><a href="uebersicht.html#entwuerfe" aria-current="page"><span>Entwürfe</span><span class="n">65</span></a></li><li><a href="eingang.html"><span>Eingang</span><span class="n">5</span></a></li><li><a href="social.html"><span>Social</span><span class="n">3</span></a></li><li><a href="verzeichnis.html"><span>Verzeichnis</span><span class="n">2</span></a></li><li><a href="buchungen.html"><span>Buchungen</span><span class="n">2</span></a></li></ul><h2>Betrieb</h2><ul class="ziele"><li><a href="/kosten"><span>Kosten</span></a></li><li><a href="/quellen"><span>Quellen</span></a></li><li><a href="/protokoll"><span>Protokoll</span></a></li><li><a href="/zeitplan"><span>Zeitplan</span></a></li><li><a href="uebersicht.html#schalter"><span>Schalter</span><span class="n">2</span></a></li><li><a href="/nutzer"><span>Benutzer</span></a></li></ul></nav></details>
+  <details class="menue"><summary>Menü</summary><nav aria-label="Cockpit, mobil"><h2>Arbeit</h2><ul class="ziele"><li><a href="uebersicht.html"><span>Übersicht</span></a></li><li><a href="uebersicht.html#entwuerfe" aria-current="page"><span>Entwürfe</span><span class="n">65</span></a></li><li><a href="eingang.html"><span>Eingang</span><span class="n">5</span></a></li><li><a href="social.html"><span>Social</span><span class="n">3</span></a></li><li><a href="verzeichnis.html"><span>Verzeichnis</span><span class="n">2</span></a></li><li><a href="buchungen.html"><span>Buchungen</span><span class="n">2</span></a></li></ul><h2>Betrieb</h2><ul class="ziele"><li><a href="/kosten"><span>Kosten</span></a></li><li><a href="/quellen"><span>Quellen</span></a></li><li><a href="/protokoll"><span>Protokoll</span></a></li><li><a href="/zeitplan"><span>Zeitplan</span></a></li><li><a href="uebersicht.html#schalter"><span>Schalter</span><span class="n">2</span></a></li><li><a href="/nutzer"><span>Benutzer</span></a></li></ul></nav><form class="menue-ab" action="/logout" method="post"><p class="klein leise">Angemeldet als redaktion1</p><button type="submit" class="knopf">Abmelden</button></form></details>
 </header>
 <div class="banner" role="status"><p><b>Angehalten: Instagram und Facebook.</b> Grund: Das Regelwerk Social, Fassung 1, wartet auf die Freigabe durch KBS. Bearbeiten und Freigeben von Hand gehen weiter. <a href="uebersicht.html#schalter">Schalter ansehen</a></p></div>
 <div class="rahmen">
@@ -26,7 +26,7 @@
 
 <a class="zurueck" href="uebersicht.html#entwuerfe">Zurück zu den Entwürfen</a>
 <header class="seitenkopf"><div><h1>Entwurf 7</h1><p class="unter">Story 30, Rubrik Events. Nachtrag für den Rückblick, erscheint mit dem Datum 8. November 2026.</p></div><p class="st halt">Bild ohne Lizenz</p></header>
-<div class="meldung" role="status"><h2>Bild ohne Lizenz-Datensatz</h2><p>Der Abruf bei Wikimedia Commons ist um 17:41 Uhr fehlgeschlagen (Zeitüberschreitung). Ohne Datensatz geht kein Bild nach WordPress. Lizenz eintragen, erneut abrufen oder die Bildkarte nehmen; erst dann lässt sich freigeben.</p></div>
+<div class="meldung" role="status"><h2>Bild ohne Lizenz-Datensatz</h2><p>Der Abruf bei Wikimedia Commons ist um 17:41 Uhr fehlgeschlagen (Zeitüberschreitung). Ohne Datensatz geht kein Bild nach WordPress. Lizenz eintragen, erneut abrufen oder die Bildkarte nehmen; erst dann lässt sich freigeben.</p><p><a href="#h-liz">Zum Formular „Lizenz eintragen“</a></p></div>
 <div class="spalten">
 <div>
 <article class="beitrag" aria-labelledby="t-beitrag">
@@ -96,7 +96,7 @@
   <dl class="daten klein">
     <dt>Rechteinhaber</dt><dd class="fehlt">fehlt</dd>
     <dt>Lizenz</dt><dd class="fehlt">fehlt</dd>
-    <dt>Quelle</dt><dd><a href="https://commons.wikimedia.org/wiki/File:Sri_Ganesha_Hindutempel_1_Berlin_2026.jpg">Seite bei Wikimedia Commons</a></dd>
+    <dt>Quelle</dt><dd><a href="https://commons.wikimedia.org/wiki/File:Sri_Ganesha_Hindutempel_1_Berlin_2026.jpg">bei Commons</a></dd>
   </dl>
 </section>
 <section class="seite-teil" aria-labelledby="h-liz">
@@ -111,9 +111,9 @@
     </div>
     <label class="feld"><span>Lizenz-Adresse</span><input name="lizenz_url" type="url" inputmode="url" autocomplete="off" placeholder="https://creativecommons.org/licenses/by-sa/4.0/"><small></small></label>
     <label class="feld"><span>Umfang</span><input name="umfang" value="Online-Veröffentlichung auf tamil.de" autocomplete="off"><small></small></label>
-    <fieldset class="feld"><legend>Auch in sozialen Netzen nutzen?</legend><div class="wahl"><label><input type="radio" name="social" value="ja"> ja</label><label><input type="radio" name="social" value="nein" checked> nein, dann Bildkarte</label></div><small>Regel R4 im Regelwerk Social.</small></fieldset>
+    <fieldset class="feld"><legend>Auch in sozialen Netzen nutzen?</legend><div class="wahl"><label><input type="radio" name="social" value="ja"><span>ja</span></label><label><input type="radio" name="social" value="nein" checked><span>nein, dann Bildkarte</span></label></div><small>Regel R4 im Regelwerk Social.</small></fieldset>
     <label class="feld"><span>Bildnachweis (Pflicht)</span><input name="attribution" required autocomplete="off" placeholder="Foto: Name / Wikimedia Commons, Lizenz"><small>Steht unter dem Bild auf tamil.de.</small></label>
-    <div class="wahl"><label><input type="checkbox" name="ki" value="1"> Das Bild ist KI-generiert</label></div>
+    <div class="wahl"><label><input type="checkbox" name="ki" value="1"><span>Das Bild ist KI-generiert</span></label></div>
     <div class="aktionen formende"><button type="submit" class="knopf primaer">Lizenz speichern</button><button type="submit" class="knopf" formaction="/entwurf/7/lizenz/abrufen">Bei Commons erneut abrufen</button><button type="submit" class="knopf" formaction="/entwurf/7/bild/karte" formnovalidate>Bildkarte nehmen</button></div>
   </form>
 </section>

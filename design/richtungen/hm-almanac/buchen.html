@@ -26,7 +26,7 @@
         <h1 id="titel">Werbeplatz buchen</h1>
         <p class="lead">Fünf Schritte auf einer Seite; bezahlt wird am Ende bei Stripe.</p>
       </div>
-      <nav class="kopfzeile__aktion schrittleiste" aria-label="Schritte der Buchung">
+      <nav class="schrittleiste" aria-label="Schritte der Buchung">
         <ol>
           <li><a href="#s1">Platz</a></li><li><a href="#s2">Start</a></li><li><a href="#s3">Angaben</a></li><li><a href="#s4">Werbemittel</a></li><li><a href="#s5">Bezahlen</a></li>
         </ol>
@@ -36,6 +36,7 @@
 
   <form class="container buchung" action="buchen.html" method="get" data-form novalidate aria-labelledby="titel">
     <p class="formular__fehler" data-fehler tabindex="-1" hidden></p>
+    <p class="legende-satz">Felder ohne Zusatz sind nötig.</p>
     <section class="schritt grid" id="s1" aria-labelledby="s1-h">
       <h2 id="s1-h" class="schritt__h"><span class="num">1</span> Platz und Laufzeit</h2>
       <div class="schritt__inhalt">
@@ -59,9 +60,9 @@
     <section class="schritt grid" id="s3" aria-labelledby="s3-h">
       <h2 id="s3-h" class="schritt__h"><span class="num">3</span> Ihre Angaben</h2>
       <div class="schritt__inhalt">
-        <div class="reihe"><div class="feld"><label for="b-firma">Firma <span class="pflicht">Pflicht</span></label><input id="b-firma" name="firma" type="text" required autocomplete="organization" aria-describedby="b-firma-hilfe"><p class="hilfe" id="b-firma-hilfe" aria-live="polite"></p></div><div class="feld"><label for="b-person">Ansprechperson <span class="pflicht">Pflicht</span></label><input id="b-person" name="person" type="text" required autocomplete="name" aria-describedby="b-person-hilfe"><p class="hilfe" id="b-person-hilfe" aria-live="polite"></p></div></div>
-        <div class="feld"><label for="b-adresse">Rechnungsadresse <span class="pflicht">Pflicht</span></label><textarea id="b-adresse" name="adresse" rows="6" required aria-describedby="b-adresse-hilfe"></textarea><p class="hilfe" id="b-adresse-hilfe" aria-live="polite"></p></div>
-        <div class="reihe"><div class="feld"><label for="b-email">E-Mail <span class="pflicht">Pflicht</span></label><input id="b-email" name="email" type="email" required autocomplete="email" aria-describedby="b-email-hilfe"><p class="hilfe" id="b-email-hilfe" aria-live="polite"></p></div><div class="feld"><label for="b-telefon">Telefon <span class="frei">freiwillig</span></label><input id="b-telefon" name="telefon" type="tel" autocomplete="tel" aria-describedby="b-telefon-hilfe"><p class="hilfe" id="b-telefon-hilfe" aria-live="polite"></p></div></div>
+        <div class="reihe"><div class="feld"><label for="b-firma">Firma </label><input id="b-firma" name="firma" type="text" required autocomplete="organization" aria-describedby="b-firma-hilfe"><p class="hilfe" id="b-firma-hilfe" aria-live="polite"></p></div><div class="feld"><label for="b-person">Ansprechperson </label><input id="b-person" name="person" type="text" required autocomplete="name" aria-describedby="b-person-hilfe"><p class="hilfe" id="b-person-hilfe" aria-live="polite"></p></div></div>
+        <div class="feld"><label for="b-adresse">Rechnungsadresse </label><textarea id="b-adresse" name="adresse" rows="6" required aria-describedby="b-adresse-hilfe"></textarea><p class="hilfe" id="b-adresse-hilfe" aria-live="polite"></p></div>
+        <div class="reihe"><div class="feld"><label for="b-email">E-Mail </label><input id="b-email" name="email" type="email" required autocomplete="email" aria-describedby="b-email-hilfe"><p class="hilfe" id="b-email-hilfe" aria-live="polite"></p></div><div class="feld"><label for="b-telefon">Telefon <span class="frei">freiwillig</span></label><input id="b-telefon" name="telefon" type="tel" autocomplete="tel" aria-describedby="b-telefon-hilfe"><p class="hilfe" id="b-telefon-hilfe" aria-live="polite"></p></div></div>
         <div class="feld"><label for="b-ustid">USt-ID <span class="frei">freiwillig</span></label><input id="b-ustid" name="ustid" type="text" aria-describedby="b-ustid-hilfe"><p class="hilfe" id="b-ustid-hilfe" aria-live="polite"></p></div>
       </div>
     </section>
@@ -70,10 +71,10 @@
       <h2 id="s4-h" class="schritt__h"><span class="num">4</span> Werbemittel</h2>
       <div class="schritt__inhalt">
         <div class="reihe">
-          <div class="feld"><label for="b-desktop">Bild für Desktop <span class="pflicht">Pflicht</span></label><p class="hinweis-feld">Leaderboard: <span class="num">728 × 90</span> Pixel, JPEG oder PNG.</p><input id="b-desktop" name="desktop" type="file" required aria-describedby="b-desktop-hilfe" accept="image/jpeg,image/png"><p class="hilfe" id="b-desktop-hilfe" aria-live="polite"></p></div>
-          <div class="feld"><label for="b-handy">Bild für das Handy <span class="pflicht">Pflicht</span></label><p class="hinweis-feld">Leaderboard: <span class="num">320 × 50</span> Pixel, JPEG oder PNG.</p><input id="b-handy" name="handy" type="file" required aria-describedby="b-handy-hilfe" accept="image/jpeg,image/png"><p class="hilfe" id="b-handy-hilfe" aria-live="polite"></p></div>
+          <div class="feld"><label for="b-desktop">Bild für Desktop </label><p class="hinweis-feld">Leaderboard: <span class="num">728 × 90</span> Pixel, JPEG oder PNG.</p><input id="b-desktop" name="desktop" type="file" required aria-describedby="b-desktop-hilfe" accept="image/jpeg,image/png"><p class="hilfe" id="b-desktop-hilfe" aria-live="polite"></p></div>
+          <div class="feld"><label for="b-handy">Bild für das Handy </label><p class="hinweis-feld">Leaderboard: <span class="num">320 × 50</span> Pixel, JPEG oder PNG.</p><input id="b-handy" name="handy" type="file" required aria-describedby="b-handy-hilfe" accept="image/jpeg,image/png"><p class="hilfe" id="b-handy-hilfe" aria-live="polite"></p></div>
         </div>
-        <div class="feld"><label for="b-ziel">Zieladresse <span class="pflicht">Pflicht</span></label><p class="hinweis-feld">Wohin die Anzeige führt.</p><input id="b-ziel" name="ziel" type="url" required autocomplete="url" aria-describedby="b-ziel-hilfe" placeholder="https://"><p class="hilfe" id="b-ziel-hilfe" aria-live="polite"></p></div>
+        <div class="feld"><label for="b-ziel">Zieladresse </label><p class="hinweis-feld">Wohin die Anzeige führt.</p><input id="b-ziel" name="ziel" type="url" required autocomplete="url" aria-describedby="b-ziel-hilfe" placeholder="https://"><p class="hilfe" id="b-ziel-hilfe" aria-live="polite"></p></div>
         <p class="legende-satz">Keine bewegten Banner, kein Video, keine fremden Skripte. Gestalten müssen Sie das Werbemittel selbst.</p>
       </div>
     </section>

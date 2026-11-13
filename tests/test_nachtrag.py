@@ -770,7 +770,12 @@ def test_seite_ohne_text_mit_json_ld_wird_zu_strukturierten_angaben(settings):
 
 
 def test_json_ld_nur_als_notanker_und_nur_passende_typen():
-    assert nachtrag.seite_lesen(html_seite(kino_html(KINO_LD, f"<article><p>{ARTIKEL1}</p></article>")))[0] == ARTIKEL1
+    # Seite mit Text: Film-Angaben (Movie) bleiben draußen; Termine (…Event mit startDate) hängt seite_lesen seit
+    # 13.11.2026 an (eigener Test unten)
+    text = nachtrag.seite_lesen(html_seite(kino_html(KINO_LD, f"<article><p>{ARTIKEL1}</p></article>")))[0]
+    angehaengt = text[len(ARTIKEL1):]
+    assert text.startswith(ARTIKEL1) and "startDate: 2026-06-12T20:00" in angehaengt
+    assert "Nelson Dilipkumar" not in angehaengt  # Film-Angaben (Movie) nur als Notanker
     nur_firma = {"@type": "Organization", "name": "Kino Beispiel GmbH", "description": "x" * 400}
     kaputt = '<html><script type="application/ld+json">{kein json</script><body></body></html>'
     for roh in (kino_html(nur_firma), kaputt):
@@ -1401,3 +1406,63 @@ def test_ergaenzen_gilt_auch_fuer_storys_vom_scan(settings):
         assert [j["schritt"] for j in offen] == ["recherche"]
         mappe = paket_v2(store, settings, ctx=kontext(store, settings))
         assert radar in [p["story_id"] for p in mappe["storys"]]
+
+
+# ---- Termindaten aus strukturierten Angaben (13.11.2026: Eventfrog-Seiten mit Text, Termine nur im JSON-LD) -----
+
+TERMIN_URL = "https://eventfrog.ch/de/p/kino/kino/scene-kino-claudia-zh-suriya-2nd-week-kloten-75.html"
+TERMIN_LD = ('<script type="application/ld+json">{"@context":"https://schema.org","@type":"Event",'
+             '"name":"SCENE - KINO CLAUDIA - ZH (SURIYA) 2nd WEEK","startDate":"2026-11-14T13:00:00+01:00",'
+             '"location":{"@type":"Place","name":"Kino Claudia","address":{"@type":"PostalAddress",'
+             '"streetAddress":"Schaffhauserstrasse 76","postalCode":"8302","addressLocality":"Kloten"}}}</script>')
+TERMIN_TEXT = ("Suriyas Film Scene läuft in der zweiten Woche im Kino Claudia. Tamilische Fassung mit englischen "
+               "Untertiteln. Tickets gibt es online und an der Abendkasse, solange Plätze frei sind. ") * 2
+
+
+def termin_html(text=TERMIN_TEXT, ld=TERMIN_LD):
+    return f"<html><head><title>SCENE - Kino Claudia</title>{ld}</head><body><article><p>{text}</p></article></body></html>"
+
+
+def test_terminseite_mit_text_behaelt_die_strukturierten_termindaten():
+    seite = net.Fetched(url=TERMIN_URL, status=200, content=termin_html().encode("utf-8"),
+                        content_type="text/html; charset=utf-8")
+    text, titel, art, _ = nachtrag.seite_lesen(seite, TERMIN_URL)
+    assert art == "volltext" and "zweiten Woche im Kino Claudia" in text
+    assert "startDate: 2026-11-14T13:00:00+01:00" in text
+    assert "location.address: Schaffhauserstrasse 76 8302 Kloten" in text
+
+
+def test_artikelseite_ohne_termin_bekommt_keinen_datenblock():
+    ld = ('<script type="application/ld+json">{"@type":"NewsArticle","headline":"x",'
+          '"datePublished":"2026-03-14"}</script>')
+    seite = net.Fetched(url=URL1, status=200, content=termin_html(ARTIKEL1 * 2, ld).encode("utf-8"),
+                        content_type="text/html; charset=utf-8")
+    text, _, art, _ = nachtrag.seite_lesen(seite, URL1)
+    assert art == "volltext" and nachtrag.LD_KOPF not in text
+
+
+def test_ergaenzen_neu_abrufen_aktualisiert_vorhandene_quellen(settings):
+    with Store(settings.db_path) as store:
+        alt = termin_html(ld="")
+        sid = annehmen(store, settings, [vorschlag(quellen=[quelle(TERMIN_URL)])],
+                       seiten={TERMIN_URL: alt})["ergebnisse"][0]["story_id"]
+        repo.story_setzen(store, sid, status="recherche_erforderlich")
+        assert "startDate" not in repo.dokumente(store, sid)[0].text
+        abrufe = []
+        e = annehmen(store, settings, [vorschlag(story_id=sid, quellen=[quelle(TERMIN_URL)], neu_abrufen=True)],
+                     seiten={TERMIN_URL: termin_html()}, abrufe=abrufe)["ergebnisse"][0]
+        assert e["ergebnis"] == "ergaenzt" and e.get("aktualisiert") == 1 and e["quellen_geholt"] == 0, e
+        assert abrufe == [TERMIN_URL]
+        docs = repo.dokumente(store, sid)
+        assert [d.doc_key for d in docs] == ["Q1"] and "startDate: 2026-11-14T13:00:00+01:00" in docs[0].text
+        assert repo.story(store, sid)["status"] == "neu"
+
+
+def test_ergaenzen_neu_abrufen_ohne_aenderung_ist_vorhanden(settings):
+    with Store(settings.db_path) as store:
+        sid = annehmen(store, settings, [vorschlag(quellen=[quelle(TERMIN_URL)])],
+                       seiten={TERMIN_URL: termin_html()})["ergebnisse"][0]["story_id"]
+        repo.story_setzen(store, sid, status="recherche_erforderlich")
+        e = annehmen(store, settings, [vorschlag(story_id=sid, quellen=[quelle(TERMIN_URL)], neu_abrufen=True)],
+                     seiten={TERMIN_URL: termin_html()})["ergebnisse"][0]
+        assert e["ergebnis"] == "vorhanden" and repo.story(store, sid)["status"] == "recherche_erforderlich"

@@ -32,27 +32,28 @@
   <section class="container grid formular-seite">
     <form class="formular" action="einreichen-danke.html" method="get" data-form data-danke="einreichen-danke.html" novalidate aria-labelledby="titel">
       <p class="formular__fehler" data-fehler tabindex="-1" hidden></p>
+      <p class="legende-satz">Felder ohne Zusatz sind nötig.</p>
       <fieldset>
         <legend>Der Termin</legend>
-        <div class="feld"><label for="t-titel">Titel <span class="pflicht">Pflicht</span></label><input id="t-titel" name="titel" type="text" required aria-describedby="t-titel-hilfe"><p class="hilfe" id="t-titel-hilfe" aria-live="polite"></p></div>
+        <div class="feld"><label for="t-titel">Titel </label><input id="t-titel" name="titel" type="text" required aria-describedby="t-titel-hilfe"><p class="hilfe" id="t-titel-hilfe" aria-live="polite"></p></div>
         <div class="reihe">
-          <div class="feld"><label for="t-datum">Datum <span class="pflicht">Pflicht</span></label><input id="t-datum" name="datum" type="date" required aria-describedby="t-datum-hilfe" min="2026-11-13"><p class="hilfe" id="t-datum-hilfe" aria-live="polite"></p></div>
-          <div class="feld"><label for="t-zeit">Beginn <span class="pflicht">Pflicht</span></label><input id="t-zeit" name="zeit" type="time" required aria-describedby="t-zeit-hilfe"><p class="hilfe" id="t-zeit-hilfe" aria-live="polite"></p></div>
+          <div class="feld"><label for="t-datum">Datum </label><input id="t-datum" name="datum" type="date" required aria-describedby="t-datum-hilfe" min="2026-11-13"><p class="hilfe" id="t-datum-hilfe" aria-live="polite"></p></div>
+          <div class="feld"><label for="t-zeit">Beginn </label><input id="t-zeit" name="zeit" type="time" required aria-describedby="t-zeit-hilfe"><p class="hilfe" id="t-zeit-hilfe" aria-live="polite"></p></div>
         </div>
         <div class="reihe">
           <div class="feld"><label for="t-ende-datum">Ende, Datum <span class="frei">freiwillig</span></label><input id="t-ende-datum" name="ende-datum" type="date" aria-describedby="t-ende-datum-hilfe"><p class="hilfe" id="t-ende-datum-hilfe" aria-live="polite"></p></div>
           <div class="feld"><label for="t-ende-zeit">Ende, Uhrzeit <span class="frei">freiwillig</span></label><input id="t-ende-zeit" name="ende-zeit" type="time" aria-describedby="t-ende-zeit-hilfe"><p class="hilfe" id="t-ende-zeit-hilfe" aria-live="polite"></p></div>
         </div>
-        <div class="feld"><label for="t-veranstalter">Veranstalter <span class="pflicht">Pflicht</span></label><p class="hinweis-feld">Verein, Tempel oder Person, die einlädt.</p><input id="t-veranstalter" name="veranstalter" type="text" required aria-describedby="t-veranstalter-hilfe"><p class="hilfe" id="t-veranstalter-hilfe" aria-live="polite"></p></div>
-        <div class="feld"><label for="t-beschreibung">Beschreibung <span class="pflicht">Pflicht</span></label><p class="hinweis-feld">Was erwartet die Gäste? Höchstens drei Links.</p><textarea id="t-beschreibung" name="beschreibung" rows="6" required aria-describedby="t-beschreibung-hilfe"></textarea><p class="hilfe" id="t-beschreibung-hilfe" aria-live="polite"></p></div>
+        <div class="feld"><label for="t-veranstalter">Veranstalter </label><p class="hinweis-feld">Verein, Tempel oder Person.</p><input id="t-veranstalter" name="veranstalter" type="text" required aria-describedby="t-veranstalter-hilfe"><p class="hilfe" id="t-veranstalter-hilfe" aria-live="polite"></p></div>
+        <div class="feld"><label for="t-beschreibung">Beschreibung </label><p class="hinweis-feld">Was erwartet die Gäste? Höchstens drei Links.</p><textarea id="t-beschreibung" name="beschreibung" rows="6" required aria-describedby="t-beschreibung-hilfe"></textarea><p class="hilfe" id="t-beschreibung-hilfe" aria-live="polite"></p></div>
       </fieldset>
       <fieldset>
         <legend>Der Ort</legend>
-        <div class="feld"><label for="t-adresse">Ort mit Adresse <span class="pflicht">Pflicht</span></label><p class="hinweis-feld">Zum Beispiel Saal, Straße und Hausnummer.</p><input id="t-adresse" name="adresse" type="text" required autocomplete="street-address" aria-describedby="t-adresse-hilfe"><p class="hilfe" id="t-adresse-hilfe" aria-live="polite"></p></div>
+        <div class="feld"><label for="t-adresse">Ort mit Adresse </label><p class="hinweis-feld">Zum Beispiel Saal, Straße und Hausnummer.</p><input id="t-adresse" name="adresse" type="text" required autocomplete="street-address" aria-describedby="t-adresse-hilfe"><p class="hilfe" id="t-adresse-hilfe" aria-live="polite"></p></div>
         <div class="reihe">
-          <div class="feld"><label for="t-stadt">Stadt <span class="pflicht">Pflicht</span></label><input id="t-stadt" name="stadt" type="text" required autocomplete="address-level2" aria-describedby="t-stadt-hilfe"><p class="hilfe" id="t-stadt-hilfe" aria-live="polite"></p></div>
+          <div class="feld"><label for="t-stadt">Stadt </label><input id="t-stadt" name="stadt" type="text" required autocomplete="address-level2" aria-describedby="t-stadt-hilfe"><p class="hilfe" id="t-stadt-hilfe" aria-live="polite"></p></div>
           <fieldset class="seg seg--klein" aria-describedby="t-land-hilfe">
-            <legend>Land <span class="pflicht">Pflicht</span></legend>
+            <legend>Land</legend>
             <input type="radio" name="land" id="t-land-DE" value="DE" required><label for="t-land-DE">Deutschland</label><input type="radio" name="land" id="t-land-AT" value="AT"><label for="t-land-AT">Österreich</label><input type="radio" name="land" id="t-land-CH" value="CH"><label for="t-land-CH">Schweiz</label>
             <p class="hilfe" id="t-land-hilfe" aria-live="polite"></p>
           </fieldset>
@@ -74,8 +75,8 @@
         <legend>Für Rückfragen</legend>
         <p class="legende-satz">Nur für die Redaktion, nie öffentlich.</p>
         <div class="reihe">
-          <div class="feld"><label for="t-name">Name <span class="pflicht">Pflicht</span></label><input id="t-name" name="name" type="text" required autocomplete="name" aria-describedby="t-name-hilfe"><p class="hilfe" id="t-name-hilfe" aria-live="polite"></p></div>
-          <div class="feld"><label for="t-email">E-Mail <span class="pflicht">Pflicht</span></label><input id="t-email" name="email" type="email" required autocomplete="email" aria-describedby="t-email-hilfe"><p class="hilfe" id="t-email-hilfe" aria-live="polite"></p></div>
+          <div class="feld"><label for="t-name">Name </label><input id="t-name" name="name" type="text" required autocomplete="name" aria-describedby="t-name-hilfe"><p class="hilfe" id="t-name-hilfe" aria-live="polite"></p></div>
+          <div class="feld"><label for="t-email">E-Mail </label><input id="t-email" name="email" type="email" required autocomplete="email" aria-describedby="t-email-hilfe"><p class="hilfe" id="t-email-hilfe" aria-live="polite"></p></div>
         </div>
         <div class="feld"><label for="t-telefon">Telefon <span class="frei">freiwillig</span></label><input id="t-telefon" name="telefon" type="tel" autocomplete="tel" aria-describedby="t-telefon-hilfe"><p class="hilfe" id="t-telefon-hilfe" aria-live="polite"></p></div>
         <div class="feld feld--check">
@@ -92,11 +93,11 @@
       <figure class="sheet">
         <figcaption class="sheet__head"><span class="sheet__title" id="r-danach">Was danach passiert</span></figcaption>
         <ol class="ablauf">
-          <li>Die Redaktion sieht Ihre Angaben im Eingang.</li>
-          <li>Sie prüft Datum und Ort und fragt bei Bedarf nach.</li>
-          <li>Nach der Freigabe steht der Termin im <a href="termine.html">Festkalender</a>, mit Ort, Eintritt und Veranstalter.</li>
+          <li><span>Die Redaktion sieht Ihre Angaben.</span></li>
+          <li><span>Sie prüft Datum und Ort.</span></li>
+          <li><span>Nach der Freigabe steht er im <a href="termine.html">Festkalender</a>.</span></li>
         </ol>
-        <p class="sheet__note">Es geht keine automatische E-Mail hinaus. Jeder Termin wird einzeln eingereicht.</p>
+        <p class="sheet__note">Es geht keine automatische E-Mail hinaus.</p>
       </figure>
     </aside>
   </section>
