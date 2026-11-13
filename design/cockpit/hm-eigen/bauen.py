@@ -175,8 +175,8 @@ def uebersicht() -> None:
 <section class="seite-teil" aria-labelledby="h-bud">
   <h2 id="h-bud">Budget</h2>
   <dl class="daten">
-    <dt>Heute</dt><dd class="zahl">$1.38 von $5.00</dd>
-    <dt>November</dt><dd class="zahl">$41.70 von $150.00</dd>
+    <dt>Heute</dt><dd class="zahl">1,38 $ von 5,00 $</dd>
+    <dt>November</dt><dd class="zahl">41,70 $ von 150,00 $</dd>
   </dl>
   <div class="balken" role="img" aria-label="Monatsbudget zu 28 Prozent verbraucht"><i class="w28"></i></div>
   <p class="klein leise">Ab 80 Prozent erscheint eine Warnung, bei 100 Prozent warten neue bezahlte Schritte. <a href="/kosten">Kosten ansehen</a></p>
@@ -224,6 +224,7 @@ def entwurf(lizenz_fehlt: bool) -> None:
         absaetze.append(f'<div class="absatz"><p>{e(text)}</p><ul class="belege" aria-label="Belege zu Absatz {i + 1}">{li}</ul></div>')
     quellen = "".join(f"<li><b>{k}</b> {e(n)}<br><span class=\"klein leise\">{e(m)}</span></li>" for k, n, m in QUELLEN)
 
+    offen_haken = "" if lizenz_fehlt else '<label class="bestaetigen"><input type="checkbox" name="offen_gelesen" value="ja" required aria-required="true"><span>Offene Punkte gelesen (C3 ist nicht belegt).</span></label>'
     if lizenz_fehlt:
         meldung = """<div class="meldung" role="status"><h2>Bild ohne Lizenz-Datensatz</h2><p>Der Abruf bei Wikimedia Commons ist um 17:41 Uhr fehlgeschlagen (Zeitüberschreitung). Ohne Datensatz geht kein Bild nach WordPress. Lizenz eintragen, erneut abrufen oder die Bildkarte nehmen; erst dann lässt sich freigeben.</p><p><a href="#h-liz">Zum Formular „Lizenz eintragen“</a></p></div>"""
         freigabe_knopf = '<button type="submit" class="knopf" disabled aria-describedby="frei-grund">Freigeben</button><p class="klein leise" id="frei-grund">Freigeben geht erst mit Lizenz-Datensatz.</p>'
@@ -251,7 +252,7 @@ def entwurf(lizenz_fehlt: bool) -> None:
     <fieldset class="feld"><legend>Auch in sozialen Netzen nutzen?</legend><div class="wahl"><label><input type="radio" name="social" value="ja"><span>ja</span></label><label><input type="radio" name="social" value="nein" checked><span>nein, dann Bildkarte</span></label></div><small>Regel R4 im Regelwerk Social.</small></fieldset>
     <label class="feld"><span>Bildnachweis (Pflicht)</span><input name="attribution" required autocomplete="off" placeholder="Foto: Name / Wikimedia Commons, Lizenz"><small>Steht unter dem Bild auf tamil.de.</small></label>
     <div class="wahl"><label><input type="checkbox" name="ki" value="1"><span>Das Bild ist KI-generiert</span></label></div>
-    <div class="aktionen formende"><button type="submit" class="knopf primaer">Lizenz speichern</button><button type="submit" class="knopf" formaction="/entwurf/7/lizenz/abrufen">Bei Commons erneut abrufen</button><button type="submit" class="knopf" formaction="/entwurf/7/bild/karte" formnovalidate>Bildkarte nehmen</button></div>
+    <div class="aktionen formende"><button type="submit" class="knopf primaer">Lizenz speichern</button><button type="submit" class="knopf" formaction="/entwurf/7/lizenz/abrufen" formnovalidate>Bei Commons erneut abrufen</button><button type="submit" class="knopf" formaction="/entwurf/7/bild/karte" formnovalidate>Bildkarte nehmen</button></div>
   </form>
 </section>"""
         datei, titel = "entwurf-lizenz-fehlt.html", "Entwurf 7, Lizenz fehlt"
@@ -329,7 +330,7 @@ def entwurf(lizenz_fehlt: bool) -> None:
   <h2 id="h-frei">Freigabe</h2>
   <dl class="daten">
     <dt>Stand</dt><dd>3, angelegt vom Radar am 12.11., 17:40 Uhr</dd>
-    <dt>Kosten</dt><dd class="zahl">$0.41 für diese Story</dd>
+    <dt>Kosten</dt><dd class="zahl">0,41 $ für diese Story</dd>
   </dl>
   <h3>Vor der Freigabe</h3>
   <ul class="hinweise">
@@ -339,8 +340,9 @@ def entwurf(lizenz_fehlt: bool) -> None:
   </ul>
   <form action="/entwurf/7/status" method="post">
     <input type="hidden" name="stand" value="3">
-    <div class="aktionen">{freigabe_knopf}</div>
-    <div class="aktionen"><button type="submit" class="knopf" name="aktion" value="zurueckstellen">Zurückstellen</button><button type="submit" class="knopf gefahr" name="aktion" value="ablehnen">Ablehnen</button><a class="knopf still" href="/vorschau/7">Vorschau</a></div>
+    {offen_haken}<div class="aktionen">{freigabe_knopf}</div>
+    <div class="aktionen abstand-oben"><button type="submit" class="knopf" name="aktion" value="zurueckstellen" formnovalidate>Zurückstellen</button><a class="knopf still" href="/vorschau/7">Vorschau</a></div>
+    <details class="aufklapp"><summary>Weitere Aktionen</summary><div class="aktionen"><button type="submit" class="knopf gefahr" name="aktion" value="ablehnen" formnovalidate>Entwurf ablehnen</button></div></details>
   </form>
 </section>
 {bild}
@@ -422,7 +424,7 @@ def eingang() -> None:
     <form action="/eingang/E-0412" method="post">
       <label class="feld"><span>Notiz</span><textarea name="notiz" rows="2">Uhrzeit und Eintritt in den vorhandenen Termin übernehmen.</textarea><small></small></label>
       <div class="aktionen"><button type="submit" class="knopf primaer" name="aktion" value="uebernehmen">Übernehmen</button><button type="submit" class="knopf" name="aktion" value="erledigt">Erledigt</button></div>
-      <div class="aktionen zweite"><button type="submit" class="knopf gefahr" name="aktion" value="ablehnen">Ablehnen</button><button type="submit" class="knopf gefahr" name="aktion" value="spam">Spam</button></div>
+      <details class="aufklapp abstand-oben"><summary>Ablehnen oder als Spam markieren</summary><p class="klein leise">Lässt sich nicht zurücknehmen; Spam wird nach 7 Tagen gelöscht.</p><div class="aktionen"><button type="submit" class="knopf gefahr" name="aktion" value="ablehnen">Ablehnen</button><button type="submit" class="knopf gefahr" name="aktion" value="spam">Spam</button></div></details>
     </form>
     <p class="klein leise">Antwort nur von Hand: <a href="mailto:termine@example.org?subject=Ihre%20Einsendung%20E-0412">im Mailprogramm öffnen</a>. Das Cockpit verschickt keine E-Mail.</p>
   </section>
@@ -474,7 +476,7 @@ def social() -> None:
   <table class="tabelle stapel">
     <thead><tr><th>Beitrag</th><th>Kanal</th><th>Grund</th><th class="r">Entscheidung</th></tr></thead>
     <tbody>
-      <tr><td class="kopf">Bundestagsdrucksache: 14 Abschiebungen nach Sri Lanka im ersten Halbjahr 2026</td><td data-l="Kanal">Instagram, Facebook</td><td data-l="Grund">R2: heikles Thema (Politik). Geht nie automatisch.</td><td data-l="Entscheidung" class="r tun"><form class="aktionen" action="/social/116" method="post"><button type="submit" class="knopf" name="aktion" value="freigeben">Trotzdem vorbereiten</button><button type="submit" class="knopf gefahr" name="aktion" value="verwerfen">Verwerfen</button></form></td></tr>
+      <tr><td class="kopf">Bundestagsdrucksache: 14 Abschiebungen nach Sri Lanka im ersten Halbjahr 2026</td><td data-l="Kanal">Instagram, Facebook</td><td data-l="Grund">R2: heikles Thema (Politik). Geht nie automatisch.</td><td data-l="Entscheidung" class="r tun"><form class="von-hand" action="/social/116" method="post"><label class="feld"><span>Grund (Pflicht, ins Protokoll)</span><textarea name="grund" rows="2" required aria-required="true"></textarea><small>Vor der Freigabe eine zweite Person lesen lassen.</small></label><div class="aktionen"><button type="submit" class="knopf" name="aktion" value="freigeben">Für Instagram und Facebook vorbereiten</button><button type="submit" class="knopf gefahr" name="aktion" value="verwerfen" formnovalidate>Verwerfen</button></div></form></td></tr>
       <tr><td class="kopf">Erstmals in Deutschland angekündigt: Yuvan Shankar Raja in der Grugahalle Essen</td><td data-l="Kanal">Instagram, Facebook</td><td data-l="Grund">R4: Bild ohne Recht für soziale Netze.</td><td data-l="Entscheidung" class="r tun"><form class="aktionen" action="/social/117" method="post"><button type="submit" class="knopf" name="aktion" value="karte">Mit Bildkarte vorbereiten</button><button type="submit" class="knopf gefahr" name="aktion" value="verwerfen">Verwerfen</button></form></td></tr>
     </tbody>
   </table>
@@ -485,11 +487,11 @@ def social() -> None:
   <div class="karenz">
     <div>
       <pre class="wa-text" id="wa-text">{e(wa)}</pre>
-      <div class="aktionen wa-aktionen"><button type="button" class="knopf" data-kopieren="wa-text">Text kopieren</button><a class="knopf" href="bilder/rb-33.jpg" download="vaani-vizha-tamil-de.jpg">Bild herunterladen</a></div>
+      <div class="aktionen wa-aktionen"><button type="button" class="knopf" data-kopieren="wa-text">Text kopieren</button><button type="button" class="knopf" disabled aria-describedby="wa-bild">Bildkarte herunterladen</button></div>
       <p class="klein leise" id="wa-meldung" role="status"></p>
     </div>
     <div>
-      <div class="social-bild"><img src="bilder/rb-33.jpg" alt="{e(b['alt'])}" width="1280" height="1707"><p class="klein">{e(b['nachweis'])}. Der Nachweis steht im Text des Beitrags auf tamil.de.</p></div>
+      <div class="social-bild"><div class="bildkarte" role="img" aria-label="Bildkarte mit dem Titel des Beitrags"><span>{e(b['titel'])}</span><small>Grafik: Tamil.de</small></div><p class="klein" id="wa-bild">Bildkarte statt Foto: Das Recht für soziale Netze ist beim Foto nicht eingetragen (Regel R4). Die Karte entsteht beim Freigeben; das Foto gibt es hier erst mit eingetragenem Recht.</p></div>
       <form action="/social/119/gepostet" method="post" class="gepostet">
         <button type="submit" class="knopf primaer">Als gepostet markieren</button>
         <p class="klein leise">Person und Zeit kommen ins Protokoll.</p>
@@ -627,9 +629,25 @@ def buchungen() -> None:
       <dt>Kunde</dt><dd>C. Beispiel, <a href="mailto:anzeigen@example.org">anzeigen@example.org</a></dd>
       <dt>Vorlauf</dt><dd>2 Werktage, Start am Montag</dd>
     </dl>
-    <form action="/buchungen/W-2026-0007" method="post">
-      <label class="feld"><span>Grund bei Ablehnung</span><textarea name="grund" rows="2">Werbemittel für das Handy hat das falsche Format.</textarea><small>Bei Ablehnung wird voll erstattet und die Tage werden frei.</small></label>
-      <div class="aktionen"><button type="submit" class="knopf primaer" name="aktion" value="freigeben">Werbemittel freigeben</button><button type="submit" class="knopf gefahr" name="aktion" value="ablehnen">Ablehnen</button></div>
+    <form action="/buchungen/W-2026-0007/freigeben" method="post">
+      <div class="aktionen"><button type="submit" class="knopf primaer" name="aktion" value="freigeben" disabled aria-describedby="fg-grund">Werbemittel freigeben</button></div>
+      <p class="klein leise" id="fg-grund">Gesperrt, weil die Prüfung „abweichend“ meldet: Handy 320 × 100 statt 300 × 250. Freigeben geht mit einer neuen Datei oder mit begründeter Übersteuerung.</p>
+      <details class="aufklapp"><summary>Format trotzdem annehmen</summary>
+        <label class="feld"><span>Grund für die Übersteuerung (Pflicht)</span><textarea name="grund_uebersteuerung" rows="2" required aria-required="true"></textarea><small>Steht mit Person und Zeit im Protokoll der Buchung.</small></label>
+        <label class="bestaetigen"><input type="checkbox" name="format_angenommen" value="ja" required aria-required="true"><span>Das Handy-Werbemittel läuft in 320 × 100 statt 300 × 250.</span></label>
+        <div class="aktionen"><button type="submit" class="knopf" name="aktion" value="freigeben_uebersteuert">Trotz Abweichung freigeben</button></div>
+      </details>
+    </form>
+    <form action="/buchungen/W-2026-0007/ablehnen" method="post" class="abstand-oben">
+      <details class="aufklapp gefahr-zone"><summary>Ablehnen und erstatten</summary>
+        <label class="feld"><span>Grund der Ablehnung (Pflicht)</span><textarea name="grund" rows="2" required aria-required="true"></textarea><small>Der Kunde sieht den Grund in seiner Buchungsübersicht.</small></label>
+        <dl class="daten">
+          <dt>Erstattung</dt><dd>voller Betrag über Stripe an Beispiel Reisen GmbH (Preis folgt, Platzhalter)</dd>
+          <dt>Folgen</dt><dd>Die Tage 16. bis 29. November werden frei. Lässt sich nicht zurücknehmen.</dd>
+        </dl>
+        <label class="bestaetigen"><input type="checkbox" name="erstattung_bestaetigt" value="ja" required aria-required="true"><span>Ich lehne W-2026-0007 ab und erstatte den vollen Betrag.</span></label>
+        <div class="aktionen"><button type="submit" class="knopf gefahr" name="aktion" value="ablehnen">Ablehnen und erstatten</button></div>
+      </details>
     </form>
   </section>
   <section class="seite-teil" aria-labelledby="h-st">
