@@ -282,7 +282,7 @@ def entwurf(draft_id: int):
                            lizenz_luecken=luecken, lizenz_meldung=lizenz.meldung(luecken) if luecken else "",
                            lizenz_asset=asset, lizenz_formular=_lizenz_vorbelegung(row, asset),
                            lizenz_herkuenfte=lizenz.FORMULAR_HERKUNFT, lizenz_kuerzel=lizenz.FORMULAR_KUERZEL,
-                           lizenz_namen=lizenz.NAMEN, cc_versionen=lizenz.CC_VERSIONEN,
+                           lizenz_namen=lizenz.NAMEN, lizenz_name=lizenz.lizenz_name, cc_versionen=lizenz.CC_VERSIONEN,
                            ki_freigegeben=settings.bild_ki_freigabe,
                            preview=inhalt_fuer_wp(row), bildthemen=themen,
                            ki_bereit=bool(settings.gemini_key) and settings.bild_ki_freigabe,
