@@ -151,3 +151,29 @@ def test_text_nahe_text_max_behaelt_den_ganzen_termin_block():
     text = nachtrag.seite_lesen(f, TERMIN_URL)[0]
     assert len(text) <= nachtrag.TEXT_MAX
     assert text.endswith("location.name: Kino Claudia") and "startDate: 2026-11-14T13:00:00+01:00" in text
+
+
+# ---- Kurzfelder auf Kinoseiten (megaplex.at, kinopolis.de: Filmstart, Regie, Besetzung unter 60 Zeichen) ------
+
+def test_kinoseite_kurzfelder_und_film_json_ld_werden_wortlich_gelesen():
+    from pathlib import Path
+
+    roh = (Path(__file__).parent / "fixtures" / "kino_kurzfelder.html").read_bytes()
+    url = "https://www.megaplex.at/film/coolie"
+    text, titel, art, _ = nachtrag.seite_lesen(net.Fetched(url=url, status=200, content=roh,
+                                                           content_type="text/html; charset=utf-8"), url)
+    for zeile in ("Filmstart: 24.07.2026", "Regie: Lokesh Kanagaraj", "Besetzung: Rajinikanth, Nagarjuna, Shruti Haasan",
+                  "Laufzeit: 170 Min.", "FSK: ab 16", "Sprache: Tamil (OmU)", "Start: 24.07.2026",
+                  "Genre: Action, Drama", "director: Lokesh Kanagaraj"):
+        assert zeile in text, zeile
+    assert "Impressum" not in text and "Programm: Heute" not in text and "Niemand Bestimmtes" not in text
+    assert art == "daten"  # kurzer Fließtext: belegbar, aber die Längenregel bleibt knapp
+
+
+def test_kurzfelder_neben_langem_text_werden_angehaengt():
+    roh = (f"<html><head><title>x</title></head><body><article><p>{ARTIKEL1}</p></article>"
+           "<dl><dt>Einlass</dt><dd>18:30 Uhr</dd></dl><ul><li>Ort: Gemeindehaus Hamm</li></ul></body></html>")
+    text, _, art, _ = nachtrag.seite_lesen(net.Fetched(url=URL1, status=200, content=roh.encode(),
+                                                       content_type="text/html; charset=utf-8"), URL1)
+    assert art == "volltext" and text.startswith(ARTIKEL1)
+    assert "Einlass: 18:30 Uhr" in text and "Ort: Gemeindehaus Hamm" in text

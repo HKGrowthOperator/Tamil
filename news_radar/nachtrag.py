@@ -392,8 +392,13 @@ def strukturierte_angaben(roh: str, nur_termine: bool = False, titel: str = "") 
         filme = [o for o in objekte if "Movie" in _typen(o)]
         kennungen = _seiten_kennungen(roh, titel)
         auswahl = _zur_seite(filme, kennungen) + _zur_seite(termine, kennungen)
-    else:  # Notanker ohne sichtbaren Text: alle passenden Typen, wie bisher
-        auswahl = [o for o in _ld_objekte(roh) if _typen(o) & LD_TYPEN]
+    else:  # Notanker ohne sichtbaren Text: Film und Termin der Seite, wenn erkennbar – sonst alle, wie bisher
+        objekte = [o for o in _ld_objekte(roh) if _typen(o) & LD_TYPEN]
+        filme = [o for o in objekte if "Movie" in _typen(o)]
+        termine = [o for o in objekte if _ist_termin(_typen(o)) and o.get("startDate")]
+        rest = [o for o in objekte if o not in filme and o not in termine]
+        kennungen = _seiten_kennungen(roh, titel)
+        auswahl = (_zur_seite(filme, kennungen) or filme) + (_zur_seite(termine, kennungen) or termine) + rest
     zeilen = []
     for obj in auswahl:
         for feld in LD_FELDER:
@@ -407,6 +412,49 @@ def strukturierte_angaben(roh: str, nur_termine: bool = False, titel: str = "") 
         zeilen.append("")
     text = "\n".join(zeilen).strip()
     return _kuerzen(f"{LD_KOPF}\n\n{text}", TEXT_MAX) if text else ""
+
+
+KURZ_KOPF = "Kurzangaben der Seite"
+KURZ_ZEILEN_MAX = 40
+KURZ_ROH_MAX = 1_500_000  # Zeichen HTML, die für Kurzangaben geparst werden
+_LABEL_WERT_RE = re.compile(r"^([^:\n]{2,30}):\s*(\S.{0,120})$")
+_RAUSCHEN = ("script", "style", "noscript", "template", "svg", "nav", "header", "footer", "aside", "form", "button")
+
+
+def kurzangaben(roh: str) -> list[str]:
+    """Kurze Felder, die extract_paragraphs verwirft (Kinoseiten megaplex.at, kinopolis.de: Filmstart, Regie, Besetzung
+    unter 60 Zeichen; Datumsangaben außerhalb von <p>): Definitionslisten (dt/dd), Tabellenzeilen (th/td oder zwei td)
+    und „Label: Wert“-Zeilen aus Listen und kurzen Elementen – wörtlich, je Zeile „Label: Wert“, ohne Navigation,
+    Kopf, Fuß und Formulare."""
+    from bs4 import BeautifulSoup
+
+    soup = BeautifulSoup(roh[:KURZ_ROH_MAX], "html.parser")
+    for tag in soup.find_all(_RAUSCHEN):
+        tag.decompose()
+
+    def wort(el) -> str:
+        return sources.clean_text(el.get_text(" ", strip=True))
+
+    zeilen: list[str] = []
+    for dl in soup.find_all("dl"):
+        label = ""
+        for el in dl.find_all(["dt", "dd"]):
+            if el.name == "dt":
+                label = wort(el)
+            elif label and wort(el):
+                zeilen.append(f"{label}: {wort(el)}")
+    for tr in soup.find_all("tr"):
+        zellen = [wort(z) for z in tr.find_all(["th", "td"], recursive=False)]
+        if len(zellen) == 2 and all(zellen) and len(zellen[0]) <= 40:
+            zeilen.append(f"{zellen[0]}: {zellen[1]}")
+    for el in soup.find_all(["li", "span", "p", "div", "td", "dd"]):
+        if el.find(["li", "p", "div", "table", "dl", "ul", "ol"]):
+            continue  # nur innerste Elemente
+        m = _LABEL_WERT_RE.match(wort(el))
+        if m:
+            zeilen.append(f"{m.group(1).strip()}: {m.group(2).strip()}")
+    out = [z for z in dict.fromkeys(zeilen) if len(z) <= 160]
+    return out[:KURZ_ZEILEN_MAX]
 
 
 def seite_lesen(seite: net.Fetched, adresse: str = "", frist: float | None = None) -> tuple[str, str, str, str]:
@@ -428,14 +476,17 @@ def seite_lesen(seite: net.Fetched, adresse: str = "", frist: float | None = Non
             titel = sources.clean_text(unescape(wert))[:300]
             break
     text = sources.extract_paragraphs(roh, TEXT_MAX)
-    if len(text or "") < VOLLTEXT_MIN:  # ohne JavaScript kein Text: strukturierte Angaben als Notanker
+    kurz = [z for z in kurzangaben(roh) if z not in (text or "")]
+    kurz_block = f"{KURZ_KOPF}\n\n" + "\n".join(kurz) if kurz else ""
+    if len(text or "") < VOLLTEXT_MIN:  # ohne JavaScript kein Text: Kurzangaben und strukturierte Angaben als Notanker
         daten = strukturierte_angaben(roh, titel=titel)
-        if daten:
-            return daten, titel, "daten", ""
+        notanker = "\n\n".join(b for b in (kurz_block, daten) if b)
+        if notanker:
+            return _kuerzen(notanker, TEXT_MAX), titel, "daten", ""
     termin = strukturierte_angaben(roh, nur_termine=True, titel=titel)  # Datum, Ort, Regie stehen oft nur dort
-    if termin and text:
-        termin = _kuerzen(termin, TEXT_MAX // 4)  # Platz für den Fließtext, der Block bleibt ganz
-        text = f"{text[:TEXT_MAX - len(termin) - 2].rstrip()}\n\n{termin}"
+    anhang = _kuerzen("\n\n".join(b for b in (kurz_block, termin) if b), TEXT_MAX // 4)  # Block bleibt ganz
+    if anhang and text:
+        text = f"{text[:TEXT_MAX - len(anhang) - 2].rstrip()}\n\n{anhang}"
     return text, titel, "volltext", ""
 
 
