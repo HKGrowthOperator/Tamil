@@ -67,7 +67,22 @@ function tamil_site_vz_metabox_speichern( $post_id ): void {
 	if ( ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) || wp_is_post_revision( $post_id ) || ! current_user_can( 'edit_post', $post_id ) ) {
 		return;
 	}
-	$roh = isset( $_POST['tamil_vz'] ) && is_array( $_POST['tamil_vz'] ) ? wp_unslash( $_POST['tamil_vz'] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- bereinigt in tamil_site_vz_werte_pruefen()
+	if ( ! tamil_site_vz_sperren( $post_id ) ) {
+		set_transient( 'tamil_vz_admin_fehler_' . get_current_user_id(), array( 'sperre' => __( 'Der Eintrag wird gerade über die Freigabe geändert. Bitte gleich noch einmal speichern.', 'tamil-site' ) ), 60 );
+		return;
+	}
+	try {
+		tamil_site_vz_metabox_felder_speichern( $post_id );
+	} finally {
+		tamil_site_vz_entsperren( $post_id );
+	}
+}
+
+/**
+ * Felder aus der Eingabemaske schreiben (unter der Sperre, Nonce und Recht sind geprüft).
+ */
+function tamil_site_vz_metabox_felder_speichern( int $post_id ): void {
+	$roh = isset( $_POST['tamil_vz'] ) && is_array( $_POST['tamil_vz'] ) ? wp_unslash( $_POST['tamil_vz'] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Missing -- Nonce in tamil_site_vz_metabox_speichern(), bereinigt in tamil_site_vz_werte_pruefen()
 	unset( $roh['name'], $roh['beschreibung'] );
 	$gepr  = tamil_site_vz_werte_pruefen( (array) $roh );
 	$werte = array_diff_key( $gepr['werte'], $gepr['fehler'] );
@@ -82,7 +97,7 @@ function tamil_site_vz_metabox_speichern( $post_id ): void {
 	update_post_meta( $post_id, '_tamil_vz_telefon_norm', tamil_site_vz_telefon_norm( (string) get_post_meta( $post_id, '_tamil_vz_telefon', true ) ) );
 	update_post_meta( $post_id, '_tamil_vz_website_host', tamil_site_vz_website_host( (string) get_post_meta( $post_id, '_tamil_vz_website', true ) ) );
 	if ( current_user_can( 'manage_options' ) ) {
-		update_post_meta( $post_id, '_tamil_vz_premium', empty( $_POST['tamil_vz_premium'] ) ? '0' : '1' );
+		update_post_meta( $post_id, '_tamil_vz_premium', empty( $_POST['tamil_vz_premium'] ) ? '0' : '1' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce in tamil_site_vz_metabox_speichern()
 	} elseif ( '' === (string) get_post_meta( $post_id, '_tamil_vz_premium', true ) ) {
 		update_post_meta( $post_id, '_tamil_vz_premium', '0' );
 	}

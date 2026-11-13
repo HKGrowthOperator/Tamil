@@ -23,6 +23,8 @@ define( 'TAMIL_SITE_VZ_KATEGORIE', 'tamil_vz_kategorie' );
 define( 'TAMIL_SITE_VZ_FRIST_TAGE', 90 );
 /** Frist für das Protokoll, in Monaten. */
 define( 'TAMIL_SITE_VZ_PROTOKOLL_MONATE', 12 );
+/** Eine beanspruchte, nicht abgeschlossene Freigabe gilt nach so vielen Sekunden als abgebrochen. */
+define( 'TAMIL_SITE_VZ_WIEDERANLAUF_SEKUNDEN', 120 );
 /** Höchstlänge der Beschreibung. */
 define( 'TAMIL_SITE_VZ_BESCHREIBUNG_MAX', 600 );
 
@@ -472,9 +474,14 @@ function tamil_site_vz_fehlt( array $werte ): array {
  * Name für den Vergleich (klein, ohne Rechtsform und Zeichen).
  */
 function tamil_site_vz_name_norm( string $name ): string {
-	$name = remove_accents( mb_strtolower( $name ) );
-	$name = preg_replace( '/\b(e\.?\s?v\.?|gmbh|ug|ag|ohg|kg)\b/u', ' ', $name );
-	return (string) preg_replace( '/[^a-z0-9]+/', '', (string) $name );
+	$name = mb_strtolower( remove_accents( $name ) );
+	if ( function_exists( 'normalizer_normalize' ) ) {
+		$norm = normalizer_normalize( $name, Normalizer::FORM_KC );
+		$name = false === $norm ? $name : $norm;
+	}
+	// Rechtsform entfernen, dann alles außer Buchstaben, Ziffern und Zeichen (auch tamilische Schrift).
+	$name = preg_replace( '/(?<![\p{L}\p{N}])(e\.?\s?v\.?|gmbh|ug|ag|ohg|kg)(?![\p{L}\p{N}])/u', ' ', $name );
+	return (string) preg_replace( '/[^\p{L}\p{N}\p{M}]+/u', '', (string) $name );
 }
 
 /**
@@ -495,7 +502,8 @@ function tamil_site_vz_website_host( string $url ): string {
 }
 
 /**
- * Mögliche Dubletten nach festen Regeln: ähnlicher Name und dazu gleiche PLZ, Telefonnummer oder Website.
+ * Mögliche Dubletten nach festen Regeln: ähnlicher Name und dazu gleiche PLZ, Telefonnummer oder Website. Ergibt der
+ * Name nach der Normalisierung nichts (z. B. nur Zeichen), zählen gleiche Telefonnummer oder Website allein.
  *
  * @param array<string,string> $werte  Werte der Einsendung.
  * @param int                  $ausser Eintrag, der nicht mitzählt (bei Änderungen der eigene).
@@ -503,11 +511,8 @@ function tamil_site_vz_website_host( string $url ): string {
  */
 function tamil_site_vz_dubletten( array $werte, int $ausser = 0 ): array {
 	$name = tamil_site_vz_name_norm( (string) ( $werte['name'] ?? '' ) );
-	if ( '' === $name ) {
-		return array();
-	}
 	$oder = array( 'relation' => 'OR' );
-	if ( '' !== (string) ( $werte['plz'] ?? '' ) ) {
+	if ( '' !== $name && '' !== (string) ( $werte['plz'] ?? '' ) ) {
 		$oder[] = array(
 			'key'   => '_tamil_vz_plz',
 			'value' => $werte['plz'],
@@ -546,14 +551,16 @@ function tamil_site_vz_dubletten( array $werte, int $ausser = 0 ): array {
 		if ( $id === $ausser ) {
 			continue;
 		}
-		$anderer = tamil_site_vz_name_norm( get_the_title( $id ) );
-		similar_text( $name, $anderer, $prozent );
-		$aehnlich = $prozent >= 80 || ( strlen( $anderer ) >= 4 && ( str_contains( $name, $anderer ) || str_contains( $anderer, $name ) ) );
-		if ( ! $aehnlich ) {
-			continue;
+		if ( '' !== $name ) {
+			$anderer = tamil_site_vz_name_norm( get_the_title( $id ) );
+			similar_text( $name, $anderer, $prozent );
+			$aehnlich = $prozent >= 80 || ( strlen( $anderer ) >= 4 && ( str_contains( $name, $anderer ) || str_contains( $anderer, $name ) ) );
+			if ( ! $aehnlich ) {
+				continue;
+			}
 		}
 		$gruende = array();
-		if ( '' !== (string) ( $werte['plz'] ?? '' ) && get_post_meta( $id, '_tamil_vz_plz', true ) === $werte['plz'] ) {
+		if ( '' !== $name && '' !== (string) ( $werte['plz'] ?? '' ) && get_post_meta( $id, '_tamil_vz_plz', true ) === $werte['plz'] ) {
 			$gruende[] = 'plz';
 		}
 		if ( '' !== $tel && get_post_meta( $id, '_tamil_vz_telefon_norm', true ) === $tel ) {
@@ -562,9 +569,12 @@ function tamil_site_vz_dubletten( array $werte, int $ausser = 0 ): array {
 		if ( '' !== $host && get_post_meta( $id, '_tamil_vz_website_host', true ) === $host ) {
 			$gruende[] = 'website';
 		}
+		if ( ! $gruende ) {
+			continue;
+		}
 		$treffer[] = array(
 			'eintrag_id' => $id,
-			'grund'      => 'name+' . implode( '+', $gruende ),
+			'grund'      => ( '' !== $name ? 'name+' : '' ) . implode( '+', $gruende ),
 		);
 	}
 	return $treffer;
@@ -894,10 +904,11 @@ function tamil_site_vz_entsperren( int $id ): void {
 /**
  * Schreibt Werte in einen Eintrag (Titel, Inhalt, Meta, Kategorie, abgeleitete Vergleichswerte).
  *
- * @param array<string,string> $werte Nur die zu schreibenden Felder.
+ * @param array<string,string> $werte   Nur die zu schreibenden Felder.
+ * @param string               $vorgang Beim Anlegen: Vorgangsnummer der Einsendung (für den Wiederanlauf).
  * @return int|WP_Error ID.
  */
-function tamil_site_vz_eintrag_schreiben( int $id, array $werte, string $post_status = '' ) {
+function tamil_site_vz_eintrag_schreiben( int $id, array $werte, string $post_status = '', string $vorgang = '' ) {
 	$post = array( 'post_type' => TAMIL_SITE_VZ_TYP );
 	if ( $id ) {
 		$post['ID'] = $id;
@@ -927,6 +938,9 @@ function tamil_site_vz_eintrag_schreiben( int $id, array $werte, string $post_st
 	}
 	if ( ! $id ) {
 		update_post_meta( $neu, '_tamil_vz_premium', '0' );
+		if ( '' !== $vorgang ) {
+			update_post_meta( $neu, '_tamil_vz_vorgang', $vorgang );
+		}
 	}
 	update_post_meta( $neu, '_tamil_vz_telefon_norm', tamil_site_vz_telefon_norm( (string) get_post_meta( $neu, '_tamil_vz_telefon', true ) ) );
 	update_post_meta( $neu, '_tamil_vz_website_host', tamil_site_vz_website_host( (string) get_post_meta( $neu, '_tamil_vz_website', true ) ) );
@@ -939,7 +953,10 @@ function tamil_site_vz_eintrag_schreiben( int $id, array $werte, string $post_st
  * Regeln: Jede Freigabe gehört zu genau einer Einsendung (Typ passend, nicht abgelehnt) und wirkt genau einmal;
  * eine wiederholte Freigabe derselben Einsendung liefert das frühere Ergebnis. Unbekannte Felder und „premium“
  * werden abgewiesen. Änderungen nur gegen den gelesenen Stand. Werte, die der Einsender als nicht öffentlich
- * markiert hat, werden nicht veröffentlicht. Der Eintrag muss danach vollständig sein.
+ * markiert hat, werden nicht veröffentlicht (gleich mit welchem Wert). Geschrieben werden nur Felder, die in der
+ * Einsendung stehen, und die Kategorie; abweichende Werte stehen als Feldnamen in „entscheidung“ und im Protokoll.
+ * Der Eintrag muss danach vollständig sein. Bricht eine Freigabe nach dem Beanspruchen ab („freigegeben“ ohne
+ * Entscheidung), ist nach TAMIL_SITE_VZ_WIEDERANLAUF_SEKUNDEN ein Wiederanlauf mit denselben Werten möglich.
  *
  * @param string              $aktion  anlegen, aendern, entfernen.
  * @param string              $vorgang Vorgangsnummer der Einsendung.
@@ -962,11 +979,16 @@ function tamil_site_vz_freigabe( string $aktion, string $vorgang, int $id, array
 	if ( $zeile['typ'] !== $typ || ( 'anlegen' !== $aktion && (int) $zeile['eintrag_id'] !== $id ) ) {
 		return new WP_Error( 'tamil_vz_falsche_einsendung', __( 'Die Einsendung passt nicht zu dieser Freigabe (Typ oder Eintrag).', 'tamil-site' ), array( 'status' => 409 ) );
 	}
-	if ( 'freigegeben' === $zeile['status'] ) {
-		$fertig = (int) $zeile['eintrag_id'];
-		if ( 'anlegen' === $aktion && ! $fertig ) {
+	$offen        = in_array( trim( (string) $zeile['entscheidung'] ), array( '', '{}', '[]' ), true );
+	$wiederanlauf = false;
+	if ( 'freigegeben' === $zeile['status'] && $offen ) {
+		$seit = time() - (int) strtotime( (string) $zeile['abgeschlossen_at'] . ' UTC' );
+		if ( $seit < TAMIL_SITE_VZ_WIEDERANLAUF_SEKUNDEN ) {
 			return new WP_Error( 'tamil_vz_in_arbeit', __( 'Diese Freigabe läuft gerade.', 'tamil-site' ), array( 'status' => 409 ) );
 		}
+		$wiederanlauf = true;
+	} elseif ( 'freigegeben' === $zeile['status'] ) {
+		$fertig = (int) $zeile['eintrag_id'];
 		return array(
 			'bereits'    => true,
 			'eintrag'    => tamil_site_vz_eintrag_ausgabe( $fertig ),
@@ -994,7 +1016,34 @@ function tamil_site_vz_freigabe( string $aktion, string $vorgang, int $id, array
 	if ( 'entfernen' === $aktion && $felder ) {
 		return new WP_Error( 'tamil_vz_unbekannte_felder', __( 'Beim Entfernen werden keine Felder geschrieben.', 'tamil-site' ), array( 'status' => 400 ) );
 	}
+	$eingesandt = json_decode( (string) $zeile['felder'], true );
+	$eingesandt = is_array( $eingesandt ) ? $eingesandt : array();
+	$fremd      = array_values( array_diff( array_keys( $felder ), array_keys( $eingesandt ), array( 'kategorie' ) ) );
+	if ( $fremd ) {
+		return new WP_Error(
+			'tamil_vz_nicht_eingesandt',
+			__( 'Diese Felder stehen nicht in der Einsendung.', 'tamil-site' ),
+			array(
+				'status' => 400,
+				'felder' => $fremd,
+			)
+		);
+	}
 	$alt = array();
+	if ( 'anlegen' === $aktion && $wiederanlauf ) {
+		$frueher = get_posts(
+			array(
+				'post_type'        => TAMIL_SITE_VZ_TYP,
+				'post_status'      => 'any',
+				'posts_per_page'   => 1,
+				'fields'           => 'ids',
+				'meta_key'         => '_tamil_vz_vorgang', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- nur im Wiederanlauf
+				'meta_value'       => $vorgang, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- nur im Wiederanlauf
+				'suppress_filters' => true,
+			)
+		);
+		$id      = $frueher ? (int) $frueher[0] : 0;
+	}
 	if ( 'anlegen' !== $aktion ) {
 		$alt = tamil_site_vz_eintrag_werte( $id );
 		if ( null === $alt ) {
@@ -1026,8 +1075,9 @@ function tamil_site_vz_freigabe( string $aktion, string $vorgang, int $id, array
 				)
 			);
 		}
-		if ( isset( $werte['plz'] ) || isset( $werte['land'] ) || isset( $werte['bundesland_kanton'] ) ) {
-			$ganz = tamil_site_vz_werte_pruefen( array_intersect_key( $gesamt, array_flip( array( 'plz', 'land', 'bundesland_kanton' ) ) ) );
+		$abhaengig = array( 'plz', 'land', 'bundesland_kanton', 'art', 'kategorie' );
+		if ( array_intersect_key( $werte, array_flip( $abhaengig ) ) ) {
+			$ganz = tamil_site_vz_werte_pruefen( array_intersect_key( $gesamt, array_flip( $abhaengig ) ) );
 			if ( $ganz['fehler'] ) {
 				return new WP_Error(
 					'tamil_vz_ungueltig',
@@ -1039,9 +1089,8 @@ function tamil_site_vz_freigabe( string $aktion, string $vorgang, int $id, array
 				);
 			}
 		}
-		$eingesandt = json_decode( (string) $zeile['felder'], true );
-		foreach ( is_array( $eingesandt ) ? $eingesandt : array() as $key => $feld ) {
-			if ( isset( $werte[ $key ] ) && '' !== $werte[ $key ] && empty( $feld['oeffentlich'] ) && ( tamil_site_vz_felder()[ $key ]['wahl'] ?? false ) && trim( (string) ( $feld['wert'] ?? '' ) ) === $werte[ $key ] ) {
+		foreach ( $eingesandt as $key => $feld ) {
+			if ( isset( $werte[ $key ] ) && '' !== $werte[ $key ] && empty( $feld['oeffentlich'] ) && ( tamil_site_vz_felder()[ $key ]['wahl'] ?? false ) ) {
 				return new WP_Error(
 					'tamil_vz_nicht_oeffentlich',
 					__( 'Der Einsender hat diesen Wert nicht zur Veröffentlichung freigegeben.', 'tamil-site' ),
@@ -1054,11 +1103,20 @@ function tamil_site_vz_freigabe( string $aktion, string $vorgang, int $id, array
 		}
 	}
 
-	if ( 'anlegen' !== $aktion && ! tamil_site_vz_sperren( $id ) ) {
+	$abweichend = array_values(
+		array_filter(
+			array_keys( $werte ),
+			static function ( $key ) use ( $werte, $eingesandt ) {
+				return 'kategorie' !== $key && trim( (string) ( $eingesandt[ $key ]['wert'] ?? '' ) ) !== $werte[ $key ];
+			}
+		)
+	);
+
+	if ( $id && ! tamil_site_vz_sperren( $id ) ) {
 		return new WP_Error( 'tamil_vz_gesperrt', __( 'Der Eintrag wird gerade geändert.', 'tamil-site' ), array( 'status' => 409 ) );
 	}
 	try {
-		if ( 'anlegen' !== $aktion && ! hash_equals( tamil_site_vz_stand( $id ), $stand ) ) {
+		if ( 'anlegen' !== $aktion && ! $wiederanlauf && ! hash_equals( tamil_site_vz_stand( $id ), $stand ) ) {
 			return new WP_Error(
 				'tamil_vz_stand',
 				__( 'Der Eintrag hat sich seit dem Lesen geändert.', 'tamil-site' ),
@@ -1069,16 +1127,21 @@ function tamil_site_vz_freigabe( string $aktion, string $vorgang, int $id, array
 			);
 		}
 		$t = tamil_site_vz_tabelle();
-		// Einsendung beanspruchen: nur eine Freigabe gewinnt.
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- eigene Tabelle
-		$beansprucht = (int) $wpdb->query( $wpdb->prepare( "UPDATE {$t} SET status = 'freigegeben', abgeschlossen_at = %s WHERE id = %d AND status IN ('neu','geprueft')", tamil_site_vz_jetzt(), (int) $zeile['id'] ) );
+		// Einsendung beanspruchen: nur eine Freigabe gewinnt (beim Wiederanlauf über den alten Zeitpunkt).
+		if ( $wiederanlauf ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- eigene Tabelle
+			$beansprucht = (int) $wpdb->query( $wpdb->prepare( "UPDATE {$t} SET abgeschlossen_at = %s WHERE id = %d AND status = 'freigegeben' AND entscheidung = %s AND abgeschlossen_at = %s", tamil_site_vz_jetzt(), (int) $zeile['id'], (string) $zeile['entscheidung'], (string) $zeile['abgeschlossen_at'] ) );
+		} else {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- eigene Tabelle
+			$beansprucht = (int) $wpdb->query( $wpdb->prepare( "UPDATE {$t} SET status = 'freigegeben', abgeschlossen_at = %s WHERE id = %d AND status IN ('neu','geprueft')", tamil_site_vz_jetzt(), (int) $zeile['id'] ) );
+		}
 		if ( 1 !== $beansprucht ) {
 			return new WP_Error( 'tamil_vz_in_arbeit', __( 'Diese Einsendung wurde gerade anders entschieden.', 'tamil-site' ), array( 'status' => 409 ) );
 		}
 		if ( 'entfernen' === $aktion ) {
 			$ergebnis = tamil_site_vz_eintrag_schreiben( $id, array(), 'draft' );
 		} else {
-			$ergebnis = tamil_site_vz_eintrag_schreiben( $id, $werte, 'anlegen' === $aktion ? 'publish' : '' );
+			$ergebnis = tamil_site_vz_eintrag_schreiben( $id, $werte, 'anlegen' === $aktion ? 'publish' : '', $vorgang );
 		}
 		if ( is_wp_error( $ergebnis ) ) {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Beanspruchung zurücknehmen
@@ -1086,7 +1149,7 @@ function tamil_site_vz_freigabe( string $aktion, string $vorgang, int $id, array
 				$t,
 				array(
 					'status'           => (string) $zeile['status'],
-					'abgeschlossen_at' => null,
+					'abgeschlossen_at' => $wiederanlauf ? (string) $zeile['abgeschlossen_at'] : null,
 				),
 				array( 'id' => (int) $zeile['id'] )
 			);
@@ -1094,10 +1157,11 @@ function tamil_site_vz_freigabe( string $aktion, string $vorgang, int $id, array
 			return $ergebnis;
 		}
 		$entscheidung = array(
-			'aktion' => $aktion,
-			'felder' => array_keys( $werte ),
-			'wer'    => wp_get_current_user()->user_login,
-			'zeit'   => gmdate( 'c' ),
+			'aktion'     => $aktion,
+			'felder'     => array_keys( $werte ),
+			'abweichend' => $abweichend,
+			'wer'        => wp_get_current_user()->user_login,
+			'zeit'       => gmdate( 'c' ),
 		);
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- eigene Tabelle
 		$wpdb->update(
@@ -1109,7 +1173,7 @@ function tamil_site_vz_freigabe( string $aktion, string $vorgang, int $id, array
 			array( 'id' => (int) $zeile['id'] )
 		);
 	} finally {
-		if ( 'anlegen' !== $aktion ) {
+		if ( $id ) {
 			tamil_site_vz_entsperren( $id );
 		}
 	}
@@ -1118,7 +1182,8 @@ function tamil_site_vz_freigabe( string $aktion, string $vorgang, int $id, array
 		'aendern'   => 'geaendert',
 		'entfernen' => 'entfernt',
 	);
-	tamil_site_vz_protokoll( $protokoll[ $aktion ], $vorgang, (int) $ergebnis, implode( ',', array_keys( $werte ) ) );
+	$notiz     = implode( ',', array_keys( $werte ) ) . ( $abweichend ? '; abweichend: ' . implode( ',', $abweichend ) : '' ) . ( $wiederanlauf ? '; wiederanlauf' : '' );
+	tamil_site_vz_protokoll( $protokoll[ $aktion ], $vorgang, (int) $ergebnis, $notiz );
 	return array(
 		'bereits'    => false,
 		'eintrag'    => tamil_site_vz_eintrag_ausgabe( (int) $ergebnis ),

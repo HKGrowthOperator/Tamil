@@ -327,6 +327,24 @@ function tamil_site_vz_aus_404(): void {
 add_action( 'template_redirect', 'tamil_site_vz_aus_404', 2 );
 
 /**
+ * Schalter aus: jede öffentliche Abfrage des Beitragstyps (Profil, Archiv, Feed) wird zu 404.
+ *
+ * @param array<string,mixed> $abfrage Abfragevariablen.
+ * @return array<string,mixed>
+ */
+function tamil_site_vz_aus_anfrage( $abfrage ) {
+	if ( is_admin() || ! is_array( $abfrage ) || tamil_site_funktion_an( 'verzeichnis' ) ) {
+		return $abfrage;
+	}
+	$typ = $abfrage['post_type'] ?? '';
+	if ( isset( $abfrage[ TAMIL_SITE_VZ_TYP ] ) || TAMIL_SITE_VZ_TYP === $typ || ( is_array( $typ ) && in_array( TAMIL_SITE_VZ_TYP, $typ, true ) ) ) {
+		return array( 'error' => '404' );
+	}
+	return $abfrage;
+}
+add_filter( 'request', 'tamil_site_vz_aus_anfrage' );
+
+/**
  * Sitemap nur mit eingeschaltetem Schalter.
  *
  * @param array<string,WP_Post_Type> $typen Beitragstypen.

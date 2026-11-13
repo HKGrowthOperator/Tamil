@@ -266,8 +266,11 @@ def test_t4_unvollstaendig_wird_markiert_nicht_ergaenzt(wp, wp_cli, seite):
     assert "stadt" not in eins["felder"] and eins["regeln"]["fehlt"] == ["stadt"]
     r = _anlegen(wp, vorgang, ohne_stadt)
     assert r.status_code == 400 and r.json()["code"] == "tamil_vz_unvollstaendig" and r.json()["data"]["fehlt"] == ["stadt"]
-    ohne_kontakt = {k: v for k, v in _verein(s).items() if k not in ("telefon", "email")}
-    assert _anlegen(wp, vorgang, ohne_kontakt).json()["data"]["fehlt"] == ["kontakt"]
+    ohne_kontakt = {k: v for k, v in ohne_stadt.items() if k not in ("telefon", "email")}
+    assert _anlegen(wp, vorgang, ohne_kontakt).json()["data"]["fehlt"] == ["stadt", "kontakt"]
+    # Ergänzen der Stadt durch die Freigabe geht nicht: sie steht nicht in der Einsendung
+    ergaenzt = _anlegen(wp, vorgang, {**ohne_stadt, "stadt": "Essen"})
+    assert ergaenzt.status_code == 400 and ergaenzt.json()["code"] == "tamil_vz_nicht_eingesandt"
     assert _einsendung(wp, vorgang)["status"] == "neu"  # abgewiesene Freigabe verbraucht die Einsendung nicht
 
 
@@ -361,3 +364,104 @@ def test_loeschfrist_und_protokoll_ohne_personendaten(wp, wp_cli, seite):
     assert "Erika" not in protokoll and "example.test" not in protokoll
     wp_cli(f"global $wpdb; $wpdb->update( tamil_site_vz_tabelle(), array( 'eingang_at' => gmdate( 'Y-m-d H:i:s', time() - 91 * DAY_IN_SECONDS ) ), array( 'vorgangsnummer' => '{vorgang}' ) ); tamil_site_vz_aufraeumen();")
     assert _rest(wp, "GET", f"/einsendung/{vorgang}").status_code == 404
+
+
+# --- Befunde der unabhängigen Prüfung --------------------------------------------------------------------------
+
+def _plz() -> str:
+    return "4" + "".join(secrets.choice("0123456789") for _ in range(4))
+
+
+def test_nicht_oeffentlich_gilt_fuer_das_feld_nicht_nur_den_wert(wp, wp_cli, seite):
+    s = secrets.token_hex(3)
+    vorgang = _vorgang(absenden(wp_cli, seite, _verein(s), oeffentlich=("email",)))
+    r = _anlegen(wp, vorgang, {**_verein(s), "telefon": "0201 1234567"})
+    assert r.status_code == 409 and r.json()["code"] == "tamil_vz_nicht_oeffentlich" and r.json()["data"]["feld"] == "telefon"
+
+
+def test_zustimmung_zurueckziehen_ist_eine_aenderung(wp, wp_cli, seite):
+    s = secrets.token_hex(3)
+    eintrag = _anlegen(wp, _vorgang(absenden(wp_cli, seite, _verein(s))), _verein(s)).json()["eintrag"]
+    antwort = absenden(wp_cli, seite, eintrag["felder"], typ="aenderung", eintrag=eintrag["id"], oeffentlich=("email",))
+    assert "keine Änderung" not in antwort.text
+    vorgang = _vorgang(antwort)
+    assert _einsendung(wp, vorgang)["felder"] == {"telefon": {"wert": "+49 201 1234567", "oeffentlich": False}}
+    stand = _rest(wp, "GET", f"/eintrag/{eintrag['id']}").json()["stand"]
+    nein = _rest(wp, "POST", f"/eintrag/{eintrag['id']}", json={"einsendung": vorgang, "stand": stand, "felder": {"telefon": "+49 201 1234567"}})
+    assert nein.status_code == 409 and nein.json()["code"] == "tamil_vz_nicht_oeffentlich"
+    ok = _rest(wp, "POST", f"/eintrag/{eintrag['id']}", json={"einsendung": vorgang, "stand": stand, "felder": {"telefon": ""}})
+    assert ok.status_code == 200, ok.text
+    assert ok.json()["eintrag"]["felder"]["telefon"] == "" and "201 1234567" not in requests.get(eintrag["link"], headers=AN, timeout=30).text
+
+
+def test_nur_eingesandte_felder_abweichungen_vermerkt(wp, wp_cli, seite):
+    s = secrets.token_hex(3)
+    vorgang = _vorgang(absenden(wp_cli, seite, _verein(s)))
+    fremd = _anlegen(wp, vorgang, {**_verein(s), "oeffnungszeiten": "Mo 9 Uhr"})
+    assert fremd.status_code == 400 and fremd.json()["code"] == "tamil_vz_nicht_eingesandt" and fremd.json()["data"]["felder"] == ["oeffnungszeiten"]
+    r = _anlegen(wp, vorgang, {**_verein(s), "telefon": "+49 201 7777777", "kategorie": "verein-kultur"})
+    assert r.status_code == 201, r.text
+    assert r.json()["einsendung"]["entscheidung"]["abweichend"] == ["telefon"]
+    notiz = wp_cli("global $wpdb; echo $wpdb->get_var( $wpdb->prepare( 'SELECT notiz FROM ' . tamil_site_vz_protokoll_tabelle() . \" WHERE vorgangsnummer = %s AND aktion = 'angelegt'\", '" + vorgang + "' ) );")
+    assert "abweichend: telefon" in notiz and "7777777" not in notiz
+
+
+def test_wiederanlauf_nach_abbruch(wp, wp_cli, seite):
+    s = secrets.token_hex(3)
+    vorgang = _vorgang(absenden(wp_cli, seite, _verein(s)))
+    abbruch = (f"global $wpdb; $wpdb->update( tamil_site_vz_tabelle(), array( 'status' => 'freigegeben', 'entscheidung' => '{{}}',"
+               f" 'abgeschlossen_at' => gmdate( 'Y-m-d H:i:s', time() - %d ) ), array( 'vorgangsnummer' => '{vorgang}' ) );")
+    wp_cli(abbruch % 5)  # läuft gerade
+    assert _anlegen(wp, vorgang, _verein(s)).json()["code"] == "tamil_vz_in_arbeit"
+    # Abbruch nach dem Schreiben des Eintrags: der Wiederanlauf findet ihn und legt keinen zweiten an
+    halb = int(wp_cli(f"echo tamil_site_vz_eintrag_schreiben( 0, array( 'name' => 'halb {s}' ), 'publish', '{vorgang}' );"))
+    wp_cli(abbruch % 600)
+    r = _anlegen(wp, vorgang, _verein(s))
+    assert r.status_code == 201, r.text
+    assert r.json()["eintrag"]["id"] == halb and r.json()["eintrag"]["felder"]["name"] == _verein(s)["name"]
+    assert r.json()["einsendung"]["entscheidung"]["aktion"] == "anlegen"
+    assert _anlegen(wp, vorgang, _verein(s)).json()["bereits"] is True
+
+
+def test_metabox_wartet_auf_die_sperre(wp_cli):
+    code = ("$id = tamil_site_vz_eintrag_schreiben( 0, array( 'name' => 'Sperre Test', 'art' => 'verein', 'plz' => '45127', 'stadt' => 'Essen', 'land' => 'DE' ), 'publish' );"
+            " wp_set_current_user( 1 ); $_POST = array( 'tamil_vz_admin_nonce' => wp_create_nonce( 'tamil_vz_admin_' . $id ), 'tamil_vz' => array( 'stadt' => 'Bochum' ) );"
+            " tamil_site_vz_sperren( $id ); tamil_site_vz_metabox_speichern( $id ); $a = get_post_meta( $id, '_tamil_vz_stadt', true );"
+            " tamil_site_vz_entsperren( $id ); tamil_site_vz_metabox_speichern( $id ); $b = get_post_meta( $id, '_tamil_vz_stadt', true );"
+            " wp_delete_post( $id, true ); echo wp_json_encode( array( $a, $b ) );")
+    assert _json(wp_cli, code) == ["Essen", "Bochum"]
+
+
+def test_art_und_kategorie_bei_teilaenderung(wp, wp_cli, seite):
+    s = secrets.token_hex(3)
+    eintrag = _anlegen(wp, _vorgang(absenden(wp_cli, seite, _verein(s))), {**_verein(s), "kategorie": "verein-kultur"}).json()["eintrag"]
+    vorgang = _vorgang(absenden(wp_cli, seite, {**eintrag["felder"], "art": "business"}, typ="aenderung", eintrag=eintrag["id"]))
+    stand = _rest(wp, "GET", f"/eintrag/{eintrag['id']}").json()["stand"]
+    falsch = _rest(wp, "POST", f"/eintrag/{eintrag['id']}", json={"einsendung": vorgang, "stand": stand, "felder": {"art": "business"}})
+    assert falsch.status_code == 400 and "kategorie" in falsch.json()["data"]["fehler"]
+    ok = _rest(wp, "POST", f"/eintrag/{eintrag['id']}", json={"einsendung": vorgang, "stand": stand, "felder": {"art": "business", "kategorie": "business-reise"}})
+    assert ok.status_code == 200 and ok.json()["eintrag"]["felder"]["kategorie"] == "business-reise"
+
+
+def test_schalter_aus_auch_archiv_und_feed(wp, wp_cli, seite):
+    alt = wp_cli("echo wp_json_encode( get_option( 'tamil_site_funktionen', null ) );").strip()
+    try:
+        wp_cli("$f = (array) get_option( 'tamil_site_funktionen', array() ); $f['verzeichnis'] = false; update_option( 'tamil_site_funktionen', $f );")
+        for params in ({"post_type": "tamil_vz_eintrag"}, {"post_type": "tamil_vz_eintrag", "feed": "rss2"}):
+            assert requests.get(wp.url + "/", params=params, timeout=30).status_code == 404, params
+        assert requests.get(wp.url + "/", params={"post_type": "tamil_vz_eintrag", "feed": "rss2"}, headers=AN, timeout=30).status_code == 200
+    finally:
+        if alt == "null":
+            wp_cli("delete_option( 'tamil_site_funktionen' );")
+        else:
+            wp_cli(f"update_option( 'tamil_site_funktionen', json_decode( '{alt}', true ) );")
+
+
+def test_dubletten_bei_tamilischen_namen(wp, wp_cli, seite):
+    plz, tel = _plz(), "+49 201 " + "".join(secrets.choice("0123456789") for _ in range(7))
+    tamil = {**_verein("x"), "name": "தமிழ் கலாச்சார மன்றம்", "plz": plz, "telefon": tel}
+    eintrag = _anlegen(wp, _vorgang(absenden(wp_cli, seite, tamil)), tamil).json()["eintrag"]
+    nochmal = _vorgang(absenden(wp_cli, seite, {**tamil, "name": "தமிழ் கலாச்சார மன்றம் e. V.", "telefon": ""}))
+    assert {"eintrag_id": eintrag["id"], "grund": "name+plz"} in _einsendung(wp, nochmal)["regeln"]["dubletten"]
+    ohne_namen = _vorgang(absenden(wp_cli, seite, {**tamil, "name": "★★★", "plz": "45999"}))
+    assert {"eintrag_id": eintrag["id"], "grund": "telefon"} in _einsendung(wp, ohne_namen)["regeln"]["dubletten"]

@@ -246,8 +246,11 @@ function tamil_site_vz_formular_annehmen( string $typ ) {
 			$alt           = (array) tamil_site_vz_eintrag_werte( $eintrag_id );
 			$felder        = array_filter(
 				$felder,
-				static function ( $wert, $key ) use ( $alt ) {
-					return (string) ( $alt[ $key ] ?? '' ) !== $wert;
+				static function ( $wert, $key ) use ( $alt, $oeffentlich ) {
+					$bisher = (string) ( $alt[ $key ] ?? '' );
+					// Haken bei einem gezeigten Wert entfernt: Zustimmung zurückgezogen, also eine Änderung auf leer.
+					$zurueck = tamil_site_vz_felder()[ $key ]['wahl'] && '' !== $bisher && ! $oeffentlich[ $key ];
+					return $bisher !== $wert || $zurueck;
 				},
 				ARRAY_FILTER_USE_BOTH
 			);
