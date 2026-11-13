@@ -563,10 +563,14 @@ stateDiagram-v2
 Ist der Schalter `eingang` an, bleiben Einsendungen unverlustig auf der Website liegen. Keine E-Mail an den Einsender;
 Antworten nur von Hand (`mailto:`-Link im Cockpit).
 
-## 13. Verzeichnis-Eintrag (F2) – spezifiziert, nicht gebaut
+## 13. Verzeichnis-Eintrag (F2) – gebaut auf der Website
 
-Quelle: `festlegung-verzeichnis.md`. Öffentlich unter `/verzeichnis/`. **Speicherform zu prüfen**, Vorschlag: eigener
-Beitragstyp mit Taxonomien „Art“ und „Kategorie“ in WordPress.
+Quelle: `festlegung-verzeichnis.md`. Öffentlich unter `/verzeichnis/` (Seite mit `[tamil_verzeichnis]`, Profile unter
+`/verzeichnis/<name>/`). **Speicherform:** Beitragstyp `tamil_vz_eintrag` (Name = Titel, Beschreibung = Inhalt,
+übrige Felder als geschützte Meta `_tamil_vz_<feld>`, `premium` als `_tamil_vz_premium`), Kategorie als Taxonomie
+`tamil_vz_kategorie` mit der Art als Term-Meta; `status` `veroeffentlicht` = veröffentlicht, `entfernt` = Entwurf.
+Einsendungen in der Tabelle `tamil_vz_einsendungen`, gelöscht 90 Tage nach Eingang; Protokoll `tamil_vz_protokoll`
+(`wordpress/plugins/tamil-site/includes/verzeichnis*.php`). Schnittstelle: `integrationen.md` §3, „Verzeichnis“.
 
 ### Eintrag (öffentlich)
 
