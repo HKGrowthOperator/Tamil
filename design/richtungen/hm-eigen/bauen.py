@@ -548,7 +548,7 @@ for v in VERZ:
     lage = e(v["lage"]) if v.get("lage") else '<span class="fill">Adresse folgt</span>'
     prem = '<p class="e-marke">Premium <span class="klein">(Darstellungsbeispiel, nicht vergeben)</span></p>' if v.get("premium") else ""
     angaben = (f'<dl class="angaben"><div><dt>Art</dt><dd>{v["art"]}, {e(v["kat"])}</dd></div>'
-               f'<div><dt>Ort</dt><dd>{e(v["stadt"])}, {e(v["region"])}, {LAENDER[v["land"]]}</dd></div>'
+               f'<div><dt>Ort</dt><dd>{e(", ".join(dict.fromkeys([v["stadt"], v["region"], LAENDER[v["land"]]])))}</dd></div>'
                f'<div><dt>Adresse</dt><dd>{lage}</dd></div>'
                f'<div><dt>Telefon, E-Mail, Website</dt><dd><span class="fill">Kontaktdaten folgen, wenn der Eintrag sie freigibt</span></dd></div>'
                f'<div><dt>Öffnungszeiten</dt><dd>nicht angegeben</dd></div></dl>')
