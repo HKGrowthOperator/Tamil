@@ -1,7 +1,10 @@
 """Orchestrator der Redaktion v2: deterministisch, Sprachmodelle nur in den Rollen.
 
   scan (Timer, alle 3 Minuten)   Quellen → Vorfilter → Signal (Grauzone) → Cluster → Story + Job
-  worker (Dienst)                recherche → gate → schreiben → faktencheck → lektorat → seo → bild → Entwurf „neu“
+  worker (Dienst)                recherche → gate → schreiben → faktencheck → lektorat → seo → endpruefung → bild
+                                 → Entwurf „neu“
+  Gate scheitert                 nachrecherche (ohne Modell, höchstens zwei Runden) → recherche → gate …; danach
+                                 pruefung (zweite KI): schreiben (notfalls Kurzmeldung) oder verwerfen mit Grund
   kino                           Kinoprogramm → Textvorlage → Entwurf (ohne Modell)
   Mensch (Cockpit)               freigeben → Publisher → WordPress
 
@@ -21,7 +24,8 @@ from datetime import date, datetime, timedelta, timezone
 from typing import Any, Callable
 
 from .. import filtering, images, notify, schalter, sources
-from ..agents import Kontext, cluster, copydesk, factcheck, media, relevance, research, schreiben, seo
+from ..agents import (Kontext, cluster, copydesk, factcheck, media, nachrecherche, pruefer, relevance, research,
+                      schreiben, seo)
 from ..config import Settings
 from ..pipeline import Result, category_label, quelle_name, refresh_kino, stale_event_date
 from ..store import OPEN_STATES, Store, now_iso
@@ -35,7 +39,8 @@ log = logging.getLogger(__name__)
 Handler = Callable[[Kontext, dict], list[tuple[str, dict]]]
 
 
-OHNE_MODELL = ("gate", "bild", "kino")  # Schritte, die auch ohne API-Schlüssel laufen
+OHNE_MODELL = ("gate", "bild", "kino", "nachrecherche")  # Schritte, die auch ohne API-Schlüssel laufen
+BEZAHLT = ("recherche", "schreiben", "faktencheck", "lektorat", "seo", "pruefung", "endpruefung")  # Kostendeckel
 
 
 def kontext(settings: Settings, store: Store, client=None, **kw) -> Kontext:
@@ -190,13 +195,19 @@ def _story(ctx: Kontext, job: dict) -> dict:
 
 def _letzte_fassung(ctx: Kontext, story_id: int) -> dict:
     for v in reversed(repo.fassungen(ctx.store, story_id=story_id)):
-        if v["rolle"] in ("text", "ueberarbeitung", "lektorat", "seo"):
-            return v["inhalt"]
+        if v["rolle"] in ("text", "ueberarbeitung", "lektorat", "seo", "pruefung"):
+            return {k: w for k, w in v["inhalt"].items() if k not in ("faktencheck", "pruefung")}
     raise RuntimeError("Keine Textfassung vorhanden")
 
 
+# Nutzdaten, die von Schritt zu Schritt weiterreisen (gruende/fehlend: Fehlstellen für die Nachrecherche;
+# kurzmeldung/nur_claims: Entscheidung der zweiten KI; endpruefung/fc_ungedeckt: Prüfung des Entwurfs)
+WEITER = ("hinweise", "uid", "quelle", "quelle_bild", "url", "fakten", "runde", "gruende", "fehlend", "kurzmeldung",
+          "nur_claims", "endpruefung", "fc_ungedeckt")
+
+
 def _weiter(payload: dict, **neu) -> dict:
-    out = {k: payload[k] for k in ("hinweise", "uid", "quelle", "quelle_bild", "url", "fakten", "runde") if k in payload}
+    out = {k: payload[k] for k in WEITER if k in payload}
     out.update(neu)
     return out
 
@@ -232,7 +243,9 @@ def termin_vorbei(ctx: Kontext, story: dict, docs) -> str:
 
 def schritt_recherche(ctx: Kontext, job: dict) -> list[tuple[str, dict]]:
     story = _story(ctx, job)
-    repo.story_setzen(ctx.store, story["id"], status="recherche")
+    if story["status"] != "recherche_erforderlich":  # in der Nachrecherche bleibt die Story im Reiter sichtbar
+        if not repo.story_setzen(ctx.store, story["id"], nur_offen=True, status="recherche"):
+            return []  # inzwischen fertig oder verworfen
     docs = research.belege_sammeln(ctx, story)
     vorbei = termin_vorbei(ctx, story, docs)
     if vorbei:  # vor jedem bezahlten Aufruf: ein vergangener Termin wird kein Beitrag
@@ -254,9 +267,7 @@ def schritt_gate(ctx: Kontext, job: dict) -> list[tuple[str, dict]]:
     repo.story_setzen(ctx.store, story["id"], laenge=g.laenge, sensibel=g.sensibel or story["sensibel"])
     hinweise = job["payload"].get("hinweise", []) + g.hinweise + [f"Fehlt: {f}" for f in job["payload"].get("fehlend", [])]
     if not g.ok:
-        repo.story_setzen(ctx.store, story["id"], status="recherche_erforderlich", notiz="; ".join(g.gruende)[:900])
-        ctx.store.event("recherche_erforderlich", story=story["id"], titel=story["titel"], gruende=g.gruende)
-        return []
+        return _nicht_belegt(ctx, story, job["payload"], g.gruende, job["payload"].get("fehlend", []))
     repo.story_setzen(ctx.store, story["id"], status="geprueft")
     return [("schreiben", _weiter(job["payload"], hinweise=hinweise, runde=1))]
 
@@ -265,7 +276,10 @@ def schritt_schreiben(ctx: Kontext, job: dict) -> list[tuple[str, dict]]:
     story = _story(ctx, job)
     p = job["payload"]
     docs = repo.dokumente(ctx.store, story["id"])
-    text = schreiben.schreiben(ctx, story, repo.claims(ctx.store, story["id"]), docs, story.get("laenge") or "normal",
+    claims = repo.claims(ctx.store, story["id"])
+    if p.get("nur_claims"):  # Kurzmeldung: genau die Claims, die die zweite KI als tragend genannt hat
+        claims = [c for c in claims if c.id in set(p["nur_claims"])]
+    text = schreiben.schreiben(ctx, story, claims, docs, story.get("laenge") or "normal",
                                anmerkung=p.get("anmerkung", ""), vorige=p.get("vorige"), job_id=job["id"])
     runde = int(p.get("runde", 1))
     repo.fassung_speichern(ctx.store, story["id"], "text" if runde == 1 else "ueberarbeitung", text.model_dump(),
@@ -288,17 +302,18 @@ def schritt_faktencheck(ctx: Kontext, job: dict) -> list[tuple[str, dict]]:
     if a.kern_probleme:
         if runde == 1:
             return [("schreiben", _weiter(p, runde=2, anmerkung=factcheck.anmerkung(a), vorige=felder))]
-        repo.story_setzen(ctx.store, story["id"], status="recherche_erforderlich",
-                          notiz="Faktencheck: Kernaussage auch nach Überarbeitung nicht gedeckt – " +
-                          "; ".join(u.satz[:120] for u in a.kern_probleme))
-        ctx.store.event("recherche_erforderlich", story=story["id"], titel=story["titel"], gruende=["Faktencheck"])
-        return []
+        grund = ("Faktencheck: Kernaussage auch nach Überarbeitung nicht gedeckt – " +
+                 "; ".join(u.satz[:120] for u in a.kern_probleme))
+        if p.get("kurzmeldung") or p.get("endpruefung"):  # schon nach Nachrecherche bzw. zweiter KI: Ende
+            return _verwerfen(ctx, story, f"{grund} (nach Nachrecherche und zweiter KI)")
+        return _nicht_belegt(ctx, story, p, [grund], p.get("fehlend", []))
     hinweise = list(p.get("hinweise", []))
     hinweise += [f"Faktencheck: nicht belegt (bitte prüfen) – „{u.satz[:160]}“" for u in a.markiert]
     if runde == 2:
         hinweise.append("Faktencheck: Text nach Beanstandung einmal überarbeitet")
     repo.story_setzen(ctx.store, story["id"], status="geprueft_text")
-    return [("lektorat", _weiter(p, hinweise=hinweise))]
+    # Nebensätze, die der Faktencheck nicht gedeckt fand, streicht die zweite KI am Ende in jedem Fall
+    return [("lektorat", _weiter(p, hinweise=hinweise, fc_ungedeckt=[u.satz for u in a.markiert]))]
 
 
 def schritt_lektorat(ctx: Kontext, job: dict) -> list[tuple[str, dict]]:
@@ -317,7 +332,134 @@ def schritt_seo(ctx: Kontext, job: dict) -> list[tuple[str, dict]]:
     story = _story(ctx, job)
     felder, h = seo.optimieren(ctx, story["id"], _letzte_fassung(ctx, story["id"]), job["id"])
     repo.fassung_speichern(ctx.store, story["id"], "seo", felder)
-    return [("bild", _weiter(job["payload"], hinweise=job["payload"].get("hinweise", []) + h))]
+    return [("endpruefung", _weiter(job["payload"], hinweise=job["payload"].get("hinweise", []) + h))]
+
+
+# ---- Nachrecherche und zweite KI (Auftrag Luis, 13.11.2026) ---------------------------------------------
+
+def _verwerfen(ctx: Kontext, story: dict, grund: str) -> list[tuple[str, dict]]:
+    if repo.story_setzen(ctx.store, story["id"], nur_offen=True, status="verworfen", notiz=grund[:900]):
+        ctx.store.event("verworfen", story=story["id"], titel=story["titel"], grund=grund[:300])
+    return []
+
+
+def _nicht_belegt(ctx: Kontext, story: dict, p: dict, gruende: list[str], fehlend: list[str]) -> list[tuple[str, dict]]:
+    """Gate oder Faktencheck gescheitert: kein Endzustand, sondern Nachrecherche (höchstens zwei Runden), danach
+    entscheidet die zweite KI. „recherche_erforderlich“ heißt im Cockpit „In Nachrecherche“."""
+    sid = story["id"]
+    n = nachrecherche.runden(ctx.store, sid)
+    hinweise = [h for h in p.get("hinweise", []) if h.startswith(("Nachrecherche", "Neue Quelle"))]
+    weiter = _weiter(p, gruende=list(gruende), fehlend=list(fehlend), hinweise=hinweise)
+    for k in ("kurzmeldung", "nur_claims", "endpruefung", "fc_ungedeckt"):
+        weiter.pop(k, None)
+    grund = "; ".join(gruende)
+    weiter_mit = "nachrecherche" if n < nachrecherche.MAX_RUNDEN else "pruefung"
+    ctx.store.event("recherche_erforderlich", story=sid, titel=story["titel"], gruende=gruende, weiter=weiter_mit)
+    if weiter_mit == "nachrecherche":
+        notiz = f"In Nachrecherche (Runde {n + 1} von {nachrecherche.MAX_RUNDEN}); {grund}"
+    else:
+        notiz = f"Zweite KI prüft nach {n} Runden Nachrecherche; {grund}"
+    if not repo.story_setzen(ctx.store, sid, nur_offen=True, status="recherche_erforderlich", notiz=notiz[:900]):
+        return []
+    return [(weiter_mit, weiter)]
+
+
+def schritt_nachrecherche(ctx: Kontext, job: dict) -> list[tuple[str, dict]]:
+    """Belege für die Fehlstellen suchen (ohne Modell). Neues gefunden → Recherche und Gate erneut; nichts gefunden →
+    zweite KI. Ohne Modell (Agent-Modus) geht die Story mit Fehlstellen und Suchanfragen in den Export."""
+    story = _story(ctx, job)
+    sid, p = story["id"], job["payload"]
+    runde = nachrecherche.runden(ctx.store, sid)
+    erg = nachrecherche.nachrecherchieren(ctx, story, p.get("fehlend", []), p.get("gruende", []), runde)
+    usage_protokollieren(ctx.store, rolle="nachrecherche", provider="suche", modell="ohne-ki", story_id=sid,
+                         job_id=job["id"])
+    ctx.store.event("nachrecherche", story=sid, runde=runde, fehlend=erg.fehlend, anfragen=erg.anfragen,
+                    neu=len(erg.neu), hinweise=erg.hinweise, gelesen=erg.gelesen, wege=dict(erg.wege),
+                    abgelehnt=dict(erg.abgelehnt), ergebnis=erg.zusammenfassung())
+    ergebnis = f"Nachrecherche Runde {runde} von {nachrecherche.MAX_RUNDEN}: {erg.zusammenfassung()}"
+    gruende = "; ".join(p.get("gruende", []))
+    repo.story_setzen(ctx.store, sid, status="recherche_erforderlich",
+                      notiz=(f"{ergebnis}; {gruende}" if gruende else ergebnis)[:900])
+    if jobs.ist_nachtrag(ctx.store, sid):
+        return []  # Nachträge schreibt nur der Agent-Modus: die Story steht mit den neuen Belegen im Export
+    weiter = _weiter(p, hinweise=p.get("hinweise", []) + [ergebnis])
+    if erg.neu or ctx.claude is None:
+        return [("recherche", weiter)]
+    return [("pruefung", weiter)]
+
+
+MAX_PRUEFUNGEN = 10  # Recherche-, Prüf- und Endprüf-Jobs je Story zusammen (alle Runden und Neustarts)
+
+
+def modell_schritte(store, story_id: int) -> int:
+    return store.db.execute("SELECT COUNT(*) FROM workflow_jobs WHERE story_id = ? AND schritt IN "
+                            "('recherche', 'pruefung', 'endpruefung')", (story_id,)).fetchone()[0]
+
+
+def schritt_pruefung(ctx: Kontext, job: dict) -> list[tuple[str, dict]]:
+    """Zweite KI nach der Nachrecherche: schreibbar mit nur belegten Aussagen (notfalls Kurzmeldung) oder verwerfen."""
+    story = _story(ctx, job)
+    sid, p = story["id"], job["payload"]
+    gruende = list(p.get("gruende", []))
+    gate_text = f" · Gate: {'; '.join(gruende)}" if gruende else ""
+    runden_text = [h for h in p.get("hinweise", []) if h.startswith("Nachrecherche Runde")]
+    gate_text += f" · {'; '.join(runden_text)}" if runden_text else ""
+    schon = ctx.store.db.execute("SELECT COUNT(*) FROM workflow_jobs WHERE story_id = ? AND schritt = 'pruefung'",
+                                 (sid,)).fetchone()[0]
+    if modell_schritte(ctx.store, sid) > MAX_PRUEFUNGEN:  # Sicherung gegen einen Kreisel (Neustarts, Runden)
+        return _verwerfen(ctx, story, f"Zweite KI: verworfen – {schon - 1}× geprüft, Belege tragen nicht{gate_text}")
+    claims = repo.claims(ctx.store, sid)
+    urteil = pruefer.story_pruefen(ctx, story, claims, repo.dokumente(ctx.store, sid), gruende, job["id"])
+    regel = pruefer.kurzmeldung_regel(story, claims)
+    if urteil.entscheidung != "schreiben" or regel:
+        grund = urteil.grund if urteil.entscheidung != "schreiben" else f"{regel} (Regel des Radars)"
+        return _verwerfen(ctx, story, f"Zweite KI: verworfen – {grund}{gate_text}")
+    neu, raus = pruefer.kurzmeldung_claims(claims)
+    repo.claims_setzen(ctx.store, sid, neu)
+    bestaetigt = [c.id for c in neu if c.support == "bestaetigt"]
+    nur = [i for i in urteil.claim_ids if i in set(bestaetigt)] or bestaetigt
+    repo.story_setzen(ctx.store, sid, status="geprueft", laenge="event" if story["typ"] == "event" else "kurz",
+                      notiz=f"Zweite KI: als Kurzmeldung schreibbar – {urteil.grund}"[:900])
+    hinweise = p.get("hinweise", []) + [f"Kurzmeldung nur aus belegten Aussagen (zweite KI: {urteil.grund})"]
+    hinweise += [f"Nicht im Text, weil nicht belegt: {c.aussage[:120]}" for c in raus]
+    return [("schreiben", _weiter(p, hinweise=hinweise, runde=1, kurzmeldung=1, nur_claims=nur))]
+
+
+def schritt_endpruefung(ctx: Kontext, job: dict) -> list[tuple[str, dict]]:
+    """Zweite KI vor „neu im Cockpit“: jeder Satz gegen die Dokumente. Ungedeckte Nebensätze (auch die, die der
+    Faktencheck nicht gedeckt fand) werden gestrichen; eine ungedeckte Kernaussage heißt einmal Überarbeitung, danach
+    verwerfen."""
+    from .models import SatzUrteil
+
+    story = _story(ctx, job)
+    sid, p = story["id"], job["payload"]
+    felder = _letzte_fassung(ctx, sid)
+    claims = [c for c in repo.claims(ctx.store, sid) if c.support == "bestaetigt"]
+    urteile = pruefer.entwurf_pruefen(ctx, story, felder, claims, repo.dokumente(ctx.store, sid), job["id"])
+    beanstandet = {u.satz.strip() for u in urteile if u.urteil != "gedeckt"}
+    zusatz = [SatzUrteil(nr=0, satz=s, urteil="ungedeckt", claim_ids=[], fundstelle="", kern=False)
+              for s in p.get("fc_ungedeckt", []) if s.strip() not in beanstandet]
+    neu, gestrichen, probleme = pruefer.pruefung_anwenden(felder, urteile + zusatz)
+    fehlt, _ = pruefer.abdeckung(felder, urteile)  # jeder Satz muss geprüft sein, sonst Überarbeitung
+    probleme += [SatzUrteil(nr=0, satz=s, urteil="ungedeckt", claim_ids=[], fundstelle="nicht geprüft", kern=True)
+                 for s in fehlt]
+    if modell_schritte(ctx.store, sid) > MAX_PRUEFUNGEN:
+        return _verwerfen(ctx, story, "Zweite KI (Endprüfung): verworfen – zu viele Prüfrunden")
+    modell = ctx.settings.modell_fuer("pruefer")
+    repo.fassung_speichern(ctx.store, sid, "pruefung", {**neu, "pruefung": [u.model_dump() for u in urteile]},
+                           von=modell)
+    if probleme:
+        if not p.get("endpruefung"):
+            hinweise = p.get("hinweise", []) + ["Zweite KI: Text nach Beanstandung einmal überarbeitet"]
+            return [("schreiben", _weiter(p, runde=2, anmerkung=pruefer.anmerkung(probleme), vorige=felder,
+                                          endpruefung=1, fc_ungedeckt=[], hinweise=hinweise))]
+        return _verwerfen(ctx, story, "Zweite KI (Endprüfung): verworfen – auch nach Überarbeitung nicht durch die "
+                                      "Dokumente gedeckt: " + "; ".join(u.satz[:120] for u in probleme))
+    hinweise = [h for h in p.get("hinweise", []) if not h.startswith("Faktencheck: nicht belegt")]
+    kopf = (f"Geprüft von zweiter KI ({modell}): {len(urteile)} Sätze gegen die Dokumente geprüft, "
+            + (f"{len(gestrichen)} gestrichen" if gestrichen else "alle gedeckt"))
+    hinweise = [kopf] + hinweise + [f"Zweite KI hat gestrichen: „{s[:160]}“" for s in gestrichen]
+    return [("bild", _weiter(p, hinweise=hinweise))]
 
 
 def _quelle(ctx: Kontext, name: str):
@@ -351,6 +493,14 @@ def entwurf_anlegen(ctx: Kontext, story: dict, felder: dict, payload: dict, *, t
     uid = payload.get("uid") or (primaer.url if primaer else "") or f"story:{story['id']}"
     if story["typ"] == "dossier":
         uid = f"dossier:{story['id']}"
+    andere = ctx.store.draft_by_uid(uid)
+    if andere and andere.get("story_id") not in (None, story["id"]):
+        # Fund 13.11. (Story 117 gegen Entwurf 68): ein eigener Beitrag mit derselben Primärquelle bekommt eine eigene
+        # uid – sonst würde er als Dublette verworfen und der Publisher könnte den anderen Post überschreiben.
+        # Suffix ohne „#“ (ein Fragment ginge in Adressen verloren)
+        uid = f"{uid}:story-{story['id']}"
+        hinweise = [f"Gleiche Primärquelle wie Entwurf {andere['id']} (Story {andere.get('story_id')}) – eigener "
+                    "Beitrag mit eigener Kennung"] + list(hinweise)
     stem = f"s{story['id']}-{slugify(felder.get('titel') or 'beitrag', 50)}"
     label = category_label(s, felder.get("kategorie") or "news")
     bild, versucht = media.besorgen(ctx, story, felder, stem, kategorie_label=label,
@@ -504,7 +654,8 @@ def schritt_kino(ctx: Kontext, job: dict) -> list[tuple[str, dict]]:
 SCHRITTE: dict[str, Handler] = {
     "recherche": schritt_recherche, "gate": schritt_gate, "schreiben": schritt_schreiben,
     "faktencheck": schritt_faktencheck, "lektorat": schritt_lektorat, "seo": schritt_seo, "bild": schritt_bild,
-    "kino": schritt_kino,
+    "kino": schritt_kino, "nachrecherche": schritt_nachrecherche, "pruefung": schritt_pruefung,
+    "endpruefung": schritt_endpruefung,
 }
 
 
@@ -512,7 +663,21 @@ SCHRITTE: dict[str, Handler] = {
 
 def job_ausfuehren(ctx: Kontext, job: dict) -> str:
     store = ctx.store
-    if jobs.ist_nachtrag(store, job["story_id"]):
+    story_jetzt = repo.story(store, job["story_id"]) if job.get("story_id") else None
+    if story_jetzt and story_jetzt["status"] in repo.ENDZUSTAND and job["schritt"] != "kino":
+        # inzwischen fertig oder verworfen (Redaktion, Import, anderer Weg): der Schritt entfällt, kein Abruf, kein Modell
+        store._write("UPDATE workflow_jobs SET status = 'fertig', fehler = ?, aktualisiert = ? WHERE id = ?",
+                     (f"Story ist {story_jetzt['status']} – Schritt entfällt", now_iso(), job["id"]))
+        return "entfallen"
+    if (story_jetzt and ctx.claude is not None and job["schritt"] in BEZAHLT and story_jetzt["typ"] != "dossier"
+            and repo.kosten_story(store, story_jetzt["id"])["usd"] >= ctx.settings.kosten_story_usd):
+        usd = repo.kosten_story(store, story_jetzt["id"])["usd"]
+        _verwerfen(ctx, story_jetzt, f"Kostendeckel je Story erreicht ({usd:.2f} $ von "
+                                     f"{ctx.settings.kosten_story_usd:.2f} $, RADAR_KOSTEN_STORY_USD) vor „{job['schritt']}“")
+        store._write("UPDATE workflow_jobs SET status = 'fertig', fehler = 'Kostendeckel', aktualisiert = ? WHERE id = ?",
+                     (now_iso(), job["id"]))
+        return "kostendeckel"
+    if jobs.ist_nachtrag(store, job["story_id"]) and job["schritt"] not in jobs.NACHTRAG_ERLAUBT:
         # Altbestand oder Umweg: ein Nachtrag läuft nie über Worker und Modell, er wartet im Agent-Export
         store._write("UPDATE workflow_jobs SET status = 'fertig', fehler = 'Nachtrag: nur Agent-Modus', aktualisiert = ? "
                      "WHERE id = ?", (now_iso(), job["id"]))
@@ -558,6 +723,7 @@ def abarbeiten(ctx: Kontext, *, bis: float | None = None, max_jobs: int | None =
     stats: Counter = Counter()
     jobs.aufraeumen(ctx.store)
     jobs.budget_wieder_frei(ctx.store)  # nur Jobs, deren Pause (15 Minuten) abgelaufen ist
+    nachrecherche_anstossen(ctx)
     nur = None if ctx.claude is not None else OHNE_MODELL
     while (bis is None or time.monotonic() < bis) and (max_jobs is None or sum(stats.values()) < max_jobs):
         job = jobs.naechster(ctx.store, worker, schritte=nur)
@@ -565,6 +731,34 @@ def abarbeiten(ctx: Kontext, *, bis: float | None = None, max_jobs: int | None =
             break
         stats[job_ausfuehren(ctx, job)] += 1
     return stats
+
+
+def nachrecherche_anstossen(ctx: Kontext) -> int:
+    """Storys auf „recherche_erforderlich“ ohne offenen Job und ohne Entwurf (Bestand von vor der Nachrecherche oder
+    ein abgebrochener Schritt) bekommen wieder einen: Nachrecherche, nach zwei Runden die zweite KI (mit Modell) bzw.
+    die Recherche für den Agent-Export (ohne Modell). Nachträge stehen nach zwei Runden ohnehin im Export."""
+    store = ctx.store
+    if schalter.gestoppt(store, "redaktion"):
+        return 0
+    rows = store.db.execute(
+        "SELECT s.id, s.notiz, s.herkunft FROM stories s WHERE s.status = 'recherche_erforderlich' AND s.typ != 'kino' "
+        "AND NOT EXISTS (SELECT 1 FROM workflow_jobs j WHERE j.story_id = s.id AND j.status IN ('offen', 'laeuft', "
+        "'wartet_budget')) AND NOT EXISTS (SELECT 1 FROM drafts d WHERE d.story_id = s.id) LIMIT 50").fetchall()
+    n = 0
+    for sid, notiz, herkunft in rows:
+        runden = nachrecherche.runden(store, sid)
+        gruende = [g.strip() for g in (notiz or "").split("; ") if g.strip() and not g.startswith(
+            ("In Nachrecherche", "Nachrecherche Runde", "Zweite KI prüft", "Ergänzt am"))]
+        if runden < nachrecherche.MAX_RUNDEN:
+            schritt = "nachrecherche"
+        elif herkunft == "nachtrag":
+            continue
+        else:
+            schritt = "pruefung" if ctx.claude is not None else "recherche"
+        if jobs.einreihen(store, sid, schritt, prio=jobs.PRIO_NEWS, key=f"{sid}:{schritt}:anstoss{runden}",
+                          payload={"gruende": gruende, "fehlend": [], "hinweise": []}):
+            n += 1
+    return n
 
 
 def worker(settings: Settings, *, parallel: int | None = None, einmal: bool = False, pause: float = 5.0,
@@ -654,20 +848,35 @@ class StoryNichtOffen(Exception):
 def neu_starten(store: Store, story_id: int, notiz: str) -> bool:
     """Eine Story, die wegen fehlender Belege oder eines Fehlers hängt, mit der neuen Quelle noch einmal prüfen."""
     story = repo.story(store, story_id)
-    if story is None or story["status"] not in NEU_STARTBAR or story["typ"] == "kino":
+    if story is None or story["typ"] == "kino":
         return False
+    verworfen = nachrecherche.neu_startbar(story)
+    if story["status"] not in NEU_STARTBAR and not verworfen:
+        return False
+    if (verworfen or story["status"] == "fehler") and (
+            nachrecherche.neustarts(store, story_id) >= nachrecherche.MAX_NEUSTARTS
+            or modell_schritte(store, story_id) >= MAX_PRUEFUNGEN):
+        return False  # höchstens zwei Neustarts je Story (verworfen oder Fehler), Prüfrunden begrenzt
+    if verworfen and store.db.execute("SELECT 1 FROM drafts WHERE story_id = ?", (story_id,)).fetchone():
+        return False
+    if jobs.offen_fuer_story(store, story_id):
+        return False  # die laufende Nachrecherche bzw. Recherche liest das neue Dokument ohnehin
     _recherche_neu(store, story_id, notiz)
+    # protokolliert; die Runden der Nachrecherche zählen über alle Neustarts (höchstens zwei je Story)
+    store.event("neu_gestartet", story=story_id, vorher=story["status"], grund=notiz[:200],
+                runden_nachrecherche=nachrecherche.runden(store, story_id))
     return True
 
 
 def quelle_ergaenzen(store: Store, story_id: int, url: str, von: str = "") -> str | None:
-    """„Recherche nötig“: die Redaktion gibt eine Quelle dazu, die Story läuft erneut durch Recherche und Gate."""
+    """Quelle von Hand (nur admin, im Cockpit versteckt): die Story läuft erneut durch Recherche und Gate. Im
+    Normalfall sucht die Nachrecherche selbst; niemand muss Links einfügen."""
     from .. import net
 
     story = repo.story(store, story_id)
     if story is None or story["status"] not in NEU_STARTBAR or story["typ"] == "kino" or jobs.offen_fuer_story(store, story_id):
         status = story["status"] if story else "fehlt"
-        raise StoryNichtOffen(f"Story {story_id} ist {status} – eine Quelle lässt sich nur bei „Recherche nötig“ oder "
+        raise StoryNichtOffen(f"Story {story_id} ist {status} – eine Quelle lässt sich nur „In Nachrecherche“ oder "
                               "„Fehler“ ergänzen (nicht bei Kino und nicht, solange sie läuft)")
     net.check_url(url)
     key = repo.dokument_hinzufuegen(store, story_id, url=url, publisher="Redaktion", quelle="Redaktion", rights="zitat",

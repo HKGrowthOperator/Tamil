@@ -57,14 +57,14 @@ Job.
 | Stopp | `redaktion` |
 | Protokoll | `seen.status = story`; Jobs `recherche` (bzw. `kino`) idempotent |
 | Wiederholung | – (idempotente Schlüssel) |
-| Mensch | „Story verwerfen“, „Quelle ergänzen“ |
+| Mensch | „Story verwerfen“; „Quelle von Hand“ nur admin (Notweg) |
 
 ### A3 Anreichern und Neustart
 
 | | |
 |---|---|
 | Auslöser | Scan: Meldung gehört zu einer bestehenden Story |
-| Regel | neues Dokument an der Story; Story in `recherche_erforderlich`/`fehler` startet neu; offener Entwurf bekommt Hinweis und Quelle |
+| Regel | neues Dokument an der Story; Story in `recherche_erforderlich`/`fehler` ohne offenen Job startet neu (eine laufende Nachrecherche liest das Dokument ohnehin); eine mangels Beleg verworfene Story („Zweite KI: verworfen …“) wird wieder zugeordnet und startet neu; offener Entwurf bekommt Hinweis und Quelle |
 | Stopp | `redaktion` |
 | Protokoll | `log` `story_angereichert` |
 | Mensch | entscheidet über den Entwurf wie sonst |
@@ -74,12 +74,24 @@ Job.
 | | |
 |---|---|
 | Auslöser | Worker: fällige Jobs nach Priorität |
-| Regel | Kette `recherche → gate → schreiben → faktencheck → lektorat → seo → bild`; Kino `kino`; Gate-Regeln; höchstens zwei Text-Runden |
+| Regel | Kette `recherche → gate → schreiben → faktencheck → lektorat → seo → endpruefung → bild`; Kino `kino`; Gate-Regeln; höchstens zwei Text-Runden; Gate oder Faktencheck gescheitert → A4a |
 | Stopp | `redaktion` bei der Übernahme eines Jobs und unmittelbar vor jedem Aufruf nach außen (Modell, Abruf, Suche); mitten im Schritt: Job zurück, Versuch zählt nicht |
-| Protokoll | `agent_usage` je Aufruf; `article_versions` je Fassung; `log` (`entwurf`, `verworfen`, `recherche_erforderlich`, `angehalten`, `budget`, `fehler`) |
+| Protokoll | `agent_usage` je Aufruf; `article_versions` je Fassung; `log` (`entwurf`, `verworfen`, `recherche_erforderlich`, `nachrecherche`, `angehalten`, `budget`, `fehler`) |
 | Karenz | – |
 | Wiederholung | nach 1, 5, 30 Min.; nach 3 Versuchen `tot` (Story `fehler`); Budget: `wartet_budget`, nach 15 Min. erneut; abgelaufene Deadline: zurück in die Schlange |
-| Mensch | „Erneut“ bei toten Jobs (admin); „Quelle ergänzen“; jeder Entwurf wartet auf Freigabe |
+| Mensch | „Erneut“ bei toten Jobs (admin); jeder Entwurf wartet auf Freigabe |
+
+### A4a Nachrecherche und zweite KI (Auftrag Luis, 13.11.2026)
+
+| | |
+|---|---|
+| Auslöser | Gate nicht ok; Faktencheck in Runde 2 mit ungedecktem Kernsatz; Agent-Import ohne tragfähige Belege; Bestand auf `recherche_erforderlich` ohne Job (`nachrecherche_anstossen` bei jedem Worker-Durchgang) |
+| Regel | Job `nachrecherche` ohne Modell: Suchanfragen aus Titel, Ort, Personen und Fehlstellen; Kandidaten aus den Dokumenten, dem Quellen- und Bildquellen-Register und der Google-News-Suche (nur Hinweise); nie soziale Netzwerke, keine Paywall; neue Volltexte → Recherche und Gate erneut; höchstens zwei Runden. Danach Job `pruefung` (zweite KI, `RADAR_MODELL_PRUEFER`): Kurzmeldung nur aus bestätigten Claims (mindestens eine bestätigte Kernaussage, kein Widerspruch, Termine mit Datum und Ort) oder verworfen mit Grund. Jeder Entwurf: Job `endpruefung` (zweite KI, Satz für Satz; Ungedecktes gestrichen, Kernaussage → einmal Überarbeitung, sonst verworfen). Ohne Schlüssel: nur die Nachrecherche läuft, die Story steht danach mit Fehlstellen und Suchanfragen in der Export-Liste `nachrecherche` |
+| Stopp | `redaktion` bei der Übernahme des Jobs und vor jedem Abruf und jeder Suche |
+| Protokoll | `log` `nachrecherche` (Runde, Fehlstellen, Anfragen, Ergebnis), `recherche_erforderlich` (mit `weiter`), `verworfen` (Grund); `agent_usage` Rolle `nachrecherche` (Provider `suche`, 0 $) und `pruefer`; Fassung `pruefung` mit allen Satzurteilen; Hinweis „Geprüft von zweiter KI“ im Entwurf |
+| Karenz | – |
+| Wiederholung | wie A4; höchstens zwei Nachrecherche- und drei Prüfjobs je Story |
+| Mensch | nichts nötig; „Verwerfen“ geht immer; Quelle von Hand nur admin (versteckter Notweg) |
 
 ### A5 Budget
 
@@ -118,7 +130,7 @@ Job.
 | | |
 |---|---|
 | Auslöser | Aufruf einer Claude-Code-Sitzung mit `RADAR_AGENT_TOKEN` (Mensch startet die Sitzung, z. B. `/research`) |
-| Regel | Gates wie im Worker; Grenzen 20 Storys je Export, 5 Vorschläge bzw. Bilder je Web-Aufruf, `RADAR_NACHTRAG_TAG` Nachtrag-Entwürfe je Tag |
+| Regel | Gates wie im Worker; Import nur mit Beitrag, Verwerfen oder neuen Quellen (der Radar liest sie selbst); scheitert das Gate → A4a, nach zwei Runden Kurzmeldung aus bestätigten Claims oder verworfen; Satzprüfung einer zweiten KI der Sitzung (`pruefung`) wird angewendet; Story ergänzen (Vorschlag mit `story_id`) für jede Story in Nachrecherche; Grenzen 20 Storys je Export, 5 Vorschläge bzw. Bilder je Web-Aufruf, 5 neue Quellen je Story und Import, `RADAR_NACHTRAG_TAG` Nachtrag-Entwürfe je Tag |
 | Stopp | `redaktion` (409) |
 | Protokoll | `agent_usage` (Provider `claude-code`), `log` `agent`, `nachtrag`, `bild`; `editorial_actions` mit Auslöser `agent` |
 | Mensch | startet die Sitzung, gibt jeden Entwurf frei |

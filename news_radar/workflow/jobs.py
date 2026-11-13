@@ -20,7 +20,10 @@ MAX_VERSUCHE = 3
 # Deadline je Schritt: länger als Client-Timeout × Versuche (600 s × 2) plus Abrufzeit, damit aufraeumen() keinen
 # noch laufenden Job ein zweites Mal startet
 DEADLINE_SEKUNDEN = {"recherche": 1500, "schreiben": 1500, "faktencheck": 1500, "lektorat": 900, "seo": 900,
-                     "bild": 600, "gate": 120, "kino": 300}
+                     "bild": 600, "gate": 120, "kino": 300, "nachrecherche": 900, "pruefung": 1500,
+                     "endpruefung": 1500}
+# Schritte, die auch an einem Nachtrag laufen dürfen: ohne Modell und ohne Kosten (Suche nach Belegen)
+NACHTRAG_ERLAUBT = ("nachrecherche",)
 DEADLINE_STANDARD = 900
 
 # Priorität: Termin in den nächsten Tagen > Nachricht > Rest > Dossier
@@ -38,10 +41,11 @@ def _now() -> datetime:
 def einreihen(store, story_id: int | None, schritt: str, *, prio: int = PRIO_NORMAL, key: str | None = None,
               payload: dict | None = None, verzoegerung: float = 0) -> int | None:
     """Neuer Job; None, wenn es den Schlüssel schon gibt (idempotent) – oder wenn die Story ein Nachtrag ist: Nachträge
-    schreibt nur der Agent-Modus, nie ein Worker mit Modell (keine Kosten auf diesem Weg)."""
+    schreibt nur der Agent-Modus, nie ein Worker mit Modell (keine Kosten auf diesem Weg). Ausnahme: die
+    Nachrecherche (sucht Belege ohne Modell)."""
     now = _now()
     key = key or f"{story_id}:{schritt}"
-    if story_id is not None and ist_nachtrag(store, story_id):
+    if story_id is not None and schritt not in NACHTRAG_ERLAUBT and ist_nachtrag(store, story_id):
         return None
     with store.lock:
         cur = store.db.execute(

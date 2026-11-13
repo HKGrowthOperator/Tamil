@@ -134,6 +134,9 @@ ROLLEN_MODELLE = {
     "seo": "claude-haiku-5-5",
     "dossier": "claude-opus-5-5",
     "eingang": "claude-haiku-5-5",  # Einsendungen (F1): Zusammenfassung und Entwurf nur aus den Angaben
+    # Zweite KI (Auftrag 13.11.2026): prüft aus frischem Kontext nach der Nachrecherche und jeden fertigen Entwurf –
+    # standardmäßig das stärkste Modell der Konfiguration (RADAR_MODELL_PRUEFER)
+    "pruefer": "claude-opus-5-5",
 }
 BILD_REIHENFOLGE = ("archiv", "quelle", "stock", "pool", "ki", "karte")
 
@@ -201,6 +204,8 @@ class Settings:
     bild_reihenfolge: tuple[str, ...] = BILD_REIHENFOLGE
     ki_bilder_je_artikel: int = 1
     recherche_google_news: bool = True  # zweite Quelle über Google-News-RSS suchen (siehe robots-Hinweis im Register)
+    modell_aktiv: bool = False  # ANTHROPIC_API_KEY (bzw. RADAR_ANTHROPIC_API_KEY) gesetzt: Worker mit Modell
+    kosten_story_usd: float = 1.0  # Kostendeckel je Story (Modellkosten aller Schritte), Dossiers ausgenommen
 
     def modell_fuer(self, rolle: str) -> str:
         return self.modelle.get(rolle) or ROLLEN_MODELLE.get(rolle) or ROLLEN_MODELLE["text"]
@@ -348,4 +353,6 @@ def load_settings(sources_file: Path = ROOT / "sources.toml") -> Settings:
         bild_reihenfolge=_reihenfolge(env("BILD_REIHENFOLGE", "")),
         ki_bilder_je_artikel=_int("RADAR_KI_BILDER_JE_ARTIKEL", 1),
         recherche_google_news=(env("RADAR_RECHERCHE_GOOGLE_NEWS", "1") or "1") not in ("0", "nein", "false"),
+        modell_aktiv=bool(os.environ.get("ANTHROPIC_API_KEY", "").strip()),
+        kosten_story_usd=_float("RADAR_KOSTEN_STORY_USD", 1.0),
     )

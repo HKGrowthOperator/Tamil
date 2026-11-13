@@ -75,7 +75,7 @@ def test_weekly_report_and_digest_include_costs_and_problems(settings):
         text = repo.wochenbericht_text(store)
         digest = notify.digest(settings, store)
     assert "Annahmequote 50%" in text and "$0.12" in text and "1 abgebrochene Jobs" in text
-    assert "Kosten" in digest and "Recherche nötig" in digest and "abgebrochene Jobs" in digest
+    assert "Kosten" in digest and "in Nachrecherche" in digest and "abgebrochene Jobs" in digest
 
 
 def test_blind_comparison_sheet_hides_models_and_evaluates(settings, tmp_path):
