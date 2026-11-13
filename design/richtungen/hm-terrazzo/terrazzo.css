@@ -504,3 +504,4 @@ p:not([class]), .artikel__text > p, .reihe__text, .kopfblock__satz { max-width: 
   .zweit .feldreihe > .feld + .feld { order: 4; margin-inline: var(--gutter); }
   .stein--kal { margin-top: var(--space-lg); }
 }
+@media (max-width: 59.99rem) { .zweit .stein--nach { border-top: var(--rule-bar) solid var(--color-ink); margin: var(--space-lg) var(--gutter) 0; padding-inline: 0; } }
