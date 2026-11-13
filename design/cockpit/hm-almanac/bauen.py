@@ -174,7 +174,7 @@ def uebersicht():
 <div class="feld"><label for="grund-alles">Grund <span class="pflicht">(Pflicht)</span></label>
 <textarea class="input" id="grund-alles" name="grund" maxlength="300" required aria-describedby="grund-alles-h"></textarea>
 <p class="hilfe" id="grund-alles-h">Wirkt sofort auf jeden Kanal und steht mit deinem Namen im Protokoll.</p></div>
-<p class="leiste"><button class="btn btn--quiet" type="submit">Jetzt anhalten</button></p>
+<div class="leiste"><button class="btn btn--quiet" type="submit">Jetzt anhalten</button></div>
 </form>
 </details>
 </section>
@@ -292,7 +292,7 @@ WEITERE
 <div class="meldung meldung--fehler lizenz-fehlt" role="status">
 <p><b>Lizenz fehlt.</b> Zu diesem Bild gibt es keinen Lizenz-Datensatz. Trag ihn nach oder ersetze das Bild.</p>
 <p class="klein">Die Commons-Seite nennt: Vincenzo.togni, CC BY-SA 4.0.</p>
-<p class="leiste"><button class="btn btn--quiet" type="button">Commons-Angaben übernehmen</button></p>
+<div class="leiste"><button class="btn btn--quiet" type="button">Commons-Angaben übernehmen</button></div>
 </div>
 <form class="form abschnitt" data-endpoint="" novalidate aria-labelledby="h-lizenzform">
 <h3 id="h-lizenzform">Lizenz-Datensatz</h3>
@@ -322,7 +322,7 @@ WEITERE
 <div class="feld"><label for="l-quelle">Bildquelle</label>
 <input class="input" id="l-quelle" name="quelle_url" type="url" inputmode="url" value="https://commons.wikimedia.org/wiki/File:The_Stade_Municipal_of_Yverdon_in_2022.jpg">
 <p class="hilfe"></p></div>
-<p class="leiste"><button class="btn btn--primary" type="submit">Datensatz speichern</button><button class="btn btn--quiet" type="button">Bildkarte erzeugen</button><span class="grund">Speichern schreibt eine Protokollzeile und gibt die Freigabe frei.</span></p>
+<div class="leiste"><button class="btn btn--primary" type="submit">Datensatz speichern</button><button class="btn btn--quiet" type="button">Bildkarte erzeugen</button><span class="grund">Speichern schreibt eine Protokollzeile und gibt die Freigabe frei.</span></div>
 </form>
 </section>"""
     else:
@@ -351,7 +351,7 @@ WEITERE
 <dt>Bildquelle</dt><dd><a href="https://commons.wikimedia.org/wiki/File:The_Stade_Municipal_of_Yverdon_in_2022.jpg">Commons-Seite öffnen</a></dd>
 <dt>Eingetragen</dt><dd>13.11.2026, <time datetime="2026-11-13T18:52">18:52</time>, Redaktion A</dd>
 </dl>
-<p class="leiste abschnitt"><button class="btn btn--quiet" type="button">Datensatz ändern</button><button class="btn btn--quiet" type="button">Bild ersetzen</button></p>
+<div class="leiste abschnitt"><button class="btn btn--quiet" type="button">Datensatz ändern</button><button class="btn btn--quiet" type="button">Bild ersetzen</button></div>
 </section>"""
     weitere = """<details class="weitere"><summary class="btn btn--quiet">Weitere</summary><div class="weitere__panel">
 <a class="btn" href="/vorschau/36">Vorschau</a>
@@ -422,7 +422,7 @@ WEITERE
 <div class="feld"><label for="f-schlag">Schlagworte</label><input class="input" id="f-schlag" name="schlagworte" placeholder="durch Komma getrennt"><p class="hilfe"></p></div>
 <div class="feld"><label for="f-seo">SEO-Titel</label><input class="input" id="f-seo" name="seo_titel" maxlength="70"><p class="hilfe">höchstens 60 Zeichen</p></div>
 <div class="feld"><label for="f-alt">Alt-Text des Bildes</label><input class="input" id="f-alt" name="bild_alt" value="Das Stade Municipal in Yverdon-les-Bains, Heimstadion von Yverdon-Sport (Archivbild 2022)"><p class="hilfe"></p></div>
-<p class="leiste ganz"><button class="btn btn--quiet" type="submit">Speichern</button><span class="grund">Speichern erhöht den Stand; freigegeben wird dann der neue Stand.</span></p>
+<div class="leiste ganz"><button class="btn btn--quiet" type="submit">Speichern</button><span class="grund">Speichern erhöht den Stand; freigegeben wird dann der neue Stand.</span></div>
 </form>
 </details></section>
 </div>
@@ -440,7 +440,7 @@ WEITERE
 <summary class="btn btn--quiet">Neu schreiben lassen</summary>
 <form class="form abschnitt" data-endpoint="">
 <div class="feld"><label for="f-anw">Anweisung</label><textarea class="input" id="f-anw" name="anweisung" placeholder="z. B. Hintergrund zur Leihe nach Vaduz ergänzen"></textarea><p class="hilfe">Kostet einen Modellaufruf aus dem Budget.</p></div>
-<p class="leiste"><button class="btn btn--quiet" type="submit">Neu schreiben</button></p>
+<div class="leiste"><button class="btn btn--quiet" type="submit">Neu schreiben</button></div>
 </form>
 </details>
 </section>
@@ -471,7 +471,7 @@ def eingang():
 </div>
 <div class="meldung meldung--fehler" role="alert">
 <p><b>Abholen fehlgeschlagen um <time datetime="2026-11-13T18:54">18:54</time>.</b> Die Website hat nicht geantwortet. Einsendungen bleiben dort liegen und gehen nicht verloren; zuletzt abgeholt um 18:51.</p>
-<p class="leiste"><button class="btn btn--quiet" type="button">Erneut abholen</button></p>
+<div class="leiste"><button class="btn btn--quiet" type="button">Erneut abholen</button></div>
 </div>
 <ul class="tabs abschnitt" aria-label="Filter">
 <li><a href="eingang.html?stand=offen" aria-current="true">Offen <span class="num">5</span></a></li>
@@ -519,10 +519,10 @@ def eingang():
 <p>„Deepavali-Feier des Düsseldorf Tamil Sangam am 15. November“, Typ Event, mit dem Vermerk „Angaben des Einsenders, ungeprüft“. <a href="entwurf.html">Entwurf ansehen</a></p>
 <form class="form abschnitt" data-endpoint="">
 <div class="feld"><label for="notiz">Notiz für die Redaktion</label><textarea class="input" id="notiz" name="notiz" placeholder="z. B. Uhrzeit beim Verein erfragt"></textarea><p class="hilfe">Bleibt intern, wird mit der Einsendung nach 90 Tagen gelöscht.</p></div>
-<p class="leiste"><button class="btn btn--primary" type="button">Übernehmen</button><button class="btn btn--quiet" type="button">Erledigt</button>
+<div class="leiste"><button class="btn btn--primary" type="button">Übernehmen</button><button class="btn btn--quiet" type="button">Erledigt</button>
 <details class="weitere"><summary class="btn btn--quiet">Weitere</summary><div class="weitere__panel"><button class="btn" type="button">Als Dublette zu Story 30 markieren</button><button class="btn gefahr" type="button">Ablehnen</button><button class="btn gefahr" type="button">Als Spam</button></div></details>
 <a class="btn btn--text" href="mailto:einsender.a@example.org?subject=Ihre%20Einsendung%20E-2026-0141">Im Mailprogramm antworten</a>
-<span class="grund">Übernehmen legt einen Entwurf an; ab da gilt der normale Weg mit Prüfen und Freigeben. Das System schreibt dem Einsender nichts.</span></p>
+<span class="grund">Übernehmen legt einen Entwurf an; ab da gilt der normale Weg mit Prüfen und Freigeben. Das System schreibt dem Einsender nichts.</span></div>
 </form>
 </section>
 </div>"""
@@ -559,7 +559,7 @@ def social():
 <div class="feld"><label for="s-text">Text für Instagram und Facebook</label>
 <textarea class="input" id="s-text" name="text" rows="5">Diwali in Basel: Basel Tamil Sangam feiert am 21. November. Der Basel Tamil Sangam lädt Familien zur Diwali-Feier in die Aula Lysbüchel ein. Mitglieder erhalten Tickets günstiger. Mehr auf tamil.de</textarea>
 <p class="hilfe">Hashtags je Rubrik: <span class="fill">liefert KBS</span>. Der Link ist bei Instagram nicht anklickbar; der Text verweist auf tamil.de.</p></div>
-<p class="leiste"><button class="btn btn--primary" type="button">Stoppen</button><button class="btn btn--quiet" type="submit">Text speichern</button><span class="grund">Stoppen hält nur diesen Beitrag an, auf beiden Kanälen.</span></p>
+<div class="leiste"><button class="btn btn--primary" type="button">Stoppen</button><button class="btn btn--quiet" type="submit">Text speichern</button><span class="grund">Stoppen hält nur diesen Beitrag an, auf beiden Kanälen.</span></div>
 </form>
 <details class="abschnitt">
 <summary class="btn btn--quiet">Regelprüfung: alle 9 erfüllt</summary>
@@ -577,7 +577,7 @@ def social():
 <ul class="hinweise">
 <li class="w"><b>R3 unklar:</b> Kinotermine zählen nur in der Zukunft; die Spielzeiten in Gütersloh und Ravensburg sind im Beitrag nicht datiert.</li>
 </ul>
-<p class="leiste"><button class="btn btn--quiet" type="button">Trotzdem vorbereiten</button><button class="btn btn--quiet" type="button">Verwerfen</button><span class="grund">Deine Entscheidung steht mit Grund und Namen im Protokoll.</span></p>
+<div class="leiste"><button class="btn btn--quiet" type="button">Trotzdem vorbereiten</button><button class="btn btn--quiet" type="button">Verwerfen</button><span class="grund">Deine Entscheidung steht mit Grund und Namen im Protokoll.</span></div>
 </section>
 <section class="sheet" aria-labelledby="h-historie">
 <div class="sheet__head"><h2 id="h-historie">Historie</h2><p>Regelwerk Fassung 1</p></div>
@@ -606,7 +606,7 @@ def social():
 <div class="sheet__head"><h2 id="h-wa">WhatsApp-Entwurf</h2><p>gepostet wird von Hand</p></div>
 <div class="wa">
 <div><p class="wa__text" id="wa-text">{e(wa_text)}<span class="fill">Link folgt</span></p>
-<p class="leiste abschnitt"><button class="btn btn--quiet" type="button" data-kopiere="wa-text" aria-describedby="wa-h">Text kopieren</button><a class="btn btn--quiet" href="#whatsapp-bild">Bild herunterladen</a></p>
+<div class="leiste abschnitt"><button class="btn btn--quiet" type="button" data-kopiere="wa-text" aria-describedby="wa-h">Text kopieren</button><a class="btn btn--quiet" href="#whatsapp-bild">Bild herunterladen</a></div>
 <p class="hilfe" id="wa-h" aria-live="polite"></p></div>
 <figure class="bild" id="whatsapp-bild"><div class="bildkarte"><img src="{LOGO}" width="300" height="121" alt="tamil.de"><b>Diwali in Basel: Basel Tamil Sangam feiert am 21. November</b><span>Grafik: Tamil.de</span></div>
 <figcaption>Bildkarte 1080 × 1350, Vorschau</figcaption></figure>
@@ -615,7 +615,7 @@ def social():
 <summary class="btn btn--quiet">Als gepostet markieren</summary>
 <form class="form abschnitt" data-endpoint="">
 <p class="klein">Erst markieren, wenn der Beitrag im WhatsApp-Kanal steht. Person und Zeit gehen ins Protokoll.</p>
-<p class="leiste"><button class="btn btn--quiet" type="submit">Ja, ist gepostet</button></p>
+<div class="leiste"><button class="btn btn--quiet" type="submit">Ja, ist gepostet</button></div>
 </form>
 </details>
 </section>
@@ -711,8 +711,8 @@ def verzeichnis():
 <dt>Premium</dt><dd>nein; setzt nur ein Administrator in WordPress</dd>
 <dt>Einsender</dt><dd>Person F, inhaber@example.org</dd>
 </dl>
-<p class="leiste abschnitt"><button class="btn btn--primary" type="submit">Auswahl freigeben</button><button class="btn btn--quiet" type="button">Ablehnen</button><a class="btn btn--text" href="mailto:inhaber@example.org?subject=Ihr%20Verzeichniseintrag">Im Mailprogramm antworten</a>
-<span class="grund">Freigegeben werden nur die Felder mit „ja“. Danach zeigt das Profil die neue Nummer.</span></p>
+<div class="leiste abschnitt"><button class="btn btn--primary" type="submit">Auswahl freigeben</button><button class="btn btn--quiet" type="button">Ablehnen</button><a class="btn btn--text" href="mailto:inhaber@example.org?subject=Ihr%20Verzeichniseintrag">Im Mailprogramm antworten</a>
+<span class="grund">Freigegeben werden nur die Felder mit „ja“. Danach zeigt das Profil die neue Nummer.</span></div>
 </form>
 </section>
 <section class="sheet" aria-labelledby="h-dub">
@@ -726,7 +726,7 @@ def verzeichnis():
 <tr class="geaendert"><td class="titel">Website</td><td class="neu" data-l="Einsendung">tempel-berlin.example.org</td><td class="alt" data-l="Eintrag">keine Angabe</td></tr>
 </tbody>
 </table>
-<p class="leiste abschnitt"><button class="btn btn--quiet" type="button">Als Änderung zu V-0004 führen</button><button class="btn btn--quiet" type="button">Trotzdem neu anlegen</button><button class="btn btn--quiet" type="button">Ablehnen</button></p>
+<div class="leiste abschnitt"><button class="btn btn--quiet" type="button">Als Änderung zu V-0004 führen</button><button class="btn btn--quiet" type="button">Trotzdem neu anlegen</button><button class="btn btn--quiet" type="button">Ablehnen</button></div>
 </section>
 </div>
 </div>"""
@@ -787,19 +787,20 @@ def buchungen():
 </ul>
 <form class="form abschnitt" data-endpoint="">
 <div class="feld"><label for="b-grund">Grund bei Ablehnung</label><textarea class="input" id="b-grund" name="ablehnungsgrund" placeholder="z. B. Zieladresse führt nicht zum beworbenen Angebot"></textarea><p class="hilfe">Bei Ablehnung wird automatisch voll erstattet; die Tage werden frei.</p></div>
-<p class="leiste"><button class="btn btn--primary" type="submit">Freigeben</button><button class="btn btn--quiet" type="button">Ablehnen</button></p>
+<div class="leiste"><button class="btn btn--primary" type="submit">Freigeben</button><button class="btn btn--quiet" type="button">Ablehnen</button></div>
 </form>
 </section>
 <section class="sheet sp-5" aria-labelledby="h-stat">
 <div class="sheet__head"><h2 id="h-stat">B-0011: Einblendungen und Klicks</h2><p>läuft bis 15.11.</p></div>
-<table class="tafel tafel--dicht tafel--stapel">
+<table class="tafel tafel--dicht">
 <caption>Beispielwerte, gezählt ohne Cookies</caption>
 <thead><tr><th scope="col">Tag</th><th scope="col" class="r">Einblendungen</th><th scope="col" class="r">Klicks</th></tr></thead>
 <tbody>
 {st}
 </tbody>
 </table>
-<div class="skelett" aria-busy="true" aria-label="Heute wird geladen"><i></i><i></i></div>
+<div class="skelett" aria-busy="true" aria-describedby="heute-laedt"><i></i><i></i></div>
+<p class="klein muted" id="heute-laedt">13.11.: wird geladen</p>
 <p class="klein muted">Eine Einblendung zählt, wenn die halbe Fläche eine Sekunde sichtbar war.</p>
 <h3 class="abschnitt">Protokoll</h3>
 <dl class="dl">
@@ -808,7 +809,7 @@ def buchungen():
 <dt>Geprüft</dt><dd>04.11., 09:40, KBS</dd>
 <dt>Gestartet</dt><dd>09.11., 00:00, Dienst</dd>
 </dl>
-<p class="leiste abschnitt"><button class="btn btn--quiet" type="button">Pausieren</button><button class="btn btn--quiet" type="button">Vorzeitig beenden</button></p>
+<div class="leiste abschnitt"><button class="btn btn--quiet" type="button">Pausieren</button><button class="btn btn--quiet" type="button">Vorzeitig beenden</button></div>
 </section>
 </div>"""
     seite("buchungen", "Buchungen", "Werbebuchungen auf tamil.de: Liste, Prüfung des Werbemittels, Stand, Einblendungen und Klicks.",

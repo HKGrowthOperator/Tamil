@@ -2,13 +2,10 @@
  * paper: oklch(97.6% 0.007 120) · accent: oklch(50.5% 0.175 25) · display: Rethink Sans 600 (Ziffern 800) · body: Golos Text · hero: Tagesblatt mit Datum, Aufmacher mit Bild und den nächsten Festen · nav: Logo, Rubriken leise, drei Dienste · footer: Feld paper-2 mit Logo, Rubriken, Diensten, Bildnachweisen · imagery: photographs (Commons, mit Nachweis) · signature: die Tageszeile (Ziffer, Titel, Ort), Ziffer rot nur bei Terminen an Sonntagen und Festtagen
  * axes: jasmine-white/grotesk/kumkum-red-as-meaning · posture: split · contrast: pass · fold: pass · v2.0.0 */
 /* Hallmark · pre-emit critique: P2 H2 E2 S2 R2 V2 · weakest: E (die Tageszeile ist die eine Idee; der Rest ist ruhige Nachrichtenordnung). Rot nie als Fläche, nie als Riesenschrift, kein roter Knopf */
-/* waive 44a: Aufmacher-Schlagzeile und Vorspann sind redaktioneller Text des Kunden (copy: verbatim), nicht für die Probe gekürzt */
-/* waive 58: Nachrichtenseite (Brief v3: lesen, finden): Startseite, Rubrik, Artikel, Kalender und Formulare sind von Natur aus dichter als 80 Wörter je Bildschirm */
-/* waive 79: Seitenköpfe von Artikel, Rubrik und Diensten sind kurz; darunter beginnt der Inhalt ohne Füllung */
-/* waive 78: Abschnittsköpfe bewusst 22 bis 28 px unter der Aufmacher-Schlagzeile (Kritik r1, P1-5 und P2-10: keine Landingpage-Köpfe in 48 px); die Hierarchie trägt die Linie über jeder Liste */
-/* waive 49b: verlinkte Überschriften sind die echten Titel der Beiträge (copy: verbatim) und brechen am Handy zwangsläufig um */
-/* waive 77: Dienstlisten (Filme im Programm, Erwähnungen eines Eintrags) sind kurz, weil es nicht mehr echtes Material gibt; nichts wird aufgefüllt */
-/* waive 85: die Seiten einreichen, kontakt und buchen sind selbst Formulare; der Job der Seite ist das Formular */
+/* Hallmark · waive 49b · verlinkte Titel in Listen und Aufmacher · die Titel der Beiträge stehen wörtlich wie von der Redaktion geschrieben und brechen am Handy um */
+/* Hallmark · waive 78 · Abschnittsköpfe 20 bis 28 px · Kritik r1 verlangt ruhige Köpfe statt Landingpage-Köpfen; die Linie über jeder Liste trägt die Ordnung */
+/* Hallmark · waive 79 · kurze Seitenköpfe der Dienste · Kalender, Kino und Verzeichnis beginnen direkt mit ihren Listen, nichts wird aufgefüllt */
+/* Hallmark · waive 77 · kurze Listen im Programm und bei Erwähnungen · es gibt nur zwei Filme und wenige Beiträge je Eintrag, nichts wird erfunden */
 @import url("./tokens.css");
 @import url("./base.css");
 

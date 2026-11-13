@@ -467,7 +467,7 @@ def verzeichnis_eintrag():
         <figcaption>Symbolbild: Chicken Kottu, ein Gericht aus Sri Lanka, nicht aus dem Ceylon Palace.</figcaption>
       </figure>
       <h2>Über das Restaurant</h2>
-      <p>Hinter dem Ceylon Palace stehen Suthakar Thiruchelvam und sein Sohn Anoj. Die Familie blickt auf rund 30 Jahre in der Bremer Gastronomie zurück; in der Küche hat der Sohn das Sagen. Auf der Karte stehen Currys, Biryani, Dosa und Idly, gebratener Reis, Devil-Gerichte und vor allem Parotta.</p>
+      <p>Vater und Sohn kochen Küche aus Sri Lanka: Currys, Biryani, Dosa und Idly, Devil-Gerichte und vor allem Parotta.</p>
       <h2 class="profil__h">In Berichten auf tamil.de</h2>
       <ol class="weiter__liste">
         <li><time class="num" datetime="{d.isoformat()}">{kurz(d)}</time><a href="artikel-37.html">{e(b["titel"])}</a></li>

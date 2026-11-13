@@ -225,7 +225,7 @@ def entwurf(lizenz_fehlt: bool) -> None:
     quellen = "".join(f"<li><b>{k}</b> {e(n)}<br><span class=\"klein leise\">{e(m)}</span></li>" for k, n, m in QUELLEN)
 
     if lizenz_fehlt:
-        meldung = """<div class="meldung" role="status"><h2>Bild ohne Lizenz-Datensatz</h2><p>Der Abruf bei Wikimedia Commons ist um 17:41 Uhr fehlgeschlagen (Zeitüberschreitung). Ohne Datensatz geht kein Bild nach WordPress. Lizenz eintragen, erneut abrufen oder die Bildkarte nehmen; erst dann lässt sich freigeben.</p></div>"""
+        meldung = """<div class="meldung" role="status"><h2>Bild ohne Lizenz-Datensatz</h2><p>Der Abruf bei Wikimedia Commons ist um 17:41 Uhr fehlgeschlagen (Zeitüberschreitung). Ohne Datensatz geht kein Bild nach WordPress. Lizenz eintragen, erneut abrufen oder die Bildkarte nehmen; erst dann lässt sich freigeben.</p><p><a href="#h-liz">Zum Formular „Lizenz eintragen“</a></p></div>"""
         freigabe_knopf = '<button type="submit" class="knopf" disabled aria-describedby="frei-grund">Freigeben</button><p class="klein leise" id="frei-grund">Freigeben geht erst mit Lizenz-Datensatz.</p>'
         bild = f"""<section class="seite-teil" aria-labelledby="h-bild">
   <h2 id="h-bild">Bild</h2>

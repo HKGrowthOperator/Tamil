@@ -119,7 +119,7 @@ a:hover { text-decoration-thickness: 2px; }
 .tagesliste .tag.ohne { font-size: var(--text-sm); color: var(--color-muted); line-height: 1.25; padding-top: var(--space-2xs); }
 .tagesliste .was { display: grid; gap: var(--space-3xs); min-width: 0; }
 .tagesliste .was a, .tagesliste .titel { font-weight: 600; text-decoration: none; }
-.tagesliste .was a, .tabelle td.kopf a, .daten a, .stand dd a { display: inline-flex; align-items: center; min-height: 44px; }
+.tagesliste .was a, .daten a, .stand dd a { display: inline-flex; align-items: center; min-height: 44px; }
 .stand dd a { min-width: 44px; }
 .tagesliste .was a:hover { text-decoration: underline; }
 .tagesliste .was p { color: var(--color-ink-2); font-size: var(--text-sm); }
@@ -315,6 +315,7 @@ details.aufklapp[open] > summary { margin-bottom: var(--space-sm); }
   .tabelle.stapel td { border: 0; padding: var(--space-3xs) 0; display: grid; grid-template-columns: 8rem minmax(0, 1fr); gap: var(--space-sm); }
   .tabelle.stapel td::before { content: attr(data-l); color: var(--color-ink-2); font-size: var(--text-sm); font-weight: 400; }
   .tabelle.stapel td.kopf { display: block; font-weight: 600; }
+  .tabelle.stapel td.kopf a { display: inline-flex; align-items: center; min-height: 44px; }
   .tabelle.stapel td.kopf::before { content: none; }
   .tabelle.stapel td.r { text-align: left; }
   .tabelle.stapel tr[aria-current="true"] { background: var(--color-paper-2); padding-inline: var(--space-sm); }

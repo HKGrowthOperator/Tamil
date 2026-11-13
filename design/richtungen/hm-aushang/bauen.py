@@ -57,7 +57,7 @@ def wa(text):
 
 
 def datum_lang(d, jahr=True):
-    return f"{TAGE[d.weekday()]}, {d.day}. {MONATE[d.month - 1]}" + (f" {d.year}" if jahr else "")
+    return f"{TAGE[d.weekday()]}, {d.day}.\u00a0{MONATE[d.month - 1]}" + (f"\u00a0{d.year}" if jahr else "")
 
 
 def bis_wann(d):
@@ -125,7 +125,7 @@ def kopf(aktiv=""):
     k = KOMMEND[0]
     return (f'<a class="skip" href="#inhalt">Zum Inhalt</a>'
             f'<header class="kopf"><div class="naechstes"><div class="container"><p>Als Nächstes: '
-            f'<time datetime="{k["d"].isoformat()}">{datum_lang(k["d"], False)}</time>, {e(k["titel"])}, {e(k["ort"])}. '
+            f'<time datetime="{k["d"].isoformat()}">{datum_lang(k["d"], False)}</time>, Deepavali-Feier in {e(k["ort"])}. '
             f'<a href="termine.html">Zum Festkalender</a></p></div></div>'
             f'<div class="leiste"><div class="container leiste-innen">'
             f'<a class="logo" href="index.html" aria-label="tamil.de, zur Startseite"><img src="bilder/logo.png" alt="tamil.de" width="300" height="121"></a>'
@@ -173,7 +173,7 @@ def startseite():
     a = BEI[30]
     hero = (f'<section class="aufmacher" aria-labelledby="h-auf"><div class="container aufmacher-raster">'
             f'<div class="aufmacher-text"><h1 id="h-auf">{e(a["titel"])}</h1>'
-            f'<p class="lead">Tempel und Vereine feierten am 8. November, Düsseldorf folgt am 15.</p>'
+            f'<p class="lead">Tempel und Vereine feierten am 8.\u00a0November, Düsseldorf folgt am\u00a015.</p>'
             f'<div class="aktionen"><a class="btn" href="artikel.html">Beitrag lesen</a>'
             f'<a class="btn btn--still" href="{e(wa(a["titel"]))}">Per WhatsApp schicken</a></div></div>'
             f'{figur(a, "bild bild--aufmacher", prio=True, sizes="(min-width: 64rem) 55vw, 100vw", fakt="Sri Ganesha Hindu Temple an der Hasenheide, Berlin.")}'

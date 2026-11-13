@@ -96,12 +96,12 @@
 </ul>
 <form class="form abschnitt" data-endpoint="">
 <div class="feld"><label for="b-grund">Grund bei Ablehnung</label><textarea class="input" id="b-grund" name="ablehnungsgrund" placeholder="z. B. Zieladresse führt nicht zum beworbenen Angebot"></textarea><p class="hilfe">Bei Ablehnung wird automatisch voll erstattet; die Tage werden frei.</p></div>
-<p class="leiste"><button class="btn btn--primary" type="submit">Freigeben</button><button class="btn btn--quiet" type="button">Ablehnen</button></p>
+<div class="leiste"><button class="btn btn--primary" type="submit">Freigeben</button><button class="btn btn--quiet" type="button">Ablehnen</button></div>
 </form>
 </section>
 <section class="sheet sp-5" aria-labelledby="h-stat">
 <div class="sheet__head"><h2 id="h-stat">B-0011: Einblendungen und Klicks</h2><p>läuft bis 15.11.</p></div>
-<table class="tafel tafel--dicht tafel--stapel">
+<table class="tafel tafel--dicht">
 <caption>Beispielwerte, gezählt ohne Cookies</caption>
 <thead><tr><th scope="col">Tag</th><th scope="col" class="r">Einblendungen</th><th scope="col" class="r">Klicks</th></tr></thead>
 <tbody>
@@ -111,7 +111,8 @@
 <tr><td>12.11.</td><td class="num r" data-l="Einblendungen">1.312</td><td class="num r" data-l="Klicks">11</td></tr>
 </tbody>
 </table>
-<div class="skelett" aria-busy="true" aria-label="Heute wird geladen"><i></i><i></i></div>
+<div class="skelett" aria-busy="true" aria-describedby="heute-laedt"><i></i><i></i></div>
+<p class="klein muted" id="heute-laedt">13.11.: wird geladen</p>
 <p class="klein muted">Eine Einblendung zählt, wenn die halbe Fläche eine Sekunde sichtbar war.</p>
 <h3 class="abschnitt">Protokoll</h3>
 <dl class="dl">
@@ -120,7 +121,7 @@
 <dt>Geprüft</dt><dd>04.11., 09:40, KBS</dd>
 <dt>Gestartet</dt><dd>09.11., 00:00, Dienst</dd>
 </dl>
-<p class="leiste abschnitt"><button class="btn btn--quiet" type="button">Pausieren</button><button class="btn btn--quiet" type="button">Vorzeitig beenden</button></p>
+<div class="leiste abschnitt"><button class="btn btn--quiet" type="button">Pausieren</button><button class="btn btn--quiet" type="button">Vorzeitig beenden</button></div>
 </section>
 </div>
 <footer class="fuss"><p>Zahlen zu Entwürfen, Recherche, Läufen, Budget und Warteschlange: Live-Bericht vom 12.11.2026, 18:57. Eingang, Social, Verzeichnis und Buchungen: Beispieldaten für die Gestaltung; Personen, Kunden, Telefon und E-Mail sind erfunden (E-Mail nur @example.org).</p></footer>
