@@ -378,6 +378,8 @@ def bild(draft_id: int):
                 return redirect(url_for("ui.entwurf", draft_id=draft_id))
             # kein Standardnachweis: Rechte trägt die Redaktion unter „Lizenz eintragen“ ein (bis dahin gesperrt)
             image = images.from_upload(file.read(), stem, request.form.get("credit", "").strip())
+            if lizenz.ist_karten_alt(row.get("bild_alt")):  # beschreibt die Bildkarte, nicht das neue Foto
+                felder = {"bild_alt": ""}
         elif aktion in ("ki", "pool") and not settings.bild_ki_freigabe:
             flash(KI_AUS, "fehler")
             return redirect(url_for("ui.entwurf", draft_id=draft_id))
@@ -415,6 +417,8 @@ def bild(draft_id: int):
             if image.origin == "karte":
                 flash("Kein Stockfoto gefunden (oder kein Unsplash/Pexels-Schlüssel) – Bildkarte erzeugt.", "fehler")
             felder = {"bild_suchbegriff": query}
+            if image.origin == "karte":  # Rückfall auf die Bildkarte: sie beschreibt sich selbst
+                felder["bild_alt"] = lizenz.alt_fuer_karte(row["titel"])
         else:
             image = images.branded_card(row["titel"], label, stem, row.get("kategorie") or "")
             felder = {"bild_alt": lizenz.alt_fuer_karte(row["titel"])}  # die Karte beschreibt sich selbst
@@ -489,7 +493,8 @@ def _lizenz_vorbelegung(row: dict, asset: dict | None) -> dict:
     return {"urheber": a.get("urheber") or "", "rechteinhaber": a.get("rechteinhaber") or "", "lizenz": basis,
             "version": version or "4.0", "umfang": lizenz.umfang_menge(a.get("umfang")) or {"website"},
             "quelle_url": a.get("quelle_url") or "", "ablauf": a.get("ablauf") or "",
-            "alt": row.get("bild_alt") or a.get("alt") or "", "nachweis": row.get("bild_credit") or "",
+            "alt": next((t for t in (row.get("bild_alt"), a.get("alt")) if t and not lizenz.ist_karten_alt(t)), ""),
+            "nachweis": row.get("bild_credit") or "",
             "herkunft": lizenz.formular_herkunft_aus(a.get("herkunft") or "", kuerzel)}
 
 

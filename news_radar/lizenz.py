@@ -170,8 +170,15 @@ def nachweis_vorschlag(kuerzel: str, *, urheber: str = "", rechteinhaber: str = 
     return ""
 
 
+KARTEN_ALT = "Grafik mit der Überschrift: "
+
+
 def alt_fuer_karte(titel: str) -> str:
-    return f"Grafik mit der Überschrift: {titel}"[:ALT_MAX]
+    return f"{KARTEN_ALT}{titel}"[:ALT_MAX]
+
+
+def ist_karten_alt(alt: str | None) -> bool:
+    return (alt or "").startswith(KARTEN_ALT)
 
 
 def alt_fehler(alt: str | None, titel: str = "") -> str:
