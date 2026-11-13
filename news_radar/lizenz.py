@@ -426,6 +426,18 @@ def nachfuehren(store, settings, *, von: str = "nachfuehrung") -> dict:
     return zaehler
 
 
+def nachfuehren_beim_start(store, settings) -> dict:
+    """Beim Start des Dienstes: Nachführung (nur lokal, kein Aufruf nach außen); eine Protokollzeile nur, wenn sie
+    etwas ergänzt hat (nur Zähler, keine Namen)."""
+    from .workflow import repo
+
+    z = nachfuehren(store, settings)
+    if z["ergaenzt"] or z["karte"]:
+        repo.aktion(store, wer="dienst", aktion="lizenz_nachfuehrung", kanal="redaktion", ausloeser="dienst",
+                    notiz=f"{z['ergaenzt']} ergänzt, {z['karte']} Bildkarten, {z['offen']} offen")
+    return z
+
+
 class _Karte:
     origin = "karte"
     credit = KARTE_CREDIT

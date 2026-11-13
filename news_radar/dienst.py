@@ -297,6 +297,12 @@ def main(settings: Settings) -> int:
     from .store import Store
 
     dienst.store = Store(settings.db_path)  # nach rechte_abgeben: Dateien gehören radar; migriert vor allen Kindern
+    try:  # Lizenz-Datensätze im Altbestand ergänzen, wo die Angaben vollständig sind (idempotent, nur lokal)
+        from .lizenz import nachfuehren_beim_start
+
+        log.info("Lizenz-Nachführung: %s", nachfuehren_beim_start(dienst.store, settings))
+    except Exception:  # noqa: BLE001 – der Start darf daran nicht scheitern; offene Bilder bleiben gesperrt
+        log.exception("Lizenz-Nachführung fehlgeschlagen")
 
     def anhalten(signum, _frame):
         log.info("Signal %s – beende alle Prozesse", signum)

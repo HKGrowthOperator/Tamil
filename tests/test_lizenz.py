@@ -444,3 +444,19 @@ def test_asset_eines_anderen_entwurfs_zaehlt_nicht(tmp_path):
             repo.asset_anlegen(store, datei="b.jpg", herkunft="karte", erfunden="x")
         with pytest.raises(sqlite3.Error):
             store.db.execute("INSERT INTO assets (herkunft, erstellt) VALUES ('x', 'y')")  # datei NOT NULL
+
+
+def test_nachfuehrung_beim_dienststart_protokolliert_nur_wenn_etwas_ergaenzt(tmp_path):
+    settings = load_settings()
+    settings.data_dir = tmp_path
+    with Store(settings.db_path) as store:
+        name, _ = save_pair(branded_card("Karte", "Community", "k"), settings.bilder_dir, "k-x")
+        store.insert_draft(dict(uid="k", typ="artikel", titel="Karte", teaser="T", inhalt_html="<p>T</p>",
+                                kategorie="community", relevanz=8, bild_datei=name, bild_origin="karte",
+                                bild_alt="Grafik mit der Überschrift: Karte"))
+        z = lizenz.nachfuehren_beim_start(store, settings)
+        assert z["karte"] == 1
+        zeilen = [dict(r) for r in store.db.execute("SELECT * FROM editorial_actions WHERE aktion = 'lizenz_nachfuehrung'")]
+        assert len(zeilen) == 1 and zeilen[0]["ausloeser"] == "dienst" and "1 Bildkarten" in zeilen[0]["notiz"]
+        lizenz.nachfuehren_beim_start(store, settings)  # nichts mehr zu tun: keine weitere Zeile
+        assert store.db.execute("SELECT COUNT(*) FROM editorial_actions WHERE aktion = 'lizenz_nachfuehrung'").fetchone()[0] == 1
