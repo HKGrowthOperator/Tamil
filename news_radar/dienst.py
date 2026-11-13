@@ -272,6 +272,14 @@ def plan(settings: Settings, env: Mapping[str, str] | None = None) -> list[PlanE
         eintraege.append(PlanEintrag("bildpool", ("bildpool", "fuellen", "--anzahl", "3", "--mit-budget"),
                                      Regel(um=(4, 30), wochentag=0), 1800, ("redaktion",),
                                      "Reserve-Bilder je Thema über die Bild-KI"))
+    from .social import konfig as social_konfig
+
+    social = social_konfig.laden(env)
+    if social.aktiv:  # Funktionsschalter RADAR_SOCIAL (Standard aus, im Echtbetrieb aus bis AV und Rechtstexte)
+        eintraege.append(PlanEintrag("social", ("social", "lauf"), Regel(alle=180), 300,
+                                     ("instagram", "facebook", "whatsapp"),
+                                     f"Social (F4): neue Beiträge erkennen, prüfen, nach der Karenz senden "
+                                     f"({'live' if social.live else 'Trockenmodus'})"))
     return eintraege
 
 

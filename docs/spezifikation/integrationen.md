@@ -124,9 +124,9 @@ muss. Bildquellen und Lizenzen im Einzelnen: `bilder-und-lizenzen.md`.
 | Ablauf | 1. Social-Bild 1080 × 1350 JPEG als Medium in WordPress, öffentliche Adresse. 2. `POST /{ig-user-id}/media` mit `image_url`, `caption`, `alt_text` → Container-ID. 3. `GET /{container-id}?fields=status_code` bis `FINISHED` (höchstens einmal je Minute, höchstens fünf Minuten). 4. `GET /{ig-user-id}/content_publishing_limit` und Stopp-Schalter `instagram` prüfen. 5. `POST /{ig-user-id}/media_publish` mit `creation_id` → Media-ID. 6. `GET /{media-id}?fields=permalink` → Link für die Historie |
 | Grenzen | 100 per API veröffentlichte Beiträge in 24 Stunden je Konto (an anderer Stelle derselben Seite steht 50; Tamil.de plant höchstens sechs am Tag, also unkritisch). Bild: nur JPEG, höchstens 8 MB, Verhältnis 4:5 bis 1,91:1, Breite 320 bis 1440 px. Text: 2200 Zeichen, 30 Hashtags, 20 Erwähnungen; Alt-Text 1000 Zeichen. Aufruf-Kontingent der Plattform: 4800 × Zahl der Einblendungen in 24 Stunden je App und Konto |
 | Fehler und Verhalten | Token ungültig (Code 190) oder Konto gesperrt: Kanal pausiert, Grund im Cockpit. Ratenlimit (Codes 4, 17, 32, 613, 80002) oder Tagesgrenze erreicht: warten, beim nächsten zulässigen Zeitpunkt (Ruhezeit 22 bis 7 Uhr beachten) erneut, kein Sofort-Wiederholen. Container `ERROR` oder `EXPIRED`: einmal neuer Container, dann an einen Menschen. Abbruch nach `media_publish`: mit den letzten Beiträgen des Kontos abgleichen (`GET /{ig-user-id}/media?fields=id,caption,timestamp,permalink`), bei Treffer als veröffentlicht übernehmen, sonst „von Hand entscheiden“. Code 368 (als missbräuchlich eingestuft): Kanal pausiert, Mensch |
-| Testmodus | Trockenmodus (alles außer dem letzten Aufruf an Meta) und Fake-Transport in den Tests (`tests/test_social.py`, geplant). Meta bietet für Veröffentlichungen keine Sandbox; für den echten Abnahmetest T1 empfiehlt sich ein nicht öffentliches Test-Professional-Konto mit Testseite von KBS. Der Vertrag lässt einen „durch die Schnittstelle bestätigten“ Test zu |
-| Variablen (Vorschlag) | `META_GRAPH_VERSION` (beim Einrichten die aktuelle Version laut Meta), `META_IG_USER_ID`, `META_PAGE_ID`, `META_ZUGANG` (geheim: Token), `SOCIAL_MODUS` (`trocken` oder `live`) |
-| Stand | offen (Baustein 5); Stopp-Schalter `instagram` gibt es schon |
+| Testmodus | Trockenmodus (alles außer dem letzten Aufruf an Meta) und Fake-Transport in den Tests (`tests/test_social.py`, `FakeMeta` in `news_radar/social/fake.py`, Abnahme-Szenarien 70–77). Meta bietet für Veröffentlichungen keine Sandbox; für den echten Abnahmetest T1 empfiehlt sich ein nicht öffentliches Test-Professional-Konto mit Testseite von KBS. Der Vertrag lässt einen „durch die Schnittstelle bestätigten“ Test zu |
+| Variablen | `META_GRAPH_VERSION` (Standard `v23.0`; beim Einrichten die aktuelle Version laut Meta), `META_IG_USER_ID`, `META_PAGE_ID`, `META_ZUGANG` (geheim: Token), `RADAR_SOCIAL_LIVE` (live nur zusammen mit allen drei Angaben, sonst Trockenmodus), Funktionsschalter `RADAR_SOCIAL` |
+| Stand | gebaut im Trockenmodus (`news_radar/social/`, 13.11.2026); live offen bis Konten und Freigabe des Regelwerks durch KBS; Stopp-Schalter `instagram` fragt der Ablauf vor jedem Aufruf ab |
 | KBS liefert | Professional-Konto, verknüpfte Seite, Business-Portfolio, App bei Meta, Rolle für den Systembenutzer, ggf. PPA; einmalige Freigabe des Regelwerks; Hashtags je Rubrik (Zuarbeit Nr. 9, 10) |
 
 ## 9. Facebook Pages API
@@ -140,7 +140,7 @@ muss. Bildquellen und Lizenzen im Einzelnen: `bilder-und-lizenzen.md`.
 | Fehler und Verhalten | wie Instagram; zusätzlich: Instagram veröffentlicht, Facebook scheitert → Facebook wird getrennt neu versucht, Instagram nicht wiederholt (Dublettenregel F4: jeder Beitrag höchstens einmal je Kanal) |
 | Testmodus | wie Instagram |
 | Variablen | `META_PAGE_ID`, Token wie Instagram |
-| Stand | offen (Baustein 5); Stopp-Schalter `facebook` vorhanden |
+| Stand | gebaut im Trockenmodus wie Instagram; Stopp-Schalter `facebook` vor jedem Aufruf |
 | KBS liefert | wie Instagram |
 
 ## 10. WhatsApp
@@ -153,9 +153,9 @@ muss. Bildquellen und Lizenzen im Einzelnen: `bilder-und-lizenzen.md`.
 | Warum nicht die WhatsApp Business Cloud API | Sie schickt Nachrichten an einzelne Personen, die vorher eingewilligt haben (Opt-in mit Namen des Unternehmens, je Nachrichtenart); das wäre ein neuer Verteiler mit Personendaten (Telefonnummern, Einwilligungen, Auftragsverarbeitung), kostenpflichtig, und vertraglich nicht beauftragt (B3.1 nennt den Kanal, Newsletter wurde am 20.10. entfernt) |
 | Verboten | inoffizielle Werkzeuge, die WhatsApp Web fernsteuern (§3 Abs. 3; Sperrrisiko für die Nummer) |
 | Grenzen, Fehler | keine Schnittstelle, also keine; Stopp-Schalter `whatsapp` blendet den Entwurf aus |
-| Testmodus | `tests/test_social.py` (geplant) |
-| Variablen (Vorschlag) | `WHATSAPP_KANAL_URL` (Link zum Kanal, kein Geheimnis) |
-| Stand | offen (Baustein 5) |
+| Testmodus | `tests/test_social.py`, Abnahme-Szenario 74 |
+| Variablen | `WHATSAPP_KANAL_URL` (Link zum Kanal, kein Geheimnis; steht im Entwurf, falls gesetzt) |
+| Stand | gebaut: Cockpit `/social` mit „Kopieren“, „Bild herunterladen“, „als gepostet markieren“ |
 | KBS liefert | Link zum WhatsApp-Kanal; Person, die postet |
 
 ## 11. Stripe (Werbebuchung)
@@ -216,9 +216,10 @@ muss. Bildquellen und Lizenzen im Einzelnen: `bilder-und-lizenzen.md`.
 | `BILD_KI_FREIGABE`, `RADAR_KI_BILDER_TAG` | Radar | nein | neu (Vorschlag) |
 | `PEXELS_API_KEY` | Radar | ja | offen |
 | `UNSPLASH_ACCESS_KEY` | Radar | ja | entfällt |
-| `META_GRAPH_VERSION`, `META_IG_USER_ID`, `META_PAGE_ID`, `SOCIAL_MODUS` | Radar | nein | neu (Vorschlag) |
-| `META_ZUGANG` | Radar | ja | neu (Vorschlag) |
-| `WHATSAPP_KANAL_URL` | Radar | nein | neu (Vorschlag) |
+| `META_GRAPH_VERSION`, `META_IG_USER_ID`, `META_PAGE_ID` | Radar | nein | im Code (F4), nicht gesetzt |
+| `RADAR_SOCIAL` (Funktionsschalter), `RADAR_SOCIAL_LIVE` (live statt trocken; ersetzt den Vorschlag `SOCIAL_MODUS`) | Radar | nein | im Code (F4), nicht gesetzt = aus bzw. trocken |
+| `META_ZUGANG` | Radar | ja | im Code (F4), offen (Konten von KBS) |
+| `WHATSAPP_KANAL_URL` | Radar | nein | im Code (F4), offen (Link von KBS) |
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Website | ja | neu (Vorschlag) |
 | `RADAR_AGENT_TOKEN`, `RADAR_LESE_TOKEN` | Radar | ja | gesetzt |
 | `COOLIFY_URL`, `COOLIFY_TOKEN` | Werkzeug (lokal) | Token ja | Tor B2 |

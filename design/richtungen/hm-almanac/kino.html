@@ -20,59 +20,81 @@
 </header>
 
 <main id="main">
-  <section class="hero hero--banner" aria-labelledby="titel">
+  <section class="hero" aria-labelledby="titel">
     <div class="container grid kopfzeile">
       <div class="kopfzeile__text">
-        <h1 id="titel">Welcher tamilische Film wo läuft.</h1>
-        <p class="lead">Spielorte in Deutschland und der Schweiz, Stand 9. November 2026.</p>
+        <h1 id="titel">Tamilisches Kino nach Stadt</h1>
+        <p class="lead">Welcher Film wo läuft, Stand 9. November 2026.</p>
       </div>
-      <p class="actions kopfzeile__aktion"><a class="btn btn--primary" href="https://wa.me/?text=Tamilisches%20Kino%20auf%20tamil.de%3A%20%E2%80%9EScene%E2%80%9C%20in%2011%20Kinos%2C%20%E2%80%9EOM%E2%80%9C%20an%2012%20Spielorten%2C%20%E2%80%9ERamayana%3A%20Rise%20of%20a%20Legend%E2%80%9C%20in%20G%C3%BCtersloh%20und%20Ravensburg%2C%20%E2%80%9EJailer%202%E2%80%9C%20am%20So%2015.11.%20im%20Kino%20Claudia%2C%20Kloten">Kinoliste per WhatsApp teilen</a></p>
+      <p class="kopfzeile__aktion"><a class="share" href="https://wa.me/?text=Tamilisches%20Kino%20auf%20tamil.de%3A%20%E2%80%9EScene%E2%80%9C%20in%2011%20Kinos%2C%20%E2%80%9EOM%E2%80%9C%20an%2012%20Spielorten%2C%20%E2%80%9ERamayana%3A%20Rise%20of%20a%20Legend%E2%80%9C%20in%20G%C3%BCtersloh%20und%20Ravensburg%2C%20%E2%80%9EJailer%202%E2%80%9C%20am%20So%2015.11.%20im%20Kino%20Claudia%2C%20Kloten">Kinoliste per WhatsApp teilen</a></p>
     </div>
   </section>
 
-  <section class="container programm" aria-labelledby="p-woche">
-    <h2 id="p-woche">Spielorte ab 9. November</h2>
-    <ol class="filmliste">
-      <li class="gross"><h3>„Scene“</h3><p class="orte">Berlin, Bremen, Chemnitz, Dortmund, Düsseldorf und 6 weitere Städte</p><p class="zahl"><span class="num">11</span> Kinos</p><a class="share" href="https://wa.me/?text=%E2%80%9EScene%E2%80%9C%20l%C3%A4uft%20in%2011%20Kinos%3A%20Berlin%2C%20Bremen%2C%20Chemnitz%2C%20Dortmund%2C%20D%C3%BCsseldorf%20und%206%20weitere%20St%C3%A4dte%20(tamil.de)">Teilen</a></li>
-      <li><h3>„OM“</h3><p class="orte">in Deutschland</p><p class="zahl"><span class="num">12</span> Spielorte</p><a class="share" href="https://wa.me/?text=%E2%80%9EOM%E2%80%9C%20im%20Kino%3A%2012%20Spielorte%20in%20Deutschland%20(tamil.de)">Teilen</a></li>
-      <li><h3>„Ramayana: Rise of a Legend“</h3><p class="orte">Gütersloh, Ravensburg</p><p class="zahl"><span class="num">2</span> Kinos</p><a class="share" href="https://wa.me/?text=%E2%80%9ERamayana%3A%20Rise%20of%20a%20Legend%E2%80%9C%20in%20G%C3%BCtersloh%20und%20Ravensburg%20(tamil.de)">Teilen</a></li>
-      <li><h3>„Jailer 2“</h3><p class="orte">Sondervorstellung im Kino Claudia, Kloten</p><p class="zahl"><span class="num">15.11.</span> Sonntag</p><a class="share" href="https://wa.me/?text=%E2%80%9EJailer%202%E2%80%9C%20am%20Sonntag%2C%2015.%20November%2C%20im%20Kino%20Claudia%2C%20Kloten%20(tamil.de)">Teilen</a></li>
-    </ol>
+  <section class="container staedte" aria-labelledby="p-stadt">
+    <figure class="sheet" aria-labelledby="p-stadt">
+      <figcaption class="sheet__head">
+        <h2 class="sheet__title" id="p-stadt">Spielorte ab 9. November</h2>
+        <span class="sheet__stand">Städte nach dem Alphabet</span>
+      </figcaption>
+      <table class="tafel stadtliste">
+        <thead><tr><th scope="col">Stadt</th><th scope="col">Film</th><th scope="col">Kino und Termin</th></tr></thead>
+        <tbody>
+          <tr class="land"><th scope="rowgroup" colspan="3">Deutschland</th></tr>
+          <tr><td class="was">Berlin</td><td>„Scene“</td><td></td></tr><tr><td class="was">Bremen</td><td>„Scene“</td><td></td></tr><tr><td class="was">Chemnitz</td><td>„Scene“</td><td></td></tr><tr><td class="was">Dortmund</td><td>„Scene“</td><td></td></tr><tr><td class="was">Düsseldorf</td><td>„Scene“</td><td></td></tr><tr><td class="was">Gütersloh</td><td>„Ramayana: Rise of a Legend“</td><td></td></tr><tr><td class="was">Ravensburg</td><td>„Ramayana: Rise of a Legend“</td><td></td></tr>
+          <tr class="land"><th scope="rowgroup" colspan="3">Schweiz</th></tr>
+          <tr><td class="was">Kloten</td><td>„Jailer 2“</td><td>Kino Claudia, Sondervorstellung am So <time class="num" datetime="2026-11-15">15.11.</time></td></tr>
+        </tbody>
+      </table>
+      <p class="sheet__note">Die Kinos in Deutschland nennt die Quelle nicht. „Scene“ läuft in 11 Kinos, davon 6 in weiteren Städten, deren Namen noch fehlen. „OM“ läuft an 12 Spielorten in Deutschland; die Orte sind noch nicht belegt.</p>
+    </figure>
+  </section>
+
+  <section class="container sec filme-sek" aria-labelledby="p-film">
+    <h2 id="p-film">Nach Film</h2>
+    <table class="tafel filme">
+      <thead><tr><th scope="col">Film</th><th scope="col">Wo</th><th scope="col" class="zahl">Kinos</th><th scope="col"><span class="visually-hidden">Teilen</span></th></tr></thead>
+      <tbody>
+        <tr><td class="was">„Scene“</td><td>Berlin, Bremen, Chemnitz, Dortmund, Düsseldorf und 6 weitere Städte</td><td class="zahl num">11</td><td class="zu"><a class="share" href="https://wa.me/?text=%E2%80%9EScene%E2%80%9C%20l%C3%A4uft%20in%2011%20Kinos%3A%20Berlin%2C%20Bremen%2C%20Chemnitz%2C%20Dortmund%2C%20D%C3%BCsseldorf%20und%206%20weitere%20St%C3%A4dte%20(tamil.de)">Teilen</a></td></tr>
+        <tr><td class="was">„OM“</td><td>in Deutschland</td><td class="zahl num">12</td><td class="zu"><a class="share" href="https://wa.me/?text=%E2%80%9EOM%E2%80%9C%20im%20Kino%3A%2012%20Spielorte%20in%20Deutschland%20(tamil.de)">Teilen</a></td></tr>
+        <tr><td class="was">„Ramayana: Rise of a Legend“</td><td>Gütersloh, Ravensburg</td><td class="zahl num">2</td><td class="zu"><a class="share" href="https://wa.me/?text=%E2%80%9ERamayana%3A%20Rise%20of%20a%20Legend%E2%80%9C%20in%20G%C3%BCtersloh%20und%20Ravensburg%20(tamil.de)">Teilen</a></td></tr>
+        <tr><td class="was">„Jailer 2“</td><td>Kino Claudia, Kloten, am So <time class="num" datetime="2026-11-15">15.11.</time></td><td class="zahl num">1</td><td class="zu"><a class="share" href="https://wa.me/?text=%E2%80%9EJailer%202%E2%80%9C%20am%20Sonntag%2C%2015.%20November%2C%20im%20Kino%20Claudia%2C%20Kloten%20(tamil.de)">Teilen</a></td></tr>
+      </tbody>
+    </table>
     <p class="quelle">Aus dem News-Radar der Redaktion; „OM“ und „Jailer 2“ aus Meldungen vom 12. November.</p>
   </section>
 
-  <section class="band band--ink" aria-labelledby="k-jahr">
-    <div class="container">
-      <div class="band__head"><h2 id="k-jahr">Das Kinojahr 2026</h2><p class="band__note">Aus dem Rückblick der Redaktion.</p></div>
-      <table class="kinojahr">
+  <section class="container sec kinojahr-sek" aria-labelledby="k-jahr">
+    <figure class="sheet">
+      <figcaption class="sheet__head"><h2 class="sheet__title" id="k-jahr">Das Kinojahr 2026</h2><span class="sheet__stand">Aus dem Rückblick der Redaktion</span></figcaption>
+      <table class="tafel kinojahr">
         <thead><tr><th scope="col">Datum</th><th scope="col">Film</th><th scope="col">Wo</th></tr></thead>
         <tbody>
-          <tr><td class="num">10.01.</td><td>„Parasakthi“ mit Sivakarthikeyan</td><td class="leer">ohne Ortsangabe</td></tr>
-          <tr><td class="num">06.02.</td><td>„With Love“ und „Gatta Kusthi 2“</td><td class="leer">ohne Ortsangabe</td></tr>
-          <tr><td class="num">16.02.</td><td>„Members of the Problematic Family“, Berlinale Forum</td><td>Berlin</td></tr>
-          <tr><td class="num">11.04.</td><td>„First Take“, Kurzfilmfestival</td><td>Bern</td></tr>
-          <tr><td class="num">23.04.</td><td>„Mayilaa“, Frauenfilmfest</td><td>Köln</td></tr>
-          <tr><td class="num">14.05.</td><td>„Karuppu“ mit Suriya</td><td>Viernheim, Wien, Berlin</td></tr>
-          <tr><td class="num">25.07.</td><td><a href="artikel-43.html">„Bride of Aravan“</a>, Indisches Filmfestival</td><td>Stuttgart</td></tr>
-          <tr><td class="num">10.09.</td><td><a href="artikel-84.html">„Sardar 2“ mit Karthi</a></td><td>Deutschland</td></tr>
+          <tr><td class="tag num">10.01.</td><td>„Parasakthi“ mit Sivakarthikeyan</td><td class="leer">ohne Ortsangabe</td></tr>
+          <tr><td class="tag num">06.02.</td><td>„With Love“ und „Gatta Kusthi 2“</td><td class="leer">ohne Ortsangabe</td></tr>
+          <tr><td class="tag num">16.02.</td><td>„Members of the Problematic Family“, Berlinale Forum</td><td>Berlin</td></tr>
+          <tr><td class="tag num">11.04.</td><td>„First Take“, Kurzfilmfestival</td><td>Bern</td></tr>
+          <tr><td class="tag num">23.04.</td><td>„Mayilaa“, Frauenfilmfest</td><td>Köln</td></tr>
+          <tr><td class="tag num">14.05.</td><td>„Karuppu“ mit Suriya</td><td>Viernheim, Wien, Berlin</td></tr>
+          <tr><td class="tag num">25.07.</td><td><a href="artikel-43.html">„Bride of Aravan“</a>, Indisches Filmfestival</td><td>Stuttgart</td></tr>
+          <tr><td class="tag num">10.09.</td><td><a href="artikel-84.html">„Sardar 2“ mit Karthi</a></td><td>Deutschland</td></tr>
         </tbody>
       </table>
-    </div>
+    </figure>
   </section>
 
   <section class="sec aravan" aria-labelledby="a-aravan">
     <div class="container grid split">
       <div class="split__text">
-        <h2 id="a-aravan">Koovagam-Fest im Film: „Bride of Aravan“ beim Indischen Filmfestival Stuttgart</h2>
+        <h2 id="a-aravan"><a href="artikel-43.html">Koovagam-Fest im Film: „Bride of Aravan“ beim Indischen Filmfestival Stuttgart</a></h2>
         <p class="lead">Der Dokumentarfilm begleitet die trans Aktivistin Bhavadharini beim Fest in Tamil Nadu. Das Festival empfahl ihn in seinem Programm zum queeren Kino aus Indien.</p>
         <p class="byline"><time datetime="2026-07-25">25. Juli 2026</time>, Stuttgart</p>
-        <p class="actions"><a class="btn" href="artikel-43.html">Beitrag lesen</a><a class="share" href="https://wa.me/?text=Koovagam-Fest%20im%20Film%3A%20%E2%80%9EBride%20of%20Aravan%E2%80%9C%20beim%20Indischen%20Filmfestival%20Stuttgart%20(tamil.de)">Per WhatsApp teilen</a></p>
+        <p class="actions"><a class="share" href="https://wa.me/?text=Koovagam-Fest%20im%20Film%3A%20%E2%80%9EBride%20of%20Aravan%E2%80%9C%20beim%20Indischen%20Filmfestival%20Stuttgart%20(tamil.de)">Per WhatsApp teilen</a></p>
       </div>
       <figure class="pic">
         <div class="photo" data-slot="koovagam" data-alt="Ein Standbild aus dem Film oder ein Bild vom Festival">
           <img src="bilder/rb-43.jpg" width="1280" height="960" loading="lazy" style="object-position: 50% 45%" alt="Geschmückter Festwagen beim Koothandavar-Fest in Koovagam, Tamil Nadu, davor eine Menschenmenge von hinten (Archivbild 2023)">
         </div>
-        <figcaption>Festwagen beim Koothandavar-Fest in Koovagam, Tamil Nadu, Archivbild von 2023.</figcaption>
+        <figcaption>Festwagen beim Koothandavar-Fest in Koovagam, Tamil Nadu, Archivbild von 2023. <small><a href="https://commons.wikimedia.org/wiki/File:Kovagam_koothandavar_temple.jpg">Foto: D Neethidoss / Wikimedia Commons</a>, <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.de">CC BY-SA 4.0</a></small></figcaption>
       </figure>
     </div>
   </section>

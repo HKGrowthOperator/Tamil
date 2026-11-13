@@ -156,7 +156,37 @@ V6 = [
 ]
 # Letzter Abruf mit Teilausfall: zählt für den Takt (interval_minutes) wie last_ok, ohne als Erfolg zu gelten
 V7 = ["ALTER TABLE source_status ADD COLUMN last_try TEXT"]
-MIGRATIONS: dict[int, list[str]] = {2: V2, 3: V3, 4: V4, 5: V5, 6: V6, 7: V7}
+# F4 (Spezifikation datenmodell.md §15): Social-Beiträge je WordPress-Beitrag und Kanal (höchstens einmal, R7),
+# Startmarke gegen den Altbestand (R9) und die Fassungen des Regelwerks (Fassung 1 steht in social/regelwerk.toml).
+V8 = [
+    """CREATE TABLE IF NOT EXISTS social_beitraege (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        wp_post_id INTEGER NOT NULL,
+        quelle_typ TEXT NOT NULL,               -- beitrag | termin
+        kanal TEXT NOT NULL,                    -- instagram | facebook | whatsapp
+        status TEXT NOT NULL,                   -- von_hand | karenz | gestoppt | geplant | wird_gesendet | unklar |
+                                                -- veroeffentlicht | trocken | pausiert | verworfen | entwurf | gepostet
+        regel_fassung TEXT NOT NULL,
+        regelpruefung TEXT NOT NULL DEFAULT '{}', -- JSON je Regel: ergebnis (erfuellt | verletzt | unklar), grund
+        titel TEXT, rubrik TEXT, quelle_datum TEXT, event_datum TEXT,
+        text TEXT NOT NULL DEFAULT '', hashtags TEXT NOT NULL DEFAULT '[]', link TEXT NOT NULL DEFAULT '',
+        bild_datei TEXT, bild_art TEXT,         -- foto | karte
+        asset_id INTEGER, ki_hinweis INTEGER NOT NULL DEFAULT 0, bild_url TEXT,
+        karenz_bis TEXT, geplant_fuer TEXT, wartet_grund TEXT, sende_at TEXT,
+        container_id TEXT, container_at TEXT, versuche INTEGER NOT NULL DEFAULT 0,
+        modus TEXT, nutzlast TEXT,              -- trocken | live; Aufrufe an Meta ohne Zugangsdaten
+        veroeffentlicht_at TEXT, meta_id TEXT, meta_link TEXT, fehler TEXT,
+        gepostet_von TEXT, gepostet_at TEXT, entschieden_von TEXT, entscheidung TEXT,
+        erkannt_at TEXT NOT NULL, aktualisiert TEXT NOT NULL,
+        UNIQUE(wp_post_id, kanal))""",
+    "CREATE INDEX IF NOT EXISTS social_status ON social_beitraege(kanal, status)",
+    "CREATE INDEX IF NOT EXISTS social_sende ON social_beitraege(kanal, sende_at)",
+    "CREATE TABLE IF NOT EXISTS social_stand (schluessel TEXT PRIMARY KEY, wert TEXT, gesetzt TEXT)",
+    """CREATE TABLE IF NOT EXISTS social_regelwerk (
+        fassung INTEGER PRIMARY KEY, inhalt TEXT NOT NULL, erstellt TEXT NOT NULL, von TEXT NOT NULL,
+        freigegeben_von TEXT, freigegeben_at TEXT)""",
+]
+MIGRATIONS: dict[int, list[str]] = {2: V2, 3: V3, 4: V4, 5: V5, 6: V6, 7: V7, 8: V8}
 LATEST = max(MIGRATIONS)
 
 

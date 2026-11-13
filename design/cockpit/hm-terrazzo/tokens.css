@@ -17,12 +17,11 @@
   --color-rule: oklch(82% 0.008 250);
   --color-paper-on-ink: oklch(96.6% 0.004 250); --color-muted-on-ink: oklch(82% 0.01 250); --color-rule-on-ink: oklch(42% 0.012 260);
   /* Signal: das Rot des Logos (#B5282A) statt Rost; zwei fast gleiche Rottöne nebeneinander wirken wie ein Fehler */
-  --color-accent: oklch(50.8% 0.177 25.6); --color-accent-soft: oklch(94.5% 0.022 25); --color-accent-ink: oklch(99.4% 0.002 250); --color-focus: oklch(50.8% 0.19 25.6);
+  --color-accent: oklch(50.8% 0.177 25.6); --color-accent-ink: oklch(99.4% 0.002 250); --color-focus: oklch(50.8% 0.19 25.6);
   --color-focus-on-ink: oklch(80% 0.11 25);
-  --font-display: "Syne", ui-sans-serif, system-ui, sans-serif; --font-body: "Onest", ui-sans-serif, system-ui, sans-serif;
-  --font-outlier: "JetBrains Mono", ui-monospace, monospace;
+  --font-display: "Onest", ui-sans-serif, system-ui, sans-serif; --font-body: "Onest", ui-sans-serif, system-ui, sans-serif;
   --radius-card: 0; --radius-pill: 0; --rule-hair: 1px; --rule-bar: 2px;
   --shadow-card: 12px 12px 0 var(--color-paper-3); --shadow-card-hover: 12px 12px 0 var(--color-ink);
-  --tracking-display: -0.02em; --display-weight: 600;
+  --tracking-display: -0.01em; --display-weight: 600;
   --display-weight: 600;
 }

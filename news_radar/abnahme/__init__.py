@@ -792,6 +792,15 @@ NACHHER: dict[str, Callable] = {
 }
 
 
+def _social(ctx, sz: Szenario, now: datetime) -> dict:
+    from . import social as social_abnahme  # F4: Fake-Website, FakeMeta bzw. Trocken-Transport
+
+    return social_abnahme.ausfuehren(ctx, sz, now)
+
+
+NACHHER["social"] = _social
+
+
 def alle(nur: list[int] | None = None, basis: Settings | None = None, ordner: Path | None = None,
          behalten: bool = False) -> list[Ergebnis]:
     """Alle (oder die gewählten) Szenarien; die Datenbanken liegen unter <data>/abnahme-laeufe und werden danach
