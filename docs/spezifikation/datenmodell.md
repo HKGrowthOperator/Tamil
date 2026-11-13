@@ -731,8 +731,11 @@ Quelle: `festlegung-social.md`. Daten im Radar (Cockpit hält Agenten, Freigabe,
 | `kennzeichnung` | KI-Bilder mit Hinweis |
 | `hashtags[rubrik]` | von KBS |
 
-Ändern: Vorschlag nur `admin`, mit neuer Fassung und Protokollzeile. Fassung 1 steht in
-`docs/regeln-social.md` (Freigabe durch KBS steht aus).
+Ändern: nur `admin`, mit neuer Fassung und Protokollzeile. Fassung 1 steht in
+`docs/regeln-social.md` und `news_radar/social/regelwerk.toml` (Freigabe durch KBS steht aus). Die Freigabe trägt
+`admin` im Cockpit ein (Freigebende, Datum, Beleg im Protokoll `social_regelwerk_freigabe`); live geht nur mit
+freigegebener aktueller Fassung, eine neue Fassung hat keine Freigabe. R3 gilt beim Erkennen und noch einmal
+unmittelbar vor dem Senden (außer nach Freigabe von Hand).
 
 ### Status-Maschine Social-Beitrag (Instagram, Facebook)
 
@@ -772,7 +775,10 @@ Protokoll). Ohne Konten läuft alles im Trockenmodus bis vor den letzten Aufruf 
 Ein Kanal ohne Zeile läuft. „alles“ hält jeden Kanal an. Wer schalten darf: Rechte-Karte (README). Jede Änderung →
 `editorial_actions` (`schalter_an`/`schalter_aus`) und `log` (`schalter`). Notweg: `python -m news_radar stopp an|aus
 [kanal] --grund "…"`. Heute fragen ab: `redaktion` (Scan, Job-Übernahme, Modellaufruf, Agent-Endpunkte, Abrufe) und
-`website` (Übertragung). Die übrigen sind schaltbar, aber ohne Abnehmer.
+`website` (Übertragung; bei Social auch der Bild-Upload vor dem ersten Aufruf an Meta), `instagram`, `facebook`
+(F4: unmittelbar vor jedem Aufruf an Meta, auch während der Karenz; Facebook wartet, solange Instagram angehalten
+ist) und `whatsapp` (F4: blendet die Entwürfe im Cockpit aus). `eingang` und `verzeichnis` sind schaltbar, aber
+noch ohne Abnehmer.
 
 **Nicht verwechseln:** Funktionsschalter der Website (`tamil_site_funktionen`) schalten einen Baustein auf der Website
 ein oder aus (Echtbetrieb erst nach Auftragsverarbeitung und Rechtstexten); Stopp-Schalter halten automatische
