@@ -10,7 +10,7 @@ from collections import Counter
 from datetime import datetime, timedelta, timezone
 
 from .. import schalter
-from ..social import ablauf, aktionen
+from ..social import ablauf, aktionen, regelwerk
 from ..social.fake import FakeMeta
 from ..social.transport import TrockenTransport
 from ..workflow import repo
@@ -30,8 +30,12 @@ def _post(pid: int, titel: str, *, rubrik: str = "community", stunden: float = 0
                                       [{"taxonomy": "post_tag", "name": t} for t in tags]]}}
 
 
-def _start(ctx, posts: list[dict]) -> Counter:
-    """Erster Lauf setzt die Startmarke (eine Stunde vor START), der zweite erkennt die Beiträge."""
+def _start(ctx, posts: list[dict], *, freigabe: bool = True) -> Counter:
+    """Freigabe des Regelwerks durch KBS (nachgestellt; ohne sie bleibt alles trocken), erster Lauf setzt die
+    Startmarke (eine Stunde vor START), der zweite erkennt die Beiträge."""
+    if freigabe:
+        regelwerk.freigabe_eintragen(ctx.store, wer="abnahme", freigegeben_von="KBS (Abnahme, nachgestellt)",
+                                     datum="2026-11-14", beleg="Abnahme-Szenario")
     ablauf.erkennen(ctx.store, ctx.settings, lambda p: [], START - timedelta(hours=1))
     return ablauf.erkennen(ctx.store, ctx.settings, lambda p: list(posts), START)
 
@@ -135,7 +139,17 @@ def trocken(ctx) -> dict:
             "ohne_kennung": sum(not z["meta_id"] for z in zeilen)}
 
 
-FAELLE = {"t1": t1_artikel, "t2": t2_termine, "t3": t3_heikel, "stopp_instagram": stopp_instagram,
+def ohne_freigabe(ctx) -> dict:
+    """Live-Transport vorhanden, Regelwerk aber nicht von KBS freigegeben: es bleibt beim Trockenlauf."""
+    _start(ctx, [_post(781, "Tamil-Kulturtag in Hamburg", rubrik="kultur")], freigabe=False)
+    meta = FakeMeta()
+    stats = ablauf.senden(ctx.store, ctx.settings, meta, NACH_KARENZ, bild_url=_url)
+    zeilen = [z for z in _zeilen(ctx) if z["kanal"] != "whatsapp"]
+    return {"meta_aufrufe": len(meta.aufrufe), "ohne_freigabe": stats["ohne_freigabe"],
+            "trocken": sum(z["status"] == "trocken" for z in zeilen)}
+
+
+FAELLE = {"ohne_freigabe": ohne_freigabe, "t1": t1_artikel, "t2": t2_termine, "t3": t3_heikel, "stopp_instagram": stopp_instagram,
           "whatsapp": whatsapp, "altbestand": altbestand, "abbruch": abbruch, "trocken": trocken}
 
 
