@@ -460,3 +460,40 @@ def test_nachfuehrung_beim_dienststart_protokolliert_nur_wenn_etwas_ergaenzt(tmp
         assert len(zeilen) == 1 and zeilen[0]["ausloeser"] == "dienst" and "1 Bildkarten" in zeilen[0]["notiz"]
         lizenz.nachfuehren_beim_start(store, settings)  # nichts mehr zu tun: keine weitere Zeile
         assert store.db.execute("SELECT COUNT(*) FROM editorial_actions WHERE aktion = 'lizenz_nachfuehrung'").fetchone()[0] == 1
+
+
+# ---- L20: Commons-Standardbreite und Retry-After ---------------------------------------------------
+
+def test_commons_vorschau_in_standardbreite_1920():
+    from news_radar import bildvorschlag
+
+    assert "iiurlwidth=1920" in bildvorschlag.commons_api_url("A.jpg")
+
+
+def test_commons_429_mit_retry_after_wartet_einmal(tmp_path, monkeypatch):
+    from news_radar import bildvorschlag, net
+
+    gewartet = []
+    monkeypatch.setattr(bildvorschlag, "_schlafen", gewartet.append)
+    aufrufe = []
+
+    def abruf(url, frist=None, bild=False):
+        aufrufe.append(url)
+        if len(aufrufe) == 1:
+            raise net.HTTPError(429, url, retry_after="3")
+        return net.Fetched(url=url, status=200, content=b"ok", content_type="image/jpeg")
+
+    with Store(tmp_path / "r.sqlite") as store:
+        got = bildvorschlag._abrufen(store, abruf, "https://upload.wikimedia.org/a.jpg", bild=True, uhr=lambda: 0.0,
+                                     ende=None, frist_abruf=20.0)
+        assert got.content == b"ok" and gewartet == [3.0] and len(aufrufe) == 2
+        aufrufe.clear()
+
+        def immer_429(url, frist=None, bild=False):
+            aufrufe.append(url)
+            raise net.HTTPError(429, url, retry_after="600")
+
+        with pytest.raises(bildvorschlag.Abgelehnt, match="429"):
+            bildvorschlag._abrufen(store, immer_429, "https://upload.wikimedia.org/a.jpg", bild=True, uhr=lambda: 0.0,
+                                   ende=None, frist_abruf=20.0)
+        assert len(aufrufe) == 1 and gewartet == [3.0]  # zu lange Wartezeit: nicht warten, nicht wiederholen

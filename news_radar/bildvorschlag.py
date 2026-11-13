@@ -177,8 +177,41 @@ def _alt(raw) -> str | None:
     return alt or None
 
 
+RETRY_AFTER_MAX = 10.0  # länger wartet ein Aufruf nicht; dann abgelehnt mit Grund, der Agent sendet später erneut
+_schlafen = time.sleep
+
+
+def _retry_after(wert: str) -> float | None:
+    wert = (wert or "").strip()
+    return float(wert) if wert.isdecimal() and len(wert) < 6 else None  # Datumsangaben: nicht warten
+
+
 def _abrufen(store: Store, abruf: Callable, url: str, *, bild: bool, uhr, ende, frist_abruf: float,
              zaehler: list[int] | None = None) -> net.Fetched:
+    """Ein Abruf nach außen; bei 429 mit kurzem Retry-After genau eine Wiederholung nach der Wartezeit."""
+    try:
+        return _abrufen_einmal(store, abruf, url, bild=bild, uhr=uhr, ende=ende, frist_abruf=frist_abruf,
+                               zaehler=zaehler)
+    except _ZuViele as exc:
+        warten = _retry_after(exc.retry_after)
+        if warten is None or warten > RETRY_AFTER_MAX or (ende is not None and uhr() + warten >= ende):
+            raise Abgelehnt(f"nicht abrufbar (429, später erneut senden): {url[:80]}") from None
+        _schlafen(warten)
+    try:
+        return _abrufen_einmal(store, abruf, url, bild=bild, uhr=uhr, ende=ende, frist_abruf=frist_abruf,
+                               zaehler=zaehler)
+    except _ZuViele:
+        raise Abgelehnt(f"nicht abrufbar (429, später erneut senden): {url[:80]}") from None
+
+
+class _ZuViele(Exception):
+    def __init__(self, retry_after: str):
+        super().__init__("429")
+        self.retry_after = retry_after
+
+
+def _abrufen_einmal(store: Store, abruf: Callable, url: str, *, bild: bool, uhr, ende, frist_abruf: float,
+                    zaehler: list[int] | None = None) -> net.Fetched:
     jetzt = uhr()
     if ende is not None and jetzt >= ende:
         raise Zeitlimit
@@ -198,6 +231,10 @@ def _abrufen(store: Store, abruf: Callable, url: str, *, bild: bool, uhr, ende, 
         raise Abgelehnt(f"Bild größer als {MAX_BYTES // 1_000_000} MB") from None
     except net.WrongContentType:
         raise Abgelehnt(f"falscher Dateityp: {url[:80]}") from None
+    except net.HTTPError as exc:
+        if exc.status == 429:
+            raise _ZuViele(getattr(exc, "retry_after", "") or "") from None
+        raise Abgelehnt(f"nicht abrufbar (HTTPError): {url[:80]}") from None
     except Exception as exc:  # noqa: BLE001 – Netzfehler lehnen den Eintrag ab, nicht den Stapel
         raise Abgelehnt(f"nicht abrufbar ({type(exc).__name__}): {url[:80]}") from None
 
@@ -290,7 +327,8 @@ def unbekannt(name: str) -> bool:
 def commons_api_url(name: str) -> str:
     return COMMONS_API + "?" + urlencode({
         "action": "query", "format": "json", "prop": "imageinfo", "iiprop": "url|size|mime|extmetadata",
-        "iiurlwidth": "1600", "titles": f"File:{name}"})
+        # Wikimedia liefert nur Standardbreiten zuverlässig aus (…, 1280, 1920, 3840; Spezifikation Bilder L20)
+        "iiurlwidth": "1920", "titles": f"File:{name}"})
 
 
 def _ext(meta: dict, key: str) -> str:
