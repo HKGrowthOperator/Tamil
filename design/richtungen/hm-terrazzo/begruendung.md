@@ -137,3 +137,19 @@ im Artikel heißt jetzt „Eigenanzeige von tamil.de“; Nachrichten und Kino te
 **Offen:** Der Kalenderboden ist ein echtes Kalenderraster aus gleichen Feldern; das ist inhaltlich begründet, kann aber
 für ein ungeübtes Auge wie ein Kartenraster wirken. Wix Madefor bleibt eine Katalog-Schrift (Hallmark „Dusk“); ihre
 Wahl ist aus dem Leser begründet, nicht neu gefunden. Die Zeilenlänge habe ich gerechnet, nicht nachgemessen.
+
+## Überarbeitung nach r3 (`design/kritik/hm-terrazzo-r3.md`)
+
+| Befund | Was geändert ist |
+|---|---|
+| P1-1 Kalenderboden am Handy zu tief, wie ein Datumswähler, 42 Zellen für 3 Daten | Am Handy zeigt das Kalenderfeld nur den **Mini-Boden**: die kommenden Feste als je eine Fliese (Tag und Monat in Tinte, rote Fuge oben) mit Titel, Wochentag und Ort; die Monatsfliesen bleiben dem Desktop. Er steht jetzt direkt nach den Nachrichten und vor dem Kino (im zweiten Bildschirm statt im dritten). Festfliesen tragen oben eine rote Fuge; im Buchungskalender ist die Auswahl nur noch ein Tintenrahmen, keine Tintenfläche. |
+| P1-2 termine.html ohne Termin im ersten Bildschirm | „Als Nächstes“ steht direkt unter dem Kopf (390: ab etwa y 380); die Monatsfliesen November und Dezember folgen darunter. |
+| P2 Kalenderzellen springen nicht | Kommende Festtage führen zu `termine.html#t-<Datum>`, die Zeilen tragen diese Anker; vergangene zum Beitrag. |
+| P2 „Städte“ im Kino ohne Funktion | jede Stadt springt zu ihrer Zeile (`#stadt-…`). |
+| P2 Köpfe vertikal zentriert | Köpfe oben bündig (`align-items: start`, `justify-content: flex-start`). |
+
+Nicht gelöst: Am Desktop (1280 × 800) steht neben dem Aufmacher weiterhin nur der Kalenderboden, keine zweite
+Geschichte; die Nachrichten beginnen unter dem Falz.
+
+**Sweep r3:** sloplint statisch 0 FAIL, 0 WARN; Render über `http://127.0.0.1:8944` (12 Seiten) 0 FAIL, 0 REFLEX, 0 WARN
+(Ausnahmen im Stempel: 44c, 49b, 78, 79); `tools/shots.mjs` 14 Seiten × 390/820/1280: 0 Fehler, keine Hinweise.
