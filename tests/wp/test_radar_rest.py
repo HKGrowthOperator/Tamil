@@ -14,7 +14,7 @@ import requests
 from PIL import Image
 from wp_umgebung import PW, URL, USER
 
-from news_radar import publisher
+from news_radar import lizenz, publisher
 from news_radar.config import load_settings
 from news_radar.images import branded_card, save_pair
 from news_radar.store import Store
@@ -84,6 +84,22 @@ def test_create_get_duplicate_and_update(client):
     assert c.get("gibt-es-nicht") is None
 
 
+def test_bild_lizenz_meta_wird_gesaeubert(client):
+    """Lizenz-Meta (Spezifikation Bilder L19): Kürzel nur aus [a-z0-9.-], Adressen nur als URL."""
+    c, created = client
+    uid = f"test-{uuid.uuid4().hex[:10]}"
+    post = c.create({"titel": "Lizenz-Meta", "inhalt": "<p>x</p>", "status": "draft", "slug": f"lizenz-{uid}",
+                     "kategorie": "news", "meta": {"radar_uid": uid, "bild_lizenz": "CC-BY-SA-4.0",
+                                                   "bild_lizenz_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+                                                   "bild_quelle_url": "javascript:alert(1)"}})
+    created.append(post["id"])
+    meta = c.get(uid)["meta"]
+    assert meta["bild_lizenz"] == "cc-by-sa-4.0"
+    assert meta["bild_lizenz_url"] == "https://creativecommons.org/licenses/by-sa/4.0/" and meta["bild_quelle_url"] == ""
+    c.update(uid, {"meta": {"bild_lizenz": "<b>frei</b>"}})
+    assert c.get(uid)["meta"]["bild_lizenz"] == ""
+
+
 def test_publisher_end_to_end_via_plugin(tmp_path, monkeypatch, client):
     _, created = client
     monkeypatch.setenv("WP_URL", URL)
@@ -94,12 +110,17 @@ def test_publisher_end_to_end_via_plugin(tmp_path, monkeypatch, client):
     settings.data_dir = tmp_path
     uid = f"test-{uuid.uuid4().hex[:10]}"
     with Store(settings.db_path) as store:
-        name, _ = save_pair(branded_card("Radar Ende zu Ende", "Kino", uid), settings.bilder_dir, uid)
+        karte = branded_card("Radar Ende zu Ende", "Kino", uid)
+        name, _ = save_pair(karte, settings.bilder_dir, uid)
         draft_id = store.insert_draft(dict(
             uid=uid, typ="artikel", titel="Radar Ende zu Ende", teaser="T", inhalt_html="<p>x</p>", kategorie="kino",
-            schlagworte=["Kino"], seo_titel="SEO", meta_beschreibung="Meta", bild_datei=name, bild_alt="Alt",
+            schlagworte=["Kino"], seo_titel="SEO", meta_beschreibung="Meta", bild_datei=name,
+            bild_alt="Grafik mit der Überschrift: Radar Ende zu Ende",
             bild_credit="Grafik: Tamil.de", quelle_url="https://q.de", quelle_name="Q", relevanz=7, original_json={},
         ))
+        # Lizenz-Gate: ohne vollständigen Datensatz ginge nichts hinaus (Spezifikation Bilder 3.3)
+        lizenz.anlegen(store, datei=name, daten=karte.data, draft_id=draft_id,
+                       felder=lizenz.datensatz(karte, titel="Radar Ende zu Ende"))
         store.db.execute("UPDATE drafts SET story_id = 4711 WHERE id = ?", (draft_id,))
         store.db.commit()
         row = store.claim_draft(draft_id, von="test")
@@ -112,3 +133,4 @@ def test_publisher_end_to_end_via_plugin(tmp_path, monkeypatch, client):
     got = wp.get(uid)
     assert got["meta"]["quelle_name"] == "Q" and got["meta"]["radar_relevanz"] == 7 and got["featured_media"] > 0
     assert got["meta"]["radar_story_id"] == 4711  # Story-Verweis wird nicht wie die Relevanz auf 10 begrenzt
+    assert got["meta"]["bild_lizenz"] == "tamil-grafik" and got["meta"]["bild_lizenz_url"] == ""  # Lizenz-Meta (L19)

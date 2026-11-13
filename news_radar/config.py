@@ -161,6 +161,9 @@ class Settings:
     bild_modell: str = "gemini-nano-banana-2.1"
     bild_groesse: str = "1K"  # 1K | 2K | 4K (Großschreibung Pflicht)
     bild_modus: str = "ki"  # ki | pool | stock | karte – wo die Bildkette beginnt
+    # KI-Symbolbilder (neu erzeugt oder aus dem Bildpool) nur mit eigenem Ja (Spezifikation Bilder 4.1, L11):
+    # Standard aus, unabhängig von GEMINI_API_KEY und BILD_MODUS
+    bild_ki_freigabe: bool = False
     bild_retry_pause: float = 2.0
     wp_url: str = ""
     wp_user: str = ""
@@ -220,6 +223,15 @@ class Settings:
 
     def category_slugs(self) -> list[str]:
         return [c.slug for c in self.categories]
+
+    def register_fassung(self) -> str:
+        """Fassung des Bildquellen-Registers (Hash der Einträge) für den Beleg eines Lizenz-Datensatzes."""
+        import hashlib
+        import json
+        from dataclasses import asdict
+
+        roh = json.dumps([asdict(b) for b in self.bildquellen], sort_keys=True, ensure_ascii=False, default=str)
+        return "register-" + hashlib.sha256(roh.encode("utf-8")).hexdigest()[:12]
 
 
 def _int(name: str, default: int) -> int:
@@ -301,6 +313,7 @@ def load_settings(sources_file: Path = ROOT / "sources.toml") -> Settings:
         bild_modell=env("BILD_MODELL", "") or "gemini-nano-banana-2.1",
         bild_groesse=(env("BILD_GROESSE", "") or "1K").upper(),
         bild_modus=(env("BILD_MODUS", "") or "ki").lower(),
+        bild_ki_freigabe=(env("BILD_KI_FREIGABE", "") or "0").strip().lower() in ("1", "ja", "true", "an"),
         wp_url=env("WP_URL", "").rstrip("/"),
         wp_user=env("WP_USER", ""),
         wp_app_password=env("WP_APP_PASSWORD", ""),

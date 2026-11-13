@@ -22,6 +22,7 @@ from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Callable
 
+from .. import lizenz as lizenz_mod
 from .. import sources
 from ..config import Settings, load_settings
 from ..store import Store
@@ -717,16 +718,71 @@ def _bild_vorschlag_ablauf(ctx, sz: Szenario, now: datetime) -> dict:
     asset = repo.asset_fuer_datei(store, d.get("bild_datei") or "")
     stats["asset_" + (asset["herkunft"] if asset else "keins")] += 1
     stats["nachweis_am_entwurf"] += int(bool(asset) and d.get("bild_credit") == asset.get("attribution"))
+    stats["lizenz_vollstaendig"] += int(bool(asset) and not lizenz_mod.fehlend(asset))
     stats["protokoll_bild"] += len([a for a in repo.aktionen(store, d["id"])
                                     if a["aktion"] == "bild" and a["ausloeser"] == "agent"])
     stats["abrufe_intern"] += sum(1 for u in abrufe if "169.254" in u)
     return dict(stats)
 
 
+def _lizenz_gate(ctx, sz: Szenario, now: datetime) -> dict:
+    """Spezifikation Bilder 3.3/3.4: Die Kette liefert ohne BILD_KI_FREIGABE die Bildkarte mit vollständigem Datensatz.
+    Ein hochgeladenes Bild ohne Lizenz sperrt Freigabe und Senden (Protokoll); nach der Eingabe geht es hinaus, mit
+    Lizenz-Meta für WordPress."""
+    from .. import images, publisher
+
+    class WP:
+        def __init__(self):
+            self.posts = []
+
+        def upload_media(self, image, alt):
+            return 1
+
+        def create_post(self, **kw):
+            self.posts.append(kw)
+            return {"id": 900 + len(self.posts), "link": "https://www.tamil.de/p/"}
+
+        def edit_link(self, post):
+            return "https://www.tamil.de/wp-admin/"
+
+    store, s, stats = ctx.store, ctx.settings, Counter()
+    d = store.list_drafts("neu")[0]
+    stats["erst_karte"] = int(d.get("bild_origin") == "karte")
+    stats["karte_vollstaendig"] = int(not lizenz_mod.luecken(store, d))
+    stats["ki_aufrufe"] = store.db.execute("SELECT COUNT(*) FROM agent_usage WHERE provider = 'gemini'").fetchone()[0]
+    # Redaktion lädt ein eigenes Foto hoch (gemeinsamer Speicherweg, kein Standardnachweis)
+    up = images.from_upload(_png(), "upload")
+    name, _ = images.save_pair(up, s.bilder_dir, f"upload-e{d['id']}")
+    store.update_draft(d["id"], bild_datei=name, bild_origin="upload", bild_credit=up.credit)
+    lizenz_mod.anlegen(store, datei=name, daten=up.data, draft_id=d["id"], felder=lizenz_mod.datensatz(up))
+    row = store.get_draft(d["id"])
+    stats["freigabe_gesperrt"] = int(bool(lizenz_mod.sperre(store, row)))
+    store.set_status(d["id"], "freigeben", von="abnahme")  # an der Oberfläche vorbei: der Publisher prüft erneut
+    wp = WP()
+    publisher.publish_approved(s, store, wp=wp)
+    stats["wp_ohne_lizenz"] = len(wp.posts)
+    stats["lizenz_fehlt_protokoll"] = len(repo.aktionen_liste(store, aktion="lizenz_fehlt"))
+    felder, fehler = lizenz_mod.formular_pruefen(
+        {"herkunft": "eigen", "lizenz": "eigen", "urheber": "Redaktion", "rechteinhaber": "Tamil.de",
+         "umfang": ["website", "social"], "alt": "Lichter vor dem Tempel in Hamm"}, None, titel=row["titel"])
+    stats["formular_ok"] = int(not fehler)
+    felder.pop("_beleg_endung", None)
+    store.update_draft(d["id"], bild_credit=felder["attribution"], bild_alt=felder["alt"])
+    lizenz_mod.anlegen(store, datei=name, daten=up.data, draft_id=d["id"],
+                       felder={**felder, "geprueft_von": "abnahme", "geprueft_am": now.isoformat(timespec="seconds")})
+    store.set_status(d["id"], "erneut", von="abnahme")
+    publisher.publish_approved(s, store, wp=wp)
+    stats["wp_mit_lizenz"] = len(wp.posts)
+    meta = publisher.radar_meta({**store.get_draft(d["id"]),
+                                 **publisher.lizenz_meta(lizenz_mod.asset_fuer(store, store.get_draft(d["id"])))})
+    stats["meta_lizenz"] = int(meta.get("bild_lizenz") == "eigen")
+    return dict(stats)
+
+
 NACHHER: dict[str, Callable] = {
     "nachtrag": _nachtrag, "nachtrag_ergaenzen": _nachtrag_ergaenzen, "nachtrag_bis_website": _nachtrag_bis_website,
     "nachtrag_pdf": _nachtrag_pdf, "bild_vorschlag": _bild_vorschlag,
-    "scan_im_stopp": _scan_im_stopp, "website_stopp": _website_stopp,
+    "scan_im_stopp": _scan_im_stopp, "website_stopp": _website_stopp, "lizenz_gate": _lizenz_gate,
     "kino_update": _kino_update, "kino_veroeffentlicht": _kino_nach_veroeffentlichung, "wp_timeout": _wp_timeout,
     "agent_v2": _agent_v2, "quelle_ergaenzen": _quelle_ergaenzen, "dossier": _dossier,
 }
