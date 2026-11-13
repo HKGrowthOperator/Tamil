@@ -28,9 +28,9 @@ T = TypeVar("T", bound=BaseModel)
 FALLBACK_BETA = "server-side-fallback-2026-07-01"
 # Effort und Ausgabegrenze je Rolle: billige Rollen knapp, Text und Dossier mit Luft für Thinking
 EFFORT = {"signal": "low", "cluster": "low", "lektorat": "low", "seo": "low", "recherche": "medium",
-          "faktencheck": "medium", "text": "medium", "dossier": "high"}
+          "faktencheck": "medium", "text": "medium", "dossier": "high", "pruefer": "high"}
 MAX_TOKENS = {"signal": 4000, "cluster": 2000, "lektorat": 4000, "seo": 3000, "recherche": 12000,
-              "faktencheck": 12000, "text": 16000, "dossier": 32000}
+              "faktencheck": 12000, "text": 16000, "dossier": 32000, "pruefer": 16000}
 OHNE_FALLBACK = ("claude-haiku",)  # für Haiku gibt es keinen serverseitigen Fallback
 
 

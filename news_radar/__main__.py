@@ -388,12 +388,13 @@ def main(argv: list[str] | None = None) -> int:
                         print(str(exc), file=sys.stderr)
                         return 2
                 data = export_v2(store, settings, Path(args.file), limit=args.limit, ids=ids)
-                print(f"{len(data['storys'])} Storys → {args.file} "
-                      f"({sum(len(p['dokumente']) for p in data['storys'])} Dokumente)")
+                alle = data["storys"] + data["nachrecherche"]
+                print(f"{len(data['storys'])} Storys, {len(data['nachrecherche'])} in Nachrecherche → {args.file} "
+                      f"({sum(len(p['dokumente']) for p in alle)} Dokumente)")
                 return 0
             stats = import_v2(store, settings, Path(args.file), von=args.von)
-        print(f"{stats['entwuerfe']} Entwürfe, {stats['recherche_noetig']} „Recherche nötig“, {stats['verworfen']} verworfen, "
-              f"{len(stats['fehler'])} Fehler")
+        print(f"{stats['entwuerfe']} Entwürfe, {stats['nachrecherche']} in Nachrecherche, {stats['quellen']} neue Quellen, "
+              f"{stats['verworfen']} verworfen, {len(stats['fehler'])} Fehler")
         for f in stats["fehler"]:
             print(f"  ! {f}")
         return 1 if stats["fehler"] and not stats["entwuerfe"] else 0

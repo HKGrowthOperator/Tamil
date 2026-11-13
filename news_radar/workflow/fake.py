@@ -138,6 +138,20 @@ def faktencheck(user: str, system: str, req: dict) -> dict:
     return {"saetze": out}
 
 
+def pruefer(user: str, system: str, req: dict) -> dict:
+    """Zweite KI. Mit <entwurf>: Satz für Satz wie der Faktencheck. Sonst (Story nach der Nachrecherche): schreiben,
+    wenn eine bestätigte Kernaussage da ist, sonst verwerfen."""
+    if block(user, "entwurf") is not None:
+        return {**faktencheck(user, system, req), "gesamt": "Satzweise gegen die Dokumente geprüft"}
+    claims = block(user, "claims") or []
+    tragend = [c["id"] for c in claims if c.get("support") == "bestaetigt"]
+    if any(c.get("kern") and c.get("support") == "bestaetigt" for c in claims):
+        return {"entscheidung": "schreiben", "grund": "Die bestätigten Aussagen tragen eine kurze Meldung.",
+                "claim_ids": tragend}
+    return {"entscheidung": "verwerfen", "claim_ids": [],
+            "grund": "Keine Kernaussage ist belegt, auch die Nachrecherche fand keinen Bericht mit dem Ereignis."}
+
+
 def lektorat(user: str, system: str, req: dict) -> dict:
     return {"hinweise": []}
 
@@ -155,7 +169,7 @@ def seo(user: str, system: str, req: dict) -> dict:
 
 STANDARD: dict[str, Responder] = {
     "signal": signal, "cluster": cluster, "recherche": recherche, "text": text, "dossier": text,
-    "faktencheck": faktencheck, "lektorat": lektorat, "seo": seo,
+    "faktencheck": faktencheck, "lektorat": lektorat, "seo": seo, "pruefer": pruefer,
 }
 
 

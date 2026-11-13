@@ -15,7 +15,7 @@ from news_radar.agents import Kontext
 from news_radar.config import load_settings
 from news_radar.store import Store
 from news_radar.workflow import fake as fake_mod
-from news_radar.workflow import repo, schema
+from news_radar.workflow import jobs, repo, schema
 
 URL1 = "https://www.tagesschau.de/inland/tamilischer-tempel-hamm-100.html"
 URL2 = "https://www.wa.de/hamm/tempelfest-2026-91234.html"
@@ -1163,10 +1163,10 @@ def test_ergaenzen_nicht_bei_vorhandenem_entwurf(settings):
         assert e["ergebnis"] == "abgelehnt" and abrufe == [] and len(repo.dokumente(store, sid)) == 1, e
 
 
-def test_ergaenzen_unbekannte_fremde_oder_beschaeftigte_story_wird_abgelehnt(settings):
+def test_ergaenzen_unbekannte_oder_beschaeftigte_story_wird_abgelehnt(settings):
     with Store(settings.db_path) as store:
         radar = repo.story_anlegen(store, typ="news", titel="Story vom Scan")
-        repo.story_setzen(store, radar, status="recherche_erforderlich")
+        repo.story_setzen(store, radar, status="verworfen")
         sid = nachtrag_mit_luecke(store, settings)
         ts = "2026-03-20T10:00:00+00:00"
         store.db.execute("INSERT INTO workflow_jobs (story_id, schritt, status, naechster_versuch, erstellt, "
@@ -1182,7 +1182,7 @@ def test_ergaenzen_unbekannte_fremde_oder_beschaeftigte_story_wird_abgelehnt(set
         assert gruende["99999"] == gruende[repr(radar)] == "Story nicht ergänzbar"  # einheitlich nach außen
         details = {json.loads(z["data"])["grund"] for z in store.db.execute(
             "SELECT data FROM log WHERE event = 'nachtrag_ergaenzen_abgelehnt'")}
-        assert {"Story nicht gefunden", "keine Nachtrag-Story"} <= details
+        assert {"Story nicht gefunden", "Story ist verworfen"} <= details
         assert "läuft gerade ein Job" in gruende[repr(sid)]
         assert all(g.startswith("story_id") for k, g in gruende.items() if k in ("0", "'7'", "True")), gruende
         assert abrufe == [] and len(repo.dokumente(store, sid)) == 1
@@ -1381,3 +1381,23 @@ def test_dokument_hinzufuegen_vergibt_doc_key_nach_dem_hoechsten(settings):
         store.db.execute("DELETE FROM source_documents WHERE story_id = ? AND doc_key = 'Q2'", (sid,))
         store.db.commit()
         assert repo.dokument_hinzufuegen(store, sid, url="https://www.example.org/neu", text=ARTIKEL2) == "Q4"
+
+
+def test_ergaenzen_gilt_auch_fuer_storys_vom_scan(settings):
+    """Auftrag 13.11.: Ergänzen geht für jede Story in „recherche_erforderlich“ ohne Entwurf und ohne laufenden Job –
+    auch für Storys vom Scan (Herkunft radar). Sie bekommen danach wieder einen Recherche-Job."""
+    with Store(settings.db_path) as store:
+        radar = repo.story_anlegen(store, typ="news", titel="Tempel in Hamm eröffnet Gemeindehaus", ort="Hamm")
+        repo.dokument_hinzufuegen(store, radar, url=URL1, art="hinweis", titel="Tempel eröffnet Gemeindehaus")
+        repo.story_setzen(store, radar, status="recherche_erforderlich", notiz="Keine Kernaussage belegt")
+        abrufe = []
+        e = annehmen(store, settings, [vorschlag(story_id=radar, quellen=[quelle(URL1), quelle(URL3)])],
+                     seiten=SEITEN3, abrufe=abrufe)["ergebnisse"][0]
+        assert e["ergebnis"] == "ergaenzt" and e["quellen_geholt"] == 1, e
+        assert abrufe == [URL3]
+        s = repo.story(store, radar)
+        assert s["status"] == "neu" and s["herkunft"] == "radar"
+        offen = jobs.offen_fuer_story(store, radar)
+        assert [j["schritt"] for j in offen] == ["recherche"]
+        mappe = paket_v2(store, settings, ctx=kontext(store, settings))
+        assert radar in [p["story_id"] for p in mappe["storys"]]

@@ -133,6 +133,9 @@ ROLLEN_MODELLE = {
     "lektorat": "claude-haiku-5-5",
     "seo": "claude-haiku-5-5",
     "dossier": "claude-opus-5-5",
+    # Zweite KI (Auftrag 13.11.2026): prüft aus frischem Kontext nach der Nachrecherche und jeden fertigen Entwurf –
+    # standardmäßig das stärkste Modell der Konfiguration (RADAR_MODELL_PRUEFER)
+    "pruefer": "claude-opus-5-5",
 }
 BILD_REIHENFOLGE = ("archiv", "quelle", "stock", "pool", "ki", "karte")
 
