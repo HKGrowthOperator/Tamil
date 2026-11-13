@@ -201,6 +201,12 @@ def bild_social(b: Beitrag) -> tuple[bool, str]:
     """R4: Foto nur mit Lizenz-Datensatz, dessen Umfang „social“ enthält, und vorhandener Datei."""
     if b.asset is None:
         return False, "kein Lizenz-Datensatz zum Beitragsbild – Bildkarte „Grafik: Tamil.de“"
+    from ..lizenz import FELDNAMEN, fehlend
+
+    offen = fehlend(b.asset)  # Ablauf, Kürzel, Urheber … (Spezifikation Bilder 3.1)
+    if offen:
+        return False, ("Lizenz-Datensatz unvollständig (" + ", ".join(FELDNAMEN.get(f, f) for f in offen)
+                       + ") – Bildkarte „Grafik: Tamil.de“")
     if "social" not in umfang_menge(b.asset.get("umfang")):
         return False, "Lizenz ohne Umfang „social“ – Bildkarte „Grafik: Tamil.de“"
     if b.bild_pfad is None:

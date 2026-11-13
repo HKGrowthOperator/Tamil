@@ -122,11 +122,16 @@ def kuerzel_aus_url(url: str) -> str:
 # ---- Umfang ---------------------------------------------------------------------------------------
 
 def umfang_menge(text: str | None) -> set[str]:
-    """Menge aus dem gespeicherten Text; Freitext aus dem Altbestand ergibt eine leere Menge."""
-    teile = [t.strip().lower() for t in (text or "").split(",")]
-    if not teile or any(t not in UMFAENGE for t in teile):
-        return set()
-    return set(teile)
+    """Umfang tolerant lesen (gemeinsam für Gate und Social): Menge aus website, social, print; Groß/klein, Leerzeichen,
+    Semikolon egal. Freitext aus dem Altbestand („Online-Veröffentlichung …“) ergibt eine leere Menge."""
+    teile = re.split(r"[,;/|\s]+", str(text or "").strip().lower())
+    return {t for t in teile if t in UMFAENGE}
+
+
+def umfang_gueltig(text: str | None) -> bool:
+    """Gespeichert wird nur die kanonische Form (`umfang_text`); alles andere gilt als unvollständig."""
+    menge = umfang_menge(text)
+    return bool(menge) and umfang_text(menge) == (text or "").strip()
 
 
 def umfang_text(menge) -> str:
@@ -204,7 +209,7 @@ def fehlend(asset: dict | None, *, heute: str | None = None) -> list[str]:
     if kuerzel and lz is None:
         out.append("lizenz_kuerzel")
     menge = umfang_menge(a.get("umfang"))
-    if a.get("umfang") and (not menge or (lz is not None and not menge <= lz.hoechst)):
+    if a.get("umfang") and (not umfang_gueltig(a["umfang"]) or (lz is not None and not menge <= lz.hoechst)):
         out.append("umfang")
     if lz is not None:
         if lz.nennung and (not a.get("urheber") or _unbekannt(a.get("urheber", ""))):

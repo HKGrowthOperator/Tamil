@@ -208,8 +208,8 @@ def test_korrektur_am_artikel_loest_nichts_erneut_aus(store, settings):
     assert len(zeilen(store)) == 3 and "korrigiert" not in zeilen(store, kanal="instagram")[0]["text"]
 
 
-def entwurf_mit_bild(store, settings, umfang, *, ki=False, wp_post_id=12):
-    from news_radar import images
+def entwurf_mit_bild(store, settings, umfang, *, ki=False, wp_post_id=12, **lizenz_felder):
+    from news_radar import images, lizenz
 
     settings.bilder_dir.mkdir(parents=True, exist_ok=True)
     img = Image.new("RGB", (1600, 900), (20, 120, 60))
@@ -221,9 +221,20 @@ def entwurf_mit_bild(store, settings, umfang, *, ki=False, wp_post_id=12):
                                   bild_datei="foto.jpg", bild_origin="ki" if ki else "commons",
                                   original_json={"titel": "T"}))
     store._write("UPDATE drafts SET wp_post_id = ? WHERE id = ?", (wp_post_id, did))
-    store._write("INSERT INTO assets (datei, herkunft, lizenz, umfang, ki, draft_id, erstellt) VALUES "
-                 "('foto.jpg', ?, 'CC BY 4.0', ?, ?, ?, 'x')", ("ki" if ki else "quelle", umfang, 1 if ki else 0, did))
+    # vollständiger Lizenz-Datensatz (Spezifikation Bilder 3.1), Umfang nach Testfall
+    if ki:
+        felder = lizenz.datensatz(images.FeaturedImage(buf.getvalue(), "foto.jpg", "image/jpeg", lizenz.KI_CREDIT, "ki",
+                                                       prompt="Empty hall", modell="gemini-nano-banana-2.1"))
+    else:
+        felder = {"herkunft": "commons", "rechteinhaber": "Max Muster", "urheber": "Max Muster",
+                  "lizenz_kuerzel": "cc-by-4.0", "lizenz": "CC BY 4.0", "lizenz_url": lizenz.lizenz_url("cc-by-4.0"),
+                  "attribution": "Foto: Max Muster / Wikimedia Commons, CC BY 4.0", "bearbeitung": "zugeschnitten",
+                  "quelle_url": "https://commons.wikimedia.org/wiki/File:A.jpg", "bild_url": "https://upload.wikimedia.org/a.jpg",
+                  "beleg": "commons-api", "geprueft_von": "agent:test", "geprueft_am": "2026-11-13T10:00:00+00:00"}
+    lizenz.anlegen(store, datei="foto.jpg", daten=buf.getvalue(), draft_id=did,
+                   felder={**felder, "umfang": umfang, **lizenz_felder})
     assert images  # Modul vorhanden (Schriften und Farben der Bildkarte)
+    return did
 
 
 def test_beitragsbild_nur_mit_umfang_social(store, settings):
@@ -239,6 +250,21 @@ def test_ohne_umfang_social_die_bildkarte(store, settings):
     mit_startmarke(store, settings, [post(12)])
     ig = zeilen(store, kanal="instagram")[0]
     assert ig["bild_art"] == "karte" and "Bildkarte" in json.loads(ig["regelpruefung"])["R4"]["grund"]
+
+
+def test_abgelaufene_oder_unvollstaendige_lizenz_ergibt_die_bildkarte(store, settings):
+    """Umfang „social“ reicht nicht: der Datensatz muss vollständig sein (Ablauf, Kürzel, Urheber)."""
+    entwurf_mit_bild(store, settings, "website,social", ablauf="2020-01-01")
+    mit_startmarke(store, settings, [post(12)])
+    ig = zeilen(store, kanal="instagram")[0]
+    assert ig["bild_art"] == "karte" and "Ablauf" in json.loads(ig["regelpruefung"])["R4"]["grund"]
+
+
+def test_datensatz_eines_anderen_entwurfs_zaehlt_nicht(store, settings):
+    did = entwurf_mit_bild(store, settings, "website,social")
+    store._write("UPDATE assets SET draft_id = ? WHERE draft_id = ?", (did + 100, did))  # gehört einem anderen Entwurf
+    mit_startmarke(store, settings, [post(12)])
+    assert zeilen(store, kanal="instagram")[0]["bild_art"] == "karte"
 
 
 def test_ki_bild_traegt_hinweis_in_text_und_bild(store, settings):
