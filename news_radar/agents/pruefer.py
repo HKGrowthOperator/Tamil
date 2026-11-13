@@ -93,6 +93,9 @@ def entwurf_pruefen(ctx: Kontext, story: dict, felder: dict, claims: list[Claim]
 # ---- Bindung an den Text (Befund P1 der Prüfung vom 13.11.2026) ------------------------------------------
 
 _SATZ_RE = re.compile(r"(?<=[^0-9\s][.!?…])\s+(?=[A-ZÄÖÜ„\"0-9])")
+# Abkürzungen: nach ihnen endet kein Satz (z. B., u. a., Nr., Dr., St., ca., bzw. …)
+_ABKUERZUNG_RE = re.compile(r"(?:^|[\s(])(?:z|u|d|o|s|v|Nr|Dr|St|Sr|Hr|Fr|Prof|ca|bzw|usw|vgl|ggf|evtl|inkl|zzgl|"
+                            r"Mio|Mrd|Str|Tel|Jh|bspw|sog|etc|u\. a|z\. B|d\. h|o\. ä|u\. ä|s\. o|s\. u|v\. a)\.$")
 _BLOCK_ENDE_RE = re.compile(r"</(?:p|h[1-6]|li|blockquote)>|<br\s*/?>", re.I)
 
 
@@ -109,9 +112,13 @@ def saetze_des_entwurfs(felder: dict) -> list[str]:
     bloecke = [felder.get("titel") or "", felder.get("teaser") or ""] + _BLOCK_ENDE_RE.split(html_text)
     out = []
     for block in bloecke:
-        for satz in _SATZ_RE.split(_klar(block)):
-            if satz.strip():
-                out.append(satz.strip())
+        teile: list[str] = []
+        for teil in _SATZ_RE.split(_klar(block)):
+            if teile and _ABKUERZUNG_RE.search(teile[-1]):
+                teile[-1] = f"{teile[-1]} {teil}"  # „St. Gallen“, „Dr. Kumar“: kein Satzende
+            else:
+                teile.append(teil)
+        out += [s.strip() for s in teile if s.strip()]
     return out
 
 
@@ -130,17 +137,50 @@ _DATUM_WORT_RE = re.compile(r"\b(?:januar|februar|märz|april|mai|juni|juli|augu
                             r"montag|dienstag|mittwoch|donnerstag|freitag|samstag|sonntag|heute|gestern|morgen)\b", re.I)
 
 
+# Großgeschriebene Wörter, die mitten im Satz keinen Namen anzeigen (Anrede)
+_KEIN_NAME_GROSS = {"sie", "ihr", "ihre", "ihnen", "ihrem", "ihren", "ihrer", "euch", "euer", "eure"}
+_GROSS_RE = re.compile(r"[A-ZÄÖÜ][\wäöüßÄÖÜ-]*")
+
+
+def _grosse_woerter(satz: str) -> list[str]:
+    """Großgeschriebene Wörter außer am Satzanfang (Namen, Orte, Nomen) – ohne die Anrede."""
+    worte = list(_GROSS_RE.finditer(satz or ""))
+    start = len(satz or "") - len((satz or "").lstrip(" „\"'(«"))
+    return [m.group(0) for m in worte if m.start() > start and m.group(0).lower() not in _KEIN_NAME_GROSS]
+
+
+def fakten(satz: str) -> list[str]:
+    """Was ein Beleg tragen muss: Zahlen, Datumswörter und großgeschriebene Wörter außer am Satzanfang."""
+    zahlen = re.findall(r"\d+(?:[.,]\d+)?", satz or "")
+    return zahlen + [m.group(0) for m in _DATUM_WORT_RE.finditer(satz or "")] + _grosse_woerter(satz)
+
+
 def darf_kein_fakt(satz: str) -> bool:
-    """„kein_fakt“ gilt nur für reine Überleitungen: keine Zahl, kein Datum, kein Name."""
-    from .nachrecherche import personen
+    """„kein_fakt“ gilt (im Worker) nur für reine Überleitungen: keine Zahl, kein Datum, kein großgeschriebenes Wort
+    außer am Satzanfang (Anrede ausgenommen)."""
+    return not fakten(satz)
 
-    return not (re.search(r"\d", satz or "") or _DATUM_WORT_RE.search(satz or "") or personen([satz or ""]))
 
-
-def streng(urteile: list[SatzUrteil]) -> list[SatzUrteil]:
-    """„kein_fakt“ mit Zahl, Datum oder Name zählt wie „ungedeckt“."""
-    return [u.model_copy(update={"urteil": "ungedeckt"}) if u.urteil == "kein_fakt" and not darf_kein_fakt(u.satz)
+def streng(urteile: list[SatzUrteil], agent: bool = False) -> list[SatzUrteil]:
+    """„kein_fakt“ zählt wie „ungedeckt“ – im Agent-Import immer, im Worker, sobald der Satz Fakten trägt."""
+    return [u.model_copy(update={"urteil": "ungedeckt"}) if u.urteil == "kein_fakt" and (agent or not darf_kein_fakt(u.satz))
             else u for u in urteile]
+
+
+def belegt(urteile: list[SatzUrteil], claims: list[Claim]) -> list[SatzUrteil]:
+    """„gedeckt“ ist keine Selbstauskunft: nur mit claim_ids bestätigter Claims, und jede Zahl, jedes Datum und jeder
+    Name des Satzes steht in Aussage oder Fundstelle dieser Claims – sonst „ungedeckt“."""
+    by_id = {c.id: c for c in claims if c.support == "bestaetigt"}
+    out = []
+    for u in urteile:
+        if u.urteil != "gedeckt":
+            out.append(u)
+            continue
+        ids = [i for i in u.claim_ids if i in by_id]
+        beleg = " ".join(f"{by_id[i].aussage} {by_id[i].fundstelle}" for i in ids).lower()
+        ok = bool(ids) and all(f.lower() in beleg for f in fakten(u.satz))
+        out.append(u if ok else u.model_copy(update={"urteil": "ungedeckt", "claim_ids": ids}))
+    return out
 
 
 def _woerter(html_text: str) -> int:
@@ -153,10 +193,14 @@ def _ganzer_satz(satz: str) -> re.Pattern:
     return re.compile(r"(?:(?<=^)|(?<=[\s>]))" + re.escape(satz) + r"(?=\s|<|$)")
 
 
-def pruefung_anwenden(felder: dict, urteile: list[SatzUrteil]) -> tuple[dict, list[str], list[SatzUrteil]]:
+def pruefung_anwenden(felder: dict, urteile: list[SatzUrteil], claims: list[Claim] | None = None,
+                      agent: bool = False) -> tuple[dict, list[str], list[SatzUrteil]]:
     """(Felder mit gestrichenen Sätzen, gestrichene Sätze, Probleme). Probleme = Überarbeitung bzw. kein Entwurf.
-    Ungedeckte Sätze in Titel oder Teaser lassen sich nicht streichen: Problem."""
-    urteile = streng(urteile)
+    Ungedeckte Sätze in Titel oder Teaser lassen sich nicht streichen: Problem. Mit `claims` (bestätigte Claims)
+    zählt „gedeckt“ nur, wenn diese Claims den Satz wirklich tragen (belegt)."""
+    urteile = streng(urteile, agent)
+    if claims is not None:
+        urteile = belegt(urteile, claims)
     a = factcheck.auswerten(urteile)
     probleme = list(a.kern_probleme)
     kopf = {norm_satz(s) for s in saetze_des_entwurfs({"titel": felder.get("titel"), "teaser": felder.get("teaser")})}

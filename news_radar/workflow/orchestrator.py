@@ -40,6 +40,7 @@ Handler = Callable[[Kontext, dict], list[tuple[str, dict]]]
 
 
 OHNE_MODELL = ("gate", "bild", "kino", "nachrecherche")  # Schritte, die auch ohne API-Schlüssel laufen
+BEZAHLT = ("recherche", "schreiben", "faktencheck", "lektorat", "seo", "pruefung", "endpruefung")  # Kostendeckel
 
 
 def kontext(settings: Settings, store: Store, client=None, **kw) -> Kontext:
@@ -495,8 +496,11 @@ def entwurf_anlegen(ctx: Kontext, story: dict, felder: dict, payload: dict, *, t
     andere = ctx.store.draft_by_uid(uid)
     if andere and andere.get("story_id") not in (None, story["id"]):
         # Fund 13.11. (Story 117 gegen Entwurf 68): ein eigener Beitrag mit derselben Primärquelle bekommt eine eigene
-        # uid – sonst würde er als Dublette verworfen und der Publisher könnte den anderen Post überschreiben
-        uid = f"{uid}#story-{story['id']}"
+        # uid – sonst würde er als Dublette verworfen und der Publisher könnte den anderen Post überschreiben.
+        # Suffix ohne „#“ (ein Fragment ginge in Adressen verloren)
+        uid = f"{uid}:story-{story['id']}"
+        hinweise = [f"Gleiche Primärquelle wie Entwurf {andere['id']} (Story {andere.get('story_id')}) – eigener "
+                    "Beitrag mit eigener Kennung"] + list(hinweise)
     stem = f"s{story['id']}-{slugify(felder.get('titel') or 'beitrag', 50)}"
     label = category_label(s, felder.get("kategorie") or "news")
     bild, versucht = media.besorgen(ctx, story, felder, stem, kategorie_label=label,
@@ -665,6 +669,14 @@ def job_ausfuehren(ctx: Kontext, job: dict) -> str:
         store._write("UPDATE workflow_jobs SET status = 'fertig', fehler = ?, aktualisiert = ? WHERE id = ?",
                      (f"Story ist {story_jetzt['status']} – Schritt entfällt", now_iso(), job["id"]))
         return "entfallen"
+    if (story_jetzt and ctx.claude is not None and job["schritt"] in BEZAHLT and story_jetzt["typ"] != "dossier"
+            and repo.kosten_story(store, story_jetzt["id"])["usd"] >= ctx.settings.kosten_story_usd):
+        usd = repo.kosten_story(store, story_jetzt["id"])["usd"]
+        _verwerfen(ctx, story_jetzt, f"Kostendeckel je Story erreicht ({usd:.2f} $ von "
+                                     f"{ctx.settings.kosten_story_usd:.2f} $, RADAR_KOSTEN_STORY_USD) vor „{job['schritt']}“")
+        store._write("UPDATE workflow_jobs SET status = 'fertig', fehler = 'Kostendeckel', aktualisiert = ? WHERE id = ?",
+                     (now_iso(), job["id"]))
+        return "kostendeckel"
     if jobs.ist_nachtrag(store, job["story_id"]) and job["schritt"] not in jobs.NACHTRAG_ERLAUBT:
         # Altbestand oder Umweg: ein Nachtrag läuft nie über Worker und Modell, er wartet im Agent-Export
         store._write("UPDATE workflow_jobs SET status = 'fertig', fehler = 'Nachtrag: nur Agent-Modus', aktualisiert = ? "
@@ -841,9 +853,11 @@ def neu_starten(store: Store, story_id: int, notiz: str) -> bool:
     verworfen = nachrecherche.neu_startbar(story)
     if story["status"] not in NEU_STARTBAR and not verworfen:
         return False
-    if verworfen and (nachrecherche.neustarts(store, story_id) >= nachrecherche.MAX_NEUSTARTS
-                      or modell_schritte(store, story_id) >= MAX_PRUEFUNGEN
-                      or store.db.execute("SELECT 1 FROM drafts WHERE story_id = ?", (story_id,)).fetchone()):
+    if (verworfen or story["status"] == "fehler") and (
+            nachrecherche.neustarts(store, story_id) >= nachrecherche.MAX_NEUSTARTS
+            or modell_schritte(store, story_id) >= MAX_PRUEFUNGEN):
+        return False  # höchstens zwei Neustarts je Story (verworfen oder Fehler), Prüfrunden begrenzt
+    if verworfen and store.db.execute("SELECT 1 FROM drafts WHERE story_id = ?", (story_id,)).fetchone():
         return False
     if jobs.offen_fuer_story(store, story_id):
         return False  # die laufende Nachrecherche bzw. Recherche liest das neue Dokument ohnehin

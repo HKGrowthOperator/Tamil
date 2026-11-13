@@ -166,6 +166,17 @@ def satz_urteile(saetze: list[str], claims: list[dict]) -> list[dict]:
                    or c["aussage"].rstrip(".")[:50] in satz or satz.rstrip(".")[:50] in c["aussage"]]
         worte = [w[:6] for w in re.findall(r"[\wäöüß]{4,}", satz.lower())]  # Wortanfänge: „tamilischer“ ~ „tamilische“
         abgedeckt = bool(worte) and sum(1 for w in worte if w in alle) / len(worte) >= 0.7
+        if abgedeckt and not treffer:  # die Claims, die die meisten Wörter tragen
+            wertung = sorted(((sum(1 for w in worte if w in c["aussage"].lower()), c) for c in claims),
+                             key=lambda x: -x[0])
+            treffer = [c for n, c in wertung[:3] if n]
+        if treffer:  # wie eine sorgfältige Prüferin: für jede Zahl und jeden Namen den Claim nennen, der sie trägt
+            from ..agents.pruefer import fakten
+
+            for f in fakten(satz):
+                beleg = " ".join(f"{c['aussage']} {c.get('fundstelle', '')}" for c in treffer).lower()
+                if f.lower() not in beleg:
+                    treffer += [c for c in claims if f.lower() in f"{c['aussage']} {c.get('fundstelle', '')}".lower()][:1]
         out.append({"nr": nr, "satz": satz, "urteil": "gedeckt" if treffer or abgedeckt else "ungedeckt",
                     "claim_ids": [c["id"] for c in treffer], "fundstelle": treffer[0]["fundstelle"] if treffer else "",
                     "kern": any(c.get("kern") for c in treffer)})

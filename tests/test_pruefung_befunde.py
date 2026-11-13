@@ -86,7 +86,7 @@ def test_kein_fakt_mit_zahl_datum_oder_name_gilt_als_ungedeckt(settings):
 
 
 def test_kein_fakt_regel():
-    assert pruefer.darf_kein_fakt("Das freut viele in der Gemeinde.")
+    assert pruefer.darf_kein_fakt("Das freut viele, die dabei waren.")  # Gegenprüfung: kein großes Wort im Satz
     for satz in ("Rund 3000 Gäste kamen.", "Am Samstag beginnt das Fest.", "Das sagte Kamala Sivakumar.",
                  "Am 14. November feiert die Gemeinde."):
         assert not pruefer.darf_kein_fakt(satz), satz
@@ -252,7 +252,7 @@ def test_eigener_beitrag_mit_derselben_primaerquelle_bekommt_eigene_uid(settings
         neu = [d for d in store.list_drafts(limit=10) if d["id"] != alt]
         story = repo.story(store, p["story_id"])
         assert story["status"] == "fertig" and len(neu) == 1, (story, stats)
-        assert neu[0]["uid"] == f"{MTS_URL}#story-{story['id']}" and neu[0]["quelle_url"] == MTS_URL
+        assert neu[0]["uid"] == f"{MTS_URL}:story-{story['id']}" and neu[0]["quelle_url"] == MTS_URL
         assert store.get_draft(alt)["uid"] == MTS_URL  # bestehende uid unverändert
 
 

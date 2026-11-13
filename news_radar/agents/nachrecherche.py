@@ -133,7 +133,7 @@ mangels_beleg = neu_startbar  # alter Name (Cluster)
 
 def neustarts(store, story_id: int) -> int:
     return store.db.execute("SELECT COUNT(*) FROM log WHERE event = 'neu_gestartet' AND json_extract(data, '$.story') = ?"
-                            " AND json_extract(data, '$.vorher') = 'verworfen'", (story_id,)).fetchone()[0]
+                            " AND json_extract(data, '$.vorher') IN ('verworfen', 'fehler')", (story_id,)).fetchone()[0]
 
 
 def runden(store, story_id: int) -> int:

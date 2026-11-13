@@ -405,7 +405,8 @@ def _import_eins(ctx: Kontext, store: Store, settings: Settings, item, von: str,
         repo.claims_setzen(store, e.story_id, neu)
         repo.story_setzen(store, e.story_id, laenge="event" if story["typ"] == "event" else "kurz")
     erlaubt = {d.url for d in docs if d.url}
-    update = {"inhalt_html": schreiben.links_bereinigen(e.beitrag.inhalt_html, erlaubt)}
+    # Die Quellenzeile baut der Radar aus den Dokumenten der Story; Text aus der eingereichten Zeile fällt weg
+    update = {"inhalt_html": quellenzeile_neu(schreiben.links_bereinigen(e.beitrag.inhalt_html, erlaubt), docs)}
     if e.beitrag.kategorie not in settings.category_slugs():
         update["kategorie"] = story.get("kategorie") or "news"
     felder = e.beitrag.model_copy(update=update).model_dump()
@@ -414,7 +415,8 @@ def _import_eins(ctx: Kontext, store: Store, settings: Settings, item, von: str,
         hinweise.append("Kurzmeldung nur aus belegten Aussagen (nach zwei Runden Nachrecherche)")
         hinweise += [f"Nicht im Text, weil nicht belegt: {c.aussage[:120]}" for c in kurzmeldung]
     pr = e.pruefung  # Pflicht, oben geprüft (andere Instanz, Zeitpunkt, Urteil, keine offenen P1/P2)
-    felder, gestrichen, probleme = pruefer.pruefung_anwenden(felder, pr.saetze)
+    felder, gestrichen, probleme = pruefer.pruefung_anwenden(
+        felder, pr.saetze, claims=[c for c in g.claims if c.support == "bestaetigt"], agent=True)
     if probleme:
         _nicht_belegt(store, story, ["Zweite KI: " + "; ".join(u.satz[:120] for u in probleme)], e.fehlend,
                       gruende + [f"Zweite KI: nicht gedeckt – {u.satz[:120]}" for u in probleme], stats)
@@ -442,6 +444,19 @@ def _import_eins(ctx: Kontext, store: Store, settings: Settings, item, von: str,
 
 
 MAX_NEUE_QUELLEN = 5  # je Story und Import
+_QUELLE_RE = re.compile(r"<p\s+class\s*=\s*[\"']?quelle[\"']?[^>]*>.*?</p>\s*", re.S | re.I)
+
+
+def quellenzeile_neu(html_text: str, docs) -> str:
+    """Eingereichte Quellenzeile(n) entfernen und eine neue aus den Dokumenten der Story anhängen (Verlage der
+    Belege, ohne Hinweise) – Text in der Quellenzeile wird so nie ungeprüft übernommen."""
+    from html import escape
+
+    ohne = _QUELLE_RE.sub("", html_text or "").rstrip()
+    namen = list(dict.fromkeys(q["name"] for q in schreiben.quellen_liste(docs) if q.get("name")))
+    if not namen:
+        return ohne
+    return f'{ohne}\n<p class="quelle">Quelle: {escape(", ".join(namen))}</p>'
 
 
 def _nicht_belegt(store: Store, story: dict, gate_gruende: list[str], fehlend: list[str], gruende: list[str],

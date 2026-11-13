@@ -204,6 +204,7 @@ class Settings:
     ki_bilder_je_artikel: int = 1
     recherche_google_news: bool = True  # zweite Quelle über Google-News-RSS suchen (siehe robots-Hinweis im Register)
     modell_aktiv: bool = False  # ANTHROPIC_API_KEY (bzw. RADAR_ANTHROPIC_API_KEY) gesetzt: Worker mit Modell
+    kosten_story_usd: float = 1.0  # Kostendeckel je Story (Modellkosten aller Schritte), Dossiers ausgenommen
 
     def modell_fuer(self, rolle: str) -> str:
         return self.modelle.get(rolle) or ROLLEN_MODELLE.get(rolle) or ROLLEN_MODELLE["text"]
@@ -352,4 +353,5 @@ def load_settings(sources_file: Path = ROOT / "sources.toml") -> Settings:
         ki_bilder_je_artikel=_int("RADAR_KI_BILDER_JE_ARTIKEL", 1),
         recherche_google_news=(env("RADAR_RECHERCHE_GOOGLE_NEWS", "1") or "1") not in ("0", "nein", "false"),
         modell_aktiv=bool(os.environ.get("ANTHROPIC_API_KEY", "").strip()),
+        kosten_story_usd=_float("RADAR_KOSTEN_STORY_USD", 1.0),
     )

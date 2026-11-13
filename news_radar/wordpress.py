@@ -7,6 +7,7 @@ import re
 import unicodedata
 
 import requests
+from urllib.parse import quote
 
 from .images import FeaturedImage
 
@@ -144,11 +145,12 @@ class TamilRadarClient:
         return data
 
     def get(self, uid: str) -> dict | None:
-        code, data = self._req("GET", f"beitrag/{uid}")
+        code, data = self._req("GET", f"beitrag/{quote(uid, safe='')}")
         return data if code == 200 else None
 
     def update(self, uid: str, payload: dict) -> dict:
-        code, data = self._req("PUT", f"beitrag/{uid}", json=payload)
+        # uid als ein Pfadsegment: Adressen als uid („https://…/:story-12“) dürfen den Pfad nicht verändern
+        code, data = self._req("PUT", f"beitrag/{quote(uid, safe='')}", json=payload)
         if code >= 400:
             raise RuntimeError(f"WordPress PUT beitrag/{uid} -> {code}: {str(data)[:300]}")
         return data

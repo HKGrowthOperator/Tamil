@@ -194,7 +194,7 @@ Erreichen: neue bezahlte Jobs warten (`wartet_budget`), Freigabe und Übertragun
   `pruefung` mit allen Satzurteilen.
 - **Kosten:** ein Aufruf mit dem stärksten Modell je Story nach der Nachrecherche und je Entwurf (bei Überarbeitung
   zwei); Budget über die Reservierung, `agent_usage` Rolle `pruefer`.
-- **Fehlerfälle:** Antwort nicht `ok` → Job-Fehler mit Wiederholung; höchstens drei `pruefung`-Jobs je Story.
+- **Fehlerfälle:** Antwort nicht `ok` → Job-Fehler mit Wiederholung; höchstens zehn Recherche-, Prüf- und Endprüf-Jobs je Story; Kostendeckel je Story `RADAR_KOSTEN_STORY_USD` (Standard 1 $, Dossiers ausgenommen) vor jedem bezahlten Schritt, darüber verworfen mit Grund. „gedeckt“ zählt nur mit bestätigten Claims, die Zahlen, Daten und Namen des Satzes tragen; „kein_fakt“ nur ohne Zahl, Datum und großgeschriebenes Wort außer am Satzanfang.
 
 ## Lektorat (`agents/copydesk.py`)
 
