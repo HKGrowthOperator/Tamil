@@ -660,10 +660,13 @@ def test_p2_live_nur_mit_freigabe_des_regelwerks(store, settings):
     assert not regelwerk.freigegeben(regelwerk.aktuell(store))
     mit_startmarke(store, settings, [post(97)])
     meta = FakeMeta()
-    stats = ablauf.senden(store, settings, meta, START + timedelta(minutes=11), bild_url=lambda z: "x")
+    for minuten in (11, 14):  # wartet, kein Endstand: nach der Freigabe muss es live hinausgehen
+        stats = ablauf.senden(store, settings, meta, START + timedelta(minutes=minuten), bild_url=lambda z: "x")
     assert meta.aufrufe == [] and stats["ohne_freigabe"] == 1
-    assert {z["status"] for z in zeilen(store) if z["kanal"] != "whatsapp"} == {"trocken"}
-    assert isinstance(ablauf.transport_fuer(konfig.laden(GRAPH_ENV), regelwerk.aktuell(store)), TrockenTransport)
+    meta_zeilen = [z for z in zeilen(store) if z["kanal"] != "whatsapp"]
+    assert {z["status"] for z in meta_zeilen} == {"geplant"}
+    assert all("Fassung 2 nicht freigegeben" in z["wartet_grund"] for z in meta_zeilen)
+    assert len(repo.aktionen_liste(store, aktion="social_angehalten")) == 2  # je Kanal einmal, nicht je Lauf
     with pytest.raises(ValueError):
         regelwerk.freigabe_eintragen(store, wer="anna", freigegeben_von="KBS", datum="2026-11-14", beleg="")
     rw = kbs_freigabe(store)
@@ -672,6 +675,71 @@ def test_p2_live_nur_mit_freigabe_des_regelwerks(store, settings):
     assert z["wer"] == "anna" and z["regel_fassung"] == "2" and "Mail von Luis" in z["notiz"]
     with pytest.raises(ValueError):  # einmalig je Fassung
         kbs_freigabe(store)
+    ablauf.senden(store, settings, meta, START + timedelta(minutes=17), bild_url=lambda z: "x")
+    assert {z["status"] for z in zeilen(store) if z["kanal"] != "whatsapp"} == {"veroeffentlicht"}
+
+
+def test_p2_trockenmodus_ohne_freigabe_bleibt_trocken(store, settings):
+    regelwerk.speichern(store, {"max_je_tag": 5}, wer="anna")
+    mit_startmarke(store, settings, [post(103)])
+    ablauf.senden(store, settings, TrockenTransport(), START + timedelta(minutes=11))
+    assert {z["status"] for z in zeilen(store) if z["kanal"] != "whatsapp"} == {"trocken"}
+
+
+class StoppNachDemVeroeffentlichen(FakeMeta):
+    """Zwischen Veröffentlichen und Permalink hält jemand den Kanal an."""
+
+    def __init__(self, store, **kw):
+        super().__init__(**kw)
+        self.store = store
+
+    def ig_veroeffentlichen(self, container_id):
+        mid = super().ig_veroeffentlichen(container_id)
+        schalter.setzen(self.store, "instagram", True, wer="priya", grund="Stopp mitten im Senden")
+        return mid
+
+
+def test_p3_permalink_nur_ohne_stopp_der_abgleich_traegt_ihn_nach(store, settings):
+    mit_startmarke(store, settings, [post(104)])
+    meta = StoppNachDemVeroeffentlichen(store)
+    ablauf.senden(store, settings, meta, START + timedelta(minutes=11), bild_url=lambda z: "x")
+    ig = zeilen(store, kanal="instagram")[0]
+    assert ig["status"] == "veroeffentlicht" and ig["meta_id"] and not ig["meta_link"]
+    assert "ig_permalink" not in [a[0] for a in meta.aufrufe]
+    schalter.setzen(store, "instagram", False, wer="priya")
+    ablauf.senden(store, settings, meta, START + timedelta(minutes=14), bild_url=lambda z: "x")
+    assert zeilen(store, kanal="instagram")[0]["meta_link"].startswith("https://www.instagram.com/p/")
+
+
+def test_p3_veroeffentlicht_nur_aus_wird_gesendet_oder_unklar(store, settings):
+    mit_startmarke(store, settings, [post(105)])
+    ig = zeilen(store, kanal="instagram")[0]
+    store._write("UPDATE social_beitraege SET status = 'gestoppt' WHERE id = ?", (ig["id"],))
+    stats = ablauf._veroeffentlicht(store, ig, START, "m9", "https://www.instagram.com/p/m9/")
+    assert zeilen(store, kanal="instagram")[0]["status"] == "gestoppt" and stats["konflikt"] == 1
+
+
+def test_p3_ein_lauf_zur_zeit(store, settings):
+    mit_startmarke(store, settings, [post(106)])
+    jetzt = START + timedelta(minutes=11)
+    assert ablauf.sperre_nehmen(store, jetzt)  # ein anderer Lauf hält die Sperre
+    meta = FakeMeta()
+    assert ablauf.senden(store, settings, meta, jetzt, bild_url=lambda z: "x")["laeuft_schon"] == 1
+    assert meta.aufrufe == []
+    ablauf.senden(store, settings, meta, jetzt + ablauf.VERWAIST + timedelta(minutes=1), bild_url=lambda z: "x")
+    assert meta.aufrufe  # abgelaufene Sperre (Kill) blockiert nicht für immer
+    ablauf.sperre_freigeben(store)
+
+
+def test_p3_tagesgrenze_live_zaehlt_keine_trockenlaeufe(store, settings):
+    tag = datetime(2026, 11, 16, 6, 0, tzinfo=UTC)
+    erkennen(store, settings, FakeWP(), tag - timedelta(hours=1))
+    erkennen(store, settings, FakeWP([post(110 + i, jetzt=tag) for i in range(7)]), tag)
+    for stunde in range(6):  # sechs Trockenläufe am Vormittag
+        ablauf.senden(store, settings, TrockenTransport(), tag + timedelta(minutes=11, hours=stunde))
+    meta = FakeMeta()
+    ablauf.senden(store, settings, meta, tag + timedelta(hours=7), bild_url=lambda z: "x")
+    assert [z["status"] for z in zeilen(store, kanal="instagram")].count("veroeffentlicht") == 1
 
 
 def test_p3_schalter_website_haelt_den_bild_upload_an(store, settings):
