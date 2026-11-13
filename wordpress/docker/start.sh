@@ -17,6 +17,9 @@
 #   MIGRATION_APP_PASSWORD  gesetzt: der Admin hat genau dieses Anwendungspasswort „migration“ (leer: wird entfernt)
 #   RADAR_COCKPIT_URL       Adresse des Radar-Cockpits (Einstellung des Plugins tamil-radar)
 #   WP_ENVIRONMENT_TYPE     Standard staging (production, staging, development, local)
+#   TAMIL_PROXY_ANZAHL      Standard 0. Nur für zusätzliche Proxys VOR Traefik (z. B. Cloudflare): Hinter Traefik
+#                           setzt Apache (mod_remoteip) REMOTE_ADDR schon auf den Besucher; ein Wert über 0 ohne
+#                           weiteren Proxy macht die Adresse für die Drossel der Einsendungen fälschbar
 set -euo pipefail
 
 SRC=/usr/src/wordpress
@@ -45,6 +48,8 @@ WP_ADMIN_EMAIL="${WP_ADMIN_EMAIL:-info@hkgrowth-operator.de}"
 WP_TITLE="${WP_TITLE:-Tamil.de}"
 WP_ENVIRONMENT_TYPE="${WP_ENVIRONMENT_TYPE:-staging}"
 case "$WP_ENVIRONMENT_TYPE" in production|staging|development|local) ;; *) fehler "WP_ENVIRONMENT_TYPE ungültig." ;; esac
+TAMIL_PROXY_ANZAHL="${TAMIL_PROXY_ANZAHL:-0}"
+[[ "$TAMIL_PROXY_ANZAHL" =~ ^[0-9]$ ]] || fehler "TAMIL_PROXY_ANZAHL muss eine Zahl von 0 bis 9 sein."
 
 # --- 1. Code aus dem Image -------------------------------------------------------------------------------------------
 # /var/www/html ist im offiziellen Image ein (anonymes) Volume und könnte alten Code vom letzten Deploy enthalten.
@@ -102,6 +107,8 @@ define( 'WP_HOME', '$WP_URL_PUBLIC' );
 define( 'WP_SITEURL', '$WP_URL_PUBLIC' );
 define( 'FORCE_SSL_ADMIN', $FORCE_SSL );
 define( 'WP_ENVIRONMENT_TYPE', '$WP_ENVIRONMENT_TYPE' );
+// Zusätzliche Proxys vor Traefik (z. B. Cloudflare); Traefik selbst löst mod_remoteip auf. Standard 0.
+define( 'TAMIL_PROXY_ANZAHL', $TAMIL_PROXY_ANZAHL );
 
 // Code kommt nur aus dem Image: keine Updates, kein Datei-Editor, keine Installationen im Backend
 define( 'AUTOMATIC_UPDATER_DISABLED', true );

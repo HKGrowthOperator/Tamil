@@ -169,7 +169,7 @@ Job.
 
 | Ablauf | Auslöser | Regel | Schalter | Stand |
 |---|---|---|---|---|
-| Upgrade-Routine | jeder Aufruf: Vergleich `tamil_site_datenversion` | Seiten, Rechte, nummerierte Schritte nachziehen; Sperre gegen gleichzeitige Läufe (300 s) | – | live (Datenversion 1) |
+| Upgrade-Routine | jeder Aufruf: Vergleich `tamil_site_datenversion` | Seiten, Rechte, nummerierte Schritte nachziehen; Sperre gegen gleichzeitige Läufe (300 s) | – | live (Datenversion 1); gebaut bis Datenversion 4 (F1 = 2, F3 = 3, F2 = 4) |
 | Container-Start | jeder Deploy (`docker/start.sh`) | Code frisch aus dem Image, Nutzer `ki-agent` mit Anwendungspasswort, Anwendungspasswort „migration“ wird ohne `MIGRATION_APP_PASSWORD` entfernt | – | live |
 | Suchmaschinen-Sperre | jeder Aufruf | außerhalb von `production` noindex, `Disallow: /`, keine Sitemap | `WP_ENVIRONMENT_TYPE` | live |
 | Angaben für Suchmaschinen | jeder Aufruf | nur ohne Yoast/Rank Math | – | live |

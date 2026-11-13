@@ -41,4 +41,15 @@
 			</property>
 		</properties>
 	</rule>
+	<!-- Eigene Rechte (vergeben über die Upgrade-Routine von tamil-site) -->
+	<rule ref="WordPress.WP.Capabilities">
+		<properties>
+			<property name="custom_capabilities" type="array">
+				<element value="tamil_einsendungen_abholen"/>
+				<element value="tamil_verzeichnis_pflegen"/>
+				<element value="edit_tamil_vz_eintraege"/>
+				<element value="tamil_werbung_verwalten"/>
+			</property>
+		</properties>
+	</rule>
 </ruleset>

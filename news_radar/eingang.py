@@ -542,7 +542,8 @@ FREIE_WOERTER = {
 }
 KURZ_FREI = {"der", "die", "das", "den", "dem", "des", "ein", "am", "im", "in", "an", "um", "ab", "es", "er", "sie",
              "wir", "ihr", "und", "so", "wo", "wie", "was", "wer", "mit", "bei", "zum", "zur", "von", "vom", "auf",
-             "aus", "bis", "für", "fuer", "uhr", "ist", "hat", "zu", "ja", "nur", "man"}
+             "aus", "bis", "fuer", "uhr", "ist", "hat", "zu", "ja", "nur", "man", "uns", "vor", "als", "wie", "auch",
+             "gut", "neu", "da", "ob", "oft", "nun", "per", "pro", "je", "zu", "dir", "mir", "ihm", "sei"}
 _UMLAUT = str.maketrans({"ä": "ae", "ö": "oe", "ü": "ue", "ß": "ss"})
 
 
@@ -581,32 +582,52 @@ def _stamm(wort: str) -> str:
     return wort
 
 
+# Wörter, die einen Wert tragen: nur in derselben Wortfolge wie in der Einsendung („Kinder frei“, nicht „Essen frei“)
+WERTWOERTER = {"frei", "kostenlos", "gratis", "umsonst", "ausverkauft", "abgesagt", "verschoben", "inklusive", "inkl",
+               "ermaessigt", "ermaessigung"}
+
+
 class _Pruefung:
+    """Positivliste gegen den erlaubten Text. Zahlen, Wertwörter und Kalenderwörter gelten nur in der Wortfolge der
+    Einsendung (Wort, Zahl, Einheit als n-Gramm, je Feld; nie über Feldgrenzen hinweg)."""
+
     def __init__(self, erlaubt: str):
         self.klein = erlaubt.lower()
-        tokens = [_norm_wort(t) for t in _woerter(erlaubt)]
-        self.woerter = set(tokens)
-        self.staemme = {_stamm(t) for t in tokens}
-        self.paare = set(zip(tokens, tokens[1:]))
+        self.woerter: set[str] = set()
+        self.staemme: set[str] = set()
+        self.ngramme: set[tuple[str, ...]] = set()
+        for zeile in erlaubt.split("\n"):
+            tokens = [_norm_wort(t) for t in _woerter(zeile)]
+            self.woerter.update(tokens)
+            self.staemme.update(_stamm(t) for t in tokens)
+            for n in (1, 2, 3):
+                self.ngramme.update(tuple(tokens[i:i + n]) for i in range(len(tokens) - n + 1))
+
+    def _in_folge(self, folge: list[str], von: int, bis: int) -> bool:
+        return tuple(_norm_wort(t) for t in folge[max(0, von):bis + 1]) in self.ngramme
 
     def fremd(self, folge: list[str], i: int) -> bool:
         """Ist das i-te Wort der Folge eine Angabe, die nicht in der Einsendung steht?"""
         roh = folge[i]
         w = _norm_wort(roh)
-        if w.isdigit():
-            vor = _norm_wort(folge[i - 1]) if i else None
-            nach = _norm_wort(folge[i + 1]) if i + 1 < len(folge) else None
-            return not ((vor, w) in self.paare or (w, nach) in self.paare
-                        or (vor is None and nach is None and w in self.woerter))
+        if w.isdigit():  # mit beiden Nachbarn so in der Einsendung („Kinder 10 Euro“ ≠ „10 Euro, Kinder frei“)
+            return not self._in_folge(folge, i - 1, i + 1)
+        if w in _KALENDER:  # Wochentag und Monat nur mit der Zahl daneben wie in der Einsendung
+            if w not in self.woerter:
+                return True
+            nachbarn = [j for j in (i - 1, i + 1) if 0 <= j < len(folge) and folge[j].isdigit()]
+            return any(not self._in_folge(folge, min(i, j), max(i, j)) for j in nachbarn)
+        if w in WERTWOERTER:  # mit dem Wort davor (am Anfang: danach) wie in der Einsendung
+            return not (self._in_folge(folge, i - 1, i) if i else self._in_folge(folge, i, i + 1))
         if w in self.woerter or _stamm(w) in self.staemme:
             return False
-        if (_ZAHLWORT.fullmatch(w) and w not in _NUR_ARTIKEL) or _ORDINAL.fullmatch(w) or w in _KALENDER:
+        if (_ZAHLWORT.fullmatch(w) and w not in _NUR_ARTIKEL) or _ORDINAL.fullmatch(w) or any(c.isdigit() for c in w):
             return True
-        if any(c.isdigit() for c in w):
+        if roh.lower() == roh.upper():  # Schrift ohne Groß- und Kleinschreibung (z. B. Tamil): nur aus der Einsendung
             return True
         if len(roh) >= 4:
             return w not in FREIE_WOERTER
-        return roh[:1].isupper() and w not in KURZ_FREI
+        return w not in KURZ_FREI  # kurze lateinische Wörter nur aus der festen Liste, in jeder Schreibung
 
 
 _KALENDER = {_norm_wort(w) for w in WOCHENTAGE + MONATE} | {"sonnabend", "jaenner", "feber"}
@@ -916,33 +937,35 @@ def uebernehmen(store, settings, vorgang: str, *, von: str, felder: dict, client
     if isinstance(bild, tuple):
         row.update(bild_datei=bild[1], bild_credit="Bild: eingesandt", bild_origin="einsendung",
                    bild_alt=f"Eingesandtes Bild zu: {titel}"[:lizenz.ALT_MAX])
-    # Erst die Einsendung beanspruchen (bedingt), dann den Entwurf anlegen: nie zwei Entwürfe zu einer Einsendung
-    jetzt = now_iso()
-    cur = store._write("UPDATE einsendungen SET status = 'uebernommen', abgeschlossen_at = ?, bearbeitet_von = ?, "
-                       "aktualisiert = ? WHERE id = ? AND status = 'vorbereitet'", (jetzt, von, jetzt, e["id"]))
-    if cur.rowcount != 1:
-        raise Konflikt(f"Einsendung {vorgang} ist nicht (mehr) vorbereitet")
-    pfad = settings.bilder_dir / bild[1] if isinstance(bild, tuple) else None
-    did = None
+    # Einsendung beanspruchen (bedingt), Entwurf und Lizenz-Datensatz anlegen: eine Transaktion, alles oder nichts.
+    # Die Bilddatei liegt bis zum Commit unter einem eigenen Namen; erst danach bekommt sie ihren Namen (so löscht ein
+    # abgewiesener zweiter Versuch nie das Bild eines gelungenen).
+    zwischen = None
+    if isinstance(bild, tuple):
+        import uuid
+
+        settings.bilder_dir.mkdir(parents=True, exist_ok=True)
+        zwischen = settings.bilder_dir / f".{bild[1]}.{uuid.uuid4().hex}.tmp"
+        zwischen.write_bytes(bild[0])
     try:
-        if pfad is not None:
-            settings.bilder_dir.mkdir(parents=True, exist_ok=True)
-            pfad.write_bytes(bild[0])
-        did = store.insert_draft(row)
-        if did is None:
-            raise Konflikt(f"Zu Einsendung {vorgang} gibt es schon einen Entwurf")
-        if pfad is not None:
-            lizenz.anlegen(store, datei=bild[1], daten=bild[0], draft_id=did,
-                           felder=_bild_lizenz(e, von=von, verkleinert=bild[2]))
-    except BaseException:
-        if did is not None:  # Entwurf ohne Lizenz-Datensatz darf nicht stehen bleiben
-            store._write("DELETE FROM assets WHERE draft_id = ?", (did,))
-            store._write("DELETE FROM drafts WHERE id = ?", (did,))
-        if pfad is not None:
-            pfad.unlink(missing_ok=True)
-        store._write("UPDATE einsendungen SET status = 'vorbereitet', abgeschlossen_at = NULL WHERE id = ?", (e["id"],))
-        raise
-    store._write("UPDATE einsendungen SET entwurf_id = ? WHERE id = ?", (did, e["id"]))
+        jetzt = now_iso()
+        with store.transaktion():
+            cur = store._write("UPDATE einsendungen SET status = 'uebernommen', abgeschlossen_at = ?, bearbeitet_von = ?, "
+                               "aktualisiert = ? WHERE id = ? AND status = 'vorbereitet'", (jetzt, von, jetzt, e["id"]))
+            if cur.rowcount != 1:
+                raise Konflikt(f"Einsendung {vorgang} ist nicht (mehr) vorbereitet")
+            did = store.insert_draft(row)
+            if did is None:
+                raise Konflikt(f"Zu Einsendung {vorgang} gibt es schon einen Entwurf")
+            if zwischen is not None:
+                lizenz.anlegen(store, datei=bild[1], daten=bild[0], draft_id=did,
+                               felder=_bild_lizenz(e, von=von, verkleinert=bild[2]))
+            store._write("UPDATE einsendungen SET entwurf_id = ? WHERE id = ?", (did, e["id"]))
+        if zwischen is not None:
+            zwischen.replace(settings.bilder_dir / bild[1])
+    finally:
+        if zwischen is not None:
+            zwischen.unlink(missing_ok=True)
     _protokoll(store, "eingang_uebernommen", vorgang, wer=von, ausloeser="person", draft_id=did,
                notiz="Vorschlag des Agenten" if basis is e.get("modell_vorschlag") else "Entwurf aus den Feldern")
     store.event("eingang_uebernommen", vorgang=vorgang, entwurf=did, von=von)
