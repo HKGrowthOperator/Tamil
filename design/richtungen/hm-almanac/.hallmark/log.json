@@ -1,0 +1,34 @@
+[
+ {
+  "shape": "Kalenderblatt",
+  "theme": "almanac",
+  "axes": "mid/grotesk-sans/chromatic-magenta",
+  "hero": "ledge",
+  "nav": "banner over a retracting bar",
+  "footer": "index columns",
+  "imagery": "photographs, the posts own Commons pictures, muted",
+  "photos": [
+   "rb-30",
+   "rb-71",
+   "rb-76",
+   "rb-43"
+  ],
+  "entry": "Ledge: the dated sheet of the next festivals above the head",
+  "fingerprint": "Bottom-aligned|Asymmetric spans|Hairline|Solid|Tightly cropped to the grid|None",
+  "sections": [
+   "Ledge hero (sheet)",
+   "Split (lead report)",
+   "Band (cinema)",
+   "Split (Hamm)",
+   "Switcher Index (year)",
+   "Footer index columns"
+  ],
+  "signature": "Kalenderblatt, next date in logo red",
+  "waived": [
+   "49b"
+  ],
+  "prompt": "tamil.de, German-language magazine of the Tamil community: start page, article, festival calendar, cinema",
+  "date": "2026-11-13",
+  "mode": "build"
+ }
+]

@@ -1,0 +1,43 @@
+/* Hallmark · shape: Kalenderblatt, the article page · genre: editorial · theme: Almanac (deal 2/3, seed tamil-deutschsprachiges-online-magazin-der-ff32·6bcf19c0·2026-11-13·r0) · job: listen · draw: 26f3b5 · copy: verbatim
+ * hero: banner · nav: banner over a retracting bar · footer: index columns · imagery: photographs, the post's own Commons picture 1, muted · signature: the dates named in the report as a printed sheet in the margin, the next one in logo red
+ * axes: mid/grotesk-sans/chromatic-magenta (accent re-hued to the logo red) · posture: restrained · contrast: pass · fold: pass · v2.0.0 */
+/* Hallmark · pre-emit critique: P4 H5 E4 S4 R5 V4 · weakest: S, a report page is the most common page there is; the sheet of dates in the margin ties the text to the calendar and the share sits beside it */
+@import url("./almanac.css");
+/* Hallmark · waive 49b · the wrapping links are report headlines in a dated list of three, two lines at 1440 · a Rückblick headline is the report's own title and cannot be cut to fit one phone line */
+/* Hallmark · dismissed 77 · a report page, counted as head with picture, text with its margin sheet, the next reads and the footer */
+
+.kopf { padding-block: var(--space-xl) var(--space-lg); row-gap: var(--space-lg); align-items: end; }
+.kopf__text { grid-column: 1 / span 9; display: flex; flex-direction: column; gap: var(--space-lg); }
+.kopf h1 { font-size: var(--text-display-s); max-width: 32ch; letter-spacing: -0.03em; line-height: 1.02; }
+.kopf .lead { max-width: 60ch; }
+.kopf__meta { grid-column: 10 / span 3; margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-2xs) var(--space-md); font-size: var(--text-sm); border-top: var(--rule-bar) solid var(--color-rule-2); padding-block-start: var(--space-sm); }
+.kopf__meta dt { color: var(--color-muted); }
+.kopf__meta dd { margin: 0; color: var(--color-ink); }
+.kopf__meta .share { grid-column: 1 / -1; }
+
+.bild { grid-column: 1 / span 10; margin-block-start: var(--space-md); }
+.photo--219 { aspect-ratio: 21 / 9; }
+@media (max-width: 40rem) { .photo--219 { aspect-ratio: 4 / 3; } }
+.bild figcaption small { display: block; margin-top: var(--space-2xs); color: var(--color-muted); font-size: var(--text-sm); }
+
+.text { padding-block-start: var(--section-gap-s); align-items: start; }
+.prosa { grid-column: 1 / span 7; display: flex; flex-direction: column; gap: var(--space-lg); }
+.prosa p { font-size: var(--text-prose); line-height: 1.7; max-width: 65ch; color: var(--color-ink-2); }
+.rand { grid-column: 9 / span 4; display: flex; flex-direction: column; gap: var(--space-lg); }
+.rand .sheet { padding: var(--space-md) var(--space-lg) var(--space-sm); }
+.rand .tafel { font-size: var(--text-sm); }
+.rand .tafel td.tag { width: 6.5rem; }
+.rand .btn { align-self: flex-start; }
+.rand .tafel .is-next td:first-child { box-shadow: none; padding-inline-start: 0; }
+
+.weiter { border-top: var(--rule-bar) solid var(--color-rule-2); margin-block-start: var(--section-gap); padding-block-start: var(--space-2xl); align-items: start; }
+.weiter h2 { grid-column: 1 / span 4; }
+.weiter__liste { grid-column: 5 / span 8; margin: 0; padding: 0; list-style: none; }
+.weiter__liste li { display: grid; grid-template-columns: 5rem minmax(0, 1fr); gap: var(--space-md); align-items: baseline; padding-block: var(--space-lg); border-top: var(--rule-hair) solid var(--color-rule); }
+.weiter__liste li:first-child { border-top: 0; padding-block-start: 0; }
+.weiter__liste a { font: 600 var(--text-title)/1.25 var(--font-display); letter-spacing: var(--tracking-display); text-decoration-thickness: 1px; }
+.weiter__liste a:hover { text-decoration-thickness: 2px; }
+.weiter__liste .num { color: var(--color-ink); font-size: var(--text-sm); }
+@media (max-width: 60rem) { .kopf__meta { border-top-width: var(--rule-hair); } }
+@media (max-width: 40rem) { .weiter__liste a { font-size: var(--text-md); } .weiter__liste li { grid-template-columns: 4rem minmax(0, 1fr); } }
+.kopf__meta .share a { display: inline-flex; align-items: center; min-height: 44px; }
