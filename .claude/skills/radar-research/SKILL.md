@@ -31,22 +31,45 @@ nur aus bestätigten Claims, Belege je `<p>`, Links nur auf Quellen der Story.
    - **Beitrag:** `claims` (Aussage, `evidence_source_ids`, wörtliche Fundstelle aus dem Dokument), optional
      `widersprueche`, `beitrag` mit allen Feldern aus der Anleitung; `belege`: zu jedem `<p>` (ab 1) die Claim-IDs.
      Letzter Absatz ist die Quellenzeile `<p class="quelle">Quelle: …</p>`.
-   - **Zu dünn:** nur `claims` plus `fehlend` (was fehlt) – der Radar setzt „Recherche nötig“.
+   - **Zweite KI:** vor dem Import prüft ein **eigener Agent aus frischem Kontext** (kennt deine Begründung nicht, nur
+     `dokumente` und den Beitrag; Rolle und Maßstab: `news_radar/prompts/pruefer.md`, Aufgabe `entwurf`) jeden Satz
+     und liefert `"pruefung": {"von": "<Name>", "saetze": [{"nr", "satz", "urteil", "claim_ids", "fundstelle",
+     "kern"}]}`. Ungedeckte Nebensätze streicht der Radar, eine ungedeckte Kernaussage schickt die Story in die
+     Nachrecherche. Ohne `pruefung` trägt der Entwurf den Hinweis „Ohne zweite KI-Prüfung“.
+   - **Zu dünn:** selbst weitersuchen (Seite des Veranstalters, Verein, registrierte Medien – nie soziale Netzwerke, keine
+     Paywall) und `{"story_id": …, "neue_quellen": ["https://…"]}` liefern; der Radar liest sie selbst und hängt sie an,
+     die Story kommt im nächsten Export mit den neuen Dokumenten. Ein Eintrag nur mit `fehlend` wird abgelehnt: nichts
+     bleibt offen.
    - **Verwerfen:** `{"story_id": …, "verwerfen": "Grund"}` bei vergangenem Termin, fehlendem DACH-Bezug, Dublette,
-     Klatsch.
-3. Importieren; Antwort lesen (`angelegt`, `recherche`, `verworfen`, `fehler`). Fehler beheben, nur diese Storys erneut.
+     Klatsch – oder wenn die Belege auch nach der Suche nicht tragen.
+3. Importieren; Antwort lesen (`entwuerfe`, `nachrecherche`, `quellen`, `verworfen`, `fehler`). Fehler beheben, nur
+   diese Storys erneut.
 4. `python tools/radar_bericht.py` → Entwürfe mit Hinweisen prüfen (Länge, Quellenzeile, Copydesk).
 5. Bericht an Luis: Tabelle Story · Ergebnis · Titel/Grund · Hinweise.
 
-## Nachtrag ergänzen
+## In Nachrecherche (eigene Liste im Export)
 
-Fehlen einer Nachtrag-Story (Herkunft `nachtrag`, Status „Recherche nötig“) Kernfakten, keine neue Story vorschlagen:
+„Recherche nötig“ gibt es nicht mehr als Endzustand (Auftrag Luis, 13.11.2026). Scheitert das Gate, sucht der Radar
+selbst (höchstens zwei Runden); ohne Modellschlüssel stehen solche Storys danach in der Mappe unter `nachrecherche`
+(nicht unter `storys`) mit `runde`, `letzte_runde`, `fehlend` (Fehlstellen), `suchanfragen`, `gruende` und dem
+`ergebnis` der letzten Runde. Je Story: mit den Suchanfragen nach Belegen für die Fehlstellen suchen und `neue_quellen`
+liefern – oder, wenn die bestätigten Aussagen tragen, einen Beitrag nur aus ihnen (notfalls Kurzmeldung 80–150 Wörter,
+nur bestätigte Claims, jeder Absatz belegt) – oder verwerfen mit Grund. Bei `letzte_runde: true` entscheidet der Import
+endgültig: Kurzmeldung aus bestätigten Claims oder verworfen. In der Übersicht (`nur=uebersicht`) tragen diese Storys
+`"nachrecherche": true`.
+
+## Story ergänzen
+
+Fehlen einer Story in Nachrecherche (Herkunft `nachtrag` oder `radar`) Kernfakten und hast du Quellen, keine neue Story
+vorschlagen:
 denselben Vorschlag mit `"story_id": <Nummer>` und den neuen Quellen an `POST /api/agent/vorschlag` schicken (oder
 `agent vorschlag --datei`). Der Radar holt nur Adressen, die noch nicht Beleg der Story sind, hängt sie an (Q<n+1> …),
 gibt die Story wieder frei (Status „neu“) und führt die Hinweise zusammen (leeres `bezug`/`bild_hinweis` behält den
 alten Wert; `kernfakten` aus neu und alt ohne Doppel, neue zuerst, höchstens 12). Antwort
 `ergaenzt`; `vorhanden` heißt: keine neue Quelle; `abgelehnt` nennt den Grund („Story nicht ergänzbar“: unbekannt,
-keine Nachtrag-Story, nicht „Recherche nötig“ oder schon ein Entwurf; oder „Job läuft“; Einzelheiten im Ereignislog). Danach die Story im nächsten Export neu schreiben – alle Dokumente sind dabei.
+nicht in Nachrecherche, Kino oder schon ein Entwurf; oder „Job läuft“; Einzelheiten im Ereignislog). Eine Story vom Scan
+bekommt danach wieder einen Recherche-Job. Danach die Story im nächsten Export neu schreiben – alle Dokumente sind
+dabei.
 
 ## Bild vorschlagen
 

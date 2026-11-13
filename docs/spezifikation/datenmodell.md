@@ -164,24 +164,33 @@ Eine Story ist ein Ereignis, zu dem mehrere Meldungen gehören können; sie trä
 
 ### Status-Maschine Story
 
+Seit 13.11.2026 (Auftrag Luis) ist `recherche_erforderlich` kein Endzustand mehr, sondern ein Durchgangszustand
+(im Cockpit „In Nachrecherche“), der nie länger dauert als die Jobs: jede Story endet als Entwurf (`fertig`) oder
+`verworfen` mit Grund in `notiz`.
+
 ```mermaid
 stateDiagram-v2
   [*] --> neu: Scan (Dienst) · Nachtrag (Agent) · Dossier (Mensch)
   neu --> recherche: Worker, Schritt recherche
   recherche --> verworfen: Termin liegt zurück (Regel)
   recherche --> geprueft: Gate ok (Regel)
-  recherche --> recherche_erforderlich: Gate nicht ok (Regel)
+  recherche --> recherche_erforderlich: Gate nicht ok → Job nachrecherche
   geprueft --> geschrieben: Worker, Schritt schreiben
   geschrieben --> geschrieben: Faktencheck Runde 1 beanstandet → Runde 2
   geschrieben --> geprueft_text: Faktencheck ok
-  geschrieben --> recherche_erforderlich: Kernsatz auch nach Runde 2 ungedeckt
-  geprueft_text --> fertig: Lektorat, SEO, Bild → Entwurf angelegt
-  geprueft_text --> verworfen: Entwurf zur Meldung existiert schon
+  geschrieben --> recherche_erforderlich: Kernsatz auch nach Runde 2 ungedeckt → Job nachrecherche
+  recherche_erforderlich --> recherche_erforderlich: Nachrecherche (ohne Modell) fand Belege → Recherche, Gate (höchstens 2 Runden)
+  recherche_erforderlich --> geprueft: Gate ok nach der Nachrecherche · zweite KI: Kurzmeldung aus bestätigten Claims
+  recherche_erforderlich --> verworfen: zweite KI verwirft mit Grund · Agent-Import nach zwei Runden ohne Beleg
+  geprueft_text --> fertig: Lektorat, SEO, Prüfung durch die zweite KI, Bild → Entwurf angelegt
+  geprueft_text --> geschrieben: zweite KI beanstandet eine Kernaussage → einmal Überarbeitung
+  geprueft_text --> verworfen: zweite KI: auch nach Überarbeitung ungedeckt · Entwurf zur Meldung existiert schon
   neu --> fertig: Kino-Vorlage ohne Modell · Agent-Import mit Beitrag
-  neu --> recherche_erforderlich: Agent-Import ohne tragfähige Belege
+  neu --> recherche_erforderlich: Agent-Import ohne tragfähige Belege → Job nachrecherche
   neu --> verworfen: Agent-Import „verwerfen“
-  recherche_erforderlich --> neu: Quelle ergänzt (Redaktion) · neue Quelle im Scan · Nachtrag ergänzt
-  fehler --> neu: Quelle ergänzt · neue Quelle im Scan
+  recherche_erforderlich --> neu: Story ergänzt (Vorschlag mit story_id, Herkunft radar oder nachtrag) · Quelle von Hand (admin)
+  verworfen --> neu: neue Quelle im Scan, wenn mangels Beleg verworfen (Notiz „Zweite KI: verworfen …“)
+  fehler --> neu: Quelle von Hand · neue Quelle im Scan
   recherche --> fehler: Job tot nach 3 Versuchen
   geprueft --> fehler: Job tot
   geschrieben --> fehler: Job tot
@@ -192,8 +201,16 @@ stateDiagram-v2
   verworfen --> [*]
 ```
 
+Jobs (`workflow_jobs.schritt`) neben den bisherigen: `nachrecherche` (ohne Modell, läuft auch ohne Schlüssel und an
+Nachträgen; höchstens zwei je Story – gezählt werden die Jobs), `pruefung` (zweite KI nach der Nachrecherche),
+`endpruefung` (zweite KI vor „neu im Cockpit“). Das Ergebnis jeder Runde steht im Protokoll (`log` Ereignis
+`nachrecherche`: `runde`, `fehlend`, `anfragen`, `neu`, `wege`, `ergebnis`) und in `stories.notiz`; die Satzurteile der
+zweiten KI in der Fassung `pruefung`. Keine neue Spalte, keine Migration. Storys, die (noch aus der Zeit davor) ohne
+Job auf `recherche_erforderlich` stehen, stößt der Worker an (`orchestrator.nachrecherche_anstossen`).
+
 `zurueckgestellt` steht in `repo.STORY_STATUS`, wird aber von keinem Übergang gesetzt (zu prüfen). Ein Nachtrag
-(`herkunft = nachtrag`) läuft nie über den Worker, nur über den Agent-Modus.
+(`herkunft = nachtrag`) läuft nie über einen Worker mit Modell, nur über den Agent-Modus; nur die Nachrecherche (ohne
+Modell) darf an ihm laufen.
 
 ## 4. Quelldokument (`source_documents`)
 

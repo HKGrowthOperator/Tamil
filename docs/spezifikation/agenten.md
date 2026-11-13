@@ -34,6 +34,8 @@ und was nie automatisch passiert. Gebautes aus `news_radar/agents/`, `workflow/`
 | Cluster | `cluster` | `claude-haiku-5-5` | `RADAR_MODELL_CLUSTER` | `cluster.md` | low / 2000 | Regeln live; Modell aus |
 | Recherche | `recherche` | `claude-sonnet-5-5` | `RADAR_MODELL_RECHERCHE` | `recherche.md` | medium / 12000 | gebaut, aus |
 | Gate | – (Regeln) | kein Modell | – | – | – | live |
+| Nachrecherche | `nachrecherche` | kein Modell (Provider `suche`, 0 $) | – | – | – | gebaut, läuft auch ohne Schlüssel |
+| Prüfer (zweite KI) | `pruefer` | `claude-opus-5-5` (stärkstes der Konfiguration) | `RADAR_MODELL_PRUEFER` | `pruefer.md` | high / 16000 | gebaut, aus (ohne Schlüssel: Satzprüfung der Research-Sitzung) |
 | Text | `text` | `claude-sonnet-5-5` | `RADAR_MODELL_TEXT` (Alias `RADAR_MODEL`) | `redaktion.md` + `text.md` + Stilbeispiele | medium / 16000 | gebaut, aus |
 | Faktencheck | `faktencheck` | `claude-sonnet-5-5` | `RADAR_MODELL_FAKTENCHECK` | `faktencheck.md` | medium / 12000 | gebaut, aus |
 | Lektorat | `lektorat` | `claude-haiku-5-5` | `RADAR_MODELL_LEKTORAT` | `redaktion.md` + `lektorat.md` | low / 4000 | Regeln live; Modell aus |
@@ -78,8 +80,10 @@ Erreichen: neue bezahlte Jobs warten (`wartet_budget`), Freigabe und Übertragun
   Stadt + Titelwörter) → gleicher Termin (Datum, Titelkern, verträglicher Ort) → Titelähnlichkeit: ≥ 0,82 gleiche
   Story; 0,55–0,82 Grenzfall ans Modell.
 - **Ausgabe:** je Grenzfall `gleiche_story` (ja/nein), `grund`. Gleiche Story → neues Dokument an der Story
-  („angereichert“), Story mit Status `recherche_erforderlich` oder `fehler` startet neu; offene Entwürfe bekommen einen
-  Hinweis und die Quelle in `weitere_quellen`.
+  („angereichert“), Story mit Status `recherche_erforderlich` oder `fehler` startet neu (nur ohne offenen Job – eine
+  laufende Nachrecherche liest das neue Dokument ohnehin); eine mangels Beleg verworfene Story (Notiz „Zweite KI:
+  verworfen …“) wird wieder zugeordnet und startet ebenfalls neu; offene Entwürfe bekommen einen Hinweis und die Quelle
+  in `weitere_quellen`.
 - **Kosten:** ein gebündelter Haiku-Aufruf je Scan mit Grenzfällen.
 - **Fehlerfälle:** Modell fällt aus oder antwortet nicht `ok` → Grenzfälle werden neue Storys (lieber doppelt als
   falsch zusammengelegt).
@@ -113,8 +117,8 @@ Erreichen: neue bezahlte Jobs warten (`wartet_budget`), Freigabe und Übertragun
   < 4 bestätigte Aussagen kurz, 4–7 mittel, ≥ 8 aus zwei Verlagen oder Primärquelle mit Volltext lang; ohne Volltext
   nie mehr als knapp. Sensibel-Wortliste (Politik, Gericht, Gesundheit, Tod, Kinder) setzt den Hinweis „zweite Person“.
 - **Ausgabe:** `ok`, bewertete Claims, `laenge`, `sensibel`, `gruende`, `hinweise`.
-- **Fehlerfälle:** nicht ok → Story `recherche_erforderlich` mit Gründen; im Cockpit „Recherche nötig“ mit „Quelle
-  ergänzen“.
+- **Fehlerfälle:** nicht ok → Story `recherche_erforderlich` mit Gründen und Job `nachrecherche` (siehe unten); nach
+  zwei Runden entscheidet die zweite KI. Im Cockpit „In Nachrecherche“; niemand muss Quellen von Hand einfügen.
 - **Nie lockern,** um einen Test grün zu bekommen (`.claude/rules/radar.md`).
 
 ## Text (`agents/schreiben.py`)
@@ -140,10 +144,57 @@ Erreichen: neue bezahlte Jobs warten (`wartet_budget`), Freigabe und Übertragun
 - **Ausgabe:** je Satz `urteil` (`gedeckt`, `ungedeckt`, `widerspruch`, `kein_fakt`), `claim_ids`, `fundstelle`,
   `kern`.
 - **Regeln:** Widerspruch oder ungedeckter Kernsatz in Runde 1 → genau eine Überarbeitung durch „Text“; in Runde 2 →
-  Story `recherche_erforderlich`. Ungedeckte Nebensätze werden als Hinweis markiert („nicht belegt, bitte prüfen“).
+  Nachrecherche (nach Kurzmeldung oder Endprüfung: verworfen mit Grund). Ungedeckte Nebensätze streicht am Ende die
+  zweite KI (Endprüfung) in jedem Fall.
 - **Kosten:** ein Sonnet-Aufruf je Runde.
 - **Fehlerfälle:** Antwort nicht `ok` → Job-Fehler mit Wiederholung.
 - **Protokoll:** `agent_usage`, Fassung `faktencheck` mit allen Satzurteilen (im Cockpit sichtbar).
+
+## Nachrecherche (`agents/nachrecherche.py`, kein Modell)
+
+- **Zweck:** Auftrag Luis vom 13.11.2026 – keine Story bleibt auf „Recherche nötig“ stehen, keine Links von Hand. Scheitert
+  das Gate (oder der Faktencheck in Runde 2, oder ein Agent-Import), sucht der Radar selbst Belege für die Fehlstellen.
+- **Eingabe:** Story, Dokumente, Claims; Fehlstellen aus den Gründen des Gates (Datum, Ort, zweite Quelle, Klärung eines
+  Widerspruchs, Bericht mit Volltext) und `fehlende_angaben` der Recherche.
+- **Suchanfragen:** höchstens vier aus Titel (ohne „- Verlag“), Titel + Ort, Personen + Ort, Titel + Fehlstelle.
+- **Wege (in dieser Reihenfolge):** `dokumente` (Adressen, die in den Dokumenten genannt sind, z. B. die Seite des
+  Veranstalters), `hinweis` (Hinweis-Dokumente mit direkter Adresse ohne Text), `register` (Meldungen registrierter
+  Quellen aus den letzten 30 Tagen in `seen`; Suche der registrierten WordPress-Quellen `wp_json`/`tribe_events`),
+  `bildquellen` (Startseite eines Betreibers aus dem Bildquellen-Register, wenn Hostname oder zwei eigene Namenswörter
+  zur Story passen), `suche` (Google-News-RSS: Google-Adressen bleiben Hinweise, nie Beleg; direkte Adressen werden
+  gelesen).
+- **Harte Regeln:** alles über `ctx.text_von`/`ctx.json_abruf` (`net.safe_get`, Stopp-Schalter vor jedem Abruf); nie
+  soziale Netzwerke (`SOZIAL`); keine Paywall (Register `paywall = true` oder Paywall-Text auf der Seite); angehängt nur
+  mit ≥ `VOLLTEXT_MIN` Zeichen und passend (Ort und ein Titelwort oder zwei Titelwörter) als `volltext`, `primaer`;
+  höchstens 8 Seiten gelesen und 4 neue Belege je Runde, höchstens zwei Runden je Story. Ob eine Aussage damit
+  bestätigt ist, entscheidet wie immer das Gate (wörtliche Fundstelle).
+- **Danach:** Neues gefunden → Recherche und Gate erneut; nichts gefunden oder zwei Runden vorbei → zweite KI
+  (`pruefung`). Ohne Modell (Agent-Modus) → Recherche-Job, die Story steht mit Fehlstellen und Suchanfragen im Export
+  (Liste `nachrecherche`). Nachträge: nur die Suche, danach Export.
+- **Kosten:** keine Modellkosten; je Runde eine Zeile in `agent_usage` (Rolle `nachrecherche`, Provider `suche`, 0 $).
+  Die folgenden Modellaufrufe (Recherche, Prüfer) laufen über die Budget-Reservierung wie alle anderen.
+- **Protokoll:** `log` `nachrecherche` (Runde, Fehlstellen, Anfragen, neue Belege, Wege, Ablehnungen, Ergebnis),
+  `stories.notiz`, Hinweis im Entwurf „Nachrecherche Runde n von 2: …“.
+
+## Prüfer – zweite KI (`agents/pruefer.py`, Rolle `pruefer`)
+
+- **Zweck:** unabhängige Prüfung aus frischem Kontext (kennt nur Dokumente, Claims und Text, nicht die Begründungen
+  von Recherche und Schreiber) – Auftrag Luis vom 13.11.2026, auch wenn es mehr kostet.
+- **(a) Nach der Nachrecherche** (`pruefung`): `schreiben` (nur aus bestätigten Claims, notfalls Kurzmeldung) oder
+  `verwerfen` mit Grund. Der Code entscheidet mit: eine Kurzmeldung braucht mindestens eine bestätigte Kernaussage,
+  keinen Widerspruch in einer Kernaussage und bei Terminen bestätigtes Datum und bestätigten Ort
+  (`kurzmeldung_regel`) – die zweite KI kann nur strenger sein. Unbestätigte Kernaussagen werden zu Nebenaussagen
+  (`kern = false`) und kommen nicht in den Text (Hinweis „Nicht im Text, weil nicht belegt“); Länge `kurz` (Termine
+  `event`).
+- **(b) Vor „neu im Cockpit“** (`endpruefung`, nach SEO): jeder Satz gegen die Dokumente (`gedeckt`, `ungedeckt`,
+  `widerspruch`, `kein_fakt`, `kern`). Ungedeckte Nebensätze – und die, die der Faktencheck nicht gedeckt fand – werden
+  gestrichen (Hinweis „Zweite KI hat gestrichen“); eine ungedeckte Kernaussage oder ein Satz, der sich nicht sicher
+  streichen lässt, heißt einmal Überarbeitung, danach verworfen. Bleiben weniger als 25 Wörter, kein Entwurf.
+- **Ausgabe im Entwurf:** Hinweis „Geprüft von zweiter KI (Modell): n Sätze gegen die Dokumente geprüft, …“; Fassung
+  `pruefung` mit allen Satzurteilen.
+- **Kosten:** ein Aufruf mit dem stärksten Modell je Story nach der Nachrecherche und je Entwurf (bei Überarbeitung
+  zwei); Budget über die Reservierung, `agent_usage` Rolle `pruefer`.
+- **Fehlerfälle:** Antwort nicht `ok` → Job-Fehler mit Wiederholung; höchstens drei `pruefung`-Jobs je Story.
 
 ## Lektorat (`agents/copydesk.py`)
 
@@ -203,10 +254,19 @@ Erreichen: neue bezahlte Jobs warten (`wartet_budget`), Freigabe und Übertragun
 - **Export** `GET /api/agent/export`: `?limit=N` (höchstens 20), `?ids=3,4,5` (höchstens 20, nur Ziffern),
   `?nur=uebersicht` (bis 200 Storys ohne Dokumente). Inhalt: Story, Dokumente mit Volltext, Regeln für Recherche, Gate,
   Länge (`staffel`), Anleitung.
-- **Import** `POST /api/agent/import`: `{"ergebnisse": [{story_id, claims, widersprueche, beitrag} | {story_id,
-  verwerfen}]}`. Der Radar prüft selbst: Story aus dem Export und offen; `validate_refs`; **Gate** wie im Worker; jeder
-  Absatz braucht Belege aus bestätigten Claims, sonst `recherche_erforderlich`; Links nur auf Story-Quellen; Lektorat-
-  und SEO-Regeln; Bildkette; Entwurf mit Hinweis „Agent-Modus“. Nachtrag-Entwürfe höchstens `RADAR_NACHTRAG_TAG` je Tag.
+  Storys in Nachrecherche stehen in der eigenen Liste `nachrecherche` mit `runde`, `letzte_runde`, `fehlend`,
+  `suchanfragen`, `gruende` und dem `ergebnis` der letzten Runde; die Übersicht markiert sie mit `nachrecherche: true`.
+- **Import** `POST /api/agent/import`: `{"ergebnisse": [{story_id, claims, widersprueche, beitrag, pruefung} |
+  {story_id, verwerfen} | {story_id, neue_quellen}]}` – nur diese drei Ergebnisse; ein Eintrag nur mit Fehlstellen wird
+  abgelehnt, nichts geändert. Der Radar prüft selbst: Story aus dem Export und offen; `validate_refs`; **Gate** wie im
+  Worker; jeder Absatz braucht Belege aus bestätigten Claims; scheitert das, geht die Story in die Nachrecherche
+  (höchstens zwei Runden), danach Kurzmeldung aus bestätigten Claims (Regeln wie beim Prüfer) oder verworfen mit Grund.
+  `neue_quellen` (höchstens 5): der Radar liest jede selbst, nie soziale Netzwerke, keine Google-Adressen, keine
+  Paywall, nur mit genug Text; die Story bleibt danach im Export. `pruefung` (`von`, `saetze[]`): Satzprüfung einer
+  zweiten KI aus frischem Kontext (eigener Agent der Sitzung); ungedeckte Nebensätze werden gestrichen, eine ungedeckte
+  Kernaussage schickt die Story in die Nachrecherche; ohne `pruefung` trägt der Entwurf den Hinweis „Ohne zweite
+  KI-Prüfung“. Links nur auf Story-Quellen; Lektorat- und SEO-Regeln; Bildkette; Entwurf mit Hinweis „Agent-Modus“.
+  Nachtrag-Entwürfe höchstens `RADAR_NACHTRAG_TAG` je Tag.
 - **Kosten:** in `agent_usage` als Provider `claude-code`, Rolle `agent`, 0 $ (die Sitzung rechnet über das Abo ab).
 - **Protokoll:** `agent_usage`, `log` `agent` (geschrieben/verworfen), `editorial_actions` (Auslöser `agent`).
 - **Nie automatisch:** Freigabe, Veröffentlichung; der Agent kann keine Gate-Regel umgehen.
@@ -216,7 +276,8 @@ Erreichen: neue bezahlte Jobs warten (`wartet_budget`), Freigabe und Übertragun
 - **Zweck:** Rückblick-Storys aus einem Vorschlag mit Quellen (Entscheidung 11.11.2026), ohne Scan, ohne Modell.
 - **Eingabe:** höchstens 5 Vorschläge je Web-Aufruf (CLI 100): `arbeitstitel`, `datum`, `rubrik`, `ort`, `bezug`,
   `heikel`, 1–6 `quellen`, optional `kernfakten`, `bild_hinweis` (nur Hinweise, nie Belege), `erzwingen`; optional
-  `story_id` zum Ergänzen.
+  `story_id` zum Ergänzen – seit 13.11.2026 für jede Story in `recherche_erforderlich` ohne Entwurf und ohne laufenden
+  Job, egal ob Herkunft `nachtrag` oder `radar` (Storys vom Scan bekommen danach wieder einen Recherche-Job).
 - **Regeln:** Der Radar ruft jede Quelle selbst ab (HTML ≤ 3 MB; PDF ≤ 8 MB, ≤ 40 Seiten, eigener Prozess mit
   Zeit- und Speichergrenze); Titel und Text nie aus dem Vorschlag. Dublettenprüfung und Anlegen in einer
   Schreibtransaktion. Ergebnis je Vorschlag: `angelegt`, `vorhanden`, `vielleicht_vorhanden`, `abgelehnt`,
