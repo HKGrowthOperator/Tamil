@@ -96,7 +96,7 @@ def kopf(aktiv=""):
 
 
 def fuss(nachweise):
-    nw = "".join(f'<li>{e(b["alt"])}: {e(b["nachweis"])} (<a href="{e(b.get("quelle_bild", ""))}">Quelle</a>)</li>' for b in nachweise)
+    nw = "".join(f'<li>{e(b["alt"])}: {e(b["nachweis"])}. <a href="{e(b.get("quelle_bild", ""))}">Quelle</a></li>' for b in nachweise)
     nw_block = (f'<div class="fuss__nachweise"><h2 class="fuss__kopf">Bildnachweise</h2><ul>{nw}</ul></div>' if nachweise else "")
     links = [("Nachrichten", "index.html#nachrichten"), ("Community", "rubrik.html"), ("Kultur", "index.html#kultur"), ("Küche", "index.html#kueche"),
              ("Festkalender", "termine.html"), ("Kino", "kino.html"), ("Verzeichnis", "verzeichnis.html"),

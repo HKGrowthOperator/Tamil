@@ -78,8 +78,8 @@ a:focus-visible, button:focus-visible, input:focus-visible + label, summary:focu
 .bild--artikel .bild__rahmen { aspect-ratio: 16 / 9; max-height: 640px; }
 .bild figcaption { margin-top: var(--space-xs); font-size: var(--text-sm); line-height: 1.45; color: var(--color-ink-2); max-width: 70ch; }
 .nachweis { color: var(--color-muted); }
-.bild figcaption a { color: var(--color-muted); padding: var(--space-md) var(--space-2xs); }
-.fuss__nachweise a { padding: var(--space-md) var(--space-2xs); }
+.bild figcaption a { color: var(--color-muted); padding: var(--space-md) var(--space-3xs); }
+.fuss__nachweise a { padding: var(--space-md) var(--space-3xs); }
 
 /* ------------------------------------------------ Fuge: Felder ungleicher Breite, geteilt durch Tintenstreifen */
 .abschnitt { padding-block: var(--space-2xl); }
