@@ -5,6 +5,11 @@
 /* Hallmark · waive 78 · section heads run 26 to 42px under a 46px lead story · tamil.de is read by grandparents on phones, so rubric heads stay quieter than the story heads they sit over */
 /* Hallmark · waive 59 · sections part by a 2px ink Fuge, an ink band or a paper well, gaps 64px and up · a news front page carries ten stories, the joints do the parting the gaps would */
 /* Hallmark · waive 64 · mono only in calendar date cells, ad sizes in pixels and step numbers · dates, pixel measures and numbers are figures, the theme names mono for codes and measures */
+/* Hallmark · waive 44c · subpages open on a Banner head of h1 and one line, the list or form starts above the fold · a calendar, a directory or a booking form is a utility, its reader came for the rows below */
+/* Hallmark · waive 79 · the article head is followed directly by the full-width photograph at the fold · a news article opens on headline and lede, the picture belongs below them */
+/* Hallmark · waive 77 · the one thin section is the billboard ad at 970px · an ad slot has a fixed booked size and must stay subordinate to the stories */
+/* Hallmark · dismissed 77 · subpages carry two to four sections: a head, the list or form, the footer; a utility page is as long as its rows */
+/* Hallmark · answered F7 · every text field shares one recipe on purpose: square plate, 1px ink edge, one height, so forms read as one material */
 /* Hallmark · waive 49b · story titles are links and wrap over two to four lines on phones · headlines from the newsroom cannot shorten, a news title is a phrase that must wrap */
 @import url("./tokens.css");
 @import url("./base.css");
@@ -282,15 +287,16 @@ a:focus-visible, button:focus-visible, input:focus-visible + label, summary:focu
 .eingabe { display: flex; flex-direction: column; gap: var(--space-xs); min-width: 0; }
 .eingabe-paar { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-lg); }
 @media (min-width: 40rem) { .eingabe-paar { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-input[type="text"], input[type="email"], input[type="tel"], input[type="url"], input[type="search"], input[type="datetime-local"], select, textarea { width: 100%; min-height: 48px; padding: var(--space-sm) var(--space-md); border: 1px solid var(--color-ink); border-radius: 0; background: var(--color-plate); color: var(--color-ink); font-size: var(--text-body); outline: 2px solid transparent; outline-offset: -3px; }
+input[type="text"], input[type="email"], input[type="tel"], input[type="url"], input[type="search"], input[type="datetime-local"], select { height: 48px; }
+input[type="text"], input[type="email"], input[type="tel"], input[type="url"], input[type="search"], input[type="datetime-local"], select, textarea { width: 100%; min-height: 48px; padding: 0 var(--space-md); border: 1px solid var(--color-ink); border-radius: 0; background: var(--color-plate); color: var(--color-ink); font-size: var(--text-body); outline: 2px solid transparent; outline-offset: -3px; }
 .filter input[type="search"], .filter select { background: var(--color-plate); }
-textarea { min-height: 8rem; resize: vertical; line-height: 1.5; }
+textarea { min-height: 8rem; padding-block: var(--space-sm); resize: vertical; line-height: 1.5; }
 input[type="file"] { min-height: 48px; padding: var(--space-sm) 0; font-size: var(--text-label); }
 input[type="file"]::file-selector-button { min-height: 44px; margin-right: var(--space-md); padding: 0 var(--space-md); border: 0; border-radius: 0; background: var(--color-ink); color: var(--color-paper); font: 500 var(--text-label) var(--font-body); cursor: pointer; }
 input:focus-visible, select:focus-visible, textarea:focus-visible { outline-color: var(--color-focus); }
 input[aria-invalid], textarea[aria-invalid], select[aria-invalid] { border-color: var(--color-error); }
 input:disabled, select:disabled, textarea:disabled { opacity: 0.55; cursor: not-allowed; }
-.filter__zeile .btn { min-height: 48px; }
+.filter__zeile .btn { height: 48px; }
 .eingabe__hilfe { min-height: 1lh; font-size: var(--text-label); color: var(--color-muted); max-width: 60ch; }
 .stern { color: var(--color-accent); }
 .frei { font-weight: 400; color: var(--color-muted); }

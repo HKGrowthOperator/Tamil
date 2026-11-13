@@ -717,7 +717,7 @@ buchen_form = (
     + haken("bedingungen", "Ich habe die Verkaufsbedingungen gelesen und nehme sie an.",
             hilfe="Die Verkaufsbedingungen liefert KBS; bis dahin ist hier kein Text verlinkt.")
     + '<p class="hilfe">Die Tage sind ab jetzt 35 Minuten reserviert. Bezahlt wird bei Stripe; danach kommen Sie hierher zurück.</p>'
-    '<p class="absenden"><button class="knopf" type="submit">Weiter zur Zahlung bei Stripe</button></p></fieldset></form>')
+    '<p class="absenden"><button class="knopf" type="submit">Zur Zahlung bei Stripe</button></p></fieldset></form>')
 schritt_nav = '<nav class="schritte" aria-label="Schritte der Buchung"><ol>' + "".join(f'<li><a href="#{i}">{t}</a></li>' for i, t in schritte) + '</ol></nav>'
 schreib("buchen.html", "Werbeplatz buchen | tamil.de", "Einen Werbeplatz auf tamil.de buchen.",
         seitenkopf("Werbeplatz buchen", "In fünf Schritten zur Anzeige. Die Werte unten sind Beispiele, bis KBS Preise und Termine liefert.")

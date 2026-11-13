@@ -39,10 +39,11 @@ a:active { color: var(--color-accent-2); }
 .muted { color: var(--color-muted); }
 .klein { font-size: var(--text-sm); }
 time { font-variant-numeric: tabular-nums; }
+b, strong { font-weight: 600; }
 code { font-family: var(--font-outlier); font-size: 0.9em; }
 
 .skip { display: inline-flex; align-items: center; min-height: var(--hit); position: absolute; left: var(--space-md); top: calc(-1 * var(--space-3xl)); z-index: var(--z-toast); padding: var(--space-xs) var(--space-md); background: var(--color-ink); color: var(--color-sheet); }
-.skip:focus-visible { top: var(--space-md); outline-color: var(--color-sheet); }
+.skip:focus-visible { top: var(--space-md); outline-color: var(--color-focus); }
 
 /* ---------- the shell: one top bar ---------- */
 .kopf { position: sticky; top: 0; z-index: var(--z-sticky-nav); background: var(--color-paper); border-bottom: var(--rule-bar) solid var(--color-rule-2); }
@@ -92,7 +93,7 @@ main { padding-block: var(--space-xl) var(--space-3xl); }
 .sp-4 { grid-column: span 4; } .sp-5 { grid-column: span 5; } .sp-7 { grid-column: span 7; } .sp-8 { grid-column: span 8; } .sp-12 { grid-column: 1 / -1; }
 .stapel { display: flex; flex-direction: column; gap: var(--space-xl); min-width: 0; }
 .fuss { margin-top: var(--space-3xl); padding-top: var(--space-md); border-top: var(--rule-hair) solid var(--color-rule); font-size: var(--text-sm); color: var(--color-muted); }
-.fuss p { max-width: 90ch; }
+.fuss p { max-width: 70ch; }
 @media (max-width: 60rem) {
   .raster { grid-template-columns: minmax(0, 1fr); }
   .raster > * { grid-column: 1 / -1; }
@@ -207,7 +208,6 @@ fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
 .wahl input:focus-visible { outline: none; }
 .wahl input:focus-visible::before { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .wahl input:disabled { opacity: 0.55; cursor: not-allowed; }
-.wahl input:disabled + span { opacity: 0.55; }
 
 /* tabs (filters in the URL) */
 .tabs { display: flex; gap: var(--space-2xs); margin: 0 0 var(--space-md); padding: 0; list-style: none; overflow-x: auto; border-bottom: var(--rule-hair) solid var(--color-rule); scrollbar-width: thin; }
@@ -261,7 +261,7 @@ fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
 
 /* ---------- Prüfbogen (Entwurf) ---------- */
 .entwurfkopf { display: grid; gap: var(--space-md); padding-block-end: var(--space-lg); }
-.entwurfkopf h1 { font-size: var(--text-2xl); max-width: 36ch; }
+.entwurfkopf h1 { font-size: var(--text-2xl); max-width: 52ch; }
 .entwurfkopf .teaser { font-size: var(--text-prose); line-height: 1.55; color: var(--color-ink-2); max-width: 68ch; }
 .werkzeug { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-sm) var(--space-md); padding: var(--space-sm) var(--space-md); background: var(--color-paper-2); border-top: var(--rule-bar) solid var(--color-rule-2); }
 .werkzeug .grund { font-size: var(--text-sm); color: var(--color-ink-2); }
@@ -344,3 +344,5 @@ details.sheet > summary.btn, details.panel > summary.btn { margin: 0; }
   .tafel--stapel tr:has(.ecke) td:first-child { grid-row: span 2; }
   .tafel--stapel tr:has(.ecke) td.aktion { grid-column: 2; grid-row: 2; text-align: right; align-self: end; }
 }
+.sp-4 .dl, .sp-5 .dl--eng { grid-template-columns: minmax(0, 1fr); }
+.sp-4 .dl dd, .sp-5 .dl--eng dd { border-top: 0; padding-top: 0; }

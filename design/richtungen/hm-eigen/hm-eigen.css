@@ -1,10 +1,13 @@
 /* Hallmark · shape: Tagesblatt (custom) · genre: editorial · theme: custom · job: visit · idea: "tamil.de ordnet sich wie der Kalender in der tamilischen Küche: jeder Beitrag an seinem Tag, das Datum vorn, Rot nur für Sonntage und Festtage" · vibe: "Kalenderblatt, ruhig, dicht, eine Druckfarbe plus Rot als Bedeutung"
- * paper: oklch(97.6% 0.007 120) · accent: oklch(50.5% 0.175 25) · display: Rethink Sans 650 (Ziffern 800) · body: Golos Text · hero: Tagesblatt mit Datum, Aufmacher mit Bild und den nächsten Festen · nav: Logo, Rubriken leise, drei Dienste · footer: Feld paper-2 mit Logo, Rubriken, Diensten, Bildnachweisen · imagery: photographs (Commons, mit Nachweis) · signature: die Tageszeile (Ziffer, Titel, Ort), Ziffer rot nur bei Terminen an Sonntagen und Festtagen
+ * paper: oklch(97.6% 0.007 120) · accent: oklch(50.5% 0.175 25) · display: Rethink Sans 600 (Ziffern 800) · body: Golos Text · hero: Tagesblatt mit Datum, Aufmacher mit Bild und den nächsten Festen · nav: Logo, Rubriken leise, drei Dienste · footer: Feld paper-2 mit Logo, Rubriken, Diensten, Bildnachweisen · imagery: photographs (Commons, mit Nachweis) · signature: die Tageszeile (Ziffer, Titel, Ort), Ziffer rot nur bei Terminen an Sonntagen und Festtagen
  * axes: jasmine-white/grotesk/kumkum-red-as-meaning · posture: split · contrast: pass · fold: pass · v2.0.0 */
 /* Hallmark · pre-emit critique: P2 H2 E2 S2 R2 V2 · weakest: E (die Tageszeile ist die eine Idee; der Rest ist ruhige Nachrichtenordnung). Rot nie als Fläche, nie als Riesenschrift, kein roter Knopf */
 /* waive 44a: Aufmacher-Schlagzeile und Vorspann sind redaktioneller Text des Kunden (copy: verbatim), nicht für die Probe gekürzt */
 /* waive 58: Nachrichtenseite (Brief v3: lesen, finden): Startseite, Rubrik, Artikel, Kalender und Formulare sind von Natur aus dichter als 80 Wörter je Bildschirm */
 /* waive 79: Seitenköpfe von Artikel, Rubrik und Diensten sind kurz; darunter beginnt der Inhalt ohne Füllung */
+/* waive 78: Abschnittsköpfe bewusst 22 bis 28 px unter der Aufmacher-Schlagzeile (Kritik r1, P1-5 und P2-10: keine Landingpage-Köpfe in 48 px); die Hierarchie trägt die Linie über jeder Liste */
+/* waive 49b: verlinkte Überschriften sind die echten Titel der Beiträge (copy: verbatim) und brechen am Handy zwangsläufig um */
+/* waive 77: Dienstlisten (Filme im Programm, Erwähnungen eines Eintrags) sind kurz, weil es nicht mehr echtes Material gibt; nichts wird aufgefüllt */
 /* waive 85: die Seiten einreichen, kontakt und buchen sind selbst Formulare; der Job der Seite ist das Formular */
 @import url("./tokens.css");
 @import url("./base.css");
@@ -31,7 +34,7 @@
   --container: 1320px;
   --gutter: clamp(16px, 4vw, 56px);
   --radius-card: 2px;
-  --weight-head: 650;
+  --weight-head: 600;
   --text-day: clamp(3rem, 4.5vw + 1rem, 5.5rem);
   --text-row: clamp(2.125rem, 1vw + 1.6rem, 2.5rem);
   --text-body: 1.125rem;
@@ -117,7 +120,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: var(--weight-head); 
 /* Gemeinsame Aktionen und Links */
 .aktionen { display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--space-lg); margin: var(--space-sm) 0 0; }
 .textlink { display: inline-flex; align-items: center; min-height: 44px; font-weight: 600; }
-.knopf { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 var(--space-lg); border: 1px solid var(--color-ink); background: var(--color-ink); color: var(--color-paper); text-decoration: none; font: 600 var(--text-md)/1.2 var(--font-body); border-radius: var(--radius-card); cursor: pointer; transition: background-color var(--dur-short) var(--ease-out), transform var(--dur-micro) var(--ease-out); }
+.knopf { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 var(--space-lg); border: 1px solid var(--color-ink); background: var(--color-ink); color: var(--color-paper); white-space: nowrap; text-decoration: none; font: 600 var(--text-md)/1.2 var(--font-body); border-radius: var(--radius-card); cursor: pointer; transition: background-color var(--dur-short) var(--ease-out), transform var(--dur-micro) var(--ease-out); }
 .knopf:hover { background: var(--color-ink-2); }
 .knopf:active { transform: translateY(1px); }
 .knopf:disabled, .knopf[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; transform: none; }
@@ -131,7 +134,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: var(--weight-head); 
 .bild-link { display: block; }
 .bild-link:hover img { opacity: 0.92; }
 .bild figcaption { margin-top: var(--space-2xs); font-size: var(--text-sm); color: var(--color-muted); line-height: 1.4; }
-.bild figcaption .quelle { display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; margin-block: -12px; color: var(--color-muted); }
+.bild figcaption .quelle { display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; margin-block: calc(-1 * var(--space-sm)); color: var(--color-muted); }
 
 /* Abschnitte */
 .abschnitt { padding-block: var(--section-gap-s); }
@@ -164,7 +167,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: var(--weight-head); 
 .tage .wo { color: var(--color-ink-2); }
 .tage .teilen { font-size: var(--text-md); font-weight: 600; min-height: 44px; display: inline-flex; align-items: center; }
 .tage li.heute { background: var(--color-paper-2); padding-inline: var(--space-sm); margin-inline: calc(-1 * var(--space-sm)); }
-.tage li.heute .was { font-weight: 700; }
+.tage li.heute .was { font-weight: var(--weight-head); }
 .tage.kompakt li, .tage.filme li { grid-template-columns: 4.25rem minmax(0, 1fr); }
 .tage.kompakt .wo, .tage.kompakt .teilen { grid-column: 2; }
 .tage.kompakt .was { font-size: var(--text-md); line-height: 1.35; }
@@ -220,7 +223,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: var(--weight-head); 
 .seiten p { margin: 0; color: var(--color-muted); }
 .seiten-links { display: flex; flex-wrap: wrap; gap: 0 var(--space-md); }
 .seiten-links a:not(.textlink) { display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; justify-content: center; }
-.seiten-links a[aria-current="page"] { font-weight: 700; text-decoration: none; }
+.seiten-links a[aria-current="page"] { font-weight: var(--weight-head); text-decoration: none; }
 
 /* Artikel */
 .artikel-kopf { padding-block: var(--space-xl) var(--space-lg); }
@@ -280,7 +283,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: var(--weight-head); 
 .e-name .meta { margin-top: var(--space-2xs); }
 .e-ort { grid-area: ort; margin: 0; font-family: var(--font-display); font-weight: var(--weight-head); font-size: var(--text-lg); line-height: 1.2; }
 .e-ort small { display: block; font-family: var(--font-body); font-weight: 400; font-size: var(--text-sm); color: var(--color-muted); margin-top: var(--space-2xs); }
-.e-marke { grid-area: marke; margin: 0; font-weight: 700; font-size: var(--text-md); }
+.e-marke { grid-area: marke; margin: 0; font-weight: var(--weight-head); font-size: var(--text-md); }
 .hinweis { margin: var(--space-md) 0 0; color: var(--color-ink-2); }
 @media (max-width: 860px) { .verz-raster { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 600px) {
@@ -317,7 +320,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: var(--weight-head); 
 .feld input:disabled, .feld textarea:disabled, .feld select:disabled { opacity: 0.55; cursor: not-allowed; }
 .feld input[aria-invalid="true"], .feld textarea[aria-invalid="true"], .feld input:user-invalid, .feld textarea:user-invalid, .feld select:user-invalid { border-color: var(--color-error); }
 .select { position: relative; display: block; }
-.select select { appearance: none; padding-right: 2.5rem; }
+.select select { appearance: none; padding-right: var(--space-xl); }
 .select::after { content: ""; position: absolute; right: var(--space-md); top: 50%; width: 8px; height: 8px; border-right: 2px solid var(--color-ink); border-bottom: 2px solid var(--color-ink); transform: translateY(-70%) rotate(45deg); pointer-events: none; }
 .hilfe { margin: 0; min-height: 1lh; font-size: var(--text-sm); color: var(--color-muted); line-height: 1.45; }
 .feld-paar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 var(--space-md); }
@@ -430,10 +433,10 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: var(--weight-head); 
 .danke-box h1 { font-size: var(--text-h1); }
 .danke-box .satz { font-size: var(--text-lead); margin-bottom: var(--space-lg); }
 .danke-box > p { margin: var(--space-md) 0 0; max-width: 60ch; }
-.nummer { font-family: var(--font-display); font-weight: 700; font-variant-numeric: tabular-nums; }
+.nummer { font-family: var(--font-display); font-weight: var(--weight-head); font-variant-numeric: tabular-nums; }
 ol.stand { list-style: none; margin: var(--space-lg) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-xs) var(--space-lg); color: var(--color-muted); }
 ol.stand li.erledigt { color: var(--color-ink-2); text-decoration: line-through; text-decoration-thickness: 1px; }
-ol.stand li.jetzt { color: var(--color-ink); font-weight: 700; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 0.3em; }
+ol.stand li.jetzt { color: var(--color-ink); font-weight: var(--weight-head); text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 0.3em; }
 
 /* Fuß */
 .fuss { background: var(--color-paper-2); padding-block: var(--space-2xl) var(--space-xl); margin-top: var(--section-gap-s); }
@@ -442,11 +445,11 @@ ol.stand li.jetzt { color: var(--color-ink); font-weight: 700; text-decoration: 
 .fuss p { margin: var(--space-sm) 0 0; max-width: 36ch; }
 .fuss ul { list-style: none; margin: 0; padding: 0; }
 .fuss li a { display: inline-flex; min-height: 44px; min-width: 44px; align-items: center; }
-.fuss h2 { font-size: var(--text-md); font-weight: 700; margin-bottom: var(--space-2xs); }
+.fuss h2 { font-size: var(--text-md); font-weight: var(--weight-head); margin-bottom: var(--space-2xs); }
 .nachweise { font-size: var(--text-sm); color: var(--color-muted); }
 .nachweise li { padding-block: var(--space-3xs); }
-.nachweise li a { display: inline-block; min-height: 0; padding-block: 12px; margin-block: -12px; color: var(--color-muted); }
-@media (max-width: 960px) { .fuss .wrap { grid-template-columns: repeat(2, minmax(0, 1fr)); } .fuss .wrap > div:first-child, .fuss .wrap > div:last-child { grid-column: 1 / -1; } }
+.nachweise li a { display: inline-block; min-height: 0; padding-block: var(--space-sm); margin-block: calc(-1 * var(--space-sm)); color: var(--color-muted); }
+@media (max-width: 1100px) { .fuss .wrap { grid-template-columns: repeat(2, minmax(0, 1fr)); } .fuss .wrap > div:first-child, .fuss .wrap > div:last-child { grid-column: 1 / -1; } }
 
 @media (max-width: 860px) {
   :root { --section-gap-s: 48px; }

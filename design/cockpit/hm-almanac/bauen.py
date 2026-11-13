@@ -292,7 +292,7 @@ WEITERE
 <div class="meldung meldung--fehler lizenz-fehlt" role="status">
 <p><b>Lizenz fehlt.</b> Zu diesem Bild gibt es keinen Lizenz-Datensatz. Trag ihn nach oder ersetze das Bild.</p>
 <p class="klein">Die Commons-Seite nennt: Vincenzo.togni, CC BY-SA 4.0.</p>
-<p class="leiste"><button class="btn btn--quiet" type="button">Angaben der Commons-Seite übernehmen</button></p>
+<p class="leiste"><button class="btn btn--quiet" type="button">Commons-Angaben übernehmen</button></p>
 </div>
 <form class="form abschnitt" data-endpoint="" novalidate aria-labelledby="h-lizenzform">
 <h3 id="h-lizenzform">Lizenz-Datensatz</h3>
@@ -413,7 +413,7 @@ WEITERE
 </table>
 </details>
 </section>
-<details class="sheet aufklapp" aria-label="Text bearbeiten">
+<section class="sheet" aria-label="Text bearbeiten"><details class="aufklapp">
 <summary class="btn btn--quiet">Text bearbeiten</summary>
 <form class="form form--zwei abschnitt" data-endpoint="">
 <div class="feld ganz"><label for="f-titel">Überschrift</label><input class="input" id="f-titel" name="titel" maxlength="120" value="Ranjan Neelakandan: Schweizer Talent mit tamilischen Wurzeln kehrt nach Yverdon zurück"><p class="hilfe">höchstens 90 Zeichen empfohlen</p></div>
@@ -424,7 +424,7 @@ WEITERE
 <div class="feld"><label for="f-alt">Alt-Text des Bildes</label><input class="input" id="f-alt" name="bild_alt" value="Das Stade Municipal in Yverdon-les-Bains, Heimstadion von Yverdon-Sport (Archivbild 2022)"><p class="hilfe"></p></div>
 <p class="leiste ganz"><button class="btn btn--quiet" type="submit">Speichern</button><span class="grund">Speichern erhöht den Stand; freigegeben wird dann der neue Stand.</span></p>
 </form>
-</details>
+</details></section>
 </div>
 <div class="stapel sp-4">
 {bild_panel}

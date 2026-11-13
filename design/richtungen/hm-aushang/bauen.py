@@ -252,11 +252,11 @@ def artikel(sid, name):
         absz.insert(2, anzeige("inarticle", WA_KANAL, "tamil.de auf WhatsApp", "Neue Beiträge und Termine direkt im Kanal.", extern=True))
     kal = ""
     if sid == 30:
-        kal = (f'<aside class="randspalte" aria-labelledby="h-kal"><h2 id="h-kal" class="rand-titel">Im Kalender</h2>'
+        kal = (f'<aside class="randspalte" aria-label="Im Kalender"><p class="rand-titel">Im Kalender</p>'
                f'<ol class="tafel tafel--knapp">{notiz(KOMMEND[0]["d"], KOMMEND[0]["titel"], KOMMEND[0]["ort"], None, teilen=True, zustand=bis_wann(KOMMEND[0]["d"]), rot=True)}</ol>'
                f'<p class="weiter"><a href="termine.html">Ganzer Festkalender 2026</a></p></aside>')
     else:
-        kal = (f'<aside class="randspalte" aria-labelledby="h-kal"><h2 id="h-kal" class="rand-titel">Als Nächstes</h2>'
+        kal = (f'<aside class="randspalte" aria-label="Als Nächstes"><p class="rand-titel">Als Nächstes</p>'
                f'<ol class="tafel tafel--knapp">{notiz(KOMMEND[0]["d"], KOMMEND[0]["titel"], KOMMEND[0]["ort"], "artikel.html", zustand=bis_wann(KOMMEND[0]["d"]), rot=True)}</ol>'
                f'<p class="weiter"><a href="termine.html">Ganzer Festkalender 2026</a></p></aside>')
     weiter_ids = [i for i in (49, 33, 71, 76, 60) if i != sid][:3]
@@ -542,7 +542,7 @@ def einreichen():
     seite_ = (f'<section class="seitenkopf" aria-labelledby="h-ein"><div class="container kopfblock kopfblock--geteilt">'
               f'<h1 id="h-ein">Termin einreichen</h1><p class="lead">Die Redaktion prüft jeden Termin, bevor er im Festkalender aushängt.</p></div></section>'
               f'<section class="abschnitt abschnitt--direkt" aria-label="Formular"><div class="container paar paar--8-4">{form}'
-              f'<aside class="randspalte" aria-labelledby="h-weg"><h2 id="h-weg" class="rand-titel">So geht es weiter</h2>'
+              f'<aside class="randspalte" aria-label="So geht es weiter"><p class="rand-titel">So geht es weiter</p>'
               f'<ol class="schritte schritte--klein"><li>Sie bekommen auf der Seite eine Vorgangsnummer.</li>'
               f'<li>Die Redaktion prüft Datum, Ort und Angaben.</li><li>Nach der Freigabe steht der Termin im Festkalender.</li></ol>'
               f'<p class="rand-satz">Eine E-Mail schicken wir nicht. Bei Rückfragen meldet sich die Redaktion von Hand.</p>'
@@ -648,7 +648,7 @@ def buchen():
             f'<li><fieldset class="gruppe"><legend>Startdatum</legend>'
             f'<p class="rand-satz">Bis zum {datum_lang(ERSTER_FREIER - dt.timedelta(days=1), False)} ist nichts buchbar: Werbemittel brauchen zwei Werktage Vorlauf für die Prüfung. Alle späteren Tage sind frei.</p>'
             f'<div class="kalender-paar">{kalender(2026, 11, ERSTER_FREIER, 14)}{kalender(2026, 12, ERSTER_FREIER, 14)}</div>'
-            f'<p class="legende"><span class="legende-frei">frei</span><span class="legende-gewaehlt">gewählt</span><span class="legende-gesperrt">nicht buchbar</span></p></fieldset></li>'
+            f'<p class="legende">Schwarz ist der Starttag, grau hinterlegt sind die gebuchten Tage, durchgestrichen die Tage, die nicht buchbar sind.</p></fieldset></li>'
             f'<li><fieldset class="gruppe"><legend>Ihre Angaben</legend>'
             + feld("firma", "Firma", pflicht=True, auto="organization")
             + feld("person", "Ansprechperson", pflicht=True, auto="name")
