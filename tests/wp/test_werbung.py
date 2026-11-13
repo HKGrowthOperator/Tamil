@@ -68,7 +68,7 @@ class Werbung:
 
     # --- Daten ---------------------------------------------------------------------------------------------------
     def buchung(self, ident) -> dict:
-        feld = "id" if isinstance(ident, int) else "nummer"
+        feld = "id" if isinstance(ident, int) or str(ident).isdigit() else "nummer"
         return _php(f"""global $wpdb; echo wp_json_encode( $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM %i WHERE {feld} = %s',
             tamil_site_werbung_tabelle( 'buchungen' ), '{ident}' ), ARRAY_A ) );""")
 
@@ -91,6 +91,10 @@ class Werbung:
               'stripe_zahlung' => 'pi_test_direkt', 'ablehnungsgrund' => '', 'warnung' => '', 'kunden_hash' => '', 'erstellt_at' => gmdate( 'Y-m-d H:i:s' ) ) );
             $id = (int) $wpdb->insert_id;
             echo wp_json_encode( tamil_site_werbung_tage_belegen( tamil_site_werbung_buchung( $id ) ) ? $id : 0 );""")
+
+    def ereignis_bekannt(self, evt: str) -> bool:
+        return _php(f"""global $wpdb; echo wp_json_encode( (bool) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i WHERE ereignis_id = %s',
+            tamil_site_werbung_tabelle( 'ereignisse' ), '{evt}' ) ) );""")
 
     def aufrufe(self) -> list[dict]:
         return _php("echo wp_json_encode( get_option( 'tamil_test_stripe_aufrufe', array() ) );") or []
@@ -138,6 +142,12 @@ class Werbung:
         return _php(f"echo wp_json_encode( tamil_site_werbung_plus_tage( tamil_site_werbung_fruehester_start(), {plus} ) );")
 
 
+def _drossel_leeren() -> None:
+    """Drosseln und Zähl-Sperren (Transienten tamil_wb_…) leeren, damit Tests einander nicht bremsen."""
+    _php("""global $wpdb; foreach ( $wpdb->get_col( "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE '%tamil_wb_%'" ) as $n ) {
+        if ( str_starts_with( $n, '_transient_' ) || str_starts_with( $n, '_transient_timeout_' ) ) { delete_option( $n ); } }""")
+
+
 @pytest.fixture
 def wb(wp, wp_cli):
     """Werbung an, Fake-Stripe als mu-plugin, Testpreise, eigene Seite; danach alles zurück."""
@@ -146,7 +156,8 @@ def wb(wp, wp_cli):
     geheimnis = "whsec_test_" + secrets.token_hex(16)
     datei = mu / "tamil-test-stripe-fake.php"
     datei.write_text((HIER / "stripe_fake.php").read_text(encoding="utf-8").replace("__GEHEIMNIS__", geheimnis), encoding="utf-8")
-    alt = _php("""echo wp_json_encode( array( get_option( 'tamil_site_funktionen', array() ), get_option( 'tamil_site_werbung_angebote', null ) ) );""")
+    alt = _php("""global $wpdb; echo wp_json_encode( array( get_option( 'tamil_site_funktionen', array() ), get_option( 'tamil_site_werbung_angebote', null ),
+        (int) $wpdb->get_var( $wpdb->prepare( 'SELECT MAX(id) FROM %i', tamil_site_werbung_tabelle( 'buchungen' ) ) ) ) );""")
     seite_id = _php(f"""tamil_site_upgrade_ausfuehren();
         $f = (array) get_option( 'tamil_site_funktionen', array() ); $f['werbung'] = true; update_option( 'tamil_site_funktionen', $f );
         update_option( 'tamil_site_werbung_angebote', array( 'laufzeiten' => array( 1, 7 ), 'vorlauf' => 2, 'bedingungen_fassung' => 'Test 1',
@@ -156,12 +167,13 @@ def wb(wp, wp_cli):
         $alt = get_page_by_path( '{SEITE}', OBJECT, 'page' ); if ( $alt ) {{ wp_delete_post( $alt->ID, true ); }}
         echo wp_json_encode( wp_insert_post( array( 'post_type' => 'page', 'post_status' => 'publish', 'post_title' => 'Werben (Test)',
           'post_name' => '{SEITE}', 'post_content' => '[tamil_werbung]' ) ) );""")
+    _drossel_leeren()
     yield Werbung(geheimnis, f"{URL}/{SEITE}/")
     _php(f"""global $wpdb;
-        $ids = $wpdb->get_col( $wpdb->prepare( "SELECT id FROM %i WHERE firma LIKE 'Testfirma%%'", tamil_site_werbung_tabelle( 'buchungen' ) ) );
+        $ids = $wpdb->get_col( $wpdb->prepare( "SELECT id FROM %i WHERE firma LIKE 'Testfirma%%' OR id > %d", tamil_site_werbung_tabelle( 'buchungen' ), {int(alt[2] or 0)} ) );
         foreach ( $ids as $id ) {{
           $b = tamil_site_werbung_buchung( (int) $id );
-          if ( ! str_starts_with( $b['werbemittel_desktop'], 'tamil-werbung/test/' ) ) {{ tamil_site_werbung_datei_loeschen( $b['werbemittel_desktop'] ); tamil_site_werbung_datei_loeschen( $b['werbemittel_mobil'] ); }}
+          if ( '' !== $b['werbemittel_desktop'] && ! str_starts_with( $b['werbemittel_desktop'], 'tamil-werbung/test/' ) ) {{ tamil_site_werbung_datei_loeschen( $b['werbemittel_desktop'] ); tamil_site_werbung_datei_loeschen( $b['werbemittel_mobil'] ); }}
           foreach ( array( 'tage', 'statistik', 'protokoll' ) as $t ) {{ $wpdb->delete( tamil_site_werbung_tabelle( $t ), array( 'buchung_id' => (int) $id ) ); }}
           $wpdb->delete( tamil_site_werbung_tabelle( 'buchungen' ), array( 'id' => (int) $id ) );
         }}
@@ -341,7 +353,7 @@ def test_buchung_zahlung_webhook_freigabe_ende_zu_ende(wb, wp_sitzung):
     assert b["bedingungen_fassung"] == "Test 1" and b["bedingungen_at"]
     aufruf = [a for a in wb.aufrufe() if a["pfad"] == "checkout/sessions"][0]
     assert aufruf["body"]["line_items"][0]["price_data"]["unit_amount"] == "20000"
-    assert aufruf["body"]["client_reference_id"] == b["nummer"] and aufruf["idempotenz"] == "checkout-" + b["nummer"]
+    assert aufruf["body"]["client_reference_id"] == b["nummer"] and aufruf["idempotenz"] == "checkout-" + b["nummer"] + "-1"
     assert "{CHECKOUT_SESSION_ID}" in aufruf["body"]["success_url"]
     # nur Kennungen gespeichert, kein Kartendatum
     assert not any(k in json.dumps(b) for k in ("4242", "card_number", "cvc"))
@@ -355,10 +367,10 @@ def test_buchung_zahlung_webhook_freigabe_ende_zu_ende(wb, wp_sitzung):
 
     # Rückkehr von Stripe: Abgleich, dann geheimer Link
     r = s.get(f"{wb.seite}?wb=rueckkehr&nummer={b['nummer']}&session_id={b['stripe_session']}", allow_redirects=False, timeout=30)
-    assert r.status_code == 303 and "buchung=" in r.headers["Location"]
-    token = re.search(r"buchung=([a-f0-9]{48})", r.headers["Location"]).group(1)
+    assert r.status_code == 303 and "wb=uebersicht" in r.headers["Location"] and "buchung=" not in r.headers["Location"]
+    token = s.cookies.get("tamil_wb_kunde")
     assert hashlib.sha256(token.encode()).hexdigest() == b["kunden_hash"] and token not in json.dumps(wb.buchung(b["nummer"]))
-    html = requests.get(r.headers["Location"], timeout=30)
+    html = s.get(r.headers["Location"], timeout=30)
     assert "bezahlt, in Prüfung" in html.text and "Zahlungsbeleg von Stripe" in html.text
     assert html.headers.get("Referrer-Policy") == "no-referrer" and "noindex" in html.text
     assert f'data-wb-buchung="{b["id"]}"' not in requests.get(URL + "/", timeout=30).text
@@ -408,14 +420,17 @@ def test_webhook_falsche_signatur_veraltet_und_doppelt(wb):
         assert r.status_code == 400, kopf
     assert wb.buchung(b["nummer"])["zahlung"] == "offen"
 
-    # Betrag passt nicht → nicht bezahlt, Warnung
-    r = wb.webhook(wb.bezahlt_meldung(b, amount_total=1))
-    assert r.status_code == 200 and wb.buchung(b["nummer"])["zahlung"] == "offen" and wb.buchung(b["nummer"])["warnung"]
-    # fremde Session derselben Buchungsnummer → nichts
-    r = wb.webhook(wb.bezahlt_meldung(b, id="cs_test_fremd"))
-    assert r.json()["ergebnis"] == "unbekannt" and wb.buchung(b["nummer"])["zahlung"] == "offen"
+    # bezahlt, aber nicht übernehmbar (Betrag, fremde Session) → 500, Warnung, Ereignis-ID nicht gemerkt
+    for falsch in (wb.bezahlt_meldung(b, amount_total=1), wb.bezahlt_meldung(b, id="cs_test_fremd")):
+        r = wb.webhook(falsch)
+        assert r.status_code == 500, falsch
+        assert wb.buchung(b["nummer"])["zahlung"] == "offen" and wb.buchung(b["nummer"])["warnung"]
+        assert not wb.ereignis_bekannt(falsch["id"])
+    # unbekannte Buchungsnummer: nichts zu tun, Ereignis erledigt
+    fremd = wb.bezahlt_meldung({**b, "nummer": "WGIBTSNICHT"})
+    assert wb.webhook(fremd).json()["ergebnis"] == "unbekannt" and wb.ereignis_bekannt(fremd["id"])
 
-    assert wb.webhook(meldung).json()["ergebnis"] == "bezahlt"
+    assert wb.webhook(meldung).json()["ergebnis"] == "bezahlt" and wb.ereignis_bekannt(meldung["id"])
     zweit = wb.webhook(meldung)
     assert zweit.status_code == 200 and zweit.json()["ergebnis"] == "doppelt"
     # dieselbe Zahlung mit neuer Ereignis-ID: idempotent
@@ -459,7 +474,7 @@ def test_reservierung_verfaellt_nach_35_minuten(wb):
     # Zahlung kommt trotzdem (verspätete Meldung): Tage werden erneut belegt, wenn frei
     wb.stripe_bezahlt(b["stripe_session"])
     assert wb.webhook(wb.bezahlt_meldung(b)).json()["ergebnis"] == "bezahlt"
-    assert len(wb.tage("sidebar")) == 7 and wb.buchung(b["nummer"])["warnung"] == ""
+    assert len(wb.tage("sidebar")) == 7 and "Werbemittel schon gelöscht" in wb.buchung(b["nummer"])["warnung"]
 
 
 def test_ablehnung_erstattet_voll_und_gibt_tage_frei(wb):
@@ -471,7 +486,7 @@ def test_ablehnung_erstattet_voll_und_gibt_tage_frei(wb):
     n = wb.buchung(b["nummer"])
     assert n["zahlung"] == "erstattet" and n["pruefung"] == "abgelehnt" and wb.tage("sidebar") == []
     erst = [a for a in wb.aufrufe() if a["pfad"] == "refunds"]
-    assert len(erst) == 1 and erst[0]["body"]["payment_intent"] == "pi_test_" + b["nummer"] and erst[0]["idempotenz"] == "erstattung-" + b["nummer"]
+    assert len(erst) == 1 and erst[0]["body"]["payment_intent"] == "pi_test_" + b["nummer"] and erst[0]["idempotenz"] == "erstattung-" + b["nummer"] + "-1"
     assert "amount" not in erst[0]["body"]  # volle Erstattung
     token = _php(f"echo wp_json_encode( tamil_site_werbung_neues_token( {b['id']} ) );")
     html = requests.get(f"{wb.seite}?buchung={token}", timeout=30).text
@@ -544,6 +559,9 @@ def test_einblendungen_und_klicks_je_tag(wb, wp_sitzung):
     bid = wb.anlegen("leaderboard", 0, 1)
     for _ in range(3):
         assert requests.post(f"{URL}/wp-json/tamil-site/v1/werbung/einblendung", data={"buchung": bid}, timeout=30).status_code == 204
+    bot = {"User-Agent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"}
+    requests.post(f"{URL}/wp-json/tamil-site/v1/werbung/einblendung", data={"buchung": bid}, headers=bot, timeout=30)
+    assert requests.get(f"{URL}/wp-json/tamil-site/v1/werbung/klick/{bid}", headers=bot, allow_redirects=False, timeout=30).status_code == 302
     r = requests.get(f"{URL}/wp-json/tamil-site/v1/werbung/klick/{bid}", allow_redirects=False, timeout=30)
     assert r.status_code == 302 and r.headers["Location"] == "https://example.org/ziel"
     assert not r.cookies
@@ -552,18 +570,19 @@ def test_einblendungen_und_klicks_je_tag(wb, wp_sitzung):
     r = requests.get(f"{URL}/wp-json/tamil-site/v1/werbung/klick/{nicht}", allow_redirects=False, timeout=30)
     assert r.headers["Location"].rstrip("/") == URL
     stat = _php(f"echo wp_json_encode( array( tamil_site_werbung_statistik( {bid} ), tamil_site_werbung_statistik( {nicht} ) ) );")
-    assert [(z["einblendungen"], z["klicks"]) for z in stat[0]] == [(3, 1)] and stat[1] == []
+    assert [(z["einblendungen"], z["klicks"]) for z in stat[0]] == [(1, 1)] and stat[1] == []  # dieselbe Adresse zählt einmal je Tag
     seite = wp_sitzung.get(f"{URL}/wp-admin/admin.php?page=tamil-werbung&buchung={bid}", timeout=30).text
     export = re.search(r'href="([^"]*action=tamil_wb_export[^"]*)"', seite).group(1).replace("&#038;", "&").replace("&amp;", "&")
     csv = wp_sitzung.get(export, timeout=30).text
-    assert csv.splitlines()[0] == "buchung;tag;einblendungen;klicks" and csv.splitlines()[1].endswith(";3;1")
+    assert csv.splitlines()[0] == "buchung;tag;einblendungen;klicks" and csv.splitlines()[1].endswith(";1;1")
 
 
 def test_kundenlink_nur_gehasht_und_wiederfinden(wb):
     s = requests.Session()
     b = _zur_zahlung(wb, s)
     r = s.get(f"{wb.seite}?wb=rueckkehr&nummer={b['nummer']}", allow_redirects=False, timeout=30)
-    alt = re.search(r"buchung=([a-f0-9]{48})", r.headers["Location"]).group(1)
+    assert r.status_code == 303
+    alt = s.cookies.get("tamil_wb_kunde")
     assert "reserviert, Zahlung offen" in requests.get(f"{wb.seite}?buchung={alt}", timeout=30).text
     assert "nicht (mehr) gültig" in requests.get(f"{wb.seite}?buchung={'0' * 48}", timeout=30).text
     # fremder Browser ohne Cookie: Rückkehr zeigt keinen Link
@@ -577,10 +596,177 @@ def test_kundenlink_nur_gehasht_und_wiederfinden(wb):
     assert r.status_code == 200 and "keine Buchung" in r.text
     r = requests.post(wb.seite, data={"tamil_wb_aktion": "wiederfinden", "_wpnonce": nonce, "nummer": b["nummer"].lower(),
                                       "email": "KUNDE@example.test"}, allow_redirects=False, timeout=30)
-    assert r.status_code == 303
-    neu = re.search(r"buchung=([a-f0-9]{48})", r.headers["Location"]).group(1)
+    assert r.status_code == 303 and "buchung=" not in r.headers["Location"]
+    neu = r.cookies.get("tamil_wb_kunde")
     assert neu != alt and "nicht (mehr) gültig" in requests.get(f"{wb.seite}?buchung={alt}", timeout=30).text
     assert wb.buchung(b["nummer"])["kunden_hash"] == hashlib.sha256(neu.encode()).hexdigest()
     # Bezahlen nur aus dem Browser, der gebucht hat
     html = s.get(f"{wb.seite}?wb=zusammenfassung&nummer={b['nummer']}", timeout=30).text
     assert "nicht zu diesem Browser" in html  # das Cookie gilt nach dem neuen Link nicht mehr
+
+
+# --- Folgeauftrag nach der Prüfung (P2, P3) -------------------------------------------------------------------------
+
+def _meldung(typ: str, objekt: dict) -> dict:
+    return {"id": "evt_test_" + secrets.token_hex(8), "type": typ, "data": {"object": objekt}}
+
+
+def test_reservierung_reicht_bis_ende_der_session(wb):
+    b = _zur_zahlung(wb, requests.Session())
+    ablauf = int([a for a in wb.aufrufe() if a["pfad"] == "checkout/sessions"][0]["body"]["expires_at"])
+    assert b["reserviert_bis"] == time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(ablauf + 300))
+    # nur solange offen: eine bezahlte Buchung bekommt keine neue Frist
+    bid = wb.anlegen("footer", 5, 1)
+    vorher = wb.buchung(bid)["reserviert_bis"]
+    assert _php(f"echo wp_json_encode( tamil_site_werbung_reservierung_verlaengern( {bid}, time() + 3600 ) );") is False
+    assert wb.buchung(bid)["reserviert_bis"] == vorher
+
+
+def test_erstattungsmeldungen_teil_voll_gescheitert(wb):
+    bid = wb.anlegen("leaderboard", 0, 7)  # Betrag 5000, Zahlung pi_test_direkt
+    teil = wb.webhook(_meldung("charge.refunded", {"object": "charge", "payment_intent": "pi_test_direkt", "amount": 5000, "amount_refunded": 1000}))
+    assert teil.status_code == 200
+    assert wb.buchung(bid)["zahlung"] == "bezahlt" and len(wb.tage("leaderboard")) == 7
+    assert f'data-wb-buchung="{bid}"' in requests.get(URL + "/", timeout=30).text  # Teilerstattung stoppt nichts
+    assert any("Teilerstattung" in p for p in wb.protokoll(bid))
+    gescheitert = wb.webhook(_meldung("refund.failed", {"object": "refund", "payment_intent": "pi_test_direkt", "amount": 5000, "status": "failed"}))
+    assert gescheitert.status_code == 200 and "Erstattung" in wb.buchung(bid)["warnung"]
+    voll = wb.webhook(_meldung("refund.updated", {"object": "refund", "payment_intent": "pi_test_direkt", "amount": 5000, "status": "succeeded"}))
+    assert voll.status_code == 200 and voll.json()["ergebnis"] == "erstattet"
+    b = wb.buchung(bid)
+    assert b["zahlung"] == "erstattet" and b["warnung"] == ""
+    assert wb.tage("leaderboard") == [_php("echo wp_json_encode( tamil_site_werbung_heute() );")]  # ab morgen frei
+    assert f'data-wb-buchung="{bid}"' not in requests.get(URL + "/", timeout=30).text
+    # charge.refunded gemessen am Buchungsbetrag, nicht am Betrag der Belastung
+    zweit = wb.anlegen("footer", 2, 3)
+    _php(f"global $wpdb; $wpdb->update( tamil_site_werbung_tabelle( 'buchungen' ), array( 'stripe_zahlung' => 'pi_test_zwei' ), array( 'id' => {zweit} ) );")
+    wb.webhook(_meldung("charge.refunded", {"object": "charge", "payment_intent": "pi_test_zwei", "amount": 9000, "amount_refunded": 5000}))
+    assert wb.buchung(zweit)["zahlung"] == "erstattet"
+
+
+def test_reservieren_gedrosselt_je_adresse_und_obergrenze(wb):
+    s = requests.Session()
+    for i in range(5):
+        r = wb.buchen(s, laufzeit=1, start=wb.fruehester(i))
+        assert r.status_code == 303, (i, r.text[-500:])
+    r = wb.buchen(s, laufzeit=1, start=wb.fruehester(5))
+    assert r.status_code == 200 and "Zu viele Buchungen" in r.text
+    assert len(wb.tage("sidebar")) == 5
+    _drossel_leeren()
+    # Obergrenze offener Reservierungen über alle Besucher
+    _php("""global $wpdb; for ( $i = 0; $i < TAMIL_SITE_WERBUNG_MAX_OFFEN; $i++ ) {
+        $wpdb->insert( tamil_site_werbung_tabelle( 'buchungen' ), array( 'nummer' => tamil_site_werbung_nummer(), 'platz' => 'footer', 'laufzeit' => 1,
+          'start' => '2099-01-01', 'ende' => '2099-01-01', 'reserviert_bis' => gmdate( 'Y-m-d H:i:s', time() + 600 ), 'firma' => 'Testfirma Offen',
+          'rechnungsadresse' => '', 'ablehnungsgrund' => '', 'warnung' => '', 'erstellt_at' => gmdate( 'Y-m-d H:i:s' ) ) ); }""")
+    r = wb.buchen(requests.Session(), laufzeit=1, start=wb.fruehester(8))
+    assert r.status_code == 200 and "zu viele offene" in r.text
+    assert len(wb.tage("sidebar")) == 5
+
+
+def test_verfallene_buchung_bilder_weg_personendaten_nach_30_tagen(wb, wp_sitzung):
+    b = _zur_zahlung(wb, requests.Session())
+    pfad = f"trailingslashit( wp_get_upload_dir()['basedir'] ) . '{b['werbemittel_desktop']}'"
+    assert _php(f"echo wp_json_encode( file_exists( {pfad} ) );") is True
+    _php(f"""global $wpdb; $wpdb->update( tamil_site_werbung_tabelle( 'buchungen' ), array( 'reserviert_bis' => gmdate( 'Y-m-d H:i:s', time() - 1 ) ), array( 'id' => {b['id']} ) );
+        tamil_site_werbung_aufraeumen();""")
+    n = wb.buchung(b["id"])
+    assert n["zahlung"] == "fehlgeschlagen" and n["werbemittel_desktop"] == ""
+    assert _php(f"echo wp_json_encode( file_exists( {pfad} ) );") is False
+    assert n["email"] == "kunde@example.test"  # Personendaten erst nach der Frist
+    bezahlt = wb.anlegen("footer", 2, 1)
+    _php(f"""global $wpdb; $alt = gmdate( 'Y-m-d H:i:s', time() - 31 * DAY_IN_SECONDS );
+        foreach ( array( {b['id']}, {bezahlt} ) as $id ) {{ $wpdb->update( tamil_site_werbung_tabelle( 'buchungen' ), array( 'erstellt_at' => $alt ), array( 'id' => $id ) ); }}
+        tamil_site_werbung_aufraeumen();""")
+    n = wb.buchung(b["id"])
+    assert [n[k] for k in ("firma", "ansprechperson", "rechnungsadresse", "email", "telefon", "ust_id")] == [""] * 6
+    assert wb.buchung(bezahlt)["email"] == "test@example.test"  # bezahlte Buchungen bleiben (Steuerrecht)
+    assert "30 Tage" in wp_sitzung.get(f"{URL}/wp-admin/admin.php?page=tamil-werbung", timeout=30).text
+
+
+def test_preiseingabe_deutsch(wb, wp_sitzung):
+    faelle = {"1.250": 125000, "1.250,50": 125050, "1250,5": 125050, "12.50": 1250, "12,5": 1250, "1.250.000": 125000000,
+              "99": 9900, " 1.250 € ": 125000, "": 0, "abc": None, "1,2,3": None, "12.345,678": None, "1250.500": None, "1.25.0": None}
+    r = _php(f"""$r = array(); foreach ( json_decode( '{json.dumps(list(faelle))}', true ) as $e ) {{ $r[] = tamil_site_werbung_cent( $e ); }} echo wp_json_encode( $r );""")
+    assert dict(zip(faelle, r)) == faelle
+    html = wp_sitzung.get(f"{URL}/wp-admin/admin.php?page=tamil-werbung-angebote", timeout=30).text
+    nonce = re.search(r'name="_wpnonce" value="([^"]+)"', html).group(1)
+    r = wp_sitzung.post(f"{URL}/wp-admin/admin-post.php", data={
+        "action": "tamil_wb_angebote", "_wpnonce": nonce, "laufzeiten": "1, 7", "vorlauf": "2", "bedingungen_fassung": "Test 1",
+        "plaetze[sidebar][aktiv]": "1", "plaetze[sidebar][preise][1]": "1.250", "plaetze[sidebar][preise][7]": "kaputt"},
+        allow_redirects=False, timeout=30)
+    assert r.status_code == 302 and "ungueltig=1" in r.headers["Location"]
+    assert _php("echo wp_json_encode( array( tamil_site_werbung_preis( 'sidebar', 1 ), tamil_site_werbung_preis( 'sidebar', 7 ) ) );") == [125000, 20000]
+    assert "nicht übernommen" in wp_sitzung.get(r.headers["Location"], timeout=30).text
+
+
+def test_rueckkehr_ohne_cookie_kein_abgleich_fuer_alte_buchung(wb):
+    b = _zur_zahlung(wb, requests.Session())
+    _php(f"""global $wpdb; $wpdb->update( tamil_site_werbung_tabelle( 'buchungen' ), array( 'zahlung' => 'fehlgeschlagen',
+        'erstellt_at' => gmdate( 'Y-m-d H:i:s', time() - 2 * DAY_IN_SECONDS ) ), array( 'id' => {b['id']} ) );""")
+    vorher = len(wb.aufrufe())
+    for _ in range(3):
+        requests.get(f"{wb.seite}?wb=rueckkehr&nummer={b['nummer']}", timeout=30)
+    assert len(wb.aufrufe()) == vorher
+    # offen, fremder Browser: höchstens ein Abgleich je Minute
+    c = _zur_zahlung(wb, requests.Session(), start=wb.fruehester(10))
+    vorher = len(wb.aufrufe())
+    for _ in range(3):
+        requests.get(f"{wb.seite}?wb=rueckkehr&nummer={c['nummer']}", timeout=30)
+    assert len(wb.aufrufe()) == vorher + 1
+
+
+def test_erstattung_neuer_versuch_neuer_idempotenzschluessel(wb):
+    bid = wb.anlegen("footer", 5, 1, pruefung="offen")
+    nummer = wb.buchung(bid)["nummer"]
+    _php("update_option( 'tamil_test_stripe_erstattung', 'fehler', false );")
+    _php(f"tamil_site_werbung_ablehnen( {bid}, 'unzulässig' );")
+    _php("update_option( 'tamil_test_stripe_erstattung', 'succeeded', false );")
+    _php(f"tamil_site_werbung_erstatten( {bid} );")
+    schluessel = [a["idempotenz"] for a in wb.aufrufe() if a["pfad"] == "refunds"]
+    assert schluessel == [f"erstattung-{nummer}-1", f"erstattung-{nummer}-2"]
+
+
+def test_tage_belegen_eigene_zeilen_erlaubt(wb):
+    bid = wb.anlegen("footer", 3, 2)
+    assert _php(f"echo wp_json_encode( tamil_site_werbung_tage_belegen( tamil_site_werbung_buchung( {bid} ) ) );") is True
+    assert len(wb.tage("footer")) == 2
+
+
+def test_klick_nur_bei_aktiver_buchung(wb):
+    bid = wb.anlegen("leaderboard", 0, 1)
+    _php(f"tamil_site_werbung_pausieren( {bid}, true );")
+    r = requests.get(f"{URL}/wp-json/tamil-site/v1/werbung/klick/{bid}", allow_redirects=False, timeout=30)
+    assert r.status_code == 302 and r.headers["Location"].rstrip("/") == URL
+
+
+def test_kundenlink_wird_gegen_cookie_getauscht(wb):
+    bid = wb.anlegen("footer", 2, 1)
+    token = _php(f"echo wp_json_encode( tamil_site_werbung_neues_token( {bid} ) );")
+    s = requests.Session()
+    r = s.get(f"{wb.seite}?buchung={token}", allow_redirects=False, timeout=30)
+    assert r.status_code == 303 and token not in r.headers["Location"] and "wb=uebersicht" in r.headers["Location"]
+    assert "httponly" in r.headers.get("Set-Cookie", "").lower()
+    html = s.get(r.headers["Location"], timeout=30).text
+    assert wb.buchung(bid)["nummer"] in html and token in html  # Link zum Aufheben steht im Text, nicht in der Adresse
+    assert wb.buchung(bid)["nummer"] not in requests.get(f"{wb.seite}?wb=uebersicht", timeout=30).text  # ohne Cookie nichts
+
+
+def test_live_checkout_nur_mit_bedingungen(wb):
+    r = _php("""$a = get_option( 'tamil_site_werbung_angebote' ); $p = get_page_by_path( 'werbebedingungen', OBJECT, 'page' ); $stand = $p->post_status;
+        $f = array( tamil_site_stripe_checkout_erlaubt( 'sk_test_x' ) );
+        $a['bedingungen_fassung'] = ''; update_option( 'tamil_site_werbung_angebote', $a, false ); wp_update_post( array( 'ID' => $p->ID, 'post_status' => 'publish' ) );
+        $f[] = tamil_site_stripe_checkout_erlaubt( 'sk_live_x' );
+        $a['bedingungen_fassung'] = '2026-11'; update_option( 'tamil_site_werbung_angebote', $a, false ); wp_update_post( array( 'ID' => $p->ID, 'post_status' => 'draft' ) );
+        $f[] = tamil_site_stripe_checkout_erlaubt( 'sk_live_x' );
+        wp_update_post( array( 'ID' => $p->ID, 'post_status' => 'publish' ) ); $f[] = tamil_site_stripe_checkout_erlaubt( 'sk_live_x' );
+        wp_update_post( array( 'ID' => $p->ID, 'post_status' => $stand ) );
+        echo wp_json_encode( $f );""")
+    assert r == [True, False, False, True]
+
+
+def test_deinstallation_entfernt_tabellen_und_option():
+    text = (HIER.parent.parent / "wordpress" / "plugins" / "tamil-site" / "uninstall.php").read_text(encoding="utf-8")
+    for name in ("tamil_werbebuchungen", "tamil_werbetage", "tamil_werbestatistik", "tamil_werbeprotokoll", "tamil_stripe_ereignisse",
+                 "tamil_site_werbung_angebote"):
+        assert name in text
+    assert "DROP TABLE IF EXISTS" in text

@@ -46,6 +46,7 @@ add_filter(
 				'currency'            => (string) ( $body['line_items'][0]['price_data']['currency'] ?? '' ),
 				'client_reference_id' => (string) ( $body['client_reference_id'] ?? '' ),
 				'payment_intent'      => null,
+				'expires_at'          => (int) ( $body['expires_at'] ?? 0 ),
 			);
 			update_option( 'tamil_test_stripe_sessions', $sessions, false );
 			$code    = 200;
