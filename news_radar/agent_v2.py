@@ -68,6 +68,7 @@ class AgentPruefung(BaseModel):
     pruefer: str = ""  # Kennung der prüfenden Instanz – nie die schreibende (?von= bzw. autor)
     autor: str = ""  # optional: Kennung der schreibenden Instanz, wenn sie von ?von= abweicht
     zeitpunkt: str = ""  # ISO 8601 mit Zeitzone
+    sha256: str = ""  # sha256 (hex) des geprüften inhalt_html – bindet die Prüfung an genau diesen Text
     urteil: Literal["importieren", "nicht_importieren"]
     befunde: list[Befund] = Field(default_factory=list)
     saetze: list[SatzUrteil] = Field(default_factory=list)
@@ -76,8 +77,9 @@ class AgentPruefung(BaseModel):
 PRUEFUNG_ALTER_MAX = timedelta(days=3)
 
 
-def pruefung_fehler(p: AgentPruefung | None, von: str) -> str:
-    """Leer, wenn der Block eine gültige Prüfung durch eine andere Instanz belegt – sonst der Grund der Abweisung."""
+def pruefung_fehler(p: AgentPruefung | None, von: str, beitrag: TextErgebnis | None = None) -> str:
+    """Leer, wenn der Block eine gültige Prüfung genau dieses Beitrags durch eine andere Instanz belegt – sonst der
+    Grund der Abweisung."""
     if p is None:
         return "Beitrag ohne „pruefung“-Block abgewiesen: jeden Beitrag prüft eine zweite KI (andere Instanz)"
     pruefer_ = p.pruefer.strip().lower()
@@ -97,6 +99,17 @@ def pruefung_fehler(p: AgentPruefung | None, von: str) -> str:
         return "offene Befunde " + "; ".join(f"{b.schwere}: {b.beschreibung[:100]}" for b in offen)
     if not p.saetze:
         return "pruefung.saetze leer: die Satzprüfung fehlt"
+    if beitrag is not None:
+        import hashlib
+
+        sha = hashlib.sha256((beitrag.inhalt_html or "").encode("utf-8")).hexdigest()
+        if p.sha256.strip().lower() != sha:
+            return "pruefung.sha256 passt nicht zum inhalt_html des Beitrags (geprüft wurde ein anderer Text)"
+        fehlt, fremd = pruefer.abdeckung(beitrag.model_dump(), p.saetze)
+        if fehlt:
+            return f"{len(fehlt)} Sätze nicht geprüft (Titel, Teaser, Haupttext): „{fehlt[0][:80]}“"
+        if fremd:
+            return f"{len(fremd)} geprüfte Sätze stehen nicht im Beitrag: „{fremd[0][:80]}“"
     return ""
 
 
@@ -338,7 +351,7 @@ def _import_eins(ctx: Kontext, store: Store, settings: Settings, item, von: str,
                                "(Fehlstellen allein halten keine Story offen)")
         return
     if e.beitrag is not None and not e.verwerfen:
-        grund = pruefung_fehler(e.pruefung, von)
+        grund = pruefung_fehler(e.pruefung, von, e.beitrag)
         if grund:
             stats["fehler"].append(f"{e.story_id}: {grund} – nichts geändert")
             return
@@ -349,10 +362,27 @@ def _import_eins(ctx: Kontext, store: Store, settings: Settings, item, von: str,
         store.event("agent", story=e.story_id, aktion="verworfen", grund=e.verwerfen, von=von)
         stats["verworfen"] += 1
         return
+    if e.neue_quellen and e.beitrag is None:
+        # neue Quellen ohne Beitrag zählen als Runde der Nachrecherche; danach entscheidet der Import endgültig
+        runden = nachrecherche.runden(store, e.story_id)
+        if runden >= nachrecherche.MAX_RUNDEN:
+            _jobs_schliessen(store, e.story_id)
+            grund = ("Nach zwei Runden Nachrecherche nicht belegt – verworfen: weitere Quellen statt eines Beitrags "
+                     "aus belegten Aussagen")
+            repo.story_setzen(store, e.story_id, nur_offen=True, status="verworfen", notiz=grund)
+            store.event("verworfen", story=e.story_id, titel=story["titel"], grund=grund)
+            stats["verworfen"] += 1
+            return
+        n = _quellen_anhaengen(ctx, store, story, e.neue_quellen, von, stats)
+        jetzt = datetime.now(timezone.utc).isoformat(timespec="seconds")
+        store._write("INSERT INTO workflow_jobs (story_id, schritt, status, prio, versuche, naechster_versuch, "
+                     "idempotenz_key, payload, fehler, erstellt, aktualisiert) VALUES (?, 'nachrecherche', 'fertig', 0, "
+                     "1, ?, ?, ?, 'Agent-Modus: neue Quellen', ?, ?)",
+                     (e.story_id, jetzt, f"{e.story_id}:nachrecherche:agent-quellen{runden + 1}",
+                      json.dumps({"agent_quellen": n}), jetzt, jetzt))
+        return  # die Story bleibt im Export, beim nächsten Mal mit den neuen Belegen
     if e.neue_quellen:
         _quellen_anhaengen(ctx, store, story, e.neue_quellen, von, stats)
-        if e.beitrag is None:  # die Story bleibt im Export, beim nächsten Mal mit den neuen Belegen
-            return
     _jobs_schliessen(store, e.story_id)
     docs = repo.dokumente(store, e.story_id)
     claims, verworfen = validate_refs(e.claims, {d.doc_key for d in docs})

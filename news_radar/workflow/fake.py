@@ -142,7 +142,11 @@ def pruefer(user: str, system: str, req: dict) -> dict:
     """Zweite KI. Mit <entwurf>: Satz für Satz wie der Faktencheck. Sonst (Story nach der Nachrecherche): schreiben,
     wenn eine bestätigte Kernaussage da ist, sonst verwerfen."""
     if block(user, "entwurf") is not None:
-        return {**faktencheck(user, system, req), "gesamt": "Satzweise gegen die Dokumente geprüft"}
+        vorgabe = block(user, "saetze")
+        if vorgabe is None:
+            return {**faktencheck(user, system, req), "gesamt": "Satzweise gegen die Dokumente geprüft"}
+        return {"saetze": satz_urteile([s["satz"] for s in vorgabe], block(user, "claims") or []),
+                "gesamt": "Satzweise gegen die Dokumente geprüft"}
     claims = block(user, "claims") or []
     tragend = [c["id"] for c in claims if c.get("support") == "bestaetigt"]
     if any(c.get("kern") and c.get("support") == "bestaetigt" for c in claims):
@@ -152,17 +156,34 @@ def pruefer(user: str, system: str, req: dict) -> dict:
             "grund": "Keine Kernaussage ist belegt, auch die Nachrecherche fand keinen Bericht mit dem Ereignis."}
 
 
+def satz_urteile(saetze: list[str], claims: list[dict]) -> list[dict]:
+    """Urteil je vorgegebenem Satz wie die zweite KI: gedeckt, wenn ein Claim ihn trägt (Ähnlichkeit, Anfang oder die
+    tragenden Wörter stehen in den Claims), sonst ungedeckt."""
+    alle = " ".join(c.get("aussage", "") for c in claims).lower()
+    out = []
+    for nr, satz in enumerate(saetze, 1):
+        treffer = [c for c in claims if SequenceMatcher(None, satz.rstrip("."), c["aussage"].rstrip(".")).ratio() > 0.6
+                   or c["aussage"].rstrip(".")[:50] in satz or satz.rstrip(".")[:50] in c["aussage"]]
+        worte = [w[:6] for w in re.findall(r"[\wäöüß]{4,}", satz.lower())]  # Wortanfänge: „tamilischer“ ~ „tamilische“
+        abgedeckt = bool(worte) and sum(1 for w in worte if w in alle) / len(worte) >= 0.7
+        out.append({"nr": nr, "satz": satz, "urteil": "gedeckt" if treffer or abgedeckt else "ungedeckt",
+                    "claim_ids": [c["id"] for c in treffer], "fundstelle": treffer[0]["fundstelle"] if treffer else "",
+                    "kern": any(c.get("kern") for c in treffer)})
+    return out
+
+
 def pruefung_block(beitrag: dict, claims: list[dict], pruefer: str = "pruefer-agent-1") -> dict:
-    """„pruefung“-Block für den Agent-Import (Tests, Abnahme): Satzurteile wie die zweite KI, andere Instanz."""
+    """„pruefung“-Block für den Agent-Import (Tests, Abnahme): andere Instanz, sha256 des geprüften inhalt_html und je
+    Satz (Titel, Teaser, Haupttext ohne Quellenzeile) ein Urteil wie die zweite KI."""
+    import hashlib
     from datetime import datetime, timezone
 
-    user = (f"<entwurf>\n{json.dumps({'inhalt_html': beitrag.get('inhalt_html', '')}, ensure_ascii=False)}\n</entwurf>\n"
-            f"<claims>\n{json.dumps(claims, ensure_ascii=False)}\n</claims>")
-    saetze = faktencheck(user, "", {})["saetze"] or [  # Beitrag ohne Satz im Haupttext: die Prüfung sagt es
-        {"nr": 1, "satz": "(kein Satz im Haupttext)", "urteil": "kein_fakt", "claim_ids": [], "fundstelle": "",
-         "kern": False}]
+    from ..agents.pruefer import saetze_des_entwurfs
+
     return {"pruefer": pruefer, "zeitpunkt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-            "urteil": "importieren", "befunde": [], "saetze": saetze}
+            "sha256": hashlib.sha256((beitrag.get("inhalt_html") or "").encode("utf-8")).hexdigest(),
+            "urteil": "importieren", "befunde": [],
+            "saetze": satz_urteile(saetze_des_entwurfs(beitrag), claims)}
 
 
 def lektorat(user: str, system: str, req: dict) -> dict:

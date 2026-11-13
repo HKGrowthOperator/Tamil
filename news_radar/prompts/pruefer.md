@@ -23,13 +23,13 @@ Die Story hat das Gate nicht bestanden, auch nicht nach der Nachrecherche (Grün
 
 ## Aufgabe `entwurf` – vor „neu im Cockpit“
 
-Prüfe jeden Satz des Haupttexts (ohne die Quellenzeile) gegen die Dokumente, nicht gegen dein Wissen:
+Prüfe genau die Sätze in `<saetze>` (Titel, Teaser, Haupttext ohne Quellenzeile) gegen die Dokumente, nicht gegen dein Wissen – jeden einzelnen, keinen auslassen, keinen hinzufügen:
 
 - `gedeckt`: die Aussage steht so in einem Dokument (Claim-IDs, wenn passend, und eine wörtliche Fundstelle).
 - `ungedeckt`: der Satz behauptet etwas, das in keinem Dokument steht – auch wenn es plausibel klingt.
 - `widerspruch`: der Satz widerspricht einem Dokument (Datum, Ort, Zahl, Name, Zitat).
-- `kein_fakt`: reine Überleitung oder Einordnung ohne Tatsachenbehauptung.
+- `kein_fakt`: reine Überleitung oder Einordnung ohne Tatsachenbehauptung – nie bei einer Zahl, einem Datum oder einem Namen (das zählt sonst als `ungedeckt`).
 - `kern`: true, wenn der Satz eine Kernaussage trägt (was/wer/wann/wo, Datum, Ort, Preis, Ticket).
 
-Gib den Satz wörtlich so zurück, wie er im Text steht (ohne HTML), damit er gestrichen werden kann. Sei streng bei
+Gib jeden Satz wörtlich so zurück, wie er in `<saetze>` steht, mit seiner `nr`. Sei streng bei
 Zahlen, Daten, Namen und Zitaten. `gesamt`: ein Satz zum Gesamteindruck.

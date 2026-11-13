@@ -75,12 +75,13 @@ Im Agent-Modus prüft die Research-Sitzung jeden Beitrag durch eine zweite KI au
 ```json
 {"pruefer": "claude-code/pruefer-1", "autor": "claude-code/redakteur-1",
  "zeitpunkt": "2026-11-13T21:40:00+00:00", "urteil": "importieren",
+ "sha256": "<sha256 hex des geprüften inhalt_html>",
  "befunde": [{"schwere": "P3", "beschreibung": "Teaser etwas lang", "satz": "", "behoben": false}],
  "saetze": [{"nr": 1, "satz": "Der Verein erhielt am Freitag den Integrationspreis.", "urteil": "gedeckt",
              "claim_ids": ["C1"], "fundstelle": "hat am Freitag den Integrationspreis", "kern": true}]}
 ```
 
-Pflicht für jeden Beitrag (Verwerfen braucht keine): eine andere Instanz als der Autor (`pruefer` ≠ `?von=` und ≠ `autor`), `zeitpunkt` ISO 8601 mit Zeitzone, nicht in der Zukunft, höchstens drei Tage alt, `urteil` `importieren` oder `nicht_importieren`, `befunde` mit `schwere` P1/P2/P3 und `behoben`, `saetze` nicht leer (`urteil` gedeckt/ungedeckt/widerspruch/kein_fakt, `kern`). Abgewiesen – nichts geändert – ohne Block, bei gleicher Instanz, ungültigem Zeitpunkt, `nicht_importieren`, offenen P1/P2 oder leeren `saetze`. Danach streicht der Radar ungedeckte Nebensätze; eine ungedeckte Kernaussage schickt die Story in die Nachrecherche. Der Block wird als Fassung `pruefung` gespeichert, der Entwurf trägt „Geprüft von zweiter KI (Prüfer, Zeitpunkt)“ und die Befunde als Hinweise.
+Pflicht für jeden Beitrag (Verwerfen braucht keine): eine andere Instanz als der Autor (`pruefer` ≠ `?von=` und ≠ `autor`), `zeitpunkt` ISO 8601 mit Zeitzone, nicht in der Zukunft, höchstens drei Tage alt, `urteil` `importieren` oder `nicht_importieren`, `befunde` mit `schwere` P1/P2/P3 und `behoben`, `sha256` (hex) genau des eingereichten `inhalt_html`, `saetze` genau die Sätze von Titel, Teaser und Haupttext ohne Quellenzeile – deterministisch geteilt wie `agents/pruefer.saetze_des_entwurfs`, keiner fehlt, keiner zusätzlich; `kein_fakt` gilt nur für Sätze ohne Zahl, Datum und Namen, sonst wie `ungedeckt` (`urteil` gedeckt/ungedeckt/widerspruch/kein_fakt, `kern`). Abgewiesen – nichts geändert – ohne Block, bei gleicher Instanz, ungültigem Zeitpunkt, falschem `sha256`, fehlenden oder fremden Sätzen, `nicht_importieren`, offenen P1/P2 oder leeren `saetze`. Danach streicht der Radar ungedeckte Nebensätze; eine ungedeckte Kernaussage schickt die Story in die Nachrecherche. Der Block wird als Fassung `pruefung` gespeichert, der Entwurf trägt „Geprüft von zweiter KI (Prüfer, Zeitpunkt)“ und die Befunde als Hinweise.
 
 ## 5. Google Gemini (KI-Symbolbilder)
 
