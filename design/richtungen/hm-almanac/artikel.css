@@ -1,8 +1,9 @@
-/* Hallmark · shape: Kalenderblatt, the article page · genre: editorial · theme: Almanac (deal 2/3, seed tamil-deutschsprachiges-online-magazin-der-ff32·6bcf19c0·2026-11-13·r0) · job: listen · draw: 26f3b5 · copy: verbatim
+/* Hallmark · shape: Kalenderblatt, the article page · genre: editorial · theme: Almanac (deal 2/3, seed tamil-deutschsprachiges-online-magazin-der-ff32·6bcf19c0·2026-11-13·r0) · job: read · draw: 26f3b5 · copy: verbatim
  * hero: banner · nav: banner over a retracting bar · footer: index columns · imagery: photographs, the post's own Commons picture 1, muted · signature: the dates named in the report as a printed sheet in the margin, the next one in logo red
  * axes: mid/grotesk-sans/chromatic-magenta (accent re-hued to the logo red) · posture: restrained · contrast: pass · fold: pass · v2.0.0 */
 /* Hallmark · pre-emit critique: P4 H5 E4 S4 R5 V4 · weakest: S, a report page is the most common page there is; the sheet of dates in the margin ties the text to the calendar and the share sits beside it */
 @import url("./almanac.css");
+/* Hallmark · waive 78 · the head Mehr zu Tempeln und Festen and the follow-up heads render at 36px under the 42px article head · on a report page the title is capped at 44px by the main session after critique r1, the follow-up heads sit one step under it */
 /* Hallmark · waive 49b · the wrapping links are report headlines in a dated list of three, two lines at 1440 · a Rückblick headline is the report's own title and cannot be cut to fit one phone line */
 /* Hallmark · dismissed 25 · the footer line under the logo is one sentence of five words, set as a caption beside the index columns */
 /* Hallmark · dismissed 77 · a report page, counted as head with picture, text with its margin sheet, the next reads and the footer */
@@ -35,7 +36,7 @@
 .weiter__liste { grid-column: 5 / span 8; margin: 0; padding: 0; list-style: none; }
 .weiter__liste li { display: grid; grid-template-columns: 5rem minmax(0, 1fr); gap: var(--space-md); align-items: baseline; padding-block: var(--space-lg); border-top: var(--rule-hair) solid var(--color-rule); }
 .weiter__liste li:first-child { border-top: 0; padding-block-start: 0; }
-.weiter__liste a { font: 600 var(--text-title)/1.25 var(--font-display); letter-spacing: var(--tracking-display); text-decoration-thickness: 1px; }
+.weiter__liste a { font: 600 var(--text-title)/1.3 var(--font-display); letter-spacing: var(--tracking-display); text-decoration-thickness: 1px; }
 .weiter__liste a:hover { text-decoration-thickness: 2px; }
 .weiter__liste .num { color: var(--color-ink); font-size: var(--text-sm); }
 @media (max-width: 60rem) { .kopf__meta { border-top-width: var(--rule-hair); } }

@@ -359,6 +359,9 @@ def entwurf_anlegen(ctx: Kontext, story: dict, felder: dict, payload: dict, *, t
     vorhanden = ctx.store.draft_by_uid(uid)
     eindeutig = f"{stem}-e{vorhanden['id']}" if vorhanden else f"{stem}-u{hashlib.sha256(uid.encode()).hexdigest()[:6]}"
     eindeutig += "-" + hashlib.sha256(bild.image.data).hexdigest()[:8]
+    # Alt-Text: die Bildkarte beschreibt sich selbst („Grafik mit der Überschrift: …“), sonst der des Writers
+    if not bild.felder.get("alt"):
+        bild.felder["alt"] = felder.get("bild_alt", "")
     name, asset_id = media.speichern(ctx, bild, eindeutig, story["id"])
     try:
         return _entwurf_eintragen(ctx, story, felder, payload, typ=typ, hinweise=hinweise, fakten=fakten,
@@ -395,7 +398,7 @@ def _entwurf_eintragen(ctx: Kontext, story: dict, felder: dict, payload: dict, *
         "titel": felder.get("titel", ""), "teaser": felder.get("teaser", ""), "inhalt_html": felder.get("inhalt_html", ""),
         "schlagworte": felder.get("schlagworte") or [], "seo_titel": felder.get("seo_titel", ""),
         "meta_beschreibung": felder.get("meta_beschreibung", ""), "bild_datei": name, "bild_credit": bild.image.credit,
-        "bild_alt": felder.get("bild_alt", ""), "bild_suchbegriff": felder.get("bild_suchbegriff", ""),
+        "bild_alt": bild.felder.get("alt") or felder.get("bild_alt", ""), "bild_suchbegriff": felder.get("bild_suchbegriff", ""),
         "bild_origin": bild.image.origin, "bild_thema": felder.get("bild_thema", ""), "bild_prompt": felder.get("bild_prompt", ""),
         "event_datum": felder.get("event_datum", ""), "event_ort": felder.get("event_ort", ""),
         "ticket_url": felder.get("ticket_url", ""), "fakten": fakten if fakten is not None else payload.get("fakten") or {},

@@ -65,6 +65,7 @@ def seite(datei: str, titel: str, aktiv: str, inhalt: str) -> None:
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{e(titel)}: Redaktion tamil.de</title>
+<meta name="description" content="Redaktions-Cockpit von tamil.de, Probe der Linie Terrazzo: {e(titel)}.">
 <link rel="preload" href="schriften/onest-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="cockpit.css">
 <script src="app.js" defer></script>
@@ -201,7 +202,7 @@ def entwurf(lizenz_fehlt: bool) -> None:
         bild = f"""<div class="bild bild--fehlt">
   <figure><img src="{BILD}{b['bild']}" width="1200" height="800" alt="{e(b['alt'])}"><figcaption>Bild der Medien-Rolle, ohne Lizenz-Datensatz nicht verwendbar</figcaption></figure>
   <div class="meldung meldung--fehler" role="alert"><p><span class="wort-fehler">Lizenz fehlt.</span> Zu diesem Bild gibt es keinen Lizenz-Datensatz. Ohne Datensatz kein Bild (Abnahmekriterium K6); Freigeben ist gesperrt, bis Lizenz eingetragen, Bild ersetzt oder die Bildkarte gewählt ist.</p>
-  <p>Gefunden: Commons-Datei <a href="{e(b['quelle_bild'])}">Sri_Ganesha_Hindutempel_1_Berlin_2026.jpg</a>; der Abruf der Lizenzangaben ist um 21:12 abgebrochen.</p></div>
+  <p>Gefunden ist die Commons-Datei des Berliner Tempels; der Abruf der Lizenzangaben ist um 21:12 abgebrochen.</p><p><a href="{e(b['quelle_bild'])}">Commons-Seite öffnen</a></p></div>
 </div>"""
         rechts_bild = f"""<form class="karte" method="post" action="entwurf.html" aria-labelledby="l-h">
   <h3 id="l-h">Lizenz eintragen</h3>
@@ -238,7 +239,7 @@ def entwurf(lizenz_fehlt: bool) -> None:
   <div class="knoepfe"><button class="knopf" type="submit">Freigeben (Stand 4)</button><button class="knopf knopf--zweit" type="submit">Zurückstellen</button><button class="knopf knopf--leise" type="submit">Ablehnen</button></div>"""
         stand_wort = "neu"
     hinweise = "".join(f"<li>{e(h)}</li>" for h in ENTWUERFE[0]["vor"].split("; "))
-    inhalt = kopf(f'Entwurf <span class="code">E-7</span>', f"Story 30, Rückblick-Nachtrag zum 8.11.2026, Rubrik Events, Stand 4, zuletzt vom Radar um 21:12. Status: {stand_wort}.",
+    inhalt = kopf('Entwurf E-7', f"Story 30, Rückblick-Nachtrag zum 8.11.2026, Rubrik Events, Stand 4, zuletzt vom Radar um 21:12. Status: {stand_wort}.",
                   '<a href="uebersicht.html">Übersicht</a> / Entwürfe') + f"""
 <div class="felder felder--8-4">
   <article class="feld" aria-labelledby="t-h">
@@ -301,7 +302,7 @@ def eingang() -> None:
 <table class="spec"><thead><tr><th>Code</th><th>Eingang</th><th>Art</th><th>Betreff</th><th>Agent</th><th>Stand</th></tr></thead><tbody>{rows}</tbody></table></section></div>
 <div class="felder" id="vorgang">
   <section class="feld" aria-labelledby="v-h">
-    <div class="block__kopf"><h2 id="v-h">Termin <span class="code">T-0142</span></h2><span class="leise">Angaben des Einsenders, ungeprüft</span></div>
+    <div class="block__kopf"><h2 id="v-h">Termin T-0142</h2><span class="leise">Angaben des Einsenders, ungeprüft</span></div>
     <dl class="satz"><dt>Titel</dt><dd>Pongal-Feier des Beispiel-Vereins Hamm</dd><dt>Beginn</dt><dd><span class="code">16.01.2027 15:00</span></dd><dt>Ende</dt><dd><span class="code">16.01.2027 21:00</span></dd>
       <dt>Ort</dt><dd>Gemeindesaal, Beispielstraße 1, 59000 Hamm, DE</dd><dt>Veranstalter</dt><dd>Beispiel-Verein Hamm e. V.</dd>
       <dt>Beschreibung</dt><dd>Thai Pongal mit gemeinsamem Kochen, Tanz der Kindergruppe und Abendessen. Eintritt frei, Anmeldung erbeten.</dd>
@@ -355,9 +356,9 @@ def social() -> None:
       <div class="block__kopf"><h2 id="h-h">Von Hand entscheiden</h2><span class="leise">eine Regel ist verletzt oder unklar</span></div>
       <table class="spec"><thead><tr><th>Code</th><th>Beitrag</th><th>Regel</th><th><span class="visually-hidden">Aktion</span></th></tr></thead><tbody>
         <tr><td data-l="Code"><span class="code">S-29</span></td><td>{e(RB[-1]['titel'])}</td><td data-l="Regel"><span class="wort-fehler">R2 heikles Thema</span><span class="unter">Justiz, geht nie automatisch</span></td>
-          <td><form method="post" action="social.html" class="knoepfe ohne-rand"><button class="knopf knopf--zweit" type="submit">Trotzdem vorbereiten</button><button class="knopf knopf--leise" type="submit">Verwerfen</button></form></td></tr>
+          <td><form method="post" action="social.html" class="knoepfe ohne-rand"><button class="knopf knopf--zweit" type="submit">Vorbereiten</button><button class="knopf knopf--leise" type="submit">Verwerfen</button></form></td></tr>
         <tr><td data-l="Code"><span class="code">S-30</span></td><td>{e(RB[12]['titel'])}</td><td data-l="Regel"><span class="wort-fehler">R4 Bild</span><span class="unter">kein Recht für soziale Netze; Vorschlag Bildkarte</span></td>
-          <td><form method="post" action="social.html" class="knoepfe ohne-rand"><button class="knopf knopf--zweit" type="submit">Mit Bildkarte vorbereiten</button><button class="knopf knopf--leise" type="submit">Verwerfen</button></form></td></tr>
+          <td><form method="post" action="social.html" class="knoepfe ohne-rand"><button class="knopf knopf--zweit" type="submit">Mit Bildkarte</button><button class="knopf knopf--leise" type="submit">Verwerfen</button></form></td></tr>
       </tbody></table>
     </div>
   </section>
@@ -417,8 +418,8 @@ def verzeichnis() -> None:
       <dt>Fehlt</dt><dd>nichts</dd><dt>Formfehler</dt><dd>keine</dd><dt>Kategorie</dt><dd class="leise">kein Vorschlag (Liste von KBS fehlt)</dd></dl>
     <form class="karte" method="post" action="verzeichnis.html" aria-labelledby="f-h">
       <h3 id="f-h">Freigabe</h3>
-      <p class="grund">Übernommen werden die Felder, die links auf „neu“ stehen.</p>
-      <div class="knoepfe"><button class="knopf" type="submit">Als Änderung an V-0004 freigeben</button><button class="knopf knopf--zweit" type="submit">Als neuen Eintrag freigeben</button><button class="knopf knopf--leise" type="submit">Ablehnen</button></div>
+      <p class="grund">Als Änderung an V-0004: übernommen werden die Felder, die links auf „neu“ stehen.</p>
+      <div class="knoepfe"><button class="knopf" type="submit">Als Änderung freigeben</button><button class="knopf knopf--zweit" type="submit">Als neu freigeben</button><button class="knopf knopf--leise" type="submit">Ablehnen</button></div>
     </form>
   </aside>
 </div>"""
@@ -445,7 +446,7 @@ def buchungen() -> None:
 <p class="leise klein nach-xs">Einblendung: mindestens die halbe Fläche eine Sekunde sichtbar. Gezählt ohne Cookies und ohne Personendaten.</p></section></div>
 <div class="felder felder--8-4" id="vorgang">
   <section class="feld" aria-labelledby="v-h">
-    <div class="block__kopf"><h2 id="v-h">Werbemittel <span class="code">B-0004</span></h2><span class="leise">In-Article, nach dem zweiten Absatz</span></div>
+    <div class="block__kopf"><h2 id="v-h">Werbemittel B-0004</h2><span class="leise">In-Article, nach dem zweiten Absatz</span></div>
     <div class="massreihe">
       <figure><div class="mass mass--728">feinkost-728x90.jpg</div><figcaption>Desktop: erwartet <span class="code">728 × 90</span>, geliefert <span class="code">728 × 90</span>, <span class="wort-gut">passt</span></figcaption></figure>
       <figure><div class="mass mass--300">erwartet 300 × 250</div><figcaption>Handy: erwartet <span class="code">300 × 250</span>, geliefert <span class="code">320 × 100</span>, <span class="wort-fehler">weicht ab</span></figcaption></figure>

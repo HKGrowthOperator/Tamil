@@ -79,6 +79,12 @@ def img(b, lazy=True, pos="50% 45%"):
             f'style="object-position: {pos}" alt="{e(b["alt"])}">')
 
 
+
+def kopfbild(sid, pos="50% 45%"):
+    b = BEI[sid]
+    return (f'<figure class="pic kopfbild"><div class="photo">{img(b, lazy=False, pos=pos)}</div>'
+            f'<figcaption><small>{nachweis(b)}</small></figcaption></figure>')
+
 # ---------------------------------------------------------------- Kopf und Fuß
 
 NAV = [("Termine", "termine.html"), ("Kino", "kino.html"), ("Community", "rubrik.html"), ("Verzeichnis", "verzeichnis.html")]
@@ -107,7 +113,8 @@ FUSS_NAV = '''<nav class="foot__col" aria-labelledby="f-dienste">
       </nav>
       <nav class="foot__col" aria-labelledby="f-rubriken">
         <p class="foot__h" id="f-rubriken">Rubriken</p>
-        <ul><li><a href="index.html#jahr">Nachrichten</a></li><li><a href="rubrik.html">Community</a></li><li><a href="index.html#jahr">Kultur</a></li><li><a href="termine.html">Events</a></li><li><a href="kino.html">Kino</a></li><li><a href="index.html#jahr">Küche</a></li><li><a href="index.html#jahr">Sport</a></li></ul>
+        <ul><li><a href="rubrik.html">Community</a></li><li><a href="termine.html">Events</a></li><li><a href="kino.html">Kino</a></li></ul>
+        <p class="foot__folgt"><span class="fill">weitere folgen</span></p>
       </nav>'''
 
 
@@ -284,10 +291,10 @@ def rubrik():
         nummern = "".join(
             f'<li><a href="{nr(j)}"{" aria-current=\"page\"" if j == k else ""}><span class="visually-hidden">Seite </span>{j}</a></li>' for j in range(1, n + 1))
         weiter = []
-        if k > 1:
-            weiter.append(f'<a class="btn" href="{nr(k - 1)}">Neuere Beiträge</a>')
-        if k < n:
-            weiter.append(f'<a class="btn" href="{nr(k + 1)}">Ältere Beiträge</a>')
+        if False:
+            pass
+        if False:
+            pass
         lead = ""
         rest = teil
         if k == 1:
@@ -381,8 +388,9 @@ def verzeichnis():
       <div class="kopfzeile__text">
         <h1 id="titel">Verzeichnis der Community</h1>
         <p class="lead">Jede Einrichtung hier kommt in einem Bericht auf tamil.de vor; Kontaktdaten tragen die Einrichtungen selbst ein.</p>
+        <p class="kopfzeile__link"><a class="share" href="kontakt.html?anliegen=verzeichnis">Eintrag vorschlagen</a></p>
       </div>
-      <p class="kopfzeile__aktion"><a class="share" href="kontakt.html?anliegen=verzeichnis">Eintrag vorschlagen</a></p>
+      {kopfbild(71, "50% 30%")}
     </div>
   </section>
 
@@ -422,7 +430,7 @@ def verzeichnis():
   </section>'''
     seite("verzeichnis.html", "Verzeichnis: Tempel, Vereine und Geschäfte | tamil.de",
           "Tempel, Vereine und Geschäfte der tamilischen Community in Deutschland, Österreich und der Schweiz.",
-          "verzeichnis.css", "Verzeichnis", main)
+          "verzeichnis.css", "Verzeichnis", main, f'<p>Sri-Kamadchi-Ampal-Tempel, Hamm: {nachweis(BEI[71])}.</p>')
 
 
 def verzeichnis_eintrag():
@@ -459,7 +467,6 @@ def verzeichnis_eintrag():
           <tr><th scope="row">Öffnungszeiten</th><td>{fehlt("fehlt")}</td></tr>
         </tbody>
       </table>
-      <p class="sheet__note">Die Angaben trägt der Inhaber ein.</p>
     </figure>
     <div class="profil__text">
       <figure class="pic">
@@ -468,7 +475,7 @@ def verzeichnis_eintrag():
       </figure>
       <h2>Über das Restaurant</h2>
       <p>Vater und Sohn kochen Küche aus Sri Lanka: Currys, Biryani, Dosa und Idly, Devil-Gerichte und vor allem Parotta.</p>
-      <h2 class="profil__h">In Berichten auf tamil.de</h2>
+      <h2 class="profil__h">Im Bericht</h2>
       <ol class="weiter__liste">
         <li><time class="num" datetime="{d.isoformat()}">{kurz(d)}</time><a href="artikel-37.html">{e(b["titel"])}</a></li>
       </ol>
@@ -592,7 +599,7 @@ def einreichen():
     <div class="container grid kopfzeile">
       <div class="kopfzeile__text">
         <h1 id="titel">Danke, die Redaktion meldet sich.</h1>
-        <p class="lead">Ihr Termin ist angekommen und wartet im Eingang der Redaktion.</p>
+        <p class="lead">Ihr Termin ist angekommen.</p>
         <p class="actions"><a class="btn btn--primary" href="termine.html">Zum Festkalender</a><a class="btn" href="einreichen.html">Weiteren Termin einreichen</a></p>
       </div>
     </div>
@@ -608,12 +615,12 @@ def einreichen():
           <tr><th scope="row">Stand</th><td>eingegangen</td></tr>
         </tbody>
       </table>
-      <p class="sheet__note">Bitte die Vorgangsnummer notieren, falls Sie nachfragen. Eine Bestätigung per E-Mail gibt es nicht.</p>
+      <p class="sheet__note">Eine Bestätigung per E-Mail gibt es nicht.</p>
     </figure>
     <aside class="rand" aria-labelledby="r-danach">
       <h2 id="r-danach" class="rand__h">Was jetzt passiert</h2>
       <ol class="ablauf">
-        <li><span>Die Redaktion prüft Datum und Ort und fragt bei Bedarf nach.</span></li>
+        <li><span>Die Redaktion prüft Datum und Ort.</span></li>
         <li><span>Nach der Freigabe steht der Termin im Festkalender.</span></li>
         <li><span>Nach 90 Tagen löscht tamil.de Ihre Kontaktdaten.</span></li>
       </ol>
@@ -704,8 +711,9 @@ def werben():
       <div class="kopfzeile__text">
         <h1 id="titel">Werben auf tamil.de</h1>
         <p class="lead">Sechs Plätze, buchbar für sieben, 14 oder 30 Tage, jeder als Anzeige gekennzeichnet.</p>
+        <p class="actions"><a class="btn btn--primary" href="buchen.html">Platz buchen</a><a class="share" href="kontakt.html?anliegen=werbung">Lieber anfragen</a></p>
       </div>
-      <p class="actions kopfzeile__aktion"><a class="btn btn--primary" href="buchen.html">Platz buchen</a><a class="share" href="kontakt.html?anliegen=werbung">Lieber anfragen</a></p>
+      {kopfbild(43, "50% 40%")}
     </div>
   </section>
 
@@ -744,7 +752,7 @@ def werben():
     </div>
   </section>'''
     seite("werben.html", "Werben auf tamil.de: Plätze und Preise", "Sechs Werbeplätze auf tamil.de, Maße, Laufzeiten und der Ablauf der Buchung.",
-          "werben.css", "", main)
+          "werben.css", "", main, f'<p>Koothandavar-Fest in Koovagam: {nachweis(BEI[43])}.</p>')
 
 
 def monat(jahr, mon, start, lauf, name):
@@ -800,7 +808,7 @@ def buchen():
     <p class="formular__fehler" data-fehler tabindex="-1" hidden></p>
     <p class="legende-satz">Felder ohne Zusatz sind nötig.</p>
     <section class="schritt grid" id="s1" aria-labelledby="s1-h">
-      <h2 id="s1-h" class="schritt__h"><span class="num">1</span> Platz und Laufzeit</h2>
+      <h2 id="s1-h" class="schritt__h"><span class="nr">1</span> Platz und Laufzeit</h2>
       <div class="schritt__inhalt">
         <fieldset class="wahl wahl--platz"><legend class="visually-hidden">Platz</legend>{plaetze}</fieldset>
         <fieldset class="seg"><legend>Laufzeit</legend>{laufz}</fieldset>
@@ -808,7 +816,7 @@ def buchen():
     </section>
 
     <section class="schritt grid" id="s2" aria-labelledby="s2-h">
-      <h2 id="s2-h" class="schritt__h"><span class="num">2</span> Startdatum</h2>
+      <h2 id="s2-h" class="schritt__h"><span class="nr">2</span> Startdatum</h2>
       <div class="schritt__inhalt">
         <fieldset class="kalender"><legend class="visually-hidden">Startdatum</legend>
           {monat(2026, 11, start, lauf, "start")}
@@ -820,7 +828,7 @@ def buchen():
     </section>
 
     <section class="schritt grid" id="s3" aria-labelledby="s3-h">
-      <h2 id="s3-h" class="schritt__h"><span class="num">3</span> Ihre Angaben</h2>
+      <h2 id="s3-h" class="schritt__h"><span class="nr">3</span> Ihre Angaben</h2>
       <div class="schritt__inhalt">
         <div class="reihe">{feld(p, "firma", "Firma", pflicht=True, auto="organization")}{feld(p, "person", "Ansprechperson", pflicht=True, auto="name")}</div>
         {feld(p, "adresse", "Rechnungsadresse", "textarea", True)}
@@ -830,7 +838,7 @@ def buchen():
     </section>
 
     <section class="schritt grid" id="s4" aria-labelledby="s4-h">
-      <h2 id="s4-h" class="schritt__h"><span class="num">4</span> Werbemittel</h2>
+      <h2 id="s4-h" class="schritt__h"><span class="nr">4</span> Werbemittel</h2>
       <div class="schritt__inhalt">
         <div class="reihe">
           {feld(p, "desktop", "Bild für Desktop", "file", True, ' accept="image/jpeg,image/png"', 'Leaderboard: <span class="num">728 × 90</span> Pixel, JPEG oder PNG.')}
@@ -842,7 +850,7 @@ def buchen():
     </section>
 
     <section class="schritt grid" id="s5" aria-labelledby="s5-h">
-      <h2 id="s5-h" class="schritt__h"><span class="num">5</span> Prüfen und bezahlen</h2>
+      <h2 id="s5-h" class="schritt__h"><span class="nr">5</span> Prüfen und bezahlen</h2>
       <div class="schritt__inhalt">
         <figure class="sheet">
           <figcaption class="sheet__head"><span class="sheet__title">Ihre Buchung</span><span class="sheet__stand">reserviert für 35 Minuten</span></figcaption>

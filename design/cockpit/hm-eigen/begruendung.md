@@ -42,6 +42,24 @@ Daten: Titel, Texte und Hinweise der Entwürfe sind echt (`docs/redaktion/rueckb
 („Beispielstraße 1“), Nummern (`+49 000 …`), Beträge und Zählwerte sind erfunden und so benannt, E-Mail nur
 `@example.org`. Der Fuß jeder Seite sagt das. Neu bauen: `python3 design/cockpit/hm-eigen/bauen.py`.
 
+## Überarbeitung nach Kritik cockpits-r1
+
+- **P1, Ablehnen mit Erstattung:** Ablehnen steht in einem eigenen Formular, räumlich unter der Freigabe, in der
+  Aufklappe „Ablehnen und erstatten“. Der Grund ist Pflicht und leer. Danach folgen Betrag, Firma und Folgen (Tage
+  werden frei, nicht rücknehmbar) und ein Pflicht-Häkchen „Ich lehne W-2026-0007 ab und erstatte den vollen Betrag“.
+  Kein Modal.
+- **P1, Freigabe trotz abweichendem Format:** „Werbemittel freigeben“ ist gesperrt (`disabled`, begründet über
+  `aria-describedby`), wie bei „Lizenz fehlt“. Freigeben geht nur über „Format trotzdem annehmen“ mit Pflicht-Grund
+  (ins Protokoll) und Pflicht-Häkchen.
+- **P2:** Entwurf verlangt „Offene Punkte gelesen“ vor dem Freigeben; „Entwurf ablehnen“ liegt hinter „Weitere
+  Aktionen“. „Bei Commons erneut abrufen“ hat `formnovalidate`. Der WhatsApp-Entwurf zeigt die Bildkarte statt des
+  Fotos, solange das Recht für soziale Netze fehlt (R4). „Von Hand entscheiden“ bei R2 verlangt einen Grund und nennt
+  die zweite Person; der Knopf heißt „Zur Freigabe vorbereiten“. Im Eingang liegen Ablehnen und Spam hinter einer
+  Aufklappe mit Hinweis, dass beides nicht rücknehmbar ist. In der Übersicht stehen Stopp, Budget und Radar am Handy
+  vor den Listen.
+- **P3:** Beträge deutsch geschrieben („1,38 $ von 5,00 $“).
+- **Prüfung danach (Server :8941):** `sloplint --scope app` über http für 7 Seiten 0 FAIL, 0 REFLEX, 12 WAIVED (49b), 7 WARN nur aus `file://`; `shots.mjs` 21 Aufnahmen, 0 Fehler, kein Überlauf, einzige kleine Tippfläche der versteckte Sprunglink.
+
 ## Prüfung
 
 - `sloplint --genre editorial --scope app` statisch und gerendert über `http://127.0.0.1:8945/cockpit/hm-eigen/…`

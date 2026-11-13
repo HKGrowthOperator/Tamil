@@ -208,8 +208,8 @@ def test_korrektur_am_artikel_loest_nichts_erneut_aus(store, settings):
     assert len(zeilen(store)) == 3 and "korrigiert" not in zeilen(store, kanal="instagram")[0]["text"]
 
 
-def entwurf_mit_bild(store, settings, umfang, *, ki=False, wp_post_id=12):
-    from news_radar import images
+def entwurf_mit_bild(store, settings, umfang, *, ki=False, wp_post_id=12, **lizenz_felder):
+    from news_radar import images, lizenz
 
     settings.bilder_dir.mkdir(parents=True, exist_ok=True)
     img = Image.new("RGB", (1600, 900), (20, 120, 60))
@@ -221,9 +221,20 @@ def entwurf_mit_bild(store, settings, umfang, *, ki=False, wp_post_id=12):
                                   bild_datei="foto.jpg", bild_origin="ki" if ki else "commons",
                                   original_json={"titel": "T"}))
     store._write("UPDATE drafts SET wp_post_id = ? WHERE id = ?", (wp_post_id, did))
-    store._write("INSERT INTO assets (datei, herkunft, lizenz, umfang, ki, draft_id, erstellt) VALUES "
-                 "('foto.jpg', ?, 'CC BY 4.0', ?, ?, ?, 'x')", ("ki" if ki else "quelle", umfang, 1 if ki else 0, did))
+    # vollständiger Lizenz-Datensatz (Spezifikation Bilder 3.1), Umfang nach Testfall
+    if ki:
+        felder = lizenz.datensatz(images.FeaturedImage(buf.getvalue(), "foto.jpg", "image/jpeg", lizenz.KI_CREDIT, "ki",
+                                                       prompt="Empty hall", modell="gemini-nano-banana-2.1"))
+    else:
+        felder = {"herkunft": "commons", "rechteinhaber": "Max Muster", "urheber": "Max Muster",
+                  "lizenz_kuerzel": "cc-by-4.0", "lizenz": "CC BY 4.0", "lizenz_url": lizenz.lizenz_url("cc-by-4.0"),
+                  "attribution": "Foto: Max Muster / Wikimedia Commons, CC BY 4.0", "bearbeitung": "zugeschnitten",
+                  "quelle_url": "https://commons.wikimedia.org/wiki/File:A.jpg", "bild_url": "https://upload.wikimedia.org/a.jpg",
+                  "beleg": "commons-api", "geprueft_von": "agent:test", "geprueft_am": "2026-11-13T10:00:00+00:00"}
+    lizenz.anlegen(store, datei="foto.jpg", daten=buf.getvalue(), draft_id=did,
+                   felder={**felder, "umfang": umfang, **lizenz_felder})
     assert images  # Modul vorhanden (Schriften und Farben der Bildkarte)
+    return did
 
 
 def test_beitragsbild_nur_mit_umfang_social(store, settings):
@@ -239,6 +250,21 @@ def test_ohne_umfang_social_die_bildkarte(store, settings):
     mit_startmarke(store, settings, [post(12)])
     ig = zeilen(store, kanal="instagram")[0]
     assert ig["bild_art"] == "karte" and "Bildkarte" in json.loads(ig["regelpruefung"])["R4"]["grund"]
+
+
+def test_abgelaufene_oder_unvollstaendige_lizenz_ergibt_die_bildkarte(store, settings):
+    """Umfang „social“ reicht nicht: der Datensatz muss vollständig sein (Ablauf, Kürzel, Urheber)."""
+    entwurf_mit_bild(store, settings, "website,social", ablauf="2020-01-01")
+    mit_startmarke(store, settings, [post(12)])
+    ig = zeilen(store, kanal="instagram")[0]
+    assert ig["bild_art"] == "karte" and "Ablauf" in json.loads(ig["regelpruefung"])["R4"]["grund"]
+
+
+def test_datensatz_eines_anderen_entwurfs_zaehlt_nicht(store, settings):
+    did = entwurf_mit_bild(store, settings, "website,social")
+    store._write("UPDATE assets SET draft_id = ? WHERE draft_id = ?", (did + 100, did))  # gehört einem anderen Entwurf
+    mit_startmarke(store, settings, [post(12)])
+    assert zeilen(store, kanal="instagram")[0]["bild_art"] == "karte"
 
 
 def test_ki_bild_traegt_hinweis_in_text_und_bild(store, settings):
@@ -660,10 +686,13 @@ def test_p2_live_nur_mit_freigabe_des_regelwerks(store, settings):
     assert not regelwerk.freigegeben(regelwerk.aktuell(store))
     mit_startmarke(store, settings, [post(97)])
     meta = FakeMeta()
-    stats = ablauf.senden(store, settings, meta, START + timedelta(minutes=11), bild_url=lambda z: "x")
+    for minuten in (11, 14):  # wartet, kein Endstand: nach der Freigabe muss es live hinausgehen
+        stats = ablauf.senden(store, settings, meta, START + timedelta(minutes=minuten), bild_url=lambda z: "x")
     assert meta.aufrufe == [] and stats["ohne_freigabe"] == 1
-    assert {z["status"] for z in zeilen(store) if z["kanal"] != "whatsapp"} == {"trocken"}
-    assert isinstance(ablauf.transport_fuer(konfig.laden(GRAPH_ENV), regelwerk.aktuell(store)), TrockenTransport)
+    meta_zeilen = [z for z in zeilen(store) if z["kanal"] != "whatsapp"]
+    assert {z["status"] for z in meta_zeilen} == {"geplant"}
+    assert all("Fassung 2 nicht freigegeben" in z["wartet_grund"] for z in meta_zeilen)
+    assert len(repo.aktionen_liste(store, aktion="social_angehalten")) == 2  # je Kanal einmal, nicht je Lauf
     with pytest.raises(ValueError):
         regelwerk.freigabe_eintragen(store, wer="anna", freigegeben_von="KBS", datum="2026-11-14", beleg="")
     rw = kbs_freigabe(store)
@@ -672,6 +701,71 @@ def test_p2_live_nur_mit_freigabe_des_regelwerks(store, settings):
     assert z["wer"] == "anna" and z["regel_fassung"] == "2" and "Mail von Luis" in z["notiz"]
     with pytest.raises(ValueError):  # einmalig je Fassung
         kbs_freigabe(store)
+    ablauf.senden(store, settings, meta, START + timedelta(minutes=17), bild_url=lambda z: "x")
+    assert {z["status"] for z in zeilen(store) if z["kanal"] != "whatsapp"} == {"veroeffentlicht"}
+
+
+def test_p2_trockenmodus_ohne_freigabe_bleibt_trocken(store, settings):
+    regelwerk.speichern(store, {"max_je_tag": 5}, wer="anna")
+    mit_startmarke(store, settings, [post(103)])
+    ablauf.senden(store, settings, TrockenTransport(), START + timedelta(minutes=11))
+    assert {z["status"] for z in zeilen(store) if z["kanal"] != "whatsapp"} == {"trocken"}
+
+
+class StoppNachDemVeroeffentlichen(FakeMeta):
+    """Zwischen Veröffentlichen und Permalink hält jemand den Kanal an."""
+
+    def __init__(self, store, **kw):
+        super().__init__(**kw)
+        self.store = store
+
+    def ig_veroeffentlichen(self, container_id):
+        mid = super().ig_veroeffentlichen(container_id)
+        schalter.setzen(self.store, "instagram", True, wer="priya", grund="Stopp mitten im Senden")
+        return mid
+
+
+def test_p3_permalink_nur_ohne_stopp_der_abgleich_traegt_ihn_nach(store, settings):
+    mit_startmarke(store, settings, [post(104)])
+    meta = StoppNachDemVeroeffentlichen(store)
+    ablauf.senden(store, settings, meta, START + timedelta(minutes=11), bild_url=lambda z: "x")
+    ig = zeilen(store, kanal="instagram")[0]
+    assert ig["status"] == "veroeffentlicht" and ig["meta_id"] and not ig["meta_link"]
+    assert "ig_permalink" not in [a[0] for a in meta.aufrufe]
+    schalter.setzen(store, "instagram", False, wer="priya")
+    ablauf.senden(store, settings, meta, START + timedelta(minutes=14), bild_url=lambda z: "x")
+    assert zeilen(store, kanal="instagram")[0]["meta_link"].startswith("https://www.instagram.com/p/")
+
+
+def test_p3_veroeffentlicht_nur_aus_wird_gesendet_oder_unklar(store, settings):
+    mit_startmarke(store, settings, [post(105)])
+    ig = zeilen(store, kanal="instagram")[0]
+    store._write("UPDATE social_beitraege SET status = 'gestoppt' WHERE id = ?", (ig["id"],))
+    stats = ablauf._veroeffentlicht(store, ig, START, "m9", "https://www.instagram.com/p/m9/")
+    assert zeilen(store, kanal="instagram")[0]["status"] == "gestoppt" and stats["konflikt"] == 1
+
+
+def test_p3_ein_lauf_zur_zeit(store, settings):
+    mit_startmarke(store, settings, [post(106)])
+    jetzt = START + timedelta(minutes=11)
+    assert ablauf.sperre_nehmen(store, jetzt)  # ein anderer Lauf hält die Sperre
+    meta = FakeMeta()
+    assert ablauf.senden(store, settings, meta, jetzt, bild_url=lambda z: "x")["laeuft_schon"] == 1
+    assert meta.aufrufe == []
+    ablauf.senden(store, settings, meta, jetzt + ablauf.VERWAIST + timedelta(minutes=1), bild_url=lambda z: "x")
+    assert meta.aufrufe  # abgelaufene Sperre (Kill) blockiert nicht für immer
+    ablauf.sperre_freigeben(store)
+
+
+def test_p3_tagesgrenze_live_zaehlt_keine_trockenlaeufe(store, settings):
+    tag = datetime(2026, 11, 16, 6, 0, tzinfo=UTC)
+    erkennen(store, settings, FakeWP(), tag - timedelta(hours=1))
+    erkennen(store, settings, FakeWP([post(110 + i, jetzt=tag) for i in range(7)]), tag)
+    for stunde in range(6):  # sechs Trockenläufe am Vormittag
+        ablauf.senden(store, settings, TrockenTransport(), tag + timedelta(minutes=11, hours=stunde))
+    meta = FakeMeta()
+    ablauf.senden(store, settings, meta, tag + timedelta(hours=7), bild_url=lambda z: "x")
+    assert [z["status"] for z in zeilen(store, kanal="instagram")].count("veroeffentlicht") == 1
 
 
 def test_p3_schalter_website_haelt_den_bild_upload_an(store, settings):

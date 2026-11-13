@@ -45,7 +45,7 @@
 .profil__h { max-width: none; padding-block-start: var(--space-lg); border-top: var(--rule-bar) solid var(--color-rule-2); }
 .weiter__liste { margin: 0; padding: 0; list-style: none; }
 .weiter__liste li { display: grid; grid-template-columns: 5rem minmax(0, 1fr); gap: var(--space-md); align-items: baseline; }
-.weiter__liste a { font: 600 var(--text-title)/1.25 var(--font-display); letter-spacing: var(--tracking-display); }
+.weiter__liste a { font: 600 var(--text-title)/1.3 var(--font-display); letter-spacing: var(--tracking-display); }
 .weiter__liste .num { font-size: var(--text-sm); }
 
 @media (max-width: 60rem) {

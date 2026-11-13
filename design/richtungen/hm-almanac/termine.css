@@ -1,8 +1,10 @@
-/* Hallmark · shape: Kalenderblatt, the festival calendar · genre: editorial · theme: Almanac (deal 2/3, seed tamil-deutschsprachiges-online-magazin-der-ff32·6bcf19c0·2026-11-13·r0) · job: listen · draw: 26f3b5
+/* Hallmark · shape: Kalenderblatt, the festival calendar · genre: editorial · theme: Almanac (deal 2/3, seed tamil-deutschsprachiges-online-magazin-der-ff32·6bcf19c0·2026-11-13·r0) · job: find · draw: 26f3b5
  * hero: index · nav: banner over a retracting bar · footer: index columns · imagery: photographs, the post's own Commons picture 1, muted · signature: the year of festivals as one chart set large, today as a red line
  * axes: mid/grotesk-sans/chromatic-magenta (accent re-hued to the logo red) · posture: restrained · contrast: pass · fold: pass · v2.0.0 */
 /* Hallmark · pre-emit critique: P4 H4 E4 S5 R4 V4 · weakest: H, two dated objects on one page; the sheet keeps the coming weeks, the chart the year, and the chart drops all type but the date, the name and the place */
 @import url("./almanac.css");
+/* Hallmark · waive 44c · the hero of the Festkalender holds its head, the Glattbrugg photograph beside it and the dated sheet of November and December · house style of this line (design.md): the sheet is the head, the photograph sits beside the head line, not as a stage */
+/* Hallmark · waive 78 · the head Das Festjahr 2026 and the Glattbrugg report render at 36px under the 42px page head · on the festival calendar the head Festkalender der Community is capped at 44px, the year chart head sits one step under it */
 /* Hallmark · waive 49b · the link Deepavali, das Lichterfest wraps to two lines at 320 beside the mono date · the festival name in the dated sheet is the row own content and links to its report */
 /* Hallmark · answered F17 · the year chart places each label in its month column and lets it run past, the column is the date, not the measure */
 /* Hallmark · dismissed 58 · the window holds the dated sheet of four festivals with its source line, counted at 85 */

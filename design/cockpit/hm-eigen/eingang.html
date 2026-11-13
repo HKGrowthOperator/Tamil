@@ -80,7 +80,7 @@
     <form action="/eingang/E-0412" method="post">
       <label class="feld"><span>Notiz</span><textarea name="notiz" rows="2">Uhrzeit und Eintritt in den vorhandenen Termin übernehmen.</textarea><small></small></label>
       <div class="aktionen"><button type="submit" class="knopf primaer" name="aktion" value="uebernehmen">Übernehmen</button><button type="submit" class="knopf" name="aktion" value="erledigt">Erledigt</button></div>
-      <div class="aktionen zweite"><button type="submit" class="knopf gefahr" name="aktion" value="ablehnen">Ablehnen</button><button type="submit" class="knopf gefahr" name="aktion" value="spam">Spam</button></div>
+      <details class="aufklapp abstand-oben"><summary>Ablehnen oder als Spam markieren</summary><p class="klein leise">Lässt sich nicht zurücknehmen; Spam wird nach 7 Tagen gelöscht.</p><div class="aktionen"><button type="submit" class="knopf gefahr" name="aktion" value="ablehnen">Ablehnen</button><button type="submit" class="knopf gefahr" name="aktion" value="spam">Spam</button></div></details>
     </form>
     <p class="klein leise">Antwort nur von Hand: <a href="mailto:termine@example.org?subject=Ihre%20Einsendung%20E-0412">im Mailprogramm öffnen</a>. Das Cockpit verschickt keine E-Mail.</p>
   </section>

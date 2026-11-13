@@ -15,7 +15,7 @@
   --color-sheet: oklch(93.5% 0.008 245);
   --font-display: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
   --font-body: "Newsreader", ui-serif, Georgia, serif;
-  --font-outlier: "IBM Plex Mono", ui-monospace, monospace;
+  --font-outlier: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
   --radius-card: 0; --radius-pill: 2px; --rule-hair: 1px; --rule-bar: 2px; --shadow-card: none;
   --tracking-display: -0.02em; --display-weight: 600;
 }

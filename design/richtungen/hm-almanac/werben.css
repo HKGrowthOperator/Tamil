@@ -1,4 +1,4 @@
-/* Hallmark · shape: Kalenderblatt, advertising (Werben, Buchen) · genre: editorial · theme: Almanac (deal 2/3, seed tamil-deutschsprachiges-online-magazin-der-ff32·6bcf19c0·2026-11-13·r0) · job: buy (book a slot) · draw: 26f3b5 · copy: places and sizes from ads.php and festlegung-werbung.md, prices absent
+/* Hallmark · shape: Kalenderblatt, advertising (Werben, Buchen) · genre: editorial · theme: Almanac (deal 2/3, seed tamil-deutschsprachiges-online-magazin-der-ff32·6bcf19c0·2026-11-13·r0) · job: buy · draw: 26f3b5 · copy: places and sizes from ads.php and festlegung-werbung.md, prices absent
  * hero: index · nav: banner over a retracting bar · footer: index columns · imagery: none · signature: the six places as a printed rate card, sizes in mono, every price a marked gap; the booking calendar as a month sheet with the lead days struck
  * axes: mid/grotesk-sans/chromatic-magenta (accent re-hued to the logo red) · posture: restrained · contrast: pass · fold: pass · v2.0.0 */
 /* Hallmark · pre-emit critique: P4 H4 E3 S4 R5 V4 · weakest: E, a rate card without prices; the gaps are marked once per cell and the sheet says who fills them, nothing is guessed */
@@ -8,7 +8,6 @@
 /* Hallmark · waive 78 · the step heads of the booking render at 25px · the five booking steps Platz, Startdatum, Angaben, Werbemittel, Bezahlen are form steps beside their fields */
 /* Hallmark · dismissed 77 · the Werben page: head, rate card, the order of a booking, the footer */
 /* Hallmark · dismissed 58 · the rate card counts six places in five columns as words; the booking form counts its labels */
-/* Hallmark · dismissed 52 · the five steps of the booking have a real order (choose, date, details, artwork, pay), the numerals are that order */
 
 .kopfzeile { padding-block: var(--space-xl) var(--space-head-after); align-items: end; row-gap: var(--space-lg); }
 .kopfzeile__text { grid-column: 1 / span 8; display: flex; flex-direction: column; gap: var(--space-md); }
@@ -52,7 +51,7 @@
 .buchung { display: flex; flex-direction: column; }
 .schritt { align-items: start; padding-block: var(--space-xl); border-top: var(--rule-bar) solid var(--color-ink); scroll-margin-top: var(--space-3xl); }
 .schritt__h { grid-column: 1 / span 4; font-size: var(--text-xl); display: flex; gap: var(--space-sm); align-items: baseline; }
-.schritt__h .num { font: 500 var(--text-xl)/1 var(--font-outlier); color: var(--color-muted); }
+.schritt__h .nr { font: 500 var(--text-xl)/1 var(--font-outlier); color: var(--color-muted); }
 .schritt__inhalt { grid-column: 5 / span 8; display: flex; flex-direction: column; gap: var(--space-lg); min-width: 0; }
 .reihe { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-lg) var(--gap-columns); align-items: start; }
 

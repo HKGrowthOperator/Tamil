@@ -17,7 +17,7 @@ keine Ornamente, keine tamilische Schrift, keine Folklore.
 - **Shape** · Index-First (Tausch gegen die Ziehung „Letter“ aus Draw 92e264: eine Nachrichtenseite ist ihre Liste) · genre editorial · job: lesen, finden, teilen (Anatomie „listen: a publication“)
 - **Theme** · Terrazzo, auf Wunsch; Farbweg „Zement“: kühles Off-white `oklch(96.6% 0.004 250)` statt des warmen Off-white (Runde 2 „Creme“ und Gate 65), Tinte `oklch(19% 0.012 260)`
 - **Signal** · das Logo-Rot `oklch(50.8% 0.177 25.6)` (= #B5282A) statt Rost. Rost `oklch(53% 0.15 38)` liegt dem Logo-Rot in Helligkeit und Ton so nah, dass beide nebeneinander wie ein Fehldruck wirken; also trägt das Logo-Rot die wenigen Signale: Fokusring, Unterstreichung beim Überfahren, aktiver Navigationspunkt, Zeile „Heute“, Premium-Marke, Pflichtstern. Nie Fläche.
-- **Schrift** · Syne 600 für Köpfe (bewusst nicht 700/800: Syne wird mit dem Gewicht breiter, die Grenze „extrabreit“ aus Runde 4 bleibt gewahrt), Onest 400/500 für Text und Titel der Beiträge (18 px Fließtext), JetBrains Mono 500 nur für Zahlen, die man abliest: Datum im Kalender, Werbemaße in Pixeln, Schrittnummern. Alle OFL, selbst gehostet in `schriften/` mit Lizenzdateien.
+- **Schrift (bis r1, ersetzt)** · Syne 600 für Köpfe (bewusst nicht 700/800: Syne wird mit dem Gewicht breiter, die Grenze „extrabreit“ aus Runde 4 bleibt gewahrt), Onest 400/500 für Text und Titel der Beiträge (18 px Fließtext), JetBrains Mono 500 nur für Zahlen, die man abliest: Datum im Kalender, Werbemaße in Pixeln, Schrittnummern. Alle OFL, selbst gehostet in `schriften/` mit Lizenzdateien.
 - **Chrome** · nav: Masthead, Logo über einem 2 px Tintenstreifen, eine Zeile Rubriken links und Dienste (Termine, Kino, Verzeichnis) rechts hinter einer Haarlinie; am Handy zwei Zeilen, nichts versteckt · footer: Kolophon (Logo, eine Linkzeile, Bildnachweise der Seite, Platzhalter Impressum)
 - **Hero** · Stage gespiegelt: Foto auf 7 Spalten, Aufmacher auf 5 Spalten hinter einer Fuge; Unterseiten mit Banner-Kopf (h1 und ein Satz)
 - **Signatur** · die Fuge: Tintenstreifen, die Felder ungleicher Breite (7/5, 5/7, 5/4/3) trennen, statt Karten im Raster
@@ -25,7 +25,7 @@ keine Ornamente, keine tamilische Schrift, keine Folklore.
 - **Range des Themes** · Spezifikationstabelle für Termine, Kino, Verzeichnis und Werbeplätze; die eine Zahl auf dem Tintenband (11 Kinos); Schritte an Fugen als echtes `<ol>`; Auswahl als randscharfe, aneinanderstoßende Zellen
 - **Sections (Start)** · Aufmacher · Die nächsten Feste (Tabelle) · Nachrichten (Feld 7/5) · Kino auf dem Tintenband · Tempel, Vereine und Schulen (Feld 5/7) · Anzeige im Papier-Well · Küche | Kultur und Sport (Feld 7/5) · Fuß
 - **Material** · echt: 20 Rückblick-Beiträge mit Commons-Bildern und Nachweis, 62 datierte Einträge aus `docs/redaktion/rueckblick-2026.md`, Kino und Basel-Termin aus `inhalte.json`, THADAM Bern (Radar-Entwurf 4), Werbeplätze aus `ads.php`, WhatsApp-Kanal aus den Standards des Plugins · Bilder: nur `design/inhalte/rueckblick/bilder/` · fehlt (sichtbare Platzhalter): Preise, Kontaktdaten der Redaktion, Impressum, Einwilligungstext, Verkaufsbedingungen, Vorgangsnummer, Kontaktdaten der Verzeichnis-Einträge
-- **Sweep** · Floor 0 FAIL · Reflex 0 offen (7 begründet im Stempel ausgenommen: 44c, 49b, 59, 64, 77, 78, 79; 77 als WARN auf Unterseiten verworfen) · F7 beantwortet · Prüfung aus frischem Kontext: steht aus (Hauptsitzung)
+- **Sweep (r1)** · siehe „Überarbeitung nach Kritik r1“ unten; dort stehen die geltenden Picks und Ergebnisse
 
 ## Seiten
 
@@ -75,3 +75,65 @@ erfundenen Kontaktdaten. Formulare senden nichts (`data-endpoint=""`; die Seite 
 `python3 design/richtungen/hm-terrazzo/bauen.py` vom Repo-Root (liest `design/inhalte/` und
 `docs/redaktion/rueckblick-2026.md`, schreibt alle HTML-Seiten, kopiert Bilder und Logo nach `bilder/`).
 Stylesheet: `terrazzo.css` (Stempel, Ausnahmen) über `tokens.css` und `base.css` (Hallmark-Scaffold, Farben angepasst).
+
+## Überarbeitung nach Kritik r1 (`design/kritik/hm-terrazzo-r1.md`)
+
+Geltende Picks nach der Überarbeitung (ersetzen oben, wo sie abweichen):
+
+- **Schrift** · Köpfe in **Wix Madefor Display 600** (OFL, selbst gehostet, `schriften/wix-madefor-display-OFL.txt`), Text in Onest 400/500. Grund: Die Leser sind Eltern und Großeltern ebenso wie Gen Z, am Handy. Wix Madefor wurde für das Lesen am Bildschirm gezeichnet: normale Breite, offene Formen, eindeutige Ziffern (1, 7) für Daten. Sie steht weder auf der impeccable-Liste (Syne steht dort) noch auf der Liste der verbrannten Schriften. Drei Gewichte auf der Seite: 400, 500, 600.
+- **Keine dritte Familie** · JetBrains Mono ist entfernt; Daten und Maße in Onest mit `tabular-nums`. Ein Datumsformat für Listen („So, 15. Nov.“), eines für Beiträge („8. November 2026“).
+- **Signatur: der Feldplan** · Jede Inhaltsart hat auf der Startseite ihr eigenes Feld und ihre eigene Form, getrennt durch 2-px-Fugen: Aufmacher mit großem Bild (8 Spalten) neben dem Feld „Nachrichten“ nur mit Text (4 Spalten); „Die nächsten Feste“ als Datumsliste neben „Kino diese Woche“ als Film mit Städten (7/5); Community als Hochformat mit Liste (5/7); Küche mit zwei kleinen Bildern und Liste neben „Kultur und Sport“ ohne Bild (7/5).
+- **Eigener Kopf je Seitentyp** · Termine: der nächste Termin groß als Datum neben dem Titel; Kino: der Satz mit beiden Filmen und die Städteliste; Verzeichnis: die Suche im Kopf; Werben: die Formate maßstabsgetreu als Bild des Kopfes; Rubrik: Zahl der Beiträge; Artikel und Formulare wie bisher.
+- **Sweep** · statisch 0 FAIL, 0 WARN, F7 beantwortet; Render über `http://127.0.0.1:8944` (12 Seiten) 0 FAIL, 0 REFLEX, 0 WARN; Ausnahmen im Stempel: 44c, 49b, 59, 77, 78, 79 (64 entfällt mit Mono); `tools/shots.mjs` 14 Seiten × 390/820/1280: 0 Fehler.
+
+| P1 aus r1 | Was geändert ist |
+|---|---|
+| 1 Seitenstreifen am aktiven Buchungsschritt | Schnitt 600 und 2-px-Tintenlinie unten, kein farbiger Rand |
+| 2 Syne auf der Ausschlussliste | Wix Madefor Display (siehe oben) |
+| 3 Dritte Familie | JetBrains Mono entfernt, Onest mit Tabellenziffern |
+| 4 index 390 mit einer Geschichte | Navigation einzeilig (waagrecht scrollbar, Termine, Kino und Verzeichnis zuerst), Aufmacherbild 16:9, Vorspann am Handy auf zwei Zeilen gekürzt; im ersten Bildschirm (390 × 844) stehen der Aufmacher, der Kopf „Nachrichten“ und drei weitere Schlagzeilen |
+| 5 Dunkles Kino-Band, Ziffer „11“ | Band und Ziffer gestrichen; Kino als linierte Liste auf hellem Grund, „11 Kinos“ in Textgröße; Kinoseite nur noch nach Stadt, Land einmal im Kopf |
+| 6 Rosa Flächen | `--color-accent-soft` gestrichen; Premium als Wort in Rot und 2-px-Tintenlinie um die Zeile; Tabellenzeilen ohne Hover-Fläche |
+| 7 Knopf „Beitrag lesen“ | gestrichen; Schlagzeile und Bild verlinken, WhatsApp als schlichter Link |
+| 8 Ein Baustein für alles | Feldplan und eigene Köpfe (siehe oben) |
+
+Zusätzlich aus P2/P3: kein harter Versatzschatten mehr an Formularkarten (nur 2-px-Rand); Hinweistexte 17 px; Monate
+als Textlinks in einer Zeile; Metazeilen als „Datum in Ort“ statt Kommaliste; Kinojahr-Bild bleibt beim Kinojahr.
+
+**Ehrlich zur Idee:** Das Terrazzo trägt nur als **Ordnung**, nicht als Oberfläche. Sichtbar sind Felder ungleicher
+Größe, getrennt durch Tintenfugen, mit je eigener Form für jede Inhaltsart. Eine Körnung, ein Material oder ein
+Bildausschnitt, der an Terrazzo erinnert, kommt bewusst nicht vor (Muster und Effekte sind ausgeschlossen). Damit
+steht die Linie einer guten Zeitungsseite mit Spaltenlinien näher als einem Boden. Der Name ist eher Arbeitstitel
+als sichtbares Merkmal. Wer ein Bild des Bodens erwartet, wird es nicht finden.
+
+Offen: Wix Madefor ist ruhig, aber eher neutral; ob die Seite damit „gemacht“ statt „generiert“ wirkt, muss die
+nächste Prüfung zeigen. Die Rubrik bleibt mit sechs Beiträgen dünn (4 + 2). Premium und belegte Buchungstage sind
+weiter Darstellungsbeispiele.
+
+## Überarbeitung nach r2 (`design/kritik/hm-terrazzo-r2.md`)
+
+| P1 aus r2 | Was geändert ist |
+|---|---|
+| 1 Zeilenlänge 81 bis 89 Zeichen | Maß in rem statt ch: Fließtext, Anreißer und Kopfsätze `max-width: 34rem` (etwa 70 Zeichen bei 18 px Onest), Vorspann `36rem` |
+| 2 Tempelspitze abgeschnitten | Bildfokus je Bild im Bauskript (`FOKUS`, für Beitrag 30 und 49 `50% 8%`) statt Mittenausschnitt |
+| 3 Idee nur Spaltenlinie | neue Signatur **Kalenderboden** (siehe unten); seitenweite Ausnahmen von 6 auf 4 abgebaut (59 und 77 entfallen) |
+| 4 Startseite 390 | Vorspann am Handy auf den ersten vollständigen Satz gekürzt („Am 8. November war Deepavali.“, Kürzung am Satzende wie in `inhalte.json` erlaubt, ohne „…“), Orte am Handy aus der Metazeile, Feldkopf „Nachrichten“ am Handy nur für Screenreader; im ersten Bildschirm (390 × 844) stehen der Aufmacher und zwei vollständige Schlagzeilen |
+
+**Kalenderboden.** Der laufende Monat liegt als Feld aus quadratischen Fliesen, getrennt durch 2-px-Tintenfugen;
+Festtage sind in Tinte ausgelegt und verlinkt (8. Deepavali, 15. Düsseldorf, 21. Basel), heute trägt eine rote
+Linie, leere Fliesen vor und nach dem Monat sind Papiergrau. Auf der Startseite steht er im ersten Bildschirm als
+zweiter Stein neben dem Aufmacher (ein hoher Stein links, rechts der Kalender mit den Festen des Monats), auf der
+Festkalender-Seite als November und Dezember im Kopf. Hier trägt die Terrazzo-Idee zum ersten Mal sichtbar: Fliesen
+und Fugen sind die Form des Inhalts selbst (Tage, Feste), nicht Schmuck. Am Handy folgt der Kalender nach den
+Nachrichten, damit der erste Bildschirm zwei Geschichten zeigt (Umordnung per CSS, Reihenfolge im Quelltext bleibt).
+
+Dazu aus P2/P3: keine Doppelung (Maneez nur unter Nachrichten), Listen nach Datum (neueste zuerst), Ortsregel
+„Stadt allein, Land nur außerhalb Deutschlands“, Billboard-Eigenwerbung von der Startseite genommen, die Eigenanzeige
+im Artikel heißt jetzt „Eigenanzeige von tamil.de“; Nachrichten und Kino teilen sich das zweite Feld.
+
+**Sweep r2:** sloplint statisch 0 FAIL, 0 WARN (F7 beantwortet); Render über `http://127.0.0.1:8944` (12 Seiten) 0 FAIL,
+0 REFLEX, 0 WARN; verbleibende Ausnahmen im Stempel: 44c, 49b, 78, 79. `tools/shots.mjs` 14 Seiten × 390/820/1280: 0 Fehler.
+
+**Offen:** Der Kalenderboden ist ein echtes Kalenderraster aus gleichen Feldern; das ist inhaltlich begründet, kann aber
+für ein ungeübtes Auge wie ein Kartenraster wirken. Wix Madefor bleibt eine Katalog-Schrift (Hallmark „Dusk“); ihre
+Wahl ist aus dem Leser begründet, nicht neu gefunden. Die Zeilenlänge habe ich gerechnet, nicht nachgemessen.
