@@ -116,7 +116,7 @@ Stand nach Kritik r3, Server `http://127.0.0.1:8941` (Haupt-Arbeitsbaum):
 - `sloplint --genre editorial` über http für die elf Seiten der Liste: **0 FAIL**, 0 REFLEX offen. Gewaivt im Stempel:
   49b (lange echte Titel als Links), 59 und 78 (dichter Abstand und ruhige Köpfe, wie von der Kritik r1 verlangt),
   77 und 79 (kurze Dienstlisten und Seitenköpfe). 11 WARN „fallback font“ stammen aus dem `file://`-Durchgang
-  (Schriften laden dort nicht); über http laden sie. Gate 58 ist mit `copy: verbatim` Notiz.
+  (Schriften laden dort nicht); über http laden sie. Dazu 2 WARN F25 (Finish): Die Vorspanne im Strom der Startseite sind am Handy absichtlich ausgeblendet (Kritik r3, P2-2). Gate 58 ist mit `copy: verbatim` Notiz.
 - `node tools/shots.mjs` bei 390/820/1280 für 14 Seiten (alle Seitentypen, Bestätigungen, Rubrik Seite 2):
   42 Aufnahmen, 0 Fehler, kein seitliches Scrollen, keine Konsolenfehler, keine leeren Bilder, keine kleinen
   Tippflächen.

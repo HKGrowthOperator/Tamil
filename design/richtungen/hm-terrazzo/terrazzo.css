@@ -1,14 +1,12 @@
 /* Hallmark · shape: Index-First (swap from draw Letter; a news front page is its list) · genre: editorial · theme: Terrazzo (by request, reworked after critique r1) · job: listen (a publication: read, find, share) · draw: 92e264
- * hero: Feldplan, the lead story with its photo on 8 columns beside a text-only news field on 4 · nav: masthead (logo over a 2px ink rule, one line of links) · footer: colophon (logo, one ruled link list, credits, legal line) · imagery: photographs (Wikimedia Commons, credited at every picture) · signature: the Feldplan, each kind of content in its own field with its own form, fields parted by 2px ink Fugen · terrazzo: cement (cool off-white), signal is the logo red, no card shadows, no mono
+ * hero: Steine, the lead story as one tall stone on 7 columns, the Kalenderboden and a text-only news stone stacked on 5 · nav: masthead (logo over a 2px ink rule, one line of links) · footer: colophon (logo, one ruled link list, credits, legal line) · imagery: photographs (Wikimedia Commons, credited at every picture) · signature: the Kalenderboden, the current month laid as square tiles in 2px ink joints, feast days filled in ink, beside the lead story; stones interlock (one tall, two stacked) · terrazzo: cement (cool off-white), signal is the logo red, no card shadows, no mono
  * axes: light/grotesk-sans/warm · posture: restrained · contrast: pass · fold: pass · copy: verbatim · v2.0.0 */
-/* Hallmark · pre-emit critique: P3 H4 E4 S3 R4 V3 · weakest: S, the floor idea shows only as an order of fields, not as a surface; kept it that way because texture is barred, and gave every field and every page head its own form instead */
+/* Hallmark · pre-emit critique: P3 H4 E4 S3 R4 V3 · weakest: S, answered with the Kalenderboden: the month laid as tiles in ink joints, feast days filled, on the first screen and on the calendar page */
 /* Hallmark · waive 44c · subpages open on a Banner head with a fact beside the h1, the list or form starts above the fold · a calendar, a directory or a booking form is a utility, its reader came for the rows below */
 /* Hallmark · waive 79 · the article head is followed directly by the full-width photograph at the fold · a news article opens on headline and lede, the picture belongs below them */
-/* Hallmark · waive 77 · the one thin section is the billboard ad at 970px · an ad slot has a fixed booked size and must stay subordinate to the stories */
 /* Hallmark · dismissed 77 · subpages carry two to four sections: a head, the list or form, the footer; a utility page is as long as its rows */
 /* Hallmark · answered F7 · every text field shares one recipe on purpose: square plate, 1px ink edge, one height, so forms read as one material */
 /* Hallmark · waive 78 · section heads run 22 to 42px under a 46px lead story · tamil.de is read by grandparents on phones, so field heads stay quieter than the story heads they sit over */
-/* Hallmark · waive 59 · sections part by a 2px ink Fuge or a paper well, gaps 64px and up · a news front page carries fourteen stories, the joints do the parting the gaps would */
 /* Hallmark · waive 49b · story titles are links and wrap over two to four lines on phones · headlines from the newsroom cannot shorten, a news title is a phrase that must wrap */
 @import url("./tokens.css");
 @import url("./base.css");
@@ -83,7 +81,7 @@ a:focus-visible, button:focus-visible, input:focus-visible + label, summary:focu
 .abschnitt { padding-block: var(--space-2xl); }
 .abschnitt--eng { padding-top: var(--space-xl); }
 .abschnitt--fuge > .container { border-top: var(--rule-bar) solid var(--color-ink); padding-top: var(--space-xl); }
-.abschnitt--fuge { padding-top: 0; }
+.abschnitt--fuge { padding-top: var(--space-2xl); }
 .abschnitt--well { background: var(--color-paper-2); padding-block: var(--space-2xl); }
 .abschnitt__kopf { margin-bottom: var(--space-xl); }
 .kopfblock { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--space-md) var(--gap-columns); align-items: end; margin-bottom: var(--space-xl); }
@@ -130,7 +128,10 @@ a:focus-visible, button:focus-visible, input:focus-visible + label, summary:focu
   .feldreihe--8-4 > .feld + .feld { border-left: var(--rule-bar) solid var(--color-ink); }
 }
 @media (max-width: 40rem) {
-  .aufmacher__lead { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+  .nur-gross { display: none; }
+  .aufmacher h1 { font-size: 1.75rem; }
+  .feld__kopf--still { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .stein--nach .reihe { padding-block: var(--space-sm); }
   .aufmacher .bild--3-2 .bild__rahmen { aspect-ratio: 16 / 9; }
   .feldplan .feldreihe > .feld + .feld { margin-top: var(--space-lg); padding-top: var(--space-md); }
   .feldplan { padding-bottom: var(--space-xl); }
@@ -407,7 +408,7 @@ input:disabled, select:disabled, textarea:disabled { opacity: 0.55; cursor: not-
   .kopfblock { grid-template-columns: minmax(0, 1fr); }
   .aufmacher { padding-bottom: var(--space-lg); }
   .abschnitt { padding-block: var(--space-xl); }
-  .abschnitt--fuge { padding-top: 0; }
+  .abschnitt--fuge { padding-top: var(--space-2xl); }
   .seitenkopf { padding-top: var(--space-xl); }
   .filter { padding: var(--space-lg); }
   .formular, .quittung { padding: var(--space-lg); }
@@ -426,3 +427,44 @@ input:disabled, select:disabled, textarea:disabled { opacity: 0.55; cursor: not-
 .seitenkopf--werben .feld:first-child { justify-content: center; }
 th, caption, legend, dt, b, strong { font-weight: 500; }
 .gruppe legend, .monat__kopf { font-weight: var(--display-weight); }
+
+/* Maß: Onest läuft breit, deshalb in rem statt ch (etwa 70 Zeichen bei 18 px) */
+p:not([class]), .artikel__text > p, .reihe__text, .kopfblock__satz { max-width: 34rem; }
+.lead, .artikel__kopf .lead { max-width: 36rem; }
+
+/* Steine: ein hoher Stein links, zwei gestapelte rechts, verzahnt durch Tintenfugen */
+.steine { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-areas: "auf" "nach" "kal"; }
+.stein { min-width: 0; display: flex; flex-direction: column; gap: var(--space-md); }
+.stein--auf { grid-area: auf; }
+.stein--kal { grid-area: kal; border-top: var(--rule-bar) solid var(--color-ink); margin-top: var(--space-xl); padding-top: var(--space-lg); }
+.stein--nach { grid-area: nach; border-top: var(--rule-bar) solid var(--color-ink); margin-top: var(--space-lg); padding-top: var(--space-xs); }
+@media (min-width: 60rem) {
+  .steine { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); grid-template-areas: "auf kal" "auf nach"; grid-template-rows: auto 1fr; }
+  .stein--auf { padding-right: var(--space-xl); }
+  .stein--kal, .stein--nach { margin-top: 0; padding-left: var(--space-xl); border-left: var(--rule-bar) solid var(--color-ink); }
+  .stein--kal { border-top: 0; padding-top: 0; padding-bottom: var(--space-lg); }
+  .stein--nach { padding-top: var(--space-lg); }
+}
+
+/* Kalenderboden: der Monat als Fliesen, Fugen in Tinte */
+.kb { width: 100%; border-collapse: collapse; table-layout: fixed; font-variant-numeric: tabular-nums; }
+.kb caption { text-align: left; font-weight: 500; padding-bottom: var(--space-xs); }
+.kb th { padding-bottom: var(--space-2xs); font-size: var(--text-sm); font-weight: 500; color: var(--color-muted); text-align: left; }
+.kb abbr { text-decoration: none; }
+.kb td { height: 44px; padding: 0; border: var(--rule-bar) solid var(--color-ink); background: var(--color-plate); vertical-align: top; }
+.kb td.leer { background: var(--color-paper-2); }
+.kb--gross td { height: 56px; }
+.kb__tag { display: block; padding: var(--space-2xs) var(--space-xs); font-size: var(--text-label); font-weight: 500; }
+.kb td.vorbei .kb__tag { color: var(--color-muted); font-weight: 400; }
+.kb td.fest { background: var(--color-ink); }
+.kb td.fest a { display: block; height: 100%; min-height: 44px; color: var(--color-paper); text-decoration: none; }
+.kb td.fest a:hover .kb__tag { text-decoration: underline; text-decoration-color: var(--color-accent); }
+.kb td.fest.vorbei { background: var(--color-ink-2); }
+.kb td.fest.vorbei .kb__tag { color: var(--color-paper); }
+.kb td.heute { box-shadow: inset 0 calc(-1 * var(--space-2xs)) 0 var(--color-accent); }
+.kb td.heute .kb__tag { color: var(--color-accent); font-weight: 600; }
+.kb__liste { list-style: none; margin: 0; padding: 0; }
+.kb__liste li { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); gap: var(--space-md); padding-block: var(--space-sm); border-bottom: var(--rule-hair) solid var(--color-rule); }
+.kb__liste a { font-weight: 500; }
+.kb-paar { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-lg); }
+@media (min-width: 48rem) { .kb-paar { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

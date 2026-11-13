@@ -467,7 +467,6 @@ def verzeichnis_eintrag():
           <tr><th scope="row">Öffnungszeiten</th><td>{fehlt("fehlt")}</td></tr>
         </tbody>
       </table>
-      <p class="sheet__note">Die Angaben trägt der Inhaber ein.</p>
     </figure>
     <div class="profil__text">
       <figure class="pic">
@@ -476,7 +475,7 @@ def verzeichnis_eintrag():
       </figure>
       <h2>Über das Restaurant</h2>
       <p>Vater und Sohn kochen Küche aus Sri Lanka: Currys, Biryani, Dosa und Idly, Devil-Gerichte und vor allem Parotta.</p>
-      <h2 class="profil__h">In Berichten auf tamil.de</h2>
+      <h2 class="profil__h">Im Bericht</h2>
       <ol class="weiter__liste">
         <li><time class="num" datetime="{d.isoformat()}">{kurz(d)}</time><a href="artikel-37.html">{e(b["titel"])}</a></li>
       </ol>
