@@ -5,6 +5,11 @@ Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
 ## 13.11.2026
 
+- **Ja zu allem (21:50):** F0–F4 mit allen Vorschlägen, Regelwerk Social Fassung 1; Gedenk-Sperre für alle
+  Terminquellen (dann Tempel Backnang an, mit Festauswahl `params.nur_titel`); Veranstalter STCC gesperrt
+  (`[blocklist] veranstalter`); dein-dein.de an. Design: keine Auswahl, mehrere fertige Linien (A Tagesblatt, B
+  Kalenderblatt, C Aushang, D Terrazzo), Luis wählt. Nicht automatisch: Freigabe der Rückblick-Entwürfe, Echtbetrieb
+  neuer Funktionen, Tore B1–B3. · Luis (`docs/abnahme/2026-11-13-ja-zu-allem.md`)
 - **Design aller bisherigen Runden abgelehnt, Neugestaltung mit Hallmark:** `mix-ordnung`, `mix-feed` und alles davor
   gelten als „komplett generisch“. Neuer Brief `design/brief-v3.md`; gestaltet wird mit dem Hallmark-Skill (Floor,
   Reflex-Gates, `sloplint --render`, Prüfung aus frischem Kontext). Der Hallmark-Floor geht den alten Regeln aus
