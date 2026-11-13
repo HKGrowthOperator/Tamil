@@ -404,11 +404,12 @@ GEDENKEN = event("Maaveerar-Gedenken in Bern", "https://swisstamilinfo.ch/bern-g
                  "+12d", "Festhalle Bern", T.ZUSAMMENFASSUNG_GEDENKEN, ort="Bern")
 SZENARIEN += [
     # ---- Eingang: Einsendungen der Website (Festlegung F1) ----
-    Szenario(80, "Termin einreichen bis in den Kalender (übernehmen, freigeben, Plugin-Meta)", "Eingang", [],
+    Szenario(80, "Termin mit Bild einreichen bis in den Kalender (übernehmen, Lizenz, freigeben, Plugin-Meta)", "Eingang", [],
              nachher="eingang_kalender", erwartet={"aufrufe": 1, "rolle_anzahl": {"eingang": 1}, "entwuerfe": 1,
              "veroeffentlicht": 1, "stats": {"eingang_neu": 1, "eingang_vorbereitet": 1, "eingang_modell": 1,
                                              "hinweise": 0, "vermerk": 1, "wp_uebernommen": 1, "veroeffentlicht_wp": 1,
-                                             "kalender_vollstaendig": 1, "ohne_personendaten": 1}}),
+                                             "kalender_vollstaendig": 1, "ohne_personendaten": 1,
+                                             "bild_ohne_sperre": 1, "bild_gesendet": 1, "bild_lizenz_wp": 1}}),
     Szenario(81, "Derselbe Termin zweimal eingereicht: mögliche Dublette", "Eingang", [], nachher="eingang_dublette",
              erwartet={"aufrufe": 2, "stats": {"erste_ohne_dublette": 1, "zweite_dublette": 1}}),
     Szenario(82, "Schalter Eingang an: nichts abgeholt, nichts verloren", "Eingang", [], nachher="eingang_stopp",

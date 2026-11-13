@@ -54,6 +54,7 @@ class FakeWordPressEingang:
         self.aufrufe: list[tuple[str, str]] = []
         self.abbruch_nach_senden: set[str] = set()  # Vorgang: Status wird gesetzt, dann bricht die Verbindung ab
         self.netzfehler = False  # jeder Aufruf scheitert, bevor er WordPress erreicht
+        self.status_antwort: dict[str, tuple[int, dict]] = {}  # Vorgang → feste Antwort auf POST …/status
         self.beitraege: list[dict] = []  # POST /beitrag (Veröffentlichen über das Plugin), für den Weg bis zum Kalender
 
     # ---- Website-Seite (was das Formular anlegt) ---------------------------------------------------------------
@@ -112,6 +113,8 @@ class FakeWordPressEingang:
                 return Antwort(200, {"vorgangsnummer": z["vorgangsnummer"], "typ": z["bild"]["typ"], "groesse": len(daten),
                                      "sha256": hashlib.sha256(daten).hexdigest(),
                                      "daten_base64": base64.b64encode(daten).decode()})
+            if method == "POST" and teile[2:] == ["status"] and z["vorgangsnummer"] in self.status_antwort:
+                return Antwort(*self.status_antwort[z["vorgangsnummer"]])
             if method == "POST" and teile[2:] == ["status"]:
                 return self._status(z, (json or {}).get("status", ""))
         return _fehler("rest_no_route", 404)

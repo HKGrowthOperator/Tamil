@@ -19,7 +19,8 @@ from .rechte import darf, recht_noetig
 eingang_bp = Blueprint("eingang", __name__)
 
 ANSICHTEN = (("offen", "Offen"), ("abgeschlossen", "Abgeschlossen"), ("alle", "Alle"))
-_EMAIL_RE = re.compile(r"[^@\s<>\"'()]+@[^@\s<>\"'()]+\.[^@\s<>\"'()]+")
+# nur schlichte Adressen: kein ?, &, = oder Leerzeichen (sonst ließen sich bcc, body oder weitere Empfänger einschleusen)
+_EMAIL_RE = re.compile(r"[A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9-]{1,63}(?:\.[A-Za-z0-9-]{1,63})+")
 
 
 def _client():
@@ -65,8 +66,8 @@ def liste():
 @eingang_bp.get("/eingang/<vorgang>")
 def einsendung(vorgang: str):
     e = _oder_404(vorgang)
-    vorschlag = e["entwurf"] or eingang.regel_vorbereitung(e)[1]
-    return render_template("einsendung.html", e=e, vorschlag=vorschlag, felder=eingang.FELDER[e["art"]],
+    entwurf = e["entwurf"] or eingang.regel_vorbereitung(e)[1]  # das Formular immer aus den Feldern
+    return render_template("einsendung.html", e=e, vorschlag=entwurf, modell=e.get("modell_vorschlag"), felder=eingang.FELDER[e["art"]],
                            arten=eingang.ARTEN, status_label=eingang.STATUS_LABEL, vermerk=eingang.VERMERK,
                            mailto=mailto(e) if darf("eingang_entscheiden") else "",
                            datum_text=eingang.datum_text, lokal=eingang._lokal,
@@ -77,7 +78,12 @@ def einsendung(vorgang: str):
 @recht_noetig("eingang_entscheiden")
 def uebernehmen(vorgang: str):
     _oder_404(vorgang)
-    felder = {k: request.form.get(k, "") for k in ("titel", "teaser", "text", "event_datum", "event_ort", "ticket_url")}
+    felder = {k: request.form.get(k, "") for k in ("titel", "teaser", "text", "event_datum", "event_ort", "ticket_url",
+                                                   "vorlage")}
+    if felder["event_datum"] and not eingang.EVENT_DATUM_RE.fullmatch(felder["event_datum"].strip()):
+        abort(400, "Beginn bitte im Format JJJJ-MM-TTTHH:MM.")
+    if felder["vorlage"] not in ("", "felder", "modell"):
+        abort(400, "Unbekannte Vorlage.")
     try:
         did = eingang.uebernehmen(get_store(), current_app.extensions["settings"], vorgang, von=session.get("user", ""),
                                   felder=felder, client=_client())

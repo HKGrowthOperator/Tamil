@@ -7,7 +7,7 @@ from __future__ import annotations
 from collections import Counter
 from datetime import datetime, timedelta, timezone
 
-from .. import eingang, publisher, schalter
+from .. import eingang, lizenz, publisher, schalter
 from ..wordpress import TamilRadarClient
 from ..workflow import repo
 from .wp_eingang import FakeWordPressEingang
@@ -39,7 +39,7 @@ def bis_kalender(ctx, sz, now: datetime) -> dict:
     """Termin einreichen → Eingang mit Hinweisen → bearbeiten → übernehmen → freigeben → im Kalender (Plugin-Meta)."""
     store, wp = ctx.store, FakeWordPressEingang()
     c = _client(wp)
-    v = wp.einreichen("event", termin(now))
+    v = wp.einreichen("event", termin(now), bild=_foto(), bild_typ="image/jpeg")
     out = Counter({f"eingang_{k}": n for k, n in eingang.lauf(store, c, ctx.claude, jetzt=now).items()})
     e = eingang.holen(store, v)
     out["hinweise"] = len(e["hinweise"])
@@ -48,14 +48,30 @@ def bis_kalender(ctx, sz, now: datetime) -> dict:
     d = store.get_draft(did)
     out["vermerk"] = int(eingang.VERMERK in d["hinweise"])
     out["wp_uebernommen"] = int(wp.zeile(v)["status"] == "uebernommen")
+    out["bild_ohne_sperre"] = int(bool(d["bild_datei"]) and lizenz.sperre(store, d) == "")
     store.set_status(did, "freigeben", von="priya")
     publisher.publish_approved(ctx.settings, store, wp=c)
     out["veroeffentlicht_wp"] = len(wp.beitraege)
     meta = wp.beitraege[0]["meta"] if wp.beitraege else {}
     out["kalender_vollstaendig"] = int(all(meta.get(k) for k in ("event_datum", "event_ort", "event_preis",
                                                                  "event_veranstalter", "event_ende")))
+    out["bild_gesendet"] = int(bool(wp.beitraege and wp.beitraege[0].get("bild", {}).get("daten")))
+    out["bild_lizenz_wp"] = int(meta.get("bild_lizenz") == "nutzungsrecht")
     out["ohne_personendaten"] = _ohne_personendaten(store)
     return dict(out)
+
+
+def _foto() -> bytes:
+    """JPEG mit EXIF (Hersteller): wird beim Übernehmen ohne Metadaten neu gespeichert."""
+    import io
+
+    from PIL import Image
+
+    buf = io.BytesIO()
+    ex = Image.Exif()
+    ex[0x010F] = "Kamera"
+    Image.new("RGB", (1600, 900), (180, 40, 42)).save(buf, "JPEG", exif=ex)
+    return buf.getvalue()
 
 
 def dublette(ctx, sz, now: datetime) -> dict:

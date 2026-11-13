@@ -21,7 +21,7 @@
     <tr><th scope="row">{{ label }}{% if pflicht %}*{% endif %}</th><td>
       {% set wert = e.felder.get(feld) %}
       {% if not wert %}<span class="leise">–</span>
-      {% elif feld in ('ticket_link', 'link') %}<a href="{{ wert|safe_url }}" target="_blank" rel="nofollow noopener">{{ wert }}</a>
+      {% elif feld in ('ticket_link', 'link') %}{% if wert|safe_url %}<a href="{{ wert|safe_url }}" target="_blank" rel="nofollow noopener">{{ wert }}</a>{% else %}{{ wert }} <span class="badge hinweis">keine gültige Adresse</span>{% endif %}
       {% elif feld in ('beginn', 'ende') %}{{ datum_text(wert) or wert }}
       {% else %}{{ wert }}{% endif %}
     </td></tr>
@@ -50,7 +50,7 @@
 {% if e.status == 'vorbereitet' and darf('eingang_entscheiden') %}
 {% if vorschlag and e.art in ('event', 'beitrag') %}
 <section class="karte">
-  <h2>Entwurf <small class="leise">{{ 'vom Agenten' if vorschlag.quelle == 'modell' else 'aus den Feldern' }}</small></h2>
+  <h2>Entwurf <small class="leise">aus den Angaben des Einsenders</small></h2>
   <p class="badge roh">{{ vermerk }}</p>
   <form method="post" action="/eingang/{{ e.vorgangsnummer }}/uebernehmen" data-confirm="Als Entwurf übernehmen? Danach gilt der normale Freigabeweg.">
     <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
@@ -68,6 +68,19 @@
     <button class="primaer">Als Entwurf übernehmen</button>
   </form>
 </section>
+{% if modell %}
+<section class="karte">
+  <h2>Vorschlag des Agenten <small class="leise">nur auf Klick, geprüft gegen die Einsendung</small></h2>
+  <p class="leise">Der Agent hat den Text umformuliert. Jede Zahl, jedes Datum, jeder Name und jede Adresse darin steht in der Einsendung; sonst wäre der Vorschlag verworfen worden. Bitte trotzdem lesen.</p>
+  <p><b>{{ modell.titel }}</b></p>
+  {% if modell.teaser %}<p>{{ modell.teaser }}</p>{% endif %}
+  {% for a in modell.absaetze %}<p>{{ a }}</p>{% endfor %}
+  <form method="post" action="/eingang/{{ e.vorgangsnummer }}/uebernehmen" data-confirm="Mit dem Vorschlag des Agenten übernehmen? Danach gilt der normale Freigabeweg.">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="vorlage" value="modell">
+    <button>Mit diesem Vorschlag übernehmen</button>
+  </form>
+</section>
+{% endif %}
 {% endif %}
 <section class="karte">
   <h2>Entscheiden</h2>

@@ -198,7 +198,8 @@ def test_modell_rolle_eingang_ohne_kontaktdaten_und_gemessen(settings, store, wp
     usage = store.db.execute("SELECT rolle, status FROM agent_usage").fetchall()
     assert [tuple(u) for u in usage] == [("eingang", "ok")]
     e = eingang.liste(store)[0]
-    assert e["entwurf"]["quelle"] == "modell" and e["entwurf"]["titel"]
+    assert e["entwurf"]["quelle"] == "regeln"  # das Formular nimmt immer den Entwurf aus den Feldern
+    assert e["modell_vorschlag"]["quelle"] == "modell" and e["modell_vorschlag"]["titel"]
 
 
 def test_modell_mit_erfundener_angabe_wird_verworfen(settings, store, wp):
