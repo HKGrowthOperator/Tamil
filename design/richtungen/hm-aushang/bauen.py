@@ -96,6 +96,11 @@ def datumsblock(d, extra=None, naechster=False):
             f'<span class="wochentag">{TAGE[d.weekday()]}</span>{zusatz}</span></time>')
 
 
+def erster_satz(t):
+    m = re.search(r"(?<=[a-zäöüß“”)])\. ", t)
+    return t[:m.start() + 1] if m else t
+
+
 def karte_url(ort):
     return "https://www.openstreetmap.org/search?query=" + urllib.parse.quote(ort)
 
@@ -122,7 +127,7 @@ def zettel(k, klein=False, mit_wer=True):
 def meldung(sid, mit_satz=False):
     b = BEI[sid]
     d = datum_iso(sid)
-    satz = f'<p class="stueck-satz">{e(b["teaser"].split(". ")[0])}.</p>' if mit_satz else ""
+    satz = f'<p class="stueck-satz">{e(erster_satz(b["teaser"]))}</p>' if mit_satz else ""
     return (f'<li class="meldung"><h3><a href="{link_zu(sid)}">{e(b["titel"])}</a></h3>{satz}'
             f'<p class="meta">{e(b["ort"])}, <time datetime="{d.isoformat()}">{d.day}.\u00a0{MONATE[d.month - 1]}\u00a0{d.year}</time></p></li>')
 
@@ -225,7 +230,7 @@ def startseite():
     nachrichten = (f'<section class="abschnitt" id="nachrichten" aria-labelledby="h-nach"><div class="container">'
                    f'<div class="kopfblock"><h2 id="h-nach">Nachrichten</h2></div>'
                    f'<div class="paar paar--7-5"><article class="stueck">{figur(BEI[85], "bild bild--breit", sizes="(min-width: 64rem) 55vw, 100vw")}'
-                   f'<h3><a href="{link_zu(85)}">{e(BEI[85]["titel"])}</a></h3><p class="stueck-satz">{e(BEI[85]["teaser"].split(". ")[0])}.</p>'
+                   f'<h3><a href="{link_zu(85)}">{e(BEI[85]["titel"])}</a></h3><p class="stueck-satz">{e(erster_satz(BEI[85]["teaser"]))}</p>'
                    f'<p class="meta">{e(BEI[85]["ort"])}, {datum_iso(85).day}.\u00a0August\u00a02026</p></article>'
                    f'<ul class="liste">{meldung(87)}{meldung(51)}</ul></div></div></section>')
 
@@ -305,7 +310,7 @@ def rubrik_zeile(sid):
     d = datum_iso(sid)
     return (f'<li class="rubrik-zeile">{figur(b, "bild bild--klein", sizes="(min-width: 64rem) 25vw, 100vw")}'
             f'<div class="rubrik-text"><h3><a href="{link_zu(sid)}">{e(b["titel"])}</a></h3>'
-            f'<p class="stueck-satz">{e(b["teaser"].split(". ")[0])}.</p><p class="meta">{e(b["ort"])}, {d.day}.\u00a0{MONATE[d.month - 1]}\u00a0{d.year}</p></div></li>')
+            f'<p class="stueck-satz">{e(erster_satz(b["teaser"]))}</p><p class="meta">{e(b["ort"])}, {d.day}.\u00a0{MONATE[d.month - 1]}\u00a0{d.year}</p></div></li>')
 
 
 def rubrik():
