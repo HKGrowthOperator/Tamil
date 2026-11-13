@@ -191,10 +191,11 @@ class Fetched:
 
 
 class HTTPError(requests.HTTPError):
-    def __init__(self, status: int, url: str):
+    def __init__(self, status: int, url: str, retry_after: str = ""):
         super().__init__(f"HTTP {status} für {url}")
         self.status = status
         self.url = url
+        self.retry_after = retry_after  # Kopfzeile Retry-After (Sekunden oder Datum), leer = keine
 
 
 def safe_get(
@@ -247,7 +248,7 @@ def safe_get(
             if resp.status_code == 304:
                 return Fetched(status=304, content=b"", **meta)
             if resp.status_code >= 400:
-                raise HTTPError(resp.status_code, current)
+                raise HTTPError(resp.status_code, current, resp.headers.get("Retry-After", "") or "")
             if accept and ctype and not ctype.lower().startswith(accept):
                 raise WrongContentType(f"{ctype} statt {'/'.join(accept)}: {current}")
             grenze = next((n for typ, n in (max_bytes_je_typ or {}).items() if ctype.lower().startswith(typ)),

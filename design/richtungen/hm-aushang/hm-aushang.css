@@ -1,7 +1,7 @@
 /* Hallmark · shape: Aushang (a notice board: ruled, dated notices, the lead story beside its picture) · genre: editorial · theme: Ink (by request) · job: visit · draw: c53a1a
- * hero: stage · nav: banner over a bar · footer: colophon block · imagery: photographs, the user's own (20 Rückblick pictures, Commons, credited at each picture), muted · signature: the date as the notice's head, a figure in Epilogue 700 on every dated item, the next one in logo red · ink: paper
+ * hero: index · nav: edge-aligned bar, the wordmark and the rubric links · footer: colophon block · imagery: photographs, the user's own (20 Rückblick pictures, Commons, credited at each picture), muted · signature: the notice slip: date, how long it still hangs, title, place, and a perforated tear-off strip (WhatsApp, calendar, map); the next one in logo red · ink: paper
  * axes: light/grotesk-sans/chromatic-red · posture: restrained · contrast: pass · fold: pass · v2.0.0 */
-/* Hallmark · pre-emit critique: P4 H4 E4 S4 R5 V4 · weakest: S, a ruled news list fits any paper; the date block, the next date in logo red and the WhatsApp line on every notice make it the community board */
+/* Hallmark · pre-emit critique: P4 H4 E4 S4 R5 V4 · weakest: S, a ruled news list fits any paper; the slips with their tear-off strip are the community board and appear only for real coming dates */
 /* Hallmark · waive 22 · ink and greys at zero chroma · a notice board is printed in plain black, the logo red is the only hue */
 /* Hallmark · waive 49b · headline links run two to four lines on a phone · a story title on the community board is the link and keeps its full wording */
 /* Hallmark · dismissed 58 · the home page lists the week's notices and the hero head is the article's own eight-word title; these are headlines set as the editors wrote them, not marketing copy */
@@ -9,7 +9,7 @@
 /* Hallmark · waive 79 · page heads of the sub-pages are banners with the list right under them · the gap on the second community page is the banner's own air, never filled with copy */
 /* Hallmark · waive 77 · the Impressum and the list of mentions on a directory profile are short reference blocks · they carry legal and source facts, not a display section */
 /* Hallmark · waive 71 · board rows set each title at the top of its own ruled row beside its date · the rule above a notice is its edge, the space below belongs to the place line and the share link */
-/* Hallmark · swap: draw dealt Split Studio, built as Aushang rows (the material is a board of dated notices); the banner does not retract, the page stays still */
+/* Hallmark · swap: draw dealt Split Studio and a Stage hero, built as Aushang (the material is a board of dated notices): the lead story beside the board, no banner, the page stays still */
 @import url("./tokens.css");
 @import url("./base.css");
 
@@ -52,12 +52,14 @@ a:hover { text-decoration-color: var(--color-accent); }
 .naechstes time { font-weight: 600; color: var(--color-accent); }
 .leiste { border-bottom: 1px solid var(--color-ink); background: var(--color-paper); }
 .leiste-innen { display: flex; align-items: center; gap: var(--space-lg); min-height: 76px; position: relative; }
-.logo { display: inline-flex; flex-shrink: 0; }
+.logo { display: inline-flex; align-items: center; min-height: 48px; flex-shrink: 0; }
 .logo img { height: 48px; width: auto; }
+.hauptnav { margin-left: auto; }
 .hauptnav ul { display: flex; gap: var(--space-md); margin: 0; padding: 0; list-style: none; }
 .hauptnav a, .menue a { display: inline-flex; align-items: center; min-height: 44px; font-size: var(--text-md); text-decoration: none; white-space: nowrap; }
 .hauptnav a:hover { text-decoration: underline; text-decoration-color: var(--color-accent); }
 .hauptnav a[aria-current="page"], .menue a[aria-current="page"] { color: var(--color-accent); }
+.hauptnav li:last-child { padding-left: var(--space-md); border-left: 1px solid var(--color-rule); }
 .kopf-aktion { margin-left: auto; }
 .menue { display: none; margin-left: auto; }
 .menue summary { display: inline-flex; align-items: center; min-height: 48px; padding: 0 var(--space-lg); border: 1px solid var(--color-muted); border-radius: var(--radius-control); background: var(--color-paper-2); color: var(--color-ink); font-weight: 600; cursor: pointer; list-style: none; }
@@ -67,7 +69,7 @@ a:hover { text-decoration-color: var(--color-accent); }
 .menue ul { margin: 0; padding: 0; list-style: none; }
 .menue li + li { border-top: 1px solid var(--color-rule-2); }
 .menue a { width: 100%; }
-@media (max-width: 75rem) {
+@media (max-width: 76rem) {
   .hauptnav, .kopf-aktion { display: none; }
   .menue { display: block; }
 }
@@ -113,7 +115,7 @@ a:hover { text-decoration-color: var(--color-accent); }
 
 /* ---------- Die Tafel: Aushänge mit Datum */
 .tafel { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--color-ink); }
-.notiz { display: grid; grid-template-columns: 9.5rem minmax(0, 1fr) auto; column-gap: var(--space-lg); padding-block: var(--space-lg); border-bottom: 1px solid var(--color-rule); }
+.notiz { display: grid; grid-template-columns: 7rem minmax(0, 1fr) auto; column-gap: var(--space-lg); padding-block: var(--space-lg); border-bottom: 1px solid var(--color-rule); }
 .notiz .datum { grid-row: 1 / span 2; }
 .notiz-text { min-width: 0; }
 .notiz h3 { font-size: var(--text-title); max-width: 34ch; }
@@ -124,13 +126,13 @@ a:hover { text-decoration-color: var(--color-accent); }
 .zustand { grid-column: 3; justify-self: end; font-size: var(--text-sm); font-weight: 600; color: var(--color-ink-2); white-space: nowrap; }
 .zustand--signal { color: var(--color-accent); }
 .teilen { grid-column: 2; justify-self: start; margin-top: var(--space-2xs); font-size: var(--text-sm); white-space: nowrap; }
-.datum { display: flex; align-items: flex-start; gap: var(--space-sm); color: var(--color-ink); }
+.datum { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-2xs); color: var(--color-ink); }
 .datum .ziffer { font-size: var(--text-figure); font-weight: 700; line-height: 0.9; letter-spacing: -0.03em; min-width: 1.25em; }
-.datum .mw { display: grid; padding-top: 0.15em; font-size: var(--text-sm); line-height: 1.3; }
+.datum .mw { display: grid; font-size: var(--text-sm); line-height: 1.3; }
 .datum .monat { font-weight: 600; }
 .datum .wochentag, .datum .mw span:last-child:not(.monat) { color: var(--color-ink-2); }
 .datum--naechster .ziffer, .datum--naechster .monat { color: var(--color-accent); }
-.tafel--knapp .notiz { padding-block: var(--space-md); grid-template-columns: 8rem minmax(0, 1fr) auto; }
+.tafel--knapp .notiz { padding-block: var(--space-md); grid-template-columns: 7rem minmax(0, 1fr) auto; }
 .tafel--knapp .datum .ziffer { font-size: var(--text-2xl); }
 .tafel--knapp h3 { font-size: var(--text-lg); line-height: 1.3; }
 
@@ -176,8 +178,8 @@ a:hover { text-decoration-color: var(--color-accent); }
 .eintrag h3 { font-size: var(--text-lg); }
 .eintrag p { font-size: var(--text-md); color: var(--color-ink); }
 .eintrag p span { font-size: var(--text-sm); color: var(--color-ink-2); }
-.filter { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) auto; gap: var(--space-lg); padding: var(--space-xl); background: var(--color-paper-2); border: 1px solid var(--color-rule); border-radius: var(--radius-card); }
-.filter .feld--breit, .filter .seg { grid-column: 1 / -1; }
+.filter { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)) auto; gap: var(--space-lg); padding-top: var(--space-lg); border-top: 1px solid var(--color-ink); }
+.filter .feld--breit { grid-column: 1 / -1; }
 .feld--knopf { align-self: end; padding-bottom: calc(1lh + var(--space-2xs)); }
 .zaehler { margin-block: var(--space-xl) var(--space-md); font-weight: 600; color: var(--color-ink); }
 .leer { padding-block: var(--space-xl); border-bottom: 1px solid var(--color-rule); }
@@ -207,23 +209,27 @@ a:hover { text-decoration-color: var(--color-accent); }
 .pflicht { margin-left: var(--space-xs); font-size: var(--text-sm); font-weight: 400; color: var(--color-muted); }
 .feld input:not([type="checkbox"]):not([type="radio"]), .feld select, .feld textarea { width: 100%; min-height: 52px; padding: 0 var(--space-md); border: 1px solid var(--color-muted); border-radius: var(--radius-control); background: var(--color-paper); color: var(--color-ink); font-size: var(--text-md); outline: 2px solid transparent; outline-offset: 2px; }
 .feld textarea { padding-block: var(--space-sm); min-height: 10rem; line-height: 1.5; resize: vertical; }
-.feld input[type="file"] { padding-block: var(--space-sm); }
+.feld input[type="file"] { padding: var(--space-xs); min-height: 60px; }
+.feld input[type="file"]::file-selector-button { min-height: 44px; margin-right: var(--space-md); padding: 0 var(--space-lg); border: 1px solid var(--color-ink); border-radius: var(--radius-control); background: var(--color-paper-2); color: var(--color-ink); font: 600 var(--text-md)/1 var(--font-body); cursor: pointer; }
 .feld input:focus-visible, .feld select:focus-visible, .feld textarea:focus-visible { outline-color: var(--color-focus); }
 .feld input:disabled, .feld select:disabled, .feld textarea:disabled { opacity: 0.55; cursor: not-allowed; }
 .feld [aria-invalid="true"] { border-color: var(--color-error); }
 .hilfe { min-height: 1lh; margin-top: var(--space-2xs); font-size: var(--text-sm); color: var(--color-muted); }
 .hilfe--form { color: var(--color-ink); font-weight: 600; }
-.feld--check { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-sm); align-items: start; }
+.feld--check { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-sm); align-items: start; min-height: 44px; }
+.feld--check label { padding-block: var(--space-2xs); }
 .feld--check input { width: 24px; height: 24px; margin: var(--space-3xs) 0 0; accent-color: var(--color-ink); }
 .feld--check label { font-weight: 400; color: var(--color-ink-2); margin: 0; }
 .feld--check input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 .seg { display: flex; flex-wrap: wrap; gap: var(--space-xs); margin: 0; padding: 0; border: 0; min-width: 0; }
 .seg legend { width: 100%; padding: 0; float: left; }
+.seg { flex-direction: column; gap: 0; }
 .seg input { position: absolute; opacity: 0; width: 1px; height: 1px; }
-.seg label { display: inline-flex; align-items: center; min-height: 48px; padding: 0 var(--space-lg); border: 1px solid var(--color-muted); border-radius: var(--radius-control); background: var(--color-paper); color: var(--color-ink); font-weight: 600; cursor: pointer; transition: background-color var(--dur-micro) var(--ease-out); }
-.seg label:hover { background: var(--color-paper-3); }
-.seg input:checked + label { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-paper); }
-.seg input:focus-visible + label { outline: 2px solid var(--color-focus); outline-offset: 3px; }
+.seg label { display: flex; align-items: center; gap: var(--space-sm); min-height: 44px; padding-block: var(--space-2xs); border-bottom: 1px solid var(--color-rule-2); color: var(--color-ink); font-weight: 400; cursor: pointer; }
+.seg label::before { content: ""; flex-shrink: 0; width: 20px; height: 20px; border: 1px solid var(--color-muted); border-radius: 50%; background: var(--color-paper); box-shadow: inset 0 0 0 4px var(--color-paper); }
+.seg input:checked + label { font-weight: 600; }
+.seg input:checked + label::before { border-color: var(--color-ink); background: var(--color-ink); }
+.seg input:focus-visible + label { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .seg input:disabled + label { opacity: 0.55; cursor: not-allowed; }
 .falle { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .absenden { display: grid; gap: var(--space-sm); justify-items: start; }
@@ -291,15 +297,15 @@ a:hover { text-decoration-color: var(--color-accent); }
 
 /* ---------- Monate im Festkalender */
 .monate ul { display: flex; flex-wrap: wrap; column-gap: var(--space-lg); margin: 0 0 var(--space-xl); padding: 0; list-style: none; }
-.monate a { display: inline-flex; align-items: center; min-height: 44px; }
-.monat { margin-top: var(--space-2xl); }
+.monate a { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; min-width: 44px; padding-inline: var(--space-xs); }
+.monatsblock { margin-top: var(--space-2xl); }
 .monat-titel { font-size: var(--text-2xl); margin-bottom: var(--space-md); }
 .heute { padding-block: var(--space-sm); border-bottom: 2px solid var(--color-accent); font-size: var(--text-sm); font-weight: 600; color: var(--color-accent); }
 
 /* ---------- Rubrik */
 .rubrik-liste { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--color-ink); }
 .rubrik-zeile { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); column-gap: var(--space-2xl); padding-block: var(--space-xl); border-bottom: 1px solid var(--color-rule); }
-.rubrik-text { display: grid; grid-template-columns: 9.5rem minmax(0, 1fr); column-gap: var(--space-lg); align-content: start; }
+.rubrik-text { min-width: 0; }
 .rubrik-zeile h3 { font-size: var(--text-title); max-width: 34ch; }
 .rubrik-liste + .tafel { margin-top: var(--space-2xl); }
 .seitennav { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-lg); margin-top: var(--space-xl); }
@@ -313,7 +319,7 @@ a:hover { text-decoration-color: var(--color-accent); }
 .fuss .logo img { height: 40px; }
 .fuss-satz { color: var(--color-ink-2); max-width: 52ch; }
 .fuss-links { margin: 0; padding: 0; list-style: none; columns: 2; column-gap: var(--space-lg); }
-.fuss-links a { display: inline-flex; align-items: center; min-height: 44px; font-weight: 400; }
+.fuss-links a { display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; font-weight: 400; }
 
 /* ---------- Handy und Tablet */
 @media (max-width: 60rem) {
@@ -348,7 +354,6 @@ a:hover { text-decoration-color: var(--color-accent); }
   .datum .mw { padding-top: 0; }
   .zustand, .teilen { grid-column: 2; justify-self: start; }
   .zustand { margin-top: var(--space-xs); }
-  .rubrik-text { grid-template-columns: 5.25rem minmax(0, 1fr); column-gap: var(--space-md); }
   .gruppe { grid-template-columns: minmax(0, 1fr); }
   .angaben > div { grid-template-columns: minmax(0, 1fr); row-gap: var(--space-2xs); }
   .buchung-schritte > li { padding-left: 0; }
@@ -356,4 +361,60 @@ a:hover { text-decoration-color: var(--color-accent); }
   .orte { columns: 1; }
   .logo img { height: 40px; }
   .leiste-innen { min-height: 68px; }
+}
+
+/* ---------- Start: Aufmacher und das Brett nebeneinander */
+.start { padding-block: var(--space-xl) 0; }
+.start-raster { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--space-2xl); align-items: start; }
+.aufmacher-stueck { display: flex; flex-direction: column; }
+.aufmacher-stueck .bild { margin-top: var(--space-lg); }
+.brett { padding-top: var(--space-xs); }
+.aufmacher-stueck .rahmen { aspect-ratio: 16 / 9; }
+.aufmacher-titel { font-size: var(--text-display-s); max-width: 22ch; line-height: 1.08; }
+.aufmacher-titel a { text-decoration: none; font-weight: inherit; }
+.aufmacher-titel a:hover { text-decoration: underline; text-decoration-thickness: 2px; text-decoration-color: var(--color-accent); }
+.aufmacher-stueck .lead { margin-top: var(--space-md); }
+.aufmacher-stueck .meta { margin-top: var(--space-sm); display: flex; flex-wrap: wrap; column-gap: var(--space-lg); align-items: center; }
+.textlink { display: inline-flex; align-items: center; min-height: 44px; }
+.brett-titel { font-size: var(--text-2xl); padding-bottom: var(--space-sm); }
+
+/* ---------- Der Zettel: Aushang mit Abreißstreifen */
+.zettel-liste { display: grid; gap: var(--space-md); margin: 0; padding: 0; list-style: none; }
+.zettel-liste--quer { grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); gap: var(--space-lg); align-items: start; }
+.zettel { border: 1px solid var(--color-ink); border-radius: var(--radius-control); background: var(--color-paper); }
+.zettel-kopf { display: flex; flex-wrap: wrap; justify-content: space-between; column-gap: var(--space-md); padding: var(--space-md) var(--space-lg) 0; }
+.zettel-datum { font-weight: 700; color: var(--color-ink); }
+.zettel--naechster .zettel-datum { color: var(--color-accent); }
+.zettel-haengt { font-size: var(--text-sm); color: var(--color-ink-2); }
+.zettel-titel { padding: var(--space-xs) var(--space-lg) 0; font-size: var(--text-title); max-width: none; }
+.zettel-titel a { text-decoration: none; font-weight: inherit; }
+.zettel-titel a:hover { text-decoration: underline; text-decoration-color: var(--color-accent); }
+.zettel-ort { padding: var(--space-2xs) var(--space-lg) var(--space-md); color: var(--color-ink-2); }
+.abriss { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; padding: 0; list-style: none; border-top: 1px dashed var(--color-ink); }
+.abriss li + li { border-left: 1px dashed var(--color-muted); }
+.abriss a { display: flex; align-items: center; justify-content: center; min-height: 48px; font-size: var(--text-sm); text-decoration: none; }
+.abriss a:hover { text-decoration: underline; text-decoration-color: var(--color-accent); }
+.zettel--klein .zettel-titel { font-size: var(--text-lg); }
+
+/* ---------- Meldungen: Titel, darunter Ort und Datum klein */
+.liste { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--color-ink); }
+.meldung { padding-block: var(--space-md); border-bottom: 1px solid var(--color-rule); }
+.meldung h3 { font-size: var(--text-title); max-width: 40ch; }
+.meldung h3 a { text-decoration: none; font-weight: inherit; }
+.meldung h3 a:hover { text-decoration: underline; text-decoration-thickness: 2px; text-decoration-color: var(--color-accent); }
+.meldung .meta { margin-top: var(--space-2xs); }
+
+/* ---------- Kino: Film, wo, Städte */
+.filme-liste { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--color-ink); }
+.film-zeile { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 3fr) minmax(0, 5fr); column-gap: var(--space-lg); align-items: baseline; padding-block: var(--space-lg); border-bottom: 1px solid var(--color-rule); }
+.film-titel { font-size: var(--text-2xl); }
+.film-wo { font-weight: 600; color: var(--color-ink); }
+
+@media (max-width: 60rem) {
+  .start-raster, .film-zeile { grid-template-columns: minmax(0, 1fr); row-gap: var(--space-xs); }
+  .start-raster { row-gap: var(--space-xl); }
+  .filter { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 40rem) {
+  .logo img { height: 44px; }
 }

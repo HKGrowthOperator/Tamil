@@ -177,7 +177,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: var(--weight-head); 
 .tage.filme li { grid-template-columns: minmax(0, 22rem) minmax(0, 1fr); }
 .tage.filme .was { font-size: var(--text-h2); }
 .naechste .tage.filme li { grid-template-columns: minmax(0, 1fr); }
-.naechste .tage.filme .was { font-size: var(--text-title); }
+.naechste .tage.filme .was { font-size: var(--text-md); line-height: 1.35; }
 .naechste .tage.filme .wo { grid-column: 1; font-size: var(--text-md); }
 .kino-kurz-kopf { font-size: var(--text-lg); margin: var(--space-lg) 0 var(--space-2xs); }
 .naechste .stand { margin: 0 0 var(--space-sm); }
@@ -234,7 +234,8 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: var(--weight-head); 
 
 /* Artikel */
 .artikel-kopf { padding-block: var(--space-xl) var(--space-lg); }
-.artikel-kopf .wrap { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 9fr); gap: var(--space-md) var(--gap-columns); align-items: start; }
+.artikel-kopf .wrap { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 6fr) minmax(0, 3fr); gap: var(--space-md) var(--gap-columns); align-items: start; }
+.artikel-kopf .wrap > div { grid-column: 2 / -1; }
 .artikel-kopf .tag { grid-template-columns: minmax(0, 1fr); row-gap: var(--space-xs); }
 .artikel-kopf h1 { font-size: var(--text-h1); max-width: 24ch; }
 .artikel-kopf .ort { margin: 0 0 var(--space-xs); color: var(--color-muted); }
@@ -255,6 +256,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: var(--weight-head); 
 @media (max-width: 860px) {
   .artikel-kopf { padding-top: var(--space-lg); }
   .artikel-kopf .wrap { grid-template-columns: minmax(0, 1fr); }
+  .artikel-kopf .wrap > div { grid-column: 1; }
   .artikel-kopf .tag { grid-template-columns: auto minmax(0, 1fr); }
 }
 
@@ -479,7 +481,7 @@ ol.stand li.jetzt { color: var(--color-ink); font-weight: var(--weight-head); te
 .tage.strom .teaser { margin: var(--space-xs) 0 0; color: var(--color-ink-2); max-width: 62ch; }
 .tage.strom .daumen { margin: 0; }
 .tage.strom .daumen img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border-radius: var(--radius-card); background: var(--color-paper-3); }
-.tage.strom .daumen figcaption { margin-top: var(--space-2xs); font-size: var(--text-xs); line-height: 1.35; color: var(--color-muted); }
+.tage.strom .daumen figcaption { margin-top: var(--space-2xs); font-size: var(--text-sm); line-height: 1.35; color: var(--color-muted); }
 @media (max-width: 760px) {
   .tage.strom li, .tage.strom.mit-teaser li { grid-template-columns: 4.25rem minmax(0, 1fr); }
   .tage.strom .s-text { display: contents; }
@@ -500,3 +502,7 @@ ol.stand li.jetzt { color: var(--color-ink); font-weight: var(--weight-head); te
 .filter-mehr[open] { padding-bottom: var(--space-md); }
 .seg input:disabled + label { opacity: 0.55; cursor: not-allowed; }
 .seg input:disabled { cursor: not-allowed; }
+.feld input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), .feld select { height: 48px; line-height: 1.2; }
+
+@media (max-width: 760px) { .tage.strom .nur-breit, .tage.strom .nicht-handy { display: none; } }
+@media (min-width: 1100px) { .bild.aufmacher-bild img { aspect-ratio: 3 / 2; max-height: none; } }

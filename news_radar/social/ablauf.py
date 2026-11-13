@@ -46,12 +46,10 @@ def _zeit(wert: str | None) -> datetime | None:
     return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
 
 
-def transport_fuer(konf: Konfig, rw: regelwerk.Regelwerk | None = None):
-    """Live nur mit RADAR_SOCIAL_LIVE, allen Schlüsseln und – falls übergeben – freigegebenem Regelwerk; `senden`
-    prüft die Freigabe ohnehin noch einmal."""
-    if konf.live and (rw is None or regelwerk.freigegeben(rw)):
-        return GraphTransport(konf)
-    return TrockenTransport()
+def transport_fuer(konf: Konfig):
+    """Live nur mit RADAR_SOCIAL_LIVE und allen Schlüsseln. Die Freigabe des Regelwerks prüft `senden`: ohne sie
+    warten die Zeilen, statt trocken zu enden (sonst gingen sie nach der Freigabe nie mehr live)."""
+    return GraphTransport(konf) if konf.live else TrockenTransport()
 
 
 def _protokoll(store, zeile: dict, aktion: str, notiz: str = "", *, wer: str = SYSTEM, ausloeser: str = "dienst",
@@ -198,10 +196,13 @@ def _anlegen(store, settings, b: quelle.Beitrag, rw: regelwerk.Regelwerk, jetzt:
 
 # ---- Senden -------------------------------------------------------------------------------------
 
-def naechster_slot(store, kanal: str, rw: regelwerk.Regelwerk, jetzt: datetime) -> tuple[datetime, str]:
-    """Frühester zulässiger Zeitpunkt für `kanal` ab `jetzt` und der Grund, falls später (R5 Menge/Abstand, R6)."""
+def naechster_slot(store, kanal: str, rw: regelwerk.Regelwerk, jetzt: datetime,
+                   modus: str = "live") -> tuple[datetime, str]:
+    """Frühester zulässiger Zeitpunkt für `kanal` ab `jetzt` und der Grund, falls später (R5 Menge/Abstand, R6).
+    Gezählt wird nur, was im selben Modus hinausging: Trockenläufe verbrauchen keine echten Beiträge des Tages."""
     gesendet = sorted(_zeit(r[0]) for r in store.db.execute(
-        "SELECT sende_at FROM social_beitraege WHERE kanal = ? AND sende_at IS NOT NULL", (kanal,)))
+        "SELECT sende_at FROM social_beitraege WHERE kanal = ? AND sende_at IS NOT NULL AND modus = ?",
+        (kanal, modus)))
     t, grund = jetzt, ""
     for _ in range(20):
         if regelwerk.in_ruhezeit(t, rw):
@@ -292,15 +293,63 @@ def _verwaiste(store, jetzt: datetime) -> Counter:
     return stats
 
 
+SPERRE = "lauf"
+
+
+def sperre_nehmen(store, jetzt: datetime) -> bool:
+    """Ein Sendelauf zur Zeit (der Dienst startet nie doppelt, ein Lauf von Hand in der Konsole aber schon). Die
+    Sperre läuft nach VERWAIST ab, damit ein getöteter Lauf nichts für immer blockiert; das bedingte UPDATE ist der
+    wirksame Übergang (zwei Prozesse können nicht beide gewinnen)."""
+    with store.lock:
+        store.db.execute("INSERT OR IGNORE INTO social_stand (schluessel, wert, gesetzt) VALUES (?, NULL, ?)",
+                         (SPERRE, now_iso()))
+        cur = store.db.execute("UPDATE social_stand SET wert = ?, gesetzt = ? WHERE schluessel = ? AND "
+                               "(wert IS NULL OR wert < ?)", (_iso(jetzt + VERWAIST), now_iso(), SPERRE, _iso(jetzt)))
+        store.db.commit()
+    return cur.rowcount == 1
+
+
+def sperre_freigeben(store) -> None:
+    store._write("UPDATE social_stand SET wert = NULL WHERE schluessel = ?", (SPERRE,))
+
+
 def senden(store, settings, transport, jetzt: datetime, bild_url: Callable[[dict], str] | None = None) -> Counter:
     """Fällige Zeilen nach der Karenz hinausschicken: zuerst Instagram, danach Facebook. Trocken ohne Aufruf; live
-    nur, wenn die aktuelle Fassung des Regelwerks von KBS freigegeben ist."""
+    nur, wenn die aktuelle Fassung des Regelwerks von KBS freigegeben ist – sonst warten die Zeilen (kein Endstand)."""
+    if not sperre_nehmen(store, jetzt):
+        return Counter({"laeuft_schon": 1})
+    try:
+        return _senden(store, settings, transport, jetzt, bild_url)
+    finally:
+        sperre_freigeben(store)
+
+
+def _ohne_freigabe_halten(store, rw, jetzt: datetime) -> Counter:
+    """Live gewünscht, aktuelle Fassung aber nicht freigegeben: fällige Zeilen bleiben „geplant“ mit Grund und gehen
+    nach der Freigabe sofort live hinaus. Kein Aufruf an Meta, auch kein Abgleich."""
+    grund = f"Regelwerk Fassung {rw.fassung} nicht freigegeben (einmalige Freigabe durch KBS) – live wartet"
+    stats: Counter = Counter({"ohne_freigabe": 1})
+    for r in store.db.execute("SELECT * FROM social_beitraege WHERE kanal != 'whatsapp' AND status IN "
+                              "('karenz', 'geplant', 'pausiert') ORDER BY id").fetchall():
+        zeile = dict(r)
+        faellig = _zeit(zeile["geplant_fuer"] if zeile["status"] != "karenz" else zeile["karenz_bis"])
+        if (faellig is not None and faellig > jetzt) or zeile["wartet_grund"] == grund:
+            continue
+        cur = store._write("UPDATE social_beitraege SET status = 'geplant', geplant_fuer = ?, wartet_grund = ?, "
+                           "aktualisiert = ? WHERE id = ? AND status = ?",
+                           (_iso(faellig or jetzt), grund, now_iso(), zeile["id"], zeile["status"]))
+        if cur.rowcount == 1:
+            _protokoll(store, zeile, "social_angehalten", grund, regel_fassung=rw.fassung)
+            stats["angehalten"] += 1
+    return stats
+
+
+def _senden(store, settings, transport, jetzt: datetime, bild_url) -> Counter:
     stats: Counter = Counter()
     rw = regelwerk.aktuell(store)
-    if transport.live and not regelwerk.freigegeben(rw):
-        stats["ohne_freigabe"] += 1
-        transport = TrockenTransport()
     stats.update(_verwaiste(store, jetzt))
+    if transport.live and not regelwerk.freigegeben(rw):
+        return stats + _ohne_freigabe_halten(store, rw, jetzt)
     if transport.live:
         stats.update(_abgleichen(store, transport, jetzt))
     if transport.live and bild_url is None:
@@ -338,8 +387,10 @@ def _eine(store, settings, transport, rw, zeile: dict, jetzt: datetime, bild_url
     stats: Counter = Counter()
     kanal = zeile["kanal"]
     faellig = _zeit(zeile["geplant_fuer"] if zeile["status"] != "karenz" else zeile["karenz_bis"])
-    if faellig is not None and faellig > jetzt:
-        return stats
+    nur_regel = zeile["status"] == "geplant" and (zeile["wartet_grund"] or "").startswith(("R5", "R6"))
+    if faellig is not None and faellig > jetzt and not nur_regel:
+        return stats  # Karenz oder Wartezeit nach einem Fehler von Meta
+    # Wer nur wegen Menge oder Ruhezeit wartet, wird neu eingeplant (z. B. nach dem Wechsel von trocken auf live)
     if kanal == "facebook":
         ig = store.db.execute("SELECT status FROM social_beitraege WHERE wp_post_id = ? AND kanal = 'instagram'",
                               (zeile["wp_post_id"],)).fetchone()
@@ -349,7 +400,7 @@ def _eine(store, settings, transport, rw, zeile: dict, jetzt: datetime, bild_url
     if _r3_neu(store, rw, zeile, jetzt):
         stats["von_hand"] += 1
         return stats
-    slot, grund = naechster_slot(store, kanal, rw, jetzt)
+    slot, grund = naechster_slot(store, kanal, rw, jetzt, "live" if transport.live else "trocken")
     if slot > jetzt:
         if zeile["status"] != "geplant" or zeile["geplant_fuer"] != _iso(slot) or zeile["wartet_grund"] != grund:
             _setzen(store, zeile["id"], status="geplant", geplant_fuer=_iso(slot), wartet_grund=grund)
@@ -451,10 +502,29 @@ def _vor_aufruf(store, kanal: str) -> None:
 
 
 def _veroeffentlicht(store, zeile: dict, jetzt: datetime, meta_id: str, link: str) -> Counter:
-    _setzen(store, zeile["id"], status="veroeffentlicht", meta_id=meta_id, meta_link=link,
-            veroeffentlicht_at=_iso(jetzt), geplant_fuer=None, fehler=None)
+    """„veröffentlicht“ nur aus „wird gesendet“ oder „unklar“ (bedingtes UPDATE). Hat jemand die Zeile inzwischen
+    anders gesetzt, bleibt ihr Status; Kennung und Link von Meta gehen trotzdem nicht verloren (Protokoll)."""
+    cur = store._write(
+        "UPDATE social_beitraege SET status = 'veroeffentlicht', meta_id = ?, meta_link = ?, veroeffentlicht_at = ?, "
+        "geplant_fuer = NULL, fehler = NULL, aktualisiert = ? WHERE id = ? AND status IN ('wird_gesendet', 'unklar')",
+        (meta_id, link, _iso(jetzt), now_iso(), zeile["id"]))
+    if cur.rowcount != 1:
+        store._write("UPDATE social_beitraege SET meta_id = ?, meta_link = ?, aktualisiert = ? WHERE id = ?",
+                     (meta_id, link, now_iso(), zeile["id"]))
+        _protokoll(store, zeile, "social_konflikt", f"bei Meta veröffentlicht (Kennung {meta_id}), Zeile stand aber "
+                                                    "nicht mehr auf „wird gesendet“ – bitte prüfen")
+        return Counter({"konflikt": 1})
     _protokoll(store, zeile, "social_veroeffentlicht", f"Kennung {meta_id}")
     return Counter({"gesendet": 1, "veroeffentlicht": 1})
+
+
+def _permalink(store, kanal: str, holen: Callable[[], str]) -> str:
+    """Link für die Historie – auch das ist ein Aufruf nach außen: im Stopp entfällt er, der Abgleich trägt ihn nach."""
+    try:
+        _vor_aufruf(store, kanal)
+        return holen() or ""
+    except Exception:  # noqa: BLE001 – veröffentlicht ist veröffentlicht; nur der Link fehlt (noch)
+        return ""
 
 
 def _instagram(store, t, zeile: dict, jetzt: datetime, phase: dict) -> Counter:
@@ -486,11 +556,7 @@ def _instagram(store, t, zeile: dict, jetzt: datetime, phase: dict) -> Counter:
     _vor_aufruf(store, "instagram")
     phase["entscheidend"] = True
     mid = t.ig_veroeffentlichen(cid)
-    try:
-        link = t.ig_permalink(mid)
-    except Exception:  # noqa: BLE001  # veröffentlicht ist veröffentlicht; der Link fehlt nur in der Historie
-        link = ""
-    return _veroeffentlicht(store, zeile, jetzt, mid, link)
+    return _veroeffentlicht(store, zeile, jetzt, mid, _permalink(store, "instagram", lambda: t.ig_permalink(mid)))
 
 
 def _facebook(store, t, zeile: dict, jetzt: datetime, phase: dict) -> Counter:
@@ -498,11 +564,7 @@ def _facebook(store, t, zeile: dict, jetzt: datetime, phase: dict) -> Counter:
     phase["entscheidend"] = True
     antwort = t.fb_foto(zeile["bild_url"], zeile["text"], (zeile["titel"] or "")[:1000])
     post_id = antwort.get("post_id") or antwort.get("id")
-    try:
-        link = t.fb_permalink(post_id)
-    except Exception:  # noqa: BLE001 – veröffentlicht ist veröffentlicht; nur der Link fehlt
-        link = ""
-    return _veroeffentlicht(store, zeile, jetzt, post_id, link)
+    return _veroeffentlicht(store, zeile, jetzt, post_id, _permalink(store, "facebook", lambda: t.fb_permalink(post_id)))
 
 
 def _link_im_text(link: str, text) -> bool:
@@ -513,32 +575,49 @@ def _link_im_text(link: str, text) -> bool:
 
 
 def _abgleichen(store, t, jetzt: datetime) -> Counter:
-    """Unklare Zeilen mit den letzten Beiträgen des Kontos vergleichen (Treffer über den Link auf tamil.de im Text)."""
+    """Unklare Zeilen mit den letzten Beiträgen des Kontos vergleichen (Treffer über den Link auf tamil.de im Text);
+    fehlende Links veröffentlichter Beiträge nachtragen. Nur bei laufendem Kanal (Stopp-Schalter)."""
     stats: Counter = Counter()
     for kanal in META_KANAELE:
+        if schalter.gestoppt(store, kanal):
+            continue
+        ohne_link = [dict(r) for r in store.db.execute(
+            "SELECT * FROM social_beitraege WHERE kanal = ? AND status = 'veroeffentlicht' AND modus = 'live' AND "
+            "meta_id IS NOT NULL AND COALESCE(meta_link, '') = '' ORDER BY id", (kanal,))]
+        for zeile in ohne_link:
+            holen = (lambda m=zeile["meta_id"]: t.ig_permalink(m)) if kanal == "instagram" else \
+                (lambda m=zeile["meta_id"]: t.fb_permalink(m))
+            link = _permalink(store, kanal, holen)
+            if link:
+                _setzen(store, zeile["id"], meta_link=link)
+                stats["link_nachgetragen"] += 1
         zeilen = [dict(r) for r in store.db.execute(
             "SELECT * FROM social_beitraege WHERE kanal = ? AND status = 'unklar' ORDER BY id", (kanal,))]
-        if not zeilen or schalter.gestoppt(store, kanal):
+        if not zeilen:
             continue
         try:
+            _vor_aufruf(store, kanal)
             letzte = t.ig_letzte() if kanal == "instagram" else t.fb_letzte()
-        except (MetaFehler, UnklarFehler) as exc:
-            store.event("social_abgleich_fehler", kanal=kanal, fehler=str(exc)[:200])
+        except Exception as exc:  # noqa: BLE001 – nächster Lauf gleicht erneut ab
+            store.event("social_abgleich_fehler", kanal=kanal, fehler=f"{type(exc).__name__}: {exc}"[:200])
             continue
         for zeile in zeilen:
             treffer = next((e for e in letzte if _link_im_text(zeile["link"], e.get("caption") or e.get("message"))),
                            None)
             if treffer:
                 link = treffer.get("permalink") or treffer.get("permalink_url") or ""
-                _setzen(store, zeile["id"], status="veroeffentlicht", meta_id=str(treffer.get("id", "")),
-                        meta_link=link, veroeffentlicht_at=_iso(jetzt), fehler=None)
-                _protokoll(store, zeile, "social_abgleich", f"gefunden: Kennung {treffer.get('id', '')}")
-                stats["abgleich_gefunden"] += 1
+                ergebnis = _veroeffentlicht(store, zeile, jetzt, str(treffer.get("id", "")), link)
+                if ergebnis["veroeffentlicht"]:
+                    _protokoll(store, zeile, "social_abgleich", f"gefunden: Kennung {treffer.get('id', '')}")
+                    stats["abgleich_gefunden"] += 1
             else:
-                _setzen(store, zeile["id"], status="von_hand",
-                        fehler="Ausgang unklar: Beitrag nicht unter den letzten des Kontos – bitte prüfen")
-                _protokoll(store, zeile, "social_abgleich", "nicht gefunden: an einen Menschen")
-                stats["abgleich_offen"] += 1
+                cur = store._write(
+                    "UPDATE social_beitraege SET status = 'von_hand', fehler = ?, aktualisiert = ? WHERE id = ? AND "
+                    "status = 'unklar'",
+                    ("Ausgang unklar: Beitrag nicht unter den letzten des Kontos – bitte prüfen", now_iso(), zeile["id"]))
+                if cur.rowcount == 1:
+                    _protokoll(store, zeile, "social_abgleich", "nicht gefunden: an einen Menschen")
+                    stats["abgleich_offen"] += 1
     return stats
 
 
@@ -557,7 +636,7 @@ def lauf(store, settings, konf: Konfig, jetzt: datetime | None = None, *, abruf:
             stats["erkennen_fehler"] += 1
     else:
         stats["ohne_website"] += 1
-    stats.update(senden(store, settings, transport or transport_fuer(konf, regelwerk.aktuell(store)), jetzt,
+    stats.update(senden(store, settings, transport or transport_fuer(konf), jetzt,
                         bild_url=bild_url))
     return stats
 

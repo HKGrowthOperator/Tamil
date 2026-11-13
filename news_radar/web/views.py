@@ -12,8 +12,8 @@ from urllib.parse import urlsplit
 from flask import (Blueprint, Response, abort, current_app, flash, g, jsonify, redirect, render_template, request,
                    send_from_directory, session, url_for)
 
-from .. import bilder, images, prompts, schalter
-from ..workflow import repo
+from .. import bilder, images, lizenz, prompts, schalter
+from ..workflow import costs, repo
 from ..publisher import inhalt_fuer_wp  # Vorschau wie veröffentlicht (Nachtrag: mit Vermerk)
 from ..render import sanitize_html
 from ..store import OPEN_STATES, PUBLISHABLE, STATUSES, TRANSITIONS, ConflictError
@@ -149,6 +149,10 @@ def set_status(draft_id: int):
         if stand is None or (store.get_draft(draft_id) or {}).get("stand", stand) != stand:
             flash(VERALTET if stand is None else GEAENDERT, "fehler")  # nichts ändern, noch einmal ansehen
             return redirect(url_for("ui.entwurf", draft_id=draft_id))
+        gesperrt = lizenz.sperre(store, _draft_or_404(draft_id))
+        if gesperrt:  # Gate (Spezifikation Bilder 3.3): ohne vollständigen Lizenz-Datensatz keine Freigabe
+            flash(f"{gesperrt}. Bitte „Lizenz eintragen“ – Freigabe gesperrt.", "fehler")
+            return redirect(url_for("ui.entwurf", draft_id=draft_id))
     try:
         neu = store.set_status(draft_id, aktion, von=_user(), stand=stand)
     except ConflictError as exc:
@@ -205,6 +209,10 @@ def sammelfreigabe():
         stand = _stand(request.form.get(f"stand_{draft_id}"))
         if stand is None or row.get("stand") != stand:
             nicht.append(f"#{draft_id} „{row['titel'][:60]}“: {VERALTET if stand is None else GEAENDERT}")
+            continue
+        gesperrt = lizenz.sperre(store, row)
+        if gesperrt:
+            nicht.append(f"#{draft_id} „{row['titel'][:60]}“: {gesperrt}")
             continue
         aktion = _freigeben(store, row, stand=stand)
         if not aktion:
@@ -266,10 +274,18 @@ def entwurf(draft_id: int):
               for t in prompts.bildpool_themen()]
     from .redaktion import belege_fuer
 
+    asset = lizenz.asset_fuer(store, row) if row.get("bild_datei") else None
+    luecken = lizenz.luecken(store, row)
     return render_template("entwurf.html", d=row, labels=STATUS_LABELS, categories=settings.categories,
                            belege=belege_fuer(store, row),
                            can_publish=row["status"] in PUBLISHABLE, open_states=OPEN_STATES,
-                           preview=inhalt_fuer_wp(row), bildthemen=themen, ki_bereit=bool(settings.gemini_key),
+                           lizenz_luecken=luecken, lizenz_meldung=lizenz.meldung(luecken) if luecken else "",
+                           lizenz_asset=asset, lizenz_formular=_lizenz_vorbelegung(row, asset),
+                           lizenz_herkuenfte=lizenz.FORMULAR_HERKUNFT, lizenz_kuerzel=lizenz.FORMULAR_KUERZEL,
+                           lizenz_namen=lizenz.NAMEN, lizenz_name=lizenz.lizenz_name, cc_versionen=lizenz.CC_VERSIONEN,
+                           ki_freigegeben=settings.bild_ki_freigabe,
+                           preview=inhalt_fuer_wp(row), bildthemen=themen,
+                           ki_bereit=bool(settings.gemini_key) and settings.bild_ki_freigabe,
                            bild_thema=row.get("bild_thema") or prompts.thema_fuer(row["kategorie"], row["titel"]))
 
 
@@ -360,7 +376,11 @@ def bild(draft_id: int):
             if not file or not file.filename:
                 flash("Keine Datei ausgewählt.", "fehler")
                 return redirect(url_for("ui.entwurf", draft_id=draft_id))
-            image = images.from_upload(file.read(), stem, request.form.get("credit", "").strip() or "Foto: Tamil.de")
+            # kein Standardnachweis: Rechte trägt die Redaktion unter „Lizenz eintragen“ ein (bis dahin gesperrt)
+            image = images.from_upload(file.read(), stem, request.form.get("credit", "").strip())
+        elif aktion in ("ki", "pool") and not settings.bild_ki_freigabe:
+            flash(KI_AUS, "fehler")
+            return redirect(url_for("ui.entwurf", draft_id=draft_id))
         elif aktion == "ki":
             thema = request.form.get("bild_thema", "").strip() or row.get("bild_thema") or ""
             motiv = request.form.get("bild_prompt", "").strip()
@@ -373,7 +393,9 @@ def bild(draft_id: int):
                                                   "unverändert."), "fehler")
                 return redirect(url_for("ui.entwurf", draft_id=draft_id))
             prompt = prompts.bild_prompt_bauen(motiv, thema)
-            image = bilder.from_gemini(prompt, settings, stem, current_app.extensions.get("bild_transport"))
+            image = _ki_bild(store, settings, row, prompt, stem)
+            if image is False:
+                return redirect(url_for("ui.entwurf", draft_id=draft_id))
             felder = {"bild_prompt": motiv, "bild_thema": thema}
             if image is None:
                 flash("Die Bild-KI hat kein Bild geliefert (Protokoll prüfen) – Bild unverändert.", "fehler")
@@ -395,6 +417,7 @@ def bild(draft_id: int):
             felder = {"bild_suchbegriff": query}
         else:
             image = images.branded_card(row["titel"], label, stem, row.get("kategorie") or "")
+            felder = {"bild_alt": lizenz.alt_fuer_karte(row["titel"])}  # die Karte beschreibt sich selbst
     except Exception as exc:  # noqa: BLE001
         log.exception("Bild fehlgeschlagen")
         flash(f"Bild fehlgeschlagen: {str(exc)[:200]}", "fehler")
@@ -413,15 +436,107 @@ def bild(draft_id: int):
         flash(GEAENDERT, "fehler")
         return redirect(url_for("ui.entwurf", draft_id=draft_id))
     images.datei_sicherstellen(image, settings.bilder_dir, name)
+    # gemeinsamer Speicherweg: jedes Bild bekommt seinen Lizenz-Datensatz (beim Upload offen bis zur Eingabe)
+    asset_id = lizenz.anlegen(store, datei=name, daten=image.data, story_id=row.get("story_id"), draft_id=draft_id,
+                              felder=lizenz.datensatz(image, titel=row["titel"] if image.origin == "karte" else "",
+                                                      alt=felder.get("bild_alt") or row.get("bild_alt") or ""))
     andere = row.get("bild_datei") and store.db.execute(
         "SELECT 1 FROM drafts WHERE bild_datei = ? AND id != ? LIMIT 1", (row["bild_datei"], draft_id)).fetchone()
     for old in (() if andere else (row.get("bild_datei"), (row.get("bild_datei") or "").replace(".jpg", "-thumb.jpg"))):
         if old and old not in (name, _thumb):
             (settings.bilder_dir / old).unlink(missing_ok=True)
-    store.event("bild", id=draft_id, aktion=aktion, origin=image.origin, von=_user())
-    _protokoll("bild", row, notiz=aktion)
-    flash("Bild ersetzt.", "ok")
+    store.event("bild", id=draft_id, aktion=aktion, origin=image.origin, von=_user(), asset=asset_id)
+    _protokoll("bild", row, notiz=f"{aktion}: Asset {asset_id}")
+    fehlt = lizenz.sperre(store, store.get_draft(draft_id) or row)
+    flash("Bild ersetzt." + (f" {fehlt} – bitte „Lizenz eintragen“." if fehlt else ""), "fehler" if fehlt else "ok")
     return redirect(url_for("ui.entwurf", draft_id=draft_id))
+
+
+KI_AUS = ("KI-Bilder und der Bildpool sind aus (BILD_KI_FREIGABE, Entscheidung „keine KI-Bilder“) – Bild unverändert. "
+          "Commons, Register, Stock, eigenes Bild und die Bildkarte gehen weiter.")
+
+
+def _ki_bild(store, settings, row: dict, prompt: str, stem: str):
+    """„Neu generieren“ wie in der Agent-Kette: Kosten vorher reservieren, jeden Aufruf nach agent_usage schreiben.
+    False = abgebrochen (Meldung ist gesetzt), None = die Bild-KI hat nichts geliefert."""
+    from ..workflow.providers import budget_fuer, usage_protokollieren
+
+    betrag = costs.bild_kosten(settings.bild_modell, settings.bild_groesse)
+    budget = budget_fuer(settings, store)
+    try:
+        reservierung = budget.reservieren(betrag, "bild", row.get("story_id"))
+    except costs.BudgetErschoepft as exc:
+        flash(f"Budget erreicht ({exc}) – kein KI-Bild, Bild unverändert.", "fehler")
+        return False
+    try:
+        image = bilder.from_gemini(prompt, settings, stem, current_app.extensions.get("bild_transport"))
+        usage_protokollieren(store, rolle="bild", provider="gemini", modell_angefragt=settings.bild_modell,
+                             modell=settings.bild_modell, usd=betrag if image else 0.0, bilder=1 if image else 0,
+                             status="ok" if image else "fehler", story_id=row.get("story_id"))
+    finally:
+        budget.freigeben(reservierung)
+    return image
+
+
+def _lizenz_vorbelegung(row: dict, asset: dict | None) -> dict:
+    """Werte für das Formular „Lizenz eintragen“: aus dem vorhandenen Datensatz, sonst leer; Nachweis aus dem Entwurf."""
+    a = asset or {}
+    kuerzel = a.get("lizenz_kuerzel") or ""
+    basis, version = kuerzel, ""
+    m = re.fullmatch(r"(cc-by(?:-sa)?)-(\d\.\d)", kuerzel)
+    if m:
+        basis, version = m.group(1), m.group(2)
+    return {"urheber": a.get("urheber") or "", "rechteinhaber": a.get("rechteinhaber") or "", "lizenz": basis,
+            "version": version or "4.0", "umfang": lizenz.umfang_menge(a.get("umfang")) or {"website"},
+            "quelle_url": a.get("quelle_url") or "", "ablauf": a.get("ablauf") or "",
+            "alt": row.get("bild_alt") or a.get("alt") or "", "nachweis": row.get("bild_credit") or "",
+            "herkunft": lizenz.formular_herkunft_aus(a.get("herkunft") or "", kuerzel)}
+
+
+@ui.post("/entwurf/<int:draft_id>/lizenz")
+@recht_noetig("bearbeiten")
+def lizenz_eintragen(draft_id: int):
+    """Formular „Lizenz eintragen“ (Spezifikation Bilder 3.4): Prüfung, neuer Datensatz, Nachweis und Alt-Text am
+    Entwurf, Protokollzeile ohne Personendaten. Bildkarte und KI-Bilder bekommen ihren Datensatz nur automatisch."""
+    store = get_store()
+    row = _draft_or_404(draft_id)
+    zurueck = redirect(url_for("ui.entwurf", draft_id=draft_id) + "#lizenz")
+    if row["status"] not in OPEN_STATES:
+        flash("Freigegebene Entwürfe zuerst zurückstellen, dann die Lizenz eintragen.", "fehler")
+        return zurueck
+    pfad = _settings().bilder_dir / (row.get("bild_datei") or "-")
+    if not row.get("bild_datei") or not pfad.is_file():
+        flash("Dieser Entwurf hat kein Bild.", "fehler")
+        return zurueck
+    if row.get("bild_origin") in ("karte", "ki", "pool"):
+        flash("Bildkarte und KI-Bilder bekommen ihren Lizenz-Datensatz automatisch – bitte das Bild ersetzen.", "fehler")
+        return zurueck
+    datei = request.files.get("beleg_datei")
+    beleg = (datei.filename or "", datei.read(lizenz.BELEG_MAX + 1)) if datei and datei.filename else None
+    felder, fehler = lizenz.formular_pruefen(request.form, beleg, titel=row["titel"])
+    if fehler:
+        flash("Lizenz nicht eingetragen: " + "; ".join(fehler), "fehler")
+        return zurueck
+    endung = felder.pop("_beleg_endung", "")
+    if endung:
+        felder["beleg"] = lizenz.beleg_ablegen(_settings().data_dir, beleg[1], endung, felder.get("beleg", ""))
+    vorher = lizenz.asset_fuer(store, row) or {}
+    if vorher.get("bild_url"):
+        felder.setdefault("bild_url", vorher["bild_url"])
+    if not store.update_draft(draft_id, von=_user(), nur_status=OPEN_STATES, bild_vorher=row["bild_datei"],
+                              bild_credit=felder["attribution"], bild_alt=felder["alt"]):
+        flash(GEAENDERT, "fehler")
+        return zurueck
+    asset_id = lizenz.anlegen(store, datei=row["bild_datei"], daten=pfad.read_bytes(), story_id=row.get("story_id"),
+                              draft_id=draft_id, felder={
+                                  **felder, "geprueft_von": _user(),
+                                  "geprueft_am": datetime.now(timezone.utc).isoformat(timespec="seconds")})
+    store.event("lizenz", id=draft_id, asset=asset_id, kuerzel=felder["lizenz_kuerzel"], von=_user())
+    _protokoll("lizenz", row, fassung=repo.fassung_hash(store.get_draft(draft_id)),
+               notiz=f"Lizenz eingetragen: {felder['lizenz_kuerzel']}, Umfang {felder['umfang']}, Asset {asset_id}")
+    fehlt = lizenz.sperre(store, store.get_draft(draft_id) or row)
+    flash("Lizenz eingetragen." + (f" Noch offen: {fehlt}" if fehlt else ""), "fehler" if fehlt else "ok")
+    return zurueck
 
 
 # ---- Veröffentlichen ------------------------------------------------------------------------
@@ -434,6 +549,10 @@ def _publish(draft_id: int, status: str):
     stand = _stand(request.form.get("stand"))
     if stand is None or row.get("stand") != stand:  # nur den Stand veröffentlichen, den die Seite gezeigt hat
         flash(VERALTET if stand is None else GEAENDERT, "fehler")
+        return redirect(url_for("ui.entwurf", draft_id=draft_id))
+    gesperrt = lizenz.sperre(store, row)
+    if gesperrt:
+        flash(f"{gesperrt}. Bitte „Lizenz eintragen“ – nichts übertragen, nichts freigegeben.", "fehler")
         return redirect(url_for("ui.entwurf", draft_id=draft_id))
     sperre = schalter.sperre(store, "website")
     if sperre is not None and status != "publish":
@@ -462,6 +581,11 @@ def _publish(draft_id: int, status: str):
     except schalter.Gestoppt as exc:  # zwischen Prüfung und Aufruf angehalten: nichts übertragen
         store.release_claim(draft_id)
         _freigeben_wartend(store, row, exc.sperre, schon_frei=True)
+        return redirect(url_for("ui.entwurf", draft_id=draft_id))
+    except lizenz.LizenzFehlt as exc:  # zwischen Prüfung und Senden geändert: nichts gesendet
+        store.mark_publish_failed(draft_id, str(exc))
+        _protokoll("lizenz_fehlt", row, kanal="website", notiz=str(exc)[:200])
+        flash(f"{exc} – nicht an WordPress gesendet.", "fehler")
         return redirect(url_for("ui.entwurf", draft_id=draft_id))
     except Exception as exc:  # noqa: BLE001
         log.exception("Veröffentlichen fehlgeschlagen")
@@ -494,6 +618,8 @@ def _freigeben(store, row: dict, stand: int | None = None) -> str:
     Aktion zurück („freigeben“ oder „erneut“); leer, wenn er es schon war oder nicht freigebbar ist."""
     aktion = "erneut" if row["status"] == "fehler" else "freigeben"
     if row["status"] not in OPEN_STATES and row["status"] != "fehler":
+        return ""
+    if lizenz.sperre(store, store.get_draft(row["id"]) or row):  # Gate auf jedem Freigabeweg
         return ""
     try:
         store.set_status(row["id"], aktion, von=_user(), stand=stand)

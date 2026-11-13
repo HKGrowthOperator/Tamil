@@ -11,7 +11,8 @@
   export    Protokoll als JSONL exportieren
   export-drafts  Entwürfe + Bilder für den HTML-Prototyp exportieren (--quellbilder lädt Vorschaubilder der Quellen)
   agent     export: Aufgabenmappe für einen schreibenden Agenten · import: fertige Beiträge übernehmen (mit Bild)
-  bildpool  status | fuellen – Reserve-Bilder je Thema über die Bild-KI anlegen
+  bildpool  status | fuellen – Reserve-Bilder je Thema über die Bild-KI anlegen (nur mit BILD_KI_FREIGABE)
+  lizenzen  nachfuehren – Lizenz-Datensätze im Altbestand aus Commons-, Register- und Kartenangaben ergänzen
   quellen   pruefen – jede Quelle live abfragen und bewerten (data/quellen-pruefung.csv) · liste – Register zeigen
   kosten    Kosten je Rolle, Modell und Tag, Budgetstand; --csv für die Fremdkostenabrechnung
   worker    Redaktion v2: Jobs abarbeiten (Dienst; --einmal leert die Schlange und beendet)
@@ -151,6 +152,8 @@ def main(argv: list[str] | None = None) -> int:
     pool.add_argument("--thema", help="nur dieses Thema füllen")
     pool.add_argument("--anzahl", type=int, default=3, help="Zielbestand je Thema")
     pool.add_argument("--mit-budget", action="store_true", help="Kosten messen und am Budget stoppen (für den Timer)")
+    lz = sub.add_parser("lizenzen", help="Lizenz-Datensätze der Bilder (Spezifikation Bilder 3)")
+    lz.add_argument("aktion", choices=("nachfuehren",))
     quellen = sub.add_parser("quellen", help="Quellen-Register prüfen bzw. anzeigen")
     quellen.add_argument("aktion", choices=("pruefen", "liste"))
     quellen.add_argument("--file", default="data/quellen-pruefung.csv")
@@ -507,6 +510,8 @@ def main(argv: list[str] | None = None) -> int:
 
         pool = BildPool(settings.bildpool_dir)
         if args.aktion == "fuellen":
+            if not settings.bild_ki_freigabe:
+                raise SystemExit("KI-Bilder sind nicht freigegeben (BILD_KI_FREIGABE) – der Pool wird nicht gefüllt.")
             if not settings.gemini_key:
                 raise SystemExit("GEMINI_API_KEY fehlt – ohne Bild-KI lässt sich der Pool nicht füllen.")
             if args.mit_budget:
@@ -522,6 +527,15 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Bildpool {settings.bildpool_dir}: {sum(s['anzahl'] for s in status.values())} Bilder in {len(status)} Themen")
         for thema, s in status.items():
             print(f"  {thema:20} {s['anzahl']:3} Bilder · {s['genutzt']:3}× genutzt")
+        return 0
+
+    if args.cmd == "lizenzen":
+        from .lizenz import nachfuehren
+
+        with Store(settings.db_path) as store:
+            z = nachfuehren(store, settings)
+        print(f"Lizenz-Datensätze: {z['ergaenzt']} ergänzt, {z['karte']} Bildkarten nachgetragen, "
+              f"{z['schon']} schon vollständig, {z['offen']} offen („Lizenz fehlt“ im Cockpit)")
         return 0
 
     if args.cmd == "export-drafts":

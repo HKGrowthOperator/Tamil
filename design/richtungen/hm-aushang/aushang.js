@@ -15,7 +15,7 @@
       const q = input.value.trim().toLowerCase();
       let n = 0;
       zeilen.forEach((z) => { const treffer = !q || (z.dataset.stadt || '').includes(q); z.hidden = !treffer; if (treffer) n += 1; });
-      if (hilfe) hilfe.textContent = !q ? '' : n ? `${n} ${n === 1 ? 'Stadt' : 'Städte'} mit tamilischem Film.` : 'Für diese Stadt ist diese Woche kein tamilischer Film gemeldet.';
+      if (hilfe) hilfe.textContent = !q ? '' : n ? `${n} ${n === 1 ? 'Film' : 'Filme'} für diese Stadt.` : 'Für diese Stadt ist diese Woche kein tamilischer Film gemeldet.';
     });
   });
 
