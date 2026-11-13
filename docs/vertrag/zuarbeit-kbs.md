@@ -17,7 +17,7 @@ Formular. Stand je Punkt hier nachtragen.
 | 9 | Instagram-Professional-Konto, damit verknüpfte Facebook-Seite, Business-Portfolio bei Meta; die App liegt bei KBS. Falls Meta es verlangt: Unternehmensverifizierung und App-Prüfung (Wochen) | Baustein 5 | erster echter Beitrag; gebaut wird im Trockenmodus | offen |
 | 10 | Einmalige Freigabe des Regelwerks für Instagram und Facebook | Baustein 5 (§8 Abs. 1) | automatische Veröffentlichung | folgt mit F4 |
 | 11 | Wer bei KBS welche Rolle im Cockpit bekommt (`admin`, `redaktion`, `leser`); die Person für die verbindliche Abnahme | Cockpit, Abnahme (§7, §9) | Abnahme | offen |
-| 12 | Freigabe laufender Kosten: Modellkosten der Agenten (Anthropic-Schlüssel), Zahlungsgebühren | §3 Abs. 2 | Betrieb der Agenten mit Modell | offen (Tor B1) |
+| 12 | **Konten auf KBS anlegen, damit alle laufenden Kosten beim Kunden liegen** (Luis, 13.11.: „Wir dürfen nicht selbst die API-Kosten zahlen“): Anthropic (Konsole, Zahlungsmittel, Ausgabenlimit; Schlüssel für die Agenten-Redaktion), Google AI Studio (Gemini, nur falls KI-Symbolbilder freigegeben werden), Meta (siehe 9), Stripe (siehe 8), optional Pexels. Freigabe der laufenden Kosten (§3 Abs. 2). Die Schlüssel trägt Luis in Coolify ein, nie in den Chat | §3 Abs. 2 | Betrieb der Agenten mit Modell, Nachrecherche und zweite Prüfung | offen (Tor B1) |
 | 13 | Umschalten der Domain tamil.de | Livegang (Tor B3) | Livegang; danach beginnt die Betreuung | offen |
 | 14 | Bildrechte: Nachweis für eigene Archiv- und Pressebilder, die automatisch verwendet werden sollen | Bildkette des Radars, Social | automatische Nutzung solcher Bilder | offen |
 
