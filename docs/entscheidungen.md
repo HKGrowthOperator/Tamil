@@ -5,6 +5,12 @@ Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
 ## 13.11.2026
 
+- **Einsendungen ohne Abschluss werden nach 90 Tagen gelöscht** (F1 nannte nur Fristen für Abgeschlossenes); Abholen
+  und Status bleiben auch bei ausgeschaltetem Schalter erreichbar, damit nichts liegen bleibt. · Hauptsitzung nach
+  Code-Prüfung
+- **Recherche bleibt nie offen:** Nachrecherche durch den Radar, zweite KI prüft, Ende immer als Entwurf oder
+  verworfen mit Grund; keine Links von Hand. Termin-Seiten liefern ihre strukturierten Angaben (Datum, Uhrzeit,
+  Adresse) mit. · Luis („Es muss alles mit der Recherche klappen … auch keine Links einfügen“)
 - **Ja zu allem (21:50):** F0–F4 mit allen Vorschlägen, Regelwerk Social Fassung 1; Gedenk-Sperre für alle
   Terminquellen (dann Tempel Backnang an, mit Festauswahl `params.nur_titel`); Veranstalter STCC gesperrt
   (`[blocklist] veranstalter`); dein-dein.de an. Design: keine Auswahl, mehrere fertige Linien (A Tagesblatt, B
