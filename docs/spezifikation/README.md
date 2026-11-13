@@ -225,7 +225,7 @@ später“). Interne Abnahme: `python -m news_radar abnahme` (62 Szenarien, Krit
 | Einsendungen | Kein Formular, kein Eingang, keine Tabelle (A1.3, A1.6, B1.2) | F1 |
 | Verzeichnis | Nichts gebaut (B1.3, B1.4) | F2 |
 | Werbebuchung | Nur die sechs Plätze mit Eigenanzeigen; keine Buchung, Zahlung, Aktiv-Funktion, Statistik (A2.1–A2.6) | F3 |
-| Social | Im Repo kein Code; `docs/regeln-social.md` (in `leistungen.md` genannt) existiert nicht | F4 |
+| Social | Im Repo kein Code; Regelwerk `docs/regeln-social.md` Fassung 1 liegt vor, Freigabe durch KBS steht aus | F4 |
 | Kalender | Radar überträgt `event_ende`, `event_land`, `event_veranstalter`, `event_preis` nicht (`publisher.META_FIELDS`) | A1.4 |
 | Autor | Jeder Radar-Beitrag trägt den Autor `ki-agent`; kein Autorkonzept | A1.5 |
 | Story-Verweis | Fehler: Meta `radar_story_id` wird im Plugin auf höchstens 10 begrenzt (`tamil_radar_sanitize_meta`, Typ `int`); der Python-Test prüft nur die gesendete Nutzlast | A1.5, B1.1 |

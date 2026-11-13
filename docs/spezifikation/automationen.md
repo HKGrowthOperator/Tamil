@@ -7,9 +7,9 @@ Regeln steht; Sicherheits-, Fehler- und Ausnahmefälle gehen an einen Menschen; 
 protokolliert.
 
 **Wo die Regeln stehen:** Radar-Redaktion: `docs/vertrag/leistungen.md`, `docs/entscheidungen.md`,
-`.claude/rules/radar.md`, Code (`filtering.py`, `agents/factcheck.py`); F0–F4: die Festlegungen (alle noch ohne Ja
-von Luis); Social zusätzlich das Regelwerk mit einmaliger Freigabe durch KBS (`docs/regeln-social.md`, noch nicht
-angelegt).
+`.claude/rules/radar.md`, Code (`filtering.py`, `agents/factcheck.py`); F0–F4: die Festlegungen (Ja von Luis am
+13.11.); Social zusätzlich das Regelwerk mit einmaliger Freigabe durch KBS (`docs/regeln-social.md`, Fassung 1,
+Freigabe steht aus).
 
 ## Zeitplan des Dienstes
 

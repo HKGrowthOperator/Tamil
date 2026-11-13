@@ -731,8 +731,8 @@ Quelle: `festlegung-social.md`. Daten im Radar (Cockpit hält Agenten, Freigabe,
 | `kennzeichnung` | KI-Bilder mit Hinweis |
 | `hashtags[rubrik]` | von KBS |
 
-Ändern: Vorschlag nur `admin`, mit neuer Fassung und Protokollzeile. Das in `leistungen.md` genannte
-`docs/regeln-social.md` gibt es noch nicht.
+Ändern: Vorschlag nur `admin`, mit neuer Fassung und Protokollzeile. Fassung 1 steht in
+`docs/regeln-social.md` (Freigabe durch KBS steht aus).
 
 ### Status-Maschine Social-Beitrag (Instagram, Facebook)
 
