@@ -17,6 +17,8 @@
 #   MIGRATION_APP_PASSWORD  gesetzt: der Admin hat genau dieses Anwendungspasswort „migration“ (leer: wird entfernt)
 #   RADAR_COCKPIT_URL       Adresse des Radar-Cockpits (Einstellung des Plugins tamil-radar)
 #   WP_ENVIRONMENT_TYPE     Standard staging (production, staging, development, local)
+#   TAMIL_PROXY_ANZAHL      Zahl der Proxys vor WordPress (Standard 0; Coolify/Traefik: 1). Bestimmt, welchen
+#                           Eintrag aus X-Forwarded-For die Drossel der Einsendungen als Adresse des Besuchers nimmt
 set -euo pipefail
 
 SRC=/usr/src/wordpress
@@ -45,6 +47,8 @@ WP_ADMIN_EMAIL="${WP_ADMIN_EMAIL:-info@hkgrowth-operator.de}"
 WP_TITLE="${WP_TITLE:-Tamil.de}"
 WP_ENVIRONMENT_TYPE="${WP_ENVIRONMENT_TYPE:-staging}"
 case "$WP_ENVIRONMENT_TYPE" in production|staging|development|local) ;; *) fehler "WP_ENVIRONMENT_TYPE ungültig." ;; esac
+TAMIL_PROXY_ANZAHL="${TAMIL_PROXY_ANZAHL:-0}"
+[[ "$TAMIL_PROXY_ANZAHL" =~ ^[0-9]$ ]] || fehler "TAMIL_PROXY_ANZAHL muss eine Zahl von 0 bis 9 sein."
 
 # --- 1. Code aus dem Image -------------------------------------------------------------------------------------------
 # /var/www/html ist im offiziellen Image ein (anonymes) Volume und könnte alten Code vom letzten Deploy enthalten.
@@ -102,6 +106,8 @@ define( 'WP_HOME', '$WP_URL_PUBLIC' );
 define( 'WP_SITEURL', '$WP_URL_PUBLIC' );
 define( 'FORCE_SSL_ADMIN', $FORCE_SSL );
 define( 'WP_ENVIRONMENT_TYPE', '$WP_ENVIRONMENT_TYPE' );
+// Proxys vor WordPress (Traefik): ab hier zählt für die Drossel der Einsendungen der vom Proxy angehängte Eintrag
+define( 'TAMIL_PROXY_ANZAHL', $TAMIL_PROXY_ANZAHL );
 
 // Code kommt nur aus dem Image: keine Updates, kein Datei-Editor, keine Installationen im Backend
 define( 'AUTOMATIC_UPDATER_DISABLED', true );

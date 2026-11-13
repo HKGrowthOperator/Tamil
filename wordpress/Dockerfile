@@ -62,7 +62,8 @@ RUN { \
         echo 'expose_php = Off'; \
     } > /usr/local/etc/php/conf.d/tamil.ini
 
-# Apache: Datenbank-Ordner nie ausliefern, in Uploads kein PHP ausführen, Server-Version nicht verraten
+# Apache: Datenbank-Ordner und eingesandte Bilder (Plugin tamil-site) nie ausliefern, in Uploads kein PHP ausführen,
+# Server-Version nicht verraten
 RUN { \
         echo '<Directory /var/www/html/wp-content/database>'; \
         echo '    Require all denied'; \
@@ -71,6 +72,9 @@ RUN { \
         echo '    <FilesMatch "\.(?i:php[0-9]?|phtml|phar)$">'; \
         echo '        Require all denied'; \
         echo '    </FilesMatch>'; \
+        echo '</Directory>'; \
+        echo '<Directory /var/www/html/wp-content/uploads/tamil-einsendungen>'; \
+        echo '    Require all denied'; \
         echo '</Directory>'; \
         echo 'ServerName localhost'; \
         echo 'ServerTokens Prod'; \
