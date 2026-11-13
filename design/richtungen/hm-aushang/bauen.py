@@ -270,7 +270,7 @@ def artikel(sid, name):
     absz = [f"<p>{e(p)}</p>" for p in b["absaetze"]]
     if len(absz) > 2:
         absz.insert(2, anzeige("inarticle", WA_KANAL, "tamil.de auf WhatsApp", "Neue Beiträge und Termine direkt im Kanal.", extern=True))
-    kal = (f'<aside class="randspalte" aria-label="Am Brett"><p class="rand-titel">Am Brett</p>'
+    kal = (f'<aside class="randspalte" aria-labelledby="h-brett-rand"><h2 id="h-brett-rand" class="rand-titel">Am Brett</h2>'
            f'<ol class="zettel-liste">{zettel(KOMMEND[0], klein=True)}</ol>'
            f'<p class="weiter"><a href="termine.html">Festkalender</a></p></aside>')
     weiter_ids = [i for i in (49, 33, 71, 76, 60) if i != sid][:3]
@@ -383,8 +383,8 @@ def kino():
     liste = (f'<section class="abschnitt abschnitt--direkt" aria-labelledby="h-st"><div class="container">'
              f'<div class="kopfblock kopfblock--filter"><h2 id="h-st">Welcher Film wo</h2>'
              f'<div class="feld feld--filter"><label for="stadt-suche">Ihre Stadt</label>'
-             f'<input id="stadt-suche" type="search" name="stadt" autocomplete="address-level2" data-filter="#filme" aria-describedby="stadt-hinweis">'
-             f'<p class="hilfe" id="stadt-hinweis" aria-live="polite"></p></div></div>'
+             f'<input id="stadt-suche" type="search" name="stadt" placeholder="z. B. Berlin" autocomplete="address-level2" data-filter="#filme" aria-describedby="stadt-erkl stadt-hinweis">'
+             f'<p class="hilfe" id="stadt-erkl">Die Liste zeigt dann nur Filme in Ihrer Stadt.</p><p class="hilfe" id="stadt-hinweis" aria-live="polite"></p></div></div>'
              f'<ul class="filme-liste" id="filme">{kino_zeilen()}</ul>'
              f'<p class="hinweis-satz">Spielorte nennen wir, sobald sie in den Programmen der Kinos stehen; für sechs Städte von „Scene“ folgen sie.</p></div></section>')
     kino_ids = (84, 43, 46, 53, 57, 94, 64, 66, 69, 96)
