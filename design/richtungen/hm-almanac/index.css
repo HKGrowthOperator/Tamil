@@ -1,4 +1,4 @@
-/* Hallmark · shape: Kalenderblatt (drawn Manifesto refused: tilted uppercase poster type is the rejected round 4) · genre: editorial · theme: Almanac (deal 2/3, seed tamil-deutschsprachiges-online-magazin-der-ff32·6bcf19c0·2026-11-13·r0) · job: listen · draw: 26f3b5
+/* Hallmark · shape: Kalenderblatt (drawn Manifesto refused: tilted uppercase poster type is the rejected round 4) · genre: editorial · theme: Almanac (deal 2/3, seed tamil-deutschsprachiges-online-magazin-der-ff32·6bcf19c0·2026-11-13·r0) · job: read · draw: 26f3b5
  * hero: index (the sheet under its head line, the first report beside it) · nav: banner over a retracting bar · footer: index columns · imagery: photographs, the posts' own Commons pictures 2, muted · signature: das Kalenderblatt, die naechsten Feste als gedruckter Bogen, der naechste Termin in Logo-Rot
  * axes: mid/grotesk-sans/chromatic-magenta (accent re-hued to the logo red) · posture: restrained · contrast: pass · fold: pass · v2.0.0 */
 /* Hallmark · pre-emit critique: P4 H4 E4 S5 R4 V5 · weakest: H, a sheet above the head competes with it; the head sits alone on the base row at the display size and the sheet keeps to one weight of type */
@@ -22,10 +22,10 @@
 .erste h2 a:hover, .hamm h2 a:hover { text-decoration: underline; text-decoration-color: var(--color-accent); text-decoration-thickness: 2px; }
 .erste .photo { aspect-ratio: 4 / 3; }
 .hero .tafel col.c-tag { width: 15%; } .hero .tafel col.c-was { width: 36%; } .hero .tafel col.c-wer { width: 27%; }
-@media (max-width: 60rem) { .kopf-start { flex-direction: column; } }
+@media (max-width: 60rem) { .kopf-start { flex-direction: column; } .hero__grid .erste { order: -1; } .erste .photo { aspect-ratio: 16 / 9; } }
 
 /* cinema on the light sheet, numbers at reading size */
-.kino-blatt { padding-block-start: var(--section-gap-l); }
+.kino-blatt { padding-block-start: var(--section-gap-s); }
 .filme .zahl { text-align: right; white-space: nowrap; width: 6rem; }
 .filme td.was { width: 30%; }
 @media (max-width: 40rem) {
