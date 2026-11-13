@@ -27,6 +27,7 @@ RECHTE: dict[str, tuple[str, ...]] = {
     "story_verwerfen": REDAKTION,
     "quelle_ergaenzen": REDAKTION,
     "dossier": REDAKTION,
+    "eingang_entscheiden": REDAKTION,  # Einsendungen übernehmen, erledigt/abgelehnt/Spam, Notiz (F1); sieht Kontaktdaten
     "anhalten": REDAKTION,            # jeden Kanal anhalten, auch „alles“
     "kanal_einschalten": REDAKTION,   # einen einzelnen Kanal wieder einschalten
     "alles_einschalten": ADMIN,       # den Schalter „alles“ wieder einschalten
@@ -38,6 +39,7 @@ RECHTE: dict[str, tuple[str, ...]] = {
 
 NAMEN = {"bearbeiten": "Entwürfe bearbeiten", "freigeben": "Entwürfe freigeben", "veroeffentlichen": "veröffentlichen",
          "story_verwerfen": "Storys verwerfen", "quelle_ergaenzen": "Quellen ergänzen", "dossier": "Dossiers anstoßen",
+         "eingang_entscheiden": "über Einsendungen entscheiden",
          "anhalten": "Kanäle anhalten", "kanal_einschalten": "Kanäle wieder einschalten",
          "alles_einschalten": "„Alles“ wieder einschalten", "job_erneut": "abgebrochene Jobs neu starten",
          "benutzer": "Benutzer verwalten", "export": "Daten exportieren", "abmelden": "abmelden"}

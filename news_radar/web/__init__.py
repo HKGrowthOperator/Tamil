@@ -120,12 +120,14 @@ def create_app(settings: Settings | None = None, testing: bool = False) -> Flask
 
     from .api import api
     from .betrieb import betrieb
+    from .eingang import eingang_bp
     from .redaktion import red
     from .views import ui
 
     app.register_blueprint(ui)
     app.register_blueprint(red)
     app.register_blueprint(betrieb)
+    app.register_blueprint(eingang_bp)
     app.register_blueprint(api)
 
     @app.errorhandler(403)
@@ -205,6 +207,10 @@ def create_app(settings: Settings | None = None, testing: bool = False) -> Flask
         def recherche_offen():
             return get_store().db.execute("SELECT COUNT(*) FROM stories WHERE status = 'recherche_erforderlich'").fetchone()[0]
 
+        def eingang_offen():
+            return get_store().db.execute("SELECT COUNT(*) FROM einsendungen WHERE status IN ('abgeholt', "
+                                          "'vorbereitet')").fetchone()[0]
+
         def stopps():
             if "stopps" not in g:
                 from .. import schalter
@@ -220,6 +226,7 @@ def create_app(settings: Settings | None = None, testing: bool = False) -> Flask
             "stopps": stopps,
             "budget": budget,
             "recherche_offen": recherche_offen,
+            "eingang_offen": eingang_offen,
             "ist_admin": session.get("rolle") == "admin",
             "csrf_token": csrf_token,
             "letzter_lauf": letzter_lauf,
