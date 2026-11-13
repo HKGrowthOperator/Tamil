@@ -1,0 +1,22 @@
+/* Werbebuchung: nur das Nötigste. Gestaltet wird im Theme (Tor G3); Klassen mit Präfix wb-. */
+.wb-anzeige img { display: block; max-width: 100%; height: auto; }
+.wb-werbung, .wb-tabelle-wrap { min-width: 0; max-width: 100%; }
+.wb-tabelle-wrap { overflow-x: auto; }
+.wb-tabelle { width: 100%; border-collapse: collapse; }
+.wb-tabelle th, .wb-tabelle td { text-align: left; vertical-align: top; padding: .5em .75em .5em 0; }
+.wb-preise { margin: 0; padding: 0; list-style: none; }
+.wb-formular label { display: block; margin-top: 1em; }
+.wb-formular input[type="text"], .wb-formular input[type="email"], .wb-formular input[type="url"],
+.wb-formular input[type="tel"], .wb-formular textarea, .wb-formular select { display: block; width: 100%; max-width: 32em; box-sizing: border-box; }
+.wb-fehler { border-left: 4px solid currentColor; padding-left: 1em; }
+.wb-platzhalter { font-style: italic; }
+.wb-vorschau img { max-width: 100%; height: auto; }
+
+/* Schmale Bildschirme: Zeilen untereinander statt seitlich scrollen; Kopfzeile bleibt für Screenreader. */
+@media (max-width: 640px) {
+	.wb-tabelle, .wb-tabelle tbody, .wb-tabelle tr, .wb-tabelle th, .wb-tabelle td { display: block; width: auto; }
+	.wb-tabelle thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+	.wb-tabelle tr { padding: .75em 0; border-bottom: 1px solid; }
+	.wb-tabelle th, .wb-tabelle td { padding: .15em 0; }
+	.wb-tabelle td[data-label]::before { content: attr(data-label) ": "; font-weight: bold; }
+}

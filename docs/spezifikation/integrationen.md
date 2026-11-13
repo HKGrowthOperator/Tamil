@@ -194,7 +194,7 @@ Prüfungen in `tamil-site/includes/einsendungen*.php`). WordPress ruft den Radar
 | Fehler und Verhalten | ungültige Signatur oder falscher Zeitstempel: 400, nichts ändern, Protokoll. Doppelte Meldung: nichts ändern. Zahlung fehlgeschlagen oder Session abgelaufen: Tage frei. Erstattung scheitert: Warnung in der Buchungsliste, Mensch (F3). Aufrufe an Stripe mit Idempotenzschlüssel, damit eine Wiederholung nichts doppelt anlegt |
 | Testmodus | Testschlüssel und Test-Webhook-Geheimnis; Testkarten von Stripe (Erfolg 4242 4242 4242 4242, Ablehnung 4000 0000 0000 0002); `stripe listen --forward-to …` und `stripe trigger …` für Ereignisse; in automatischen Tests ein Fake mit selbst signierten Meldungen (`tests/wp/test_buchung.py`, geplant) |
 | Variablen (Vorschlag, App `tamil-web`) | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`; Modus folgt aus dem Schlüssel; im Echtbetrieb aus, bis Auftragsverarbeitung und Rechtstexte vorliegen |
-| Stand | offen (Baustein 4, Festlegung F3 wartet auf das Ja) |
+| Stand | gebaut im Plugin `tamil-site` (`includes/werbung-stripe.php`), geprüft nur gegen den Fake (`tests/wp/test_werbung.py`, `tests/wp/stripe_fake.php`); nicht gegen Stripe selbst (Konto und Testschlüssel fehlen). Schalter „werbung“ Standard aus |
 | KBS liefert | Stripe-Konto (Identitätsprüfung dauert Tage), Auszahlungskonto, Einstellung zu Belegmails bei Stripe, Preise, Steuerangabe, Verkaufsbedingungen (Zuarbeit Nr. 7, 8). Gebühren von Stripe sind Gebühren Dritter (§3 Abs. 2) |
 
 ## 12. Coolify (Betrieb)
@@ -242,7 +242,7 @@ Prüfungen in `tamil-site/includes/einsendungen*.php`). WordPress ruft den Radar
 | `RADAR_SOCIAL` (Funktionsschalter), `RADAR_SOCIAL_LIVE` (live statt trocken; ersetzt den Vorschlag `SOCIAL_MODUS`) | Radar | nein | im Code (F4), nicht gesetzt = aus bzw. trocken |
 | `META_ZUGANG` | Radar | ja | im Code (F4), offen (Konten von KBS) |
 | `WHATSAPP_KANAL_URL` | Radar | nein | im Code (F4), offen (Link von KBS) |
-| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Website | ja | neu (Vorschlag) |
+| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Website | ja | im Code verwendet, Werte offen (Stripe-Konto von KBS) |
 | `RADAR_AGENT_TOKEN`, `RADAR_LESE_TOKEN` | Radar | ja | gesetzt |
 | `COOLIFY_URL`, `COOLIFY_TOKEN` | Werkzeug (lokal) | Token ja | Tor B2 |
 

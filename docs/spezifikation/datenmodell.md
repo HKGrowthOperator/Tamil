@@ -633,7 +633,7 @@ Regeln; nur der Kategorie-Vorschlag entfällt.
 Reihenfolge je Platz: Advanced-Ads-Platzierung → eigenes Banner-HTML → Eigenanzeige → nichts. Fremde Inhalte werden bei
 eingeschalteter Zustimmung durch die Eigenanzeige ersetzt.
 
-### Angebot – spezifiziert, nicht gebaut
+### Angebot – gebaut (Option `tamil_site_werbung_angebote`)
 
 | Feld | Typ | Bedeutung |
 |---|---|---|
@@ -644,7 +644,7 @@ eingeschalteter Zustimmung durch die Eigenanzeige ersetzt.
 | `gleichzeitig` | Zahl | Vorschlag 1 (exklusiv) |
 | `vorlauf_werktage` | Zahl | Vorschlag 2 |
 
-### Buchung – spezifiziert, nicht gebaut
+### Buchung – gebaut (Tabellen `wp_tamil_werbebuchungen`, `…_werbetage`, `…_werbestatistik`, `…_werbeprotokoll`, `wp_tamil_stripe_ereignisse`)
 
 | Feld | Typ | Pflicht | Herkunft | Prüfung | Ändern | Frist |
 |---|---|---|---|---|---|---|

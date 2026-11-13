@@ -19,8 +19,12 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Datenversion dieses Plugins. Erhöhen, sobald ein Baustein Seiten, Rechte, Tabellen oder Schritte neu anmeldet.
+ *
+ * Nummerierte Schritte (jede Nummer genau einmal, angemeldet in der Datei des Bausteins):
+ *   2: Einsendungen F1 (includes/einsendungen.php)
+ *   3: Werbebuchung F3 (includes/werbung.php)
  */
-define( 'TAMIL_SITE_DATENVERSION', 2 ); // 2: Einsendungen (includes/einsendungen.php)
+define( 'TAMIL_SITE_DATENVERSION', 3 );
 
 /**
  * Sperre gegen gleichzeitige Läufe: so viele Sekunden gilt eine liegengebliebene Sperre noch.

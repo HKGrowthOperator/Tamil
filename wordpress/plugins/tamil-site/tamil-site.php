@@ -32,6 +32,11 @@ require_once TAMIL_SITE_DIR . 'includes/einsendungen.php';
 require_once TAMIL_SITE_DIR . 'includes/einsendungen-formular.php';
 require_once TAMIL_SITE_DIR . 'includes/einsendungen-admin.php';
 require_once TAMIL_SITE_DIR . 'includes/admin.php';
+require_once TAMIL_SITE_DIR . 'includes/werbung.php';
+require_once TAMIL_SITE_DIR . 'includes/werbung-stripe.php';
+require_once TAMIL_SITE_DIR . 'includes/werbung-zaehlung.php';
+require_once TAMIL_SITE_DIR . 'includes/werbung-seiten.php';
+require_once TAMIL_SITE_DIR . 'includes/werbung-admin.php';
 
 register_activation_hook( __FILE__, 'flush_rewrite_rules' );
 register_deactivation_hook( __FILE__, 'flush_rewrite_rules' );
