@@ -28,6 +28,8 @@ META_FIELDS = (
     ("ticket_url", "ticket_url"),
 )
 
+TERMIN_FAKTEN = ("event_ende", "event_veranstalter", "event_preis", "event_land")
+
 
 def radar_meta(row: dict) -> dict:
     """Meta für das Plugin: Herkunft, Bildnachweis, Ort, Event- und Kinodaten."""
@@ -40,6 +42,11 @@ def radar_meta(row: dict) -> dict:
             meta[key] = value
     if row.get("typ") == "kino_termine" and row.get("fakten"):
         meta["kino_fakten"] = row["fakten"]
+    if row.get("typ") == "event":  # Termin aus einer Einsendung (F1): Ende, Veranstalter, Eintritt, Land für den Kalender
+        for key in TERMIN_FAKTEN:
+            value = (row.get("fakten") or {}).get(key)
+            if value not in (None, ""):
+                meta[key] = value
     if row.get("typ") != "event":
         for key in ("event_datum", "event_ort", "ticket_url"):
             meta.pop(key, None)

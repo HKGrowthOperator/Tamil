@@ -152,6 +152,54 @@ class TamilRadarClient:
     def edit_link(self, post: dict) -> str:
         return post.get("edit_link") or f"{self.base}/wp-admin/post.php?post={post.get('id')}&action=edit"
 
+    # ---- Einsendungen (F1, integrationen.md §3): der Radar holt ab, WordPress ruft nie den Radar --------------
+    @staticmethod
+    def _vorgang(vorgang: str) -> str:
+        if not VORGANG_RE.fullmatch(vorgang or ""):
+            raise ValueError(f"keine gültige Vorgangsnummer: {vorgang[:40]!r}")
+        return vorgang
+
+    def einsendungen(self, nach: int, anzahl: int = 50) -> dict | None:
+        """Neue Einsendungen ab dem Cursor. None bei 503 (Funktion aus oder tamil-site fehlt: nichts abzuholen)."""
+        code, data = self._req("GET", "einsendungen", params={"nach": int(nach), "anzahl": int(anzahl)})
+        if code == 503:
+            return None
+        if code != 200 or not isinstance(data.get("einsendungen"), list):
+            raise RuntimeError(f"WordPress GET einsendungen -> {code}: {str(data)[:300]}")
+        return data
+
+    def einsendung(self, vorgang: str) -> dict | None:
+        """Eine Einsendung; None, wenn es sie (nicht mehr) gibt."""
+        code, data = self._req("GET", f"einsendung/{self._vorgang(vorgang)}")
+        if code == 404:
+            return None
+        if code != 200:
+            raise RuntimeError(f"WordPress GET einsendung -> {code}: {str(data)[:300]}")
+        return data
+
+    def einsendung_status(self, vorgang: str, status: str) -> dict:
+        """Status setzen. 409 (schon anders abgeschlossen) → {"konflikt": True, "aktuell": …}; 404 → {"fehlt": True}."""
+        code, data = self._req("POST", f"einsendung/{self._vorgang(vorgang)}/status", json={"status": status})
+        if code == 409:
+            extra = data.get("data") if isinstance(data.get("data"), dict) else {}
+            return {"konflikt": True, "aktuell": extra.get("aktuell", "")}
+        if code == 404:
+            return {"fehlt": True}
+        if code != 200:
+            raise RuntimeError(f"WordPress POST einsendung/status -> {code}: {str(data)[:300]}")
+        return data
+
+    def einsendung_bild(self, vorgang: str) -> dict | None:
+        code, data = self._req("GET", f"einsendung/{self._vorgang(vorgang)}/bild")
+        if code == 404:
+            return None
+        if code != 200:
+            raise RuntimeError(f"WordPress GET einsendung/bild -> {code}: {str(data)[:300]}")
+        return data
+
+
+VORGANG_RE = re.compile(r"T\d{6}-[A-HJ-NP-Z2-9]{5}")
+
 
 def make_client(base_url: str, user: str, app_password: str, session: requests.Session | None = None):
     """Plugin-Client, wenn das Tamil.de-Plugin antwortet, sonst der Core-REST-Client."""

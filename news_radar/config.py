@@ -133,6 +133,7 @@ ROLLEN_MODELLE = {
     "lektorat": "claude-haiku-5-5",
     "seo": "claude-haiku-5-5",
     "dossier": "claude-opus-5-5",
+    "eingang": "claude-haiku-5-5",  # Einsendungen (F1): Zusammenfassung und Entwurf nur aus den Angaben
 }
 BILD_REIHENFOLGE = ("archiv", "quelle", "stock", "pool", "ki", "karte")
 

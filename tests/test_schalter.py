@@ -68,8 +68,8 @@ def test_migration_legt_tabellen_und_spalten_an(store):
     assert {"schalter", "dienst_laeufe"} <= tabellen
     spalten = {r[1] for r in store.db.execute("PRAGMA table_info(editorial_actions)")}
     assert {"gegenstand_typ", "gegenstand_id", "kanal", "regel_fassung", "ausloeser"} <= spalten
-    # keine Tabellen für spätere Bausteine
-    assert not tabellen & {"einsendungen", "verzeichnis", "werbung", "regeln"}
+    # keine Tabellen für spätere Bausteine (Einsendungen gibt es seit Migration 11, Baustein F1)
+    assert not tabellen & {"verzeichnis", "werbung", "regeln"}
 
 
 def _schema_dump(path) -> list:

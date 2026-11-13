@@ -180,6 +180,8 @@ def main(argv: list[str] | None = None) -> int:
     bw.add_argument("aktion", choices=("vergleich", "bogen", "auswerten"))
     bw.add_argument("--anzahl", type=int, default=10)
     bw.add_argument("--ordner", default="data/bewertung")
+    eg = sub.add_parser("eingang", help="Einsendungen der Website (F1): lauf = abholen + vorbereiten, loeschen = Frist")
+    eg.add_argument("aktion", choices=["lauf", "loeschen", "status"])
     ab = sub.add_parser("abnahme", help="Abnahme-Szenarien mit FakeClaude")
     ab.add_argument("--bericht", default="data/abnahme-bericht.md")
     ab.add_argument("--nur", type=int, nargs="*", help="nur diese Szenario-Nummern")
@@ -434,6 +436,24 @@ def main(argv: list[str] | None = None) -> int:
                 zustand = "angehalten" if z["gestoppt"] else "läuft"
                 extra = f"  seit {z['seit']} · {z['wer']} · {z['grund']}" if z["gestoppt"] else ""
                 print(f"{z['kanal']:12} {zustand:11}{extra}")
+        return 0
+
+    if args.cmd == "eingang":
+        from . import eingang
+
+        with Store(settings.db_path) as store:
+            if args.aktion == "loeschen":
+                out = eingang.loeschen(store)
+            elif args.aktion == "status":
+                out = eingang.zaehlen(store)
+            elif not settings.wordpress_enabled:
+                print("WordPress nicht eingerichtet (WP_URL, WP_USER, WP_APP_PASSWORD) – nichts abzuholen")
+                return 0
+            else:
+                from .workflow.orchestrator import kontext
+
+                out = eingang.lauf(store, eingang.client_fuer(settings), kontext(settings, store).claude)
+        print(", ".join(f"{k} {v}" for k, v in out.items() if v) or "nichts zu tun")
         return 0
 
     if args.cmd == "dossier":

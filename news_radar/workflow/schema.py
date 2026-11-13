@@ -156,7 +156,35 @@ V6 = [
 ]
 # Letzter Abruf mit Teilausfall: zählt für den Takt (interval_minutes) wie last_ok, ohne als Erfolg zu gelten
 V7 = ["ALTER TABLE source_status ADD COLUMN last_try TEXT"]
-MIGRATIONS: dict[int, list[str]] = {2: V2, 3: V3, 4: V4, 5: V5, 6: V6, 7: V7}
+# V11: Eingang (Festlegung F1) – abgeholte Einsendungen der Website mit Status, Hinweisen des Agenten, Entwurf und
+# Notiz der Redaktion; `wp_status` ist der zuletzt von WordPress bestätigte Status (Abgleich nach unklarem Ausgang).
+# Personendaten (name, email, telefon) nur hier; Löschung 90 Tage nach Abschluss, Spam nach 7 Tagen (eingang.loeschen).
+# 8–10 sind für parallele Bausteine reserviert.
+V11 = [
+    """CREATE TABLE IF NOT EXISTS einsendungen (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        wp_id INTEGER NOT NULL UNIQUE,          -- id auf der Website (Cursor)
+        vorgangsnummer TEXT NOT NULL UNIQUE,    -- T261113-K7M3Q
+        art TEXT NOT NULL,                      -- event | beitrag | kooperation | werbung | kontakt
+        status TEXT NOT NULL DEFAULT 'abgeholt',-- abgeholt | vorbereitet | uebernommen | erledigt | abgelehnt | spam
+        wp_status TEXT,                         -- zuletzt bestätigt: eingegangen | abgeholt | Abschluss | fehlt
+        eingang_at TEXT, abgeholt_at TEXT NOT NULL, vorbereitet_at TEXT, abgeschlossen_at TEXT,
+        name TEXT, email TEXT, telefon TEXT,
+        einwilligung INTEGER NOT NULL DEFAULT 0, einwilligung_fassung TEXT,
+        felder TEXT NOT NULL DEFAULT '{}',      -- JSON je Art
+        bild TEXT,                              -- JSON: typ, groesse, sha256, recht_bestaetigt (ohne Datei)
+        zusammenfassung TEXT,
+        hinweise TEXT NOT NULL DEFAULT '[]',    -- JSON-Liste
+        dublette_von TEXT,                      -- story:12 | entwurf:5 | einsendung:T…
+        entwurf TEXT,                           -- JSON: titel, teaser, absaetze, quelle (regeln | modell)
+        entwurf_id INTEGER,                     -- Entwurf nach „übernehmen“
+        notiz TEXT, bearbeitet_von TEXT,
+        versuche INTEGER NOT NULL DEFAULT 0,
+        aktualisiert TEXT NOT NULL)""",
+    "CREATE INDEX IF NOT EXISTS einsendungen_status ON einsendungen(status, eingang_at)",
+    "CREATE TABLE IF NOT EXISTS eingang_stand (schluessel TEXT PRIMARY KEY, wert TEXT)",  # Cursor der Abholung
+]
+MIGRATIONS: dict[int, list[str]] = {2: V2, 3: V3, 4: V4, 5: V5, 6: V6, 7: V7, 11: V11}
 LATEST = max(MIGRATIONS)
 
 
