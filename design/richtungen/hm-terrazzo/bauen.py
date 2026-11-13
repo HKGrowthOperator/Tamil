@@ -206,7 +206,7 @@ FESTE[dt.date(2026, 11, 8)] = ("Deepavali", "Berlin, Düsseldorf, München", "ar
 def kalenderboden(jahr, monat, gross=False):
     erster = dt.date(jahr, monat, 1)
     tage = (dt.date(jahr + (monat == 12), monat % 12 + 1, 1) - erster).days
-    zellen_ = ['<td class="leer"></td>'] * erster.weekday()
+    zellen_ = ['<td class="kb__leer"></td>'] * erster.weekday()
     for t in range(1, tage + 1):
         d = dt.date(jahr, monat, t)
         cls = []
@@ -222,7 +222,7 @@ def kalenderboden(jahr, monat, gross=False):
         c = f' class="{" ".join(cls)}"' if cls else ""
         zellen_.append(f'<td{c}>{inhalt}</td>')
     while len(zellen_) % 7:
-        zellen_.append('<td class="leer"></td>')
+        zellen_.append('<td class="kb__leer"></td>')
     rows = "".join("<tr>" + "".join(zellen_[i:i + 7]) + "</tr>" for i in range(0, len(zellen_), 7))
     kopf_ = "".join(f'<th scope="col"><abbr title="{TAGE[i]}">{KURZ[i]}</abbr></th>' for i in range(7))
     return (f'<table class="kb{" kb--gross" if gross else ""}"><caption>{MONATE[monat - 1]} {jahr}</caption>'
@@ -250,8 +250,8 @@ def nachricht(sid):
 
 
 NACHRICHTEN = sorted((85, 87, 51, 39), key=lambda i: BEI[i]["datum"], reverse=True)
-erster_satz, _, rest = a["teaser"].partition(". ")
-hero = (f'<section class="feldplan" aria-label="Aufmacher, Kalender und Nachrichten"><div class="container steine">'
+erster_satz, rest = re.split(r"(?<=[a-zäöüß])\. ", a["teaser"], maxsplit=1)
+hero = (f'<section class="feldplan" aria-label="Aufmacher und Festkalender"><div class="container steine">'
         f'<article class="stein stein--auf aufmacher" aria-labelledby="a-h">{figur(a, "bild--16-9", lazy=False, fakt=False, href="artikel.html")}'
         f'<h1 id="a-h"><a href="artikel.html">{e(a["titel"])}</a></h1>'
         f'<div class="aufmacher__fuss"><p class="meta"><time datetime="2026-11-08">8. November 2026</time><span class="nur-gross"> in Berlin, Düsseldorf und München</span></p>'
@@ -259,8 +259,9 @@ hero = (f'<section class="feldplan" aria-label="Aufmacher, Kalender und Nachrich
         f'<p class="lead aufmacher__lead">{e(erster_satz)}.<span class="nur-gross"> {e(rest)}</span></p></article>'
         f'<div class="stein stein--kal" aria-labelledby="kal-h"><h2 id="kal-h" class="feld__kopf">Festkalender</h2>{kalenderboden(2026, 11)}'
         f'<ul class="kb__liste">{feste_des_monats(11)}</ul><p class="weiter"><a class="textlink" href="termine.html">Alle Feste 2026</a></p></div>'
-        f'<div class="stein stein--nach" id="nachrichten"><h2 class="feld__kopf feld__kopf--still">Nachrichten</h2>'
-        f'<ul class="reihen">{"".join(nachricht(i) for i in NACHRICHTEN)}</ul></div></div></section>')
+        f'</div></section>')
+nach_feld = (f'<div class="feld stein--nach" id="nachrichten"><h2 class="feld__kopf feld__kopf--still">Nachrichten</h2>'
+             f'<ul class="reihen">{"".join(nachricht(i) for i in NACHRICHTEN)}</ul></div>')
 
 def kino_zeile(k):
     weiter = f" und {k['weitere_staedte']} weitere Städte" if k["weitere_staedte"] else ""
@@ -269,10 +270,10 @@ def kino_zeile(k):
 
 
 kino_liste = "".join(kino_zeile(k) for k in KINO)
-dienst = (f'<section class="abschnitt abschnitt--fuge" aria-label="Kino"><div class="container feldreihe feldreihe--5-7">'
-          f'<div class="feld"><h2 class="feld__kopf">Tamilisches Kino</h2><p class="lead">„{e(scene["titel"])}“ läuft in {scene["kinos"]} Kinos, „{e(rama["titel"])}“ in {rama["kinos"]}.</p></div>'
+dienst = (f'<section class="abschnitt abschnitt--fuge zweit" aria-label="Nachrichten und Kino"><div class="container feldreihe feldreihe--7-5">{nach_feld}'
+          f'<div class="feld"><h2 class="feld__kopf">Tamilisches Kino</h2><p>„{e(scene["titel"])}“ läuft in {scene["kinos"]} Kinos, „{e(rama["titel"])}“ in {rama["kinos"]}.</p>'
 
-          f'<div class="feld"><h3 class="visually-hidden">Filme und Städte</h3><ul class="kino">{kino_liste}</ul>'
+          f'<ul class="kino">{kino_liste}</ul>'
           f'<p class="meta">Stand: 9. November 2026, aus den Programmen der Kinos.</p>'
           f'<p class="weiter"><a class="textlink" href="kino.html">Alle Städte</a></p></div></div></section>')
 

@@ -6,11 +6,9 @@
 @import url("./base.css");
 
 @font-face { font-family: "Hanken Grotesk"; src: url("./schriften/hanken-grotesk-latin-wght-normal.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: swap; }
-@font-face { font-family: "IBM Plex Mono"; src: url("./schriften/plex-mono-latin-400.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
-@font-face { font-family: "IBM Plex Mono"; src: url("./schriften/plex-mono-latin-500.woff2") format("woff2"); font-weight: 500; font-style: normal; font-display: swap; }
 
 /* Marke wie die Linie (design/richtungen/hm-almanac/almanac.css, Stand 13.11. 20:55): helles Schieferpapier, fast weisser Bogen,
- * Hanken Grotesk auch im Text, Ziffern in IBM Plex Mono, Akzent im Rot des Logos. App-Skala 1.2, fest, ohne fliessende Koepfe. */
+ * Hanken Grotesk auch im Text und in den Ziffern (Tabellenziffern; IBM Plex Mono nach Kritik cockpits-r1 entfernt), Akzent im Rot des Logos. App-Skala 1.2, fest, ohne fliessende Koepfe. */
 :root {
   --color-paper: oklch(95.5% 0.008 245); --color-paper-2: oklch(92.5% 0.009 245); --color-paper-3: oklch(89% 0.010 245);
   --color-ink: oklch(16% 0.020 245); --color-ink-2: oklch(26% 0.018 245); --color-muted: oklch(46% 0.016 245);
@@ -35,12 +33,12 @@ h3 { font-size: var(--text-md); }
 a { color: var(--color-ink); text-decoration-color: var(--color-accent); text-underline-offset: 0.15em; transition: text-decoration-color var(--dur-micro) var(--ease-out); }
 a:hover { text-decoration-thickness: 2px; }
 a:active { color: var(--color-accent-2); }
-.num { font-family: var(--font-outlier); font-variant-numeric: tabular-nums; }
+.num { font-family: var(--font-body); font-variant-numeric: tabular-nums lining-nums; }
 .muted { color: var(--color-muted); }
 .klein { font-size: var(--text-sm); }
 time { font-variant-numeric: tabular-nums; }
 b, strong { font-weight: 600; }
-code { font-family: var(--font-outlier); font-size: 0.9em; }
+code { font-family: var(--font-body); font-variant-numeric: tabular-nums lining-nums; font-size: 0.95em; }
 
 .skip { display: inline-flex; align-items: center; min-height: var(--hit); position: absolute; left: var(--space-md); top: calc(-1 * var(--space-3xl)); z-index: var(--z-toast); padding: var(--space-xs) var(--space-md); background: var(--color-ink); color: var(--color-sheet); }
 .skip:focus-visible { top: var(--space-md); outline-color: var(--color-focus); }
@@ -252,7 +250,7 @@ fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
 .chart .gitter { stroke: var(--color-rule); stroke-width: 1; }
 .chart .series { fill: none; stroke: var(--color-accent); stroke-width: 2; vector-effect: non-scaling-stroke; }
 .chart .punkt { fill: var(--color-accent); }
-.chart text { font-family: var(--font-outlier); font-size: 13px; fill: var(--color-ink-2); }
+.chart text { font-family: var(--font-body); font-variant-numeric: tabular-nums lining-nums; font-size: 13px; fill: var(--color-ink-2); }
 .chart .lbl { font-family: var(--font-body); fill: var(--color-muted); }
 .chart-rahmen { margin: 0; }
 .chart-rahmen figcaption { margin-top: var(--space-xs); font-size: var(--text-sm); color: var(--color-muted); max-width: 70ch; }
