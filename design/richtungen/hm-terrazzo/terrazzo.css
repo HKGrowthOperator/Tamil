@@ -405,3 +405,5 @@ input:disabled, select:disabled, textarea:disabled { opacity: 0.55; cursor: not-
   .hauptnav a { min-height: 44px; }
 }
 @media (prefers-reduced-motion: reduce) { .btn, .textlink, .hauptnav a, .spec tbody tr, .anzeige__flaeche, .kopf__aktion { transition: none; } }
+.feld > .bild + .titel { margin-top: var(--space-sm); }
+.feld > .titel + .meta, .feld > .titel + .reihe__text { margin-top: calc(-1 * var(--space-xs)); }
