@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Termin einreichen | tamil.de</title>
+<meta name="description" content="Vereine und Tempel melden hier ihr Fest für den Festkalender von tamil.de.">
+<link rel="stylesheet" href="formular.css">
+</head>
+<body>
+<a class="skip" href="#main">Zum Inhalt springen</a>
+<div class="banner"><div class="container"><a href="index.html#jahr">Rückblick 2026 in zwanzig Berichten</a></div></div>
+<header class="bar" data-bar>
+  <div class="container bar__in">
+    <a class="bar__logo" href="index.html" aria-label="tamil.de, zur Startseite"><img src="bilder/logo.png" width="300" height="121" alt=""></a>
+    <nav aria-label="Hauptnavigation">
+      <ul><li><a href="termine.html">Termine</a></li><li><a href="kino.html">Kino</a></li><li><a href="rubrik.html">Community</a></li><li><a href="verzeichnis.html">Verzeichnis</a></li></ul>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero" aria-labelledby="titel">
+    <div class="container grid kopfzeile">
+      <div class="kopfzeile__text">
+        <h1 id="titel">Termin einreichen</h1>
+        <p class="lead">Vereine und Tempel melden hier ihr Fest; die Redaktion prüft jeden Termin, bevor er im Festkalender steht.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="container grid formular-seite">
+    <form class="formular" action="einreichen-danke.html" method="get" data-form data-danke="einreichen-danke.html" novalidate aria-labelledby="titel">
+      <p class="formular__fehler" data-fehler tabindex="-1" hidden></p>
+      <fieldset>
+        <legend>Der Termin</legend>
+        <div class="feld"><label for="t-titel">Titel <span class="pflicht">Pflicht</span></label><input id="t-titel" name="titel" type="text" required aria-describedby="t-titel-hilfe"><p class="hilfe" id="t-titel-hilfe" aria-live="polite"></p></div>
+        <div class="reihe">
+          <div class="feld"><label for="t-datum">Datum <span class="pflicht">Pflicht</span></label><input id="t-datum" name="datum" type="date" required aria-describedby="t-datum-hilfe" min="2026-11-13"><p class="hilfe" id="t-datum-hilfe" aria-live="polite"></p></div>
+          <div class="feld"><label for="t-zeit">Beginn <span class="pflicht">Pflicht</span></label><input id="t-zeit" name="zeit" type="time" required aria-describedby="t-zeit-hilfe"><p class="hilfe" id="t-zeit-hilfe" aria-live="polite"></p></div>
+        </div>
+        <div class="reihe">
+          <div class="feld"><label for="t-ende-datum">Ende, Datum <span class="frei">freiwillig</span></label><input id="t-ende-datum" name="ende-datum" type="date" aria-describedby="t-ende-datum-hilfe"><p class="hilfe" id="t-ende-datum-hilfe" aria-live="polite"></p></div>
+          <div class="feld"><label for="t-ende-zeit">Ende, Uhrzeit <span class="frei">freiwillig</span></label><input id="t-ende-zeit" name="ende-zeit" type="time" aria-describedby="t-ende-zeit-hilfe"><p class="hilfe" id="t-ende-zeit-hilfe" aria-live="polite"></p></div>
+        </div>
+        <div class="feld"><label for="t-veranstalter">Veranstalter <span class="pflicht">Pflicht</span></label><p class="hinweis-feld">Verein, Tempel oder Person, die einlädt.</p><input id="t-veranstalter" name="veranstalter" type="text" required aria-describedby="t-veranstalter-hilfe"><p class="hilfe" id="t-veranstalter-hilfe" aria-live="polite"></p></div>
+        <div class="feld"><label for="t-beschreibung">Beschreibung <span class="pflicht">Pflicht</span></label><p class="hinweis-feld">Was erwartet die Gäste? Höchstens drei Links.</p><textarea id="t-beschreibung" name="beschreibung" rows="6" required aria-describedby="t-beschreibung-hilfe"></textarea><p class="hilfe" id="t-beschreibung-hilfe" aria-live="polite"></p></div>
+      </fieldset>
+      <fieldset>
+        <legend>Der Ort</legend>
+        <div class="feld"><label for="t-adresse">Ort mit Adresse <span class="pflicht">Pflicht</span></label><p class="hinweis-feld">Zum Beispiel Saal, Straße und Hausnummer.</p><input id="t-adresse" name="adresse" type="text" required autocomplete="street-address" aria-describedby="t-adresse-hilfe"><p class="hilfe" id="t-adresse-hilfe" aria-live="polite"></p></div>
+        <div class="reihe">
+          <div class="feld"><label for="t-stadt">Stadt <span class="pflicht">Pflicht</span></label><input id="t-stadt" name="stadt" type="text" required autocomplete="address-level2" aria-describedby="t-stadt-hilfe"><p class="hilfe" id="t-stadt-hilfe" aria-live="polite"></p></div>
+          <fieldset class="seg seg--klein" aria-describedby="t-land-hilfe">
+            <legend>Land <span class="pflicht">Pflicht</span></legend>
+            <input type="radio" name="land" id="t-land-DE" value="DE" required><label for="t-land-DE">Deutschland</label><input type="radio" name="land" id="t-land-AT" value="AT"><label for="t-land-AT">Österreich</label><input type="radio" name="land" id="t-land-CH" value="CH"><label for="t-land-CH">Schweiz</label>
+            <p class="hilfe" id="t-land-hilfe" aria-live="polite"></p>
+          </fieldset>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Eintritt und Bild</legend>
+        <div class="reihe">
+          <div class="feld"><label for="t-eintritt">Eintritt <span class="frei">freiwillig</span></label><p class="hinweis-feld">Zum Beispiel frei oder ein Betrag.</p><input id="t-eintritt" name="eintritt" type="text" aria-describedby="t-eintritt-hilfe"><p class="hilfe" id="t-eintritt-hilfe" aria-live="polite"></p></div>
+          <div class="feld"><label for="t-tickets">Link zu den Tickets <span class="frei">freiwillig</span></label><input id="t-tickets" name="tickets" type="url" autocomplete="url" aria-describedby="t-tickets-hilfe"><p class="hilfe" id="t-tickets-hilfe" aria-live="polite"></p></div>
+        </div>
+        <div class="feld"><label for="t-bild">Bild <span class="frei">freiwillig</span></label><p class="hinweis-feld">JPEG oder PNG, höchstens 5 MB. Bis zur Freigabe sieht es niemand.</p><input id="t-bild" name="bild" type="file" aria-describedby="t-bild-hilfe" accept="image/jpeg,image/png"><p class="hilfe" id="t-bild-hilfe" aria-live="polite"></p></div>
+        <div class="feld feld--check">
+          <input id="t-bildrecht" name="bildrecht" type="checkbox">
+          <label for="t-bildrecht">Ich darf dieses Bild weitergeben, und tamil.de darf es zum Termin zeigen.</label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Für Rückfragen</legend>
+        <p class="legende-satz">Nur für die Redaktion, nie öffentlich.</p>
+        <div class="reihe">
+          <div class="feld"><label for="t-name">Name <span class="pflicht">Pflicht</span></label><input id="t-name" name="name" type="text" required autocomplete="name" aria-describedby="t-name-hilfe"><p class="hilfe" id="t-name-hilfe" aria-live="polite"></p></div>
+          <div class="feld"><label for="t-email">E-Mail <span class="pflicht">Pflicht</span></label><input id="t-email" name="email" type="email" required autocomplete="email" aria-describedby="t-email-hilfe"><p class="hilfe" id="t-email-hilfe" aria-live="polite"></p></div>
+        </div>
+        <div class="feld"><label for="t-telefon">Telefon <span class="frei">freiwillig</span></label><input id="t-telefon" name="telefon" type="tel" autocomplete="tel" aria-describedby="t-telefon-hilfe"><p class="hilfe" id="t-telefon-hilfe" aria-live="polite"></p></div>
+        <div class="feld feld--check">
+          <input id="t-ok" name="einwilligung" type="checkbox" required aria-describedby="t-ok-hilfe">
+          <label for="t-ok">Ich bin einverstanden, dass tamil.de meine Angaben für diese Anfrage speichert und nach 90 Tagen löscht. <span class="fill">Einwilligungstext folgt von KBS</span> <span class="fill">Datenschutzerklärung folgt</span></label>
+          <p class="hilfe" id="t-ok-hilfe" aria-live="polite"></p>
+        </div>
+        <div class="falle" aria-hidden="true"><label for="t-web">Nicht ausfüllen</label><input id="t-web" name="webseite" type="text" tabindex="-1" autocomplete="off"></div>
+      </fieldset>
+      <p class="actions"><button class="btn btn--primary" type="submit">Termin einreichen</button></p>
+    </form>
+
+    <aside class="rand" aria-labelledby="r-danach">
+      <figure class="sheet">
+        <figcaption class="sheet__head"><span class="sheet__title" id="r-danach">Was danach passiert</span></figcaption>
+        <ol class="ablauf">
+          <li>Die Redaktion sieht Ihre Angaben im Eingang.</li>
+          <li>Sie prüft Datum und Ort und fragt bei Bedarf nach.</li>
+          <li>Nach der Freigabe steht der Termin im <a href="termine.html">Festkalender</a>, mit Ort, Eintritt und Veranstalter.</li>
+        </ol>
+        <p class="sheet__note">Es geht keine automatische E-Mail hinaus. Jeder Termin wird einzeln eingereicht.</p>
+      </figure>
+    </aside>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="container">
+    <div class="grid foot__cols">
+      <div class="foot__brand">
+        <img src="bilder/logo.png" width="300" height="121" alt="tamil.de">
+        <p>Das Magazin der tamilischen Community.</p>
+      </div>
+      <nav class="foot__col" aria-labelledby="f-dienste">
+        <p class="foot__h" id="f-dienste">Dienste</p>
+        <ul><li><a href="termine.html">Festkalender</a></li><li><a href="kino.html">Kino</a></li><li><a href="verzeichnis.html">Verzeichnis</a></li><li><a href="index.html#jahr">Rückblick 2026</a></li></ul>
+      </nav>
+      <nav class="foot__col" aria-labelledby="f-mit">
+        <p class="foot__h" id="f-mit">Mitmachen</p>
+        <ul><li><a href="einreichen.html">Termin einreichen</a></li><li><a href="werben.html">Werben</a></li><li><a href="kontakt.html">Kontakt</a></li></ul>
+      </nav>
+      <nav class="foot__col" aria-labelledby="f-rubriken">
+        <p class="foot__h" id="f-rubriken">Rubriken</p>
+        <ul><li><a href="index.html#jahr">Nachrichten</a></li><li><a href="rubrik.html">Community</a></li><li><a href="index.html#jahr">Kultur</a></li><li><a href="termine.html">Events</a></li><li><a href="kino.html">Kino</a></li><li><a href="index.html#jahr">Küche</a></li><li><a href="index.html#jahr">Sport</a></li></ul>
+      </nav>
+      <div class="foot__credits"><p class="foot__h">Bildnachweis</p><p>Auf dieser Seite steht kein Foto.</p></div>
+    </div>
+    <div class="foot__legal">
+      <span class="fill" data-fill="impressum">Impressum folgt</span>
+      <span class="fill" data-fill="datenschutz">Datenschutz folgt</span>
+      <span>© 2026 tamil.de, KBS Digitalmedia</span>
+    </div>
+  </div>
+</footer>
+<script src="site.js"></script>
+<script>window.hallmarkSlots = (m) => { for (const [k, v] of Object.entries(m)) { const s = document.querySelector(`[data-slot="${k}"]`); if (!s) continue; const im = new Image(); im.src = typeof v === 'string' ? v : v.src; im.alt = (typeof v === 'object' && v.alt) || s.dataset.alt || ''; s.querySelectorAll(':scope > img').forEach((o) => o.remove()); s.prepend(im); } };
+document.querySelectorAll('[data-slot] img').forEach((i) => { if (i.complete && !i.naturalWidth) i.remove(); else i.addEventListener('error', () => i.remove(), { once: true }); });</script>
+</body>
+</html>

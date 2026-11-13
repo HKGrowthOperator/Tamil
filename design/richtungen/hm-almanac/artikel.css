@@ -28,7 +28,6 @@
 .rand .tafel { font-size: var(--text-sm); }
 .rand .tafel td.tag { width: 6.5rem; }
 .rand .btn { align-self: flex-start; }
-.rand .tafel .is-next td:first-child { box-shadow: none; padding-inline-start: 0; }
 
 .weiter { border-top: var(--rule-bar) solid var(--color-rule-2); margin-block-start: var(--section-gap); padding-block-start: var(--space-2xl); align-items: start; }
 .weiter h2 { grid-column: 1 / span 4; }
@@ -41,3 +40,6 @@
 @media (max-width: 60rem) { .kopf__meta { border-top-width: var(--rule-hair); } }
 @media (max-width: 40rem) { .weiter__liste a { font-size: var(--text-md); } .weiter__liste li { grid-template-columns: 4rem minmax(0, 1fr); } }
 .kopf__meta .share a { display: inline-flex; align-items: center; min-height: 44px; }
+.bild--hoch { grid-column: 1 / span 8; }
+.bild--hoch .photo { aspect-ratio: 4 / 3; }
+.rand .tafel td a { text-decoration-thickness: 1px; }

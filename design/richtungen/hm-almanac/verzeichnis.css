@@ -1,0 +1,59 @@
+/* Hallmark · shape: Kalenderblatt, the directory and one profile · genre: editorial · theme: Almanac (deal 2/3, seed tamil-deutschsprachiges-online-magazin-der-ff32·6bcf19c0·2026-11-13·r0) · job: find · draw: 26f3b5 · copy: names and places from the reports, no contact invented
+ * hero: index · nav: banner over a retracting bar · footer: index columns · imagery: one Commons picture on the profile, marked as a stand-in · signature: the directory set as the printed sheet, each entry dated to the report it comes from
+ * axes: mid/grotesk-sans/chromatic-magenta (accent re-hued to the logo red) · posture: restrained · contrast: pass · fold: pass · v2.0.0 */
+/* Hallmark · pre-emit critique: P4 H4 E4 S4 R5 V4 · weakest: E, twelve entries without contact details; the column "Im Bericht" turns the gap into the line's own proof, and every missing field says so in a marked placeholder */
+@import url("./almanac.css");
+/* Hallmark · dismissed 58 · the filter form counts its labels and options as words; the window holds the head, the filter and the first rows of the sheet */
+
+.kopfzeile { padding-block: var(--space-2xl) var(--space-xl); align-items: end; row-gap: var(--space-lg); }
+.kopfzeile__text { grid-column: 1 / span 8; display: flex; flex-direction: column; gap: var(--space-md); }
+.kopfzeile h1 { font-size: var(--text-display-s); max-width: 22ch; letter-spacing: -0.03em; line-height: 1.02; }
+.kopfzeile__aktion { grid-column: 9 / span 4; justify-content: flex-end; }
+
+.vz { align-items: start; }
+.filter { grid-column: 1 / span 4; display: flex; flex-direction: column; gap: var(--space-lg); padding-block-start: var(--space-md); border-top: var(--rule-bar) solid var(--color-rule-2); position: sticky; top: var(--space-3xl); }
+.ort { margin: 0; padding: 0; border: 0; min-width: 0; display: flex; flex-direction: column; gap: var(--space-md); }
+.ort legend { padding: 0; margin-block-end: var(--space-xs); }
+.ort .feld label { font: 400 var(--text-sm)/1.3 var(--font-body); color: var(--color-ink-2); }
+.seg--art label .num { color: inherit; opacity: 0.8; }
+.vz__liste { grid-column: 5 / span 8; }
+.vz__liste .tafel td { padding-block: var(--space-md); }
+.vz__liste .tafel td.was { font-weight: 600; }
+.vz__liste .tafel .hinweis { display: block; }
+.vz__liste .tafel .zu a { display: inline-flex; align-items: center; min-height: 44px; }
+.sheet__leer { padding-block: var(--space-lg); color: var(--color-ink-2); }
+
+/* the profile */
+.profil-kopf { padding-block: var(--space-xl) var(--space-xl); }
+.zurueck a { display: inline-flex; align-items: center; min-height: 44px; font-size: var(--text-sm); }
+.profil-kopf .grid { align-items: end; row-gap: var(--space-lg); }
+.profil-kopf__text { grid-column: 1 / span 8; display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-md); }
+.profil-kopf h1 { font-size: var(--text-display-s); letter-spacing: -0.03em; line-height: 1.02; }
+.profil-kopf__hinweis { grid-column: 9 / span 4; font-size: var(--text-sm); color: var(--color-muted); padding-block-start: var(--space-sm); border-top: var(--rule-hair) solid var(--color-rule-2); }
+.profil { align-items: start; border-top: var(--rule-bar) solid var(--color-ink); padding-block-start: var(--space-xl); }
+.angaben { grid-column: 1 / span 5; }
+.tafel--dl th { width: 9.5rem; padding: var(--space-sm) var(--space-sm) var(--space-sm) 0; border-bottom: 0; border-top: var(--rule-hair) solid var(--color-rule); font: 400 var(--text-sm)/1.4 var(--font-body); color: var(--color-muted); white-space: normal; vertical-align: baseline; }
+.tafel--dl tbody tr:first-child th { border-top: 0; }
+.profil__text { grid-column: 7 / span 6; display: flex; flex-direction: column; gap: var(--space-lg); }
+.profil__text h2 { font-size: var(--text-2xl); }
+.profil__text > p { font-size: var(--text-prose); line-height: 1.6; }
+.profil__h { padding-block-start: var(--space-lg); border-top: var(--rule-bar) solid var(--color-rule-2); }
+.weiter__liste { margin: 0; padding: 0; list-style: none; }
+.weiter__liste li { display: grid; grid-template-columns: 5rem minmax(0, 1fr); gap: var(--space-md); align-items: baseline; }
+.weiter__liste a { font: 600 var(--text-title)/1.25 var(--font-display); letter-spacing: var(--tracking-display); }
+.weiter__liste .num { font-size: var(--text-sm); }
+
+@media (max-width: 60rem) {
+  .kopfzeile__aktion { justify-content: flex-start; }
+  .filter { position: static; }
+}
+@media (max-width: 40rem) {
+  .vz__liste .tafel tr { grid-template-columns: minmax(0, 1fr); }
+  .vz__liste .tafel td { grid-column: 1; padding: 0; }
+  .vz__liste .tafel td.zu { text-align: left; }
+  .tafel--dl tr { grid-template-columns: 7.5rem minmax(0, 1fr) !important; }
+  .tafel--dl th { border: 0; padding: 0; width: auto; }
+  .tafel--dl td { grid-column: 2 !important; }
+  .weiter__liste li { grid-template-columns: 4rem minmax(0, 1fr); }
+  .weiter__liste a { font-size: var(--text-md); }
+}

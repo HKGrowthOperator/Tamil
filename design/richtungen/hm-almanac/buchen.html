@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Werbeplatz buchen | tamil.de</title>
+<meta name="description" content="Einen Werbeplatz auf tamil.de in fünf Schritten buchen.">
+<link rel="stylesheet" href="werben.css">
+</head>
+<body>
+<a class="skip" href="#main">Zum Inhalt springen</a>
+<div class="banner"><div class="container"><a href="index.html#jahr">Rückblick 2026 in zwanzig Berichten</a></div></div>
+<header class="bar" data-bar>
+  <div class="container bar__in">
+    <a class="bar__logo" href="index.html" aria-label="tamil.de, zur Startseite"><img src="bilder/logo.png" width="300" height="121" alt=""></a>
+    <nav aria-label="Hauptnavigation">
+      <ul><li><a href="termine.html">Termine</a></li><li><a href="kino.html">Kino</a></li><li><a href="rubrik.html">Community</a></li><li><a href="verzeichnis.html">Verzeichnis</a></li></ul>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero" aria-labelledby="titel">
+    <div class="container grid kopfzeile">
+      <div class="kopfzeile__text">
+        <h1 id="titel">Werbeplatz buchen</h1>
+        <p class="lead">Fünf Schritte auf einer Seite; bezahlt wird am Ende bei Stripe.</p>
+      </div>
+      <nav class="kopfzeile__aktion schrittleiste" aria-label="Schritte der Buchung">
+        <ol>
+          <li><a href="#s1">Platz</a></li><li><a href="#s2">Start</a></li><li><a href="#s3">Angaben</a></li><li><a href="#s4">Werbemittel</a></li><li><a href="#s5">Bezahlen</a></li>
+        </ol>
+      </nav>
+    </div>
+  </section>
+
+  <form class="container buchung" action="buchen.html" method="get" data-form novalidate aria-labelledby="titel">
+    <p class="formular__fehler" data-fehler tabindex="-1" hidden></p>
+    <section class="schritt grid" id="s1" aria-labelledby="s1-h">
+      <h2 id="s1-h" class="schritt__h"><span class="num">1</span> Platz und Laufzeit</h2>
+      <div class="schritt__inhalt">
+        <fieldset class="wahl wahl--platz"><legend class="visually-hidden">Platz</legend><input type="radio" name="platz" id="pl-leaderboard" value="leaderboard" checked><label for="pl-leaderboard"><span class="pl-name">Leaderboard</span><span class="pl-wo">unter der Navigation, auf allen Seiten</span><span class="pl-mass"><span class="num">728 × 90</span> und <span class="num">320 × 50</span></span></label><input type="radio" name="platz" id="pl-sidebar" value="sidebar"><label for="pl-sidebar"><span class="pl-name">Half Page</span><span class="pl-wo">in der Seitenspalte</span><span class="pl-mass"><span class="num">300 × 600</span> und <span class="num">300 × 600</span></span></label><input type="radio" name="platz" id="pl-inarticle" value="inarticle"><label for="pl-inarticle"><span class="pl-name">Im Artikel</span><span class="pl-wo">nach dem zweiten Absatz</span><span class="pl-mass"><span class="num">728 × 90</span> und <span class="num">300 × 250</span></span></label><input type="radio" name="platz" id="pl-billboard" value="billboard"><label for="pl-billboard"><span class="pl-name">Billboard</span><span class="pl-wo">Startseite, zwischen den Rubriken</span><span class="pl-mass"><span class="num">970 × 250</span> und <span class="num">300 × 250</span></span></label><input type="radio" name="platz" id="pl-footer" value="footer"><label for="pl-footer"><span class="pl-name">Fuß</span><span class="pl-wo">über dem Fuß der Seite</span><span class="pl-mass"><span class="num">728 × 90</span> und <span class="num">320 × 100</span></span></label><input type="radio" name="platz" id="pl-mobile" value="mobile"><label for="pl-mobile"><span class="pl-name">Mobil</span><span class="pl-wo">am Handy fest am unteren Rand</span><span class="pl-mass">nur Handy und <span class="num">320 × 50</span></span></label></fieldset>
+        <fieldset class="seg"><legend>Laufzeit</legend><input type="radio" name="laufzeit" id="lz-7" value="7" checked><label for="lz-7"><span class="num">7</span> Tage</label><input type="radio" name="laufzeit" id="lz-14" value="14"><label for="lz-14"><span class="num">14</span> Tage</label><input type="radio" name="laufzeit" id="lz-30" value="30"><label for="lz-30"><span class="num">30</span> Tage</label></fieldset>
+      </div>
+    </section>
+
+    <section class="schritt grid" id="s2" aria-labelledby="s2-h">
+      <h2 id="s2-h" class="schritt__h"><span class="num">2</span> Startdatum</h2>
+      <div class="schritt__inhalt">
+        <fieldset class="kalender"><legend class="visually-hidden">Startdatum</legend>
+          <table class="monat"><caption>November 2026</caption><thead><tr><th scope="col"><abbr title="Mo">Mo</abbr></th><th scope="col"><abbr title="Di">Di</abbr></th><th scope="col"><abbr title="Mi">Mi</abbr></th><th scope="col"><abbr title="Do">Do</abbr></th><th scope="col"><abbr title="Fr">Fr</abbr></th><th scope="col"><abbr title="Sa">Sa</abbr></th><th scope="col"><abbr title="So">So</abbr></th></tr></thead><tbody><tr><td></td><td></td><td></td><td></td><td></td><td></td><td class="zu-frueh"><span class="tagzahl num" aria-label="1. November, gesperrt">1</span></td></tr><tr><td class="zu-frueh"><span class="tagzahl num" aria-label="2. November, gesperrt">2</span></td><td class="zu-frueh"><span class="tagzahl num" aria-label="3. November, gesperrt">3</span></td><td class="zu-frueh"><span class="tagzahl num" aria-label="4. November, gesperrt">4</span></td><td class="zu-frueh"><span class="tagzahl num" aria-label="5. November, gesperrt">5</span></td><td class="zu-frueh"><span class="tagzahl num" aria-label="6. November, gesperrt">6</span></td><td class="zu-frueh"><span class="tagzahl num" aria-label="7. November, gesperrt">7</span></td><td class="zu-frueh"><span class="tagzahl num" aria-label="8. November, gesperrt">8</span></td></tr><tr><td class="zu-frueh"><span class="tagzahl num" aria-label="9. November, gesperrt">9</span></td><td class="zu-frueh"><span class="tagzahl num" aria-label="10. November, gesperrt">10</span></td><td class="zu-frueh"><span class="tagzahl num" aria-label="11. November, gesperrt">11</span></td><td class="zu-frueh"><span class="tagzahl num" aria-label="12. November, gesperrt">12</span></td><td class="zu-frueh"><span class="tagzahl num" aria-label="13. November, gesperrt">13</span></td><td class="zu-frueh"><span class="tagzahl num" aria-label="14. November, gesperrt">14</span></td><td class="zu-frueh"><span class="tagzahl num" aria-label="15. November, gesperrt">15</span></td></tr><tr><td class="zu-frueh"><span class="tagzahl num" aria-label="16. November, gesperrt">16</span></td><td><input type="radio" name="start" id="tag-2026-11-17" value="2026-11-17"><label for="tag-2026-11-17" class="tagzahl num"><span class="visually-hidden">Di, </span>17<span class="visually-hidden">. November</span></label></td><td><input type="radio" name="start" id="tag-2026-11-18" value="2026-11-18"><label for="tag-2026-11-18" class="tagzahl num"><span class="visually-hidden">Mi, </span>18<span class="visually-hidden">. November</span></label></td><td><input type="radio" name="start" id="tag-2026-11-19" value="2026-11-19"><label for="tag-2026-11-19" class="tagzahl num"><span class="visually-hidden">Do, </span>19<span class="visually-hidden">. November</span></label></td><td><input type="radio" name="start" id="tag-2026-11-20" value="2026-11-20"><label for="tag-2026-11-20" class="tagzahl num"><span class="visually-hidden">Fr, </span>20<span class="visually-hidden">. November</span></label></td><td><input type="radio" name="start" id="tag-2026-11-21" value="2026-11-21"><label for="tag-2026-11-21" class="tagzahl num"><span class="visually-hidden">Sa, </span>21<span class="visually-hidden">. November</span></label></td><td><input type="radio" name="start" id="tag-2026-11-22" value="2026-11-22"><label for="tag-2026-11-22" class="tagzahl num"><span class="visually-hidden">So, </span>22<span class="visually-hidden">. November</span></label></td></tr><tr><td class="im-zeitraum"><input type="radio" name="start" id="tag-2026-11-23" value="2026-11-23" checked><label for="tag-2026-11-23" class="tagzahl num"><span class="visually-hidden">Mo, </span>23<span class="visually-hidden">. November</span></label></td><td class="im-zeitraum"><input type="radio" name="start" id="tag-2026-11-24" value="2026-11-24"><label for="tag-2026-11-24" class="tagzahl num"><span class="visually-hidden">Di, </span>24<span class="visually-hidden">. November</span></label></td><td class="im-zeitraum"><input type="radio" name="start" id="tag-2026-11-25" value="2026-11-25"><label for="tag-2026-11-25" class="tagzahl num"><span class="visually-hidden">Mi, </span>25<span class="visually-hidden">. November</span></label></td><td class="im-zeitraum"><input type="radio" name="start" id="tag-2026-11-26" value="2026-11-26"><label for="tag-2026-11-26" class="tagzahl num"><span class="visually-hidden">Do, </span>26<span class="visually-hidden">. November</span></label></td><td class="im-zeitraum"><input type="radio" name="start" id="tag-2026-11-27" value="2026-11-27"><label for="tag-2026-11-27" class="tagzahl num"><span class="visually-hidden">Fr, </span>27<span class="visually-hidden">. November</span></label></td><td class="im-zeitraum"><input type="radio" name="start" id="tag-2026-11-28" value="2026-11-28"><label for="tag-2026-11-28" class="tagzahl num"><span class="visually-hidden">Sa, </span>28<span class="visually-hidden">. November</span></label></td><td class="im-zeitraum"><input type="radio" name="start" id="tag-2026-11-29" value="2026-11-29"><label for="tag-2026-11-29" class="tagzahl num"><span class="visually-hidden">So, </span>29<span class="visually-hidden">. November</span></label></td></tr><tr><td><input type="radio" name="start" id="tag-2026-11-30" value="2026-11-30"><label for="tag-2026-11-30" class="tagzahl num"><span class="visually-hidden">Mo, </span>30<span class="visually-hidden">. November</span></label></td><td></td><td></td><td></td><td></td><td></td><td></td></tr></tbody></table>
+          <table class="monat"><caption>Dezember 2026</caption><thead><tr><th scope="col"><abbr title="Mo">Mo</abbr></th><th scope="col"><abbr title="Di">Di</abbr></th><th scope="col"><abbr title="Mi">Mi</abbr></th><th scope="col"><abbr title="Do">Do</abbr></th><th scope="col"><abbr title="Fr">Fr</abbr></th><th scope="col"><abbr title="Sa">Sa</abbr></th><th scope="col"><abbr title="So">So</abbr></th></tr></thead><tbody><tr><td></td><td><input type="radio" name="start" id="tag-2026-12-01" value="2026-12-01"><label for="tag-2026-12-01" class="tagzahl num"><span class="visually-hidden">Di, </span>1<span class="visually-hidden">. Dezember</span></label></td><td><input type="radio" name="start" id="tag-2026-12-02" value="2026-12-02"><label for="tag-2026-12-02" class="tagzahl num"><span class="visually-hidden">Mi, </span>2<span class="visually-hidden">. Dezember</span></label></td><td><input type="radio" name="start" id="tag-2026-12-03" value="2026-12-03"><label for="tag-2026-12-03" class="tagzahl num"><span class="visually-hidden">Do, </span>3<span class="visually-hidden">. Dezember</span></label></td><td><input type="radio" name="start" id="tag-2026-12-04" value="2026-12-04"><label for="tag-2026-12-04" class="tagzahl num"><span class="visually-hidden">Fr, </span>4<span class="visually-hidden">. Dezember</span></label></td><td><input type="radio" name="start" id="tag-2026-12-05" value="2026-12-05"><label for="tag-2026-12-05" class="tagzahl num"><span class="visually-hidden">Sa, </span>5<span class="visually-hidden">. Dezember</span></label></td><td><input type="radio" name="start" id="tag-2026-12-06" value="2026-12-06"><label for="tag-2026-12-06" class="tagzahl num"><span class="visually-hidden">So, </span>6<span class="visually-hidden">. Dezember</span></label></td></tr><tr><td><input type="radio" name="start" id="tag-2026-12-07" value="2026-12-07"><label for="tag-2026-12-07" class="tagzahl num"><span class="visually-hidden">Mo, </span>7<span class="visually-hidden">. Dezember</span></label></td><td><input type="radio" name="start" id="tag-2026-12-08" value="2026-12-08"><label for="tag-2026-12-08" class="tagzahl num"><span class="visually-hidden">Di, </span>8<span class="visually-hidden">. Dezember</span></label></td><td><input type="radio" name="start" id="tag-2026-12-09" value="2026-12-09"><label for="tag-2026-12-09" class="tagzahl num"><span class="visually-hidden">Mi, </span>9<span class="visually-hidden">. Dezember</span></label></td><td><input type="radio" name="start" id="tag-2026-12-10" value="2026-12-10"><label for="tag-2026-12-10" class="tagzahl num"><span class="visually-hidden">Do, </span>10<span class="visually-hidden">. Dezember</span></label></td><td><input type="radio" name="start" id="tag-2026-12-11" value="2026-12-11"><label for="tag-2026-12-11" class="tagzahl num"><span class="visually-hidden">Fr, </span>11<span class="visually-hidden">. Dezember</span></label></td><td><input type="radio" name="start" id="tag-2026-12-12" value="2026-12-12"><label for="tag-2026-12-12" class="tagzahl num"><span class="visually-hidden">Sa, </span>12<span class="visually-hidden">. Dezember</span></label></td><td><input type="radio" name="start" id="tag-2026-12-13" value="2026-12-13"><label for="tag-2026-12-13" class="tagzahl num"><span class="visually-hidden">So, </span>13<span class="visually-hidden">. Dezember</span></label></td></tr><tr><td><input type="radio" name="start" id="tag-2026-12-14" value="2026-12-14"><label for="tag-2026-12-14" class="tagzahl num"><span class="visually-hidden">Mo, </span>14<span class="visually-hidden">. Dezember</span></label></td><td><input type="radio" name="start" id="tag-2026-12-15" value="2026-12-15"><label for="tag-2026-12-15" class="tagzahl num"><span class="visually-hidden">Di, </span>15<span class="visually-hidden">. Dezember</span></label></td><td><input type="radio" name="start" id="tag-2026-12-16" value="2026-12-16"><label for="tag-2026-12-16" class="tagzahl num"><span class="visually-hidden">Mi, </span>16<span class="visually-hidden">. Dezember</span></label></td><td><input type="radio" name="start" id="tag-2026-12-17" value="2026-12-17"><label for="tag-2026-12-17" class="tagzahl num"><span class="visually-hidden">Do, </span>17<span class="visually-hidden">. Dezember</span></label></td><td><input type="radio" name="start" id="tag-2026-12-18" value="2026-12-18"><label for="tag-2026-12-18" class="tagzahl num"><span class="visually-hidden">Fr, </span>18<span class="visually-hidden">. Dezember</span></label></td><td><input type="radio" name="start" id="tag-2026-12-19" value="2026-12-19"><label for="tag-2026-12-19" class="tagzahl num"><span class="visually-hidden">Sa, </span>19<span class="visually-hidden">. Dezember</span></label></td><td><input type="radio" name="start" id="tag-2026-12-20" value="2026-12-20"><label for="tag-2026-12-20" class="tagzahl num"><span class="visually-hidden">So, </span>20<span class="visually-hidden">. Dezember</span></label></td></tr><tr><td><input type="radio" name="start" id="tag-2026-12-21" value="2026-12-21"><label for="tag-2026-12-21" class="tagzahl num"><span class="visually-hidden">Mo, </span>21<span class="visually-hidden">. Dezember</span></label></td><td><input type="radio" name="start" id="tag-2026-12-22" value="2026-12-22"><label for="tag-2026-12-22" class="tagzahl num"><span class="visually-hidden">Di, </span>22<span class="visually-hidden">. Dezember</span></label></td><td><input type="radio" name="start" id="tag-2026-12-23" value="2026-12-23"><label for="tag-2026-12-23" class="tagzahl num"><span class="visually-hidden">Mi, </span>23<span class="visually-hidden">. Dezember</span></label></td><td><input type="radio" name="start" id="tag-2026-12-24" value="2026-12-24"><label for="tag-2026-12-24" class="tagzahl num"><span class="visually-hidden">Do, </span>24<span class="visually-hidden">. Dezember</span></label></td><td><input type="radio" name="start" id="tag-2026-12-25" value="2026-12-25"><label for="tag-2026-12-25" class="tagzahl num"><span class="visually-hidden">Fr, </span>25<span class="visually-hidden">. Dezember</span></label></td><td><input type="radio" name="start" id="tag-2026-12-26" value="2026-12-26"><label for="tag-2026-12-26" class="tagzahl num"><span class="visually-hidden">Sa, </span>26<span class="visually-hidden">. Dezember</span></label></td><td><input type="radio" name="start" id="tag-2026-12-27" value="2026-12-27"><label for="tag-2026-12-27" class="tagzahl num"><span class="visually-hidden">So, </span>27<span class="visually-hidden">. Dezember</span></label></td></tr><tr><td><input type="radio" name="start" id="tag-2026-12-28" value="2026-12-28"><label for="tag-2026-12-28" class="tagzahl num"><span class="visually-hidden">Mo, </span>28<span class="visually-hidden">. Dezember</span></label></td><td><input type="radio" name="start" id="tag-2026-12-29" value="2026-12-29"><label for="tag-2026-12-29" class="tagzahl num"><span class="visually-hidden">Di, </span>29<span class="visually-hidden">. Dezember</span></label></td><td><input type="radio" name="start" id="tag-2026-12-30" value="2026-12-30"><label for="tag-2026-12-30" class="tagzahl num"><span class="visually-hidden">Mi, </span>30<span class="visually-hidden">. Dezember</span></label></td><td><input type="radio" name="start" id="tag-2026-12-31" value="2026-12-31"><label for="tag-2026-12-31" class="tagzahl num"><span class="visually-hidden">Do, </span>31<span class="visually-hidden">. Dezember</span></label></td><td></td><td></td><td></td></tr></tbody></table>
+        </fieldset>
+        <p class="legende-satz"><span class="muster muster--zu"></span> gesperrt: zwei Werktage Vorlauf für die Prüfung <span class="muster muster--zeit"></span> Ihr Zeitraum, <time datetime="2026-11-23">23.11.</time> bis <time datetime="2026-11-29">29.11.</time></p>
+        <p class="legende-satz">Belegt ist auf diesem Platz noch kein Tag. Die gewählten Tage bleiben 35 Minuten für Sie reserviert.</p>
+      </div>
+    </section>
+
+    <section class="schritt grid" id="s3" aria-labelledby="s3-h">
+      <h2 id="s3-h" class="schritt__h"><span class="num">3</span> Ihre Angaben</h2>
+      <div class="schritt__inhalt">
+        <div class="reihe"><div class="feld"><label for="b-firma">Firma <span class="pflicht">Pflicht</span></label><input id="b-firma" name="firma" type="text" required autocomplete="organization" aria-describedby="b-firma-hilfe"><p class="hilfe" id="b-firma-hilfe" aria-live="polite"></p></div><div class="feld"><label for="b-person">Ansprechperson <span class="pflicht">Pflicht</span></label><input id="b-person" name="person" type="text" required autocomplete="name" aria-describedby="b-person-hilfe"><p class="hilfe" id="b-person-hilfe" aria-live="polite"></p></div></div>
+        <div class="feld"><label for="b-adresse">Rechnungsadresse <span class="pflicht">Pflicht</span></label><textarea id="b-adresse" name="adresse" rows="6" required aria-describedby="b-adresse-hilfe"></textarea><p class="hilfe" id="b-adresse-hilfe" aria-live="polite"></p></div>
+        <div class="reihe"><div class="feld"><label for="b-email">E-Mail <span class="pflicht">Pflicht</span></label><input id="b-email" name="email" type="email" required autocomplete="email" aria-describedby="b-email-hilfe"><p class="hilfe" id="b-email-hilfe" aria-live="polite"></p></div><div class="feld"><label for="b-telefon">Telefon <span class="frei">freiwillig</span></label><input id="b-telefon" name="telefon" type="tel" autocomplete="tel" aria-describedby="b-telefon-hilfe"><p class="hilfe" id="b-telefon-hilfe" aria-live="polite"></p></div></div>
+        <div class="feld"><label for="b-ustid">USt-ID <span class="frei">freiwillig</span></label><input id="b-ustid" name="ustid" type="text" aria-describedby="b-ustid-hilfe"><p class="hilfe" id="b-ustid-hilfe" aria-live="polite"></p></div>
+      </div>
+    </section>
+
+    <section class="schritt grid" id="s4" aria-labelledby="s4-h">
+      <h2 id="s4-h" class="schritt__h"><span class="num">4</span> Werbemittel</h2>
+      <div class="schritt__inhalt">
+        <div class="reihe">
+          <div class="feld"><label for="b-desktop">Bild für Desktop <span class="pflicht">Pflicht</span></label><p class="hinweis-feld">Leaderboard: <span class="num">728 × 90</span> Pixel, JPEG oder PNG.</p><input id="b-desktop" name="desktop" type="file" required aria-describedby="b-desktop-hilfe" accept="image/jpeg,image/png"><p class="hilfe" id="b-desktop-hilfe" aria-live="polite"></p></div>
+          <div class="feld"><label for="b-handy">Bild für das Handy <span class="pflicht">Pflicht</span></label><p class="hinweis-feld">Leaderboard: <span class="num">320 × 50</span> Pixel, JPEG oder PNG.</p><input id="b-handy" name="handy" type="file" required aria-describedby="b-handy-hilfe" accept="image/jpeg,image/png"><p class="hilfe" id="b-handy-hilfe" aria-live="polite"></p></div>
+        </div>
+        <div class="feld"><label for="b-ziel">Zieladresse <span class="pflicht">Pflicht</span></label><p class="hinweis-feld">Wohin die Anzeige führt.</p><input id="b-ziel" name="ziel" type="url" required autocomplete="url" aria-describedby="b-ziel-hilfe" placeholder="https://"><p class="hilfe" id="b-ziel-hilfe" aria-live="polite"></p></div>
+        <p class="legende-satz">Keine bewegten Banner, kein Video, keine fremden Skripte. Gestalten müssen Sie das Werbemittel selbst.</p>
+      </div>
+    </section>
+
+    <section class="schritt grid" id="s5" aria-labelledby="s5-h">
+      <h2 id="s5-h" class="schritt__h"><span class="num">5</span> Prüfen und bezahlen</h2>
+      <div class="schritt__inhalt">
+        <figure class="sheet">
+          <figcaption class="sheet__head"><span class="sheet__title">Ihre Buchung</span><span class="sheet__stand">reserviert für 35 Minuten</span></figcaption>
+          <table class="tafel tafel--dl">
+            <tbody>
+              <tr><th scope="row">Platz</th><td>Leaderboard, unter der Navigation</td></tr>
+              <tr><th scope="row">Laufzeit</th><td><span class="num">7</span> Tage</td></tr>
+              <tr><th scope="row">Zeitraum</th><td>Mo <time class="num" datetime="2026-11-23">23.11.</time> bis So <time class="num" datetime="2026-11-29">29.11.</time></td></tr>
+              <tr><th scope="row">Betrag</th><td><span class="fill">Preis folgt von KBS</span></td></tr>
+            </tbody>
+          </table>
+        </figure>
+        <div class="feld feld--check">
+          <input id="b-bed" name="bedingungen" type="checkbox" required aria-describedby="b-bed-hilfe">
+          <label for="b-bed">Ich nehme die Bedingungen für Anzeigen an. <span class="fill">Bedingungen folgen von KBS</span></label>
+          <p class="hilfe" id="b-bed-hilfe" aria-live="polite"></p>
+        </div>
+        <p class="actions"><button class="btn btn--primary" type="submit" aria-disabled="true" disabled>Weiter zu Stripe</button></p>
+        <p class="legende-satz">Bezahlen ist noch nicht möglich: Preise, Bedingungen und das Stripe-Konto folgen von KBS. Kartendaten sieht tamil.de nie.</p>
+      </div>
+    </section>
+  </form>
+</main>
+
+<footer class="foot">
+  <div class="container">
+    <div class="grid foot__cols">
+      <div class="foot__brand">
+        <img src="bilder/logo.png" width="300" height="121" alt="tamil.de">
+        <p>Das Magazin der tamilischen Community.</p>
+      </div>
+      <nav class="foot__col" aria-labelledby="f-dienste">
+        <p class="foot__h" id="f-dienste">Dienste</p>
+        <ul><li><a href="termine.html">Festkalender</a></li><li><a href="kino.html">Kino</a></li><li><a href="verzeichnis.html">Verzeichnis</a></li><li><a href="index.html#jahr">Rückblick 2026</a></li></ul>
+      </nav>
+      <nav class="foot__col" aria-labelledby="f-mit">
+        <p class="foot__h" id="f-mit">Mitmachen</p>
+        <ul><li><a href="einreichen.html">Termin einreichen</a></li><li><a href="werben.html">Werben</a></li><li><a href="kontakt.html">Kontakt</a></li></ul>
+      </nav>
+      <nav class="foot__col" aria-labelledby="f-rubriken">
+        <p class="foot__h" id="f-rubriken">Rubriken</p>
+        <ul><li><a href="index.html#jahr">Nachrichten</a></li><li><a href="rubrik.html">Community</a></li><li><a href="index.html#jahr">Kultur</a></li><li><a href="termine.html">Events</a></li><li><a href="kino.html">Kino</a></li><li><a href="index.html#jahr">Küche</a></li><li><a href="index.html#jahr">Sport</a></li></ul>
+      </nav>
+      <div class="foot__credits"><p class="foot__h">Bildnachweis</p><p>Auf dieser Seite steht kein Foto.</p></div>
+    </div>
+    <div class="foot__legal">
+      <span class="fill" data-fill="impressum">Impressum folgt</span>
+      <span class="fill" data-fill="datenschutz">Datenschutz folgt</span>
+      <span>© 2026 tamil.de, KBS Digitalmedia</span>
+    </div>
+  </div>
+</footer>
+<script src="site.js"></script>
+<script>window.hallmarkSlots = (m) => { for (const [k, v] of Object.entries(m)) { const s = document.querySelector(`[data-slot="${k}"]`); if (!s) continue; const im = new Image(); im.src = typeof v === 'string' ? v : v.src; im.alt = (typeof v === 'object' && v.alt) || s.dataset.alt || ''; s.querySelectorAll(':scope > img').forEach((o) => o.remove()); s.prepend(im); } };
+document.querySelectorAll('[data-slot] img').forEach((i) => { if (i.complete && !i.naturalWidth) i.remove(); else i.addEventListener('error', () => i.remove(), { once: true }); });</script>
+</body>
+</html>

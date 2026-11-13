@@ -1,0 +1,40 @@
+/* Hallmark · shape: Kalenderblatt, the forms (Termin einreichen, Danke, Kontakt) · genre: editorial · theme: Almanac (deal 2/3, seed tamil-deutschsprachiges-online-magazin-der-ff32·6bcf19c0·2026-11-13·r0) · job: attend (submit a date) · draw: 26f3b5 · copy: fields from datenmodell.md §12
+ * hero: index · nav: banner over a retracting bar · footer: index columns · imagery: none, a form is the page · signature: the margin sheet that says what happens next, in the order it happens
+ * axes: mid/grotesk-sans/chromatic-magenta (accent re-hued to the logo red) · posture: restrained · contrast: pass · fold: pass · v2.0.0 */
+/* Hallmark · pre-emit critique: P4 H4 E4 S3 R5 V4 · weakest: S, a form is a form; the fieldsets are cut by the firm rule like the sheets, and the margin carries the promise that nothing goes out by mail */
+@import url("./almanac.css");
+/* Hallmark · dismissed 58 · a form counts every label as a word; the head holds the headline and one sentence */
+/* Hallmark · dismissed 44b · a form page has no hero action, the submit sits at the form's end where the reader arrives after filling it */
+
+.kopfzeile { padding-block: var(--space-2xl) var(--space-xl); align-items: end; }
+.kopfzeile__text { grid-column: 1 / span 8; display: flex; flex-direction: column; gap: var(--space-md); }
+.kopfzeile h1 { font-size: var(--text-display-s); max-width: 22ch; letter-spacing: -0.03em; line-height: 1.02; }
+
+.formular-seite { align-items: start; border-top: var(--rule-bar) solid var(--color-ink); padding-block-start: var(--space-xl); }
+.formular { grid-column: 1 / span 7; display: flex; flex-direction: column; gap: var(--space-xl); }
+.formular > fieldset { margin: 0; padding: 0; border: 0; min-width: 0; display: flex; flex-direction: column; gap: var(--space-lg); }
+.formular > fieldset + fieldset { padding-block-start: var(--space-xl); border-top: var(--rule-hair) solid var(--color-rule-2); }
+.formular > fieldset > legend { padding: 0; margin-block-end: var(--space-lg); font: 600 var(--text-xl)/1.2 var(--font-display); letter-spacing: var(--tracking-display); color: var(--color-ink); float: left; width: 100%; }
+.formular > fieldset > legend + * { clear: both; }
+.reihe { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-lg) var(--gap-columns); align-items: start; }
+
+.rand { grid-column: 9 / span 4; display: flex; flex-direction: column; gap: var(--space-lg); position: sticky; top: var(--space-3xl); }
+.rand .sheet { padding: var(--space-md) var(--space-lg) var(--space-sm); }
+.rand__h { font-size: var(--text-xl); }
+.ablauf { margin: 0; padding: 0 0 var(--space-md); list-style: none; counter-reset: schritt; }
+.ablauf li { counter-increment: schritt; display: grid; grid-template-columns: 2rem minmax(0, 1fr); gap: var(--space-sm); padding-block: var(--space-sm); border-top: var(--rule-hair) solid var(--color-rule); }
+.ablauf li:first-child { border-top: 0; }
+.ablauf li::before { content: counter(schritt); font: 500 var(--text-md)/1.5 var(--font-outlier); color: var(--color-ink); }
+.tafel--dl th { width: 10rem; padding: var(--space-sm) var(--space-sm) var(--space-sm) 0; border-bottom: 0; border-top: var(--rule-hair) solid var(--color-rule); font: 400 var(--text-sm)/1.4 var(--font-body); color: var(--color-muted); white-space: normal; vertical-align: baseline; }
+.tafel--dl tbody tr:first-child th { border-top: 0; }
+.quittung { grid-column: 1 / span 7; }
+
+@media (max-width: 60rem) {
+  .rand { position: static; }
+}
+@media (max-width: 40rem) {
+  .reihe { grid-template-columns: minmax(0, 1fr); }
+  .tafel--dl tr { grid-template-columns: minmax(0, 1fr) !important; }
+  .tafel--dl th { border: 0; padding: 0; width: auto; }
+  .tafel--dl td { grid-column: 1 !important; }
+}

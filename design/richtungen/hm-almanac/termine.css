@@ -36,16 +36,14 @@
 .monate { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gap-columns); margin: 0; padding: var(--space-xs) 0 0; list-style: none; font-size: var(--text-sm); color: var(--color-muted); border-top: var(--rule-hair) solid var(--color-rule); }
 
 @media (max-width: 64rem) {
-  .leiste { display: block; border-left: var(--rule-bar) solid var(--color-rule-2); padding-inline-start: var(--space-lg); }
+  .leiste { display: block; border-top: var(--rule-bar) solid var(--color-rule-2); }
   .leiste::before { display: none; }
   .leiste li { display: grid; grid-template-columns: 4.5rem minmax(0, 1fr); column-gap: var(--space-sm); padding-block: var(--space-sm); border-top: var(--rule-hair) solid var(--color-rule); }
   .leiste li:first-child { border-top: 0; }
+  .leiste li::after, .leiste li.unten::after { display: none; }
   .leiste li > *, .leiste li.unten > *, .leiste li.ende > * { position: static; white-space: normal; text-align: left; }
-  .leiste li::after { left: calc(-1 * var(--space-lg) - var(--rule-bar)); top: var(--space-md); bottom: auto; width: var(--space-sm); height: var(--rule-bar); }
-  .leiste li.unten::after { top: var(--space-md); }
   .leiste li .num { grid-row: 1 / span 2; padding-block-start: var(--space-3xs); }
   .leiste li .o { grid-column: 2; }
-  .leiste li.kommt::after { border-left: 0; background: var(--color-muted); }
   .leiste li.heute { display: none; }
   .monate { display: none; }
 }

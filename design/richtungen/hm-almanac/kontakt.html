@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kontakt | tamil.de</title>
+<meta name="description" content="Kontakt zur Redaktion von tamil.de: Hinweise, Fragen, Kooperationen.">
+<link rel="stylesheet" href="formular.css">
+</head>
+<body>
+<a class="skip" href="#main">Zum Inhalt springen</a>
+<div class="banner"><div class="container"><a href="index.html#jahr">Rückblick 2026 in zwanzig Berichten</a></div></div>
+<header class="bar" data-bar>
+  <div class="container bar__in">
+    <a class="bar__logo" href="index.html" aria-label="tamil.de, zur Startseite"><img src="bilder/logo.png" width="300" height="121" alt=""></a>
+    <nav aria-label="Hauptnavigation">
+      <ul><li><a href="termine.html">Termine</a></li><li><a href="kino.html">Kino</a></li><li><a href="rubrik.html">Community</a></li><li><a href="verzeichnis.html">Verzeichnis</a></li></ul>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero" aria-labelledby="titel">
+    <div class="container grid kopfzeile">
+      <div class="kopfzeile__text">
+        <h1 id="titel">Kontakt zur Redaktion</h1>
+        <p class="lead">Für Hinweise, Fragen und Kooperationen; Termine bitte über <a href="einreichen.html">Termin einreichen</a>.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="container grid formular-seite">
+    <form class="formular" action="kontakt.html" method="get" data-form novalidate aria-labelledby="f-titel" id="nachricht">
+      <p class="formular__fehler" data-fehler tabindex="-1" hidden></p>
+      <fieldset>
+        <legend id="f-titel">Ihre Nachricht</legend>
+        <div class="feld"><label for="k-anliegen">Worum geht es <span class="frei">freiwillig</span></label><select id="k-anliegen" name="anliegen" data-anliegen><option value="">Bitte wählen</option><option value="hinweis">Hinweis auf ein Thema</option><option value="frage">Frage an die Redaktion</option><option value="kooperation">Kooperation</option><option value="werbung">Werbeanfrage</option><option value="verzeichnis">Verzeichnis: Eintrag vorschlagen oder ändern</option></select></div>
+        <div class="feld"><label for="k-nachricht">Nachricht <span class="pflicht">Pflicht</span></label><p class="hinweis-feld">Höchstens drei Links.</p><textarea id="k-nachricht" name="nachricht" rows="6" required aria-describedby="k-nachricht-hilfe"></textarea><p class="hilfe" id="k-nachricht-hilfe" aria-live="polite"></p></div>
+        <div class="reihe">
+          <div class="feld"><label for="k-name">Name <span class="pflicht">Pflicht</span></label><input id="k-name" name="name" type="text" required autocomplete="name" aria-describedby="k-name-hilfe"><p class="hilfe" id="k-name-hilfe" aria-live="polite"></p></div>
+          <div class="feld"><label for="k-email">E-Mail <span class="pflicht">Pflicht</span></label><input id="k-email" name="email" type="email" required autocomplete="email" aria-describedby="k-email-hilfe"><p class="hilfe" id="k-email-hilfe" aria-live="polite"></p></div>
+        </div>
+        <div class="feld"><label for="k-telefon">Telefon <span class="frei">freiwillig</span></label><input id="k-telefon" name="telefon" type="tel" autocomplete="tel" aria-describedby="k-telefon-hilfe"><p class="hilfe" id="k-telefon-hilfe" aria-live="polite"></p></div>
+        <div class="feld feld--check">
+          <input id="k-ok" name="einwilligung" type="checkbox" required aria-describedby="k-ok-hilfe">
+          <label for="k-ok">Ich bin einverstanden, dass tamil.de meine Angaben für diese Anfrage speichert und nach 90 Tagen löscht. <span class="fill">Einwilligungstext folgt von KBS</span> <span class="fill">Datenschutzerklärung folgt</span></label>
+          <p class="hilfe" id="k-ok-hilfe" aria-live="polite"></p>
+        </div>
+        <div class="falle" aria-hidden="true"><label for="k-web">Nicht ausfüllen</label><input id="k-web" name="webseite" type="text" tabindex="-1" autocomplete="off"></div>
+      </fieldset>
+      <p class="actions"><button class="btn btn--primary" type="submit">Nachricht senden</button></p>
+      <p class="formular__stand" data-stand aria-live="polite"></p>
+    </form>
+
+    <aside class="rand" aria-labelledby="r-wege">
+      <figure class="sheet">
+        <figcaption class="sheet__head"><span class="sheet__title" id="r-wege">Andere Wege</span></figcaption>
+        <table class="tafel tafel--dl">
+          <tbody>
+            <tr><th scope="row">E-Mail</th><td><span class="fill">Adresse der Redaktion folgt von KBS</span></td></tr>
+            <tr><th scope="row">WhatsApp</th><td><span class="fill">Nummer folgt von KBS</span></td></tr>
+            <tr><th scope="row">Anschrift</th><td>KBS Digitalmedia <span class="fill">Anschrift folgt mit dem Impressum</span></td></tr>
+            <tr><th scope="row">Werbung</th><td><a href="werben.html">Werbeplätze und Buchung</a></td></tr>
+            <tr><th scope="row">Verzeichnis</th><td><a href="verzeichnis.html">Eintrag vorschlagen oder ändern</a></td></tr>
+          </tbody>
+        </table>
+        <p class="sheet__note">Die Redaktion antwortet von Hand, meist innerhalb weniger Tage. Es geht keine automatische E-Mail hinaus.</p>
+      </figure>
+    </aside>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="container">
+    <div class="grid foot__cols">
+      <div class="foot__brand">
+        <img src="bilder/logo.png" width="300" height="121" alt="tamil.de">
+        <p>Das Magazin der tamilischen Community.</p>
+      </div>
+      <nav class="foot__col" aria-labelledby="f-dienste">
+        <p class="foot__h" id="f-dienste">Dienste</p>
+        <ul><li><a href="termine.html">Festkalender</a></li><li><a href="kino.html">Kino</a></li><li><a href="verzeichnis.html">Verzeichnis</a></li><li><a href="index.html#jahr">Rückblick 2026</a></li></ul>
+      </nav>
+      <nav class="foot__col" aria-labelledby="f-mit">
+        <p class="foot__h" id="f-mit">Mitmachen</p>
+        <ul><li><a href="einreichen.html">Termin einreichen</a></li><li><a href="werben.html">Werben</a></li><li><a href="kontakt.html">Kontakt</a></li></ul>
+      </nav>
+      <nav class="foot__col" aria-labelledby="f-rubriken">
+        <p class="foot__h" id="f-rubriken">Rubriken</p>
+        <ul><li><a href="index.html#jahr">Nachrichten</a></li><li><a href="rubrik.html">Community</a></li><li><a href="index.html#jahr">Kultur</a></li><li><a href="termine.html">Events</a></li><li><a href="kino.html">Kino</a></li><li><a href="index.html#jahr">Küche</a></li><li><a href="index.html#jahr">Sport</a></li></ul>
+      </nav>
+      <div class="foot__credits"><p class="foot__h">Bildnachweis</p><p>Auf dieser Seite steht kein Foto.</p></div>
+    </div>
+    <div class="foot__legal">
+      <span class="fill" data-fill="impressum">Impressum folgt</span>
+      <span class="fill" data-fill="datenschutz">Datenschutz folgt</span>
+      <span>© 2026 tamil.de, KBS Digitalmedia</span>
+    </div>
+  </div>
+</footer>
+<script src="site.js"></script>
+<script>window.hallmarkSlots = (m) => { for (const [k, v] of Object.entries(m)) { const s = document.querySelector(`[data-slot="${k}"]`); if (!s) continue; const im = new Image(); im.src = typeof v === 'string' ? v : v.src; im.alt = (typeof v === 'object' && v.alt) || s.dataset.alt || ''; s.querySelectorAll(':scope > img').forEach((o) => o.remove()); s.prepend(im); } };
+document.querySelectorAll('[data-slot] img').forEach((i) => { if (i.complete && !i.naturalWidth) i.remove(); else i.addEventListener('error', () => i.remove(), { once: true }); });</script>
+</body>
+</html>
