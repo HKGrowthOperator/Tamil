@@ -228,7 +228,7 @@ später“). Interne Abnahme: `python -m news_radar abnahme` (62 Szenarien, Krit
 | Social | Im Repo kein Code; Regelwerk `docs/regeln-social.md` Fassung 1 liegt vor, Freigabe durch KBS steht aus | F4 |
 | Kalender | Radar überträgt `event_ende`, `event_land`, `event_veranstalter`, `event_preis` nicht (`publisher.META_FIELDS`) | A1.4 |
 | Autor | Jeder Radar-Beitrag trägt den Autor `ki-agent`; kein Autorkonzept | A1.5 |
-| Story-Verweis | Fehler: Meta `radar_story_id` wird im Plugin auf höchstens 10 begrenzt (`tamil_radar_sanitize_meta`, Typ `int`); der Python-Test prüft nur die gesendete Nutzlast | A1.5, B1.1 |
+| Story-Verweis | Behoben am 13.11. (`c4f3cd8`, Typ `id` ohne Obergrenze, Test mit Story 4711); vorher veröffentlichte Beiträge zu Storys über 10 tragen noch den Wert 10 | A1.5, B1.1 |
 | Löschfristen | Keine automatische Löschung: Protokoll (F0: 12 Monate), `log`, `seen`, `agent_usage` wachsen unbegrenzt | F0 |
 | Sicherungen | Code hält 14 Tage (`sicherung.AUFBEWAHREN_TAGE`), F0 schlägt 30 Tage vor | F0 |
 | Schalter | `eingang`, `verzeichnis`, `instagram`, `facebook`, `whatsapp` sind schaltbar, haben aber noch keinen Abnehmer | F0 |

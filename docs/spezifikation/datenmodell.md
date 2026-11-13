@@ -419,7 +419,7 @@ Der Radar schreibt über das Plugin `tamil-radar` (Namensraum `tamil-radar/v1`),
 | Schlüssel | Typ | Schreibt | Liest | Prüfung |
 |---|---|---|---|---|
 | `radar_uid` | Text | Radar | Plugin (Dublettenprüfung) | Text |
-| `radar_story_id` | Zahl | Radar | Cockpit-Verweis | **Befund:** Typ `int` wird in `tamil_radar_sanitize_meta` auf 0–10 begrenzt (gedacht für die Relevanz); jede Story ab Nummer 11 steht in WordPress als 10. Eigener Typ ohne Obergrenze nötig |
+| `radar_story_id` | Zahl | Radar | Cockpit-Verweis | Typ `id`, ganze Zahl ohne Obergrenze (bis 13.11. fälschlich auf 10 begrenzt; ältere Beiträge zu Storys über 10 tragen noch 10) |
 | `radar_relevanz` | Zahl 0–10 | Radar | – | 0–10 |
 | `quelle_name`, `quelle_sprache` | Text | Radar | Theme (Quellenzeile) | Text |
 | `quelle_url` | URL | Radar | Theme | `esc_url_raw` |
