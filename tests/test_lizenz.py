@@ -497,3 +497,21 @@ def test_commons_429_mit_retry_after_wartet_einmal(tmp_path, monkeypatch):
             bildvorschlag._abrufen(store, immer_429, "https://upload.wikimedia.org/a.jpg", bild=True, uhr=lambda: 0.0,
                                    ende=None, frist_abruf=20.0)
         assert len(aufrufe) == 1 and gewartet == [3.0]  # zu lange Wartezeit: nicht warten, nicht wiederholen
+
+
+# ---- L24: Prompt-Vorlagen nach Spezifikation 4.6 und 4.9 -------------------------------------------
+
+def test_bild_prompt_nach_spezifikation():
+    from news_radar import prompts
+
+    p = prompts.bild_prompt_bauen("Empty cinema hall with red seats", "kino-saal")
+    assert "Scene: Empty cinema hall with red seats" in p
+    for teil in ("Germany, Austria and", "symbolic image, not a depiction of a real event", "numbers, signs",
+                 '"in the\nstyle of"', "No children in focus", "no tiger imagery", "Format: landscape 4:3"):
+        assert teil in p, teil
+    assert "16:9" not in p
+    assert "politik-sri-lanka" not in prompts.thema_slugs()  # Politik ist heikel: Bildkarte
+    assert prompts.thema_fuer("news", "Parlament in Colombo wählt neuen Präsidenten") != "politik-sri-lanka"
+    assert "no people" in prompts.motiv_fuer_thema("hochzeit") and "bride" not in prompts.motiv_fuer_thema("hochzeit")
+    assert "child" not in prompts.motiv_fuer_thema("tamil-sprache").lower()
+    assert "no children" in prompts.motiv_fuer_thema("tamilschule")

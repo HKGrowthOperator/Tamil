@@ -118,7 +118,7 @@ def test_bildpool_fuellen_uses_theme_prompts(settings):
     transport = FakeTransport(*[(200, _antwort())] * 2)
     erzeugt = pool.fuellen(settings, thema="kolam", anzahl=2, transport=transport)
     assert erzeugt == {"kolam": 2} and pool.anzahl("kolam") == 2
-    assert "rice-flour kolam" in transport.calls[0][1]["input"] and "no text" in transport.calls[0][1]["input"]
+    assert "rice-flour kolam" in transport.calls[0][1]["input"] and "no text" in transport.calls[0][1]["input"].lower()
     assert pool.fuellen(settings, thema="kolam", anzahl=2, transport=FakeTransport()) == {}  # nichts fehlt
     assert pool.fuellen(settings, thema="gibt-es-nicht", anzahl=1, transport=FakeTransport()) == {}
 
