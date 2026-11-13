@@ -64,6 +64,10 @@ class WordPress:
         self._req("POST", f"media/{media['id']}", json={"alt_text": alt, "caption": image.credit})
         return media["id"]
 
+    def media_quelle(self, media_id: int) -> str:
+        """Öffentliche Adresse einer Datei aus der Mediathek (Social: Meta lädt das Bild von dort)."""
+        return str(self._req("GET", f"media/{media_id}", params={"_fields": "source_url"}).get("source_url", ""))
+
     def create_post(
         self,
         *,

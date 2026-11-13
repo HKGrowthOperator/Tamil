@@ -350,6 +350,43 @@ SZENARIEN += [
                                  "grund_register": 1, "grund_intern": 1, "abrufe_intern": 0, "protokoll_bild": 0}}),
 ]
 
+# ---- Social (F4, Festlegung T1–T3) im Trockenmodus bzw. mit nachgestellter Schnittstelle (FakeMeta) ----
+# Nummern ab 70: 67–69 bleiben für parallele Bausteine frei.
+SOCIAL = {"_ohne_modell": True}
+
+SZENARIEN += [
+    Szenario(70, "Social T1: Artikel nach der Karenz zuerst auf Instagram, dann Facebook – Links und Kennung",
+             "Social", [], nachher="social", einstellungen={**SOCIAL, "_social": "t1"},
+             erwartet={"aufrufe": 0, "stats": {"vor_karenz_gesendet": 0, "veroeffentlicht": 2, "links": 2,
+                                               "kennungen": 2, "instagram_zuerst": 1, "regel_fassung": 1}}),
+    Szenario(71, "Social T2: Termin in der Zukunft geht hinaus, Termin in der Vergangenheit wird übersprungen",
+             "Social", [], nachher="social", einstellungen={**SOCIAL, "_social": "t2"},
+             erwartet={"aufrufe": 0, "stats": {"termin_veroeffentlicht": 2, "vergangen_uebersprungen": 2,
+                                               "aufrufe_vergangen": 0}}),
+    Szenario(72, "Social T3: heikler Beitrag geht nie automatisch, steht unter „von Hand entscheiden“", "Social", [],
+             nachher="social", einstellungen={**SOCIAL, "_social": "t3"},
+             erwartet={"aufrufe": 0, "stats": {"von_hand": 2, "grund_r2": 2, "meta_aufrufe": 0, "in_ansicht": 2}}),
+    Szenario(73, "Social: Kanal Instagram gestoppt – nichts geht hinaus, das Protokoll nennt den Grund", "Social", [],
+             nachher="social", einstellungen={**SOCIAL, "_social": "stopp_instagram"},
+             erwartet={"aufrufe": 0, "stats": {"meta_aufrufe": 0, "gesendet": 0, "protokoll_grund": 1}}),
+    Szenario(74, "Social: WhatsApp-Entwurf als gepostet markiert – Person und Zeit im Protokoll", "Social", [],
+             nachher="social", einstellungen={**SOCIAL, "_social": "whatsapp"},
+             erwartet={"aufrufe": 0, "stats": {"gepostet": 1, "protokoll_person": 1, "protokoll_zeit": 1}}),
+    Szenario(75, "Social: der übernommene Altbestand löst nichts aus", "Social", [], nachher="social",
+             einstellungen={**SOCIAL, "_social": "altbestand"},
+             erwartet={"aufrufe": 0, "stats": {"altbestand": 2, "zeilen": 0, "meta_aufrufe": 0}}),
+    Szenario(76, "Social: Abbruch beim Veröffentlichen – Abgleich statt Wiederholung, kein Doppelpost", "Social", [],
+             nachher="social", einstellungen={**SOCIAL, "_social": "abbruch"},
+             erwartet={"aufrufe": 0, "stats": {"erst_unklar": 1, "abgleich_gefunden": 1,
+                                               "veroeffentlichen_aufrufe": 1, "instagram_beitraege": 1}}),
+    Szenario(77, "Social: Trockenmodus – alles vorbereitet, volle Nutzlast gespeichert, kein Aufruf an Meta",
+             "Social", [], nachher="social", einstellungen={**SOCIAL, "_social": "trocken"},
+             erwartet={"aufrufe": 0, "stats": {"trocken": 2, "nutzlast": 2, "ohne_kennung": 2}}),
+    Szenario(78, "Social: Regelwerk nicht von KBS freigegeben – trotz Live-Transport nur Trockenlauf", "Social", [],
+             nachher="social", einstellungen={**SOCIAL, "_social": "ohne_freigabe"},
+             erwartet={"aufrufe": 0, "stats": {"meta_aufrufe": 0, "ohne_freigabe": 1, "trocken": 2}}),
+]
+
 # Nummer 90 (darunter vergeben parallele Spuren): Gedenk-Sperre gilt seit 13.11.2026 für alle Terminquellen
 # (Entscheidung Luis), nicht nur für Kalender-Schnittstellen. Ein Termin aus einem Feed wird nie automatisch Story.
 GEDENKEN = event("Maaveerar-Gedenken in Bern", "https://swisstamilinfo.ch/bern-gedenken", "Swiss Tamil Info · Events",

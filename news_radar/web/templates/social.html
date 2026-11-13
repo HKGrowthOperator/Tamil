@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block title %}Social{% endblock %}
+{% block content %}
+<header class="topline">
+  <div><h1>Social</h1>
+  <p class="unter">Instagram und Facebook nach dem Regelwerk Fassung {{ rw.fassung }}, WhatsApp als Entwurf zum Posten von Hand. Neue Beiträge der Website gehen nach {{ rw.karenz_min }} Minuten Karenz hinaus, zuerst Instagram, dann Facebook. Jeder Schritt steht im <a href="/protokoll">Protokoll</a>; die Schalter Instagram, Facebook und WhatsApp wirken sofort.</p></div>
+</header>
+<div class="banner {{ 'stopp' if live else 'warnung' }}" role="status">
+  {% if live %}<b>Live:</b> Beiträge gehen über die Graph API an Meta.
+  {% else %}<b>Trockenmodus:</b> alles wird vorbereitet und mit vollständiger Nutzlast gespeichert, aber nichts an Meta geschickt.{% endif %}
+  Funktion {{ 'an' if konf.aktiv else 'aus' }} (RADAR_SOCIAL{{ '' if konf.aktiv else ', der Dienst plant keinen Lauf' }}).
+  {% if marke %}Startmarke {{ fmt_dt(marke.isoformat()) }}: der Altbestand davor löst nichts aus.{% else %}Noch keine Startmarke (setzt der erste Lauf).{% endif %}
+  {% if freigegeben %}Regelwerk Fassung {{ rw.fassung }} freigegeben von {{ rw.freigegeben_von }} am {{ rw.freigegeben_at }}.
+  {% else %}Regelwerk Fassung {{ rw.fassung }} ist nicht freigegeben (einmalige Freigabe durch KBS): live bleibt aus, auch mit RADAR_SOCIAL_LIVE.{% endif %}
+</div>
+
+<h2>Warteschlange</h2>
+{% for z in a.warteschlange %}
+<section class="karte">
+  <div class="meta">
+    <span class="badge status">{{ z.kanal|capitalize }}</span>
+    <span class="badge status">{{ z.status_text }}</span>
+    {% if z.status == 'karenz' %}<span class="leise">Karenz bis {{ fmt_dt(z.karenz_bis) }}</span>{% endif %}
+    {% if z.geplant_fuer %}<span class="leise">geplant für {{ fmt_dt(z.geplant_fuer) }}</span>{% endif %}
+    <span class="leise">{{ z.quelle_typ }} · Fassung {{ z.regel_fassung }}</span>
+  </div>
+  <h3><a href="{{ z.link|safe_url }}" target="_blank" rel="noopener">{{ z.titel }}</a></h3>
+  {% if z.wartet_grund %}<p><b>Wartet:</b> {{ z.wartet_grund }}</p>{% endif %}
+  {% if z.fehler %}<p class="fehlertext">{{ z.fehler }}</p>{% endif %}
+  <div class="zwei-spalten">
+    <img class="thumb" src="/social/{{ z.id }}/bild" alt="Social-Bild ({{ 'Foto' if z.bild_art == 'foto' else 'Bildkarte' }})" width="216" height="270" loading="lazy">
+    {% if darf('social') and z.status in ('karenz', 'geplant') %}
+    <form method="post" action="/social/{{ z.id }}/text">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <label>Text (Instagram und Facebook) <textarea name="text" rows="8" maxlength="2200">{{ z.text }}</textarea></label>
+      <button class="knopf">Text speichern</button>
+    </form>
+    {% else %}<pre class="papier">{{ z.text }}</pre>{% endif %}
+  </div>
+  {% if darf('social') and z.status in ('karenz', 'geplant', 'pausiert') %}
+  <form method="post" action="/social/{{ z.id }}/stoppen" class="zeile" data-confirm="Diesen Beitrag auf Instagram und Facebook anhalten?">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <label>Grund (Pflicht) <input name="grund" required maxlength="300" placeholder="z. B. Bild prüfen"></label>
+    <button class="gefahr">Stoppen</button>
+  </form>
+  {% endif %}
+</section>
+{% else %}<p class="leise">Nichts in der Warteschlange.</p>{% endfor %}
+
+<h2>Von Hand entscheiden</h2>
+{% for z in a.von_hand %}
+<section class="karte">
+  <div class="meta">
+    <span class="badge status s-fehler">{{ z.kanal|capitalize }}</span>
+    <span class="leise">{{ z.quelle_typ }} · erkannt {{ fmt_dt(z.erkannt_at) }} · Fassung {{ z.regel_fassung }}</span>
+  </div>
+  <h3><a href="{{ z.link|safe_url }}" target="_blank" rel="noopener">{{ z.titel }}</a></h3>
+  <ul class="hinweise">{% for g in z.gruende %}<li>{{ g }}</li>{% endfor %}{% if z.fehler and not z.gruende %}<li>{{ z.fehler }}</li>{% endif %}</ul>
+  <pre class="papier">{{ z.text }}</pre>
+  {% if darf('social') %}
+  <form method="post" action="/social/{{ z.id }}/freigeben" class="zeile">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <label>Grund (Pflicht) <input name="grund" required maxlength="300" placeholder="z. B. Urteil ist öffentlich"></label>
+    <button class="primaer">Freigeben</button>
+  </form>
+  <form method="post" action="/social/{{ z.id }}/verwerfen" class="zeile">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <label>Grund (Pflicht) <input name="grund" required maxlength="300"></label>
+    <button class="gefahr">Verwerfen</button>
+  </form>
+  {% endif %}
+</section>
+{% else %}<p class="leise">Nichts zu entscheiden.</p>{% endfor %}
+
+<h2>WhatsApp-Entwürfe</h2>
+{% if a.whatsapp_aus %}<p class="leise">Der Schalter WhatsApp ist angehalten: Entwürfe sind ausgeblendet.</p>{% endif %}
+{% for z in a.whatsapp %}
+<section class="karte">
+  <div class="meta"><span class="badge status">WhatsApp</span><span class="leise">erkannt {{ fmt_dt(z.erkannt_at) }}</span></div>
+  <h3>{{ z.titel }}</h3>
+  {% if z.gruende %}<p class="leise">Achtung, Regel nicht erfüllt: {{ z.gruende|join('; ') }}</p>{% endif %}
+  <div class="zwei-spalten">
+    <img class="thumb" src="/social/{{ z.id }}/bild" alt="Bild zum Entwurf" width="216" height="270" loading="lazy">
+    <textarea id="wa-{{ z.id }}" rows="8" readonly>{{ z.text }}</textarea>
+  </div>
+  <div class="aktionen">
+    <button type="button" class="knopf" data-kopieren="#wa-{{ z.id }}">Kopieren</button>
+    <a class="knopf" href="/social/{{ z.id }}/bild?download=1" download>Bild herunterladen</a>
+    {% if darf('social') %}
+    <form method="post" action="/social/{{ z.id }}/gepostet" class="inline" data-confirm="Im WhatsApp-Kanal gepostet?">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="primaer">Als gepostet markieren</button>
+    </form>
+    {% endif %}
+  </div>
+</section>
+{% else %}{% if not a.whatsapp_aus %}<p class="leise">Keine offenen Entwürfe.</p>{% endif %}{% endfor %}
+
+<h2>Historie</h2>
+<section class="karte">
+<table class="voll kompakt">
+  <tr><th>Zeit</th><th>Kanal</th><th>Status</th><th>Beitrag</th><th>Link</th><th>Kennung</th><th>Fassung</th><th>Hinweis</th></tr>
+  {% for z in a.historie %}
+  <tr><td>{{ fmt_dt(z.veroeffentlicht_at or z.gepostet_at or z.aktualisiert) }}</td><td>{{ z.kanal|capitalize }}</td><td>{{ z.status_text }}</td>
+    <td>{{ z.titel }}</td>
+    <td>{% if z.meta_link %}<a href="{{ z.meta_link|safe_url }}" target="_blank" rel="noopener">ansehen</a>{% endif %}</td>
+    <td>{{ z.meta_id or '' }}</td><td>{{ z.regel_fassung }}</td>
+    <td class="leise">{{ z.entscheidung or z.fehler or '' }}{% if z.gepostet_von %}{{ z.gepostet_von }}, {{ fmt_dt(z.gepostet_at) }}{% endif %}{% if z.status == 'trocken' %}Nutzlast gespeichert, nichts gesendet{% endif %}</td></tr>
+  {% else %}<tr><td colspan="8" class="leise">Noch keine Einträge.</td></tr>{% endfor %}
+</table>
+</section>
+
+<h2>Regelwerk Fassung {{ rw.fassung }}</h2>
+<section class="karte">
+  <ul class="hinweise">
+    <li>R1 {{ regeln.R1 }}: {{ rw.rubriken|join(', ') }}; „news“ nur ohne heikles Thema</li>
+    <li>R2 {{ regeln.R2 }}: {{ rw.heikel|join(', ') }}</li>
+    <li>R3 {{ regeln.R3 }}: höchstens {{ rw.max_alter_stunden }} Stunden; Termine nur in der Zukunft</li>
+    <li>R4 {{ regeln.R4 }}: Foto nur mit Umfang „social“, sonst Bildkarte</li>
+    <li>R5 {{ regeln.R5 }}: höchstens {{ rw.max_je_tag }} je Kanal und Tag, {{ rw.abstand_min }} Minuten Abstand</li>
+    <li>R6 {{ regeln.R6 }}: {{ rw.ruhe_von }} bis {{ rw.ruhe_bis }} Uhr</li>
+    <li>R7 {{ regeln.R7 }} · R8 {{ regeln.R8 }} („{{ rw.ki_hinweis }}“) · R9 {{ regeln.R9 }}</li>
+    <li>Hashtags{% if rw.hashtags_platzhalter %} (Platzhalter, KBS liefert){% endif %}: {% for r, t in rw.hashtags.items() %}{{ r }} {{ t|join(' ') }}{{ '; ' if not loop.last }}{% endfor %}</li>
+  </ul>
+  {% if darf('social_regelwerk') and not freigegeben %}
+  <form method="post" action="/social/regelwerk/freigabe" class="zeile" data-confirm="Freigabe von Fassung {{ rw.fassung }} eintragen?">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <label>Freigegeben von <input name="freigegeben_von" required maxlength="120" placeholder="KBS über Luis"></label>
+    <label>Datum <input name="datum" type="date" required></label>
+    <label>Beleg (Pflicht) <input name="beleg" required maxlength="250" placeholder="z. B. Mail von Luis vom …"></label>
+    <button class="primaer">Freigabe eintragen</button>
+  </form>
+  {% endif %}
+  {% if darf('social_regelwerk') %}
+  <details><summary>Regelwerk ändern</summary>
+  <form method="post" action="/social/regelwerk" data-confirm="Neue Fassung des Regelwerks speichern?">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <div class="zeile">
+      {% for k, label in (('max_je_tag', 'je Tag'), ('abstand_min', 'Abstand (Min.)'), ('ruhe_von', 'Ruhe ab (Uhr)'), ('ruhe_bis', 'Ruhe bis (Uhr)'), ('max_alter_stunden', 'Alter (Std.)'), ('karenz_min', 'Karenz (Min.)')) %}
+      <label>{{ label }} <input name="{{ k }}" type="number" value="{{ rw[k] }}" required></label>
+      {% endfor %}
+    </div>
+    <label>Heikle Themen (Komma; * am Ende = Wortanfang) <textarea name="heikel" rows="3">{{ rw.heikel|join(', ') }}</textarea></label>
+    {% for r in rw.rubriken %}<label>Hashtags {{ r }} <input name="hashtags_{{ r }}" value="{{ (rw.hashtags.get(r) or [])|join(' ') }}"></label>{% endfor %}
+    <label><input type="checkbox" name="hashtags_von_kbs" value="1"> Hashtags stammen von KBS</label>
+    <button class="primaer">Als neue Fassung speichern</button>
+  </form>
+  </details>
+  {% endif %}
+</section>
+{% endblock %}

@@ -183,6 +183,9 @@ def main(argv: list[str] | None = None) -> int:
     ab = sub.add_parser("abnahme", help="Abnahme-Szenarien mit FakeClaude")
     ab.add_argument("--bericht", default="data/abnahme-bericht.md")
     ab.add_argument("--nur", type=int, nargs="*", help="nur diese Szenario-Nummern")
+    so = sub.add_parser("social", help="Social F4: lauf (erkennen + senden) | status")
+    so.add_argument("aktion", choices=("lauf", "status"))
+    so.add_argument("--trocken", action="store_true", help="Trockenmodus erzwingen, auch mit RADAR_SOCIAL_LIVE")
     sub.add_parser("dienst", help="Container-Betrieb (Coolify): Cockpit, Scan, Worker, Digest, Sicherung in einem Prozess")
     kosten = sub.add_parser("kosten", help="Kosten je Rolle/Modell/Tag und Budgetstand")
     kosten.add_argument("--tage", type=int, default=30)
@@ -434,6 +437,31 @@ def main(argv: list[str] | None = None) -> int:
                 zustand = "angehalten" if z["gestoppt"] else "läuft"
                 extra = f"  seit {z['seit']} · {z['wer']} · {z['grund']}" if z["gestoppt"] else ""
                 print(f"{z['kanal']:12} {zustand:11}{extra}")
+        return 0
+
+    if args.cmd == "social":
+        from .social import ablauf as social_ablauf, konfig as social_konfig, regelwerk as social_regelwerk
+        from .social.transport import TrockenTransport
+
+        konf = social_konfig.laden()
+        with Store(settings.db_path) as store:
+            if args.aktion == "status":
+                rw = social_regelwerk.aktuell(store)
+                marke = social_ablauf.startmarke(store)
+                print(f"Funktion {'an' if konf.aktiv else 'aus'} (RADAR_SOCIAL) · Modus "
+                      f"{'trocken' if args.trocken else konf.modus} · Regelwerk Fassung {rw.fassung}"
+                      f"{' (Hashtags: Platzhalter)' if rw.hashtags_platzhalter else ''} · Startmarke "
+                      f"{marke.isoformat() if marke else '(noch keine)'}")
+                for r in store.db.execute("SELECT kanal, status, COUNT(*) AS n FROM social_beitraege "
+                                          "GROUP BY kanal, status ORDER BY kanal, status"):
+                    print(f"  {r['kanal']:10} {r['status']:16} {r['n']}")
+                return 0
+            if not konf.aktiv:
+                print("Social ist aus (Funktionsschalter RADAR_SOCIAL) – nichts zu tun.")
+                return 0
+            transport = TrockenTransport() if args.trocken else social_ablauf.transport_fuer(konf)
+            stats = social_ablauf.lauf(store, settings, konf, transport=transport)
+            print(" · ".join(f"{k} {v}" for k, v in sorted(stats.items())) or "nichts zu tun")
         return 0
 
     if args.cmd == "dossier":

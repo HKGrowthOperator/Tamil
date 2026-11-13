@@ -26,6 +26,7 @@
     <a href="/quellen" class="{{ 'aktiv' if request.endpoint == 'red.quellen' }}"><span>Quellen</span></a>
     <a href="/warteschlange" class="{{ 'aktiv' if request.endpoint == 'red.warteschlange' }}"><span>Warteschlange</span></a>
     <a href="/protokoll" class="{{ 'aktiv' if request.endpoint == 'ui.protokoll' }}"><span>Protokoll</span></a>
+    <a href="/social" class="{{ 'aktiv' if request.endpoint == 'social.seite' }}"><span>Social</span></a>
     <a href="/zeitplan" class="{{ 'aktiv' if request.endpoint == 'betrieb.zeitplan' }}"><span>Zeitplan</span></a>
     {% set st = stopps() %}
     <a href="/schalter" class="{{ 'aktiv' if request.endpoint == 'betrieb.schalter_seite' }}"><span>Schalter</span>{% if st %}<span class="count">{{ st|length }}</span>{% endif %}</a>

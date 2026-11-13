@@ -33,6 +33,8 @@ RECHTE: dict[str, tuple[str, ...]] = {
     "job_erneut": ADMIN,              # „Erneut“ bei toten Jobs
     "benutzer": ADMIN,                # Benutzer ansehen, anlegen, sperren
     "export": ADMIN,                  # Protokoll und Kosten als Datei
+    "social": REDAKTION,              # Social (F4): stoppen, Text ändern, von Hand entscheiden, WhatsApp gepostet
+    "social_regelwerk": ADMIN,        # Regelwerk Social ändern (neue Fassung, Festlegung F4 Frage 4)
     "abmelden": ALLE,
 }
 
@@ -40,7 +42,8 @@ NAMEN = {"bearbeiten": "Entwürfe bearbeiten", "freigeben": "Entwürfe freigeben
          "story_verwerfen": "Storys verwerfen", "quelle_ergaenzen": "Quellen ergänzen", "dossier": "Dossiers anstoßen",
          "anhalten": "Kanäle anhalten", "kanal_einschalten": "Kanäle wieder einschalten",
          "alles_einschalten": "„Alles“ wieder einschalten", "job_erneut": "abgebrochene Jobs neu starten",
-         "benutzer": "Benutzer verwalten", "export": "Daten exportieren", "abmelden": "abmelden"}
+         "benutzer": "Benutzer verwalten", "export": "Daten exportieren",
+         "social": "Social-Beiträge stoppen und entscheiden", "social_regelwerk": "das Social-Regelwerk ändern", "abmelden": "abmelden"}
 TEXT_403 = ("Ihre Rolle „{rolle}“ darf nicht: {recht}. Ansehen geht weiter; wer Änderungen braucht, fragt "
             "jemanden mit Rolle admin.")
 
