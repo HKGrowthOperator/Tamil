@@ -202,3 +202,13 @@ details.auf > div { padding-bottom: var(--space-md); }
   .spec td[data-l]::before { content: attr(data-l) ": "; color: var(--color-muted); }
   .zellen label, .zellen--filter a { padding-inline: var(--space-sm); }
 }
+
+/* Abstände als Klassen, kein Stil im HTML */
+.nach-xs { margin-top: var(--space-xs); }
+.nach-sm { margin-top: var(--space-sm); }
+.nach-md { margin-top: var(--space-md); }
+.nach-lg { margin-top: var(--space-lg); }
+.ohne-rand { margin: 0; }
+.fuge-oben { border-top: var(--rule-bar) solid var(--color-ink); }
+.mass--728 { width: 728px; aspect-ratio: 728 / 90; }
+.mass--300 { width: 300px; aspect-ratio: 300 / 250; }
