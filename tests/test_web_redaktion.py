@@ -67,12 +67,16 @@ def test_draft_shows_evidence_costs_license_and_approval_is_audited(app):
 
 
 def test_research_needed_page_add_source_blocks_internal_urls(app):
+    """Der Google-Hinweis ohne Beleg endet nach Nachrecherche und zweiter KI als verworfen (kein offenes „Recherche
+    nötig“); eine Story in Nachrecherche zeigt die Seite – die Quelle von Hand bleibt der versteckte Notweg für admin."""
     client = app.test_client()
     token = login(client)
-    html = client.get("/recherche").get_data(as_text=True)
-    assert "Tamilischer Verein in Köln" in html and "Quelle ergänzen" in html
     with Store(app.extensions["settings"].db_path) as store:
-        sid = repo.stories(store, "recherche_erforderlich")[0]["id"]
+        assert repo.stories(store, "verworfen")
+        sid = repo.story_anlegen(store, typ="news", titel="Tamilischer Verein in Köln gewinnt Preis")
+        repo.story_setzen(store, sid, status="recherche_erforderlich", notiz="Keine Kernaussage (was/wer/wann/wo) belegt")
+    html = client.get("/recherche").get_data(as_text=True)
+    assert "Tamilischer Verein in Köln" in html and "Quelle ergänzen" in html and "In Nachrecherche" in html
     resp = client.post(f"/story/{sid}/quelle", data={"url": "http://127.0.0.1:8787/", "_csrf": token}, follow_redirects=True)
     assert "geht nicht" in resp.get_data(as_text=True)
     client.post(f"/story/{sid}/quelle", data={"url": "https://www1.wdr.de/preis", "_csrf": token})
@@ -257,7 +261,7 @@ def test_add_source_to_finished_story_is_refused(app):
     with _store(app) as store:
         fertig = repo.stories(store, "fertig")[0]["id"]
     resp = client.post(f"/story/{fertig}/quelle", data={"_csrf": token, "url": "https://www1.wdr.de/x"})
-    assert resp.status_code == 409 and "Recherche nötig" in resp.get_data(as_text=True)
+    assert resp.status_code == 409 and "In Nachrecherche" in resp.get_data(as_text=True)
     with _store(app) as store:
         assert jobs.offen_fuer_story(store, fertig) == []
 
@@ -408,7 +412,8 @@ def test_agent_export_uebersicht_ohne_dokumente_und_ohne_abruf(app, monkeypatch)
     offen, _ = _offene_ids(app)
     data = client.get("/api/agent/export?nur=uebersicht", headers=agent).get_json()
     assert sorted(s["story_id"] for s in data["storys"]) == sorted(offen)
-    assert set(data["storys"][0]) == {"story_id", "typ", "herkunft", "titel", "kategorie", "ereignis_datum", "erstellt"}
+    assert set(data["storys"][0]) == {"story_id", "typ", "herkunft", "titel", "kategorie", "ereignis_datum", "erstellt",
+                                     "nachrecherche"}
     assert "dokumente" not in data["storys"][0] and "regeln_recherche" not in data
     assert client.get("/api/agent/export?nur=alles", headers=agent).status_code == 400
     with _store(app) as store:

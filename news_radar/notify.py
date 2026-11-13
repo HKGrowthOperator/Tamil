@@ -69,7 +69,7 @@ def _redaktion_v2(settings: Settings, store: Store) -> list[str]:
               f"${stand['monat_limit']:.2f}" + (" · BUDGET ERREICHT" if stand["stopp"] else "")]
     probleme = []
     if recherche:
-        probleme.append(f"{recherche} Storys „Recherche nötig“ ({settings.web_url}/recherche)")
+        probleme.append(f"{recherche} Storys in Nachrecherche ({settings.web_url}/recherche)")
     if zaehler["tot"]:
         probleme.append(f"{zaehler['tot']} abgebrochene Jobs ({settings.web_url}/warteschlange?status=tot)")
     if zaehler["wartet_budget"]:

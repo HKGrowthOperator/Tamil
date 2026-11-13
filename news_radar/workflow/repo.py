@@ -488,6 +488,6 @@ def wochenbericht_text(store, tage: int = 7) -> str:
     quote = f"{b['annahmequote']:.0%}" if b["annahmequote"] is not None else "–"
     je = f"${b['kosten_je_entwurf']:.3f}" if b["kosten_je_entwurf"] else "–"
     return (f"Radar – letzte {tage} Tage: {b['entwuerfe']} Entwürfe, {b['angenommen']} angenommen, {b['abgelehnt']} "
-            f"abgelehnt (Annahmequote {quote}); {b['recherche_noetig']} Storys „Recherche nötig“; Kosten "
+            f"abgelehnt (Annahmequote {quote}); {b['recherche_noetig']} Storys in Nachrecherche; Kosten "
             f"${b['kosten_usd']:.2f} ({je} je Entwurf); {b['jobs_abgebrochen']} abgebrochene Jobs, "
             f"{b['fehlversuche']} Fehlversuche bei Modellaufrufen.")

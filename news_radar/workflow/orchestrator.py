@@ -821,7 +821,7 @@ def quelle_ergaenzen(store: Store, story_id: int, url: str, von: str = "") -> st
     story = repo.story(store, story_id)
     if story is None or story["status"] not in NEU_STARTBAR or story["typ"] == "kino" or jobs.offen_fuer_story(store, story_id):
         status = story["status"] if story else "fehlt"
-        raise StoryNichtOffen(f"Story {story_id} ist {status} – eine Quelle lässt sich nur bei „Recherche nötig“ oder "
+        raise StoryNichtOffen(f"Story {story_id} ist {status} – eine Quelle lässt sich nur „In Nachrecherche“ oder "
                               "„Fehler“ ergänzen (nicht bei Kino und nicht, solange sie läuft)")
     net.check_url(url)
     key = repo.dokument_hinzufuegen(store, story_id, url=url, publisher="Redaktion", quelle="Redaktion", rights="zitat",

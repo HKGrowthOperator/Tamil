@@ -20,7 +20,7 @@
   <nav>
     <a href="/" class="{{ 'aktiv' if request.endpoint == 'ui.feed' }}"><span>Feed</span><span class="count">{{ offen() }}</span></a>
     {% set rn = recherche_offen() %}
-    <a href="/recherche" class="{{ 'aktiv' if request.endpoint == 'red.recherche' }}"><span>Recherche nötig</span>{% if rn %}<span class="count leise-count">{{ rn }}</span>{% endif %}</a>
+    <a href="/recherche" class="{{ 'aktiv' if request.endpoint == 'red.recherche' }}"><span>In Nachrecherche</span>{% if rn %}<span class="count leise-count">{{ rn }}</span>{% endif %}</a>
     <a href="/dashboard" class="{{ 'aktiv' if request.endpoint == 'ui.dashboard' }}"><span>Dashboard</span></a>
     <a href="/kosten" class="{{ 'aktiv' if request.endpoint == 'red.kosten' }}"><span>Kosten</span></a>
     <a href="/quellen" class="{{ 'aktiv' if request.endpoint == 'red.quellen' }}"><span>Quellen</span></a>
