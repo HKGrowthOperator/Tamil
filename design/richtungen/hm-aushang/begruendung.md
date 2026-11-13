@@ -102,3 +102,12 @@ dieses Laufs (24a, 12 px Innenabstand statt Token) ist durch `var(--space-sm)` b
 Übrige WARN: 13 × „fallback font“ nur aus `file://`, F15, F21 (h1 gefolgt von h3). `tools/shots.mjs` 390/820/1280:
 39 Aufnahmen, 0 Fehler, kein seitliches Scrollen. Danach habe ich noch die Mindestbreite 44 px an „Karte“ und den
 anderen Mitnahme-Links ergänzt (nur CSS, nicht neu aufgenommen).
+
+## Überarbeitung nach r3
+
+- **P1, Zettel bei 390:** Unter 60rem steht der Zettel einspaltig (`.zettel` mit `minmax(0, 1fr)`): Datum, „Hängt noch“, Titel, Ort und Mitnehmen untereinander in voller Breite. Bei 390 und 820 auf index, termine, rubrik und artikel nachgesehen.
+- **P2-1 Tippflächen:** Bildnachweis-Links als `inline-block` mit mindestens 44 px Höhe; `shots.mjs` meldet bei 390 und 820 keinen Nachweis- oder Karten-Link unter 44 px mehr.
+- **P2-3 Kino:** Das Stadtfeld hat den Platzhalter „z. B. Berlin“ und die Zeile „Die Liste zeigt dann nur Filme in Ihrer Stadt.“; Feld und Titel sind oben ausgerichtet.
+- **P2-4 Gliederung:** Die Randspalte im Artikel hat die H2 „Am Brett“ (klein gesetzt), es gibt keinen Sprung von H1 auf H3 mehr.
+- **Nicht bearbeitet:** P2-2 (Lücke neben den Nachrichten bei 1280, es gibt nur drei Nachrichten), P2-5 (F15) und P2-6 (Zahl der Ausnahmen, 71 und 77 bleiben ausgenommen).
+- **Prüfung:** `tools/shots.mjs` 390/820/1280 über 13 Seiten: 39 Aufnahmen, 0 Fehler. `sloplint` über http auf index, termine, rubrik, artikel und kino: 0 FAIL, 0 offene REFLEX.
