@@ -400,6 +400,16 @@ def test_nachfuehrung_ergaenzt_nur_vollstaendige_angaben(tmp_path):
                   umfang="Online-Veröffentlichung auf tamil.de; Zuschnitt auf das Seitenformat",
                   attribution="Foto: Max Muster / Wikimedia Commons, CC BY-SA 4.0",
                   quelle_url="https://commons.wikimedia.org/wiki/File:Hindu_Tempel_Hamm.jpg")
+        # Commons mit belegter Bildadresse: quelle_bild ist laut Protokoll (Asset und Hash) die abgerufene Datei
+        c2_bild = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Tempel.jpg/1920px-Tempel.jpg"
+        c2_id, c2_name = entwurf("commons-belegt", "commons", quelle_bild=c2_bild)
+        c2_asset = alt_asset(c2_name, c2_id, herkunft="commons", rechteinhaber="Max Muster",
+                             lizenz="CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)", umfang="x",
+                             attribution="Foto: Max Muster / Wikimedia Commons, CC BY 4.0",
+                             quelle_url="https://commons.wikimedia.org/wiki/File:Tempel.jpg")
+        store.db.execute("INSERT INTO editorial_actions (ts, wer, aktion, draft_id, notiz) VALUES (?,?,?,?,?)",
+                         ("2026-11-12T10:00:00+00:00", "agent", "bild", c2_id,
+                          f"Bild mit Nachweis (commons): Asset {c2_asset}, upload.wikimedia.org, #{adress_hash(c2_bild)}"))
         bild = "https://tempel-hamm.de/wp-content/uploads/fest.jpg"
         r_id, r_name = entwurf("register", "quelle", quelle_bild=bild)
         r_asset = alt_asset(r_name, r_id, herkunft="quelle", rechteinhaber="Tempel Hamm", lizenz="Material der Quelle",
@@ -420,10 +430,12 @@ def test_nachfuehrung_ergaenzt_nur_vollstaendige_angaben(tmp_path):
         store.db.commit()
 
         z = lizenz.nachfuehren(store, settings)
-        assert z == {"ergaenzt": 2, "karte": 1, "offen": 2, "schon": 0}
+        assert z == {"ergaenzt": 2, "karte": 1, "offen": 3, "schon": 0}
         c = repo.asset_fuer_entwurf(store, c_id, c_name)
-        assert c["lizenz_kuerzel"] == "cc-by-sa-4.0" and c["urheber"] == "Max Muster" and lizenz.fehlend(c) == []
-        assert c["umfang"] == "website,social,print" and c["bild_url"].endswith("Special:FilePath/Hindu_Tempel_Hamm.jpg")
+        assert not c["lizenz_kuerzel"] and not c["bild_url"]  # abgerufene Adresse nicht belegt: offen, nichts abgeleitet
+        c2 = repo.asset_fuer_entwurf(store, c2_id, c2_name)
+        assert c2["lizenz_kuerzel"] == "cc-by-4.0" and c2["urheber"] == "Max Muster" and lizenz.fehlend(c2) == []
+        assert c2["umfang"] == "website,social,print" and c2["bild_url"] == c2_bild
         r = repo.asset_fuer_entwurf(store, r_id, r_name)
         assert r["lizenz_kuerzel"] == "presse-redaktionell" and r["umfang"] == "website" and r["bild_url"] == bild
         x = repo.asset_fuer_entwurf(store, x_id, x_name)
@@ -530,3 +542,68 @@ def test_ki_bild_traegt_digital_source_type_in_xmp(tmp_path):
     with Image.open(io.BytesIO(img.data)) as geladen:
         assert geladen.size == images.SIZE and not geladen.getexif()  # sonst keine Metadaten (Ortsdaten)
     assert b"trainedAlgorithmicMedia" not in branded_card("x", "News", "x").data
+
+
+def test_nachfuehrung_schreibt_nur_vollstaendige_datensaetze(tmp_path):
+    """P3: Fehlt danach noch etwas (hier die Prüfsumme, weil die Datei fehlt), bleibt der Datensatz unberührt; ein
+    zweiter Lauf setzt `geprueft_am` nicht neu."""
+    from news_radar.bildvorschlag import adress_hash
+
+    settings = load_settings()
+    settings.data_dir = tmp_path
+    bild = "https://tempel-hamm.de/wp-content/uploads/fest.jpg"
+    with Store(settings.db_path) as store:
+        did = store.insert_draft(dict(uid="r", typ="artikel", titel="r", teaser="T", inhalt_html="<p>T</p>",
+                                      kategorie="community", relevanz=8, bild_datei="fehlt.jpg", bild_origin="quelle",
+                                      bild_alt="Gopuram vor Himmel", quelle_bild=bild))
+        aid = store.db.execute(
+            "INSERT INTO assets (datei, herkunft, draft_id, erstellt, sha256, rechteinhaber, lizenz, umfang, attribution, "
+            "quelle_url) VALUES ('fehlt.jpg', 'quelle', ?, '2026-11-12T10:00:00+00:00', '', 'Tempel Hamm', 'Material', "
+            "'x', 'Foto: Tempel Hamm', 'https://tempel-hamm.de/fest')", (did,)).lastrowid
+        store.db.execute("INSERT INTO editorial_actions (ts, wer, aktion, draft_id, notiz) VALUES (?,?,?,?,?)",
+                         ("2026-11-12T10:00:00+00:00", "agent", "bild", did,
+                          f"Bild mit Nachweis (quelle): Asset {aid}, tempel-hamm.de, #{adress_hash(bild)}"))
+        store.db.commit()
+        assert lizenz.nachfuehren(store, settings)["offen"] == 1
+        a = dict(store.db.execute("SELECT * FROM assets WHERE id = ?", (aid,)).fetchone())
+        assert a["lizenz_kuerzel"] is None and a["geprueft_am"] is None and a["bild_url"] is None
+
+        name, _ = save_pair(branded_card("k", "Community", "k"), settings.bilder_dir, "k-x")
+        kid = store.insert_draft(dict(uid="k", typ="artikel", titel="k", teaser="T", inhalt_html="<p>T</p>",
+                                      kategorie="community", relevanz=8, bild_datei=name, bild_origin="karte",
+                                      bild_alt="Grafik mit der Überschrift: k"))
+        lizenz.nachfuehren(store, settings)
+        vorher = repo.asset_fuer_entwurf(store, kid, name)["geprueft_am"]
+        store.db.execute("UPDATE assets SET geprueft_am = '2026-01-01T00:00:00+00:00' WHERE draft_id = ?", (kid,))
+        store.db.commit()
+        lizenz.nachfuehren(store, settings)
+        assert vorher and repo.asset_fuer_entwurf(store, kid, name)["geprueft_am"] == "2026-01-01T00:00:00+00:00"
+
+
+# ---- P2: Prüfsumme gegen die Datei, P3: KI-Bild ohne Freigabe ----------------------------------------
+
+def test_pruefsumme_der_datei_muss_zum_datensatz_passen(tmp_path):
+    settings = load_settings()
+    settings.data_dir = tmp_path
+    with Store(settings.db_path) as store:
+        did, name, img = _entwurf_mit_karte(store, settings)
+        lizenz.anlegen(store, datei=name, daten=img.data, draft_id=did, felder=lizenz.datensatz(img, titel="Tempelfest"))
+        assert lizenz.sperre(store, store.get_draft(did), settings) == ""
+        (settings.bilder_dir / name).write_bytes(branded_card("Anderes Bild", "News", "x").data)  # Datei getauscht
+        assert lizenz.sperre(store, store.get_draft(did), settings) == "Lizenz fehlt: Prüfsumme"
+        with pytest.raises(lizenz.LizenzFehlt, match="Prüfsumme"):
+            publisher.publish_draft(store.get_draft(did), settings, FakeWP(), store, status="publish")
+
+
+def test_ki_bild_ohne_freigabe_gesperrt(tmp_path):
+    settings = load_settings()
+    settings.data_dir = tmp_path
+    with Store(settings.db_path) as store:
+        did, name, img = _entwurf_mit_karte(store, settings, alt="Symbolbild: leerer Kinosaal")
+        ki = images.FeaturedImage(img.data, name, "image/jpeg", lizenz.KI_CREDIT, "ki", prompt="Empty hall",
+                                  modell="gemini-nano-banana-2.1")
+        lizenz.anlegen(store, datei=name, daten=img.data, draft_id=did, felder=lizenz.datensatz(ki))
+        settings.bild_ki_freigabe = False
+        assert "KI-Kennzeichen" in lizenz.sperre(store, store.get_draft(did), settings)
+        settings.bild_ki_freigabe = True
+        assert lizenz.sperre(store, store.get_draft(did), settings) == ""

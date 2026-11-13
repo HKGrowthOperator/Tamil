@@ -1,4 +1,5 @@
 /* Hallmark · shared sheet of the tamil.de almanac pages · genre: editorial · theme: Almanac (deal 2/3, seed tamil-deutschsprachiges-online-magazin-der-ff32·6bcf19c0·2026-11-13·r0) · draw: 26f3b5 · accent re-hued to the logo red · v2.0.0 */
+/* Hallmark · pre-emit critique: P4 H4 E4 S4 R5 V4 · weakest: E, the shared sheet carries rules, numerals and controls for eleven page types; the one idea, the dated printed sheet, has to hold on every page without a second device beside it */
 @import url("./tokens.css");
 @import url("./base.css");
 
@@ -215,3 +216,17 @@ time { font-variant-numeric: tabular-nums; }
 .sheet__note a, .share-zeile a { display: inline-flex; align-items: center; min-height: 44px; }
 .sheet__head h2.sheet__title { max-width: none; }
 .legende-satz, .hinweis-feld, .pl-wo { font-size: var(--text-md); }
+
+/* Kritik r2: ein Foto im ersten Bildschirm jeder Hauptseite, rechts neben dem Kopf, am Handy unter dem Kopf in 16:9 */
+.kopfbild { grid-column: 9 / span 4; grid-row: 1 / span 2; align-self: end; margin: 0; }
+.kopfbild .photo { aspect-ratio: 3 / 2; }
+.kopfzeile__link { margin: 0; }
+.foot__folgt { margin-block-start: var(--space-xs); color: var(--color-muted); }
+.weiter__liste a, .kopf__meta dd a { display: inline-block; padding-block: var(--space-sm); margin-block: calc(-1 * var(--space-sm)); }
+.feld input[type="file"] { min-height: 48px; }
+.sheet__note { font-size: var(--text-md); }
+.tafel td.leer { color: var(--color-muted); }
+@media (max-width: 60rem) {
+  .kopfbild { grid-row: auto; align-self: start; }
+  .kopfbild .photo { aspect-ratio: 16 / 9; }
+}

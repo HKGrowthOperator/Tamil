@@ -277,7 +277,8 @@ def entwurf(lizenz_fehlt):
         for k, art, kern, q, s, a in CLAIMS)
     if lizenz_fehlt:
         werkzeug = """<div class="werkzeug" role="group" aria-label="Entscheidung">
-<button class="btn btn--quiet" type="button" aria-disabled="true" aria-describedby="sperre">Freigeben</button>
+<!-- Sperre: Der Server lehnt jede Freigabe ohne Lizenz-Datensatz ab (Stand und Lizenz werden dort geprüft, Abnahmekriterium K6); der Knopf ist nur die Anzeige dieser Regel. -->
+<button class="btn btn--quiet" type="button" disabled aria-describedby="sperre">Freigeben</button>
 <p class="grund" id="sperre"><b>Lizenz fehlt.</b> Ohne Lizenz-Datensatz geht kein Bild auf tamil.de; Freigeben und Direkt posten sind gesperrt.</p>
 <div class="rechts">
 <a class="btn btn--quiet" href="#lizenz">Lizenz nachtragen</a>

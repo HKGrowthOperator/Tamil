@@ -1,6 +1,6 @@
 # Linie A „Tagesblatt“ (hm-eigen) – Begründung
 
-Stand 13.11.2026, Runde 3 (nach `design/kritik/hm-eigen-r1.md` und `hm-eigen-r2.md`). Gestaltet nach `design/brief-v3.md` mit Hallmark
+Stand 13.11.2026, Runde 4 (nach `design/kritik/hm-eigen-r1.md`, `-r2.md` und `-r3.md`). Gestaltet nach `design/brief-v3.md` mit Hallmark
 (eigene Richtung). Alle Seiten erzeugt der Generator `bauen.py` aus echtem Material; von Hand geschrieben ist nur
 `hm-eigen.css`.
 
@@ -16,12 +16,12 @@ Festtag“, klein, nie als Fläche und nie als Riesenschrift.
 |---|---|
 | Shape | Tagesblatt (eigene Form): Datum, die nächsten Feste und das Kino links, Aufmacher mit Bild rechts; darunter „Zuletzt bei tamil.de“ nach Tagen mit Monatsköpfen |
 | Papier | Jasminweiß `oklch(97.6% 0.007 120)`, Tinte `oklch(21% 0.022 155)`, Mulde `paper-2` für Nachrichten und Fuß |
-| Rot | Logo-Rot `oklch(50.5% 0.175 25)`: Ziffer in Tageszeilen von Terminen an Sonntagen und Festtagen, Wochentag „Sonntag“/Festname im Datumsblock, Sonntage im Buchungskalender, Fokusring. Kein roter Knopf mehr |
+| Rot | Logo-Rot `oklch(50.5% 0.175 25)`: überall eine Regel, Ziffer in jeder Tageszeile an Sonntagen und Festtagen, Wochentag „Sonntag“/Festname im Datumsblock, Sonntage im Buchungskalender, Fokusring. Kein roter Knopf mehr |
 | Schrift | Rethink Sans 600 für Köpfe, 800 nur für Ziffern; Golos Text für Lesetext (beide OFL, selbst gehostet, Lizenzen in `schriften/`). Drei Gewichte: 400, 600, 800 |
 | Signatur | die Tageszeile; sie trägt Startseite, Rubrik, Weiterlesen, Festkalender, Erwähnungen im Verzeichnis und den Buchungskalender. Die Ziffernspalte zeigt nur Tage |
 | Haltung | geteilt (split), Linien statt Kästen, keine Karten, keine Vollfarbflächen |
 | Bilder | Fotos aus Commons mit Nachweis am Bild, auch an jedem Daumenbild (Kurznachweis darunter); volle Nachweise mit Link im Fuß |
-| Chrome | Kopf: Logo, Tagesdatum, drei Dienste (Termine, Kino, Verzeichnis), Rubriken im Menü; Fuß mit Rubriken, Diensten, Bildnachweisen |
+| Chrome | Kopf: Logo, Tagesdatum (nicht auf der Startseite, dort trägt es das Tagesblatt), drei Dienste (Termine, Kino, Verzeichnis), Rubriken im Menü; Fuß mit Rubriken, Diensten, Bildnachweisen |
 | Sweep | siehe Prüfung unten |
 
 ## Seiten
@@ -83,6 +83,23 @@ P2:
 P3: Legende 18 px, Hilfetexte 16 px, einheitlich „Per WhatsApp schicken“, deutscher Hinweis unter dem Datumsfeld,
 „Heute, kein Termin“.
 
+## Überarbeitung nach r3
+
+- **P1, Datum doppelt:** Auf der Startseite steht kein Datum mehr im Kopf; dort trägt allein das Tagesblatt den Tag.
+- **Rot hat eine Bedeutung:** Eine Regel für alle Listen (Sonntag oder Festtag), in `bauen.py` über dieselbe Funktion
+  `rot()` für Termine und Beiträge; die Legende sagt das so.
+- **Strom weniger gleichförmig:** Bei 1280 füllt der Vorspann die Mitte jeder Zeile. Am Handy zeigt nur der erste
+  Beitrag eines Monats ein Bild, ohne Vorspann; die Seite ist dadurch deutlich kürzer.
+- **Loch unter dem Aufmacher:** Das Aufmacherbild steht ab 1100 px im Format 3:2 und endet auf Höhe der linken Spalte.
+- **Kante im Artikel:** Kopf und Text nutzen dasselbe Raster (3/6/3); Titel und Fließtext beginnen an derselben Kante.
+- **Kein Foto doppelt:** Der Generator vergleicht die Bilddateien je Seite; ein schon gezeigtes Foto (rb-30 und rb-49
+  sind dieselbe Datei) wird in Listen weggelassen, die Zeile steht dann ohne Bild.
+- **Symbolbilder gekennzeichnet:** „Symbolbild.“ oder „Archivbild.“ steht vor dem Nachweis, nach der Angabe der
+  Bildredaktion im Alt-Text.
+- **Hierarchie links:** Filmtitel in „Im Kino“ so groß wie die Festtitel (16 px).
+- P3: Nachweise an Daumen 14 px, Billboard „zwischen den Monaten“, „Zurückliegend“ sagt „Termine, über die wir
+  berichtet haben“. „Nach Stadt“ auf `kino.html` bleibt, weil der Linienauftrag „Kino nach Stadt“ verlangt.
+
 ## Inhalte
 
 Alles echt: 20 Rückblick-Beiträge (Bilder mit Nachweis), Festkalender aus der Spalte „Ereignis“ von
@@ -94,12 +111,12 @@ Kinos und Uhrzeiten. Beispielwerte (belegte Tage, Vorgangs- und Buchungsnummer, 
 
 ## Prüfung
 
-Stand nach Kritik r2, Server `http://127.0.0.1:8941` (Haupt-Arbeitsbaum):
+Stand nach Kritik r3, Server `http://127.0.0.1:8941` (Haupt-Arbeitsbaum):
 
 - `sloplint --genre editorial` über http für die elf Seiten der Liste: **0 FAIL**, 0 REFLEX offen. Gewaivt im Stempel:
   49b (lange echte Titel als Links), 59 und 78 (dichter Abstand und ruhige Köpfe, wie von der Kritik r1 verlangt),
   77 und 79 (kurze Dienstlisten und Seitenköpfe). 11 WARN „fallback font“ stammen aus dem `file://`-Durchgang
-  (Schriften laden dort nicht); über http laden sie. Gate 58 ist mit `copy: verbatim` Notiz.
+  (Schriften laden dort nicht); über http laden sie. Dazu 2 WARN F25 (Finish): Die Vorspanne im Strom der Startseite sind am Handy absichtlich ausgeblendet (Kritik r3, P2-2). Gate 58 ist mit `copy: verbatim` Notiz.
 - `node tools/shots.mjs` bei 390/820/1280 für 14 Seiten (alle Seitentypen, Bestätigungen, Rubrik Seite 2):
   42 Aufnahmen, 0 Fehler, kein seitliches Scrollen, keine Konsolenfehler, keine leeren Bilder, keine kleinen
   Tippflächen.

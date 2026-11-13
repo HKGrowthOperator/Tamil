@@ -5,6 +5,7 @@ Liest design/inhalte/ und docs/redaktion/rueckblick-2026.md, schreibt alle HTML-
 Bilder und Logo. Nichts wird erfunden: wo Material fehlt (Kontakte, Preise, Impressum), steht ein sichtbarer Platzhalter.
 """
 import datetime as dt
+import hashlib
 import html
 import json
 import pathlib
@@ -189,7 +190,7 @@ def figur(b, cls="bild", lazy=True, link=None, quelle=True):
            f'{" loading=\"lazy\"" if lazy else " fetchpriority=\"high\""}>')
     if link:
         img = f'<a class="bild-link" href="{link}" tabindex="-1" aria-hidden="true">{img}</a>'
-    cap = e(nachweis(b))
+    cap = e(bildart(b) + nachweis(b))
     if quelle and q:
         cap += f' <a class="quelle" href="{e(q)}">Quelle</a>'
     return f'<figure class="{cls}">{img}<figcaption>{cap}</figcaption></figure>'
@@ -213,8 +214,30 @@ def bericht(sid, bild=True, teaser=False, hn="h3"):
             f'<p class="meta"><time datetime="{d.isoformat()}">{datum(d)}</time>, {e(b["ort"])}</p></div></li>')
 
 
+def bildart(b):
+    """Symbol- und Archivbilder als solche kennzeichnen (Angabe steht im Alt-Text der Bildredaktion)."""
+    if "Symbolbild" in b["alt"]:
+        return "Symbolbild. "
+    if "Archivbild" in b["alt"]:
+        return "Archivbild. "
+    return ""
+
+
 def kurznachweis(b):
-    return nachweis(b).replace(" / Wikimedia Commons", "")
+    return bildart(b) + nachweis(b).replace(" / Wikimedia Commons", "")
+
+
+_HASH = {}
+
+
+def bildhash(b):
+    if b["bild"] not in _HASH:
+        _HASH[b["bild"]] = hashlib.md5((INH / "rueckblick" / b["bild"]).read_bytes()).hexdigest()
+    return _HASH[b["bild"]]
+
+
+def schon_gezeigt(b):
+    return any(bildhash(x) == bildhash(b) for x in NW)
 
 
 def rubrik_von(sid):
@@ -224,21 +247,23 @@ def rubrik_von(sid):
     return "Kino" if sid in KINO_IDS else None
 
 
-def strom_zeile(sid, teaser=False, hn="h3", rubrik=True, lazy=True):
+def strom_zeile(sid, teaser=False, hn="h3", rubrik=True, lazy=True, erster=True):
     b = BEI[sid]
     d = dt.date.fromisoformat(b["datum"])
     href = link_zu(sid)
-    merk(b)
+    mit_bild = not schon_gezeigt(b)
+    if mit_bild:
+        merk(b)
     w, h = bildgroesse(b)
     rn = rubrik_von(sid) if rubrik else None
     wo = ", ".join(x for x in (rn, b["ort"]) if x)
     z = (f'<span class="z"><time datetime="{d.isoformat()}">{d.day}</time>'
          f'<small>{TAGE[d.weekday()][:2]}, {mon_kurz(d)}</small></span>')
-    t = f'<p class="teaser">{e(b["teaser"])}</p>' if teaser else ""
-    bild = (f'<figure class="daumen"><a href="{href}" tabindex="-1" aria-hidden="true"><img src="{e(b["bild"])}" alt="" '
+    t = f'<p class="teaser{" nur-breit" if teaser == "breit" else ""}">{e(b["teaser"])}</p>' if teaser else ""
+    bild = "" if not mit_bild else (f'<figure class="daumen{"" if erster else " nicht-handy"}"><a href="{href}" tabindex="-1" aria-hidden="true"><img src="{e(b["bild"])}" alt="" '
             f'width="{w}" height="{h}"{" loading=\"lazy\"" if lazy else ""}></a><figcaption>{e(kurznachweis(b))}</figcaption></figure>')
-    rot_k = " class=\"rot\"" if d in FESTTAGE else ""
-    return (f'<li{rot_k}>{z}<div class="s-text"><{hn} class="b-titel"><a href="{href}">{e(b["titel"])}</a></{hn}>'
+    k = " ".join(x for x in ("rot" if rot(d) else "", "" if bild else "ohne-bild") if x)
+    return (f'<li{f" class=\"{k}\"" if k else ""}>{z}<div class="s-text"><{hn} class="b-titel"><a href="{href}">{e(b["titel"])}</a></{hn}>'
             f'<p class="wo">{e(wo)}</p>{t}</div>{bild}</li>')
 
 
@@ -253,7 +278,7 @@ def strom(ids, teaser=False, monat_hn="h3", hn="h4", rubrik=True, monate=True):
     aus = ""
     for (j, m), gids in gruppen.items():
         aus += (f'<{monat_hn} class="monat-kopf">{MONATE[m-1]}</{monat_hn}>'
-                f'<ul class="tage strom{" mit-teaser" if teaser else ""}">{"".join(strom_zeile(i, teaser, hn, rubrik) for i in gids)}</ul>')
+                f'<ul class="tage strom{" mit-teaser" if teaser else ""}">{"".join(strom_zeile(i, teaser, hn, rubrik, erster=(n == 0 or teaser is True)) for n, i in enumerate(gids))}</ul>')
     return aus
 
 
@@ -286,9 +311,10 @@ def kopf(aktiv=""):
     dien = "".join(f'<a href="{h}"{cur(n)}{" class=\"breit\"" if n == "Verzeichnis" else ""}>{n}</a>' for n, h in DIENSTE)
     rub = "".join(f'<a href="{h}"{cur(n)}>{n}</a>' for n, h in NAV_R)
     menue = "".join(f'<li><a href="{h}"{cur(n)}>{n}</a></li>' for n, h in NAV_R + [DIENSTE[2]] + MITMACHEN)
+    kdat = "" if aktiv == "Start" else f'<p class="kopf-datum"><time datetime="{HEUTE.isoformat()}">{TAGE[HEUTE.weekday()]}, {datum(HEUTE)}</time></p>'
     return (f'<a class="skip" href="#inhalt">Zum Inhalt</a><header class="kopf"><div class="wrap">'
             f'<a class="logo" href="index.html" aria-label="tamil.de, zur Startseite"><img src="bilder/logo.png" alt="tamil.de" width="300" height="121"></a>'
-            f'<p class="kopf-datum"><time datetime="{HEUTE.isoformat()}">{TAGE[HEUTE.weekday()]}, {datum(HEUTE)}</time></p>'
+            f'{kdat}'
             f'<nav class="dienste" aria-label="Dienste">{dien}</nav>'
             f'<details class="menue"><summary>Rubriken</summary><ul>{menue}</ul></details></div></header>')
 
@@ -399,13 +425,13 @@ hero = (f'<section class="blatt" aria-label="Heute"><div class="wrap">'
 
 ZULETZT = [i for i in BEI if i != 30 and BEI[i]["datum"] >= "2026-07-01"]
 zuletzt = (f'<section class="abschnitt" id="zuletzt" aria-labelledby="z-h"><div class="wrap">'
-           f'<h2 id="z-h" class="strom-kopf">Zuletzt bei tamil.de</h2>{strom(ZULETZT)}'
+           f'<h2 id="z-h" class="strom-kopf">Zuletzt bei tamil.de</h2>{strom(ZULETZT, teaser="breit")}'
            f'<p class="weiter-links">Ältere Beiträge nach Rubrik: '
            + "".join(f'<a class="textlink" href="{h}">{n}</a>' for n, h in NAV_R) + '</p></div></section>')
 
 schreib("index.html", "tamil.de | Nachrichten, Termine und Kino der tamilischen Community",
         "Nachrichten, Termine und Kino der tamilischen Community in Deutschland, Österreich und der Schweiz.",
-        hero + zuletzt)
+        hero + zuletzt, "Start")
 
 
 # ======================================================================
@@ -483,9 +509,9 @@ termine_body = (seitenkopf("Festkalender", "Feste, Feiern und Bühnen der tamili
                            '<p class="aktionen"><a class="textlink" href="einreichen.html">Termin einreichen</a></p>')
                 + f'<section class="abschnitt" aria-labelledby="ah-h"><div class="wrap">{kopfzeile("ah-h", "Ab heute")}'
                 + tage(ab_heute)
-                + '<p class="legende">Rot steht für einen Termin an einem Sonntag oder an einem Festtag (Thai Pongal, Tamilisches Neujahr, Deepavali).</p></div></section>'
+                + '<p class="legende">Rot steht überall auf tamil.de für einen Sonntag oder einen Festtag (Thai Pongal, Tamilisches Neujahr, Deepavali).</p></div></section>'
                 + f'<section class="abschnitt" aria-labelledby="zl-h"><div class="wrap">{kopfzeile("zl-h", "Zurückliegend in 2026")}'
-                + f'<p class="satz">Worüber wir berichtet haben, nach Monaten.</p>{vorbei}</div></section>')
+                + f'<p class="satz">Termine, über die wir berichtet haben, nach Monaten.</p>{vorbei}</div></section>')
 schreib("termine.html", "Festkalender | tamil.de", "Feste, Feiern und Bühnen der tamilischen Community, ab heute.", termine_body, "Termine")
 
 
@@ -639,7 +665,7 @@ PLAETZE = [
     ("leaderboard", "Leaderboard", "Unter der Navigation, auf allen Seiten", (728, 90), (320, 50)),
     ("halfpage", "Half Page", "In der Seitenspalte", (300, 600), None),
     ("artikel", "Im Artikel", "Nach dem zweiten Absatz", (728, 90), (300, 250)),
-    ("billboard", "Billboard", "Startseite, zwischen den Rubriken", (970, 250), (300, 250)),
+    ("billboard", "Billboard", "Startseite, zwischen den Monaten", (970, 250), (300, 250)),
     ("fuss", "Fuß", "Über dem Fuß der Seite", (728, 90), (320, 100)),
     ("mobil", "Mobil", "Am Handy fest am unteren Rand", None, (320, 50)),
 ]
@@ -732,7 +758,7 @@ buchen_form = (
     + feld("ziel", "Zieladresse", "url", attrs='inputmode="url" placeholder="https://"', hilfe="Wohin ein Klick auf die Anzeige führt.")
     + '</fieldset>'
     f'<fieldset id="s5"><legend><span class="schritt-nr">Schritt 5 von 5</span>Prüfen und bezahlen</legend>'
-    '<dl class="angaben zusammenfassung"><div><dt>Platz</dt><dd>Billboard, Startseite zwischen den Rubriken</dd></div>'
+    '<dl class="angaben zusammenfassung"><div><dt>Platz</dt><dd>Billboard, Startseite zwischen den Monaten</dd></div>'
     '<div><dt>Zeitraum</dt><dd>8. bis 21. Dezember 2026, 14 Tage</dd></div>'
     '<div><dt>Preis</dt><dd><span class="fill">Preis folgt</span></dd></div></dl>'
     + haken("bedingungen", "Ich habe die Verkaufsbedingungen gelesen und nehme sie an.",

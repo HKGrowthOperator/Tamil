@@ -71,9 +71,25 @@
       <dt>Kunde</dt><dd>C. Beispiel, <a href="mailto:anzeigen@example.org">anzeigen@example.org</a></dd>
       <dt>Vorlauf</dt><dd>2 Werktage, Start am Montag</dd>
     </dl>
-    <form action="/buchungen/W-2026-0007" method="post">
-      <label class="feld"><span>Grund bei Ablehnung</span><textarea name="grund" rows="2">Werbemittel für das Handy hat das falsche Format.</textarea><small>Bei Ablehnung wird voll erstattet und die Tage werden frei.</small></label>
-      <div class="aktionen"><button type="submit" class="knopf primaer" name="aktion" value="freigeben">Werbemittel freigeben</button><button type="submit" class="knopf gefahr" name="aktion" value="ablehnen">Ablehnen</button></div>
+    <form action="/buchungen/W-2026-0007/freigeben" method="post">
+      <div class="aktionen"><button type="submit" class="knopf primaer" name="aktion" value="freigeben" disabled aria-describedby="fg-grund">Werbemittel freigeben</button></div>
+      <p class="klein leise" id="fg-grund">Gesperrt, weil die Prüfung „abweichend“ meldet: Handy 320 × 100 statt 300 × 250. Freigeben geht mit einer neuen Datei oder mit begründeter Übersteuerung.</p>
+      <details class="aufklapp"><summary>Format trotzdem annehmen</summary>
+        <label class="feld"><span>Grund für die Übersteuerung (Pflicht)</span><textarea name="grund_uebersteuerung" rows="2" required aria-required="true"></textarea><small>Steht mit Person und Zeit im Protokoll der Buchung.</small></label>
+        <label class="bestaetigen"><input type="checkbox" name="format_angenommen" value="ja" required aria-required="true"><span>Das Handy-Werbemittel läuft in 320 × 100 statt 300 × 250.</span></label>
+        <div class="aktionen"><button type="submit" class="knopf" name="aktion" value="freigeben_uebersteuert">Trotz Abweichung freigeben</button></div>
+      </details>
+    </form>
+    <form action="/buchungen/W-2026-0007/ablehnen" method="post" class="abstand-oben">
+      <details class="aufklapp gefahr-zone"><summary>Ablehnen und erstatten</summary>
+        <label class="feld"><span>Grund der Ablehnung (Pflicht)</span><textarea name="grund" rows="2" required aria-required="true"></textarea><small>Der Kunde sieht den Grund in seiner Buchungsübersicht.</small></label>
+        <dl class="daten">
+          <dt>Erstattung</dt><dd>voller Betrag über Stripe an Beispiel Reisen GmbH (Preis folgt, Platzhalter)</dd>
+          <dt>Folgen</dt><dd>Die Tage 16. bis 29. November werden frei. Lässt sich nicht zurücknehmen.</dd>
+        </dl>
+        <label class="bestaetigen"><input type="checkbox" name="erstattung_bestaetigt" value="ja" required aria-required="true"><span>Ich lehne W-2026-0007 ab und erstatte den vollen Betrag.</span></label>
+        <div class="aktionen"><button type="submit" class="knopf gefahr" name="aktion" value="ablehnen">Ablehnen und erstatten</button></div>
+      </details>
     </form>
   </section>
   <section class="seite-teil" aria-labelledby="h-st">

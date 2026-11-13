@@ -135,6 +135,40 @@ Dazu: Navigation mit Community und Verzeichnis (am Handy als zweite Zeile unter 
 - Dismissed: 58 auf Kino (84 Wörter im Kinojahr).
 - `tools/shots.mjs`: 48 Aufnahmen (16 Seiten × 390/820/1280), 0 Fehler.
 
+## Schliff nach r2 (`design/kritik/hm-almanac-r2.md`)
+
+- **Bild im ersten Handy-Bildschirm (P2-1).** Alle fünf Hauptseiten zeigen bei 390 ein echtes Foto mit Nachweis direkt
+  unter dem Kopf; am Desktop steht es rechts neben dem Kopf.
+  - Start: der Deepavali-Bericht steht am Handy vor dem Bogen.
+  - Termine: Sivan Kovil Glattbrugg.
+  - Kino: Karthi, der Darsteller in „Sardar 2“.
+  - Verzeichnis: der Tempel in Hamm.
+  - Werben: das Koothandavar-Fest.
+- **Kino (P2-2).** Die leere Spalte ist weg. Die Orte von „Scene“ stehen in einer Zeile; „6 weitere Städte“ und
+  „OM, 12 Spielorte“ tragen den Platzhalter „Orte folgen“. Die doppelte Ansicht nach Film entfällt, geteilt wird je
+  Zeile.
+- **Fuß (P2-3).** Verlinkt sind nur Rubriken mit eigener Seite (Community, Events, Kino), dazu der Platzhalter
+  „weitere folgen“.
+- **Tippflächen (P2-4).** Weiterlesen-Links, Rubrik-Link im Artikelkopf und Dateifeld haben jetzt 44 bzw. 48 px.
+- **Schriftgröße (P2-5).** Erklärende Notizen unter den Bögen in 18 px; 15 px bleiben für Tabellenköpfe, Stand und
+  Nachweise. Die leeren Zellen in `buchen.html` sind die Kalenderfelder vor dem Monatsersten und nach dem Monatsende.
+- **P3.**
+  - THADAM: „Veranstalter nicht genannt“.
+  - Kalaiththiran: „drei Städte“.
+  - Unterzeile des Festjahrs: „aus Rückblick und Radar“.
+  - Abstände auf Start und Termine: `--section-gap-s`.
+  - Die doppelte Seitenführung in der Rubrik ist entfernt.
+- **Buchhaltung (P3-4).**
+  - `job` je Seite: read, find, attend, buy.
+  - Die Abweisung zu Gate 52 ist gestrichen.
+  - `almanac.css` hat die Zeile mit der Selbstkritik.
+  - Die Ausnahmen, die überall gelten (44c, 59, 78, 49b), stehen als Hausstil in `design.md`.
+- **Prüfung:** `sloplint --genre editorial` über http und Dateien für alle 32 Seiten: 0 FAIL, 0 offene REFLEX, 0 WARN; `shots.mjs` 48 Aufnahmen, 0 Fehler.
+- **Offen:**
+  - Das Foto auf der Startseite zeigt den Tempel vom Juni, kein Deepavali (P3-7).
+  - THADAM, „OM“ und „Jailer 2“ sind wartende Radar-Entwürfe (P3-3).
+  - Schrittleiste, Datumsformat und Vorschau der Einsendung (P3-9) sind unverändert.
+
 ## Abgrenzung
 
 - **Gegen Runde 2** (Sand, Braungrau, Serife, runde Bilder): heller kühler Grund statt Creme (Farbton 245, nicht 60–90), blauschwarze Tinte statt Braungrau, eckige Bilder, Grotesk für Köpfe und Text.

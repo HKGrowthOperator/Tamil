@@ -8,7 +8,7 @@
   // Kino: Stadt eintippen, die Liste wird kürzer
   document.querySelectorAll('[data-filter]').forEach((input) => {
     const liste = document.querySelector(input.dataset.filter);
-    const hilfe = document.getElementById(input.getAttribute('aria-describedby'));
+    const hilfe = document.getElementById(input.getAttribute('aria-describedby').split(' ').pop());
     if (!liste) return;
     const zeilen = [...liste.children];
     input.addEventListener('input', () => {

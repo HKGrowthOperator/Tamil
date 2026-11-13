@@ -9,7 +9,7 @@
 .aktionen--artikel .meta { order: 2; }
 .bild--artikel { margin-top: var(--space-2xl); }
 .bild--artikel .rahmen { aspect-ratio: 16 / 9; }
-.artikel-raster { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); gap: var(--space-3xl); margin-top: var(--space-2xl); align-items: start; }
+.artikel-raster { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); gap: var(--gap-columns); margin-top: var(--space-2xl); align-items: start; }
 .text > p { max-width: 65ch; font-size: clamp(1.125rem, 0.2vw + 1.05rem, 1.1875rem); line-height: 1.7; color: var(--color-ink-2); }
 .text > p + p { margin-top: var(--space-lg); }
 .text .anzeige + p { margin-top: 0; }

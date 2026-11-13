@@ -752,7 +752,7 @@ def _lizenz_gate(ctx, sz: Szenario, now: datetime) -> dict:
     store, s, stats = ctx.store, ctx.settings, Counter()
     d = store.list_drafts("neu")[0]
     stats["erst_karte"] = int(d.get("bild_origin") == "karte")
-    stats["karte_vollstaendig"] = int(not lizenz_mod.luecken(store, d))
+    stats["karte_vollstaendig"] = int(not lizenz_mod.luecken(store, d, ctx.settings))
     stats["ki_aufrufe"] = store.db.execute("SELECT COUNT(*) FROM agent_usage WHERE provider = 'gemini'").fetchone()[0]
     # Redaktion lädt ein eigenes Foto hoch (gemeinsamer Speicherweg, kein Standardnachweis)
     up = images.from_upload(_png(), "upload")
@@ -760,7 +760,7 @@ def _lizenz_gate(ctx, sz: Szenario, now: datetime) -> dict:
     store.update_draft(d["id"], bild_datei=name, bild_origin="upload", bild_credit=up.credit)
     lizenz_mod.anlegen(store, datei=name, daten=up.data, draft_id=d["id"], felder=lizenz_mod.datensatz(up))
     row = store.get_draft(d["id"])
-    stats["freigabe_gesperrt"] = int(bool(lizenz_mod.sperre(store, row)))
+    stats["freigabe_gesperrt"] = int(bool(lizenz_mod.sperre(store, row, ctx.settings)))
     store.set_status(d["id"], "freigeben", von="abnahme")  # an der Oberfläche vorbei: der Publisher prüft erneut
     wp = WP()
     publisher.publish_approved(s, store, wp=wp)

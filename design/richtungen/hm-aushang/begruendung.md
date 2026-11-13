@@ -77,3 +77,28 @@ getrennt.
 
 **Offen:** Die Zettel stehen auf termine und rubrik zu dritt beziehungsweise zu zweit nebeneinander und sind dort fast
 gleich groß; das kann wie ein Kartenraster wirken. Die Finish-Prüfung von Hallmark aus frischem Kontext steht weiter aus.
+
+## Überarbeitung nach r2
+
+Grundlage: `design/kritik/hm-aushang-r2.md` (4 P1, 6 P2) und die Angaben der Koordination.
+
+| Punkt | Was jetzt gilt |
+|---|---|
+| P1-1 Zettel als Kartenraster | Kein Kasten, keine Rundung, keine Knopfleiste mehr. Ein Aushang ist eine Zeile zwischen Haarlinien in einer Spalte: links Datum und „Hängt noch n Tage“, rechts Titel und Ort, darunter nach einer gestrichelten Linie „Mitnehmen: WhatsApp, Kalender, Karte“ als Textlinks. Im schmalen Brett der Startseite und in der Randspalte steht alles untereinander. Auf termine und rubrik gibt es keine Reihe nebeneinander mehr. |
+| P1-2 „Jailer 2“, 17 Uhr | Belegt im Radar (Story 19, Eventfrog); am Termin und in der Kinozeile steht sichtbar „Quelle: Eventfrog“. Die `.ics` hat nur `DTSTART:20261115T170000` ohne Endzeit und ohne Zeitzone, deshalb braucht sie keinen VTIMEZONE-Block (behebt P2-6). |
+| P1-3 Hierarchie | Die H1 des Aufmachers ist 50 px bei 1280 und 32 px bei 390. Abschnittstitel sind 30 bis 34 px, Zweittitel, Filmtitel und „Am Brett“ 22 bis 28 px, also überall kleiner als die H1. Überschriften trennen mit `hyphens: auto` (`lang="de"`), „Bundestagsdrucksache“ bricht mit Trennstrich. |
+| P1-4 „Hängt noch“ | Steht immer unter dem Datum. |
+| P2-1 Tippflächen | Bildnachweis-Links mit 12 px Innenabstand oben und unten, Blätterlinks, „Karte“ und der WhatsApp-Link im Kontakt mit mindestens 44 px; Ankreuzfelder 28 px mit 44 px hoher Zeile. |
+| P2-2 Dichte | Abschnitte 96 px statt 144 px, 24 px unter dem Abschnittstitel; Titel im Festkalender bis 60 Zeichen breit. |
+| P2-3 Gleichförmigkeit | „Küche und Kultur“ statt „Küche, Kultur und Sport“ (Sport hatte keinen eigenen Platz); Kultur trägt jetzt den Stuttgarter Filmfestival-Beitrag. Eine eigene Ordnung je Rubrik (Community nach Ort, Küche mit Adresse) bleibt offen. |
+| P2-4 Festkalender | Nur Ereignisse: Nachrichten, Gerichtsurteile, Studien, Eröffnungen und Sportwechsel sind herausgenommen (17 Chronik-Einträge). Neue Unterzeile: „Feste, Bühnen und Vorstellungen aus den Beiträgen 2026, noch nicht freigegeben.“ |
+| P2-5 Spaltenabstände | `--gap-columns` (32 px) in allen Rastern; sloplint meldet F15 noch einmal mit drei Werten (64, 24, 40) aus Formular und Fuß. |
+| P2-6 `.ics` | siehe P1-2. |
+
+Ausnahmen neu im Stempel: 78 (Abschnittstitel unter 40 px, weil der Aufmacher führt) und 59 (96 px mit schwarzer Linie als Naht).
+
+**Prüfung:** `sloplint --genre editorial --render` über http, 13 Seiten: 0 FAIL, 0 offene REFLEX. Der einzige FAIL
+dieses Laufs (24a, 12 px Innenabstand statt Token) ist durch `var(--space-sm)` behoben und im CSS nachgeprüft (0 FAIL).
+Übrige WARN: 13 × „fallback font“ nur aus `file://`, F15, F21 (h1 gefolgt von h3). `tools/shots.mjs` 390/820/1280:
+39 Aufnahmen, 0 Fehler, kein seitliches Scrollen. Danach habe ich noch die Mindestbreite 44 px an „Karte“ und den
+anderen Mitnahme-Links ergänzt (nur CSS, nicht neu aufgenommen).

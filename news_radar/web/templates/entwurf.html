@@ -135,7 +135,7 @@
   {% if d.bild_datei and lizenz_luecken %}
   <p class="fehlertext" id="lizenz-fehlt">{{ lizenz_meldung }}</p>
   {% endif %}
-  {% if darf('bearbeiten') and d.bild_datei and d.status in open_states and d.bild_origin not in ('karte', 'ki', 'pool') %}
+  {% if darf('bearbeiten') and d.bild_datei and (d.status in open_states or d.status == 'fehler') and d.bild_origin not in ('karte', 'ki', 'pool') %}
   <details class="lizenz-formular" id="lizenz"{% if lizenz_luecken %} open{% endif %}>
     <summary>Lizenz eintragen</summary>
     <form method="post" action="/entwurf/{{ d.id }}/lizenz" enctype="multipart/form-data">

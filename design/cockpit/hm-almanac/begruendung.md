@@ -2,7 +2,7 @@
 
 Redaktions-Cockpit der Linie B „Kalenderblatt“. Produkt-Register: dieselbe Marke wie die Website
 (`design/richtungen/hm-almanac/`, Stand 13.11. 20:55: helles Schieferpapier, fast weißer Bogen, Hanken Grotesk auch im
-Text, Ziffern in IBM Plex Mono, Akzent im Logo-Rot), ruhiger und dichter. Statisches HTML/CSS, erzeugt mit `bauen.py`;
+Text, Ziffern in Hanken Grotesk mit Tabellenziffern (IBM Plex Mono nach Kritik cockpits-r1 entfernt), Akzent im Logo-Rot), ruhiger und dichter. Statisches HTML/CSS, erzeugt mit `bauen.py`;
 `app.js` nur für „Text kopieren“ im WhatsApp-Entwurf. Schriften selbst gehostet in `schriften/` (OFL).
 
 ## Hallmark-Picks
@@ -56,3 +56,11 @@ ein Diagramm.
 - Das Datumsfeld zeigt das Format des Browsers (in der Aufnahme englisch).
 - Eine Prüfung aus frischem Kontext (Finish-Review) ist nicht gelaufen.
 - Links in „Mehr“ zeigen auf die Pfade des heutigen Cockpits; diese Screens sind nicht gestaltet.
+
+
+## Nach Kritik cockpits-r1
+
+- **P1:** IBM Plex Mono ist entfernt, die Schriftdateien sind gelöscht. Ziffern, Code und Diagrammbeschriftungen stehen
+  in Hanken Grotesk mit `tabular-nums lining-nums`, wie auf der Website.
+- **P3:** „Freigeben“ bei fehlender Lizenz ist jetzt echt `disabled`. Im Markup steht als Kommentar, dass der Server
+  jede Freigabe ohne Lizenz-Datensatz ablehnt (K6); der Knopf zeigt die Regel nur an.

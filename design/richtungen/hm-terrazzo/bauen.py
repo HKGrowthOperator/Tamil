@@ -72,13 +72,24 @@ def groesse(b):
     return Image.open(INH / "rueckblick" / b["bild"]).size
 
 
+FOKUS = {30: "50% 8%", 49: "50% 8%", 71: "50% 20%", 85: "50% 55%"}
+CH = {"Leuk", "Glattbrugg", "Zürich", "Basel", "Aarau"}
+
+
+def ort_text(o):
+    o = o.replace(", Deutschland", "")
+    return f"{o}, Schweiz" if o in CH else o
+
+
 def figur(b, cls="", lazy=True, fakt=True, href=None):
     w, h = groesse(b)
     q = b.get("quelle_bild") or ""
     quelle = f' <a href="{e(q)}">Quelle</a>' if q else ""
     text = f'{e(b["alt"])}. ' if fakt else ""
     laden = ' loading="lazy" decoding="async"' if lazy else ' fetchpriority="high"'
-    img = f'<img src="{e(b["bild"])}" alt="{e(b["alt"])}" width="{w}" height="{h}"{laden}>'
+    fokus = FOKUS.get(b["story_id"])
+    stil = f' style="object-position: {fokus}"' if fokus else ""
+    img = f'<img src="{e(b["bild"])}" alt="{e(b["alt"])}" width="{w}" height="{h}"{laden}{stil}>'
     if href:
         img = f'<a href="{href}" tabindex="-1" aria-hidden="true">{img}</a>'
     return (f'<figure class="bild {cls}"><div class="bild__rahmen">{img}</div>'
@@ -142,7 +153,7 @@ def seite(name, titel, beschreibung, body, nachweise=(), aktiv="", skript=False)
 
 def meta(b):
     d = dt.date.fromisoformat(b["datum"])
-    return f'<p class="meta"><time datetime="{d.isoformat()}">{datum_lang(d)}</time> in {e(b["ort"])}</p>'
+    return f'<p class="meta"><time datetime="{d.isoformat()}">{datum_lang(d)}</time> in {e(ort_text(b["ort"]))}</p>'
 
 
 def reihe(sid, teaser=False, titel_tag="h3"):
@@ -180,11 +191,48 @@ def anzeige_event():
 
 
 def anzeige_whatsapp():
-    return ('<aside class="anzeige anzeige--artikel" aria-label="Anzeige"><p class="anzeige__hinweis">Anzeige</p>'
+    return ('<aside class="anzeige anzeige--artikel" aria-label="Eigenanzeige"><p class="anzeige__hinweis">Eigenanzeige von tamil.de</p>'
             f'<a class="anzeige__flaeche" href="{WA_KANAL}" rel="noopener">'
             '<span class="anzeige__claim">Tamil.de auf WhatsApp</span>'
             '<span class="anzeige__sub">Neue Beiträge und Termine im Kanal von tamil.de.</span>'
             '<span class="anzeige__cta">Kanal abonnieren</span></a></aside>')
+
+
+# ---------------------------------------------------------------- Kalenderboden
+FESTE = {d: (w, o, h) for d, w, o, h in KOMMEND}
+FESTE[dt.date(2026, 11, 8)] = ("Deepavali", "Berlin, Düsseldorf, München", "artikel.html")
+
+
+def kalenderboden(jahr, monat, gross=False):
+    erster = dt.date(jahr, monat, 1)
+    tage = (dt.date(jahr + (monat == 12), monat % 12 + 1, 1) - erster).days
+    zellen_ = ['<td class="kb__leer"></td>'] * erster.weekday()
+    for t in range(1, tage + 1):
+        d = dt.date(jahr, monat, t)
+        cls = []
+        inhalt = f'<span class="kb__tag">{t}</span>'
+        if d in FESTE:
+            w, o, h = FESTE[d]
+            cls.append("fest")
+            inhalt = f'<a href="{h or "termine.html"}"><span class="kb__tag">{t}</span><span class="visually-hidden">: {e(w)}</span></a>'
+        if d == HEUTE:
+            cls.append("heute")
+        if d < HEUTE:
+            cls.append("vorbei")
+        c = f' class="{" ".join(cls)}"' if cls else ""
+        zellen_.append(f'<td{c}>{inhalt}</td>')
+    while len(zellen_) % 7:
+        zellen_.append('<td class="kb__leer"></td>')
+    rows = "".join("<tr>" + "".join(zellen_[i:i + 7]) + "</tr>" for i in range(0, len(zellen_), 7))
+    kopf_ = "".join(f'<th scope="col"><abbr title="{TAGE[i]}">{KURZ[i]}</abbr></th>' for i in range(7))
+    return (f'<table class="kb{" kb--gross" if gross else ""}"><caption>{MONATE[monat - 1]} {jahr}</caption>'
+            f'<thead><tr>{kopf_}</tr></thead><tbody>{rows}</tbody></table>')
+
+
+def feste_des_monats(monat):
+    return "".join(f'<li><time class="zahl" datetime="{d.isoformat()}">{datum_kurz(d)}</time>'
+                   f'<span>{f"<a href={chr(34)}{h}{chr(34)}>{e(w)}</a>" if h else e(w)}<span class="meta"> in {e(o)}</span></span></li>'
+                   for d, (w, o, h) in sorted(FESTE.items()) if d.month == monat and d >= HEUTE)
 
 
 # ---------------------------------------------------------------- Startseite
@@ -201,13 +249,19 @@ def nachricht(sid):
             f'<p class="meta"><time datetime="{d.isoformat()}">{datum_lang(d)}</time></p></li>')
 
 
-hero = (f'<section class="feldplan" aria-label="Aufmacher und Nachrichten"><div class="container feldreihe feldreihe--8-4">'
-        f'<article class="feld aufmacher" aria-labelledby="a-h">{figur(a, "bild--16-9", lazy=False, fakt=False, href="artikel.html")}'
+NACHRICHTEN = sorted((85, 87, 51, 39), key=lambda i: BEI[i]["datum"], reverse=True)
+erster_satz, rest = re.split(r"(?<=[a-zäöüß])\. ", a["teaser"], maxsplit=1)
+hero = (f'<section class="feldplan" aria-label="Aufmacher und Festkalender"><div class="container steine">'
+        f'<article class="stein stein--auf aufmacher" aria-labelledby="a-h">{figur(a, "bild--16-9", lazy=False, fakt=False, href="artikel.html")}'
         f'<h1 id="a-h"><a href="artikel.html">{e(a["titel"])}</a></h1>'
-        f'<p class="lead aufmacher__lead">{e(a["teaser"])}</p>'
-        f'<div class="aufmacher__fuss">{meta(a)}<a class="textlink" href="{e(wa(a["titel"]))}">Per WhatsApp schicken</a></div></article>'
-        f'<div class="feld feld--text" id="nachrichten"><h2 class="feld__kopf">Nachrichten</h2>'
-        f'<ul class="reihen">{"".join(nachricht(i) for i in (85, 87, 51, 39))}</ul></div></div></section>')
+        f'<div class="aufmacher__fuss"><p class="meta"><time datetime="2026-11-08">8. November 2026</time><span class="nur-gross"> in Berlin, Düsseldorf und München</span></p>'
+        f'<a class="textlink" href="{e(wa(a["titel"]))}">Per WhatsApp schicken</a></div>'
+        f'<p class="lead aufmacher__lead">{e(erster_satz)}.<span class="nur-gross"> {e(rest)}</span></p></article>'
+        f'<div class="stein stein--kal" aria-labelledby="kal-h"><h2 id="kal-h" class="feld__kopf">Festkalender</h2>{kalenderboden(2026, 11)}'
+        f'<ul class="kb__liste">{feste_des_monats(11)}</ul><p class="weiter"><a class="textlink" href="termine.html">Alle Feste 2026</a></p></div>'
+        f'</div></section>')
+nach_feld = (f'<div class="feld stein--nach" id="nachrichten"><h2 class="feld__kopf feld__kopf--still">Nachrichten</h2>'
+             f'<ul class="reihen">{"".join(nachricht(i) for i in NACHRICHTEN)}</ul></div>')
 
 def kino_zeile(k):
     weiter = f" und {k['weitere_staedte']} weitere Städte" if k["weitere_staedte"] else ""
@@ -216,18 +270,17 @@ def kino_zeile(k):
 
 
 kino_liste = "".join(kino_zeile(k) for k in KINO)
-dienst = (f'<section class="abschnitt abschnitt--fuge" aria-label="Feste und Kino"><div class="container feldreihe feldreihe--7-5">'
-          f'<div class="feld"><h2 class="feld__kopf">Die nächsten Feste</h2>'
-          f'{termin_tabelle([termin_zeile(d, w, o, h, kompakt=True) for d, w, o, h in KOMMEND], "Die nächsten Feste", kompakt=True)}'
-          f'<p class="weiter"><a class="textlink" href="termine.html">Festkalender 2026</a></p></div>'
-          f'<div class="feld"><h2 class="feld__kopf">Kino diese Woche</h2><ul class="kino">{kino_liste}</ul>'
+dienst = (f'<section class="abschnitt abschnitt--fuge zweit" aria-label="Nachrichten und Kino"><div class="container feldreihe feldreihe--7-5">{nach_feld}'
+          f'<div class="feld"><h2 class="feld__kopf">Tamilisches Kino</h2><p>„{e(scene["titel"])}“ läuft in {scene["kinos"]} Kinos, „{e(rama["titel"])}“ in {rama["kinos"]}.</p>'
+
+          f'<ul class="kino">{kino_liste}</ul>'
           f'<p class="meta">Stand: 9. November 2026, aus den Programmen der Kinos.</p>'
           f'<p class="weiter"><a class="textlink" href="kino.html">Alle Städte</a></p></div></div></section>')
 
 gemeinde = (f'<section class="abschnitt abschnitt--fuge" id="community" aria-labelledby="g-h"><div class="container feldreihe feldreihe--5-7">'
             f'<div class="feld">{figur(BEI[71], "bild--4-5", href=link_zu(71))}</div>'
             f'<div class="feld"><h2 id="g-h" class="feld__kopf">Tempel, Vereine und Schulen</h2>'
-            f'<ul class="reihen reihen--dicht">{"".join(reihe(i) for i in (71, 76, 49, 80, 60, 38))}</ul>'
+            f'<ul class="reihen reihen--dicht">{"".join(reihe(i) for i in sorted((71, 76, 49, 80, 60, 38), key=lambda i: BEI[i]["datum"], reverse=True))}</ul>'
             f'<p class="weiter"><a class="textlink" href="rubrik.html">Alle Beiträge aus der Community</a></p></div></div></section>')
 
 werbung = f'<section class="abschnitt abschnitt--well" aria-label="Anzeige"><div class="container">{anzeige_event()}</div></section>'
@@ -240,13 +293,13 @@ def kachel(sid):
 
 
 kueche = (f'<section class="abschnitt abschnitt--fuge" aria-label="Küche, Kultur und Sport"><div class="container feldreihe feldreihe--7-5">'
-          f'<div class="feld" id="kueche"><h2 class="feld__kopf">Küche</h2><ul class="kleine">{"".join(kachel(i) for i in (62, 48))}</ul><ul class="reihen reihen--nach">{"".join(reihe(i) for i in (37, 39))}</ul></div>'
+          f'<div class="feld" id="kueche"><h2 class="feld__kopf">Küche</h2><ul class="kleine">{"".join(kachel(i) for i in (62, 48))}</ul><ul class="reihen reihen--nach">{"".join(reihe(i) for i in (37,))}</ul></div>'
           f'<div class="feld feld--text" id="kultur"><h2 class="feld__kopf">Kultur und Sport</h2>'
           f'<ul class="reihen">{"".join(reihe(i) for i in (33, 83, 43, 67))}</ul></div></div></section>')
 
 seite("index.html", "tamil.de | Nachrichten, Termine und Kino der tamilischen Community",
       "Nachrichten, Termine und Kino der tamilischen Community in Deutschland, Österreich und der Schweiz.",
-      hero + dienst + gemeinde + werbung + kueche, [a, BEI[71], BEI[62], BEI[48]])
+      hero + dienst + gemeinde + kueche, [a, BEI[71], BEI[62], BEI[48]])
 
 # ---------------------------------------------------------------- Artikel
 WEITER = {30: (71, 76, 33)}
@@ -337,12 +390,11 @@ zellen = "".join(f'<li><a href="#m{m}">{MONATE[m - 1]}</a></li>' for m in range(
 termine_body = (f'<section class="seitenkopf seitenkopf--termin"><div class="container feldreihe feldreihe--5-7">'
                 f'<div class="feld"><h1>Festkalender 2026</h1><p class="lead">Feste, Tempel, Vereine und Bühnen der Community, Tag für Tag.</p>'
                 f'<div class="aktionen"><a class="btn btn--primaer" href="einreichen.html">Termin einreichen</a></div></div>'
-                f'<div class="feld naechster"><p class="naechster__wann"><time datetime="{naechst[0].isoformat()}">{TAGE[naechst[0].weekday()]}, {naechst[0].day}. {MONATE[naechst[0].month - 1]}</time></p>'
-                f'<p class="naechster__was"><a href="{naechst[3]}">{e(naechst[1])}</a></p><p class="meta">{e(naechst[2])}. Heute ist {TAGE[HEUTE.weekday()]}, {datum_lang(HEUTE)}.</p>'
-                f'<a class="textlink" href="{e(wa(datum_lang(naechst[0]) + ": " + naechst[1]))}">Per WhatsApp schicken</a></div></div></section>'
+                f'<div class="feld"><div class="kb-paar">{kalenderboden(2026, 11, True)}{kalenderboden(2026, 12, True)}</div>'
+                f'<p class="meta">Belegt sind die Tage mit Fest. Heute ist {TAGE[HEUTE.weekday()]}, {datum_lang(HEUTE)}.</p></div></div></section>'
                 f'<section class="abschnitt abschnitt--eng" aria-labelledby="n-h"><div class="container">'
-                f'<h2 id="n-h" class="feld__kopf">Danach</h2>'
-                f'{termin_tabelle([termin_zeile(d, w, o, h) for d, w, o, h in KOMMEND[1:]], "Weitere kommende Termine")}</div></section>'
+                f'<h2 id="n-h" class="feld__kopf">Als Nächstes</h2>'
+                f'{termin_tabelle([termin_zeile(d, w, o, h) for d, w, o, h in KOMMEND], "Kommende Termine")}</div></section>'
                 f'<section class="abschnitt abschnitt--fuge" aria-labelledby="j-h"><div class="container">'
                 f'<div class="kopfblock"><h2 id="j-h">Das Jahr 2026</h2><p class="kopfblock__satz">Was die Redaktion aus diesem Jahr berichtet. Verlinkt ist, was schon als Beitrag vorliegt.</p></div>'
                 f'<nav aria-label="Monate"><ul class="monatsleiste">{zellen}</ul></nav>{bloecke}</div></section>')

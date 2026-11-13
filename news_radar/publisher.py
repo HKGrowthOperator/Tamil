@@ -105,9 +105,24 @@ def nachtrag_vermerk(row: dict, jetzt: datetime | None = None) -> str:
             f"Rückblick auf das Jahr {jahr} geschrieben.</em></p>")
 
 
+RUECKBLICK_AB_TAGEN = 14  # jüngere oder kommende Ereignisse sind aktuell, kein Rückblick
+
+
+def ist_rueckblick(row: dict, jetzt: datetime | None = None) -> bool:
+    """Nachtrag zu einem Ereignis, das bei der Veröffentlichung mehr als 14 Tage zurückliegt."""
+    if not ist_nachtrag(row):
+        return False
+    try:
+        tag = datetime.strptime(str(row.get("ereignis_datum"))[:10], "%Y-%m-%d").date()
+    except ValueError:
+        return True  # unlesbares Datum: lieber kennzeichnen als still weglassen
+    heute = (jetzt or datetime.now(timezone.utc)).date()
+    return (heute - tag).days > RUECKBLICK_AB_TAGEN
+
+
 def inhalt_fuer_wp(row: dict, jetzt: datetime | None = None) -> str:
     inhalt = render_content(row)
-    if ist_nachtrag(row):
+    if ist_rueckblick(row, jetzt):
         inhalt = inhalt.rstrip() + "\n" + nachtrag_vermerk(row, jetzt)
     return inhalt
 
@@ -189,7 +204,7 @@ def publish_draft(row: dict, settings: Settings, wp: WordPress | TamilRadarClien
     """
     status = status or settings.wp_post_status
     schalter.pruefen(store, "website")  # unmittelbar vor dem ersten Aufruf an WordPress
-    asset = lizenz.pruefen_fuer_wp(store, row)  # LizenzFehlt: nichts gesendet
+    asset = lizenz.pruefen_fuer_wp(store, row, settings)  # LizenzFehlt: nichts gesendet
     row = {**row, **lizenz_meta(asset)}
     if isinstance(wp, TamilRadarClient):
         return publish_via_plugin(row, settings, wp, store, status)

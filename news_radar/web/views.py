@@ -149,7 +149,7 @@ def set_status(draft_id: int):
         if stand is None or (store.get_draft(draft_id) or {}).get("stand", stand) != stand:
             flash(VERALTET if stand is None else GEAENDERT, "fehler")  # nichts ändern, noch einmal ansehen
             return redirect(url_for("ui.entwurf", draft_id=draft_id))
-        gesperrt = lizenz.sperre(store, _draft_or_404(draft_id))
+        gesperrt = lizenz.sperre(store, _draft_or_404(draft_id), _settings())
         if gesperrt:  # Gate (Spezifikation Bilder 3.3): ohne vollständigen Lizenz-Datensatz keine Freigabe
             flash(f"{gesperrt}. Bitte „Lizenz eintragen“ – Freigabe gesperrt.", "fehler")
             return redirect(url_for("ui.entwurf", draft_id=draft_id))
@@ -210,7 +210,7 @@ def sammelfreigabe():
         if stand is None or row.get("stand") != stand:
             nicht.append(f"#{draft_id} „{row['titel'][:60]}“: {VERALTET if stand is None else GEAENDERT}")
             continue
-        gesperrt = lizenz.sperre(store, row)
+        gesperrt = lizenz.sperre(store, row, _settings())
         if gesperrt:
             nicht.append(f"#{draft_id} „{row['titel'][:60]}“: {gesperrt}")
             continue
@@ -275,7 +275,7 @@ def entwurf(draft_id: int):
     from .redaktion import belege_fuer
 
     asset = lizenz.asset_fuer(store, row) if row.get("bild_datei") else None
-    luecken = lizenz.luecken(store, row)
+    luecken = lizenz.luecken(store, row, settings)
     return render_template("entwurf.html", d=row, labels=STATUS_LABELS, categories=settings.categories,
                            belege=belege_fuer(store, row),
                            can_publish=row["status"] in PUBLISHABLE, open_states=OPEN_STATES,
@@ -378,6 +378,8 @@ def bild(draft_id: int):
                 return redirect(url_for("ui.entwurf", draft_id=draft_id))
             # kein Standardnachweis: Rechte trägt die Redaktion unter „Lizenz eintragen“ ein (bis dahin gesperrt)
             image = images.from_upload(file.read(), stem, request.form.get("credit", "").strip())
+            if lizenz.ist_karten_alt(row.get("bild_alt")):  # beschreibt die Bildkarte, nicht das neue Foto
+                felder = {"bild_alt": ""}
         elif aktion in ("ki", "pool") and not settings.bild_ki_freigabe:
             flash(KI_AUS, "fehler")
             return redirect(url_for("ui.entwurf", draft_id=draft_id))
@@ -415,6 +417,8 @@ def bild(draft_id: int):
             if image.origin == "karte":
                 flash("Kein Stockfoto gefunden (oder kein Unsplash/Pexels-Schlüssel) – Bildkarte erzeugt.", "fehler")
             felder = {"bild_suchbegriff": query}
+            if image.origin == "karte":  # Rückfall auf die Bildkarte: sie beschreibt sich selbst
+                felder["bild_alt"] = lizenz.alt_fuer_karte(row["titel"])
         else:
             image = images.branded_card(row["titel"], label, stem, row.get("kategorie") or "")
             felder = {"bild_alt": lizenz.alt_fuer_karte(row["titel"])}  # die Karte beschreibt sich selbst
@@ -447,7 +451,7 @@ def bild(draft_id: int):
             (settings.bilder_dir / old).unlink(missing_ok=True)
     store.event("bild", id=draft_id, aktion=aktion, origin=image.origin, von=_user(), asset=asset_id)
     _protokoll("bild", row, notiz=f"{aktion}: Asset {asset_id}")
-    fehlt = lizenz.sperre(store, store.get_draft(draft_id) or row)
+    fehlt = lizenz.sperre(store, store.get_draft(draft_id) or row, _settings())
     flash("Bild ersetzt." + (f" {fehlt} – bitte „Lizenz eintragen“." if fehlt else ""), "fehler" if fehlt else "ok")
     return redirect(url_for("ui.entwurf", draft_id=draft_id))
 
@@ -489,7 +493,8 @@ def _lizenz_vorbelegung(row: dict, asset: dict | None) -> dict:
     return {"urheber": a.get("urheber") or "", "rechteinhaber": a.get("rechteinhaber") or "", "lizenz": basis,
             "version": version or "4.0", "umfang": lizenz.umfang_menge(a.get("umfang")) or {"website"},
             "quelle_url": a.get("quelle_url") or "", "ablauf": a.get("ablauf") or "",
-            "alt": row.get("bild_alt") or a.get("alt") or "", "nachweis": row.get("bild_credit") or "",
+            "alt": next((t for t in (row.get("bild_alt"), a.get("alt")) if t and not lizenz.ist_karten_alt(t)), ""),
+            "nachweis": row.get("bild_credit") or "",
             "herkunft": lizenz.formular_herkunft_aus(a.get("herkunft") or "", kuerzel)}
 
 
@@ -501,7 +506,9 @@ def lizenz_eintragen(draft_id: int):
     store = get_store()
     row = _draft_or_404(draft_id)
     zurueck = redirect(url_for("ui.entwurf", draft_id=draft_id) + "#lizenz")
-    if row["status"] not in OPEN_STATES:
+    # auch im Status „fehler“ (z. B. „Lizenz unvollständig“ beim Senden): eintragen, dann „Erneut freigeben“
+    erlaubt = (*OPEN_STATES, "fehler")
+    if row["status"] not in erlaubt:
         flash("Freigegebene Entwürfe zuerst zurückstellen, dann die Lizenz eintragen.", "fehler")
         return zurueck
     pfad = _settings().bilder_dir / (row.get("bild_datei") or "-")
@@ -518,23 +525,29 @@ def lizenz_eintragen(draft_id: int):
         flash("Lizenz nicht eingetragen: " + "; ".join(fehler), "fehler")
         return zurueck
     endung = felder.pop("_beleg_endung", "")
-    if endung:
-        felder["beleg"] = lizenz.beleg_ablegen(_settings().data_dir, beleg[1], endung, felder.get("beleg", ""))
     vorher = lizenz.asset_fuer(store, row) or {}
     if vorher.get("bild_url"):
         felder.setdefault("bild_url", vorher["bild_url"])
-    if not store.update_draft(draft_id, von=_user(), nur_status=OPEN_STATES, bild_vorher=row["bild_datei"],
+    if not store.update_draft(draft_id, von=_user(), nur_status=erlaubt, bild_vorher=row["bild_datei"],
                               bild_credit=felder["attribution"], bild_alt=felder["alt"]):
         flash(GEAENDERT, "fehler")
         return zurueck
-    asset_id = lizenz.anlegen(store, datei=row["bild_datei"], daten=pfad.read_bytes(), story_id=row.get("story_id"),
-                              draft_id=draft_id, felder={
-                                  **felder, "geprueft_von": _user(),
-                                  "geprueft_am": datetime.now(timezone.utc).isoformat(timespec="seconds")})
+    beleg_pfad = None  # Belegdatei erst nach dem erfolgreichen Speichern am Entwurf ablegen, bei Fehlern wieder weg
+    if endung:
+        felder["beleg"], beleg_pfad = lizenz.beleg_ablegen(_settings().data_dir, beleg[1], endung, felder.get("beleg", ""))
+    try:
+        asset_id = lizenz.anlegen(store, datei=row["bild_datei"], daten=pfad.read_bytes(), story_id=row.get("story_id"),
+                                  draft_id=draft_id, felder={
+                                      **felder, "geprueft_von": _user(),
+                                      "geprueft_am": datetime.now(timezone.utc).isoformat(timespec="seconds")})
+    except BaseException:
+        if beleg_pfad is not None:
+            beleg_pfad.unlink(missing_ok=True)
+        raise
     store.event("lizenz", id=draft_id, asset=asset_id, kuerzel=felder["lizenz_kuerzel"], von=_user())
     _protokoll("lizenz", row, fassung=repo.fassung_hash(store.get_draft(draft_id)),
                notiz=f"Lizenz eingetragen: {felder['lizenz_kuerzel']}, Umfang {felder['umfang']}, Asset {asset_id}")
-    fehlt = lizenz.sperre(store, store.get_draft(draft_id) or row)
+    fehlt = lizenz.sperre(store, store.get_draft(draft_id) or row, _settings())
     flash("Lizenz eingetragen." + (f" Noch offen: {fehlt}" if fehlt else ""), "fehler" if fehlt else "ok")
     return zurueck
 
@@ -550,7 +563,7 @@ def _publish(draft_id: int, status: str):
     if stand is None or row.get("stand") != stand:  # nur den Stand veröffentlichen, den die Seite gezeigt hat
         flash(VERALTET if stand is None else GEAENDERT, "fehler")
         return redirect(url_for("ui.entwurf", draft_id=draft_id))
-    gesperrt = lizenz.sperre(store, row)
+    gesperrt = lizenz.sperre(store, row, _settings())
     if gesperrt:
         flash(f"{gesperrt}. Bitte „Lizenz eintragen“ – nichts übertragen, nichts freigegeben.", "fehler")
         return redirect(url_for("ui.entwurf", draft_id=draft_id))
@@ -619,7 +632,7 @@ def _freigeben(store, row: dict, stand: int | None = None) -> str:
     aktion = "erneut" if row["status"] == "fehler" else "freigeben"
     if row["status"] not in OPEN_STATES and row["status"] != "fehler":
         return ""
-    if lizenz.sperre(store, store.get_draft(row["id"]) or row):  # Gate auf jedem Freigabeweg
+    if lizenz.sperre(store, store.get_draft(row["id"]) or row, _settings()):  # Gate auf jedem Freigabeweg
         return ""
     try:
         store.set_status(row["id"], aktion, von=_user(), stand=stand)

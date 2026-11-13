@@ -76,7 +76,7 @@
   <h2 id="h-frei">Freigabe</h2>
   <dl class="daten">
     <dt>Stand</dt><dd>3, angelegt vom Radar am 12.11., 17:40 Uhr</dd>
-    <dt>Kosten</dt><dd class="zahl">$0.41 für diese Story</dd>
+    <dt>Kosten</dt><dd class="zahl">0,41 $ für diese Story</dd>
   </dl>
   <h3>Vor der Freigabe</h3>
   <ul class="hinweise">
@@ -87,7 +87,8 @@
   <form action="/entwurf/7/status" method="post">
     <input type="hidden" name="stand" value="3">
     <div class="aktionen"><button type="submit" class="knopf" disabled aria-describedby="frei-grund">Freigeben</button><p class="klein leise" id="frei-grund">Freigeben geht erst mit Lizenz-Datensatz.</p></div>
-    <div class="aktionen"><button type="submit" class="knopf" name="aktion" value="zurueckstellen">Zurückstellen</button><button type="submit" class="knopf gefahr" name="aktion" value="ablehnen">Ablehnen</button><a class="knopf still" href="/vorschau/7">Vorschau</a></div>
+    <div class="aktionen abstand-oben"><button type="submit" class="knopf" name="aktion" value="zurueckstellen" formnovalidate>Zurückstellen</button><a class="knopf still" href="/vorschau/7">Vorschau</a></div>
+    <details class="aufklapp"><summary>Weitere Aktionen</summary><div class="aktionen"><button type="submit" class="knopf gefahr" name="aktion" value="ablehnen" formnovalidate>Entwurf ablehnen</button></div></details>
   </form>
 </section>
 <section class="seite-teil" aria-labelledby="h-bild">
@@ -114,7 +115,7 @@
     <fieldset class="feld"><legend>Auch in sozialen Netzen nutzen?</legend><div class="wahl"><label><input type="radio" name="social" value="ja"><span>ja</span></label><label><input type="radio" name="social" value="nein" checked><span>nein, dann Bildkarte</span></label></div><small>Regel R4 im Regelwerk Social.</small></fieldset>
     <label class="feld"><span>Bildnachweis (Pflicht)</span><input name="attribution" required autocomplete="off" placeholder="Foto: Name / Wikimedia Commons, Lizenz"><small>Steht unter dem Bild auf tamil.de.</small></label>
     <div class="wahl"><label><input type="checkbox" name="ki" value="1"><span>Das Bild ist KI-generiert</span></label></div>
-    <div class="aktionen formende"><button type="submit" class="knopf primaer">Lizenz speichern</button><button type="submit" class="knopf" formaction="/entwurf/7/lizenz/abrufen">Bei Commons erneut abrufen</button><button type="submit" class="knopf" formaction="/entwurf/7/bild/karte" formnovalidate>Bildkarte nehmen</button></div>
+    <div class="aktionen formende"><button type="submit" class="knopf primaer">Lizenz speichern</button><button type="submit" class="knopf" formaction="/entwurf/7/lizenz/abrufen" formnovalidate>Bei Commons erneut abrufen</button><button type="submit" class="knopf" formaction="/entwurf/7/bild/karte" formnovalidate>Bildkarte nehmen</button></div>
   </form>
 </section>
 </aside>

@@ -1,4 +1,4 @@
-/* Hallmark · shape: Kalenderblatt, the cinema page · genre: editorial · theme: Almanac (deal 2/3, seed tamil-deutschsprachiges-online-magazin-der-ff32·6bcf19c0·2026-11-13·r0) · job: listen · draw: 26f3b5
+/* Hallmark · shape: Kalenderblatt, the cinema page · genre: editorial · theme: Almanac (deal 2/3, seed tamil-deutschsprachiges-online-magazin-der-ff32·6bcf19c0·2026-11-13·r0) · job: find · draw: 26f3b5
  * hero: banner · nav: banner over a retracting bar · footer: index columns · imagery: photographs, the post's own Commons picture 1, muted · signature: the cities as the index of a printed sheet, each with its film and, where known, its cinema
  * axes: mid/grotesk-sans/chromatic-magenta (accent re-hued to the logo red) · posture: restrained · contrast: pass · fold: pass · v2.0.0 */
 /* Hallmark · pre-emit critique: P4 H4 E4 S4 R5 V4 · weakest: E, the source names five cities for eleven cinemas; the gap is said in one line under the sheet, nothing is filled in */
@@ -14,7 +14,8 @@
 .kopfzeile__aktion { grid-column: 1 / span 8; justify-content: flex-start; }
 
 /* Kritik r1: the city is the index, the film second; numbers at reading size, all on the light sheet */
-.stadtliste td.was { width: 26%; }
+.stadtliste td.was { width: 52%; }
+.stadtliste td.zu { width: 6rem; text-align: right; }
 .stadtliste .land th { padding: var(--space-lg) 0 var(--space-xs); border-bottom: var(--rule-bar) solid var(--color-rule-2); font: 600 var(--text-title)/1.2 var(--font-display); color: var(--color-ink); }
 .stadtliste tbody tr.land:first-child th { padding-block-start: var(--space-xs); }
 .stadtliste tr.land + tr td { border-top: 0; }
@@ -39,7 +40,8 @@
   .stadtliste td, .filme td { grid-column: 1 !important; }
   .stadtliste tr.land { display: block; }
   .stadtliste .land th { display: block; }
-  .stadtliste td.was { font-weight: 600; }
+  .stadtliste td.was { font-weight: 600; width: auto; }
+  .stadtliste td.zu { text-align: left; }
   .filme td.zahl { grid-column: 2 !important; grid-row: 1; width: auto; }
   .filme td.zu { text-align: left; }
 }
