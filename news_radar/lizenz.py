@@ -17,7 +17,7 @@ import hashlib
 import re
 from dataclasses import dataclass
 from datetime import date
-from urllib.parse import quote, urlsplit
+from urllib.parse import urlsplit
 
 from .store import OPEN_STATES, now_iso
 
@@ -67,7 +67,8 @@ FELDNAMEN = {"datensatz": "Datensatz", "sha256": "Prüfsumme", "herkunft": "Herk
              "umfang": "Umfang", "website": "Umfang Website", "attribution": "Nachweis", "ablauf": "Ablauf",
              "quelle_url": "Quelle", "bild_url": "Bildadresse", "bearbeitung": "Bearbeitung", "beleg": "Beleg",
              "geprueft_von": "Geprüft von", "geprueft_am": "Geprüft am", "ki": "KI-Kennzeichen",
-             "ki_modell": "KI-Modell", "prompt_hash": "Prompt", "alt": "Alt-Text"}
+             "ki_modell": "KI-Modell", "prompt_hash": "Prompt", "alt": "Alt-Text",
+             "ki_freigabe": "KI-Kennzeichen (KI-Bilder nicht freigegeben, BILD_KI_FREIGABE)"}
 
 
 def art(kuerzel: str) -> Art | None:
@@ -121,11 +122,16 @@ def kuerzel_aus_url(url: str) -> str:
 # ---- Umfang ---------------------------------------------------------------------------------------
 
 def umfang_menge(text: str | None) -> set[str]:
-    """Menge aus dem gespeicherten Text; Freitext aus dem Altbestand ergibt eine leere Menge."""
-    teile = [t.strip().lower() for t in (text or "").split(",")]
-    if not teile or any(t not in UMFAENGE for t in teile):
-        return set()
-    return set(teile)
+    """Umfang tolerant lesen (gemeinsam für Gate und Social): Menge aus website, social, print; Groß/klein, Leerzeichen,
+    Semikolon egal. Freitext aus dem Altbestand („Online-Veröffentlichung …“) ergibt eine leere Menge."""
+    teile = re.split(r"[,;/|\s]+", str(text or "").strip().lower())
+    return {t for t in teile if t in UMFAENGE}
+
+
+def umfang_gueltig(text: str | None) -> bool:
+    """Gespeichert wird nur die kanonische Form (`umfang_text`); alles andere gilt als unvollständig."""
+    menge = umfang_menge(text)
+    return bool(menge) and umfang_text(menge) == (text or "").strip()
 
 
 def umfang_text(menge) -> str:
@@ -164,8 +170,15 @@ def nachweis_vorschlag(kuerzel: str, *, urheber: str = "", rechteinhaber: str = 
     return ""
 
 
+KARTEN_ALT = "Grafik mit der Überschrift: "
+
+
 def alt_fuer_karte(titel: str) -> str:
-    return f"Grafik mit der Überschrift: {titel}"[:ALT_MAX]
+    return f"{KARTEN_ALT}{titel}"[:ALT_MAX]
+
+
+def ist_karten_alt(alt: str | None) -> bool:
+    return (alt or "").startswith(KARTEN_ALT)
 
 
 def alt_fehler(alt: str | None, titel: str = "") -> str:
@@ -203,7 +216,7 @@ def fehlend(asset: dict | None, *, heute: str | None = None) -> list[str]:
     if kuerzel and lz is None:
         out.append("lizenz_kuerzel")
     menge = umfang_menge(a.get("umfang"))
-    if a.get("umfang") and (not menge or (lz is not None and not menge <= lz.hoechst)):
+    if a.get("umfang") and (not umfang_gueltig(a["umfang"]) or (lz is not None and not menge <= lz.hoechst)):
         out.append("umfang")
     if lz is not None:
         if lz.nennung and (not a.get("urheber") or _unbekannt(a.get("urheber", ""))):
@@ -244,17 +257,25 @@ def vollstaendig(asset: dict | None) -> bool:
     return not fehlend(asset)
 
 
-def luecken(store, row: dict) -> list[str]:
-    """Was am Bild eines Entwurfs fehlt (Schlüssel aus FELDNAMEN); leer, wenn er kein Bild hat oder alles stimmt."""
+def luecken(store, row: dict, settings) -> list[str]:
+    """Was am Bild eines Entwurfs fehlt (Schlüssel aus FELDNAMEN); leer, wenn er kein Bild hat oder alles stimmt.
+    Mit den Einstellungen: Prüfsumme gegen die Datei auf der Platte, KI-Bilder nur mit BILD_KI_FREIGABE (4.1)."""
     if not row.get("bild_datei"):
         return []
     asset = asset_fuer(store, row)
     out = fehlend(asset)
     if asset and "umfang" not in out and "website" not in umfang_menge(asset.get("umfang")):
         out.append("website")
+    if asset and asset.get("sha256"):
+        pfad = settings.bilder_dir / row["bild_datei"]
+        if pfad.is_file() and hashlib.sha256(pfad.read_bytes()).hexdigest() != asset["sha256"]:
+            out.append("sha256")  # die Datei ist nicht die, für die der Datensatz gilt
+    if asset and (str(asset.get("ki") or "0") not in ("0", "") or asset.get("herkunft") in ("ki", "pool")) \
+            and not settings.bild_ki_freigabe:
+        out.append("ki_freigabe")
     if alt_fehler(row.get("bild_alt"), row.get("titel") or ""):
         out.append("alt")
-    return out
+    return list(dict.fromkeys(out))
 
 
 def asset_fuer(store, row: dict) -> dict | None:
@@ -267,9 +288,9 @@ def meldung(luecken_: list[str]) -> str:
     return "Lizenz fehlt: " + ", ".join(FELDNAMEN.get(f, f) for f in luecken_)
 
 
-def sperre(store, row: dict) -> str:
+def sperre(store, row: dict, settings) -> str:
     """Gate für Freigabe und Sammelfreigabe (3.3): leer = frei, sonst „Lizenz fehlt: <Feld>, …“."""
-    fehlt = luecken(store, row)
+    fehlt = luecken(store, row, settings)
     return meldung(fehlt) if fehlt else ""
 
 
@@ -277,9 +298,9 @@ class LizenzFehlt(RuntimeError):
     """Unmittelbar vor dem Senden an WordPress: Datensatz unvollständig – nichts gesendet."""
 
 
-def pruefen_fuer_wp(store, row: dict) -> dict | None:
+def pruefen_fuer_wp(store, row: dict, settings) -> dict | None:
     """Wirft LizenzFehlt („Lizenz unvollständig: …“); gibt sonst den Datensatz (oder None ohne Bild) zurück."""
-    fehlt = luecken(store, row)
+    fehlt = luecken(store, row, settings)
     if fehlt:
         raise LizenzFehlt("Lizenz unvollständig: " + ", ".join(FELDNAMEN.get(f, f) for f in fehlt))
     return asset_fuer(store, row) if row.get("bild_datei") else None
@@ -336,39 +357,50 @@ def anlegen(store, *, datei: str, daten: bytes, felder: dict, story_id: int | No
 
 # ---- Nachführung des Altbestands -------------------------------------------------------------------
 
-def _commons_ergaenzen(asset: dict) -> dict | None:
-    """Commons-Datensatz aus dem Agent-Weg vor V9: Lizenztext „<Kurzname> (<Adresse>)“, Rechteinhaber = Urheber."""
+def _belegte_bild_url(store, asset: dict, row: dict) -> str:
+    """Die abgerufene Bildadresse, belegt durch die Protokollzeile „bild“ dieses Datensatzes (Asset-Nummer und Hash
+    der Adresse): nur `quelle_bild` des Entwurfs kommt als Kandidat in Frage. Ohne Treffer leer – nichts ableiten."""
+    from .bildvorschlag import adress_hash
+
+    kandidat = (row.get("quelle_bild") or "").strip()
+    if not kandidat.startswith("https://"):
+        return ""
+    treffer = store.db.execute(
+        "SELECT 1 FROM editorial_actions WHERE draft_id = ? AND aktion = 'bild' AND notiz LIKE ?",
+        (row["id"], f"%Asset {asset['id']},%#{adress_hash(kandidat)}%")).fetchone()
+    return kandidat if treffer else ""
+
+
+def _commons_ergaenzen(store, asset: dict, row: dict) -> dict | None:
+    """Commons-Datensatz aus dem Agent-Weg vor V9: Lizenztext „<Kurzname> (<Adresse>)“, Rechteinhaber = Urheber,
+    Bildadresse nur aus dem Protokoll belegt."""
     m = re.fullmatch(r"(.+) \((https://creativecommons\.org/[^)\s]+)\)", (asset.get("lizenz") or "").strip())
     kuerzel = kuerzel_aus_url(m.group(2)) if m else ""
     seite = asset.get("quelle_url") or ""
-    datei = re.match(r"https://commons\.wikimedia\.org/wiki/File:(.+)$", seite)
-    if not kuerzel or not datei or not asset.get("attribution"):
+    if not kuerzel or not re.match(r"https://commons\.wikimedia\.org/wiki/File:.+$", seite) \
+            or not asset.get("attribution"):
         return None
     urheber = "" if asset.get("rechteinhaber") in ("", "gemeinfrei") else asset["rechteinhaber"]
     if art(kuerzel).nennung and not urheber:
         return None
+    bild_url = _belegte_bild_url(store, asset, row)
+    if not bild_url:
+        return None
     hinweis = "Hinweis von Commons" in (asset.get("umfang") or "")
     return {"urheber": urheber, "lizenz_kuerzel": kuerzel, "lizenz_url": m.group(2),
-            "umfang": umfang_text({"website"} if hinweis else art(kuerzel).hoechst),
-            # Dateiseite und Datei sind auf Commons eindeutig verknüpft: Special:FilePath liefert genau diese Datei
-            "bild_url": "https://commons.wikimedia.org/wiki/Special:FilePath/" + quote(datei.group(1), safe=""),
+            "umfang": umfang_text({"website"} if hinweis else art(kuerzel).hoechst), "bild_url": bild_url,
             "bearbeitung": "zugeschnitten",
             "beleg": f"nachgeführt aus Commons-Angaben vom {asset.get('erstellt', '')[:16]} (Datensatz {asset['id']})"}
 
 
 def _register_ergaenzen(store, asset: dict, row: dict) -> dict | None:
-    """Register-Datensatz (Weg „quelle“) vor V9: Bildadresse nur, wenn `quelle_bild` des Entwurfs dieselbe Adresse
-    ist, die laut Protokoll abgerufen wurde (gleicher Hash) – sonst bleibt der Datensatz offen."""
-    from .bildvorschlag import adress_hash
-
-    kandidat = (row.get("quelle_bild") or "").strip()
-    if not kandidat or not asset.get("attribution") or not asset.get("rechteinhaber") or not asset.get("quelle_url"):
+    """Register-Datensatz (Weg „quelle“) vor V9: Bildadresse nur, wenn sie laut Protokoll abgerufen wurde."""
+    if not asset.get("attribution") or not asset.get("rechteinhaber") or not asset.get("quelle_url"):
         return None
-    h = adress_hash(kandidat)
-    if not store.db.execute("SELECT 1 FROM editorial_actions WHERE draft_id = ? AND aktion = 'bild' AND notiz LIKE ?",
-                            (row["id"], f"%Asset {asset['id']},%#{h}%")).fetchone():
+    bild_url = _belegte_bild_url(store, asset, row)
+    if not bild_url:
         return None
-    return {"lizenz_kuerzel": "presse-redaktionell", "umfang": "website", "bild_url": kandidat,
+    return {"lizenz_kuerzel": "presse-redaktionell", "umfang": "website", "bild_url": bild_url,
             "bearbeitung": "zugeschnitten",
             "beleg": f"nachgeführt aus Register-Angaben vom {asset.get('erstellt', '')[:16]} (Datensatz {asset['id']})"}
 
@@ -391,7 +423,7 @@ def nachfuehren(store, settings, *, von: str = "nachfuehrung") -> dict:
             continue
         neu: dict | None = None
         if asset and asset.get("herkunft") == "commons":
-            neu = _commons_ergaenzen(asset)
+            neu = _commons_ergaenzen(store, asset, row)
         elif asset and asset.get("herkunft") in ("quelle", "register"):
             neu = _register_ergaenzen(store, asset, row)
         elif asset and asset.get("herkunft") == "karte" or (asset is None and row.get("bild_origin") == "karte"):
@@ -416,13 +448,13 @@ def nachfuehren(store, settings, *, von: str = "nachfuehrung") -> dict:
                 neu["sha256"] = hashlib.sha256(pfad.read_bytes()).hexdigest()
         if not asset.get("alt") and row.get("bild_alt"):
             neu["alt"] = row["bild_alt"]
+        if fehlend({**asset, **neu}):  # nur schreiben, was danach vollständig ist; sonst bleibt alles unberührt
+            zaehler["offen"] += 1
+            continue
         sets = ", ".join(f"{k} = ?" for k in neu)
         store._write(f"UPDATE assets SET {sets}, draft_id = COALESCE(draft_id, ?) WHERE id = ?",
                      (*neu.values(), row["id"], asset["id"]))
-        if fehlend({**asset, **neu}):
-            zaehler["offen"] += 1
-        else:
-            zaehler["ergaenzt"] += 1
+        zaehler["ergaenzt"] += 1
     return zaehler
 
 
@@ -535,7 +567,7 @@ def formular_pruefen(form, beleg: tuple[str, bytes] | None, *, titel: str = "",
             endung = ""
         elif not endung:
             fehler.append("Beleg: nur PDF, PNG oder JPEG")
-    if kuerzel == "nutzungsrecht" and not beleg_text and not endung:
+    if lz is not None and lz.beleg_datei and not beleg_text and not endung:
         fehler.append("Beleg fehlt (Nutzungsrecht: Datei oder Text, z. B. „Mail vom …“)")
     ablauf = _wert(form, "ablauf")
     if ablauf and (not re.fullmatch(r"\d{4}-\d{2}-\d{2}", ablauf) or ablauf <= (heute or date.today().isoformat())):
@@ -561,8 +593,9 @@ def formular_pruefen(form, beleg: tuple[str, bytes] | None, *, titel: str = "",
     return felder, []
 
 
-def beleg_ablegen(data_dir, daten: bytes, endung: str, text: str = "") -> str:
-    """Belegdatei unter data/belege/ (nicht öffentlich, nicht unter /bild/); Name = Prüfsumme, nie der Upload-Name."""
+def beleg_ablegen(data_dir, daten: bytes, endung: str, text: str = "") -> tuple[str, "Path | None"]:
+    """Belegdatei unter data/belege/ (nicht öffentlich, nicht unter /bild/); Name = Prüfsumme, nie der Upload-Name.
+    Gibt (Text für das Feld `beleg`, Pfad der neu angelegten Datei oder None, wenn sie schon da war) zurück."""
     ordner = data_dir / "belege"
     ordner.mkdir(parents=True, exist_ok=True)
     try:
@@ -571,7 +604,9 @@ def beleg_ablegen(data_dir, daten: bytes, endung: str, text: str = "") -> str:
         pass
     name = f"{hashlib.sha256(daten).hexdigest()[:24]}.{endung}"
     pfad = ordner / name
+    neu = None
     if not pfad.exists():
         pfad.write_bytes(daten)
         pfad.chmod(0o600)
-    return f"{text}; Datei belege/{name}" if text else f"Datei belege/{name}"
+        neu = pfad
+    return (f"{text}; Datei belege/{name}" if text else f"Datei belege/{name}"), neu

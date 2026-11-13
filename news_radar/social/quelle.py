@@ -101,10 +101,10 @@ def altbestand(b: Beitrag, startmarke: datetime) -> bool:
 
 
 def umfang_menge(wert) -> set[str]:
-    """Lizenz-Umfang tolerant lesen: kommagetrennte Menge aus website, social, print (Groß/klein, Leerzeichen,
-    Semikolon egal). Alles andere – auch der alte Freitext „Online-Veröffentlichung …“ – zählt nicht."""
-    teile = re.split(r"[,;/|\s]+", str(wert or "").strip().lower())
-    return {t for t in teile if t in ("website", "social", "print")}
+    """Lizenz-Umfang lesen – die gemeinsame Funktion aus `lizenz.py` (eine Stelle für Gate und Social)."""
+    from ..lizenz import umfang_menge as gemeinsam
+
+    return gemeinsam(wert)
 
 
 def anreichern(store, settings, b: Beitrag) -> Beitrag:
@@ -121,7 +121,7 @@ def anreichern(store, settings, b: Beitrag) -> Beitrag:
         b.story_id = story_id
     if draft is not None and draft["bild_datei"]:
         pfad = settings.bilder_dir / draft["bild_datei"]
-        b.asset = repo.asset_fuer_datei(store, draft["bild_datei"])
+        b.asset = repo.asset_fuer_entwurf(store, draft["id"], draft["bild_datei"])  # nie der eines anderen Entwurfs
         b.bild_pfad = pfad if pfad.is_file() else None
         b.bild_ki = bool((b.asset or {}).get("ki")) or (b.asset or {}).get("herkunft") == "ki" \
             or draft["bild_origin"] == "ki"
