@@ -33,6 +33,7 @@ mit Verweis auf die Festlegung; Feldnamen dort sind Vorschläge für den Bau.
 | Ereignisprotokoll (`log`) | Benutzername in `data.von` | keine | zu prüfen (F0 nennt nur „Protokoll“) |
 | Entwurf (`drafts.bearbeitet_von`) | Benutzername | keine | – |
 | Quelldokumente | Namen aus veröffentlichter Presse | keine | zu prüfen |
+| Einsendung (F1), Website | Name, E-Mail, Telefon, IP-Hash | Website: 90 Tage nach Abschluss, Spam 7 Tage, nie abgeschlossen 90 Tage nach Eingang, IP-Hash 24 Stunden, Protokoll 12 Monate (WP-Cron stündlich) | wie gebaut |
 | Einsendung (F1), Kopie im Radar (`einsendungen`) | Name, E-Mail, Telefon (kein IP-Hash) | 90 Tage nach Abschluss, Spam 7 Tage; auf der Website nicht mehr vorhanden (`wp_status = fehlt`): 30 Tage nach dem Vermerk, auch wenn noch offen (`eingang loeschen`, täglich 03:30). Offene Einträge mit bekanntem Gegenstück folgen der Frist der Website. Kontaktdaten gehen nie an das Modell, Freitext wird vorher maskiert | 90 Tage nach Abschluss; Spam 7 Tage; IP-Hash 24 Stunden |
 | Verzeichnis-Einsendung (F2) | Name, E-Mail des Einsenders | – | 90 Tage |
 | Buchung (F3) | Firma, Ansprechperson, Rechnungsadresse, E-Mail, Telefon, USt-ID | – | steuerliche Frist, nennt KBS (offen) |
@@ -465,7 +466,8 @@ Schreibrecht auf Meta: `edit_posts` bzw. `edit_post`. Termin-Felder pflegt die R
 | `tamil_site_zustimmung` | Texte des Cookie-Hinweises: `titel`, `text`, `notwendig`, `externe_medien`, `statistik`, `fassung` | Administrator |
 | `tamil_site_seo` | SEO-Einstellungen | Administrator |
 | `tamil_site_redirects`, `tamil_site_redirects_csv` | Weiterleitungen | Administrator, REST |
-| `tamil_site_datenversion`, `tamil_site_upgrade_fehler` | Upgrade-Routine (Datenversion 1) | Maschine |
+| `tamil_site_datenversion`, `tamil_site_upgrade_fehler` | Upgrade-Routine (Datenversion 4; Schritte 2 Einsendungen F1, 3 Werbung F3, 4 Verzeichnis F2) | Maschine |
+| `tamil_site_werbung_deinstallation_loeschen` | ausdrücklich gesetzt: Deinstallation löscht auch bezahlte Werbebuchungen (Standard: nicht gesetzt) | Administrator (WP-CLI) |
 | `tamil_radar_settings` | `cockpit_url` | Administrator |
 | `tamil_radar_version` | Plugin-Version | Maschine |
 
@@ -512,12 +514,18 @@ Herkunft: Anbieter `cinestar`, `kinoheld`, `cineplexx` und HTML-Kinoseiten. Entw
 aktualisiert der Radar bei einer Dublette die Kinoliste in WordPress (`PUT /beitrag/{uid}`). Ein Spielort bleibt nur mit
 aktiver Quelle und künftigem Termin.
 
-## 12. Einsendung (F1) – Radar-Seite gebaut (`news_radar/eingang.py`, Migration 11, Cockpit „Eingang“)
+## 12. Einsendung (F1) – Website und Radar-Seite gebaut (`tamil-site`, `news_radar/eingang.py`, Migration 11/12, Cockpit „Eingang“)
 
 Quelle: `festlegung-einreichungen.md`. Gespeichert auf der Website (WordPress hält Öffentliches und Kunden); der Radar
-holt ab und führt den Eingang. **Speicherform zu prüfen**, Vorschlag: eigene Tabelle über die Upgrade-Routine
-(`tamil_site_upgrade_schritt`), nicht öffentlich; im Radar eine Tabelle `einsendungen` für Status, Hinweise und
-Entwurf.
+holt ab und führt den Eingang. **Speicherform (gebaut):** Tabelle `wp_tamil_einsendungen` über die Upgrade-Routine
+(Datenversion 2, `wordpress/plugins/tamil-site/includes/einsendungen.php`), nicht öffentlich; art-spezifische Felder
+als JSON in `felder`; Bilder neu gespeichert unter `uploads/tamil-einsendungen/` mit Zufallsnamen und Sperre für den
+Webserver. Protokoll ohne Personendaten in `wp_tamil_einsendungen_protokoll` (Vorgangsnummer, Aktion, wer). Auf der
+Website führt die Status-Maschine nur `eingegangen`, `abgeholt` und die Abschlüsse; nie abgeschlossene Einsendungen
+löscht sie 90 Tage nach Eingang (Höchstfrist). Den Einwilligungstext archiviert sie je Fassung
+(`tamil_site_einsendungen_fassungen`), damit `einwilligung_fassung` den zugestimmten Text belegt; `vorbereitet`, `zusammenfassung`,
+`hinweise`, `dublette_von`, `entwurf_id` und `notiz` hält der Radar (Tabelle `einsendungen`, noch nicht gebaut).
+Abholen: `integrationen.md` §3 „Einsendungen“.
 
 ### Gemeinsame Felder
 
@@ -556,8 +564,9 @@ Nicht gespeichert: das versteckte Feld (Programme), die Absendedauer (nur geprü
 
 ### Prüfungen
 
-Annahme auf der Website nur mit: Pflichtfeldern, Einwilligung, leerem verstecktem Feld, Absendedauer ≥ 3 s, höchstens
-5 Einsendungen je Stunde und IP-Hash, höchstens 3 Links im Text. Danach markiert der Agent (entscheidet nicht): Datum
+Annahme auf der Website nur mit: Pflichtfeldern (Datum nur, wenn es den Tag gibt), Einwilligung in der angezeigten
+Fassung, leerem verstecktem Feld, Absendedauer ≥ 3 s, höchstens 5 Einsendungen je Stunde und IP-Hash (IPv6 je /64;
+erst einfügen, dann zählen), höchstens 3 Links im Text; Bilder bis 5 MB und 16 Megapixel. Danach markiert der Agent (entscheidet nicht): Datum
 in der Vergangenheit oder unplausibel, Ort außerhalb DE/AT/CH, mögliche Dublette.
 
 ### Status-Maschine Einsendung
@@ -575,15 +584,21 @@ stateDiagram-v2
   erledigt --> geloescht: 90 Tage
   abgelehnt --> geloescht: 90 Tage
   spam --> geloescht: 7 Tage
+  eingegangen --> geloescht: Höchstfrist 90 Tage nach Eingang
+  abgeholt --> geloescht: Höchstfrist 90 Tage nach Eingang
 ```
 
 Ist der Schalter `eingang` an, bleiben Einsendungen unverlustig auf der Website liegen. Keine E-Mail an den Einsender;
 Antworten nur von Hand (`mailto:`-Link im Cockpit).
 
-## 13. Verzeichnis-Eintrag (F2) – spezifiziert, nicht gebaut
+## 13. Verzeichnis-Eintrag (F2) – gebaut auf der Website
 
-Quelle: `festlegung-verzeichnis.md`. Öffentlich unter `/verzeichnis/`. **Speicherform zu prüfen**, Vorschlag: eigener
-Beitragstyp mit Taxonomien „Art“ und „Kategorie“ in WordPress.
+Quelle: `festlegung-verzeichnis.md`. Öffentlich unter `/verzeichnis/` (Seite mit `[tamil_verzeichnis]`, Profile unter
+`/verzeichnis/<name>/`). **Speicherform:** Beitragstyp `tamil_vz_eintrag` (Name = Titel, Beschreibung = Inhalt,
+übrige Felder als geschützte Meta `_tamil_vz_<feld>`, `premium` als `_tamil_vz_premium`), Kategorie als Taxonomie
+`tamil_vz_kategorie` mit der Art als Term-Meta; `status` `veroeffentlicht` = veröffentlicht, `entfernt` = Entwurf.
+Einsendungen in der Tabelle `tamil_vz_einsendungen`, gelöscht 90 Tage nach Eingang; Protokoll `tamil_vz_protokoll`
+(`wordpress/plugins/tamil-site/includes/verzeichnis*.php`). Schnittstelle: `integrationen.md` §3, „Verzeichnis“.
 
 ### Eintrag (öffentlich)
 
@@ -641,7 +656,7 @@ Regeln; nur der Kategorie-Vorschlag entfällt.
 Reihenfolge je Platz: Advanced-Ads-Platzierung → eigenes Banner-HTML → Eigenanzeige → nichts. Fremde Inhalte werden bei
 eingeschalteter Zustimmung durch die Eigenanzeige ersetzt.
 
-### Angebot – spezifiziert, nicht gebaut
+### Angebot – gebaut (Option `tamil_site_werbung_angebote`)
 
 | Feld | Typ | Bedeutung |
 |---|---|---|
@@ -652,7 +667,7 @@ eingeschalteter Zustimmung durch die Eigenanzeige ersetzt.
 | `gleichzeitig` | Zahl | Vorschlag 1 (exklusiv) |
 | `vorlauf_werktage` | Zahl | Vorschlag 2 |
 
-### Buchung – spezifiziert, nicht gebaut
+### Buchung – gebaut (Tabellen `wp_tamil_werbebuchungen`, `…_werbetage`, `…_werbestatistik`, `…_werbeprotokoll`, `wp_tamil_stripe_ereignisse`)
 
 | Feld | Typ | Pflicht | Herkunft | Prüfung | Ändern | Frist |
 |---|---|---|---|---|---|---|
@@ -679,6 +694,11 @@ eingeschalteter Zustimmung durch die Eigenanzeige ersetzt.
 
 **Aktiv-Funktion (genau eine):** aktiv ⇔ `zahlung = bezahlt` ∧ `pruefung = freigegeben` ∧ `pausiert = nein` ∧
 `start ≤ heute ≤ ende` (und nicht vorzeitig beendet). Alle Anzeigen fragen nur diese Funktion.
+
+**Deinstallation:** Gibt es bezahlte oder erstattete Buchungen, bleiben `tamil_werbebuchungen` und
+`tamil_werbeprotokoll` beim Löschen des Plugins stehen (steuerliche Aufbewahrung); nie bezahlte Buchungen und die
+Betriebstabellen (`tamil_werbetage`, `tamil_werbestatistik`, `tamil_stripe_ereignisse`) werden entfernt. Alles löschen
+nur mit der Option `tamil_site_werbung_deinstallation_loeschen` (nach dem Export). Hinweis in wp-admin unter Werbung.
 
 ### Status-Maschine Buchung
 
