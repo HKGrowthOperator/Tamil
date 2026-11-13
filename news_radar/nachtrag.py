@@ -331,19 +331,71 @@ def _ist_termin(typen: set) -> bool:
     return any(isinstance(t, str) and t.endswith("Event") for t in typen)
 
 
-def strukturierte_angaben(roh: str, nur_termine: bool = False) -> str:
+def _typen(obj: dict) -> set[str]:
+    """@type als Menge – nur Strings (eine Liste mit Objekten oder Zahlen darf nicht werfen)."""
+    typ = obj.get("@type")
+    if isinstance(typ, str):
+        return {typ}
+    return {x for x in typ if isinstance(x, str)} if isinstance(typ, list) else set()
+
+
+_CANONICAL_RE = re.compile(r"<link\b[^>]{0,300}?rel\s*=\s*[\"']?canonical[^>]{0,300}>", re.I)
+_HREF_RE = re.compile(r"href\s*=\s*[\"']?([^\"'\s>]{1,500})", re.I)
+
+
+def _seiten_kennungen(roh: str, titel: str = "") -> list[str]:
+    """Titel der Seite (og:title, <title>) und der Pfad der kanonischen Adresse, normalisiert – damit ein Termin aus
+    JSON-LD der Seite zugeordnet werden kann."""
+    werte = [titel, *_og_titel(roh)]
+    block = next(sources.bloecke(roh, _TITLE_START_RE), None)
+    if block:
+        werte.append(roh[block[1]:block[2]])
+    m = _CANONICAL_RE.search(roh[:200_000])
+    href = _HREF_RE.search(m.group(0)) if m else None
+    if href:
+        werte.append(urlsplit(href.group(1)).path.replace("-", " ").replace("/", " "))
+    return [k for k in (_norm(unescape(w or "")) for w in werte) if len(k) >= 4]
+
+
+def _passt_zur_seite(name: str, kennungen: list[str]) -> bool:
+    n = _norm(name)
+    return len(n) >= 4 and any(n in k or (len(k) >= 8 and k in n) for k in kennungen)
+
+
+def _zur_seite(objekte: list[dict], kennungen: list[str]) -> list[dict]:
+    """Nur das Objekt, das zur Seite gehört: genau eines, oder das eine, dessen Name zu Titel oder kanonischer Adresse
+    passt. Objekte ohne Namen nie (sie lassen sich keiner Seite zuordnen)."""
+    mit_name = [o for o in objekte if _ld_werte(o.get("name"))]
+    if len(mit_name) == 1:
+        return mit_name
+    passend = [o for o in mit_name if _passt_zur_seite(" ".join(_ld_werte(o.get("name"))), kennungen)]
+    return passend if len(passend) == 1 else []
+
+
+def _kuerzen(text: str, grenze: int) -> str:
+    """Höchstens `grenze` Zeichen, nur an einer Zeilengrenze – nie mitten in einem Wert."""
+    if len(text) <= grenze:
+        return text
+    schnitt = text.rfind("\n", 0, grenze + 1)
+    return text[:schnitt].rstrip() if schnitt > 0 else ""
+
+
+def strukturierte_angaben(roh: str, nur_termine: bool = False, titel: str = "") -> str:
     """Notanker für Seiten ohne lesbaren Text: Felder aus JSON-LD (Movie, Event, ScreeningEvent, NewsArticle, Article),
     nur wörtlich übernommene Werte, höchstens TEXT_MAX. Leer, wenn nichts Passendes da ist.
-    `nur_termine`: nur Termine (Typ …Event mit startDate) – sie ergänzen auch Seiten mit sichtbarem Text, weil Datum,
-    Uhrzeit und Adresse oft nur in den strukturierten Angaben stehen (Eventfrog, Fund 13.11.2026)."""
+    `nur_termine`: nur Termine (Typ …Event mit startDate) und Filme (Movie) – sie ergänzen auch Seiten mit sichtbarem
+    Text, weil Datum, Uhrzeit, Adresse, Regie und Besetzung oft nur in den strukturierten Angaben stehen (Eventfrog,
+    Kinoketten, Fund 13.11.2026). Termine und Filme nur, wenn sie zur Seite gehören (_zur_seite)."""
+    if nur_termine:  # angehängt an sichtbaren Text: nur Termin und Film, die zur Seite gehören
+        objekte = list(_ld_objekte(roh))
+        termine = [o for o in objekte if _ist_termin(_typen(o)) and o.get("startDate")]
+        filme = [o for o in objekte if "Movie" in _typen(o)]
+        kennungen = _seiten_kennungen(roh, titel)
+        auswahl = _zur_seite(filme, kennungen) + _zur_seite(termine, kennungen)
+    else:  # Notanker ohne sichtbaren Text: alle passenden Typen, wie bisher
+        auswahl = [o for o in _ld_objekte(roh) if _typen(o) & LD_TYPEN]
     zeilen = []
-    for obj in _ld_objekte(roh):
-        typ = obj.get("@type")
-        typen = {typ} if isinstance(typ, str) else set(typ) if isinstance(typ, list) else set()
-        if nur_termine and not (_ist_termin(typen) and obj.get("startDate")):
-            continue
-        if not nur_termine and not typen & LD_TYPEN:
-            continue
+    for obj in auswahl:
         for feld in LD_FELDER:
             wert = obj
             for teil in feld.split("."):
@@ -354,7 +406,7 @@ def strukturierte_angaben(roh: str, nur_termine: bool = False) -> str:
                 zeilen.append(f"{feld}: {', '.join(werte)}")
         zeilen.append("")
     text = "\n".join(zeilen).strip()
-    return f"{LD_KOPF}\n\n{text}"[:TEXT_MAX] if text else ""
+    return _kuerzen(f"{LD_KOPF}\n\n{text}", TEXT_MAX) if text else ""
 
 
 def seite_lesen(seite: net.Fetched, adresse: str = "", frist: float | None = None) -> tuple[str, str, str, str]:
@@ -377,12 +429,13 @@ def seite_lesen(seite: net.Fetched, adresse: str = "", frist: float | None = Non
             break
     text = sources.extract_paragraphs(roh, TEXT_MAX)
     if len(text or "") < VOLLTEXT_MIN:  # ohne JavaScript kein Text: strukturierte Angaben als Notanker
-        daten = strukturierte_angaben(roh)
+        daten = strukturierte_angaben(roh, titel=titel)
         if daten:
             return daten, titel, "daten", ""
-    termin = strukturierte_angaben(roh, nur_termine=True)  # Datum, Uhrzeit, Ort eines Termins stehen oft nur dort
+    termin = strukturierte_angaben(roh, nur_termine=True, titel=titel)  # Datum, Ort, Regie stehen oft nur dort
     if termin and text:
-        text = f"{text}\n\n{termin}"[:TEXT_MAX]
+        termin = _kuerzen(termin, TEXT_MAX // 4)  # Platz für den Fließtext, der Block bleibt ganz
+        text = f"{text[:TEXT_MAX - len(termin) - 2].rstrip()}\n\n{termin}"
     return text, titel, "volltext", ""
 
 

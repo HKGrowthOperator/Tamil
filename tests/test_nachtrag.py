@@ -773,12 +773,12 @@ def test_seite_ohne_text_mit_json_ld_wird_zu_strukturierten_angaben(settings):
 
 
 def test_json_ld_nur_als_notanker_und_nur_passende_typen():
-    # Seite mit Text: Film-Angaben (Movie) bleiben draußen; Termine (…Event mit startDate) hängt seite_lesen seit
-    # 13.11.2026 an (eigener Test unten)
+    # Seite mit Text: Termine (…Event mit startDate) und – seit dem Zusatzauftrag vom 13.11.2026 – Film-Angaben
+    # (Movie: Regie, Besetzung) hängt seite_lesen an, wenn sie zur Seite gehören; andere Typen nie
     text = nachtrag.seite_lesen(html_seite(kino_html(KINO_LD, f"<article><p>{ARTIKEL1}</p></article>")))[0]
     angehaengt = text[len(ARTIKEL1):]
     assert text.startswith(ARTIKEL1) and "startDate: 2026-06-12T20:00" in angehaengt
-    assert "Nelson Dilipkumar" not in angehaengt  # Film-Angaben (Movie) nur als Notanker
+    assert "director: Nelson Dilipkumar" in angehaengt and "Kino Beispiel GmbH" not in angehaengt
     nur_firma = {"@type": "Organization", "name": "Kino Beispiel GmbH", "description": "x" * 400}
     kaputt = '<html><script type="application/ld+json">{kein json</script><body></body></html>'
     for roh in (kino_html(nur_firma), kaputt):
