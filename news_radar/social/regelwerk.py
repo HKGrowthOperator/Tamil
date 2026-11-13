@@ -126,6 +126,42 @@ def speichern(store, aenderung: dict, *, wer: str) -> Regelwerk:
     return aktuell(store)
 
 
+def freigegeben(rw: Regelwerk) -> bool:
+    """Live nur mit der einmaligen Freigabe dieser Fassung durch KBS (Vertrag §8 Abs. 1); eine neue Fassung hat keine."""
+    return bool(rw.freigegeben_von and rw.freigegeben_at)
+
+
+def freigabe_eintragen(store, *, wer: str, freigegeben_von: str, datum: str, beleg: str) -> Regelwerk:
+    """Die Freigabe der aktuellen Fassung eintragen (Cockpit: nur admin). Person, Freigebende, Datum (JJJJ-MM-TT) und
+    Beleg sind Pflicht; der Beleg steht im Protokoll. Einmalig je Fassung."""
+    from ..store import now_iso
+    from ..workflow import repo
+
+    wer, von = (wer or "").strip(), " ".join((freigegeben_von or "").split())[:120]
+    beleg = " ".join((beleg or "").split())[:250]
+    if not (wer and von and beleg):
+        raise ValueError("Person, Freigebende und Beleg sind Pflicht")
+    try:
+        tag = date.fromisoformat((datum or "").strip()).isoformat()
+    except ValueError:
+        raise ValueError("Datum der Freigabe als JJJJ-MM-TT") from None
+    rw = aktuell(store)
+    if freigegeben(rw):
+        raise ValueError(f"Fassung {rw.fassung} ist schon freigegeben")
+    with store.lock:
+        store.db.execute("INSERT OR IGNORE INTO social_regelwerk (fassung, inhalt, erstellt, von) VALUES (?,?,?,?)",
+                         (int(rw.fassung), json.dumps(rw.inhalt(), ensure_ascii=False), now_iso(), rw.von or "Datei"))
+        cur = store.db.execute("UPDATE social_regelwerk SET freigegeben_von = ?, freigegeben_at = ? WHERE fassung = ? "
+                               "AND freigegeben_von IS NULL", (von, tag, int(rw.fassung)))
+        store.db.commit()
+    if cur.rowcount != 1:
+        raise ValueError(f"Fassung {rw.fassung} ist schon freigegeben")
+    repo.aktion(store, wer=wer, aktion="social_regelwerk_freigabe", gegenstand_typ="regelwerk",
+                gegenstand_id=rw.fassung, regel_fassung=rw.fassung, notiz=f"freigegeben von {von} am {tag}; Beleg: {beleg}",
+                ausloeser="person")
+    return aktuell(store)
+
+
 # ---- Prüfung ------------------------------------------------------------------------------------
 
 def _muster(eintrag: str) -> str:
@@ -172,6 +208,24 @@ def bild_social(b: Beitrag) -> tuple[bool, str]:
     return True, "Beitragsbild mit Recht für soziale Netze (Umfang „social“)"
 
 
+def pruefe_alter(datum: datetime | None, quelle_typ: str, event_datum: str, rw: Regelwerk, jetzt: datetime) -> dict:
+    """R3: höchstens `max_alter_stunden` seit der Veröffentlichung; Termine nur, solange sie in der Zukunft liegen.
+    Gilt beim Erkennen und noch einmal unmittelbar vor dem Senden."""
+    if datum is None:
+        return _r("unklar", "Veröffentlichungszeit fehlt")
+    alter = (jetzt - datum).total_seconds() / 3600
+    if alter > rw.max_alter_stunden:
+        return _r("verletzt", f"{alter:.0f} Stunden alt (höchstens {rw.max_alter_stunden})")
+    if quelle_typ != "termin":
+        return _r("erfuellt", f"{alter:.0f} Stunden alt")
+    tag = _event_tag(event_datum)
+    if tag is None:
+        return _r("unklar", f"Termindatum „{event_datum}“ nicht lesbar")
+    if (tag < jetzt) if isinstance(tag, datetime) else (tag < jetzt.astimezone(TZ).date()):
+        return _r("verletzt", f"Termin {event_datum} liegt in der Vergangenheit – übersprungen")
+    return _r("erfuellt", f"{alter:.0f} Stunden alt, Termin {event_datum} in der Zukunft")
+
+
 def pruefen(b: Beitrag, rw: Regelwerk, jetzt: datetime) -> dict[str, dict]:
     p: dict[str, dict] = {}
     rubrik = next((r for r in b.rubriken if r in rw.rubriken), "")
@@ -191,23 +245,7 @@ def pruefen(b: Beitrag, rw: Regelwerk, jetzt: datetime) -> dict[str, dict]:
         p["R2"] = _r("verletzt", f"heikles Thema „{treffer}“ in Titel, Rubrik oder Schlagwort")
     else:
         p["R2"] = _r("erfuellt", "kein heikles Thema erkannt")
-    # R3 Alter, Termine nur in der Zukunft
-    if b.datum is None:
-        p["R3"] = _r("unklar", "Veröffentlichungszeit fehlt")
-    else:
-        alter = (jetzt - b.datum).total_seconds() / 3600
-        if alter > rw.max_alter_stunden:
-            p["R3"] = _r("verletzt", f"{alter:.0f} Stunden alt (höchstens {rw.max_alter_stunden})")
-        elif b.quelle_typ == "termin":
-            tag = _event_tag(b.event_datum)
-            if tag is None:
-                p["R3"] = _r("unklar", f"Termindatum „{b.event_datum}“ nicht lesbar")
-            elif (tag < jetzt) if isinstance(tag, datetime) else (tag < jetzt.astimezone(TZ).date()):
-                p["R3"] = _r("verletzt", f"Termin {b.event_datum} liegt in der Vergangenheit – übersprungen")
-            else:
-                p["R3"] = _r("erfuellt", f"{alter:.0f} Stunden alt, Termin {b.event_datum} in der Zukunft")
-        else:
-            p["R3"] = _r("erfuellt", f"{alter:.0f} Stunden alt")
+    p["R3"] = pruefe_alter(b.datum, b.quelle_typ, b.event_datum, rw, jetzt)
     # R4 Bild: entscheidet nur zwischen Foto und Bildkarte
     p["R4"] = _r("erfuellt", bild_social(b)[1])
     p["R5"] = _r("erfuellt", f"höchstens {rw.max_je_tag} je Kanal und Tag, {rw.abstand_min} Minuten Abstand – "

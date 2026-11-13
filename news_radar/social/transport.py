@@ -78,7 +78,7 @@ def fehler_aus(status: int, daten: dict) -> MetaFehler:
     text = str(err.get("message") or f"HTTP {status}")[:200]
     if code in ZUGANG_CODES or err.get("type") == "OAuthException" and code == 190:
         return ZugangFehler(code, text)
-    if code in WARTE_CODES or status == 429:
+    if code in WARTE_CODES or status == 429 or status >= 500:
         return WarteFehler(code, text)
     return MetaFehler(code, text)
 
@@ -101,7 +101,7 @@ class GraphTransport:
                 resp = self.http.get(f"{self.basis}/{pfad}", params=werte, timeout=self.timeout)
             else:
                 resp = self.http.post(f"{self.basis}/{pfad}", data=werte, timeout=self.timeout)
-        except (requests.Timeout, requests.ConnectionError) as exc:
+        except requests.RequestException as exc:  # Timeout, Verbindung, abgebrochene Antwort (ChunkedEncoding) …
             if entscheidend:
                 raise UnklarFehler(f"Verbindung abgebrochen bei {pfad.split('?')[0]}: {type(exc).__name__}") from None
             raise WarteFehler(0, f"Netzfehler: {type(exc).__name__}") from None
@@ -116,8 +116,11 @@ class GraphTransport:
         return antwort if isinstance(antwort, dict) else {}
 
     def ig_container(self, image_url: str, caption: str, alt_text: str) -> str:
-        return str(self._anfrage("POST", f"{self.ig}/media",
-                                 daten={"image_url": image_url, "caption": caption, "alt_text": alt_text})["id"])
+        d = self._anfrage("POST", f"{self.ig}/media",
+                          daten={"image_url": image_url, "caption": caption, "alt_text": alt_text})
+        if not d.get("id"):
+            raise MetaFehler(0, "Container ohne Kennung in der Antwort")
+        return str(d["id"])
 
     def ig_status(self, container_id: str) -> str:
         return str(self._anfrage("GET", container_id, daten={"fields": "status_code"}).get("status_code", ""))
@@ -128,8 +131,10 @@ class GraphTransport:
         return int(eintrag.get("quota_usage") or 0), int((eintrag.get("config") or {}).get("quota_total") or 100)
 
     def ig_veroeffentlichen(self, container_id: str) -> str:
-        return str(self._anfrage("POST", f"{self.ig}/media_publish", daten={"creation_id": container_id},
-                                 entscheidend=True)["id"])
+        d = self._anfrage("POST", f"{self.ig}/media_publish", daten={"creation_id": container_id}, entscheidend=True)
+        if not d.get("id"):  # angenommen oder nicht? Nur der Abgleich weiß es
+            raise UnklarFehler("Antwort ohne Kennung beim Veröffentlichen")
+        return str(d["id"])
 
     def ig_permalink(self, media_id: str) -> str:
         return str(self._anfrage("GET", media_id, daten={"fields": "permalink"}).get("permalink", ""))
@@ -141,7 +146,9 @@ class GraphTransport:
     def fb_foto(self, url: str, caption: str, alt_text: str) -> dict:
         d = self._anfrage("POST", f"{self.page}/photos", entscheidend=True,
                           daten={"url": url, "caption": caption, "alt_text_custom": alt_text, "published": "true"})
-        return {"id": str(d.get("id", "")), "post_id": str(d.get("post_id") or d.get("id", ""))}
+        if not (d.get("post_id") or d.get("id")):
+            raise UnklarFehler("Antwort ohne Kennung beim Veröffentlichen auf Facebook")
+        return {"id": str(d.get("id", "")), "post_id": str(d.get("post_id") or d.get("id"))}
 
     def fb_permalink(self, post_id: str) -> str:
         return str(self._anfrage("GET", post_id, daten={"fields": "permalink_url"}).get("permalink_url", ""))

@@ -5,12 +5,13 @@
   <div><h1>Social</h1>
   <p class="unter">Instagram und Facebook nach dem Regelwerk Fassung {{ rw.fassung }}, WhatsApp als Entwurf zum Posten von Hand. Neue Beiträge der Website gehen nach {{ rw.karenz_min }} Minuten Karenz hinaus, zuerst Instagram, dann Facebook. Jeder Schritt steht im <a href="/protokoll">Protokoll</a>; die Schalter Instagram, Facebook und WhatsApp wirken sofort.</p></div>
 </header>
-<div class="banner {{ 'warnung' if not konf.live else 'stopp' }}" role="status">
-  {% if konf.live %}<b>Live:</b> Beiträge gehen über die Graph API an Meta.
+<div class="banner {{ 'stopp' if live else 'warnung' }}" role="status">
+  {% if live %}<b>Live:</b> Beiträge gehen über die Graph API an Meta.
   {% else %}<b>Trockenmodus:</b> alles wird vorbereitet und mit vollständiger Nutzlast gespeichert, aber nichts an Meta geschickt.{% endif %}
   Funktion {{ 'an' if konf.aktiv else 'aus' }} (RADAR_SOCIAL{{ '' if konf.aktiv else ', der Dienst plant keinen Lauf' }}).
   {% if marke %}Startmarke {{ fmt_dt(marke.isoformat()) }}: der Altbestand davor löst nichts aus.{% else %}Noch keine Startmarke (setzt der erste Lauf).{% endif %}
-  {% if rw.freigegeben_von %}Regelwerk freigegeben von {{ rw.freigegeben_von }}.{% else %}Freigabe des Regelwerks durch KBS steht aus.{% endif %}
+  {% if freigegeben %}Regelwerk Fassung {{ rw.fassung }} freigegeben von {{ rw.freigegeben_von }} am {{ rw.freigegeben_at }}.
+  {% else %}Regelwerk Fassung {{ rw.fassung }} ist nicht freigegeben (einmalige Freigabe durch KBS): live bleibt aus, auch mit RADAR_SOCIAL_LIVE.{% endif %}
 </div>
 
 <h2>Warteschlange</h2>
@@ -120,6 +121,15 @@
     <li>R7 {{ regeln.R7 }} · R8 {{ regeln.R8 }} („{{ rw.ki_hinweis }}“) · R9 {{ regeln.R9 }}</li>
     <li>Hashtags{% if rw.hashtags_platzhalter %} (Platzhalter, KBS liefert){% endif %}: {% for r, t in rw.hashtags.items() %}{{ r }} {{ t|join(' ') }}{{ '; ' if not loop.last }}{% endfor %}</li>
   </ul>
+  {% if darf('social_regelwerk') and not freigegeben %}
+  <form method="post" action="/social/regelwerk/freigabe" class="zeile" data-confirm="Freigabe von Fassung {{ rw.fassung }} eintragen?">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <label>Freigegeben von <input name="freigegeben_von" required maxlength="120" placeholder="KBS über Luis"></label>
+    <label>Datum <input name="datum" type="date" required></label>
+    <label>Beleg (Pflicht) <input name="beleg" required maxlength="250" placeholder="z. B. Mail von Luis vom …"></label>
+    <button class="primaer">Freigabe eintragen</button>
+  </form>
+  {% endif %}
   {% if darf('social_regelwerk') %}
   <details><summary>Regelwerk ändern</summary>
   <form method="post" action="/social/regelwerk" data-confirm="Neue Fassung des Regelwerks speichern?">

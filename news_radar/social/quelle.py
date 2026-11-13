@@ -135,10 +135,8 @@ def wp_abruf(settings) -> Abruf:
     basis = f"{settings.wp_url.rstrip('/')}/wp-json/wp/v2/posts"
 
     def abruf(params: dict) -> list[dict]:
-        antwort = net.safe_get(basis, params=params, headers={"Accept": "application/json"}, timeout=20)
-        if antwort.status >= 400:
-            raise RuntimeError(f"WordPress GET posts -> {antwort.status}")
-        daten = antwort.json()
+        # HTTP-Fehler wirft safe_get selbst (net.HTTPError); `lauf` fängt sie ab und sendet trotzdem
+        daten = net.safe_get(basis, params=params, headers={"Accept": "application/json"}, timeout=20).json()
         return daten if isinstance(daten, list) else []
 
     return abruf

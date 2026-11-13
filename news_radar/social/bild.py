@@ -17,6 +17,10 @@ from .. import images
 
 GROESSE = (1080, 1350)
 LEISTE = 96
+RAND = 48
+WORTMARKE_BREITE = 190   # „tamil.de“ in 44 px Catamaran ExtraBold (gemessen ~165 px) plus Luft
+ABSTAND = 32             # Mindestabstand zwischen Wortmarke und Hinweis
+HINWEIS_MAX = GROESSE[0] - 2 * RAND - WORTMARKE_BREITE - ABSTAND
 
 
 def _jpeg(img: Image.Image) -> bytes:
@@ -39,13 +43,31 @@ def foto(daten: bytes, *, nachweis: str = "", ki_hinweis: str = "") -> bytes:
     bild.paste(flaeche, (0, 0))
     draw = ImageDraw.Draw(bild)
     y = GROESSE[1] - LEISTE
-    _wortmarke(draw, 48, y + 22, 44)
-    hinweis = " · ".join(t for t in (ki_hinweis, nachweis) if t)
+    _wortmarke(draw, RAND, y + 22, 44)
+    hinweis, breite = hinweis_passend(" · ".join(t for t in (ki_hinweis, nachweis) if t))
     if hinweis:
-        font = images._font(26, "Bold")
-        breite = draw.textlength(hinweis, font=font)
-        draw.text((GROESSE[0] - 48 - breite, y + 34), hinweis[:80], font=font, fill=images.TINTE_2)
+        draw.text((GROESSE[0] - RAND - breite, y + 34), hinweis, font=_hinweis_font(), fill=images.TINTE_2)
     return _jpeg(bild)
+
+
+def _hinweis_font():
+    return images._font(26, "Bold")
+
+
+def hinweis_passend(text: str) -> tuple[str, float]:
+    """Hinweis und Bildnachweis in der Leiste: erst kürzen (mit „…“), dann messen – nie über die Wortmarke.
+    Gibt den Text und seine Breite zurück; der KI-Hinweis steht vorn und bleibt damit sichtbar."""
+    text = " ".join((text or "").split())
+    if not text:
+        return "", 0.0
+    draw = ImageDraw.Draw(Image.new("RGB", (1, 1)))
+    font = _hinweis_font()
+    if draw.textlength(text, font=font) <= HINWEIS_MAX:
+        return text, draw.textlength(text, font=font)
+    while text and draw.textlength(text + "…", font=font) > HINWEIS_MAX:
+        text = text[:-1]
+    text = text.rstrip(" ·/,") + "…"
+    return text, draw.textlength(text, font=font)
 
 
 def karte(titel: str, rubrik_label: str, rubrik: str = "") -> bytes:

@@ -40,8 +40,11 @@ def _ausfuehren(fn, ok: str):
 def seite():
     store = get_store()
     jetzt = datetime.now(timezone.utc)
-    return render_template("social.html", a=aktionen.ansicht(store), rw=regelwerk.aktuell(store),
-                           konf=konfig.laden(), marke=startmarke(store), jetzt=jetzt.isoformat(timespec="seconds"),
+    rw = regelwerk.aktuell(store)
+    konf = konfig.laden()
+    return render_template("social.html", a=aktionen.ansicht(store), rw=rw, konf=konf,
+                           live=konf.live and regelwerk.freigegeben(rw), freigegeben=regelwerk.freigegeben(rw),
+                           marke=startmarke(store), jetzt=jetzt.isoformat(timespec="seconds"),
                            regeln=regelwerk.REGELN)
 
 
@@ -92,6 +95,22 @@ def verwerfen(zeile_id: int):
 def gepostet(zeile_id: int):
     return _ausfuehren(lambda: aktionen.gepostet(get_store(), zeile_id, wer=session.get("user", "")),
                        "Als gepostet markiert.")
+
+
+@social.post("/social/regelwerk/freigabe")
+@recht_noetig("social_regelwerk")
+def regelwerk_freigabe():
+    """Die einmalige Freigabe der aktuellen Fassung durch KBS eintragen (nur admin, Beleg Pflicht, Protokoll)."""
+    f = request.form
+    try:
+        rw = regelwerk.freigabe_eintragen(get_store(), wer=session.get("user", ""),
+                                          freigegeben_von=f.get("freigegeben_von", ""), datum=f.get("datum", ""),
+                                          beleg=f.get("beleg", ""))
+    except ValueError as exc:
+        flash(f"Freigabe nicht eingetragen: {exc}.", "fehler")
+        return _zurueck()
+    flash(f"Freigabe von Fassung {rw.fassung} eingetragen.", "ok")
+    return _zurueck()
 
 
 @social.post("/social/regelwerk")

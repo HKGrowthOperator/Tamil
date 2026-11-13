@@ -36,9 +36,16 @@ def settings(tmp_path, monkeypatch):
     return s
 
 
+def kbs_freigabe(store, wer="anna"):
+    """Die einmalige Freigabe der aktuellen Fassung durch KBS (über Luis) eintragen – Voraussetzung für live."""
+    return regelwerk.freigabe_eintragen(store, wer=wer, freigegeben_von="KBS über Luis", datum="2026-11-14",
+                                        beleg="Mail von Luis, 14.11.2026")
+
+
 @pytest.fixture
 def store(settings):
     with Store(settings.db_path) as st:
+        kbs_freigabe(st)  # die Fälle mit FakeMeta laufen „live“; ohne Freigabe: eigener Test
         yield st
 
 
@@ -76,9 +83,9 @@ def zeilen(store, **wo):
     return [dict(r) for r in store.db.execute(sql + " ORDER BY id", tuple(wo.values()))]
 
 
-def mit_startmarke(store, settings, posts, jetzt=START):
-    """Erster Lauf setzt die Startmarke eine Stunde vor `jetzt`; dann sind die Beiträge neu."""
-    erkennen(store, settings, FakeWP(), jetzt - timedelta(hours=1))
+def mit_startmarke(store, settings, posts, jetzt=START, vorlauf=timedelta(hours=1)):
+    """Erster Lauf setzt die Startmarke `vorlauf` vor `jetzt`; dann sind die Beiträge neu."""
+    erkennen(store, settings, FakeWP(), jetzt - vorlauf)
     wp = FakeWP(posts)
     return erkennen(store, settings, wp, jetzt), wp
 
@@ -557,3 +564,291 @@ def test_cockpit_admin_aendert_regelwerk(app, store):
     assert resp.status_code == 302
     rw = regelwerk.aktuell(store)
     assert rw.fassung == "2" and rw.max_je_tag == 5 and rw.hashtags["news"] == ["#TamilDE", "#News"]
+    assert "nicht freigegeben" in client.get("/social").get_data(as_text=True)  # neue Fassung: Freigabe erlischt
+    resp = client.post("/social/regelwerk/freigabe", data={"_csrf": token, "freigegeben_von": "KBS über Luis",
+                                                           "datum": "2026-11-15", "beleg": "Mail vom 15.11."})
+    assert resp.status_code == 302 and regelwerk.freigegeben(regelwerk.aktuell(store))
+
+
+def test_cockpit_freigabe_des_regelwerks_nur_admin(app, store):
+    regelwerk.speichern(store, {"max_je_tag": 5}, wer="anna")
+    client, token = login(app, "priya")
+    assert "Freigabe eintragen" not in client.get("/social").get_data(as_text=True)
+    assert client.post("/social/regelwerk/freigabe", data={"_csrf": token, "freigegeben_von": "KBS",
+                                                            "datum": "2026-11-15", "beleg": "x"}).status_code == 403
+
+
+# ---- Befunde der Code-Prüfung (Regressionen) --------------------------------------------------------
+
+def test_p1_unbekannter_fehler_vor_dem_veroeffentlichen_laesst_nichts_haengen(store, settings):
+    mit_startmarke(store, settings, [post(90)])
+
+    def kaputt(zeile):
+        raise RuntimeError("WordPress POST media -> 502")
+
+    meta = FakeMeta()
+    for minuten in (11, 30, 50):
+        ablauf.senden(store, settings, meta, START + timedelta(minutes=minuten), bild_url=kaputt)
+        ig = zeilen(store, kanal="instagram")[0]
+        assert ig["status"] != "wird_gesendet" and "502" in ig["fehler"]
+    assert ig["status"] == "von_hand"  # nach drei Versuchen an einen Menschen, nie endlos
+    assert meta.aufrufe == [] and zeilen(store, kanal="facebook")[0]["status"] in ("karenz", "geplant")
+
+
+def test_p1_fehler_im_veroeffentlichenden_aufruf_wird_unklar(store, settings):
+    mit_startmarke(store, settings, [post(91)])
+    meta = FakeMeta(fehler={"ig_veroeffentlichen": KeyError("id")})
+    ablauf.senden(store, settings, meta, START + timedelta(minutes=11), bild_url=lambda z: "x")
+    assert zeilen(store, kanal="instagram")[0]["status"] == "unklar"
+
+
+def test_p1_antwort_ohne_kennung_beim_veroeffentlichen_ist_unklar():
+    t, _ = graph((200, {}))
+    with pytest.raises(UnklarFehler):
+        t.ig_veroeffentlichen("c1")
+
+
+def test_p1_verwaiste_zeile_wird_abgeglichen(store, settings):
+    mit_startmarke(store, settings, [post(92)])
+    ig = zeilen(store, kanal="instagram")[0]
+    store._write("UPDATE social_beitraege SET status = 'wird_gesendet', modus = 'live', sende_at = ? WHERE id = ?",
+                 ((START + timedelta(minutes=11)).isoformat(timespec="seconds"), ig["id"]))
+    meta = FakeMeta()
+    ablauf.senden(store, settings, meta, START + timedelta(minutes=12), bild_url=lambda z: "x")
+    assert zeilen(store, kanal="instagram")[0]["status"] == "wird_gesendet"  # läuft vielleicht noch
+    ablauf.senden(store, settings, meta, START + timedelta(minutes=40), bild_url=lambda z: "x")
+    ig = zeilen(store, kanal="instagram")[0]
+    assert ig["status"] == "von_hand" and "unklar" in ig["fehler"].lower()
+    assert "ig_veroeffentlichen" not in [a[0] for a in meta.aufrufe]  # nie blind wiederholt
+
+
+def test_p1_verwaiste_zeile_im_trockenmodus_geht_zurueck(store, settings):
+    mit_startmarke(store, settings, [post(93)])
+    ig = zeilen(store, kanal="instagram")[0]
+    store._write("UPDATE social_beitraege SET status = 'wird_gesendet', modus = 'trocken', sende_at = ? WHERE id = ?",
+                 ((START + timedelta(minutes=11)).isoformat(timespec="seconds"), ig["id"]))
+    ablauf.senden(store, settings, TrockenTransport(), START + timedelta(minutes=40))
+    assert zeilen(store, kanal="instagram")[0]["status"] == "trocken"
+
+
+def test_p2_r3_wird_beim_senden_neu_geprueft(store, settings):
+    termin = (START + timedelta(minutes=30)).astimezone(regelwerk.TZ).strftime("%Y-%m-%d %H:%M")
+    mit_startmarke(store, settings, [post(94, stunden=47.5), post(95, rubrik="events", event=termin)],
+                   vorlauf=timedelta(days=3))
+    nacht = START + timedelta(hours=14)  # 23 Uhr: Ruhezeit hält beide bis zum Morgen
+    ablauf.senden(store, settings, FakeMeta(), nacht, bild_url=lambda z: "x")
+    meta = FakeMeta()
+    ablauf.senden(store, settings, meta, datetime(2026, 11, 17, 6, 0, tzinfo=UTC), bild_url=lambda z: "x")
+    assert meta.aufrufe == []
+    for pid in (94, 95):
+        z = zeilen(store, wp_post_id=pid, kanal="instagram")[0]
+        assert z["status"] == "von_hand" and "R3" in z["fehler"], pid
+        assert json.loads(z["regelpruefung"])["R3"]["ergebnis"] == "verletzt"
+
+
+def test_p2_von_hand_freigegeben_wird_nicht_erneut_nach_r3_zurueckgeholt(store, settings):
+    mit_startmarke(store, settings, [post(96, stunden=50)], vorlauf=timedelta(days=3))
+    ig = zeilen(store, kanal="instagram")[0]
+    assert ig["status"] == "von_hand"
+    aktionen.freigeben(store, ig["id"], wer="priya", grund="trotzdem zeigen", jetzt=START)
+    ablauf.senden(store, settings, FakeMeta(), START + timedelta(minutes=11), bild_url=lambda z: "x")
+    assert zeilen(store, kanal="instagram")[0]["status"] == "veroeffentlicht"
+
+
+def test_p2_live_nur_mit_freigabe_des_regelwerks(store, settings):
+    regelwerk.speichern(store, {"max_je_tag": 5}, wer="anna")  # neue Fassung: Freigabe erlischt
+    assert not regelwerk.freigegeben(regelwerk.aktuell(store))
+    mit_startmarke(store, settings, [post(97)])
+    meta = FakeMeta()
+    stats = ablauf.senden(store, settings, meta, START + timedelta(minutes=11), bild_url=lambda z: "x")
+    assert meta.aufrufe == [] and stats["ohne_freigabe"] == 1
+    assert {z["status"] for z in zeilen(store) if z["kanal"] != "whatsapp"} == {"trocken"}
+    assert isinstance(ablauf.transport_fuer(konfig.laden(GRAPH_ENV), regelwerk.aktuell(store)), TrockenTransport)
+    with pytest.raises(ValueError):
+        regelwerk.freigabe_eintragen(store, wer="anna", freigegeben_von="KBS", datum="2026-11-14", beleg="")
+    rw = kbs_freigabe(store)
+    assert rw.fassung == "2" and regelwerk.freigegeben(rw)
+    z = repo.aktionen_liste(store, aktion="social_regelwerk_freigabe")[0]
+    assert z["wer"] == "anna" and z["regel_fassung"] == "2" and "Mail von Luis" in z["notiz"]
+    with pytest.raises(ValueError):  # einmalig je Fassung
+        kbs_freigabe(store)
+
+
+def test_p3_schalter_website_haelt_den_bild_upload_an(store, settings):
+    schalter.setzen(store, "website", True, wer="priya", grund="Theme-Umbau")
+    mit_startmarke(store, settings, [post(98)])
+    hochgeladen = []
+    ablauf.senden(store, settings, FakeMeta(), START + timedelta(minutes=11), bild_url=hochgeladen.append)
+    ig = zeilen(store, kanal="instagram")[0]
+    assert hochgeladen == [] and ig["status"] in ("karenz", "geplant") and "Theme-Umbau" in ig["wartet_grund"]
+
+
+def test_p3_bedingter_wechsel_nur_mit_dem_gelesenen_stand(store, settings):
+    mit_startmarke(store, settings, [post(99)])
+    alt = zeilen(store, kanal="instagram")[0]
+    store._write("UPDATE social_beitraege SET text = 'Neuer Text', aktualisiert = '2099-01-01T00:00:00+00:00' "
+                 "WHERE wp_post_id = 99 AND kanal != 'whatsapp'")  # Redaktion ändert zwischen Lesen und Senden
+    meta = FakeMeta()
+    ablauf._eine(store, settings, meta, regelwerk.aktuell(store), alt, START + timedelta(minutes=11), lambda z: "x")
+    assert meta.aufrufe == [] and zeilen(store, kanal="instagram")[0]["status"] == "karenz"
+    ablauf.senden(store, settings, meta, START + timedelta(minutes=11), bild_url=lambda z: "x")
+    assert meta.aufrufe[0][1]["caption"] == "Neuer Text"
+
+
+def test_p3_abgleich_vergleicht_den_link_exakt(store, settings):
+    mit_startmarke(store, settings, [post(65)])
+    meta = FakeMeta(abbruch_bei=("ig_veroeffentlichen",), kommt_an=False)
+    meta.ig_beitraege.append({"id": "m1", "caption": "Mehr auf tamil.de: https://www.tamil.de/beitrag-65/teil-2",
+                              "permalink": "https://www.instagram.com/p/m1/"})
+    ablauf.senden(store, settings, meta, START + timedelta(minutes=11), bild_url=lambda z: "x")
+    ablauf.senden(store, settings, meta, START + timedelta(minutes=14), bild_url=lambda z: "x")
+    assert zeilen(store, kanal="instagram")[0]["status"] == "von_hand"
+
+
+def _jpeg():
+    buf = io.BytesIO()
+    Image.new("RGB", (800, 600), (10, 80, 140)).save(buf, "JPEG")
+    return buf.getvalue()
+
+
+def test_p3_langer_bildnachweis_wird_gekuerzt_und_haelt_abstand():
+    from news_radar.social import bild
+
+    lang = "Foto: " + "Sehr langer Name einer Rechteinhaberin " * 6 + "/ CC BY-SA 4.0"
+    text, breite = bild.hinweis_passend(lang)
+    assert text.endswith("…") and breite <= bild.HINWEIS_MAX
+    assert bild.hinweis_passend("Foto: Tempelverein")[0] == "Foto: Tempelverein"
+    daten = bild.foto(_jpeg(), nachweis=lang, ki_hinweis="Symbolbild: KI-generiert")
+    assert Image.open(io.BytesIO(daten)).size == (1080, 1350)
+
+
+def test_p3_angewandte_fassung_beim_senden_im_protokoll(store, settings):
+    mit_startmarke(store, settings, [post(100)])
+    regelwerk.speichern(store, {"max_je_tag": 5}, wer="anna")
+    kbs_freigabe(store)
+    ablauf.senden(store, settings, FakeMeta(), START + timedelta(minutes=11), bild_url=lambda z: "x")
+    z = repo.aktionen_liste(store, aktion="social_senden", kanal="instagram")[0]
+    assert z["regel_fassung"] == "2" and "Fassung 1" in z["notiz"]
+
+
+def test_p3_fehler_beim_erkennen_haelt_das_senden_nicht_auf(store, settings):
+    mit_startmarke(store, settings, [post(101)])
+
+    def kaputt(params):
+        raise RuntimeError("WordPress nicht erreichbar")
+
+    stats = ablauf.lauf(store, settings, konfig.laden({}), START + timedelta(minutes=11), abruf=kaputt,
+                        transport=TrockenTransport())
+    assert stats["erkennen_fehler"] == 1 and stats["trocken"] == 2
+
+
+# ---- GraphTransport mit nachgestellter Session (kein Netz) ---------------------------------------
+
+GRAPH_ENV = {"RADAR_SOCIAL_LIVE": "an", "META_ZUGANG": "GEHEIMES-TOKEN-123", "META_IG_USER_ID": "1784",
+             "META_PAGE_ID": "4242"}
+
+
+class FakeAntwort:
+    def __init__(self, code, daten):
+        self.status_code, self._daten = code, daten
+
+    def json(self):
+        return self._daten
+
+
+class FakeSession:
+    """requests.Session-Ersatz: liefert der Reihe nach Antworten oder wirft Ausnahmen; merkt sich jeden Aufruf."""
+
+    def __init__(self, antworten):
+        self.antworten = list(antworten)
+        self.aufrufe = []
+        self.headers = {}
+
+    def _naechste(self, methode, url, **kw):
+        self.aufrufe.append((methode, url, kw))
+        a = self.antworten.pop(0)
+        if isinstance(a, Exception):
+            raise a
+        return FakeAntwort(*a)
+
+    def get(self, url, **kw):
+        return self._naechste("GET", url, **kw)
+
+    def post(self, url, **kw):
+        return self._naechste("POST", url, **kw)
+
+
+def graph(*antworten):
+    from news_radar.social.transport import GraphTransport
+
+    s = FakeSession(antworten)
+    return GraphTransport(konfig.laden(GRAPH_ENV), session=s), s
+
+
+def meta_fehler(code):
+    return (400, {"error": {"code": code, "message": "Fehler von Meta", "type": "OAuthException"}})
+
+
+@pytest.mark.parametrize("code, klasse", [(190, "ZugangFehler"), (368, "ZugangFehler"), (4, "WarteFehler"),
+                                          (17, "WarteFehler"), (100, "MetaFehler")])
+def test_graph_fehlercodes(code, klasse):
+    from news_radar.social import transport
+
+    t, _ = graph(meta_fehler(code))
+    with pytest.raises(getattr(transport, klasse)) as exc:
+        t.ig_container("https://x/b.jpg", "Text", "Alt")
+    assert type(exc.value).__name__ == klasse and "GEHEIMES-TOKEN-123" not in str(exc.value)
+
+
+def test_graph_429_heisst_warten():
+    from news_radar.social.transport import WarteFehler
+
+    t, _ = graph((429, {}))
+    with pytest.raises(WarteFehler):
+        t.fb_letzte()
+
+
+def _abbrueche():
+    import requests
+
+    return [requests.Timeout("zu lange"), (502, {}), requests.exceptions.ChunkedEncodingError("abgebrochen")]
+
+
+@pytest.mark.parametrize("nr", range(3))
+@pytest.mark.parametrize("aufruf", ["ig", "fb"])
+def test_graph_abbruch_beim_veroeffentlichen_ist_unklar(nr, aufruf):
+    t, _ = graph(_abbrueche()[nr])
+    with pytest.raises(UnklarFehler) as exc:
+        if aufruf == "ig":
+            t.ig_veroeffentlichen("c1")
+        else:
+            t.fb_foto("https://x/b.jpg", "Text", "Alt")
+    assert "GEHEIMES-TOKEN-123" not in str(exc.value)
+
+
+def test_graph_netzfehler_vor_dem_veroeffentlichen_heisst_warten():
+    import requests
+
+    from news_radar.social.transport import WarteFehler
+
+    t, _ = graph(requests.ConnectionError("weg"))
+    with pytest.raises(WarteFehler):
+        t.ig_container("https://x/b.jpg", "Text", "Alt")
+
+
+def test_graph_ablauf_und_token_nur_im_aufruf(store, settings):
+    t, s = graph((200, {"id": "c1"}), (200, {"status_code": "FINISHED"}),
+                 (200, {"data": [{"quota_usage": 1, "config": {"quota_total": 100}}]}), (200, {"id": "m1"}),
+                 (200, {"permalink": "https://www.instagram.com/p/m1/"}),
+                 (200, {"id": "f1", "post_id": "4242_9"}), (200, {"permalink_url": "https://www.facebook.com/4242_9"}))
+    mit_startmarke(store, settings, [post(102)])
+    ablauf.senden(store, settings, t, START + timedelta(minutes=11), bild_url=lambda z: "https://cdn/x.jpg")
+    ig, fb = zeilen(store, kanal="instagram")[0], zeilen(store, kanal="facebook")[0]
+    assert (ig["meta_id"], ig["meta_link"]) == ("m1", "https://www.instagram.com/p/m1/")
+    assert (fb["meta_id"], fb["meta_link"]) == ("4242_9", "https://www.facebook.com/4242_9")
+    pfade = [(m, u.split("/v23.0/")[1]) for m, u, _ in s.aufrufe]
+    assert pfade == [("POST", "1784/media"), ("GET", "c1"), ("GET", "1784/content_publishing_limit"),
+                     ("POST", "1784/media_publish"), ("GET", "m1"), ("POST", "4242/photos"), ("GET", "4242_9")]
+    gespeichert = " ".join(str(v) for z in zeilen(store) for v in z.values())
+    protokoll = " ".join(str(v) for z in repo.aktionen_liste(store) for v in z.values())
+    assert "GEHEIMES-TOKEN-123" not in gespeichert + protokoll
