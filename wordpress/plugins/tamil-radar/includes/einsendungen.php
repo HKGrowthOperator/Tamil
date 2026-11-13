@@ -107,7 +107,11 @@ function tamil_radar_einsendungen_liste( WP_REST_Request $request ) {
 	if ( $fehler ) {
 		return $fehler;
 	}
-	$antwort = rest_ensure_response( tamil_site_einsendung_liste( (int) $request['nach'], (int) $request['anzahl'] ) );
+	$liste = tamil_site_einsendung_liste( (int) $request['nach'], (int) $request['anzahl'] );
+	if ( is_wp_error( $liste ) ) {
+		return $liste;
+	}
+	$antwort = rest_ensure_response( $liste );
 	$antwort->header( 'Cache-Control', 'no-store' );
 	return $antwort;
 }
@@ -124,7 +128,8 @@ function tamil_radar_einsendung_holen( WP_REST_Request $request ) {
 	}
 	$zeile = tamil_site_einsendung_zeile( (string) $request['vorgang'] );
 	if ( ! $zeile ) {
-		return new WP_Error( 'tamil_einsendung_fehlt', __( 'Einsendung nicht gefunden.', 'tamil-radar' ), array( 'status' => 404 ) );
+		$db = tamil_site_einsendung_db_fehler();
+		return $db ? $db : new WP_Error( 'tamil_einsendung_fehlt', __( 'Einsendung nicht gefunden.', 'tamil-radar' ), array( 'status' => 404 ) );
 	}
 	$antwort = rest_ensure_response( tamil_site_einsendung_ausgabe( $zeile ) );
 	$antwort->header( 'Cache-Control', 'no-store' );
@@ -157,6 +162,9 @@ function tamil_radar_einsendung_bild( WP_REST_Request $request ) {
 	}
 	$vorgang = (string) $request['vorgang'];
 	$bild    = tamil_site_einsendung_bild( $vorgang );
+	if ( is_wp_error( $bild ) ) {
+		return $bild;
+	}
 	if ( ! $bild ) {
 		return new WP_Error( 'tamil_einsendung_ohne_bild', __( 'Zu dieser Einsendung gibt es kein Bild.', 'tamil-radar' ), array( 'status' => 404 ) );
 	}

@@ -29,8 +29,8 @@ function tamil_site_einsendungen_seite(): void {
 		<h1><?php esc_html_e( 'Einsendungen', 'tamil-site' ); ?></h1>
 		<p class="description"><?php esc_html_e( 'Nur lesend, für den Notfall. Bearbeitet werden Einsendungen im Cockpit des Radars. Geantwortet wird von Hand aus dem eigenen Mailprogramm.', 'tamil-site' ); ?>
 		<?php
-		/* translators: 1: Tage nach Abschluss, 2: Tage für Spam */
-		echo esc_html( sprintf( __( 'Löschung %1$d Tage nach Abschluss, Spam nach %2$d Tagen.', 'tamil-site' ), TAMIL_SITE_EINSENDUNG_FRIST_TAGE, TAMIL_SITE_EINSENDUNG_SPAM_TAGE ) );
+		/* translators: 1: Tage nach Abschluss, 2: Tage für Spam, 3: Höchstfrist in Tagen nach Eingang */
+		echo esc_html( sprintf( __( 'Löschung %1$d Tage nach Abschluss, Spam nach %2$d Tagen; nie abgeschlossene Einsendungen %3$d Tage nach Eingang, auch wenn der Eingang im Radar so lange angehalten ist.', 'tamil-site' ), TAMIL_SITE_EINSENDUNG_FRIST_TAGE, TAMIL_SITE_EINSENDUNG_SPAM_TAGE, TAMIL_SITE_EINSENDUNG_HOECHST_TAGE ) );
 		?>
 		</p>
 		<?php if ( ! tamil_site_funktion_an( 'einreichungen' ) ) : ?>

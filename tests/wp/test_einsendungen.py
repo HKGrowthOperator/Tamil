@@ -578,3 +578,81 @@ def test_xss_bei_erneuter_anzeige_und_in_wp_admin(wp, wp_cli, wp_sitzung, seite)
     einzeln = wp_sitzung.get(f"{wp.url}/wp-admin/tools.php?page=tamil-einsendungen&vorgang={vorgang}", timeout=30).text
     assert "<img src=x" not in einzeln and "<i>Erika</i>" not in einzeln
     assert "a &lt; b &amp; &quot;c&quot;" in einzeln and "Erika &amp; Co" in einzeln
+
+
+# --- Nachträge aus der Gegenprüfung ------------------------------------------------------------------------------
+
+def _mod_remoteip(verbindung: str, kette: str) -> tuple[str, str]:
+    """Bildet mod_remoteip ab, wie das Image es einstellt (RemoteIPHeader X-Forwarded-For, RemoteIPInternalProxy für
+    private Netze und Loopback): von rechts nach links, solange die bisherige Adresse ein vertrauter Proxy ist; die
+    verbrauchten Einträge verschwinden aus der Kopfzeile."""
+    import ipaddress
+    netze = [ipaddress.ip_network(n) for n in ("10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "169.254.0.0/16", "127.0.0.0/8")]
+    eintraege = [e.strip() for e in kette.split(",") if e.strip()]
+    adresse = verbindung
+    while eintraege and any(ipaddress.ip_address(adresse) in n for n in netze):
+        adresse = eintraege.pop()
+    return adresse, ", ".join(eintraege)
+
+
+@pytest.mark.parametrize("fall,verbindung,kette,proxys,besucher", [
+    ("nur Traefik", "172.18.0.2", "5.6.7.8", 0, "5.6.7.8"),
+    ("nur Traefik, gefälscht", "172.18.0.2", "6.6.6.6, 5.6.7.8", 0, "5.6.7.8"),
+    ("Cloudflare vor Traefik", "172.18.0.2", "5.6.7.8, 203.0.113.10", 1, "5.6.7.8"),
+    ("Cloudflare vor Traefik, gefälscht", "172.18.0.2", "6.6.6.6, 5.6.7.8, 203.0.113.10", 1, "5.6.7.8"),
+])
+def test_besucheradresse_hinter_mod_remoteip(wp_cli, fall, verbindung, kette, proxys, besucher):
+    remote, rest = _mod_remoteip(verbindung, kette)
+    assert wp_cli(f"echo tamil_site_einsendung_client_ip( {proxys}, '{remote}', '{rest}' );") == besucher, fall
+
+
+def test_proxy_anzahl_eins_hinter_traefik_waere_faelschbar(wp_cli):
+    """Darum Standard 0: Hinter Traefik allein nähme 1 den gefälschten Rest der Kopfzeile."""
+    remote, rest = _mod_remoteip("172.18.0.2", "6.6.6.6, 5.6.7.8")
+    assert (remote, rest) == ("5.6.7.8", "6.6.6.6")
+    assert wp_cli(f"echo tamil_site_einsendung_client_ip( 1, '{remote}', '{rest}' );") == "6.6.6.6"
+
+
+def test_ungueltiges_datum_bleibt_bei_erneuter_anzeige_roh(wp, wp_cli, seite):
+    r = absenden(wp, wp_cli, seite, "event", {**EVENT, "beginn": "2027-02-30T18:00", "ende": "2027-03-01T20:00"})
+    block = _formular(r.text, "event")
+    assert "Bitte ein gültiges Datum mit Uhrzeit angeben." in block
+    assert re.search(r'id="tf-event-beginn"[^>]*value="2027-02-30T18:00"', block)
+    assert re.search(r'id="tf-event-ende"[^>]*value="2027-03-01T20:00"', block)  # gültig: unverändert in Ortszeit
+    assert "2027-03-02T18:00" not in block
+
+
+def test_standardfassung_wird_beim_ersten_gebrauch_gespeichert(wp, wp_cli, seite, einwilligung_sichern):
+    wp_cli("delete_option( 'tamil_site_einsendungen' ); delete_option( 'tamil_site_einsendungen_fassungen' );")
+    assert wp_cli("echo wp_json_encode( get_option( 'tamil_site_einsendungen_fassungen', null ) );") == "null"
+    vorgang = _vorgang(absenden(wp, wp_cli, seite, "kontakt", {"nachricht": "Erste Einsendung"}))
+    archiv = _json(wp_cli, "echo wp_json_encode( get_option( 'tamil_site_einsendungen_fassungen' ) );")
+    eintrag = archiv["2026-11-vorlaeufig"]
+    assert eintrag["seit"] and eintrag["text"].startswith("Vorläufige Fassung.")
+    assert eintrag["sha256"] == hashlib.sha256(eintrag["text"].encode()).hexdigest()
+    assert _rest(wp, "GET", f"/einsendung/{vorgang}").json()["einwilligung_fassung"] == "2026-11-vorlaeufig"
+    # die Standardfassung lässt sich nicht an einen anderen Text binden
+    assert wp_cli("var_export( tamil_site_einsendung_fassung_archivieren( '2026-11-vorlaeufig', 'Anderer Text' ) );") == "false"
+
+
+@pytest.mark.parametrize("pfad,methode", [
+    ("/einsendungen", "GET"), ("/einsendung/{v}", "GET"), ("/einsendung/{v}/bild", "GET"), ("/einsendung/{v}/status", "POST"),
+])
+def test_lesefehler_der_datenbank_ist_500_nicht_404(wp_cli, seite, pfad, methode):
+    code = r"""
+    $v = tamil_site_einsendung_speichern( array( 'art' => 'kontakt', 'name' => 'Test', 'email' => 't@example.test', 'felder' => array(), 'einwilligung_fassung' => 'test', 'ip_hash' => 'x' ) );
+    wp_set_current_user( get_user_by( 'login', 'ki-agent' )->ID );
+    add_filter( 'query', function ( $q ) { return ( 0 === strpos( $q, 'SELECT' ) && false !== strpos( $q, 'tamil_einsendungen ' ) ) ? 'SELECT * FROM gibt_es_nicht' : $q; } );
+    global $wpdb; $wpdb->suppress_errors( true );
+    $anfrage = new WP_REST_Request( '__METHODE__', '/tamil-radar/v1' . str_replace( '{v}', $v, '__PFAD__' ) );
+    $anfrage->set_param( 'status', 'erledigt' );
+    $antwort = rest_do_request( $anfrage );
+    remove_all_filters( 'query' );
+    echo wp_json_encode( array( $antwort->get_status(), $antwort->get_data()['code'] ?? '' ) );
+    """.replace("__METHODE__", methode).replace("__PFAD__", pfad)
+    assert _json(wp_cli, code) == [500, "tamil_einsendung_db"]
+
+
+def test_admin_nennt_hoechstfrist(wp, wp_sitzung):
+    seite = wp_sitzung.get(f"{wp.url}/wp-admin/tools.php?page=tamil-einsendungen", timeout=30).text
+    assert "nie abgeschlossene Einsendungen 90 Tage nach Eingang" in seite

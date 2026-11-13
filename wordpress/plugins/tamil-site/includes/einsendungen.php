@@ -288,7 +288,19 @@ function tamil_site_einsendung_drossel_bis( string $ip_hash, int $bis ): int {
 }
 
 /**
- * Rohzeile zu einer Vorgangsnummer.
+ * Fehler der letzten Datenbankabfrage als WP_Error (500), sonst null. wpdb setzt last_error bei jeder Abfrage neu.
+ */
+function tamil_site_einsendung_db_fehler(): ?WP_Error {
+	global $wpdb;
+	if ( '' === (string) $wpdb->last_error ) {
+		return null;
+	}
+	return new WP_Error( 'tamil_einsendung_db', __( 'Die Einsendungen konnten nicht gelesen werden.', 'tamil-site' ), array( 'status' => 500 ) );
+}
+
+/**
+ * Rohzeile zu einer Vorgangsnummer. null heißt „gibt es nicht“ nur, wenn tamil_site_einsendung_db_fehler() danach
+ * null liefert.
  *
  * @return array<string,mixed>|null
  */
@@ -336,14 +348,18 @@ function tamil_site_einsendung_ausgabe( array $z ): array {
  *
  * @param int $nach   Nur Einsendungen mit größerer id.
  * @param int $anzahl Höchstens so viele (1–100).
- * @return array{einsendungen:array<int,array<string,mixed>>,weiter:int,mehr:bool}
+ * @return array{einsendungen:array<int,array<string,mixed>>,weiter:int,mehr:bool}|WP_Error Datenbankfehler: 500.
  */
-function tamil_site_einsendung_liste( int $nach, int $anzahl ): array {
+function tamil_site_einsendung_liste( int $nach, int $anzahl ) {
 	global $wpdb;
 	$t      = tamil_site_einsendung_tabelle();
 	$anzahl = max( 1, min( 100, $anzahl ) );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- eigene Tabelle
 	$zeilen = (array) $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$t} WHERE id > %d ORDER BY id ASC LIMIT %d", max( 0, $nach ), $anzahl + 1 ), ARRAY_A );
+	$fehler = tamil_site_einsendung_db_fehler();
+	if ( $fehler ) {
+		return $fehler;
+	}
 	$mehr   = count( $zeilen ) > $anzahl;
 	$zeilen = array_slice( $zeilen, 0, $anzahl );
 	$aus    = array_map( 'tamil_site_einsendung_ausgabe', $zeilen );
@@ -398,7 +414,7 @@ function tamil_site_einsendung_status_setzen( string $vorgang, string $neu ) {
 	}
 	$zeile = tamil_site_einsendung_zeile( $vorgang );
 	if ( ! $zeile ) {
-		return new WP_Error( 'tamil_einsendung_fehlt', __( 'Einsendung nicht gefunden.', 'tamil-site' ), array( 'status' => 404 ) );
+		return tamil_site_einsendung_db_fehler() ?? new WP_Error( 'tamil_einsendung_fehlt', __( 'Einsendung nicht gefunden.', 'tamil-site' ), array( 'status' => 404 ) );
 	}
 	if ( (int) $geaendert > 0 ) {
 		tamil_site_einsendung_protokoll( 'status', $vorgang, 'nach=' . $neu );
@@ -421,11 +437,14 @@ function tamil_site_einsendung_status_setzen( string $vorgang, string $neu ) {
 /**
  * Bild einer Einsendung (Inhalt und Angaben) oder null.
  *
- * @return array{typ:string,groesse:int,sha256:string,daten:string}|null
+ * @return array{typ:string,groesse:int,sha256:string,daten:string}|WP_Error|null Datenbankfehler: WP_Error (500).
  */
-function tamil_site_einsendung_bild( string $vorgang ): ?array {
+function tamil_site_einsendung_bild( string $vorgang ) {
 	$zeile = tamil_site_einsendung_zeile( $vorgang );
-	if ( ! $zeile || '' === (string) $zeile['bild_datei'] ) {
+	if ( ! $zeile ) {
+		return tamil_site_einsendung_db_fehler();
+	}
+	if ( '' === (string) $zeile['bild_datei'] ) {
 		return null;
 	}
 	$pfad = tamil_site_einsendung_bildordner() . basename( (string) $zeile['bild_datei'] );

@@ -152,10 +152,12 @@ function tamil_site_einsendung_einwilligung( $gespeichert = null ): array {
 }
 
 /**
- * Archiv: Fassung → Text und Zeitpunkt der Ablage. Belegt, welchem Text eine gespeicherte Fassung entspricht.
- * Einträge werden nie geändert oder gelöscht (auch nicht von der Löschfrist; sie enthalten keine Personendaten).
+ * Archiv: Fassung → Text, SHA-256 des Textes und Zeitpunkt der Ablage. Belegt, welchem Text eine gespeicherte Fassung
+ * entspricht. Einträge werden nie geändert oder gelöscht (auch nicht von der Löschfrist; sie enthalten keine
+ * Personendaten). Die Standardfassung erscheint hier auch, bevor sie gespeichert ist (dann mit leerem „seit“); beim
+ * ersten Gebrauch legt tamil_site_einsendung_fassung_archivieren() sie wirklich ab.
  *
- * @return array<string,array{text:string,seit:string}>
+ * @return array<string,array{text:string,sha256?:string,seit:string}>
  */
 function tamil_site_einsendung_fassungen(): array {
 	$archiv   = get_option( 'tamil_site_einsendungen_fassungen', array() );
@@ -174,17 +176,23 @@ function tamil_site_einsendung_fassungen(): array {
  * Legt eine Fassung im Archiv ab. Gibt false zurück, wenn die Fassung schon mit einem anderen Text belegt ist.
  */
 function tamil_site_einsendung_fassung_archivieren( string $fassung, string $text ): bool {
-	$archiv = tamil_site_einsendung_fassungen();
-	if ( isset( $archiv[ $fassung ] ) ) {
-		return $archiv[ $fassung ]['text'] === $text;
+	$gespeichert = get_option( 'tamil_site_einsendungen_fassungen', array() );
+	$gespeichert = is_array( $gespeichert ) ? $gespeichert : array();
+	if ( isset( $gespeichert[ $fassung ] ) ) {
+		return (string) ( $gespeichert[ $fassung ]['text'] ?? '' ) === $text;
 	}
-	$gespeichert             = get_option( 'tamil_site_einsendungen_fassungen', array() );
-	$gespeichert             = is_array( $gespeichert ) ? $gespeichert : array();
+	$standard = tamil_site_einsendung_einwilligung_standard();
+	if ( $fassung === $standard['fassung'] && $text !== $standard['text'] ) {
+		return false; // die Standardfassung gehört zum Standardtext
+	}
 	$gespeichert[ $fassung ] = array(
-		'text' => $text,
-		'seit' => gmdate( 'c' ),
+		'text'   => $text,
+		'sha256' => hash( 'sha256', $text ),
+		'seit'   => gmdate( 'c' ),
 	);
-	return update_option( 'tamil_site_einsendungen_fassungen', $gespeichert, false );
+	update_option( 'tamil_site_einsendungen_fassungen', $gespeichert, false );
+	$neu = get_option( 'tamil_site_einsendungen_fassungen', array() );
+	return is_array( $neu ) && isset( $neu[ $fassung ] ) && $neu[ $fassung ]['text'] === $text;
 }
 
 /**
@@ -274,14 +282,15 @@ function tamil_site_einsendung_zeit_pruefen( string $wert, ?int $jetzt = null ):
 }
 
 /**
- * Adresse des Besuchers. Hinter Proxys (Traefik in Coolify) zählt der Eintrag aus X-Forwarded-For, den der äußerste
- * vertrauenswürdige Proxy angehängt hat: TAMIL_PROXY_ANZAHL in wp-config.php = Zahl der Proxys vor WordPress
- * (wordpress/docker/start.sh schreibt sie aus der gleichnamigen Variable). Einträge davor kann der Besucher fälschen
- * und werden nie genommen. 0 (Standard): REMOTE_ADDR.
+ * Adresse des Besuchers. Im Container löst Apache (mod_remoteip, wordpress/Dockerfile) X-Forwarded-For schon auf:
+ * Traefik und andere Proxys in privaten Netzen gelten als vertraut, REMOTE_ADDR ist danach der Besucher, und im
+ * X-Forwarded-For bleiben nur die nicht verbrauchten (fälschbaren) Einträge. Darum Standard 0 = REMOTE_ADDR.
+ * TAMIL_PROXY_ANZAHL > 0 nur für zusätzliche öffentliche Proxys vor Traefik (z. B. Cloudflare): Dann ist REMOTE_ADDR
+ * deren Adresse, und der Besucher steht als so vielter Eintrag von rechts im restlichen X-Forwarded-For.
  *
- * @param int|null    $proxys Zahl der Proxys (Standard: TAMIL_PROXY_ANZAHL oder 0).
+ * @param int|null    $proxys Zusätzliche Proxys vor Traefik (Standard: TAMIL_PROXY_ANZAHL oder 0).
  * @param string|null $remote REMOTE_ADDR (Standard: aus dem Aufruf).
- * @param string|null $kette  X-Forwarded-For (Standard: aus dem Aufruf).
+ * @param string|null $kette  X-Forwarded-For nach mod_remoteip (Standard: aus dem Aufruf).
  */
 function tamil_site_einsendung_client_ip( ?int $proxys = null, ?string $remote = null, ?string $kette = null ): string {
 	$proxys = $proxys ?? ( defined( 'TAMIL_PROXY_ANZAHL' ) ? (int) TAMIL_PROXY_ANZAHL : 0 );
@@ -843,8 +852,12 @@ function tamil_site_einsendung_feld( string $id, string $key, array $feld, strin
 		$attr .= ' autocomplete="' . esc_attr( $auto[ $key ] ) . '"';
 	}
 	if ( 'datetime' === $feld['typ'] && '' !== $wert ) {
-		$zeit = date_create_immutable( $wert );
-		$wert = $zeit ? $zeit->setTimezone( wp_timezone() )->format( 'Y-m-d\TH:i' ) : '';
+		// Nur gültige ISO-Werte (eigene Speicherform nach der Prüfung) umformatieren; eine abgewiesene Eingabe wie
+		// 2027-02-30T18:00 bleibt roh stehen, statt still zum 2. März zu werden.
+		$zeit = DateTimeImmutable::createFromFormat( DATE_ATOM, $wert );
+		if ( $zeit && $zeit->format( DATE_ATOM ) === $wert ) {
+			$wert = $zeit->setTimezone( wp_timezone() )->format( 'Y-m-d\TH:i' );
+		}
 	}
 	?>
 	<p class="tf-feld">
