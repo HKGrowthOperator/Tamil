@@ -54,6 +54,7 @@ class FakeWordPressEingang:
         self.aufrufe: list[tuple[str, str]] = []
         self.abbruch_nach_senden: set[str] = set()  # Vorgang: Status wird gesetzt, dann bricht die Verbindung ab
         self.netzfehler = False  # jeder Aufruf scheitert, bevor er WordPress erreicht
+        self.beitraege: list[dict] = []  # POST /beitrag (Veröffentlichen über das Plugin), für den Weg bis zum Kalender
 
     # ---- Website-Seite (was das Formular anlegt) ---------------------------------------------------------------
     def einreichen(self, art: str, felder: dict, *, name: str = "Erika Beispiel", email: str = "erika@example.test",
@@ -84,9 +85,14 @@ class FakeWordPressEingang:
         self.aufrufe.append((method, route))
         if self.netzfehler:
             raise requests.ConnectionError("Verbindung abgelehnt (Fake)")
-        if not self.funktion_an:
-            return _fehler("tamil_funktion_aus", 503)
         teile = route.split("/")
+        if method == "POST" and route == "beitrag":
+            self.beitraege.append(dict(json or {}))
+            n = 900 + len(self.beitraege)
+            return Antwort(200, {"id": n, "status": (json or {}).get("status", "publish"),
+                                 "link": f"https://www.tamil.test/?p={n}", "edit_link": f"https://www.tamil.test/wp-admin/{n}"})
+        if not self.funktion_an:  # Funktionsschalter „einreichungen“ betrifft nur die Einsendungen-Routen
+            return _fehler("tamil_funktion_aus", 503)
         if method == "GET" and route == "einsendungen":
             nach, anzahl = int((params or {}).get("nach", 0)), max(1, min(100, int((params or {}).get("anzahl", 50))))
             neu = [z for z in self.zeilen if z["id"] > nach]
