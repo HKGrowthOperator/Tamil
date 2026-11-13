@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import sqlite3
 import threading
+from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Iterable, Iterator
@@ -145,7 +146,8 @@ class Store:
         self.db.execute("PRAGMA journal_mode=WAL")
         self.db.execute("PRAGMA busy_timeout=5000")
         self.db.execute("PRAGMA synchronous=NORMAL")
-        self.lock = threading.Lock()  # Schreibzugriffe aus mehreren Threads eines Prozesses
+        self.lock = threading.RLock()  # Schreibzugriffe aus mehreren Threads eines Prozesses (wiedereintrittsfähig)
+        self._transaktion = False
         self.migrate()
 
     def migrate(self) -> None:
@@ -173,8 +175,30 @@ class Store:
     def _write(self, sql: str, params: tuple = ()) -> sqlite3.Cursor:
         with self.lock:
             cur = self.db.execute(sql, params)
-            self.db.commit()
+            if not self._transaktion:
+                self.db.commit()
             return cur
+
+    @contextmanager
+    def transaktion(self) -> Iterator[None]:
+        """Mehrere Schreibschritte als eine Transaktion: alles oder nichts (Rollback bei jeder Ausnahme). Andere
+        Threads warten am Lock; Schreibhelfer (_write) committen innerhalb nicht einzeln."""
+        with self.lock:
+            if self._transaktion:
+                raise RuntimeError("Transaktion läuft schon")
+            if self.db.in_transaction:
+                self.db.commit()
+            self.db.execute("BEGIN IMMEDIATE")
+            self._transaktion = True
+            try:
+                yield
+            except BaseException:
+                self.db.rollback()
+                raise
+            else:
+                self.db.commit()
+            finally:
+                self._transaktion = False
 
     # ---- gesehene Meldungen ----------------------------------------------
     def seen_uids(self) -> set[str]:

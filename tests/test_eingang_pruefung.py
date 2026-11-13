@@ -22,7 +22,12 @@ GEGENBEISPIELE = ["Eintritt 18 Euro", "Kinder 1 Euro", "Freitag, 16. Juni", "fü
                   "Das Fest findet heute statt", "Wir treffen uns morgen abend", "am dritten advent",
                   "Das zehnte Fest.", "Wir feiern Pongal in köln.", "Es singt குமார் ராஜன்.",
                   "Infos auf testverein-essen.nl", "Treffpunkt ist gelsenkirchen", "es spricht kumar rajan",
-                  "am elf uhr", "erste Ausgabe"]
+                  "am elf uhr", "erste Ausgabe",
+                  # Folgerunde: Zahlen und Wertwörter nur in der Wortfolge der Einsendung
+                  "Kinder 10 Euro.", "Kinder bis 10 Euro frei.", "Freitag, 16. Januar 2027",
+                  "Beginn 22:00 Uhr, Ende 18:30 Uhr", "Essen frei.",
+                  # Wörter ohne Groß- und Kleinschreibung (Tamil) ohne Längengrenze, kurze lateinische Wörter
+                  "Tanz ரா.", "mit tom und kai"]
 
 
 def _einsendung(**felder):
@@ -48,7 +53,7 @@ def test_gegenbeispiele_gelten_als_erfunden(text):
 def test_angaben_aus_der_einsendung_sind_erlaubt():
     erlaubt = eingang.erlaubter_text(_einsendung())
     texte = ["Pongal-Fest Testverein in Essen am Samstag, 16. Januar 2027, 18:30 Uhr.",
-             "Testverein e. V.: 10 Euro, Kinder frei.", "TANZ und musik – alle familien sind willkommen.",
+             "10 Euro, Kinder frei.", "TANZ und musik – alle familien sind willkommen.",
              "Tanz, Musik und Essen im Gemeindesaal, Beispielstraße 1."]
     assert eingang.fremde_angaben(texte, erlaubt) == []
     assert eingang.fremde_angaben(["9" * 5000], erlaubt)  # sehr lange Ziffernfolge: als Text, ohne int()
@@ -294,8 +299,8 @@ def test_cockpit_formular_aus_feldern_vorschlag_nur_per_knopf(settings, store, w
 
 def test_vorschlag_wird_markiert_statt_behauptet(settings, store, wp):
     erlaubt = eingang.erlaubter_text(_einsendung())
-    html = str(eingang.markieren("Tanz in köln <b>", erlaubt))
-    assert '<mark title="nicht in der Einsendung">köln</mark>' in html and "&lt;b&gt;" in html
+    html = str(eingang.markieren("Tanz in köln <und>", erlaubt))
+    assert '<mark title="nicht in der Einsendung">köln</mark>' in html and "&lt;und&gt;" in html
     assert "<mark" not in str(eingang.markieren("Tanz, Musik und Essen.", erlaubt))
     from pathlib import Path
 
@@ -365,3 +370,72 @@ def test_maskierung_ort_bleibt_handles_und_at_punkt_werden_maskiert():
     b = felder["beschreibung"]
     assert "[Telefon]" in b and "0201" not in b and "1234567" in b  # 7 Ziffern ohne Vorwahl bleiben
     assert "@testverein_essen" not in b and "testverein punkt de" not in b
+
+
+# ---- Folgerunde ----------------------------------------------------------------------------------------------------
+
+def test_zahlen_in_der_wortfolge_der_einsendung_sind_erlaubt():
+    erlaubt = eingang.erlaubter_text(_einsendung())
+    assert eingang.fremde_angaben(["Samstag, 16. Januar 2027, 18:30 Uhr bis Samstag, 16. Januar 2027, 22:00 Uhr.",
+                                   "10 Euro, Kinder frei.", "Gemeindesaal, Beispielstraße 1."], erlaubt) == []
+    # Tamil in der Einsendung: dann auch im Vorschlag erlaubt, egal wie kurz
+    tamil = eingang.erlaubter_text(_einsendung(beschreibung="Lieder von ரா und Tanz."))
+    assert eingang.fremde_angaben(["Lieder von ரா und Tanz."], tamil) == []
+
+
+def test_template_ohne_erklaertext_zur_markierung():
+    from pathlib import Path
+
+    vorlage = (Path(eingang.__file__).parent / "web/templates/einsendung.html").read_text(encoding="utf-8")
+    assert "sind markiert" not in vorlage
+
+
+def test_uebernehmen_ist_eine_transaktion(settings, store, wp, monkeypatch):
+    """Scheitert ein Schritt, bleibt nichts stehen: kein Entwurf, kein Datensatz, keine Datei, Einsendung offen."""
+    v = wp.einreichen("event", EVENT, bild=bild())
+    abholen_und_vorbereiten(store, wp)
+    echt = store.insert_draft
+    zaehler = {"n": 0}
+
+    def zaehlen(row):
+        zaehler["n"] += 1
+        return echt(row)
+    monkeypatch.setattr(store, "insert_draft", zaehlen)
+
+    def kaputt(*a, **kw):
+        raise RuntimeError("Lizenz nicht gespeichert")
+    monkeypatch.setattr(lizenz, "anlegen", kaputt)
+    with pytest.raises(RuntimeError):
+        eingang.uebernehmen(store, settings, v, von="priya", client=client(wp), felder={})
+    assert zaehler["n"] == 1 and store.db.execute("SELECT COUNT(*) FROM drafts").fetchone()[0] == 0
+    assert not store.db.in_transaction
+    assert eingang.holen(store, v)["status"] == "vorbereitet"
+    assert not [p for p in settings.bilder_dir.glob("*")] if settings.bilder_dir.exists() else True
+    monkeypatch.undo()
+    d = store.get_draft(eingang.uebernehmen(store, settings, v, von="priya", client=client(wp), felder={}))
+    assert (settings.bilder_dir / d["bild_datei"]).exists() and lizenz.sperre(store, d, settings) == ""
+
+
+def test_store_transaktion_rollt_zurueck(store):
+    with pytest.raises(RuntimeError):
+        with store.transaktion():
+            store._write("INSERT INTO log (ts, event, data) VALUES ('x', 'probe', '{}')")
+            raise RuntimeError("abbrechen")
+    assert store.db.execute("SELECT COUNT(*) FROM log WHERE event = 'probe'").fetchone()[0] == 0
+    with store.transaktion():
+        store._write("INSERT INTO log (ts, event, data) VALUES ('x', 'probe', '{}')")
+    assert store.db.execute("SELECT COUNT(*) FROM log WHERE event = 'probe'").fetchone()[0] == 1
+
+
+def test_migration_von_version_9_nach_12(tmp_path, monkeypatch):
+    from news_radar.workflow import schema
+
+    pfad = tmp_path / "v9.sqlite"
+    monkeypatch.setattr(schema, "MIGRATIONS", {k: v for k, v in schema.MIGRATIONS.items() if k <= 9})
+    with Store(pfad) as st:
+        assert st.db.execute("PRAGMA user_version").fetchone()[0] == 9
+    monkeypatch.undo()
+    with Store(pfad) as st:
+        assert st.db.execute("PRAGMA user_version").fetchone()[0] == schema.LATEST >= 12
+        tabellen = {r[0] for r in st.db.execute("SELECT name FROM sqlite_master WHERE type = 'table'")}
+        assert {"einsendungen", "eingang_stand", "social_beitraege"} <= tabellen

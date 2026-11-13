@@ -71,7 +71,7 @@
 {% if modell %}
 <section class="karte">
   <h2>Vorschlag des Agenten <small class="leise">nur auf Klick, geprüft gegen die Einsendung</small></h2>
-  <p class="leise">Der Agent hat den Text umformuliert. Wörter, die nicht in der Einsendung stehen, sind markiert. Der Radar prüft das nur nach Regeln: Bitte jeden Satz mit den Angaben oben vergleichen.</p>
+  <p class="leise">Der Agent hat den Text umformuliert. Der Radar prüft ihn nur nach Regeln; ein Vorschlag mit Angaben, die nicht in der Einsendung stehen, wird verworfen. Bitte jeden Satz mit den Angaben oben vergleichen.</p>
   <p><b>{{ markieren(modell.titel, erlaubt) }}</b></p>
   {% if modell.teaser %}<p>{{ markieren(modell.teaser, erlaubt) }}</p>{% endif %}
   {% for a in modell.absaetze %}<p>{{ markieren(a, erlaubt) }}</p>{% endfor %}
