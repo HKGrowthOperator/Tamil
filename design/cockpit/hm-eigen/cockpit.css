@@ -3,6 +3,7 @@
  * nav: Kopfleiste mit Logo, Tagesziffer und Radar-Stand; Seitenleiste mit zwölf Zielen, unter 60rem ein Menü · signature: die Tagesliste, jede Aufgabe an ihrem Tag, links die Ziffer · states: leer, Fehler, voll (Server rendert, kein Ladezustand); Lizenz fehlt; Karenz; pausiert
  * axes: jasmine-white/grotesk-heavy/kumkum-red · posture: quiet · contrast: pass · v2.0.0 */
 /* Hallmark · pre-emit critique: P3 H4 E4 S4 R5 V3 · weakest: P, ein Werkzeug soll keine These haben; die eine Behauptung ist „jede Aufgabe hat ihren Tag“, deshalb führt jede Liste mit der Tagesziffer statt mit Kacheln */
+/* Hallmark · waive 49b · Titel von Einsendungen und Verzeichnis-Einträgen in den Tabellen, höchstens zwei Zeilen bei 320 und 1024 · der Titel ist der Name des Vorgangs, den der Einsender gewählt hat, und wird im Cockpit nicht gekürzt */
 @import url("./tokens.css");
 @import url("./base.css");
 

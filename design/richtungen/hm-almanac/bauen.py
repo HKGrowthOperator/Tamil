@@ -462,12 +462,12 @@ def verzeichnis_eintrag():
       <p class="sheet__note">Die Angaben trägt der Inhaber ein.</p>
     </figure>
     <div class="profil__text">
-      <h2>Über das Restaurant</h2>
-      <p>Hinter dem Ceylon Palace stehen Suthakar Thiruchelvam und sein Sohn Anoj. Die Familie blickt auf rund 30 Jahre in der Bremer Gastronomie zurück; in der Küche hat der Sohn das Sagen. Auf der Karte stehen Currys, Biryani, Dosa und Idly, gebratener Reis, Devil-Gerichte und vor allem Parotta.</p>
       <figure class="pic">
         <div class="photo" data-slot="profil" data-alt="Ein Foto aus dem Ceylon Palace">{img(b, pos="50% 50%")}</div>
         <figcaption>Symbolbild: Chicken Kottu, ein Gericht aus Sri Lanka, nicht aus dem Ceylon Palace.</figcaption>
       </figure>
+      <h2>Über das Restaurant</h2>
+      <p>Hinter dem Ceylon Palace stehen Suthakar Thiruchelvam und sein Sohn Anoj. Die Familie blickt auf rund 30 Jahre in der Bremer Gastronomie zurück; in der Küche hat der Sohn das Sagen. Auf der Karte stehen Currys, Biryani, Dosa und Idly, gebratener Reis, Devil-Gerichte und vor allem Parotta.</p>
       <h2 class="profil__h">In Berichten auf tamil.de</h2>
       <ol class="weiter__liste">
         <li><time class="num" datetime="{d.isoformat()}">{kurz(d)}</time><a href="artikel-37.html">{e(b["titel"])}</a></li>
@@ -731,11 +731,11 @@ def werben():
       <p class="lead">Ohne Konto, bezahlt über Stripe; jede Anzeige prüft KBS vor dem Start.</p>
     </div>
     <ol class="schritte">
-      <li><h3>Platz und Laufzeit wählen</h3><p>Sieben, 14 oder 30 Tage.</p></li>
-      <li><h3>Startdatum wählen</h3><p>Belegte Tage sind gesperrt.</p></li>
-      <li><h3>Angaben zur Firma</h3><p>Für die Rechnung.</p></li>
-      <li><h3>Werbemittel hochladen</h3><p>Ein Bild je Größe, JPEG oder PNG.</p></li>
-      <li><h3>Prüfen und bezahlen</h3><p>Bei Stripe.</p></li>
+      <li><h3>Platz und Laufzeit wählen</h3></li>
+      <li><h3>Startdatum wählen</h3></li>
+      <li><h3>Angaben zur Firma</h3></li>
+      <li><h3>Werbemittel hochladen</h3></li>
+      <li><h3>Prüfen und bezahlen</h3></li>
     </ol>
     <div class="danach">
       <h3>Nach der Zahlung</h3>

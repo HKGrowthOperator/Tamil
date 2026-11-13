@@ -40,6 +40,6 @@
 @media (max-width: 60rem) { .kopf__meta { border-top-width: var(--rule-hair); } }
 @media (max-width: 40rem) { .weiter__liste a { font-size: var(--text-md); } .weiter__liste li { grid-template-columns: 4rem minmax(0, 1fr); } }
 .kopf__meta .share a { display: inline-flex; align-items: center; min-height: 44px; }
-.bild--hoch { grid-column: 1 / span 8; }
+.bild--hoch { grid-column: 1 / span 6; }
 .bild--hoch .photo { aspect-ratio: 4 / 3; }
 .rand .tafel td a { text-decoration-thickness: 1px; }
