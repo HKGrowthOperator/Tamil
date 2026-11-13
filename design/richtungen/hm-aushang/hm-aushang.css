@@ -1,5 +1,5 @@
 /* Hallmark · shape: Aushang (a notice board: ruled, dated notices, the lead story beside its picture) · genre: editorial · theme: Ink (by request) · job: visit · draw: c53a1a
- * hero: stage · nav: banner over a bar · footer: colophon block · imagery: photographs, the user's own (20 Rückblick pictures, Commons, credited at each picture), muted · signature: the notice slip: date, how long it still hangs, title, place, and a perforated tear-off strip (WhatsApp, calendar, map); the next one in logo red · ink: paper
+ * hero: index · nav: edge-aligned bar, the wordmark and the rubric links · footer: colophon block · imagery: photographs, the user's own (20 Rückblick pictures, Commons, credited at each picture), muted · signature: the notice slip: date, how long it still hangs, title, place, and a perforated tear-off strip (WhatsApp, calendar, map); the next one in logo red · ink: paper
  * axes: light/grotesk-sans/chromatic-red · posture: restrained · contrast: pass · fold: pass · v2.0.0 */
 /* Hallmark · pre-emit critique: P4 H4 E4 S4 R5 V4 · weakest: S, a ruled news list fits any paper; the slips with their tear-off strip are the community board and appear only for real coming dates */
 /* Hallmark · waive 22 · ink and greys at zero chroma · a notice board is printed in plain black, the logo red is the only hue */
@@ -9,7 +9,7 @@
 /* Hallmark · waive 79 · page heads of the sub-pages are banners with the list right under them · the gap on the second community page is the banner's own air, never filled with copy */
 /* Hallmark · waive 77 · the Impressum and the list of mentions on a directory profile are short reference blocks · they carry legal and source facts, not a display section */
 /* Hallmark · waive 71 · board rows set each title at the top of its own ruled row beside its date · the rule above a notice is its edge, the space below belongs to the place line and the share link */
-/* Hallmark · swap: draw dealt Split Studio, built as Aushang rows (the material is a board of dated notices); the banner does not retract, the page stays still */
+/* Hallmark · swap: draw dealt Split Studio and a Stage hero, built as Aushang (the material is a board of dated notices): the lead story beside the board, no banner, the page stays still */
 @import url("./tokens.css");
 @import url("./base.css");
 
