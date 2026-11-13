@@ -20,7 +20,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Datenversion dieses Plugins. Erhöhen, sobald ein Baustein Seiten, Rechte, Tabellen oder Schritte neu anmeldet.
  */
-define( 'TAMIL_SITE_DATENVERSION', 1 );
+define( 'TAMIL_SITE_DATENVERSION', 2 );
 
 /**
  * Sperre gegen gleichzeitige Läufe: so viele Sekunden gilt eine liegengebliebene Sperre noch.
@@ -272,3 +272,6 @@ function tamil_site_rechte_nachruesten( string $rolle, array $rechte ): array {
 // Erste Anmeldungen (Datenversion 1): Rechtsseiten. Den Text liefert KBS; bis dahin bleiben sie Entwürfe.
 tamil_site_seite_anmelden( 'impressum', 'Impressum' );
 tamil_site_seite_anmelden( 'datenschutz', 'Datenschutz' );
+
+// Werbebuchung (F3): Tabellen und Seite „Werben“ (includes/werbung.php).
+tamil_site_upgrade_schritt( 2, 'werbung', static fn() => tamil_site_werbung_tabellen() );
