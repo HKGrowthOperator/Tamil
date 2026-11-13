@@ -279,7 +279,11 @@ Erreichen: neue bezahlte Jobs warten (`wartet_budget`), Freigabe und Übertragun
   `story_id` zum Ergänzen – seit 13.11.2026 für jede Story in `recherche_erforderlich` ohne Entwurf und ohne laufenden
   Job, egal ob Herkunft `nachtrag` oder `radar` (Storys vom Scan bekommen danach wieder einen Recherche-Job).
 - **Regeln:** Der Radar ruft jede Quelle selbst ab (HTML ≤ 3 MB; PDF ≤ 8 MB, ≤ 40 Seiten, eigener Prozess mit
-  Zeit- und Speichergrenze); Titel und Text nie aus dem Vorschlag. Dublettenprüfung und Anlegen in einer
+  Zeit- und Speichergrenze); Titel und Text nie aus dem Vorschlag. Kurze Felder (dt/dd, th/td, „Label: Wert“, z. B.
+  Filmstart, Regie, Besetzung auf Kinoseiten) kommen wörtlich als „Kurzangaben der Seite“ dazu; JSON-LD von Termin und
+  Film nur, wenn es zur Seite gehört (genau eines oder Name passt zu Titel bzw. kanonischer Adresse). `neu_abrufen`
+  ersetzt nur das Dokument genau dieser Adresse – bei einer Umleitung nichts („umgeleitet, nicht ersetzt“); der alte
+  Stand bleibt als Fassung `quelle_vorher`, die Claims der Story werden gelöscht. Dublettenprüfung und Anlegen in einer
   Schreibtransaktion. Ergebnis je Vorschlag: `angelegt`, `vorhanden`, `vielleicht_vorhanden`, `abgelehnt`,
   `nicht_bearbeitet`, `ergaenzt`.
 - **Veröffentlichung:** Beitrag mit dem Ereignisdatum (12:00) und dem Vermerk „Nachtrag der Redaktion …“ am Ende; nur
