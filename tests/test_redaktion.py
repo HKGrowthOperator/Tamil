@@ -8,7 +8,7 @@ from news_radar import sources
 from news_radar.config import load_settings
 from news_radar.store import Store
 from news_radar.workflow import jobs, orchestrator, repo
-from news_radar.workflow.fake import FakeAnthropic, faktencheck as fake_faktencheck
+from news_radar.workflow.fake import FakeAnthropic, faktencheck as fake_faktencheck, pruefung_block
 
 NOW = datetime.now(timezone.utc)
 ARTIKEL = ("Die tamilische Gemeinde in Hamm feiert am Samstag, 14. November, ihr Lichterfest im Sri-Kamadchi-Ampal-Tempel. "
@@ -48,8 +48,8 @@ def test_full_pipeline_creates_draft_with_evidence_versions_license_and_costs(se
     item = meldung("Tamilisches Lichterfest im Tempel Hamm am 14. November", "Tamilen feiern in Hamm",
                    url="https://www.ruhrnachrichten.de/hamm/lichterfest")
     stats, fake = lauf(settings, [item], texte={item.url: ARTIKEL})
-    assert stats["storys"] == 1 and stats["jobs"]["fertig"] == 7
-    assert fake.rollen() == ["recherche", "text", "faktencheck", "lektorat", "seo"]
+    assert stats["storys"] == 1 and stats["jobs"]["fertig"] == 8
+    assert fake.rollen() == ["recherche", "text", "faktencheck", "lektorat", "seo", "pruefer"]
     with Store(settings.db_path) as store:
         draft = store.list_drafts("neu")[0]
         sid = draft["story_id"]
@@ -61,9 +61,9 @@ def test_full_pipeline_creates_draft_with_evidence_versions_license_and_costs(se
         kosten = repo.kosten_story(store, sid)
     assert story["status"] == "fertig" and docs[0].art == "volltext" and docs[0].primaer
     assert claims and all(c.support == "bestaetigt" for c in claims if c.kern)
-    assert rollen == ["text", "faktencheck", "lektorat", "seo", "entwurf"]
+    assert rollen == ["text", "faktencheck", "lektorat", "seo", "pruefung", "entwurf"]
     assert asset["lizenz"] and asset["draft_id"] == draft["id"] and asset["herkunft"] == "karte"
-    assert kosten["usd"] > 0 and kosten["aufrufe"] == 5
+    assert kosten["usd"] > 0 and kosten["aufrufe"] == 6
     assert "Quelle:" in draft["inhalt_html"] and len(draft["seo_titel"]) <= 60
     # Prompt-Injection im Quelltext landet nur im Datenblock der Recherche
     assert "<dokumente>" in fake.requests[0]["user"]
@@ -95,7 +95,8 @@ def test_contradiction_in_core_claim_stops_before_writing(settings):
                        texte={"https://www.ruhrnachrichten.de/x": ARTIKEL})
     with Store(settings.db_path) as store:
         story = repo.stories(store)[0]
-    assert story["status"] == "recherche_erforderlich" and "Widerspruch" in story["notiz"]
+    # kein Endzustand „Recherche nötig“: Nachrecherche, danach verwirft die zweite KI mit Grund
+    assert story["status"] == "verworfen" and "Widerspruch" in story["notiz"] and "Zweite KI" in story["notiz"]
     assert "text" not in fake.rollen()
 
 
@@ -130,7 +131,7 @@ def test_factcheck_still_failing_after_revision_needs_research(settings):
     lauf(settings, [item], client=FakeAnthropic({"faktencheck": immer_falsch}),
          texte={"https://www.ruhrnachrichten.de/z": ARTIKEL})
     with Store(settings.db_path) as store:
-        assert repo.stories(store)[0]["status"] == "recherche_erforderlich" and store.list_drafts() == []
+        assert repo.stories(store)[0]["status"] == "verworfen" and store.list_drafts() == []
 
 
 def test_budget_stop_parks_jobs_and_keeps_approval_working(settings):
@@ -220,7 +221,8 @@ def test_without_api_key_scan_runs_and_agent_mode_v2_finishes_the_story(settings
         beitrag = text("<story>\n" + json.dumps({"titel": paket["titel"], "ort": "Hamm"}) + "\n</story>\n<claims>\n"
                        + json.dumps(claims) + "\n</claims>", "", {})
         (tmp_path / "e.json").write_text(json.dumps({"ergebnisse": [
-            {"story_id": paket["story_id"], "claims": claims, "widersprueche": [], "beitrag": beitrag}]}))
+            {"story_id": paket["story_id"], "claims": claims, "widersprueche": [], "beitrag": beitrag,
+             "pruefung": pruefung_block(beitrag, claims)}]}))
         stats = import_v2(store, settings, tmp_path / "e.json", von="cloud-sitzung",
                           ctx=Kontext(settings, store, fetch_text=lambda u: ""))
         draft = store.list_drafts("neu")[0]
@@ -243,7 +245,7 @@ def test_worker_threads_process_queue_in_parallel(settings):
                                 kontext_kw={"fetch_text": lambda u: ARTIKEL, "suche": lambda q: []})
     with Store(settings.db_path) as store:
         assert len(store.list_drafts("neu")) == 2 and jobs.zaehlen(store)["offen"] == 0
-    assert stats["fertig"] == 14
+    assert stats["fertig"] == 16
 
 
 def test_redaktion_adds_source_and_dossier(settings):
@@ -251,9 +253,14 @@ def test_redaktion_adds_source_and_dossier(settings):
                    source="Google News DACH · WDR")
     lauf(settings, [item])
     with Store(settings.db_path) as store:
-        sid = repo.stories(store, "recherche_erforderlich")[0]["id"]
+        sid = repo.stories(store, "verworfen")[0]["id"]
+        repo.story_setzen(store, sid, status="recherche_erforderlich")  # mitten in der Nachrecherche
         orchestrator.quelle_ergaenzen(store, sid, "https://www1.wdr.de/preis", von="luis")
-        ctx = orchestrator.kontext(settings, store, client=FakeAnthropic(), fetch_text=lambda u: ARTIKEL, suche=lambda q: [])
+        preis = ("Der tamilische Verein in Köln gewinnt den Preis der Stadt Köln für Integration. "
+                 "Die Auszeichnung ist mit 5000 Euro dotiert und wurde im Rathaus übergeben. "
+                 "Der Verein betreibt seit 1998 eine Samstagsschule mit rund 200 Kindern. "
+                 "Die Vorsitzende kündigte an, das Preisgeld in neue Lernmaterialien zu stecken.")
+        ctx = orchestrator.kontext(settings, store, client=FakeAnthropic(), fetch_text=lambda u: preis, suche=lambda q: [])
         orchestrator.abarbeiten(ctx)
         draft = store.list_drafts("neu")[0]
         dossier = orchestrator.dossier_anlegen(store, draft["id"], von="luis")
@@ -366,7 +373,7 @@ def test_run_v2_records_run_and_processes_jobs_until_deadline(settings):
     with Store(settings.db_path) as store:
         run = store.recent_runs(1)[0]
         assert len(store.list_drafts("neu")) == 1
-    assert stats["storys"] == 1 and stats["jobs"]["fertig"] == 7
+    assert stats["storys"] == 1 and stats["jobs"]["fertig"] == 8
     assert run["modus"].startswith("v2") and run["finished_at"] and run["entwuerfe"] == 1
     assert "termin_veraltet" not in run["notiz"] and "ohne_bezug" not in run["notiz"]  # nur, wenn größer 0
 
@@ -489,7 +496,8 @@ def test_agent_import_only_touches_exported_stories_and_survives_bad_input(setti
         datei = tmp_path / "e.json"
         datei.write_text(json.dumps({"ergebnisse": [
             {"story_id": "kaputt"},  # Validierungsfehler: der Rest der Datei läuft trotzdem
-            {"story_id": sid, "claims": claims, "widersprueche": [], "beitrag": beitrag}]}))
+            {"story_id": sid, "claims": claims, "widersprueche": [], "beitrag": beitrag,
+             "pruefung": pruefung_block(beitrag, claims)}]}))
         kw = {"von": "cloud-sitzung", "ctx": Kontext(settings, store, fetch_text=lambda u: "")}
         erst = import_v2(store, settings, datei, **kw)
         assert erst["entwuerfe"] == 1 and len(erst["fehler"]) == 1
@@ -519,11 +527,12 @@ def test_agent_import_needs_evidence_for_every_paragraph(settings, tmp_path, mon
         paket, claims, beitrag = _agent_paket(settings, store, tmp_path)
         beitrag["inhalt_html"] += "<p>Ein Satz, den keine Quelle trägt.</p>"
         (tmp_path / "e.json").write_text(json.dumps({"ergebnisse": [
-            {"story_id": paket["story_id"], "claims": claims, "widersprueche": [], "beitrag": beitrag}]}))
+            {"story_id": paket["story_id"], "claims": claims, "widersprueche": [], "beitrag": beitrag,
+             "pruefung": pruefung_block(beitrag, claims)}]}))
         stats = import_v2(store, settings, tmp_path / "e.json", ctx=Kontext(settings, store, fetch_text=lambda u: ""))
         story = repo.story(store, paket["story_id"])
         assert store.list_drafts("neu") == []
-    assert stats["recherche_noetig"] == 1 and story["status"] == "recherche_erforderlich"
+    assert stats["nachrecherche"] == 1 and story["status"] == "recherche_erforderlich"
     assert "ohne Beleg" in story["notiz"]
 
 

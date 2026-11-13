@@ -1,4 +1,4 @@
-"""Cockpit-Seiten der Redaktion v2: Belege im Entwurf, „Recherche nötig“, Kosten, Quellen, Warteschlange, Benutzer."""
+"""Cockpit-Seiten der Redaktion v2: Belege im Entwurf, „In Nachrecherche“, Kosten, Quellen, Warteschlange, Benutzer."""
 
 from __future__ import annotations
 
@@ -48,7 +48,7 @@ def belege_fuer(store, row: dict) -> dict | None:
         return None
     versionen = repo.fassungen(store, story_id=sid, draft_id=row["id"])
     faktencheck = next((v["inhalt"].get("faktencheck") for v in reversed(versionen) if v["rolle"] == "faktencheck"), None)
-    texte = [v for v in versionen if v["rolle"] in ("vorlage", "text", "ueberarbeitung", "seo", "entwurf")]
+    texte = [v for v in versionen if v["rolle"] in ("vorlage", "text", "ueberarbeitung", "seo", "pruefung", "entwurf")]
     diffs = []
     vorher = None
     for v in texte:
@@ -79,7 +79,32 @@ def budget_stand(store) -> dict:
     return budget_fuer(_settings(), store).stand()
 
 
-# ---- Recherche nötig --------------------------------------------------------------------------
+# ---- In Nachrecherche --------------------------------------------------------------------------
+
+SCHRITT_TEXT = {"nachrecherche": "sucht Belege für die Fehlstellen", "recherche": "liest die Quellen und zieht Aussagen",
+                "gate": "prüft die Belege", "pruefung": "zweite KI entscheidet: schreiben oder verwerfen"}
+
+
+def _nachrecherche_lage(store, story: dict) -> dict:
+    """Was der Radar an dieser Story gerade tut: Runde, gesuchte Fehlstellen, Ergebnis der letzten Runde, Schritt."""
+    from ..agents import nachrecherche as nr
+
+    stand = nr.stand(store, story["id"]) or {}
+    offen = jobs.offen_fuer_story(store, story["id"])
+    job = next((j for j in offen if j["status"] == "laeuft"), offen[0] if offen else None)
+    if job is None:
+        jetzt = "wartet auf den nächsten Lauf"
+    elif job["schritt"] == "recherche" and not _settings_hat_modell():
+        jetzt = "wartet auf die Research-Sitzung (Agent-Modus)"
+    else:
+        jetzt = SCHRITT_TEXT.get(job["schritt"], job["schritt"]) + (" (läuft)" if job["status"] == "laeuft" else "")
+    return {"runde": nr.runden(store, story["id"]), "max": nr.MAX_RUNDEN, "fehlend": stand.get("fehlend") or [],
+            "ergebnis": stand.get("ergebnis") or "", "anfragen": stand.get("anfragen") or [], "jetzt": jetzt}
+
+
+def _settings_hat_modell() -> bool:
+    return bool(getattr(_settings(), "modell_aktiv", False))
+
 
 @red.get("/recherche")
 def recherche():
@@ -88,6 +113,9 @@ def recherche():
     for s in storys:
         s["dokumente"] = repo.dokumente(store, s["id"])
         s["claims"] = repo.claims(store, s["id"])
+        s["lage"] = _nachrecherche_lage(store, s)
+        s["gruende"] = [g for g in (s.get("notiz") or "").split("; ") if g and not g.startswith(
+            ("In Nachrecherche", "Nachrecherche Runde", "Zweite KI prüft"))]
     laufend = repo.stories(store, ("neu", "recherche", "geprueft", "geschrieben", "geprueft_text"), limit=50)
     return render_template("recherche.html", storys=storys, laufend=laufend, labels=SUPPORT_LABEL, arten=ART_LABEL)
 
@@ -107,7 +135,7 @@ def quelle(story_id: int):
         flash(f"Diese Adresse geht nicht: {exc}", "fehler")
         return redirect(url_for("red.recherche"))
     repo.aktion(store, wer=_user(), aktion="quelle_ergaenzt", story_id=story_id)  # nur die Kennung, keine Adresse
-    flash("Quelle ergänzt – die Story läuft erneut durch Recherche und Prüfung.", "ok")
+    flash("Quelle von Hand ergänzt – die Story läuft erneut durch Recherche und Prüfung.", "ok")
     return redirect(url_for("red.recherche"))
 
 

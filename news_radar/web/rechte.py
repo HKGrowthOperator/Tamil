@@ -25,7 +25,7 @@ RECHTE: dict[str, tuple[str, ...]] = {
     "freigeben": REDAKTION,           # Freigeben (auch „erneut“ nach einem WordPress-Fehler)
     "veroeffentlichen": REDAKTION,    # Direkt posten, WordPress-Entwurf
     "story_verwerfen": REDAKTION,
-    "quelle_ergaenzen": REDAKTION,
+    "quelle_ergaenzen": ADMIN,        # Quelle von Hand: nur Notweg, im Cockpit versteckt (Auftrag 13.11.2026)
     "dossier": REDAKTION,
     "eingang_entscheiden": REDAKTION,  # Einsendungen übernehmen, erledigt/abgelehnt/Spam, Notiz (F1); sieht Kontaktdaten
     "anhalten": REDAKTION,            # jeden Kanal anhalten, auch „alles“

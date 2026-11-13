@@ -15,7 +15,7 @@ from news_radar.agents import Kontext
 from news_radar.config import load_settings
 from news_radar.store import Store
 from news_radar.workflow import fake as fake_mod
-from news_radar.workflow import repo, schema
+from news_radar.workflow import jobs, repo, schema
 
 URL1 = "https://www.tagesschau.de/inland/tamilischer-tempel-hamm-100.html"
 URL2 = "https://www.wa.de/hamm/tempelfest-2026-91234.html"
@@ -254,7 +254,9 @@ def _nachtrag_story(store, settings, status="recherche_erforderlich"):
 
 
 def _jobs(store, sid):
-    return store.db.execute("SELECT COUNT(*) FROM workflow_jobs WHERE story_id = ?", (sid,)).fetchone()[0]
+    """Jobs mit Modell an der Story – die Nachrecherche (Suche ohne Modell, ohne Kosten) zählt nicht."""
+    return store.db.execute("SELECT COUNT(*) FROM workflow_jobs WHERE story_id = ? AND schritt != 'nachrecherche'",
+                            (sid,)).fetchone()[0]
 
 
 def test_nachtrag_bekommt_nie_einen_modell_job(settings):
@@ -312,7 +314,8 @@ def test_scan_ordnet_nachtraegen_keine_meldung_mit_job_zu(settings):
         orchestrator.scan(ctx, [gleich])
         orchestrator.abarbeiten(ctx)
         assert _jobs(store, sid) == 0
-        assert store.db.execute("SELECT COUNT(*) FROM agent_usage WHERE story_id = ?", (sid,)).fetchone()[0] == 0
+        assert store.db.execute("SELECT COUNT(*) FROM agent_usage WHERE story_id = ? AND (provider = 'anthropic' "
+                                "OR kosten_usd > 0)", (sid,)).fetchone()[0] == 0
 
 
 QUELLE3 = {"url": "https://www.wdr.de/kultur/abend", "titel": "t", "herausgeber": "WDR", "datum": "2026-03-14",
@@ -415,7 +418,8 @@ def _ergebnis(paket: dict) -> dict:
     beitrag = fake_mod.text("<story>\n" + json.dumps({"titel": paket["titel"], "ort": paket["ort"],
                                                        "kategorie": paket["kategorie"]})
                             + "\n</story>\n<claims>\n" + json.dumps(dokus["claims"]) + "\n</claims>", "", {})
-    return {"story_id": paket["story_id"], "claims": dokus["claims"], "widersprueche": [], "beitrag": beitrag}
+    return {"story_id": paket["story_id"], "claims": dokus["claims"], "widersprueche": [], "beitrag": beitrag,
+            "pruefung": fake_mod.pruefung_block(beitrag, dokus["claims"])}
 
 
 def _schreiben(store, settings):
@@ -782,12 +786,12 @@ def test_seite_ohne_text_mit_json_ld_wird_zu_strukturierten_angaben(settings):
 
 
 def test_json_ld_nur_als_notanker_und_nur_passende_typen():
-    # Seite mit Text: Film-Angaben (Movie) bleiben draußen; Termine (…Event mit startDate) hängt seite_lesen seit
-    # 13.11.2026 an (eigener Test unten)
+    # Seite mit Text: Termine (…Event mit startDate) und – seit dem Zusatzauftrag vom 13.11.2026 – Film-Angaben
+    # (Movie: Regie, Besetzung) hängt seite_lesen an, wenn sie zur Seite gehören; andere Typen nie
     text = nachtrag.seite_lesen(html_seite(kino_html(KINO_LD, f"<article><p>{ARTIKEL1}</p></article>")))[0]
     angehaengt = text[len(ARTIKEL1):]
     assert text.startswith(ARTIKEL1) and "startDate: 2026-06-12T20:00" in angehaengt
-    assert "Nelson Dilipkumar" not in angehaengt  # Film-Angaben (Movie) nur als Notanker
+    assert "director: Nelson Dilipkumar" in angehaengt and "Kino Beispiel GmbH" not in angehaengt
     nur_firma = {"@type": "Organization", "name": "Kino Beispiel GmbH", "description": "x" * 400}
     kaputt = '<html><script type="application/ld+json">{kein json</script><body></body></html>'
     for roh in (kino_html(nur_firma), kaputt):
@@ -1180,10 +1184,10 @@ def test_ergaenzen_nicht_bei_vorhandenem_entwurf(settings):
         assert e["ergebnis"] == "abgelehnt" and abrufe == [] and len(repo.dokumente(store, sid)) == 1, e
 
 
-def test_ergaenzen_unbekannte_fremde_oder_beschaeftigte_story_wird_abgelehnt(settings):
+def test_ergaenzen_unbekannte_oder_beschaeftigte_story_wird_abgelehnt(settings):
     with Store(settings.db_path) as store:
         radar = repo.story_anlegen(store, typ="news", titel="Story vom Scan")
-        repo.story_setzen(store, radar, status="recherche_erforderlich")
+        repo.story_setzen(store, radar, status="verworfen")
         sid = nachtrag_mit_luecke(store, settings)
         ts = "2026-03-20T10:00:00+00:00"
         store.db.execute("INSERT INTO workflow_jobs (story_id, schritt, status, naechster_versuch, erstellt, "
@@ -1199,7 +1203,7 @@ def test_ergaenzen_unbekannte_fremde_oder_beschaeftigte_story_wird_abgelehnt(set
         assert gruende["99999"] == gruende[repr(radar)] == "Story nicht ergänzbar"  # einheitlich nach außen
         details = {json.loads(z["data"])["grund"] for z in store.db.execute(
             "SELECT data FROM log WHERE event = 'nachtrag_ergaenzen_abgelehnt'")}
-        assert {"Story nicht gefunden", "keine Nachtrag-Story"} <= details
+        assert {"Story nicht gefunden", "Story ist verworfen"} <= details
         assert "läuft gerade ein Job" in gruende[repr(sid)]
         assert all(g.startswith("story_id") for k, g in gruende.items() if k in ("0", "'7'", "True")), gruende
         assert abrufe == [] and len(repo.dokumente(store, sid)) == 1
@@ -1398,6 +1402,26 @@ def test_dokument_hinzufuegen_vergibt_doc_key_nach_dem_hoechsten(settings):
         store.db.execute("DELETE FROM source_documents WHERE story_id = ? AND doc_key = 'Q2'", (sid,))
         store.db.commit()
         assert repo.dokument_hinzufuegen(store, sid, url="https://www.example.org/neu", text=ARTIKEL2) == "Q4"
+
+
+def test_ergaenzen_gilt_auch_fuer_storys_vom_scan(settings):
+    """Auftrag 13.11.: Ergänzen geht für jede Story in „recherche_erforderlich“ ohne Entwurf und ohne laufenden Job –
+    auch für Storys vom Scan (Herkunft radar). Sie bekommen danach wieder einen Recherche-Job."""
+    with Store(settings.db_path) as store:
+        radar = repo.story_anlegen(store, typ="news", titel="Tempel in Hamm eröffnet Gemeindehaus", ort="Hamm")
+        repo.dokument_hinzufuegen(store, radar, url=URL1, art="hinweis", titel="Tempel eröffnet Gemeindehaus")
+        repo.story_setzen(store, radar, status="recherche_erforderlich", notiz="Keine Kernaussage belegt")
+        abrufe = []
+        e = annehmen(store, settings, [vorschlag(story_id=radar, quellen=[quelle(URL1), quelle(URL3)])],
+                     seiten=SEITEN3, abrufe=abrufe)["ergebnisse"][0]
+        assert e["ergebnis"] == "ergaenzt" and e["quellen_geholt"] == 1, e
+        assert abrufe == [URL3]
+        s = repo.story(store, radar)
+        assert s["status"] == "neu" and s["herkunft"] == "radar"
+        offen = jobs.offen_fuer_story(store, radar)
+        assert [j["schritt"] for j in offen] == ["recherche"]
+        mappe = paket_v2(store, settings, ctx=kontext(store, settings))
+        assert radar in [p["story_id"] for p in mappe["storys"]]
 
 
 # ---- Termindaten aus strukturierten Angaben (13.11.2026: Eventfrog-Seiten mit Text, Termine nur im JSON-LD) -----

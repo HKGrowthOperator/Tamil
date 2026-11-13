@@ -57,7 +57,7 @@ muss. Bildquellen und Lizenzen im Einzelnen: `bilder-und-lizenzen.md`.
 | Zweck | Rollen der Redaktion v2: Signal, Cluster, Recherche, Faktencheck, Text, Lektorat, SEO, Dossier |
 | Offizieller Weg | Messages API über das offizielle Python-SDK `anthropic`; nur `providers.Claude.call()` ruft an (`news_radar/workflow/providers.py`) |
 | Auth | API-Schlüssel (`ANTHROPIC_API_KEY`, alternativ `RADAR_ANTHROPIC_API_KEY`) |
-| Modelle je Rolle | Haiku 5.5 (`claude-haiku-5-5`): Signal, Cluster, Lektorat, SEO · Sonnet 5.5 (`claude-sonnet-5-5`): Recherche, Faktencheck, Text · Opus 5.5 (`claude-opus-5-5`): Dossier (`config.py` `ROLLEN_MODELLE`; je Rolle änderbar über `RADAR_MODELL_<ROLLE>`, `RADAR_MODEL` für Text) |
+| Modelle je Rolle | Haiku 5.5 (`claude-haiku-5-5`): Signal, Cluster, Lektorat, SEO · Sonnet 5.5 (`claude-sonnet-5-5`): Recherche, Faktencheck, Text · Opus 5.5 (`claude-opus-5-5`): Dossier, Prüfer (zweite KI, `RADAR_MODELL_PRUEFER`) (`config.py` `ROLLEN_MODELLE`; je Rolle änderbar über `RADAR_MODELL_<ROLLE>`, `RADAR_MODEL` für Text) |
 | Preise (je 1 Mio. Tokens, Eingabe / Ausgabe / Cache-Lesen) | Haiku 5.5: 0,10 $ / 0,50 $ / 0,01 $ (über 100 000 Tokens im Prompt 0,50 $ / 2,50 $) · Sonnet 5.5: 2 $ / 10 $ / 0,10 $ · Opus 5.5: 4 $ / 20 $ / 0,20 $ (Modellübersicht von Anthropic, Stand 03.11.2026). `workflow/costs.py` rechnet bei Sonnet 5.5 Cache-Lesen mit 0,20 $; das überschätzt leicht und ist zu korrigieren |
 | Budget | Reservierung des ungünstigsten Falls vor jedem Aufruf; Tag `RADAR_BUDGET_TAG_USD`, Monat `RADAR_BUDGET_MONAT_USD`, Warnung `RADAR_BUDGET_WARNUNG`, neue bezahlte Storys je Tag `RADAR_ENTWUERFE_TAG`; Pilot 2 $ je Tag (Entscheidung 09.11.). Jeder Aufruf steht in `agent_usage` |
 | Grenzen | Ratenlimits des Anthropic-Kontos; das SDK wiederholt 429 und 5xx einmal (`max_retries=1`), Zeitlimit 600 s |
@@ -66,6 +66,22 @@ muss. Bildquellen und Lizenzen im Einzelnen: `bilder-und-lizenzen.md`.
 | Testmodus | `FakeClaude` (`news_radar/workflow/fake.py`); kein Test ruft `api.anthropic.com` |
 | Stand | gebaut; Schlüssel fehlt (Tor B1). Bis dahin schreibt eine Claude-Sitzung im Agent-Modus (`/api/agent/export`, `/api/agent/import`, `RADAR_AGENT_TOKEN`) ohne API-Kosten (Entscheidung 12.11.: Schreib-Automatik später) |
 | KBS liefert | Freigabe der Modellkosten (Zuarbeit Nr. 12); den Schlüssel trägt Luis in Coolify ein |
+
+### Agent-Import: Block `pruefung` (Entscheidung Luis, 13.11.2026)
+
+Im Agent-Modus prüft die Research-Sitzung jeden Beitrag durch eine zweite KI aus frischem Kontext und liefert dazu in
+`POST /api/agent/import` je Beitrag den Block `pruefung`:
+
+```json
+{"pruefer": "claude-code/pruefer-1", "autor": "claude-code/redakteur-1",
+ "zeitpunkt": "2026-11-13T21:40:00+00:00", "urteil": "importieren",
+ "sha256": "<sha256 hex des geprüften inhalt_html>",
+ "befunde": [{"schwere": "P3", "beschreibung": "Teaser etwas lang", "satz": "", "behoben": false}],
+ "saetze": [{"nr": 1, "satz": "Der Verein erhielt am Freitag den Integrationspreis.", "urteil": "gedeckt",
+             "claim_ids": ["C1"], "fundstelle": "hat am Freitag den Integrationspreis", "kern": true}]}
+```
+
+Pflicht für jeden Beitrag (Verwerfen braucht keine): eine andere Instanz als der Autor (`pruefer` ≠ `?von=` und ≠ `autor`), `zeitpunkt` ISO 8601 mit Zeitzone, nicht in der Zukunft, höchstens drei Tage alt, `urteil` `importieren` oder `nicht_importieren`, `befunde` mit `schwere` P1/P2/P3 und `behoben`, `sha256` (hex) genau des eingereichten `inhalt_html`, `saetze` genau die Sätze von Titel, Teaser und Haupttext ohne Quellenzeile – deterministisch geteilt wie `agents/pruefer.saetze_des_entwurfs`, keiner fehlt, keiner zusätzlich (Abkürzungen wie „z. B.“, „Dr.“, „St.“ trennen keinen Satz) (`urteil` gedeckt/ungedeckt/widerspruch/kein_fakt, `kern`). Abgewiesen – nichts geändert – ohne Block, bei gleicher Instanz, ungültigem Zeitpunkt, falschem `sha256`, fehlenden oder fremden Sätzen, `nicht_importieren`, offenen P1/P2 oder leeren `saetze`. Danach streicht der Radar ungedeckte Nebensätze; eine ungedeckte Kernaussage schickt die Story in die Nachrecherche. Der Block wird als Fassung `pruefung` gespeichert, der Entwurf trägt „Geprüft von zweiter KI (Prüfer, Zeitpunkt)“ und die Befunde als Hinweise. `gedeckt` zählt nur mit `claim_ids` bestätigter Claims, und jede Zahl, jedes Datum und jedes großgeschriebene Wort außer am Satzanfang muss in Aussage oder Fundstelle dieser Claims stehen – sonst `ungedeckt`. `kein_fakt` gilt im Agent-Import nie (wie `ungedeckt`). Die Quellenzeile `<p class="quelle">` baut der Radar aus den Dokumenten der Story neu; eingereichter Text darin fällt weg.
 
 ## 5. Google Gemini (KI-Symbolbilder)
 
