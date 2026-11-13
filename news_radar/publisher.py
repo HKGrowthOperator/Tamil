@@ -3,6 +3,9 @@
 Stopp-Schalter „website“ (oder „alles“): `publish_draft` prüft ihn unmittelbar vor dem ersten Aufruf an WordPress;
 der Timer-Lauf überträgt dann nichts, Freigegebenes wartet und geht beim ersten Lauf nach dem Einschalten hinaus.
 Jede Übertragung im Lauf steht mit Auslöser „dienst“ und Kanal im Protokoll der Aktionen.
+
+Lizenz-Gate (Spezifikation Bilder 3.3): unmittelbar vor dem Senden prüft `publish_draft` den Lizenz-Datensatz des
+Bildes und den Alt-Text; fehlt etwas, wird nichts gesendet („Lizenz unvollständig: …“, Status „Fehler“, Protokoll).
 """
 
 from __future__ import annotations
@@ -11,7 +14,7 @@ import base64
 import logging
 from datetime import datetime, timezone
 
-from . import schalter
+from . import lizenz, schalter
 from .config import Settings
 from .images import load_image
 from .render import render_content
@@ -26,9 +29,24 @@ META_FIELDS = (
     ("quelle_datum", "quelle_datum"), ("quelle_sprache", "quelle_sprache"), ("bild_credit", "bild_credit"),
     ("bild_origin", "bild_origin"), ("ort", "ort"), ("event_datum", "event_datum"), ("event_ort", "event_ort"),
     ("ticket_url", "ticket_url"),
+    # aus dem Lizenz-Datensatz (lizenz_meta): Kürzel, Lizenz-Adresse und Seite der Bildquelle für Links im Theme
+    ("bild_lizenz", "bild_lizenz"), ("bild_lizenz_url", "bild_lizenz_url"), ("bild_quelle_url", "bild_quelle_url"),
 )
 
 TERMIN_FAKTEN = ("event_ende", "event_veranstalter", "event_preis", "event_land")
+
+
+def _http(url: str | None) -> str:
+    url = (url or "").strip()
+    return url if url.startswith(("https://", "http://")) and len(url) <= 2000 else ""
+
+
+def lizenz_meta(asset: dict | None) -> dict:
+    """Felder aus dem Lizenz-Datensatz, die mit dem Beitrag nach WordPress gehen (L19)."""
+    if not asset:
+        return {}
+    return {"bild_lizenz": asset.get("lizenz_kuerzel") or "", "bild_lizenz_url": _http(asset.get("lizenz_url")),
+            "bild_quelle_url": _http(asset.get("quelle_url"))}
 
 
 def radar_meta(row: dict) -> dict:
@@ -60,7 +78,7 @@ def bild_payload(row: dict, settings: Settings) -> dict:
     return {
         "daten": base64.b64encode(path.read_bytes()).decode("ascii"),
         "dateiname": path.name,
-        "alt": row.get("bild_alt") or row["titel"],
+        "alt": row.get("bild_alt") or "",  # Pflicht nach dem Lizenz-Gate, kein Rückfall auf den Titel (5.5)
         "credit": row.get("bild_credit") or "",
     }
 
@@ -171,6 +189,8 @@ def publish_draft(row: dict, settings: Settings, wp: WordPress | TamilRadarClien
     """
     status = status or settings.wp_post_status
     schalter.pruefen(store, "website")  # unmittelbar vor dem ersten Aufruf an WordPress
+    asset = lizenz.pruefen_fuer_wp(store, row)  # LizenzFehlt: nichts gesendet
+    row = {**row, **lizenz_meta(asset)}
     if isinstance(wp, TamilRadarClient):
         return publish_via_plugin(row, settings, wp, store, status)
     if ist_nachtrag(row):
@@ -181,7 +201,7 @@ def publish_draft(row: dict, settings: Settings, wp: WordPress | TamilRadarClien
     if row.get("bild_datei"):
         path = settings.bilder_dir / row["bild_datei"]
         if path.exists():
-            media_id = wp.upload_media(load_image(path, row.get("bild_credit") or ""), row.get("bild_alt") or row["titel"])
+            media_id = wp.upload_media(load_image(path, row.get("bild_credit") or ""), row.get("bild_alt") or "")
     post = wp.create_post(
         title=row["titel"],
         content=render_content(row),
@@ -242,6 +262,9 @@ def publish_approved(settings: Settings, store: Store, wp: WordPress | None = No
         except Exception as exc:  # noqa: BLE001 - ein fehlerhafter Beitrag stoppt den Lauf nicht
             log.exception("Veröffentlichen fehlgeschlagen: %s", row["titel"])
             store.mark_publish_failed(row["id"], str(exc))
+            if isinstance(exc, lizenz.LizenzFehlt):
+                repo.aktion(store, wer="dienst", aktion="lizenz_fehlt", draft_id=row["id"], story_id=row.get("story_id"),
+                            kanal=KANAL, ausloeser="dienst", notiz=str(exc)[:200])
             store.event("fehler", id=row["id"], titel=row["titel"], fehler=str(exc)[:300], schritt="veroeffentlichen")
             results.append(Result(row["titel"], "fehler", row.get("kategorie") or "", note=str(exc)[:200], draft_id=row["id"]))
             continue

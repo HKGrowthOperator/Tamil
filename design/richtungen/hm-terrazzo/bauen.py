@@ -51,8 +51,11 @@ def datum_lang(d):
     return f"{d.day}. {MONATE[d.month - 1]} {d.year}"
 
 
+MON_KURZ = ["Jan.", "Feb.", "März", "Apr.", "Mai", "Juni", "Juli", "Aug.", "Sept.", "Okt.", "Nov.", "Dez."]
+
+
 def datum_kurz(d):
-    return f"{KURZ[d.weekday()]} {d.day:02d}.{d.month:02d}."
+    return f"{KURZ[d.weekday()]}, {d.day}. {MON_KURZ[d.month - 1]}"
 
 
 def wa(text):
@@ -69,13 +72,16 @@ def groesse(b):
     return Image.open(INH / "rueckblick" / b["bild"]).size
 
 
-def figur(b, cls="", lazy=True, fakt=True):
+def figur(b, cls="", lazy=True, fakt=True, href=None):
     w, h = groesse(b)
     q = b.get("quelle_bild") or ""
     quelle = f' <a href="{e(q)}">Quelle</a>' if q else ""
     text = f'{e(b["alt"])}. ' if fakt else ""
     laden = ' loading="lazy" decoding="async"' if lazy else ' fetchpriority="high"'
-    return (f'<figure class="bild {cls}"><div class="bild__rahmen"><img src="{e(b["bild"])}" alt="{e(b["alt"])}" width="{w}" height="{h}"{laden}></div>'
+    img = f'<img src="{e(b["bild"])}" alt="{e(b["alt"])}" width="{w}" height="{h}"{laden}>'
+    if href:
+        img = f'<a href="{href}" tabindex="-1" aria-hidden="true">{img}</a>'
+    return (f'<figure class="bild {cls}"><div class="bild__rahmen">{img}</div>'
             f'<figcaption>{text}<span class="nachweis">{e(b["nachweis"])}.{quelle}</span></figcaption></figure>')
 
 
@@ -128,7 +134,7 @@ def seite(name, titel, beschreibung, body, nachweise=(), aktiv="", skript=False)
     doc = (f'<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
            f'<title>{e(titel)}</title><meta name="description" content="{e(beschreibung)}">'
            f'<link rel="preload" href="schriften/onest-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>'
-           f'<link rel="preload" href="schriften/syne-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>'
+           f'<link rel="preload" href="schriften/wix-madefor-display-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>'
            f'<link rel="stylesheet" href="terrazzo.css"></head><body>{kopf(aktiv)}<main id="inhalt">{body}</main>'
            f'{fuss(list(nachweise))}{FORM_SKRIPT if skript else ""}</body></html>\n')
     (HIER / name).write_text(doc, encoding="utf-8")
@@ -136,7 +142,7 @@ def seite(name, titel, beschreibung, body, nachweise=(), aktiv="", skript=False)
 
 def meta(b):
     d = dt.date.fromisoformat(b["datum"])
-    return f'<p class="meta"><time datetime="{d.isoformat()}">{datum_lang(d)}</time>, {e(b["ort"])}</p>'
+    return f'<p class="meta"><time datetime="{d.isoformat()}">{datum_lang(d)}</time> in {e(b["ort"])}</p>'
 
 
 def reihe(sid, teaser=False, titel_tag="h3"):
@@ -145,14 +151,21 @@ def reihe(sid, teaser=False, titel_tag="h3"):
     return (f'<li class="reihe"><{titel_tag} class="titel"><a href="{link_zu(sid)}">{e(b["titel"])}</a></{titel_tag}>{t}{meta(b)}</li>')
 
 
-def termin_zeile(d, was, wo, href=None, teilen=True, heute=False):
+def termin_zeile(d, was, wo, href=None, teilen=True, heute=False, kompakt=False):
     w = f'<a href="{href}">{e(was)}</a>' if href else e(was)
+    if kompakt:
+        tl = f'<a class="textlink" href="{e(wa(datum_lang(d) + ": " + was))}">Per WhatsApp schicken</a>' if teilen else ""
+        return (f'<tr><td class="zahl"><time datetime="{d.isoformat()}">{datum_kurz(d)}</time></td>'
+                f'<td class="spec__titel">{w}<span class="spec__zusatz">{e(wo)}</span>{tl}</td></tr>')
     tl = f'<a class="textlink" href="{e(wa(datum_lang(d) + ": " + was))}">Per WhatsApp schicken</a>' if teilen else ""
-    return (f'<tr{" class=" + chr(34) + "ist-heute" + chr(34) if heute else ""}><td class="code"><time datetime="{d.isoformat()}">{datum_kurz(d)}</time></td>'
+    return (f'<tr{" class=" + chr(34) + "ist-heute" + chr(34) if heute else ""}><td class="zahl"><time datetime="{d.isoformat()}">{datum_kurz(d)}</time></td>'
             f'<td class="spec__titel">{w}</td><td class="spec__ort">{e(wo)}</td><td class="spec__aktion">{tl}</td></tr>')
 
 
-def termin_tabelle(zeilen, caption, kopf_aktion="Weitersagen"):
+def termin_tabelle(zeilen, caption, kopf_aktion="Weitersagen", kompakt=False):
+    if kompakt:
+        return (f'<table class="spec spec--kompakt"><caption class="visually-hidden">{e(caption)}</caption>'
+                f'<thead><tr><th scope="col">Datum</th><th scope="col">Was und wo</th></tr></thead><tbody>{"".join(zeilen)}</tbody></table>')
     return (f'<table class="spec"><caption class="visually-hidden">{e(caption)}</caption>'
             f'<thead><tr><th scope="col">Datum</th><th scope="col">Was</th><th scope="col">Wo</th><th scope="col"><span class="visually-hidden">{kopf_aktion}</span></th></tr></thead>'
             f'<tbody>{"".join(zeilen)}</tbody></table>')
@@ -175,52 +188,65 @@ def anzeige_whatsapp():
 
 
 # ---------------------------------------------------------------- Startseite
+# Feldplan: jede Inhaltsart hat ihr eigenes Feld und ihre eigene Form (Aufmacher: großes Bild; Nachrichten: nur
+# Text; Feste: Daten; Kino: Film und Städte; Community: Hochformat und Liste; Küche: kleine Bilder in Reihe).
 a = BEI[30]
-hero = (f'<section class="aufmacher" aria-labelledby="a-h"><div class="container aufmacher__raster">'
-        f'{figur(a, "bild--4-3 aufmacher__bild", lazy=False, fakt=False)}'
-        f'<div class="aufmacher__text"><h1 id="a-h"><a href="artikel.html">{e(a["titel"])}</a></h1>'
-        f'<p class="lead">{e(a["teaser"])}</p>{meta(a)}'
-        f'<div class="aktionen"><a class="btn btn--primaer" href="artikel.html">Beitrag lesen</a>'
-        f'<a class="textlink" href="{e(wa(a["titel"]))}">Per WhatsApp schicken</a></div></div></div></section>')
-
-termine = (f'<section class="abschnitt" aria-labelledby="t-h"><div class="container">'
-           f'<div class="kopfblock"><h2 id="t-h">Die nächsten Feste</h2>'
-           f'<p class="kopfblock__satz">Was Tempel und Vereine angekündigt haben. <a class="textlink" href="termine.html">Ganzer Festkalender 2026</a></p></div>'
-           f'{termin_tabelle([termin_zeile(d, w, o, h) for d, w, o, h in KOMMEND], "Die nächsten Feste")}</div></section>')
-
-nachrichten = (f'<section class="abschnitt abschnitt--fuge" id="nachrichten" aria-labelledby="n-h"><div class="container">'
-               f'<h2 id="n-h" class="abschnitt__kopf">Nachrichten aus Berlin, St. Gallen und Colombo</h2>'
-               f'<div class="feldreihe feldreihe--7-5">'
-               f'<article class="feld">{figur(BEI[85], "bild--16-9")}<h3 class="titel titel--gross"><a href="{link_zu(85)}">{e(BEI[85]["titel"])}</a></h3>'
-               f'<p class="reihe__text">{e(BEI[85]["teaser"])}</p>{meta(BEI[85])}</article>'
-               f'<div class="feld"><ul class="reihen">{reihe(87, teaser=True)}{reihe(51, teaser=True)}</ul></div></div></div></section>')
-
 scene, rama = KINO[0], KINO[1]
-kino = (f'<section class="band band--tinte" aria-labelledby="k-h"><div class="container kinoband">'
-        f'<p class="kinoband__zahl" aria-hidden="true">{scene["kinos"]}</p>'
-        f'<div class="kinoband__text"><h2 id="k-h">{scene["kinos"]} Kinos zeigen „{e(scene["titel"])}“</h2>'
-        f'<ul class="kinoband__orte">{"".join(f"<li>{e(o)}</li>" for o in scene["orte"])}<li>und {scene["weitere_staedte"]} weitere Städte</li></ul></div>'
-        f'<div class="kinoband__neben"><p>„{e(rama["titel"])}“ läuft in {e(" und ".join(rama["orte"]))}.</p>'
-        f'<p class="meta">Stand: 9. November 2026, aus den Programmen der Kinos.</p>'
-        f'<a class="textlink" href="kino.html">Alle Spielorte nach Stadt</a></div></div></section>')
 
-gemeinde = (f'<section class="abschnitt" id="community" aria-labelledby="g-h"><div class="container feldreihe feldreihe--5-7">'
-            f'<div class="feld">{figur(BEI[71], "bild--4-5")}</div>'
-            f'<div class="feld"><h2 id="g-h">Tempel, Vereine und Schulen</h2>'
+
+def nachricht(sid):
+    b = BEI[sid]
+    d = dt.date.fromisoformat(b["datum"])
+    return (f'<li class="reihe"><h3 class="titel"><a href="{link_zu(sid)}">{e(b["titel"])}</a></h3>'
+            f'<p class="meta"><time datetime="{d.isoformat()}">{datum_lang(d)}</time></p></li>')
+
+
+hero = (f'<section class="feldplan" aria-label="Aufmacher und Nachrichten"><div class="container feldreihe feldreihe--8-4">'
+        f'<article class="feld aufmacher" aria-labelledby="a-h">{figur(a, "bild--16-9", lazy=False, fakt=False, href="artikel.html")}'
+        f'<h1 id="a-h"><a href="artikel.html">{e(a["titel"])}</a></h1>'
+        f'<p class="lead aufmacher__lead">{e(a["teaser"])}</p>'
+        f'<div class="aufmacher__fuss">{meta(a)}<a class="textlink" href="{e(wa(a["titel"]))}">Per WhatsApp schicken</a></div></article>'
+        f'<div class="feld feld--text" id="nachrichten"><h2 class="feld__kopf">Nachrichten</h2>'
+        f'<ul class="reihen">{"".join(nachricht(i) for i in (85, 87, 51, 39))}</ul></div></div></section>')
+
+def kino_zeile(k):
+    weiter = f" und {k['weitere_staedte']} weitere Städte" if k["weitere_staedte"] else ""
+    return (f'<li><p class="kino__film">„{e(k["titel"])}“</p><p class="kino__orte">{e(", ".join(k["orte"]))}{weiter}</p>'
+            f'<p class="meta">{k["kinos"]} Kinos</p></li>')
+
+
+kino_liste = "".join(kino_zeile(k) for k in KINO)
+dienst = (f'<section class="abschnitt abschnitt--fuge" aria-label="Feste und Kino"><div class="container feldreihe feldreihe--7-5">'
+          f'<div class="feld"><h2 class="feld__kopf">Die nächsten Feste</h2>'
+          f'{termin_tabelle([termin_zeile(d, w, o, h, kompakt=True) for d, w, o, h in KOMMEND], "Die nächsten Feste", kompakt=True)}'
+          f'<p class="weiter"><a class="textlink" href="termine.html">Festkalender 2026</a></p></div>'
+          f'<div class="feld"><h2 class="feld__kopf">Kino diese Woche</h2><ul class="kino">{kino_liste}</ul>'
+          f'<p class="meta">Stand: 9. November 2026, aus den Programmen der Kinos.</p>'
+          f'<p class="weiter"><a class="textlink" href="kino.html">Alle Städte</a></p></div></div></section>')
+
+gemeinde = (f'<section class="abschnitt abschnitt--fuge" id="community" aria-labelledby="g-h"><div class="container feldreihe feldreihe--5-7">'
+            f'<div class="feld">{figur(BEI[71], "bild--4-5", href=link_zu(71))}</div>'
+            f'<div class="feld"><h2 id="g-h" class="feld__kopf">Tempel, Vereine und Schulen</h2>'
             f'<ul class="reihen reihen--dicht">{"".join(reihe(i) for i in (71, 76, 49, 80, 60, 38))}</ul>'
             f'<p class="weiter"><a class="textlink" href="rubrik.html">Alle Beiträge aus der Community</a></p></div></div></section>')
 
 werbung = f'<section class="abschnitt abschnitt--well" aria-label="Anzeige"><div class="container">{anzeige_event()}</div></section>'
 
-kueche = (f'<section class="abschnitt abschnitt--fuge" aria-label="Küche und Kultur"><div class="container feldreihe feldreihe--7-5">'
-          f'<div class="feld" id="kueche"><h2 class="abschnitt__kopf">Küche</h2>'
-          f'<div class="paar">{figur(BEI[62], "bild--1-1")}<ul class="reihen">{"".join(reihe(i) for i in (62, 37, 48))}</ul></div></div>'
-          f'<div class="feld" id="kultur"><h2 class="abschnitt__kopf">Kultur und Sport</h2>'
+
+def kachel(sid):
+    b = BEI[sid]
+    return (f'<li class="klein">{figur(b, "bild--1-1 klein__bild", fakt=False, href=link_zu(sid))}'
+            f'<div><h3 class="titel"><a href="{link_zu(sid)}">{e(b["titel"])}</a></h3>{meta(b)}</div></li>')
+
+
+kueche = (f'<section class="abschnitt abschnitt--fuge" aria-label="Küche, Kultur und Sport"><div class="container feldreihe feldreihe--7-5">'
+          f'<div class="feld" id="kueche"><h2 class="feld__kopf">Küche</h2><ul class="kleine">{"".join(kachel(i) for i in (62, 48))}</ul><ul class="reihen reihen--nach">{"".join(reihe(i) for i in (37, 39))}</ul></div>'
+          f'<div class="feld feld--text" id="kultur"><h2 class="feld__kopf">Kultur und Sport</h2>'
           f'<ul class="reihen">{"".join(reihe(i) for i in (33, 83, 43, 67))}</ul></div></div></section>')
 
 seite("index.html", "tamil.de | Nachrichten, Termine und Kino der tamilischen Community",
       "Nachrichten, Termine und Kino der tamilischen Community in Deutschland, Österreich und der Schweiz.",
-      hero + termine + nachrichten + kino + gemeinde + werbung + kueche, [a, BEI[85], BEI[71], BEI[62]])
+      hero + dienst + gemeinde + werbung + kueche, [a, BEI[71], BEI[62], BEI[48]])
 
 # ---------------------------------------------------------------- Artikel
 WEITER = {30: (71, 76, 33)}
@@ -234,7 +260,7 @@ def artikel(sid, name):
     rand = ""
     if sid == 30:
         rand = (f'<aside class="artikel__rand" aria-labelledby="ak-h"><h2 id="ak-h" class="rand__kopf">Im Festkalender</h2>'
-                f'<ul class="rand__termine">{"".join(f"<li><time class={chr(34)}code{chr(34)} datetime={chr(34)}{d.isoformat()}{chr(34)}>{datum_kurz(d)}</time><span>{e(w)}</span><span class={chr(34)}meta{chr(34)}>{e(o)}</span></li>" for d, w, o, _ in KOMMEND[:2])}</ul>'
+                f'<ul class="rand__termine">{"".join(f"<li><time class={chr(34)}zahl{chr(34)} datetime={chr(34)}{d.isoformat()}{chr(34)}>{datum_kurz(d)}</time><span>{e(w)}</span><span class={chr(34)}meta{chr(34)}>{e(o)}</span></li>" for d, w, o, _ in KOMMEND[:2])}</ul>'
                 f'<a class="textlink" href="termine.html">Zum Festkalender</a></aside>')
     weiter_ids = [i for i in WEITER.get(sid, (30, 49, 76, 33)) if i != sid][:3]
     weiter = (f'<section class="abschnitt abschnitt--fuge" aria-labelledby="w-h"><div class="container">'
@@ -267,7 +293,7 @@ def rubrik(nr):
     for i, b in enumerate(posten):
         lead = nr == 1 and i == 0
         zeilen.append(f'<li class="liste__eintrag{" liste__eintrag--lead" if lead else ""}">'
-                      f'{figur(b, "bild--3-2" if lead else "bild--4-3", lazy=not lead, fakt=False)}'
+                      f'{figur(b, "bild--3-2" if lead else "bild--4-3", lazy=not lead, fakt=False, href=link_zu(b["story_id"]))}'
                       f'<div class="liste__text"><h2 class="titel{" titel--gross" if lead else ""}"><a href="{link_zu(b["story_id"])}">{e(b["titel"])}</a></h2>'
                       f'<p class="reihe__text">{e(b["teaser"])}</p>{meta(b)}</div></li>')
     seiten = []
@@ -279,7 +305,7 @@ def rubrik(nr):
            else '<li><a class="seiten__schritt" href="rubrik.html">Neuere Beiträge</a></li>')
     pag = f'<nav class="seiten" aria-label="Seiten der Rubrik"><ul>{"".join(seiten)}{vor}</ul><p class="meta">Seite {nr} von 2</p></nav>'
     body = (f'<section class="seitenkopf"><div class="container seitenkopf__raster"><h1>Community</h1>'
-            f'<p class="lead">Tempel, Vereine, Schulen und Begegnungen in Deutschland, Österreich und der Schweiz.</p></div></section>'
+            f'<div><p class="lead">Tempel, Vereine, Schulen und Begegnungen in Deutschland, Österreich und der Schweiz.</p><p class="meta">{len(COMM)} Beiträge seit Januar 2026</p></div></div></section>'
             f'<section class="abschnitt abschnitt--eng" aria-label="Beiträge"><div class="container"><ol class="liste">{"".join(zeilen)}</ol>{pag}</div></section>')
     seite("rubrik.html" if nr == 1 else "rubrik-2.html", f"Community{' (Seite 2)' if nr == 2 else ''} | tamil.de",
           "Beiträge aus der tamilischen Community: Tempel, Vereine, Schulen.", body, posten, aktiv="Community")
@@ -294,55 +320,60 @@ for d, sid, titel in CHRONIK:
     mon.setdefault(d.month, []).append((d, sid, titel, BEI[sid]["ort"] if sid in BEI else ""))
 for d, w, o, h in KOMMEND:
     mon.setdefault(d.month, []).append((d, None, w, o))
-zellen = "".join(f'<li><a href="#m{m}">{MONATE[m - 1][:3]}</a></li>' if m in mon else f'<li><span aria-disabled="true">{MONATE[m - 1][:3]}</span></li>' for m in range(1, 13))
 bloecke = ""
 for m in sorted(mon):
     zeilen = []
     heute_drin = False
     for d, sid, titel, ort in sorted(mon[m], key=lambda x: x[0]):
         if m == HEUTE.month and not heute_drin and d > HEUTE:
-            zeilen.append(f'<tr class="ist-heute"><td class="code"><time datetime="{HEUTE.isoformat()}">{datum_kurz(HEUTE)}</time></td><td class="spec__titel">Heute</td><td class="spec__ort"></td><td class="spec__aktion"></td></tr>')
+            zeilen.append(f'<tr class="ist-heute"><td class="zahl"><time datetime="{HEUTE.isoformat()}">{datum_kurz(HEUTE)}</time></td><td class="spec__titel">Heute</td><td class="spec__ort"></td><td class="spec__aktion"></td></tr>')
             heute_drin = True
         href = link_zu(sid) if sid else ("artikel.html" if d == dt.date(2026, 11, 15) else None)
         zeilen.append(termin_zeile(d, titel, ort, href, teilen=d > HEUTE))
     bloecke += (f'<section class="monat" id="m{m}" aria-labelledby="mh{m}"><h3 id="mh{m}" class="monat__kopf">{MONATE[m - 1]}</h3>'
                 f'{termin_tabelle(zeilen, MONATE[m - 1] + " 2026")}</section>')
-termine_body = (f'<section class="seitenkopf"><div class="container seitenkopf__raster"><h1>Festkalender 2026</h1>'
-                f'<div><p class="lead">Feste, Tempel, Vereine und Bühnen der Community, Tag für Tag.</p>'
-                f'<div class="aktionen"><a class="btn btn--primaer" href="einreichen.html">Termin einreichen</a></div></div></div></section>'
+naechst = KOMMEND[0]
+zellen = "".join(f'<li><a href="#m{m}">{MONATE[m - 1]}</a></li>' for m in range(1, 13) if m in mon)
+termine_body = (f'<section class="seitenkopf seitenkopf--termin"><div class="container feldreihe feldreihe--5-7">'
+                f'<div class="feld"><h1>Festkalender 2026</h1><p class="lead">Feste, Tempel, Vereine und Bühnen der Community, Tag für Tag.</p>'
+                f'<div class="aktionen"><a class="btn btn--primaer" href="einreichen.html">Termin einreichen</a></div></div>'
+                f'<div class="feld naechster"><p class="naechster__wann"><time datetime="{naechst[0].isoformat()}">{TAGE[naechst[0].weekday()]}, {naechst[0].day}. {MONATE[naechst[0].month - 1]}</time></p>'
+                f'<p class="naechster__was"><a href="{naechst[3]}">{e(naechst[1])}</a></p><p class="meta">{e(naechst[2])}. Heute ist {TAGE[HEUTE.weekday()]}, {datum_lang(HEUTE)}.</p>'
+                f'<a class="textlink" href="{e(wa(datum_lang(naechst[0]) + ": " + naechst[1]))}">Per WhatsApp schicken</a></div></div></section>'
                 f'<section class="abschnitt abschnitt--eng" aria-labelledby="n-h"><div class="container">'
-                f'<h2 id="n-h" class="abschnitt__kopf">Als Nächstes</h2>'
-                f'{termin_tabelle([termin_zeile(d, w, o, h) for d, w, o, h in KOMMEND], "Kommende Termine")}'
-                f'<p class="meta">Heute ist {TAGE[HEUTE.weekday()]}, {datum_lang(HEUTE)}.</p></div></section>'
+                f'<h2 id="n-h" class="feld__kopf">Danach</h2>'
+                f'{termin_tabelle([termin_zeile(d, w, o, h) for d, w, o, h in KOMMEND[1:]], "Weitere kommende Termine")}</div></section>'
                 f'<section class="abschnitt abschnitt--fuge" aria-labelledby="j-h"><div class="container">'
                 f'<div class="kopfblock"><h2 id="j-h">Das Jahr 2026</h2><p class="kopfblock__satz">Was die Redaktion aus diesem Jahr berichtet. Verlinkt ist, was schon als Beitrag vorliegt.</p></div>'
-                f'<nav aria-label="Monate"><ul class="zellen zellen--monate">{zellen}</ul></nav>{bloecke}</div></section>')
+                f'<nav aria-label="Monate"><ul class="monatsleiste">{zellen}</ul></nav>{bloecke}</div></section>')
 seite("termine.html", "Festkalender 2026 | tamil.de", "Feste, Tempel, Vereine und Bühnen der tamilischen Community 2026, Tag für Tag.",
       termine_body, aktiv="Termine")
 
 # ---------------------------------------------------------------- Kino
-staedte = sorted([(o, scene["titel"]) for o in scene["orte"]] + [(o, rama["titel"]) for o in rama["orte"]])
-kino_zeilen = "".join(f'<tr><th scope="row" class="spec__titel">{e(s)}</th><td>„{e(f)}“</td><td class="spec__ort">Deutschland</td></tr>' for s, f in staedte)
+staedte = {}
+for k in KINO:
+    for o in k["orte"]:
+        staedte.setdefault(o, []).append(k["titel"])
+kino_zeilen = "".join(f'<tr><th scope="row" class="spec__titel">{e(st)}</th><td>{" und ".join("„" + e(f) + "“" for f in fs)}</td></tr>' for st, fs in sorted(staedte.items()))
 kino_zeilen += (f'<tr><th scope="row" class="spec__titel spec__titel--leise">{scene["weitere_staedte"]} weitere Städte</th>'
-                f'<td>„{e(scene["titel"])}“</td><td class="spec__ort">Namen liegen der Redaktion nicht vor</td></tr>')
+                f'<td>„{e(scene["titel"])}“; die Namen der Städte liegen der Redaktion nicht vor</td></tr>')
+staedte_links = "".join(f'<li>{e(st)}</li>' for st in sorted(staedte))
 KINOJAHR = [(d, sid, t) for d, sid, t in CHRONIK if sid in (84, 43, 46, 53, 57, 64, 66, 69, 94, 96)]
-kino_body = (f'<section class="seitenkopf"><div class="container seitenkopf__raster"><h1>Tamilisches Kino diese Woche</h1>'
-             f'<div><p class="lead">Welcher Film in welcher Stadt läuft. Stand: 9. November 2026, aus den Programmen der Kinos.</p>'
-             f'<div class="aktionen"><a class="textlink" href="{e(wa("Tamilisches Kino diese Woche"))}">Per WhatsApp schicken</a></div></div></div></section>'
+kino_body = (f'<section class="seitenkopf seitenkopf--kino"><div class="container feldreihe feldreihe--7-5">'
+             f'<div class="feld"><h1>Tamilisches Kino diese Woche</h1>'
+             f'<p class="lead">„{e(scene["titel"])}“ läuft in {scene["kinos"]} Kinos, „{e(rama["titel"])}“ in {rama["kinos"]}. Alle Spielorte liegen in Deutschland.</p>'
+             f'<p class="meta">Stand: 9. November 2026, aus den Programmen der Kinos.</p>'
+             f'<div class="aktionen"><a class="textlink" href="{e(wa("Tamilisches Kino diese Woche"))}">Per WhatsApp schicken</a></div></div>'
+             f'<div class="feld"><h2 class="feld__kopf">Städte</h2><ul class="stadtliste">{staedte_links}</ul></div></div></section>'
              f'<section class="abschnitt abschnitt--eng" aria-labelledby="s-h"><div class="container">'
-             f'<h2 id="s-h" class="abschnitt__kopf">Nach Stadt</h2>'
-             f'<table class="spec spec--kino"><caption class="visually-hidden">Filme nach Stadt</caption><thead><tr><th scope="col">Stadt</th><th scope="col">Film</th><th scope="col">Land</th></tr></thead>'
+             f'<h2 id="s-h" class="feld__kopf">Was in welcher Stadt läuft</h2>'
+             f'<table class="spec spec--kino"><caption class="visually-hidden">Filme nach Stadt</caption><thead><tr><th scope="col">Stadt</th><th scope="col">Film</th></tr></thead>'
              f'<tbody>{kino_zeilen}</tbody></table></div></section>'
-             f'<section class="band band--tinte" aria-labelledby="f-h"><div class="container feldreihe feldreihe--7-5 feldreihe--tinte">'
-             f'<div class="feld"><h2 id="f-h">„{e(scene["titel"])}“</h2><p class="kinoband__zahl kinoband__zahl--klein">{scene["kinos"]} <span>Kinos</span></p>'
-             f'<p>In {e(", ".join(scene["orte"][:-1]))} und {e(scene["orte"][-1])}, dazu in {scene["weitere_staedte"]} weiteren Städten.</p></div>'
-             f'<div class="feld"><h2>„{e(rama["titel"])}“</h2><p class="kinoband__zahl kinoband__zahl--klein">{rama["kinos"]} <span>Kinos</span></p>'
-             f'<p>In {e(" und ".join(rama["orte"]))}.</p></div></div></section>'
-             f'<section class="abschnitt" aria-labelledby="kj-h"><div class="container feldreihe feldreihe--5-7">'
-             f'<div class="feld">{figur(BEI[84], "bild--4-3")}</div>'
-             f'<div class="feld"><h2 id="kj-h">Aus dem Kinojahr 2026</h2>'
+             f'<section class="abschnitt abschnitt--fuge" aria-labelledby="kj-h"><div class="container feldreihe feldreihe--5-7">'
+             f'<div class="feld">{figur(BEI[84], "bild--4-3", href=link_zu(84))}</div>'
+             f'<div class="feld"><h2 id="kj-h" class="feld__kopf">Aus dem Kinojahr 2026</h2>'
              f'<table class="spec spec--schmal"><caption class="visually-hidden">Kinomeldungen 2026</caption><thead><tr><th scope="col">Datum</th><th scope="col">Meldung</th></tr></thead><tbody>'
-             + "".join(f'<tr><td class="code"><time datetime="{d.isoformat()}">{d.day:02d}.{d.month:02d}.</time></td><td class="spec__titel">{f"<a href={chr(34)}{link_zu(sid)}{chr(34)}>{e(t)}</a>" if link_zu(sid) else e(t)}</td></tr>' for d, sid, t in sorted(KINOJAHR, reverse=True))
+             + "".join(f'<tr><td class="zahl"><time datetime="{d.isoformat()}">{d.day}. {MON_KURZ[d.month - 1]}</time></td><td class="spec__titel">{f"<a href={chr(34)}{link_zu(sid)}{chr(34)}>{e(t)}</a>" if link_zu(sid) else e(t)}</td></tr>' for d, sid, t in sorted(KINOJAHR, reverse=True))
              + '</tbody></table></div></div></section>')
 seite("kino.html", "Tamilisches Kino diese Woche | tamil.de", "Welcher tamilische Film in welcher Stadt läuft.", kino_body, [BEI[84]], aktiv="Kino")
 
@@ -385,7 +416,7 @@ def vz_href(v):
 def zellen_auswahl(name, werte, gewaehlt, legend, zaehlen=None):
     out = [f'<fieldset class="wahl"><legend>{legend}</legend><div class="zellen">']
     for i, (wert, text) in enumerate(werte):
-        anz = f' <span class="code">{zaehlen(wert)}</span>' if zaehlen else ""
+        anz = f' <span class="zahl">{zaehlen(wert)}</span>' if zaehlen else ""
         out.append(f'<input type="radio" name="{name}" id="{name}-{i}" value="{e(wert)}"{" checked" if wert == gewaehlt else ""}>'
                    f'<label for="{name}-{i}">{e(text)}{anz}</label>')
     out.append("</div></fieldset>")
@@ -415,14 +446,13 @@ def vz_zeile(v):
     return (f'<tr{" class=" + chr(34) + "ist-premium" + chr(34) if v.get("premium") else ""}>'
             f'<td class="spec__titel"><a href="{vz_href(v)}">{e(v["name"])}</a>{prem}</td>'
             f'<td>{v["art"]}<span class="spec__zusatz">{e(v["kat"])}</span></td>'
-            f'<td>{e(v["stadt"])}<span class="spec__zusatz">{e(v["region"])}</span></td><td class="code">{v["land"]}</td></tr>')
+            f'<td>{e(v["stadt"])}<span class="spec__zusatz">{e(v["region"])}</span></td><td class="zahl">{v["land"]}</td></tr>')
 
 
 liste = sorted(VZ, key=lambda v: (not v.get("premium"), v["name"]))
-vz_body = (f'<section class="seitenkopf"><div class="container seitenkopf__raster"><h1>Verzeichnis</h1>'
-           f'<div><p class="lead">Tempel, Vereine, Läden und Dienste der Community, nach Ort.</p>'
-           f'<div class="aktionen"><a class="textlink" href="kontakt.html#nachricht">Eintrag vorschlagen</a></div></div></div></section>'
-           f'<section class="abschnitt abschnitt--eng" aria-label="Suche und Filter"><div class="container">{filter_form}</div></section>'
+vz_body = (f'<section class="seitenkopf seitenkopf--suche" aria-labelledby="vz-h"><div class="container">'
+           f'<div class="kopfblock"><h1 id="vz-h">Verzeichnis</h1><p class="kopfblock__satz">Tempel, Vereine, Läden und Dienste der Community, nach Ort. '
+           f'<a class="textlink" href="kontakt.html#nachricht">Eintrag vorschlagen</a></p></div>{filter_form}</div></section>'
            f'<section class="abschnitt abschnitt--fuge" aria-labelledby="e-h"><div class="container">'
            f'<div class="kopfblock"><h2 id="e-h">{len(VZ)} Einträge</h2><p class="kopfblock__satz">Premium-Einträge stehen oben und sind so gekennzeichnet. '
            f'<span class="fill">In dieser Probe zeigt der erste Eintrag die Markierung nur zur Darstellung.</span></p></div>'
@@ -546,27 +576,25 @@ def mass(m):
 
 
 def mass_txt(m):
-    return f'<span class="code">{mass(m)}</span>' if m else '<span class="spec__zusatz">nicht am Desktop</span>'
+    return f'<span class="zahl">{mass(m)}</span>' if m else '<span class="spec__zusatz">nicht am Desktop</span>'
 
 
 formate = "".join(
     f'<figure class="format"><div class="format__flaeche" style="--w:{(d or h)[0]};--h:{(d or h)[1]}"></div>'
-    f'<figcaption><span>{n}</span><span class="code">{mass(d or h)}</span></figcaption></figure>' for k, n, wo, d, h in PLAETZE)
+    f'<figcaption><span>{n}</span><span class="zahl">{mass(d or h)}</span></figcaption></figure>' for k, n, wo, d, h in PLAETZE)
 plaetze_zeilen = "".join(
     f'<tr><th scope="row" class="spec__titel">{n}<span class="spec__zusatz">{wo}</span></th><td data-label="Desktop">{mass_txt(d)}</td>'
     f'<td data-label="Handy">{mass_txt(h) if h else "<span class=spec__zusatz>nur Desktop</span>"}</td>'
     f'<td data-label="Preis"><span class="fill fill--klein">Preis folgt</span></td></tr>' for k, n, wo, d, h in PLAETZE)
-werben_body = (f'<section class="seitenkopf"><div class="container seitenkopf__raster"><h1>Werben auf tamil.de</h1>'
-               f'<div><p class="lead">Sechs Plätze auf der Website, online gebucht und bezahlt. Jede Anzeige ist als „Anzeige“ gekennzeichnet.</p>'
-               f'<div class="aktionen"><a class="btn btn--primaer" href="buchen.html">Werbeplatz buchen</a><a class="textlink" href="kontakt.html#nachricht">Erst eine Frage stellen</a></div></div></div></section>'
+werben_body = (f'<section class="seitenkopf seitenkopf--werben"><div class="container feldreihe feldreihe--5-7">'
+               f'<div class="feld"><h1>Werben auf tamil.de</h1><p class="lead">Sechs Plätze auf der Website, online gebucht und bezahlt. Jede Anzeige ist als „Anzeige“ gekennzeichnet.</p>'
+               f'<div class="aktionen"><a class="btn btn--primaer" href="buchen.html">Werbeplatz buchen</a><a class="textlink" href="kontakt.html#nachricht">Erst eine Frage stellen</a></div></div>'
+               f'<div class="feld"><div class="formate diagramm" role="img" aria-label="Diagramm: die sechs Werbeformate maßstabsgetreu zueinander, Desktop-Maß, beim Platz Mobil das Handy-Maß">{formate}</div>'
+               f'<p class="meta">Die sechs Formate maßstabsgetreu zueinander; gezeigt ist das Desktop-Maß, bei Mobil das Handy-Maß.</p></div></div></section>'
                f'<section class="abschnitt abschnitt--eng" aria-labelledby="p-h"><div class="container">'
                f'<div class="kopfblock"><h2 id="p-h">Die sechs Plätze</h2><p class="kopfblock__satz">Maße in Pixeln. Laufzeiten und Preise legt KBS fest; bis dahin steht dort ein Platzhalter.</p></div>'
                f'<table class="spec spec--plaetze"><caption class="visually-hidden">Werbeplätze, Maße und Preise</caption><thead><tr><th scope="col">Platz</th><th scope="col">Desktop</th><th scope="col">Handy</th><th scope="col">Preis je Laufzeit</th></tr></thead>'
                f'<tbody>{plaetze_zeilen}</tbody></table></div></section>'
-               f'<section class="abschnitt abschnitt--well" aria-labelledby="fm-h"><div class="container">'
-               f'<h2 id="fm-h" class="abschnitt__kopf">Die Formate im Verhältnis</h2>'
-               f'<div class="formate diagramm" role="img" aria-label="Diagramm: die sechs Werbeformate maßstabsgetreu zueinander, Desktop-Maß, beim Platz Mobil das Handy-Maß">{formate}</div>'
-               f'<p class="meta">Maßstabsgetreu zueinander; gezeigt ist das Desktop-Maß, beim Platz Mobil das Handy-Maß.</p></div></section>'
                f'<section class="abschnitt" aria-labelledby="ab-h"><div class="container feldreihe feldreihe--5-7">'
                f'<div class="feld"><h2 id="ab-h">So läuft eine Buchung</h2><p class="lead">In fünf Schritten, ohne Konto.</p></div>'
                f'<div class="feld"><ol class="schritte schritte--gross">'
@@ -612,28 +640,28 @@ def monat_tabelle(jahr, monat):
 
 platz_wahl = zellen_auswahl("platz", [(k, n) for k, n, *_ in PLAETZE], "billboard", "Platz")
 lauf_wahl = zellen_auswahl("laufzeit", [("7", "7 Tage"), ("14", "14 Tage"), ("30", "30 Tage")], "14", "Laufzeit")
-schritte_nav = "".join(f'<li><a href="#s{i}"{" aria-current=" + chr(34) + "step" + chr(34) if i == 1 else ""}><span class="code">{i}</span> {t}</a></li>'
+schritte_nav = "".join(f'<li><a href="#s{i}"{" aria-current=" + chr(34) + "step" + chr(34) if i == 1 else ""}><span class="zahl">{i}</span> {t}</a></li>'
                        for i, t in enumerate(["Platz und Laufzeit", "Startdatum", "Ihre Angaben", "Werbemittel", "Prüfen und bezahlen"], 1))
 buchen_form = ('<form class="karte formular buchung" action="" method="post" data-endpoint="" enctype="multipart/form-data" novalidate aria-labelledby="bu-h">'
-               f'<fieldset class="gruppe" id="s1"><legend><span class="code">1</span> Platz und Laufzeit</legend>{platz_wahl}{lauf_wahl}'
-               '<p class="gruppe__satz">Billboard: Startseite, zwischen den Rubriken; Desktop <span class="code">970&#8239;×&#8239;250</span>, Handy <span class="code">300&#8239;×&#8239;250</span>.</p></fieldset>'
-               '<fieldset class="gruppe" id="s2"><legend><span class="code">2</span> Startdatum</legend>'
+               f'<fieldset class="gruppe" id="s1"><legend><span class="zahl">1</span> Platz und Laufzeit</legend>{platz_wahl}{lauf_wahl}'
+               '<p class="gruppe__satz">Billboard: Startseite, zwischen den Rubriken; Desktop <span class="zahl">970&#8239;×&#8239;250</span>, Handy <span class="zahl">300&#8239;×&#8239;250</span>.</p></fieldset>'
+               '<fieldset class="gruppe" id="s2"><legend><span class="zahl">2</span> Startdatum</legend>'
                f'<p class="gruppe__satz">Frühester Start: {datum_lang(FRUEHESTENS)}. Gewählt: {datum_lang(START)} bis {datum_lang(ENDE)}.</p>'
                f'<div class="kalender-paar">{monat_tabelle(2026, 11)}{monat_tabelle(2026, 12)}</div>'
                '<p class="legende"><span class="legende__muster legende__muster--gewaehlt" aria-hidden="true"></span>gewählter Zeitraum '
                '<span class="legende__muster legende__muster--belegt" aria-hidden="true"></span>belegt <span class="fill fill--klein">belegte Tage hier nur als Beispiel</span></p></fieldset>'
-               '<fieldset class="gruppe" id="s3"><legend><span class="code">3</span> Ihre Angaben</legend>'
+               '<fieldset class="gruppe" id="s3"><legend><span class="zahl">3</span> Ihre Angaben</legend>'
                + eingabe("firma", "Firma", pflicht=True, auto="organization") + eingabe("person", "Ansprechperson", pflicht=True, auto="name")
                + eingabe("adresse", "Rechnungsadresse", "textarea", True, extra=' autocomplete="street-address"')
                + '<div class="eingabe-paar">' + eingabe("b-email", "E-Mail", "email", True, "email") + eingabe("b-telefon", "Telefon", "tel", auto="tel") + '</div>'
                + eingabe("ustid", "USt-ID") + '</fieldset>'
-               '<fieldset class="gruppe" id="s4"><legend><span class="code">4</span> Werbemittel</legend>'
-               + eingabe("wm-desktop", 'Bild für den Desktop, <span class="code">970&#8239;×&#8239;250</span> Pixel', "file", True, hilfe="JPEG oder PNG; Maße und Größe prüft die Website beim Hochladen.", extra=' accept="image/jpeg,image/png"')
-               + eingabe("wm-handy", 'Bild für das Handy, <span class="code">300&#8239;×&#8239;250</span> Pixel', "file", True, extra=' accept="image/jpeg,image/png"')
+               '<fieldset class="gruppe" id="s4"><legend><span class="zahl">4</span> Werbemittel</legend>'
+               + eingabe("wm-desktop", 'Bild für den Desktop, <span class="zahl">970&#8239;×&#8239;250</span> Pixel', "file", True, hilfe="JPEG oder PNG; Maße und Größe prüft die Website beim Hochladen.", extra=' accept="image/jpeg,image/png"')
+               + eingabe("wm-handy", 'Bild für das Handy, <span class="zahl">300&#8239;×&#8239;250</span> Pixel', "file", True, extra=' accept="image/jpeg,image/png"')
                + eingabe("ziel", "Zieladresse", "url", True, hilfe="Wohin die Anzeige führt, mit https://", extra=' inputmode="url"') + '</fieldset>'
-               '<fieldset class="gruppe" id="s5"><legend><span class="code">5</span> Prüfen und bezahlen</legend>'
+               '<fieldset class="gruppe" id="s5"><legend><span class="zahl">5</span> Prüfen und bezahlen</legend>'
                f'<dl class="angaben angaben--summe"><div><dt>Platz</dt><dd>Billboard, Startseite</dd></div>'
-               f'<div><dt>Zeitraum</dt><dd><span class="code">{START:%d.%m.}–{ENDE:%d.%m.%Y}</span>, {LAUFZEIT} Tage</dd></div>'
+               f'<div><dt>Zeitraum</dt><dd><span class="zahl">{START:%d.%m.}–{ENDE:%d.%m.%Y}</span>, {LAUFZEIT} Tage</dd></div>'
                f'<div><dt>Betrag</dt><dd><span class="fill">Preis folgt von KBS</span></dd></div></dl>'
                '<div class="haken"><input id="bedingungen" name="bedingungen" type="checkbox" required><label for="bedingungen">Ich nehme die Verkaufsbedingungen an. '
                '<span class="fill fill--klein">Bedingungen folgen</span> <span class="stern" aria-hidden="true">*</span></label></div>'

@@ -5,8 +5,9 @@ geprüft (`pruefen`). Bearbeiten und Freigeben von Hand bleiben möglich; Freige
 aus ist. Jede Änderung braucht eine Person, ein Stopp zusätzlich einen Grund, und steht im Protokoll
 (editorial_actions). Ein Kanal ohne Zeile in der Tabelle läuft.
 
-Heute fragen ab: `redaktion` (Scan, Job-Übernahme, Modellaufruf), `website` (Übertragung nach WordPress). Die übrigen
-Kanäle sind schaltbar und sichtbar; spätere Bausteine fragen `gestoppt()` ab. Der Budget-Stopp ist davon unabhängig.
+Heute fragen ab: `redaktion` (Scan, Job-Übernahme, Modellaufruf), `website` (Übertragung nach WordPress),
+`instagram`, `facebook`, `whatsapp` (Baustein F4, `social/ablauf.py`). Die übrigen Kanäle sind schaltbar und sichtbar;
+spätere Bausteine fragen `gestoppt()` ab. Der Budget-Stopp ist davon unabhängig.
 """
 
 from __future__ import annotations
@@ -22,9 +23,9 @@ HAELT_AN = {
     "website": "das Übertragen freigegebener Beiträge nach WordPress",
     "eingang": "Abholen und Vorbereiten von Einsendungen (noch ohne Abnehmer)",
     "verzeichnis": "die Prüfung von Verzeichniseinträgen (noch ohne Abnehmer)",
-    "instagram": "den Kanal Instagram (noch ohne Abnehmer)",
-    "facebook": "den Kanal Facebook (noch ohne Abnehmer)",
-    "whatsapp": "den Kanal WhatsApp (noch ohne Abnehmer)",
+    "instagram": "Senden an Instagram, auch während der Karenz (Facebook wartet mit, weil Instagram zuerst geht)",
+    "facebook": "Senden an die Facebook-Seite, auch während der Karenz",
+    "whatsapp": "die WhatsApp-Entwürfe im Cockpit (ausgeblendet)",
 }
 GRUND_MAX = 300
 

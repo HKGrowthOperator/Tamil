@@ -156,10 +156,58 @@ V6 = [
 ]
 # Letzter Abruf mit Teilausfall: zählt für den Takt (interval_minutes) wie last_ok, ohne als Erfolg zu gelten
 V7 = ["ALTER TABLE source_status ADD COLUMN last_try TEXT"]
+# F4 (Spezifikation datenmodell.md §15): Social-Beiträge je WordPress-Beitrag und Kanal (höchstens einmal, R7),
+# Startmarke gegen den Altbestand (R9) und die Fassungen des Regelwerks (Fassung 1 steht in social/regelwerk.toml).
+V8 = [
+    """CREATE TABLE IF NOT EXISTS social_beitraege (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        wp_post_id INTEGER NOT NULL,
+        quelle_typ TEXT NOT NULL,               -- beitrag | termin
+        kanal TEXT NOT NULL,                    -- instagram | facebook | whatsapp
+        status TEXT NOT NULL,                   -- von_hand | karenz | gestoppt | geplant | wird_gesendet | unklar |
+                                                -- veroeffentlicht | trocken | pausiert | verworfen | entwurf | gepostet
+        regel_fassung TEXT NOT NULL,
+        regelpruefung TEXT NOT NULL DEFAULT '{}', -- JSON je Regel: ergebnis (erfuellt | verletzt | unklar), grund
+        titel TEXT, rubrik TEXT, quelle_datum TEXT, event_datum TEXT,
+        text TEXT NOT NULL DEFAULT '', hashtags TEXT NOT NULL DEFAULT '[]', link TEXT NOT NULL DEFAULT '',
+        bild_datei TEXT, bild_art TEXT,         -- foto | karte
+        asset_id INTEGER, ki_hinweis INTEGER NOT NULL DEFAULT 0, bild_url TEXT,
+        karenz_bis TEXT, geplant_fuer TEXT, wartet_grund TEXT, sende_at TEXT,
+        container_id TEXT, container_at TEXT, versuche INTEGER NOT NULL DEFAULT 0,
+        modus TEXT, nutzlast TEXT,              -- trocken | live; Aufrufe an Meta ohne Zugangsdaten
+        veroeffentlicht_at TEXT, meta_id TEXT, meta_link TEXT, fehler TEXT,
+        gepostet_von TEXT, gepostet_at TEXT, entschieden_von TEXT, entscheidung TEXT,
+        erkannt_at TEXT NOT NULL, aktualisiert TEXT NOT NULL,
+        UNIQUE(wp_post_id, kanal))""",
+    "CREATE INDEX IF NOT EXISTS social_status ON social_beitraege(kanal, status)",
+    "CREATE INDEX IF NOT EXISTS social_sende ON social_beitraege(kanal, sende_at)",
+    "CREATE TABLE IF NOT EXISTS social_stand (schluessel TEXT PRIMARY KEY, wert TEXT, gesetzt TEXT)",
+    """CREATE TABLE IF NOT EXISTS social_regelwerk (
+        fassung INTEGER PRIMARY KEY, inhalt TEXT NOT NULL, erstellt TEXT NOT NULL, von TEXT NOT NULL,
+        freigegeben_von TEXT, freigegeben_at TEXT)""",
+]
+# V9: Lizenz-Datensatz je Bild (docs/spezifikation/bilder-und-lizenzen.md, Abschnitt 3.1). `umfang` bleibt die Spalte
+# aus V2, gilt ab jetzt als kommagetrennte Menge aus website, social, print (`lizenz.umfang_text`); Altbestand mit
+# Freitext gilt als unvollständig, bis die Nachführung oder die Redaktion den Datensatz ergänzt.
+V9 = [
+    "ALTER TABLE assets ADD COLUMN urheber TEXT",
+    "ALTER TABLE assets ADD COLUMN lizenz_kuerzel TEXT",      # Positivliste lizenz.KUERZEL (eigen, cc-by-4.0 …)
+    "ALTER TABLE assets ADD COLUMN lizenz_url TEXT",
+    "ALTER TABLE assets ADD COLUMN bild_url TEXT",            # Adresse der abgerufenen Bilddatei
+    "ALTER TABLE assets ADD COLUMN bearbeitung TEXT",         # keine | zugeschnitten | eingepasst | Logo-Leiste | KI-Hinweis
+    "ALTER TABLE assets ADD COLUMN beleg TEXT",               # wie die Lizenz geprüft wurde (Abruf, Register, Datei)
+    "ALTER TABLE assets ADD COLUMN geprueft_von TEXT",        # dienst | agent:<name> | Benutzername
+    "ALTER TABLE assets ADD COLUMN geprueft_am TEXT",
+    "ALTER TABLE assets ADD COLUMN ki_modell TEXT",
+    "ALTER TABLE assets ADD COLUMN prompt_hash TEXT",
+    "ALTER TABLE assets ADD COLUMN alt TEXT",
+    "ALTER TABLE assets ADD COLUMN fokus TEXT",               # x,y in Prozent
+    "CREATE INDEX IF NOT EXISTS assets_draft ON assets(draft_id, datei)",
+]
 # V11: Eingang (Festlegung F1) – abgeholte Einsendungen der Website mit Status, Hinweisen des Agenten, Entwurf und
 # Notiz der Redaktion; `wp_status` ist der zuletzt von WordPress bestätigte Status (Abgleich nach unklarem Ausgang).
 # Personendaten (name, email, telefon) nur hier; Löschung 90 Tage nach Abschluss, Spam nach 7 Tagen (eingang.loeschen).
-# 8–10 sind für parallele Bausteine reserviert.
+# 10 ist für die Recherche reserviert.
 V11 = [
     """CREATE TABLE IF NOT EXISTS einsendungen (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -184,7 +232,7 @@ V11 = [
     "CREATE INDEX IF NOT EXISTS einsendungen_status ON einsendungen(status, eingang_at)",
     "CREATE TABLE IF NOT EXISTS eingang_stand (schluessel TEXT PRIMARY KEY, wert TEXT)",  # Cursor der Abholung
 ]
-MIGRATIONS: dict[int, list[str]] = {2: V2, 3: V3, 4: V4, 5: V5, 6: V6, 7: V7, 11: V11}
+MIGRATIONS: dict[int, list[str]] = {2: V2, 3: V3, 4: V4, 5: V5, 6: V6, 7: V7, 8: V8, 9: V9, 11: V11}
 LATEST = max(MIGRATIONS)
 
 

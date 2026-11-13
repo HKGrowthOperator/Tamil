@@ -10,8 +10,8 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Meta-Schlüssel → Typ (text | url | int | id | datetime | land | json). `int` ist eine Wertung 0–10, `id` ein Verweis
- * ohne Obergrenze.
+ * Meta-Schlüssel → Typ (text | url | int | id | datetime | land | json | lizenz). `int` ist eine Wertung 0–10, `id` ein
+ * Verweis ohne Obergrenze, `lizenz` ein Lizenz-Kürzel aus der Positivliste des Radars (z. B. cc-by-sa-4.0).
  *
  * @return array<string,string>
  */
@@ -26,6 +26,9 @@ function tamil_radar_meta_keys(): array {
 		'quelle_sprache'     => 'text',
 		'bild_credit'        => 'text',
 		'bild_origin'        => 'text',
+		'bild_lizenz'        => 'lizenz',
+		'bild_lizenz_url'    => 'url',
+		'bild_quelle_url'    => 'url',
 		'ort'                => 'text',
 		'standfirst'         => 'text',
 		'event_datum'        => 'datetime',
@@ -68,6 +71,9 @@ function tamil_radar_sanitize_meta( $value, string $type ) {
 				}
 			}
 			return '';
+		case 'lizenz':
+			$kuerzel = strtolower( trim( (string) $value ) );
+			return 1 === preg_match( '/^[a-z0-9][a-z0-9.-]{0,39}$/', $kuerzel ) ? $kuerzel : '';
 		case 'land':
 			$land = strtoupper( sanitize_text_field( (string) $value ) );
 			return in_array( $land, array( 'DE', 'AT', 'CH', 'DACH' ), true ) ? $land : '';

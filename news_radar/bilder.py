@@ -112,7 +112,8 @@ def from_gemini(prompt: str, settings: Settings, slug: str, transport: Transport
     except (OSError, ValueError, TypeError) as exc:
         log.warning("Bild-KI-Bild unbrauchbar: %s", exc)
         return None
-    return FeaturedImage(images._encode(fitted), f"{slug}.jpg", "image/jpeg", KI_CREDIT, "ki")
+    return FeaturedImage(images._encode(fitted, ki=True), f"{slug}.jpg", "image/jpeg", KI_CREDIT, "ki", prompt=prompt,
+                         modell=settings.bild_modell)
 
 
 def gueltiges_thema(thema: str, kategorie: str = "", titel: str = "") -> str:
@@ -157,7 +158,7 @@ class BildPool:
         (self.folder / thema).mkdir(parents=True, exist_ok=True)
         (self.folder / thema / name).write_bytes(image.data)
         entries.append({
-            "datei": name, "prompt": prompt, "credit": image.credit, "origin": image.origin,
+            "datei": name, "prompt": prompt, "credit": image.credit, "origin": image.origin, "modell": image.modell,
             "erstellt": datetime.now(timezone.utc).isoformat(timespec="seconds"), "genutzt": 0,
         })
         self._save()
@@ -172,7 +173,8 @@ class BildPool:
         entry["genutzt"] = entry.get("genutzt", 0) + 1
         self._save()
         data = (self.folder / thema / entry["datei"]).read_bytes()
-        return FeaturedImage(data, f"{slug}.jpg", "image/jpeg", entry.get("credit") or KI_CREDIT, "pool")
+        return FeaturedImage(data, f"{slug}.jpg", "image/jpeg", entry.get("credit") or KI_CREDIT, "pool",
+                             prompt=entry.get("prompt") or "", modell=entry.get("modell") or "")
 
     def fuellen(self, settings: Settings, thema: str | None = None, anzahl: int = 3,
                 transport: Transport | None = None, store=None, budget=None) -> dict[str, int]:
@@ -232,8 +234,11 @@ def beitragsbild(
     transport: Transport | None = None,
     pool: BildPool | None = None,
 ) -> FeaturedImage:
-    """Immer ein Bild: KI (nur mit Prompt und Schlüssel) → Pool → Stock (nur mit Schlüssel) → Karte."""
+    """Immer ein Bild: KI (nur mit Prompt und Schlüssel) → Pool → Stock (nur mit Schlüssel) → Karte.
+    KI und Pool nur mit BILD_KI_FREIGABE (Spezifikation Bilder 4.1, L11); sonst beginnt die Kette bei Stock."""
     modus = settings.bild_modus if settings.bild_modus in MODI else "ki"
+    if modus in ("ki", "pool") and not settings.bild_ki_freigabe:
+        modus = "stock"
     thema = gueltiges_thema(bild_thema, kategorie, titel)
     if modus == "karte":
         return images.branded_card(titel, kategorie_label, slug, kategorie)

@@ -1,52 +1,43 @@
 /* Hallmark · shape: Kalenderblatt (drawn Manifesto refused: tilted uppercase poster type is the rejected round 4) · genre: editorial · theme: Almanac (deal 2/3, seed tamil-deutschsprachiges-online-magazin-der-ff32·6bcf19c0·2026-11-13·r0) · job: listen · draw: 26f3b5
- * hero: ledge · nav: banner over a retracting bar · footer: index columns · imagery: photographs, the posts' own Commons pictures 2, muted · signature: das Kalenderblatt, die naechsten Feste als gedruckter Bogen, der naechste Termin in Logo-Rot
+ * hero: index (the sheet under its head line, the first report beside it) · nav: banner over a retracting bar · footer: index columns · imagery: photographs, the posts' own Commons pictures 2, muted · signature: das Kalenderblatt, die naechsten Feste als gedruckter Bogen, der naechste Termin in Logo-Rot
  * axes: mid/grotesk-sans/chromatic-magenta (accent re-hued to the logo red) · posture: restrained · contrast: pass · fold: pass · v2.0.0 */
 /* Hallmark · pre-emit critique: P4 H4 E4 S5 R4 V5 · weakest: H, a sheet above the head competes with it; the head sits alone on the base row at the display size and the sheet keeps to one weight of type */
 @import url("./almanac.css");
+/* Hallmark · waive 78 · the section heads Im Kino, Steinmeier and Das Jahr 2026 render at 36px under the 42px head line · on the start page the head line Die nächsten Feste is capped at 44px by the main session, the section heads sit one step under it */
+/* Hallmark · waive 44c · the hero holds the head line, the dated sheet of the next festivals and the first report with its photograph beside it · the Kalenderblatt is the head of the start page by decision of the critique r1, the photograph sits beside the sheet, not centred on the head line */
 /* Hallmark · hero-review: fix · 5 findings · 1 resolved 2 partial 2 kept by choice (sheet as hero visual, dated head) · finish-review: subagent (claude -p, sonnet, fresh context) · 8 findings · 3 resolved 5 partial · gap: none */
 /* Hallmark · dismissed 58 · the page count includes all four year tabs, one of which shows at a time; the 91-word window is six report headlines over the footer index */
 /* Hallmark · waive 49b · the wrapping links are report headlines in the dated year index, two lines at most at 1440 · a Rückblick headline is the report's own title and cannot be cut to fit one phone line */
 
-/* hero: Ledge, the sheet as the tall field, the head resting at the base */
-.hero { padding-block: var(--space-xl) var(--space-lg); }
-.aufmacher { padding-block-start: var(--section-gap-s); }
-.hero__grid { display: grid; grid-template-rows: auto auto; row-gap: var(--space-2xl); }
-.hero__field { grid-row: 1; }
-.hero__base { grid-row: 2; grid-template-columns: repeat(12, minmax(0, 1fr)); align-items: end; }
-.hero__base h1 { grid-column: 1 / span 8; font-size: clamp(2.25rem, 4.6vw + 0.5rem, 4.75rem); letter-spacing: -0.035em; line-height: 0.95; max-width: 22ch; text-wrap: balance; }
-.hero__base h1 .l { display: block; }
-.hero__side { grid-column: 9 / span 4; display: flex; flex-direction: column; gap: var(--space-lg); }
-.hero__side .lead { max-width: 34ch; }
-.hero .tafel col.c-tag { width: 13%; } .hero .tafel col.c-was { width: 38%; } .hero .tafel col.c-wer { width: 27%; }
-@media (max-width: 60rem) {
-  .hero__grid { grid-template-rows: auto auto; min-height: 0; row-gap: var(--space-xl); }
-  .hero__base { grid-row: 1; row-gap: var(--space-lg); }
-  .hero__field { grid-row: 2; }
-  .hero__base h1 .l { display: inline; }
-}
+/* Kritik r1: the sheet is the head; the head line sits over it, the first report with its photograph beside it */
+.hero { padding-block: var(--space-xl) 0; }
+.kopf-start { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--space-xs) var(--space-xl); padding-block-end: var(--space-head-after); }
+.kopf-start h1 { font-size: var(--text-display); letter-spacing: -0.02em; line-height: 1.1; max-width: 24ch; }
+.kopf-start .lead { max-width: 40ch; }
+.hero__grid { align-items: start; row-gap: var(--space-xl); }
+.hero__field { grid-column: 1 / span 8; }
+.erste { grid-column: 9 / span 4; display: flex; flex-direction: column; gap: var(--space-sm); }
+.erste h2 { font-size: var(--text-title); line-height: 1.2; }
+.erste h2 a, .hamm h2 a { text-decoration: none; }
+.erste h2 a:hover, .hamm h2 a:hover { text-decoration: underline; text-decoration-color: var(--color-accent); text-decoration-thickness: 2px; }
+.erste .photo { aspect-ratio: 4 / 3; }
+.hero .tafel col.c-tag { width: 15%; } .hero .tafel col.c-was { width: 36%; } .hero .tafel col.c-wer { width: 27%; }
+@media (max-width: 60rem) { .kopf-start { flex-direction: column; } }
 
-/* the lead report */
-.aufmacher .pic { grid-column: 1 / span 6; }
-.aufmacher .split__text { grid-column: 7 / span 6; }
-
-/* cinema on the ink band */
-.filme { width: 100%; border-collapse: collapse; }
-.filme th, .filme td { padding: var(--space-md) var(--space-md) var(--space-md) 0; border-bottom: var(--rule-hair) solid var(--color-muted); vertical-align: baseline; text-align: left; }
-.filme th { font: 600 var(--text-title)/1.2 var(--font-display); color: var(--color-sheet); width: 34%; }
-.filme td { color: var(--color-paper); }
-.filme td.num { font: 500 var(--text-2xl)/1 var(--font-outlier); color: var(--color-sheet); text-align: right; width: 10%; letter-spacing: -0.02em; white-space: nowrap; }
-.filme td.einheit { width: 10%; color: var(--color-paper-2); font-size: var(--text-sm); }
+/* cinema on the light sheet, numbers at reading size */
+.kino-blatt { padding-block-start: var(--section-gap-l); }
+.filme .zahl { text-align: right; white-space: nowrap; width: 6rem; }
+.filme td.was { width: 30%; }
 @media (max-width: 40rem) {
-  .filme, .filme tbody { display: block; }
-  .filme tr { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; column-gap: var(--space-xs); padding-block: var(--space-md); border-bottom: var(--rule-hair) solid var(--color-muted); }
-  .filme th, .filme td { display: block; padding: 0; border: 0; width: auto !important; }
-  .filme th { grid-column: 1; }
-  .filme td.orte { grid-column: 1 / -1; grid-row: 2; padding-block-start: var(--space-2xs); }
+  .filme tr { grid-template-columns: minmax(0, 1fr) auto !important; }
+  .filme td { grid-column: 1 !important; }
+  .filme td.was { grid-row: 1; }
+  .filme td.zahl { grid-column: 2 !important; grid-row: 1; width: auto; }
 }
 
 /* a second report, the picture on the right */
 .hamm .split__text { grid-column: 1 / span 6; }
-.hamm .split__text h2 { font-size: var(--text-display-s); max-width: 22ch; }
+.hamm .split__text h2 { font-size: var(--text-section); max-width: 24ch; }
 .hamm .split__text .lead { max-width: 46ch; }
 .hamm .pic { grid-column: 7 / span 6; }
 
@@ -54,7 +45,7 @@
 .jahr { padding-block-end: var(--space-xl); border-top: var(--rule-bar) solid var(--color-rule-2); margin-block-start: var(--section-gap-l); padding-block-start: var(--space-2xl); align-items: start; }
 .jahr__head { grid-column: 1 / span 4; display: flex; flex-direction: column; gap: var(--space-md); position: sticky; top: var(--space-3xl); }
 .jahr__body { grid-column: 5 / span 8; min-width: 0; }
-.tabs { display: flex; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: thin; gap: 0; margin-block-end: var(--space-lg); border-bottom: var(--rule-hair) solid var(--color-rule-2); }
+.tabs { display: flex; flex-wrap: wrap; gap: 0; margin-block-end: var(--space-lg); border-bottom: var(--rule-hair) solid var(--color-rule-2); }
 .tabs button { min-height: 44px; padding: 0 var(--space-md); border: 0; border-bottom: var(--rule-bar) solid transparent; background: transparent; color: var(--color-ink-2); font: 500 var(--text-sm)/1 var(--font-display); cursor: pointer; white-space: nowrap; transition: color var(--dur-micro) var(--ease-out), border-color var(--dur-micro) var(--ease-out); }
 .tabs button:hover { color: var(--color-ink); border-bottom-color: var(--color-rule-2); }
 .tabs button[aria-selected="true"] { color: var(--color-ink); border-bottom-color: var(--color-accent); }

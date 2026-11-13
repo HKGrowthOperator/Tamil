@@ -278,6 +278,14 @@ def plan(settings: Settings, env: Mapping[str, str] | None = None) -> list[PlanE
         eintraege.append(PlanEintrag("bildpool", ("bildpool", "fuellen", "--anzahl", "3", "--mit-budget"),
                                      Regel(um=(4, 30), wochentag=0), 1800, ("redaktion",),
                                      "Reserve-Bilder je Thema über die Bild-KI"))
+    from .social import konfig as social_konfig
+
+    social = social_konfig.laden(env)
+    if social.aktiv:  # Funktionsschalter RADAR_SOCIAL (Standard aus, im Echtbetrieb aus bis AV und Rechtstexte)
+        eintraege.append(PlanEintrag("social", ("social", "lauf"), Regel(alle=180), 300,
+                                     ("instagram", "facebook", "whatsapp"),
+                                     f"Social (F4): neue Beiträge erkennen, prüfen, nach der Karenz senden "
+                                     f"({'live' if social.live else 'Trockenmodus'})"))
     return eintraege
 
 
@@ -303,6 +311,12 @@ def main(settings: Settings) -> int:
     from .store import Store
 
     dienst.store = Store(settings.db_path)  # nach rechte_abgeben: Dateien gehören radar; migriert vor allen Kindern
+    try:  # Lizenz-Datensätze im Altbestand ergänzen, wo die Angaben vollständig sind (idempotent, nur lokal)
+        from .lizenz import nachfuehren_beim_start
+
+        log.info("Lizenz-Nachführung: %s", nachfuehren_beim_start(dienst.store, settings))
+    except Exception:  # noqa: BLE001 – der Start darf daran nicht scheitern; offene Bilder bleiben gesperrt
+        log.exception("Lizenz-Nachführung fehlgeschlagen")
 
     def anhalten(signum, _frame):
         log.info("Signal %s – beende alle Prozesse", signum)

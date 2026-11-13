@@ -170,7 +170,7 @@ def tage(zeilen, kompakt=False, cls=""):
     return f'<ul class="{k}">{"".join(zeilen)}</ul>'
 
 
-def blatt(d, extra=""):
+def blatt(d, extra="", ort=None):
     marke = ""
     if d in FESTTAGE:
         marke = f'<span class="marke">{TAGE[d.weekday()]}, {FESTTAGE[d]}</span>'
@@ -178,7 +178,7 @@ def blatt(d, extra=""):
         marke = f'<span class="marke">{TAGE[d.weekday()]}</span>'
     wt = marke or f'<span class="wochentag">{TAGE[d.weekday()]}</span>'
     return (f'<p class="tag"><time class="ziffer" datetime="{d.isoformat()}">{d.day}</time>'
-            f'<span class="tag-rest"><span class="monat">{MONATE[d.month-1]} {d.year}</span>{wt}{extra}</span></p>')
+            f'<span class="tag-rest"><span class="monat">{MONATE[d.month-1]} {d.year}</span>{wt}{extra}{f'<span class="tag-ort">{e(ort)}</span>' if ort else ""}</span></p>')
 
 
 def figur(b, cls="bild", lazy=True, link=None, quelle=True):
@@ -213,6 +213,50 @@ def bericht(sid, bild=True, teaser=False, hn="h3"):
             f'<p class="meta"><time datetime="{d.isoformat()}">{datum(d)}</time>, {e(b["ort"])}</p></div></li>')
 
 
+def kurznachweis(b):
+    return nachweis(b).replace(" / Wikimedia Commons", "")
+
+
+def rubrik_von(sid):
+    for n, h, ids, _ in RUBRIKEN:
+        if sid in ids:
+            return n
+    return "Kino" if sid in KINO_IDS else None
+
+
+def strom_zeile(sid, teaser=False, hn="h3", rubrik=True, lazy=True):
+    b = BEI[sid]
+    d = dt.date.fromisoformat(b["datum"])
+    href = link_zu(sid)
+    merk(b)
+    w, h = bildgroesse(b)
+    rn = rubrik_von(sid) if rubrik else None
+    wo = ", ".join(x for x in (rn, b["ort"]) if x)
+    z = (f'<span class="z"><time datetime="{d.isoformat()}">{d.day}</time>'
+         f'<small>{TAGE[d.weekday()][:2]}, {mon_kurz(d)}</small></span>')
+    t = f'<p class="teaser">{e(b["teaser"])}</p>' if teaser else ""
+    bild = (f'<figure class="daumen"><a href="{href}" tabindex="-1" aria-hidden="true"><img src="{e(b["bild"])}" alt="" '
+            f'width="{w}" height="{h}"{" loading=\"lazy\"" if lazy else ""}></a><figcaption>{e(kurznachweis(b))}</figcaption></figure>')
+    rot_k = " class=\"rot\"" if d in FESTTAGE else ""
+    return (f'<li{rot_k}>{z}<div class="s-text"><{hn} class="b-titel"><a href="{href}">{e(b["titel"])}</a></{hn}>'
+            f'<p class="wo">{e(wo)}</p>{t}</div>{bild}</li>')
+
+
+def strom(ids, teaser=False, monat_hn="h3", hn="h4", rubrik=True, monate=True):
+    ids = sorted(ids, key=lambda i: BEI[i]["datum"], reverse=True)
+    if not monate:
+        return f'<ul class="tage strom{" mit-teaser" if teaser else ""}">{"".join(strom_zeile(i, teaser, hn, rubrik) for i in ids)}</ul>'
+    gruppen = {}
+    for i in ids:
+        d = dt.date.fromisoformat(BEI[i]["datum"])
+        gruppen.setdefault((d.year, d.month), []).append(i)
+    aus = ""
+    for (j, m), gids in gruppen.items():
+        aus += (f'<{monat_hn} class="monat-kopf">{MONATE[m-1]}</{monat_hn}>'
+                f'<ul class="tage strom{" mit-teaser" if teaser else ""}">{"".join(strom_zeile(i, teaser, hn, rubrik) for i in gids)}</ul>')
+    return aus
+
+
 def berichte(ids, bild=True, teaser=False, cls="", hn="h3"):
     return f'<ul class="berichte{" " + cls if cls else ""}">{"".join(bericht(i, bild, teaser, hn) for i in ids)}</ul>'
 
@@ -227,8 +271,8 @@ def filme():
         orte = ", ".join(f["orte"])
         if f["weitere_staedte"]:
             orte += f" und {f['weitere_staedte']} weiteren Städten"
-        return (f'<li><span class="z"><span class="n">{f["kinos"]}</span><small>{"Kinos" if f["kinos"] != 1 else "Kino"}</small></span>'
-                f'<span class="was">{e(f["titel"])}</span><span class="wo">{e(orte)}</span></li>')
+        return (f'<li><span class="was">{e(f["titel"])}</span>'
+                f'<span class="wo">In {f["kinos"]} {"Kinos" if f["kinos"] != 1 else "Kino"}: {e(orte)}</span></li>')
     return f'<ul class="tage filme">{film(SCENE)}{film(RAMA)}</ul>'
 
 
@@ -244,8 +288,9 @@ def kopf(aktiv=""):
     menue = "".join(f'<li><a href="{h}"{cur(n)}>{n}</a></li>' for n, h in NAV_R + [DIENSTE[2]] + MITMACHEN)
     return (f'<a class="skip" href="#inhalt">Zum Inhalt</a><header class="kopf"><div class="wrap">'
             f'<a class="logo" href="index.html" aria-label="tamil.de, zur Startseite"><img src="bilder/logo.png" alt="tamil.de" width="300" height="121"></a>'
-            f'<nav class="rubriken" aria-label="Rubriken">{rub}</nav><nav class="dienste" aria-label="Dienste">{dien}</nav>'
-            f'<details class="menue"><summary>Menü</summary><ul>{menue}</ul></details></div></header>')
+            f'<p class="kopf-datum"><time datetime="{HEUTE.isoformat()}">{TAGE[HEUTE.weekday()]}, {datum(HEUTE)}</time></p>'
+            f'<nav class="dienste" aria-label="Dienste">{dien}</nav>'
+            f'<details class="menue"><summary>Rubriken</summary><ul>{menue}</ul></details></div></header>')
 
 
 def fuss():
@@ -328,7 +373,7 @@ EINWILLIGUNG = haken(
     "einwilligung",
     'Ich bin einverstanden, dass tamil.de meine Angaben speichert, um die Einsendung zu bearbeiten. '
     'Gelöscht wird 90 Tage nach Abschluss.',
-    hilfe='<span class="fill">Wortlaut der Einwilligung und Link zur Datenschutzerklärung folgen von KBS</span>')
+    hilfe='<span class="fill">Wortlaut und Datenschutzerklärung folgen</span>')
 
 PERSON = (feld("name", "Ihr Name", attrs='autocomplete="name"')
           + feld("email", "E-Mail", "email", attrs='autocomplete="email"', hilfe="Für Rückfragen der Redaktion. Wird nicht veröffentlicht.")
@@ -347,36 +392,20 @@ hero = (f'<section class="blatt" aria-label="Heute"><div class="wrap">'
         f'<p class="aktionen"><a class="textlink" href="{e(wa(a["titel"]))}">Per WhatsApp schicken</a></p></article>'
         f'<section class="naechste" aria-labelledby="t-h"><h2 id="t-h">Die nächsten Feste</h2>'
         f'{tage([zeile(d, w, o, h, kompakt=True) for d, w, o, h in KOMMEND], kompakt=True)}'
-        f'<p><a class="textlink" href="termine.html">Ganzer Festkalender</a></p></section>'
+        f'<p><a class="textlink" href="termine.html">Ganzer Festkalender</a></p>'
+        f'<h2 class="kino-kurz-kopf">Im Kino</h2><p class="stand">Stand: 9. November 2026</p>{filme()}'
+        f'<p><a class="textlink" href="kino.html">Alle Spielorte</a></p></section>'
         f'</div></section>')
 
-kinoteil = (f'<section class="abschnitt" id="kino" aria-labelledby="k-h"><div class="wrap">'
-            f'{kopfzeile("k-h", "Kino", "kino.html", "Alle Spielorte nach Stadt")}'
-            f'<p class="stand">Stand: 9. November 2026, aus den Programmen der Kinos.</p>{filme()}</div></section>')
-
-gemeinde = (f'<section class="abschnitt" id="community" aria-labelledby="g-h"><div class="wrap">'
-            f'{kopfzeile("g-h", "Tempel und Vereine", "rubrik.html", "Alles aus Community")}'
-            f'{berichte([71, 76, 49, 80, 38, 60], cls="zweispaltig")}</div></section>')
-
-nachrichten = (f'<section class="abschnitt mulde" id="nachrichten" aria-labelledby="n-h"><div class="wrap">'
-               f'{kopfzeile("n-h", "Nachrichten", "rubrik-nachrichten.html", "Alle Nachrichten")}'
-               f'{berichte([85, 87, 51], teaser=True, cls="mit-teaser")}</div></section>')
-
-k = BEI[37]
-kueche = (f'<section class="abschnitt" id="kueche" aria-labelledby="ku-h"><div class="wrap">'
-          f'{kopfzeile("ku-h", "Küche", "rubrik-kueche.html", "Alles aus Küche")}'
-          f'<div class="lead">{figur(k, link="artikel-37.html")}<div><h3 class="lead-titel"><a href="artikel-37.html">{e(k["titel"])}</a></h3>'
-          f'<p class="teaser">{e(k["teaser"])}</p><p class="meta"><time datetime="{k["datum"]}">{datum(dt.date.fromisoformat(k["datum"]))}</time>, {e(k["ort"])}</p>'
-          f'{berichte([62, 39, 48], bild=False)}</div></div></div></section>')
-
-kultur = (f'<section class="abschnitt" id="kultur" aria-labelledby="kk-h"><div class="wrap">'
-          f'{kopfzeile("kk-h", "Kultur und Sport")}'
-          f'{berichte([33, 83, 43, 67], bild=False, cls="zweispaltig")}'
-          f'<p class="weiter-links"><a class="textlink" href="rubrik-kultur.html">Alles aus Kultur</a><a class="textlink" href="rubrik-sport.html">Alles aus Sport</a></p></div></section>')
+ZULETZT = [i for i in BEI if i != 30 and BEI[i]["datum"] >= "2026-07-01"]
+zuletzt = (f'<section class="abschnitt" id="zuletzt" aria-labelledby="z-h"><div class="wrap">'
+           f'<h2 id="z-h" class="strom-kopf">Zuletzt bei tamil.de</h2>{strom(ZULETZT)}'
+           f'<p class="weiter-links">Ältere Beiträge nach Rubrik: '
+           + "".join(f'<a class="textlink" href="{h}">{n}</a>' for n, h in NAV_R) + '</p></div></section>')
 
 schreib("index.html", "tamil.de | Nachrichten, Termine und Kino der tamilischen Community",
         "Nachrichten, Termine und Kino der tamilischen Community in Deutschland, Österreich und der Schweiz.",
-        hero + kinoteil + gemeinde + nachrichten + kueche + kultur)
+        hero + zuletzt)
 
 
 # ======================================================================
@@ -393,10 +422,10 @@ def artikel(sid, name):
                f'<p><a class="textlink" href="termine.html">Zum Festkalender</a></p></aside>')
     weiter_ids = [i for i in (76, 71, 49, 33, 60) if i != sid][:3]
     weiter = (f'<section class="abschnitt" aria-labelledby="w-h"><div class="wrap">{kopfzeile("w-h", "Weiterlesen")}'
-              f'{berichte(weiter_ids, cls="dreispaltig")}</div></section>')
-    body = (f'<article><header class="artikel-kopf"><div class="wrap">{blatt(d)}'
-            f'<div><p class="ort">{e(b["ort"])}</p><h1>{e(b["titel"])}</h1><p class="vorspann">{e(b["teaser"])}</p>'
-            f'<p class="aktionen"><a class="textlink" href="{e(wa(b["titel"]))}">Per WhatsApp teilen</a></p></div></div></header>'
+              f'{strom(weiter_ids, monate=False, hn="h3")}</div></section>')
+    body = (f'<article><header class="artikel-kopf"><div class="wrap">{blatt(d, ort=b["ort"])}'
+            f'<div><h1>{e(b["titel"])}</h1><p class="vorspann">{e(b["teaser"])}</p>'
+            f'<p class="aktionen"><a class="textlink" href="{e(wa(b["titel"]))}">Per WhatsApp schicken</a></p></div></div></header>'
             f'<div class="artikel-bild"><div class="wrap">{figur(b, lazy=False)}</div></div>'
             f'<div class="artikel-text"><div class="wrap"><div class="text">{absz}'
             f'<div class="teilen-block"><a class="knopf" href="{e(wa(b["titel"]))}">Per WhatsApp schicken</a>'
@@ -420,17 +449,8 @@ for rname, datei_name, ids, satz in RUBRIKEN:
     seiten = [ids[i:i + JE_SEITE] for i in range(0, len(ids), JE_SEITE)]
     for n, teilids in enumerate(seiten, 1):
         fname = datei_name if n == 1 else datei_name.replace(".html", f"-{n}.html")
-        erst = teilids[0]
-        b = BEI[erst]
-        d = dt.date.fromisoformat(b["datum"])
-        lead = (f'<section class="abschnitt rubrik-lead" aria-label="Neuester Beitrag"><div class="wrap lead">'
-                f'{figur(b, lazy=False, link=link_zu(erst))}<div><h2 class="lead-titel"><a href="{link_zu(erst)}">{e(b["titel"])}</a></h2>'
-                f'<p class="teaser">{e(b["teaser"])}</p><p class="meta"><time datetime="{b["datum"]}">{datum(d)}</time>, {e(b["ort"])}</p>'
-                f'<p class="aktionen"><a class="textlink" href="{e(wa(b["titel"]))}">Per WhatsApp schicken</a></p></div></div></section>')
-        rest = ""
-        if teilids[1:]:
-            rest = (f'<section class="abschnitt" aria-label="Weitere Beiträge"><div class="wrap">'
-                    f'{berichte(teilids[1:], teaser=True, cls="mit-teaser", hn="h2")}</div></section>')
+        liste = (f'<section class="abschnitt" aria-label="Beiträge"><div class="wrap">'
+                 f'{strom(teilids, teaser=True, monat_hn="h2", hn="h3", rubrik=False)}</div></section>')
         nav = ""
         if len(seiten) > 1:
             def seite_link(k):
@@ -441,13 +461,13 @@ for rname, datei_name, ids, satz in RUBRIKEN:
             nav = (f'<nav class="seiten" aria-label="Seiten"><div class="wrap"><div class="seiten-zeile"><p>Seite {n} von {len(seiten)}</p>'
                    f'<div class="seiten-links">{vor}{"".join(seite_link(k) for k in range(1, len(seiten) + 1))}{nach}</div></div></div></nav>')
         titel = rname if n == 1 else f"{rname}, Seite {n}"
-        schreib(fname, f"{titel} | tamil.de", satz, seitenkopf(titel, e(satz)) + lead + rest + nav, rname)
+        schreib(fname, f"{titel} | tamil.de", satz, seitenkopf(titel, e(satz)) + liste + nav, rname)
 
 
 # ======================================================================
 # Festkalender: ab heute zuerst, darunter das Jahr 2026
 # ======================================================================
-ab_heute = [zeile(HEUTE, "Heute", None, None, teilen=False, heute=True, termin=False)]
+ab_heute = [zeile(HEUTE, "Heute, kein Termin", None, None, teilen=False, heute=True, termin=False)]
 ab_heute += [zeile(d, w, o, h) for d, w, o, h in KOMMEND]
 mon = {}
 for d, sid, titel in CHRONIK:
@@ -478,14 +498,14 @@ for f in (SCENE, RAMA):
         staedte.setdefault(o, []).append(f["titel"])
 stadtzeilen = "".join(
     f'<li><span class="stadt">{e(s)}</span><span class="was">{e(" und ".join(fs))}</span>'
-    f'<span class="wo">Kino und Uhrzeiten folgen</span></li>' for s, fs in sorted(staedte.items()))
+    f'</li>' for s, fs in sorted(staedte.items()))
 kinojahr = sorted([(d, sid, t) for d, sid, t in CHRONIK if sid in KINO_IDS], reverse=True)
 kino_body = (seitenkopf("Kino", "Welcher tamilische Film in welcher Stadt läuft. Stand: 9. November 2026, aus den Programmen der Kinos.",
                         f'<p class="aktionen"><a class="textlink" href="#staedte">Meine Stadt finden</a>'
                         f'<a class="textlink" href="{e(wa("Tamilisches Kino, Stand 9. November 2026"))}">Per WhatsApp schicken</a></p>')
              + f'<section class="abschnitt" aria-labelledby="f-h"><div class="wrap">{kopfzeile("f-h", "Im Programm")}{filme()}</div></section>'
              + f'<section class="abschnitt" id="staedte" aria-labelledby="s-h"><div class="wrap">{kopfzeile("s-h", "Nach Stadt")}'
-             + f'<p class="satz"><span class="fill">Namen der Kinos und Uhrzeiten folgen, sobald die Kinos sie veröffentlichen</span></p>'
+             + f'<p class="satz"><span class="fill">Kinos und Uhrzeiten folgen</span></p>'
              + f'<ul class="staedte">{stadtzeilen}</ul>'
              + f'<p class="satz">„{e(SCENE["titel"])}“ läuft außerdem in {SCENE["weitere_staedte"]} weiteren Städten, die noch nicht erfasst sind.</p></div></section>'
              + f'<section class="abschnitt" aria-labelledby="kj-h"><div class="wrap">{kopfzeile("kj-h", "Aus dem Kinojahr 2026")}'
@@ -510,7 +530,7 @@ regionen = {}
 for v in VERZ:
     regionen.setdefault(v["land"], set()).add(v["region"])
 art_seg = (f'<span class="opt"><input type="radio" name="art" id="art-alle" value="" checked><label for="art-alle">Alle ({len(VERZ)})</label></span>'
-           + "".join(f'<span class="opt"><input type="radio" name="art" id="art-{a.lower()}" value="{a.lower()}"><label for="art-{a.lower()}">{a} ({zaehl(art=a)})</label></span>' for a in ARTEN))
+           + "".join(f'<span class="opt"><input type="radio" name="art" id="art-{a.lower()}" value="{a.lower()}"{" disabled" if not zaehl(art=a) else ""}><label for="art-{a.lower()}">{a} ({zaehl(art=a)})</label></span>' for a in ARTEN))
 land_ops = ['<option value="">Alle Länder</option>'] + [f'<option value="{c}">{n} ({zaehl(land=c)})</option>' for c, n in LAENDER.items()]
 reg_ops = ['<option value="">Alle</option>'] + [
     f'<optgroup label="{LAENDER[c]}">' + "".join(f'<option>{e(r)}</option>' for r in sorted(regionen[c])) + '</optgroup>'
@@ -520,16 +540,17 @@ filter_form = (f'<form class="filter" action="verzeichnis.html" method="get" rol
                f'<div class="feld suche"><label for="q">Suche nach Name, Ort oder Stichwort</label>'
                f'<div class="zeile-feld"><input id="q" name="q" type="search" aria-describedby="q-h"><button class="knopf" type="submit">Suchen</button></div>'
                f'<p class="hilfe" id="q-h">Zum Beispiel Tempel, Zürich oder Tamilschule.</p></div>'
+               f'<details class="filter-mehr"><summary>Filter: Art und Ort</summary>'
                f'<fieldset class="seg"><legend>Art</legend>{art_seg}</fieldset>'
                f'<fieldset class="ort"><legend>Ort</legend><div class="ort-felder">'
                f'{auswahl("land", "Land", land_ops, pflicht=False, zusatz=False)}{auswahl("region", "Bundesland oder Kanton", reg_ops, pflicht=False, zusatz=False)}'
                f'{auswahl("stadt", "Stadt", stadt_ops, pflicht=False, zusatz=False)}</div></fieldset>'
                f'<p class="filter-fuss"><button class="knopf knopf-leise" type="submit">Filter anwenden</button>'
-               f'<a class="textlink" href="verzeichnis.html">Filter zurücksetzen</a></p></form>')
+               f'<a class="textlink" href="verzeichnis.html">Filter zurücksetzen</a></p></details></form>')
 sortiert = sorted(VERZ, key=lambda v: (not v.get("premium"), v["name"].lower()))
 eintraege = "".join(
     f'<li{" class=\"premium\"" if v.get("premium") else ""}><div class="e-name"><h2><a href="{eintrag_datei(v)}">{e(v["name"])}</a></h2>'
-    f'<p class="meta">{v["art"]}, {e(v["kat"])}</p></div><p class="e-ort">{e(v["stadt"])}<small>{e(v["region"])}, {LAENDER[v["land"]]}</small></p>'
+    f'<p class="meta">{v["art"]}, {e(v["kat"])}</p></div><p class="e-ort">{e(v["stadt"])}<small>{e(", ".join(x for x in (v["region"], LAENDER[v["land"]]) if x != v["stadt"]))}</small></p>'
     f'{"<p class=\"e-marke\">Premium</p>" if v.get("premium") else ""}</li>' for v in sortiert)
 verz_body = (seitenkopf("Verzeichnis", "Tempel, Vereine, Geschäfte und Dienstleister der tamilischen Community in Deutschland, Österreich und der Schweiz.",
                         '<p class="aktionen"><a class="textlink" href="kontakt.html">Eintrag vorschlagen</a></p>')
@@ -539,18 +560,18 @@ verz_body = (seitenkopf("Verzeichnis", "Tempel, Vereine, Geschäfte und Dienstle
              + f'<ul class="eintraege">{eintraege}</ul>'
              + f'<p class="hinweis">Für Dienstleister und für Österreich gibt es noch keine Einträge. '
              + f'<a href="kontakt.html">Eintrag vorschlagen</a></p>'
-             + f'<p class="hinweis"><span class="fill">Darstellungsbeispiel: Die Premium-Markierung am Sri Ganesha Hindu Temple ist nicht vergeben</span></p></div></div></section>')
+             + f'<p class="hinweis"><span class="fill">Premium hier nur als Beispiel</span></p></div></div></section>')
 schreib("verzeichnis.html", "Verzeichnis | tamil.de", "Tempel, Vereine, Geschäfte und Dienstleister der tamilischen Community.", verz_body, "Verzeichnis")
 
 for v in VERZ:
     bild = figur(BEI[v["bild"]], lazy=False) if v.get("bild") else ""
-    quellen = berichte(v["quellen"], cls="dreispaltig")
+    quellen = strom(v["quellen"], monate=False, hn="h3")
     lage = e(v["lage"]) if v.get("lage") else '<span class="fill">Adresse folgt</span>'
     prem = '<p class="e-marke">Premium <span class="klein">(Darstellungsbeispiel, nicht vergeben)</span></p>' if v.get("premium") else ""
     angaben = (f'<dl class="angaben"><div><dt>Art</dt><dd>{v["art"]}, {e(v["kat"])}</dd></div>'
-               f'<div><dt>Ort</dt><dd>{e(v["stadt"])}, {e(v["region"])}, {LAENDER[v["land"]]}</dd></div>'
+               f'<div><dt>Ort</dt><dd>{e(", ".join(dict.fromkeys([v["stadt"], v["region"], LAENDER[v["land"]]])))}</dd></div>'
                f'<div><dt>Adresse</dt><dd>{lage}</dd></div>'
-               f'<div><dt>Telefon, E-Mail, Website</dt><dd><span class="fill">Kontaktdaten folgen, wenn der Eintrag sie freigibt</span></dd></div>'
+               f'<div><dt>Telefon, E-Mail, Website</dt><dd><span class="fill">Kontaktdaten folgen</span></dd></div>'
                f'<div><dt>Öffnungszeiten</dt><dd>nicht angegeben</dd></div></dl>')
     body = (f'<article><header class="seitenkopf eintrag-kopf"><div class="wrap"><p class="zurueck"><a class="textlink" href="verzeichnis.html">Zurück zum Verzeichnis</a></p>'
             f'{prem}<h1>{e(v["name"])}</h1><p class="satz">{e(v["text"])}</p></div></header>'
@@ -575,7 +596,7 @@ einreichen_form = (
     '<fieldset><legend>Der Termin</legend>'
     + feld("titel", "Titel", hilfe="So, wie er im Kalender stehen soll.")
     + '<div class="feld-paar">'
-    + feld("beginn", "Datum und Uhrzeit", "datetime-local")
+    + feld("beginn", "Datum und Uhrzeit", "datetime-local", hilfe="Tag, Monat, Jahr und Beginn, zum Beispiel 21.11.2026, 18 Uhr.")
     + feld("ende", "Ende", "datetime-local", pflicht=False) + '</div>'
     + feld("ort", "Ort mit Adresse", hilfe="Saal oder Tempel, Straße und Hausnummer.")
     + '<div class="feld-paar">' + feld("stadt", "Stadt")
@@ -643,7 +664,7 @@ werben_body = (
     + '<p class="satz">Die Rahmen zeigen die Formate im richtigen Verhältnis zueinander. Jede Anzeige trägt auf der Seite den Hinweis „Anzeige“.</p>'
     + f'<ul class="plaetze">{platz_liste}</ul></div></section>'
     + f'<section class="abschnitt mulde" aria-labelledby="pr-h"><div class="wrap">{kopfzeile("pr-h", "Preise und freie Termine")}'
-    + '<p class="satz"><span class="fill">Preise je Laufzeit und der nächste freie Termin folgen von KBS</span> Preise werden mit Umsatzsteuer angezeigt.</p>'
+    + '<p class="satz"><span class="fill">Preise folgen</span> Preise werden mit Umsatzsteuer angezeigt.</p>'
     + '<div class="tabelle-rahmen" tabindex="0" role="region" aria-label="Preise je Platz und Laufzeit"><table class="preise"><thead><tr><th scope="col">Platz</th><th scope="col">7 Tage</th><th scope="col">14 Tage</th>'
     + f'<th scope="col">30 Tage</th><th scope="col">Nächster freier Termin</th></tr></thead><tbody>{preis_zeilen}</tbody></table></div></div></section>'
     + f'<section class="abschnitt" aria-labelledby="b-h"><div class="wrap zwei">{kopfzeile("b-h", "So läuft die Buchung")}'
@@ -652,7 +673,7 @@ werben_body = (
     + '<li><b>Ihre Angaben.</b> Firma, Ansprechperson, Rechnungsadresse, E-Mail.</li>'
     + '<li><b>Werbemittel hochladen.</b> Ein Bild für Desktop und eins für das Handy, JPEG oder PNG, dazu die Zieladresse.</li>'
     + '<li><b>Prüfen und bezahlen.</b> Bedingungen annehmen, Zahlung bei Stripe.</li></ol>'
-    + '<div class="danach"><h3>Danach</h3><p>Die gewählten Tage sind 35 Minuten für Sie reserviert. Nach der Zahlung prüft KBS die Anzeige. '
+    + '<div class="danach"><h3>Danach</h3><p>Die gewählten Tage sind 35 Minuten für Sie reserviert. Nach der Zahlung prüft tamil.de die Anzeige. '
     + 'Sie läuft nur, wenn sie bezahlt und freigegeben ist, und nur an den gebuchten Tagen. Wird sie abgelehnt, erstatten wir den vollen Betrag.</p>'
     + '<p>Kartendaten sieht tamil.de nie; sie bleiben bei Stripe. Gezählt werden Einblendungen und Klicks, ohne Cookies.</p>'
     + '<p>Nicht möglich: bewegte Banner, Video und fremde Skripte.</p></div></div></section>')
@@ -693,7 +714,7 @@ buchen_form = (
     f'<fieldset id="s1"><legend><span class="schritt-nr">Schritt 1 von 5</span>Platz und Laufzeit</legend>'
     f'<div class="wahlen">{platz_radios}</div>'
     f'<fieldset class="seg"><legend>Laufzeit</legend>{lauf_radios}</fieldset>'
-    f'<p class="hilfe">Preis je Laufzeit: <span class="fill">folgt von KBS</span></p></fieldset>'
+    f'<p class="hilfe">Preis je Laufzeit: <span class="fill">Preis folgt</span></p></fieldset>'
     f'<fieldset id="s2"><legend><span class="schritt-nr">Schritt 2 von 5</span>Startdatum</legend>'
     f'<p class="kal-monat">Dezember 2026</p><div class="kal" role="radiogroup" aria-label="Starttag im Dezember 2026">'
     f'<div class="kal-kopf">{kal_kopf}</div><div class="kal-tage">{"".join(tage_kal)}</div></div>'
@@ -713,20 +734,20 @@ buchen_form = (
     f'<fieldset id="s5"><legend><span class="schritt-nr">Schritt 5 von 5</span>Prüfen und bezahlen</legend>'
     '<dl class="angaben zusammenfassung"><div><dt>Platz</dt><dd>Billboard, Startseite zwischen den Rubriken</dd></div>'
     '<div><dt>Zeitraum</dt><dd>8. bis 21. Dezember 2026, 14 Tage</dd></div>'
-    '<div><dt>Preis</dt><dd><span class="fill">folgt von KBS</span></dd></div></dl>'
+    '<div><dt>Preis</dt><dd><span class="fill">Preis folgt</span></dd></div></dl>'
     + haken("bedingungen", "Ich habe die Verkaufsbedingungen gelesen und nehme sie an.",
-            hilfe="Die Verkaufsbedingungen liefert KBS; bis dahin ist hier kein Text verlinkt.")
+            hilfe="Die Verkaufsbedingungen folgen; bis dahin ist hier kein Text verlinkt.")
     + '<p class="hilfe">Die Tage sind ab jetzt 35 Minuten reserviert. Bezahlt wird bei Stripe; danach kommen Sie hierher zurück.</p>'
     '<p class="absenden"><button class="knopf" type="submit">Zur Zahlung bei Stripe</button></p></fieldset></form>')
 schritt_nav = '<nav class="schritte" aria-label="Schritte der Buchung"><ol>' + "".join(f'<li><a href="#{i}">{t}</a></li>' for i, t in schritte) + '</ol></nav>'
 schreib("buchen.html", "Werbeplatz buchen | tamil.de", "Einen Werbeplatz auf tamil.de buchen.",
-        seitenkopf("Werbeplatz buchen", "In fünf Schritten zur Anzeige. Die Werte unten sind Beispiele, bis KBS Preise und Termine liefert.")
+        seitenkopf("Werbeplatz buchen", "In fünf Schritten zur Anzeige. Die Werte unten sind Beispiele.")
         + f'<section class="abschnitt formular-raum"><div class="wrap form-raster">{buchen_form}<aside class="ablauf">{schritt_nav}</aside></div></section>')
 
 buchen_danke = (
     '<section class="abschnitt danke" aria-labelledby="bd-h"><div class="wrap"><div class="danke-box" role="status">'
     '<h1 id="bd-h">Bezahlt, jetzt in Prüfung</h1>'
-    '<p class="satz">Ihre Buchung ist eingegangen. KBS prüft die Anzeige; danach läuft sie an den gebuchten Tagen.</p>'
+    '<p class="satz">Ihre Buchung ist eingegangen. tamil.de prüft die Anzeige; danach läuft sie an den gebuchten Tagen.</p>'
     '<p><span class="fill">Beispiel einer Kundenübersicht mit erfundenen Werten</span></p>'
     '<dl class="angaben"><div><dt>Buchungsnummer</dt><dd><span class="nummer">W-2026-000123</span></dd></div>'
     '<div><dt>Platz</dt><dd>Billboard</dd></div><div><dt>Zeitraum</dt><dd>8. bis 21. Dezember 2026</dd></div>'
@@ -745,7 +766,7 @@ kontakt_form = (
     + '<p class="absenden"><button class="knopf" type="submit">Nachricht senden</button></p></form>')
 kontakt_aside = (
     '<aside class="ablauf" aria-labelledby="r-h"><h2 id="r-h">Redaktion</h2>'
-    '<p><span class="fill">Anschrift, E-Mail und Telefon der Redaktion folgen</span></p>'
+    '<p><span class="fill">Anschrift und Kontakt folgen</span></p>'
     '<p>Antworten schreibt die Redaktion von Hand. Automatische E-Mails verschicken wir nicht.</p>'
     '<h2>Andere Wege</h2><ul class="wege"><li><a href="einreichen.html">Termin einreichen</a></li>'
     '<li><a href="werben.html">Werben und Werbeplatz buchen</a></li><li><a href="verzeichnis.html">Verzeichnis</a></li></ul></aside>')

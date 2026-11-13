@@ -222,9 +222,19 @@ SZENARIEN: list[Szenario] = [
 
 # Bildrechte: KI-Bild mit Budget und Lizenz (ersetzt kein Szenario, läuft als 51 mit, wenn ausdrücklich gewählt)
 BILD = Szenario(51, "KI-Symbolbild mit Lizenz-Datensatz und Kosten", "Bild", [HAMM], texte=HAMM_TEXT,
-                einstellungen={"gemini_key": "test", "bild_reihenfolge": ("archiv", "quelle", "ki", "karte")},
+                einstellungen={"gemini_key": "test", "bild_ki_freigabe": True,
+                               "bild_reihenfolge": ("archiv", "quelle", "ki", "karte")},
                 fake={"bild_prompt": True}, erwartet={"entwuerfe": 1, "bild": "ki", "kosten_min": 0.0336})
 SZENARIEN.append(BILD)
+
+# ---- Lizenz-Datensatz je Bild (Spezifikation Bilder 3, Entscheidung „Ja zu allem“ vom 13.11.2026) ----
+SZENARIEN.append(Szenario(
+    79, "Lizenz-Gate: KI aus trotz Schlüssel → Bildkarte mit Datensatz; Upload ohne Lizenz gesperrt, nach Eintrag "
+        "veröffentlicht", "Bild", [HAMM], texte=HAMM_TEXT, nachher="lizenz_gate",
+    einstellungen={"gemini_key": "test"}, fake={"bild_prompt": True},
+    erwartet={"entwuerfe": 1,
+              "stats": {"erst_karte": 1, "karte_vollstaendig": 1, "ki_aufrufe": 0, "freigabe_gesperrt": 1, "wp_ohne_lizenz": 0,
+                        "lizenz_fehlt_protokoll": 1, "formular_ok": 1, "wp_mit_lizenz": 1, "meta_lizenz": 1}}))
 
 # ---- Stopp-Schalter (Vertrag B1.1, §8, Test T7) ----
 SZENARIEN += [
@@ -327,14 +337,15 @@ SZENARIEN += [
                                              COMMONS_BILD: "jpeg:1600x1066"}},
              erwartet={"aufrufe": 0, "bild": "commons",
                        "stats": {"bild_gesetzt": 1, "asset_commons": 1, "nachweis_am_entwurf": 1,
-                                 "protokoll_bild": 1}}),
+                                 "protokoll_bild": 1, "lizenz_vollstaendig": 1}}),
     Szenario(60, "Bild aus gelisteter Quelle (og:image): Nachweis aus dem Register, nicht aus dem Vorschlag", "Bild", [],
              texte=BILD_TEXTE, nachher="bild_vorschlag",
              einstellungen={**BILD_BASIS, "_bilder": [{"weg": "quelle", "seite_url": TEMPEL_URL,
                                                        "nachweis": "Foto: erfunden"}],
                             "_bild_seiten": {TEMPEL_URL: TEMPEL_HTML_EIGEN, TEMPEL_OG: "jpeg:1600x900"}},
              erwartet={"aufrufe": 0, "bild": "quelle",
-                       "stats": {"bild_gesetzt": 1, "asset_quelle": 1, "nachweis_am_entwurf": 1, "protokoll_bild": 1}}),
+                       "stats": {"bild_gesetzt": 1, "asset_quelle": 1, "nachweis_am_entwurf": 1, "protokoll_bild": 1,
+                                 "lizenz_vollstaendig": 1}}),
     Szenario(61, "Bildvorschläge abgelehnt (Agenturbild, NC-Lizenz, Host nicht im Register, interne Adresse): "
                  "Bildkarte bleibt, nichts Internes abgerufen", "Bild", [], texte=BILD_TEXTE, nachher="bild_vorschlag",
              einstellungen={**BILD_BASIS, "_bilder": [
@@ -348,6 +359,43 @@ SZENARIEN += [
              erwartet={"aufrufe": 0, "bild": "karte",
                        "stats": {"bild_abgelehnt": 4, "bild_gesetzt": 0, "grund_agentur": 1, "grund_lizenz": 1,
                                  "grund_register": 1, "grund_intern": 1, "abrufe_intern": 0, "protokoll_bild": 0}}),
+]
+
+# ---- Social (F4, Festlegung T1–T3) im Trockenmodus bzw. mit nachgestellter Schnittstelle (FakeMeta) ----
+# Nummern ab 70: 67–69 bleiben für parallele Bausteine frei.
+SOCIAL = {"_ohne_modell": True}
+
+SZENARIEN += [
+    Szenario(70, "Social T1: Artikel nach der Karenz zuerst auf Instagram, dann Facebook – Links und Kennung",
+             "Social", [], nachher="social", einstellungen={**SOCIAL, "_social": "t1"},
+             erwartet={"aufrufe": 0, "stats": {"vor_karenz_gesendet": 0, "veroeffentlicht": 2, "links": 2,
+                                               "kennungen": 2, "instagram_zuerst": 1, "regel_fassung": 1}}),
+    Szenario(71, "Social T2: Termin in der Zukunft geht hinaus, Termin in der Vergangenheit wird übersprungen",
+             "Social", [], nachher="social", einstellungen={**SOCIAL, "_social": "t2"},
+             erwartet={"aufrufe": 0, "stats": {"termin_veroeffentlicht": 2, "vergangen_uebersprungen": 2,
+                                               "aufrufe_vergangen": 0}}),
+    Szenario(72, "Social T3: heikler Beitrag geht nie automatisch, steht unter „von Hand entscheiden“", "Social", [],
+             nachher="social", einstellungen={**SOCIAL, "_social": "t3"},
+             erwartet={"aufrufe": 0, "stats": {"von_hand": 2, "grund_r2": 2, "meta_aufrufe": 0, "in_ansicht": 2}}),
+    Szenario(73, "Social: Kanal Instagram gestoppt – nichts geht hinaus, das Protokoll nennt den Grund", "Social", [],
+             nachher="social", einstellungen={**SOCIAL, "_social": "stopp_instagram"},
+             erwartet={"aufrufe": 0, "stats": {"meta_aufrufe": 0, "gesendet": 0, "protokoll_grund": 1}}),
+    Szenario(74, "Social: WhatsApp-Entwurf als gepostet markiert – Person und Zeit im Protokoll", "Social", [],
+             nachher="social", einstellungen={**SOCIAL, "_social": "whatsapp"},
+             erwartet={"aufrufe": 0, "stats": {"gepostet": 1, "protokoll_person": 1, "protokoll_zeit": 1}}),
+    Szenario(75, "Social: der übernommene Altbestand löst nichts aus", "Social", [], nachher="social",
+             einstellungen={**SOCIAL, "_social": "altbestand"},
+             erwartet={"aufrufe": 0, "stats": {"altbestand": 2, "zeilen": 0, "meta_aufrufe": 0}}),
+    Szenario(76, "Social: Abbruch beim Veröffentlichen – Abgleich statt Wiederholung, kein Doppelpost", "Social", [],
+             nachher="social", einstellungen={**SOCIAL, "_social": "abbruch"},
+             erwartet={"aufrufe": 0, "stats": {"erst_unklar": 1, "abgleich_gefunden": 1,
+                                               "veroeffentlichen_aufrufe": 1, "instagram_beitraege": 1}}),
+    Szenario(77, "Social: Trockenmodus – alles vorbereitet, volle Nutzlast gespeichert, kein Aufruf an Meta",
+             "Social", [], nachher="social", einstellungen={**SOCIAL, "_social": "trocken"},
+             erwartet={"aufrufe": 0, "stats": {"trocken": 2, "nutzlast": 2, "ohne_kennung": 2}}),
+    Szenario(78, "Social: Regelwerk nicht von KBS freigegeben – trotz Live-Transport nur Trockenlauf", "Social", [],
+             nachher="social", einstellungen={**SOCIAL, "_social": "ohne_freigabe"},
+             erwartet={"aufrufe": 0, "stats": {"meta_aufrufe": 0, "ohne_freigabe": 1, "trocken": 2}}),
 ]
 
 # Nummer 90 (darunter vergeben parallele Spuren): Gedenk-Sperre gilt seit 13.11.2026 für alle Terminquellen

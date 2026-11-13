@@ -84,6 +84,7 @@ class Vorschlag(BaseModel):
     bild_hinweis: str = Field(default="", max_length=300)
     erzwingen: bool = False
     story_id: int | None = Field(default=None, gt=0, le=2_147_483_647, strict=True)  # ergänzen statt anlegen
+    neu_abrufen: bool = False  # mit story_id: Quellen, die schon Beleg sind, neu abrufen und ihren Text ersetzen
 
     @field_validator("datum")
     @classmethod
@@ -325,13 +326,22 @@ def _ld_werte(wert, tiefe: int = 0) -> list[str]:
     return []
 
 
-def strukturierte_angaben(roh: str) -> str:
+def _ist_termin(typen: set) -> bool:
+    return any(isinstance(t, str) and t.endswith("Event") for t in typen)
+
+
+def strukturierte_angaben(roh: str, nur_termine: bool = False) -> str:
     """Notanker für Seiten ohne lesbaren Text: Felder aus JSON-LD (Movie, Event, ScreeningEvent, NewsArticle, Article),
-    nur wörtlich übernommene Werte, höchstens TEXT_MAX. Leer, wenn nichts Passendes da ist."""
+    nur wörtlich übernommene Werte, höchstens TEXT_MAX. Leer, wenn nichts Passendes da ist.
+    `nur_termine`: nur Termine (Typ …Event mit startDate) – sie ergänzen auch Seiten mit sichtbarem Text, weil Datum,
+    Uhrzeit und Adresse oft nur in den strukturierten Angaben stehen (Eventfrog, Fund 13.11.2026)."""
     zeilen = []
     for obj in _ld_objekte(roh):
         typ = obj.get("@type")
-        if not ({typ} if isinstance(typ, str) else set(typ) if isinstance(typ, list) else set()) & LD_TYPEN:
+        typen = {typ} if isinstance(typ, str) else set(typ) if isinstance(typ, list) else set()
+        if nur_termine and not (_ist_termin(typen) and obj.get("startDate")):
+            continue
+        if not nur_termine and not typen & LD_TYPEN:
             continue
         for feld in LD_FELDER:
             wert = obj
@@ -369,6 +379,9 @@ def seite_lesen(seite: net.Fetched, adresse: str = "", frist: float | None = Non
         daten = strukturierte_angaben(roh)
         if daten:
             return daten, titel, "daten", ""
+    termin = strukturierte_angaben(roh, nur_termine=True)  # Datum, Uhrzeit, Ort eines Termins stehen oft nur dort
+    if termin and text:
+        text = f"{text}\n\n{termin}"[:TEXT_MAX]
     return text, titel, "volltext", ""
 
 
@@ -536,6 +549,23 @@ def _dokument(db, sid: int, doc_key: str, eintrag: tuple, ts: str) -> None:
          art, seitentitel, text, hashlib.sha256(text.encode("utf-8")).hexdigest(), text[:500]))
 
 
+def _aktualisieren(db, sid: int, eintrag: tuple, ts: str) -> int:
+    """Text eines Dokuments, das schon Beleg der Story ist, durch den neu abgerufenen ersetzen (doc_key bleibt). 1,
+    wenn sich der Text geändert hat, sonst 0. Claims der Story beziehen sich auf den doc_key; das Gate prüft ihre
+    Fundstellen beim nächsten Import gegen den neuen Text."""
+    q, text, seitentitel, gelesen, pdf, art = eintrag
+    sha = hashlib.sha256(text.encode("utf-8")).hexdigest()
+    zeile = db.execute("SELECT id, text_sha256 FROM source_documents WHERE story_id = ? AND (url_norm = ? OR url_norm = ? "
+                       "OR uid = ?) ORDER BY id LIMIT 1",
+                       (sid, adresse_norm(gelesen, pdf), adresse_norm(q.url, pdf), _uid(q.url, pdf))).fetchone()
+    if zeile is None or zeile[1] == sha:
+        return 0
+    db.execute("UPDATE source_documents SET text = ?, text_sha256 = ?, auszug = ?, art = ?, retrieved_at = ?, "
+               "titel = CASE WHEN ? != '' THEN ? ELSE titel END WHERE id = ?",
+               (text, sha, text[:500], art, ts, seitentitel, seitentitel, zeile[0]))
+    return 1
+
+
 def _hinweise_zusammen(alt_json: str | None, v: Vorschlag) -> dict:
     """Hinweise der Story mit denen des Vorschlags: leere Felder behalten den alten Wert, Kernfakten aus neu und alt
     ohne Doppel (neue zuerst, höchstens 12)."""
@@ -565,9 +595,12 @@ def _ergaenzen(store: Store, v: Vorschlag, geholt: list, heute: date) -> dict:
                 db.rollback()
                 return {"ergebnis": "abgelehnt", "story_id": sid, "grund": grund, "_story": story}
             belege, je_datei, anzahl = _bestand(store, sid)
-            neu, grund = [], ""
+            neu, grund, aktualisiert = [], "", 0
+            ts = now_iso()
             for g in geholt:  # Grenzen wie vor den Abrufen, jetzt mit dem Bestand zum Zeitpunkt des Schreibens
                 if _schon_beleg(belege, g[0].url, g[4]) or adresse_norm(g[3], g[4]) in belege:
+                    if v.neu_abrufen:
+                        aktualisiert += _aktualisieren(db, sid, g, ts)
                     continue
                 dateien = {repo.normalize_url(g[0].url), repo.normalize_url(g[3])}
                 if max(je_datei.get(d, 0) for d in dateien) >= ANKER_JE_DATEI:
@@ -578,7 +611,7 @@ def _ergaenzen(store: Store, v: Vorschlag, geholt: list, heute: date) -> dict:
                     for d in dateien:
                         je_datei[d] = je_datei.get(d, 0) + 1
                     neu.append(g)
-            if not neu:
+            if not neu and not aktualisiert:
                 db.rollback()
                 if grund:
                     return {"ergebnis": "abgelehnt", "story_id": sid, "grund": grund}
@@ -586,10 +619,15 @@ def _ergaenzen(store: Store, v: Vorschlag, geholt: list, heute: date) -> dict:
             nummern = [int(r[0][1:]) for r in db.execute(
                 "SELECT doc_key FROM source_documents WHERE story_id = ?", (sid,)) if re.fullmatch(r"Q[0-9]+", r[0])]
             start = max(nummern, default=0) + 1
-            ts = now_iso()
             for n, eintrag in enumerate(neu, start):
                 _dokument(db, sid, f"Q{n}", eintrag, ts)
-            zusatz = f"Ergänzt am {heute.isoformat()}: {len(neu)} {'Quelle' if len(neu) == 1 else 'Quellen'}"
+            teile = []
+            if neu:
+                teile.append(f"Ergänzt am {heute.isoformat()}: {len(neu)} {'Quelle' if len(neu) == 1 else 'Quellen'}")
+            if aktualisiert:
+                teile.append(f"Neu abgerufen am {heute.isoformat()}: {aktualisiert} "
+                             f"{'Quelle' if aktualisiert == 1 else 'Quellen'}")
+            zusatz = " · ".join(teile)
             alt = (story.get("notiz") or "").strip()
             notiz = f"{alt[:900 - len(zusatz) - 3]} · {zusatz}" if alt else zusatz
             hinweise = _hinweise_zusammen(story.get("vorschlag"), v)
@@ -602,6 +640,8 @@ def _ergaenzen(store: Store, v: Vorschlag, geholt: list, heute: date) -> dict:
             db.rollback()
             raise
     out = {"ergebnis": "ergaenzt", "story_id": sid, "quellen_geholt": len(neu)}
+    if aktualisiert:
+        out["aktualisiert"] = aktualisiert
     alt_datum = story.get("ereignis_datum") or ""
     return {**out, "hinweis": f"Datum der Story bleibt {alt_datum}"} if alt_datum and alt_datum != v.datum else out
 
@@ -663,7 +703,8 @@ def _eins(store: Store, raw, nr: int, von: str, abruf: Callable, heute: date, uh
     gesehen: set[str] = set()
     hinweise: list[dict] = []  # z. B. „gekürzt …“ je Quelle
     for q in v.quellen:
-        if v.story_id and _schon_beleg(belege, q.url):  # nicht noch einmal holen
+        erneut = bool(v.story_id and v.neu_abrufen and _schon_beleg(belege, q.url))
+        if v.story_id and _schon_beleg(belege, q.url) and not erneut:  # nicht noch einmal holen
             uebersprungen.append({"url": q.url, "grund": SCHON_BELEG})
             continue
         if adresse_norm(q.url) in gesehen:  # vor dem Abruf und Lesen; nach Umleitungen prüft die Stelle unten
@@ -671,11 +712,12 @@ def _eins(store: Store, raw, nr: int, von: str, abruf: Callable, heute: date, uh
             continue
         gesehen.add(adresse_norm(q.url))
         datei = repo.normalize_url(q.url)
-        je_datei[datei] = je_datei.get(datei, 0) + 1
-        if je_datei[datei] > ANKER_JE_DATEI:
+        if not erneut:  # ein erneuter Abruf ersetzt ein Dokument, er legt kein neues an
+            je_datei[datei] = je_datei.get(datei, 0) + 1
+        if not erneut and je_datei[datei] > ANKER_JE_DATEI:
             uebersprungen.append({"url": q.url, "grund": GRUND_SEITEN})
             continue
-        if v.story_id and anzahl + len(geholt) >= MAX_DOKUMENTE:
+        if v.story_id and not erneut and anzahl + len(geholt) >= MAX_DOKUMENTE:
             uebersprungen.append({"url": q.url, "grund": GRUND_MAX})
             continue
         jetzt = uhr()
@@ -707,7 +749,7 @@ def _eins(store: Store, raw, nr: int, von: str, abruf: Callable, heute: date, uh
         gelesen, pdf = seite.url or q.url, ist_pdf(seite)
         if pdf and anker_seite(q.url) > 1 and "#" not in gelesen:
             gelesen += f"#page={anker_seite(q.url)}"  # der Link führt auf die gelesene Seite
-        if v.story_id and adresse_norm(gelesen, pdf) in belege:  # nach einer Umleitung schon Beleg
+        if v.story_id and not erneut and adresse_norm(gelesen, pdf) in belege:  # nach einer Umleitung schon Beleg
             uebersprungen.append({"url": q.url, "grund": SCHON_BELEG})
             continue
         if any(adresse_norm(g[3], g[4]) == adresse_norm(gelesen, pdf) for g in geholt):

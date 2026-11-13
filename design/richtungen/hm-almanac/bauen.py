@@ -242,7 +242,7 @@ def artikel(b):
           </table>
           <p class="sheet__note"><a href="index.html#jahr">Alle zwanzig Berichte</a></p>
         </figure>
-        <a class="btn btn--primary" href="{e(wa(b["titel"]))}">Per WhatsApp teilen</a>
+        <a class="share" href="{e(wa(b["titel"]))}">Per WhatsApp teilen</a>
       </aside>
     </section>
   </article>
@@ -275,7 +275,7 @@ def rubrik():
             <p>{e(b["teaser"])}</p>
             <p class="byline">{e(b["ort"])}</p>
           </div>
-          <figure class="pic eintrag__bild"><div class="photo">{img(b)}</div></figure>
+          <figure class="pic eintrag__bild"><div class="photo">{img(b)}</div><figcaption><small>{nachweis(b)}</small></figcaption></figure>
         </li>'''
 
     for k, teil in enumerate(seiten, start=1):
@@ -297,13 +297,13 @@ def rubrik():
             lead = f'''<article class="grid aufmacher-r">
         <figure class="pic">
           <div class="photo">{img(a, lazy=False, pos="50% 50%")}</div>
-          <figcaption>{e(a["alt"])}.</figcaption>
+          <figcaption>{e(a["alt"])}. <small>{nachweis(a)}</small></figcaption>
         </figure>
         <div class="split__text">
           <h2><a href="{link(a["story_id"])}">{e(a["titel"])}</a></h2>
           <p class="lead">{e(a["teaser"])}</p>
           <p class="byline"><time datetime="{d.isoformat()}">{lang(d)}</time>, {e(a["ort"])}</p>
-          <p class="actions"><a class="btn" href="{link(a["story_id"])}">Beitrag lesen</a><a class="share" href="{e(wa(a["titel"]))}">Per WhatsApp teilen</a></p>
+          <p class="actions"><a class="share" href="{e(wa(a["titel"]))}">Per WhatsApp teilen</a></p>
         </div>
       </article>'''
         zeilen = "\n        ".join(zeile(b) for b in rest)
@@ -379,10 +379,10 @@ def verzeichnis():
     main = f'''  <section class="hero" aria-labelledby="titel">
     <div class="container grid kopfzeile">
       <div class="kopfzeile__text">
-        <h1 id="titel">Tempel, Vereine und Geschäfte der Community</h1>
+        <h1 id="titel">Verzeichnis der Community</h1>
         <p class="lead">Jede Einrichtung hier kommt in einem Bericht auf tamil.de vor; Kontaktdaten tragen die Einrichtungen selbst ein.</p>
       </div>
-      <p class="actions kopfzeile__aktion"><a class="btn btn--primary" href="kontakt.html?anliegen=verzeichnis">Eintrag vorschlagen</a></p>
+      <p class="kopfzeile__aktion"><a class="share" href="kontakt.html?anliegen=verzeichnis">Eintrag vorschlagen</a></p>
     </div>
   </section>
 
@@ -436,7 +436,7 @@ def verzeichnis_eintrag():
         <p class="premium" id="premium">Premium</p>
         <h1 id="titel">Ceylon Palace</h1>
         <p class="lead">Restaurant mit Küche aus Sri Lanka in Bremen, geführt von Suthakar Thiruchelvam und seinem Sohn Anoj.</p>
-        <p class="actions"><a class="btn btn--primary" href="kontakt.html?anliegen=verzeichnis&amp;eintrag=ceylon-palace">Änderung melden</a><a class="share" href="{e(wa("Ceylon Palace, Restaurant mit Küche aus Sri Lanka in Bremen, im Verzeichnis"))}">Per WhatsApp teilen</a></p>
+        <p class="actions"><a class="btn" href="kontakt.html?anliegen=verzeichnis&amp;eintrag=ceylon-palace">Änderung melden</a><a class="share" href="{e(wa("Ceylon Palace, Restaurant mit Küche aus Sri Lanka in Bremen, im Verzeichnis"))}">Per WhatsApp teilen</a></p>
       </div>
       <p class="profil-kopf__hinweis">Muster der Markierung; Premium setzt allein die Verwaltung.</p>
     </div>
@@ -464,7 +464,7 @@ def verzeichnis_eintrag():
     <div class="profil__text">
       <figure class="pic">
         <div class="photo" data-slot="profil" data-alt="Ein Foto aus dem Ceylon Palace">{img(b, pos="50% 50%")}</div>
-        <figcaption>Symbolbild: Chicken Kottu, ein Gericht aus Sri Lanka, nicht aus dem Ceylon Palace.</figcaption>
+        <figcaption>Symbolbild: Chicken Kottu, ein Gericht aus Sri Lanka, nicht aus dem Ceylon Palace. <small>{nachweis(b)}</small></figcaption>
       </figure>
       <h2>Über das Restaurant</h2>
       <p>Vater und Sohn kochen Küche aus Sri Lanka: Currys, Biryani, Dosa und Idly, Devil-Gerichte und vor allem Parotta.</p>
@@ -592,7 +592,7 @@ def einreichen():
     <div class="container grid kopfzeile">
       <div class="kopfzeile__text">
         <h1 id="titel">Danke, die Redaktion meldet sich.</h1>
-        <p class="lead">Ihr Termin ist angekommen und wartet im Eingang der Redaktion.</p>
+        <p class="lead">Ihr Termin ist angekommen.</p>
         <p class="actions"><a class="btn btn--primary" href="termine.html">Zum Festkalender</a><a class="btn" href="einreichen.html">Weiteren Termin einreichen</a></p>
       </div>
     </div>
@@ -608,12 +608,12 @@ def einreichen():
           <tr><th scope="row">Stand</th><td>eingegangen</td></tr>
         </tbody>
       </table>
-      <p class="sheet__note">Bitte die Vorgangsnummer notieren, falls Sie nachfragen. Eine Bestätigung per E-Mail gibt es nicht.</p>
+      <p class="sheet__note">Eine Bestätigung per E-Mail gibt es nicht.</p>
     </figure>
     <aside class="rand" aria-labelledby="r-danach">
       <h2 id="r-danach" class="rand__h">Was jetzt passiert</h2>
       <ol class="ablauf">
-        <li><span>Die Redaktion prüft Datum und Ort und fragt bei Bedarf nach.</span></li>
+        <li><span>Die Redaktion prüft Datum und Ort.</span></li>
         <li><span>Nach der Freigabe steht der Termin im Festkalender.</span></li>
         <li><span>Nach 90 Tagen löscht tamil.de Ihre Kontaktdaten.</span></li>
       </ol>
@@ -702,10 +702,10 @@ def werben():
     main = f'''  <section class="hero" aria-labelledby="titel">
     <div class="container grid kopfzeile">
       <div class="kopfzeile__text">
-        <h1 id="titel">Werben bei der tamilischen Community</h1>
+        <h1 id="titel">Werben auf tamil.de</h1>
         <p class="lead">Sechs Plätze, buchbar für sieben, 14 oder 30 Tage, jeder als Anzeige gekennzeichnet.</p>
       </div>
-      <p class="actions kopfzeile__aktion"><a class="btn btn--primary" href="buchen.html">Platz buchen</a><a class="btn" href="kontakt.html?anliegen=werbung">Lieber anfragen</a></p>
+      <p class="actions kopfzeile__aktion"><a class="btn btn--primary" href="buchen.html">Platz buchen</a><a class="share" href="kontakt.html?anliegen=werbung">Lieber anfragen</a></p>
     </div>
   </section>
 
@@ -800,7 +800,7 @@ def buchen():
     <p class="formular__fehler" data-fehler tabindex="-1" hidden></p>
     <p class="legende-satz">Felder ohne Zusatz sind nötig.</p>
     <section class="schritt grid" id="s1" aria-labelledby="s1-h">
-      <h2 id="s1-h" class="schritt__h"><span class="num">1</span> Platz und Laufzeit</h2>
+      <h2 id="s1-h" class="schritt__h"><span class="nr">1</span> Platz und Laufzeit</h2>
       <div class="schritt__inhalt">
         <fieldset class="wahl wahl--platz"><legend class="visually-hidden">Platz</legend>{plaetze}</fieldset>
         <fieldset class="seg"><legend>Laufzeit</legend>{laufz}</fieldset>
@@ -808,7 +808,7 @@ def buchen():
     </section>
 
     <section class="schritt grid" id="s2" aria-labelledby="s2-h">
-      <h2 id="s2-h" class="schritt__h"><span class="num">2</span> Startdatum</h2>
+      <h2 id="s2-h" class="schritt__h"><span class="nr">2</span> Startdatum</h2>
       <div class="schritt__inhalt">
         <fieldset class="kalender"><legend class="visually-hidden">Startdatum</legend>
           {monat(2026, 11, start, lauf, "start")}
@@ -820,7 +820,7 @@ def buchen():
     </section>
 
     <section class="schritt grid" id="s3" aria-labelledby="s3-h">
-      <h2 id="s3-h" class="schritt__h"><span class="num">3</span> Ihre Angaben</h2>
+      <h2 id="s3-h" class="schritt__h"><span class="nr">3</span> Ihre Angaben</h2>
       <div class="schritt__inhalt">
         <div class="reihe">{feld(p, "firma", "Firma", pflicht=True, auto="organization")}{feld(p, "person", "Ansprechperson", pflicht=True, auto="name")}</div>
         {feld(p, "adresse", "Rechnungsadresse", "textarea", True)}
@@ -830,7 +830,7 @@ def buchen():
     </section>
 
     <section class="schritt grid" id="s4" aria-labelledby="s4-h">
-      <h2 id="s4-h" class="schritt__h"><span class="num">4</span> Werbemittel</h2>
+      <h2 id="s4-h" class="schritt__h"><span class="nr">4</span> Werbemittel</h2>
       <div class="schritt__inhalt">
         <div class="reihe">
           {feld(p, "desktop", "Bild für Desktop", "file", True, ' accept="image/jpeg,image/png"', 'Leaderboard: <span class="num">728 × 90</span> Pixel, JPEG oder PNG.')}
@@ -842,7 +842,7 @@ def buchen():
     </section>
 
     <section class="schritt grid" id="s5" aria-labelledby="s5-h">
-      <h2 id="s5-h" class="schritt__h"><span class="num">5</span> Prüfen und bezahlen</h2>
+      <h2 id="s5-h" class="schritt__h"><span class="nr">5</span> Prüfen und bezahlen</h2>
       <div class="schritt__inhalt">
         <figure class="sheet">
           <figcaption class="sheet__head"><span class="sheet__title">Ihre Buchung</span><span class="sheet__stand">reserviert für 35 Minuten</span></figcaption>

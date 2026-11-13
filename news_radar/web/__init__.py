@@ -122,6 +122,7 @@ def create_app(settings: Settings | None = None, testing: bool = False) -> Flask
     from .betrieb import betrieb
     from .eingang import eingang_bp
     from .redaktion import red
+    from .social import social
     from .views import ui
 
     app.register_blueprint(ui)
@@ -129,6 +130,7 @@ def create_app(settings: Settings | None = None, testing: bool = False) -> Flask
     app.register_blueprint(betrieb)
     app.register_blueprint(eingang_bp)
     app.register_blueprint(api)
+    app.register_blueprint(social)
 
     @app.errorhandler(403)
     def _verboten(exc):
