@@ -305,7 +305,7 @@ a:hover { text-decoration-color: var(--color-accent); }
 /* ---------- Rubrik */
 .rubrik-liste { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--color-ink); }
 .rubrik-zeile { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); column-gap: var(--space-2xl); padding-block: var(--space-xl); border-bottom: 1px solid var(--color-rule); }
-.rubrik-text { display: grid; grid-template-columns: 9.5rem minmax(0, 1fr); column-gap: var(--space-lg); align-content: start; }
+.rubrik-text { min-width: 0; }
 .rubrik-zeile h3 { font-size: var(--text-title); max-width: 34ch; }
 .rubrik-liste + .tafel { margin-top: var(--space-2xl); }
 .seitennav { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-lg); margin-top: var(--space-xl); }
@@ -354,7 +354,6 @@ a:hover { text-decoration-color: var(--color-accent); }
   .datum .mw { padding-top: 0; }
   .zustand, .teilen { grid-column: 2; justify-self: start; }
   .zustand { margin-top: var(--space-xs); }
-  .rubrik-text { grid-template-columns: 5.25rem minmax(0, 1fr); column-gap: var(--space-md); }
   .gruppe { grid-template-columns: minmax(0, 1fr); }
   .angaben > div { grid-template-columns: minmax(0, 1fr); row-gap: var(--space-2xs); }
   .buchung-schritte > li { padding-left: 0; }
