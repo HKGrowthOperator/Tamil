@@ -184,7 +184,7 @@ time { font-variant-numeric: tabular-nums; }
 .hilfe { min-height: 0; font-size: var(--text-sm); color: var(--color-error); }
 .hilfe:empty { display: none; }
 .feld--check { display: grid; grid-template-columns: 28px minmax(0, 1fr); column-gap: var(--space-sm); align-items: start; }
-.feld--check input { width: 24px; height: 24px; margin: 10px 0 0; accent-color: var(--color-ink); }
+.feld--check input { width: 24px; height: 24px; margin: var(--space-xs) 0 0; accent-color: var(--color-ink); }
 .feld--check label { font: 400 var(--text-md)/1.5 var(--font-body); color: var(--color-ink-2); padding-block: var(--space-xs); }
 .feld--check .hilfe { grid-column: 2; }
 .seg { margin: 0; padding: 0; border: 0; min-width: 0; display: flex; flex-wrap: wrap; gap: var(--space-xs); }

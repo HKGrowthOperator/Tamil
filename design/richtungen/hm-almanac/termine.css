@@ -3,6 +3,7 @@
  * axes: mid/grotesk-sans/chromatic-magenta (accent re-hued to the logo red) · posture: restrained · contrast: pass · fold: pass · v2.0.0 */
 /* Hallmark · pre-emit critique: P4 H4 E4 S5 R4 V4 · weakest: H, two dated objects on one page; the sheet keeps the coming weeks, the chart the year, and the chart drops all type but the date, the name and the place */
 @import url("./almanac.css");
+/* Hallmark · waive 49b · the link Deepavali, das Lichterfest wraps to two lines at 320 beside the mono date · the festival name in the dated sheet is the row own content and links to its report */
 /* Hallmark · answered F17 · the year chart places each label in its month column and lets it run past, the column is the date, not the measure */
 /* Hallmark · dismissed 58 · the window holds the dated sheet of four festivals with its source line, counted at 85 */
 /* Hallmark · dismissed 77 · a calendar page: the coming dates, the year as one chart, one festival report and the footer; the material holds no further dated festivals */

@@ -2,9 +2,10 @@
  * hero: Stage, mirrored (photo on 7 columns, the lead story on 5) · nav: masthead (logo over a 2px ink rule, one line of links) · footer: colophon (logo, one ruled link list, credits, legal line) · imagery: photographs (Wikimedia Commons, credited at every picture) · signature: the Fuge, terrazzo divider strips in 2px ink that part the page into unequal fields, no cards · terrazzo: cement (cool off-white), signal is the logo red, cards only for forms
  * axes: light/geometric-sans/warm · posture: restrained · contrast: pass · fold: pass · copy: verbatim · v2.0.0 */
 /* Hallmark · pre-emit critique: P4 H4 E4 S3 R4 V4 · weakest: S, a news page shares its parts with every portal; the Fuge layout, mono dates and the request card for every form keep it in one material */
-/* Hallmark · waive 78 · section heads on the front page sit at 26 to 42px; tamil.de is read by grandparents and every story head competes with its rubric head, so heads stay quieter than the lead story */
-/* Hallmark · waive 59 · the front page parts sections with Fugen and paper changes instead of 120px gaps; a news page with ten stories a screen needs the density */
-/* Hallmark · waive 64 · JetBrains Mono only on dates in the calendar tables, ad sizes in pixels and step numbers; all figures, the theme names mono for codes and measures */
+/* Hallmark · waive 78 · section heads run 26 to 42px under a 46px lead story · tamil.de is read by grandparents on phones, so rubric heads stay quieter than the story heads they sit over */
+/* Hallmark · waive 59 · sections part by a 2px ink Fuge, an ink band or a paper well, gaps 64px and up · a news front page carries ten stories, the joints do the parting the gaps would */
+/* Hallmark · waive 64 · mono only in calendar date cells, ad sizes in pixels and step numbers · dates, pixel measures and numbers are figures, the theme names mono for codes and measures */
+/* Hallmark · waive 49b · story titles are links and wrap over two to four lines on phones · headlines from the newsroom cannot shorten, a news title is a phrase that must wrap */
 @import url("./tokens.css");
 @import url("./base.css");
 
@@ -56,6 +57,7 @@ a:focus-visible, button:focus-visible, input:focus-visible + label, summary:focu
 .btn:disabled, .btn[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; transform: none; }
 .btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 .textlink { display: inline-flex; align-items: center; min-height: 44px; font-weight: 500; text-decoration: underline; text-decoration-thickness: var(--rule-hair); text-decoration-color: var(--color-muted); transition: text-decoration-color var(--dur-micro) var(--ease-out); }
+.kopfblock__satz .textlink { display: inline; min-height: 0; }
 .textlink:hover { text-decoration-color: var(--color-accent); text-decoration-thickness: var(--rule-bar); }
 .aktionen { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-sm) var(--space-lg); }
 
@@ -183,7 +185,7 @@ a:focus-visible, button:focus-visible, input:focus-visible + label, summary:focu
 .anzeige__claim { font-family: var(--font-display); font-weight: 600; font-size: var(--text-2xl); line-height: 1.1; letter-spacing: var(--tracking-display); }
 .anzeige__sub { color: var(--color-ink-2); max-width: 52ch; }
 .anzeige__cta { justify-self: start; margin-top: var(--space-sm); font-weight: 500; text-decoration: underline; text-decoration-thickness: var(--rule-hair); }
-.anzeige--artikel { margin-block: var(--space-xl); max-width: none; }
+.anzeige--artikel { margin-block: var(--space-lg); margin-inline: 0; max-width: none; }
 .anzeige--artikel .anzeige__flaeche { min-height: 0; padding: var(--space-lg); }
 .anzeige--artikel .anzeige__claim { font-size: var(--text-xl); }
 
@@ -363,7 +365,7 @@ input:disabled, select:disabled, textarea:disabled { opacity: 0.55; cursor: not-
 .fuss { margin-top: var(--space-2xl); padding-block: var(--space-2xl); background: var(--color-paper-2); border-top: var(--rule-bar) solid var(--color-ink); font-size: var(--text-label); }
 .fuss__oben { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-xl); }
 .fuss__marke { display: flex; flex-direction: column; gap: var(--space-md); max-width: 40ch; }
-.fuss__marke img { height: 48px; width: auto; }
+.fuss__marke img { height: 48px; width: auto; align-self: flex-start; }
 .fuss__links ul { display: flex; flex-wrap: wrap; gap: 0 var(--space-lg); margin: 0; padding: 0; list-style: none; border-top: var(--rule-hair) solid var(--color-rule); }
 .fuss__links a { display: inline-flex; align-items: center; min-height: 44px; font-weight: 500; text-decoration: none; }
 .fuss__links a:hover { text-decoration: underline; text-decoration-color: var(--color-accent); }
@@ -378,6 +380,10 @@ input:disabled, select:disabled, textarea:disabled { opacity: 0.55; cursor: not-
   .kopfblock { grid-template-columns: minmax(0, 1fr); }
   .filter { padding: var(--space-lg); }
   .formular, .quittung { padding: var(--space-lg); }
-  .hauptnav li.dienst { margin-left: 0; }
+}
+@media (max-width: 47.99rem) {
+  .hauptnav ul { flex-wrap: wrap; column-gap: var(--space-lg); overflow: visible; }
+  .hauptnav li.dienst { margin-left: 0; padding-left: 0; border-left: 0; }
+  .hauptnav a { min-height: 44px; }
 }
 @media (prefers-reduced-motion: reduce) { .btn, .textlink, .hauptnav a, .spec tbody tr, .anzeige__flaeche, .kopf__aktion { transition: none; } }

@@ -294,8 +294,8 @@ def textfeld(fid, label, pflicht=True, hilfe="", zeilen=6):
             f'<p class="hilfe" id="{fid}-h">{hilfe}</p></div>')
 
 
-def auswahl(fid, label, optionen, pflicht=True, hilfe=""):
-    frei = "" if pflicht else ' <span class="frei">(freiwillig)</span>'
+def auswahl(fid, label, optionen, pflicht=True, hilfe="", zusatz=True):
+    frei = "" if pflicht or not zusatz else ' <span class="frei">(freiwillig)</span>'
     req = ' required aria-required="true"' if pflicht else ""
     ops = "".join(o if o.startswith("<") else f'<option>{e(o)}</option>' for o in optionen)
     return (f'<div class="feld"><label for="{fid}">{label}{frei}</label><span class="select">'
@@ -438,8 +438,8 @@ for rname, datei_name, ids, satz in RUBRIKEN:
                 return f'<a href="{f}"{" aria-current=\"page\"" if k == n else ""}>Seite {k}</a>'
             vor = (f'<a class="textlink" href="{datei_name if n - 1 == 1 else datei_name.replace(".html", f"-{n-1}.html")}">Neuere Beiträge</a>' if n > 1 else "")
             nach = (f'<a class="textlink" href="{datei_name.replace(".html", f"-{n+1}.html")}">Ältere Beiträge</a>' if n < len(seiten) else "")
-            nav = (f'<nav class="seiten" aria-label="Seiten"><div class="wrap"><p>Seite {n} von {len(seiten)}</p>'
-                   f'<div class="seiten-links">{vor}{"".join(seite_link(k) for k in range(1, len(seiten) + 1))}{nach}</div></div></nav>')
+            nav = (f'<nav class="seiten" aria-label="Seiten"><div class="wrap"><div class="seiten-zeile"><p>Seite {n} von {len(seiten)}</p>'
+                   f'<div class="seiten-links">{vor}{"".join(seite_link(k) for k in range(1, len(seiten) + 1))}{nach}</div></div></div></nav>')
         titel = rname if n == 1 else f"{rname}, Seite {n}"
         schreib(fname, f"{titel} | tamil.de", satz, seitenkopf(titel, e(satz)) + lead + rest + nav, rname)
 
@@ -522,8 +522,8 @@ filter_form = (f'<form class="filter" action="verzeichnis.html" method="get" rol
                f'<p class="hilfe" id="q-h">Zum Beispiel Tempel, Zürich oder Tamilschule.</p></div>'
                f'<fieldset class="seg"><legend>Art</legend>{art_seg}</fieldset>'
                f'<fieldset class="ort"><legend>Ort</legend><div class="ort-felder">'
-               f'{auswahl("land", "Land", land_ops, pflicht=False)}{auswahl("region", "Bundesland oder Kanton", reg_ops, pflicht=False)}'
-               f'{auswahl("stadt", "Stadt", stadt_ops, pflicht=False)}</div></fieldset>'
+               f'{auswahl("land", "Land", land_ops, pflicht=False, zusatz=False)}{auswahl("region", "Bundesland oder Kanton", reg_ops, pflicht=False, zusatz=False)}'
+               f'{auswahl("stadt", "Stadt", stadt_ops, pflicht=False, zusatz=False)}</div></fieldset>'
                f'<p class="filter-fuss"><button class="knopf knopf-leise" type="submit">Filter anwenden</button>'
                f'<a class="textlink" href="verzeichnis.html">Filter zurücksetzen</a></p></form>')
 sortiert = sorted(VERZ, key=lambda v: (not v.get("premium"), v["name"].lower()))

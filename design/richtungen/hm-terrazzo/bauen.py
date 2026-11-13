@@ -223,7 +223,7 @@ seite("index.html", "tamil.de | Nachrichten, Termine und Kino der tamilischen Co
       hero + termine + nachrichten + kino + gemeinde + werbung + kueche, [a, BEI[85], BEI[71], BEI[62]])
 
 # ---------------------------------------------------------------- Artikel
-WEITER = {30: (49, 76, 33)}
+WEITER = {30: (71, 76, 33)}
 
 
 def artikel(sid, name):

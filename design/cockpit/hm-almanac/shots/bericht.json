@@ -1,0 +1,414 @@
+{
+  "stand": "2026-11-13T21:08:17.711Z",
+  "ergebnisse": [
+    {
+      "ziel": "http://127.0.0.1:8946/cockpit/hm-almanac/uebersicht.html",
+      "url": "http://127.0.0.1:8946/cockpit/hm-almanac/uebersicht.html",
+      "breite": 390,
+      "status": 200,
+      "datei": "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-uebersicht-390.png",
+      "kacheln": [
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-uebersicht-390-k0.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-uebersicht-390-k1.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-uebersicht-390-k2.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-uebersicht-390-k3.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-uebersicht-390-k4.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8946/cockpit/hm-almanac/entwurf.html",
+      "url": "http://127.0.0.1:8946/cockpit/hm-almanac/entwurf.html",
+      "breite": 390,
+      "status": 200,
+      "datei": "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-entwurf-390.png",
+      "kacheln": [
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-entwurf-390-k0.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-entwurf-390-k1.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-entwurf-390-k2.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-entwurf-390-k3.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-entwurf-390-k4.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-entwurf-390-k5.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-entwurf-390-k6.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8946/cockpit/hm-almanac/entwurf-freigabe.html",
+      "url": "http://127.0.0.1:8946/cockpit/hm-almanac/entwurf-freigabe.html",
+      "breite": 390,
+      "status": 200,
+      "datei": "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-entwurf-freigabe-390.png",
+      "kacheln": [
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-entwurf-freigabe-390-k0.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-entwurf-freigabe-390-k1.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-entwurf-freigabe-390-k2.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-entwurf-freigabe-390-k3.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-entwurf-freigabe-390-k4.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-entwurf-freigabe-390-k5.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8946/cockpit/hm-almanac/eingang.html",
+      "url": "http://127.0.0.1:8946/cockpit/hm-almanac/eingang.html",
+      "breite": 390,
+      "status": 200,
+      "datei": "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-eingang-390.png",
+      "kacheln": [
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-eingang-390-k0.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-eingang-390-k1.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-eingang-390-k2.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-eingang-390-k3.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8946/cockpit/hm-almanac/social.html",
+      "url": "http://127.0.0.1:8946/cockpit/hm-almanac/social.html",
+      "breite": 390,
+      "status": 200,
+      "datei": "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-social-390.png",
+      "kacheln": [
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-social-390-k0.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-social-390-k1.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-social-390-k2.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-social-390-k3.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8946/cockpit/hm-almanac/verzeichnis.html",
+      "url": "http://127.0.0.1:8946/cockpit/hm-almanac/verzeichnis.html",
+      "breite": 390,
+      "status": 200,
+      "datei": "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-verzeichnis-390.png",
+      "kacheln": [
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-verzeichnis-390-k0.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-verzeichnis-390-k1.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-verzeichnis-390-k2.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8946/cockpit/hm-almanac/buchungen.html",
+      "url": "http://127.0.0.1:8946/cockpit/hm-almanac/buchungen.html",
+      "breite": 390,
+      "status": 200,
+      "datei": "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-buchungen-390.png",
+      "kacheln": [
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-buchungen-390-k0.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-buchungen-390-k1.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-buchungen-390-k2.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-buchungen-390-k3.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8946/cockpit/hm-almanac/uebersicht.html",
+      "url": "http://127.0.0.1:8946/cockpit/hm-almanac/uebersicht.html",
+      "breite": 820,
+      "status": 200,
+      "datei": "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-uebersicht-820.png",
+      "kacheln": [
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-uebersicht-820-k0.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-uebersicht-820-k1.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-uebersicht-820-k2.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8946/cockpit/hm-almanac/entwurf.html",
+      "url": "http://127.0.0.1:8946/cockpit/hm-almanac/entwurf.html",
+      "breite": 820,
+      "status": 200,
+      "datei": "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-entwurf-820.png",
+      "kacheln": [
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-entwurf-820-k0.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-entwurf-820-k1.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-entwurf-820-k2.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-entwurf-820-k3.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-entwurf-820-k4.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8946/cockpit/hm-almanac/entwurf-freigabe.html",
+      "url": "http://127.0.0.1:8946/cockpit/hm-almanac/entwurf-freigabe.html",
+      "breite": 820,
+      "status": 200,
+      "datei": "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-entwurf-freigabe-820.png",
+      "kacheln": [
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-entwurf-freigabe-820-k0.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-entwurf-freigabe-820-k1.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-entwurf-freigabe-820-k2.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-entwurf-freigabe-820-k3.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8946/cockpit/hm-almanac/eingang.html",
+      "url": "http://127.0.0.1:8946/cockpit/hm-almanac/eingang.html",
+      "breite": 820,
+      "status": 200,
+      "datei": "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-eingang-820.png",
+      "kacheln": [
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-eingang-820-k0.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-eingang-820-k1.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-eingang-820-k2.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8946/cockpit/hm-almanac/social.html",
+      "url": "http://127.0.0.1:8946/cockpit/hm-almanac/social.html",
+      "breite": 820,
+      "status": 200,
+      "datei": "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-social-820.png",
+      "kacheln": [
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-social-820-k0.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-social-820-k1.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-social-820-k2.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8946/cockpit/hm-almanac/verzeichnis.html",
+      "url": "http://127.0.0.1:8946/cockpit/hm-almanac/verzeichnis.html",
+      "breite": 820,
+      "status": 200,
+      "datei": "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-verzeichnis-820.png",
+      "kacheln": [
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-verzeichnis-820-k0.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-verzeichnis-820-k1.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8946/cockpit/hm-almanac/buchungen.html",
+      "url": "http://127.0.0.1:8946/cockpit/hm-almanac/buchungen.html",
+      "breite": 820,
+      "status": 200,
+      "datei": "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-buchungen-820.png",
+      "kacheln": [
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-buchungen-820-k0.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-buchungen-820-k1.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-buchungen-820-k2.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8946/cockpit/hm-almanac/uebersicht.html",
+      "url": "http://127.0.0.1:8946/cockpit/hm-almanac/uebersicht.html",
+      "breite": 1280,
+      "status": 200,
+      "datei": "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-uebersicht-1280.png",
+      "kacheln": [
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-uebersicht-1280-k0.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-uebersicht-1280-k1.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8946/cockpit/hm-almanac/entwurf.html",
+      "url": "http://127.0.0.1:8946/cockpit/hm-almanac/entwurf.html",
+      "breite": 1280,
+      "status": 200,
+      "datei": "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-entwurf-1280.png",
+      "kacheln": [
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-entwurf-1280-k0.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-entwurf-1280-k1.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-entwurf-1280-k2.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8946/cockpit/hm-almanac/entwurf-freigabe.html",
+      "url": "http://127.0.0.1:8946/cockpit/hm-almanac/entwurf-freigabe.html",
+      "breite": 1280,
+      "status": 200,
+      "datei": "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-entwurf-freigabe-1280.png",
+      "kacheln": [
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-entwurf-freigabe-1280-k0.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-entwurf-freigabe-1280-k1.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-entwurf-freigabe-1280-k2.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8946/cockpit/hm-almanac/eingang.html",
+      "url": "http://127.0.0.1:8946/cockpit/hm-almanac/eingang.html",
+      "breite": 1280,
+      "status": 200,
+      "datei": "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-eingang-1280.png",
+      "kacheln": [
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-eingang-1280-k0.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-eingang-1280-k1.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8946/cockpit/hm-almanac/social.html",
+      "url": "http://127.0.0.1:8946/cockpit/hm-almanac/social.html",
+      "breite": 1280,
+      "status": 200,
+      "datei": "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-social-1280.png",
+      "kacheln": [
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-social-1280-k0.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-social-1280-k1.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8946/cockpit/hm-almanac/verzeichnis.html",
+      "url": "http://127.0.0.1:8946/cockpit/hm-almanac/verzeichnis.html",
+      "breite": 1280,
+      "status": 200,
+      "datei": "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-verzeichnis-1280.png",
+      "kacheln": [
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-verzeichnis-1280-k0.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-verzeichnis-1280-k1.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "http://127.0.0.1:8946/cockpit/hm-almanac/buchungen.html",
+      "url": "http://127.0.0.1:8946/cockpit/hm-almanac/buchungen.html",
+      "breite": 1280,
+      "status": 200,
+      "datei": "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-buchungen-1280.png",
+      "kacheln": [
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-buchungen-1280-k0.png",
+        "design/cockpit/hm-almanac/shots/cockpit-hm-almanac-buchungen-1280-k1.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    }
+  ],
+  "fehler": 0
+}

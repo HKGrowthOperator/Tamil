@@ -277,6 +277,7 @@ details.aufklapp[open] > summary { margin-bottom: var(--space-sm); }
   .seitenleiste { display: none; }
   .menue { display: block; order: 3; margin-left: auto; }
   .menue[open] { width: 100%; margin-left: 0; }
+  .menue:not([open]) > :not(summary) { display: none; }
   .wer { display: none; }
   .menue > summary { display: inline-flex; align-items: center; min-height: 44px; padding: 0 var(--space-md); border: 1px solid var(--color-rule-strong); border-radius: var(--radius-card); cursor: pointer; font-weight: 600; }
   .menue[open] > summary { margin-bottom: var(--space-xs); }
@@ -309,7 +310,7 @@ details.aufklapp[open] > summary { margin-bottom: var(--space-sm); }
   .tabelle.stapel, .tabelle.stapel tbody, .tabelle.stapel tr, .tabelle.stapel td { display: block; width: 100%; }
   .tabelle.stapel tr { padding-block: var(--space-sm); border-bottom: 1px solid var(--color-rule); }
   .tabelle.stapel td { border: 0; padding: var(--space-3xs) 0; display: grid; grid-template-columns: 8rem minmax(0, 1fr); gap: var(--space-sm); }
-  .tabelle.stapel td::before { content: attr(data-l); color: var(--color-ink-2); font-size: var(--text-sm); }
+  .tabelle.stapel td::before { content: attr(data-l); color: var(--color-ink-2); font-size: var(--text-sm); font-weight: 400; }
   .tabelle.stapel td.kopf { display: block; font-weight: 600; }
   .tabelle.stapel td.kopf::before { content: none; }
   .tabelle.stapel td.r { text-align: left; }
@@ -319,7 +320,6 @@ details.aufklapp[open] > summary { margin-bottom: var(--space-sm); }
   .tabelle.stapel td.tun { display: block; }
   .tabelle.stapel td.tun::before { content: none; }
   .tabelle.stapel td.tun .aktionen { justify-content: flex-start; margin-top: var(--space-xs); }
-  .knopf { white-space: normal; text-align: center; }
 }
 
 @media (prefers-reduced-motion: reduce) {

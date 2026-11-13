@@ -258,7 +258,7 @@ def entwurf(lizenz_fehlt: bool) -> None:
         zustand = '<p class="st halt">Bild ohne Lizenz</p>'
     else:
         meldung = ""
-        freigabe_knopf = '<button type="submit" class="knopf primaer">Freigeben und veröffentlichen</button>'
+        freigabe_knopf = '<button type="submit" class="knopf primaer">Freigeben</button><p class="klein leise">Freigeben veröffentlicht sofort auf tamil.de.</p>'
         bild = f"""<section class="seite-teil" aria-labelledby="h-bild">
   <h2 id="h-bild">Bild</h2>
   <figure class="bild"><img src="bilder/rb-30.jpg" alt="{e(b['alt'])}" width="1280" height="960"><figcaption>{e(b['nachweis'])}</figcaption></figure>
@@ -356,7 +356,7 @@ def eingang() -> None:
         ("E-0412", "Termin", "Diwali in Basel", "13.11., 7:58 Uhr", "vorbereitet", "wartet", "mögliche Dublette", True),
         ("E-0411", "Termin", "Laternenabend der Tamilschule Beispielstadt", "12.11., 21:40 Uhr", "vorbereitet", "wartet", "Datum in der Vergangenheit", False),
         ("E-0410", "Beitrag", "Neue Räume für die Tamilschule Beispielstadt", "12.11., 18:05 Uhr", "vorbereitet", "wartet", "", False),
-        ("E-0409", "Werbung", "Beispiel Catering GmbH, Leaderboard im Dezember", "12.11., 10:22 Uhr", "vorbereitet", "wartet", "", False),
+        ("E-0409", "Werbung", "Leaderboard im Dezember", "12.11., 10:22 Uhr", "vorbereitet", "wartet", "", False),
         ("E-0408", "Kontakt", "Frage zum Kinoprogramm in Wien", "11.11., 16:30 Uhr", "vorbereitet", "wartet", "", False),
         ("E-0405", "Termin", "Pongal-Treffen in Chennai", "10.11., 12:14 Uhr", "abgelehnt", "halt", "Ort außerhalb von DE, AT, CH", False),
     ]
@@ -364,7 +364,7 @@ def eingang() -> None:
     for nr, art, betreff, zeit, st, kl, hinweis, aktiv in zeilen:
         cur = ' aria-current="true"' if aktiv else ""
         h = f'<span class="warnung">{hinweis}</span>' if hinweis else '<span class="leise">keine</span>'
-        rows.append(f'<tr{cur}><td class="kopf"><a href="eingang.html?vorgang={nr}">{art}: {e(betreff)}</a></td><td data-l="Vorgang" class="zahl nw">{nr}</td><td data-l="Eingang" class="nw">{zeit}</td><td data-l="Stand"><span class="st {kl}">{st}</span></td><td data-l="Hinweise">{h}</td></tr>')
+        rows.append(f'<tr{cur}><td class="kopf"><a href="eingang.html?vorgang={nr}">{e(betreff)}</a></td><td data-l="Art">{art}</td><td data-l="Eingang" class="nw">{zeit}</td><td data-l="Stand"><span class="st {kl}">{st}</span></td><td data-l="Hinweise">{h}</td></tr>')
     inhalt = f"""
 <header class="seitenkopf"><div><h1>Eingang</h1><p class="unter">Einsendungen von tamil.de. Der Agent prüft und bereitet vor; entscheiden und antworten tut die Redaktion.</p></div></header>
 <ul class="reiter" aria-label="Nach Art filtern">
@@ -377,7 +377,7 @@ def eingang() -> None:
   <li><a href="eingang.html?stand=erledigt">Erledigt und abgelehnt</a></li>
 </ul>
 <table class="tabelle stapel liste-eingang">
-  <thead><tr><th>Einsendung</th><th>Vorgang</th><th>Eingang</th><th>Stand</th><th>Hinweise des Agenten</th></tr></thead>
+  <thead><tr><th>Einsendung</th><th>Art</th><th>Eingang</th><th>Stand</th><th>Hinweise des Agenten</th></tr></thead>
   <tbody>{''.join(rows)}</tbody>
 </table>
 
@@ -570,7 +570,7 @@ def verzeichnis() -> None:
   <dt>Premium</dt><dd>nein, setzt nur der Administrator in WordPress</dd>
   <dt>Einwilligung</dt><dd>ja, Fassung vom 1. November 2026</dd>
 </dl>
-<div class="aktionen formende"><button type="submit" class="knopf primaer" name="ergebnis" value="aenderung">Als Änderung an V-0031 freigeben</button><button type="submit" class="knopf" name="ergebnis" value="neu">Als neuen Eintrag freigeben</button><button type="submit" class="knopf gefahr" name="ergebnis" value="ablehnen">Ablehnen</button></div>
+<div class="aktionen formende"><button type="submit" class="knopf primaer" name="ergebnis" value="aenderung">Als Änderung freigeben</button><button type="submit" class="knopf" name="ergebnis" value="neu">Als neuen Eintrag freigeben</button><button type="submit" class="knopf gefahr" name="ergebnis" value="ablehnen">Ablehnen</button></div>
 </form>
 </section>
 """
@@ -588,13 +588,13 @@ def buchungen() -> None:
   <li><a href="buchungen.html?stand=warnung">Mit Warnung <span class="n">1</span></a></li>
 </ul>
 <table class="tabelle stapel">
-  <thead><tr><th>Buchung</th><th>Platz</th><th>Zeitraum</th><th>Stand</th><th class="r">Einblendungen</th><th class="r">Klicks</th></tr></thead>
+  <thead><tr><th>Buchung</th><th>Kunde</th><th>Platz</th><th>Zeitraum</th><th>Stand</th><th class="r">Einblendungen</th><th class="r">Klicks</th></tr></thead>
   <tbody>
-    <tr aria-current="true"><td class="kopf"><a href="buchungen.html?buchung=W-2026-0007">W-2026-0007, Beispiel Reisen GmbH</a></td><td data-l="Platz">Billboard</td><td data-l="Zeitraum" class="nw">16.11. bis 29.11.</td><td data-l="Stand"><span class="st wartet">bezahlt, in Prüfung</span></td><td data-l="Einblendungen" class="r zahl">0</td><td data-l="Klicks" class="r zahl">0</td></tr>
-    <tr><td class="kopf"><a href="buchungen.html?buchung=W-2026-0006">W-2026-0006, Musterkino Beispielstadt</a></td><td data-l="Platz">Leaderboard</td><td data-l="Zeitraum" class="nw">9.11. bis 15.11.</td><td data-l="Stand"><span class="st ok">läuft</span></td><td data-l="Einblendungen" class="r zahl">4.812</td><td data-l="Klicks" class="r zahl">37</td></tr>
-    <tr><td class="kopf"><a href="buchungen.html?buchung=W-2026-0005">W-2026-0005, Beispiel Handel KG</a></td><td data-l="Platz">Im Artikel</td><td data-l="Zeitraum" class="nw">abgelehnt am 10.11.</td><td data-l="Stand"><span class="warnung">Erstattung fehlgeschlagen</span></td><td data-l="Einblendungen" class="r zahl">0</td><td data-l="Klicks" class="r zahl">0</td></tr>
-    <tr><td class="kopf"><a href="buchungen.html?buchung=W-2026-0004">W-2026-0004, Beispiel Reisen GmbH</a></td><td data-l="Platz">Seitenspalte</td><td data-l="Zeitraum" class="nw">26.10. bis 8.11.</td><td data-l="Stand"><span class="st">beendet</span></td><td data-l="Einblendungen" class="r zahl">9.640</td><td data-l="Klicks" class="r zahl">71</td></tr>
-    <tr><td class="kopf"><a href="buchungen.html?buchung=W-2026-0008">W-2026-0008, Beispiel Catering GmbH</a></td><td data-l="Platz">Fuß</td><td data-l="Zeitraum" class="nw">1.12. bis 7.12.</td><td data-l="Stand"><span class="st wartet">reserviert bis 9:52 Uhr</span></td><td data-l="Einblendungen" class="r zahl">0</td><td data-l="Klicks" class="r zahl">0</td></tr>
+    <tr aria-current="true"><td class="kopf"><a href="buchungen.html?buchung=W-2026-0007">W-2026-0007</a></td><td data-l="Kunde">Beispiel Reisen GmbH</td><td data-l="Platz">Billboard</td><td data-l="Zeitraum" class="nw">16.11. bis 29.11.</td><td data-l="Stand"><span class="st wartet">bezahlt, in Prüfung</span></td><td data-l="Einblendungen" class="r zahl">0</td><td data-l="Klicks" class="r zahl">0</td></tr>
+    <tr><td class="kopf"><a href="buchungen.html?buchung=W-2026-0006">W-2026-0006</a></td><td data-l="Kunde">Musterkino Beispielstadt</td><td data-l="Platz">Leaderboard</td><td data-l="Zeitraum" class="nw">9.11. bis 15.11.</td><td data-l="Stand"><span class="st ok">läuft</span></td><td data-l="Einblendungen" class="r zahl">4.812</td><td data-l="Klicks" class="r zahl">37</td></tr>
+    <tr><td class="kopf"><a href="buchungen.html?buchung=W-2026-0005">W-2026-0005</a></td><td data-l="Kunde">Beispiel Handel KG</td><td data-l="Platz">Im Artikel</td><td data-l="Zeitraum" class="nw">abgelehnt am 10.11.</td><td data-l="Stand"><span class="warnung">Erstattung fehlgeschlagen</span></td><td data-l="Einblendungen" class="r zahl">0</td><td data-l="Klicks" class="r zahl">0</td></tr>
+    <tr><td class="kopf"><a href="buchungen.html?buchung=W-2026-0004">W-2026-0004</a></td><td data-l="Kunde">Beispiel Reisen GmbH</td><td data-l="Platz">Seitenspalte</td><td data-l="Zeitraum" class="nw">26.10. bis 8.11.</td><td data-l="Stand"><span class="st">beendet</span></td><td data-l="Einblendungen" class="r zahl">9.640</td><td data-l="Klicks" class="r zahl">71</td></tr>
+    <tr><td class="kopf"><a href="buchungen.html?buchung=W-2026-0008">W-2026-0008</a></td><td data-l="Kunde">Beispiel Catering GmbH</td><td data-l="Platz">Fuß</td><td data-l="Zeitraum" class="nw">1.12. bis 7.12.</td><td data-l="Stand"><span class="st wartet">reserviert bis 9:52 Uhr</span></td><td data-l="Einblendungen" class="r zahl">0</td><td data-l="Klicks" class="r zahl">0</td></tr>
   </tbody>
 </table>
 
