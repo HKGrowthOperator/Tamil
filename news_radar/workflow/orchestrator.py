@@ -243,7 +243,8 @@ def termin_vorbei(ctx: Kontext, story: dict, docs) -> str:
 def schritt_recherche(ctx: Kontext, job: dict) -> list[tuple[str, dict]]:
     story = _story(ctx, job)
     if story["status"] != "recherche_erforderlich":  # in der Nachrecherche bleibt die Story im Reiter sichtbar
-        repo.story_setzen(ctx.store, story["id"], status="recherche")
+        if not repo.story_setzen(ctx.store, story["id"], nur_offen=True, status="recherche"):
+            return []  # inzwischen fertig oder verworfen
     docs = research.belege_sammeln(ctx, story)
     vorbei = termin_vorbei(ctx, story, docs)
     if vorbei:  # vor jedem bezahlten Aufruf: ein vergangener Termin wird kein Beitrag
@@ -336,8 +337,8 @@ def schritt_seo(ctx: Kontext, job: dict) -> list[tuple[str, dict]]:
 # ---- Nachrecherche und zweite KI (Auftrag Luis, 13.11.2026) ---------------------------------------------
 
 def _verwerfen(ctx: Kontext, story: dict, grund: str) -> list[tuple[str, dict]]:
-    repo.story_setzen(ctx.store, story["id"], status="verworfen", notiz=grund[:900])
-    ctx.store.event("verworfen", story=story["id"], titel=story["titel"], grund=grund[:300])
+    if repo.story_setzen(ctx.store, story["id"], nur_offen=True, status="verworfen", notiz=grund[:900]):
+        ctx.store.event("verworfen", story=story["id"], titel=story["titel"], grund=grund[:300])
     return []
 
 
@@ -357,7 +358,8 @@ def _nicht_belegt(ctx: Kontext, story: dict, p: dict, gruende: list[str], fehlen
         notiz = f"In Nachrecherche (Runde {n + 1} von {nachrecherche.MAX_RUNDEN}); {grund}"
     else:
         notiz = f"Zweite KI prüft nach {n} Runden Nachrecherche; {grund}"
-    repo.story_setzen(ctx.store, sid, status="recherche_erforderlich", notiz=notiz[:900])
+    if not repo.story_setzen(ctx.store, sid, nur_offen=True, status="recherche_erforderlich", notiz=notiz[:900]):
+        return []
     return [(weiter_mit, weiter)]
 
 
@@ -385,7 +387,12 @@ def schritt_nachrecherche(ctx: Kontext, job: dict) -> list[tuple[str, dict]]:
     return [("pruefung", weiter)]
 
 
-MAX_PRUEFUNGEN = 3
+MAX_PRUEFUNGEN = 10  # Recherche-, Prüf- und Endprüf-Jobs je Story zusammen (alle Runden und Neustarts)
+
+
+def modell_schritte(store, story_id: int) -> int:
+    return store.db.execute("SELECT COUNT(*) FROM workflow_jobs WHERE story_id = ? AND schritt IN "
+                            "('recherche', 'pruefung', 'endpruefung')", (story_id,)).fetchone()[0]
 
 
 def schritt_pruefung(ctx: Kontext, job: dict) -> list[tuple[str, dict]]:
@@ -398,7 +405,7 @@ def schritt_pruefung(ctx: Kontext, job: dict) -> list[tuple[str, dict]]:
     gate_text += f" · {'; '.join(runden_text)}" if runden_text else ""
     schon = ctx.store.db.execute("SELECT COUNT(*) FROM workflow_jobs WHERE story_id = ? AND schritt = 'pruefung'",
                                  (sid,)).fetchone()[0]
-    if schon > MAX_PRUEFUNGEN:  # Sicherung gegen einen Kreisel (neue Quellen starten eine verworfene Story neu)
+    if modell_schritte(ctx.store, sid) > MAX_PRUEFUNGEN:  # Sicherung gegen einen Kreisel (Neustarts, Runden)
         return _verwerfen(ctx, story, f"Zweite KI: verworfen – {schon - 1}× geprüft, Belege tragen nicht{gate_text}")
     claims = repo.claims(ctx.store, sid)
     urteil = pruefer.story_pruefen(ctx, story, claims, repo.dokumente(ctx.store, sid), gruende, job["id"])
@@ -432,6 +439,11 @@ def schritt_endpruefung(ctx: Kontext, job: dict) -> list[tuple[str, dict]]:
     zusatz = [SatzUrteil(nr=0, satz=s, urteil="ungedeckt", claim_ids=[], fundstelle="", kern=False)
               for s in p.get("fc_ungedeckt", []) if s.strip() not in beanstandet]
     neu, gestrichen, probleme = pruefer.pruefung_anwenden(felder, urteile + zusatz)
+    fehlt, _ = pruefer.abdeckung(felder, urteile)  # jeder Satz muss geprüft sein, sonst Überarbeitung
+    probleme += [SatzUrteil(nr=0, satz=s, urteil="ungedeckt", claim_ids=[], fundstelle="nicht geprüft", kern=True)
+                 for s in fehlt]
+    if modell_schritte(ctx.store, sid) > MAX_PRUEFUNGEN:
+        return _verwerfen(ctx, story, "Zweite KI (Endprüfung): verworfen – zu viele Prüfrunden")
     modell = ctx.settings.modell_fuer("pruefer")
     repo.fassung_speichern(ctx.store, sid, "pruefung", {**neu, "pruefung": [u.model_dump() for u in urteile]},
                            von=modell)
@@ -440,8 +452,8 @@ def schritt_endpruefung(ctx: Kontext, job: dict) -> list[tuple[str, dict]]:
             hinweise = p.get("hinweise", []) + ["Zweite KI: Text nach Beanstandung einmal überarbeitet"]
             return [("schreiben", _weiter(p, runde=2, anmerkung=pruefer.anmerkung(probleme), vorige=felder,
                                           endpruefung=1, fc_ungedeckt=[], hinweise=hinweise))]
-        return _verwerfen(ctx, story, "Zweite KI: verworfen – auch nach Überarbeitung nicht durch die Dokumente "
-                                      "gedeckt: " + "; ".join(u.satz[:120] for u in probleme))
+        return _verwerfen(ctx, story, "Zweite KI (Endprüfung): verworfen – auch nach Überarbeitung nicht durch die "
+                                      "Dokumente gedeckt: " + "; ".join(u.satz[:120] for u in probleme))
     hinweise = [h for h in p.get("hinweise", []) if not h.startswith("Faktencheck: nicht belegt")]
     kopf = (f"Geprüft von zweiter KI ({modell}): {len(urteile)} Sätze gegen die Dokumente geprüft, "
             + (f"{len(gestrichen)} gestrichen" if gestrichen else "alle gedeckt"))
@@ -480,6 +492,11 @@ def entwurf_anlegen(ctx: Kontext, story: dict, felder: dict, payload: dict, *, t
     uid = payload.get("uid") or (primaer.url if primaer else "") or f"story:{story['id']}"
     if story["typ"] == "dossier":
         uid = f"dossier:{story['id']}"
+    andere = ctx.store.draft_by_uid(uid)
+    if andere and andere.get("story_id") not in (None, story["id"]):
+        # Fund 13.11. (Story 117 gegen Entwurf 68): ein eigener Beitrag mit derselben Primärquelle bekommt eine eigene
+        # uid – sonst würde er als Dublette verworfen und der Publisher könnte den anderen Post überschreiben
+        uid = f"{uid}#story-{story['id']}"
     stem = f"s{story['id']}-{slugify(felder.get('titel') or 'beitrag', 50)}"
     label = category_label(s, felder.get("kategorie") or "news")
     bild, versucht = media.besorgen(ctx, story, felder, stem, kategorie_label=label,
@@ -642,6 +659,12 @@ SCHRITTE: dict[str, Handler] = {
 
 def job_ausfuehren(ctx: Kontext, job: dict) -> str:
     store = ctx.store
+    story_jetzt = repo.story(store, job["story_id"]) if job.get("story_id") else None
+    if story_jetzt and story_jetzt["status"] in repo.ENDZUSTAND and job["schritt"] != "kino":
+        # inzwischen fertig oder verworfen (Redaktion, Import, anderer Weg): der Schritt entfällt, kein Abruf, kein Modell
+        store._write("UPDATE workflow_jobs SET status = 'fertig', fehler = ?, aktualisiert = ? WHERE id = ?",
+                     (f"Story ist {story_jetzt['status']} – Schritt entfällt", now_iso(), job["id"]))
+        return "entfallen"
     if jobs.ist_nachtrag(store, job["story_id"]) and job["schritt"] not in jobs.NACHTRAG_ERLAUBT:
         # Altbestand oder Umweg: ein Nachtrag läuft nie über Worker und Modell, er wartet im Agent-Export
         store._write("UPDATE workflow_jobs SET status = 'fertig', fehler = 'Nachtrag: nur Agent-Modus', aktualisiert = ? "
@@ -815,10 +838,12 @@ def neu_starten(store: Store, story_id: int, notiz: str) -> bool:
     story = repo.story(store, story_id)
     if story is None or story["typ"] == "kino":
         return False
-    mangels_beleg = nachrecherche.mangels_beleg(story)
-    if story["status"] not in NEU_STARTBAR and not mangels_beleg:
+    verworfen = nachrecherche.neu_startbar(story)
+    if story["status"] not in NEU_STARTBAR and not verworfen:
         return False
-    if mangels_beleg and store.db.execute("SELECT 1 FROM drafts WHERE story_id = ?", (story_id,)).fetchone():
+    if verworfen and (nachrecherche.neustarts(store, story_id) >= nachrecherche.MAX_NEUSTARTS
+                      or modell_schritte(store, story_id) >= MAX_PRUEFUNGEN
+                      or store.db.execute("SELECT 1 FROM drafts WHERE story_id = ?", (story_id,)).fetchone()):
         return False
     if jobs.offen_fuer_story(store, story_id):
         return False  # die laufende Nachrecherche bzw. Recherche liest das neue Dokument ohnehin

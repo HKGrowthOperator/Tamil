@@ -616,6 +616,11 @@ def _ziel_grund(store: Store, sid: int) -> tuple[dict | None, str]:
         return story, "Story hat schon einen Entwurf"
     if store.db.execute("SELECT 1 FROM workflow_jobs WHERE story_id = ? AND status = 'laeuft'", (sid,)).fetchone():
         return story, JOB_LAEUFT
+    # jeder wartende Job außer einer Recherche (die liest die neuen Quellen ohnehin): Nachrecherche, Prüfung,
+    # Endprüfung, Text … – sonst liefe ein Schritt mit einem Belegstand, den niemand geprüft hat
+    if store.db.execute("SELECT 1 FROM workflow_jobs WHERE story_id = ? AND status IN ('offen', 'wartet_budget') "
+                        "AND schritt != 'recherche'", (sid,)).fetchone():
+        return story, JOB_LAEUFT
     return story, ""
 
 

@@ -116,8 +116,9 @@ def _antworten(sz: Szenario) -> tuple[dict, dict]:
             if out["saetze"]:
                 if art == "kern_immer" or (art == "kern_einmal" and zaehler["n"] == 1):
                     out["saetze"][0].update(urteil="widerspruch", kern=True)
-                elif art == "neben":
-                    out["saetze"][0].update(urteil="ungedeckt", kern=False)
+                elif art == "neben":  # ein Nebensatz im Haupttext (nicht der Satz, der auch Titel oder Teaser trägt)
+                    neben = [s for s in out["saetze"] if s["urteil"] == "gedeckt"][-1:] or out["saetze"][:1]
+                    neben[0].update(urteil="ungedeckt", kern=False)
             return out
         antworten["faktencheck"] = faktencheck
     if f.get("pruefer") == "streichen":  # zweite KI findet im Entwurf einen ungedeckten Nebensatz

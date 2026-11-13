@@ -12,7 +12,7 @@ import pytest
 from news_radar import sources
 from news_radar.agent_v2 import import_daten, paket_v2
 from news_radar.agents import Kontext, nachrecherche
-from news_radar.config import load_settings
+from news_radar.config import Bildquelle, load_settings
 from news_radar.store import Store
 from news_radar.workflow import costs, fake as fake_mod, jobs, orchestrator, repo
 from news_radar.workflow.fake import FakeAnthropic
@@ -28,6 +28,8 @@ HAMM = ("Die tamilische Gemeinde in Hamm feiert am Samstag, 14. November, ihr Li
         "Die Feier beginnt um 10 Uhr mit einer Prozession, der Eintritt ist frei. "
         "Veranstalter ist der Tempelverein, der seit 2002 in Hamm aktiv ist.")
 VEREIN_URL = "https://www.tamilverein-koeln.de/integrationspreis"
+VEREIN = Bildquelle(host="tamilverein-koeln.de", betreiber="Tamilischer Kulturverein Köln", art="verein",
+                    nachweis="Foto: Tamilischer Kulturverein Köln")
 
 
 @pytest.fixture
@@ -74,6 +76,7 @@ def test_gate_scheitert_nachrecherche_findet_offizielle_seite_und_es_wird_ein_en
     """Nur ein Google-News-Hinweis: das Gate scheitert; die Nachrecherche findet die Seite des Vereins, die im Hinweis
     genannt ist, Recherche und Gate laufen erneut, die zweite KI prüft den Entwurf."""
     item = google(summary=f"Preis für Verein – mehr unter {VEREIN_URL}")
+    settings.bildquellen = settings.bildquellen + [VEREIN]  # Veranstalter: seine Seite ist allein ein Beleg
     client = lauf(settings, [item], texte={VEREIN_URL: KOELN})
     with Store(settings.db_path) as store:
         story = repo.stories(store)[0]
@@ -248,7 +251,9 @@ def test_register_quellen_aus_bereits_gesehenen_meldungen(settings):
         story = repo.stories(store)[0]
         erg = nachrecherche.nachrecherchieren(ctx, story, ["Bericht mit Volltext"], [], 1)
         docs = repo.dokumente(store, story["id"])
-    assert erg.wege.get("register") == 1 and any(d.url == "https://www.wa.de/koeln/preis" and d.primaer for d in docs)
+    # WA ist keine vertrauenswürdige Registerquelle: Beleg ja, allein aber nicht primär (zweiter Verlag nötig)
+    assert erg.wege.get("register") == 1 and any(d.url == "https://www.wa.de/koeln/preis" and d.art == "volltext"
+                                                  and not d.primaer for d in docs)
 
 
 # ---- Ohne Modellschlüssel (Agent-Modus) ------------------------------------------------------------

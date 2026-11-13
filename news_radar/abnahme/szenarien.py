@@ -4,6 +4,7 @@ Budget, WordPress-Timeout nach dem Post …)."""
 
 from __future__ import annotations
 
+from ..config import Bildquelle
 from . import Szenario
 from . import texte as T
 
@@ -419,12 +420,14 @@ SZENARIEN += [
 # Gate scheitert → Nachrecherche (ohne Modell, höchstens zwei Runden) → Recherche und Gate erneut; danach entscheidet
 # die zweite KI („pruefer“). Jeder Entwurf geht vorher Satz für Satz durch die zweite KI.
 VEREIN_URL = "https://www.tamilverein-koeln.de/integrationspreis"
+VEREIN = Bildquelle(host="tamilverein-koeln.de", betreiber="Tamilischer Kulturverein Köln", art="verein",
+                    nachweis="Foto: Tamilischer Kulturverein Köln")  # Veranstalter: seine Seite ist allein ein Beleg
 SZENARIEN += [
     Szenario(91, "Gate scheitert → Nachrecherche findet die Seite des Vereins → Entwurf, von zweiter KI geprüft",
              "Nachrecherche",
              [M("Tamilischer Verein in Köln gewinnt Integrationspreis - WDR", "https://news.google.com/rss/articles/k3",
                 quelle="Google News DACH · WDR", zusammenfassung=f"Preis für Verein – mehr unter {VEREIN_URL}")],
-             texte={VEREIN_URL: T.KOELN},
+             texte={VEREIN_URL: T.KOELN}, einstellungen={"bildquellen": [VEREIN]},
              erwartet={"entwuerfe": 1, "status": {"fertig": 1}, "rolle_anzahl": {"recherche": 2},
                        "rollen_mit": ["pruefer"], "ereignis": "nachrecherche",
                        "hinweis": ["Nachrecherche Runde 1", "Geprüft von zweiter KI"]}),

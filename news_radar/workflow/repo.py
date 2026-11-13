@@ -47,7 +47,12 @@ def story(store, story_id: int) -> dict | None:
     return dict(row) if row else None
 
 
-def story_setzen(store, story_id: int, **felder) -> None:
+ENDZUSTAND = ("fertig", "verworfen")
+
+
+def story_setzen(store, story_id: int, nur_offen: bool = False, **felder) -> bool:
+    """Felder einer Story setzen. `nur_offen`: nur, solange sie nicht fertig oder verworfen ist (Bedingung im selben
+    UPDATE – ein Schritt überschreibt nie, was inzwischen die Redaktion oder ein anderer Weg entschieden hat)."""
     erlaubt = {"status", "titel", "kategorie", "ort", "region", "sensibel", "schluessel", "prioritaet", "laenge",
                "relevanz", "begruendung", "notiz", "typ"}
     data = {k: v for k, v in felder.items() if k in erlaubt}
@@ -55,7 +60,9 @@ def story_setzen(store, story_id: int, **felder) -> None:
         data["sensibel"] = 1 if data["sensibel"] else 0
     data["aktualisiert"] = now_iso()
     sets = ", ".join(f"{k} = ?" for k in data)
-    store._write(f"UPDATE stories SET {sets} WHERE id = ?", (*data.values(), story_id))
+    bedingung = " AND status NOT IN ('fertig', 'verworfen')" if nur_offen else ""
+    cur = store._write(f"UPDATE stories SET {sets} WHERE id = ?{bedingung}", (*data.values(), story_id))
+    return cur.rowcount == 1
 
 
 def stories(store, status: str | Iterable[str] | None = None, limit: int = 100) -> list[dict]:

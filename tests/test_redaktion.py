@@ -256,7 +256,11 @@ def test_redaktion_adds_source_and_dossier(settings):
         sid = repo.stories(store, "verworfen")[0]["id"]
         repo.story_setzen(store, sid, status="recherche_erforderlich")  # mitten in der Nachrecherche
         orchestrator.quelle_ergaenzen(store, sid, "https://www1.wdr.de/preis", von="luis")
-        ctx = orchestrator.kontext(settings, store, client=FakeAnthropic(), fetch_text=lambda u: ARTIKEL, suche=lambda q: [])
+        preis = ("Der tamilische Verein in Köln gewinnt den Preis der Stadt Köln für Integration. "
+                 "Die Auszeichnung ist mit 5000 Euro dotiert und wurde im Rathaus übergeben. "
+                 "Der Verein betreibt seit 1998 eine Samstagsschule mit rund 200 Kindern. "
+                 "Die Vorsitzende kündigte an, das Preisgeld in neue Lernmaterialien zu stecken.")
+        ctx = orchestrator.kontext(settings, store, client=FakeAnthropic(), fetch_text=lambda u: preis, suche=lambda q: [])
         orchestrator.abarbeiten(ctx)
         draft = store.list_drafts("neu")[0]
         dossier = orchestrator.dossier_anlegen(store, draft["id"], von="luis")

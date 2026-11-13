@@ -81,6 +81,7 @@ class Kandidat:
     titel: str = ""
     publisher: str = ""
     doc_key: str = ""  # gesetzt bei „hinweis“: vorhandenes Dokument, das Text bekommt
+    primaer: bool = False  # Veranstalter oder vertrauenswürdige Registerquelle
 
 
 @dataclass
@@ -114,13 +115,25 @@ def sozial(url: str) -> bool:
     return any(h == s or h.endswith("." + s) for s in SOZIAL)
 
 
-# Verworfen, weil Belege fehlten: eine neue Quelle aus dem Scan ordnet sich der Story zu und startet sie noch einmal
-# (nicht bei Terminen in der Vergangenheit, Dubletten oder einer Entscheidung der Redaktion bzw. des Agenten)
-MANGELS_BELEG = ("Zweite KI: verworfen", "Nach zwei Runden Nachrecherche", "Faktencheck: Kernaussage")
+# Verworfen, weil Belege fehlten (zweite KI nach der Nachrecherche, Agent-Import nach zwei Runden) oder als Dublette
+# eines Entwurfs: eine neue Quelle startet die Story noch einmal – höchstens MAX_NEUSTARTS-mal. Nie nach der
+# Endprüfung („Zweite KI (Endprüfung): …“), dem Faktencheck, einem vergangenen Termin oder einer Entscheidung der
+# Redaktion bzw. des Agenten.
+NEU_STARTBAR_VERWORFEN = ("Zweite KI: verworfen", "Nach zwei Runden Nachrecherche",
+                          "Entwurf zu dieser Meldung existiert schon")
+MAX_NEUSTARTS = 2
 
 
-def mangels_beleg(story: dict) -> bool:
-    return story.get("status") == "verworfen" and (story.get("notiz") or "").startswith(MANGELS_BELEG)
+def neu_startbar(story: dict) -> bool:
+    return story.get("status") == "verworfen" and (story.get("notiz") or "").startswith(NEU_STARTBAR_VERWORFEN)
+
+
+mangels_beleg = neu_startbar  # alter Name (Cluster)
+
+
+def neustarts(store, story_id: int) -> int:
+    return store.db.execute("SELECT COUNT(*) FROM log WHERE event = 'neu_gestartet' AND json_extract(data, '$.story') = ?"
+                            " AND json_extract(data, '$.vorher') = 'verworfen'", (story_id,)).fetchone()[0]
 
 
 def runden(store, story_id: int) -> int:
@@ -185,10 +198,58 @@ def stichworte(story: dict) -> list[str]:
     return list(dict.fromkeys(w[:6] for w in worte if w not in _STOP and not w.startswith("tamil")))
 
 
-def passt(text: str, worte: list[str], ort: str) -> bool:
+def passt(text: str, worte: list[str], ort: str, jahr: int | None = None, datum=None) -> bool:
+    """Passt die Seite zur Story? Ort und ein Titelwort oder zwei Titelwörter – und, wo bekannt, das Jahr (nennt die
+    Seite Jahre, muss das der Story dabei sein) und bei Terminen das Datum (nennt sie Daten, muss es dabei sein)."""
     low = (text or "").lower()
     n = sum(1 for w in worte if w in low)
-    return n >= 2 or (bool(ort) and ort.lower() in low and n >= 1)
+    if not (n >= 2 or (bool(ort) and ort.lower() in low and n >= 1)):
+        return False
+    if jahr:
+        jahre = set(re.findall(r"\b(20\d\d)\b", text or ""))
+        if jahre and str(jahr) not in jahre:
+            return False
+    if datum is not None:
+        from .. import dates
+
+        daten = dates.alle_daten(text or "")
+        if daten and datum not in daten:
+            return False
+    return True
+
+
+def story_zeit(story: dict, docs: list[SourceDocument]) -> tuple[int | None, object]:
+    """(Jahr, Termindatum) der Story: Ereignisdatum (Nachtrag), Termin aus den strukturierten Angaben, sonst das Jahr
+    der Anlage."""
+    import json as _json
+    from datetime import date
+
+    datum = None
+    for wert in [story.get("ereignis_datum") or ""] + [
+            str((_json.loads(d.text or "{}") if d.art == "daten" and (d.text or "").startswith("{") else {})
+                .get("event_datum") or "") for d in docs]:
+        try:
+            datum = date.fromisoformat(wert[:10])
+            break
+        except ValueError:
+            continue
+    jahr = datum.year if datum else int((story.get("erstellt") or "0")[:4] or 0) or None
+    return jahr, (datum if story.get("typ") == "event" else None)
+
+
+def _primaer_hosts(ctx: Kontext) -> set[str]:
+    """Veranstalter (Bildquellen-Register) und vertrauenswürdige Quellen des Registers: nur ihre Seiten sind allein ein
+    Beleg (primär); alles andere braucht wie immer einen zweiten Verlag."""
+    from .research import quelle_vertrauenswuerdig
+
+    hosts = {b.host for b in ctx.settings.bildquellen}
+    hosts |= {host(s.url) for s in ctx.settings.alle_quellen if s.url and quelle_vertrauenswuerdig(s)}
+    return {h for h in hosts if h}
+
+
+def _ist_primaer(url: str, hosts: set[str]) -> bool:
+    h = host(url)
+    return any(h == x or h.endswith("." + x) for x in hosts)
 
 
 def _paywall_hosts(ctx: Kontext) -> set[str]:
@@ -222,7 +283,8 @@ def _aus_register(ctx: Kontext, story: dict, worte: list[str], ort: str) -> list
         low = (titel or "").lower()
         n = sum(1 for w in worte if w in low) + (1 if ort and ort.lower() in low else 0)
         if n >= 2:
-            treffer.append((n, Kandidat(url=url, weg="register", titel=clean_text(titel or ""), publisher=src.name)))
+            treffer.append((n, Kandidat(url=url, weg="register", titel=clean_text(titel or ""), publisher=src.name,
+                                        primaer=research_vertrauen(src))))
     treffer.sort(key=lambda t: -t[0])
     out = [k for _, k in treffer[:4]]
     # WordPress-Quellen des Registers durchsuchen (eigene Suche der Seite, nur Titel und Adresse)
@@ -253,6 +315,12 @@ def _aus_register(ctx: Kontext, story: dict, worte: list[str], ort: str) -> list
     return out
 
 
+def research_vertrauen(src) -> bool:
+    from .research import quelle_vertrauenswuerdig
+
+    return quelle_vertrauenswuerdig(src)
+
+
 def _aus_bildquellen(ctx: Kontext, story_text: str) -> list[Kandidat]:
     staedte = {s.lower() for s in ctx.settings.regions.staedte}
     low = story_text.lower()
@@ -262,7 +330,7 @@ def _aus_bildquellen(ctx: Kontext, story_text: str) -> list[Kandidat]:
         worte = [w for w in re.findall(r"[\wäöüß]{5,}", b.betreiber.lower())
                  if w not in _GENERISCH and w not in staedte and not w.startswith("tamil")]
         if (len(stamm) >= 6 and stamm in low.replace(" ", "")) or sum(1 for w in set(worte) if w in low) >= 2:
-            out.append(Kandidat(url=f"https://{b.host}/", weg="bildquellen", publisher=b.betreiber))
+            out.append(Kandidat(url=f"https://{b.host}/", weg="bildquellen", publisher=b.betreiber, primaer=True))
     return out
 
 
@@ -294,6 +362,8 @@ def nachrecherchieren(ctx: Kontext, story: dict, fehlend: list[str], gruende: li
     anfragen = suchanfragen(story, texte, fehl)
     erg = Ergebnis(runde=runde, fehlend=fehl, anfragen=anfragen)
     worte, ort = stichworte(story), (story.get("ort") or "").strip()
+    jahr, datum = story_zeit(story, docs)
+    primaer_hosts = _primaer_hosts(ctx)
     story_text = " ".join([story.get("titel") or ""] + [f"{d.titel} {d.text[:3000]}" for d in docs])
 
     kandidaten = _aus_dokumenten(docs) + _aus_register(ctx, story, worte, ort) + _aus_bildquellen(ctx, story_text)
@@ -335,15 +405,17 @@ def nachrecherchieren(ctx: Kontext, story: dict, fehlend: list[str], gruende: li
         if _PAYWALL_RE.search(text[:4000]):
             erg.abgelehnt["paywall"] += 1
             continue
-        if not passt(text, worte, ort):
+        if not passt(text, worte, ort, jahr, datum):
             erg.abgelehnt["passt_nicht"] += 1
             continue
         if k.doc_key:
-            repo.dokument_setzen(ctx.store, sid, k.doc_key, text=text[:TEXT_MAX], art="volltext", primaer=True)
+            primaer = k.primaer or _ist_primaer(k.url, primaer_hosts)
+            repo.dokument_setzen(ctx.store, sid, k.doc_key, text=text[:TEXT_MAX], art="volltext", primaer=primaer)
             key = k.doc_key
         else:
             key = repo.dokument_hinzufuegen(ctx.store, sid, url=k.url, publisher=k.publisher or host(k.url),
-                                            quelle=f"Nachrecherche ({k.weg})", rights="zitat", primaer=True,
+                                            quelle=f"Nachrecherche ({k.weg})", rights="zitat",
+                                            primaer=k.primaer or _ist_primaer(k.url, primaer_hosts),
                                             art="volltext", titel=k.titel, text=text[:TEXT_MAX])
         if key:
             erg.neu.append(key)

@@ -48,7 +48,7 @@ def belege_fuer(store, row: dict) -> dict | None:
         return None
     versionen = repo.fassungen(store, story_id=sid, draft_id=row["id"])
     faktencheck = next((v["inhalt"].get("faktencheck") for v in reversed(versionen) if v["rolle"] == "faktencheck"), None)
-    texte = [v for v in versionen if v["rolle"] in ("vorlage", "text", "ueberarbeitung", "seo", "entwurf")]
+    texte = [v for v in versionen if v["rolle"] in ("vorlage", "text", "ueberarbeitung", "seo", "pruefung", "entwurf")]
     diffs = []
     vorher = None
     for v in texte:
@@ -103,9 +103,7 @@ def _nachrecherche_lage(store, story: dict) -> dict:
 
 
 def _settings_hat_modell() -> bool:
-    import os
-
-    return bool(os.environ.get("ANTHROPIC_API_KEY"))
+    return bool(getattr(_settings(), "modell_aktiv", False))
 
 
 @red.get("/recherche")
