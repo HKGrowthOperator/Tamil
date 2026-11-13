@@ -287,7 +287,7 @@ a:hover { text-decoration-color: var(--color-accent); }
 .legende { font-size: var(--text-sm); }
 .vorgang { display: grid; gap: var(--space-xs); justify-items: start; margin-top: var(--space-xl); }
 .vorgang-label { font-size: var(--text-sm); color: var(--color-ink-2); }
-.vorgang .figur { font-size: var(--text-figure); font-weight: 700; line-height: 1.1; padding: var(--space-xs) var(--space-md); }
+.vorgang .figur { font-size: var(--text-figure); font-weight: 700; line-height: 1.1; padding: var(--space-xs) var(--space-lg); }
 
 /* ---------- Monate im Festkalender */
 .monate ul { display: flex; flex-wrap: wrap; column-gap: var(--space-lg); margin: 0 0 var(--space-xl); padding: 0; list-style: none; }
