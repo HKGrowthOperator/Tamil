@@ -25,7 +25,7 @@ keine Ornamente, keine tamilische Schrift, keine Folklore.
 - **Range des Themes** · Spezifikationstabelle für Termine, Kino, Verzeichnis und Werbeplätze; die eine Zahl auf dem Tintenband (11 Kinos); Schritte an Fugen als echtes `<ol>`; Auswahl als randscharfe, aneinanderstoßende Zellen
 - **Sections (Start)** · Aufmacher · Die nächsten Feste (Tabelle) · Nachrichten (Feld 7/5) · Kino auf dem Tintenband · Tempel, Vereine und Schulen (Feld 5/7) · Anzeige im Papier-Well · Küche | Kultur und Sport (Feld 7/5) · Fuß
 - **Material** · echt: 20 Rückblick-Beiträge mit Commons-Bildern und Nachweis, 62 datierte Einträge aus `docs/redaktion/rueckblick-2026.md`, Kino und Basel-Termin aus `inhalte.json`, THADAM Bern (Radar-Entwurf 4), Werbeplätze aus `ads.php`, WhatsApp-Kanal aus den Standards des Plugins · Bilder: nur `design/inhalte/rueckblick/bilder/` · fehlt (sichtbare Platzhalter): Preise, Kontaktdaten der Redaktion, Impressum, Einwilligungstext, Verkaufsbedingungen, Vorgangsnummer, Kontaktdaten der Verzeichnis-Einträge
-- **Sweep** · Floor 0 FAIL · Reflex 0 offen (8 begründet im Stempel ausgenommen: 44c, 49b, 59, 64, 77, 78, 79; 77 als WARN auf Unterseiten verworfen) · F7 beantwortet · Prüfung aus frischem Kontext: steht aus (Hauptsitzung)
+- **Sweep** · Floor 0 FAIL · Reflex 0 offen (7 begründet im Stempel ausgenommen: 44c, 49b, 59, 64, 77, 78, 79; 77 als WARN auf Unterseiten verworfen) · F7 beantwortet · Prüfung aus frischem Kontext: steht aus (Hauptsitzung)
 
 ## Seiten
 
@@ -58,7 +58,7 @@ erfundenen Kontaktdaten. Formulare senden nichts (`data-endpoint=""`; die Seite 
 - `node tools/shots.mjs` bei 390/820/1280 für 14 Seiten (42 Aufnahmen, `shots/`): **0 Fehler**, kein seitliches
   Scrollen, keine Konsolenfehler, alle Schriften geladen. Kleine Tippflächen nur noch die unsichtbaren Radio-
   und Kontrollkästchen (1 × 1 px), deren Beschriftung die 44 px große Fläche ist.
-- Fließtext 18 px; Tinte auf Papier etwa 16:1, gedämpftes Grau etwa 7:1, Logo-Rot auf Papier etwa 6:1.
+- Fließtext 18 px; Tinte auf Papier 16,7:1, gedämpftes Grau 6,7:1, Logo-Rot auf Papier 5,8:1 (gerechnet aus den Token-Werten).
 
 ## Schwächen (je ein Satz)
 
