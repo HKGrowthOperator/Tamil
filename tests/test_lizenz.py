@@ -515,3 +515,18 @@ def test_bild_prompt_nach_spezifikation():
     assert "no people" in prompts.motiv_fuer_thema("hochzeit") and "bride" not in prompts.motiv_fuer_thema("hochzeit")
     assert "child" not in prompts.motiv_fuer_thema("tamil-sprache").lower()
     assert "no children" in prompts.motiv_fuer_thema("tamilschule")
+
+
+# ---- L17: KI-Kennzeichnung in der Datei ------------------------------------------------------------
+
+def test_ki_bild_traegt_digital_source_type_in_xmp(tmp_path):
+    from news_radar import bilder
+
+    settings = load_settings()
+    settings.data_dir, settings.gemini_key, settings.bild_retry_pause = tmp_path, "test", 0
+    img = bilder.from_gemini("Empty hall", settings, "s", lambda h, b: _ki_antwort())
+    assert b"http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia" in img.data
+    assert "Tamil.de (KI-generiert)".encode() in img.data
+    with Image.open(io.BytesIO(img.data)) as geladen:
+        assert geladen.size == images.SIZE and not geladen.getexif()  # sonst keine Metadaten (Ortsdaten)
+    assert b"trainedAlgorithmicMedia" not in branded_card("x", "News", "x").data

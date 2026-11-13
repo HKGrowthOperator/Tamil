@@ -185,9 +185,22 @@ def featured_image(settings: Settings, query: str, title: str, category_label: s
     return branded_card(title, category_label, slug)
 
 
-def _encode(img: Image.Image, quality: int = 86) -> bytes:
+# KI-Kennzeichnung in der Datei (Spezifikation Bilder 4.8, L17): IPTC Digital Source Type als XMP, Credit Tamil.de
+KI_XMP = (
+    '<?xpacket begin="\ufeff" id="W5M0MpCehiHzreSzNTczkc9d"?>'
+    '<x:xmpmeta xmlns:x="adobe:ns:meta/"><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">'
+    '<rdf:Description rdf:about="" xmlns:Iptc4xmpExt="http://iptc.org/std/Iptc4xmpExt/2008-02-29/" '
+    'xmlns:photoshop="http://ns.adobe.com/photoshop/1.0/" '
+    'Iptc4xmpExt:DigitalSourceType="http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia" '
+    'photoshop:Credit="Tamil.de (KI-generiert)"/></rdf:RDF></x:xmpmeta><?xpacket end="w"?>'
+).encode("utf-8")
+
+
+def _encode(img: Image.Image, quality: int = 86, ki: bool = False) -> bytes:
+    """JPEG ohne übernommene Metadaten (EXIF und Ortsdaten fallen weg); KI-Bilder mit Kennzeichnung als XMP."""
     buf = io.BytesIO()
-    img.convert("RGB").save(buf, "JPEG", quality=quality, optimize=True, progressive=True)
+    extra = {"xmp": KI_XMP} if ki else {}
+    img.convert("RGB").save(buf, "JPEG", quality=quality, optimize=True, progressive=True, **extra)
     return buf.getvalue()
 
 

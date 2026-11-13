@@ -112,7 +112,7 @@ def from_gemini(prompt: str, settings: Settings, slug: str, transport: Transport
     except (OSError, ValueError, TypeError) as exc:
         log.warning("Bild-KI-Bild unbrauchbar: %s", exc)
         return None
-    return FeaturedImage(images._encode(fitted), f"{slug}.jpg", "image/jpeg", KI_CREDIT, "ki", prompt=prompt,
+    return FeaturedImage(images._encode(fitted, ki=True), f"{slug}.jpg", "image/jpeg", KI_CREDIT, "ki", prompt=prompt,
                          modell=settings.bild_modell)
 
 
