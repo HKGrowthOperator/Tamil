@@ -24,6 +24,7 @@ require_once TAMIL_RADAR_DIR . 'includes/role.php';
 require_once TAMIL_RADAR_DIR . 'includes/media.php';
 require_once TAMIL_RADAR_DIR . 'includes/seo.php';
 require_once TAMIL_RADAR_DIR . 'includes/rest.php';
+require_once TAMIL_RADAR_DIR . 'includes/einsendungen.php';
 require_once TAMIL_RADAR_DIR . 'includes/admin.php';
 require_once TAMIL_RADAR_DIR . 'includes/dashboard.php';
 

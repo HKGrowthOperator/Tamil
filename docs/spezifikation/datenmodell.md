@@ -33,7 +33,7 @@ mit Verweis auf die Festlegung; Feldnamen dort sind Vorschläge für den Bau.
 | Ereignisprotokoll (`log`) | Benutzername in `data.von` | keine | zu prüfen (F0 nennt nur „Protokoll“) |
 | Entwurf (`drafts.bearbeitet_von`) | Benutzername | keine | – |
 | Quelldokumente | Namen aus veröffentlichter Presse | keine | zu prüfen |
-| Einsendung (F1) | Name, E-Mail, Telefon, IP-Hash | – | 90 Tage nach Abschluss; Spam 7 Tage; IP-Hash 24 Stunden |
+| Einsendung (F1) | Name, E-Mail, Telefon, IP-Hash | Website: 90 Tage nach Abschluss, Spam 7 Tage, nie abgeschlossen 90 Tage nach Eingang, IP-Hash 24 Stunden, Protokoll 12 Monate (WP-Cron stündlich) | wie gebaut |
 | Verzeichnis-Einsendung (F2) | Name, E-Mail des Einsenders | – | 90 Tage |
 | Buchung (F3) | Firma, Ansprechperson, Rechnungsadresse, E-Mail, Telefon, USt-ID | – | steuerliche Frist, nennt KBS (offen) |
 | Sicherungen | alles Obige | 14 Tage | 30 Tage (F0) |
@@ -495,12 +495,18 @@ Herkunft: Anbieter `cinestar`, `kinoheld`, `cineplexx` und HTML-Kinoseiten. Entw
 aktualisiert der Radar bei einer Dublette die Kinoliste in WordPress (`PUT /beitrag/{uid}`). Ein Spielort bleibt nur mit
 aktiver Quelle und künftigem Termin.
 
-## 12. Einsendung (F1) – spezifiziert, nicht gebaut
+## 12. Einsendung (F1) – Website gebaut, Radar-Seite offen
 
 Quelle: `festlegung-einreichungen.md`. Gespeichert auf der Website (WordPress hält Öffentliches und Kunden); der Radar
-holt ab und führt den Eingang. **Speicherform zu prüfen**, Vorschlag: eigene Tabelle über die Upgrade-Routine
-(`tamil_site_upgrade_schritt`), nicht öffentlich; im Radar eine Tabelle `einsendungen` für Status, Hinweise und
-Entwurf.
+holt ab und führt den Eingang. **Speicherform (gebaut):** Tabelle `wp_tamil_einsendungen` über die Upgrade-Routine
+(Datenversion 2, `wordpress/plugins/tamil-site/includes/einsendungen.php`), nicht öffentlich; art-spezifische Felder
+als JSON in `felder`; Bilder neu gespeichert unter `uploads/tamil-einsendungen/` mit Zufallsnamen und Sperre für den
+Webserver. Protokoll ohne Personendaten in `wp_tamil_einsendungen_protokoll` (Vorgangsnummer, Aktion, wer). Auf der
+Website führt die Status-Maschine nur `eingegangen`, `abgeholt` und die Abschlüsse; nie abgeschlossene Einsendungen
+löscht sie 90 Tage nach Eingang (Höchstfrist). Den Einwilligungstext archiviert sie je Fassung
+(`tamil_site_einsendungen_fassungen`), damit `einwilligung_fassung` den zugestimmten Text belegt; `vorbereitet`, `zusammenfassung`,
+`hinweise`, `dublette_von`, `entwurf_id` und `notiz` hält der Radar (Tabelle `einsendungen`, noch nicht gebaut).
+Abholen: `integrationen.md` §3 „Einsendungen“.
 
 ### Gemeinsame Felder
 
@@ -539,8 +545,9 @@ Nicht gespeichert: das versteckte Feld (Programme), die Absendedauer (nur geprü
 
 ### Prüfungen
 
-Annahme auf der Website nur mit: Pflichtfeldern, Einwilligung, leerem verstecktem Feld, Absendedauer ≥ 3 s, höchstens
-5 Einsendungen je Stunde und IP-Hash, höchstens 3 Links im Text. Danach markiert der Agent (entscheidet nicht): Datum
+Annahme auf der Website nur mit: Pflichtfeldern (Datum nur, wenn es den Tag gibt), Einwilligung in der angezeigten
+Fassung, leerem verstecktem Feld, Absendedauer ≥ 3 s, höchstens 5 Einsendungen je Stunde und IP-Hash (IPv6 je /64;
+erst einfügen, dann zählen), höchstens 3 Links im Text; Bilder bis 5 MB und 16 Megapixel. Danach markiert der Agent (entscheidet nicht): Datum
 in der Vergangenheit oder unplausibel, Ort außerhalb DE/AT/CH, mögliche Dublette.
 
 ### Status-Maschine Einsendung
@@ -558,6 +565,8 @@ stateDiagram-v2
   erledigt --> geloescht: 90 Tage
   abgelehnt --> geloescht: 90 Tage
   spam --> geloescht: 7 Tage
+  eingegangen --> geloescht: Höchstfrist 90 Tage nach Eingang
+  abgeholt --> geloescht: Höchstfrist 90 Tage nach Eingang
 ```
 
 Ist der Schalter `eingang` an, bleiben Einsendungen unverlustig auf der Website liegen. Keine E-Mail an den Einsender;

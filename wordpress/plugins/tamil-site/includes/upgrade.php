@@ -20,7 +20,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Datenversion dieses Plugins. Erhöhen, sobald ein Baustein Seiten, Rechte, Tabellen oder Schritte neu anmeldet.
  */
-define( 'TAMIL_SITE_DATENVERSION', 1 );
+define( 'TAMIL_SITE_DATENVERSION', 2 ); // 2: Einsendungen (includes/einsendungen.php)
 
 /**
  * Sperre gegen gleichzeitige Läufe: so viele Sekunden gilt eine liegengebliebene Sperre noch.

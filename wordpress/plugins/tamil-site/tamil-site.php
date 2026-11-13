@@ -28,6 +28,9 @@ require_once TAMIL_SITE_DIR . 'includes/seo.php';
 require_once TAMIL_SITE_DIR . 'includes/indexierung.php';
 require_once TAMIL_SITE_DIR . 'includes/leistung.php';
 require_once TAMIL_SITE_DIR . 'includes/consent.php';
+require_once TAMIL_SITE_DIR . 'includes/einsendungen.php';
+require_once TAMIL_SITE_DIR . 'includes/einsendungen-formular.php';
+require_once TAMIL_SITE_DIR . 'includes/einsendungen-admin.php';
 require_once TAMIL_SITE_DIR . 'includes/admin.php';
 
 register_activation_hook( __FILE__, 'flush_rewrite_rules' );
