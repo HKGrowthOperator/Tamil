@@ -422,7 +422,7 @@ function tamil_site_vz_werte_pruefen( array $roh, string $land_vorgabe = '' ): a
 				break;
 			case 'url':
 				$url = esc_url_raw( $wert, array( 'http', 'https' ) );
-				if ( '' === $url || ! wp_http_validate_url( $url ) ) {
+				if ( '' === $url || ! filter_var( $url, FILTER_VALIDATE_URL ) || ! str_contains( (string) wp_parse_url( $url, PHP_URL_HOST ), '.' ) ) { // ohne DNS-Abfrage
 					$fehler[ $key ] = __( 'Bitte die Adresse der Website mit https:// angeben.', 'tamil-site' );
 				} else {
 					$werte[ $key ] = $url;
