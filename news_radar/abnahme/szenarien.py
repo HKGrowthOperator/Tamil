@@ -403,12 +403,12 @@ SZENARIEN += [
              erwartet={"storys": 0, "aufrufe": 0, "stats": {"gedenktermin": 1}}),
 ]
 
-# Nummer 76–79 (67–74 frei für parallele Spuren): „Recherche nötig“ ist kein Endzustand (Auftrag Luis, 13.11.2026).
+# Nummer 80–83 (70–78: Social): „Recherche nötig“ ist kein Endzustand (Auftrag Luis, 13.11.2026).
 # Gate scheitert → Nachrecherche (ohne Modell, höchstens zwei Runden) → Recherche und Gate erneut; danach entscheidet
 # die zweite KI („pruefer“). Jeder Entwurf geht vorher Satz für Satz durch die zweite KI.
 VEREIN_URL = "https://www.tamilverein-koeln.de/integrationspreis"
 SZENARIEN += [
-    Szenario(76, "Gate scheitert → Nachrecherche findet die Seite des Vereins → Entwurf, von zweiter KI geprüft",
+    Szenario(80, "Gate scheitert → Nachrecherche findet die Seite des Vereins → Entwurf, von zweiter KI geprüft",
              "Nachrecherche",
              [M("Tamilischer Verein in Köln gewinnt Integrationspreis - WDR", "https://news.google.com/rss/articles/k3",
                 quelle="Google News DACH · WDR", zusammenfassung=f"Preis für Verein – mehr unter {VEREIN_URL}")],
@@ -416,16 +416,16 @@ SZENARIEN += [
              erwartet={"entwuerfe": 1, "status": {"fertig": 1}, "rolle_anzahl": {"recherche": 2},
                        "rollen_mit": ["pruefer"], "ereignis": "nachrecherche",
                        "hinweis": ["Nachrecherche Runde 1", "Geprüft von zweiter KI"]}),
-    Szenario(77, "Nachrecherche findet nichts → zweite KI verwirft mit Grund", "Nachrecherche",
+    Szenario(81, "Nachrecherche findet nichts → zweite KI verwirft mit Grund", "Nachrecherche",
              [M("Tamilischer Verein in Bielefeld feiert Jubiläum - NW", "https://news.google.com/rss/articles/b1",
                 quelle="Google News DACH · NW", zusammenfassung="Jubiläum")],
              erwartet={"entwuerfe": 0, "status": {"verworfen": 1, "recherche_erforderlich": 0},
                        "rolle_anzahl": {"pruefer": 1}, "rollen_ohne": ["text"],
                        "hinweis": ["Zweite KI: verworfen", "nichts Neues gefunden"]}),
-    Szenario(78, "Zweite KI streicht einen ungedeckten Satz im Entwurf", "Nachrecherche", [HAMM], texte=HAMM_TEXT,
+    Szenario(82, "Zweite KI streicht einen ungedeckten Satz im Entwurf", "Nachrecherche", [HAMM], texte=HAMM_TEXT,
              fake={"pruefer": "streichen"},
              erwartet={"entwuerfe": 1, "status": {"fertig": 1}, "hinweis": "Zweite KI hat gestrichen"}),
-    Szenario(79, "Ohne Modellschlüssel: Nachrecherche läuft, Export mit eigener Liste, Import nur mit Ergebnis",
+    Szenario(83, "Ohne Modellschlüssel: Nachrecherche läuft, Export mit eigener Liste, Import nur mit Ergebnis",
              "Nachrecherche",
              [M("Tamilischer Verein in Köln gewinnt Integrationspreis - WDR", "https://news.google.com/rss/articles/k4",
                 quelle="Google News DACH · WDR", zusammenfassung="Preis für Verein")],
