@@ -10,14 +10,15 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Meta-Schlüssel → Typ (text | url | int | datetime | land | json).
+ * Meta-Schlüssel → Typ (text | url | int | id | datetime | land | json). `int` ist eine Wertung 0–10, `id` ein Verweis
+ * ohne Obergrenze.
  *
  * @return array<string,string>
  */
 function tamil_radar_meta_keys(): array {
 	return array(
 		'radar_uid'          => 'text',
-		'radar_story_id'     => 'int',
+		'radar_story_id'     => 'id',
 		'radar_relevanz'     => 'int',
 		'quelle_name'        => 'text',
 		'quelle_url'         => 'url',
@@ -51,6 +52,8 @@ function tamil_radar_sanitize_meta( $value, string $type ) {
 	switch ( $type ) {
 		case 'int':
 			return max( 0, min( 10, (int) $value ) );
+		case 'id':
+			return max( 0, (int) $value );
 		case 'url':
 			return esc_url_raw( (string) $value );
 		case 'datetime':
@@ -84,6 +87,15 @@ function tamil_radar_sanitize_meta( $value, string $type ) {
 }
 
 /**
+ * Ob ein Meta-Typ als Zahl gespeichert wird.
+ *
+ * @param string $type Typ aus tamil_radar_meta_keys().
+ */
+function tamil_radar_meta_ist_zahl( string $type ): bool {
+	return in_array( $type, array( 'int', 'id' ), true );
+}
+
+/**
  * register_post_meta für die Radar-Felder (single, REST-sichtbar, nur für Redakteure schreibbar); Schlüssel, die
  * das Website-Plugin schon registriert hat, bleiben bei dessen Definition.
  */
@@ -96,9 +108,9 @@ function tamil_radar_register_meta(): void {
 			'post',
 			$key,
 			array(
-				'type'              => 'int' === $type ? 'integer' : 'string',
+				'type'              => tamil_radar_meta_ist_zahl( $type ) ? 'integer' : 'string',
 				'single'            => true,
-				'default'           => 'int' === $type ? 0 : '',
+				'default'           => tamil_radar_meta_ist_zahl( $type ) ? 0 : '',
 				'show_in_rest'      => true,
 				'sanitize_callback' => static function ( $value ) use ( $type ) {
 					return tamil_radar_sanitize_meta( $value, $type );

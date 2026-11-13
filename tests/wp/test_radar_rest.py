@@ -100,6 +100,8 @@ def test_publisher_end_to_end_via_plugin(tmp_path, monkeypatch, client):
             schlagworte=["Kino"], seo_titel="SEO", meta_beschreibung="Meta", bild_datei=name, bild_alt="Alt",
             bild_credit="Grafik: Tamil.de", quelle_url="https://q.de", quelle_name="Q", relevanz=7, original_json={},
         ))
+        store.db.execute("UPDATE drafts SET story_id = 4711 WHERE id = ?", (draft_id,))
+        store.db.commit()
         row = store.claim_draft(draft_id, von="test")
         wp = publisher.make_wordpress(settings)
         assert isinstance(wp, TamilRadarClient)
@@ -109,3 +111,4 @@ def test_publisher_end_to_end_via_plugin(tmp_path, monkeypatch, client):
         assert store.get_draft(draft_id)["status"] == "in_wordpress"
     got = wp.get(uid)
     assert got["meta"]["quelle_name"] == "Q" and got["meta"]["radar_relevanz"] == 7 and got["featured_media"] > 0
+    assert got["meta"]["radar_story_id"] == 4711  # Story-Verweis wird nicht wie die Relevanz auf 10 begrenzt
