@@ -33,10 +33,10 @@ mit Verweis auf die Festlegung; Feldnamen dort sind Vorschläge für den Bau.
 | Ereignisprotokoll (`log`) | Benutzername in `data.von` | keine | zu prüfen (F0 nennt nur „Protokoll“) |
 | Entwurf (`drafts.bearbeitet_von`) | Benutzername | keine | – |
 | Quelldokumente | Namen aus veröffentlichter Presse | keine | zu prüfen |
-| Einsendung (F1) | Name, E-Mail, Telefon, IP-Hash | – | 90 Tage nach Abschluss; Spam 7 Tage; IP-Hash 24 Stunden |
+| Einsendung (F1), Kopie im Radar (`einsendungen`) | Name, E-Mail, Telefon (kein IP-Hash) | 90 Tage nach Abschluss, Spam 7 Tage; auf der Website nicht mehr vorhanden (`wp_status = fehlt`): 30 Tage nach dem Vermerk, auch wenn noch offen (`eingang loeschen`, täglich 03:30). Offene Einträge mit bekanntem Gegenstück folgen der Frist der Website. Kontaktdaten gehen nie an das Modell, Freitext wird vorher maskiert | 90 Tage nach Abschluss; Spam 7 Tage; IP-Hash 24 Stunden |
 | Verzeichnis-Einsendung (F2) | Name, E-Mail des Einsenders | – | 90 Tage |
 | Buchung (F3) | Firma, Ansprechperson, Rechnungsadresse, E-Mail, Telefon, USt-ID | – | steuerliche Frist, nennt KBS (offen) |
-| Sicherungen | alles Obige | 14 Tage | 30 Tage (F0) |
+| Sicherungen | alles Obige – auch Einsendungen, die im Radar schon gelöscht sind, bleiben bis zum Ablauf der Sicherung darin | 14 Tage (`sicherung.AUFBEWAHREN_TAGE`); eine gelöschte Einsendung ist damit spätestens 14 Tage nach der Löschung überall fort | 30 Tage (F0) |
 
 Regel für alle: Namen und Kontaktdaten stehen nie in Protokollen, Logs oder Testdaten aus dem Echtbetrieb
 (`.claude/rules/vertrag.md`).
@@ -495,7 +495,7 @@ Herkunft: Anbieter `cinestar`, `kinoheld`, `cineplexx` und HTML-Kinoseiten. Entw
 aktualisiert der Radar bei einer Dublette die Kinoliste in WordPress (`PUT /beitrag/{uid}`). Ein Spielort bleibt nur mit
 aktiver Quelle und künftigem Termin.
 
-## 12. Einsendung (F1) – spezifiziert, nicht gebaut
+## 12. Einsendung (F1) – Radar-Seite gebaut (`news_radar/eingang.py`, Migration 11, Cockpit „Eingang“)
 
 Quelle: `festlegung-einreichungen.md`. Gespeichert auf der Website (WordPress hält Öffentliches und Kunden); der Radar
 holt ab und führt den Eingang. **Speicherform zu prüfen**, Vorschlag: eigene Tabelle über die Upgrade-Routine
