@@ -229,7 +229,7 @@ SZENARIEN.append(BILD)
 
 # ---- Lizenz-Datensatz je Bild (Spezifikation Bilder 3, Entscheidung „Ja zu allem“ vom 13.11.2026) ----
 SZENARIEN.append(Szenario(
-    80, "Lizenz-Gate: KI aus trotz Schlüssel → Bildkarte mit Datensatz; Upload ohne Lizenz gesperrt, nach Eintrag "
+    79, "Lizenz-Gate: KI aus trotz Schlüssel → Bildkarte mit Datensatz; Upload ohne Lizenz gesperrt, nach Eintrag "
         "veröffentlicht", "Bild", [HAMM], texte=HAMM_TEXT, nachher="lizenz_gate",
     einstellungen={"gemini_key": "test"}, fake={"bild_prompt": True},
     erwartet={"entwuerfe": 1,
