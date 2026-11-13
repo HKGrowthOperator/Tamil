@@ -567,7 +567,7 @@ def formular_pruefen(form, beleg: tuple[str, bytes] | None, *, titel: str = "",
             endung = ""
         elif not endung:
             fehler.append("Beleg: nur PDF, PNG oder JPEG")
-    if kuerzel == "nutzungsrecht" and not beleg_text and not endung:
+    if lz is not None and lz.beleg_datei and not beleg_text and not endung:
         fehler.append("Beleg fehlt (Nutzungsrecht: Datei oder Text, z. B. „Mail vom …“)")
     ablauf = _wert(form, "ablauf")
     if ablauf and (not re.fullmatch(r"\d{4}-\d{2}-\d{2}", ablauf) or ablauf <= (heute or date.today().isoformat())):
@@ -593,8 +593,9 @@ def formular_pruefen(form, beleg: tuple[str, bytes] | None, *, titel: str = "",
     return felder, []
 
 
-def beleg_ablegen(data_dir, daten: bytes, endung: str, text: str = "") -> str:
-    """Belegdatei unter data/belege/ (nicht öffentlich, nicht unter /bild/); Name = Prüfsumme, nie der Upload-Name."""
+def beleg_ablegen(data_dir, daten: bytes, endung: str, text: str = "") -> tuple[str, "Path | None"]:
+    """Belegdatei unter data/belege/ (nicht öffentlich, nicht unter /bild/); Name = Prüfsumme, nie der Upload-Name.
+    Gibt (Text für das Feld `beleg`, Pfad der neu angelegten Datei oder None, wenn sie schon da war) zurück."""
     ordner = data_dir / "belege"
     ordner.mkdir(parents=True, exist_ok=True)
     try:
@@ -603,7 +604,9 @@ def beleg_ablegen(data_dir, daten: bytes, endung: str, text: str = "") -> str:
         pass
     name = f"{hashlib.sha256(daten).hexdigest()[:24]}.{endung}"
     pfad = ordner / name
+    neu = None
     if not pfad.exists():
         pfad.write_bytes(daten)
         pfad.chmod(0o600)
-    return f"{text}; Datei belege/{name}" if text else f"Datei belege/{name}"
+        neu = pfad
+    return (f"{text}; Datei belege/{name}" if text else f"Datei belege/{name}"), neu

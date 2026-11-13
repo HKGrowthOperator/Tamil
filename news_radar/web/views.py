@@ -506,7 +506,9 @@ def lizenz_eintragen(draft_id: int):
     store = get_store()
     row = _draft_or_404(draft_id)
     zurueck = redirect(url_for("ui.entwurf", draft_id=draft_id) + "#lizenz")
-    if row["status"] not in OPEN_STATES:
+    # auch im Status „fehler“ (z. B. „Lizenz unvollständig“ beim Senden): eintragen, dann „Erneut freigeben“
+    erlaubt = (*OPEN_STATES, "fehler")
+    if row["status"] not in erlaubt:
         flash("Freigegebene Entwürfe zuerst zurückstellen, dann die Lizenz eintragen.", "fehler")
         return zurueck
     pfad = _settings().bilder_dir / (row.get("bild_datei") or "-")
@@ -523,19 +525,25 @@ def lizenz_eintragen(draft_id: int):
         flash("Lizenz nicht eingetragen: " + "; ".join(fehler), "fehler")
         return zurueck
     endung = felder.pop("_beleg_endung", "")
-    if endung:
-        felder["beleg"] = lizenz.beleg_ablegen(_settings().data_dir, beleg[1], endung, felder.get("beleg", ""))
     vorher = lizenz.asset_fuer(store, row) or {}
     if vorher.get("bild_url"):
         felder.setdefault("bild_url", vorher["bild_url"])
-    if not store.update_draft(draft_id, von=_user(), nur_status=OPEN_STATES, bild_vorher=row["bild_datei"],
+    if not store.update_draft(draft_id, von=_user(), nur_status=erlaubt, bild_vorher=row["bild_datei"],
                               bild_credit=felder["attribution"], bild_alt=felder["alt"]):
         flash(GEAENDERT, "fehler")
         return zurueck
-    asset_id = lizenz.anlegen(store, datei=row["bild_datei"], daten=pfad.read_bytes(), story_id=row.get("story_id"),
-                              draft_id=draft_id, felder={
-                                  **felder, "geprueft_von": _user(),
-                                  "geprueft_am": datetime.now(timezone.utc).isoformat(timespec="seconds")})
+    beleg_pfad = None  # Belegdatei erst nach dem erfolgreichen Speichern am Entwurf ablegen, bei Fehlern wieder weg
+    if endung:
+        felder["beleg"], beleg_pfad = lizenz.beleg_ablegen(_settings().data_dir, beleg[1], endung, felder.get("beleg", ""))
+    try:
+        asset_id = lizenz.anlegen(store, datei=row["bild_datei"], daten=pfad.read_bytes(), story_id=row.get("story_id"),
+                                  draft_id=draft_id, felder={
+                                      **felder, "geprueft_von": _user(),
+                                      "geprueft_am": datetime.now(timezone.utc).isoformat(timespec="seconds")})
+    except BaseException:
+        if beleg_pfad is not None:
+            beleg_pfad.unlink(missing_ok=True)
+        raise
     store.event("lizenz", id=draft_id, asset=asset_id, kuerzel=felder["lizenz_kuerzel"], von=_user())
     _protokoll("lizenz", row, fassung=repo.fassung_hash(store.get_draft(draft_id)),
                notiz=f"Lizenz eingetragen: {felder['lizenz_kuerzel']}, Umfang {felder['umfang']}, Asset {asset_id}")
