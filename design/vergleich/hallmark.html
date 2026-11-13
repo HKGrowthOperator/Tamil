@@ -1,0 +1,96 @@
+<title>Tagesblatt und Kalenderblatt</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+@font-face { font-family: "Rethink Sans"; src: url("hm-eigen/schriften/rethink-sans-latin-wght-normal.woff2") format("woff2"); font-weight: 400 800; font-display: swap; }
+@font-face { font-family: "Golos Text"; src: url("hm-eigen/schriften/golos-text-latin-wght-normal.woff2") format("woff2"); font-weight: 400 900; font-display: swap; }
+:root {
+  --bg: oklch(97.6% 0.007 120); --bg-2: oklch(94.6% 0.012 125); --fg: oklch(21% 0.022 155); --fg-2: oklch(42% 0.02 150);
+  --rule: oklch(84% 0.015 130); --accent: oklch(50.5% 0.175 25); --accent-ink: oklch(97.6% 0.007 120);
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: oklch(20% 0.018 155); --bg-2: oklch(25% 0.02 155); --fg: oklch(95% 0.01 120); --fg-2: oklch(78% 0.02 140);
+  --rule: oklch(38% 0.02 150); --accent: oklch(66% 0.17 25); --accent-ink: oklch(18% 0.02 155); color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: oklch(20% 0.018 155); --bg-2: oklch(25% 0.02 155); --fg: oklch(95% 0.01 120); --fg-2: oklch(78% 0.02 140);
+  --rule: oklch(38% 0.02 150); --accent: oklch(66% 0.17 25); --accent-ink: oklch(18% 0.02 155); color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font: 400 1.0625rem/1.6 "Golos Text", ui-sans-serif, system-ui, sans-serif; }
+.wrap { max-width: 1160px; margin-inline: auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+header { padding-block: 48px 24px; border-bottom: 1px solid var(--rule); }
+h1, h2, h3 { font-family: "Rethink Sans", ui-sans-serif, system-ui, sans-serif; font-weight: 800; letter-spacing: -0.02em; line-height: 1.08; margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(2rem, 3vw + 1rem, 3.25rem); max-width: 20ch; }
+.lead { max-width: 62ch; color: var(--fg-2); margin: 16px 0 0; }
+section { padding-block: 48px; border-bottom: 1px solid var(--rule); }
+.kopf { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 24px; }
+h2 { font-size: clamp(1.6rem, 1.5vw + 1rem, 2.25rem); }
+.rat { color: var(--accent); font-weight: 600; }
+.text { max-width: 66ch; margin: 12px 0 0; }
+.bilder { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 1fr); gap: 16px; margin-top: 24px; align-items: start; }
+.bilder figure { margin: 0; min-width: 0; }
+.bilder img { width: 100%; height: auto; display: block; border: 1px solid var(--rule); }
+figcaption { font-size: 0.875rem; color: var(--fg-2); margin-top: 6px; }
+.links { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 20px; }
+.links a { display: inline-flex; align-items: center; min-height: 44px; color: var(--fg); font-weight: 600; text-underline-offset: 0.2em; }
+.links a.haupt { background: var(--accent); color: var(--accent-ink); text-decoration: none; padding: 0 20px; border-radius: 2px; }
+ul.punkte { margin: 12px 0 0; padding-left: 1.2em; max-width: 70ch; }
+ul.punkte li { margin-top: 4px; }
+.zwei { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 24px; }
+.zwei img { width: 100%; height: auto; display: block; border: 1px solid var(--rule); }
+footer { padding-block: 32px 48px; color: var(--fg-2); font-size: 0.9375rem; }
+@media (max-width: 720px) { .bilder, .zwei { grid-template-columns: minmax(0, 1fr); } .bilder figure:last-child { max-width: 260px; } }
+</style>
+
+<header><div class="wrap">
+  <h1>Zwei neue Proben für tamil.de</h1>
+  <p class="lead">Neu gestaltet nach dem Urteil vom 13. November („generisch“) mit Hallmark: ohne Dachzeilen, Versal-Labels,
+  Kartenraster und Bildkacheln. Beide Proben zeigen echte Inhalte (Rückblick 2026, Festkalender, Kino) und bestehen die
+  Hallmark-Prüfung ohne Fehler. Klickbar am Handy und am Desktop.</p>
+</div></header>
+
+<section><div class="wrap">
+  <div class="kopf"><h2>A: Tagesblatt</h2><span class="rat">Empfehlung</span></div>
+  <p class="text">Das Datum ist die Hauptfigur, wie im tamilischen Küchenkalender: groß vorn, rot an Sonntagen und
+  Festtagen, jeder Beitrag an seinem Tag. Jasminweiß, Blattgrün-Schwarz, Logo-Rot nur als Bedeutung; der Kino-Bereich
+  liegt auf Bananenblatt-Grün. Grotesk durchgehend, Fließtext 18 px.</p>
+  <div class="bilder">
+    <figure><img src="img/hm-eigen-index-1280.jpg" alt="Startseite Tagesblatt am Desktop: große Tagesziffer 13 neben dem Aufmacher zu Deepavali" width="1280" height="800" loading="lazy"><figcaption>Startseite, Desktop</figcaption></figure>
+    <figure><img src="img/hm-eigen-index-390.jpg" alt="Startseite Tagesblatt am Handy" width="390" height="1700" loading="lazy"><figcaption>Startseite, Handy</figcaption></figure>
+  </div>
+  <div class="zwei">
+    <figure><img src="img/hm-eigen-termine-1280.jpg" alt="Festkalender 2026 mit Monatsleiste und roter Ziffer für den Sonntag 15. November" width="1280" height="800" loading="lazy"><figcaption>Festkalender 2026</figcaption></figure>
+    <figure><img src="img/hm-eigen-kino-1280.jpg" alt="Kinoseite auf grüner Fläche mit dem Filmtitel Scene in großer Schrift" width="1280" height="800" loading="lazy"><figcaption>Kino</figcaption></figure>
+  </div>
+  <div class="links">
+    <a class="haupt" href="hm-eigen/index.html">Startseite öffnen</a>
+    <a href="hm-eigen/artikel.html">Artikel</a>
+    <a href="hm-eigen/termine.html">Festkalender</a>
+    <a href="hm-eigen/kino.html">Kino</a>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="kopf"><h2>B: Kalenderblatt</h2><span>Hallmark-Theme Almanac</span></div>
+  <p class="text">Die nächsten Feste als gedruckter Bogen ganz oben, darunter Aufmacher und Rückblick; Schiefergrau,
+  Datumsangaben in Mono. Schwächen: Fließtext in einer Serife (erinnert an Runde 2), der hervorgehobene Termin trägt
+  einen roten Randstreifen, die Fläche wirkt grau.</p>
+  <div class="bilder">
+    <figure><img src="img/hm-almanac-index-1280.jpg" alt="Startseite Kalenderblatt am Desktop: Tabelle der nächsten Feste über der Schlagzeile" width="1280" height="800" loading="lazy"><figcaption>Startseite, Desktop</figcaption></figure>
+    <figure><img src="img/hm-almanac-index-390.jpg" alt="Startseite Kalenderblatt am Handy" width="390" height="1700" loading="lazy"><figcaption>Startseite, Handy</figcaption></figure>
+  </div>
+  <div class="links">
+    <a href="hm-almanac/index.html">Startseite öffnen</a>
+    <a href="hm-almanac/artikel.html">Artikel</a>
+    <a href="hm-almanac/termine.html">Termine</a>
+    <a href="hm-almanac/kino.html">Kino</a>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <h2>Was als Nächstes passiert</h2>
+  <ul class="punkte">
+    <li>Nachtschicht: Probe A ins WordPress-Theme, Cockpit in derselben Sprache, Instagram/Facebook/WhatsApp im Trockenmodus, Lizenzpflicht für Bilder, Einsendungen, Verzeichnis, Werbebuchung (Stripe-Testmodus).</li>
+    <li>Im Echtbetrieb bleiben neue Funktionen aus, bis Rechtstexte und Auftragsverarbeitung von KBS da sind.</li>
+    <li>Impressum und Kontakt sind in den Proben bewusst Platzhalter.</li>
+  </ul>
+</div></section>
+
+<footer><div class="wrap">Stand 13. November 2026. Bilder: Wikimedia Commons, Nachweise auf den Seiten der Proben.</div></footer>
