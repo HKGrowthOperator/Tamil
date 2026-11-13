@@ -242,7 +242,7 @@ def artikel(b):
           </table>
           <p class="sheet__note"><a href="index.html#jahr">Alle zwanzig Berichte</a></p>
         </figure>
-        <a class="btn btn--primary" href="{e(wa(b["titel"]))}">Per WhatsApp teilen</a>
+        <a class="share" href="{e(wa(b["titel"]))}">Per WhatsApp teilen</a>
       </aside>
     </section>
   </article>
@@ -275,7 +275,7 @@ def rubrik():
             <p>{e(b["teaser"])}</p>
             <p class="byline">{e(b["ort"])}</p>
           </div>
-          <figure class="pic eintrag__bild"><div class="photo">{img(b)}</div></figure>
+          <figure class="pic eintrag__bild"><div class="photo">{img(b)}</div><figcaption><small>{nachweis(b)}</small></figcaption></figure>
         </li>'''
 
     for k, teil in enumerate(seiten, start=1):
@@ -297,13 +297,13 @@ def rubrik():
             lead = f'''<article class="grid aufmacher-r">
         <figure class="pic">
           <div class="photo">{img(a, lazy=False, pos="50% 50%")}</div>
-          <figcaption>{e(a["alt"])}.</figcaption>
+          <figcaption>{e(a["alt"])}. <small>{nachweis(a)}</small></figcaption>
         </figure>
         <div class="split__text">
           <h2><a href="{link(a["story_id"])}">{e(a["titel"])}</a></h2>
           <p class="lead">{e(a["teaser"])}</p>
           <p class="byline"><time datetime="{d.isoformat()}">{lang(d)}</time>, {e(a["ort"])}</p>
-          <p class="actions"><a class="btn" href="{link(a["story_id"])}">Beitrag lesen</a><a class="share" href="{e(wa(a["titel"]))}">Per WhatsApp teilen</a></p>
+          <p class="actions"><a class="share" href="{e(wa(a["titel"]))}">Per WhatsApp teilen</a></p>
         </div>
       </article>'''
         zeilen = "\n        ".join(zeile(b) for b in rest)
@@ -379,10 +379,10 @@ def verzeichnis():
     main = f'''  <section class="hero" aria-labelledby="titel">
     <div class="container grid kopfzeile">
       <div class="kopfzeile__text">
-        <h1 id="titel">Tempel, Vereine und Geschäfte der Community</h1>
+        <h1 id="titel">Verzeichnis der Community</h1>
         <p class="lead">Jede Einrichtung hier kommt in einem Bericht auf tamil.de vor; Kontaktdaten tragen die Einrichtungen selbst ein.</p>
       </div>
-      <p class="actions kopfzeile__aktion"><a class="btn btn--primary" href="kontakt.html?anliegen=verzeichnis">Eintrag vorschlagen</a></p>
+      <p class="kopfzeile__aktion"><a class="share" href="kontakt.html?anliegen=verzeichnis">Eintrag vorschlagen</a></p>
     </div>
   </section>
 
@@ -436,7 +436,7 @@ def verzeichnis_eintrag():
         <p class="premium" id="premium">Premium</p>
         <h1 id="titel">Ceylon Palace</h1>
         <p class="lead">Restaurant mit Küche aus Sri Lanka in Bremen, geführt von Suthakar Thiruchelvam und seinem Sohn Anoj.</p>
-        <p class="actions"><a class="btn btn--primary" href="kontakt.html?anliegen=verzeichnis&amp;eintrag=ceylon-palace">Änderung melden</a><a class="share" href="{e(wa("Ceylon Palace, Restaurant mit Küche aus Sri Lanka in Bremen, im Verzeichnis"))}">Per WhatsApp teilen</a></p>
+        <p class="actions"><a class="btn" href="kontakt.html?anliegen=verzeichnis&amp;eintrag=ceylon-palace">Änderung melden</a><a class="share" href="{e(wa("Ceylon Palace, Restaurant mit Küche aus Sri Lanka in Bremen, im Verzeichnis"))}">Per WhatsApp teilen</a></p>
       </div>
       <p class="profil-kopf__hinweis">Muster der Markierung; Premium setzt allein die Verwaltung.</p>
     </div>
@@ -464,7 +464,7 @@ def verzeichnis_eintrag():
     <div class="profil__text">
       <figure class="pic">
         <div class="photo" data-slot="profil" data-alt="Ein Foto aus dem Ceylon Palace">{img(b, pos="50% 50%")}</div>
-        <figcaption>Symbolbild: Chicken Kottu, ein Gericht aus Sri Lanka, nicht aus dem Ceylon Palace.</figcaption>
+        <figcaption>Symbolbild: Chicken Kottu, ein Gericht aus Sri Lanka, nicht aus dem Ceylon Palace. <small>{nachweis(b)}</small></figcaption>
       </figure>
       <h2>Über das Restaurant</h2>
       <p>Vater und Sohn kochen Küche aus Sri Lanka: Currys, Biryani, Dosa und Idly, Devil-Gerichte und vor allem Parotta.</p>
@@ -702,10 +702,10 @@ def werben():
     main = f'''  <section class="hero" aria-labelledby="titel">
     <div class="container grid kopfzeile">
       <div class="kopfzeile__text">
-        <h1 id="titel">Werben bei der tamilischen Community</h1>
+        <h1 id="titel">Werben auf tamil.de</h1>
         <p class="lead">Sechs Plätze, buchbar für sieben, 14 oder 30 Tage, jeder als Anzeige gekennzeichnet.</p>
       </div>
-      <p class="actions kopfzeile__aktion"><a class="btn btn--primary" href="buchen.html">Platz buchen</a><a class="btn" href="kontakt.html?anliegen=werbung">Lieber anfragen</a></p>
+      <p class="actions kopfzeile__aktion"><a class="btn btn--primary" href="buchen.html">Platz buchen</a><a class="share" href="kontakt.html?anliegen=werbung">Lieber anfragen</a></p>
     </div>
   </section>
 
