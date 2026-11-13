@@ -76,7 +76,7 @@
   <h2 id="h-frei">Freigabe</h2>
   <dl class="daten">
     <dt>Stand</dt><dd>3, angelegt vom Radar am 12.11., 17:40 Uhr</dd>
-    <dt>Kosten</dt><dd class="zahl">$0.41 für diese Story</dd>
+    <dt>Kosten</dt><dd class="zahl">0,41 $ für diese Story</dd>
   </dl>
   <h3>Vor der Freigabe</h3>
   <ul class="hinweise">
@@ -86,8 +86,9 @@
   </ul>
   <form action="/entwurf/7/status" method="post">
     <input type="hidden" name="stand" value="3">
-    <div class="aktionen"><button type="submit" class="knopf primaer">Freigeben</button><p class="klein leise">Freigeben veröffentlicht sofort auf tamil.de.</p></div>
-    <div class="aktionen"><button type="submit" class="knopf" name="aktion" value="zurueckstellen">Zurückstellen</button><button type="submit" class="knopf gefahr" name="aktion" value="ablehnen">Ablehnen</button><a class="knopf still" href="/vorschau/7">Vorschau</a></div>
+    <label class="bestaetigen"><input type="checkbox" name="offen_gelesen" value="ja" required aria-required="true"><span>Offene Punkte gelesen (C3 ist nicht belegt).</span></label><div class="aktionen"><button type="submit" class="knopf primaer">Freigeben</button><p class="klein leise">Freigeben veröffentlicht sofort auf tamil.de.</p></div>
+    <div class="aktionen abstand-oben"><button type="submit" class="knopf" name="aktion" value="zurueckstellen" formnovalidate>Zurückstellen</button><a class="knopf still" href="/vorschau/7">Vorschau</a></div>
+    <details class="aufklapp"><summary>Weitere Aktionen</summary><div class="aktionen"><button type="submit" class="knopf gefahr" name="aktion" value="ablehnen" formnovalidate>Entwurf ablehnen</button></div></details>
   </form>
 </section>
 <section class="seite-teil" aria-labelledby="h-bild">

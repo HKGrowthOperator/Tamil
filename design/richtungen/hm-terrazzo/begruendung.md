@@ -109,3 +109,31 @@ als sichtbares Merkmal. Wer ein Bild des Bodens erwartet, wird es nicht finden.
 Offen: Wix Madefor ist ruhig, aber eher neutral; ob die Seite damit „gemacht“ statt „generiert“ wirkt, muss die
 nächste Prüfung zeigen. Die Rubrik bleibt mit sechs Beiträgen dünn (4 + 2). Premium und belegte Buchungstage sind
 weiter Darstellungsbeispiele.
+
+## Überarbeitung nach r2 (`design/kritik/hm-terrazzo-r2.md`)
+
+| P1 aus r2 | Was geändert ist |
+|---|---|
+| 1 Zeilenlänge 81 bis 89 Zeichen | Maß in rem statt ch: Fließtext, Anreißer und Kopfsätze `max-width: 34rem` (etwa 70 Zeichen bei 18 px Onest), Vorspann `36rem` |
+| 2 Tempelspitze abgeschnitten | Bildfokus je Bild im Bauskript (`FOKUS`, für Beitrag 30 und 49 `50% 8%`) statt Mittenausschnitt |
+| 3 Idee nur Spaltenlinie | neue Signatur **Kalenderboden** (siehe unten); seitenweite Ausnahmen von 6 auf 4 abgebaut (59 und 77 entfallen) |
+| 4 Startseite 390 | Vorspann am Handy auf den ersten vollständigen Satz gekürzt („Am 8. November war Deepavali.“, Kürzung am Satzende wie in `inhalte.json` erlaubt, ohne „…“), Orte am Handy aus der Metazeile, Feldkopf „Nachrichten“ am Handy nur für Screenreader; im ersten Bildschirm (390 × 844) stehen der Aufmacher und zwei vollständige Schlagzeilen |
+
+**Kalenderboden.** Der laufende Monat liegt als Feld aus quadratischen Fliesen, getrennt durch 2-px-Tintenfugen;
+Festtage sind in Tinte ausgelegt und verlinkt (8. Deepavali, 15. Düsseldorf, 21. Basel), heute trägt eine rote
+Linie, leere Fliesen vor und nach dem Monat sind Papiergrau. Auf der Startseite steht er im ersten Bildschirm als
+zweiter Stein neben dem Aufmacher (ein hoher Stein links, rechts der Kalender mit den Festen des Monats), auf der
+Festkalender-Seite als November und Dezember im Kopf. Hier trägt die Terrazzo-Idee zum ersten Mal sichtbar: Fliesen
+und Fugen sind die Form des Inhalts selbst (Tage, Feste), nicht Schmuck. Am Handy folgt der Kalender nach den
+Nachrichten, damit der erste Bildschirm zwei Geschichten zeigt (Umordnung per CSS, Reihenfolge im Quelltext bleibt).
+
+Dazu aus P2/P3: keine Doppelung (Maneez nur unter Nachrichten), Listen nach Datum (neueste zuerst), Ortsregel
+„Stadt allein, Land nur außerhalb Deutschlands“, Billboard-Eigenwerbung von der Startseite genommen, die Eigenanzeige
+im Artikel heißt jetzt „Eigenanzeige von tamil.de“; Nachrichten und Kino teilen sich das zweite Feld.
+
+**Sweep r2:** sloplint statisch 0 FAIL, 0 WARN (F7 beantwortet); Render über `http://127.0.0.1:8944` (12 Seiten) 0 FAIL,
+0 REFLEX, 0 WARN; verbleibende Ausnahmen im Stempel: 44c, 49b, 78, 79. `tools/shots.mjs` 14 Seiten × 390/820/1280: 0 Fehler.
+
+**Offen:** Der Kalenderboden ist ein echtes Kalenderraster aus gleichen Feldern; das ist inhaltlich begründet, kann aber
+für ein ungeübtes Auge wie ein Kartenraster wirken. Wix Madefor bleibt eine Katalog-Schrift (Hallmark „Dusk“); ihre
+Wahl ist aus dem Leser begründet, nicht neu gefunden. Die Zeilenlänge habe ich gerechnet, nicht nachgemessen.

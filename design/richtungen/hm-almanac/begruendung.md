@@ -163,6 +163,7 @@ Dazu: Navigation mit Community und Verzeichnis (am Handy als zweite Zeile unter 
   - Die Abweisung zu Gate 52 ist gestrichen.
   - `almanac.css` hat die Zeile mit der Selbstkritik.
   - Die Ausnahmen, die überall gelten (44c, 59, 78, 49b), stehen als Hausstil in `design.md`.
+- **Prüfung:** `sloplint --genre editorial` über http und Dateien für alle 32 Seiten: 0 FAIL, 0 offene REFLEX, 0 WARN; `shots.mjs` 48 Aufnahmen, 0 Fehler.
 - **Offen:**
   - Das Foto auf der Startseite zeigt den Tempel vom Juni, kein Deepavali (P3-7).
   - THADAM, „OM“ und „Jailer 2“ sind wartende Radar-Entwürfe (P3-3).
