@@ -140,13 +140,20 @@ def trocken(ctx) -> dict:
 
 
 def ohne_freigabe(ctx) -> dict:
-    """Live-Transport vorhanden, Regelwerk aber nicht von KBS freigegeben: es bleibt beim Trockenlauf."""
+    """Live-Transport vorhanden, Regelwerk aber nicht von KBS freigegeben: nichts geht an Meta, die Beiträge warten
+    mit Grund und gehen nach der eingetragenen Freigabe live hinaus."""
     _start(ctx, [_post(781, "Tamil-Kulturtag in Hamburg", rubrik="kultur")], freigabe=False)
     meta = FakeMeta()
     stats = ablauf.senden(ctx.store, ctx.settings, meta, NACH_KARENZ, bild_url=_url)
     zeilen = [z for z in _zeilen(ctx) if z["kanal"] != "whatsapp"]
-    return {"meta_aufrufe": len(meta.aufrufe), "ohne_freigabe": stats["ohne_freigabe"],
-            "trocken": sum(z["status"] == "trocken" for z in zeilen)}
+    wartend = sum(z["status"] == "geplant" and "nicht freigegeben" in (z["wartet_grund"] or "") for z in zeilen)
+    aufrufe_vorher = len(meta.aufrufe)
+    regelwerk.freigabe_eintragen(ctx.store, wer="abnahme", freigegeben_von="KBS (Abnahme, nachgestellt)",
+                                 datum="2026-11-14", beleg="Abnahme-Szenario")
+    ablauf.senden(ctx.store, ctx.settings, meta, NACH_KARENZ + timedelta(minutes=3), bild_url=_url)
+    zeilen = [z for z in _zeilen(ctx) if z["kanal"] != "whatsapp"]
+    return {"meta_aufrufe_ohne_freigabe": aufrufe_vorher, "ohne_freigabe": stats["ohne_freigabe"],
+            "wartend": wartend, "nach_freigabe_live": sum(z["status"] == "veroeffentlicht" for z in zeilen)}
 
 
 FAELLE = {"ohne_freigabe": ohne_freigabe, "t1": t1_artikel, "t2": t2_termine, "t3": t3_heikel, "stopp_instagram": stopp_instagram,
