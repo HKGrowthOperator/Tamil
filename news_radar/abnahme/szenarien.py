@@ -350,11 +350,11 @@ SZENARIEN += [
                                  "grund_register": 1, "grund_intern": 1, "abrufe_intern": 0, "protokoll_bild": 0}}),
 ]
 
-# Nummer 75 (67–74 frei für parallele Spuren): Gedenk-Sperre gilt seit 13.11.2026 für alle Terminquellen
+# Nummer 90 (darunter vergeben parallele Spuren): Gedenk-Sperre gilt seit 13.11.2026 für alle Terminquellen
 # (Entscheidung Luis), nicht nur für Kalender-Schnittstellen. Ein Termin aus einem Feed wird nie automatisch Story.
 GEDENKEN = event("Maaveerar-Gedenken in Bern", "https://swisstamilinfo.ch/bern-gedenken", "Swiss Tamil Info · Events",
                  "+12d", "Festhalle Bern", T.ZUSAMMENFASSUNG_GEDENKEN, ort="Bern")
 SZENARIEN += [
-    Szenario(75, "Gedenktermin aus einer Feed-Quelle wird nie automatisch zur Story", "Event", [GEDENKEN],
+    Szenario(90, "Gedenktermin aus einer Feed-Quelle wird nie automatisch zur Story", "Event", [GEDENKEN],
              erwartet={"storys": 0, "aufrufe": 0, "stats": {"gedenktermin": 1}}),
 ]
