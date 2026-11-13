@@ -254,7 +254,9 @@ def _nachtrag_story(store, settings, status="recherche_erforderlich"):
 
 
 def _jobs(store, sid):
-    return store.db.execute("SELECT COUNT(*) FROM workflow_jobs WHERE story_id = ?", (sid,)).fetchone()[0]
+    """Jobs mit Modell an der Story – die Nachrecherche (Suche ohne Modell, ohne Kosten) zählt nicht."""
+    return store.db.execute("SELECT COUNT(*) FROM workflow_jobs WHERE story_id = ? AND schritt != 'nachrecherche'",
+                            (sid,)).fetchone()[0]
 
 
 def test_nachtrag_bekommt_nie_einen_modell_job(settings):
@@ -312,7 +314,8 @@ def test_scan_ordnet_nachtraegen_keine_meldung_mit_job_zu(settings):
         orchestrator.scan(ctx, [gleich])
         orchestrator.abarbeiten(ctx)
         assert _jobs(store, sid) == 0
-        assert store.db.execute("SELECT COUNT(*) FROM agent_usage WHERE story_id = ?", (sid,)).fetchone()[0] == 0
+        assert store.db.execute("SELECT COUNT(*) FROM agent_usage WHERE story_id = ? AND (provider = 'anthropic' "
+                                "OR kosten_usd > 0)", (sid,)).fetchone()[0] == 0
 
 
 QUELLE3 = {"url": "https://www.wdr.de/kultur/abend", "titel": "t", "herausgeber": "WDR", "datum": "2026-03-14",

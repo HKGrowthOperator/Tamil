@@ -7,9 +7,10 @@ arbeitstitel, datum (JJJJ-MM-TT, Tag des Ereignisses oder der Meldung), rubrik, 
 [{url, titel, herausgeber, datum, sprache, art}], optional kernfakten, bild_hinweis (nur Hinweise für den Agenten,
 nie Belege) und erzwingen (legt trotz „vielleicht schon vorhanden“ an).
 
-Nachtrag ergänzen: mit story_id (positive Ganzzahl) hängt der Vorschlag seine neuen Quellen an eine bestehende
-Nachtrag-Story im Status „recherche_erforderlich“ ohne Entwurf an, an der gerade kein Job läuft (Kennungen Q<n+1> …),
-und gibt sie wieder zum Schreiben frei (Status „neu“). Adressen, die schon Beleg dieser Story sind, werden nicht
+Story ergänzen: mit story_id (positive Ganzzahl) hängt der Vorschlag seine neuen Quellen an eine bestehende Story im
+Status „recherche_erforderlich“ („In Nachrecherche“) ohne Entwurf an, an der gerade kein Job läuft (Kennungen
+Q<n+1> …) – egal ob Herkunft „nachtrag“ oder „radar“ (Scan) –, und gibt sie wieder zum Schreiben frei (Status „neu“;
+eine Story vom Scan bekommt wieder einen Recherche-Job). Adressen, die schon Beleg dieser Story sind, werden nicht
 geholt; die Titel-Ähnlichkeit wird nicht geprüft und erzwingen ignoriert. Ergebnis „ergaenzt“, ohne Neues „vorhanden“.
 
 Ergebnis je Vorschlag: angelegt · vorhanden (alle Adressen sind schon Beleg derselben Story) · vielleicht_vorhanden
@@ -496,14 +497,15 @@ def _nach_aussen(store: Store, sid: int, grund: str, von: str, story: dict | Non
 
 
 def _ziel_grund(store: Store, sid: int) -> tuple[dict | None, str]:
-    """(Story, Grund) – Grund leer, wenn die Story ergänzt werden darf: Nachtrag, Status ERGAENZBAR, kein Entwurf,
-    kein Job läuft (wie agent_v2._OFFEN_SQL)."""
+    """(Story, Grund) – Grund leer, wenn die Story ergänzt werden darf: Status ERGAENZBAR, kein Entwurf, kein Job läuft
+    (wie agent_v2._OFFEN_SQL). Seit 13.11.2026 jede Story, egal ob Herkunft „nachtrag“ oder „radar“ (Scan); nur
+    Kino-Datensätze nicht."""
     row = store.db.execute("SELECT * FROM stories WHERE id = ?", (sid,)).fetchone()
     if row is None:
         return None, "Story nicht gefunden"
     story = dict(row)
-    if story["herkunft"] != "nachtrag":
-        return story, "keine Nachtrag-Story"
+    if story["typ"] == "kino":
+        return story, "Kino-Datensatz"
     if story["status"] not in ERGAENZBAR:
         return story, f"Story ist {story['status']}"
     if store.db.execute("SELECT 1 FROM drafts WHERE story_id = ?", (sid,)).fetchone():
@@ -778,6 +780,20 @@ def _eins(store: Store, raw, nr: int, von: str, abruf: Callable, heute: date, uh
     return {**out, "quellen_hinweise": hinweise} if hinweise else out
 
 
+def _recherche_einreihen(store: Store, sid: int) -> None:
+    """Story vom Scan nach dem Ergänzen: wieder ein Recherche-Job (Worker mit Modell oder Agent-Export). Steht schon eine
+    Recherche oder Nachrecherche an, liest sie die neuen Quellen ohnehin. Nachträge bekommen nie einen Job."""
+    from .workflow import jobs
+
+    if jobs.ist_nachtrag(store, sid) or any(j["schritt"] in ("recherche", "nachrecherche")
+                                            for j in jobs.offen_fuer_story(store, sid)):
+        return
+    n = store.db.execute("SELECT COUNT(*) FROM workflow_jobs WHERE story_id = ? AND schritt = 'recherche'",
+                         (sid,)).fetchone()[0]
+    jobs.einreihen(store, sid, "recherche", prio=jobs.PRIO_NEWS, key=f"{sid}:recherche:ergaenzt{n + 1}",
+                   payload={"hinweise": ["Neue Quelle: per Vorschlag ergänzt"]})
+
+
 def _ergaenzt_melden(store: Store, out: dict, v: Vorschlag, geholt: list, uebersprungen: list, hinweise: list,
                      heute: date, von: str) -> dict:
     ergebnis = _ergaenzen(store, v, geholt, heute)
@@ -787,6 +803,7 @@ def _ergaenzt_melden(store: Store, out: dict, v: Vorschlag, geholt: list, uebers
     if ergebnis["ergebnis"] != "ergaenzt":
         return {**out, **ergebnis, "quellen_uebersprungen": uebersprungen}
     sid, n = ergebnis["story_id"], ergebnis["quellen_geholt"]
+    _recherche_einreihen(store, sid)
     repo.aktion(store, wer=von[:60], aktion="nachtrag_ergaenzt", story_id=sid, kanal="redaktion", ausloeser="agent",
                 notiz=f"{n} Quellen angehängt, {len(uebersprungen)} übersprungen")
     store.event("nachtrag_ergaenzt", story=sid, quellen=n, uebersprungen=len(uebersprungen), von=von[:60])
