@@ -141,6 +141,7 @@ def test_regeln_ohne_schluessel_markieren_und_entwerfen_nur_aus_angaben(store, w
     e = eingang.liste(store)[0]
     assert e["status"] == "vorbereitet" and e["hinweise"] == []
     assert "Pongal-Fest Testverein" in e["zusammenfassung"] and "Essen" in e["zusammenfassung"]
+    assert not e["zusammenfassung"].endswith("..")  # „Testverein e. V.“ ohne doppelten Punkt
     assert e["entwurf"]["titel"] == "Pongal-Fest Testverein" and e["entwurf"]["quelle"] == "regeln"
     assert e["entwurf"]["absaetze"] == [EVENT["beschreibung"]]
     zeile = repo.aktionen_liste(store, aktion="eingang_vorbereitet")[0]

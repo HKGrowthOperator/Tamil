@@ -415,7 +415,8 @@ def regel_vorbereitung(e: dict) -> tuple[str, dict | None]:
             teile.append(f"am {datum_text(f['beginn']) or f['beginn']}")
         if ort:
             teile.append(f"in {ort}")
-        zusammenfassung = " ".join(teile) + (f"; Veranstalter: {f['veranstalter']}" if f.get("veranstalter") else "") + "."
+        zusammenfassung = " ".join(teile) + (f"; Veranstalter: {f['veranstalter']}" if f.get("veranstalter") else "")
+        zusammenfassung += "" if zusammenfassung.endswith(".") else "."
     elif art == "beitrag":
         zusammenfassung = f"Themenvorschlag „{f.get('thema') or 'ohne Thema'}“: {_erster_satz(f.get('text', ''))}"
     elif art == "kooperation":
