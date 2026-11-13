@@ -1,8 +1,8 @@
 # Festlegung F4: Instagram, Facebook und WhatsApp-Entwurf
 
 Vertrag: B2 (automatisches Instagram- und Facebook-Publishing), B3 (WhatsApp-Channel-Entwurf, E-Mail von Hand), §3
-Abs. 3, §8 Abs. 1. Stand: **Vorschlag vom 11.11.2026, wartet auf das Ja von Luis und auf die einmalige Freigabe des
-Regelwerks durch KBS.** Gebaut wird zuerst im Trockenmodus (alles außer dem letzten Aufruf an Meta), bis die Konten
+Abs. 3, §8 Abs. 1. Stand: **Ja von Luis am 13.11.2026 mit den Vorschlägen dieser Festlegung** (`docs/abnahme/2026-11-13-auftrag-luis.md`); gebaut wird auf dem Testsystem, im Echtbetrieb bleibt die Funktion per Schalter aus, bis Auftragsverarbeitung und Rechtstexte vorliegen. Live erst mit den Konten von KBS und der einmaligen
+Freigabe des Regelwerks durch KBS. Gebaut wird zuerst im Trockenmodus (alles außer dem letzten Aufruf an Meta), bis die Konten
 da sind.
 
 ## Was gebaut wird

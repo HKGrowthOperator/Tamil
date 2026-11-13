@@ -1,7 +1,7 @@
 # Festlegung F0: Grundlage (Website-Technik und Cockpit)
 
 Vertrag: A1 (Basis-SEO, Performance, Pflichtinformationen, Cookie-Consent), B1 (Cockpit mit Rollen, Stopp-Funktion,
-Protokoll), §8. Stand: **Vorschlag vom 11.11.2026, wartet auf das Ja von Luis.**
+Protokoll), §8. Stand: **Ja von Luis am 13.11.2026 mit den Vorschlägen dieser Festlegung** (`docs/abnahme/2026-11-13-auftrag-luis.md`); gebaut wird auf dem Testsystem, im Echtbetrieb bleibt die Funktion per Schalter aus, bis Auftragsverarbeitung und Rechtstexte vorliegen.
 
 Was davon sofort gebaut wird (so im Plan vom 11.11. freigegeben, weil es keine Geschäftsregel enthält):
 Upgrade-Routine, Angaben für Suchmaschinen, Tempo, Stopp-Schalter, Protokoll, Zeitplan, Tests. **Auf das Ja warten:**

@@ -1,8 +1,7 @@
 # Festlegung F1: Einreichungen (Formulare und Eingang im Cockpit)
 
 Vertrag: A1 (Event-Einreichung, Kontakt), B1 (automatische Erfassung und Vorbereitung eingehender Beiträge,
-Event-Einreichungen, Kooperations- und Werbeanfragen), §8. Stand: **Vorschlag vom 11.11.2026, wartet auf das Ja von
-Luis.**
+Event-Einreichungen, Kooperations- und Werbeanfragen), §8. Stand: **Ja von Luis am 13.11.2026 mit den Vorschlägen dieser Festlegung** (`docs/abnahme/2026-11-13-auftrag-luis.md`); gebaut wird auf dem Testsystem, im Echtbetrieb bleibt die Funktion per Schalter aus, bis Auftragsverarbeitung und Rechtstexte vorliegen.
 
 ## Was gebaut wird
 

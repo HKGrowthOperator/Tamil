@@ -221,7 +221,7 @@ später“). Interne Abnahme: `python -m news_radar abnahme` (62 Szenarien, Krit
 
 | Bereich | Lücke | Bezug |
 |---|---|---|
-| Festlegungen | Für F0–F4 liegt kein Ja von Luis vor; F1–F4 dürfen nach `.claude/rules/vertrag.md` erst danach gebaut werden | alle |
+| Festlegungen | Ja zu F0–F4 am 13.11. (`docs/abnahme/2026-11-13-auftrag-luis.md`); Bau auf dem Testsystem, im Echtbetrieb Schalter aus | alle |
 | Einsendungen | Kein Formular, kein Eingang, keine Tabelle (A1.3, A1.6, B1.2) | F1 |
 | Verzeichnis | Nichts gebaut (B1.3, B1.4) | F2 |
 | Werbebuchung | Nur die sechs Plätze mit Eigenanzeigen; keine Buchung, Zahlung, Aktiv-Funktion, Statistik (A2.1–A2.6) | F3 |

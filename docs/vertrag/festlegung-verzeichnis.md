@@ -2,7 +2,7 @@
 
 Vertrag: B1 (durchsuchbares öffentliches Verzeichnis mit Kategorien, Profilen, Kontaktdaten, Standortfiltern und
 Premium-Markierung; Agent für Dubletten, fehlende Felder, Klassifikation und Vorschläge zur Freigabe), §8. Stand:
-**Vorschlag vom 11.11.2026, wartet auf das Ja von Luis.**
+**Ja von Luis am 13.11.2026 mit den Vorschlägen dieser Festlegung** (`docs/abnahme/2026-11-13-auftrag-luis.md`); gebaut wird auf dem Testsystem, im Echtbetrieb bleibt die Funktion per Schalter aus, bis Auftragsverarbeitung und Rechtstexte vorliegen.
 
 ## Was gebaut wird
 
