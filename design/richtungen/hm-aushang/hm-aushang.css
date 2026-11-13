@@ -102,7 +102,7 @@ a:hover { text-decoration-color: var(--color-accent); }
 .rahmen::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px var(--color-rule); pointer-events: none; }
 .bild figcaption { margin-top: var(--space-sm); max-width: 60ch; }
 .nachweis { color: var(--color-muted); }
-.nachweis a { font-weight: 400; color: inherit; padding-block: var(--space-sm); }
+.nachweis a { display: inline-block; min-height: 44px; padding-block: var(--space-sm); font-weight: 400; color: inherit; }
 .bild--aufmacher .rahmen { aspect-ratio: 4 / 3; }
 .bild--breit .rahmen { aspect-ratio: 16 / 10; }
 .bild--hoch .rahmen { aspect-ratio: 4 / 5; }
@@ -162,7 +162,7 @@ a:hover { text-decoration-color: var(--color-accent); }
 .stadt-film { font-size: var(--text-title); font-weight: 700; color: var(--color-ink); }
 .stadt .notiz-ort { margin-top: var(--space-2xs); }
 .stadt .zustand { grid-column: auto; }
-.kopfblock--filter { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 24rem); column-gap: var(--gap-columns); align-items: end; }
+.kopfblock--filter { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 24rem); column-gap: var(--gap-columns); align-items: start; }
 
 /* ---------- Anzeige: gekennzeichnet und untergeordnet */
 .anzeige { max-width: 970px; margin-inline: auto; }
@@ -236,7 +236,7 @@ a:hover { text-decoration-color: var(--color-accent); }
 .falle { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .absenden { display: grid; gap: var(--space-sm); justify-items: start; }
 .randspalte { min-width: 0; }
-.rand-titel { font-size: var(--text-title); font-weight: 700; color: var(--color-ink); margin-bottom: var(--space-md); }
+.rand-titel { max-width: none; font-size: var(--text-title); font-weight: 700; color: var(--color-ink); margin-bottom: var(--space-md); }
 .rand-satz { margin-top: var(--space-lg); font-size: var(--text-md); }
 
 /* ---------- Schritte (echte Reihenfolge) */
@@ -413,7 +413,7 @@ a:hover { text-decoration-color: var(--color-accent); }
 .film-wo { font-weight: 600; color: var(--color-ink); }
 
 @media (max-width: 60rem) {
-  .start-raster, .film-zeile { grid-template-columns: minmax(0, 1fr); row-gap: var(--space-xs); }
+  .start-raster, .film-zeile, .zettel { grid-template-columns: minmax(0, 1fr); row-gap: var(--space-xs); }
   .start-raster { row-gap: var(--space-xl); }
   .filter { grid-template-columns: minmax(0, 1fr); }
 }

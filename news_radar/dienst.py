@@ -10,6 +10,7 @@ Zeitplan (Europe/Berlin; jeweils als eigener Prozess mit Timeout, nie doppelt):
   digest    `digest` täglich 08:00          (news-radar-digest.timer)
   sicherung `sicherung erstellen` 03:00     (Backup-Cron) – nach $RADAR_DATA_DIR/backup
   bildpool  montags 04:30, nur mit GEMINI_API_KEY (news-radar-bildpool.timer)
+  eingang   `eingang lauf` alle 3 Minuten, nur mit WordPress und RADAR_EINGANG=an (Einsendungen F1); `eingang loeschen` täglich 03:30
 
 Startet der Container als root, gehört der Datenordner danach dem Nutzer `radar` und der Dienst gibt die Rechte ab
 (Coolify-Volumes gehören anfangs root). SIGTERM (Redeploy) beendet alle Kinder geordnet.
@@ -268,6 +269,13 @@ def plan(settings: Settings, env: Mapping[str, str] | None = None) -> list[PlanE
         PlanEintrag("sicherung", ("sicherung", "erstellen", "--ziel", str(settings.data_dir / "backup")),
                     Regel(um=(3, 0)), 1800, (), "Datenbank und Bilder sichern (lokal, läuft auch im Stopp)"),
     ]
+    # Eingang (F1): Abholen bei der Website. Funktionsschalter RADAR_EINGANG (Standard aus, im Echtbetrieb aus bis
+    # Auftragsverarbeitung und Rechtstexte vorliegen); ohne Funktion dort antwortet die Website 503
+    if settings.wordpress_enabled and env.get("RADAR_EINGANG", "").strip().lower() in ("an", "1", "ja"):
+        eintraege.append(PlanEintrag("eingang", ("eingang", "lauf"), Regel(alle=180), 300, ("eingang",),
+                                     "Einsendungen der Website abholen, vorbereiten, Status zurückmelden"))
+        eintraege.append(PlanEintrag("eingang-frist", ("eingang", "loeschen"), Regel(um=(3, 30)), 300, (),
+                                     "Einsendungen 90 Tage nach Abschluss löschen, Spam nach 7 Tagen (läuft auch im Stopp)"))
     if env.get("GEMINI_API_KEY"):
         eintraege.append(PlanEintrag("bildpool", ("bildpool", "fuellen", "--anzahl", "3", "--mit-budget"),
                                      Regel(um=(4, 30), wochentag=0), 1800, ("redaktion",),

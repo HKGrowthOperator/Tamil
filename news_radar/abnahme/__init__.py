@@ -135,6 +135,10 @@ def _antworten(sz: Szenario) -> tuple[dict, dict]:
             out["bild_thema"] = "tempelfest"
             return out
         antworten["text"] = text_mit_bild
+    if f.get("eingang") == "erfindet":  # Einsendung (F1): Modell ergänzt eine Zahl und einen Link
+        from .eingang_ablauf import erfindet_antwort
+
+        antworten["eingang"] = erfindet_antwort
     if f.get("seo_kaputt"):
         antworten["seo"] = {"falsch": 1}
     for rolle, art in (f.get("fehler") or {}).items():
@@ -786,6 +790,9 @@ NACHHER: dict[str, Callable] = {
     "kino_update": _kino_update, "kino_veroeffentlicht": _kino_nach_veroeffentlichung, "wp_timeout": _wp_timeout,
     "agent_v2": _agent_v2, "quelle_ergaenzen": _quelle_ergaenzen, "dossier": _dossier,
 }
+from .eingang_ablauf import NACHHER as _EINGANG  # noqa: E402 – Szenarien ab 80 (Festlegung F1)
+
+NACHHER.update(_EINGANG)
 
 
 def _social(ctx, sz: Szenario, now: datetime) -> dict:

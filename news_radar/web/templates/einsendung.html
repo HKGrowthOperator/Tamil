@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Einsendung {{ e.vorgangsnummer }}{% endblock %}
+{% block content %}
+<header class="topline">
+  <div><h1>{{ arten[e.art] }} <small class="leise">{{ e.vorgangsnummer }}</small></h1>
+  <p class="unter"><a href="/eingang">Zurück zum Eingang</a> · Status: <b>{{ status_label[e.status] }}</b> · eingegangen {{ fmt_dt(e.eingang_at) }}{% if e.abgeschlossen_at %} · abgeschlossen {{ fmt_dt(e.abgeschlossen_at) }}{% endif %}{% if e.entwurf_id %} · <a href="/entwurf/{{ e.entwurf_id }}">zum Entwurf</a>{% endif %}</p></div>
+</header>
+
+<section class="karte">
+  <h2>Prüfung des Agenten</h2>
+  {% if e.zusammenfassung %}<p>{{ e.zusammenfassung }}</p>{% else %}<p class="leise">Noch nicht vorbereitet.</p>{% endif %}
+  {% if e.hinweise %}<ul class="hinweise">{% for h in e.hinweise %}<li>{{ h }}</li>{% endfor %}</ul>
+  {% elif e.status != 'abgeholt' %}<p class="leise">Keine Hinweise: Pflichtfelder vollständig, Datum und Ort plausibel, keine Dublette gefunden.</p>{% endif %}
+  {% if e.dublette_von %}<p class="leise">Mögliche Dublette von {% if e.dublette_von.startswith('einsendung:') %}<a href="/eingang/{{ e.dublette_von[11:] }}">{{ e.dublette_von[11:] }}</a>{% elif e.dublette_von.startswith('entwurf:') %}<a href="/entwurf/{{ e.dublette_von[8:] }}">Entwurf {{ e.dublette_von[8:] }}</a>{% else %}{{ e.dublette_von }}{% endif %}.</p>{% endif %}
+</section>
+
+<section class="karte">
+  <h2>Angaben des Einsenders</h2>
+  <table class="voll kompakt">
+    {% for feld, label, pflicht in felder %}
+    <tr><th scope="row">{{ label }}{% if pflicht %}*{% endif %}</th><td>
+      {% set wert = e.felder.get(feld) %}
+      {% if not wert %}<span class="leise">–</span>
+      {% elif feld in ('ticket_link', 'link') %}{% if wert|safe_url %}<a href="{{ wert|safe_url }}" target="_blank" rel="nofollow noopener">{{ wert }}</a>{% else %}{{ wert }} <span class="badge hinweis">keine gültige Adresse</span>{% endif %}
+      {% elif feld in ('beginn', 'ende') %}{{ datum_text(wert) or wert }}
+      {% else %}{{ wert }}{% endif %}
+    </td></tr>
+    {% endfor %}
+    <tr><th scope="row">Bild</th><td>{% if e.bild %}{{ e.bild.typ }}, {{ (e.bild.groesse / 1024)|round|int }} KB, Nutzungsrecht {{ 'bestätigt' if e.bild.recht_bestaetigt else 'nicht bestätigt' }} (nicht öffentlich bis zur Übernahme){% else %}<span class="leise">keins</span>{% endif %}</td></tr>
+    <tr><th scope="row">Einwilligung</th><td>{{ 'ja' if e.einwilligung else 'nein' }}{% if e.einwilligung_fassung %} (Fassung {{ e.einwilligung_fassung }}){% endif %}</td></tr>
+  </table>
+</section>
+
+<section class="karte">
+  <h2>Kontakt</h2>
+  {% if darf('eingang_entscheiden') %}
+  <p>{{ e.name }}{% if e.email %} · {{ e.email }}{% endif %}{% if e.telefon %} · {{ e.telefon }}{% endif %}</p>
+  {% if mailto %}<p><a class="knopf" href="{{ mailto }}">Antwort im eigenen Mailprogramm schreiben</a> <span class="leise">Das Cockpit verschickt nichts.</span></p>{% endif %}
+  {% else %}<p class="leise">Kontaktdaten sieht nur die Redaktion.</p>{% endif %}
+  {% if e.notiz %}<p><b>Notiz:</b> {{ e.notiz }}</p>{% endif %}
+  {% if darf('eingang_entscheiden') %}
+  <form method="post" action="/eingang/{{ e.vorgangsnummer }}/notiz" class="zeile">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <label>Notiz (intern) <input name="notiz" value="{{ e.notiz or '' }}" maxlength="1000"></label>
+    <button>Notiz speichern</button>
+  </form>
+  {% endif %}
+</section>
+
+{% if e.status == 'vorbereitet' and darf('eingang_entscheiden') %}
+{% if vorschlag and e.art in ('event', 'beitrag') %}
+<section class="karte">
+  <h2>Entwurf <small class="leise">aus den Angaben des Einsenders</small></h2>
+  <p class="badge roh">{{ vermerk }}</p>
+  <form method="post" action="/eingang/{{ e.vorgangsnummer }}/uebernehmen" data-confirm="Als Entwurf übernehmen? Danach gilt der normale Freigabeweg.">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <label>Überschrift <input name="titel" value="{{ vorschlag.titel }}" maxlength="200" required></label>
+    <label>Teaser <textarea name="teaser" rows="2" maxlength="400">{{ vorschlag.teaser }}</textarea></label>
+    <label>Text (Absätze durch Leerzeile) <textarea name="text" rows="8">{{ vorschlag.absaetze|join('\n\n') }}</textarea></label>
+    {% if e.art == 'event' %}
+    <div class="zeile">
+      <label>Beginn <input name="event_datum" type="datetime-local" value="{{ lokal(e.felder.beginn) }}"></label>
+      <label>Ort <input name="event_ort" value="{{ e.felder.ort }}{% if e.felder.stadt and e.felder.stadt|lower not in (e.felder.ort or '')|lower %}, {{ e.felder.stadt }}{% endif %}"></label>
+      <label>Ticket-Link <input name="ticket_url" type="url" value="{{ e.felder.ticket_link }}"></label>
+    </div>
+    <p class="leise">Ende, Veranstalter und Eintritt gehen aus den Angaben in den Termin; ändern lassen sie sich danach im Entwurf.</p>
+    {% endif %}
+    <button class="primaer">Als Entwurf übernehmen</button>
+  </form>
+</section>
+{% if modell %}
+<section class="karte">
+  <h2>Vorschlag des Agenten <small class="leise">nur auf Klick, geprüft gegen die Einsendung</small></h2>
+  <p class="leise">Der Agent hat den Text umformuliert. Wörter, die nicht in der Einsendung stehen, sind markiert. Der Radar prüft das nur nach Regeln: Bitte jeden Satz mit den Angaben oben vergleichen.</p>
+  <p><b>{{ markieren(modell.titel, erlaubt) }}</b></p>
+  {% if modell.teaser %}<p>{{ markieren(modell.teaser, erlaubt) }}</p>{% endif %}
+  {% for a in modell.absaetze %}<p>{{ markieren(a, erlaubt) }}</p>{% endfor %}
+  <form method="post" action="/eingang/{{ e.vorgangsnummer }}/uebernehmen" data-confirm="Mit dem Vorschlag des Agenten übernehmen? Danach gilt der normale Freigabeweg.">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="vorlage" value="modell">
+    <button>Mit diesem Vorschlag übernehmen</button>
+  </form>
+</section>
+{% endif %}
+{% endif %}
+<section class="karte">
+  <h2>Entscheiden</h2>
+  <div class="zeile">
+    {% for st in entscheidungen %}
+    <form method="post" action="/eingang/{{ e.vorgangsnummer }}/status" class="inline" data-confirm="Einsendung als „{{ status_label[st] }}“ abschließen?">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="status" value="{{ st }}">
+      <button class="{{ 'gefahr' if st in ('abgelehnt', 'spam') else '' }}">{{ status_label[st]|capitalize }}</button>
+    </form>
+    {% endfor %}
+  </div>
+  <p class="leise">Der Status geht an die Website; ab dem Abschluss läuft die Löschfrist (90 Tage, Spam 7 Tage).</p>
+</section>
+{% endif %}
+{% endblock %}
