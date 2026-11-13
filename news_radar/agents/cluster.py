@@ -20,7 +20,7 @@ from ..workflow import repo
 from ..workflow.costs import BudgetErschoepft
 from ..workflow.models import ClusterErgebnis
 from ..workflow.providers import json_block
-from . import Kontext
+from . import Kontext, nachrecherche
 
 log = logging.getLogger(__name__)
 
@@ -214,7 +214,8 @@ def zuordnen(ctx: Kontext, items: list[NewsItem], tage: int = 7) -> list[Zuordnu
             continue
         best, wert = None, 0.0
         for s in bestehend:
-            if s["typ"] in ("kino", "dossier") or s["status"] == "verworfen" or s.get("herkunft") == "nachtrag":
+            if s["typ"] in ("kino", "dossier") or s.get("herkunft") == "nachtrag" or (
+                    s["status"] == "verworfen" and not nachrecherche.mangels_beleg(s)):
                 continue
             if item.kind == "event" and _kuerzel_widerspruch(item.title, s.get("titel") or ""):
                 continue  # MTS-Termin ≠ BTS-Termin, auch bei fast gleichem Titel

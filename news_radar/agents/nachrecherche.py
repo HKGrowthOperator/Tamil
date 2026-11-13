@@ -114,6 +114,15 @@ def sozial(url: str) -> bool:
     return any(h == s or h.endswith("." + s) for s in SOZIAL)
 
 
+# Verworfen, weil Belege fehlten: eine neue Quelle aus dem Scan ordnet sich der Story zu und startet sie noch einmal
+# (nicht bei Terminen in der Vergangenheit, Dubletten oder einer Entscheidung der Redaktion bzw. des Agenten)
+MANGELS_BELEG = ("Zweite KI: verworfen", "Nach zwei Runden Nachrecherche", "Faktencheck: Kernaussage")
+
+
+def mangels_beleg(story: dict) -> bool:
+    return story.get("status") == "verworfen" and (story.get("notiz") or "").startswith(MANGELS_BELEG)
+
+
 def runden(store, story_id: int) -> int:
     """Wie viele Runden Nachrecherche die Story schon hat (jeder Job zählt, auch der laufende)."""
     return store.db.execute("SELECT COUNT(*) FROM workflow_jobs WHERE story_id = ? AND schritt = 'nachrecherche'",

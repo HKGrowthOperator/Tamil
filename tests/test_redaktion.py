@@ -48,8 +48,8 @@ def test_full_pipeline_creates_draft_with_evidence_versions_license_and_costs(se
     item = meldung("Tamilisches Lichterfest im Tempel Hamm am 14. November", "Tamilen feiern in Hamm",
                    url="https://www.ruhrnachrichten.de/hamm/lichterfest")
     stats, fake = lauf(settings, [item], texte={item.url: ARTIKEL})
-    assert stats["storys"] == 1 and stats["jobs"]["fertig"] == 7
-    assert fake.rollen() == ["recherche", "text", "faktencheck", "lektorat", "seo"]
+    assert stats["storys"] == 1 and stats["jobs"]["fertig"] == 8
+    assert fake.rollen() == ["recherche", "text", "faktencheck", "lektorat", "seo", "pruefer"]
     with Store(settings.db_path) as store:
         draft = store.list_drafts("neu")[0]
         sid = draft["story_id"]
@@ -61,9 +61,9 @@ def test_full_pipeline_creates_draft_with_evidence_versions_license_and_costs(se
         kosten = repo.kosten_story(store, sid)
     assert story["status"] == "fertig" and docs[0].art == "volltext" and docs[0].primaer
     assert claims and all(c.support == "bestaetigt" for c in claims if c.kern)
-    assert rollen == ["text", "faktencheck", "lektorat", "seo", "entwurf"]
+    assert rollen == ["text", "faktencheck", "lektorat", "seo", "pruefung", "entwurf"]
     assert asset["lizenz"] and asset["draft_id"] == draft["id"] and asset["herkunft"] == "karte"
-    assert kosten["usd"] > 0 and kosten["aufrufe"] == 5
+    assert kosten["usd"] > 0 and kosten["aufrufe"] == 6
     assert "Quelle:" in draft["inhalt_html"] and len(draft["seo_titel"]) <= 60
     # Prompt-Injection im Quelltext landet nur im Datenblock der Recherche
     assert "<dokumente>" in fake.requests[0]["user"]
@@ -95,7 +95,8 @@ def test_contradiction_in_core_claim_stops_before_writing(settings):
                        texte={"https://www.ruhrnachrichten.de/x": ARTIKEL})
     with Store(settings.db_path) as store:
         story = repo.stories(store)[0]
-    assert story["status"] == "recherche_erforderlich" and "Widerspruch" in story["notiz"]
+    # kein Endzustand „Recherche nötig“: Nachrecherche, danach verwirft die zweite KI mit Grund
+    assert story["status"] == "verworfen" and "Widerspruch" in story["notiz"] and "Zweite KI" in story["notiz"]
     assert "text" not in fake.rollen()
 
 
@@ -130,7 +131,7 @@ def test_factcheck_still_failing_after_revision_needs_research(settings):
     lauf(settings, [item], client=FakeAnthropic({"faktencheck": immer_falsch}),
          texte={"https://www.ruhrnachrichten.de/z": ARTIKEL})
     with Store(settings.db_path) as store:
-        assert repo.stories(store)[0]["status"] == "recherche_erforderlich" and store.list_drafts() == []
+        assert repo.stories(store)[0]["status"] == "verworfen" and store.list_drafts() == []
 
 
 def test_budget_stop_parks_jobs_and_keeps_approval_working(settings):
@@ -243,7 +244,7 @@ def test_worker_threads_process_queue_in_parallel(settings):
                                 kontext_kw={"fetch_text": lambda u: ARTIKEL, "suche": lambda q: []})
     with Store(settings.db_path) as store:
         assert len(store.list_drafts("neu")) == 2 and jobs.zaehlen(store)["offen"] == 0
-    assert stats["fertig"] == 14
+    assert stats["fertig"] == 16
 
 
 def test_redaktion_adds_source_and_dossier(settings):
@@ -251,7 +252,8 @@ def test_redaktion_adds_source_and_dossier(settings):
                    source="Google News DACH · WDR")
     lauf(settings, [item])
     with Store(settings.db_path) as store:
-        sid = repo.stories(store, "recherche_erforderlich")[0]["id"]
+        sid = repo.stories(store, "verworfen")[0]["id"]
+        repo.story_setzen(store, sid, status="recherche_erforderlich")  # mitten in der Nachrecherche
         orchestrator.quelle_ergaenzen(store, sid, "https://www1.wdr.de/preis", von="luis")
         ctx = orchestrator.kontext(settings, store, client=FakeAnthropic(), fetch_text=lambda u: ARTIKEL, suche=lambda q: [])
         orchestrator.abarbeiten(ctx)
@@ -366,7 +368,7 @@ def test_run_v2_records_run_and_processes_jobs_until_deadline(settings):
     with Store(settings.db_path) as store:
         run = store.recent_runs(1)[0]
         assert len(store.list_drafts("neu")) == 1
-    assert stats["storys"] == 1 and stats["jobs"]["fertig"] == 7
+    assert stats["storys"] == 1 and stats["jobs"]["fertig"] == 8
     assert run["modus"].startswith("v2") and run["finished_at"] and run["entwuerfe"] == 1
     assert "termin_veraltet" not in run["notiz"] and "ohne_bezug" not in run["notiz"]  # nur, wenn größer 0
 
@@ -523,7 +525,7 @@ def test_agent_import_needs_evidence_for_every_paragraph(settings, tmp_path, mon
         stats = import_v2(store, settings, tmp_path / "e.json", ctx=Kontext(settings, store, fetch_text=lambda u: ""))
         story = repo.story(store, paket["story_id"])
         assert store.list_drafts("neu") == []
-    assert stats["recherche_noetig"] == 1 and story["status"] == "recherche_erforderlich"
+    assert stats["nachrecherche"] == 1 and story["status"] == "recherche_erforderlich"
     assert "ohne Beleg" in story["notiz"]
 
 

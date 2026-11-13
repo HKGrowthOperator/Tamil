@@ -385,16 +385,21 @@ def schritt_nachrecherche(ctx: Kontext, job: dict) -> list[tuple[str, dict]]:
     return [("pruefung", weiter)]
 
 
+MAX_PRUEFUNGEN = 3
+
+
 def schritt_pruefung(ctx: Kontext, job: dict) -> list[tuple[str, dict]]:
     """Zweite KI nach der Nachrecherche: schreibbar mit nur belegten Aussagen (notfalls Kurzmeldung) oder verwerfen."""
     story = _story(ctx, job)
     sid, p = story["id"], job["payload"]
     gruende = list(p.get("gruende", []))
     gate_text = f" · Gate: {'; '.join(gruende)}" if gruende else ""
+    runden_text = [h for h in p.get("hinweise", []) if h.startswith("Nachrecherche Runde")]
+    gate_text += f" · {'; '.join(runden_text)}" if runden_text else ""
     schon = ctx.store.db.execute("SELECT COUNT(*) FROM workflow_jobs WHERE story_id = ? AND schritt = 'pruefung'",
                                  (sid,)).fetchone()[0]
-    if schon > 1:  # die Kurzmeldung ist schon einmal gescheitert: kein Kreisel
-        return _verwerfen(ctx, story, f"Zweite KI: verworfen – auch die Kurzmeldung trug nicht{gate_text}")
+    if schon > MAX_PRUEFUNGEN:  # Sicherung gegen einen Kreisel (neue Quellen starten eine verworfene Story neu)
+        return _verwerfen(ctx, story, f"Zweite KI: verworfen – {schon - 1}× geprüft, Belege tragen nicht{gate_text}")
     claims = repo.claims(ctx.store, sid)
     urteil = pruefer.story_pruefen(ctx, story, claims, repo.dokumente(ctx.store, sid), gruende, job["id"])
     regel = pruefer.kurzmeldung_regel(story, claims)
@@ -805,7 +810,12 @@ class StoryNichtOffen(Exception):
 def neu_starten(store: Store, story_id: int, notiz: str) -> bool:
     """Eine Story, die wegen fehlender Belege oder eines Fehlers hängt, mit der neuen Quelle noch einmal prüfen."""
     story = repo.story(store, story_id)
-    if story is None or story["status"] not in NEU_STARTBAR or story["typ"] == "kino":
+    if story is None or story["typ"] == "kino":
+        return False
+    mangels_beleg = nachrecherche.mangels_beleg(story)
+    if story["status"] not in NEU_STARTBAR and not mangels_beleg:
+        return False
+    if mangels_beleg and store.db.execute("SELECT 1 FROM drafts WHERE story_id = ?", (story_id,)).fetchone():
         return False
     if jobs.offen_fuer_story(store, story_id):
         return False  # die laufende Nachrecherche bzw. Recherche liest das neue Dokument ohnehin
