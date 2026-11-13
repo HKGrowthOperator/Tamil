@@ -393,9 +393,10 @@ SZENARIEN += [
     Szenario(77, "Social: Trockenmodus – alles vorbereitet, volle Nutzlast gespeichert, kein Aufruf an Meta",
              "Social", [], nachher="social", einstellungen={**SOCIAL, "_social": "trocken"},
              erwartet={"aufrufe": 0, "stats": {"trocken": 2, "nutzlast": 2, "ohne_kennung": 2}}),
-    Szenario(78, "Social: Regelwerk nicht von KBS freigegeben – trotz Live-Transport nur Trockenlauf", "Social", [],
-             nachher="social", einstellungen={**SOCIAL, "_social": "ohne_freigabe"},
-             erwartet={"aufrufe": 0, "stats": {"meta_aufrufe": 0, "ohne_freigabe": 1, "trocken": 2}}),
+    Szenario(78, "Social: Regelwerk nicht von KBS freigegeben – nichts geht an Meta, nach der Freigabe live", "Social",
+             [], nachher="social", einstellungen={**SOCIAL, "_social": "ohne_freigabe"},
+             erwartet={"aufrufe": 0, "stats": {"meta_aufrufe_ohne_freigabe": 0, "ohne_freigabe": 1, "wartend": 2,
+                                               "nach_freigabe_live": 2}}),
 ]
 
 # Nummer 90 (darunter vergeben parallele Spuren): Gedenk-Sperre gilt seit 13.11.2026 für alle Terminquellen
