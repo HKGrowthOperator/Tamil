@@ -551,20 +551,40 @@ def _dokument(db, sid: int, doc_key: str, eintrag: tuple, ts: str) -> None:
          art, seitentitel, text, hashlib.sha256(text.encode("utf-8")).hexdigest(), text[:500]))
 
 
+UMGELEITET = "umgeleitet, nicht ersetzt"
+
+
+def _ziel_dokument(db, sid: int, url: str, pdf: bool = True):
+    """Das Dokument der Story zu genau dieser Adresse (url_norm oder uid der Ursprungsadresse) – nie über die Adresse,
+    auf die eine Umleitung zeigt."""
+    return db.execute("SELECT id, url_norm, text_sha256, doc_key, titel, text, url FROM source_documents "
+                      "WHERE story_id = ? AND (url_norm = ? OR uid = ?) ORDER BY id LIMIT 1",
+                      (sid, adresse_norm(url, pdf), _uid(url, pdf))).fetchone()
+
+
+def _gleiche_adresse(zeile, url: str, gelesen: str, pdf: bool) -> bool:
+    """Ist die gelesene Seite noch die des Dokuments? Leitet die Adresse auf die Startseite oder eine andere Quelle
+    um, nicht – sonst bekäme das Dokument einen fremden Text und der Beleg ginge verloren (Prüfung von a6b13cf)."""
+    return zeile is not None and adresse_norm(gelesen, pdf) in {zeile[1], adresse_norm(url, pdf)}
+
+
 def _aktualisieren(db, sid: int, eintrag: tuple, ts: str) -> int:
-    """Text eines Dokuments, das schon Beleg der Story ist, durch den neu abgerufenen ersetzen (doc_key bleibt). 1,
-    wenn sich der Text geändert hat, sonst 0. Claims der Story beziehen sich auf den doc_key; das Gate prüft ihre
-    Fundstellen beim nächsten Import gegen den neuen Text."""
+    """Text und Titel (immer zusammen, auch durch einen leeren Titel) eines Dokuments, das schon Beleg der Story ist,
+    durch den neu abgerufenen ersetzen (doc_key bleibt). 1, wenn sich etwas geändert hat, sonst 0. Der alte Stand
+    bleibt als Fassung „quelle_vorher“; die Claims der Story löscht _ergaenzen in derselben Transaktion."""
     q, text, seitentitel, gelesen, pdf, art = eintrag
-    sha = hashlib.sha256(text.encode("utf-8")).hexdigest()
-    zeile = db.execute("SELECT id, text_sha256 FROM source_documents WHERE story_id = ? AND (url_norm = ? OR url_norm = ? "
-                       "OR uid = ?) ORDER BY id LIMIT 1",
-                       (sid, adresse_norm(gelesen, pdf), adresse_norm(q.url, pdf), _uid(q.url, pdf))).fetchone()
-    if zeile is None or zeile[1] == sha:
+    zeile = _ziel_dokument(db, sid, q.url, pdf)
+    if not _gleiche_adresse(zeile, q.url, gelesen, pdf):
         return 0
+    sha = hashlib.sha256(text.encode("utf-8")).hexdigest()
+    if zeile[2] == sha and (zeile[4] or "") == seitentitel:
+        return 0
+    alt = {"doc_key": zeile[3], "url": zeile[6], "titel": zeile[4] or "", "text": zeile[5] or ""}
+    db.execute("INSERT INTO article_versions (story_id, draft_id, rolle, von, hash, inhalt, erstellt) "
+               "VALUES (?, NULL, 'quelle_vorher', 'neu_abrufen', ?, ?, ?)",
+               (sid, zeile[2] or "", json.dumps(alt, ensure_ascii=False), ts))
     db.execute("UPDATE source_documents SET text = ?, text_sha256 = ?, auszug = ?, art = ?, retrieved_at = ?, "
-               "titel = CASE WHEN ? != '' THEN ? ELSE titel END WHERE id = ?",
-               (text, sha, text[:500], art, ts, seitentitel, seitentitel, zeile[0]))
+               "titel = ? WHERE id = ?", (text, sha, text[:500], art, ts, seitentitel, zeile[0]))
     return 1
 
 
@@ -613,6 +633,8 @@ def _ergaenzen(store: Store, v: Vorschlag, geholt: list, heute: date) -> dict:
                     for d in dateien:
                         je_datei[d] = je_datei.get(d, 0) + 1
                     neu.append(g)
+            if aktualisiert:  # die Claims bezogen sich auf den alten Text: der nächste Import zieht sie neu
+                db.execute("DELETE FROM claims WHERE story_id = ?", (sid,))
             if not neu and not aktualisiert:
                 db.rollback()
                 if grund:
@@ -751,6 +773,9 @@ def _eins(store: Store, raw, nr: int, von: str, abruf: Callable, heute: date, uh
         gelesen, pdf = seite.url or q.url, ist_pdf(seite)
         if pdf and anker_seite(q.url) > 1 and "#" not in gelesen:
             gelesen += f"#page={anker_seite(q.url)}"  # der Link führt auf die gelesene Seite
+        if erneut and not _gleiche_adresse(_ziel_dokument(store.db, v.story_id, q.url, pdf), q.url, gelesen, pdf):
+            uebersprungen.append({"url": q.url, "grund": UMGELEITET})
+            continue
         if v.story_id and not erneut and adresse_norm(gelesen, pdf) in belege:  # nach einer Umleitung schon Beleg
             uebersprungen.append({"url": q.url, "grund": SCHON_BELEG})
             continue
