@@ -28,6 +28,7 @@ from ..store import Store
 from ..workflow import costs, jobs, orchestrator, repo
 from ..workflow import fake as fake_mod
 from ..workflow.fake import FakeAnthropic
+from . import texte as T
 
 
 @dataclass
@@ -118,6 +119,15 @@ def _antworten(sz: Szenario) -> tuple[dict, dict]:
                     out["saetze"][0].update(urteil="ungedeckt", kern=False)
             return out
         antworten["faktencheck"] = faktencheck
+    if f.get("pruefer") == "streichen":  # zweite KI findet im Entwurf einen ungedeckten Nebensatz
+        def pruefer(user, system, req):
+            out = fake_mod.pruefer(user, system, req)
+            if fake_mod.block(user, "entwurf") is not None:
+                satz = next((s for s in reversed(out["saetze"]) if s["urteil"] == "gedeckt"), None)
+                if satz:
+                    satz.update(urteil="ungedeckt", kern=False, claim_ids=[], fundstelle="")
+            return out
+        antworten["pruefer"] = pruefer
     if f.get("signal"):
         rel = 8 if f["signal"] == "ja" else 2
         antworten["signal"] = lambda u, s, r: {"bewertungen": [
@@ -462,6 +472,55 @@ def _quelle_ergaenzen(ctx, sz: Szenario, now: datetime) -> dict:
     return {f"nach_{k}": v for k, v in _zeitraffer(ctx).items()}
 
 
+def _ergaenzen_scan(ctx, sz: Szenario, now: datetime) -> dict:
+    """Agent-Modus: Import ohne Beleg schickt die Story vom Scan in die Nachrecherche; ein Vorschlag mit story_id
+    ergänzt sie um eine Quelle (Story wieder „neu“ mit Recherche-Job); danach schreibt der Agent-Modus mit Gate."""
+    from ..agent_v2 import import_daten
+    from ..nachtrag import annehmen
+
+    store = ctx.store
+    sid = repo.stories(store)[0]["id"]
+    leer = fake_mod.text("<story>\n{}\n</story>\n<claims>\n[]\n</claims>", "", {})
+    import_daten(store, ctx.settings, {"ergebnisse": [{"story_id": sid, "claims": [], "beitrag": leer}]}, ctx=ctx)
+    orchestrator.abarbeiten(ctx)  # ohne Modell: nur die Nachrecherche
+    stats: Counter = Counter()
+    stats["in_nachrecherche"] += int(repo.story(store, sid)["status"] == "recherche_erforderlich")
+    v = {"story_id": sid, "arbeitstitel": "Integrationspreis Köln", "datum": now.date().isoformat(),
+         "rubrik": "community", "ort": "Köln", "bezug": "Verein in Köln", "heikel": False,
+         "quellen": [{"url": sz.erwartet["_url"], "titel": "Preis", "herausgeber": "WDR", "datum": "", "sprache": "de",
+                      "art": "bericht"}]}
+    texte = {sz.erwartet["_url"]: T.KOELN}
+    out = annehmen(store, ctx.settings, {"vorschlaege": [v]}, von="abnahme", ctx=ctx,
+                   abruf=_fake_abruf(Szenario(0, "", "", [], {}, texte=texte)))
+    stats[f"ergaenzung_{out['ergebnisse'][0]['ergebnis']}"] += 1
+    stats["recherche_job"] += sum(1 for j in jobs.offen_fuer_story(store, sid) if j["schritt"] == "recherche")
+    stats.update(_agent_v2(ctx, sz, now))
+    return dict(stats)
+
+
+def _agent_nachrecherche(ctx, sz: Szenario, now: datetime) -> dict:
+    """Agent-Modus: Import ohne Beleg → Nachrecherche (ohne Modell) → Export mit eigener Liste „nachrecherche“
+    (Fehlstellen, Suchanfragen); ein Import nur mit Fehlstellen wird abgelehnt."""
+    from ..agent_v2 import import_daten, paket_v2
+
+    store = ctx.store
+    sid = repo.stories(store)[0]["id"]
+    leer = fake_mod.text("<story>\n{}\n</story>\n<claims>\n[]\n</claims>", "", {})
+    import_daten(store, ctx.settings, {"ergebnisse": [{"story_id": sid, "claims": [], "beitrag": leer,
+                                                       "fehlend": ["Bericht des Vereins"]}]}, ctx=ctx)
+    orchestrator.abarbeiten(ctx)
+    mappe = paket_v2(store, ctx.settings, ctx=ctx)
+    stats: Counter = Counter()
+    stats["export_storys"] = len(mappe["storys"])
+    for n in mappe["nachrecherche"]:
+        stats["export_nachrecherche"] += 1
+        stats["mit_fehlstellen"] += int("Bericht des Vereins" in n["fehlend"])
+        stats["mit_suchanfragen"] += int(bool(n["suchanfragen"]))
+    nur_fehlend = import_daten(store, ctx.settings, {"ergebnisse": [{"story_id": sid, "fehlend": ["Ort"]}]}, ctx=ctx)
+    stats["import_abgelehnt"] = len(nur_fehlend["fehler"])
+    return dict(stats)
+
+
 def _dossier(ctx, sz: Szenario, now: datetime) -> dict:
     d = ctx.store.list_drafts("neu")[0]
     orchestrator.dossier_anlegen(ctx.store, d["id"], von="abnahme")
@@ -729,6 +788,7 @@ NACHHER: dict[str, Callable] = {
     "scan_im_stopp": _scan_im_stopp, "website_stopp": _website_stopp,
     "kino_update": _kino_update, "kino_veroeffentlicht": _kino_nach_veroeffentlichung, "wp_timeout": _wp_timeout,
     "agent_v2": _agent_v2, "quelle_ergaenzen": _quelle_ergaenzen, "dossier": _dossier,
+    "ergaenzen_scan": _ergaenzen_scan, "agent_nachrecherche": _agent_nachrecherche,
 }
 
 
