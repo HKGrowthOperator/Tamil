@@ -47,8 +47,29 @@ muss. Bildquellen und Lizenzen im Einzelnen: `bilder-und-lizenzen.md`.
 | Testmodus | Fake-Client in `tests/test_publisher.py`; echtes WordPress lokal (`wordpress/dev/`, SQLite) für `tests/wp/` |
 | Variablen | Radar: `WP_URL`, `WP_USER`, `WP_APP_PASSWORD`, `WP_POST_STATUS`, `WP_SEO_META`. Website: `RADAR_APP_PASSWORD`, `RADAR_COCKPIT_URL`, `WP_ENVIRONMENT_TYPE` |
 | Stand | gebaut und verbunden (Vorschau-Adresse, `WP_POST_STATUS=publish`) |
-| Geplant | Meta `bild_lizenz`, `bild_lizenz_url`, `bild_quelle_url` (Bilder); Upload der Social-Datei als eigenes Medium mit öffentlicher JPEG-Adresse (Baustein 5); Abfrage neu veröffentlichter Beiträge und Termine für Social, auch von Hand angelegter (F4: „Erkennen“), z. B. über `/wp/v2/posts?after=` oder einen eigenen Endpunkt; Abholen von Einsendungen und Verzeichniseinträgen (Bausteine 2 und 3) |
+| Geplant | Meta `bild_lizenz`, `bild_lizenz_url`, `bild_quelle_url` (Bilder); Upload der Social-Datei als eigenes Medium mit öffentlicher JPEG-Adresse (Baustein 5); Abfrage neu veröffentlichter Beiträge und Termine für Social, auch von Hand angelegter (F4: „Erkennen“), z. B. über `/wp/v2/posts?after=` oder einen eigenen Endpunkt; Abholen von Verzeichniseinträgen (Baustein 3); Einsendungen siehe unten |
 | KBS liefert | nichts; beim Livegang (Tor B3) nur die Domain |
+
+### Einsendungen (F1)
+
+Der Radar holt Einsendungen der Formulare ab (`wordpress/plugins/tamil-radar/includes/einsendungen.php`, Daten und
+Prüfungen in `tamil-site/includes/einsendungen*.php`). WordPress ruft den Radar nie auf und verschickt keine E-Mail.
+
+| Punkt | Festlegung |
+|---|---|
+| Routen | `GET /einsendungen?nach=<id>&anzahl=<1–100, Standard 50>` · `GET /einsendung/{vorgang}` · `POST /einsendung/{vorgang}/status` mit `{"status": …}` · `GET /einsendung/{vorgang}/bild` (alle unter `tamil-radar/v1`) |
+| Auth und Recht | Anwendungspasswort wie oben; Recht `tamil_einsendungen_abholen`, nur Rolle „Radar“ (vergeben über die Upgrade-Routine von `tamil-site`, Datenversion 2). Ohne Anmeldung 401, ohne Recht 403 (auch für Administratoren) |
+| Voraussetzung | Plugin `tamil-site` aktiv mit Datenversion ≥ 2, sonst 503 `tamil_site_fehlt`; Funktionsschalter „Einreichungen“ aus: 503 `tamil_funktion_aus` (der Radar wertet beides als „nichts abzuholen“) |
+| Cursor | Liste aufsteigend nach `id`, nur `id > nach`. Antwort `{"einsendungen": [...], "weiter": <id>, "mehr": bool}`; der Radar merkt sich `weiter` und fragt erneut, solange `mehr` wahr ist. Lesen ändert nichts (beliebig wiederholbar) |
+| Einsendung | `id`, `vorgangsnummer` (Form `T261113-K7M3Q`), `art` (`event`, `beitrag`, `kooperation`, `werbung`, `kontakt`), `status`, `eingang_at`, `abgeholt_at`, `abgeschlossen_at` (ISO 8601, UTC), `name`, `email`, `telefon`, `einwilligung`, `einwilligung_fassung`, `felder` (je Art: Event `titel`, `beginn`, `ende` (ISO 8601 mit Versatz), `ort`, `stadt`, `land` (DE/AT/CH), `veranstalter`, `beschreibung`, `eintritt`, `ticket_link`; Beitrag `thema`, `text`, `link`; Kooperation `organisation`, `anliegen`; Werbung `firma`, `platz_zeitraum`, `nachricht`; Kontakt `nachricht`; leere Felder als `""`), `bild` (`null` oder `typ`, `groesse`, `sha256`, `recht_bestaetigt`). Kein IP-Hash, kein Dateiname |
+| Status setzen | Erlaubt: `abgeholt` (aus `eingegangen`), `uebernommen`, `erledigt`, `abgelehnt`, `spam` (aus `eingegangen` oder `abgeholt`). Ein Abschluss setzt `abgeschlossen_at` (Beginn der Löschfrist) und ist endgültig: derselbe Status noch einmal → 200 ohne Wirkung; ein anderer Abschluss → 409 `tamil_einsendung_abgeschlossen` mit `data.aktuell`; `abgeholt` nach einem Abschluss → 200 ohne Wirkung. Unbekannter Status 400, unbekannte Vorgangsnummer 404. Prüfung und Schreiben sind eine bedingte Anweisung (kein Rennen). `vorbereitet` führt nur der Radar |
+| Bild | `{"vorgangsnummer", "typ" (image/jpeg oder image/png), "groesse", "sha256", "daten_base64"}`; 404 ohne Bild. Das Bild ist neu gespeichert ohne Metadaten. Bei „übernehmen“ lädt der Radar es mit dem Beitrag hoch (`POST /beitrag`, Base64); auf der Website bleibt es bis zur Löschfrist nicht öffentlich |
+| Protokoll (Website) | Eingang (`website`), jeder Statuswechsel und jeder Bildabruf (Benutzername), Löschungen (`cron`); nur Vorgangsnummer, Aktion, kurze Notiz, keine Namen oder Kontaktdaten. Frist 12 Monate |
+| Löschfrist | WP-Cron stündlich, unabhängig vom Schalter: 90 Tage nach Abschluss (`uebernommen`, `erledigt`, `abgelehnt`), Spam nach 7 Tagen, IP-Hash nach 24 Stunden. Der Radar löscht seine Kopie mit derselben Frist |
+| Ablauf im Radar (zu bauen) | Stopp-Schalter `eingang` prüfen → `GET /einsendungen?nach=` → je Einsendung speichern → `POST …/status` `abgeholt` → Agent bereitet vor → Redaktion entscheidet → `POST …/status` mit dem Abschluss. Bei unklarem Ausgang (Abbruch nach dem Senden) erneut `GET /einsendung/{vorgang}` und abgleichen |
+| Testmodus | `tests/wp/test_einsendungen.py` gegen das lokale WordPress; Schalter je Aufruf über die Kopfzeile `X-Tamil-Funktionen: einreichungen` (nur Umgebung `local`) |
+| Variablen | keine neuen. Hinter Traefik: `TAMIL_PROXY_ANZAHL` in `wp-config.php` (Zahl der Proxys vor WordPress), damit die Drossel die Adresse des Besuchers sieht; fehlt sie, zählt die Adresse des Proxys |
+| Stand | Website gebaut und lokal geprüft; Radar-Seite offen |
 
 ## 4. Anthropic (Agenten-Redaktion)
 
