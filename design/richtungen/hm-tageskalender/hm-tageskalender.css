@@ -2,6 +2,13 @@
  * paper: oklch(97.6% 0.007 120) · sheet: oklch(99.3% 0.004 120) · accent: oklch(50.5% 0.175 25) · display: Rethink Sans 600 (Ziffern 800) · body: Golos Text · hero: Tagesziffer, Aufmacher-Schlagzeile und Vorspann links, großes Foto mit Nachweis rechts; darunter die Feste und das Kino als Tabellen · nav: schmale Leiste Rückblick über dem Kopf, Logo, vier Ziele (Termine, Kino, Community, Verzeichnis), Menü Mehr · footer: Feld paper-2 mit Logo, Rubriken, Diensten, Bildnachweisen · imagery: photographs (Commons, Nachweis an jedem Bild) · signature: die Feste-Tabelle mit großer Tagesziffer je Zeile, der nächste Termin zwischen zwei festen Linien in Rot mit „als Nächstes“
  * axes: light/grotesk/chromatic-red · posture: split · contrast: pass · fold: pass · v2.0.0 */
 /* Hallmark · pre-emit critique: P3 H4 E4 S4 R4 V3 · weakest: V, Tabellen und Tageszeilen sind Ordnung, kein Effekt; dafür trägt jede Seite ein echtes Foto mit Nachweis im ersten Bildschirm */
+/* Hallmark · waive 49b · verlinkte Titel, Termine und Feste in Tabellen und Listen · jeder Titel steht wörtlich wie von der Redaktion von tamil.de geschrieben und bricht am Handy in der schmalen Spalte um */
+/* Hallmark · waive 78 · Abschnittsköpfe 20 bis 28 px · über jeder Tabelle trägt die feste Linie den Bogen; große Köpfe würden das Kalenderblatt zur Landingpage machen (Kritik r1 beider Linien) */
+/* Hallmark · waive 77 · Formular, Kontakt, Termin und Werben mit wenigen Abschnitten · tamil.de füllt nichts auf, solange Kinos, Preise und Kontaktdaten fehlen */
+/* Hallmark · waive 79 · Seitenkopf der Formularseiten ohne Foto · für Termin einreichen und Kontakt gibt es kein echtes Bild mit Nachweis */
+/* Hallmark · waive 59 · Abstand 64 px zwischen Abschnitten · eine Nachrichtenseite braucht Dichte; Linien und das helle Tabellenblatt trennen die Teile */
+/* Hallmark · answered F25 · im Strom „Zuletzt bei tamil.de“ steht der Vorspann am Handy nicht, damit jede Zeile mit Bild kurz bleibt; der Bericht selbst zeigt ihn vollständig */
+/* Hallmark · answered F15 · ein Container für alle Seiten; Tabellen auf Festkalender und Kino enden innerhalb davon bei 62rem, damit Zeilen lesbar bleiben */
 @import url("./tokens.css");
 @import url("./base.css");
 
