@@ -42,6 +42,48 @@ Handler = Callable[[Kontext, dict], list[tuple[str, dict]]]
 OHNE_MODELL = ("gate", "bild", "kino", "nachrecherche")  # Schritte, die auch ohne API-Schlüssel laufen
 BEZAHLT = ("recherche", "schreiben", "faktencheck", "lektorat", "seo", "pruefung", "endpruefung")  # Kostendeckel
 PRUEFSCHRITTE = ("pruefung", "endpruefung")  # zweite KI: eigener Anteil am Kostendeckel
+# Rolle des Modellaufrufs je Schritt (agent_usage.rolle); die zweite KI ruft als „pruefer“ auf
+ROLLE_DES_SCHRITTS = {"recherche": "recherche", "schreiben": "text", "faktencheck": "faktencheck",
+                      "lektorat": "lektorat", "seo": "seo", "pruefung": "pruefer", "endpruefung": "pruefer"}
+PRUEF_ROLLEN = ("pruefer", "pruefung", "endpruefung")
+
+
+def schritt_schaetzung(ctx: Kontext, story_id: int, schritt: str) -> float:
+    """Was der Schritt voraussichtlich kostet: der teuerste der letzten 20 erfolgreichen Aufrufe dieser Rolle; ohne
+    Verlauf die Obergrenze der Budget-Reservierung (costs.schaetzung: Dokumente der Story als Prompt, volle
+    max_tokens)."""
+    from ..agents.research import DOK_ZEICHEN
+    from .providers import MAX_TOKENS
+
+    rolle = ROLLE_DES_SCHRITTS.get(schritt, "text")
+    row = ctx.store.db.execute(
+        "SELECT MAX(kosten_usd) FROM (SELECT kosten_usd FROM agent_usage WHERE rolle = ? AND status = 'ok' "
+        "AND kosten_usd > 0 ORDER BY id DESC LIMIT 20)", (rolle,)).fetchone()
+    if row and row[0]:
+        return float(row[0])
+    zeichen = sum(len(d.text[:DOK_ZEICHEN]) + 200 for d in repo.dokumente(ctx.store, story_id)) + 8000
+    return costs.schaetzung(ctx.settings.modell_fuer(rolle), zeichen, MAX_TOKENS.get(rolle, 8000))
+
+
+def kostendeckel_grund(ctx: Kontext, story_id: int, schritt: str) -> str:
+    """Leer, wenn der Schritt in den Kostendeckel der Story passt; sonst der Grund. Prüfschritte rechnen alle Kosten
+    gegen den vollen Deckel, die übrigen Schritte nur die Kosten ohne die zweite KI gegen Deckel minus Prüfanteil –
+    jeweils bisherige Summe plus Schätzung des Schritts."""
+    s = ctx.settings
+    gesamt = repo.kosten_story(ctx.store, story_id)["usd"]
+    if schritt in PRUEFSCHRITTE:
+        summe, deckel = gesamt, s.kosten_story_usd
+    else:
+        pruef = ctx.store.db.execute(
+            f"SELECT COALESCE(SUM(kosten_usd), 0) FROM agent_usage WHERE story_id = ? AND rolle IN "
+            f"({','.join('?' * len(PRUEF_ROLLEN))})", (story_id, *PRUEF_ROLLEN)).fetchone()[0]
+        summe, deckel = gesamt - float(pruef), s.kosten_story_usd - max(s.kosten_story_pruefung_usd, 0)
+    schaetzung = schritt_schaetzung(ctx, story_id, schritt)
+    if summe + schaetzung <= deckel:
+        return ""
+    return (f"Kostendeckel je Story erreicht ({summe:.2f} $ + geschätzt {schaetzung:.2f} $ für „{schritt}“ über "
+            f"{deckel:.2f} $; RADAR_KOSTEN_STORY_USD {s.kosten_story_usd:.2f} $, davon "
+            f"{s.kosten_story_pruefung_usd:.2f} $ für die zweite KI; bisher gesamt {gesamt:.2f} $)")
 
 
 def kontext(settings: Settings, store: Store, client=None, **kw) -> Kontext:
@@ -670,15 +712,12 @@ def job_ausfuehren(ctx: Kontext, job: dict) -> str:
         store._write("UPDATE workflow_jobs SET status = 'fertig', fehler = ?, aktualisiert = ? WHERE id = ?",
                      (f"Story ist {story_jetzt['status']} – Schritt entfällt", now_iso(), job["id"]))
         return "entfallen"
-    # Die zweite KI hat einen eigenen Anteil: die übrigen bezahlten Schritte laufen nur bis Deckel minus Prüfanteil
-    deckel = ctx.settings.kosten_story_usd - (0 if job["schritt"] in PRUEFSCHRITTE
-                                               else max(ctx.settings.kosten_story_pruefung_usd, 0))
-    if (story_jetzt and ctx.claude is not None and job["schritt"] in BEZAHLT and story_jetzt["typ"] != "dossier"
-            and repo.kosten_story(store, story_jetzt["id"])["usd"] >= deckel):
-        usd = repo.kosten_story(store, story_jetzt["id"])["usd"]
-        _verwerfen(ctx, story_jetzt, f"Kostendeckel je Story erreicht ({usd:.2f} $ von {deckel:.2f} $ für "
-                                     f"„{job['schritt']}“; RADAR_KOSTEN_STORY_USD {ctx.settings.kosten_story_usd:.2f} $, "
-                                     f"davon {ctx.settings.kosten_story_pruefung_usd:.2f} $ für die zweite KI)")
+    # Die zweite KI hat einen eigenen Anteil; jeder bezahlte Schritt startet nur, wenn er mit Schätzung hineinpasst
+    grund = (kostendeckel_grund(ctx, story_jetzt["id"], job["schritt"])
+             if story_jetzt and ctx.claude is not None and job["schritt"] in BEZAHLT and story_jetzt["typ"] != "dossier"
+             else "")
+    if grund:
+        _verwerfen(ctx, story_jetzt, grund)
         store._write("UPDATE workflow_jobs SET status = 'fertig', fehler = 'Kostendeckel', aktualisiert = ? WHERE id = ?",
                      (now_iso(), job["id"]))
         return "kostendeckel"

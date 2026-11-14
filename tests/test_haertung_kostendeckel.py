@@ -41,7 +41,9 @@ def test_endpruefung_laeuft_im_eigenen_anteil(settings):
     settings.kosten_story_usd, settings.kosten_story_pruefung_usd = 1.0, 0.3
     with Store(settings.db_path) as store:
         client = FakeAnthropic()
-        ctx, sid = _story_mit_kosten(settings, store, client, 0.8)
+        # 0,60 $ für die Schreibschritte: die Endprüfung passt mit ihrer Schätzung (ohne Verlauf die Obergrenze der
+        # Reservierung, rund 0,33 $) noch in den vollen Deckel (seit der Code-Prüfung von Sitzung B mit Schätzung)
+        ctx, sid = _story_mit_kosten(settings, store, client, 0.6)
         # die Schreibschritte sind schon gelaufen: offen ist nur noch die Endprüfung
         store.db.execute("UPDATE workflow_jobs SET status = 'fertig' WHERE story_id = ?", (sid,))
         store.db.commit()
