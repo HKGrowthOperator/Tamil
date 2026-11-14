@@ -37,7 +37,7 @@ function tamil_site_laender(): array {
 		'DE'   => __( 'Deutschland', 'tamil-site' ),
 		'AT'   => __( 'Österreich', 'tamil-site' ),
 		'CH'   => __( 'Schweiz', 'tamil-site' ),
-		'DACH' => __( 'DE · AT · CH', 'tamil-site' ),
+		'DACH' => __( 'Deutschland, Österreich und Schweiz', 'tamil-site' ),
 	);
 }
 

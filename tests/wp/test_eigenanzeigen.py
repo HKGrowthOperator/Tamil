@@ -33,6 +33,26 @@ def test_whatsapp_oeffnet_neues_fenster_andere_nicht(wp_cli):
     assert "target=" not in _html(wp_cli, "werben")
 
 
+def test_frontend_texte_ohne_trennpunkt_und_gedankenstrich(wp_cli):
+    """Kritik theme-tageskalender-r2 P1-B: Länder, Buchungsdaten, Platz- und Zeitraumtexte im Frontend mit Komma
+    bzw. „bis“ statt „·“ und „–“."""
+    laender = json.loads(wp_cli("echo wp_json_encode( tamil_site_laender() );"))
+    assert laender["DACH"] == "Deutschland, Österreich und Schweiz"
+    daten = wp_cli("echo tamil_site_werbung_html_daten( array( 'nummer' => 'T-1', 'platz' => 'leaderboard', 'start' => '2026-11-20',"
+                   " 'ende' => '2026-11-26', 'betrag' => 1000, 'ziel_url' => 'https://example.test/' ) );")
+    assert " bis " in daten and "–" not in daten and "·" not in daten
+
+
+def test_frontend_quellen_ohne_trennpunkt_und_gedankenstrich():
+    """Quelltext-Prüfung für Stellen, die lokal ohne eingerichtetes Verzeichnis bzw. Buchung nicht erreichbar sind."""
+    from pathlib import Path
+    plugin = Path(__file__).resolve().parents[2] / "wordpress" / "plugins" / "tamil-site" / "includes"
+    vz = (plugin / "verzeichnis-ansicht.php").read_text(encoding="utf-8")
+    assert "implode( ' · '" not in vz and "implode( ', ', array_filter( $teile ) )" in vz
+    wb = (plugin / "werbung-ansichten.php").read_text(encoding="utf-8")
+    assert "' – '" not in wb
+
+
 def test_ungebuchter_platz_zeigt_eigenanzeige_mit_label(wp_cli):
     """F3: ein ungebuchter Platz bleibt nicht leer; das Label „Anzeige“ steht dabei."""
     raus = json.loads(wp_cli("echo wp_json_encode( array( tamil_site_anzeige( 'footer', false ), tamil_site_settings()['eigen']['footer'] ) );"))
