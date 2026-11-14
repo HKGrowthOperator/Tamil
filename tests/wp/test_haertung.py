@@ -10,6 +10,7 @@ import re
 import secrets
 import shlex
 import subprocess
+from html.parser import HTMLParser
 
 import pytest
 import requests
@@ -123,14 +124,63 @@ def test_werbung_drossel_beachtet_proxy_anzahl(wp_cli):
 @pytest.fixture
 def datenversion_drei(wp_cli):
     """Lage nach einem gescheiterten Upgrade: Datenversion 3 (Verzeichnis-Tabellen fehlen noch), Wartezeit läuft, damit
-    Seitenaufrufe das Upgrade nicht sofort nachholen. Danach alter Stand der Schalter und Upgrade auf den vollen Stand."""
-    alt = wp_cli("echo wp_json_encode( get_option( 'tamil_site_funktionen', array() ) );")
+    Seitenaufrufe das Upgrade nicht sofort nachholen. Danach alle Optionen tamil_site_* wie vorher (das Formular speichert
+    die ganze Gruppe: Werbeplätze, Weiterleitungen, SEO) und Upgrade auf den vollen Stand."""
+    muster = "$wpdb->esc_like( 'tamil_site_' ) . '%'"
+    sicher = wp_cli("global $wpdb; echo base64_encode( wp_json_encode( $wpdb->get_results( $wpdb->prepare("
+                    f" 'SELECT option_name, option_value, autoload FROM %i WHERE option_name LIKE %s', $wpdb->options, {muster} ), ARRAY_A ) ) );")
     wp_cli("update_option( 'tamil_site_datenversion', 3 ); update_option( 'tamil_site_upgrade_fehler', time() );"
            " update_option( 'tamil_site_funktionen', array() );")
     yield
-    wp_cli(f"update_option( 'tamil_site_funktionen', json_decode( '{alt or '[]'}', true ) ?: array() );"
-           " delete_option( 'tamil_site_upgrade_fehler' ); tamil_site_upgrade_ausfuehren();")
+    wp_cli(f"global $wpdb; $alt = json_decode( base64_decode( '{sicher}' ), true );"
+           f" $wpdb->query( $wpdb->prepare( 'DELETE FROM %i WHERE option_name LIKE %s', $wpdb->options, {muster} ) );"
+           " foreach ( $alt as $zeile ) { $wpdb->replace( $wpdb->options, $zeile ); } wp_cache_flush();"
+           " update_option( 'tamil_site_datenversion', 3 ); tamil_site_upgrade_ausfuehren();")
     assert wp_cli("echo tamil_site_datenversion();") == wp_cli("echo TAMIL_SITE_DATENVERSION;")
+
+
+class _Formular(HTMLParser):
+    """Felder eines Formulars so, wie der Browser sie absendet (nicht angehakte Kästchen und gesperrte Felder fehlen)."""
+
+    def __init__(self, action: str):
+        super().__init__(convert_charrefs=True)
+        self.action, self.drin, self.felder, self._text, self._select = action, False, [], None, None
+
+    def handle_starttag(self, tag, attrs):
+        a = dict(attrs)
+        if tag == "form":
+            self.drin = a.get("action") == self.action
+        if not self.drin or "disabled" in a:
+            return
+        name, typ = a.get("name"), a.get("type", "text")
+        if tag == "input" and name and typ != "submit" and (typ not in ("checkbox", "radio") or "checked" in a):
+            self.felder.append((name, a.get("value") or ("on" if typ == "checkbox" else "")))
+        elif tag == "textarea" and name:
+            self._text = [name, ""]
+        elif tag == "select" and name:
+            self._select = [name, None]
+        elif tag == "option" and self._select is not None and ("selected" in a or self._select[1] is None):
+            self._select[1] = a.get("value", "")
+
+    def handle_data(self, data):
+        if self._text is not None:
+            self._text[1] += data
+
+    def handle_endtag(self, tag):
+        if tag == "form":
+            self.drin = False
+        elif tag == "textarea" and self._text is not None:
+            self.felder.append((self._text[0], self._text[1]))
+            self._text = None
+        elif tag == "select" and self._select is not None:
+            self.felder.append((self._select[0], self._select[1] or ""))
+            self._select = None
+
+
+def _formularfelder(html: str, action: str) -> list:
+    p = _Formular(action)
+    p.feed(html)
+    return p.felder
 
 
 def test_schalter_vor_datenversion_bleibt_aus(wp_cli, datenversion_drei):
@@ -154,14 +204,23 @@ def test_admin_formular_schaltet_baustein_ohne_daten_nicht_ein(wp_cli, wp_sitzun
     feld = re.search(r'<input[^>]*name="tamil_site_funktionen\[verzeichnis\]"[^>]*>', html)
     assert feld and "disabled" in feld.group(0), "Schalter vor Datenversion 4 nicht wählbar"
     assert "Datenversion" in html
-    form = html[html.index('action="options.php"'):]
-    felder = {n: re.search(rf"""name=["']{n}["'] value=["']([^"']*)["']""", form).group(1)
-              for n in ("option_page", "action", "_wpnonce", "_wp_http_referer")}
-    r = wp_sitzung.post(f"{URL}/wp-admin/options.php", data={**felder, "tamil_site_funktionen[verzeichnis]": "1",
-                                                            "tamil_site_funktionen[werbung]": "1"}, allow_redirects=False, timeout=30)
+    # Absenden wie der Browser (ganzes Formular); das gesperrte Feld zusätzlich von Hand (Manipulation).
+    lesen = "echo wp_json_encode( array( tamil_site_settings(), get_option( 'tamil_site_redirects' ) ) );"
+    vorher = wp_cli(lesen)
+    felder = _formularfelder(html, "options.php") + [("tamil_site_funktionen[verzeichnis]", "1"), ("tamil_site_funktionen[werbung]", "1")]
+    assert ("option_page", "tamil_site") in felder
+    r = wp_sitzung.post(f"{URL}/wp-admin/options.php", data=felder, allow_redirects=False, timeout=30)
     assert r.status_code == 302
     stand = _json(wp_cli, "echo wp_json_encode( get_option( 'tamil_site_funktionen' ) );")
     assert stand.get("verzeichnis") is False and stand.get("werbung") is True, stand
+    def ohne_leere(w):
+        if isinstance(w, dict):
+            return {k: ohne_leere(v) for k, v in w.items() if ohne_leere(v) not in ("", {}, [])}
+        if isinstance(w, list):
+            return [ohne_leere(v) for v in w] if w else {}
+        return w
+
+    assert ohne_leere(json.loads(wp_cli(lesen))) == ohne_leere(json.loads(vorher)), "übrige Einstellungen bleiben beim Speichern unverändert"
 
 
 # --- 3. Umschreibregeln erst, wenn alle Beitragstypen registriert sind ----------------------------------------------
