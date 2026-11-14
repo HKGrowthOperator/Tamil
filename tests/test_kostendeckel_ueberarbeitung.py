@@ -71,3 +71,33 @@ def test_endpruefung_startet_nicht_wenn_sie_den_deckel_ueberschreiten_wuerde(set
         orchestrator.abarbeiten(ctx)
         story = repo.story(store, sid)
     assert client.requests == [] and story["status"] == "verworfen" and "Kostendeckel" in story["notiz"]
+
+
+def _story(settings, store, client):
+    ctx = orchestrator.kontext(settings, store, client=client, fetch_text=lambda u: HAMM, suche=lambda q: [])
+    orchestrator.scan(ctx, [hamm()])
+    return ctx, repo.stories(store)[0]["id"]
+
+
+def test_zweite_ki_ueber_ihrem_anteil_sperrt_die_uebrigen_schritte(settings):
+    # zweite KI 0,40 $ (über ihren 0,30 $), übrige 0,55 $: ein weiterer Schreibschritt ließe für die Endprüfung nichts
+    settings.kosten_story_usd, settings.kosten_story_pruefung_usd = 1.0, 0.3
+    with Store(settings.db_path) as store:
+        client = FakeAnthropic()
+        ctx, sid = _story(settings, store, client)
+        for rolle, usd in (("recherche", 0.15), ("text", 0.10), ("faktencheck", 0.30), ("pruefer", 0.20),
+                           ("pruefer", 0.20)):
+            usage_protokollieren(store, rolle=rolle, provider="anthropic", modell="x", usd=usd, story_id=sid)
+        grund = orchestrator.kostendeckel_grund(ctx, sid, "schreiben")
+    assert "Kostendeckel" in grund and "Endprüfung" in grund
+
+
+def test_ohne_verlauf_schaetzt_die_zweite_ki_hoechstens_ihren_anteil(settings):
+    # frische Datenbank, 0,68 $ übrige Kosten (im Anteil von 0,70 $): die Endprüfung darf noch laufen
+    settings.kosten_story_usd, settings.kosten_story_pruefung_usd = 1.0, 0.3
+    with Store(settings.db_path) as store:
+        client = FakeAnthropic()
+        ctx, sid = _story(settings, store, client)
+        usage_protokollieren(store, rolle="vorher", provider="anthropic", modell="x", usd=0.68, story_id=sid)
+        assert orchestrator.schritt_schaetzung(ctx, sid, "endpruefung") <= 0.3
+        assert orchestrator.kostendeckel_grund(ctx, sid, "endpruefung") == ""

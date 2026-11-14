@@ -62,13 +62,17 @@ def schritt_schaetzung(ctx: Kontext, story_id: int, schritt: str) -> float:
     if row and row[0]:
         return float(row[0])
     zeichen = sum(len(d.text[:DOK_ZEICHEN]) + 200 for d in repo.dokumente(ctx.store, story_id)) + 8000
-    return costs.schaetzung(ctx.settings.modell_fuer(rolle), zeichen, MAX_TOKENS.get(rolle, 8000))
+    obergrenze = costs.schaetzung(ctx.settings.modell_fuer(rolle), zeichen, MAX_TOKENS.get(rolle, 8000))
+    if rolle in PRUEF_ROLLEN:  # ohne Verlauf höchstens ihr Anteil – sonst passte die zweite KI nie in ihren Anteil
+        return min(obergrenze, max(ctx.settings.kosten_story_pruefung_usd, 0))
+    return obergrenze
 
 
 def kostendeckel_grund(ctx: Kontext, story_id: int, schritt: str) -> str:
     """Leer, wenn der Schritt in den Kostendeckel der Story passt; sonst der Grund. Prüfschritte rechnen alle Kosten
     gegen den vollen Deckel, die übrigen Schritte nur die Kosten ohne die zweite KI gegen Deckel minus Prüfanteil –
-    jeweils bisherige Summe plus Schätzung des Schritts."""
+    jeweils bisherige Summe plus Schätzung des Schritts. Die übrigen Schritte verlangen zusätzlich, dass nach
+    ihnen die Endprüfung noch in den vollen Deckel passt (die zweite KI kann über ihren Anteil gegangen sein)."""
     s = ctx.settings
     gesamt = repo.kosten_story(ctx.store, story_id)["usd"]
     if schritt in PRUEFSCHRITTE:
@@ -79,11 +83,18 @@ def kostendeckel_grund(ctx: Kontext, story_id: int, schritt: str) -> str:
             f"({','.join('?' * len(PRUEF_ROLLEN))})", (story_id, *PRUEF_ROLLEN)).fetchone()[0]
         summe, deckel = gesamt - float(pruef), s.kosten_story_usd - max(s.kosten_story_pruefung_usd, 0)
     schaetzung = schritt_schaetzung(ctx, story_id, schritt)
-    if summe + schaetzung <= deckel:
-        return ""
-    return (f"Kostendeckel je Story erreicht ({summe:.2f} $ + geschätzt {schaetzung:.2f} $ für „{schritt}“ über "
-            f"{deckel:.2f} $; RADAR_KOSTEN_STORY_USD {s.kosten_story_usd:.2f} $, davon "
-            f"{s.kosten_story_pruefung_usd:.2f} $ für die zweite KI; bisher gesamt {gesamt:.2f} $)")
+    if summe + schaetzung > deckel:
+        return (f"Kostendeckel je Story erreicht ({summe:.2f} $ + geschätzt {schaetzung:.2f} $ für „{schritt}“ über "
+                f"{deckel:.2f} $; RADAR_KOSTEN_STORY_USD {s.kosten_story_usd:.2f} $, davon "
+                f"{s.kosten_story_pruefung_usd:.2f} $ für die zweite KI; bisher gesamt {gesamt:.2f} $)")
+    if schritt not in PRUEFSCHRITTE:
+        # Hat die zweite KI schon mehr als ihren Anteil verbraucht, muss die Endprüfung nach diesem Schritt noch passen
+        end = schritt_schaetzung(ctx, story_id, "endpruefung")
+        if gesamt + schaetzung + end > s.kosten_story_usd:
+            return (f"Kostendeckel je Story erreicht: bisher {gesamt:.2f} $ + geschätzt {schaetzung:.2f} $ für "
+                    f"„{schritt}“ + {end:.2f} $ für die Endprüfung über {s.kosten_story_usd:.2f} $ "
+                    "(RADAR_KOSTEN_STORY_USD)")
+    return ""
 
 
 def kontext(settings: Settings, store: Store, client=None, **kw) -> Kontext:
