@@ -269,6 +269,8 @@ def _jpeg_mit_exif() -> bytes:
 
 
 def test_bild_jpeg_ohne_metadaten_gedreht_und_abholbar(wp, wp_cli, seite):
+    anhaenge = "echo count( get_posts( array( 'post_type' => 'attachment', 'post_status' => 'any', 'numberposts' => -1, 'fields' => 'ids' ) ) );"
+    vorher = int(wp_cli(anhaenge))
     vorgang = _vorgang(absenden(wp, wp_cli, seite, "beitrag", {"thema": "Bildtest", "text": "Mit Foto"},
                                 bild=("foto.jpg", _jpeg_mit_exif(), "image/jpeg")))
     e = _rest(wp, "GET", f"/einsendung/{vorgang}").json()
@@ -283,7 +285,8 @@ def test_bild_jpeg_ohne_metadaten_gedreht_und_abholbar(wp, wp_cli, seite):
     # nicht öffentlich: zufälliger Dateiname im gesperrten Ordner, nicht in der Mediathek
     datei = wp_cli(f"echo tamil_site_einsendung_zeile( '{vorgang}' )['bild_datei'];")
     assert re.fullmatch(r"[0-9a-f]{32}\.jpg", datei)
-    assert wp_cli("echo count( get_posts( array( 'post_type' => 'attachment', 'post_status' => 'any', 's' => 'foto', 'numberposts' => -1 ) ) );") == "0"
+    # keine neue Mediathek-Datei durch die Einsendung (vorher/nachher; die Mediathek kann importierte „Foto: …“ enthalten)
+    assert int(wp_cli(anhaenge)) == vorher
     assert '"aktion":"bild_abgerufen"' in wp_cli(f"global $wpdb; echo wp_json_encode( $wpdb->get_results( \"SELECT aktion FROM \" . tamil_site_einsendung_protokoll_tabelle() . \" WHERE vorgangsnummer = '{vorgang}'\" ) );")
 
 
