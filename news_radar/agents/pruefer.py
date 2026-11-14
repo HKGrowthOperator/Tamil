@@ -167,8 +167,18 @@ _ZIFFER = {"null": "0", "eins": "1", "zwei": "2", "drei": "3", "vier": "4", "fü
            "fünfzehn": "15", "sechzehn": "16", "siebzehn": "17", "achtzehn": "18", "neunzehn": "19", "zwanzig": "20",
            "dreißig": "30", "vierzig": "40", "fünfzig": "50", "sechzig": "60", "siebzig": "70", "achtzig": "80",
            "neunzig": "90", "hundert": "100", "tausend": "1000"}
-# Datum und Uhrzeit im Beleg: „14.11.2026“ trägt 14, 11 und 2026, „19.00 Uhr“ trägt 19
-_DATUM_ZEIT_RE = re.compile(r"(?<!\d)\d{1,2}\.\d{1,2}\.(?:\d{2,4})?|(?<![\d.,])\d{1,2}[.:]\d{2}(?![\d.,])")
+# Datum und Uhrzeit im Beleg: „14.11.2026“ trägt 14, 11 und 2026, „19.00 Uhr“ trägt 19 – nur in dieser Form
+# (eine Dezimalzahl wie „12.50 Franken“ zerfällt nicht), und nie für Zahlwörter
+_BELEG_DATUM_RE = re.compile(r"(?<![\d.,])(\d{1,2})\.(\d{1,2})\.(\d{4}|\d{2}(?!\d))?")
+_BELEG_UHR_RE = re.compile(r"(?<![\d.,])(\d{1,2})[.:]\d{2}\s*uhr\b")
+_MONAT_NR = {m: n for n, m in enumerate(("januar", "februar", "märz", "april", "mai", "juni", "juli", "august",
+                                         "september", "oktober", "november", "dezember"), 1)}
+
+
+def _beleg_daten(beleg: str) -> list[tuple[int, int, str]]:
+    """Daten in Datumsform im Beleg: (Tag, Monat, Jahr oder "") mit Tag 1–31 und Monat 1–12."""
+    return [(int(m.group(1)), int(m.group(2)), m.group(3) or "") for m in _BELEG_DATUM_RE.finditer(beleg)
+            if 1 <= int(m.group(1)) <= 31 and 1 <= int(m.group(2)) <= 12]
 _VERNEINUNG_RE = re.compile(r"nicht|nichts|nie|niemals|niemand|keine?[mnrs]?|weder")
 # Funktionswörter am Satzanfang tragen keinen Fakt (sonst zählt das erste Wort mit, z. B. ein Name)
 _ANFANG_FREI = {
@@ -210,15 +220,18 @@ def _erstes_wort(satz: str) -> str:
     return worte[0] if worte and not worte[0].isdigit() and worte[0].lower() not in _ANFANG_FREI else ""
 
 
-def _traegt(fakt: str, beleg: str, anfang: bool = False) -> bool:
+def _traegt(fakt: str, beleg: str, anfang: bool = False, tage_monate: tuple = ()) -> bool:
     """Steht der Fakt im Beleg (klein geschrieben)? Zahlen nur als ganze Zahl („12“ nicht in „2012“ oder „120“),
     Zahlwörter und Verneinungen nur als ganzes Wort (ein Zahlwort bis zwölf auch als Ziffer), sonst als Teilfolge.
     Das erste Wort darf gebeugt sein („Tamilischer“ zu „tamilische“): ohne Endung als Teilfolge."""
     f = fakt.lower()
-    zahlen = set(_ZAHL_RE.findall(beleg)) | {z for m in _DATUM_ZEIT_RE.finditer(beleg)
-                                             for z in re.findall(r"\d+", m.group(0))}
+    zahlen = set(_ZAHL_RE.findall(beleg))
+    daten = _beleg_daten(beleg)
     if _ZAHL_RE.fullmatch(f):
-        return f in zahlen
+        return (f in zahlen or any(f in (str(d), str(m), j) for d, m, j in daten)
+                or f in {u.group(1) for u in _BELEG_UHR_RE.finditer(beleg)})
+    if f in _MONAT_NR and f not in beleg:  # „15. November“ gegen „15.11.2026“: gleicher Tag und Monat
+        return any((d, m) in {(x, y) for x, y, _ in daten} for d, m in tage_monate)
     if _ist_zahlwort(f) or _VERNEINUNG_RE.fullmatch(f):
         worte = set(_WORT_RE.findall(beleg))
         return f in worte or (f in _ZIFFER and _ZIFFER[f] in zahlen)
@@ -227,6 +240,12 @@ def _traegt(fakt: str, beleg: str, anfang: bool = False) -> bool:
     elif anfang and len(f) > 4 and f.endswith("s"):  # Genitiv-s auch bei kurzen Namen („Kölns“), Rest ≥ 4 Zeichen
         f = f[:-1]
     return f in beleg
+
+
+def _tage_monate(satz: str) -> tuple[tuple[int, int], ...]:
+    """(Tag, Monat) der Daten mit Monatsnamen im Satz („15. November“ → (15, 11))."""
+    return tuple((int(m.group(1)), _MONAT_NR[m.group(2).lower()]) for m in re.finditer(
+        r"(?<!\d)(\d{1,2})\.\s*(" + "|".join(_MONAT_NR) + r")\b", satz or "", re.I))
 
 
 MAX_CLAIMS_JE_SATZ = 3
@@ -276,7 +295,8 @@ def belegt(urteile: list[SatzUrteil], claims: list[Claim]) -> list[SatzUrteil]:
         tragend = [i for i in ids if ueberlappt(u.satz, f"{by_id[i].aussage} {by_id[i].fundstelle}")]
         beleg = " ".join(f"{by_id[i].aussage} {by_id[i].fundstelle}" for i in tragend).lower()
         ok = (bool(tragend) and len(tragend) <= MAX_CLAIMS_JE_SATZ
-              and all(_traegt(f, beleg, f == _erstes_wort(u.satz)) for f in fakten_beleg(u.satz)))
+              and all(_traegt(f, beleg, f == _erstes_wort(u.satz), _tage_monate(u.satz))
+                      for f in fakten_beleg(u.satz)))
         out.append(u if ok else u.model_copy(update={"urteil": "ungedeckt", "claim_ids": ids}))
     return out
 

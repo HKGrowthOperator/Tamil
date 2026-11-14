@@ -68,3 +68,25 @@ def test_p3_zahlen_in_anderer_schreibung(satz, aussage, fundstelle):
 
 def test_p3_achten_ist_kein_zahlwort():
     assert "achten" not in pruefer.fakten_beleg("Die Helfer achten auf die Gäste.")
+
+
+# ---- Gegenprüfung: Dezimalzahlen, Zahlwörter gegen Datum, kurzes Genitiv-s, Monatsname gegen Datum ------------------
+
+@pytest.mark.parametrize("satz, aussage", [
+    ("Der Eintritt zur Feier kostet 12 Franken.", "Der Eintritt zur Feier kostet 12.50 Franken."),
+    ("Der Eintritt zur Feier kostet 50 Franken.", "Der Eintritt zur Feier kostet 12.50 Franken."),
+    ("Zur Feier kamen zehn Familien aus der Gemeinde.", "Zur Feier der Gemeinde am 10.11. kamen Familien."),
+    ("Hans Kumar leitet die Feier der Gemeinde.", "Shanthi Kumar leitet die Feier der Gemeinde."),
+    ("Die Feier der Gemeinde beginnt am 16. November.", "Die Feier der Gemeinde beginnt am 15.11.2026."),
+])
+def test_gegenpruefung_bleibt_ungedeckt(satz, aussage):
+    assert _urteil(satz, ["C1"], [_claim("C1", aussage)]) == "ungedeckt"
+
+
+@pytest.mark.parametrize("satz, aussage", [
+    ("Die Feier der Gemeinde beginnt um 19 Uhr.", "Die Feier der Gemeinde beginnt um 19.00 Uhr."),
+    ("Die Feier der Gemeinde beginnt am 15. November.", "Die Feier der Gemeinde beginnt am 15.11.2026."),
+    ("Kölns Kulturverein erhielt den Integrationspreis.", "Der Kulturverein in Köln erhielt den Integrationspreis."),
+])
+def test_gegenpruefung_bleibt_gedeckt(satz, aussage):
+    assert _urteil(satz, ["C1"], [_claim("C1", aussage)]) == "gedeckt"
