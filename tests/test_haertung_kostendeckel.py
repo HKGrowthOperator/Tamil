@@ -80,3 +80,13 @@ def test_ki_bild_zaehlt_zum_kostendeckel(settings):
         orchestrator.abarbeiten(ctx)
         ki = store.db.execute("SELECT COUNT(*) FROM agent_usage WHERE rolle = 'bild'").fetchone()[0]
     assert aufrufe == [] and ki == 0
+
+
+def test_pruefanteil_nicht_groesser_als_der_deckel(monkeypatch, caplog):
+    from news_radar.config import load_settings
+
+    monkeypatch.setenv("RADAR_KOSTEN_STORY_USD", "1.0")
+    monkeypatch.setenv("RADAR_KOSTEN_STORY_PRUEFUNG_USD", "1.5")
+    s = load_settings()
+    assert 0 < s.kosten_story_pruefung_usd < s.kosten_story_usd
+    assert "RADAR_KOSTEN_STORY_PRUEFUNG_USD" in caplog.text
