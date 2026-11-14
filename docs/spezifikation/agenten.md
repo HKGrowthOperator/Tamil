@@ -194,7 +194,7 @@ Erreichen: neue bezahlte Jobs warten (`wartet_budget`), Freigabe und Übertragun
   `pruefung` mit allen Satzurteilen.
 - **Kosten:** ein Aufruf mit dem stärksten Modell je Story nach der Nachrecherche und je Entwurf (bei Überarbeitung
   zwei); Budget über die Reservierung, `agent_usage` Rolle `pruefer`.
-- **Fehlerfälle:** Antwort nicht `ok` → Job-Fehler mit Wiederholung; höchstens zehn Recherche-, Prüf- und Endprüf-Jobs je Story; Kostendeckel je Story `RADAR_KOSTEN_STORY_USD` (Standard 1 $, Dossiers ausgenommen) vor jedem bezahlten Schritt, darüber verworfen mit Grund. „gedeckt“ zählt nur mit höchstens drei bestätigten Claims, die je mit dem Satz überlappen und Zahlen (als ganze Zahl), Zahlwörter, Verneinungen, Daten und Namen des Satzes (auch am Satzanfang) tragen; „kein_fakt“ nur ohne Zahl, Datum und großgeschriebenes Wort außer am Satzanfang.
+- **Fehlerfälle:** Antwort nicht `ok` → Job-Fehler mit Wiederholung; höchstens zehn Recherche-, Prüf- und Endprüf-Jobs je Story; Kostendeckel je Story `RADAR_KOSTEN_STORY_USD` (Standard 1 $, Dossiers ausgenommen) vor jedem bezahlten Schritt, darüber verworfen mit Grund; davon bleibt `RADAR_KOSTEN_STORY_PRUEFUNG_USD` (Standard 0,30 $) der zweiten KI (pruefung/endpruefung) vorbehalten, die übrigen Schritte enden vorher; ein KI-Bild zählt mit und entfällt, wenn es den Deckel überschreiten würde. „gedeckt“ zählt nur mit höchstens drei bestätigten Claims, die je mit dem Satz überlappen und Zahlen (als ganze Zahl), Zahlwörter, Verneinungen, Daten und Namen des Satzes (auch am Satzanfang) tragen; „kein_fakt“ nur ohne Zahl, Datum und großgeschriebenes Wort außer am Satzanfang.
 
 ## Lektorat (`agents/copydesk.py`)
 
