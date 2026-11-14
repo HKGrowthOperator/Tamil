@@ -133,6 +133,10 @@ ROLLEN_MODELLE = {
     "lektorat": "claude-haiku-5-5",
     "seo": "claude-haiku-5-5",
     "dossier": "claude-opus-5-5",
+    "eingang": "claude-haiku-5-5",  # Einsendungen (F1): Zusammenfassung und Entwurf nur aus den Angaben
+    # Zweite KI (Auftrag 13.11.2026): prüft aus frischem Kontext nach der Nachrecherche und jeden fertigen Entwurf –
+    # standardmäßig das stärkste Modell der Konfiguration (RADAR_MODELL_PRUEFER)
+    "pruefer": "claude-opus-5-5",
 }
 BILD_REIHENFOLGE = ("archiv", "quelle", "stock", "pool", "ki", "karte")
 
@@ -149,6 +153,7 @@ class Settings:
     kollywood: list[str] = field(default_factory=list)  # Kollywood und Stars ([bezug] kollywood): Kino für die Ausland-Regel
     blocklist_termine: list[str] = field(default_factory=list)  # Termine, die nie automatisch zur Story werden
     blocklist_termine_wort: list[str] = field(default_factory=list)  # wie blocklist_termine, nur als ganzes Wort
+    blocklist_veranstalter: list[str] = field(default_factory=list)  # Veranstalter, deren Termine nie automatisch kommen
     alle_quellen: list[Source] = field(default_factory=list)  # inkl. abgeschalteter (enabled = false)
     bildquellen: list[Bildquelle] = field(default_factory=list)  # Register für den Weg „Bild mit Nachweis“
     anthropic_model: str = "claude-opus-5-5"
@@ -160,6 +165,9 @@ class Settings:
     bild_modell: str = "gemini-nano-banana-2.1"
     bild_groesse: str = "1K"  # 1K | 2K | 4K (Großschreibung Pflicht)
     bild_modus: str = "ki"  # ki | pool | stock | karte – wo die Bildkette beginnt
+    # KI-Symbolbilder (neu erzeugt oder aus dem Bildpool) nur mit eigenem Ja (Spezifikation Bilder 4.1, L11):
+    # Standard aus, unabhängig von GEMINI_API_KEY und BILD_MODUS
+    bild_ki_freigabe: bool = False
     bild_retry_pause: float = 2.0
     wp_url: str = ""
     wp_user: str = ""
@@ -196,6 +204,8 @@ class Settings:
     bild_reihenfolge: tuple[str, ...] = BILD_REIHENFOLGE
     ki_bilder_je_artikel: int = 1
     recherche_google_news: bool = True  # zweite Quelle über Google-News-RSS suchen (siehe robots-Hinweis im Register)
+    modell_aktiv: bool = False  # ANTHROPIC_API_KEY (bzw. RADAR_ANTHROPIC_API_KEY) gesetzt: Worker mit Modell
+    kosten_story_usd: float = 1.0  # Kostendeckel je Story (Modellkosten aller Schritte), Dossiers ausgenommen
 
     def modell_fuer(self, rolle: str) -> str:
         return self.modelle.get(rolle) or ROLLEN_MODELLE.get(rolle) or ROLLEN_MODELLE["text"]
@@ -219,6 +229,15 @@ class Settings:
 
     def category_slugs(self) -> list[str]:
         return [c.slug for c in self.categories]
+
+    def register_fassung(self) -> str:
+        """Fassung des Bildquellen-Registers (Hash der Einträge) für den Beleg eines Lizenz-Datensatzes."""
+        import hashlib
+        import json
+        from dataclasses import asdict
+
+        roh = json.dumps([asdict(b) for b in self.bildquellen], sort_keys=True, ensure_ascii=False, default=str)
+        return "register-" + hashlib.sha256(roh.encode("utf-8")).hexdigest()[:12]
 
 
 def _int(name: str, default: int) -> int:
@@ -283,6 +302,7 @@ def load_settings(sources_file: Path = ROOT / "sources.toml") -> Settings:
         blocklist=[t.lower() for t in raw.get("blocklist", {}).get("terms", [])],
         blocklist_termine=[t.lower() for t in raw.get("blocklist", {}).get("termine", [])],
         blocklist_termine_wort=[t.lower() for t in raw.get("blocklist", {}).get("termine_wort", [])],
+        blocklist_veranstalter=[t.lower() for t in raw.get("blocklist", {}).get("veranstalter", [])],
         categories=categories,
         regions=regions,
         bezug=[t.lower() for t in raw.get("bezug", {}).get("terms", [])],
@@ -299,6 +319,7 @@ def load_settings(sources_file: Path = ROOT / "sources.toml") -> Settings:
         bild_modell=env("BILD_MODELL", "") or "gemini-nano-banana-2.1",
         bild_groesse=(env("BILD_GROESSE", "") or "1K").upper(),
         bild_modus=(env("BILD_MODUS", "") or "ki").lower(),
+        bild_ki_freigabe=(env("BILD_KI_FREIGABE", "") or "0").strip().lower() in ("1", "ja", "true", "an"),
         wp_url=env("WP_URL", "").rstrip("/"),
         wp_user=env("WP_USER", ""),
         wp_app_password=env("WP_APP_PASSWORD", ""),
@@ -332,4 +353,6 @@ def load_settings(sources_file: Path = ROOT / "sources.toml") -> Settings:
         bild_reihenfolge=_reihenfolge(env("BILD_REIHENFOLGE", "")),
         ki_bilder_je_artikel=_int("RADAR_KI_BILDER_JE_ARTIKEL", 1),
         recherche_google_news=(env("RADAR_RECHERCHE_GOOGLE_NEWS", "1") or "1") not in ("0", "nein", "false"),
+        modell_aktiv=bool(os.environ.get("ANTHROPIC_API_KEY", "").strip()),
+        kosten_story_usd=_float("RADAR_KOSTEN_STORY_USD", 1.0),
     )

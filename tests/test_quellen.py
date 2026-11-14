@@ -27,7 +27,7 @@ INVENTUR_2026_11 = {
 
 def test_register_has_33_active_of_43_and_disabled_sources_have_a_reason():
     s = load_settings()
-    assert len(s.alle_quellen) == 43 and len(s.sources) == 33
+    assert len(s.alle_quellen) == 43 and len(s.sources) == 35  # 13.11.: Backnang und dein-dein an
     assert all(q.notiz for q in s.alle_quellen if not q.enabled)
     assert {q.prioritaet for q in s.alle_quellen} <= {"A", "B", "C"}
     assert not any(q.bild_nutzen for q in s.alle_quellen)  # ohne dokumentierte Erlaubnis keine Pressebilder
@@ -38,8 +38,8 @@ def test_inventur_quellen_haben_die_pflichtfelder():
     by_name = {q.name: q for q in load_settings().alle_quellen}
     for name, (typ, land) in INVENTUR_2026_11.items():
         q = by_name[name]
-        # Kino-Seiten (provider html) laufen nach den Korrekturen zur Prüfung 11.11.2026 wieder; dein-dein bleibt aus
-        assert q.enabled == (not name.startswith("dein-dein")), name
+        # Kino-Seiten (provider html) laufen nach den Korrekturen zur Prüfung 11.11.2026 wieder; dein-dein seit 13.11.
+        assert q.enabled, name
         assert q.type == typ and q.type in sources.FETCHERS and q.country == land, name
         assert q.betreiber and q.notiz and q.robots == "erlaubt" and q.prioritaet in {"A", "B", "C"}, name
         assert not q.paywall and not q.bild_nutzen and q.url.startswith("https://"), name

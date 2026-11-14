@@ -52,11 +52,11 @@ def _seite(monkeypatch, datei):
     monkeypatch.setattr(sources.requests, "get", lambda url, **kw: Antwort(datei))
 
 
-def test_kino_html_quellen_wieder_an_ausser_dein_dein(settings):
-    """Nach den Korrekturen zur Prüfung 11.11.2026 laufen Filmkunstkinos, Mathäser und Babylon wieder; dein-dein
-    bleibt aus, bis Luis über robots.txt entschieden hat."""
+def test_kino_html_quellen_alle_an(settings):
+    """Nach den Korrekturen zur Prüfung 11.11.2026 laufen Filmkunstkinos, Mathäser und Babylon wieder; dein-dein seit
+    der Entscheidung von Luis am 13.11.2026."""
     an = {q.name for q in settings.sources if q.provider == "html"}
-    assert an == set(KINO_HTML) - {"dein-dein · Tamil Films in Germany"}
+    assert an == set(KINO_HTML)
     for name in KINO_HTML:
         q = _quelle(settings, name)
         assert q.type == "kino" and q.provider == "html" and q.selectors, name
@@ -89,9 +89,9 @@ def test_babylon_telugu_fassung_kommt_nicht_durch(monkeypatch, settings):
     assert kp.fetch_html_kino(_quelle(settings, "Babylon Berlin · IndoGerman Film"), settings, now=STAND) == []
 
 
-def test_dein_dein_aus_bis_luis_entscheidet(monkeypatch, settings):
+def test_dein_dein_an_nach_entscheidung(monkeypatch, settings):
     q = _quelle(settings, "dein-dein · Tamil Films in Germany")
-    assert not q.enabled and "KI-Crawler" in q.notiz
+    assert q.enabled and "KI-Crawler" in q.notiz and "13.11.2026" in q.notiz
     _seite(monkeypatch, "deindein_tamil_films.html")
     shows = kp.fetch_html_kino(q, settings, now=STAND)
     assert [s.film for s in shows] == ["Scene", "Ramayana: Rise of a Legend", "OM: Chapter 1"]

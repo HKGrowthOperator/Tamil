@@ -3,6 +3,45 @@
 Neueste oben. Format: Datum · Entscheidung · wer · warum. Was hier steht, gilt, bis ein neuerer Eintrag es ändert.
 Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
+## 13.11.2026
+
+- **Bezahlte Werbebuchungen überdauern die Deinstallation** (steuerliche Aufbewahrung): Buchungen und Protokoll
+  bleiben, nie bezahlte Buchungen werden entfernt; ganz gelöscht wird nur mit der Option
+  `tamil_site_werbung_deinstallation_loeschen`. Datenversion 4 mit den Schritten F1 = 2, F3 = 3, F2 = 4. ·
+  Hauptsitzung bei der Zusammenführung der Bausteine
+- **Einsendungen ohne Abschluss werden nach 90 Tagen gelöscht** (F1 nannte nur Fristen für Abgeschlossenes); Abholen
+  und Status bleiben auch bei ausgeschaltetem Schalter erreichbar, damit nichts liegen bleibt. Die Frist gilt auch bei
+  angehaltenem Eingang (Stopp `eingang`): Was länger als 90 Tage nicht abgeholt wurde, wird ungesehen gelöscht. ·
+  Hauptsitzung nach Code-Prüfung
+- **Recherche bleibt nie offen:** Nachrecherche durch den Radar, zweite KI prüft, Ende immer als Entwurf oder
+  verworfen mit Grund; keine Links von Hand. Termin-Seiten liefern ihre strukturierten Angaben (Datum, Uhrzeit,
+  Adresse) mit. · Luis („Es muss alles mit der Recherche klappen … auch keine Links einfügen“)
+- **Ja zu allem (21:50):** F0–F4 mit allen Vorschlägen, Regelwerk Social Fassung 1; Gedenk-Sperre für alle
+  Terminquellen (dann Tempel Backnang an, mit Festauswahl `params.nur_titel`); Veranstalter STCC gesperrt
+  (`[blocklist] veranstalter`); dein-dein.de an. Design: keine Auswahl, mehrere fertige Linien (A Tagesblatt, B
+  Kalenderblatt, C Aushang, D Terrazzo), Luis wählt. Nicht automatisch: Freigabe der Rückblick-Entwürfe, Echtbetrieb
+  neuer Funktionen, Tore B1–B3. · Luis (`docs/abnahme/2026-11-13-ja-zu-allem.md`)
+- **Design aller bisherigen Runden abgelehnt, Neugestaltung mit Hallmark:** `mix-ordnung`, `mix-feed` und alles davor
+  gelten als „komplett generisch“. Neuer Brief `design/brief-v3.md`; gestaltet wird mit dem Hallmark-Skill (Floor,
+  Reflex-Gates, `sloplint --render`, Prüfung aus frischem Kontext). Der Hallmark-Floor geht den alten Regeln aus
+  `tamil-marke`/`tamil-richtung` vor (keine Dachzeilen, keine Versal-Labels, keine „·“-Metazeilen). Website **und**
+  Cockpit werden neu gestaltet. · Luis · „generischer AI-Slop“, der Auftrag hat Gewicht.
+- **Neugestaltung auf Anordnung von Luis, ohne Umweg über `/design-runde`:** Die Hauptsitzung baut die erste Probe
+  selbst (die Sitzung stand im Planmodus, Hintergrund-Agenten durften nicht schreiben); die Prüfung kommt trotzdem
+  aus frischem Kontext (`design/kritik/hm-eigen-r1.md`). Abnahme durch den Auftraggeber bleibt Tor G4. · Luis
+  („alles selber entscheiden“), Hauptsitzung
+- **Erste Probe „Tagesblatt“ (`design/richtungen/hm-eigen/`):** Das Datum ist die Hauptfigur wie im tamilischen
+  Küchenkalender; Rot (Logo-Rot) nur für Sonntage, Festtage, Logo, einen Primärknopf und den Fokus; Bananenblatt-Grün
+  nur für den Kino-Bereich; Rethink Sans und Golos Text (OFL, selbst gehostet). · Hauptsitzung
+- **Vertrag ohne weitere Festlegungsrunde bauen:** „Alle Sachen, die im Vertrag drinstehen“ gilt als Ja zu F4
+  (Instagram, Facebook, WhatsApp-Entwurf; Trockenmodus bis Konten von KBS und Freigabe des Regelwerks) und als Ja
+  zum Bau von F0–F3 auf dem Testsystem mit den Vorschlägen der Festlegungen; im Echtbetrieb bleiben neue Funktionen
+  per Schalter aus, bis Auftragsverarbeitung und Rechtstexte vorliegen. · Luis
+- **Lizenzpflicht für jedes Bild:** vollständiger Lizenz-Datensatz oder keine Freigabe; fehlt er, trägt die Redaktion
+  ihn im Cockpit ein. Reihenfolge der Quellen und Felder in `docs/spezifikation/bilder-und-lizenzen.md`. · Luis
+- **Software-Spezifikation** `docs/spezifikation/` ist ab jetzt die Grundlage für alle Bausteine (Felder,
+  Statusmaschinen, Agenten, Automationen, Integrationen). · Luis („die ganze Software definieren“)
+
 ## 12.11.2026
 
 - **Termin-Abgleich ohne Ort braucht einen Vereinshinweis:** Fehlt auf einer Seite die Stadt und teilen beide Titel nur

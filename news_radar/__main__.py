@@ -11,7 +11,8 @@
   export    Protokoll als JSONL exportieren
   export-drafts  Entwürfe + Bilder für den HTML-Prototyp exportieren (--quellbilder lädt Vorschaubilder der Quellen)
   agent     export: Aufgabenmappe für einen schreibenden Agenten · import: fertige Beiträge übernehmen (mit Bild)
-  bildpool  status | fuellen – Reserve-Bilder je Thema über die Bild-KI anlegen
+  bildpool  status | fuellen – Reserve-Bilder je Thema über die Bild-KI anlegen (nur mit BILD_KI_FREIGABE)
+  lizenzen  nachfuehren – Lizenz-Datensätze im Altbestand aus Commons-, Register- und Kartenangaben ergänzen
   quellen   pruefen – jede Quelle live abfragen und bewerten (data/quellen-pruefung.csv) · liste – Register zeigen
   kosten    Kosten je Rolle, Modell und Tag, Budgetstand; --csv für die Fremdkostenabrechnung
   worker    Redaktion v2: Jobs abarbeiten (Dienst; --einmal leert die Schlange und beendet)
@@ -151,6 +152,8 @@ def main(argv: list[str] | None = None) -> int:
     pool.add_argument("--thema", help="nur dieses Thema füllen")
     pool.add_argument("--anzahl", type=int, default=3, help="Zielbestand je Thema")
     pool.add_argument("--mit-budget", action="store_true", help="Kosten messen und am Budget stoppen (für den Timer)")
+    lz = sub.add_parser("lizenzen", help="Lizenz-Datensätze der Bilder (Spezifikation Bilder 3)")
+    lz.add_argument("aktion", choices=("nachfuehren",))
     quellen = sub.add_parser("quellen", help="Quellen-Register prüfen bzw. anzeigen")
     quellen.add_argument("aktion", choices=("pruefen", "liste"))
     quellen.add_argument("--file", default="data/quellen-pruefung.csv")
@@ -180,9 +183,14 @@ def main(argv: list[str] | None = None) -> int:
     bw.add_argument("aktion", choices=("vergleich", "bogen", "auswerten"))
     bw.add_argument("--anzahl", type=int, default=10)
     bw.add_argument("--ordner", default="data/bewertung")
+    eg = sub.add_parser("eingang", help="Einsendungen der Website (F1): lauf = abholen + vorbereiten, loeschen = Frist")
+    eg.add_argument("aktion", choices=["lauf", "loeschen", "status"])
     ab = sub.add_parser("abnahme", help="Abnahme-Szenarien mit FakeClaude")
     ab.add_argument("--bericht", default="data/abnahme-bericht.md")
     ab.add_argument("--nur", type=int, nargs="*", help="nur diese Szenario-Nummern")
+    so = sub.add_parser("social", help="Social F4: lauf (erkennen + senden) | status")
+    so.add_argument("aktion", choices=("lauf", "status"))
+    so.add_argument("--trocken", action="store_true", help="Trockenmodus erzwingen, auch mit RADAR_SOCIAL_LIVE")
     sub.add_parser("dienst", help="Container-Betrieb (Coolify): Cockpit, Scan, Worker, Digest, Sicherung in einem Prozess")
     kosten = sub.add_parser("kosten", help="Kosten je Rolle/Modell/Tag und Budgetstand")
     kosten.add_argument("--tage", type=int, default=30)
@@ -388,12 +396,13 @@ def main(argv: list[str] | None = None) -> int:
                         print(str(exc), file=sys.stderr)
                         return 2
                 data = export_v2(store, settings, Path(args.file), limit=args.limit, ids=ids)
-                print(f"{len(data['storys'])} Storys → {args.file} "
-                      f"({sum(len(p['dokumente']) for p in data['storys'])} Dokumente)")
+                alle = data["storys"] + data["nachrecherche"]
+                print(f"{len(data['storys'])} Storys, {len(data['nachrecherche'])} in Nachrecherche → {args.file} "
+                      f"({sum(len(p['dokumente']) for p in alle)} Dokumente)")
                 return 0
             stats = import_v2(store, settings, Path(args.file), von=args.von)
-        print(f"{stats['entwuerfe']} Entwürfe, {stats['recherche_noetig']} „Recherche nötig“, {stats['verworfen']} verworfen, "
-              f"{len(stats['fehler'])} Fehler")
+        print(f"{stats['entwuerfe']} Entwürfe, {stats['nachrecherche']} in Nachrecherche, {stats['quellen']} neue Quellen, "
+              f"{stats['verworfen']} verworfen, {len(stats['fehler'])} Fehler")
         for f in stats["fehler"]:
             print(f"  ! {f}")
         return 1 if stats["fehler"] and not stats["entwuerfe"] else 0
@@ -434,6 +443,49 @@ def main(argv: list[str] | None = None) -> int:
                 zustand = "angehalten" if z["gestoppt"] else "läuft"
                 extra = f"  seit {z['seit']} · {z['wer']} · {z['grund']}" if z["gestoppt"] else ""
                 print(f"{z['kanal']:12} {zustand:11}{extra}")
+        return 0
+
+    if args.cmd == "eingang":
+        from . import eingang
+
+        with Store(settings.db_path) as store:
+            if args.aktion == "loeschen":
+                out = eingang.loeschen(store)
+            elif args.aktion == "status":
+                out = eingang.zaehlen(store)
+            elif not settings.wordpress_enabled:
+                print("WordPress nicht eingerichtet (WP_URL, WP_USER, WP_APP_PASSWORD) – nichts abzuholen")
+                return 0
+            else:
+                from .workflow.orchestrator import kontext
+
+                out = eingang.lauf(store, eingang.client_fuer(settings), kontext(settings, store).claude)
+        print(", ".join(f"{k} {v}" for k, v in out.items() if v) or "nichts zu tun")
+        return 0
+
+    if args.cmd == "social":
+        from .social import ablauf as social_ablauf, konfig as social_konfig, regelwerk as social_regelwerk
+        from .social.transport import TrockenTransport
+
+        konf = social_konfig.laden()
+        with Store(settings.db_path) as store:
+            if args.aktion == "status":
+                rw = social_regelwerk.aktuell(store)
+                marke = social_ablauf.startmarke(store)
+                print(f"Funktion {'an' if konf.aktiv else 'aus'} (RADAR_SOCIAL) · Modus "
+                      f"{'trocken' if args.trocken else konf.modus} · Regelwerk Fassung {rw.fassung}"
+                      f"{' (Hashtags: Platzhalter)' if rw.hashtags_platzhalter else ''} · Startmarke "
+                      f"{marke.isoformat() if marke else '(noch keine)'}")
+                for r in store.db.execute("SELECT kanal, status, COUNT(*) AS n FROM social_beitraege "
+                                          "GROUP BY kanal, status ORDER BY kanal, status"):
+                    print(f"  {r['kanal']:10} {r['status']:16} {r['n']}")
+                return 0
+            if not konf.aktiv:
+                print("Social ist aus (Funktionsschalter RADAR_SOCIAL) – nichts zu tun.")
+                return 0
+            transport = TrockenTransport() if args.trocken else social_ablauf.transport_fuer(konf)
+            stats = social_ablauf.lauf(store, settings, konf, transport=transport)
+            print(" · ".join(f"{k} {v}" for k, v in sorted(stats.items())) or "nichts zu tun")
         return 0
 
     if args.cmd == "dossier":
@@ -478,6 +530,8 @@ def main(argv: list[str] | None = None) -> int:
 
         pool = BildPool(settings.bildpool_dir)
         if args.aktion == "fuellen":
+            if not settings.bild_ki_freigabe:
+                raise SystemExit("KI-Bilder sind nicht freigegeben (BILD_KI_FREIGABE) – der Pool wird nicht gefüllt.")
             if not settings.gemini_key:
                 raise SystemExit("GEMINI_API_KEY fehlt – ohne Bild-KI lässt sich der Pool nicht füllen.")
             if args.mit_budget:
@@ -493,6 +547,15 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Bildpool {settings.bildpool_dir}: {sum(s['anzahl'] for s in status.values())} Bilder in {len(status)} Themen")
         for thema, s in status.items():
             print(f"  {thema:20} {s['anzahl']:3} Bilder · {s['genutzt']:3}× genutzt")
+        return 0
+
+    if args.cmd == "lizenzen":
+        from .lizenz import nachfuehren
+
+        with Store(settings.db_path) as store:
+            z = nachfuehren(store, settings)
+        print(f"Lizenz-Datensätze: {z['ergaenzt']} ergänzt, {z['karte']} Bildkarten nachgetragen, "
+              f"{z['schon']} schon vollständig, {z['offen']} offen („Lizenz fehlt“ im Cockpit)")
         return 0
 
     if args.cmd == "export-drafts":

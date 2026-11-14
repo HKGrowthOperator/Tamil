@@ -3,10 +3,11 @@
 - archiv: lizenzierte eigene Bilder unter data/archiv/ mit archiv.json (Rechteinhaber, Lizenz, Umfang, Ablauf, Themen)
 - quelle: Pressebild der Quelle nur, wenn im Register `bild_nutzen = true` steht (dokumentierte Erlaubnis)
 - stock: Unsplash/Pexels mit Schlüssel, Lizenz der Plattform
-- pool: Reserve-Symbolbilder (KI) je Thema
-- ki: neues KI-Symbolbild – höchstens RADAR_KI_BILDER_JE_ARTIKEL je Story, nur mit Budget
+- pool: Reserve-Symbolbilder (KI) je Thema – nur mit BILD_KI_FREIGABE
+- ki: neues KI-Symbolbild – nur mit BILD_KI_FREIGABE, höchstens RADAR_KI_BILDER_JE_ARTIKEL je Story, nur mit Budget
 - karte: Tamil.de-Bildkarte (immer möglich)
-Jedes Bild bekommt einen Datensatz in `assets`. KI-Bilder bleiben als Symbolbild gekennzeichnet.
+Jedes Bild bekommt über `lizenz.anlegen` einen Datensatz in `assets` (Kürzel, Umfang je Kürzel, Nachweis, Beleg).
+KI-Bilder bleiben als Symbolbild gekennzeichnet.
 """
 
 from __future__ import annotations
@@ -14,16 +15,17 @@ from __future__ import annotations
 import io
 import json
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
 
 import requests
 from PIL import Image, ImageOps
 
-from .. import bilder, images, net, prompts, schalter
+from .. import bilder, images, lizenz, net, prompts, schalter
 from ..config import Source
 from ..images import SIZE, FeaturedImage
+from ..store import now_iso
 from ..workflow import costs, repo
 from ..workflow.providers import usage_protokollieren
 from . import Kontext
@@ -36,11 +38,24 @@ class Bild:
     image: FeaturedImage
     rechteinhaber: str
     lizenz: str
-    umfang: str = "Online-Veröffentlichung auf tamil.de"
+    umfang: str = ""  # Menge aus website, social, print (lizenz.umfang_text)
     attribution: str = ""
     ablauf: str = ""
     quelle_url: str = ""
     ki: bool = False
+    felder: dict = field(default_factory=dict)  # weitere Felder des Lizenz-Datensatzes (urheber, lizenz_kuerzel …)
+
+
+def _aus_datensatz(image: FeaturedImage, d: dict) -> Bild:
+    d = dict(d)
+    d.pop("herkunft", None)
+    return Bild(image, d.pop("rechteinhaber", ""), d.pop("lizenz", ""), d.pop("umfang", ""), d.pop("attribution", ""),
+                d.pop("ablauf", ""), d.pop("quelle_url", ""), bool(d.pop("ki", False)), d)
+
+
+def karte(titel: str, kategorie_label: str, slug: str, kategorie: str = "") -> Bild:
+    img = images.branded_card(titel, kategorie_label, slug, kategorie)
+    return _aus_datensatz(img, lizenz.datensatz(img, titel=titel))
 
 
 def _archiv(ctx: Kontext, thema: str, kategorie: str, slug: str) -> Bild | None:
@@ -64,8 +79,14 @@ def _archiv(ctx: Kontext, thema: str, kategorie: str, slug: str) -> Bild | None:
         if not e.get("lizenz") or not e.get("rechteinhaber") or not pfad.is_file():
             continue  # ohne dokumentierte Lizenz kein Bild
         data = images.from_upload(pfad.read_bytes(), slug, credit=e.get("attribution") or f"Foto: {e['rechteinhaber']}")
+        kuerzel = e.get("lizenz_kuerzel") if lizenz.gueltig(e.get("lizenz_kuerzel") or "") else ""
+        wunsch = lizenz.umfang_menge(e.get("umfang")) or None
         return Bild(FeaturedImage(data.data, data.filename, data.mime, data.credit, "archiv"), e["rechteinhaber"],
-                    e["lizenz"], e.get("umfang") or "Online-Veröffentlichung auf tamil.de", data.credit, e.get("ablauf", ""))
+                    e["lizenz"], lizenz.umfang_fuer(kuerzel, wunsch) if kuerzel else "", data.credit, e.get("ablauf", ""),
+                    felder={"urheber": e.get("urheber") or "", "lizenz_kuerzel": kuerzel,
+                            "lizenz_url": e.get("lizenz_url") or lizenz.lizenz_url(kuerzel),
+                            "bearbeitung": "zugeschnitten", "beleg": f"Archiv data/archiv/archiv.json: {e.get('datei')}",
+                            "geprueft_von": "dienst", "geprueft_am": now_iso()})
     return None
 
 
@@ -80,9 +101,13 @@ def _quelle(source: Source | None, bild_url: str, slug: str) -> Bild | None:
         log.info("Pressebild nicht übernommen: %s", exc)
         return None
     credit = f"Foto: {source.betreiber or source.name}"
+    # dokumentierte Erlaubnis im Register: Nutzungsrecht; ihr Umfang ist nicht eingetragen, also nur Website
     return Bild(FeaturedImage(images._encode(fitted), f"{slug}.jpg", "image/jpeg", credit, "quelle"),
                 source.betreiber or source.name, f"Erlaubnis laut Quellen-Register ({source.vertrag or 'bild_nutzen'})",
-                attribution=credit, quelle_url=bild_url)
+                umfang="website", attribution=credit, quelle_url=bild_url,
+                felder={"lizenz_kuerzel": "nutzungsrecht", "bild_url": bild_url, "bearbeitung": "zugeschnitten",
+                        "beleg": f"Quellen-Register sources.toml: {source.name} ({source.vertrag or 'bild_nutzen'})",
+                        "geprueft_von": "dienst", "geprueft_am": now_iso()})
 
 
 def _stock(ctx: Kontext, suchbegriff: str, slug: str) -> Bild | None:
@@ -96,7 +121,7 @@ def _stock(ctx: Kontext, suchbegriff: str, slug: str) -> Bild | None:
             log.info("Stockfoto (%s) fehlgeschlagen: %s", plattform, exc)
             continue
         if img:
-            return Bild(img, img.credit.removeprefix("Foto: ").split(" / ")[0], f"{plattform} License", attribution=img.credit)
+            return _aus_datensatz(img, lizenz.datensatz(img))
     return None
 
 
@@ -132,8 +157,7 @@ def _ki(ctx: Kontext, story_id: int, bild_prompt: str, thema: str, slug: str, po
             pool.add(thema, img, prompt)
         except (OSError, ValueError) as exc:
             log.warning("Pool nicht beschreibbar: %s", exc)
-    return Bild(img, "Tamil.de (KI-generiert)", "KI-generiert – Symbolbild, keine Abbildung des Ereignisses",
-                attribution=bilder.KI_CREDIT, ki=True)
+    return _aus_datensatz(img, lizenz.datensatz(img))
 
 
 def besorgen(ctx: Kontext, story: dict, felder: dict, slug: str, *, kategorie_label: str,
@@ -145,6 +169,9 @@ def besorgen(ctx: Kontext, story: dict, felder: dict, slug: str, *, kategorie_la
     versucht = []
     for stufe in s.bild_reihenfolge:
         bild = None
+        if stufe in ("pool", "ki") and not s.bild_ki_freigabe:  # KI-Bilder nur mit eigenem Ja (L11)
+            versucht.append(stufe)
+            continue
         if stufe in ("quelle", "stock", "ki"):  # Aufruf nach außen: Gestoppt geht nach oben, kein Ausweichen
             schalter.pruefen(ctx.store, "redaktion")
         if stufe == "archiv":
@@ -156,18 +183,15 @@ def besorgen(ctx: Kontext, story: dict, felder: dict, slug: str, *, kategorie_la
         elif stufe == "pool" and thema:
             img = pool.pick(thema, slug)
             if img:
-                bild = Bild(img, "Tamil.de (KI-generiert)", "KI-generiert – Symbolbild aus der Bildreserve",
-                            attribution=img.credit, ki=True)
+                bild = _aus_datensatz(img, lizenz.datensatz(img))
         elif stufe == "ki":
             bild = _ki(ctx, story["id"], felder.get("bild_prompt") or "", thema, slug, pool)
         elif stufe == "karte":
-            img = images.branded_card(felder.get("titel") or "", kategorie_label, slug, felder.get("kategorie") or "")
-            bild = Bild(img, "Tamil.de", "eigene Grafik", attribution=img.credit)
+            bild = karte(felder.get("titel") or "", kategorie_label, slug, felder.get("kategorie") or "")
         if bild is not None:
             return bild, versucht
         versucht.append(stufe)
-    img = images.branded_card(felder.get("titel") or "", kategorie_label, slug, felder.get("kategorie") or "")
-    return Bild(img, "Tamil.de", "eigene Grafik", attribution=img.credit), versucht
+    return karte(felder.get("titel") or "", kategorie_label, slug, felder.get("kategorie") or ""), versucht
 
 
 def speichern(ctx: Kontext, bild: Bild, stem: str, story_id: int | None) -> tuple[str, int]:
@@ -176,11 +200,11 @@ def speichern(ctx: Kontext, bild: Bild, stem: str, story_id: int | None) -> tupl
     vorher = {n: (ordner / n).exists() for n in (f"{stem}.jpg", f"{stem}-thumb.jpg")} if ordner.exists() else {}
     name, thumb = images.save_pair(bild.image, ordner, stem)
     try:
-        asset_id = repo.asset_anlegen(
-            ctx.store, datei=name, herkunft=bild.image.origin, rechteinhaber=bild.rechteinhaber, lizenz=bild.lizenz,
-            umfang=bild.umfang, attribution=bild.attribution, ablauf=bild.ablauf, quelle_url=bild.quelle_url,
-            ki=bild.ki, story_id=story_id, daten=bild.image.data,
-        )
+        herkunft = "stock" if bild.image.origin in lizenz.STOCK_URL else bild.image.origin
+        asset_id = lizenz.anlegen(ctx.store, datei=name, daten=bild.image.data, story_id=story_id, felder={
+            "herkunft": herkunft, "rechteinhaber": bild.rechteinhaber, "lizenz": bild.lizenz, "umfang": bild.umfang,
+            "attribution": bild.attribution, "ablauf": bild.ablauf, "quelle_url": bild.quelle_url, "ki": bild.ki,
+            **bild.felder})
     except BaseException:
         # ohne Lizenz-Datensatz kein Bild: neu angelegte Dateien wieder weg (vorhandene gleiche Dateien bleiben)
         for n in (name, thumb):
@@ -198,8 +222,9 @@ def archiv_vorlage(ordner: Path) -> Path:
     if not index.exists():
         index.write_text(json.dumps([{
             "datei": "beispiel.jpg", "themen": ["tempelfest"], "rubriken": ["community"],
-            "rechteinhaber": "Name der Fotografin", "lizenz": "Nutzungsrecht für tamil.de, unbefristet",
-            "umfang": "Online-Veröffentlichung auf tamil.de und Social Media", "attribution": "Foto: Name",
+            "rechteinhaber": "Name der Fotografin", "urheber": "Name der Fotografin",
+            "lizenz": "Nutzungsrecht für tamil.de, unbefristet", "lizenz_kuerzel": "nutzungsrecht",
+            "umfang": "website,social", "attribution": "Foto: Name",
             "ablauf": "",
         }], ensure_ascii=False, indent=1), encoding="utf-8")
     return index

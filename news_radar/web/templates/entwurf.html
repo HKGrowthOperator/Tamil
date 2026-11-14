@@ -20,21 +20,24 @@
   {% if d.fehler %}<p class="fehlertext">{{ d.fehler }}</p>{% endif %}
   {% if d.wp_link %}<p><a class="knopf" href="{{ d.wp_link|safe_url }}" target="_blank" rel="noopener">{{ 'Beitrag auf tamil.de öffnen' if d.status == 'veroeffentlicht' else 'In WordPress öffnen' }}</a></p>{% endif %}
 
+  {% if lizenz_meldung and (d.status in open_states or d.status in ('freigegeben', 'fehler')) %}
+  <p class="fehlertext lizenz-fehlt">{{ lizenz_meldung }} – Freigabe gesperrt. <a href="#lizenz">Lizenz eintragen</a></p>
+  {% endif %}
   <div class="aktionen gross">
     {% if can_publish and darf('freigeben') %}
       {% if wordpress_enabled and darf('veroeffentlichen') %}
       <form method="post" action="/entwurf/{{ d.id }}/veroeffentlichen" class="inline" data-confirm="Jetzt direkt auf tamil.de veröffentlichen?">
-        <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="stand" value="{{ d.stand }}"><button class="gold" data-busy="Wird veröffentlicht …">Direkt posten</button>
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="stand" value="{{ d.stand }}"><button class="gold" data-busy="Wird veröffentlicht …"{% if lizenz_meldung %} disabled title="{{ lizenz_meldung }}"{% endif %}>Direkt posten</button>
       </form>
       <form method="post" action="/entwurf/{{ d.id }}/wp-entwurf" class="inline">
-        <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="stand" value="{{ d.stand }}"><button class="knopf" data-busy="Wird angelegt …">In WordPress bearbeiten</button>
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="stand" value="{{ d.stand }}"><button class="knopf" data-busy="Wird angelegt …"{% if lizenz_meldung %} disabled title="{{ lizenz_meldung }}"{% endif %}>In WordPress bearbeiten</button>
       </form>
       {% endif %}
       {% if d.status != 'freigegeben' %}
       <form method="post" action="/entwurf/{{ d.id }}/status?next=/entwurf/{{ d.id }}" class="inline">
         <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="aktion" value="freigeben">
         <input type="hidden" name="stand" value="{{ d.stand }}">
-        <button class="primaer">Freigeben</button>
+        <button class="primaer"{% if lizenz_meldung %} disabled title="{{ lizenz_meldung }}"{% endif %}>Freigeben</button>
       </form>
       {% endif %}
     {% endif %}
@@ -126,9 +129,51 @@
   <h2>Bild</h2>
   {% if d.bild_datei %}<img class="bild" src="/bild/{{ d.bild_datei }}" alt="{{ d.bild_alt }}"><p class="leise">{% if d.bild_origin in ('ki', 'pool') and 'KI' in (d.bild_credit or '') %}<span class="badge ki">KI-Symbolbild</span> {% endif %}{{ d.bild_credit }}{% if d.bild_origin not in ('commons', 'quelle') %} · {{ {'karte': 'Bildkarte', 'ki': 'KI-Bild', 'pool': 'Bildpool', 'upload': 'eigenes Bild', 'quelle': 'Bild der Quelle', 'commons': 'Wikimedia Commons', 'unsplash': 'Unsplash', 'pexels': 'Pexels'}.get(d.bild_origin, d.bild_origin) }}{% endif %}</p>{% endif %}
   {% set bild_asset = belege.asset if belege else None %}
-  {% if d.bild_datei and d.bild_origin in ('commons', 'quelle') %}<p class="leise"><span class="badge typ" title="Bild mit Nachweis, vom Radar geprüft">{{ 'Wikimedia Commons' if d.bild_origin == 'commons' else 'Bildquelle aus dem Register' }}</span>{% if bild_asset %}{% set lz = (bild_asset.lizenz or '').rsplit(' (', 1) %} Lizenz: {% if lz|length == 2 and lz[1].startswith(('http://', 'https://')) and lz[1].endswith(')') %}<a href="{{ lz[1][:-1]|safe_url }}" target="_blank" rel="noopener license">{{ lz[0] }}</a>{% else %}{{ bild_asset.lizenz }}{% endif %} · Rechteinhaber: {{ bild_asset.rechteinhaber }}{% if 'Hinweis von Commons' in (bild_asset.umfang or '') %} · <b>{{ bild_asset.umfang.split('; ', 1)[-1] }}</b>{% endif %}{% endif %}</p>
+  {% if d.bild_datei and d.bild_origin in ('commons', 'quelle') %}<p class="leise"><span class="badge typ" title="Bild mit Nachweis, vom Radar geprüft">{{ 'Wikimedia Commons' if d.bild_origin == 'commons' else 'Bildquelle aus dem Register' }}</span>{% if bild_asset %}{% set lz = (bild_asset.lizenz or '').rsplit(' (', 1) %} Lizenz: {% if lz|length == 2 and lz[1].startswith(('http://', 'https://')) and lz[1].endswith(')') %}<a href="{{ lz[1][:-1]|safe_url }}" target="_blank" rel="noopener license">{{ lz[0] }}</a>{% else %}{{ bild_asset.lizenz }}{% endif %} · Rechteinhaber: {{ bild_asset.rechteinhaber }}{% if 'Hinweis von Commons' in (bild_asset.beleg or '') %} · <b>Hinweis von Commons{{ bild_asset.beleg.split('Hinweis von Commons', 1)[1] }}</b> (kein Social){% elif 'Hinweis von Commons' in (bild_asset.umfang or '') %} · <b>{{ bild_asset.umfang.split('; ', 1)[-1] }}</b>{% endif %}{% endif %}</p>
   {% if bild_asset and bild_asset.quelle_url %}<p><a class="knopf" href="{{ bild_asset.quelle_url|safe_url }}" target="_blank" rel="noopener">Bildquelle öffnen</a></p>{% endif %}{% endif %}
+  {% if lizenz_asset %}<p class="leise">Lizenz-Kürzel: {{ lizenz_name(lizenz_asset.lizenz_kuerzel) if lizenz_asset.lizenz_kuerzel else 'offen' }} · Umfang: {{ (lizenz_asset.umfang or 'offen').replace(',', ', ') }}{% if lizenz_asset.geprueft_von %} · geprüft: {{ lizenz_asset.geprueft_von }}{% endif %}</p>{% endif %}
+  {% if d.bild_datei and lizenz_luecken %}
+  <p class="fehlertext" id="lizenz-fehlt">{{ lizenz_meldung }}</p>
+  {% endif %}
+  {% if darf('bearbeiten') and d.bild_datei and (d.status in open_states or d.status == 'fehler') and d.bild_origin not in ('karte', 'ki', 'pool') %}
+  <details class="lizenz-formular" id="lizenz"{% if lizenz_luecken %} open{% endif %}>
+    <summary>Lizenz eintragen</summary>
+    <form method="post" action="/entwurf/{{ d.id }}/lizenz" enctype="multipart/form-data">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <label>Herkunft <select name="herkunft" required>
+        <option value="">– bitte wählen –</option>
+        {% for k, h in lizenz_herkuenfte.items() %}<option value="{{ k }}"{% if lizenz_formular.herkunft == k %} selected{% endif %}>{{ h[2] }}</option>{% endfor %}
+      </select></label>
+      <div class="zeile">
+        <label>Urheber <input name="urheber" value="{{ lizenz_formular.urheber }}" maxlength="200"></label>
+        <label>Rechteinhaber <input name="rechteinhaber" value="{{ lizenz_formular.rechteinhaber }}" maxlength="200" required></label>
+      </div>
+      <div class="zeile">
+        <label>Lizenz <select name="lizenz" required>
+          <option value="">– bitte wählen –</option>
+          {% for k in lizenz_kuerzel %}<option value="{{ k }}"{% if lizenz_formular.lizenz == k %} selected{% endif %}>{{ lizenz_namen.get(k, k) }}</option>{% endfor %}
+        </select></label>
+        <label>CC-Version <select name="version">{% for v in cc_versionen %}<option value="{{ v }}"{% if lizenz_formular.version == v %} selected{% endif %}>{{ v }}</option>{% endfor %}</select></label>
+      </div>
+      <fieldset class="zeile"><legend>Umfang</legend>
+        {% for u, label in (('website', 'Website'), ('social', 'Social'), ('print', 'Print')) %}<label class="inline"><input type="checkbox" name="umfang" value="{{ u }}"{% if u in lizenz_formular.umfang %} checked{% endif %}> {{ label }}</label>{% endfor %}
+      </fieldset>
+      <label>Quelle (Adresse der Seite; leer nur bei eigenem Foto) <input name="quelle_url" type="url" value="{{ lizenz_formular.quelle_url }}" maxlength="2000"></label>
+      <div class="zeile">
+        <label>Beleg (Text, z. B. „Mail von … vom …“) <input name="beleg" maxlength="200"></label>
+        <label>Beleg als Datei (PDF, PNG, JPEG, höchstens 5 MB) <input type="file" name="beleg_datei" accept="application/pdf,image/png,image/jpeg"></label>
+      </div>
+      <div class="zeile">
+        <label>Ablauf (leer = unbefristet) <input name="ablauf" type="date" value="{{ lizenz_formular.ablauf }}"></label>
+        <label>Alt-Text (5 bis 160 Zeichen, nicht der Titel) <input name="alt" value="{{ lizenz_formular.alt }}" minlength="5" maxlength="160" required></label>
+      </div>
+      <label>Nachweis (leer = Vorschlag nach Muster) <input name="nachweis" value="{{ lizenz_formular.nachweis }}" maxlength="200"></label>
+      <button class="primaer">Lizenz speichern</button>
+    </form>
+  </details>
+  {% endif %}
   {% if darf('bearbeiten') %}
+  {% if ki_freigegeben %}
   <form method="post" action="/entwurf/{{ d.id }}/bild" class="bild-ki">
     <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="aktion" value="ki">
     <label>Motiv für die Bild-KI (englisch, keine realen Personen, kein Text)
@@ -140,6 +185,9 @@
     </div>
     {% if not ki_bereit %}<p class="leise">KI-Bilder sind aus: GEMINI_API_KEY fehlt in der .env. „Aus dem Pool“ und die Bildkarte gehen trotzdem.</p>{% endif %}
   </form>
+  {% else %}
+  <p class="leise">KI-Bilder und Bildpool sind aus (BILD_KI_FREIGABE, Entscheidung „keine KI-Bilder“).</p>
+  {% endif %}
   <form method="post" action="/entwurf/{{ d.id }}/bild" class="zeile">
     <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="aktion" value="stock">
     <input name="suchbegriff" value="{{ d.bild_suchbegriff or '' }}" placeholder="Suchbegriff (englisch)">
@@ -148,7 +196,7 @@
   <form method="post" action="/entwurf/{{ d.id }}/bild" class="zeile" enctype="multipart/form-data">
     <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="aktion" value="upload">
     <input type="file" name="datei" accept="image/*" required>
-    <input name="credit" placeholder="Bildnachweis (optional)">
+    <input name="credit" placeholder="Bildnachweis (danach „Lizenz eintragen“)">
     <button class="knopf">Eigenes Bild</button>
   </form>
   <form method="post" action="/entwurf/{{ d.id }}/bild" class="zeile">

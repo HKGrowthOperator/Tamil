@@ -1,9 +1,12 @@
 # Festlegung F4: Instagram, Facebook und WhatsApp-Entwurf
 
 Vertrag: B2 (automatisches Instagram- und Facebook-Publishing), B3 (WhatsApp-Channel-Entwurf, E-Mail von Hand), §3
-Abs. 3, §8 Abs. 1. Stand: **Vorschlag vom 11.11.2026, wartet auf das Ja von Luis und auf die einmalige Freigabe des
-Regelwerks durch KBS.** Gebaut wird zuerst im Trockenmodus (alles außer dem letzten Aufruf an Meta), bis die Konten
-da sind.
+Abs. 3, §8 Abs. 1. Stand: **Ja von Luis am 13.11.2026 mit den Vorschlägen dieser Festlegung** (`docs/abnahme/2026-11-13-auftrag-luis.md`); gebaut wird auf dem Testsystem, im Echtbetrieb bleibt die Funktion per Schalter aus, bis Auftragsverarbeitung und Rechtstexte vorliegen. Live erst mit den Konten von KBS und der einmaligen
+Freigabe des Regelwerks durch KBS. Gebaut wird zuerst im Trockenmodus (alles außer dem letzten Aufruf an Meta), bis die Konten
+da sind. **Bau 13.11.2026:** Trockenmodus fertig (`news_radar/social/`, Cockpit `/social`, Abnahme-Szenarien 70–77
+für T1–T3 mit nachgestellter Schnittstelle); Funktionsschalter `RADAR_SOCIAL` steht aus. Angewandt sind alle
+Vorschläge: Regelwerk wie in der Tabelle, Foto mit Logo-Leiste, zehn Minuten Karenz, Regelwerk ändert nur `admin`,
+Facebook als Foto mit Text.
 
 ## Was gebaut wird
 

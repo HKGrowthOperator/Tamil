@@ -47,7 +47,12 @@ def story(store, story_id: int) -> dict | None:
     return dict(row) if row else None
 
 
-def story_setzen(store, story_id: int, **felder) -> None:
+ENDZUSTAND = ("fertig", "verworfen")
+
+
+def story_setzen(store, story_id: int, nur_offen: bool = False, **felder) -> bool:
+    """Felder einer Story setzen. `nur_offen`: nur, solange sie nicht fertig oder verworfen ist (Bedingung im selben
+    UPDATE – ein Schritt überschreibt nie, was inzwischen die Redaktion oder ein anderer Weg entschieden hat)."""
     erlaubt = {"status", "titel", "kategorie", "ort", "region", "sensibel", "schluessel", "prioritaet", "laenge",
                "relevanz", "begruendung", "notiz", "typ"}
     data = {k: v for k, v in felder.items() if k in erlaubt}
@@ -55,7 +60,9 @@ def story_setzen(store, story_id: int, **felder) -> None:
         data["sensibel"] = 1 if data["sensibel"] else 0
     data["aktualisiert"] = now_iso()
     sets = ", ".join(f"{k} = ?" for k in data)
-    store._write(f"UPDATE stories SET {sets} WHERE id = ?", (*data.values(), story_id))
+    bedingung = " AND status NOT IN ('fertig', 'verworfen')" if nur_offen else ""
+    cur = store._write(f"UPDATE stories SET {sets} WHERE id = ?{bedingung}", (*data.values(), story_id))
+    return cur.rowcount == 1
 
 
 def stories(store, status: str | Iterable[str] | None = None, limit: int = 100) -> list[dict]:
@@ -222,21 +229,53 @@ def fassungen(store, *, story_id: int | None = None, draft_id: int | None = None
 
 # ---- Bildrechte ---------------------------------------------------------------------------------
 
-def asset_anlegen(store, *, datei: str, herkunft: str, rechteinhaber: str = "", lizenz: str = "", umfang: str = "",
-                  attribution: str = "", ablauf: str = "", quelle_url: str = "", ki: bool = False,
-                  story_id: int | None = None, draft_id: int | None = None, daten: bytes | None = None) -> int:
-    sha = hashlib.sha256(daten).hexdigest() if daten else ""
-    cur = store._write(
-        "INSERT INTO assets (datei, sha256, herkunft, rechteinhaber, lizenz, umfang, attribution, ablauf, quelle_url, ki, "
-        "story_id, draft_id, erstellt) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
-        (datei, sha, herkunft, rechteinhaber, lizenz, umfang, attribution, ablauf, quelle_url, 1 if ki else 0,
-         story_id, draft_id, now_iso()),
-    )
+ASSET_FELDER = ("rechteinhaber", "lizenz", "umfang", "attribution", "ablauf", "quelle_url", "urheber", "lizenz_kuerzel",
+                "lizenz_url", "bild_url", "bearbeitung", "beleg", "geprueft_von", "geprueft_am", "ki_modell",
+                "prompt_hash", "alt", "fokus")
+
+
+def asset_werte(*, datei: str, herkunft: str, ki: bool = False, story_id: int | None = None,
+                draft_id: int | None = None, daten: bytes | None = None, sha256: str = "", **felder) -> dict:
+    """Spalten eines Lizenz-Datensatzes (Spezifikation Bilder 3.1). Unbekannte Felder sind ein Programmierfehler."""
+    fremd = set(felder) - set(ASSET_FELDER)
+    if fremd:
+        raise TypeError(f"unbekannte Felder im Lizenz-Datensatz: {sorted(fremd)}")
+    werte = {"datei": datei, "sha256": hashlib.sha256(daten).hexdigest() if daten else sha256, "herkunft": herkunft,
+             **{k: str(felder.get(k) or "") for k in ASSET_FELDER}, "ki": 1 if ki else 0, "story_id": story_id,
+             "draft_id": draft_id, "erstellt": now_iso()}
+    return werte
+
+
+def asset_einfuegen(db, werte: dict) -> int:
+    """INSERT ohne Commit: für Aufrufer, die den Datensatz in ihrer eigenen Transaktion schreiben."""
+    spalten = list(werte)
+    return db.execute(f"INSERT INTO assets ({', '.join(spalten)}) VALUES ({','.join('?' for _ in spalten)})",
+                      [werte[k] for k in spalten]).lastrowid
+
+
+def asset_anlegen(store, *, datei: str, herkunft: str, ki: bool = False, story_id: int | None = None,
+                  draft_id: int | None = None, daten: bytes | None = None, **felder) -> int:
+    werte = asset_werte(datei=datei, herkunft=herkunft, ki=ki, story_id=story_id, draft_id=draft_id, daten=daten,
+                        **felder)
+    spalten = list(werte)
+    cur = store._write(f"INSERT INTO assets ({', '.join(spalten)}) VALUES ({','.join('?' for _ in spalten)})",
+                       tuple(werte[k] for k in spalten))
     return cur.lastrowid
 
 
 def asset_draft_setzen(store, asset_id: int, draft_id: int) -> None:
     store._write("UPDATE assets SET draft_id = ? WHERE id = ?", (draft_id, asset_id))
+
+
+def asset_fuer_entwurf(store, draft_id: int, datei: str) -> dict | None:
+    """Der Lizenz-Datensatz zum aktuellen Bild eines Entwurfs: der neueste für genau diese Datei, an diesen Entwurf
+    gebunden oder (Altbestand) noch ungebunden. Datensätze anderer Entwürfe zählen nie."""
+    if not datei:
+        return None
+    row = store.db.execute(
+        "SELECT * FROM assets WHERE datei = ? AND (draft_id = ? OR draft_id IS NULL) ORDER BY draft_id IS NULL, id DESC "
+        "LIMIT 1", (datei, draft_id)).fetchone()
+    return dict(row) if row else None
 
 
 def asset_fuer_datei(store, datei: str) -> dict | None:
@@ -488,6 +527,6 @@ def wochenbericht_text(store, tage: int = 7) -> str:
     quote = f"{b['annahmequote']:.0%}" if b["annahmequote"] is not None else "–"
     je = f"${b['kosten_je_entwurf']:.3f}" if b["kosten_je_entwurf"] else "–"
     return (f"Radar – letzte {tage} Tage: {b['entwuerfe']} Entwürfe, {b['angenommen']} angenommen, {b['abgelehnt']} "
-            f"abgelehnt (Annahmequote {quote}); {b['recherche_noetig']} Storys „Recherche nötig“; Kosten "
+            f"abgelehnt (Annahmequote {quote}); {b['recherche_noetig']} Storys in Nachrecherche; Kosten "
             f"${b['kosten_usd']:.2f} ({je} je Entwurf); {b['jobs_abgebrochen']} abgebrochene Jobs, "
             f"{b['fehlversuche']} Fehlversuche bei Modellaufrufen.")

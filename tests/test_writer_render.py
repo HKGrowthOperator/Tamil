@@ -47,7 +47,7 @@ def test_prompts_helpers_parse_markdown():
     assert prompts.thema_fuer("sport", "") == "cricket"
     assert prompts.thema_fuer("unbekannt", "") == "diaspora-stadt"
     vorlage = prompts.bild_vorlage()
-    assert "{motiv}" in vorlage and "no text" in vorlage
+    assert "{motiv}" in vorlage and "no text" in vorlage.lower()
     prompt = prompts.bild_prompt_bauen("", "kolam")
     assert "rice-flour kolam" in prompt and "{motiv}" not in prompt
     assert prompts.bild_prompt_bauen("A quiet cinema foyer").startswith("Editorial photograph")

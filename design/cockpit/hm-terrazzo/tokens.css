@@ -1,0 +1,27 @@
+:root {
+  color-scheme: light;
+  --space-3xs: 2px; --space-2xs: 4px; --space-xs: 8px; --space-sm: 12px; --space-md: 16px; --space-lg: 24px; --space-xl: 40px; --space-2xl: 64px; --space-3xl: 96px; --space-4xl: 144px;
+  --text-xs: 0.75rem; --text-sm: 0.875rem; --text-md: 1rem; --text-lg: 1.2rem; --text-xl: 1.44rem; --text-2xl: 1.728rem; --text-3xl: 2.074rem;
+  --text-display-s: 1.44rem; --text-display: 1.728rem; --text-section: 1.2rem; --text-title: 1rem; --text-lead: 1rem;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1); --ease-in: cubic-bezier(0.7, 0, 0.84, 0); --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-micro: 120ms; --dur-short: 220ms; --dur-long: 420ms;
+  --z-base: 1; --z-raised: 10; --z-dropdown: 100; --z-sticky: 200; --z-sticky-nav: 300; --z-modal: 400; --z-toast: 500; --z-tooltip: 600;
+  /* Cockpit: Bedienhöhen im Produkt-Register (32 bis 40 px, Treffer 44 px unter 60rem) */
+  --control: 40px; --control-touch: 44px; --text-body: 1rem; --text-reading: 1.125rem;
+  --container: 1360px; --gutter: 40px; --gap-columns: 32px;
+  --color-error: oklch(48% 0.17 27); --color-success: oklch(45% 0.1 155);
+  /* Terrazzo, Farbweg „Zement“: kühles Off-white statt Creme (Runde 2), Tinte wie schwarze Marmorsplitter */
+  --color-paper: oklch(96.6% 0.004 250); --color-paper-2: oklch(93% 0.006 250); --color-paper-3: oklch(88.5% 0.008 250);
+  --color-plate: oklch(99.4% 0.002 250);
+  --color-ink: oklch(19% 0.012 260); --color-ink-2: oklch(30% 0.012 260); --color-muted: oklch(45% 0.012 260);
+  --color-rule: oklch(82% 0.008 250);
+  --color-paper-on-ink: oklch(96.6% 0.004 250); --color-muted-on-ink: oklch(82% 0.01 250); --color-rule-on-ink: oklch(42% 0.012 260);
+  /* Signal: das Rot des Logos (#B5282A) statt Rost; zwei fast gleiche Rottöne nebeneinander wirken wie ein Fehler */
+  --color-accent: oklch(50.8% 0.177 25.6); --color-accent-ink: oklch(99.4% 0.002 250); --color-focus: oklch(50.8% 0.19 25.6);
+  --color-focus-on-ink: oklch(80% 0.11 25);
+  --font-display: "Onest", ui-sans-serif, system-ui, sans-serif; --font-body: "Onest", ui-sans-serif, system-ui, sans-serif;
+  --radius-card: 0; --radius-pill: 0; --rule-hair: 1px; --rule-bar: 2px;
+  --shadow-card: 12px 12px 0 var(--color-paper-3); --shadow-card-hover: 12px 12px 0 var(--color-ink);
+  --tracking-display: -0.01em; --display-weight: 600;
+  --display-weight: 600;
+}

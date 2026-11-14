@@ -31,22 +31,54 @@ nur aus bestätigten Claims, Belege je `<p>`, Links nur auf Quellen der Story.
    - **Beitrag:** `claims` (Aussage, `evidence_source_ids`, wörtliche Fundstelle aus dem Dokument), optional
      `widersprueche`, `beitrag` mit allen Feldern aus der Anleitung; `belege`: zu jedem `<p>` (ab 1) die Claim-IDs.
      Letzter Absatz ist die Quellenzeile `<p class="quelle">Quelle: …</p>`.
-   - **Zu dünn:** nur `claims` plus `fehlend` (was fehlt) – der Radar setzt „Recherche nötig“.
+   - **Zweite KI (Pflicht):** vor dem Import prüft ein **eigener Agent aus frischem Kontext** (eine andere Instanz,
+     kennt deine Begründung nicht, nur `dokumente` und den Beitrag; Maßstab: `news_radar/prompts/pruefer.md`, Aufgabe
+     `entwurf`) jeden Satz und liefert den Block `pruefung`. Beispiel:
+
+     ```json
+     "pruefung": {"pruefer": "claude-code/pruefer-1", "autor": "claude-code/redakteur-1",
+      "zeitpunkt": "2026-11-13T21:40:00+00:00", "urteil": "importieren",
+ "sha256": "<sha256 hex des geprüften inhalt_html>",
+      "befunde": [{"schwere": "P3", "beschreibung": "Teaser etwas lang", "satz": "", "behoben": false}],
+      "saetze": [{"nr": 1, "satz": "Der Verein erhielt am Freitag den Integrationspreis.", "urteil": "gedeckt",
+                  "claim_ids": ["C1"], "fundstelle": "hat am Freitag den Integrationspreis", "kern": true}]}
+     ```
+
+     Pflicht für jeden Beitrag (Verwerfen braucht keine): eine andere Instanz als der Autor (`pruefer` ≠ `?von=` und ≠ `autor`), `zeitpunkt` ISO 8601 mit Zeitzone, nicht in der Zukunft, höchstens drei Tage alt, `urteil` `importieren` oder `nicht_importieren`, `befunde` mit `schwere` P1/P2/P3 und `behoben`, `sha256` (hex) genau des eingereichten `inhalt_html`, `saetze` genau die Sätze von Titel, Teaser und Haupttext ohne Quellenzeile – deterministisch geteilt wie `agents/pruefer.saetze_des_entwurfs`, keiner fehlt, keiner zusätzlich (Abkürzungen wie „z. B.“, „Dr.“, „St.“ trennen keinen Satz) (`urteil` gedeckt/ungedeckt/widerspruch/kein_fakt, `kern`). Abgewiesen – nichts geändert – ohne Block, bei gleicher Instanz, ungültigem Zeitpunkt, falschem `sha256`, fehlenden oder fremden Sätzen, `nicht_importieren`, offenen P1/P2 oder leeren `saetze`. Danach streicht der Radar ungedeckte Nebensätze; eine ungedeckte Kernaussage schickt die Story in die Nachrecherche. Der Block wird als Fassung `pruefung` gespeichert, der Entwurf trägt „Geprüft von zweiter KI (Prüfer, Zeitpunkt)“ und die Befunde als Hinweise. `gedeckt` zählt nur mit `claim_ids` bestätigter Claims, und jede Zahl, jedes Datum und jedes großgeschriebene Wort außer am Satzanfang muss in Aussage oder Fundstelle dieser Claims stehen – sonst `ungedeckt`. `kein_fakt` gilt im Agent-Import nie (wie `ungedeckt`). Die Quellenzeile `<p class="quelle">` baut der Radar aus den Dokumenten der Story neu; eingereichter Text darin fällt weg.
+   - **Zu dünn:** selbst weitersuchen (Seite des Veranstalters, Verein, registrierte Medien – nie soziale Netzwerke, keine
+     Paywall) und `{"story_id": …, "neue_quellen": ["https://…"]}` liefern; der Radar liest sie selbst und hängt sie an,
+     die Story kommt im nächsten Export mit den neuen Dokumenten. Ein Eintrag nur mit `fehlend` wird abgelehnt: nichts
+     bleibt offen.
    - **Verwerfen:** `{"story_id": …, "verwerfen": "Grund"}` bei vergangenem Termin, fehlendem DACH-Bezug, Dublette,
-     Klatsch.
-3. Importieren; Antwort lesen (`angelegt`, `recherche`, `verworfen`, `fehler`). Fehler beheben, nur diese Storys erneut.
+     Klatsch – oder wenn die Belege auch nach der Suche nicht tragen.
+3. Importieren; Antwort lesen (`entwuerfe`, `nachrecherche`, `quellen`, `verworfen`, `fehler`). Fehler beheben, nur
+   diese Storys erneut.
 4. `python tools/radar_bericht.py` → Entwürfe mit Hinweisen prüfen (Länge, Quellenzeile, Copydesk).
 5. Bericht an Luis: Tabelle Story · Ergebnis · Titel/Grund · Hinweise.
 
-## Nachtrag ergänzen
+## In Nachrecherche (eigene Liste im Export)
 
-Fehlen einer Nachtrag-Story (Herkunft `nachtrag`, Status „Recherche nötig“) Kernfakten, keine neue Story vorschlagen:
+„Recherche nötig“ gibt es nicht mehr als Endzustand (Auftrag Luis, 13.11.2026). Scheitert das Gate, sucht der Radar
+selbst (höchstens zwei Runden); ohne Modellschlüssel stehen solche Storys danach in der Mappe unter `nachrecherche`
+(nicht unter `storys`) mit `runde`, `letzte_runde`, `fehlend` (Fehlstellen), `suchanfragen`, `gruende` und dem
+`ergebnis` der letzten Runde. Je Story: mit den Suchanfragen nach Belegen für die Fehlstellen suchen und `neue_quellen`
+liefern – oder, wenn die bestätigten Aussagen tragen, einen Beitrag nur aus ihnen (notfalls Kurzmeldung 80–150 Wörter,
+nur bestätigte Claims, jeder Absatz belegt) – oder verwerfen mit Grund. Bei `letzte_runde: true` entscheidet der Import
+endgültig: Kurzmeldung aus bestätigten Claims oder verworfen. In der Übersicht (`nur=uebersicht`) tragen diese Storys
+`"nachrecherche": true`.
+
+## Story ergänzen
+
+Fehlen einer Story in Nachrecherche (Herkunft `nachtrag` oder `radar`) Kernfakten und hast du Quellen, keine neue Story
+vorschlagen:
 denselben Vorschlag mit `"story_id": <Nummer>` und den neuen Quellen an `POST /api/agent/vorschlag` schicken (oder
 `agent vorschlag --datei`). Der Radar holt nur Adressen, die noch nicht Beleg der Story sind, hängt sie an (Q<n+1> …),
 gibt die Story wieder frei (Status „neu“) und führt die Hinweise zusammen (leeres `bezug`/`bild_hinweis` behält den
 alten Wert; `kernfakten` aus neu und alt ohne Doppel, neue zuerst, höchstens 12). Antwort
 `ergaenzt`; `vorhanden` heißt: keine neue Quelle; `abgelehnt` nennt den Grund („Story nicht ergänzbar“: unbekannt,
-keine Nachtrag-Story, nicht „Recherche nötig“ oder schon ein Entwurf; oder „Job läuft“; Einzelheiten im Ereignislog). Danach die Story im nächsten Export neu schreiben – alle Dokumente sind dabei.
+nicht in Nachrecherche, Kino oder schon ein Entwurf; oder „Job läuft“; Einzelheiten im Ereignislog). Eine Story vom Scan
+bekommt danach wieder einen Recherche-Job. Danach die Story im nächsten Export neu schreiben – alle Dokumente sind
+dabei.
 
 ## Bild vorschlagen
 

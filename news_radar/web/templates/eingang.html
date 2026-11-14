@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Eingang{% endblock %}
+{% block content %}
+<header class="topline">
+  <div><h1>Eingang</h1><p class="unter">Einsendungen aus den Formularen der Website. Der Agent prüft und markiert, entscheiden tut die Redaktion. Es geht keine E-Mail hinaus; geantwortet wird von Hand.</p></div>
+  <nav class="tabs" aria-label="Ansicht">
+    {% for slug, label in ansichten %}
+    <a href="/eingang?ansicht={{ slug }}{% if art %}&art={{ art }}{% endif %}" class="{{ 'aktiv' if slug == ansicht }}">{{ label }} <b>{{ summen[slug] }}</b></a>
+    {% endfor %}
+  </nav>
+</header>
+<nav class="tabs" aria-label="Art">
+  <a href="/eingang?ansicht={{ ansicht }}" class="{{ 'aktiv' if not art }}">Alle Arten</a>
+  {% for slug, label in arten.items() %}<a href="/eingang?ansicht={{ ansicht }}&art={{ slug }}" class="{{ 'aktiv' if slug == art }}">{{ label }}</a>{% endfor %}
+</nav>
+{% for e in eintraege %}
+<section class="karte">
+  <div class="meta">
+    <span class="badge typ">{{ arten[e.art] }}</span>
+    <span class="badge status {{ 's-neu' if e.status in ('abgeholt', 'vorbereitet') else ('s-veroeffentlicht' if e.status == 'uebernommen' else 's-abgelehnt' if e.status in ('abgelehnt', 'spam') else '') }}">{{ status_label[e.status] }}</span>
+    {% if e.hinweise %}<span class="badge hinweis">{{ e.hinweise|length }} Hinweis{{ 'e' if e.hinweise|length != 1 }}</span>{% endif %}
+    <span class="leise">{{ e.vorgangsnummer }} · eingegangen {{ fmt_dt(e.eingang_at) }}</span>
+  </div>
+  <h2><a href="/eingang/{{ e.vorgangsnummer }}">{{ e.felder.titel or e.felder.thema or e.felder.organisation or e.felder.firma or arten[e.art] }}</a></h2>
+  {% if e.zusammenfassung %}<p>{{ e.zusammenfassung }}</p>{% elif e.status == 'abgeholt' %}<p class="leise">Noch nicht vorbereitet.</p>{% endif %}
+  {% if e.hinweise %}<ul class="hinweise">{% for h in e.hinweise %}<li>{{ h }}</li>{% endfor %}</ul>{% endif %}
+</section>
+{% else %}
+<div class="leer"><strong>Nichts im Eingang.</strong><span>Neue Einsendungen holt der Radar alle drei Minuten bei der Website ab (Schalter „Eingang“).</span></div>
+{% endfor %}
+{% endblock %}

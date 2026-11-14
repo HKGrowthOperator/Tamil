@@ -112,3 +112,18 @@ if ("serviceWorker" in navigator) {
 }
 
 document.querySelectorAll("select[data-auto-submit]").forEach((sel) => sel.addEventListener("change", () => sel.form.submit()));
+
+// Social: WhatsApp-Entwurf in die Zwischenablage (Knopf mit data-kopieren="#id-des-textfelds")
+document.querySelectorAll("button[data-kopieren]").forEach((btn) => btn.addEventListener("click", async () => {
+  const feld = document.querySelector(btn.getAttribute("data-kopieren"));
+  if (!feld) return;
+  const vorher = btn.textContent;
+  try {
+    await navigator.clipboard.writeText(feld.value || feld.textContent);
+    btn.textContent = "Kopiert";
+  } catch (_) {
+    feld.select();
+    btn.textContent = "Mit Strg+C kopieren";
+  }
+  setTimeout(() => { btn.textContent = vorher; }, 2000);
+}));

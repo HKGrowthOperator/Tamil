@@ -1,0 +1,27 @@
+[
+ {
+  "scope": "app",
+  "shape": "app screen",
+  "theme": "almanac",
+  "axes": "light/grotesk-sans/chromatic-red",
+  "nav": "top bar with Mehr disclosure, Menü under 60rem",
+  "footer": "source note",
+  "hero": "none (app)",
+  "imagery": "one Commons photo (rb-67) and a built Bildkarte preview",
+  "photos": [],
+  "signature": "the dated sheet; on the draft the Prüfbogen with claims in the margin",
+  "sections": [
+   "uebersicht",
+   "entwurf",
+   "entwurf-freigabe",
+   "eingang",
+   "social",
+   "verzeichnis",
+   "buchungen"
+  ],
+  "waived": [],
+  "prompt": "Redaktions-Cockpit tamil.de, Linie B Kalenderblatt",
+  "date": "2026-11-13",
+  "mode": "build"
+ }
+]

@@ -205,8 +205,8 @@ def test_laendernamen_heben_den_dach_bezug_nicht_auf(settings):
     """Review: „இலங்கை“ (Sri Lanka) steht in fast jedem Bericht der Diaspora. Nur Ortsnamen außerhalb von DACH machen
     einen Termin zum Auslandstermin, Ländernamen nicht."""
     gestern = FUND - timedelta(days=1)
-    luzern = NewsItem(title="லுசேர்ன் நகரில் மாவீரர் நாள் 27.11.2026", url="https://swisstamilinfo.ch/40001/",
-                      summary="இலங்கையில் உயிர்நீத்த மாவீரர்களை நினைவுகூரும் நிகழ்வு", source="Swiss Tamil Info · Events",
+    luzern = NewsItem(title="லுசேர்ன் நகரில் தீபாவளி விழா 27.11.2026", url="https://swisstamilinfo.ch/40001/",
+                      summary="இலங்கைத் தமிழர்கள் கொண்டாடும் தீபாவளி விழா", source="Swiss Tamil Info · Events",
                       published=FUND, language="ta", kind="event", source_published=gestern)
     visa = NewsItem(title="இலங்கைத் தமிழர்களுக்கு புதிய விசா விதிகள்", url="https://swisstamilinfo.ch/40002/",
                     summary="தமிழ் அகதிகள் புதிய விதிகளை எதிர்கொள்கின்றனர்", source="Swiss Tamil Info · Schweiz",

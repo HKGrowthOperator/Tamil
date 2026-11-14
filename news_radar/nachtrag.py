@@ -7,9 +7,10 @@ arbeitstitel, datum (JJJJ-MM-TT, Tag des Ereignisses oder der Meldung), rubrik, 
 [{url, titel, herausgeber, datum, sprache, art}], optional kernfakten, bild_hinweis (nur Hinweise für den Agenten,
 nie Belege) und erzwingen (legt trotz „vielleicht schon vorhanden“ an).
 
-Nachtrag ergänzen: mit story_id (positive Ganzzahl) hängt der Vorschlag seine neuen Quellen an eine bestehende
-Nachtrag-Story im Status „recherche_erforderlich“ ohne Entwurf an, an der gerade kein Job läuft (Kennungen Q<n+1> …),
-und gibt sie wieder zum Schreiben frei (Status „neu“). Adressen, die schon Beleg dieser Story sind, werden nicht
+Story ergänzen: mit story_id (positive Ganzzahl) hängt der Vorschlag seine neuen Quellen an eine bestehende Story im
+Status „recherche_erforderlich“ („In Nachrecherche“) ohne Entwurf an, an der gerade kein Job läuft (Kennungen
+Q<n+1> …) – egal ob Herkunft „nachtrag“ oder „radar“ (Scan) –, und gibt sie wieder zum Schreiben frei (Status „neu“;
+eine Story vom Scan bekommt wieder einen Recherche-Job). Adressen, die schon Beleg dieser Story sind, werden nicht
 geholt; die Titel-Ähnlichkeit wird nicht geprüft und erzwingen ignoriert. Ergebnis „ergaenzt“, ohne Neues „vorhanden“.
 
 Ergebnis je Vorschlag: angelegt · vorhanden (alle Adressen sind schon Beleg derselben Story) · vielleicht_vorhanden
@@ -84,6 +85,7 @@ class Vorschlag(BaseModel):
     bild_hinweis: str = Field(default="", max_length=300)
     erzwingen: bool = False
     story_id: int | None = Field(default=None, gt=0, le=2_147_483_647, strict=True)  # ergänzen statt anlegen
+    neu_abrufen: bool = False  # mit story_id: Quellen, die schon Beleg sind, neu abrufen und ihren Text ersetzen
 
     @field_validator("datum")
     @classmethod
@@ -325,14 +327,80 @@ def _ld_werte(wert, tiefe: int = 0) -> list[str]:
     return []
 
 
-def strukturierte_angaben(roh: str) -> str:
+def _ist_termin(typen: set) -> bool:
+    return any(isinstance(t, str) and t.endswith("Event") for t in typen)
+
+
+def _typen(obj: dict) -> set[str]:
+    """@type als Menge – nur Strings (eine Liste mit Objekten oder Zahlen darf nicht werfen)."""
+    typ = obj.get("@type")
+    if isinstance(typ, str):
+        return {typ}
+    return {x for x in typ if isinstance(x, str)} if isinstance(typ, list) else set()
+
+
+_CANONICAL_RE = re.compile(r"<link\b[^>]{0,300}?rel\s*=\s*[\"']?canonical[^>]{0,300}>", re.I)
+_HREF_RE = re.compile(r"href\s*=\s*[\"']?([^\"'\s>]{1,500})", re.I)
+
+
+def _seiten_kennungen(roh: str, titel: str = "") -> list[str]:
+    """Titel der Seite (og:title, <title>) und der Pfad der kanonischen Adresse, normalisiert – damit ein Termin aus
+    JSON-LD der Seite zugeordnet werden kann."""
+    werte = [titel, *_og_titel(roh)]
+    block = next(sources.bloecke(roh, _TITLE_START_RE), None)
+    if block:
+        werte.append(roh[block[1]:block[2]])
+    m = _CANONICAL_RE.search(roh[:200_000])
+    href = _HREF_RE.search(m.group(0)) if m else None
+    if href:
+        werte.append(urlsplit(href.group(1)).path.replace("-", " ").replace("/", " "))
+    return [k for k in (_norm(unescape(w or "")) for w in werte) if len(k) >= 4]
+
+
+def _passt_zur_seite(name: str, kennungen: list[str]) -> bool:
+    n = _norm(name)
+    return len(n) >= 4 and any(n in k or (len(k) >= 8 and k in n) for k in kennungen)
+
+
+def _zur_seite(objekte: list[dict], kennungen: list[str]) -> list[dict]:
+    """Nur das Objekt, das zur Seite gehört: genau eines, oder das eine, dessen Name zu Titel oder kanonischer Adresse
+    passt. Objekte ohne Namen nie (sie lassen sich keiner Seite zuordnen)."""
+    mit_name = [o for o in objekte if _ld_werte(o.get("name"))]
+    if len(mit_name) == 1:
+        return mit_name
+    passend = [o for o in mit_name if _passt_zur_seite(" ".join(_ld_werte(o.get("name"))), kennungen)]
+    return passend if len(passend) == 1 else []
+
+
+def _kuerzen(text: str, grenze: int) -> str:
+    """Höchstens `grenze` Zeichen, nur an einer Zeilengrenze – nie mitten in einem Wert."""
+    if len(text) <= grenze:
+        return text
+    schnitt = text.rfind("\n", 0, grenze + 1)
+    return text[:schnitt].rstrip() if schnitt > 0 else ""
+
+
+def strukturierte_angaben(roh: str, nur_termine: bool = False, titel: str = "") -> str:
     """Notanker für Seiten ohne lesbaren Text: Felder aus JSON-LD (Movie, Event, ScreeningEvent, NewsArticle, Article),
-    nur wörtlich übernommene Werte, höchstens TEXT_MAX. Leer, wenn nichts Passendes da ist."""
+    nur wörtlich übernommene Werte, höchstens TEXT_MAX. Leer, wenn nichts Passendes da ist.
+    `nur_termine`: nur Termine (Typ …Event mit startDate) und Filme (Movie) – sie ergänzen auch Seiten mit sichtbarem
+    Text, weil Datum, Uhrzeit, Adresse, Regie und Besetzung oft nur in den strukturierten Angaben stehen (Eventfrog,
+    Kinoketten, Fund 13.11.2026). Termine und Filme nur, wenn sie zur Seite gehören (_zur_seite)."""
+    if nur_termine:  # angehängt an sichtbaren Text: nur Termin und Film, die zur Seite gehören
+        objekte = list(_ld_objekte(roh))
+        termine = [o for o in objekte if _ist_termin(_typen(o)) and o.get("startDate")]
+        filme = [o for o in objekte if "Movie" in _typen(o)]
+        kennungen = _seiten_kennungen(roh, titel)
+        auswahl = _zur_seite(filme, kennungen) + _zur_seite(termine, kennungen)
+    else:  # Notanker ohne sichtbaren Text: Film und Termin der Seite, wenn erkennbar – sonst alle, wie bisher
+        objekte = [o for o in _ld_objekte(roh) if _typen(o) & LD_TYPEN]
+        filme = [o for o in objekte if "Movie" in _typen(o)]
+        termine = [o for o in objekte if _ist_termin(_typen(o)) and o.get("startDate")]
+        rest = [o for o in objekte if o not in filme and o not in termine]
+        kennungen = _seiten_kennungen(roh, titel)
+        auswahl = (_zur_seite(filme, kennungen) or filme) + (_zur_seite(termine, kennungen) or termine) + rest
     zeilen = []
-    for obj in _ld_objekte(roh):
-        typ = obj.get("@type")
-        if not ({typ} if isinstance(typ, str) else set(typ) if isinstance(typ, list) else set()) & LD_TYPEN:
-            continue
+    for obj in auswahl:
         for feld in LD_FELDER:
             wert = obj
             for teil in feld.split("."):
@@ -343,7 +411,50 @@ def strukturierte_angaben(roh: str) -> str:
                 zeilen.append(f"{feld}: {', '.join(werte)}")
         zeilen.append("")
     text = "\n".join(zeilen).strip()
-    return f"{LD_KOPF}\n\n{text}"[:TEXT_MAX] if text else ""
+    return _kuerzen(f"{LD_KOPF}\n\n{text}", TEXT_MAX) if text else ""
+
+
+KURZ_KOPF = "Kurzangaben der Seite"
+KURZ_ZEILEN_MAX = 40
+KURZ_ROH_MAX = 1_500_000  # Zeichen HTML, die für Kurzangaben geparst werden
+_LABEL_WERT_RE = re.compile(r"^([^:\n]{2,30}):\s*(\S.{0,120})$")
+_RAUSCHEN = ("script", "style", "noscript", "template", "svg", "nav", "header", "footer", "aside", "form", "button")
+
+
+def kurzangaben(roh: str) -> list[str]:
+    """Kurze Felder, die extract_paragraphs verwirft (Kinoseiten megaplex.at, kinopolis.de: Filmstart, Regie, Besetzung
+    unter 60 Zeichen; Datumsangaben außerhalb von <p>): Definitionslisten (dt/dd), Tabellenzeilen (th/td oder zwei td)
+    und „Label: Wert“-Zeilen aus Listen und kurzen Elementen – wörtlich, je Zeile „Label: Wert“, ohne Navigation,
+    Kopf, Fuß und Formulare."""
+    from bs4 import BeautifulSoup
+
+    soup = BeautifulSoup(roh[:KURZ_ROH_MAX], "html.parser")
+    for tag in soup.find_all(_RAUSCHEN):
+        tag.decompose()
+
+    def wort(el) -> str:
+        return sources.clean_text(el.get_text(" ", strip=True))
+
+    zeilen: list[str] = []
+    for dl in soup.find_all("dl"):
+        label = ""
+        for el in dl.find_all(["dt", "dd"]):
+            if el.name == "dt":
+                label = wort(el)
+            elif label and wort(el):
+                zeilen.append(f"{label}: {wort(el)}")
+    for tr in soup.find_all("tr"):
+        zellen = [wort(z) for z in tr.find_all(["th", "td"], recursive=False)]
+        if len(zellen) == 2 and all(zellen) and len(zellen[0]) <= 40:
+            zeilen.append(f"{zellen[0]}: {zellen[1]}")
+    for el in soup.find_all(["li", "span", "p", "div", "td", "dd"]):
+        if el.find(["li", "p", "div", "table", "dl", "ul", "ol"]):
+            continue  # nur innerste Elemente
+        m = _LABEL_WERT_RE.match(wort(el))
+        if m:
+            zeilen.append(f"{m.group(1).strip()}: {m.group(2).strip()}")
+    out = [z for z in dict.fromkeys(zeilen) if len(z) <= 160]
+    return out[:KURZ_ZEILEN_MAX]
 
 
 def seite_lesen(seite: net.Fetched, adresse: str = "", frist: float | None = None) -> tuple[str, str, str, str]:
@@ -365,10 +476,17 @@ def seite_lesen(seite: net.Fetched, adresse: str = "", frist: float | None = Non
             titel = sources.clean_text(unescape(wert))[:300]
             break
     text = sources.extract_paragraphs(roh, TEXT_MAX)
-    if len(text or "") < VOLLTEXT_MIN:  # ohne JavaScript kein Text: strukturierte Angaben als Notanker
-        daten = strukturierte_angaben(roh)
-        if daten:
-            return daten, titel, "daten", ""
+    kurz = [z for z in kurzangaben(roh) if z not in (text or "")]
+    kurz_block = f"{KURZ_KOPF}\n\n" + "\n".join(kurz) if kurz else ""
+    if len(text or "") < VOLLTEXT_MIN:  # ohne JavaScript kein Text: Kurzangaben und strukturierte Angaben als Notanker
+        daten = strukturierte_angaben(roh, titel=titel)
+        notanker = "\n\n".join(b for b in (kurz_block, daten) if b)
+        if notanker:
+            return _kuerzen(notanker, TEXT_MAX), titel, "daten", ""
+    termin = strukturierte_angaben(roh, nur_termine=True, titel=titel)  # Datum, Ort, Regie stehen oft nur dort
+    anhang = _kuerzen("\n\n".join(b for b in (kurz_block, termin) if b), TEXT_MAX // 4)  # Block bleibt ganz
+    if anhang and text:
+        text = f"{text[:TEXT_MAX - len(anhang) - 2].rstrip()}\n\n{anhang}"
     return text, titel, "volltext", ""
 
 
@@ -483,19 +601,25 @@ def _nach_aussen(store: Store, sid: int, grund: str, von: str, story: dict | Non
 
 
 def _ziel_grund(store: Store, sid: int) -> tuple[dict | None, str]:
-    """(Story, Grund) – Grund leer, wenn die Story ergänzt werden darf: Nachtrag, Status ERGAENZBAR, kein Entwurf,
-    kein Job läuft (wie agent_v2._OFFEN_SQL)."""
+    """(Story, Grund) – Grund leer, wenn die Story ergänzt werden darf: Status ERGAENZBAR, kein Entwurf, kein Job läuft
+    (wie agent_v2._OFFEN_SQL). Seit 13.11.2026 jede Story, egal ob Herkunft „nachtrag“ oder „radar“ (Scan); nur
+    Kino-Datensätze nicht."""
     row = store.db.execute("SELECT * FROM stories WHERE id = ?", (sid,)).fetchone()
     if row is None:
         return None, "Story nicht gefunden"
     story = dict(row)
-    if story["herkunft"] != "nachtrag":
-        return story, "keine Nachtrag-Story"
+    if story["typ"] == "kino":
+        return story, "Kino-Datensatz"
     if story["status"] not in ERGAENZBAR:
         return story, f"Story ist {story['status']}"
     if store.db.execute("SELECT 1 FROM drafts WHERE story_id = ?", (sid,)).fetchone():
         return story, "Story hat schon einen Entwurf"
     if store.db.execute("SELECT 1 FROM workflow_jobs WHERE story_id = ? AND status = 'laeuft'", (sid,)).fetchone():
+        return story, JOB_LAEUFT
+    # jeder wartende Job außer einer Recherche (die liest die neuen Quellen ohnehin): Nachrecherche, Prüfung,
+    # Endprüfung, Text … – sonst liefe ein Schritt mit einem Belegstand, den niemand geprüft hat
+    if store.db.execute("SELECT 1 FROM workflow_jobs WHERE story_id = ? AND status IN ('offen', 'wartet_budget') "
+                        "AND schritt != 'recherche'", (sid,)).fetchone():
         return story, JOB_LAEUFT
     return story, ""
 
@@ -536,6 +660,43 @@ def _dokument(db, sid: int, doc_key: str, eintrag: tuple, ts: str) -> None:
          art, seitentitel, text, hashlib.sha256(text.encode("utf-8")).hexdigest(), text[:500]))
 
 
+UMGELEITET = "umgeleitet, nicht ersetzt"
+
+
+def _ziel_dokument(db, sid: int, url: str, pdf: bool = True):
+    """Das Dokument der Story zu genau dieser Adresse (url_norm oder uid der Ursprungsadresse) – nie über die Adresse,
+    auf die eine Umleitung zeigt."""
+    return db.execute("SELECT id, url_norm, text_sha256, doc_key, titel, text, url FROM source_documents "
+                      "WHERE story_id = ? AND (url_norm = ? OR uid = ?) ORDER BY id LIMIT 1",
+                      (sid, adresse_norm(url, pdf), _uid(url, pdf))).fetchone()
+
+
+def _gleiche_adresse(zeile, url: str, gelesen: str, pdf: bool) -> bool:
+    """Ist die gelesene Seite noch die des Dokuments? Leitet die Adresse auf die Startseite oder eine andere Quelle
+    um, nicht – sonst bekäme das Dokument einen fremden Text und der Beleg ginge verloren (Prüfung von a6b13cf)."""
+    return zeile is not None and adresse_norm(gelesen, pdf) in {zeile[1], adresse_norm(url, pdf)}
+
+
+def _aktualisieren(db, sid: int, eintrag: tuple, ts: str) -> int:
+    """Text und Titel (immer zusammen, auch durch einen leeren Titel) eines Dokuments, das schon Beleg der Story ist,
+    durch den neu abgerufenen ersetzen (doc_key bleibt). 1, wenn sich etwas geändert hat, sonst 0. Der alte Stand
+    bleibt als Fassung „quelle_vorher“; die Claims der Story löscht _ergaenzen in derselben Transaktion."""
+    q, text, seitentitel, gelesen, pdf, art = eintrag
+    zeile = _ziel_dokument(db, sid, q.url, pdf)
+    if not _gleiche_adresse(zeile, q.url, gelesen, pdf):
+        return 0
+    sha = hashlib.sha256(text.encode("utf-8")).hexdigest()
+    if zeile[2] == sha and (zeile[4] or "") == seitentitel:
+        return 0
+    alt = {"doc_key": zeile[3], "url": zeile[6], "titel": zeile[4] or "", "text": zeile[5] or ""}
+    db.execute("INSERT INTO article_versions (story_id, draft_id, rolle, von, hash, inhalt, erstellt) "
+               "VALUES (?, NULL, 'quelle_vorher', 'neu_abrufen', ?, ?, ?)",
+               (sid, zeile[2] or "", json.dumps(alt, ensure_ascii=False), ts))
+    db.execute("UPDATE source_documents SET text = ?, text_sha256 = ?, auszug = ?, art = ?, retrieved_at = ?, "
+               "titel = ? WHERE id = ?", (text, sha, text[:500], art, ts, seitentitel, zeile[0]))
+    return 1
+
+
 def _hinweise_zusammen(alt_json: str | None, v: Vorschlag) -> dict:
     """Hinweise der Story mit denen des Vorschlags: leere Felder behalten den alten Wert, Kernfakten aus neu und alt
     ohne Doppel (neue zuerst, höchstens 12)."""
@@ -565,9 +726,12 @@ def _ergaenzen(store: Store, v: Vorschlag, geholt: list, heute: date) -> dict:
                 db.rollback()
                 return {"ergebnis": "abgelehnt", "story_id": sid, "grund": grund, "_story": story}
             belege, je_datei, anzahl = _bestand(store, sid)
-            neu, grund = [], ""
+            neu, grund, aktualisiert = [], "", 0
+            ts = now_iso()
             for g in geholt:  # Grenzen wie vor den Abrufen, jetzt mit dem Bestand zum Zeitpunkt des Schreibens
                 if _schon_beleg(belege, g[0].url, g[4]) or adresse_norm(g[3], g[4]) in belege:
+                    if v.neu_abrufen:
+                        aktualisiert += _aktualisieren(db, sid, g, ts)
                     continue
                 dateien = {repo.normalize_url(g[0].url), repo.normalize_url(g[3])}
                 if max(je_datei.get(d, 0) for d in dateien) >= ANKER_JE_DATEI:
@@ -578,7 +742,9 @@ def _ergaenzen(store: Store, v: Vorschlag, geholt: list, heute: date) -> dict:
                     for d in dateien:
                         je_datei[d] = je_datei.get(d, 0) + 1
                     neu.append(g)
-            if not neu:
+            if aktualisiert:  # die Claims bezogen sich auf den alten Text: der nächste Import zieht sie neu
+                db.execute("DELETE FROM claims WHERE story_id = ?", (sid,))
+            if not neu and not aktualisiert:
                 db.rollback()
                 if grund:
                     return {"ergebnis": "abgelehnt", "story_id": sid, "grund": grund}
@@ -586,10 +752,15 @@ def _ergaenzen(store: Store, v: Vorschlag, geholt: list, heute: date) -> dict:
             nummern = [int(r[0][1:]) for r in db.execute(
                 "SELECT doc_key FROM source_documents WHERE story_id = ?", (sid,)) if re.fullmatch(r"Q[0-9]+", r[0])]
             start = max(nummern, default=0) + 1
-            ts = now_iso()
             for n, eintrag in enumerate(neu, start):
                 _dokument(db, sid, f"Q{n}", eintrag, ts)
-            zusatz = f"Ergänzt am {heute.isoformat()}: {len(neu)} {'Quelle' if len(neu) == 1 else 'Quellen'}"
+            teile = []
+            if neu:
+                teile.append(f"Ergänzt am {heute.isoformat()}: {len(neu)} {'Quelle' if len(neu) == 1 else 'Quellen'}")
+            if aktualisiert:
+                teile.append(f"Neu abgerufen am {heute.isoformat()}: {aktualisiert} "
+                             f"{'Quelle' if aktualisiert == 1 else 'Quellen'}")
+            zusatz = " · ".join(teile)
             alt = (story.get("notiz") or "").strip()
             notiz = f"{alt[:900 - len(zusatz) - 3]} · {zusatz}" if alt else zusatz
             hinweise = _hinweise_zusammen(story.get("vorschlag"), v)
@@ -602,6 +773,8 @@ def _ergaenzen(store: Store, v: Vorschlag, geholt: list, heute: date) -> dict:
             db.rollback()
             raise
     out = {"ergebnis": "ergaenzt", "story_id": sid, "quellen_geholt": len(neu)}
+    if aktualisiert:
+        out["aktualisiert"] = aktualisiert
     alt_datum = story.get("ereignis_datum") or ""
     return {**out, "hinweis": f"Datum der Story bleibt {alt_datum}"} if alt_datum and alt_datum != v.datum else out
 
@@ -663,7 +836,8 @@ def _eins(store: Store, raw, nr: int, von: str, abruf: Callable, heute: date, uh
     gesehen: set[str] = set()
     hinweise: list[dict] = []  # z. B. „gekürzt …“ je Quelle
     for q in v.quellen:
-        if v.story_id and _schon_beleg(belege, q.url):  # nicht noch einmal holen
+        erneut = bool(v.story_id and v.neu_abrufen and _schon_beleg(belege, q.url))
+        if v.story_id and _schon_beleg(belege, q.url) and not erneut:  # nicht noch einmal holen
             uebersprungen.append({"url": q.url, "grund": SCHON_BELEG})
             continue
         if adresse_norm(q.url) in gesehen:  # vor dem Abruf und Lesen; nach Umleitungen prüft die Stelle unten
@@ -671,11 +845,12 @@ def _eins(store: Store, raw, nr: int, von: str, abruf: Callable, heute: date, uh
             continue
         gesehen.add(adresse_norm(q.url))
         datei = repo.normalize_url(q.url)
-        je_datei[datei] = je_datei.get(datei, 0) + 1
-        if je_datei[datei] > ANKER_JE_DATEI:
+        if not erneut:  # ein erneuter Abruf ersetzt ein Dokument, er legt kein neues an
+            je_datei[datei] = je_datei.get(datei, 0) + 1
+        if not erneut and je_datei[datei] > ANKER_JE_DATEI:
             uebersprungen.append({"url": q.url, "grund": GRUND_SEITEN})
             continue
-        if v.story_id and anzahl + len(geholt) >= MAX_DOKUMENTE:
+        if v.story_id and not erneut and anzahl + len(geholt) >= MAX_DOKUMENTE:
             uebersprungen.append({"url": q.url, "grund": GRUND_MAX})
             continue
         jetzt = uhr()
@@ -707,7 +882,10 @@ def _eins(store: Store, raw, nr: int, von: str, abruf: Callable, heute: date, uh
         gelesen, pdf = seite.url or q.url, ist_pdf(seite)
         if pdf and anker_seite(q.url) > 1 and "#" not in gelesen:
             gelesen += f"#page={anker_seite(q.url)}"  # der Link führt auf die gelesene Seite
-        if v.story_id and adresse_norm(gelesen, pdf) in belege:  # nach einer Umleitung schon Beleg
+        if erneut and not _gleiche_adresse(_ziel_dokument(store.db, v.story_id, q.url, pdf), q.url, gelesen, pdf):
+            uebersprungen.append({"url": q.url, "grund": UMGELEITET})
+            continue
+        if v.story_id and not erneut and adresse_norm(gelesen, pdf) in belege:  # nach einer Umleitung schon Beleg
             uebersprungen.append({"url": q.url, "grund": SCHON_BELEG})
             continue
         if any(adresse_norm(g[3], g[4]) == adresse_norm(gelesen, pdf) for g in geholt):
@@ -736,6 +914,20 @@ def _eins(store: Store, raw, nr: int, von: str, abruf: Callable, heute: date, uh
     return {**out, "quellen_hinweise": hinweise} if hinweise else out
 
 
+def _recherche_einreihen(store: Store, sid: int) -> None:
+    """Story vom Scan nach dem Ergänzen: wieder ein Recherche-Job (Worker mit Modell oder Agent-Export). Steht schon eine
+    Recherche oder Nachrecherche an, liest sie die neuen Quellen ohnehin. Nachträge bekommen nie einen Job."""
+    from .workflow import jobs
+
+    if jobs.ist_nachtrag(store, sid) or any(j["schritt"] in ("recherche", "nachrecherche")
+                                            for j in jobs.offen_fuer_story(store, sid)):
+        return
+    n = store.db.execute("SELECT COUNT(*) FROM workflow_jobs WHERE story_id = ? AND schritt = 'recherche'",
+                         (sid,)).fetchone()[0]
+    jobs.einreihen(store, sid, "recherche", prio=jobs.PRIO_NEWS, key=f"{sid}:recherche:ergaenzt{n + 1}",
+                   payload={"hinweise": ["Neue Quelle: per Vorschlag ergänzt"]})
+
+
 def _ergaenzt_melden(store: Store, out: dict, v: Vorschlag, geholt: list, uebersprungen: list, hinweise: list,
                      heute: date, von: str) -> dict:
     ergebnis = _ergaenzen(store, v, geholt, heute)
@@ -745,6 +937,7 @@ def _ergaenzt_melden(store: Store, out: dict, v: Vorschlag, geholt: list, uebers
     if ergebnis["ergebnis"] != "ergaenzt":
         return {**out, **ergebnis, "quellen_uebersprungen": uebersprungen}
     sid, n = ergebnis["story_id"], ergebnis["quellen_geholt"]
+    _recherche_einreihen(store, sid)
     repo.aktion(store, wer=von[:60], aktion="nachtrag_ergaenzt", story_id=sid, kanal="redaktion", ausloeser="agent",
                 notiz=f"{n} Quellen angehängt, {len(uebersprungen)} übersprungen")
     store.event("nachtrag_ergaenzt", story=sid, quellen=n, uebersprungen=len(uebersprungen), von=von[:60])

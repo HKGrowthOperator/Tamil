@@ -12,7 +12,7 @@ paths:
 Maßstab: `docs/vertrag/leistungen.md`. Einzelheiten je Baustein: `docs/vertrag/festlegung-<baustein>.md`.
 
 - **Erst festlegen, dann bauen.** Ein Baustein wird gebaut, wenn Luis seine Festlegung bestätigt hat
-  (`docs/abnahme/*-F*-<baustein>.md`). Was nicht in der Festlegung steht, wird nicht gebaut.
+  (`docs/abnahme/*-F*-<baustein>.md`; für F0–F4 gilt das Gesamt-Ja `docs/abnahme/2026-11-13-auftrag-luis.md`). Was nicht in der Festlegung steht, wird nicht gebaut.
 - **Kein Mailversand.** Kein `wp_mail`, kein `smtplib`, kein Maildienst. Rückmeldungen stehen auf der Website oder im
   Cockpit. `tests/test_kein_mailversand.py` sichert das ab.
 - **Automatisch läuft nur, was in einer freigegebenen Regel steht.** Unklares geht an einen Menschen. Jede

@@ -10,7 +10,7 @@ import json
 import pytest
 from PIL import Image
 
-from news_radar import bildvorschlag, net, schalter
+from news_radar import bildvorschlag, lizenz, net, schalter
 from news_radar.config import Bildquelle, load_settings
 from news_radar.store import Store
 from news_radar.workflow import repo
@@ -100,12 +100,16 @@ def settings(tmp_path, monkeypatch):
     return s
 
 
-def story_mit_entwurf(store, url=DOK, status=None) -> tuple[int, int]:
+def story_mit_entwurf(store, url=DOK, status=None, lizenz=False) -> tuple[int, int]:
     sid = repo.story_anlegen(store, typ="news", titel="Thaipusam in Zürich")
     repo.dokument_hinzufuegen(store, sid, url=url, publisher="murugantemple.ch", text="Prozession")
     did = store.insert_draft({"uid": f"bild-{sid}", "titel": "Thaipusam in Zürich", "story_id": sid,
                               "kategorie": "community", "bild_datei": "alt.jpg", "bild_credit": "Grafik: Tamil.de",
                               "bild_origin": "karte"})
+    if lizenz:  # vollständiger Lizenz-Datensatz zur Bildkarte, damit Freigabe-Tests nur den Stand prüfen
+        from lizenz_hilfe import lizenz_setzen
+
+        lizenz_setzen(store, did)
     if status:
         store.set_status(did, status)
     return sid, did
@@ -140,7 +144,12 @@ def test_commons_cc_by_sa_gesetzt_mit_nachweis_lizenz_und_protokoll(settings):
         a = repo.asset_fuer_datei(store, d["bild_datei"])
         assert a["herkunft"] == "commons" and a["rechteinhaber"] == "Anna K." and a["quelle_url"] == COMMONS_SEITE
         assert "CC BY-SA 4.0" in a["lizenz"] and "creativecommons.org" in a["lizenz"]
-        assert a["attribution"] == e["nachweis"] and "Zuschnitt" in a["umfang"] and a["draft_id"] == did
+        assert a["attribution"] == e["nachweis"] and a["umfang"] == "website,social,print" and a["draft_id"] == did
+        # Lizenz-Datensatz nach Spezifikation Bilder 3.1: Kürzel, Adresse, Urheber, Bildadresse, Beleg, vollständig
+        assert a["lizenz_kuerzel"] == "cc-by-sa-4.0" and a["urheber"] == "Anna K." and a["bild_url"] == COMMONS_THUMB
+        assert a["lizenz_url"] == "https://creativecommons.org/licenses/by-sa/4.0/" and a["beleg"].startswith("commons-api")
+        assert a["geprueft_von"] == "agent:test" and a["alt"] == "Prozession beim Thaipusam in Zürich"
+        assert lizenz.fehlend(a) == []
         zeile = repo.aktionen(store, did)[-1]
         assert zeile["aktion"] == "bild" and zeile["wer"] == "test" and zeile["kanal"] == "redaktion"
         assert zeile["ausloeser"] == "agent"
@@ -290,7 +299,8 @@ def test_commons_nonfree_abgelehnt_restrictions_als_hinweis(settings):
                  {"API": commons_api(extra={"Restrictions": "personality|trademarked"}), COMMONS_THUMB: jpeg()})
         assert e["ergebnis"] == "gesetzt", e
         a = repo.asset_fuer_datei(store, store.get_draft(did)["bild_datei"])
-        assert "Hinweis von Commons: personality, trademarked" in a["umfang"]
+        assert a["umfang"] == "website"  # mit Hinweis von Commons kein Social (Spezifikation Bilder 2.3)
+        assert "Hinweis von Commons: personality, trademarked" in a["beleg"]
 
 
 def test_commons_zu_schmal_abgelehnt(settings):
@@ -670,7 +680,8 @@ def test_cockpit_zeigt_nachweis_lizenz_und_link(settings):
     html = client.get(f"/entwurf/{did}").get_data(as_text=True)
     assert "Foto: Anna K. / Wikimedia Commons, CC BY-SA 4.0" in html
     assert "Wikimedia Commons</span>" in html and f'href="{COMMONS_SEITE}"' in html
-    assert html.count("Wikimedia Commons</") == 1  # Kennzeichen nur einmal (Badge), nicht zusätzlich in der Zeile
+    # Kennzeichen nur einmal (Badge), nicht zusätzlich in der Zeile (die Auswahl im Formular „Lizenz eintragen“ zählt nicht)
+    assert html.count("Wikimedia Commons</span>") == 1 and "Wikimedia Commons</p>" not in html
     assert 'Lizenz: <a href="https://creativecommons.org/licenses/by-sa/4.0/"' in html and ">CC BY-SA 4.0</a>" in html
     assert "(https://creativecommons.org" not in html  # auch nicht im Abschnitt „Kosten und Rechte“
     assert f'<p><a class="knopf" href="{COMMONS_SEITE}"' in html  # eigene Zeile, Tippfläche über .knopf
@@ -728,7 +739,7 @@ def _cockpit(settings):
 
 def test_freigabe_nur_mit_aktuellem_stand(settings):
     with Store(settings.db_path) as store:
-        sid, did = story_mit_entwurf(store)
+        sid, did = story_mit_entwurf(store, lizenz=True)
         stand = store.get_draft(did)["stand"]
     client, token = _cockpit(settings)
     html = client.get(f"/entwurf/{did}").get_data(as_text=True)
@@ -751,7 +762,7 @@ def test_freigabe_nur_mit_aktuellem_stand(settings):
 
 def test_sammelfreigabe_gemischt(settings):
     with Store(settings.db_path) as store:
-        ids = [story_mit_entwurf(store, url=f"{DOK}-{n}")[1] for n in range(3)]
+        ids = [story_mit_entwurf(store, url=f"{DOK}-{n}", lizenz=True)[1] for n in range(3)]
         staende = {i: store.get_draft(i)["stand"] for i in ids}
     client, token = _cockpit(settings)
     feed = client.get("/").get_data(as_text=True)
@@ -769,7 +780,7 @@ def test_sammelfreigabe_gemischt(settings):
 @pytest.mark.parametrize("route", ["veroeffentlichen", "wp-entwurf"])
 def test_direkt_posten_nur_mit_aktuellem_stand(settings, route):
     with Store(settings.db_path) as store:
-        sid, did = story_mit_entwurf(store)
+        sid, did = story_mit_entwurf(store, lizenz=True)
         alt = store.get_draft(did)["stand"]
         store.update_draft(did, titel="Vom Agenten geändert")
     client, token = _cockpit(settings)

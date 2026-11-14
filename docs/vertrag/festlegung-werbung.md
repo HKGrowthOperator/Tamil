@@ -1,8 +1,7 @@
 # Festlegung F3: Werbebuchung mit Online-Zahlung
 
 Vertrag: A2 (Angebots- und Preisdarstellung, Self-Service-Buchung, Verfügbarkeit, Freigabeprüfung, Online-Zahlung,
-automatischer Start und Ablauf, Kundenübersicht, Admin mit Statistik), A3, §8. Stand: **Vorschlag vom 11.11.2026,
-wartet auf das Ja von Luis und auf Preise und Regeln von KBS.** Zahlungsanbieter: Stripe (Luis, 11.11.), gebaut wird
+automatischer Start und Ablauf, Kundenübersicht, Admin mit Statistik), A3, §8. Stand: **Ja von Luis am 13.11.2026 mit den Vorschlägen dieser Festlegung** (`docs/abnahme/2026-11-13-auftrag-luis.md`); gebaut wird auf dem Testsystem, im Echtbetrieb bleibt die Funktion per Schalter aus, bis Auftragsverarbeitung und Rechtstexte vorliegen. Preise und Regeln liefert KBS; bis dahin Platzhalterwerte, deutlich gekennzeichnet. Zahlungsanbieter: Stripe (Luis, 11.11.), gebaut wird
 zuerst im Testmodus.
 
 ## Was gebaut wird

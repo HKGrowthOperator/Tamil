@@ -3,6 +3,8 @@
 relevance  Signal: Heuristik wie bisher, nur die Grauzone geht gebündelt an Haiku
 cluster    Story-Clustering: URL/UID → Kino-/Event-Schlüssel → Titelähnlichkeit, Grenzfälle an Haiku
 research   Belege: Volltext der Primärquelle, Cluster-Quellen, Suche nach zweiter Quelle; Claims mit Sonnet
+nachrecherche  Gate gescheitert: Suche nach Belegen für die Fehlstellen (ohne Modell, höchstens zwei Runden)
+pruefer    zweite KI aus frischem Kontext: nach der Nachrecherche schreiben oder verwerfen; jeden Entwurf Satz für Satz
 factcheck  Gate (Regeln, kein Modell) vor dem Schreiben; Satz-für-Satz-Prüfung des Entwurfs mit Sonnet
 schreiben  Text aus bestätigten Claims, Länge nach Stofflage, Stilbeispiele passend zu Typ und Rubrik
 copydesk   Lektorat: deterministische Prüfungen (Länge, Zahlen, Nähe zum Quelltext, Tabus) + Hinweise von Haiku
@@ -31,6 +33,7 @@ class Kontext:
     suche: Callable[[str], list[dict]] | None = None  # zweite Quelle: [{"titel", "url", "publisher"}]
     bild_transport: Any = None  # bilder.Transport für die Bild-KI
     wp_suche: Callable[[str], list[dict]] | None = None  # interne Links: [{"titel", "url"}]
+    fetch_json: Callable[[str], Any] | None = None  # JSON einer URL (Nachrecherche: Suche der WordPress-Quellen)
     uhr: Callable[[], datetime] = field(default=lambda: datetime.now(timezone.utc))
 
     def text_von(self, url: str) -> str:
@@ -42,3 +45,17 @@ class Kontext:
         from ..sources import fetch_article_text
 
         return fetch_article_text(url)
+
+    def json_abruf(self, url: str) -> Any:
+        """JSON über net.safe_get; Stopp-Schalter unmittelbar davor. In Tests ohne fetch_json: kein Abruf (None)."""
+        import json
+
+        from .. import net, schalter
+
+        schalter.pruefen(self.store, "redaktion")
+        if self.fetch_json is not None:
+            return self.fetch_json(url)
+        if self.fetch_text is not None:  # Kontext mit Fake-Netz: nie das echte Netz
+            return None
+        seite = net.safe_get(url, timeout=8, max_bytes=2_000_000)
+        return json.loads(seite.content.decode("utf-8", "replace"))

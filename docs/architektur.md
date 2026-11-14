@@ -34,7 +34,7 @@ publisher.py ── REST (Anwendungspasswort ki-agent) ──► Plugin tamil-ra
 ## Cockpit (`news_radar/web/`)
 
 Flask mit serverseitigen Sitzungen, Login-Drossel, CSRF, CSP ohne Inline-Script, nh3-Bereinigung. Seiten: Dashboard,
-Feed, Entwurf (Claims, Belege, Fassungen, Kosten), Warteschlange, Recherche nötig, Quellen, Kosten, Protokoll, Nutzer.
+Feed, Entwurf (Claims, Belege, Fassungen, Kosten), Warteschlange, In Nachrecherche, Quellen, Kosten, Protokoll, Nutzer.
 API: `/api/bericht` (Lese-Token), `/api/agent/export|import` (Agent-Token), `/gesund`.
 
 ## Website (`wordpress/`)

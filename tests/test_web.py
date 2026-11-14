@@ -1,6 +1,7 @@
 """Freigabe-App mit dem Flask-Test-Client: Login, CSRF, Feed, Aktionen, Bearbeiten, Bild, Direkt posten."""
 
 from stand_hilfe import stand_von
+from lizenz_hilfe import lizenz_setzen
 
 import io
 import json
@@ -55,9 +56,10 @@ def app(tmp_path, monkeypatch):
         for i, (titel, status) in enumerate([("Jailer 2 in Mainz", "neu"), ("Pongal in Hamburg", "neu"), ("Alt", "abgelehnt")], 1):
             name, _ = save_pair(branded_card(titel, "Kino", f"u{i}"), settings.bilder_dir, f"u{i}-x")
             store.insert_draft(dict(uid=f"u{i}", typ="artikel", titel=titel, teaser="T", inhalt_html="<p>Text</p>", kategorie="kino",
-                                    relevanz=8, dach_bezug=True, ort="Mainz", schlagworte=["Kino"], bild_datei=name, bild_alt="alt",
+                                    relevanz=8, dach_bezug=True, ort="Mainz", schlagworte=["Kino"], bild_datei=name, bild_alt="Kinosaal mit Leinwand",
                                     quelle_url="https://q.de/1", quelle_name="Q", original_json={"titel": titel, "inhalt_html": "<p>Text</p>",
                                     "teaser": "T", "schlagworte": ["Kino"]}))
+            lizenz_setzen(store, i, settings)  # Bildkarte mit vollständigem Lizenz-Datensatz
             if status == "abgelehnt":
                 store.set_status(i, "ablehnen")
     return app
@@ -245,7 +247,7 @@ def _ki_antwort() -> tuple[int, dict]:
 def test_image_ki_regenerate_and_pool(client, app):
     token = login(client)
     settings = app.extensions["settings"]
-    settings.gemini_key, settings.bild_retry_pause = "test-key", 0
+    settings.gemini_key, settings.bild_retry_pause, settings.bild_ki_freigabe = "test-key", 0, True
     gesendet = []
     app.extensions["bild_transport"] = lambda headers, body: (gesendet.append(body), _ki_antwort())[1]
     page = client.get("/entwurf/1").get_data(as_text=True)
@@ -279,6 +281,7 @@ def test_image_ki_without_key_keeps_image(client, app):
     settings = app.extensions["settings"]
     with Store(settings.db_path) as store:
         before = store.get_draft(1)["bild_datei"]
+    settings.bild_ki_freigabe = True  # freigegeben, aber ohne Schlüssel
     assert "GEMINI_API_KEY fehlt" in client.get("/entwurf/1").get_data(as_text=True)
     resp = client.post("/entwurf/1/bild", data={"_csrf": token, "aktion": "ki", "bild_prompt": "x"}, follow_redirects=True)
     assert "GEMINI_API_KEY" in resp.get_data(as_text=True)

@@ -12,7 +12,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 
-from . import dates, filtering, notify, schalter, sources
+from . import dates, filtering, lizenz, notify, schalter, sources
 from .config import Settings
 from .bilder import beitragsbild
 from .images import save_pair
@@ -74,7 +74,7 @@ def draft_row(item: sources.NewsItem, draft: Draft, bild_datei: str, image, hinw
         "meta_beschreibung": draft.meta_beschreibung,
         "bild_datei": bild_datei,
         "bild_credit": image.credit,
-        "bild_alt": draft.bild_alt,
+        "bild_alt": lizenz.alt_fuer_karte(draft.titel) if image.origin == "karte" else draft.bild_alt,
         "bild_suchbegriff": draft.bild_suchbegriff,
         "bild_origin": image.origin,
         "bild_thema": draft.bild_thema,
@@ -142,10 +142,15 @@ def process(item: sources.NewsItem, settings: Settings, writer: Writer, store: S
         slug=stem, bild_prompt=draft.bild_prompt, bild_thema=draft.bild_thema, bild_suchbegriff=draft.bild_suchbegriff,
     )
     bild_datei, _thumb = save_pair(image, settings.bilder_dir, stem)
-    draft_id = store.insert_draft(draft_row(item, draft, bild_datei, image, hinweise))
+    zeile = draft_row(item, draft, bild_datei, image, hinweise)
+    draft_id = store.insert_draft(zeile)
     store.mark(item.uid, item.title, item.url, item.source, "entwurf")
     if draft_id is None:
         return Result(draft.titel, "verworfen", draft.kategorie, note="Entwurf existiert schon", seconds=time.monotonic() - start)
+    # gemeinsamer Speicherweg: Lizenz-Datensatz zum Bild (Spezifikation Bilder 3.1)
+    lizenz.anlegen(store, datei=bild_datei, daten=image.data, draft_id=draft_id,
+                   felder=lizenz.datensatz(image, titel=draft.titel if image.origin == "karte" else "",
+                                           alt=zeile["bild_alt"]))
 
     seconds = time.monotonic() - start
     link = f"{settings.web_url}/entwurf/{draft_id}"

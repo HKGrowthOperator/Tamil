@@ -1,0 +1,57 @@
+/* Hallmark · shape: Kalenderblatt, the festival calendar · genre: editorial · theme: Almanac (deal 2/3, seed tamil-deutschsprachiges-online-magazin-der-ff32·6bcf19c0·2026-11-13·r0) · job: find · draw: 26f3b5
+ * hero: index · nav: banner over a retracting bar · footer: index columns · imagery: photographs, the post's own Commons picture 1, muted · signature: the year of festivals as one chart set large, today as a red line
+ * axes: mid/grotesk-sans/chromatic-magenta (accent re-hued to the logo red) · posture: restrained · contrast: pass · fold: pass · v2.0.0 */
+/* Hallmark · pre-emit critique: P4 H4 E4 S5 R4 V4 · weakest: H, two dated objects on one page; the sheet keeps the coming weeks, the chart the year, and the chart drops all type but the date, the name and the place */
+@import url("./almanac.css");
+/* Hallmark · waive 44c · the hero of the Festkalender holds its head, the Glattbrugg photograph beside it and the dated sheet of November and December · house style of this line (design.md): the sheet is the head, the photograph sits beside the head line, not as a stage */
+/* Hallmark · waive 78 · the head Das Festjahr 2026 and the Glattbrugg report render at 36px under the 42px page head · on the festival calendar the head Festkalender der Community is capped at 44px, the year chart head sits one step under it */
+/* Hallmark · waive 49b · the link Deepavali, das Lichterfest wraps to two lines at 320 beside the mono date · the festival name in the dated sheet is the row own content and links to its report */
+/* Hallmark · answered F17 · the year chart places each label in its month column and lets it run past, the column is the date, not the measure */
+/* Hallmark · dismissed 58 · the window holds the dated sheet of four festivals with its source line, counted at 85 */
+/* Hallmark · dismissed 77 · a calendar page: the coming dates, the year as one chart, one festival report and the footer; the material holds no further dated festivals */
+
+.kopfzeile { padding-block: var(--space-xl) var(--space-head-after); align-items: end; }
+.kopfzeile__text { grid-column: 1 / span 8; display: flex; flex-direction: column; gap: var(--space-md); }
+.kopfzeile h1 { font-size: var(--text-display-s); max-width: 26ch; letter-spacing: -0.02em; line-height: 1.1; }
+.kopfzeile__aktion { grid-column: 1 / span 8; justify-content: flex-start; }
+.bogen .tafel .zu { width: 6rem; }
+
+/* the year as one chart */
+.festjahr__kopf { display: flex; flex-direction: column; gap: var(--space-md); padding-block-end: var(--space-2xl); }
+.leiste { position: relative; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gap-columns); grid-template-rows: 9rem var(--rule-bar) 9rem; margin: 0; padding: 0; list-style: none; }
+.leiste::before { content: ""; grid-column: 1 / -1; grid-row: 2; background: var(--color-rule-2); }
+.leiste li { grid-column: var(--m); grid-row: 1; position: relative; }
+.leiste li > * { position: absolute; left: calc((var(--d) - 1) / 31 * 100%); white-space: nowrap; }
+.leiste li::after { content: ""; position: absolute; left: calc((var(--d) - 1) / 31 * 100%); bottom: 0; width: var(--rule-bar); height: var(--space-xl); background: var(--color-ink); }
+.leiste li .num { bottom: calc(var(--space-xl) + 3.6rem); font-size: var(--text-sm); color: var(--color-ink); }
+.leiste li .n { bottom: calc(var(--space-xl) + 1.9rem); font: 600 var(--text-md)/1.2 var(--font-display); letter-spacing: var(--tracking-display); color: var(--color-ink); }
+.leiste li .o { bottom: calc(var(--space-xl) + 0.4rem); font-size: var(--text-sm); color: var(--color-muted); }
+.leiste li.unten { grid-row: 3; }
+.leiste li.unten::after { top: 0; bottom: auto; }
+.leiste li.unten .num { top: calc(var(--space-xl) + 0.4rem); bottom: auto; }
+.leiste li.unten .n { top: calc(var(--space-xl) + 1.9rem); bottom: auto; }
+.leiste li.unten .o { top: calc(var(--space-xl) + 3.6rem); bottom: auto; }
+.leiste li.ende > * { left: auto; right: calc(100% - (var(--d) - 1) / 31 * 100%); text-align: right; }
+.leiste li.kommt::after { background: transparent; border-left: var(--rule-bar) dashed var(--color-ink); }
+.leiste li.heute { grid-row: 1 / span 3; }
+.leiste li.heute::after { top: 0; bottom: 0; height: auto; background: var(--color-accent); }
+.leiste li.heute .n { top: 0; left: calc((var(--d) - 1) / 31 * 100% + var(--space-xs)); font: 500 var(--text-sm)/1 var(--font-body); color: var(--color-accent-2); }
+.monate { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gap-columns); margin: 0; padding: var(--space-xs) 0 0; list-style: none; font-size: var(--text-sm); color: var(--color-muted); border-top: var(--rule-hair) solid var(--color-rule); }
+
+@media (max-width: 64rem) {
+  .leiste { display: block; border-top: var(--rule-bar) solid var(--color-rule-2); }
+  .leiste::before { display: none; }
+  .leiste li { display: grid; grid-template-columns: 4.5rem minmax(0, 1fr); column-gap: var(--space-sm); padding-block: var(--space-sm); border-top: var(--rule-hair) solid var(--color-rule); }
+  .leiste li:first-child { border-top: 0; }
+  .leiste li::after, .leiste li.unten::after { display: none; }
+  .leiste li > *, .leiste li.unten > *, .leiste li.ende > * { position: static; white-space: normal; text-align: left; }
+  .leiste li .num { grid-row: 1 / span 2; padding-block-start: var(--space-3xs); }
+  .leiste li .o { grid-column: 2; }
+  .leiste li.heute { display: none; }
+  .monate { display: none; }
+}
+
+.glatt .pic { grid-column: 1 / span 7; }
+.glatt .split__text { grid-column: 9 / span 4; }
+.glatt .split__text h2 { font-size: var(--text-2xl); }
+@media (max-width: 60rem) { .kopfzeile__aktion { justify-content: flex-start; } }

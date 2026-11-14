@@ -4,6 +4,7 @@ from news_radar import publisher
 from news_radar.config import load_settings
 from news_radar.images import branded_card, save_pair
 from news_radar.store import Store
+from lizenz_hilfe import lizenz_setzen
 
 
 class FakeWP:
@@ -45,6 +46,7 @@ def seed(settings, store, uid, titel, status="neu"):
         schlagworte=["Kino"], seo_titel="SEO", meta_beschreibung="Meta", bild_datei=name, bild_alt="Alt",
         bild_credit="Grafik: Tamil.de", quelle_url="https://q.de", quelle_name="Q", original_json={},
     ))
+    lizenz_setzen(store, draft_id, settings)  # Bildkarte mit vollständigem Lizenz-Datensatz
     if status == "freigegeben":
         store.set_status(draft_id, "freigeben")
     return draft_id
@@ -189,6 +191,7 @@ def test_timeout_after_successful_post_does_not_create_a_second_post(env):
     name, _ = save_pair(branded_card("Lichterfest", "Community", "s42"), settings.bilder_dir, "s42")
     draft_id = store.insert_draft(dict(uid="https://example.com/lichterfest", titel="Lichterfest in Hamm", teaser="T",
                                        inhalt_html="<p>Text</p>", kategorie="community", bild_datei=name, story_id=42))
+    lizenz_setzen(store, draft_id, settings)
     store.set_status(draft_id, "freigeben")
     erste = publisher.publish_approved(settings, store, wp=wp)
     assert erste[0].status == "fehler" and store.get_draft(draft_id)["status"] == "fehler"

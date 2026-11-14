@@ -1,6 +1,6 @@
 <?php
 /**
- * Werbeplätze. Reihenfolge je Platz: Advanced-Ads-Platzierung → eigenes Banner-HTML → Eigenanzeige von Tamil.de
+ * Werbeplätze. Reihenfolge je Platz: gebuchte Anzeige (werbung.php) → Advanced-Ads-Platzierung → eigenes Banner-HTML → Eigenanzeige von Tamil.de
  * (Production, Event melden, Werben, WhatsApp-Kanal) → nichts. Ein Platz ohne Inhalt bleibt unsichtbar.
  */
 
@@ -195,6 +195,11 @@ function tamil_site_anzeige_fremd( string $html, string $platz ): string {
  * @return array{0:string,1:bool}
  */
 function tamil_site_anzeige_inhalt( string $platz ): array {
+	// Eine gebuchte, heute aktive Anzeige (Werbebuchung F3) geht allem anderen vor; „aktiv“ entscheidet werbung.php.
+	$gebucht = function_exists( 'tamil_site_werbung_ausliefern' ) ? tamil_site_werbung_ausliefern( $platz ) : '';
+	if ( '' !== $gebucht ) {
+		return array( $gebucht, false );
+	}
 	$settings  = tamil_site_settings();
 	$placement = (string) ( $settings['advanced_ads'][ $platz ] ?? '' );
 	if ( $placement && function_exists( 'get_the_ad_placement' ) ) {

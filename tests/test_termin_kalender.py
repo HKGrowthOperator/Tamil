@@ -172,3 +172,44 @@ def test_kalender_ende_um_mitternacht_gehoert_zum_vortag(settings, monkeypatch):
     abend, fest = sources.FETCHERS["tribe_events"](quelle, settings, now=VOR_DEM_FEST)
     assert abend.facts["event_ende"] == "2026-05-22" and "bis" not in abend.summary
     assert fest.facts["event_ende"] == "2026-05-24" and "bis 24.05.2026" in fest.summary
+
+
+def test_gedenk_sperre_gilt_fuer_alle_terminquellen(settings):
+    """Entscheidung Luis 13.11.: auch Termine aus Feeds und Seiten (nicht nur Kalender-Schnittstellen) werden nie
+    automatisch zur Story; die Auswahl zählt sie als „gedenktermin“."""
+    from collections import Counter
+
+    jetzt = datetime(2026, 11, 13, 9, tzinfo=timezone.utc)
+    termin = sources.NewsItem("Maaveerar-Gedenken in Bern", "https://x.example/bern", "Samstag, 21. November, Bern",
+                              "Swiss Tamil Info · Events", jetzt, kind="event", ort="Bern")
+    fest = sources.NewsItem("Deepavali-Feier in Bern", "https://x.example/fest", "Samstag, 21. November, Bern",
+                            "Swiss Tamil Info · Events", jetzt, kind="event", ort="Bern")
+    zaehler = Counter()
+    gewaehlt = filtering.select([termin, fest], settings, set(), [], now=jetzt, zaehler=zaehler)
+    assert [i.title for i in gewaehlt] == ["Deepavali-Feier in Bern"]
+    assert zaehler["gedenktermin"] == 1
+
+
+def test_nachricht_ueber_ein_gedenken_kommt_weiter_durch(settings):
+    from collections import Counter
+
+    jetzt = datetime(2026, 11, 13, 9, tzinfo=timezone.utc)
+    bericht = sources.NewsItem("Polizei Bern prüft Maaveerar-Veranstaltung", "https://x.example/polizei",
+                               "Tamilen in Bern", "Swiss Tamil Info · Schweiz", jetzt, ort="Bern")
+    zaehler = Counter()
+    gewaehlt = filtering.select([bericht], settings, set(), [], now=jetzt, zaehler=zaehler)
+    assert zaehler["gedenktermin"] == 0
+    assert [i.kind for i in gewaehlt] in ([], ["news"])  # andere Regeln (Bezug) dürfen greifen, die Gedenk-Sperre nicht
+
+
+def test_gedenk_sperre_greift_wenn_kind_erst_aus_der_quelle_kommt(settings):
+    """Feed-Eintrag ohne eigene Art (news) aus einer Terminquelle: select setzt kind=event und sperrt dann."""
+    from collections import Counter
+
+    jetzt = datetime(2026, 11, 13, 9, tzinfo=timezone.utc)
+    item = sources.NewsItem("Maaveerar Naal 2026 in Zürich", "https://x.example/zh", "27. November, Zürich",
+                            "Swiss Tamil Info · Events", jetzt, ort="Zürich")
+    assert item.kind == "news"
+    zaehler = Counter()
+    assert filtering.select([item], settings, set(), [], now=jetzt, zaehler=zaehler) == []
+    assert zaehler["gedenktermin"] == 1

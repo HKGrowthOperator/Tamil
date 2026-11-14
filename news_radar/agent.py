@@ -22,7 +22,7 @@ from typing import Callable
 
 from pydantic import BaseModel, Field, ValidationError
 
-from . import prompts, sources
+from . import lizenz, prompts, sources
 from .bilder import BildPool, Transport, beitragsbild
 from .config import Settings
 from .images import datei_sicherstellen, save_pair
@@ -191,6 +191,8 @@ def import_results(
             bild_datei=name, bild_credit=image.credit, bild_origin=image.origin,
             rewrite_count=int(row.get("rewrite_count") or 0) + 1,
         )
+        if image.origin == "karte":  # die Bildkarte beschreibt sich selbst (5.5)
+            fields["bild_alt"] = lizenz.alt_fuer_karte(d.titel)
         # erst schreiben (nur solange der Entwurf wartet), dann aufräumen
         if not store.update_draft(d.id, von=von, nur_status=OPEN_STATES, bild_vorher=row.get("bild_datei"), **fields):
             if not store.db.execute("SELECT 1 FROM drafts WHERE bild_datei = ? LIMIT 1", (name,)).fetchone():
@@ -199,6 +201,10 @@ def import_results(
             stats["fehler"].append(f"{draft_id}: inzwischen freigegeben oder geändert – nicht übernommen")
             continue
         datei_sicherstellen(image, settings.bilder_dir, name)
+        # gemeinsamer Speicherweg: Lizenz-Datensatz zum neuen Bild (Spezifikation Bilder 3.1)
+        lizenz.anlegen(store, datei=name, daten=image.data, story_id=row.get("story_id"), draft_id=d.id,
+                       felder=lizenz.datensatz(image, titel=d.titel if image.origin == "karte" else "",
+                                               von=f"agent:{von}", alt=fields.get("bild_alt") or ""))
         for old in (row.get("bild_datei"), (row.get("bild_datei") or "").replace(".jpg", "-thumb.jpg")):
             if old and old not in (name, thumb) and not store.db.execute(
                     "SELECT 1 FROM drafts WHERE bild_datei = ? AND id != ?", (row.get("bild_datei"), d.id)).fetchone():

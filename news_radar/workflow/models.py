@@ -109,6 +109,19 @@ class FaktencheckErgebnis(BaseModel):
     saetze: list[SatzUrteil]
 
 
+class StoryPruefung(BaseModel):
+    """Zweite KI nach der Nachrecherche: ist die Story mit nur belegten Aussagen schreibbar?"""
+    entscheidung: Literal["schreiben", "verwerfen"]
+    grund: str = Field(description="ein bis zwei Sätze: warum schreibbar oder warum nicht")
+    claim_ids: list[str] = Field(description="bestätigte Claims, die den Beitrag tragen (leer bei verwerfen)")
+
+
+class EntwurfPruefung(BaseModel):
+    """Zweite KI vor „neu im Cockpit“: jeder Satz des Entwurfs gegen die Dokumente."""
+    saetze: list[SatzUrteil]
+    gesamt: str = Field(description="ein Satz zum Gesamteindruck")
+
+
 class LektoratHinweis(BaseModel):
     art: Literal["sprache", "stil", "verstaendlichkeit", "ton", "fakten"]
     stelle: str

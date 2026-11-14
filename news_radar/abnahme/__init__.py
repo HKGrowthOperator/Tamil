@@ -22,12 +22,14 @@ from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Callable
 
+from .. import lizenz as lizenz_mod
 from .. import sources
 from ..config import Settings, load_settings
 from ..store import Store
 from ..workflow import costs, jobs, orchestrator, repo
 from ..workflow import fake as fake_mod
 from ..workflow.fake import FakeAnthropic
+from . import texte as T
 
 
 @dataclass
@@ -114,10 +116,20 @@ def _antworten(sz: Szenario) -> tuple[dict, dict]:
             if out["saetze"]:
                 if art == "kern_immer" or (art == "kern_einmal" and zaehler["n"] == 1):
                     out["saetze"][0].update(urteil="widerspruch", kern=True)
-                elif art == "neben":
-                    out["saetze"][0].update(urteil="ungedeckt", kern=False)
+                elif art == "neben":  # ein Nebensatz im Haupttext (nicht der Satz, der auch Titel oder Teaser trägt)
+                    neben = [s for s in out["saetze"] if s["urteil"] == "gedeckt"][-1:] or out["saetze"][:1]
+                    neben[0].update(urteil="ungedeckt", kern=False)
             return out
         antworten["faktencheck"] = faktencheck
+    if f.get("pruefer") == "streichen":  # zweite KI findet im Entwurf einen ungedeckten Nebensatz
+        def pruefer(user, system, req):
+            out = fake_mod.pruefer(user, system, req)
+            if fake_mod.block(user, "entwurf") is not None:
+                satz = next((s for s in reversed(out["saetze"]) if s["urteil"] == "gedeckt"), None)
+                if satz:
+                    satz.update(urteil="ungedeckt", kern=False, claim_ids=[], fundstelle="")
+            return out
+        antworten["pruefer"] = pruefer
     if f.get("signal"):
         rel = 8 if f["signal"] == "ja" else 2
         antworten["signal"] = lambda u, s, r: {"bewertungen": [
@@ -134,6 +146,10 @@ def _antworten(sz: Szenario) -> tuple[dict, dict]:
             out["bild_thema"] = "tempelfest"
             return out
         antworten["text"] = text_mit_bild
+    if f.get("eingang") == "erfindet":  # Einsendung (F1): Modell ergänzt eine Zahl und einen Link
+        from .eingang_ablauf import erfindet_antwort
+
+        antworten["eingang"] = erfindet_antwort
     if f.get("seo_kaputt"):
         antworten["seo"] = {"falsch": 1}
     for rolle, art in (f.get("fehler") or {}).items():
@@ -450,7 +466,8 @@ def _agent_v2(ctx, sz: Szenario, now: datetime) -> dict:
         dokus = fake_mod.recherche("<dokumente>\n" + json.dumps(p["dokumente"]) + "\n</dokumente>", "", {})
         beitrag = fake_mod.text("<story>\n" + json.dumps({"titel": p["titel"], "ort": p["ort"]}) + "\n</story>\n<claims>\n"
                                 + json.dumps(dokus["claims"]) + "\n</claims>", "", {})
-        ergebnisse.append({"story_id": p["story_id"], "claims": dokus["claims"], "widersprueche": [], "beitrag": beitrag})
+        ergebnisse.append({"story_id": p["story_id"], "claims": dokus["claims"], "widersprueche": [], "beitrag": beitrag,
+                           "pruefung": fake_mod.pruefung_block(beitrag, dokus["claims"], pruefer="abnahme-pruefer")})
     (tmp / "e.json").write_text(json.dumps({"ergebnisse": ergebnisse}), encoding="utf-8")
     stats = import_v2(ctx.store, ctx.settings, tmp / "e.json", von="cloud-sitzung", ctx=ctx)
     return {"agent_entwuerfe": stats["entwuerfe"]}
@@ -460,6 +477,57 @@ def _quelle_ergaenzen(ctx, sz: Szenario, now: datetime) -> dict:
     sid = repo.stories(ctx.store, "recherche_erforderlich")[0]["id"]
     orchestrator.quelle_ergaenzen(ctx.store, sid, sz.erwartet["_url"], von="abnahme")
     return {f"nach_{k}": v for k, v in _zeitraffer(ctx).items()}
+
+
+def _ergaenzen_scan(ctx, sz: Szenario, now: datetime) -> dict:
+    """Agent-Modus: Import ohne Beleg schickt die Story vom Scan in die Nachrecherche; ein Vorschlag mit story_id
+    ergänzt sie um eine Quelle (Story wieder „neu“ mit Recherche-Job); danach schreibt der Agent-Modus mit Gate."""
+    from ..agent_v2 import import_daten
+    from ..nachtrag import annehmen
+
+    store = ctx.store
+    sid = repo.stories(store)[0]["id"]
+    leer = fake_mod.text("<story>\n{}\n</story>\n<claims>\n[]\n</claims>", "", {})
+    import_daten(store, ctx.settings, {"ergebnisse": [{"story_id": sid, "claims": [], "beitrag": leer,
+                                                       "pruefung": fake_mod.pruefung_block(leer, [])}]}, ctx=ctx)
+    orchestrator.abarbeiten(ctx)  # ohne Modell: nur die Nachrecherche
+    stats: Counter = Counter()
+    stats["in_nachrecherche"] += int(repo.story(store, sid)["status"] == "recherche_erforderlich")
+    v = {"story_id": sid, "arbeitstitel": "Integrationspreis Köln", "datum": now.date().isoformat(),
+         "rubrik": "community", "ort": "Köln", "bezug": "Verein in Köln", "heikel": False,
+         "quellen": [{"url": sz.erwartet["_url"], "titel": "Preis", "herausgeber": "WDR", "datum": "", "sprache": "de",
+                      "art": "bericht"}]}
+    texte = {sz.erwartet["_url"]: T.KOELN}
+    out = annehmen(store, ctx.settings, {"vorschlaege": [v]}, von="abnahme", ctx=ctx,
+                   abruf=_fake_abruf(Szenario(0, "", "", [], {}, texte=texte)))
+    stats[f"ergaenzung_{out['ergebnisse'][0]['ergebnis']}"] += 1
+    stats["recherche_job"] += sum(1 for j in jobs.offen_fuer_story(store, sid) if j["schritt"] == "recherche")
+    stats.update(_agent_v2(ctx, sz, now))
+    return dict(stats)
+
+
+def _agent_nachrecherche(ctx, sz: Szenario, now: datetime) -> dict:
+    """Agent-Modus: Import ohne Beleg → Nachrecherche (ohne Modell) → Export mit eigener Liste „nachrecherche“
+    (Fehlstellen, Suchanfragen); ein Import nur mit Fehlstellen wird abgelehnt."""
+    from ..agent_v2 import import_daten, paket_v2
+
+    store = ctx.store
+    sid = repo.stories(store)[0]["id"]
+    leer = fake_mod.text("<story>\n{}\n</story>\n<claims>\n[]\n</claims>", "", {})
+    import_daten(store, ctx.settings, {"ergebnisse": [{"story_id": sid, "claims": [], "beitrag": leer,
+                                                       "fehlend": ["Bericht des Vereins"],
+                                                       "pruefung": fake_mod.pruefung_block(leer, [])}]}, ctx=ctx)
+    orchestrator.abarbeiten(ctx)
+    mappe = paket_v2(store, ctx.settings, ctx=ctx)
+    stats: Counter = Counter()
+    stats["export_storys"] = len(mappe["storys"])
+    for n in mappe["nachrecherche"]:
+        stats["export_nachrecherche"] += 1
+        stats["mit_fehlstellen"] += int("Bericht des Vereins" in n["fehlend"])
+        stats["mit_suchanfragen"] += int(bool(n["suchanfragen"]))
+    nur_fehlend = import_daten(store, ctx.settings, {"ergebnisse": [{"story_id": sid, "fehlend": ["Ort"]}]}, ctx=ctx)
+    stats["import_abgelehnt"] = len(nur_fehlend["fehler"])
+    return dict(stats)
 
 
 def _dossier(ctx, sz: Szenario, now: datetime) -> dict:
@@ -717,19 +785,87 @@ def _bild_vorschlag_ablauf(ctx, sz: Szenario, now: datetime) -> dict:
     asset = repo.asset_fuer_datei(store, d.get("bild_datei") or "")
     stats["asset_" + (asset["herkunft"] if asset else "keins")] += 1
     stats["nachweis_am_entwurf"] += int(bool(asset) and d.get("bild_credit") == asset.get("attribution"))
+    stats["lizenz_vollstaendig"] += int(bool(asset) and not lizenz_mod.fehlend(asset))
     stats["protokoll_bild"] += len([a for a in repo.aktionen(store, d["id"])
                                     if a["aktion"] == "bild" and a["ausloeser"] == "agent"])
     stats["abrufe_intern"] += sum(1 for u in abrufe if "169.254" in u)
     return dict(stats)
 
 
+def _lizenz_gate(ctx, sz: Szenario, now: datetime) -> dict:
+    """Spezifikation Bilder 3.3/3.4: Die Kette liefert ohne BILD_KI_FREIGABE die Bildkarte mit vollständigem Datensatz.
+    Ein hochgeladenes Bild ohne Lizenz sperrt Freigabe und Senden (Protokoll); nach der Eingabe geht es hinaus, mit
+    Lizenz-Meta für WordPress."""
+    from .. import images, publisher
+
+    class WP:
+        def __init__(self):
+            self.posts = []
+
+        def upload_media(self, image, alt):
+            return 1
+
+        def create_post(self, **kw):
+            self.posts.append(kw)
+            return {"id": 900 + len(self.posts), "link": "https://www.tamil.de/p/"}
+
+        def edit_link(self, post):
+            return "https://www.tamil.de/wp-admin/"
+
+    store, s, stats = ctx.store, ctx.settings, Counter()
+    d = store.list_drafts("neu")[0]
+    stats["erst_karte"] = int(d.get("bild_origin") == "karte")
+    stats["karte_vollstaendig"] = int(not lizenz_mod.luecken(store, d, ctx.settings))
+    stats["ki_aufrufe"] = store.db.execute("SELECT COUNT(*) FROM agent_usage WHERE provider = 'gemini'").fetchone()[0]
+    # Redaktion lädt ein eigenes Foto hoch (gemeinsamer Speicherweg, kein Standardnachweis)
+    up = images.from_upload(_png(), "upload")
+    name, _ = images.save_pair(up, s.bilder_dir, f"upload-e{d['id']}")
+    store.update_draft(d["id"], bild_datei=name, bild_origin="upload", bild_credit=up.credit)
+    lizenz_mod.anlegen(store, datei=name, daten=up.data, draft_id=d["id"], felder=lizenz_mod.datensatz(up))
+    row = store.get_draft(d["id"])
+    stats["freigabe_gesperrt"] = int(bool(lizenz_mod.sperre(store, row, ctx.settings)))
+    store.set_status(d["id"], "freigeben", von="abnahme")  # an der Oberfläche vorbei: der Publisher prüft erneut
+    wp = WP()
+    publisher.publish_approved(s, store, wp=wp)
+    stats["wp_ohne_lizenz"] = len(wp.posts)
+    stats["lizenz_fehlt_protokoll"] = len(repo.aktionen_liste(store, aktion="lizenz_fehlt"))
+    felder, fehler = lizenz_mod.formular_pruefen(
+        {"herkunft": "eigen", "lizenz": "eigen", "urheber": "Redaktion", "rechteinhaber": "Tamil.de",
+         "umfang": ["website", "social"], "alt": "Lichter vor dem Tempel in Hamm"}, None, titel=row["titel"])
+    stats["formular_ok"] = int(not fehler)
+    felder.pop("_beleg_endung", None)
+    store.update_draft(d["id"], bild_credit=felder["attribution"], bild_alt=felder["alt"])
+    lizenz_mod.anlegen(store, datei=name, daten=up.data, draft_id=d["id"],
+                       felder={**felder, "geprueft_von": "abnahme", "geprueft_am": now.isoformat(timespec="seconds")})
+    store.set_status(d["id"], "erneut", von="abnahme")
+    publisher.publish_approved(s, store, wp=wp)
+    stats["wp_mit_lizenz"] = len(wp.posts)
+    meta = publisher.radar_meta({**store.get_draft(d["id"]),
+                                 **publisher.lizenz_meta(lizenz_mod.asset_fuer(store, store.get_draft(d["id"])))})
+    stats["meta_lizenz"] = int(meta.get("bild_lizenz") == "eigen")
+    return dict(stats)
+
+
 NACHHER: dict[str, Callable] = {
     "nachtrag": _nachtrag, "nachtrag_ergaenzen": _nachtrag_ergaenzen, "nachtrag_bis_website": _nachtrag_bis_website,
     "nachtrag_pdf": _nachtrag_pdf, "bild_vorschlag": _bild_vorschlag,
-    "scan_im_stopp": _scan_im_stopp, "website_stopp": _website_stopp,
+    "scan_im_stopp": _scan_im_stopp, "website_stopp": _website_stopp, "lizenz_gate": _lizenz_gate,
     "kino_update": _kino_update, "kino_veroeffentlicht": _kino_nach_veroeffentlichung, "wp_timeout": _wp_timeout,
     "agent_v2": _agent_v2, "quelle_ergaenzen": _quelle_ergaenzen, "dossier": _dossier,
+    "ergaenzen_scan": _ergaenzen_scan, "agent_nachrecherche": _agent_nachrecherche,
 }
+from .eingang_ablauf import NACHHER as _EINGANG  # noqa: E402 – Szenarien ab 80 (Festlegung F1)
+
+NACHHER.update(_EINGANG)
+
+
+def _social(ctx, sz: Szenario, now: datetime) -> dict:
+    from . import social as social_abnahme  # F4: Fake-Website, FakeMeta bzw. Trocken-Transport
+
+    return social_abnahme.ausfuehren(ctx, sz, now)
+
+
+NACHHER["social"] = _social
 
 
 def alle(nur: list[int] | None = None, basis: Settings | None = None, ordner: Path | None = None,

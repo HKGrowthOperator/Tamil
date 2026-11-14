@@ -1,0 +1,36 @@
+[
+ {
+  "shape": "Aushang (custom: ruled dated notices)",
+  "theme": "ink",
+  "axes": "light/grotesk-sans/chromatic-red",
+  "hero": "stage",
+  "nav": "banner over a bar",
+  "footer": "colophon block",
+  "imagery": "photographs, user own, muted",
+  "photos": [],
+  "entry": "index.html",
+  "fingerprint": "hanging/asymmetric spans/hairline/solid+unstyled/tightly cropped/none",
+  "sections": [
+   "hero",
+   "aushang rows",
+   "nachrichten split",
+   "kino band",
+   "community rows+photo",
+   "anzeige",
+   "kueche kultur split",
+   "verzeichnis band"
+  ],
+  "signature": "date figure on every notice, next one in logo red",
+  "waived": [
+   "22",
+   "44c",
+   "49b",
+   "71",
+   "77",
+   "79"
+  ],
+  "prompt": "tamil.de Linie C Aushang",
+  "date": "2026-11-13",
+  "mode": "build"
+ }
+]

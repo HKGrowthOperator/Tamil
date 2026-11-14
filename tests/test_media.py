@@ -76,9 +76,17 @@ def test_ki_image_at_most_once_per_story_with_budget_and_cost(ctx):
     ctx.settings.bild_retry_pause = 0
     data = base64.b64encode(_png()).decode()
     ctx.bild_transport = lambda headers, body: (200, {"status": "completed", "outputs": [{"type": "image", "data": data}]})
+    # ohne BILD_KI_FREIGABE (Standard): weder Pool noch KI, kein Aufruf, keine Kosten
+    aus, versucht = media.besorgen(ctx, STORY, FELDER, "s0", kategorie_label="Community")
+    assert aus.image.origin == "karte" and {"pool", "ki"} <= set(versucht)
+    assert ctx.store.db.execute("SELECT COUNT(*) FROM agent_usage").fetchone()[0] == 0
+    ctx.settings.bild_ki_freigabe = True
     bild, _ = media.besorgen(ctx, STORY, FELDER, "s1", kategorie_label="Community")
     assert bild.image.origin == "ki" and bild.ki
-    media.speichern(ctx, bild, "s1-ki", 1)
+    name, _ = media.speichern(ctx, bild, "s1-ki", 1)
+    asset = repo.asset_fuer_datei(ctx.store, name)
+    assert asset["lizenz_kuerzel"] == "ki-symbolbild" and asset["ki"] == 1 and asset["umfang"] == "website,social"
+    assert asset["ki_modell"] == ctx.settings.bild_modell and asset["prompt_hash"]
     usage = dict(ctx.store.db.execute("SELECT * FROM agent_usage WHERE rolle = 'bild'").fetchone())
     assert usage["provider"] == "gemini" and usage["bilder"] == 1 and usage["kosten_usd"] == pytest.approx(0.0336)
     zweites, versucht = media.besorgen(ctx, STORY, {**FELDER, "bild_thema": "kino-saal"}, "s1b", kategorie_label="Community")
