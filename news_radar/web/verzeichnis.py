@@ -66,6 +66,12 @@ def einsendung(vorgang: str):
                            gestoppt=schalter.gestoppt(get_store(), verzeichnis.KANAL))
 
 
+def _kategorie_aus_formular() -> str | None:
+    """„“ (Auswahl leer) = unverändert, „-“ = keine Kategorie (leeren), sonst der Slug."""
+    wert = request.form.get("kategorie", "").strip()
+    return None if not wert else "" if wert == "-" else wert
+
+
 @verzeichnis_bp.post("/verzeichnis/<vorgang>/freigeben")
 @recht_noetig("verzeichnis_entscheiden")
 def freigeben(vorgang: str):
@@ -82,7 +88,7 @@ def freigeben(vorgang: str):
         return _zurueck(vorgang)
     try:
         ergebnis = verzeichnis.freigeben(get_store(), client, vorgang, von=session.get("user", ""), werte=werte,
-                                         annehmen=annehmen, kategorie=request.form.get("kategorie", ""))
+                                         annehmen=annehmen, kategorie=_kategorie_aus_formular())
     except (verzeichnis.Konflikt, verzeichnis.Abgewiesen, ValueError) as exc:  # auch StandVeraltet (409)
         flash(f"Nicht freigegeben: {exc}", "fehler")
         return _zurueck(vorgang)
@@ -90,6 +96,11 @@ def freigeben(vorgang: str):
         flash(f"Nicht freigegeben: {exc}. Nach dem Einschalten noch einmal freigeben.", "fehler")
         return _zurueck(vorgang)
     eintrag = ergebnis.get("eintrag") if isinstance(ergebnis.get("eintrag"), dict) else {}
+    if ergebnis.get("bereits"):
+        fehlt = ", ".join(verzeichnis.LABEL.get(k, k) for k in ergebnis.get("nicht_uebernommen") or [])
+        flash(f"Die Website hatte schon freigegeben (Eintrag {eintrag.get('id') or ''})"
+              + (f"; Ihre Änderungen wurden nicht übernommen: {fehlt}." if fehlt else "; nichts doppelt."), "fehler")
+        return redirect(url_for("verzeichnis.liste"))
     was = {"neu": "angelegt", "aenderung": "geändert", "entfernen": "entfernt (jetzt Entwurf)"}[e["typ"]]
     flash(f"Freigegeben: Eintrag {eintrag.get('id') or ''} {was}.", "ok")
     return redirect(url_for("verzeichnis.liste"))

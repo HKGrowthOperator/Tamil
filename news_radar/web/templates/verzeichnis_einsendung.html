@@ -57,19 +57,19 @@
   {% if offen and e.alt %}<form method="post" action="/verzeichnis/{{ e.vorgangsnummer }}/freigeben" data-confirm="Die angehakten Felder im Eintrag ändern?">
     <input type="hidden" name="_csrf" value="{{ csrf_token() }}">{% endif %}
   <table class="voll kompakt">
-    <tr><th scope="col">Feld</th><th scope="col">Alt</th><th scope="col">Neu</th>{% if offen and e.alt %}<th scope="col">Annehmen</th>{% endif %}</tr>
+    <tr><th scope="col">{{ 'Feld annehmen' if offen and e.alt else 'Feld' }}</th><th scope="col">Alt</th><th scope="col">Neu</th></tr>
     {% for z in vergleich %}
-    <tr{% if z.geaendert %} class="warn"{% endif %}><th scope="row">{{ z.label }}</th>
+    <tr{% if z.geaendert %} class="warn"{% endif %}><th scope="row">{% if offen and e.alt %}<label class="auswahl"><input type="checkbox" name="annehmen" value="{{ z.feld }}" {{ 'checked' if z.geaendert }}> {{ z.label }}</label>{% else %}{{ z.label }}{% endif %}</th>
       <td>{% if z.alt %}{{ arten.get(z.alt, z.alt) if z.feld == 'art' else z.alt }}{% else %}<span class="leise">leer</span>{% endif %}</td>
       <td>{% if z.neu %}{{ arten.get(z.neu, z.neu) if z.feld == 'art' else z.neu }}{% else %}<span class="leise">leer</span>{% endif %}{% if not z.oeffentlich and z.feld in wahl %} <span class="badge hinweis">nicht öffentlich</span>{% endif %}{% if z.feld in (p.formfehler or []) %} <span class="badge s-abgelehnt">Form prüfen</span>{% endif %}</td>
-      {% if offen and e.alt %}<td><label class="auswahl"><input type="checkbox" name="annehmen" value="{{ z.feld }}" {{ 'checked' if z.geaendert }} aria-label="{{ z.label }} annehmen"></label></td>{% endif %}
     </tr>
     {% else %}
-    <tr><td colspan="4" class="leise">Keine Felder eingesandt.</td></tr>
+    <tr><td colspan="3" class="leise">Keine Felder eingesandt.</td></tr>
     {% endfor %}
   </table>
   {% if offen and e.alt %}
-    {% if kategorien %}<label>Kategorie (nur bei Bedarf) <select name="kategorie"><option value="">– unverändert –</option>{% for slug, klabel in kategorien %}<option value="{{ slug }}" {{ 'selected' if slug == p.kategorie_vorschlag }}>{{ klabel }}</option>{% endfor %}</select></label>{% endif %}
+    {% if kategorien %}<label>Kategorie (nur bei Bedarf) <select name="kategorie"><option value="">– unverändert –</option><option value="-">– keine Kategorie –</option>{% for slug, klabel in kategorien %}<option value="{{ slug }}" {{ 'selected' if slug == p.kategorie_vorschlag }}>{{ klabel }}</option>{% endfor %}</select></label>{% endif %}
+    {% if 'art' in e.felder %}<p class="leise">Die Art ändert sich: bitte eine Kategorie der neuen Art wählen oder „keine Kategorie“.</p>{% endif %}
     <p class="leise">Nur angehakte Felder werden geschrieben, und nur gegen den Stand, den diese Seite zeigt. Hat jemand den Eintrag seitdem geändert, weist die Website ab und alt/neu wird neu geladen.</p>
     <button class="primaer"{% if gestoppt %} disabled{% endif %}>Angehakte Felder freigeben</button>
   </form>{% endif %}

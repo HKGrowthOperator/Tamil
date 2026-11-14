@@ -119,7 +119,8 @@ def test_t4_aenderung_alt_neben_neu_feldweise_und_409(umgebung):
     c, token = login(app, "priya")
     v = vorgaenge["aenderung"]
     html = c.get(f"/verzeichnis/{v}").get_data(as_text=True)
-    zeile = re.search(r"<tr class=\"warn\"><th scope=\"row\">Telefon</th>(.*?)</tr>", html, re.S).group(1)
+    zeile = re.search(r"<tr class=\"warn\"><th scope=\"row\"><label[^>]*>[^<]*<input[^>]*> Telefon</label></th>(.*?)</tr>",
+                      html, re.S).group(1)
     assert "+49 201 1234567" in zeile and "+49 201 7654321" in zeile  # alt neben neu
     assert 'name="annehmen" value="telefon"' in html and 'name="annehmen" value="email"' in html
     wp.eintraege[eid]["felder"]["website"] = "https://neu.example.test"  # jemand ändert in wp-admin
@@ -152,3 +153,33 @@ def test_entfernen_mit_bestaetigung(umgebung):
     assert "wirklich aus dem Verzeichnis nehmen" in html and "Tamilischer Kulturverein Essen" in html
     assert c.post(f"/verzeichnis/{v}/freigeben", data={"_csrf": token}).status_code == 302
     assert wp.eintraege[eid]["status"] == "entfernt"
+
+
+def test_annehmen_haekchen_vorne_in_der_feldspalte(umgebung):
+    """P3-a: das Häkchen steht mit der Feldbezeichnung als Label in der ersten Spalte (am Handy sichtbar, groß)."""
+    app, _, vorgaenge, _, _ = umgebung
+    c, _ = login(app, "priya")
+    html = c.get(f"/verzeichnis/{vorgaenge['aenderung']}").get_data(as_text=True)
+    assert re.search(r'<th scope="row"><label class="auswahl"><input type="checkbox" name="annehmen" value="telefon"'
+                     r'[^>]*> Telefon</label></th>', html)
+    assert '<th scope="col">Annehmen</th>' not in html
+
+
+def test_kategorie_leeren_im_formular(umgebung):
+    app, wp, vorgaenge, _, eid = umgebung
+    c, token = login(app, "priya")
+    wp.eintraege[eid]["felder"]["kategorie"] = "verein-kultur"
+    v = vorgaenge["aenderung"]
+    html = c.get(f"/verzeichnis/{v}").get_data(as_text=True)
+    assert 'value="-"' in html and "keine Kategorie" in html
+
+
+def test_bereits_freigegeben_zeigt_hinweis_statt_angelegt(umgebung):
+    app, wp, vorgaenge, _, _ = umgebung
+    c, token = login(app, "priya")
+    v = vorgaenge["neu"]
+    felder = {k: f["wert"] for k, f in wp.einsendung(v)["felder"].items() if f["wert"]}
+    assert TamilRadarClient("https://www.tamil.test", "u", "p", session=wp).vz_anlegen(v, felder)[0] == 201
+    c.post(f"/verzeichnis/{v}/freigeben", data={"_csrf": token, "wert_name": "Anderer Name"})
+    seite = c.get("/verzeichnis").get_data(as_text=True)
+    assert "hatte schon freigegeben" in seite and "nicht übernommen" in seite and "angelegt" not in seite

@@ -19,9 +19,11 @@ from urllib.parse import urlsplit
 
 import requests
 
+from ..verzeichnis import KATEGORIE_LABEL, REGIONEN
 from .wp_eingang import Antwort, _fehler
 
 NS = "/wp-json/tamil-radar/v1/verzeichnis/"
+ABHAENGIG = ("plz", "land", "bundesland_kanton", "art", "kategorie")
 FELDER = ("name", "art", "kategorie", "beschreibung", "adresse", "plz", "stadt", "land", "bundesland_kanton", "telefon",
           "email", "website", "oeffnungszeiten")
 PFLICHT = ("name", "art", "plz", "stadt", "land")
@@ -59,7 +61,9 @@ def _formfehler(werte: dict, land_vorgabe: str = "") -> dict[str, str]:
             fehler[k] = "Bitte eine Telefonnummer aus Ziffern angeben."
         elif k == "website" and not re.fullmatch(r"https?://[^\s/]+\.[^\s/]+(/\S*)?", w):
             fehler[k] = "Bitte die Adresse der Website mit https:// angeben."
-        elif k == "kategorie" and not w.startswith(str(werte.get("art") or "") + "-"):
+        elif k == "bundesland_kanton" and land in REGIONEN and w not in REGIONEN[land]:
+            fehler[k] = "Bitte ein Bundesland oder einen Kanton aus der Liste wählen."
+        elif k == "kategorie" and (w not in KATEGORIE_LABEL or (werte.get("art") and not w.startswith(f"{werte['art']}-"))):
             fehler[k] = "Diese Kategorie gibt es für diese Art nicht."
     return fehler
 
@@ -229,6 +233,11 @@ class FakeWordPressVerzeichnis:
         if aktion != "entfernen":
             if _fehlt(gesamt):
                 return _fehler("tamil_vz_unvollstaendig", 400, fehlt=_fehlt(gesamt))
+            # wie `$abhaengig` im PHP: bei Teiländerungen abhängige Felder über alt + neu gegeneinander prüfen
+            if any(k in werte for k in ABHAENGIG):
+                ganz = _formfehler({k: gesamt[k] for k in ABHAENGIG if k in gesamt})
+                if ganz:
+                    return _fehler("tamil_vz_ungueltig", 400, fehler=ganz)
             for k, f in z["felder"].items():
                 if werte.get(k) and not f["oeffentlich"] and k in WAHL:
                     return _fehler("tamil_vz_nicht_oeffentlich", 409, feld=k)

@@ -64,6 +64,7 @@ LABEL = {f[0]: f[1] for f in FELDER} | {"kontakt": "Kontaktweg (Telefon, E-Mail 
 PFLICHT = tuple(f[0] for f in FELDER if f[2])
 MAX = {f[0]: f[3] for f in FELDER}
 WAHL = ("adresse", "telefon", "email", "website", "oeffnungszeiten")
+ABHAENGIG = ("plz", "land", "bundesland_kanton", "art", "kategorie")  # wie `$abhaengig` in WordPress
 KONTAKTWEGE = ("telefon", "email", "website")
 # Kategorien je Art: Slugs wie in WordPress (Upgrade-Schritt 4, sanitize_title „<art>-<Name>“ unter de_DE).
 KATEGORIEN: dict[str, tuple[tuple[str, str], ...]] = {
@@ -664,7 +665,7 @@ def melden(store, client, *, nur: str | None = None, wer: str = DIENST, ausloese
     out: Counter = Counter()
     sql = ("SELECT * FROM verzeichnis_einsendungen WHERE ((status = 'geprueft' AND COALESCE(wp_status, '') NOT IN "
            "('geprueft', 'freigegeben', 'abgelehnt', 'fehlt', 'abgewiesen')) OR (status = 'abgelehnt' AND "
-           "COALESCE(wp_status, '') NOT IN ('abgelehnt', 'freigegeben', 'fehlt', 'abgewiesen')))")
+           "COALESCE(wp_status, '') NOT IN ('abgelehnt', 'freigegeben', 'fehlt')))")
     params: tuple = ()
     if nur:
         sql, params = sql + " AND vorgangsnummer = ?", (nur,)
@@ -765,8 +766,10 @@ def _kein_premium(*schluessel) -> None:
         raise ValueError("Premium setzt nur ein Administrator in WordPress – nicht über das Cockpit")
 
 
-def _freigabe_felder(e: dict, werte: dict, annehmen: list[str] | None, kategorie: str) -> dict:
-    """Die Felder für die Freigabe: nur eingesandte (die Redaktion darf Werte ändern) und die Kategorie."""
+def _freigabe_felder(e: dict, werte: dict, annehmen: list[str] | None, kategorie: str | None) -> dict:
+    """Die Felder für die Freigabe: nur eingesandte (die Redaktion darf Werte ändern) und die Kategorie
+    (None = unverändert, "" = bei einer Änderung leeren). Abhängige Felder (PLZ, Land, Bundesland, Art, Kategorie)
+    werden wie in WordPress über alt + neu geprüft, damit die Freigabe nicht erst dort scheitert."""
     unbekannt = [k for k in werte if k not in FELD_NAMEN]
     if unbekannt:
         raise ValueError(f"Unbekannte Felder: {', '.join(sorted(map(str, unbekannt)))[:200]}")
@@ -788,14 +791,25 @@ def _freigabe_felder(e: dict, werte: dict, annehmen: list[str] | None, kategorie
             raise ValueError(f"{LABEL[k]}: der Einsender hat diesen Wert nicht zur Veröffentlichung freigegeben")
     if e["typ"] == "neu":
         felder = {k: v for k, v in felder.items() if v}
-    kategorie = (kategorie or "").strip()
-    if kategorie:
-        art = felder.get("art") or _art(e)
+    alt = e.get("alt") or {}
+    if kategorie is not None and kategorie.strip():
+        kategorie = kategorie.strip()
+        art = felder.get("art") or (str(alt.get("art") or "") if e["typ"] == "aenderung" else _art(e))
         if kategorie not in dict(KATEGORIEN.get(art, ())):
             raise ValueError(f"Kategorie passt nicht zur Art „{ARTEN.get(art, art or '–')}“")
         felder["kategorie"] = kategorie
+    elif kategorie is not None and e["typ"] == "aenderung":
+        felder["kategorie"] = ""  # ausdrücklich „keine Kategorie“
     if e["typ"] == "aenderung" and not felder:
         raise ValueError("Kein Feld angenommen – dann bitte ablehnen")
+    if e["typ"] == "aenderung" and any(k in felder for k in ABHAENGIG):
+        gesamt = {**{k: str(v or "") for k, v in alt.items()}, **felder}
+        fehler = formfehler({k: gesamt[k] for k in ABHAENGIG if k in gesamt})
+        if fehler:
+            teile = "; ".join(f"{LABEL.get(k, k)} ({grund})" for k, grund in fehler.items())
+            rat = (" – bitte eine Kategorie der neuen Art wählen oder „keine Kategorie“" if "kategorie" in fehler
+                   else " – zusammengehörige Felder gemeinsam annehmen")
+            raise ValueError(f"Alt und neu passen nicht zusammen: {teile}{rat}")
     return felder
 
 
@@ -841,8 +855,15 @@ def _freigegeben(store, e: dict, *, von: str, aktion: str, felder: dict, daten: 
     einsendung = daten.get("einsendung") if isinstance(daten.get("einsendung"), dict) else {}
     wp_entscheidung = einsendung.get("entscheidung") if isinstance(einsendung.get("entscheidung"), dict) else {}
     eintrag_id = int(eintrag.get("id") or einsendung.get("eintrag_id") or e["eintrag_id"] or 0) or None
+    if daten.get("bereits"):  # schon freigegeben (z. B. zweites Fenster): die jetzige Wahl kam nicht an
+        ist = eintrag.get("felder") if isinstance(eintrag.get("felder"), dict) else {}
+        daten["nicht_uebernommen"] = sorted(k for k, v in felder.items() if str(ist.get(k) or "").strip() != v)
+        if daten["nicht_uebernommen"]:
+            _hinweis_dazu(store, e["id"], "Website hatte schon freigegeben – nicht übernommen: "
+                                          f"{_liste_text(daten['nicht_uebernommen'])}")
     entscheidung = {"aktion": aktion, "felder": sorted(felder), "wer": von, "zeit": now_iso(),
                     "bereits": bool(daten.get("bereits")), "abgeglichen": bool(daten.get("abgeglichen")),
+                    "nicht_uebernommen": list(daten.get("nicht_uebernommen") or []),
                     "abweichend": [str(x)[:40] for x in wp_entscheidung.get("abweichend") or []]}
     if _abschliessen(store, e, "freigegeben", von=von, entscheidung=entscheidung, eintrag_id=eintrag_id):
         notiz = f"{aktion}: {','.join(sorted(felder)) or '–'}"
@@ -854,13 +875,13 @@ def _freigegeben(store, e: dict, *, von: str, aktion: str, felder: dict, daten: 
 
 
 def freigeben(store, client, vorgang: str, *, von: str, werte: dict | None = None, annehmen: list[str] | None = None,
-              kategorie: str = "") -> dict:
+              kategorie: str | None = None) -> dict:
     """Freigabe durch die Redaktion: neu → `POST /eintrag` (eingesandte Werte, von der Redaktion geändert),
     Änderung → `POST /eintrag/{id}` nur mit den angenommenen Feldern gegen den gelesenen `stand`, Entfernen →
     `POST /eintrag/{id}/entfernen`. Premium nie. Gibt die Antwort der Website zurück. Wirft ValueError (Eingabe),
     Konflikt / StandVeraltet (Stand), Abgewiesen (Website), schalter.Gestoppt (Kanal angehalten)."""
     werte = dict(werte or {})
-    _kein_premium(*werte, *(annehmen or []), kategorie)
+    _kein_premium(*werte, *(annehmen or []), kategorie or "")
     e = holen(store, vorgang)
     if e is None:
         raise LookupError(vorgang)
@@ -868,7 +889,7 @@ def freigeben(store, client, vorgang: str, *, von: str, werte: dict | None = Non
     if e["status"] != "geprueft":
         raise Konflikt(f"Einsendung {vorgang} ist {'noch nicht geprüft' if e['status'] == 'abgeholt' else 'schon ' + STATUS_LABEL.get(e['status'], e['status'])}")
     if e["typ"] != "neu" and not e.get("alt_stand"):
-        raise Konflikt(f"Eintrag {e['eintrag_id']} konnte nicht gelesen werden – erst neu prüfen")
+        raise Konflikt(f"Eintrag {e['eintrag_id']} gibt es auf der Website nicht mehr – bitte ablehnen")
     aktion = {"neu": "anlegen", "aenderung": "aendern", "entfernen": "entfernen"}[e["typ"]]
     schalter.pruefen(store, KANAL)  # unmittelbar vor dem Aufruf nach außen
     try:

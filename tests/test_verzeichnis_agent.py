@@ -388,3 +388,79 @@ def test_dienst_plan_nur_mit_funktionsschalter(settings):
     plan = {e.name: e for e in dienst.plan(settings, env={"RADAR_VERZEICHNIS": "an"})}
     assert plan["verzeichnis"].args == ("verzeichnis", "lauf") and plan["verzeichnis"].kanaele == ("verzeichnis",)
     assert plan["verzeichnis-frist"].args == ("verzeichnis", "loeschen") and plan["verzeichnis-frist"].kanaele == ()
+
+
+# ---- Befunde der Code-Prüfung (14.11.2026) ---------------------------------------------------------------------------
+
+def test_fake_prueft_abhaengige_felder_bei_teilaenderungen_wie_das_php(wp):
+    """P2-1: wie `$abhaengig` in tamil_site_vz_freigabe – plz, land, bundesland_kanton, art, kategorie über alt + neu."""
+    c = client(wp)
+    eid = wp.eintrag_anlegen({**VEREIN, "kategorie": "verein-kultur"})
+    v = wp.einreichen("aenderung", {"art": "business"}, eintrag_id=eid)
+    code, daten = c.vz_aendern(eid, v, wp.stand(eid), {"art": "business"})
+    assert (code, daten["code"]) == (400, "tamil_vz_ungueltig") and "kategorie" in daten["data"]["fehler"]
+    v2 = wp.einreichen("aenderung", {"land": "AT"}, eintrag_id=eid)
+    code, daten = c.vz_aendern(eid, v2, wp.stand(eid), {"land": "AT"})
+    assert (code, daten["code"]) == (400, "tamil_vz_ungueltig") and "plz" in daten["data"]["fehler"]
+    code, _ = c.vz_aendern(eid, v, wp.stand(eid), {"art": "business", "kategorie": ""})  # Kategorie leeren geht
+    assert code == 200 and wp.eintraege[eid]["felder"]["kategorie"] == ""
+
+
+def test_art_aendern_verlangt_passende_kategorie_vor_dem_aufruf(store, wp):
+    """P2-2: Art-Änderung mit alter Kategorie scheitert nicht erst auf der Website."""
+    eid = wp.eintrag_anlegen({**VEREIN, "kategorie": "verein-kultur"})
+    v = wp.einreichen("aenderung", {"art": "business"}, eintrag_id=eid)
+    lauf(store, wp)
+    with pytest.raises(ValueError, match="Kategorie"):
+        verzeichnis.freigeben(store, client(wp), v, von="priya", annehmen=["art"])
+    assert posts(wp) == []
+    verzeichnis.freigeben(store, client(wp), v, von="priya", annehmen=["art"], kategorie="business-reise")
+    assert wp.eintraege[eid]["felder"]["kategorie"] == "business-reise"
+
+
+def test_art_aendern_mit_kategorie_leeren(store, wp):
+    eid = wp.eintrag_anlegen({**VEREIN, "kategorie": "verein-kultur"})
+    v = wp.einreichen("aenderung", {"art": "business"}, eintrag_id=eid)
+    lauf(store, wp)
+    verzeichnis.freigeben(store, client(wp), v, von="priya", annehmen=["art"], kategorie="")
+    assert posts(wp)[0][1]["felder"] == {"art": "business", "kategorie": ""}
+    assert wp.eintraege[eid]["felder"]["art"] == "business" and wp.eintraege[eid]["felder"]["kategorie"] == ""
+
+
+def test_land_aendern_ohne_passende_plz_wird_vorab_gemeldet(store, wp):
+    eid = wp.eintrag_anlegen(VEREIN)
+    v = wp.einreichen("aenderung", {"land": "AT"}, eintrag_id=eid)
+    lauf(store, wp)
+    with pytest.raises(ValueError, match="PLZ"):
+        verzeichnis.freigeben(store, client(wp), v, von="priya", annehmen=["land"])
+    assert posts(wp) == []
+
+
+def test_eintrag_fehlt_beim_pruefen_sagt_ablehnen(store, wp):
+    """P3-b: kein Hinweis auf ein „neu prüfen“, das es nicht gibt."""
+    v = wp.einreichen("aenderung", {"telefon": "+49 201 7654321"}, eintrag_id=999)
+    lauf(store, wp)
+    with pytest.raises(verzeichnis.Konflikt, match="nicht mehr – bitte ablehnen"):
+        verzeichnis.freigeben(store, client(wp), v, von="priya", annehmen=["telefon"])
+
+
+def test_ablehnen_geht_nach_abgewiesenem_geprueft_noch_hinaus(store, wp):
+    """P3-c: wp_status „abgewiesen“ (4xx auf geprueft) hält ein späteres „abgelehnt“ nicht auf."""
+    v = wp.einreichen("neu", VEREIN)
+    verzeichnis.abholen(store, client(wp))
+    store._write("UPDATE verzeichnis_einsendungen SET status = 'geprueft', wp_status = 'abgewiesen', pruefung = '{}' "
+                 "WHERE vorgangsnummer = ?", (v,))
+    verzeichnis.ablehnen(store, client(wp), v, von="priya")
+    assert wp.einsendung(v)["status"] == "abgelehnt" and verzeichnis.holen(store, v)["wp_status"] == "abgelehnt"
+
+
+def test_bereits_freigegeben_mit_anderen_werten_meldet_nicht_uebernommen(store, wp):
+    """P3-d: Die Website hatte schon (mit anderen Werten) freigegeben – die neue Wahl kam nicht an."""
+    v = wp.einreichen("neu", VEREIN)
+    lauf(store, wp)
+    code, _ = client(wp).vz_anlegen(v, dict(VEREIN))  # z. B. ein zweites Fenster
+    assert code == 201
+    ergebnis = verzeichnis.freigeben(store, client(wp), v, von="priya", werte={"name": "Anderer Name"})
+    assert ergebnis["bereits"] is True and ergebnis["nicht_uebernommen"] == ["name"]
+    e = verzeichnis.holen(store, v)
+    assert e["status"] == "freigegeben" and any("nicht übernommen" in h for h in e["hinweise"])
