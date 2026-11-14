@@ -444,6 +444,44 @@ input:hover, textarea:hover, select:hover { background: var(--color-paper); }
   .lead .tag { grid-template-columns: 4.25rem minmax(0, 1fr); column-gap: var(--space-sm); }
 }
 
+/* ---------- Festkalender und Kino: Seitenkopf mit Foto, Tafel links unter der Einleitung (Kante bei 7/12) ---------- */
+.seitenkopf.mit-bild { padding-bottom: var(--space-xl); }
+.seitenkopf.mit-bild .wrap { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--space-lg) var(--gap-columns); align-items: start; }
+.seitenkopf.mit-bild .bild img { aspect-ratio: 3 / 2; }
+.sk-text > .bogen { margin-top: var(--space-xl); }
+.sk-text > .legende { margin-top: var(--space-sm); }
+.legende { color: var(--color-muted); font-size: var(--text-body); }
+.wrap.schmal { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); column-gap: var(--gap-columns); }
+.wrap.schmal > * { grid-column: 1; }
+.kopfzeile + .satz { margin: 0 0 var(--space-lg); }
+.monat-block { border-top: 1px solid var(--color-rule); }
+.monat-block:last-of-type { border-bottom: 1px solid var(--color-rule); }
+.monat-block summary { display: flex; align-items: center; justify-content: space-between; gap: var(--space-md); min-height: 56px; cursor: pointer; list-style: none; }
+.monat-block summary::-webkit-details-marker { display: none; }
+.monat-name { font-family: var(--font-display); font-weight: var(--weight-head); font-size: var(--text-lg); }
+.anzahl { color: var(--color-muted); display: inline-flex; align-items: center; gap: var(--space-sm); }
+.anzahl::after { content: "+"; font-size: 1.25rem; color: var(--color-ink); }
+.monat-block[open] .anzahl::after { content: "\2212"; }
+.monat-block .tafel { margin-bottom: var(--space-lg); }
+.tafel.jahr .was { font-weight: 600; }
+.tafel.kino .t-stand { white-space: nowrap; color: var(--color-muted); font-size: var(--text-md); width: 6.5rem; padding-left: var(--space-md); }
+.tafel.kino th.t-stand { font-size: var(--text-sm); }
+.tafel.orte .land th { font-family: var(--font-display); font-weight: 600; font-size: var(--text-lg); color: var(--color-ink); padding-top: var(--space-lg); border-top: 0; border-bottom: 1px solid var(--color-rule); }
+.tafel.orte tbody tr.land:first-child th { padding-top: var(--space-sm); }
+.tafel.orte tbody th.stadt { width: 40%; font-family: var(--font-display); font-weight: 600; font-size: var(--text-body); color: var(--color-ink); border-bottom: 0; white-space: normal; }
+.tafel.orte .was { font-family: var(--font-body); font-weight: 400; }
+@media (max-width: 860px) {
+  .seitenkopf.mit-bild .wrap, .wrap.schmal { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 640px) {
+  .tafel.jahr tr { grid-template-columns: 4.25rem minmax(0, 1fr); }
+  .tafel.orte tr { grid-template-columns: minmax(0, 1fr); }
+  .tafel.orte tbody th, .tafel.orte td { grid-column: 1; }
+  .tafel.orte .land th { padding-top: var(--space-md); border-bottom: 0; }
+  .tafel.orte tr.land { border-top: 0; }
+  .tafel.kino td.t-stand { grid-column: 1 / -1; grid-row: 3; padding: 0; width: auto; font-size: var(--text-sm); }
+}
+
 /* ---------- Anzeigen (Plätze aus dem Plugin „Tamil.de Website“) ---------- */
 .ad { display: flex; flex-direction: column; align-items: center; gap: var(--space-2xs); max-width: 100%; min-width: 0; }
 .ad .ad-label { align-self: flex-start; font-size: var(--text-sm); color: var(--color-muted); }
