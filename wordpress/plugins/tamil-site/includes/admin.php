@@ -112,8 +112,20 @@ function tamil_site_page_settings(): void {
 			<h2><?php esc_html_e( 'Funktionen', 'tamil-site' ); ?></h2>
 			<p class="description"><?php esc_html_e( 'Jeder Baustein lässt sich einzeln einschalten. Im Echtbetrieb bleibt er aus, bis Auftragsverarbeitung und Rechtstexte vorliegen.', 'tamil-site' ); ?></p>
 			<fieldset>
-				<?php foreach ( tamil_site_funktionen_stand() as $name => $an ) : ?>
-				<p><label><input type="checkbox" name="tamil_site_funktionen[<?php echo esc_attr( $name ); ?>]" value="1" <?php checked( $an ); ?>> <?php echo esc_html( tamil_site_funktionen()[ $name ] ); ?></label></p>
+				<?php
+				foreach ( tamil_site_funktionen_stand() as $name => $an ) :
+					$bereit = tamil_site_funktion_bereit( $name );
+					?>
+				<p><label><input type="checkbox" name="tamil_site_funktionen[<?php echo esc_attr( $name ); ?>]" value="1" <?php checked( $an && $bereit ); ?> <?php disabled( ! $bereit ); ?>> <?php echo esc_html( tamil_site_funktionen()[ $name ] ); ?></label>
+					<?php if ( ! $bereit ) : ?>
+					<span class="description">
+						<?php
+						/* translators: 1: nötige Datenversion, 2: Datenversion der Installation */
+						echo esc_html( sprintf( __( 'Erst ab Datenversion %1$d einschaltbar, die Installation steht auf %2$d. Die Upgrade-Routine holt das nach.', 'tamil-site' ), (int) tamil_site_funktionen_datenversion()[ $name ], tamil_site_datenversion() ) );
+						?>
+					</span>
+					<?php endif; ?>
+				</p>
 				<?php endforeach; ?>
 			</fieldset>
 			<h2><?php esc_html_e( 'Suchmaschinen und soziale Netze', 'tamil-site' ); ?></h2>

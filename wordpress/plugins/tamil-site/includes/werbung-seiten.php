@@ -127,12 +127,11 @@ function tamil_site_werbung_kunde_token(): string {
 }
 
 /**
- * Schlüssel der Drossel für diese Verbindung: Hash der Adresse (REMOTE_ADDR; hinter dem Proxy setzt mod_remoteip die
- * Adresse des Besuchers), nie die Adresse selbst.
+ * Schlüssel der Drossel für diese Verbindung: Hash der Besucheradresse wie in F1 (mod_remoteip, TAMIL_PROXY_ANZAHL,
+ * IPv6 je /64), nie die Adresse selbst.
  */
 function tamil_site_werbung_drossel_schluessel(): string {
-	$ip = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
-	return 'tamil_wb_res_' . substr( hash_hmac( 'sha256', $ip, wp_salt( 'nonce' ) ), 0, 32 );
+	return 'tamil_wb_res_' . substr( tamil_site_einsendung_ip_hash( tamil_site_einsendung_client_ip() ), 0, 32 );
 }
 
 /**

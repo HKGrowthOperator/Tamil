@@ -5,6 +5,7 @@ Läuft gegen ein lokales WordPress (wordpress/dev/setup.sh + serve.sh). Stripe i
 veralteter und doppelter Webhook, bezahlt ohne Prüfung, geprüft ohne Zahlung, Ablauf, Doppelbuchung (auch gleichzeitig).
 """
 
+import base64
 import hashlib
 import hmac
 import json
@@ -157,7 +158,9 @@ def wb(wp, wp_cli):
     datei = mu / "tamil-test-stripe-fake.php"
     datei.write_text((HIER / "stripe_fake.php").read_text(encoding="utf-8").replace("__GEHEIMNIS__", geheimnis), encoding="utf-8")
     alt = _php("""global $wpdb; echo wp_json_encode( array( get_option( 'tamil_site_funktionen', array() ), get_option( 'tamil_site_werbung_angebote', null ),
-        (int) $wpdb->get_var( $wpdb->prepare( 'SELECT MAX(id) FROM %i', tamil_site_werbung_tabelle( 'buchungen' ) ) ) ) );""")
+        (int) $wpdb->get_var( $wpdb->prepare( 'SELECT MAX(id) FROM %i', tamil_site_werbung_tabelle( 'buchungen' ) ) ), get_option( 'tamil_site_settings', null ) ) );""")
+    # Werbeplätze wie auf einer frischen Installation: ohne gespeicherte Einstellungen zeigt jeder Platz seine Eigenanzeige.
+    _php("delete_option( 'tamil_site_settings' );")
     seite_id = _php(f"""tamil_site_upgrade_ausfuehren();
         $f = (array) get_option( 'tamil_site_funktionen', array() ); $f['werbung'] = true; update_option( 'tamil_site_funktionen', $f );
         update_option( 'tamil_site_werbung_angebote', array( 'laufzeiten' => array( 1, 7 ), 'vorlauf' => 2, 'bedingungen_fassung' => 'Test 1',
@@ -182,7 +185,8 @@ def wb(wp, wp_cli):
         delete_option( 'tamil_test_stripe_aufrufe' ); delete_option( 'tamil_test_stripe_sessions' ); delete_option( 'tamil_test_stripe_erstattung' );
         echo '';""")
     _php(f"""update_option( 'tamil_site_funktionen', json_decode( '{json.dumps(alt[0] or {})}', true ) ?: array() );
-        $a = json_decode( '{json.dumps(alt[1])}', true ); if ( null === $a ) {{ delete_option( 'tamil_site_werbung_angebote' ); }} else {{ update_option( 'tamil_site_werbung_angebote', $a, false ); }}""")
+        $a = json_decode( '{json.dumps(alt[1])}', true ); if ( null === $a ) {{ delete_option( 'tamil_site_werbung_angebote' ); }} else {{ update_option( 'tamil_site_werbung_angebote', $a, false ); }}
+        $e = json_decode( base64_decode( '{base64.b64encode(json.dumps(alt[3]).encode()).decode()}' ), true ); if ( null !== $e ) {{ update_option( 'tamil_site_settings', $e ); }}""")
     datei.unlink()
 
 

@@ -57,23 +57,17 @@ function tamil_site_vz_zeit_pruefen( string $wert, ?int $jetzt = null ): string 
 }
 
 /**
- * Adresse des Besuchers (hinter Proxys: TAMIL_PROXY_ANZAHL in wp-config.php, wie bei F1).
+ * Adresse des Besuchers: dieselbe Funktion wie in F1 (mod_remoteip, TAMIL_PROXY_ANZAHL nur für Proxys vor Traefik).
  */
 function tamil_site_vz_client_ip(): string {
-	$ip     = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
-	$proxys = defined( 'TAMIL_PROXY_ANZAHL' ) ? (int) TAMIL_PROXY_ANZAHL : 0;
-	if ( $proxys > 0 && isset( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
-		$kette = array_values( array_filter( array_map( 'trim', explode( ',', sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) ) ) ) );
-		$wahl  = $kette[ count( $kette ) - $proxys ] ?? '';
-		if ( filter_var( $wahl, FILTER_VALIDATE_IP ) ) {
-			$ip = $wahl;
-		}
-	}
-	return $ip;
+	return tamil_site_einsendung_client_ip();
 }
 
+/**
+ * Schlüssel der Drossel: wie in F1 (IPv6 je /64, damit wechselnde Adressen eines Anschlusses nicht umgehen).
+ */
 function tamil_site_vz_ip_hash( string $ip ): string {
-	return hash_hmac( 'sha256', $ip, wp_salt( 'nonce' ) );
+	return tamil_site_einsendung_ip_hash( $ip );
 }
 
 /**

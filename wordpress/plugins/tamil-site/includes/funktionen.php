@@ -24,6 +24,30 @@ function tamil_site_funktionen(): array {
 }
 
 /**
+ * Datenversion, ab der ein Baustein seine Tabellen und Rechte hat (nummerierte Schritte in includes/upgrade.php).
+ * Steht die Installation darunter (Upgrade noch nicht gelaufen oder gescheitert), bleibt sein Schalter aus – gleich,
+ * was gespeichert ist oder die Test-Kopfzeile sagt.
+ *
+ * @return array<string,int>
+ */
+function tamil_site_funktionen_datenversion(): array {
+	return array(
+		'einreichungen' => 2,
+		'werbung'       => 3,
+		'verzeichnis'   => 4,
+		'zustimmung'    => 0,
+	);
+}
+
+/**
+ * Hat die Installation die Datenversion, die der Baustein $name braucht?
+ */
+function tamil_site_funktion_bereit( string $name ): bool {
+	$noetig = tamil_site_funktionen_datenversion()[ $name ] ?? PHP_INT_MAX;
+	return tamil_site_datenversion() >= $noetig;
+}
+
+/**
  * Gespeicherte Schalter (nur bekannte Namen, alle Werte bool).
  *
  * @return array<string,bool>
@@ -42,7 +66,7 @@ function tamil_site_funktionen_stand(): array {
  * Ist der Baustein $name eingeschaltet?
  */
 function tamil_site_funktion_an( string $name ): bool {
-	if ( ! array_key_exists( $name, tamil_site_funktionen() ) ) {
+	if ( ! array_key_exists( $name, tamil_site_funktionen() ) || ! tamil_site_funktion_bereit( $name ) ) {
 		return false;
 	}
 	if ( in_array( $name, tamil_site_funktionen_test(), true ) ) {
@@ -76,7 +100,7 @@ function tamil_site_funktionen_test( ?string $umgebung = null ): array {
 }
 
 /**
- * Bereinigung für das Einstellungsformular: nicht angehakt = aus.
+ * Bereinigung für das Einstellungsformular: nicht angehakt = aus; vor der nötigen Datenversion immer aus.
  *
  * @param mixed $input Formularwerte.
  * @return array<string,bool>
@@ -85,7 +109,7 @@ function tamil_site_sanitize_funktionen( $input ): array {
 	$input = is_array( $input ) ? $input : array();
 	$out   = array();
 	foreach ( array_keys( tamil_site_funktionen() ) as $name ) {
-		$out[ $name ] = ! empty( $input[ $name ] );
+		$out[ $name ] = ! empty( $input[ $name ] ) && tamil_site_funktion_bereit( $name );
 	}
 	return $out;
 }
