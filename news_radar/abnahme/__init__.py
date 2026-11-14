@@ -473,6 +473,36 @@ def _agent_v2(ctx, sz: Szenario, now: datetime) -> dict:
     return {"agent_entwuerfe": stats["entwuerfe"]}
 
 
+def _agent_fremder_claim(ctx, sz: Szenario, now: datetime) -> dict:
+    """Agent-Modus: Die Prüferin nennt bei jedem gedeckten Satz zusätzlich einen Claim, der mit dem Satz nichts zu tun
+    hat. Der Radar zählt ihn nicht mit; belegte Sätze bleiben gedeckt, der Entwurf entsteht."""
+    from ..agent_v2 import import_daten, paket_v2
+
+    stats: Counter = Counter()
+    ergebnisse = []
+    for p in paket_v2(ctx.store, ctx.settings, ctx=ctx)["storys"]:
+        claims = fake_mod.recherche("<dokumente>\n" + json.dumps(p["dokumente"]) + "\n</dokumente>", "", {})["claims"]
+        fremd = {"id": "C99", "aussage": "Die Stadtbibliothek Bielefeld verleiht seit 1975 Brettspiele.",
+                 "art": "hintergrund", "kern": False, "quellen": claims[0]["quellen"],
+                 "fundstelle": claims[0]["fundstelle"], "sicherheit": 0.9}
+        beitrag = fake_mod.text("<story>\n" + json.dumps({"titel": p["titel"], "ort": p["ort"]}) + "\n</story>\n"
+                                "<claims>\n" + json.dumps(claims) + "\n</claims>", "", {})
+        block = fake_mod.pruefung_block(beitrag, claims, pruefer="abnahme-pruefer")
+        for s in block["saetze"]:
+            if s["urteil"] == "gedeckt":
+                s["claim_ids"] = s["claim_ids"] + ["C99"]
+                stats["mit_fremdem_claim"] += 1
+        ergebnisse.append({"story_id": p["story_id"], "claims": claims + [fremd], "beitrag": beitrag, "pruefung": block})
+    out = import_daten(ctx.store, ctx.settings, {"ergebnisse": ergebnisse}, von="cloud-sitzung", ctx=ctx)
+    stats["agent_entwuerfe"] = out["entwuerfe"]
+    from ..agents.pruefer import saetze_des_entwurfs
+
+    eingereicht = {s for e in ergebnisse for s in saetze_des_entwurfs(e["beitrag"])}
+    im_entwurf = {s for d in ctx.store.list_drafts() for s in saetze_des_entwurfs(d)}
+    stats["gestrichen"] = len(eingereicht - im_entwurf)
+    return dict(stats)
+
+
 def _quelle_ergaenzen(ctx, sz: Szenario, now: datetime) -> dict:
     sid = repo.stories(ctx.store, "recherche_erforderlich")[0]["id"]
     orchestrator.quelle_ergaenzen(ctx.store, sid, sz.erwartet["_url"], von="abnahme")
@@ -851,7 +881,7 @@ NACHHER: dict[str, Callable] = {
     "nachtrag_pdf": _nachtrag_pdf, "bild_vorschlag": _bild_vorschlag,
     "scan_im_stopp": _scan_im_stopp, "website_stopp": _website_stopp, "lizenz_gate": _lizenz_gate,
     "kino_update": _kino_update, "kino_veroeffentlicht": _kino_nach_veroeffentlichung, "wp_timeout": _wp_timeout,
-    "agent_v2": _agent_v2, "quelle_ergaenzen": _quelle_ergaenzen, "dossier": _dossier,
+    "agent_v2": _agent_v2, "agent_fremder_claim": _agent_fremder_claim, "quelle_ergaenzen": _quelle_ergaenzen, "dossier": _dossier,
     "ergaenzen_scan": _ergaenzen_scan, "agent_nachrecherche": _agent_nachrecherche,
 }
 from .eingang_ablauf import NACHHER as _EINGANG  # noqa: E402 – Szenarien ab 80 (Festlegung F1)

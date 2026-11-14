@@ -5,6 +5,16 @@ Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
 ## 14.11.2026
 
+- **Satzprüfung im Agent-Import strenger, aber ohne Überstrenge:** Zahlen nur als ganze Zahl, Zahlwörter und
+  Verneinungen sind Fakten, höchstens drei überlappende Claims je Satz (nicht überlappende zählen nicht, statt den Satz
+  abzulehnen), ein Name am Satzanfang braucht einen Beleg; Datum und Uhrzeit im Beleg tragen ihre Zahlen nur in ihrer
+  Form („19.00 Uhr“ trägt 19, „12.50 Franken“ nicht 12). Szenario 95 hält fest, dass ein fremder Zusatzclaim einen
+  belegten Satz nicht kippt. · Hauptsitzung nach Prüfung und zwei Gegenprüfungen
+- **Kostendeckel je Story mit Prüfanteil:** Recherche, Schreiben, Faktencheck, Lektorat und SEO laufen bis Deckel minus
+  Prüfanteil (Standard 1 $ − 0,30 $ = 0,70 $); Prüfung und Endprüfung bis zum vollen Deckel; ein KI-Bild zählt mit
+  (darüber: Bildkarte). Variable `RADAR_KOSTEN_STORY_PRUEFUNG_USD`. · Hauptsitzung · Sonst konnte die Pflichtprüfung am
+  Deckel scheitern.
+
 - **Design: Mischung aus A (Tagesblatt) und B (Kalenderblatt), noch nicht fertig.** A gibt das Gerüst (Datum als
   Hauptfigur, Aufmacher mit großem Foto), B die Ordnung (Feste als Tabelle Tag · Was · Wer · Wo, Kino als Tabelle).
   Probe `hm-tageskalender`, danach Theme auf eigenem Branch; aufs Testsystem erst nach dem Ja von Luis. · Luis
