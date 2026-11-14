@@ -727,3 +727,20 @@ ol.stand li.jetzt { color: var(--color-ink); font-weight: var(--weight-head); te
 @media (max-width: 640px) { .blatt-feste .bogen, .blatt-kino .bogen { margin-inline: calc(-1 * var(--gutter)); } }
 .blatt { padding-bottom: var(--space-lg); }
 .tage.strom .b-titel { hyphenate-limit-chars: 12 5 5; }
+
+/* ================================================================
+   Runde 3 (Kritik r2): Tafel unter der Einleitung, eine Kante bei 7 von 12 Spalten
+   ================================================================ */
+.sk-text > .bogen { margin-top: var(--space-xl); }
+.sk-text > .legende { margin-top: var(--space-sm); }
+.seitenkopf.mit-bild { padding-bottom: var(--space-xl); }
+.wrap.schmal { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); column-gap: var(--gap-columns); }
+.wrap.schmal > * { grid-column: 1; max-width: none; }
+@media (max-width: 860px) { .wrap.schmal { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 640px) {
+  .sk-text > .bogen { margin-inline: calc(-1 * var(--gutter)); }
+  .blatt-tag .tag { grid-template-columns: 4.25rem minmax(0, 1fr); column-gap: var(--space-sm); }
+  .tafel.kino.kompakt td.t-teilen { grid-column: 1 / -1; grid-row: 2; }
+  .tafel.kino.kompakt td.was { grid-column: 1; }
+}
+.tafel tbody th.stadt { font-size: var(--text-body); color: var(--color-ink); border-bottom: 0; white-space: normal; }

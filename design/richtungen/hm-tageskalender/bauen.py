@@ -138,7 +138,7 @@ def rot(d, termin=True):
 def tag_zelle(d, naechst=False, ziffer=True):
     """Die Tag-Spalte: große Tagesziffer aus Linie A, Wochentag und Monat klein darunter."""
     return (f'<td class="t-tag"><time datetime="{d.isoformat()}"><span class="t-z">{d.day}</span>'
-            f'<span class="t-wt">{TAGE[d.weekday()][:2]}, {mon_kurz(d)}</span></time></td>')
+            f'<span class="t-wt">{TAGE[d.weekday()][:2]}., {mon_kurz(d)}</span></time></td>')
 
 
 def feste_tabelle(zeilen, titel, stand=True, teilen=False, kopf_id="ft-h", hn="h2", mehr=None):
@@ -154,7 +154,7 @@ def feste_tabelle(zeilen, titel, stand=True, teilen=False, kopf_id="ft-h", hn="h
         tz = f'<td class="t-teilen">{t}</td>' if teilen else ""
         rows += (f'<tr{f" class=\"{cls}\"" if cls else ""}>{tag_zelle(d, nx)}<td class="was">{w}{als}</td>'
                  f'<td class="wer">{wer_z}</td><td class="wo">{e(wo)}</td>{tz}</tr>')
-    st = (f'<p class="bogen-stand"><time datetime="{HEUTE.isoformat()}">Stand: {TAGE[HEUTE.weekday()]}, {datum(HEUTE, False)}</time></p>' if stand else "")
+    st = (f'<p class="bogen-stand"><time datetime="{HEUTE.isoformat()}">Stand: {datum(HEUTE, False)}</time></p>' if stand else "")
     m = f'<p class="bogen-fuss"><a class="textlink" href="{mehr[0]}">{e(mehr[1])}</a></p>' if mehr else ""
     return (f'<section class="bogen" aria-labelledby="{kopf_id}"><div class="bogen-kopf"><{hn} id="{kopf_id}">{e(titel)}</{hn}>{st}</div>'
             f'<table class="tafel feste"><thead><tr><th scope="col">Tag</th><th scope="col">Was</th><th scope="col">Wer</th><th scope="col">Wo</th>{'<th scope="col">Weitersagen</th>' if teilen else ""}</tr></thead>'
@@ -168,14 +168,15 @@ def kino_tabelle(titel, kopf_id="kt-h", hn="h2", mehr=None, teilen=False, kompak
         t = f'<a class="teilen" href="{e(wa("„" + film + "“ im Kino: " + wo))}" aria-label="„{e(film)}“ per WhatsApp schicken">Per WhatsApp</a>' if teilen else ""
         zahl = f'<td class="zahl">{n}<span class="m"> {"Kinos" if n != 1 else "Kino"}</span></td>'
         if kompakt:
-            rows += f'<tr><td class="was">„{e(film)}“<span class="unter">{e(wo)}{f_}</span></td>{zahl}</tr>'
+            tz = f'<td class="t-teilen">{t}</td>' if teilen else ""
+            rows += f'<tr><td class="was">„{e(film)}“<span class="unter">{e(wo)}{f_}</span></td>{zahl}{tz}</tr>'
         else:
             tz = f'<td class="t-teilen">{t}</td>' if teilen else ""
             rows += (f'<tr><td class="was">„{e(film)}“</td><td class="wo">{e(wo)}{f_}</td>{zahl}'
-                     f'<td class="t-stand"><span class="m">Stand </span><time datetime="{stand.isoformat()}">{stand.day}. {mon_kurz(stand)}</time></td>{tz}</tr>')
+                     f'<td class="t-stand"><span class="m">Stand: </span><time datetime="{stand.isoformat()}">{datum(stand, False)}</time></td>{tz}</tr>')
     m = f'<p class="bogen-fuss"><a class="textlink" href="{mehr[0]}">{e(mehr[1])}</a></p>' if mehr else ""
     st = '<p class="bogen-stand">Stand: 9. November</p>' if kompakt else ""
-    kopf_z = ('<th scope="col">Film und Städte</th><th scope="col" class="zahl">Kinos</th>' if kompakt else
+    kopf_z = ('<th scope="col">Film und Städte</th><th scope="col" class="zahl">Kinos</th>' + ('<th scope="col">Weitersagen</th>' if teilen else "") if kompakt else
               '<th scope="col">Film</th><th scope="col">Städte</th><th scope="col" class="zahl">Kinos</th><th scope="col" class="t-stand">Stand</th>' + ('<th scope="col">Weitersagen</th>' if teilen else ""))
     return (f'<section class="bogen" aria-labelledby="{kopf_id}"><div class="bogen-kopf"><{hn} id="{kopf_id}">{e(titel)}</{hn}>{st}</div>'
             f'<table class="tafel kino{" kompakt" if kompakt else ""}"><thead><tr>{kopf_z}</tr></thead>'
@@ -215,7 +216,7 @@ def bildgroesse(b):
 def zeile(d, was, wo=None, href=None, teilen=True, heute=False, termin=True, kompakt=False):
     klasse = " ".join(k for k in ("rot" if rot(d, termin) else "", "heute" if heute else "") if k)
     z = (f'<span class="z"><time datetime="{d.isoformat()}">{d.day}</time>'
-         f'<small>{TAGE[d.weekday()][:2]}, {mon_kurz(d)}</small></span>')
+         f'<small>{TAGE[d.weekday()][:2]}., {mon_kurz(d)}</small></span>')
     w = f'<a href="{href}">{e(was)}</a>' if href else e(was)
     teile = [z, f'<span class="was">{w}</span>']
     if wo:
@@ -317,7 +318,7 @@ def strom_zeile(sid, teaser=False, hn="h3", rubrik=True, lazy=True, erster=True)
     rn = rubrik_von(sid) if rubrik else None
     wo = ", ".join(x for x in (rn, b["ort"]) if x)
     z = (f'<span class="z"><time datetime="{d.isoformat()}">{d.day}</time>'
-         f'<small>{TAGE[d.weekday()][:2]}, {mon_kurz(d)}</small></span>')
+         f'<small>{TAGE[d.weekday()][:2]}., {mon_kurz(d)}</small></span>')
     t = f'<p class="teaser{" nur-breit" if teaser == "breit" else ""}">{e(b["teaser"])}</p>' if teaser else ""
     bild = "" if not mit_bild else (f'<figure class="daumen"><a href="{href}" tabindex="-1" aria-hidden="true"><img src="{e(b["bild"])}" alt="" '
             f'width="{w}" height="{h}"{" loading=\"lazy\"" if lazy else ""}></a><figcaption>{e(kurznachweis(b))}</figcaption></figure>')
@@ -404,12 +405,12 @@ def schreib(name, titel, beschreibung, body, aktiv=""):
     NW.clear()
 
 
-def seitenkopf(titel, satz, extra="", bild=None, link=None, vor=""):
+def seitenkopf(titel, satz, extra="", bild=None, link=None, vor="", tafel=""):
     """Seitenkopf: Titel und ein Satz; mit Bild steht das Foto daneben (Handy: darunter), Nachweis am Bild."""
     if bild:
         fig = figur(BEI[bild], cls="bild kopf-bild", lazy=False, link=link, vor=vor)
         return (f'<header class="seitenkopf mit-bild"><div class="wrap"><div class="sk-text"><h1>{e(titel)}</h1>'
-                f'<p class="satz">{satz}</p>{extra}</div>{fig}</div></header>')
+                f'<p class="satz">{satz}</p>{extra}{tafel}</div>{fig}</div></header>')
     return (f'<header class="seitenkopf"><div class="wrap"><h1>{e(titel)}</h1><p class="satz">{satz}</p>{extra}</div></header>')
 
 
@@ -595,10 +596,9 @@ for m in sorted(mon, reverse=True):
                f'<span class="anzahl">{len(eintr)} {"Bericht" if len(eintr) == 1 else "Berichte"}</span></summary>{monat_tabelle(eintr)}</details>')
 termine_body = (seitenkopf("Festkalender", "Feste, Feiern und Bühnen der tamilischen Community, ab heute.",
                            '<p class="aktionen"><a class="textlink" href="einreichen.html">Termin einreichen</a></p>', bild=76, link="artikel-76.html",
-                           vor="Arulmigu Sivan Kovil, Glattbrugg. ")
-                + f'<section class="abschnitt" aria-label="Ab heute"><div class="wrap schmal">'
-                + feste_tabelle([f for f in FESTE if f[0] >= HEUTE], "Ab heute", teilen=True, kopf_id="ah-h")
-                + '<p class="legende">Rot steht auf tamil.de für den nächsten Termin.</p></div></section>'
+                           vor="Arulmigu Sivan Kovil, Glattbrugg. ",
+                           tafel=feste_tabelle([f for f in FESTE if f[0] >= HEUTE], "Ab heute", teilen=True, kopf_id="ah-h")
+                           + '<p class="legende">Rot steht auf tamil.de für den nächsten Termin.</p>')
                 + f'<section class="abschnitt" aria-labelledby="zl-h"><div class="wrap schmal">{kopfzeile("zl-h", "Das Jahr 2026")}'
                 + f'<p class="satz">Feste und Aufführungen, über die wir berichtet haben, nach Monaten.</p>{vorbei}</div></section>')
 schreib("termine.html", "Festkalender | tamil.de", "Feste, Feiern und Bühnen der tamilischen Community, ab heute.", termine_body, "Termine")
@@ -626,8 +626,8 @@ kinojahr = sorted([(d, sid, t) for d, sid, t in CHRONIK if sid in KINO_IDS], rev
 kino_body = (seitenkopf("Kino", "Welcher tamilische Film in welcher Stadt läuft, aus den Programmen der Kinos.",
                         f'<p class="aktionen"><a class="textlink" href="#s-h">Meine Stadt finden</a>'
                         f'<a class="textlink" href="{e(wa("Tamilisches Kino diese Woche"))}">Per WhatsApp schicken</a></p>', bild=43, link="artikel-43.html",
-                        vor="Koothandavar-Fest in Koovagam, Thema des Films „Bride of Aravan“. ")
-             + f'<section class="abschnitt" aria-label="Im Programm"><div class="wrap schmal">{kino_tabelle("Im Programm", kopf_id="f-h", teilen=True)}</div></section>'
+                        vor="Koothandavar-Fest in Koovagam, Thema des Films „Bride of Aravan“. ",
+                        tafel=kino_tabelle("Im Programm", kopf_id="f-h", teilen=True, kompakt=True))
              + f'<section class="abschnitt" id="staedte" aria-label="Nach Stadt"><div class="wrap schmal">{stadt_tab}</div></section>'
              + f'<section class="abschnitt" aria-labelledby="kj-h"><div class="wrap schmal">{kopfzeile("kj-h", "Aus dem Kinojahr 2026")}'
              + monat_tabelle(kinojahr)
