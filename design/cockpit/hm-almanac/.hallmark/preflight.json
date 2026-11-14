@@ -1,0 +1,11 @@
+{
+  "built": "2026-11-13",
+  "scope": "app",
+  "signals": {
+    "design_md": "keiner fuer die Linie; Marke aus design/richtungen/hm-almanac/almanac.css (Stand 13.11. 20:55) und tokens.css",
+    "funktion": ["news_radar/web/templates/base.html (Leiste, Stopp-Banner, Budget)", "news_radar/web/templates/entwurf.html (Aktionen, Bild, Neu schreiben)", "news_radar/web/templates/_belege.html (Quellen, Claims, Fassungen)", "news_radar/web/templates/dashboard.html (Laeufe)"],
+    "daten": ["docs/spezifikation/datenmodell.md 6, 8, 12 bis 16", "docs/regeln-social.md", "Live-Bericht 12.11.2026 18:57 (scratchpad bericht-jetzt.json)"]
+  },
+  "preserved": ["Logo design/inhalte/logo.png unveraendert", "Tokens der Linie hm-almanac", "alle Aktionen und Status-Maschinen des Cockpits"],
+  "introduced": ["Kopfleiste statt Seitenleiste", "Pruefbogen mit Belegen je Absatz", "Tabellen statt Kacheln"]
+}

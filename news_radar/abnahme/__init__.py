@@ -1,0 +1,921 @@
+"""Abnahme der Redaktion v2: alle Szenarien mit FakeClaude, jedes in einer eigenen Datenbank.
+
+  python -m news_radar abnahme [--bericht data/abnahme-bericht.md] [--nur 12]
+
+Je Szenario: Meldungen scannen, Jobs abarbeiten (mit Zeitraffer für Wiederholungen), Ergebnis aus der DB mit der
+Erwartung vergleichen. Über alle Szenarien werden die Abnahmekriterien K1–K9 gemessen (keine unbelegte Kernaussage im
+Entwurf, keine fremden Links, Budget eingehalten, jeder Aufruf gemessen, keine Doppel-Entwürfe, jedes Bild mit Lizenz,
+Kino ohne Modell, kein Absturz, Erwartung erfüllt).
+"""
+
+from __future__ import annotations
+
+import base64
+import io
+import json
+import re
+import tempfile
+import traceback
+from collections import Counter
+from dataclasses import dataclass, field
+from datetime import date, datetime, timedelta, timezone
+from pathlib import Path
+from typing import Any, Callable
+
+from .. import lizenz as lizenz_mod
+from .. import sources
+from ..config import Settings, load_settings
+from ..store import Store
+from ..workflow import costs, jobs, orchestrator, repo
+from ..workflow import fake as fake_mod
+from ..workflow.fake import FakeAnthropic
+from . import texte as T
+
+
+@dataclass
+class Szenario:
+    nr: int
+    name: str
+    bereich: str
+    meldungen: list[dict]
+    erwartet: dict
+    texte: dict[str, str] = field(default_factory=dict)
+    vorlauf: list[dict] = field(default_factory=list)
+    fake: dict = field(default_factory=dict)
+    einstellungen: dict = field(default_factory=dict)
+    suche: list[dict] = field(default_factory=list)
+    nachher: str = ""
+
+
+@dataclass
+class Ergebnis:
+    szenario: Szenario
+    ok: bool
+    abweichungen: list[str]
+    fakten: dict
+    kriterien: dict[str, bool]
+    fehler: str = ""
+
+
+class FakeFehler(Exception):
+    """Simulierter API-Fehler (429, Timeout, 529)."""
+
+
+# ---- Aufbau ---------------------------------------------------------------------------------------
+
+def _datum(wert: str, now: datetime) -> str:
+    m = re.fullmatch(r"([+-])(\d+)d", wert or "")
+    if not m:
+        return wert
+    tage = int(m.group(2)) * (1 if m.group(1) == "+" else -1)
+    return (now + timedelta(days=tage)).date().isoformat()
+
+
+def meldung(d: dict, now: datetime) -> sources.NewsItem:
+    fakten = d.get("fakten")
+    if fakten:
+        fakten = {k: (_datum(v, now) if isinstance(v, str) else v) for k, v in fakten.items()}
+    item = sources.NewsItem(
+        title=d["titel"], url=d.get("url") or f"https://www.example-news.de/{abs(hash(d['titel'])) % 10**8}",
+        summary=d.get("zusammenfassung", ""), source=d.get("quelle", "Ruhr Nachrichten"),
+        published=now - timedelta(hours=d.get("stunden", 1)), kind=d.get("art", "news"), language=d.get("sprache", "de"),
+        facts=fakten, uid_override=d.get("uid", ""), image_url=d.get("bild", ""), ort=d.get("ort", ""),
+        fingerprint=d.get("fingerprint", ""),
+    )
+    return item
+
+
+def _antworten(sz: Szenario) -> tuple[dict, dict]:
+    f = sz.fake
+    antworten: dict[str, Any] = {}
+    fehler: dict[str, Any] = {}
+    r = f.get("recherche")
+    if r:
+        def recherche(user, system, req, art=r):
+            out = fake_mod.recherche(user, system, req)
+            if art == "leer":
+                out["claims"] = []
+            elif art == "widerspruch" and out["claims"]:
+                kern = next((c for c in out["claims"] if c["kern"]), out["claims"][0])
+                out["widersprueche"] = [{"claim_ids": [kern["id"]], "beschreibung": "Datum weicht zwischen Quellen ab"}]
+            elif art == "fremde_quelle":
+                out["claims"].append({"id": "C99", "aussage": "Erfundene Aussage", "art": "was", "kern": False,
+                                      "quellen": ["Q9"], "fundstelle": "x", "sicherheit": 0.9, "support": "offen"})
+            elif art == "erfunden":
+                for c in out["claims"]:
+                    c["fundstelle"] = "diese Stelle steht in keinem Dokument der Story"
+            return out
+        antworten["recherche"] = recherche
+    fc = f.get("faktencheck")
+    if fc:
+        zaehler = Counter()
+
+        def faktencheck(user, system, req, art=fc):
+            out = fake_mod.faktencheck(user, system, req)
+            zaehler["n"] += 1
+            if out["saetze"]:
+                if art == "kern_immer" or (art == "kern_einmal" and zaehler["n"] == 1):
+                    out["saetze"][0].update(urteil="widerspruch", kern=True)
+                elif art == "neben":  # ein Nebensatz im Haupttext (nicht der Satz, der auch Titel oder Teaser trägt)
+                    neben = [s for s in out["saetze"] if s["urteil"] == "gedeckt"][-1:] or out["saetze"][:1]
+                    neben[0].update(urteil="ungedeckt", kern=False)
+            return out
+        antworten["faktencheck"] = faktencheck
+    if f.get("pruefer") == "streichen":  # zweite KI findet im Entwurf einen ungedeckten Nebensatz
+        def pruefer(user, system, req):
+            out = fake_mod.pruefer(user, system, req)
+            if fake_mod.block(user, "entwurf") is not None:
+                satz = next((s for s in reversed(out["saetze"]) if s["urteil"] == "gedeckt"), None)
+                if satz:
+                    satz.update(urteil="ungedeckt", kern=False, claim_ids=[], fundstelle="")
+            return out
+        antworten["pruefer"] = pruefer
+    if f.get("signal"):
+        rel = 8 if f["signal"] == "ja" else 2
+        antworten["signal"] = lambda u, s, r: {"bewertungen": [
+            {"nr": m["nr"], "relevanz": rel, "land": "DE", "grund": "Abnahme", "risiko": "keins"}
+            for m in (fake_mod.block(u, "meldungen") or [])]}
+    if f.get("cluster"):
+        ja = f["cluster"] == "ja"
+        antworten["cluster"] = lambda u, s, r: {"entscheidungen": [
+            {"nr": p["nr"], "gleiche_story": ja, "grund": "Abnahme"} for p in (fake_mod.block(u, "paare") or [])]}
+    if f.get("bild_prompt"):
+        def text_mit_bild(user, system, req):
+            out = fake_mod.text(user, system, req)
+            out["bild_prompt"] = "Temple courtyard at dusk with oil lamps, wide angle, no people in focus"
+            out["bild_thema"] = "tempelfest"
+            return out
+        antworten["text"] = text_mit_bild
+    if f.get("eingang") == "erfindet":  # Einsendung (F1): Modell ergänzt eine Zahl und einen Link
+        from .eingang_ablauf import erfindet_antwort
+
+        antworten["eingang"] = erfindet_antwort
+    if f.get("seo_kaputt"):
+        antworten["seo"] = {"falsch": 1}
+    for rolle, art in (f.get("fehler") or {}).items():
+        if art == "immer":
+            fehler[rolle] = FakeFehler(f"{rolle}: Timeout")
+        else:  # einmal: erster Aufruf scheitert (429), danach normal
+            basis = antworten.get(rolle) or fake_mod.STANDARD[rolle]
+            stand = Counter()
+
+            def einmal(user, system, req, basis=basis, stand=stand, rolle=rolle):
+                stand["n"] += 1
+                if stand["n"] == 1:
+                    raise FakeFehler(f"{rolle}: 429 rate limit")
+                return basis(user, system, req)
+            antworten[rolle] = einmal
+    return antworten, fehler
+
+
+def _png() -> bytes:
+    from PIL import Image
+
+    buf = io.BytesIO()
+    Image.new("RGB", (1600, 900), (180, 40, 42)).save(buf, "PNG")
+    return buf.getvalue()
+
+
+def _settings(basis: Settings, data_dir: Path, sz: Szenario) -> Settings:
+    from dataclasses import replace
+
+    s = replace(basis, data_dir=data_dir, wp_url="", wp_user="", wp_app_password="", notify_webhook="",
+                unsplash_key="", pexels_key="", gemini_key="", web_url="https://radar.test", workflow="v2")
+    for k, v in sz.einstellungen.items():
+        if not k.startswith("_"):  # _ohne_modell, _vorher_kosten steuern den Lauf, nicht die Settings
+            setattr(s, k, v)
+    if sz.einstellungen.get("gemini_key"):
+        s.bild_retry_pause = 0
+    return s
+
+
+def _zeitraffer(ctx, runden: int = 8) -> Counter:
+    gesamt: Counter = Counter()
+    for _ in range(runden):
+        gesamt.update(orchestrator.abarbeiten(ctx))
+        offen = ctx.store.db.execute("SELECT COUNT(*) FROM workflow_jobs WHERE status = 'offen'").fetchone()[0]
+        if not offen:
+            break
+        ctx.store.db.execute("UPDATE workflow_jobs SET naechster_versuch = '2000-01-01' WHERE status = 'offen'")
+        ctx.store.db.commit()
+    return gesamt
+
+
+# ---- Ausführen und messen --------------------------------------------------------------------------
+
+def ausfuehren(sz: Szenario, basis: Settings | None = None, ordner: Path | None = None) -> Ergebnis:
+    basis = basis or load_settings()
+    now = datetime.now(timezone.utc)
+    tmp = Path(tempfile.mkdtemp(prefix=f"abnahme-{sz.nr:02d}-", dir=ordner))
+    s = _settings(basis, tmp / "data", sz)
+    antworten, fehler = _antworten(sz)
+    halter: dict = {}
+    stopp_rolle = sz.einstellungen.get("_stopp_in_rolle")
+    if stopp_rolle:  # während dieser Rolle drückt jemand „Redaktion anhalten“: der Aufruf läuft zu Ende
+        basis_antwort = antworten.get(stopp_rolle) or fake_mod.STANDARD[stopp_rolle]
+
+        def mit_stopp(user, system, req, basis_antwort=basis_antwort):
+            from .. import schalter
+
+            if not schalter.gestoppt(halter["store"], "redaktion"):
+                schalter.setzen(halter["store"], "redaktion", True, wer="abnahme", grund="Stopp während eines Jobs")
+            return basis_antwort(user, system, req)
+        antworten[stopp_rolle] = mit_stopp
+    client = FakeAnthropic(antworten, ablehnen=tuple(sz.fake.get("ablehnen", ())),
+                           abschneiden=tuple(sz.fake.get("abschneiden", ())), fehler=fehler,
+                           fallback_modell=sz.fake.get("fallback") or {})
+    texte = sz.texte
+    png = base64.b64encode(_png()).decode()
+    kw = dict(fetch_text=lambda url: texte.get(url, ""), suche=lambda q: list(sz.suche),
+              bild_transport=lambda h, b: (200, {"status": "completed", "outputs": [{"type": "image", "data": png}]}))
+    stats: Counter = Counter()
+    fehltext = ""
+    with Store(s.db_path) as store:
+        halter["store"] = store
+        if sz.einstellungen.get("_ohne_modell"):  # nie den echten Client: Kontext ohne Modell von Hand
+            from ..agents import Kontext
+
+            ctx = Kontext(settings=s, store=store, budget=costs.Budget(store, s.budget_tag_usd, s.budget_monat_usd), **kw)
+        else:
+            ctx = orchestrator.kontext(s, store, client=client, **kw)
+        if sz.einstellungen.get("_vorher_kosten"):
+            from ..workflow.providers import usage_protokollieren
+
+            usage_protokollieren(store, rolle="vorher", provider="vorlauf", modell="claude-sonnet-5-5",
+                                 usd=float(sz.einstellungen["_vorher_kosten"]))
+        try:
+            if sz.vorlauf:
+                stats.update(orchestrator.scan(ctx, [meldung(m, now) for m in sz.vorlauf]))
+                _zeitraffer(ctx)
+                stats = Counter()
+            stats.update({k: v for k, v in orchestrator.scan(ctx, [meldung(m, now) for m in sz.meldungen]).items()
+                          if isinstance(v, int)})
+            if sz.einstellungen.get("_stopp_nach_scan"):
+                from .. import schalter
+
+                schalter.setzen(store, sz.einstellungen["_stopp_nach_scan"], True, wer="abnahme", grund="Abnahme")
+            stats.update({f"job_{k}": v for k, v in _zeitraffer(ctx).items()})
+            if sz.nachher:
+                stats.update(NACHHER[sz.nachher](ctx, sz, now))
+        except Exception:  # noqa: BLE001 – ein Absturz ist selbst ein Abnahmefehler (K8)
+            fehltext = traceback.format_exc(limit=6)
+        fakten = _fakten(store, client, stats)
+        kriterien = _kriterien(store, client, s, fehltext)
+    abweichungen = _vergleichen(sz.erwartet, fakten) if not fehltext else [f"Absturz: {fehltext.splitlines()[-1]}"]
+    kriterien["K9 Erwartung erfüllt"] = not abweichungen
+    return Ergebnis(sz, not abweichungen and all(kriterien.values()), abweichungen, fakten, kriterien, fehltext)
+
+
+def _fakten(store: Store, client: FakeAnthropic, stats: Counter) -> dict:
+    drafts = store.list_drafts(limit=500)
+    storys = repo.stories(store, limit=500)
+    usage = [dict(r) for r in store.db.execute("SELECT * FROM agent_usage")]
+    return {
+        "entwuerfe": len(drafts),
+        "storys": len(storys),
+        "status": dict(Counter(s["status"] for s in storys)),
+        "rollen": client.rollen(),
+        "aufrufe": len(client.requests),
+        "jobs": jobs.zaehlen(store),
+        "hinweise": " | ".join(h for d in drafts for h in d["hinweise"]) + " | " +
+                    " | ".join(s.get("notiz") or "" for s in storys),
+        "bild": sorted({d["bild_origin"] for d in drafts if d.get("bild_origin")}),
+        "typ": sorted({d["typ"] for d in drafts}),
+        "kosten": round(sum(u["kosten_usd"] for u in usage), 6),
+        "usage_status": sorted({u["status"] for u in usage}),
+        "stats": dict(stats),
+        "texte": " ".join((d.get("titel") or "") + " " + (d.get("inhalt_html") or "") for d in drafts),
+        "laengen": sorted({s.get("laenge") or "" for s in storys}),
+        "prio": sorted({j["prio"] for j in jobs.liste(store)}),
+        "veroeffentlicht": sum(1 for d in drafts if d["status"] == "veroeffentlicht"),
+        "dokumente": store.db.execute("SELECT COUNT(*) FROM source_documents").fetchone()[0],
+        "modelle": sorted({u["modell"] for u in usage if u["modell"]}),
+        "ereignisse": sorted({r[0] for r in store.db.execute("SELECT DISTINCT event FROM log")}),
+        "bloecke_dicht": all(
+            r["user"].count(f"</{name}>") <= 1 for r in client.requests
+            for name in ("dokumente", "meldungen", "story", "claims", "entwurf", "paare", "quellen")),
+    }
+
+
+def _vergleichen(erwartet: dict, f: dict) -> list[str]:
+    ab: list[str] = []
+    for key, soll in erwartet.items():
+        if key in ("entwuerfe", "storys", "aufrufe", "veroeffentlicht"):
+            if f[key] != soll:
+                ab.append(f"{key}: {f[key]} statt {soll}")
+        elif key == "aufrufe_max" and f["aufrufe"] > soll:
+            ab.append(f"aufrufe: {f['aufrufe']} > {soll}")
+        elif key == "status":
+            for st, n in soll.items():
+                if f["status"].get(st, 0) != n:
+                    ab.append(f"Storys „{st}“: {f['status'].get(st, 0)} statt {n}")
+        elif key == "jobs":
+            for st, n in soll.items():
+                if f["jobs"].get(st, 0) != n:
+                    ab.append(f"Jobs „{st}“: {f['jobs'].get(st, 0)} statt {n}")
+        elif key == "stats":
+            for st, n in soll.items():
+                if f["stats"].get(st, 0) != n:
+                    ab.append(f"Scan „{st}“: {f['stats'].get(st, 0)} statt {n}")
+        elif key == "rollen_mit":
+            fehlt = [r for r in soll if r not in f["rollen"]]
+            if fehlt:
+                ab.append(f"Rollen fehlen: {fehlt}")
+        elif key == "rollen_ohne":
+            da = [r for r in soll if r in f["rollen"]]
+            if da:
+                ab.append(f"Rollen hätten nicht laufen dürfen: {da}")
+        elif key == "rolle_anzahl":
+            for r, n in soll.items():
+                if f["rollen"].count(r) != n:
+                    ab.append(f"Rolle {r}: {f['rollen'].count(r)}× statt {n}×")
+        elif key == "hinweis":
+            for teil in ([soll] if isinstance(soll, str) else soll):
+                if teil not in f["hinweise"]:
+                    ab.append(f"Hinweis fehlt: „{teil}“")
+        elif key == "bild":
+            if soll not in f["bild"]:
+                ab.append(f"Bild {f['bild']} statt {soll}")
+        elif key == "typ":
+            if soll not in f["typ"]:
+                ab.append(f"Typ {f['typ']} statt {soll}")
+        elif key == "kosten_max" and f["kosten"] > soll:
+            ab.append(f"Kosten ${f['kosten']} > ${soll}")
+        elif key == "kosten_min" and f["kosten"] < soll:
+            ab.append(f"Kosten ${f['kosten']} < ${soll}")
+        elif key == "usage_status":
+            for st in soll:
+                if st not in f["usage_status"]:
+                    ab.append(f"usage-Status {st} fehlt ({f['usage_status']})")
+        elif key == "text_ohne":
+            for teil in ([soll] if isinstance(soll, str) else soll):
+                if teil.lower() in f["texte"].lower():
+                    ab.append(f"Text enthält „{teil}“")
+        elif key == "laenge":
+            if soll not in f["laengen"]:
+                ab.append(f"Länge {f['laengen']} statt {soll}")
+        elif key == "prio":
+            if soll not in f["prio"]:
+                ab.append(f"Priorität {f['prio']} ohne {soll}")
+        elif key == "dokumente" and f["dokumente"] != soll:
+            ab.append(f"Dokumente: {f['dokumente']} statt {soll}")
+        elif key == "modell" and soll not in f["modelle"]:
+            ab.append(f"Modell {soll} fehlt ({f['modelle']})")
+        elif key == "ereignis" and soll not in f["ereignisse"]:
+            ab.append(f"Ereignis {soll} fehlt")
+        elif key == "bloecke_dicht" and f["bloecke_dicht"] != soll:
+            ab.append("Ein Datenblock wurde durch Text aus dem Netz geschlossen")
+    return ab
+
+
+def _kriterien(store: Store, client: FakeAnthropic, s: Settings, fehltext: str) -> dict[str, bool]:
+    k: dict[str, bool] = {}
+    drafts = store.list_drafts(limit=500)
+    unbelegt = []
+    fremde_links = []
+    for d in drafts:
+        if not d.get("story_id"):
+            continue
+        story = repo.story(store, d["story_id"])
+        if story and story["typ"] != "kino" and not any("Agent-Modus" in h for h in d["hinweise"]):
+            kern = [c for c in repo.claims(store, d["story_id"]) if c.kern]
+            if any(c.support != "bestaetigt" for c in kern) or not kern:
+                unbelegt.append(d["id"])
+        urls = {doc.url for doc in repo.dokumente(store, d["story_id"])}
+        for href in re.findall(r'href="([^"]+)"', d.get("inhalt_html") or ""):
+            if href not in urls:
+                fremde_links.append(href)
+    k["K1 keine unbelegte Kernaussage im Entwurf"] = not unbelegt
+    k["K2 Links nur auf Quellen der Story"] = not fremde_links
+    kosten = store.db.execute("SELECT COALESCE(SUM(kosten_usd), 0) FROM agent_usage").fetchone()[0]
+    k["K3 Budget eingehalten"] = kosten <= s.budget_tag_usd + 1e-9  # inkl. Vorbelastung (_vorher_kosten)
+    anthropic_zeilen = store.db.execute("SELECT COUNT(*) FROM agent_usage WHERE provider = 'anthropic'").fetchone()[0]
+    k["K4 jeder Modellaufruf gemessen"] = anthropic_zeilen == len(client.requests)
+    doppelt = store.db.execute("SELECT COUNT(*) FROM (SELECT story_id FROM drafts WHERE story_id IS NOT NULL "
+                               "GROUP BY story_id HAVING COUNT(*) > 1)").fetchone()[0]
+    k["K5 keine Doppel-Entwürfe je Story"] = doppelt == 0
+    ohne_lizenz = [d["id"] for d in drafts if d.get("bild_datei") and not (repo.asset_fuer_datei(store, d["bild_datei"]) or {}).get("lizenz")]
+    k["K6 jedes Bild mit Lizenz"] = not ohne_lizenz
+    kino_modell = store.db.execute(
+        "SELECT COUNT(*) FROM agent_usage u JOIN stories s ON s.id = u.story_id WHERE s.typ = 'kino' "
+        "AND u.provider = 'anthropic'").fetchone()[0]
+    k["K7 Kino ohne Modellaufruf"] = kino_modell == 0
+    k["K8 kein Absturz"] = not fehltext
+    return k
+
+
+# ---- Nachläufe ------------------------------------------------------------------------------------
+
+def _kino_update(ctx, sz: Szenario, now: datetime) -> dict:
+    neu = [meldung(m, now) for m in sz.erwartet.get("_update", [])]
+    return {f"update_{k}": v for k, v in orchestrator.scan(ctx, neu).items() if isinstance(v, int)}
+
+
+def _kino_nach_veroeffentlichung(ctx, sz: Szenario, now: datetime) -> dict:
+    d = ctx.store.list_drafts("neu")[0]
+    ctx.store.claim_draft(d["id"], von="abnahme")
+    ctx.store.mark_published(d["id"], 900, "https://www.tamil.de/x/")
+    return _kino_update(ctx, sz, now)
+
+
+def _wp_timeout(ctx, sz: Szenario, now: datetime) -> dict:
+    import requests
+
+    from .. import publisher
+    from ..wordpress import TamilRadarClient
+
+    class Resp:
+        def __init__(self, code, data):
+            self.status_code, self._data, self.text = code, data, ""
+
+        def json(self):
+            return self._data
+
+    class Session:
+        def __init__(self):
+            self.posts, self.headers, self.auth, self.verloren = {}, {}, None, True
+
+        def request(self, method, url, timeout=None, json=None, **kw):
+            uid = json["meta"]["radar_uid"]
+            if uid in self.posts:
+                return Resp(409, {"data": {"status": 409, "id": self.posts[uid], "link": "https://www.tamil.de/p/"}})
+            self.posts[uid] = 700 + len(self.posts)
+            if self.verloren:
+                self.verloren = False
+                raise requests.Timeout("Antwort verloren")
+            return Resp(201, {"id": self.posts[uid], "link": "https://www.tamil.de/p/", "status": "publish"})
+
+    session = Session()
+    wp = TamilRadarClient("https://www.tamil.de", "u", "p", session=session)
+    store = ctx.store
+    d = store.list_drafts("neu")[0]
+    store.set_status(d["id"], "freigeben", von="abnahme")
+    publisher.publish_approved(ctx.settings, store, wp=wp)
+    store.set_status(d["id"], "erneut", von="abnahme")
+    publisher.publish_approved(ctx.settings, store, wp=wp)
+    return {"wp_posts": len(session.posts)}
+
+
+def _agent_v2(ctx, sz: Szenario, now: datetime) -> dict:
+    from ..agent_v2 import export_v2, import_v2
+
+    tmp = ctx.settings.data_dir
+    mappe = export_v2(ctx.store, ctx.settings, tmp / "m.json", ctx=ctx)
+    ergebnisse = []
+    for p in mappe["storys"]:
+        dokus = fake_mod.recherche("<dokumente>\n" + json.dumps(p["dokumente"]) + "\n</dokumente>", "", {})
+        beitrag = fake_mod.text("<story>\n" + json.dumps({"titel": p["titel"], "ort": p["ort"]}) + "\n</story>\n<claims>\n"
+                                + json.dumps(dokus["claims"]) + "\n</claims>", "", {})
+        ergebnisse.append({"story_id": p["story_id"], "claims": dokus["claims"], "widersprueche": [], "beitrag": beitrag,
+                           "pruefung": fake_mod.pruefung_block(beitrag, dokus["claims"], pruefer="abnahme-pruefer")})
+    (tmp / "e.json").write_text(json.dumps({"ergebnisse": ergebnisse}), encoding="utf-8")
+    stats = import_v2(ctx.store, ctx.settings, tmp / "e.json", von="cloud-sitzung", ctx=ctx)
+    return {"agent_entwuerfe": stats["entwuerfe"]}
+
+
+def _quelle_ergaenzen(ctx, sz: Szenario, now: datetime) -> dict:
+    sid = repo.stories(ctx.store, "recherche_erforderlich")[0]["id"]
+    orchestrator.quelle_ergaenzen(ctx.store, sid, sz.erwartet["_url"], von="abnahme")
+    return {f"nach_{k}": v for k, v in _zeitraffer(ctx).items()}
+
+
+def _ergaenzen_scan(ctx, sz: Szenario, now: datetime) -> dict:
+    """Agent-Modus: Import ohne Beleg schickt die Story vom Scan in die Nachrecherche; ein Vorschlag mit story_id
+    ergänzt sie um eine Quelle (Story wieder „neu“ mit Recherche-Job); danach schreibt der Agent-Modus mit Gate."""
+    from ..agent_v2 import import_daten
+    from ..nachtrag import annehmen
+
+    store = ctx.store
+    sid = repo.stories(store)[0]["id"]
+    leer = fake_mod.text("<story>\n{}\n</story>\n<claims>\n[]\n</claims>", "", {})
+    import_daten(store, ctx.settings, {"ergebnisse": [{"story_id": sid, "claims": [], "beitrag": leer,
+                                                       "pruefung": fake_mod.pruefung_block(leer, [])}]}, ctx=ctx)
+    orchestrator.abarbeiten(ctx)  # ohne Modell: nur die Nachrecherche
+    stats: Counter = Counter()
+    stats["in_nachrecherche"] += int(repo.story(store, sid)["status"] == "recherche_erforderlich")
+    v = {"story_id": sid, "arbeitstitel": "Integrationspreis Köln", "datum": now.date().isoformat(),
+         "rubrik": "community", "ort": "Köln", "bezug": "Verein in Köln", "heikel": False,
+         "quellen": [{"url": sz.erwartet["_url"], "titel": "Preis", "herausgeber": "WDR", "datum": "", "sprache": "de",
+                      "art": "bericht"}]}
+    texte = {sz.erwartet["_url"]: T.KOELN}
+    out = annehmen(store, ctx.settings, {"vorschlaege": [v]}, von="abnahme", ctx=ctx,
+                   abruf=_fake_abruf(Szenario(0, "", "", [], {}, texte=texte)))
+    stats[f"ergaenzung_{out['ergebnisse'][0]['ergebnis']}"] += 1
+    stats["recherche_job"] += sum(1 for j in jobs.offen_fuer_story(store, sid) if j["schritt"] == "recherche")
+    stats.update(_agent_v2(ctx, sz, now))
+    return dict(stats)
+
+
+def _agent_nachrecherche(ctx, sz: Szenario, now: datetime) -> dict:
+    """Agent-Modus: Import ohne Beleg → Nachrecherche (ohne Modell) → Export mit eigener Liste „nachrecherche“
+    (Fehlstellen, Suchanfragen); ein Import nur mit Fehlstellen wird abgelehnt."""
+    from ..agent_v2 import import_daten, paket_v2
+
+    store = ctx.store
+    sid = repo.stories(store)[0]["id"]
+    leer = fake_mod.text("<story>\n{}\n</story>\n<claims>\n[]\n</claims>", "", {})
+    import_daten(store, ctx.settings, {"ergebnisse": [{"story_id": sid, "claims": [], "beitrag": leer,
+                                                       "fehlend": ["Bericht des Vereins"],
+                                                       "pruefung": fake_mod.pruefung_block(leer, [])}]}, ctx=ctx)
+    orchestrator.abarbeiten(ctx)
+    mappe = paket_v2(store, ctx.settings, ctx=ctx)
+    stats: Counter = Counter()
+    stats["export_storys"] = len(mappe["storys"])
+    for n in mappe["nachrecherche"]:
+        stats["export_nachrecherche"] += 1
+        stats["mit_fehlstellen"] += int("Bericht des Vereins" in n["fehlend"])
+        stats["mit_suchanfragen"] += int(bool(n["suchanfragen"]))
+    nur_fehlend = import_daten(store, ctx.settings, {"ergebnisse": [{"story_id": sid, "fehlend": ["Ort"]}]}, ctx=ctx)
+    stats["import_abgelehnt"] = len(nur_fehlend["fehler"])
+    return dict(stats)
+
+
+def _dossier(ctx, sz: Szenario, now: datetime) -> dict:
+    d = ctx.store.list_drafts("neu")[0]
+    orchestrator.dossier_anlegen(ctx.store, d["id"], von="abnahme")
+    return {f"dossier_{k}": v for k, v in _zeitraffer(ctx).items()}
+
+
+def _scan_im_stopp(ctx, sz: Szenario, now: datetime) -> dict:
+    """Noch eine Meldung, während angehalten ist: kein Scan, keine Story."""
+    neu = [meldung({"titel": "Tamilischer Kulturverein Köln lädt zum Pongal-Fest", "url": "https://www.ksta.de/pongal",
+                    "zusammenfassung": "Tamilen in Köln feiern Pongal"}, now)]
+    return {f"stopp_{k}": v for k, v in orchestrator.scan(ctx, neu).items() if isinstance(v, int)}
+
+
+def _website_stopp(ctx, sz: Szenario, now: datetime) -> dict:
+    """Website angehalten: Freigegebenes geht nicht hinaus, wird einmal als zurückgehalten protokolliert und geht nach
+    dem Einschalten beim nächsten Lauf hinaus."""
+    from .. import publisher, schalter
+
+    class WP:
+        def __init__(self):
+            self.posts = []
+
+        def upload_media(self, image, alt):
+            return 1
+
+        def create_post(self, **kw):
+            self.posts.append(kw)
+            return {"id": 800 + len(self.posts), "link": "https://www.tamil.de/p/"}
+
+        def edit_link(self, post):
+            return "https://www.tamil.de/wp-admin/"
+
+    store, wp = ctx.store, WP()
+    d = store.list_drafts("neu")[0]
+    schalter.setzen(store, "website", True, wer="abnahme", grund="Abnahme")
+    store.set_status(d["id"], "freigeben", von="abnahme")
+    publisher.publish_approved(ctx.settings, store, wp=wp)
+    publisher.publish_approved(ctx.settings, store, wp=wp)
+    im_stopp = len(wp.posts)
+    zurueck = len(repo.aktionen_liste(store, aktion="zurueckgehalten"))
+    schalter.setzen(store, "website", False, wer="abnahme")
+    publisher.publish_approved(ctx.settings, store, wp=wp)
+    return {"wp_im_stopp": im_stopp, "zurueckgehalten": zurueck, "wp_danach": len(wp.posts),
+            "protokoll_dienst": len(repo.aktionen_liste(store, aktion="veroeffentlicht", kanal="website"))}
+
+
+def _fake_abruf(sz: Szenario) -> Callable:
+    """Seiten der Szenario-Texte als HTML (Titel der Seite = Schlüssel der URL), unbekannte Adressen → 404."""
+    from .. import net
+
+    def abruf(url: str, frist: float | None = None) -> net.Fetched:
+        datei = url.split("#", 1)[0]  # das Fragment geht nie an den Server
+        if datei.endswith(".pdf") and datei in sz.texte:
+            return net.Fetched(url=datei, status=200, content=_pdf(sz.texte[datei]), content_type="application/pdf")
+        if url not in sz.texte:
+            raise net.HTTPError(404, url)
+        seite = f"<html><head><title>Seite {url.rsplit('/', 1)[-1]}</title></head><body><article><p>{sz.texte[url]}</p></article></body></html>"
+        return net.Fetched(url=url, status=200, content=seite.encode(), content_type="text/html; charset=utf-8")
+    return abruf
+
+
+def _pdf(text: str) -> bytes:
+    """PDF wie eine Drucksache: Seite 1 Deckblatt, Seite 2 der Text in Zeilen umbrochen, mit einer Silbentrennung."""
+    import textwrap
+    from io import BytesIO
+
+    from pypdf import PdfWriter
+    from pypdf.generic import DecodedStreamObject, DictionaryObject, NameObject
+
+    vorn, _, hinten = text.replace("Besucherinnen", "Besu-\x00cherinnen", 1).partition("\x00")
+    seiten = [["Deutscher Bundestag Drucksache 20/99999", "Deckblatt ohne Bezug zum Thema"],
+              textwrap.wrap(vorn, 60) + textwrap.wrap(hinten, 60)]
+    w = PdfWriter()
+    font = w._add_object(DictionaryObject({
+        NameObject("/Type"): NameObject("/Font"), NameObject("/Subtype"): NameObject("/Type1"),
+        NameObject("/BaseFont"): NameObject("/Helvetica"), NameObject("/Encoding"): NameObject("/WinAnsiEncoding")}))
+    for zeilen in seiten:
+        seite = w.add_blank_page(595, 842)
+        ops = ["BT /F1 10 Tf 12 TL 40 800 Td"] + [
+            "(" + z.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)") + ") Tj T*" for z in zeilen]
+        stream = DecodedStreamObject()
+        stream.set_data("\n".join(ops + ["ET"]).encode("cp1252"))
+        seite[NameObject("/Contents")] = w._add_object(stream)
+        seite[NameObject("/Resources")] = DictionaryObject(
+            {NameObject("/Font"): DictionaryObject({NameObject("/F1"): font})})
+    w.add_metadata({"/Title": "Drucksache 20/99999"})
+    buf = BytesIO()
+    w.write(buf)
+    return buf.getvalue()
+
+
+def _vorschlaege_annehmen(ctx, sz: Szenario, now: datetime) -> Counter:
+    """Nachtrag: je Runde in einstellungen["_vorschlaege"] einmal annehmen (Datum „-200d“ relativ zu heute)."""
+    from ..nachtrag import annehmen
+
+    stats: Counter = Counter()
+    for runde in sz.einstellungen.get("_vorschlaege", []):
+        vorschlaege = [{**v, "datum": _datum(v["datum"], now)} for v in runde]
+        out = annehmen(ctx.store, ctx.settings, {"vorschlaege": vorschlaege}, von="abnahme", ctx=ctx,
+                       abruf=_fake_abruf(sz))
+        for e in out["ergebnisse"]:
+            stats[f"nachtrag_{e['ergebnis']}"] += 1
+            grund = e.get("grund") or ""
+            if e["ergebnis"] == "abgelehnt":
+                stats["grund_intern" if "interne Adresse" in grund else
+                      "grund_nicht_abrufbar" if "keine Quelle abrufbar" in grund else "grund_sonst"] += 1
+    return stats
+
+
+def _nachtrag(ctx, sz: Szenario, now: datetime) -> dict:
+    return dict(_vorschlaege_annehmen(ctx, sz, now))
+
+
+def _nachtrag_bis_website(ctx, sz: Szenario, now: datetime) -> dict:
+    """Vorschlag → Story → Agent-Modus (Export/Import mit Gate) → Freigabe → Plugin mit Ereignisdatum und Vermerk."""
+    from .. import publisher
+    from ..wordpress import TamilRadarClient
+
+    stats = _vorschlaege_annehmen(ctx, sz, now)
+    stats.update(_agent_v2(ctx, sz, now))
+
+    class Resp:
+        def __init__(self, data):
+            self.status_code, self._data, self.text = 201, data, ""
+
+        def json(self):
+            return self._data
+
+    class Session:
+        def __init__(self):
+            self.posts, self.headers, self.auth = [], {}, None
+
+        def request(self, method, url, timeout=None, json=None, **kw):
+            self.posts.append(json)
+            return Resp({"id": 900 + len(self.posts), "link": "https://www.tamil.de/p/", "status": "publish"})
+
+    session = Session()
+    store = ctx.store
+    for d in store.list_drafts("neu"):
+        store.set_status(d["id"], "freigeben", von="abnahme")
+    publisher.publish_approved(ctx.settings, store, wp=TamilRadarClient("https://www.tamil.de", "u", "p", session=session))
+    ereignis = {s["id"]: s["ereignis_datum"] for s in repo.stories(store) if s["herkunft"] == "nachtrag"}
+    for post in session.posts:
+        sid = post["meta"].get("radar_story_id")
+        stats["wp_posts"] += 1
+        stats["wp_datum_ereignis"] += int(bool(ereignis.get(sid)) and post.get("datum", "")[:10] == ereignis[sid])
+        stats["wp_vermerk"] += int("Nachtrag der Redaktion: Dieser Beitrag wurde im" in post["inhalt"])
+    return dict(stats)
+
+
+def _nachtrag_pdf(ctx, sz: Szenario, now: datetime) -> dict:
+    """PDF-Quelle mit Anker #page=2 bis zur Website; zählt Dokumente mit Anker und mit dem Wortlaut der Seite 2."""
+    stats = _nachtrag_bis_website(ctx, sz, now)
+    for url, text, titel in ctx.store.db.execute("SELECT url, text, titel FROM source_documents"):
+        stats["pdf_anker"] = stats.get("pdf_anker", 0) + int(url.endswith(".pdf#page=2"))
+        stats["pdf_wortlaut"] = stats.get("pdf_wortlaut", 0) + int(
+            "Erwartet werden rund 3000 Besucherinnen und Besucher" in text and "Deckblatt" not in text)
+        stats["pdf_titel"] = stats.get("pdf_titel", 0) + int(titel == "Drucksache 20/99999")
+    return stats
+
+
+def _nachtrag_ergaenzen(ctx, sz: Szenario, now: datetime) -> dict:
+    """Nachtrag anlegen, Import scheitert (Recherche nötig), Vorschlag mit story_id ergänzt die Story zweimal (zweites
+    Mal abgelehnt: schon freigegeben), Export enthält alle Dokumente, danach Agent-Modus mit Gate."""
+    from ..agent_v2 import paket_v2
+    from ..nachtrag import annehmen
+
+    stats = _vorschlaege_annehmen(ctx, sz, now)
+    sid = next(s["id"] for s in repo.stories(ctx.store) if s["herkunft"] == "nachtrag")
+    repo.story_setzen(ctx.store, sid, status="recherche_erforderlich", notiz="Fehlt: Zahl der Gäste")
+    v = {**sz.einstellungen["_ergaenzung"], "story_id": sid}
+    v["datum"] = _datum(v["datum"], now)
+    for _ in range(2):
+        out = annehmen(ctx.store, ctx.settings, {"vorschlaege": [v]}, von="abnahme", ctx=ctx, abruf=_fake_abruf(sz))
+        e = out["ergebnisse"][0]
+        stats[f"ergaenzung_{e['ergebnis']}"] += 1
+        stats["uebersprungen_schon_beleg"] += sum(
+            1 for u in e.get("quellen_uebersprungen", []) if u["grund"] == "schon Beleg dieser Story")
+    story = repo.story(ctx.store, sid)
+    stats["status_neu"] += int(story["status"] == "neu")
+    stats["notiz_alt_und_ergaenzt"] += int(story["notiz"].startswith("Fehlt: Zahl der Gäste") and "Ergänzt am" in story["notiz"])
+    mappe = paket_v2(ctx.store, ctx.settings, ctx=ctx)
+    stats["export_dokumente"] += sum(len(p["dokumente"]) for p in mappe["storys"] if p["story_id"] == sid)
+    stats.update(_agent_v2(ctx, sz, now))
+    return dict(stats)
+
+
+def _bild_abruf(seiten: dict, abrufe: list) -> Callable:
+    """Fake für bildvorschlag: „jpeg:BxH“ → Bild, „commons:<Lizenz>“ → Antwort der Commons-API, sonst HTML."""
+
+    from PIL import Image
+
+    from urllib.parse import unquote
+
+    from .. import net
+
+    def abruf(url: str, frist: float | None = None, bild: bool = False) -> net.Fetched:
+        abrufe.append(url)
+        schluessel = "API" if url.startswith("https://commons.wikimedia.org/w/api.php") else url
+        if schluessel not in seiten:
+            raise net.HTTPError(404, url)
+        wert = seiten[schluessel]
+        if wert.startswith("jpeg:"):
+            b, h = (int(x) for x in wert[5:].split("x"))
+            buf = io.BytesIO()
+            Image.new("RGB", (b, h), (200, 120, 40)).save(buf, "JPEG")
+            return net.Fetched(url=url, status=200, content=buf.getvalue(), content_type="image/jpeg")
+        if wert.startswith("commons:"):
+            lizenz, _, thumb = wert[8:].partition("|")
+            ext = {"LicenseShortName": {"value": lizenz}, "Artist": {"value": "<a href='#'>Ravi S.</a>"},
+                   "LicenseUrl": {"value": "https://creativecommons.org/licenses/by-sa/4.0"}}
+            info = {"url": thumb, "thumburl": thumb, "width": 3000, "height": 2000, "mime": "image/jpeg",
+                    "extmetadata": ext}
+            titel = "File:" + unquote(thumb.rsplit("/", 2)[-2]).replace("_", " ")
+            body = json.dumps({"query": {"pages": {"1": {"title": titel, "imageinfo": [info]}}}})
+            return net.Fetched(url=url, status=200, content=body.encode(), content_type="application/json")
+        return net.Fetched(url=url, status=200, content=wert.encode(), content_type="text/html; charset=utf-8")
+    return abruf
+
+
+def _bild_vorschlag(ctx, sz: Szenario, now: datetime) -> dict:
+    """Nachtrag → Agent-Modus (wartender Entwurf mit Bildkarte) → Bildvorschläge aus einstellungen["_bilder"].
+    Ohne DNS: Hostnamen lösen auf eine öffentliche Beispieladresse auf (wie in den Tests), IP-Literale bleiben echt."""
+    from .. import net
+
+    aufloesen = net._resolve
+    net._resolve = lambda host: ["93.184.216.34"]
+    try:
+        return _bild_vorschlag_ablauf(ctx, sz, now)
+    finally:
+        net._resolve = aufloesen
+
+
+def _bild_vorschlag_ablauf(ctx, sz: Szenario, now: datetime) -> dict:
+    from ..bildvorschlag import annehmen
+
+    stats = _vorschlaege_annehmen(ctx, sz, now)
+    stats.update(_agent_v2(ctx, sz, now))
+    store = ctx.store
+    entwurf = store.list_drafts("neu")[0]
+    eintraege = [{**e, "story_id": entwurf["story_id"]} for e in sz.einstellungen["_bilder"]]
+    abrufe: list[str] = []
+    out = annehmen(store, ctx.settings, {"bilder": eintraege}, von="abnahme",
+                   abruf=_bild_abruf(sz.einstellungen.get("_bild_seiten", {}), abrufe))
+    for e in out["ergebnisse"]:
+        stats[f"bild_{e['ergebnis']}"] += 1
+        grund = e.get("grund") or ""
+        if e["ergebnis"] == "abgelehnt":
+            stats["grund_" + next((k for k, t in (("agentur", "Agenturbild"), ("lizenz", "Lizenz nicht erlaubt"),
+                                                  ("register", "nicht im Bildquellen-Register"),
+                                                  ("intern", "interne Adresse")) if t in grund), "sonst")] += 1
+    d = store.get_draft(entwurf["id"])
+    asset = repo.asset_fuer_datei(store, d.get("bild_datei") or "")
+    stats["asset_" + (asset["herkunft"] if asset else "keins")] += 1
+    stats["nachweis_am_entwurf"] += int(bool(asset) and d.get("bild_credit") == asset.get("attribution"))
+    stats["lizenz_vollstaendig"] += int(bool(asset) and not lizenz_mod.fehlend(asset))
+    stats["protokoll_bild"] += len([a for a in repo.aktionen(store, d["id"])
+                                    if a["aktion"] == "bild" and a["ausloeser"] == "agent"])
+    stats["abrufe_intern"] += sum(1 for u in abrufe if "169.254" in u)
+    return dict(stats)
+
+
+def _lizenz_gate(ctx, sz: Szenario, now: datetime) -> dict:
+    """Spezifikation Bilder 3.3/3.4: Die Kette liefert ohne BILD_KI_FREIGABE die Bildkarte mit vollständigem Datensatz.
+    Ein hochgeladenes Bild ohne Lizenz sperrt Freigabe und Senden (Protokoll); nach der Eingabe geht es hinaus, mit
+    Lizenz-Meta für WordPress."""
+    from .. import images, publisher
+
+    class WP:
+        def __init__(self):
+            self.posts = []
+
+        def upload_media(self, image, alt):
+            return 1
+
+        def create_post(self, **kw):
+            self.posts.append(kw)
+            return {"id": 900 + len(self.posts), "link": "https://www.tamil.de/p/"}
+
+        def edit_link(self, post):
+            return "https://www.tamil.de/wp-admin/"
+
+    store, s, stats = ctx.store, ctx.settings, Counter()
+    d = store.list_drafts("neu")[0]
+    stats["erst_karte"] = int(d.get("bild_origin") == "karte")
+    stats["karte_vollstaendig"] = int(not lizenz_mod.luecken(store, d, ctx.settings))
+    stats["ki_aufrufe"] = store.db.execute("SELECT COUNT(*) FROM agent_usage WHERE provider = 'gemini'").fetchone()[0]
+    # Redaktion lädt ein eigenes Foto hoch (gemeinsamer Speicherweg, kein Standardnachweis)
+    up = images.from_upload(_png(), "upload")
+    name, _ = images.save_pair(up, s.bilder_dir, f"upload-e{d['id']}")
+    store.update_draft(d["id"], bild_datei=name, bild_origin="upload", bild_credit=up.credit)
+    lizenz_mod.anlegen(store, datei=name, daten=up.data, draft_id=d["id"], felder=lizenz_mod.datensatz(up))
+    row = store.get_draft(d["id"])
+    stats["freigabe_gesperrt"] = int(bool(lizenz_mod.sperre(store, row, ctx.settings)))
+    store.set_status(d["id"], "freigeben", von="abnahme")  # an der Oberfläche vorbei: der Publisher prüft erneut
+    wp = WP()
+    publisher.publish_approved(s, store, wp=wp)
+    stats["wp_ohne_lizenz"] = len(wp.posts)
+    stats["lizenz_fehlt_protokoll"] = len(repo.aktionen_liste(store, aktion="lizenz_fehlt"))
+    felder, fehler = lizenz_mod.formular_pruefen(
+        {"herkunft": "eigen", "lizenz": "eigen", "urheber": "Redaktion", "rechteinhaber": "Tamil.de",
+         "umfang": ["website", "social"], "alt": "Lichter vor dem Tempel in Hamm"}, None, titel=row["titel"])
+    stats["formular_ok"] = int(not fehler)
+    felder.pop("_beleg_endung", None)
+    store.update_draft(d["id"], bild_credit=felder["attribution"], bild_alt=felder["alt"])
+    lizenz_mod.anlegen(store, datei=name, daten=up.data, draft_id=d["id"],
+                       felder={**felder, "geprueft_von": "abnahme", "geprueft_am": now.isoformat(timespec="seconds")})
+    store.set_status(d["id"], "erneut", von="abnahme")
+    publisher.publish_approved(s, store, wp=wp)
+    stats["wp_mit_lizenz"] = len(wp.posts)
+    meta = publisher.radar_meta({**store.get_draft(d["id"]),
+                                 **publisher.lizenz_meta(lizenz_mod.asset_fuer(store, store.get_draft(d["id"])))})
+    stats["meta_lizenz"] = int(meta.get("bild_lizenz") == "eigen")
+    return dict(stats)
+
+
+NACHHER: dict[str, Callable] = {
+    "nachtrag": _nachtrag, "nachtrag_ergaenzen": _nachtrag_ergaenzen, "nachtrag_bis_website": _nachtrag_bis_website,
+    "nachtrag_pdf": _nachtrag_pdf, "bild_vorschlag": _bild_vorschlag,
+    "scan_im_stopp": _scan_im_stopp, "website_stopp": _website_stopp, "lizenz_gate": _lizenz_gate,
+    "kino_update": _kino_update, "kino_veroeffentlicht": _kino_nach_veroeffentlichung, "wp_timeout": _wp_timeout,
+    "agent_v2": _agent_v2, "quelle_ergaenzen": _quelle_ergaenzen, "dossier": _dossier,
+    "ergaenzen_scan": _ergaenzen_scan, "agent_nachrecherche": _agent_nachrecherche,
+}
+from .eingang_ablauf import NACHHER as _EINGANG  # noqa: E402 – Szenarien ab 80 (Festlegung F1)
+
+NACHHER.update(_EINGANG)
+
+
+def _social(ctx, sz: Szenario, now: datetime) -> dict:
+    from . import social as social_abnahme  # F4: Fake-Website, FakeMeta bzw. Trocken-Transport
+
+    return social_abnahme.ausfuehren(ctx, sz, now)
+
+
+NACHHER["social"] = _social
+
+
+def alle(nur: list[int] | None = None, basis: Settings | None = None, ordner: Path | None = None,
+         behalten: bool = False) -> list[Ergebnis]:
+    """Alle (oder die gewählten) Szenarien; die Datenbanken liegen unter <data>/abnahme-laeufe und werden danach
+    gelöscht (mit `behalten` bleiben sie zum Nachsehen liegen)."""
+    import shutil
+
+    from .szenarien import SZENARIEN
+
+    basis = basis or load_settings()
+    wurzel = ordner or (basis.data_dir / "abnahme-laeufe")
+    wurzel.mkdir(parents=True, exist_ok=True)
+    lauf = Path(tempfile.mkdtemp(prefix="lauf-", dir=wurzel))
+    try:
+        return [ausfuehren(sz, basis, lauf) for sz in SZENARIEN if not nur or sz.nr in nur]
+    finally:
+        if not behalten:
+            shutil.rmtree(lauf, ignore_errors=True)
+
+
+def bericht(ergebnisse: list[Ergebnis]) -> str:
+    ok = sum(1 for e in ergebnisse if e.ok)
+    kriterien: dict[str, list[int]] = {}
+    for e in ergebnisse:
+        for name, wert in e.kriterien.items():
+            kriterien.setdefault(name, [])
+            if not wert:
+                kriterien[name].append(e.szenario.nr)
+    zeilen = [
+        f"# Abnahme Redaktion v2 – {datetime.now(timezone.utc):%d.%m.%Y %H:%M} UTC",
+        "",
+        f"**{ok} von {len(ergebnisse)} Szenarien bestanden.** Alle Läufe mit FakeClaude (keine echten Modellaufrufe), "
+        "jedes Szenario in einer eigenen Datenbank.",
+        "",
+        "## Kriterien",
+        "",
+        "| Kriterium | Ergebnis |",
+        "|---|---|",
+    ]
+    for name, fehl in kriterien.items():
+        zeilen.append(f"| {name} | {'erfüllt' if not fehl else 'verletzt in ' + ', '.join(map(str, fehl))} |")
+    zeilen += ["", "## Szenarien", "", "| Nr. | Bereich | Szenario | Ergebnis | Entwürfe | Aufrufe | Kosten |", "|---|---|---|---|---|---|---|"]
+    for e in ergebnisse:
+        f = e.fakten
+        status = "bestanden" if e.ok else "**nicht bestanden**: " + "; ".join(e.abweichungen or
+                                                                              [k for k, v in e.kriterien.items() if not v])
+        zeilen.append(f"| {e.szenario.nr} | {e.szenario.bereich} | {e.szenario.name} | {status} | {f.get('entwuerfe', '–')} "
+                      f"| {f.get('aufrufe', '–')} | ${f.get('kosten', 0):.4f} |")
+    return "\n".join(zeilen) + "\n"
+
+
+__all__ = ["Szenario", "Ergebnis", "ausfuehren", "alle", "bericht", "date"]

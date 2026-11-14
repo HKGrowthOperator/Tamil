@@ -15,6 +15,7 @@ import base64
 import io
 import json
 import logging
+import re
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -111,7 +112,15 @@ def from_gemini(prompt: str, settings: Settings, slug: str, transport: Transport
     except (OSError, ValueError, TypeError) as exc:
         log.warning("Bild-KI-Bild unbrauchbar: %s", exc)
         return None
-    return FeaturedImage(images._encode(fitted), f"{slug}.jpg", "image/jpeg", KI_CREDIT, "ki")
+    return FeaturedImage(images._encode(fitted, ki=True), f"{slug}.jpg", "image/jpeg", KI_CREDIT, "ki", prompt=prompt,
+                         modell=settings.bild_modell)
+
+
+def gueltiges_thema(thema: str, kategorie: str = "", titel: str = "") -> str:
+    """Nur Themen aus bildpool.md (das Thema kommt aus der Modellantwort und wird Teil eines Dateipfads)."""
+    if thema in prompts.thema_slugs():
+        return thema
+    return prompts.thema_fuer(kategorie, titel)
 
 
 class BildPool:
@@ -142,12 +151,14 @@ class BildPool:
         return len(self._data.get(thema, []))
 
     def add(self, thema: str, image: FeaturedImage, prompt: str = "") -> Path:
+        if not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,40}", thema or ""):
+            raise ValueError(f"Ungültiges Bildthema: {thema!r}")
         entries = self._data.setdefault(thema, [])
         name = f"{thema}-{len(entries) + 1:03d}.jpg"
         (self.folder / thema).mkdir(parents=True, exist_ok=True)
         (self.folder / thema / name).write_bytes(image.data)
         entries.append({
-            "datei": name, "prompt": prompt, "credit": image.credit, "origin": image.origin,
+            "datei": name, "prompt": prompt, "credit": image.credit, "origin": image.origin, "modell": image.modell,
             "erstellt": datetime.now(timezone.utc).isoformat(timespec="seconds"), "genutzt": 0,
         })
         self._save()
@@ -162,11 +173,16 @@ class BildPool:
         entry["genutzt"] = entry.get("genutzt", 0) + 1
         self._save()
         data = (self.folder / thema / entry["datei"]).read_bytes()
-        return FeaturedImage(data, f"{slug}.jpg", "image/jpeg", entry.get("credit") or KI_CREDIT, "pool")
+        return FeaturedImage(data, f"{slug}.jpg", "image/jpeg", entry.get("credit") or KI_CREDIT, "pool",
+                             prompt=entry.get("prompt") or "", modell=entry.get("modell") or "")
 
     def fuellen(self, settings: Settings, thema: str | None = None, anzahl: int = 3,
-                transport: Transport | None = None) -> dict[str, int]:
-        """Erzeugt fehlende Bilder je Thema aus den Motiv-Prompts in prompts/bildpool.md."""
+                transport: Transport | None = None, store=None, budget=None) -> dict[str, int]:
+        """Erzeugt fehlende Bilder je Thema aus den Motiv-Prompts in prompts/bildpool.md.
+
+        Mit `store`/`budget` (Timer): jedes Bild wird vorher reserviert und als Kosten protokolliert; ist das Budget
+        erreicht, hört das Auffüllen auf.
+        """
         themen = [thema] if thema else prompts.thema_slugs()
         erzeugt: dict[str, int] = {}
         for t in themen:
@@ -176,7 +192,28 @@ class BildPool:
                 continue
             for n in range(self.anzahl(t), anzahl):
                 prompt = prompts.bild_prompt_bauen(motiv, t)
-                image = from_gemini(prompt, settings, f"{t}-{n + 1}", transport)
+                reservierung = None
+                if budget is not None:
+                    from .workflow.costs import BudgetErschoepft, bild_kosten
+
+                    try:
+                        reservierung = budget.reservieren(bild_kosten(settings.bild_modell, settings.bild_groesse), "bildpool")
+                    except BudgetErschoepft as exc:
+                        log.warning("Bildpool: %s", exc)
+                        return erzeugt
+                try:
+                    image = from_gemini(prompt, settings, f"{t}-{n + 1}", transport)
+                finally:
+                    if reservierung is not None:
+                        budget.freigeben(reservierung)
+                if store is not None:
+                    from .workflow.costs import bild_kosten
+                    from .workflow.providers import usage_protokollieren
+
+                    usage_protokollieren(store, rolle="bildpool", provider="gemini", modell_angefragt=settings.bild_modell,
+                                         modell=settings.bild_modell, bilder=1 if image else 0,
+                                         usd=bild_kosten(settings.bild_modell, settings.bild_groesse) if image else 0.0,
+                                         status="ok" if image else "fehler")
                 if image is None:
                     break
                 self.add(t, image, prompt)
@@ -197,9 +234,12 @@ def beitragsbild(
     transport: Transport | None = None,
     pool: BildPool | None = None,
 ) -> FeaturedImage:
-    """Immer ein Bild: KI (nur mit Prompt und Schlüssel) → Pool → Stock (nur mit Schlüssel) → Karte."""
+    """Immer ein Bild: KI (nur mit Prompt und Schlüssel) → Pool → Stock (nur mit Schlüssel) → Karte.
+    KI und Pool nur mit BILD_KI_FREIGABE (Spezifikation Bilder 4.1, L11); sonst beginnt die Kette bei Stock."""
     modus = settings.bild_modus if settings.bild_modus in MODI else "ki"
-    thema = bild_thema or prompts.thema_fuer(kategorie, titel)
+    if modus in ("ki", "pool") and not settings.bild_ki_freigabe:
+        modus = "stock"
+    thema = gueltiges_thema(bild_thema, kategorie, titel)
     if modus == "karte":
         return images.branded_card(titel, kategorie_label, slug, kategorie)
     pool = pool or BildPool(settings.bildpool_dir)
@@ -210,7 +250,7 @@ def beitragsbild(
             if thema:
                 try:
                     pool.add(thema, image, prompt)
-                except OSError as exc:
+                except (OSError, ValueError) as exc:
                     log.warning("Pool nicht beschreibbar: %s", exc)
             return image
     if modus in ("ki", "pool") and thema:

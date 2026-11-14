@@ -36,8 +36,7 @@ _STICHWORT_THEMA: tuple[tuple[str, str], ...] = (
     ("asyl", "bahnhof-ankunft"), ("flucht", "bahnhof-ankunft"),
     ("jaffna", "sri-lanka-kueste"), ("kilinochchi", "sri-lanka-kueste"), ("batticaloa", "sri-lanka-kueste"),
     ("colombo", "sri-lanka-stadt"), ("chennai", "chennai-stadt"), ("tamil nadu", "tamil-nadu-tempel"),
-    ("regierung", "politik-sri-lanka"), ("parlament", "politik-sri-lanka"), ("wahl", "politik-sri-lanka"),
-    ("präsident", "politik-sri-lanka"), ("sri lanka", "sri-lanka-kueste"),
+    ("sri lanka", "sri-lanka-kueste"),  # Politik hat kein Pool-Thema mehr (heikel: Bildkarte)
     ("festival", "event-halle"), ("event", "event-halle"), ("night", "event-halle"), ("gala", "event-halle"),
     ("verein", "gemeindefest"), ("gemeinde", "gemeindefest"), ("fest", "gemeindefest"),
 )
@@ -99,7 +98,7 @@ def bild_vorlage() -> str:
     """Die Prompt-Vorlage (Codeblock) aus bild.md; enthält den Platzhalter {motiv}."""
     m = _CODE_BLOCK_RE.search(load_prompt("bild"))
     if not m:
-        return "Editorial photograph, documentary style, landscape 16:9, no text, no logos, no recognizable people.\nScene: {motiv}"
+        return "Editorial photograph, documentary style, symbolic image, landscape 4:3, no text, no logos, no recognizable people.\nScene: {motiv}"
     return m.group(1).strip()
 
 

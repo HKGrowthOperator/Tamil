@@ -1,0 +1,130 @@
+"""Text: der Beitrag aus bestätigten Claims – Länge nach Stofflage, Stilbeispiele passend zu Typ und Rubrik.
+
+Das Modell bekommt nur Claims mit Status „bestaetigt“ und die Quellenliste. Es liefert zu jedem Absatz die Claim-IDs
+(`belege`). Links im Text bleiben nur, wenn ihre URL in den Quellen der Story steht; alle anderen entfernt der Code.
+"""
+
+from __future__ import annotations
+
+import re
+
+from .. import prompts
+from .. import stilbeispiele as stilbeispiele_mod
+from ..config import Settings
+from ..writer import SCHEMA_RULES, STYLE_GUIDE, STYLE_FILE
+from ..workflow.models import Claim, SourceDocument, TextErgebnis
+from ..workflow.providers import json_block
+from . import Kontext
+
+# Wörter im Haupttext je Längenregel (redaktion.md: Länge nach Stofflage)
+# Anweisung des Auftraggebers vom 11.11.2026: Beiträge von mehreren Minuten, wenn der belegte Stoff es trägt.
+# event/kino = knapp (ohne Volltext), *_mittel = mittlerer Stoff, *_lang = viel Stoff.
+LAENGEN = {"kurz": (80, 150), "normal": (250, 400), "lang": (450, 750), "event": (150, 250), "kino": (150, 250),
+           "event_mittel": (250, 400), "kino_mittel": (250, 400), "event_lang": (350, 550), "kino_lang": (350, 550),
+           "dossier": (600, 1000)}
+KNAPP = ("kurz", "event", "kino")
+H2_AB_WOERTER = 350  # ab hier gliedern Zwischenüberschriften (Längentext, Lektorat, redaktion.md)
+
+
+def stilbeispiele(typ: str, kategorie: str, n: int = 3) -> list[dict]:
+    """2–3 Beispiele aus dem Altbestand, die zur Art passen (Nachricht, Kino, Event, Porträt, Küche)."""
+    return stilbeispiele_mod.passende(typ, kategorie, n=n, path=STYLE_FILE)
+
+
+def system_prompt(settings: Settings, typ: str, kategorie: str) -> str:
+    profil = prompts.redaktion(fallback=STYLE_GUIDE).strip()
+    rolle = prompts.load_prompt("text").strip()
+    cats = "\n".join(f"- {c.slug}: {c.label}" for c in settings.categories)
+    technik = "\n".join(z for z in SCHEMA_RULES.splitlines() if not z.startswith("- Länge:")
+                        and "Kinoliste wird automatisch" not in z)
+    text = (f"{profil}\n\n{rolle}\n\n{technik}\n\nKategorien (Slug: Name):\n{cats}\n\n"
+            f"Bildthemen (bild_thema): {', '.join(prompts.thema_slugs()) or 'diaspora-stadt'}\n")
+    beispiele = stilbeispiele({"artikel": "news", "kino_termine": "kino"}.get(typ, typ), kategorie)
+    if beispiele:
+        text += "\nSo klingen veröffentlichte Tamil.de-Beiträge (nur Ton, nicht Inhalt übernehmen):\n"
+        for ex in beispiele:
+            art = f" ({ex['art']}, {ex.get('woerter', '?')} Wörter)" if ex.get("art") else ""
+            text += f"\n<beispiel>\n# {ex['title']}{art}\n{ex['text']}\n</beispiel>\n"
+    return text
+
+
+def laenge_text(laenge: str, typ: str) -> str:
+    lo, hi = LAENGEN.get(laenge, LAENGEN["normal"])
+    zusatz = ""
+    if laenge in KNAPP:
+        zusatz += " Wenig belegter Stoff oder kein Volltext: eine knappe Meldung, nichts auffüllen."
+        if typ in ("event", "kino"):
+            zusatz += " Wann, wo, Karten – nur, was belegt ist."
+    else:
+        zusatz += (" Aufbau: erster Absatz mit dem Kern (wer, was, wann, wo), dann <h2>-Zwischenüberschriften"
+                   f" (eine je Abschnitt, ab etwa {H2_AB_WOERTER} Wörtern), Hintergrund und Einordnung nur aus den"
+                   " Claims.")
+        if typ in ("event", "kino"):
+            zusatz += " Zum Schluss ein Service-Absatz: wann, wo, Karten – nur, was belegt ist."
+        zusatz += (" Die Länge entsteht aus mehr belegten Einzelheiten und Zusammenhang; nicht strecken – keine"
+                   " Wiederholung, keine Floskeln, keine Vermutungen. Trägt der Stoff die Spanne nicht, bleibt der"
+                   " Text kürzer.")
+    if typ == "kino":
+        zusatz += " Die Kinoliste wird automatisch angehängt – keine Kinos im Text aufzählen."
+    return f"{lo}–{hi} Wörter im Haupttext.{zusatz}"
+
+
+def quellen_liste(docs: list[SourceDocument]) -> list[dict]:
+    seen, out = set(), []
+    for d in docs:
+        if d.art == "hinweis" or not d.url or d.url.endswith("#daten"):
+            continue
+        name = d.publisher or d.quelle
+        if (name, d.url) in seen:
+            continue
+        seen.add((name, d.url))
+        out.append({"name": name, "url": d.url})
+    return out
+
+
+def schreiben(ctx: Kontext, story: dict, claims: list[Claim], docs: list[SourceDocument], laenge: str,
+              anmerkung: str = "", vorige: dict | None = None, job_id: int | None = None) -> TextErgebnis:
+    bestaetigt = [c for c in claims if c.support == "bestaetigt"]
+    rolle = "dossier" if story["typ"] == "dossier" else "text"
+    typ_hint = {"event": "event", "kino": "kino_termine"}.get(story["typ"], "artikel")
+    story_info = {"titel": story.get("titel"), "typ": story["typ"], "typ_im_schema": typ_hint, "ort": story.get("ort"),
+                  "kategorie": story.get("kategorie"), "relevanz": story.get("relevanz"),
+                  "begruendung": story.get("begruendung")}
+    teile = [json_block("story", story_info), f"<laenge>{laenge_text(laenge, story['typ'])}</laenge>",
+             json_block("claims", [c.model_dump(include={"id", "aussage", "art", "kern"}) for c in bestaetigt]),
+             json_block("quellen", quellen_liste(docs))]
+    if anmerkung and vorige:
+        teile.append(json_block("vorige_fassung", {k: vorige.get(k) for k in ("titel", "teaser", "inhalt_html")}))
+        teile.append(f"<anmerkung>\n{anmerkung}\n</anmerkung>")
+    teile.append("Schreibe den Beitrag nur aus diesen Claims.")
+    antwort = ctx.claude.call(rolle, system_prompt(ctx.settings, typ_hint, story.get("kategorie") or ""),
+                              "\n\n".join(teile), TextErgebnis, story_id=story["id"], job_id=job_id)
+    if not antwort.ok:
+        raise RuntimeError(f"Text ohne Ergebnis: {antwort.status} {antwort.hinweis}")
+    ergebnis: TextErgebnis = antwort.daten
+    erlaubt = {q["url"] for q in quellen_liste(docs)} | {d.url for d in docs if d.url}
+    return ergebnis.model_copy(update={"inhalt_html": links_bereinigen(ergebnis.inhalt_html, erlaubt),
+                                       "typ": typ_hint if story["typ"] in ("event", "kino") else ergebnis.typ})
+
+
+def links_bereinigen(html_text: str, erlaubt: set[str]) -> str:
+    """Links, deren Ziel nicht in den Quellen der Story steht, werden zu reinem Text.
+
+    Mit einem HTML-Parser statt Regex: auch <a href=x>, <a href = "x"> und nicht geschlossene <a> werden erkannt.
+    Erlaubte Links behalten nur href (keine Event-Handler, kein style).
+    """
+    from bs4 import BeautifulSoup
+
+    soup = BeautifulSoup(html_text or "", "html.parser")
+    for a in soup.find_all("a"):
+        href = (a.get("href") or "").strip()
+        if href in erlaubt and href.startswith(("http://", "https://")):
+            a.attrs = {"href": href, "target": "_blank", "rel": "noopener"}
+        else:
+            a.unwrap()
+    return str(soup)
+
+
+def woerter(html_text: str) -> int:
+    text = re.sub(r'<p class="quelle">.*?</p>', " ", html_text or "", flags=re.S)
+    return len(re.sub(r"<[^>]+>", " ", text).split())

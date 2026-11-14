@@ -1,6 +1,6 @@
 <?php
 /**
- * Werbeplätze. Reihenfolge je Platz: Advanced-Ads-Platzierung → eigenes Banner-HTML → Eigenanzeige von Tamil.de
+ * Werbeplätze. Reihenfolge je Platz: gebuchte Anzeige (werbung.php) → Advanced-Ads-Platzierung → eigenes Banner-HTML → Eigenanzeige von Tamil.de
  * (Production, Event melden, Werben, WhatsApp-Kanal) → nichts. Ein Platz ohne Inhalt bleibt unsichtbar.
  */
 
@@ -133,22 +133,84 @@ function tamil_site_eigenanzeige_html( string $vorlage ): string {
 }
 
 /**
+ * Lädt dieses HTML etwas von fremden Hosts? Gezählt wird, was der Browser beim Aufbau lädt: src, srcset, data,
+ * poster, href von <link>, url(…) in Stilen – und jedes <script> und <iframe> (Skripte können beliebig nachladen).
+ * Ein gewöhnlicher Link (<a href>) lädt nichts und zählt nicht.
+ */
+function tamil_site_fremde_inhalte( string $html ): bool {
+	if ( preg_match( '/<(script|iframe|object|embed)\b/i', $html ) ) {
+		return true;
+	}
+	$eigen    = strtolower( (string) wp_parse_url( home_url(), PHP_URL_HOST ) );
+	$adressen = array();
+	if ( preg_match_all( '/\s(?:src|data|poster)\s*=\s*["\']?\s*([^"\'\s>]+)/i', $html, $m ) ) {
+		$adressen = array_merge( $adressen, $m[1] );
+	}
+	if ( preg_match_all( '/\ssrcset\s*=\s*["\']([^"\']+)/i', $html, $m ) ) {
+		foreach ( $m[1] as $srcset ) {
+			foreach ( explode( ',', $srcset ) as $teil ) {
+				$adressen[] = strtok( trim( $teil ), ' ' );
+			}
+		}
+	}
+	if ( preg_match_all( '/<link\b[^>]*\shref\s*=\s*["\']?\s*([^"\'\s>]+)/i', $html, $m ) ) {
+		$adressen = array_merge( $adressen, $m[1] );
+	}
+	if ( preg_match_all( '/url\(\s*["\']?([^"\')]+)/i', $html, $m ) ) {
+		$adressen = array_merge( $adressen, $m[1] );
+	}
+	foreach ( $adressen as $adresse ) {
+		$adresse = html_entity_decode( trim( (string) $adresse ), ENT_QUOTES, 'UTF-8' );
+		if ( ! preg_match( '~^(?:[a-z][a-z0-9+.-]*:)?//~i', $adresse ) ) {
+			continue; // relativ oder data: – bleibt auf der eigenen Website
+		}
+		$host = strtolower( (string) wp_parse_url( ( str_starts_with( $adresse, '//' ) ? 'https:' : '' ) . $adresse, PHP_URL_HOST ) );
+		if ( '' === $host || $host !== $eigen ) {
+			return true;
+		}
+	}
+	return false;
+}
+
+/**
+ * Fremdes Werbe-HTML erst nach Zustimmung: Ist der Schalter „zustimmung“ an und lädt der Inhalt etwas von fremden
+ * Hosts, steht er inaktiv in einem <template>; consent.js setzt ihn nach Zustimmung zu „externe_medien“ ein. Bis
+ * dahin zeigt der Platz die Eigenanzeige (oder nichts).
+ *
+ * @param string $html  Werbe-HTML.
+ * @param string $platz Werbeplatz.
+ */
+function tamil_site_anzeige_fremd( string $html, string $platz ): string {
+	if ( ! tamil_site_funktion_an( 'zustimmung' ) || ! tamil_site_fremde_inhalte( $html ) ) {
+		return '<div class="flaeche">' . $html . '</div>';
+	}
+	$settings = tamil_site_settings();
+	$ersatz   = tamil_site_eigenanzeige_html( (string) ( $settings['eigen'][ $platz ] ?? '' ) );
+	return '<div class="tz-anzeige" data-tz-platz>' . $ersatz . '<template data-zustimmung="externe_medien"><div class="flaeche">' . $html . '</div></template></div>';
+}
+
+/**
  * Inhalt eines Werbeplatzes ohne Rahmen. Zweiter Rückgabewert: true, wenn es eine Eigenanzeige ist.
  *
  * @return array{0:string,1:bool}
  */
 function tamil_site_anzeige_inhalt( string $platz ): array {
+	// Eine gebuchte, heute aktive Anzeige (Werbebuchung F3) geht allem anderen vor; „aktiv“ entscheidet werbung.php.
+	$gebucht = function_exists( 'tamil_site_werbung_ausliefern' ) ? tamil_site_werbung_ausliefern( $platz ) : '';
+	if ( '' !== $gebucht ) {
+		return array( $gebucht, false );
+	}
 	$settings  = tamil_site_settings();
 	$placement = (string) ( $settings['advanced_ads'][ $platz ] ?? '' );
 	if ( $placement && function_exists( 'get_the_ad_placement' ) ) {
 		$html = (string) get_the_ad_placement( $placement );
 		if ( '' !== trim( $html ) ) {
-			return array( '<div class="flaeche">' . $html . '</div>', false );
+			return array( tamil_site_anzeige_fremd( $html, $platz ), false );
 		}
 	}
 	$html = trim( (string) ( $settings['anzeigen'][ $platz ] ?? '' ) );
 	if ( '' !== $html ) {
-		return array( '<div class="flaeche">' . $html . '</div>', false );
+		return array( tamil_site_anzeige_fremd( $html, $platz ), false );
 	}
 	$eigen = tamil_site_eigenanzeige_html( (string) ( $settings['eigen'][ $platz ] ?? '' ) );
 	return array( $eigen, '' !== $eigen );

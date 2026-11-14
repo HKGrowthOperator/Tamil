@@ -55,13 +55,24 @@
     });
   });
 
-  // YouTube erst nach Klick laden
+  // YouTube erst nach Klick laden – oder sofort, wenn die Zustimmung „externe_medien“ vorliegt (Plugin tamil-site)
+  function ladeVideo(box, perKlick) {
+    if (box.classList.contains("is-geladen")) return;
+    var id = box.getAttribute("data-video");
+    var frame = document.createElement("iframe");
+    frame.src = "https://www.youtube-nocookie.com/embed/" + encodeURIComponent(id) + (perKlick ? "?autoplay=1" : "");
+    frame.title = "YouTube-Video";
+    frame.allow = "autoplay; encrypted-media; picture-in-picture";
+    frame.allowFullscreen = true;
+    if (!perKlick) frame.loading = "lazy";
+    box.classList.add("is-geladen");
+    box.textContent = "";
+    box.appendChild(frame);
+    if (perKlick) frame.focus(); // der Knopf ist weg; der Fokus bleibt beim Video statt an den Seitenanfang zu springen
+  }
   $$(".video-embed").forEach(function (box) {
     var btn = $(".video-load", box); if (!btn) return;
-    btn.addEventListener("click", function () {
-      var id = box.getAttribute("data-video");
-      box.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + encodeURIComponent(id) + '?autoplay=1" title="YouTube-Video" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>';
-    });
+    btn.addEventListener("click", function () { ladeVideo(box, true); });
   });
 
   // Link kopieren
@@ -74,19 +85,33 @@
   });
 
 
-  // Tamil TV: Stream erst nach Klick laden (Safari/iOS spielen HLS direkt, sonst Link zum Stream)
+  // Tamil TV: Stream erst nach Klick laden (Safari/iOS spielen HLS direkt, sonst Link zum Stream) – oder sofort bei Zustimmung
+  function ladeStream(box, perKlick) {
+    if (box.classList.contains("is-geladen")) return;
+    var src = box.getAttribute("data-stream"), v = document.createElement("video");
+    box.classList.add("is-geladen");
+    if (v.canPlayType("application/vnd.apple.mpegurl")) {
+      v.src = src; v.controls = true; v.autoplay = perKlick; v.playsInline = true; v.preload = perKlick ? "auto" : "metadata";
+      v.style.width = "100%"; v.style.height = "100%";
+      box.innerHTML = ""; box.appendChild(v);
+    } else {
+      box.innerHTML = '<a class="knopf knopf-rot" href="' + src.replace(/"/g, "") + '" target="_blank" rel="noopener">Stream öffnen</a>';
+    }
+  }
   $$(".player[data-stream]").forEach(function (box) {
     var btn = $(".play", box); if (!btn) return;
-    btn.addEventListener("click", function () {
-      var src = box.getAttribute("data-stream"), v = document.createElement("video");
-      if (v.canPlayType("application/vnd.apple.mpegurl")) {
-        v.src = src; v.controls = true; v.autoplay = true; v.playsInline = true; v.style.width = "100%"; v.style.height = "100%";
-        box.innerHTML = ""; box.appendChild(v);
-      } else {
-        box.innerHTML = '<a class="knopf knopf-rot" href="' + src.replace(/"/g, "") + '" target="_blank" rel="noopener">Stream öffnen</a>';
-      }
-    });
+    btn.addEventListener("click", function () { ladeStream(box, true); });
   });
+
+  // Zustimmung „externe_medien“: Videos und Streams ohne Klick laden (nur wenn das Plugin die Zustimmung anbietet)
+  function externeMedien() {
+    var z = window.tamilZustimmung;
+    if (!z || !z.hat("externe_medien")) return;
+    $$(".video-embed").forEach(function (box) { if ($(".video-load", box)) ladeVideo(box, false); });
+    $$(".player[data-stream]").forEach(function (box) { if ($(".play", box)) ladeStream(box, false); });
+  }
+  document.addEventListener("tamil:zustimmung", externeMedien);
+  externeMedien();
 
   // Zutaten abhaken
   $$(".rezept-zutaten li").forEach(function (li) { li.addEventListener("click", function () { var an = li.style.opacity === "0.45"; li.style.opacity = an ? "" : "0.45"; li.style.textDecoration = an ? "" : "line-through"; }); });

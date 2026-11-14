@@ -5,20 +5,36 @@ from __future__ import annotations
 import html
 import re
 from datetime import datetime
+from urllib.parse import urlsplit
+
+import nh3
 
 _QUELLE_RE = re.compile(r'<p class="quelle">.*?</p>\s*', re.S)
-_UNSAFE_RE = re.compile(r"<\s*(script|iframe|object|embed|style)[^>]*>.*?<\s*/\s*\1\s*>|<\s*(script|iframe|object|embed|style)[^>]*/?>", re.I | re.S)
-_ON_ATTR_RE = re.compile(r"\s+on\w+\s*=\s*(\"[^\"]*\"|'[^']*'|[^\s>]+)", re.I)
-_JS_HREF_RE = re.compile(r"(href|src)\s*=\s*([\"']?)\s*javascript:[^\"'>\s]*", re.I)
-_ALLOWED_TAGS = re.compile(r"</?(p|h2|h3|strong|em|b|i|ul|ol|li|a|br|blockquote|figure|figcaption|img|div|span|table|thead|tbody|tr|th|td)\b[^>]*>", re.I)
+_TAGS = {"p", "h2", "h3", "strong", "em", "b", "i", "ul", "ol", "li", "a", "br", "blockquote", "figure", "figcaption", "img",
+         "div", "span", "table", "thead", "tbody", "tr", "th", "td"}
+_ATTRIBUTE = {"*": {"class"}, "a": {"href", "title", "rel", "target"}, "img": {"src", "alt", "width", "height"},
+              "th": {"colspan", "rowspan"}, "td": {"colspan", "rowspan"}}
+_STEUERZEICHEN_RE = re.compile(r"[\x00-\x20\x7f]")
 
 
 def sanitize_html(text: str) -> str:
-    """Entfernt Script/Iframe/Event-Handler – WordPress filtert für Autoren noch einmal (wp_kses)."""
-    text = _UNSAFE_RE.sub("", text or "")
-    text = _ON_ATTR_RE.sub("", text)
-    text = _JS_HREF_RE.sub(r'\1=\2#', text)
-    return re.sub(r"<[^>]+>", lambda m: m.group(0) if _ALLOWED_TAGS.fullmatch(m.group(0)) else "", text)
+    """Allowlist-Bereinigung (nh3/ammonia): nur erlaubte Tags und Attribute, Links und Bilder nur mit http/https/mailto
+    oder relativ, keine Event-Handler, kein style, Inhalt von script/style wird verworfen. WordPress filtert für Autoren
+    noch einmal (wp_kses_post)."""
+    return nh3.clean(text or "", tags=_TAGS, attributes=_ATTRIBUTE, url_schemes={"http", "https", "mailto"},
+                     link_rel=None, strip_comments=True)
+
+
+def safe_url(url: str | None) -> str:
+    """Nur absolute http/https-Adressen – alles andere (javascript:, data:, relative Pfade, Müll) wird zu „“."""
+    kandidat = _STEUERZEICHEN_RE.sub("", (url or "").strip())
+    try:
+        teile = urlsplit(kandidat)
+    except ValueError:
+        return ""
+    if teile.scheme.lower() not in ("http", "https") or not teile.hostname:
+        return ""
+    return kandidat
 
 
 def format_date_de(value: str | None, with_time: bool = False) -> str:
@@ -32,7 +48,10 @@ def format_date_de(value: str | None, with_time: bool = False) -> str:
 
 
 def _link(url: str, label: str) -> str:
-    return f'<a href="{html.escape(url, quote=True)}" rel="nofollow noopener" target="_blank">{html.escape(label)}</a>'
+    sicher = safe_url(url)
+    if not sicher:
+        return html.escape(label)
+    return f'<a href="{html.escape(sicher, quote=True)}" rel="nofollow noopener" target="_blank">{html.escape(label)}</a>'
 
 
 def render_kino_liste(fakten: dict) -> str:
@@ -67,8 +86,15 @@ def render_event_box(row: dict) -> str:
     rows = []
     if row.get("event_datum"):
         rows.append(f"<p><strong>Wann:</strong> {html.escape(format_date_de(row['event_datum']))}</p>")
+    fakten = row.get("fakten") or {}
+    if fakten.get("event_ende"):
+        rows.append(f"<p><strong>Bis:</strong> {html.escape(format_date_de(fakten['event_ende'], with_time=True))}</p>")
     if row.get("event_ort"):
         rows.append(f"<p><strong>Wo:</strong> {html.escape(row['event_ort'])}</p>")
+    if fakten.get("event_veranstalter"):
+        rows.append(f"<p><strong>Veranstalter:</strong> {html.escape(str(fakten['event_veranstalter']))}</p>")
+    if fakten.get("event_preis"):
+        rows.append(f"<p><strong>Eintritt:</strong> {html.escape(str(fakten['event_preis']))}</p>")
     if row.get("ticket_url"):
         rows.append(f"<p>{_link(row['ticket_url'], 'Tickets')}</p>")
     if not rows:

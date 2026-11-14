@@ -12,10 +12,11 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 
-from . import dates, filtering, notify, sources
+from . import dates, filtering, lizenz, notify, schalter, sources
 from .config import Settings
 from .bilder import beitragsbild
 from .images import save_pair
+from .kino_providers import vereinige_fakten
 from .store import Store
 from .wordpress import slugify
 from .writer import Draft, Writer, split_source_suffix
@@ -73,7 +74,7 @@ def draft_row(item: sources.NewsItem, draft: Draft, bild_datei: str, image, hinw
         "meta_beschreibung": draft.meta_beschreibung,
         "bild_datei": bild_datei,
         "bild_credit": image.credit,
-        "bild_alt": draft.bild_alt,
+        "bild_alt": lizenz.alt_fuer_karte(draft.titel) if image.origin == "karte" else draft.bild_alt,
         "bild_suchbegriff": draft.bild_suchbegriff,
         "bild_origin": image.origin,
         "bild_thema": draft.bild_thema,
@@ -119,7 +120,13 @@ def process(item: sources.NewsItem, settings: Settings, writer: Writer, store: S
             store.mark(item.uid, item.title, item.url, item.source, "veraltet")
             store.event("verworfen", titel=item.title, quelle=item.url, grund=f"Veranstaltung vom {vergangen} liegt zurück")
             return Result(item.title, "verworfen", note=f"veraltet: Termin {vergangen}", seconds=time.monotonic() - start)
-    draft = writer.write(item, article_text)
+    from .workflow.costs import BudgetErschoepft
+
+    try:
+        draft = writer.write(item, article_text)
+    except BudgetErschoepft as exc:  # nicht als gesehen markieren: kommt dran, wenn wieder Budget da ist
+        store.event("budget", titel=item.title, quelle=item.url, grund=str(exc))
+        return Result(item.title, "verworfen", note=f"Budget: {exc}", seconds=time.monotonic() - start)
     if draft is None:
         store.mark(item.uid, item.title, item.url, item.source, "abgelehnt_modell")
         return Result(item.title, "verworfen", note="vom Modell abgelehnt", seconds=time.monotonic() - start)
@@ -135,10 +142,15 @@ def process(item: sources.NewsItem, settings: Settings, writer: Writer, store: S
         slug=stem, bild_prompt=draft.bild_prompt, bild_thema=draft.bild_thema, bild_suchbegriff=draft.bild_suchbegriff,
     )
     bild_datei, _thumb = save_pair(image, settings.bilder_dir, stem)
-    draft_id = store.insert_draft(draft_row(item, draft, bild_datei, image, hinweise))
+    zeile = draft_row(item, draft, bild_datei, image, hinweise)
+    draft_id = store.insert_draft(zeile)
     store.mark(item.uid, item.title, item.url, item.source, "entwurf")
     if draft_id is None:
         return Result(draft.titel, "verworfen", draft.kategorie, note="Entwurf existiert schon", seconds=time.monotonic() - start)
+    # gemeinsamer Speicherweg: Lizenz-Datensatz zum Bild (Spezifikation Bilder 3.1)
+    lizenz.anlegen(store, datei=bild_datei, daten=image.data, draft_id=draft_id,
+                   felder=lizenz.datensatz(image, titel=draft.titel if image.origin == "karte" else "",
+                                           alt=zeile["bild_alt"]))
 
     seconds = time.monotonic() - start
     link = f"{settings.web_url}/entwurf/{draft_id}"
@@ -160,16 +172,19 @@ def refresh_kino(items: list[sources.NewsItem], store: Store, seen: set[str]) ->
         existing = store.draft_by_uid(item.uid)
         if not existing:
             continue
+        facts, fingerprint = vereinige_fakten(existing["fakten"], item)
         old = {k.get("kino") for k in existing["fakten"].get("kinos", [])}
-        new = {k.get("kino") for k in (item.facts or {}).get("kinos", [])}
+        new = {k.get("kino") for k in facts.get("kinos", [])}
         added, removed = sorted(new - old), sorted(old - new)
         parts = [f"+{k}" for k in added] + [f"−{k}" for k in removed]
         note = f"Aktualisiert {datetime.now(timezone.utc):%d.%m.}: " + (", ".join(parts) if parts else "Termine aktualisiert")
-        if store.update_kino_facts(item.uid, item.facts or {}, item.fingerprint, note):
+        if store.update_kino_facts(item.uid, facts, fingerprint, note, alt_fingerprint=existing.get("fingerprint")):
             store.event("kino_aktualisiert", id=existing["id"], titel=existing["titel"], hinweis=note)
             results.append(Result(existing["titel"], "aktualisiert", existing["kategorie"], note=note, draft_id=existing["id"]))
-        elif existing["status"] not in ("neu", "bearbeitet", "zurueckgestellt") and existing.get("fingerprint") != item.fingerprint:
-            store.event("kino_update_ignoriert", id=existing["id"], titel=existing["titel"], status=existing["status"])
+        else:
+            jetzt = store.get_draft(existing["id"]) or existing  # Status nach dem (bedingten) Update neu lesen
+            if jetzt["status"] not in ("neu", "bearbeitet", "zurueckgestellt") and jetzt.get("fingerprint") != fingerprint:
+                store.event("kino_update_ignoriert", id=jetzt["id"], titel=jetzt["titel"], status=jetzt["status"])
     return results
 
 
@@ -183,6 +198,18 @@ def run(settings: Settings, writer: Writer | None = None, store: Store | None = 
     run_id = store.start_run(modus)
     results: list[Result] = []
     try:
+
+
+        if schalter.gestoppt(store, "redaktion"):  # Stopp-Schalter: kein Abruf, kein Text; Freigegebenes geht weiter
+            log.info("Redaktion angehalten – kein Scan; nur Veröffentlichung freigegebener Entwürfe")
+            if settings.wordpress_enabled:
+                from .publisher import publish_approved
+
+                results += publish_approved(settings, store)
+            store.finish_run(run_id, gesammelt=0, relevant=0, entwuerfe=0, verworfen=0,
+                             veroeffentlicht=sum(1 for r in results if r.status == "veroeffentlicht"), fehler=0,
+                             notiz="Redaktion angehalten")
+            return results
         items = sources.fetch_all(settings, store)
         seen = store.seen_uids()
         results += refresh_kino(items, store, seen)
@@ -197,7 +224,10 @@ def run(settings: Settings, writer: Writer | None = None, store: Store | None = 
         log.info("%d Meldungen gesammelt, %d relevant, bearbeite %d", len(items), len(candidates), len(batch))
 
         if batch:
-            writer = writer or Writer(settings)
+            if writer is None:
+                # eigene Datenbankverbindung je Aufruf: läuft ein Aufruf über die Deadline hinaus, wird er trotzdem
+                # verbucht (der Lauf-Store ist dann schon geschlossen)
+                writer = Writer(settings)
             deadline = t0 + settings.deadline_seconds
             pool = ThreadPoolExecutor(max_workers=min(5, len(batch)))
             futures = {pool.submit(process, item, settings, writer, store): item for item in batch}
@@ -206,6 +236,8 @@ def run(settings: Settings, writer: Writer | None = None, store: Store | None = 
                     item = futures[fut]
                     try:
                         results.append(fut.result())
+                    except schalter.Gestoppt:
+                        log.info("Angehalten – %s folgt nach dem Einschalten", item.title)
                     except Exception as exc:  # noqa: BLE001 - ein fehlerhafter Beitrag stoppt den Lauf nicht
                         log.exception("Fehler bei %s", item.title)
                         store.event("fehler", titel=item.title, quelle=item.url, fehler=str(exc)[:300])

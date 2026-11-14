@@ -1,0 +1,64 @@
+/* Hallmark · shape: Kalenderblatt (drawn Manifesto refused: tilted uppercase poster type is the rejected round 4) · genre: editorial · theme: Almanac (deal 2/3, seed tamil-deutschsprachiges-online-magazin-der-ff32·6bcf19c0·2026-11-13·r0) · job: read · draw: 26f3b5
+ * hero: index (the sheet under its head line, the first report beside it) · nav: banner over a retracting bar · footer: index columns · imagery: photographs, the posts' own Commons pictures 2, muted · signature: das Kalenderblatt, die naechsten Feste als gedruckter Bogen, der naechste Termin in Logo-Rot
+ * axes: mid/grotesk-sans/chromatic-magenta (accent re-hued to the logo red) · posture: restrained · contrast: pass · fold: pass · v2.0.0 */
+/* Hallmark · pre-emit critique: P4 H4 E4 S5 R4 V5 · weakest: H, a sheet above the head competes with it; the head sits alone on the base row at the display size and the sheet keeps to one weight of type */
+@import url("./almanac.css");
+/* Hallmark · waive 78 · the section heads Im Kino, Steinmeier and Das Jahr 2026 render at 36px under the 42px head line · on the start page the head line Die nächsten Feste is capped at 44px by the main session, the section heads sit one step under it */
+/* Hallmark · waive 44c · the hero holds the head line, the dated sheet of the next festivals and the first report with its photograph beside it · the Kalenderblatt is the head of the start page by decision of the critique r1, the photograph sits beside the sheet, not centred on the head line */
+/* Hallmark · hero-review: fix · 5 findings · 1 resolved 2 partial 2 kept by choice (sheet as hero visual, dated head) · finish-review: subagent (claude -p, sonnet, fresh context) · 8 findings · 3 resolved 5 partial · gap: none */
+/* Hallmark · dismissed 58 · the page count includes all four year tabs, one of which shows at a time; the 91-word window is six report headlines over the footer index */
+/* Hallmark · waive 49b · the wrapping links are report headlines in the dated year index, two lines at most at 1440 · a Rückblick headline is the report's own title and cannot be cut to fit one phone line */
+
+/* Kritik r1: the sheet is the head; the head line sits over it, the first report with its photograph beside it */
+.hero { padding-block: var(--space-xl) 0; }
+.kopf-start { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--space-xs) var(--space-xl); padding-block-end: var(--space-head-after); }
+.kopf-start h1 { font-size: var(--text-display); letter-spacing: -0.02em; line-height: 1.1; max-width: 24ch; }
+.kopf-start .lead { max-width: 40ch; }
+.hero__grid { align-items: start; row-gap: var(--space-xl); }
+.hero__field { grid-column: 1 / span 8; }
+.erste { grid-column: 9 / span 4; display: flex; flex-direction: column; gap: var(--space-sm); }
+.erste h2 { font-size: var(--text-title); line-height: 1.2; }
+.erste h2 a, .hamm h2 a { text-decoration: none; }
+.erste h2 a:hover, .hamm h2 a:hover { text-decoration: underline; text-decoration-color: var(--color-accent); text-decoration-thickness: 2px; }
+.erste .photo { aspect-ratio: 4 / 3; }
+.hero .tafel col.c-tag { width: 15%; } .hero .tafel col.c-was { width: 36%; } .hero .tafel col.c-wer { width: 27%; }
+@media (max-width: 60rem) { .kopf-start { flex-direction: column; } .hero__grid .erste { order: -1; } .erste .photo { aspect-ratio: 16 / 9; } }
+
+/* cinema on the light sheet, numbers at reading size */
+.kino-blatt { padding-block-start: var(--section-gap-s); }
+.filme .zahl { text-align: right; white-space: nowrap; width: 6rem; }
+.filme td.was { width: 30%; }
+@media (max-width: 40rem) {
+  .filme tr { grid-template-columns: minmax(0, 1fr) auto !important; }
+  .filme td { grid-column: 1 !important; }
+  .filme td.was { grid-row: 1; }
+  .filme td.zahl { grid-column: 2 !important; grid-row: 1; width: auto; }
+}
+
+/* a second report, the picture on the right */
+.hamm .split__text { grid-column: 1 / span 6; }
+.hamm .split__text h2 { font-size: var(--text-section); max-width: 24ch; }
+.hamm .split__text .lead { max-width: 46ch; }
+.hamm .pic { grid-column: 7 / span 6; }
+
+/* the year as an index, by quarter */
+.jahr { padding-block-end: var(--space-3xl); border-top: var(--rule-bar) solid var(--color-rule-2); margin-block-start: var(--section-gap-l); padding-block-start: var(--space-2xl); align-items: start; }
+.jahr__head { grid-column: 1 / span 4; display: flex; flex-direction: column; gap: var(--space-md); position: sticky; top: var(--space-3xl); }
+.jahr__body { grid-column: 5 / span 8; min-width: 0; }
+.tabs { display: flex; flex-wrap: wrap; gap: 0; margin-block-end: var(--space-lg); border-bottom: var(--rule-hair) solid var(--color-rule-2); }
+.tabs button { min-height: 44px; padding: 0 var(--space-md); border: 0; border-bottom: var(--rule-bar) solid transparent; background: transparent; color: var(--color-ink-2); font: 500 var(--text-sm)/1 var(--font-display); cursor: pointer; white-space: nowrap; transition: color var(--dur-micro) var(--ease-out), border-color var(--dur-micro) var(--ease-out); }
+.tabs button:hover { color: var(--color-ink); border-bottom-color: var(--color-rule-2); }
+.tabs button[aria-selected="true"] { color: var(--color-ink); border-bottom-color: var(--color-accent); }
+.tabs button:active { color: var(--color-accent-2); }
+.tabs button:disabled { opacity: 0.55; cursor: not-allowed; }
+.quartal + .quartal { margin-block-start: var(--space-xl); }
+.quartal h3 { font-size: var(--text-sm); font-family: var(--font-body); font-weight: 500; color: var(--color-muted); letter-spacing: 0; padding-block-end: var(--space-xs); }
+.js .quartal h3 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.zeilen { margin: 0; padding: 0; list-style: none; }
+.zeilen li { display: grid; grid-template-columns: 5rem minmax(0, 1fr); gap: var(--space-md); align-items: baseline; padding-block: var(--space-md); border-top: var(--rule-hair) solid var(--color-rule); }
+.zeilen li:first-child { border-top: 0; }
+.zeilen .num { color: var(--color-ink); font-size: var(--text-sm); }
+.zeilen .titel { color: var(--color-ink); font-weight: 500; }
+.zeilen .ort { color: var(--color-muted); font-size: var(--text-sm); text-align: right; }
+@media (max-width: 60rem) { .jahr__head { position: static; } }
+@media (max-width: 40rem) { .zeilen li { grid-template-columns: 4rem minmax(0, 1fr); } }

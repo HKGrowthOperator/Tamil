@@ -3,6 +3,11 @@
 Projekt HKG-2026-TML-V-001 (HK Growth Operator × KBS Management GmbH). Plan, Audit, Quellen und ROI:
 [„Tamil.de Relaunch, Automation & ROI“](https://claude.ai/code/artifact/08e13154-b4ac-4123-9ff3-0087cf3a3612).
 
+**Für Claude-Sitzungen und Entwickler:** Einstieg ist [`CLAUDE.md`](CLAUDE.md) (Systeme, Befehle, Regeln, Abläufe).
+Tiefer: [`docs/architektur.md`](docs/architektur.md), [`docs/betrieb.md`](docs/betrieb.md) (Coolify, Variablen,
+Deploy, Sicherung), [`docs/ablaeufe.md`](docs/ablaeufe.md) (Rollen und Abnahme-Tore),
+[`docs/entscheidungen.md`](docs/entscheidungen.md).
+
 ## News-Radar (Teil B)
 
 Findet Nachrichten mit Bezug zur tamilischen Community im DACH-Raum, schreibt daraus einen eigenen
@@ -22,6 +27,54 @@ Quellen (Google News je Stadt, Schweizer Tamil-Portale, Eventfrog, Haus der Reli
 Takt: alle 3 Minuten; ein Lauf bricht spätestens nach 4,5 Minuten ab. Eine Meldung liegt also rund
 5 Minuten nach Erscheinen im Feed als Entwurf vor. Kinoprogramme werden je Film und Kinowoche zu
 **einem** Beitrag „‹Film› (Tamil) läuft in n Kinos“ gebündelt und aktualisiert, solange er offen ist.
+
+### Redaktion v2: Rollen, Belege, Kostenmessung (Blueprint 19.10.)
+
+Mit `RADAR_WORKFLOW=v2` arbeitet der Radar als kleine Redaktion. Ein deterministischer Orchestrator verteilt die Arbeit,
+Sprachmodelle kommen nur in einzelnen Rollen zum Einsatz, und jeder Modellaufruf wird gemessen und gegen ein Budget
+gebucht.
+
+```
+Timer (3 Min.)  run     Quellen → Vorfilter → Signal (Haiku, nur Grauzone) → Story-Clustering → Story + Job
+Dienst          worker  Recherche (Belege + Claims, Sonnet) → Gate (Regeln) → Text (Sonnet) → Faktencheck (Sonnet)
+                        → Lektorat (Regeln + Haiku) → SEO (Regeln + Haiku) → Bild mit Lizenz → Entwurf „neu“
+Kino                    Kinoprogramm → Textvorlage → Entwurf (ohne Modell)
+Mensch          App     freigeben (mit Person und Fassungs-Hash protokolliert) → WordPress
+```
+
+- **Belege statt Bauchgefühl:** Jede Story sammelt Dokumente (Volltext der Primärquelle, weitere Meldungen zum selben
+  Ereignis, Google-News-Titel nur als Hinweis). Die Recherche zieht Aussagen (Claims) mit Dokument-Kennung und
+  Fundstelle. Das **Gate** prüft nach Regeln: Kernaussagen (was, wer, wann, wo; bei Terminen Datum und Ort) müssen in
+  einer Primärquelle oder in zwei unabhängigen Quellen stehen, und die Fundstelle muss wörtlich im Dokument stehen.
+  Sonst landet die Story unter **„Recherche nötig“**, und die Redaktion kann eine Quelle ergänzen.
+- **Text nur aus bestätigten Claims**, Länge nach Stofflage (Kurzmeldung, Nachricht, lange Nachricht, Termin, Kino,
+  Dossier), Belege je Absatz, Links nur auf Quellen der Story. Der **Faktencheck** prüft danach jeden Satz; bei einer
+  ungedeckten Kernaussage gibt es genau eine Überarbeitung.
+- **Story-Clustering:** Eine zweite Meldung zum selben Ereignis reichert die Story an, statt einen zweiten Entwurf
+  anzulegen. Hängt die Story unter „Recherche nötig“, startet die neue Quelle die Recherche neu.
+- **Kosten und Budget:** Preise je Modell (Stand 08.11.2026, inklusive Cache und Fallback-Versuche) in
+  `workflow/costs.py`. Vor jedem Aufruf wird der ungünstigste Fall reserviert. Bei 80 % kommt eine Warnung, bei 100 %
+  ein harter Stopp für neue bezahlte Schritte. Freigeben und Veröffentlichen laufen weiter.
+- **Bilder mit Lizenz:** Archiv → Pressebild (nur mit `bild_nutzen = true` im Register) → Stock → Pool → KI (höchstens
+  eins je Story) → Bildkarte. Jedes Bild bekommt einen Datensatz mit Rechteinhaber, Lizenz, Umfang und Ablauf.
+- **Ohne API-Schlüssel** laufen Scan und Kino. Recherche und Text übernimmt dann die Cloud-Sitzung:
+  `agent export --v2` / `agent import --v2`, mit denselben Gates.
+
+```bash
+python -m news_radar quellen pruefen   # Register live prüfen (robots, Ausbeute, Paywall) → data/quellen-pruefung.csv
+python -m news_radar run               # RADAR_WORKFLOW=v2: Storys und Jobs anlegen (--mit-jobs: gleich abarbeiten)
+python -m news_radar worker            # Jobs abarbeiten (Dienst; --einmal leert die Schlange)
+python -m news_radar kosten            # Kosten je Rolle/Modell/Tag, Budgetstand; --csv für die Abrechnung
+python -m news_radar bericht --woche   # Annahmequote, „Recherche nötig“, Kosten je Entwurf, Fehler
+python -m news_radar dossier --entwurf 12   # Entwurf als Dossier recherchieren (Opus)
+python -m news_radar nutzer anlegen priya --rolle redaktion
+python -m news_radar abnahme           # alle Szenarien mit FakeClaude, Kriterien K1–K9 → data/abnahme-bericht.md
+python -m news_radar bewertung vergleich --anzahl 10   # Sonnet gegen Opus blind (braucht Schlüssel)
+python -m news_radar sicherung erstellen|pruefen|wiederherstellen --datum 2026-11-08
+```
+
+Die Prompts der Rollen liegen als Markdown neben `redaktion.md`: `signal.md`, `cluster.md`, `recherche.md`, `text.md`,
+`faktencheck.md`, `lektorat.md`, `seo.md`. Die Modelle je Rolle stehen in `.env` (`RADAR_MODELL_<ROLLE>`).
 
 ### Start
 
@@ -71,6 +124,10 @@ KI-Bilder tragen den Nachweis „Symbolbild: KI-generiert · Tamil.de“.
   eigenes Bild, Bildkarte; KI-Bilder sind im Feed und im Editor als „KI-Symbolbild“ markiert
 - Im WordPress-Backend unter „News-Radar“ eingebettet (nur unter HTTPS; `frame-ancestors` erlaubt nur `WP_URL`)
 - Dashboard (offene/erledigte Vorgänge, je Kategorie/Quelle, Läufe, Fehler, Quellen-Status), Protokoll mit JSONL-Export
+- Redaktion v2: im Entwurf Quellen mit Rechten, Faktenmatrix als Ampel, Faktencheck je Satz, Fassungen mit
+  Änderungen, Kosten der Story, Bildlizenz, „Als Dossier recherchieren“; Seiten **Recherche nötig**, **Kosten**
+  (mit CSV), **Quellen** (Register, robots, Ausfallquote), **Warteschlange** (abgebrochene Jobs neu starten),
+  **Benutzer** (Rollen redaktion/admin); Budget-Banner bei 80 % und beim Stopp
 
 ### WordPress vorbereiten
 
@@ -83,11 +140,27 @@ Ausführlich in [`wordpress/README.md`](wordpress/README.md). Kurz:
 4. `python -m news_radar publish --pruefen` zeigt, ob das Plugin antwortet. Ohne Plugin nutzt der Radar die Core-REST
    (dann ohne Termin- und Kinofelder; SEO nur mit `WP_SEO_META=rankmath|yoast`).
 
+### Coolify (Dockerfile, ein Container)
+
+Standardbetrieb. Coolify baut das `Dockerfile` im Repo-Root (Port 3000); im Container läuft `python -m news_radar dienst`
+(Cockpit, Scan alle 3 Minuten, Worker, Digest 08:00, Sicherung 03:00) als Nutzer `radar`. Persistent Storage auf
+`/app/data`. App, Domain, alle Variablennamen, Deploy, Rollback und Sicherung: [`docs/betrieb.md`](docs/betrieb.md).
+Einzelbefehle über „Execute command“ im Container, z. B. `python -m news_radar kosten`.
+
 ### Server (HK-Server, systemd)
 
 ```bash
 sudo ./deploy/install.sh     # /opt/tamil-news-radar: venv, Timer (3 Min.), Web-Service (gunicorn :8787), Digest-Timer (8 Uhr), Backup-Cron
+sudo /opt/tamil-news-radar/restore.sh 2026-11-08   # Backup-Stand zurückspielen (prüft vorher die Integrität)
 ```
+
+Code, venv und Skripte unter `/opt/tamil-news-radar` gehören root, das Dienstkonto `newsradar` schreibt nur in `data/`
+und `backup/`. `restore.sh` stoppt alle Radar-Timer und -Dienste (bricht ab, wenn einer weiterläuft) und lässt Python als
+`newsradar` laufen. Stilbeispiele (`style`) deshalb im Repo aktualisieren und neu installieren.
+
+Mit `RADAR_WORKFLOW=v2` in der `.env` aktiviert `install.sh` zusätzlich den Worker-Dienst und den wöchentlichen
+Bildpool-Timer (nur fehlende Bilder, mit Budget). `/gesund` zeigt Warteschlange und Budget; die Tageszusammenfassung
+nennt Kosten und Probleme.
 
 Zugriff von außen über Cloudflare Tunnel: `deploy/cloudflared-ingress.yml`. Die App lauscht nur auf 127.0.0.1.
 

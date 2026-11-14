@@ -1,0 +1,205 @@
+{
+  "slug": "klar",
+  "stand": "2026-11-10T14:29",
+  "groesster_massstab": 1,
+  "handy": {
+    "kopfleiste_hoehe": 112,
+    "erste_schlagzeile_ab": 369,
+    "schlagzeilen_ganz_sichtbar": 2,
+    "schlagzeilen_seite": 18,
+    "max_zeilen_schlagzeile": 4,
+    "groesste_schrift": {
+      "px": 28,
+      "text": "Uma Kumaran, Londons erste tamilische Ab"
+    },
+    "groesste_rote_schrift": {
+      "px": 13,
+      "text": "Nachrichten"
+    },
+    "schriftgroessen_seite": [
+      {
+        "px": 28,
+        "anzahl": 1,
+        "text": "Uma Kumaran, Londons erste tamilische Ab"
+      },
+      {
+        "px": 19,
+        "anzahl": 10,
+        "text": "Sri Lanka schafft Visum für Deutsche ab"
+      },
+      {
+        "px": 18,
+        "anzahl": 3,
+        "text": "Scene"
+      },
+      {
+        "px": 17,
+        "anzahl": 9,
+        "text": "In einem Erdrutschsieg für die Labour Pa"
+      },
+      {
+        "px": 16,
+        "anzahl": 10,
+        "text": "tamil.de – Startseite"
+      },
+      {
+        "px": 15,
+        "anzahl": 9,
+        "text": "Nachrichten"
+      }
+    ],
+    "versalien_ueber_14px": 0,
+    "schriftfamilien": [
+      "Libre Franklin"
+    ],
+    "groesster_radius": {
+      "px": 0,
+      "element": ""
+    },
+    "schatten": 0,
+    "gedreht": 0,
+    "schriftbreite_verstellt": 0,
+    "bilder_ueber_natuerlicher_breite": [],
+    "bilder_ueber_dateibreite": [],
+    "anreisser": 18,
+    "anreisser_ohne_bild": [
+      "Von Deutschland nach Tamil Nadu: Prashath Lokeshwa",
+      "Ist Sri Lanka bereit für einen Neuanfang?",
+      "Meet Tamil Singles – Ein neues Dating-Event für di",
+      "Indien: Viel Interesse für tamilische Wurzeln von ",
+      "Maya Neelakantan: Ich vertrete ganz Indien auf der",
+      "Vijay unterstützt Sri-Lanka-Tamilen",
+      "Scene",
+      "Ramayana: Rise of a Legend",
+      "Diwali in Basel"
+    ],
+    "anreisser_mit_grafik": [],
+    "dunkle_flaechen": [],
+    "fest_stehend": [],
+    "bewegung": {
+      "uebergaenge": 0,
+      "laengster_uebergang_s": 0,
+      "animationen": 0,
+      "endlos": 0
+    },
+    "seitenhoehe": 2833,
+    "ueberlauf": 0,
+    "bewegung_bei_reduziert": {
+      "uebergaenge": 0,
+      "laengster_uebergang_s": 0,
+      "animationen": 0,
+      "endlos": 0
+    },
+    "helle_schrift": {
+      "anzahl": 0,
+      "kleinster_kontrast": null,
+      "unter_4_5": []
+    },
+    "farbanteil_ohne_bilder": {
+      "bunt": 0.002,
+      "rot": 0.002,
+      "dunkel": 0.039
+    },
+    "seitenfehler": []
+  },
+  "desktop": {
+    "kopfleiste_hoehe": 90,
+    "erste_schlagzeile_ab": 145,
+    "schlagzeilen_ganz_sichtbar": 9,
+    "schlagzeilen_seite": 18,
+    "max_zeilen_schlagzeile": 3,
+    "groesste_schrift": {
+      "px": 34,
+      "text": "Uma Kumaran, Londons erste tamilische Ab"
+    },
+    "groesste_rote_schrift": {
+      "px": 13,
+      "text": "Nachrichten"
+    },
+    "schriftgroessen_seite": [
+      {
+        "px": 34,
+        "anzahl": 1,
+        "text": "Uma Kumaran, Londons erste tamilische Ab"
+      },
+      {
+        "px": 22,
+        "anzahl": 6,
+        "text": "Sri Lanka schafft Visum für Deutsche ab"
+      },
+      {
+        "px": 19,
+        "anzahl": 4,
+        "text": "Kottu Roti"
+      },
+      {
+        "px": 18,
+        "anzahl": 11,
+        "text": "Von Deutschland nach Tamil Nadu: Prashat"
+      },
+      {
+        "px": 17,
+        "anzahl": 1,
+        "text": "In einem Erdrutschsieg für die Labour Pa"
+      },
+      {
+        "px": 16,
+        "anzahl": 14,
+        "text": "tamil.de – Startseite"
+      }
+    ],
+    "versalien_ueber_14px": 0,
+    "schriftfamilien": [
+      "Libre Franklin"
+    ],
+    "groesster_radius": {
+      "px": 0,
+      "element": ""
+    },
+    "schatten": 0,
+    "gedreht": 0,
+    "schriftbreite_verstellt": 0,
+    "bilder_ueber_natuerlicher_breite": [],
+    "bilder_ueber_dateibreite": [],
+    "anreisser": 18,
+    "anreisser_ohne_bild": [
+      "Von Deutschland nach Tamil Nadu: Prashath Lokeshwa",
+      "Ist Sri Lanka bereit für einen Neuanfang?",
+      "Meet Tamil Singles – Ein neues Dating-Event für di",
+      "Indien: Viel Interesse für tamilische Wurzeln von ",
+      "Maya Neelakantan: Ich vertrete ganz Indien auf der",
+      "Vijay unterstützt Sri-Lanka-Tamilen",
+      "Scene",
+      "Ramayana: Rise of a Legend",
+      "Diwali in Basel"
+    ],
+    "anreisser_mit_grafik": [],
+    "dunkle_flaechen": [],
+    "fest_stehend": [],
+    "bewegung": {
+      "uebergaenge": 0,
+      "laengster_uebergang_s": 0,
+      "animationen": 0,
+      "endlos": 0
+    },
+    "seitenhoehe": 1834,
+    "ueberlauf": 0,
+    "bewegung_bei_reduziert": {
+      "uebergaenge": 0,
+      "laengster_uebergang_s": 0,
+      "animationen": 0,
+      "endlos": 0
+    },
+    "helle_schrift": {
+      "anzahl": 0,
+      "kleinster_kontrast": null,
+      "unter_4_5": []
+    },
+    "farbanteil_ohne_bilder": {
+      "bunt": 0.0018,
+      "rot": 0.0018,
+      "dunkel": 0.018
+    },
+    "seitenfehler": []
+  }
+}

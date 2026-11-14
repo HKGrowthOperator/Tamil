@@ -1,0 +1,24 @@
+/* Hallmark · wortlaut: pages that carry the editors' own text in full (articles, the year's list, older notices) · copy: verbatim · the Rückblick texts and the radar's titles are printed as written, never cut to a screen budget */
+/* Hallmark · pre-emit critique: P4 H4 E4 S4 R5 V3 · weakest: V, the article is a plain long read; kept plain on purpose so older readers get 19px text at 65 characters */
+
+/* ---------- Artikel */
+.artikel-kopf { padding-top: var(--space-3xl); }
+.artikel-kopf h1 { font-size: var(--text-display-s); max-width: 24ch; line-height: 1.08; }
+.artikel-kopf .lead { margin-top: var(--space-lg); max-width: 58ch; }
+.aktionen--artikel { align-items: center; column-gap: var(--space-xl); }
+.aktionen--artikel .meta { order: 2; }
+.bild--artikel { margin-top: var(--space-2xl); }
+.bild--artikel .rahmen { aspect-ratio: 16 / 9; }
+.artikel-raster { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); gap: var(--gap-columns); margin-top: var(--space-2xl); align-items: start; }
+.text > p { max-width: 65ch; font-size: clamp(1.125rem, 0.2vw + 1.05rem, 1.1875rem); line-height: 1.7; color: var(--color-ink-2); }
+.text > p + p { margin-top: var(--space-lg); }
+.text .anzeige + p { margin-top: 0; }
+.teilen-zeile { margin-top: var(--space-xl); }
+.artikel-raster .randspalte { border-top: 1px solid var(--color-ink); padding-top: var(--space-md); }
+.artikel-raster .randspalte .tafel { border-top-color: var(--color-rule); }
+
+@media (max-width: 60rem) {
+  .artikel-kopf { padding-top: var(--space-2xl); }
+  .artikel-raster { grid-template-columns: minmax(0, 1fr); gap: var(--space-2xl); }
+  .bild--artikel .rahmen { aspect-ratio: 4 / 3; }
+}

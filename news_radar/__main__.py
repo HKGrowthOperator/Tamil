@@ -11,7 +11,21 @@
   export    Protokoll als JSONL exportieren
   export-drafts  Entwürfe + Bilder für den HTML-Prototyp exportieren (--quellbilder lädt Vorschaubilder der Quellen)
   agent     export: Aufgabenmappe für einen schreibenden Agenten · import: fertige Beiträge übernehmen (mit Bild)
-  bildpool  status | fuellen – Reserve-Bilder je Thema über die Bild-KI anlegen
+  bildpool  status | fuellen – Reserve-Bilder je Thema über die Bild-KI anlegen (nur mit BILD_KI_FREIGABE)
+  lizenzen  nachfuehren – Lizenz-Datensätze im Altbestand aus Commons-, Register- und Kartenangaben ergänzen
+  quellen   pruefen – jede Quelle live abfragen und bewerten (data/quellen-pruefung.csv) · liste – Register zeigen
+  kosten    Kosten je Rolle, Modell und Tag, Budgetstand; --csv für die Fremdkostenabrechnung
+  worker    Redaktion v2: Jobs abarbeiten (Dienst; --einmal leert die Schlange und beendet)
+  dienst    Container-Betrieb (Coolify/Dockerfile): Cockpit auf $PORT, Scan, Worker, Digest, Sicherung
+  dossier   Entwurf als Dossier recherchieren lassen (--entwurf ID)
+  nutzer    anlegen | sperren | liste – Benutzer der Freigabe-App (Rollen admin, redaktion, leser)
+  stopp     an | aus [kanal] --grund "…" – Stopp-Schalter („an“ = angehalten; ohne Kanal: alles) · status
+  sicherung erstellen | pruefen | wiederherstellen – Datenbank und Bilder (deploy/backup.sh, deploy/restore.sh)
+  bericht   --woche: Annahmequote, Fehler, Kosten je Artikel der letzten 7 Tage
+  abnahme   alle Szenarien mit FakeClaude durchspielen, Kriterien K1–K9 messen (--bericht Datei)
+  bewertung vergleich (Sonnet vs. Opus blind, braucht Schlüssel) | bogen (letzte Entwürfe) | auswerten
+
+Mit RADAR_WORKFLOW=v2 legt `run` Storys und Jobs an (Redaktion v2); `run --mit-jobs` arbeitet sie bis zur Deadline ab.
 """
 
 from __future__ import annotations
@@ -32,8 +46,8 @@ from .config import load_settings
 from .store import Store
 from .writer import STYLE_FILE, RawWriter
 
-KEY_HINT = ("ANTHROPIC_API_KEY fehlt – Schlüssel in .env oder als Secret setzen, "
-            "oder `run --ohne-ki` für Rohfassungen ohne KI.")
+KEY_HINT = ("ANTHROPIC_API_KEY fehlt – Schlüssel in .env setzen (in einer Claude-Code-Umgebung als "
+            "RADAR_ANTHROPIC_API_KEY), oder `run --ohne-ki` für Rohfassungen ohne KI.")
 
 
 def pick_writer(ohne_ki: bool, settings):
@@ -71,6 +85,25 @@ def cmd_style(site: str, count: int) -> int:
     return 0
 
 
+def cmd_style_export(ordner: Path, nur_kandidaten: bool = False) -> int:
+    """Stilbeispiele aus einem Export der alten Seite (wiederholbar, Auswahl in stilbeispiele.AUSWAHL)."""
+    from . import stilbeispiele
+
+    try:
+        posts, kategorien = stilbeispiele.laden_export(ordner)
+        if nur_kandidaten:
+            for k in stilbeispiele.kandidaten(posts, kategorien):
+                print(f"{k['id']:>6}  {k['woerter']:>5} W  {k['datum']}  {k['rubrik']:<20}  {k['title'][:70]}")
+            return 0
+        beispiele = stilbeispiele.auswaehlen(posts, kategorien)
+    except ValueError as exc:  # ExportFehler und untaugliche Auswahl
+        print(f"Stilbeispiele nicht erzeugt: {exc}", file=sys.stderr)
+        return 1
+    STYLE_FILE.write_text(json.dumps(beispiele, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    print(f"{len(beispiele)} Stilbeispiele gespeichert in {STYLE_FILE}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="news_radar", description="Tamil.de News-Radar")
     parser.add_argument("-v", "--verbose", action="store_true")
@@ -78,6 +111,8 @@ def main(argv: list[str] | None = None) -> int:
     run = sub.add_parser("run")
     run.add_argument("--max-age-hours", type=int, help="z. B. 336 für die Erstbefüllung (14 Tage)")
     run.add_argument("--ohne-ki", action="store_true", help="Rohfassungen ohne Claude (Titel + Quellentext, markiert)")
+    run.add_argument("--mit-jobs", action="store_true", help="v2: Jobs im selben Lauf bis zur Deadline abarbeiten")
+    run.add_argument("--v1", action="store_true", help="bisherigen Ablauf erzwingen, auch wenn RADAR_WORKFLOW=v2")
     loop = sub.add_parser("loop")
     loop.add_argument("--interval", type=int, default=180)
     loop.add_argument("--ohne-ki", action="store_true", help=argparse.SUPPRESS)
@@ -96,20 +131,70 @@ def main(argv: list[str] | None = None) -> int:
     style = sub.add_parser("style")
     style.add_argument("--site", default="https://www.tamil.de")
     style.add_argument("--count", type=int, default=6)
+    style.add_argument("--export", help="Ordner mit posts.json/categories.json der alten Seite: kuratierte Auswahl")
+    style.add_argument("--kandidaten", action="store_true", help="mit --export: taugliche Beiträge auflisten")
     exp = sub.add_parser("export")
     exp.add_argument("--file", default="radar-protokoll.jsonl")
     agent = sub.add_parser("agent", help="Agent-Modus: Aufgabenmappe exportieren / fertige Beiträge importieren")
-    agent.add_argument("aktion", choices=("export", "import"))
-    agent.add_argument("--file", required=True, help="Aufgabenmappe (export) bzw. Ergebnis-JSON (import)")
+    agent.add_argument("aktion", choices=("export", "import", "vorschlag", "bild"))
+    agent.add_argument("--file", help="Aufgabenmappe (export) bzw. Ergebnis-JSON (import)")
+    agent.add_argument("--datei", help="vorschlag: JSON mit Nachtrag-Vorschlägen (Liste oder {\"vorschlaege\": [...]}); "
+                       "bild: JSON mit Bildvorschlägen ({\"bilder\": [...]})")
     agent.add_argument("--limit", type=int, default=20, help="export: höchstens so viele Entwürfe")
     agent.add_argument("--alle", action="store_true", help="export: auch Entwürfe, die keine Rohfassung sind")
     agent.add_argument("--status", default="neu", help="export: Status der Entwürfe (kommagetrennt)")
     agent.add_argument("--ohne-text", action="store_true", help="export: Quelltexte nicht nachladen")
     agent.add_argument("--von", default="agent", help="import: Name für Protokoll und bearbeitet_von")
+    agent.add_argument("--v2", action="store_true", help="Redaktion v2: Evidenzpakete statt Rohfassungen")
+    agent.add_argument("--ids", help="export --v2: nur diese Story-Nummern (z. B. 3,4,5; höchstens 20, soweit offen)")
     pool = sub.add_parser("bildpool", help="Reserve-Bilder je Thema (prompts/bildpool.md)")
     pool.add_argument("aktion", choices=("status", "fuellen"))
     pool.add_argument("--thema", help="nur dieses Thema füllen")
     pool.add_argument("--anzahl", type=int, default=3, help="Zielbestand je Thema")
+    pool.add_argument("--mit-budget", action="store_true", help="Kosten messen und am Budget stoppen (für den Timer)")
+    lz = sub.add_parser("lizenzen", help="Lizenz-Datensätze der Bilder (Spezifikation Bilder 3)")
+    lz.add_argument("aktion", choices=("nachfuehren",))
+    quellen = sub.add_parser("quellen", help="Quellen-Register prüfen bzw. anzeigen")
+    quellen.add_argument("aktion", choices=("pruefen", "liste"))
+    quellen.add_argument("--file", default="data/quellen-pruefung.csv")
+    quellen.add_argument("--aktiv", type=int, default=20, help="pruefen: so viele Quellen empfehlen")
+    wk = sub.add_parser("worker", help="Redaktion v2: Jobs abarbeiten")
+    wk.add_argument("--parallel", type=int, help="Anzahl paralleler Jobs (Standard RADAR_PARALLEL_JOBS)")
+    wk.add_argument("--einmal", action="store_true", help="Schlange leeren und beenden")
+    ds = sub.add_parser("dossier", help="Entwurf als Dossier recherchieren lassen")
+    ds.add_argument("--entwurf", type=int, required=True)
+    nu = sub.add_parser("nutzer", help="Benutzer der Freigabe-App")
+    nu.add_argument("aktion", choices=("anlegen", "sperren", "liste"))
+    nu.add_argument("name", nargs="?")
+    nu.add_argument("--rolle", default="redaktion", choices=("admin", "redaktion", "leser"))
+    st = sub.add_parser("stopp", help="Stopp-Schalter: an (= angehalten) | aus | status")
+    st.add_argument("aktion", choices=("an", "aus", "status"))
+    st.add_argument("kanal", nargs="?", default="alles", help="alles (Standard), redaktion, website, eingang, …")
+    st.add_argument("--grund", default="", help="Pflicht bei „an“")
+    st.add_argument("--wer", default="konsole", help="Person für das Protokoll (Standard: konsole)")
+    sich = sub.add_parser("sicherung", help="Sicherung und Wiederherstellung")
+    sich.add_argument("aktion", choices=("erstellen", "pruefen", "wiederherstellen"))
+    sich.add_argument("--ziel", default="", help="Ordner der Sicherungen (Standard: <App>/backup)")
+    sich.add_argument("--datum", default="", help="pruefen/wiederherstellen: Stand YYYY-MM-DD")
+    ber = sub.add_parser("bericht", help="Wochenbericht der Redaktion")
+    ber.add_argument("--woche", action="store_true", help="letzte 7 Tage (Standard)")
+    ber.add_argument("--tage", type=int, default=7)
+    bw = sub.add_parser("bewertung", help="Blindbewertung der Texte (Pilot)")
+    bw.add_argument("aktion", choices=("vergleich", "bogen", "auswerten"))
+    bw.add_argument("--anzahl", type=int, default=10)
+    bw.add_argument("--ordner", default="data/bewertung")
+    eg = sub.add_parser("eingang", help="Einsendungen der Website (F1): lauf = abholen + vorbereiten, loeschen = Frist")
+    eg.add_argument("aktion", choices=["lauf", "loeschen", "status"])
+    ab = sub.add_parser("abnahme", help="Abnahme-Szenarien mit FakeClaude")
+    ab.add_argument("--bericht", default="data/abnahme-bericht.md")
+    ab.add_argument("--nur", type=int, nargs="*", help="nur diese Szenario-Nummern")
+    so = sub.add_parser("social", help="Social F4: lauf (erkennen + senden) | status")
+    so.add_argument("aktion", choices=("lauf", "status"))
+    so.add_argument("--trocken", action="store_true", help="Trockenmodus erzwingen, auch mit RADAR_SOCIAL_LIVE")
+    sub.add_parser("dienst", help="Container-Betrieb (Coolify): Cockpit, Scan, Worker, Digest, Sicherung in einem Prozess")
+    kosten = sub.add_parser("kosten", help="Kosten je Rolle/Modell/Tag und Budgetstand")
+    kosten.add_argument("--tage", type=int, default=30)
+    kosten.add_argument("--csv", help="alle Aufrufe des Zeitraums als CSV (Fremdkostenabrechnung)")
     args = parser.parse_args(argv)
 
     logging.basicConfig(
@@ -121,9 +206,30 @@ def main(argv: list[str] | None = None) -> int:
         logging.getLogger(noisy).setLevel(logging.WARNING)
 
     if args.cmd == "style":
+        if args.export:
+            return cmd_style_export(Path(args.export), args.kandidaten)
         return cmd_style(args.site, args.count)
 
+    if args.cmd == "abnahme":
+        from . import abnahme
+
+        ergebnisse = abnahme.alle(args.nur)
+        text = abnahme.bericht(ergebnisse)
+        Path(args.bericht).parent.mkdir(parents=True, exist_ok=True)
+        Path(args.bericht).write_text(text, encoding="utf-8")
+        for e in ergebnisse:
+            print(f"{'ok  ' if e.ok else 'FEHL'} {e.szenario.nr:2} {e.szenario.name}"
+                  + ("" if e.ok else f"  → {'; '.join(e.abweichungen or [k for k, v in e.kriterien.items() if not v])}"))
+        bestanden = sum(1 for e in ergebnisse if e.ok)
+        print(f"\n{bestanden} von {len(ergebnisse)} Szenarien bestanden → {args.bericht}")
+        return 0 if bestanden == len(ergebnisse) else 1
+
     settings = load_settings()
+
+    if args.cmd == "dienst":
+        from .dienst import main as dienst_main
+
+        return dienst_main(settings)
 
     if args.cmd == "scan":
         with Store(settings.db_path) as store:
@@ -134,10 +240,270 @@ def main(argv: list[str] | None = None) -> int:
             print(f"{i.score:3} {i.dach_score:2} {i.kind:5} {i.category_hint:13} {i.ort[:12]:12} {i.published:%d.%m %H:%M}  {i.title[:80]}")
         return 0
 
+    if args.cmd == "quellen":
+        if args.aktion == "liste":
+            for q in settings.alle_quellen:
+                print(f"{'an ' if q.enabled else 'aus'}  {q.prioritaet}  {q.type:12} {q.kind:5} {q.country or '–':4} {q.name}")
+            print(f"\n{len(settings.sources)} von {len(settings.alle_quellen)} Quellen aktiv")
+            return 0
+        from .quellencheck import pruefen
+
+        with Store(settings.db_path) as store:
+            ranking = pruefen(settings, store, Path(args.file), aktiv=args.aktiv)
+        print(f"\n{'Punkte':>6}  {'jetzt':>5} {'14 T.':>5} {'Entw.':>5}  robots    Empfehlung  Quelle")
+        for p in ranking:
+            print(f"{p.punkte:6.1f}  {p.treffer_jetzt:5} {p.treffer_14_tage:5} {p.entwuerfe_db:5}  {p.robots:9} "
+                  f"{p.empfehlung:11} {p.name}{'  (' + p.fehler + ')' if p.fehler else ''}")
+        print(f"\n→ {args.file}")
+        return 0
+
+    if args.cmd == "sicherung":
+        from . import sicherung
+
+        ziel = Path(args.ziel) if args.ziel else settings.data_dir.parent / "backup"
+        if args.aktion == "erstellen":
+            out = sicherung.erstellen(settings.data_dir, ziel)
+            print(f"Sicherung: {out['datenbank']} · {out['bilder']}")
+            return 0
+        if not args.datum:
+            raise SystemExit("--datum YYYY-MM-DD fehlt")
+        if args.aktion == "pruefen":
+            print(sicherung.pruefen(ziel / f"radar-{sicherung.stand(args.datum)}.sqlite"))
+            return 0
+        print(f"Wiederhergestellt: {sicherung.wiederherstellen(settings.data_dir, ziel, args.datum)}")
+        return 0
+
+    if args.cmd == "bericht":
+        from .workflow import repo
+
+        with Store(settings.db_path) as store:
+            print(repo.wochenbericht_text(store, args.tage))
+        return 0
+
+    if args.cmd == "bewertung":
+        from . import bewertung
+
+        ordner = Path(args.ordner)
+        if args.aktion == "auswerten":
+            for modell, werte in bewertung.auswerten(ordner / "bogen.csv", ordner / "schluessel.json").items():
+                print(f"{modell:20} {werte}")
+            return 0
+        with Store(settings.db_path) as store:
+            if args.aktion == "bogen":
+                print(f"Bogen → {bewertung.bogen_aus_entwuerfen(store, settings, ordner, args.anzahl)}")
+                return 0
+            if not os.environ.get("ANTHROPIC_API_KEY"):
+                raise SystemExit("Der Modellvergleich braucht ANTHROPIC_API_KEY (zwei Textaufrufe je Story).")
+            from .workflow import orchestrator
+
+            out = bewertung.vergleich(orchestrator.kontext(settings, store), ordner, args.anzahl)
+        print(f"{out['storys']} Storys, {out['fassungen']} Fassungen → {out['bogen']} (Schlüssel erst nach der Bewertung öffnen)")
+        return 0
+
+    if args.cmd == "kosten":
+        from .workflow import repo
+        from .workflow.providers import budget_fuer
+
+        with Store(settings.db_path) as store:
+            bericht = repo.kosten_bericht(store, args.tage)
+            stand = budget_fuer(settings, store).stand()
+            if args.csv:
+                import csv
+
+                zeilen = repo.usage_zeilen(store, args.tage)
+                with open(args.csv, "w", newline="", encoding="utf-8") as fh:
+                    w = csv.DictWriter(fh, fieldnames=list(zeilen[0]) if zeilen else ["id"])
+                    w.writeheader()
+                    w.writerows(zeilen)
+                print(f"{len(zeilen)} Aufrufe → {args.csv}")
+        print(f"Budget heute ${stand['tag_usd']:.2f} von ${stand['tag_limit']:.2f} · Monat ${stand['monat_usd']:.2f} "
+              f"von ${stand['monat_limit']:.2f}{' · STOPP' if stand['stopp'] else (' · Warnung' if stand['warnung'] else '')}")
+        print(f"Letzte {bericht['tage']} Tage: ${bericht['gesamt_usd']:.2f} für {bericht['entwuerfe']} Entwürfe"
+              + (f" (${bericht['je_entwurf_usd']:.3f} je Entwurf)" if bericht["je_entwurf_usd"] else ""))
+        for r in bericht["je_rolle"]:
+            print(f"  {r['rolle']:12} {r['aufrufe']:5} Aufrufe  ${r['usd'] or 0:8.4f}  Fehlversuche {r['fehlversuche']}")
+        return 0
+
     if args.cmd == "export":
         with Store(settings.db_path) as store:
             n = store.export_log(Path(args.file))
         print(f"{n} Protokolleinträge → {args.file}")
+        return 0
+
+    if args.cmd == "agent":
+        from . import schalter
+
+        with Store(settings.db_path) as store:
+            sperre = schalter.sperre(store, "redaktion")
+        if sperre is not None:  # Agent-Modus gehört zur Redaktion: im Stopp weder abrufen noch anlegen
+            print(f"Redaktion angehalten (Schalter „{sperre['kanal']}“ seit {sperre['seit']}): {sperre['grund']} – "
+                  "nichts exportiert oder importiert.", file=sys.stderr)
+            return 3
+
+    if args.cmd == "agent" and args.aktion == "vorschlag":
+        from .nachtrag import annehmen
+
+        if not (args.datei or args.file):
+            print("agent vorschlag braucht --datei <json>", file=sys.stderr)
+            return 2
+        raw = json.loads(Path(args.datei or args.file).read_text(encoding="utf-8"))
+        with Store(settings.db_path) as store:
+            try:
+                out = annehmen(store, settings, raw, von=args.von)
+            except ValueError as exc:
+                print(f"Vorschläge abgewiesen: {exc}", file=sys.stderr)
+                return 2
+        for e in out["ergebnisse"]:
+            print(f"{e['nr']:>3} {e['ergebnis']:<10} {e.get('story_id') or '':>6} {e.get('grund') or ''}")
+        print(f"{out['angelegt']} angelegt, {out['ergaenzt']} ergänzt, {out['vorhanden']} schon vorhanden, {out['vielleicht_vorhanden']} vielleicht "
+              f"vorhanden, {out['abgelehnt']} abgelehnt, {out['nicht_bearbeitet']} nicht bearbeitet")
+        return 3 if out.get("angehalten") else 0
+
+    if args.cmd == "agent" and args.aktion == "bild":
+        from .bildvorschlag import annehmen as bild_annehmen
+
+        if not (args.datei or args.file):
+            print("agent bild braucht --datei <json>", file=sys.stderr)
+            return 2
+        raw = json.loads(Path(args.datei or args.file).read_text(encoding="utf-8"))
+        with Store(settings.db_path) as store:
+            try:
+                out = bild_annehmen(store, settings, raw, von=args.von)
+            except ValueError as exc:
+                print(f"Bildvorschläge abgewiesen: {exc}", file=sys.stderr)
+                return 2
+        for e in out["ergebnisse"]:
+            print(f"{e['nr']:>3} {e['ergebnis']:<16} {e.get('story_id') or '':>6} {e.get('nachweis') or e.get('grund') or ''}")
+        print(f"{out['gesetzt']} gesetzt, {out['abgelehnt']} abgelehnt, {out['nicht_bearbeitet']} nicht bearbeitet")
+        return 3 if out.get("angehalten") else 0
+
+    if args.cmd == "agent" and not args.file:
+        print("agent export/import braucht --file", file=sys.stderr)
+        return 2
+
+    if args.cmd == "agent" and args.v2:
+        from .agent_v2 import export_v2, import_v2
+
+        with Store(settings.db_path) as store:
+            if args.aktion == "export":
+                ids = None
+                if args.ids is not None:
+                    from .agent_v2 import ids_lesen
+
+                    try:
+                        ids = ids_lesen(args.ids)
+                    except ValueError as exc:
+                        print(str(exc), file=sys.stderr)
+                        return 2
+                data = export_v2(store, settings, Path(args.file), limit=args.limit, ids=ids)
+                alle = data["storys"] + data["nachrecherche"]
+                print(f"{len(data['storys'])} Storys, {len(data['nachrecherche'])} in Nachrecherche → {args.file} "
+                      f"({sum(len(p['dokumente']) for p in alle)} Dokumente)")
+                return 0
+            stats = import_v2(store, settings, Path(args.file), von=args.von)
+        print(f"{stats['entwuerfe']} Entwürfe, {stats['nachrecherche']} in Nachrecherche, {stats['quellen']} neue Quellen, "
+              f"{stats['verworfen']} verworfen, {len(stats['fehler'])} Fehler")
+        for f in stats["fehler"]:
+            print(f"  ! {f}")
+        return 1 if stats["fehler"] and not stats["entwuerfe"] else 0
+
+    if args.cmd == "nutzer":
+        from getpass import getpass
+
+        from .workflow import repo
+
+        with Store(settings.db_path) as store:
+            if args.aktion == "liste":
+                for n in repo.nutzer_liste(store):
+                    print(f"{n['name']:20} {n['rolle']:10} {'aktiv' if n['aktiv'] else 'gesperrt':9} letzter Login {n['letzter_login'] or '–'}")
+                return 0
+            if not args.name:
+                raise SystemExit("Name fehlt: nutzer anlegen NAME [--rolle admin]")
+            try:
+                if args.aktion == "sperren":
+                    print("gesperrt" if repo.nutzer_sperren(store, args.name) else "unbekannt")
+                    return 0
+                passwort = os.environ.get("RADAR_NEUES_PASSWORT") or getpass(f"Passwort für {args.name} (mind. 10 Zeichen): ")
+                repo.nutzer_anlegen(store, args.name, passwort, args.rolle)
+            except ValueError as exc:
+                raise SystemExit(str(exc)) from None
+        print(f"{args.name} angelegt ({args.rolle})")
+        return 0
+
+    if args.cmd == "stopp":
+        from . import schalter
+
+        with Store(settings.db_path) as store:
+            if args.aktion != "status":
+                try:
+                    schalter.setzen(store, args.kanal, args.aktion == "an", wer=args.wer, grund=args.grund)
+                except ValueError as exc:
+                    raise SystemExit(str(exc)) from None
+            for z in schalter.stand(store):
+                zustand = "angehalten" if z["gestoppt"] else "läuft"
+                extra = f"  seit {z['seit']} · {z['wer']} · {z['grund']}" if z["gestoppt"] else ""
+                print(f"{z['kanal']:12} {zustand:11}{extra}")
+        return 0
+
+    if args.cmd == "eingang":
+        from . import eingang
+
+        with Store(settings.db_path) as store:
+            if args.aktion == "loeschen":
+                out = eingang.loeschen(store)
+            elif args.aktion == "status":
+                out = eingang.zaehlen(store)
+            elif not settings.wordpress_enabled:
+                print("WordPress nicht eingerichtet (WP_URL, WP_USER, WP_APP_PASSWORD) – nichts abzuholen")
+                return 0
+            else:
+                from .workflow.orchestrator import kontext
+
+                out = eingang.lauf(store, eingang.client_fuer(settings), kontext(settings, store).claude)
+        print(", ".join(f"{k} {v}" for k, v in out.items() if v) or "nichts zu tun")
+        return 0
+
+    if args.cmd == "social":
+        from .social import ablauf as social_ablauf, konfig as social_konfig, regelwerk as social_regelwerk
+        from .social.transport import TrockenTransport
+
+        konf = social_konfig.laden()
+        with Store(settings.db_path) as store:
+            if args.aktion == "status":
+                rw = social_regelwerk.aktuell(store)
+                marke = social_ablauf.startmarke(store)
+                print(f"Funktion {'an' if konf.aktiv else 'aus'} (RADAR_SOCIAL) · Modus "
+                      f"{'trocken' if args.trocken else konf.modus} · Regelwerk Fassung {rw.fassung}"
+                      f"{' (Hashtags: Platzhalter)' if rw.hashtags_platzhalter else ''} · Startmarke "
+                      f"{marke.isoformat() if marke else '(noch keine)'}")
+                for r in store.db.execute("SELECT kanal, status, COUNT(*) AS n FROM social_beitraege "
+                                          "GROUP BY kanal, status ORDER BY kanal, status"):
+                    print(f"  {r['kanal']:10} {r['status']:16} {r['n']}")
+                return 0
+            if not konf.aktiv:
+                print("Social ist aus (Funktionsschalter RADAR_SOCIAL) – nichts zu tun.")
+                return 0
+            transport = TrockenTransport() if args.trocken else social_ablauf.transport_fuer(konf)
+            stats = social_ablauf.lauf(store, settings, konf, transport=transport)
+            print(" · ".join(f"{k} {v}" for k, v in sorted(stats.items())) or "nichts zu tun")
+        return 0
+
+    if args.cmd == "dossier":
+        from .workflow.orchestrator import dossier_anlegen
+
+        with Store(settings.db_path) as store:
+            sid = dossier_anlegen(store, args.entwurf, von="cli")
+        print(f"Dossier-Story {sid} angelegt – der Worker recherchiert sie (Opus schreibt)")
+        return 0
+
+    if args.cmd == "worker":
+        from .workflow import orchestrator
+
+        if not os.environ.get("ANTHROPIC_API_KEY"):
+            logging.warning("Ohne ANTHROPIC_API_KEY: nur Schritte ohne Modell (Kino, Gate, Bild); Recherche-Jobs warten "
+                            "auf den Schlüssel oder auf `agent export --v2`")
+        stats = orchestrator.worker(settings, parallel=args.parallel, einmal=args.einmal)
+        print(", ".join(f"{k} {v}" for k, v in stats.items()) or "keine Jobs")
         return 0
 
     if args.cmd == "agent":
@@ -164,14 +530,32 @@ def main(argv: list[str] | None = None) -> int:
 
         pool = BildPool(settings.bildpool_dir)
         if args.aktion == "fuellen":
+            if not settings.bild_ki_freigabe:
+                raise SystemExit("KI-Bilder sind nicht freigegeben (BILD_KI_FREIGABE) – der Pool wird nicht gefüllt.")
             if not settings.gemini_key:
                 raise SystemExit("GEMINI_API_KEY fehlt – ohne Bild-KI lässt sich der Pool nicht füllen.")
-            erzeugt = pool.fuellen(settings, thema=args.thema, anzahl=args.anzahl)
+            if args.mit_budget:
+                from .workflow.providers import budget_fuer
+
+                with Store(settings.db_path) as store:
+                    erzeugt = pool.fuellen(settings, thema=args.thema, anzahl=args.anzahl, store=store,
+                                           budget=budget_fuer(settings, store))
+            else:
+                erzeugt = pool.fuellen(settings, thema=args.thema, anzahl=args.anzahl)
             print(f"{sum(erzeugt.values())} Bilder erzeugt: " + (", ".join(f"{t} +{n}" for t, n in erzeugt.items()) or "nichts fehlte"))
         status = pool.status()
         print(f"Bildpool {settings.bildpool_dir}: {sum(s['anzahl'] for s in status.values())} Bilder in {len(status)} Themen")
         for thema, s in status.items():
             print(f"  {thema:20} {s['anzahl']:3} Bilder · {s['genutzt']:3}× genutzt")
+        return 0
+
+    if args.cmd == "lizenzen":
+        from .lizenz import nachfuehren
+
+        with Store(settings.db_path) as store:
+            z = nachfuehren(store, settings)
+        print(f"Lizenz-Datensätze: {z['ergaenzt']} ergänzt, {z['karte']} Bildkarten nachgetragen, "
+              f"{z['schon']} schon vollständig, {z['offen']} offen („Lizenz fehlt“ im Cockpit)")
         return 0
 
     if args.cmd == "export-drafts":
@@ -219,6 +603,15 @@ def main(argv: list[str] | None = None) -> int:
 
     if not settings.wordpress_enabled:
         logging.info("Keine WordPress-Zugangsdaten → Entwürfe warten in der Freigabe-App (%s)", settings.web_url)
+
+    if args.cmd == "run" and settings.workflow == "v2" and not args.v1 and not args.ohne_ki:
+        from .workflow import orchestrator
+
+        if args.max_age_hours:
+            settings.max_age_hours = args.max_age_hours
+        stats = orchestrator.lauf(settings, mit_jobs=args.mit_jobs)
+        print(", ".join(f"{k} {v}" for k, v in stats.items() if v))
+        return 0
 
     writer = pick_writer(args.ohne_ki, settings)
     if writer is not None:

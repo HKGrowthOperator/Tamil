@@ -9,11 +9,13 @@ from __future__ import annotations
 import json
 import sqlite3
 import threading
+from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any, Iterator
+from typing import Any, Iterable, Iterator
 
 # Lebenszyklus eines Entwurfs (Vertrag B.2.2: Freigeben, Ablehnen, Bearbeiten, Zurückstellen)
+_OHNE = object()  # Platzhalter: keine Bedingung an bild_datei
 OPEN_STATES = frozenset({"neu", "bearbeitet", "zurueckgestellt"})
 STATUSES = ("neu", "bearbeitet", "zurueckgestellt", "freigegeben", "wird_veroeffentlicht",
             "veroeffentlicht", "in_wordpress", "abgelehnt", "fehler")
@@ -35,12 +37,13 @@ DRAFT_COLUMNS = (
     "schlagworte", "seo_titel", "meta_beschreibung", "bild_datei", "bild_credit", "bild_alt",
     "bild_suchbegriff", "bild_origin", "bild_thema", "bild_prompt", "event_datum", "event_ort", "ticket_url",
     "fakten_json", "fingerprint", "hinweise", "original_json", "rewrite_count", "wp_post_id", "wp_link", "fehler",
-    "bearbeitet_von", "freigegeben_at", "veroeffentlicht_at",
+    "bearbeitet_von", "freigegeben_at", "veroeffentlicht_at", "story_id", "herkunft", "ereignis_datum",
 )
 # Spalten, die nach der ersten Version dazukamen (ALTER TABLE für bestehende Datenbanken)
 ADDED_COLUMNS = (("quelle_bild", "TEXT"), ("bild_thema", "TEXT"), ("bild_prompt", "TEXT"))
 # Nicht in den Prototyp-Export (intern bzw. WordPress-spezifisch)
-EXPORT_SKIP = ("original_json", "fingerprint", "fakten_json", "wp_post_id", "wp_link", "bearbeitet_von", "fehler")
+EXPORT_SKIP = ("original_json", "fingerprint", "fakten_json", "wp_post_id", "wp_link", "bearbeitet_von", "fehler",
+               "herkunft", "ereignis_datum")
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS seen (
@@ -102,6 +105,24 @@ def _loads(value: Any, default: Any) -> Any:
         return default
 
 
+URL_COLUMNS = ("quelle_url", "ticket_url", "quelle_bild", "wp_link")
+
+
+def _bereinigen(data: dict) -> dict:
+    """Beim Speichern: HTML über die Allowlist, Adressen nur http/https – egal ob aus Writer, Agent-Import oder Formular."""
+    from .render import safe_url, sanitize_html
+
+    if data.get("inhalt_html"):
+        data["inhalt_html"] = sanitize_html(data["inhalt_html"])
+    for col in URL_COLUMNS:
+        if data.get(col):
+            data[col] = safe_url(data[col])
+    if isinstance(data.get("weitere_quellen"), list):
+        data["weitere_quellen"] = [{**q, "url": safe_url(q.get("url"))} if isinstance(q, dict) else q
+                                   for q in data["weitere_quellen"]]
+    return data
+
+
 def row_to_draft(row: sqlite3.Row | None) -> dict | None:
     """DB-Zeile → dict mit geparsten JSON-Spalten."""
     if row is None:
@@ -125,7 +146,8 @@ class Store:
         self.db.execute("PRAGMA journal_mode=WAL")
         self.db.execute("PRAGMA busy_timeout=5000")
         self.db.execute("PRAGMA synchronous=NORMAL")
-        self.lock = threading.Lock()  # Schreibzugriffe aus mehreren Threads eines Prozesses
+        self.lock = threading.RLock()  # Schreibzugriffe aus mehreren Threads eines Prozesses (wiedereintrittsfähig)
+        self._transaktion = False
         self.migrate()
 
     def migrate(self) -> None:
@@ -135,6 +157,10 @@ class Store:
             if column not in present:
                 self.db.execute(f"ALTER TABLE drafts ADD COLUMN {column} {ddl}")
         self.db.commit()
+        from .workflow import schema  # v2: Storys, Belege, Jobs, Kosten, Benutzer (PRAGMA user_version)
+
+        with self.lock:
+            schema.apply(self.db)
 
     def close(self) -> None:
         self.db.close()
@@ -149,8 +175,30 @@ class Store:
     def _write(self, sql: str, params: tuple = ()) -> sqlite3.Cursor:
         with self.lock:
             cur = self.db.execute(sql, params)
-            self.db.commit()
+            if not self._transaktion:
+                self.db.commit()
             return cur
+
+    @contextmanager
+    def transaktion(self) -> Iterator[None]:
+        """Mehrere Schreibschritte als eine Transaktion: alles oder nichts (Rollback bei jeder Ausnahme). Andere
+        Threads warten am Lock; Schreibhelfer (_write) committen innerhalb nicht einzeln."""
+        with self.lock:
+            if self._transaktion:
+                raise RuntimeError("Transaktion läuft schon")
+            if self.db.in_transaction:
+                self.db.commit()
+            self.db.execute("BEGIN IMMEDIATE")
+            self._transaktion = True
+            try:
+                yield
+            except BaseException:
+                self.db.rollback()
+                raise
+            else:
+                self.db.commit()
+            finally:
+                self._transaktion = False
 
     # ---- gesehene Meldungen ----------------------------------------------
     def seen_uids(self) -> set[str]:
@@ -219,7 +267,7 @@ class Store:
     # ---- Entwürfe ----------------------------------------------------------
     def insert_draft(self, row: dict) -> int | None:
         """Legt einen Entwurf an. Gibt None zurück, wenn es zu dieser uid schon einen gibt."""
-        data = {k: row.get(k) for k in DRAFT_COLUMNS if k in row}
+        data = _bereinigen({k: row.get(k) for k in DRAFT_COLUMNS if k in row})
         for col in JSON_COLUMNS:
             if col in data and not isinstance(data[col], (str, type(None))):
                 data[col] = _dumps(data[col])
@@ -244,14 +292,19 @@ class Store:
     def draft_by_uid(self, uid: str) -> dict | None:
         return row_to_draft(self.db.execute("SELECT * FROM drafts WHERE uid = ?", (uid,)).fetchone())
 
-    def list_drafts(self, status: str | None = None, limit: int = 100, offset: int = 0) -> list[dict]:
+    def list_drafts(self, status: str | None = None, limit: int = 100, offset: int = 0,
+                    herkunft: str | None = None) -> list[dict]:
+        """Entwürfe je Status; `herkunft` („nachtrag“) filtert auf den Rückblick."""
         order = "dach_bezug DESC, relevanz DESC, created_at DESC" if status == "neu" else "updated_at DESC"
+        where, params = [], []
         if status:
-            rows = self.db.execute(
-                f"SELECT * FROM drafts WHERE status = ? ORDER BY {order} LIMIT ? OFFSET ?", (status, limit, offset)
-            )
-        else:
-            rows = self.db.execute(f"SELECT * FROM drafts ORDER BY {order} LIMIT ? OFFSET ?", (limit, offset))
+            where.append("status = ?")
+            params.append(status)
+        if herkunft:
+            where.append("herkunft = ?")
+            params.append(herkunft)
+        sql = "SELECT * FROM drafts" + (f" WHERE {' AND '.join(where)}" if where else "")
+        rows = self.db.execute(f"{sql} ORDER BY {order} LIMIT ? OFFSET ?", (*params, limit, offset))
         return [row_to_draft(r) for r in rows]
 
     def counts_by_status(self) -> dict[str, int]:
@@ -260,11 +313,16 @@ class Store:
             counts[row["status"]] = row["n"]
         return counts
 
-    def update_draft(self, draft_id: int, von: str = "", **fields) -> None:
-        data = {k: v for k, v in fields.items() if k in DRAFT_COLUMNS and k not in ("uid", "status")}
+    def update_draft(self, draft_id: int, von: str = "", nur_status: Iterable[str] | None = None,
+                     bild_vorher: str | None | object = _OHNE, **fields) -> int:
+        """Felder setzen; gibt die Zahl der geänderten Zeilen zurück. Maschinenwege übergeben `nur_status`
+        (z. B. OPEN_STATES): die Bedingung steht im selben UPDATE, ein inzwischen freigegebener Entwurf bleibt."""
+        data = _bereinigen({k: v for k, v in fields.items() if k in DRAFT_COLUMNS and k not in ("uid", "status")})
         for col in JSON_COLUMNS:
             if col in data and not isinstance(data[col], (str, type(None))):
                 data[col] = _dumps(data[col])
+        if isinstance(data.get("original_json"), dict):
+            data["original_json"] = _dumps(data["original_json"])
         if "fakten" in fields:
             data["fakten_json"] = _dumps(fields["fakten"])
         if "dach_bezug" in data:
@@ -273,10 +331,17 @@ class Store:
         if von:
             data["bearbeitet_von"] = von
         sets = ", ".join(f"{k} = ?" for k in data)
-        self._write(f"UPDATE drafts SET {sets} WHERE id = ?", (*data.values(), draft_id))
+        bedingung, extra = "", ()
+        if nur_status is not None:
+            erlaubt = tuple(nur_status)
+            bedingung, extra = f" AND status IN ({','.join('?' for _ in erlaubt)})", erlaubt
+        if bild_vorher is not _OHNE:  # nur, wenn der Entwurf noch das Bild trägt, von dem die Änderung ausging
+            bedingung, extra = bedingung + " AND bild_datei IS ?", (*extra, bild_vorher)
+        return self._write(f"UPDATE drafts SET {sets} WHERE id = ?{bedingung}", (*data.values(), draft_id, *extra)).rowcount
 
-    def set_status(self, draft_id: int, aktion: str, von: str = "") -> str:
-        """Wendet eine Aktion der Status-Maschine an; ConflictError, wenn der Zustand nicht passt."""
+    def set_status(self, draft_id: int, aktion: str, von: str = "", stand: int | None = None) -> str:
+        """Wendet eine Aktion der Status-Maschine an; ConflictError, wenn der Zustand nicht passt. Mit `stand` nur,
+        wenn der Entwurf noch den Stand hat, den die Seite gezeigt hat (Bedingung im selben UPDATE)."""
         if aktion not in TRANSITIONS:
             raise ValueError(f"Unbekannte Aktion: {aktion}")
         allowed, target = TRANSITIONS[aktion]
@@ -288,23 +353,30 @@ class Store:
         if extra:
             params.append(now_iso())
         params += [draft_id, *allowed]
+        bedingung = ""
+        if stand is not None:
+            bedingung = " AND stand = ?"
+            params.append(stand)
         cur = self._write(
             f"UPDATE drafts SET status = ?, updated_at = ?, bearbeitet_von = ?{extra} "
-            f"WHERE id = ? AND status IN ({marks})",
+            f"WHERE id = ? AND status IN ({marks}){bedingung}",
             tuple(params),
         )
         if cur.rowcount != 1:
             raise ConflictError(f"Entwurf {draft_id}: Aktion „{aktion}“ im aktuellen Zustand nicht möglich")
         return target
 
-    def claim_draft(self, draft_id: int, von: str = "") -> dict | None:
-        """Reserviert einen Entwurf fürs Veröffentlichen („Direkt posten“). None = schon vergeben."""
+    def claim_draft(self, draft_id: int, von: str = "", stand: int | None = None) -> dict | None:
+        """Reserviert einen Entwurf fürs Veröffentlichen („Direkt posten“). None = schon vergeben oder (mit `stand`)
+        inzwischen geändert – die Bedingung steht im selben UPDATE."""
         marks = ",".join("?" for _ in PUBLISHABLE)
         ts = now_iso()
+        bedingung, extra = ("", ()) if stand is None else (" AND stand = ?", (stand,))
         cur = self._write(
             f"UPDATE drafts SET status = 'wird_veroeffentlicht', updated_at = ?, bearbeitet_von = ?, "
-            f"freigegeben_at = COALESCE(freigegeben_at, ?), fehler = NULL WHERE id = ? AND status IN ({marks})",
-            (ts, von, ts, draft_id, *PUBLISHABLE),
+            f"freigegeben_at = COALESCE(freigegeben_at, ?), fehler = NULL WHERE id = ? AND status IN ({marks})"
+            f"{bedingung}",
+            (ts, von, ts, draft_id, *PUBLISHABLE, *extra),
         )
         return self.get_draft(draft_id) if cur.rowcount == 1 else None
 
@@ -351,17 +423,23 @@ class Store:
             (now_iso(), draft_id),
         )
 
-    def update_kino_facts(self, uid: str, facts: dict, fingerprint: str, note: str) -> bool:
-        """Aktualisiert die Spielorte eines offenen Kino-Entwurfs, wenn sich etwas geändert hat."""
+    def update_kino_facts(self, uid: str, facts: dict, fingerprint: str, note: str,
+                          alt_fingerprint: str | None = None) -> bool:
+        """Aktualisiert die Spielorte eines offenen Kino-Entwurfs, wenn sich etwas geändert hat. Mit
+        `alt_fingerprint` nur, solange der Entwurf noch auf dem Stand ist, von dem aus gerechnet wurde."""
         row = self.draft_by_uid(uid)
         if row is None or row["status"] not in OPEN_STATES or row.get("fingerprint") == fingerprint:
             return False
         hinweise = row["hinweise"] + [note]
-        self._write(
-            "UPDATE drafts SET fakten_json = ?, fingerprint = ?, hinweise = ?, updated_at = ? WHERE id = ?",
-            (_dumps(facts), fingerprint, _dumps(hinweise), now_iso(), row["id"]),
+        offen = tuple(OPEN_STATES)
+        cur = self._write(  # nur, solange er noch wartet (Bedingung im selben UPDATE)
+            "UPDATE drafts SET fakten_json = ?, fingerprint = ?, hinweise = ?, updated_at = ? "
+            f"WHERE id = ? AND status IN ({','.join('?' for _ in offen)})"
+            + (" AND fingerprint IS ?" if alt_fingerprint is not None else ""),
+            (_dumps(facts), fingerprint, _dumps(hinweise), now_iso(), row["id"], *offen,
+             *((alt_fingerprint,) if alt_fingerprint is not None else ())),
         )
-        return True
+        return cur.rowcount == 1
 
     def drafts_created_since(self, since_iso: str) -> int:
         return self.db.execute("SELECT COUNT(*) FROM drafts WHERE created_at >= ?", (since_iso,)).fetchone()[0]
@@ -383,20 +461,37 @@ class Store:
 
     def source_ok(self, name: str, count: int) -> None:
         self._write(
-            "INSERT INTO source_status (name, last_ok, last_count, error_msg, paused_until) VALUES (?,?,?,NULL,NULL) "
+            "INSERT INTO source_status (name, last_ok, last_count, error_msg, paused_until, ok_count) "
+            "VALUES (?,?,?,NULL,NULL,1) "
             "ON CONFLICT(name) DO UPDATE SET last_ok = excluded.last_ok, last_count = excluded.last_count, "
-            "error_msg = NULL, paused_until = NULL",
+            "error_msg = NULL, paused_until = NULL, ok_count = ok_count + 1",
             (name, now_iso(), count),
         )
 
     def source_failed(self, name: str, message: str, pause_minutes: int = 0) -> None:
         paused = (datetime.now(timezone.utc) + timedelta(minutes=pause_minutes)).isoformat(timespec="seconds") if pause_minutes else None
         self._write(
-            "INSERT INTO source_status (name, last_error, error_msg, paused_until) VALUES (?,?,?,?) "
+            "INSERT INTO source_status (name, last_error, error_msg, paused_until, err_count) VALUES (?,?,?,?,1) "
             "ON CONFLICT(name) DO UPDATE SET last_error = excluded.last_error, error_msg = excluded.error_msg, "
-            "paused_until = excluded.paused_until",
+            "paused_until = excluded.paused_until, err_count = err_count + 1",
             (name, now_iso(), message[:300], paused),
         )
+
+    def source_partial(self, name: str, message: str) -> None:
+        """Teilausfall: Fehler vermerken und den Abruf zeitlich festhalten (last_try), damit der Takt gilt."""
+        ts = now_iso()
+        self._write(
+            "INSERT INTO source_status (name, last_try, last_error, error_msg, err_count) VALUES (?,?,?,?,1) "
+            "ON CONFLICT(name) DO UPDATE SET last_try = excluded.last_try, last_error = excluded.last_error, "
+            "error_msg = excluded.error_msg, err_count = err_count + 1",
+            (name, ts, ts, message[:300]),
+        )
+
+    def source_last_run(self, name: str) -> datetime | None:
+        """Letzter Abruf, der den Takt startet: erfolgreich (last_ok) oder mit Teilausfall (last_try)."""
+        row = self.db.execute("SELECT last_ok, last_try FROM source_status WHERE name = ?", (name,)).fetchone()
+        werte = [datetime.fromisoformat(v) for v in (row or ()) if v]
+        return max(werte) if werte else None
 
     def source_last_ok(self, name: str) -> datetime | None:
         row = self.db.execute("SELECT last_ok FROM source_status WHERE name = ?", (name,)).fetchone()
@@ -409,7 +504,28 @@ class Store:
         return {r["name"] for r in self.db.execute("SELECT name FROM source_status WHERE paused_until > ?", (now,))}
 
     def source_status_all(self) -> list[dict]:
-        return [dict(r) for r in self.db.execute("SELECT * FROM source_status ORDER BY name")]
+        rows = [dict(r) for r in self.db.execute("SELECT * FROM source_status ORDER BY name")]
+        for r in rows:
+            total = (r.get("ok_count") or 0) + (r.get("err_count") or 0)
+            r["ausfallquote"] = round((r.get("err_count") or 0) / total, 2) if total else None
+        return rows
+
+    # ---- bedingte Abrufe (ETag/Last-Modified je Feed-URL) ----------------------
+    def http_cache_load(self) -> dict[str, tuple[str, str]]:
+        return {r["url"]: (r["etag"] or "", r["last_modified"] or "") for r in self.db.execute("SELECT * FROM http_cache")}
+
+    def http_cache_save(self, entries: dict[str, tuple[str, str]]) -> None:
+        if not entries:
+            return
+        ts = now_iso()
+        with self.lock:
+            self.db.executemany(
+                "INSERT INTO http_cache (url, etag, last_modified, updated_at) VALUES (?,?,?,?) "
+                "ON CONFLICT(url) DO UPDATE SET etag = excluded.etag, last_modified = excluded.last_modified, "
+                "updated_at = excluded.updated_at",
+                [(url, et, lm, ts) for url, (et, lm) in entries.items()],
+            )
+            self.db.commit()
 
     # ---- Dashboard (Vertrag B.3.3) ------------------------------------------
     def dashboard(self, days: int = 7) -> dict:

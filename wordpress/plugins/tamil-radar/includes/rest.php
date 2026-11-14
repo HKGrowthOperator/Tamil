@@ -225,7 +225,7 @@ function tamil_radar_beitrag_response( int $post_id ): array {
 		$value = get_post_meta( $post_id, $key, true );
 		if ( 'json' === $type ) {
 			$value = tamil_radar_get_json( $post_id, $key );
-		} elseif ( 'int' === $type ) {
+		} elseif ( tamil_radar_meta_ist_zahl( $type ) ) {
 			$value = '' === $value ? null : (int) $value;
 		}
 		$meta[ $key ] = $value;

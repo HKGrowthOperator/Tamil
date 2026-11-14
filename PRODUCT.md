@@ -4,6 +4,9 @@
 
 brand
 
+Richtung seit 09.11.2026 (Luis): wie eine große Nachrichtenmarke, ruhig und seriös, Rot nur als Akzent. Für die
+Gestaltung gilt `design/brief.md`; Vertrautheit geht vor Eigenwilligkeit.
+
 ## Users
 
 Tamilinnen und Tamilen in Deutschland, Österreich und der Schweiz: die junge, hier aufgewachsene Generation ebenso wie Eltern und Großeltern. Sie lesen meist am Handy, oft unterwegs oder abends zu Hause, und teilen Beiträge über WhatsApp. Sie suchen, was die Community betrifft: Nachrichten aus Sri Lanka und Tamil Nadu mit Bezug zum DACH-Raum, tamilische Filme in hiesigen Kinos, Feste, Konzerte, Tempel und Vereine, Rezepte.

@@ -1,0 +1,116 @@
+{
+  "stand": "2026-11-09T20:41:54.350Z",
+  "ergebnisse": [
+    {
+      "ziel": "design/richtungen/feed/index.html",
+      "url": "http://127.0.0.1:46299/design/richtungen/feed/index.html",
+      "breite": 390,
+      "status": 200,
+      "datei": "design/richtungen/feed/shots/design-richtungen-feed-index-390.png",
+      "kacheln": [
+        "design/richtungen/feed/shots/design-richtungen-feed-index-390-k0.png",
+        "design/richtungen/feed/shots/design-richtungen-feed-index-390-k1.png",
+        "design/richtungen/feed/shots/design-richtungen-feed-index-390-k2.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "design/richtungen/feed/artikel.html",
+      "url": "http://127.0.0.1:46299/design/richtungen/feed/artikel.html",
+      "breite": 390,
+      "status": 200,
+      "datei": "design/richtungen/feed/shots/design-richtungen-feed-artikel-390.png",
+      "kacheln": [
+        "design/richtungen/feed/shots/design-richtungen-feed-artikel-390-k0.png",
+        "design/richtungen/feed/shots/design-richtungen-feed-artikel-390-k1.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "design/richtungen/feed/index.html",
+      "url": "http://127.0.0.1:46299/design/richtungen/feed/index.html",
+      "breite": 820,
+      "status": 200,
+      "datei": "design/richtungen/feed/shots/design-richtungen-feed-index-820.png",
+      "kacheln": [
+        "design/richtungen/feed/shots/design-richtungen-feed-index-820-k0.png",
+        "design/richtungen/feed/shots/design-richtungen-feed-index-820-k1.png",
+        "design/richtungen/feed/shots/design-richtungen-feed-index-820-k2.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "design/richtungen/feed/artikel.html",
+      "url": "http://127.0.0.1:46299/design/richtungen/feed/artikel.html",
+      "breite": 820,
+      "status": 200,
+      "datei": "design/richtungen/feed/shots/design-richtungen-feed-artikel-820.png",
+      "kacheln": [
+        "design/richtungen/feed/shots/design-richtungen-feed-artikel-820-k0.png",
+        "design/richtungen/feed/shots/design-richtungen-feed-artikel-820-k1.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "design/richtungen/feed/index.html",
+      "url": "http://127.0.0.1:46299/design/richtungen/feed/index.html",
+      "breite": 1280,
+      "status": 200,
+      "datei": "design/richtungen/feed/shots/design-richtungen-feed-index-1280.png",
+      "kacheln": [
+        "design/richtungen/feed/shots/design-richtungen-feed-index-1280-k0.png",
+        "design/richtungen/feed/shots/design-richtungen-feed-index-1280-k1.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    },
+    {
+      "ziel": "design/richtungen/feed/artikel.html",
+      "url": "http://127.0.0.1:46299/design/richtungen/feed/artikel.html",
+      "breite": 1280,
+      "status": 200,
+      "datei": "design/richtungen/feed/shots/design-richtungen-feed-artikel-1280.png",
+      "kacheln": [
+        "design/richtungen/feed/shots/design-richtungen-feed-artikel-1280-k0.png",
+        "design/richtungen/feed/shots/design-richtungen-feed-artikel-1280-k1.png"
+      ],
+      "ueberlauf": 0,
+      "konsole": [],
+      "bilder": [],
+      "schriften": [],
+      "tippflaechen": [],
+      "tamil_ohne_lang": 0,
+      "fehler": 0
+    }
+  ],
+  "fehler": 0
+}

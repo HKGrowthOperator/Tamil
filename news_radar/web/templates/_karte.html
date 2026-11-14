@@ -7,6 +7,7 @@
     <div class="meta">
       <span class="rubrik r-{{ d.kategorie }}">{{ category_label(d.kategorie) }}</span>
       {% if d.typ == 'kino_termine' %}<span class="badge typ">Kinotermine</span>{% elif d.typ == 'event' %}<span class="badge typ">Event</span>{% endif %}
+      {% if d.herkunft == 'nachtrag' and d.ereignis_datum %}<span class="badge typ" title="Nachtrag für den Rückblick, erscheint mit dem Ereignisdatum">Nachtrag · {{ d.ereignis_datum[8:10] }}.{{ d.ereignis_datum[5:7] }}.{{ d.ereignis_datum[:4] }}</span>{% endif %}
       {% if d.ort %}<span class="badge ort">{{ d.ort }}</span>{% endif %}
       <span class="relevanz r{{ d.relevanz }}" title="Relevanz {{ d.relevanz }} von 10"><i style="--r:{{ d.relevanz }}"></i>Relevanz {{ d.relevanz }}</span>
       <span class="leise">{{ age(d.created_at) }} · {{ d.quelle_name }}</span>
@@ -15,21 +16,25 @@
     <h2><a href="/entwurf/{{ d.id }}" data-open>{{ d.titel }}</a></h2>
     <p class="teaser">{{ d.teaser }}</p>
     {% if d.status == 'fehler' %}<p class="fehlertext">{{ d.fehler }}</p>{% endif %}
-    {% if d.wp_link %}<p class="leise"><a href="{{ d.wp_link }}" target="_blank" rel="noopener">{{ 'Beitrag öffnen' if d.status == 'veroeffentlicht' else 'In WordPress öffnen' }}</a></p>{% endif %}
+    {% if d.wp_link %}<p class="leise"><a href="{{ d.wp_link|safe_url }}" target="_blank" rel="noopener">{{ 'Beitrag öffnen' if d.status == 'veroeffentlicht' else 'In WordPress öffnen' }}</a></p>{% endif %}
     <div class="aktionen">
       {% set open = d.status in ('neu', 'bearbeitet', 'zurueckgestellt') %}
-      {% if open or d.status == 'fehler' %}
-      {% if wordpress_enabled %}
+      {% if (open or d.status == 'fehler') and darf('freigeben') %}
+      <label class="auswahl"><input type="checkbox" name="ids" value="{{ d.id }}" form="sammel" aria-label="„{{ d.titel }}“ auswählen"> Auswählen</label>
+      <input type="hidden" name="stand_{{ d.id }}" value="{{ d.stand }}" form="sammel">
+      {% if wordpress_enabled and darf('veroeffentlichen') %}
       <form method="post" action="/entwurf/{{ d.id }}/veroeffentlichen" class="inline" data-confirm="Jetzt direkt auf tamil.de veröffentlichen?">
-        <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="gold" data-busy="Wird veröffentlicht …">Direkt posten</button>
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="stand" value="{{ d.stand }}"><button class="gold" data-busy="Wird veröffentlicht …">Direkt posten</button>
       </form>
       {% endif %}
       <form method="post" action="/entwurf/{{ d.id }}/status?next=/?status={{ status }}" class="inline" data-key="f">
         <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="aktion" value="freigeben">
+        <input type="hidden" name="stand" value="{{ d.stand }}">
         <button class="primaer">Freigeben</button>
       </form>
       {% endif %}
-      <a class="knopf" href="/entwurf/{{ d.id }}">Bearbeiten</a>
+      <a class="knopf" href="/entwurf/{{ d.id }}">{{ 'Bearbeiten' if darf('bearbeiten') else 'Ansehen' }}</a>
+      {% if darf('bearbeiten') %}
       {% if open %}
       <form method="post" action="/entwurf/{{ d.id }}/status?next=/?status={{ status }}" class="inline">
         <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="aktion" value="zurueckstellen">
@@ -53,6 +58,7 @@
         <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="aktion" value="zurueckstellen">
         <button class="leise">Zurückziehen</button>
       </form>
+      {% endif %}
       {% endif %}
     </div>
   </div>

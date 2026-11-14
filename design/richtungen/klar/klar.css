@@ -1,0 +1,404 @@
+/* tamil.de – Probe „klar“ (Schnellprobe, Runde 2)
+   Vorbild BBC News und tagesschau. Feste Farbwerte aus design/brief.md, Abschnitt 3. Kein JavaScript. */
+
+@font-face {
+  font-family: "Libre Franklin";
+  src: url("schriften/libre-franklin-latin-wght-normal.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Libre Franklin";
+  src: url("schriften/libre-franklin-latin-ext-wght-normal.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+:root {
+  --grund: oklch(0.985 0.002 250);
+  --flaeche: oklch(0.962 0.003 250);
+  --tinte: oklch(0.21 0.012 255);
+  --leise: oklch(0.45 0.012 255);
+  --linie: oklch(0.88 0.004 250);
+  --rot: oklch(0.508 0.177 25.6);
+
+  --schrift: "Libre Franklin", "Noto Sans Tamil", "Tamil Sangam MN", system-ui, sans-serif;
+  --rand: 16px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--grund);
+  color: var(--tinte);
+  font-family: var(--schrift);
+  font-size: 17px;
+  line-height: 1.5;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+}
+
+:lang(ta) { font-family: "Noto Sans Tamil", "Tamil Sangam MN", "Latha", sans-serif; }
+
+h1, h2, h3, p, ul { margin: 0; }
+ul { padding: 0; list-style: none; }
+img { display: block; max-width: 100%; height: auto; }
+a { color: inherit; text-decoration: none; }
+
+a:focus-visible {
+  outline: 2px solid var(--tinte);
+  outline-offset: 3px;
+}
+
+.zusammen { white-space: nowrap; }
+
+.nur-vorlesen {
+  position: absolute;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  font-size: 1rem;
+}
+
+/* ---------- Kopf ---------- */
+
+.kopf {
+  background: var(--grund);
+  border-bottom: 1px solid var(--linie);
+}
+.kopf__logo {
+  display: block;
+  width: max-content;
+  padding: 10px var(--rand) 8px;
+}
+.kopf__logo img { width: 119px; height: auto; }
+
+.rubriken { border-top: 1px solid var(--linie); }
+.rubriken ul {
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 0 4px;
+}
+.rubriken ul::-webkit-scrollbar { display: none; }
+.rubriken a {
+  display: block;
+  padding: 0 12px;
+  line-height: 44px;
+  font-size: 15px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.rubriken a:hover { color: var(--rot); }
+.rubriken a[aria-current] { color: var(--rot); font-weight: 600; }
+.rubriken a:focus-visible { outline-offset: -3px; }
+
+/* ---------- gemeinsame Bausteine ---------- */
+
+.seite { padding: 0 var(--rand) 56px; }
+
+.anr { display: block; }
+.anr:hover .titel {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.14em;
+}
+
+.bild {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  background: var(--flaeche);
+}
+
+.meta {
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--leise);
+  margin-bottom: 6px;
+}
+.meta__rubrik {
+  color: var(--rot);
+  font-weight: 600;
+}
+.meta__rubrik::after {
+  content: "";
+  display: inline-block;
+  width: 1px;
+  height: 0.95em;
+  margin: 0 8px;
+  background: var(--leise);
+  vertical-align: -0.12em;
+}
+
+.titel {
+  font-weight: 650;
+  text-wrap: balance;
+  hyphens: manual;
+}
+
+.vorspann { margin-top: 8px; }
+
+.block-titel {
+  font-size: 16px;
+  line-height: 1.25;
+  font-weight: 700;
+  border-top: 1px solid var(--tinte);
+  padding-top: 10px;
+  margin-bottom: 4px;
+}
+
+/* ---------- Aufmacher ---------- */
+
+.aufmacher .bild {
+  width: calc(100% + 2 * var(--rand));
+  max-width: none;
+  margin-inline: calc(-1 * var(--rand));
+}
+.aufmacher__text { padding: 14px 0 24px; }
+.aufmacher .titel {
+  font-size: 28px;
+  line-height: 1.14;
+  letter-spacing: -0.012em;
+}
+.aufmacher .vorspann { font-size: 17px; line-height: 1.5; }
+
+/* ---------- Nebenstücke ---------- */
+
+.stueck { border-top: 1px solid var(--linie); }
+.stueck .anr {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  column-gap: 12px;
+  align-items: start;
+  padding: 16px 0;
+}
+/* Handy wie BBC: zwei feste Spalten, Bild links, Dachzeile und Schlagzeile rechts mit einer Kante
+   (höchstens vier Zeilen); unter dem Bild bleibt frei, wenn der Text höher ist. */
+.stueck .bild { margin-top: 3px; }
+.stueck .titel {
+  font-size: 19px;
+  line-height: 1.22;
+  letter-spacing: -0.005em;
+}
+.stueck .vorspann { display: none; font-size: 16px; line-height: 1.5; }
+
+/* ---------- Meldungen ---------- */
+
+.meldungen { margin-top: 32px; }
+.meldung + .meldung { border-top: 1px solid var(--linie); }
+.meldung .anr { padding: 14px 0; }
+.meldung .titel {
+  font-size: 17px;
+  line-height: 1.3;
+  font-weight: 600;
+}
+
+/* ---------- Küche ---------- */
+
+.kueche { margin-top: 40px; }
+.kueche__liste {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px 16px;
+  padding-top: 12px;
+}
+.rezept .bild { margin-bottom: 10px; }
+.rezept .titel { font-size: 19px; line-height: 1.22; }
+
+/* ---------- Diese Woche ---------- */
+
+.woche {
+  margin-top: 48px;
+  background: var(--flaeche);
+  margin-inline: calc(-1 * var(--rand));
+  padding: 0 var(--rand) 8px;
+}
+.woche .block-titel { padding-top: 20px; border-top: 0; }
+.woche__art {
+  font-size: 13px;
+  line-height: 1.35;
+  font-weight: 600;
+  color: var(--rot);
+  padding: 16px 0 8px;
+  border-bottom: 1px solid var(--linie);
+}
+.eintrag + .eintrag { border-top: 1px solid var(--linie); }
+.eintrag .anr { padding: 12px 0 14px; }
+.eintrag .titel { font-size: 18px; line-height: 1.25; }
+.eintrag .meta { margin: 4px 0 0; }
+.eintrag__zahl {
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 4px;
+  font-variant-numeric: tabular-nums;
+}
+.eintrag__orte { font-size: 16px; color: var(--leise); }
+.eintrag__text { font-size: 16px; margin-top: 6px; }
+
+/* ---------- Tablet: eine Spalte, begrenzte Breite ---------- */
+
+@media (min-width: 600px) {
+  .seite { max-width: 712px; margin: 0 auto; }
+  .kopf__innen { max-width: 712px; margin: 0 auto; }
+  .aufmacher .bild { width: 100%; margin-inline: 0; }
+  .stueck .anr {
+    display: grid;
+    grid-template-columns: 200px minmax(0, 1fr);
+    column-gap: 20px;
+    align-items: start;
+  }
+  .stueck .bild { margin-top: 0; }
+  .stueck .vorspann { display: block; }
+  .kueche__liste { gap: 28px 24px; }
+  .woche { margin-inline: 0; padding-inline: 24px; }
+}
+
+/* ---------- Desktop ---------- */
+
+@media (min-width: 1024px) {
+  :root { --rand: 40px; }
+
+  .kopf__innen {
+    max-width: 1280px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+    padding: 0 var(--rand);
+  }
+  .kopf__logo { padding: 14px 0; }
+  .kopf__logo img { width: 150px; }
+  .rubriken { border-top: 0; }
+  .rubriken ul { padding: 0; overflow: visible; }
+  .rubriken a { padding: 0 10px; }
+  .rubriken li:last-child a { padding-right: 0; }
+
+  .seite { max-width: 1280px; padding: 32px var(--rand) 80px; }
+
+  .oben {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    grid-template-areas: "auf mel" "neb mel";
+    column-gap: 48px;
+    align-items: start;
+  }
+  .aufmacher { grid-area: auf; }
+  .neben { grid-area: neb; }
+  .meldungen { grid-area: mel; margin-top: 0; }
+
+  .aufmacher .anr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: 28px;
+    align-items: start;
+  }
+  .aufmacher__text { padding: 0 0 28px; }
+  .aufmacher .titel { font-size: 34px; line-height: 1.12; letter-spacing: -0.015em; }
+  .aufmacher .vorspann { margin-top: 12px; }
+
+  .stueck .anr { grid-template-columns: 208px minmax(0, 1fr); column-gap: 24px; padding: 18px 0; }
+  .stueck .titel { font-size: 22px; line-height: 1.2; }
+  .stueck .vorspann { margin-top: 6px; color: var(--tinte); max-width: 31em; }
+
+  .meldung .anr { padding: 13px 0 14px; }
+  .meldung .titel { font-size: 18px; line-height: 1.28; }
+
+  .kueche { margin-top: 56px; }
+  .kueche__liste { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 32px; padding-top: 16px; }
+
+  .woche { margin-top: 64px; padding: 0 32px 20px; }
+  /* drei gleich breite Spalten: zwei Filme, ein Termin; gleiche Linie und Oberkante */
+  .woche__spalten {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: 32px;
+  }
+  .woche__gruppe:first-child { grid-column: span 2; }
+  .woche__gruppe:first-child .eintrag + .eintrag { border-top: 0; }
+  .woche__gruppe:first-child ul {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 32px;
+  }
+}
+
+/* ---------- Artikel ---------- */
+
+.artikel { padding: 20px var(--rand) 64px; }
+.artikel__titel {
+  font-size: 28px;
+  line-height: 1.14;
+  font-weight: 650;
+  letter-spacing: -0.012em;
+  text-wrap: balance;
+  hyphens: manual;
+}
+.artikel__vorspann {
+  margin-top: 12px;
+  font-size: 19px;
+  line-height: 1.45;
+  font-weight: 500;
+  max-width: 29em;
+}
+.artikel__leiste {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  column-gap: 16px;
+  margin-top: 16px;
+  border-top: 1px solid var(--linie);
+  font-size: 14px;
+  line-height: 1.35;
+  color: var(--leise);
+}
+.artikel__teilen {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--tinte);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+.artikel__teilen:hover { color: var(--rot); }
+.artikel__bild {
+  width: calc(100% + 2 * var(--rand));
+  max-width: none;
+  margin: 8px calc(-1 * var(--rand)) 0;
+}
+.artikel__text {
+  margin-top: 24px;
+  font-size: 18px;
+  line-height: 1.6;
+  max-width: 29em;
+}
+.artikel__text p + p { margin-top: 1em; }
+
+@media (min-width: 600px) {
+  .artikel { max-width: 712px; margin: 0 auto; padding-top: 32px; }
+  .artikel__bild { width: 100%; margin-inline: 0; }
+}
+
+@media (min-width: 1024px) {
+  .artikel { max-width: 760px; padding: 48px var(--rand) 96px; }
+  .artikel__titel { font-size: 36px; line-height: 1.12; letter-spacing: -0.015em; }
+  .artikel__vorspann { font-size: 20px; margin-top: 14px; }
+  .artikel__text { margin-top: 32px; font-size: 19px; line-height: 1.6; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}

@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kontakt – tamil.de (Probe „mix-ordnung“)</title>
+<link rel="preload" href="schriften/libre-franklin-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="mix-ordnung.css">
+</head>
+<body>
+
+<header class="kopf">
+  <div class="innen kopf__innen">
+    <a class="kopf__logo" href="index.html"><img src="bilder/logo.png" width="300" height="121" alt="tamil.de – zur Startseite"></a>
+    <time class="kopf__datum" datetime="2026-11-12">Donnerstag, 12. November 2026</time>
+    <p class="kopf__hinweise"><strong>Diese Woche</strong>
+      <a href="termine.html#termine">Diwali in Basel am 21. November</a>
+      <a href="termine.html#kino">„Scene“ läuft in 11 Kinos</a>
+    </p>
+    <a class="kopf__suche" href="suche.html"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="6.8" cy="6.8" r="5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10.6 10.6 14.5 14.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Suche</a>
+  </div>
+</header>
+
+<nav class="band" aria-label="Rubriken">
+  <ul>
+    <li><a href="#">Nachrichten</a></li>
+    <li><a href="#">Entertainment</a></li>
+    <li><a href="termine.html">Events</a></li>
+    <li><a href="rubrik.html">Community</a></li>
+    <li><a href="index.html#kueche">Küche</a></li>
+    <li><a href="termine.html#kino">Kino</a></li>
+    <li><a href="#">Sport</a></li>
+    <li><a href="#">Kultur</a></li>
+    <li><a href="kontakt.html" aria-current="page">Kontakt</a></li>
+  </ul>
+</nav>
+
+<main>
+  <div class="innen">
+    <header class="seitenkopf">
+      <h1 class="seitenkopf__titel">Kontakt</h1>
+      <p class="seitenkopf__zeile">Hinweise, Termine und Geschichten aus der Community an die Redaktion</p>
+    </header>
+    <div class="kontakt">
+      <div>
+        <figure class="kontakt__bild">
+          <div class="rahmen r32"><img src="bilder/p9146.jpg" width="1005" height="503" style="object-position: 50% 30%" alt="Sieben Männer stehen in einem geschmückten Tempelraum nebeneinander, in der Mitte ein Gast mit Schal und Blumengirlande."></div>
+          <figcaption class="nachweis">Bild: Archiv tamil.de</figcaption>
+        </figure>
+        <dl class="kontakt__daten">
+          <dt>E-Mail</dt><dd><a href="mailto:info@tamil.de">info@tamil.de</a> <span class="beispiel">(Beispielwert)</span></dd>
+          <dt>Telefon</dt><dd>+49 69 123 456 <span class="beispiel">(Beispielwert)</span></dd>
+          <dt>WhatsApp</dt><dd>+49 170 123 4567 <span class="beispiel">(Beispielwert)</span></dd>
+          <dt>Anschrift</dt><dd>KBS Management GmbH<br>Rheinstr. 78a<br>51371 Leverkusen</dd>
+        </dl>
+        <p class="formular__hinweis" style="margin-top:14px">Wir antworten in der Regel innerhalb von zwei Werktagen.</p>
+      </div>
+      <form class="formular" action="#" method="post" aria-labelledby="t-form">
+        <h2 class="block-titel" id="t-form" style="margin-bottom:0">Nachricht an die Redaktion</h2>
+        <div><label for="f-name">Name</label><input id="f-name" name="name" autocomplete="name"></div>
+        <div><label for="f-mail">E-Mail</label><input id="f-mail" name="email" type="email" autocomplete="email"></div>
+        <div><label for="f-text">Nachricht</label><textarea id="f-text" name="nachricht"></textarea></div>
+        <p class="formular__hinweis">Probe: Das Formular verschickt nichts.</p>
+        <button class="knopf" type="submit">Nachricht senden</button>
+      </form>
+    </div>
+  </div>
+</main>
+
+<footer class="fuss">
+  <div class="innen fuss__innen">
+    <div>
+      <a class="fuss__logo" href="index.html"><img src="bilder/logo.png" width="300" height="121" alt="tamil.de – zur Startseite"></a>
+      <p class="fuss__satz">Nachrichten, Kino und Community für Tamilen in DE, AT und CH</p>
+    </div>
+    <ul aria-label="Service">
+      <li><a href="kontakt.html">Kontakt</a></li>
+      <li><a href="suche.html">Suche</a></li>
+      <li><a href="#">Impressum</a></li>
+      <li><a href="#">Datenschutz</a></li>
+    </ul>
+  </div>
+</footer>
+
+</body>
+</html>

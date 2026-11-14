@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Zeitplan{% endblock %}
+{% block content %}
+<header class="topline">
+  <div><h1>Zeitplan</h1><p class="unter">Was der Dienst wann zuletzt ausgeführt hat und wann es wieder läuft (Zeiten in Europe/Berlin).</p></div>
+</header>
+{% for z in zeilen %}
+<section class="karte">
+  <div class="meta">
+    <span class="badge">{{ z.takt }}</span>
+    {% if z.sperre %}<span class="badge status s-fehler">angehalten durch „{{ z.sperre.kanal }}“</span>{% endif %}
+    {% if z.kanaele %}<span class="leise">Schalter: {{ z.kanaele|join(', ') }}</span>{% else %}<span class="leise">ohne Schalter</span>{% endif %}
+  </div>
+  <h2>{{ z.plan.name }}</h2>
+  <p class="leise">{{ z.plan.zweck }}</p>
+  <p>Zuletzt: {% if z.letzter %}{{ fmt_dt(z.letzter.start) }} · {{ z.letzter.ergebnis or 'läuft gerade' }}{% else %}noch nicht aufgezeichnet{% endif %}<br>
+     Nächste Fälligkeit: {% if z.naechste %}{{ fmt_dt(z.naechste) }}{% else %}beim nächsten Start des Dienstes{% endif %}{% if z.sperre %} (entfällt, solange angehalten){% endif %}</p>
+</section>
+{% endfor %}
+<section class="karte">
+  <h2>Worker</h2>
+  <p class="leise">Läuft dauernd{% if workflow != 'v2' %} (nur mit RADAR_WORKFLOW=v2){% endif %} und arbeitet die <a href="/warteschlange">Warteschlange</a> ab.</p>
+  <p>{% if worker_sperre %}<span class="badge status s-fehler">angehalten durch „{{ worker_sperre.kanal }}“</span> Es wird kein Job übernommen.{% else %}Übernimmt Jobs.{% endif %}</p>
+</section>
+{% endblock %}

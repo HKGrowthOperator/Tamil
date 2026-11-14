@@ -19,12 +19,26 @@
   <a class="logo" href="/"><span>tamil<b>.de</b></span><em>Redaktion</em></a>
   <nav>
     <a href="/" class="{{ 'aktiv' if request.endpoint == 'ui.feed' }}"><span>Feed</span><span class="count">{{ offen() }}</span></a>
+    {% set rn = recherche_offen() %}
+    <a href="/recherche" class="{{ 'aktiv' if request.endpoint == 'red.recherche' }}"><span>In Nachrecherche</span>{% if rn %}<span class="count leise-count">{{ rn }}</span>{% endif %}</a>
+    {% set eo = eingang_offen() %}
+    <a href="/eingang" class="{{ 'aktiv' if request.endpoint and request.endpoint.startswith('eingang.') }}"><span>Eingang</span>{% if eo %}<span class="count leise-count">{{ eo }}</span>{% endif %}</a>
     <a href="/dashboard" class="{{ 'aktiv' if request.endpoint == 'ui.dashboard' }}"><span>Dashboard</span></a>
+    <a href="/kosten" class="{{ 'aktiv' if request.endpoint == 'red.kosten' }}"><span>Kosten</span></a>
+    <a href="/quellen" class="{{ 'aktiv' if request.endpoint == 'red.quellen' }}"><span>Quellen</span></a>
+    <a href="/warteschlange" class="{{ 'aktiv' if request.endpoint == 'red.warteschlange' }}"><span>Warteschlange</span></a>
     <a href="/protokoll" class="{{ 'aktiv' if request.endpoint == 'ui.protokoll' }}"><span>Protokoll</span></a>
+    <a href="/social" class="{{ 'aktiv' if request.endpoint == 'social.seite' }}"><span>Social</span></a>
+    <a href="/zeitplan" class="{{ 'aktiv' if request.endpoint == 'betrieb.zeitplan' }}"><span>Zeitplan</span></a>
+    {% set st = stopps() %}
+    <a href="/schalter" class="{{ 'aktiv' if request.endpoint == 'betrieb.schalter_seite' }}"><span>Schalter</span>{% if st %}<span class="count">{{ st|length }}</span>{% endif %}</a>
+    {% if darf('benutzer') %}<a href="/nutzer" class="{{ 'aktiv' if request.endpoint == 'red.nutzer' }}"><span>Benutzer</span></a>{% endif %}
   </nav>
   <div class="status" {% if lauf %}data-lauf="{{ lauf.started_at }}"{% endif %}>
-    <span class="live">Radar läuft</span>
-    <span class="takt">alle 3 Minuten</span>
+    {% set halt = (stopps()|selectattr('kanal', 'in', ['alles', 'redaktion'])|list) %}
+    {% if halt %}<span class="takt"><b>Radar angehalten</b> ({{ halt[0].label }})</span><span class="takt">kein Scan, keine Agenten</span>
+    {% else %}<span class="live">Radar läuft</span>
+    <span class="takt">alle 3 Minuten</span>{% endif %}
     {% if lauf %}<span class="letzter">letzter Lauf {{ fmt_dt(lauf.started_at) }}{% if lauf.entwuerfe %}, {{ lauf.entwuerfe }} neue Entwürfe{% endif %}</span><span class="naechster" data-countdown>nächster in <b>–:––</b></span>{% else %}<span class="letzter">noch kein Lauf protokolliert</span>{% endif %}
     <span class="shortcuts" title="Tastatur im Feed">J/K wechseln · F freigeben · A ablehnen · ↵ öffnen</span>
   </div>
@@ -32,8 +46,14 @@
 </aside>
 {% endif %}
 <main class="cockpit">
+{% if session.user %}{% set st = stopps() %}{% if st %}
+<div class="banner stopp" role="status"><b>Angehalten:</b> {% for s in st %}{{ s.label }} ({{ s.grund }}){{ ', ' if not loop.last else '.' }}{% endfor %} Bearbeiten und Freigeben von Hand gehen weiter. <a href="/schalter">Schalter ansehen</a></div>
+{% endif %}{% endif %}
+{% if session.user %}{% set b = budget() %}{% if b.stopp or b.warnung %}
+<div class="banner {{ 'stopp' if b.stopp else 'warnung' }}">{% if b.stopp %}<b>Budget erreicht.</b> Neue bezahlte Schritte warten bis morgen bzw. bis zum nächsten Monat; Freigeben und Veröffentlichen gehen weiter.{% else %}<b>Budget zu {{ (b.anteil * 100)|round|int }} % verbraucht.</b>{% endif %} Heute ${{ '%.2f'|format(b.tag_usd) }} von ${{ '%.2f'|format(b.tag_limit) }}, Monat ${{ '%.2f'|format(b.monat_usd) }} von ${{ '%.2f'|format(b.monat_limit) }}. <a href="/kosten">Kosten ansehen</a></div>
+{% endif %}{% endif %}
 {% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}<div class="meldungen">{% for cat, m in messages %}<div class="meldung {{ cat }}">{{ m|urlize(target='_blank') }}</div>{% endfor %}</div>{% endif %}
+  {% if messages %}<div class="meldungen">{% for cat, m in messages %}<div class="meldung {{ cat }}" role="{{ 'alert' if cat == 'fehler' else 'status' }}">{{ m|urlize(target='_blank') }}</div>{% endfor %}</div>{% endif %}
 {% endwith %}
 {% block content %}{% endblock %}
 </main>

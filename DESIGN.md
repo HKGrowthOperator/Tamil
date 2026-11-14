@@ -1,5 +1,9 @@
 # Design – Tamil.de
 
+> **Abgelehnt, gilt nicht für neue Gestaltung.** Diese Datei beschreibt das „Community-Magazin“ (Runde 2), das der
+> Auftraggeber als „altbacken“ abgelehnt hat. Sie bleibt nur als Beschreibung des heutigen Themes stehen. Maßstab für
+> alles Neue ist `design/brief.md`; diese Datei wird nach Tor G3 neu geschrieben.
+
 Modernes Community-Magazin. Warmes Weiß, dunkles Braungrau, Rot aus dem Logo als führende Farbe. Gilt für das
 WordPress-Theme (`wordpress/themes/tamil`). Das Redaktions-Cockpit (`news_radar/web`) nutzt dieselben Farben und
 Schriften in ruhigerer Form (Produkt-Register, siehe unten).

@@ -19,8 +19,17 @@ if (inhalt) {
       if (ziel) {
         const parser = new DOMParser();
         const doc = parser.parseFromString(inhalt.value, "text/html");
-        doc.querySelectorAll("script,iframe,object,embed,style").forEach((n) => n.remove());
-        doc.querySelectorAll("*").forEach((n) => [...n.attributes].forEach((a) => { if (/^on/i.test(a.name) || /^javascript:/i.test(a.value)) n.removeAttribute(a.name); }));
+        // Live-Vorschau: dieselbe Allowlist wie auf dem Server (render.sanitize_html), dazu blockt die CSP Inline-Skripte
+        const TAGS = /^(P|H2|H3|STRONG|EM|B|I|UL|OL|LI|A|BR|BLOCKQUOTE|FIGURE|FIGCAPTION|IMG|DIV|SPAN|TABLE|THEAD|TBODY|TR|TH|TD)$/;
+        const ATTR = /^(class|href|src|alt|title|rel|target|width|height|colspan|rowspan)$/;
+        doc.querySelectorAll("script,style,iframe,object,embed,template,noscript").forEach((n) => n.remove());
+        [...doc.body.querySelectorAll("*")].reverse().forEach((n) => {
+          [...n.attributes].forEach((a) => {
+            const wert = a.value.replace(/[\u0000-\u0020\u007f]/g, "");
+            if (!ATTR.test(a.name) || ((a.name === "href" || a.name === "src") && !/^(https?:|mailto:|\/(?!\/)|#)/i.test(wert))) n.removeAttribute(a.name);
+          });
+          if (!TAGS.test(n.tagName)) n.replaceWith(...n.childNodes);
+        });
         ziel.innerHTML = doc.body.innerHTML;
       }
       const vt = document.getElementById("vorschau-titel"); if (vt && titel) vt.textContent = titel.value;
@@ -39,6 +48,26 @@ document.querySelectorAll(".chip[data-anweisung]").forEach((chip) => {
     ta.focus();
   });
 });
+
+// Sammelfreigabe: Auswahl je Karte, „alle sichtbaren“, Rückfrage mit Anzahl (Server prüft jeden Entwurf einzeln)
+const sammel = document.querySelector("form[data-sammel]");
+if (sammel) {
+  const boxen = [...document.querySelectorAll('input[name="ids"][form="sammel"]')];
+  const alle = sammel.querySelector("[data-alle]");
+  const anzahl = sammel.querySelector("[data-anzahl]");
+  const knopf = sammel.querySelector("button");
+  const zaehle = () => {
+    const n = boxen.filter((b) => b.checked).length;
+    anzahl.textContent = n ? `${n} ausgewählt` : "Keiner ausgewählt";
+    knopf.disabled = n === 0;
+    alle.checked = n > 0 && n === boxen.length;
+    alle.indeterminate = n > 0 && n < boxen.length;
+    sammel.setAttribute("data-confirm", `${n} ${n === 1 ? "Entwurf" : "Entwürfe"} freigeben?`);
+  };
+  boxen.forEach((b) => b.addEventListener("change", zaehle));
+  alle.addEventListener("change", () => { boxen.forEach((b) => { b.checked = alle.checked; }); zaehle(); });
+  zaehle();
+}
 
 // Tastatur im Feed: J/K wechseln, F freigeben, A ablehnen, Enter öffnet
 const board = document.querySelector("[data-board]");
@@ -81,3 +110,20 @@ if (status) {
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("/sw.js").catch(() => {});
 }
+
+document.querySelectorAll("select[data-auto-submit]").forEach((sel) => sel.addEventListener("change", () => sel.form.submit()));
+
+// Social: WhatsApp-Entwurf in die Zwischenablage (Knopf mit data-kopieren="#id-des-textfelds")
+document.querySelectorAll("button[data-kopieren]").forEach((btn) => btn.addEventListener("click", async () => {
+  const feld = document.querySelector(btn.getAttribute("data-kopieren"));
+  if (!feld) return;
+  const vorher = btn.textContent;
+  try {
+    await navigator.clipboard.writeText(feld.value || feld.textContent);
+    btn.textContent = "Kopiert";
+  } catch (_) {
+    feld.select();
+    btn.textContent = "Mit Strg+C kopieren";
+  }
+  setTimeout(() => { btn.textContent = vorher; }, 2000);
+}));

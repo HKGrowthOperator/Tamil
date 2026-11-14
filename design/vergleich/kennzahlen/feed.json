@@ -1,0 +1,73 @@
+{
+  "slug": "feed",
+  "stand": "2026-11-09T22:14",
+  "handy": {
+    "kopf_hoehe": 12,
+    "schlagzeilen_ganz_sichtbar": 2,
+    "schlagzeilen_seite": 5,
+    "max_zeilen_schlagzeile": null,
+    "groesste_schrift": {
+      "px": 128.7,
+      "text": "Kanguva"
+    },
+    "groesste_rote_schrift": {
+      "px": 128.7,
+      "text": "Kanguva"
+    },
+    "versalien_ueber_14px": 1,
+    "schriftfamilien": [
+      "Atkinson Hyperlegible Next",
+      "Sofia Sans Extra Condensed"
+    ],
+    "groesster_radius": {
+      "px": 0,
+      "element": ""
+    },
+    "schatten": 0,
+    "gedreht": 7,
+    "schriftbreite_verstellt": 0,
+    "bilder_ueber_natuerlicher_breite": [],
+    "ueberlauf": 0,
+    "farbanteil_ohne_bilder": {
+      "bunt": 0.5002,
+      "rot": 0.5002
+    },
+    "seitenfehler": []
+  },
+  "desktop": {
+    "kopf_hoehe": 24,
+    "schlagzeilen_ganz_sichtbar": 2,
+    "schlagzeilen_seite": 5,
+    "max_zeilen_schlagzeile": null,
+    "groesste_schrift": {
+      "px": 192,
+      "text": "Kanguva"
+    },
+    "groesste_rote_schrift": {
+      "px": 192,
+      "text": "Kanguva"
+    },
+    "versalien_ueber_14px": 1,
+    "schriftfamilien": [
+      "Atkinson Hyperlegible Next",
+      "Sofia Sans Extra Condensed"
+    ],
+    "groesster_radius": {
+      "px": 0,
+      "element": ""
+    },
+    "schatten": 0,
+    "gedreht": 7,
+    "schriftbreite_verstellt": 0,
+    "bilder_ueber_natuerlicher_breite": [
+      "../../../prototyp/static/img/logo.png (152 px gezeigt, 300 px vorhanden)",
+      "../../../prototyp/static/img/p9711.jpg (640 px gezeigt, 1024 px vorhanden)"
+    ],
+    "ueberlauf": 0,
+    "farbanteil_ohne_bilder": {
+      "bunt": 0.5452,
+      "rot": 0.5452
+    },
+    "seitenfehler": []
+  }
+}
