@@ -179,6 +179,140 @@ input:hover, textarea:hover, select:hover { background: var(--color-paper); }
 .seitenkopf + .abschnitt { border-top: 0; padding-top: var(--space-xl); }
 .fill { display: inline-block; max-width: 100%; padding: var(--space-2xs) var(--space-sm); line-height: 1.6; border: 1px dashed var(--color-muted); border-radius: 3px; color: var(--color-muted); }
 
+/* ---------- Datumsblock ---------- */
+.tag { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: var(--space-md); align-items: end; margin: 0; }
+.tag .ziffer { font-family: var(--font-display); font-weight: 800; font-size: var(--text-day); line-height: 0.8; letter-spacing: -0.04em; font-variant-numeric: tabular-nums lining-nums; color: var(--color-ink); }
+.tag-rest { display: grid; gap: var(--space-3xs); padding-bottom: 0.1em; }
+.tag .monat { font-family: var(--font-display); font-weight: 600; font-size: var(--text-lg); line-height: 1.2; }
+.tag .wochentag { color: var(--color-muted); line-height: 1.3; }
+.tag .marke { color: var(--color-ink-2); font-weight: 600; line-height: 1.3; }
+.tag-ort { color: var(--color-ink-2); line-height: 1.35; margin-top: var(--space-2xs); }
+.tag-ort a { text-decoration-color: var(--color-rule); }
+
+/* ---------- Bogen und Tafel: Tabellen auf hellem Blatt mit fester Linie oben ---------- */
+.bogen { background: var(--color-sheet); border-top: 2px solid var(--color-rule-2); padding: var(--space-md) var(--space-lg) var(--space-xs); }
+.bogen-kopf { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--space-2xs) var(--space-lg); padding-bottom: var(--space-sm); }
+.bogen-kopf h2 { font-size: var(--text-h2); }
+.bogen-stand { margin: 0; color: var(--color-muted); font-size: var(--text-sm); }
+.bogen-fuss { margin: 0; padding-top: var(--space-2xs); border-top: 2px solid var(--color-rule-2); }
+.bogen-fuss.notiz { padding-block: var(--space-sm); color: var(--color-ink-2); }
+.bogen-leer { padding-block: var(--space-sm) var(--space-md); border-top: 2px solid var(--color-rule-2); color: var(--color-ink-2); }
+.tafel { width: 100%; border-collapse: collapse; font-size: var(--text-body); line-height: 1.45; font-variant-numeric: tabular-nums lining-nums; }
+.tafel th { font-family: var(--font-body); font-weight: 400; font-size: var(--text-sm); color: var(--color-muted); text-align: left; padding: var(--space-xs) var(--space-md) var(--space-xs) 0; border-bottom: 2px solid var(--color-rule-2); white-space: nowrap; }
+.tafel td, .tafel tbody th { padding: var(--space-sm) var(--space-md) var(--space-sm) 0; border-top: 1px solid var(--color-rule); vertical-align: top; text-align: left; }
+.tafel tbody tr:first-child td, .tafel tbody tr:first-child th { border-top: 0; }
+.tafel td:last-child { padding-right: 0; }
+.tafel .t-tag { width: 5.5rem; white-space: nowrap; }
+.tafel .t-tag time { display: grid; }
+.t-z { font-family: var(--font-display); font-weight: 800; font-size: 1.875rem; line-height: 1; letter-spacing: -0.03em; color: var(--color-ink); padding-top: var(--space-3xs); }
+.t-wt { font-size: var(--text-sm); color: var(--color-muted); line-height: 1.3; margin-top: var(--space-3xs); }
+.tafel .was { font-family: var(--font-display); font-weight: 600; color: var(--color-ink); }
+.tafel .was > a { display: inline-block; padding-block: var(--space-sm); margin-block: calc(-1 * var(--space-sm)); text-decoration: none; }
+.tafel .was > a:hover { text-decoration: underline; }
+.tafel .wer, .tafel .wo { color: var(--color-ink-2); }
+.tafel .leer { color: var(--color-muted); }
+.tafel.feste .was { width: 34%; }
+.tafel.feste .wer { width: 28%; }
+.tafel .teilen { display: flex; align-items: center; min-height: 44px; width: max-content; font-weight: 400; font-size: var(--text-md); color: var(--color-ink-2); }
+.tafel .t-teilen { white-space: nowrap; width: 1%; }
+.tafel .t-teilen .teilen { margin: calc(-1 * var(--space-sm)) 0; }
+.tafel tr.vorbei td, .tafel tr.vorbei .t-z, .tafel tr.vorbei .was { color: var(--color-muted); }
+.tafel tr.ist-naechst td { border-top: 2px solid var(--color-rule-2); border-bottom: 2px solid var(--color-rule-2); }
+.tafel tr.ist-naechst + tr td { border-top: 0; }
+.tafel tr.ist-naechst .t-z, .tafel tr.ist-naechst .was, .tafel tr.ist-naechst .was > a { color: var(--color-accent); }
+.als { display: block; margin-top: var(--space-3xs); font-family: var(--font-body); font-size: var(--text-md); font-weight: 600; color: var(--color-accent); }
+.tafel .unter { display: block; margin-top: var(--space-3xs); font-family: var(--font-body); font-weight: 400; color: var(--color-ink-2); }
+.tafel.kino .zahl { text-align: right; width: 4.5rem; font-family: var(--font-display); font-weight: 800; font-size: var(--text-lg); }
+.tafel.kino th.zahl { font-family: var(--font-body); font-weight: 400; font-size: var(--text-sm); }
+.tafel .m { display: none; }
+@media (max-width: 640px) {
+  .bogen { margin-inline: calc(-1 * var(--gutter)); padding: var(--space-sm) var(--gutter) var(--space-2xs); }
+  .tafel thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .tafel, .tafel tbody { display: block; }
+  .tafel tr { display: grid; grid-template-columns: 4.25rem minmax(0, 1fr); column-gap: var(--space-sm); padding-block: var(--space-sm); border-top: 1px solid var(--color-rule); }
+  .tafel tbody tr:first-child { border-top: 0; }
+  .tafel td, .tafel tbody th { display: block; grid-column: 2; padding: 0; border: 0; width: auto; }
+  .tafel td.t-tag { grid-column: 1; grid-row: 1 / span 4; }
+  .tafel tr.ist-naechst { border-top: 2px solid var(--color-rule-2); border-bottom: 2px solid var(--color-rule-2); }
+  .tafel tr.ist-naechst + tr { border-top: 0; }
+  .tafel tr.ist-naechst td { border: 0; }
+  .tafel.feste .was, .tafel.feste .wer { width: auto; }
+  .tafel td.t-teilen { grid-column: 2; }
+  .tafel .t-teilen .teilen { margin: 0; }
+  .tafel.kino tr { grid-template-columns: minmax(0, 1fr) 5.5rem; }
+  .tafel.kino td.was { grid-column: 1; grid-row: 1; }
+  .tafel.kino td.zahl { grid-column: 2; grid-row: 1; text-align: right; font-size: var(--text-body); white-space: nowrap; }
+  .tafel.kino td.t-teilen { grid-column: 1 / -1; grid-row: 2; }
+  .tafel .m { display: inline; }
+  .tafel.kino td.zahl .m { font-family: var(--font-body); font-weight: 400; }
+}
+
+/* ---------- Strom: Beiträge nach Monaten, Tagesziffer je Zeile, Bild mit Nachweis rechts ---------- */
+.strom-kopf { font-size: var(--text-h2); margin-bottom: var(--space-md); }
+.monat-kopf { font-family: var(--font-display); font-weight: var(--weight-head); font-size: var(--text-lg); margin: var(--space-xl) 0 var(--space-xs); }
+.strom-kopf + .monat-kopf, .kopfzeile + .monat-kopf, .wrap > .monat-kopf:first-child { margin-top: 0; }
+.tage { list-style: none; margin: 0; padding: 0; border-top: 2px solid var(--color-ink); }
+.tage li { display: grid; grid-template-columns: 5rem minmax(0, 1fr) minmax(0, 12rem); gap: var(--space-2xs) var(--space-lg); align-items: start; padding-block: var(--space-sm); border-bottom: 1px solid var(--color-rule); }
+.tage.mit-teaser li { grid-template-columns: 5rem minmax(0, 1fr) minmax(0, 15rem); }
+.tage li.ohne-bild { grid-template-columns: 5rem minmax(0, 1fr); }
+.tage .z { font-family: var(--font-display); font-weight: 800; font-size: var(--text-row); line-height: 0.95; letter-spacing: -0.03em; font-variant-numeric: tabular-nums lining-nums; }
+.tage .z time { display: block; }
+.tage .z small { display: block; font-family: var(--font-body); font-weight: 400; font-size: var(--text-sm); letter-spacing: 0; color: var(--color-muted); margin-top: var(--space-2xs); line-height: 1.3; }
+.b-titel { margin: 0; font-size: var(--text-title); line-height: 1.3; font-weight: 600; hyphens: auto; -webkit-hyphens: auto; hyphenate-limit-chars: 12 5 5; }
+.b-titel a { text-decoration: none; }
+.b-titel a:hover { text-decoration: underline; }
+.tage .wo { margin: var(--space-2xs) 0 0; font-size: var(--text-md); color: var(--color-muted); }
+.tage .teaser { margin: var(--space-xs) 0 0; color: var(--color-ink-2); max-width: 62ch; }
+.daumen { margin: 0; }
+.daumen a { display: block; }
+.daumen img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border-radius: var(--radius-card); background: var(--color-paper-3); }
+.daumen a:hover img { opacity: 0.92; }
+.daumen figcaption { line-height: 1.35; }
+@media (max-width: 760px) {
+  .tage li, .tage.mit-teaser li { grid-template-columns: 3rem minmax(0, 1fr) 5.5rem; grid-template-areas: "z titel bild" "z wo bild" "z cap bild" "z teaser teaser"; column-gap: var(--space-sm); row-gap: 0; }
+  .tage li.ohne-bild { grid-template-columns: 3rem minmax(0, 1fr); grid-template-areas: "z titel" "z wo" "z teaser"; }
+  .tage .s-text { display: contents; }
+  .tage .z { grid-area: z; font-size: 1.75rem; }
+  .tage .b-titel { grid-area: titel; font-size: var(--text-body); line-height: 1.35; }
+  .tage .wo { grid-area: wo; }
+  .tage .teaser { grid-area: teaser; }
+  .tage .nur-breit { display: none; }
+  .tage .daumen { display: contents; }
+  .tage .daumen a { grid-area: bild; }
+  .tage .daumen figcaption { grid-area: cap; margin-top: var(--space-2xs); }
+  .tage .daumen img { aspect-ratio: 1 / 1; }
+}
+
+/* ---------- Startseite: Tagesblatt ---------- */
+.blatt { padding-block: var(--space-xl) var(--space-lg); }
+.blatt .wrap { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--space-lg) var(--gap-columns); align-items: start; }
+.blatt-text { display: flex; flex-direction: column; gap: var(--space-lg); }
+.blatt-rechts { display: flex; flex-direction: column; gap: var(--space-xl); }
+.aufmacher { display: flex; flex-direction: column; }
+.aufmacher h1 { font-size: var(--text-h1); line-height: 1.12; max-width: 26ch; }
+.aufmacher .vorspann { margin: var(--space-md) 0 0; max-width: 60ch; font-size: var(--text-lead); line-height: 1.5; color: var(--color-ink-2); }
+.aufmacher .aktionen { margin-top: var(--space-xs); }
+.bild.aufmacher-bild img { aspect-ratio: 4 / 3; }
+.titel-link { text-decoration: none; }
+.titel-link:hover { text-decoration: underline; text-decoration-thickness: 2px; }
+.blatt + .anzeige-mitte .ad-billboard { padding-top: 0; }
+@media (max-width: 860px) {
+  .blatt { padding-block: var(--space-md) var(--space-lg); }
+  .blatt .wrap { display: flex; flex-direction: column; gap: 0; }
+  .blatt-text, .blatt .aufmacher, .blatt-rechts { display: contents; }
+  .blatt-tag { order: 1; margin-bottom: var(--space-md); }
+  .blatt-feste { order: 2; margin-bottom: var(--space-lg); }
+  .aufmacher h1 { order: 3; }
+  .bild.aufmacher-bild { order: 4; margin-top: var(--space-md); }
+  .bild.aufmacher-bild img { aspect-ratio: 3 / 2; }
+  .aufmacher .vorspann { order: 5; margin-top: var(--space-sm); }
+  .aufmacher .aktionen { order: 6; }
+  .blatt-kino { order: 7; margin-top: var(--space-lg); }
+}
+@media (max-width: 640px) {
+  .blatt-tag .tag { grid-template-columns: 4.25rem minmax(0, 1fr); column-gap: var(--space-sm); }
+}
+
 /* ---------- Anzeigen (Plätze aus dem Plugin „Tamil.de Website“) ---------- */
 .ad { display: flex; flex-direction: column; align-items: center; gap: var(--space-2xs); max-width: 100%; min-width: 0; }
 .ad .ad-label { align-self: flex-start; font-size: var(--text-sm); color: var(--color-muted); }
