@@ -1,6 +1,6 @@
 # Probeseite „Tageskalender“ (hm-tageskalender): Begründung
 
-Stand 14.11.2026. Auftrag von Luis (14.11.): „eine Mischung aus A und B“. Gestaltet nach `design/brief-v3.md` und
+Stand 14.11.2026, Runde 2 (nach `design/kritik/hm-tageskalender-r1.md`; Änderungen im Abschnitt „Runde 2“ am Ende, ältere Aussagen oben sind dort berichtigt). Auftrag von Luis (14.11.): „eine Mischung aus A und B“. Gestaltet nach `design/brief-v3.md` und
 `design/linien-auftrag.md` mit Hallmark v2.0.0 (eigene Richtung). Alle Seiten erzeugt `bauen.py` aus echtem Material
 (Aufruf vom Repo-Root: `python3 design/richtungen/hm-tageskalender/bauen.py`); von Hand geschrieben ist nur
 `hm-tageskalender.css` (Ausgangspunkt war die CSS von Linie A, die Mischung steht im Block „Tageskalender“ am Ende).
@@ -61,9 +61,8 @@ was kommt, als gedrucktes Kalenderblatt in Tabellen (Linie B); Rot zeigt nur, wa
   Aufmacher mit großem Foto · Strom mit Bild je Zeile · Seitennavigation.
 - **Material** · real: 20 Rückblick-Beiträge mit Bildern und Nachweisen (`rueckblick.json`), Chronik aus
   `docs/redaktion/rueckblick-2026.md`, Kino „Scene“ und „Ramayana“ aus `inhalte.json` (Stand 9.11.), Diwali in Basel aus
-  `inhalte.json`, Düsseldorf 15.11. aus Beitrag 30; „OM“, „Jailer 2“ und THADAM aus den wartenden Radar-Entwürfen 54, 5
-  und 4 (`rueckblick-2026.md`, Stand 12.11.) · pictures: Commons-Fotos der Beiträge, Symbol- und Archivbilder als
-  solche gekennzeichnet · absent: Kinonamen und Uhrzeiten (außer Kloten), Orte von „OM“ und sechs Städte von „Scene“,
+  `inhalte.json`, Düsseldorf 15.11. aus Beitrag 30 (seit Runde 2 nichts mehr aus wartenden Radar-Entwürfen) · pictures: Commons-Fotos der Beiträge, Symbol- und Archivbilder als
+  solche gekennzeichnet · absent: Kinonamen und Uhrzeiten, sechs Städte von „Scene“, weitere kommende Termine,
   Preise, Kontaktdaten, Impressum.
 - **Sweep** · `sloplint --genre editorial` über die elf Pflichtseiten (Dateien und `--url`): 0 FAIL, 0 REFLEX offen;
   waived 49b, 78, 77, 79, 59; answered F25, F15 · `shots.mjs`: 48 Aufnahmen, 0 Fehler · keine Prüfung aus frischem
@@ -113,7 +112,6 @@ Server `http://127.0.0.1:8111/`, Stand 14.11.2026.
   `design.md` gehört.
 - Die Tabellen wiederholen auf Start, Termine und Artikel dieselben drei Termine; bei echten Daten würde die Startseite
   mehr Zeilen brauchen.
-- „OM“, „Jailer 2“ und THADAM stammen aus nicht freigegebenen Radar-Entwürfen und stehen hier wie feste Angaben.
 - Das Aufmacherfoto zeigt den Berliner Tempel im Juni, nicht Deepavali, und ist dieselbe Datei wie bei Beitrag 49.
 - Das Karthi-Foto im Strom hat einen roten Hintergrund und ist die größte rote Fläche der Probe.
 - Am Handy brechen lange Berichtstitel in der schmalen Spalte neben dem Daumenbild auf vier bis fünf Zeilen um.
@@ -121,9 +119,67 @@ Server `http://127.0.0.1:8111/`, Stand 14.11.2026.
 - Formulare, Werben, Buchen und Kontakt haben kein Foto und tragen die Mischung kaum; sie sind A's Fassung.
 - Kinonamen und Uhrzeiten fehlen; „Nach Stadt“ endet für sieben von acht Städten beim Film.
 - Verzeichnis-Filter und Buchungskalender sind statisch und zeigen nur Zustände.
-- Leiste und Kopf brauchen am Handy drei Zeilen, bevor das Datum beginnt.
 - Keine Prüfung aus frischem Kontext; die steht noch aus.
 
 ## Neu bauen
 
 `python3 design/richtungen/hm-tageskalender/bauen.py` (vom Repo-Root).
+
+## Runde 2 (nach Kritik r1)
+
+Behoben sind die drei P1 und P2-1 bis P2-4; sonst ist nichts Neues dazugekommen. Was oben in Picks, Look, Chrome, Hero und Sections
+anders steht, gilt in der Fassung dieses Abschnitts.
+
+**P1-1 Inhalte.** THADAM, „OM“ und „Jailer 2“ sind auf allen Seiten gestrichen (sie stammten aus nicht freigegebenen
+Radar-Entwürfen). Damit entfällt auch das Wort „nur“. Der Kino-Stand heißt jetzt „9. November“ (`inhalte.json`), die
+Schweiz-Gruppe in „Nach Stadt“ entfällt. Kommend sind damit nur noch zwei belegte Feste (15.11. Düsseldorf,
+21.11. Basel); mehr gibt `design/inhalte/` nicht her.
+
+**P1-2 A und B zusammen im ersten Bildschirm.** Was jetzt von B kommt, je ein Satz:
+- **Kalender im ersten Bildschirm:** Bei 1280 stehen „Die nächsten Feste“ als Tabelle in der Textspalte unter dem
+  Vorspann. Das Foto ist auf fünf Spalten verkleinert, darunter steht die Kino-Tabelle, weil B den Kalender als Kopf
+  der Seite will und A den Aufmacher.
+- **Am Handy unter der Tagesziffer:** Die Feste-Tabelle folgt direkt auf die Tagesziffer, vor Schlagzeile und Foto,
+  weil die Frage „was kommt als Nächstes“ bei B an erster Stelle steht.
+- **Kühles Papier aus B:** Grund `oklch(96.8% 0.007 245)`, Blatt `oklch(99.3% 0.003 245)`, blauschwarze Tinte
+  `oklch(19% 0.02 245)`, Linien im Farbton 240. Das ist B's Material statt A's grünlichem Weiß. Schriften bleiben die
+  zwei von A, keine dritte; `tokens.css` ist angepasst.
+- **Randloses Blatt am Handy:** Das Tabellenblatt läuft am Handy über die volle Breite, der Text steht auf derselben
+  16-px-Kante wie alles andere, so wie B's Blatt auf dem Grund liegt.
+
+**P1-3 Kopf am Handy.** Bis 760 px ist der Kopf eine Zeile wie bei A: Logo, Termine, Kino, Mehr. Bis 520 px stehen
+Community und Verzeichnis nur im Menü. Die Rückblick-Leiste ist am Handy ausgeblendet; ihr Ziel steht im Menü
+„Mehr“. Die verrutschte Linie über der zweiten Zeile gibt es nicht mehr. Ab 761 px bleibt B's Leiste über dem Kopf.
+
+**P2.**
+- „Die nächsten Feste“ zeigt auf der Startseite nur Kommendes; der 8.11. steht nur noch im Artikel unter „Im Beitrag
+  genannt“.
+- Am Handy gibt es eine linke Kante: Blatt randlos, Text bei 16 px.
+- Lange Titel im Strom trennen jetzt (`hyphens: auto`, erst ab zwölf Zeichen), statt an das Vorschaubild zu stoßen.
+- Gestrichelte Platzhalter sind ein Kasten (`inline-block`, gepolstert) und brechen nicht mehr in zwei Teile.
+
+**Messwerte erster Bildschirm (Startseite, gemessen über http).**
+
+| | 390 × 844 | 1280 × 800 |
+|---|---|---|
+| Kopfhöhe | 61 px (vorher 143) | 122 px mit Leiste (unverändert) |
+| erste Festzeile ab y | 245 px (vorher 848) | 614 px (vorher 727, nur der Tabellenkopf war sichtbar) |
+| beide Festzeilen enden bei y | 477 px | 769 px |
+| Schlagzeile ab y | 555 px | 245 px |
+| Foto ab y | 672 px | 162 px |
+
+**Prüfung Runde 2.**
+- `sloplint --genre editorial` über index, artikel, rubrik, termine, kino (Dateien plus je `--url`): **0 FAIL,
+  0 REFLEX, 5 WARN, 118 WAIVED, 5 ANSWERED, 20 NOTE.**
+  - Die 5 WARN sind „fallback font“ im Datei-Durchgang über `file://` (P2-5 der Kritik). Über http laden die
+    Schriften; shots meldet 0 nicht geladene Schriften. Nicht weiter verfolgt, weil P2-5 nicht zum Auftrag gehörte.
+  - Neu behoben: REFLEX 72 an den Platzhalter-Kästen, durch Innenabstand.
+- `tools/shots.mjs` über dieselben fünf Seiten bei 390/820/1280: **15 Aufnahmen, 0 Fehler**, 0 px Überlauf,
+  0 Konsolenfehler, 0 kleine Tippflächen.
+
+**Neue oder geänderte Schwächen.**
+- Die Feste-Tabelle der Startseite hat nur zwei Zeilen, weil es in `design/inhalte/` nicht mehr kommende Termine gibt.
+- Am Handy steht die Aufmacher-Schlagzeile erst bei y 555, das Foto beginnt im unteren Fünftel des ersten Bildschirms.
+- Silbentrennung im Strom trennt auch mittellange Wörter („Ta-milalayams“).
+- Die anderen Seitentypen (Verzeichnis, Formulare, Werben, Buchen, Kontakt) sind nur technisch geprüft
+  (shots.mjs: 18 Aufnahmen, 0 Fehler), nicht angesehen. Papier und Kopf haben sich dort mitgeändert.

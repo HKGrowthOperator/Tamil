@@ -44,23 +44,20 @@ TERMIN_IDS = {30, 108, 102, 107, 33, 82, 104, 106, 84, 83, 42, 71, 43, 46, 75, 7
 KINO_IDS = {84, 46, 53, 57, 94, 64, 96, 66, 69, 43}
 
 # Die Feste-Tabelle (Tag, Was, Wer, Wo). Quellen: Beitrag 30 (8.11., 15.11.), inhalte.json (21.11.),
-# Radar-Entwurf 4 laut docs/redaktion/rueckblick-2026.md (13.12., Veranstalter dort nicht genannt).
+# Nur freigegebenes Material aus design/inhalte/ (Runde 2: THADAM aus einem wartenden Radar-Entwurf gestrichen).
 FESTE = [
     (dt.date(2026, 11, 8), "Deepavali, das Lichterfest", "Sivaalayam-Tempel", "München", "artikel.html"),
     (dt.date(2026, 11, 15), "Deepavali-Feier", "Düsseldorf Tamil Sangam", "Düsseldorf", "artikel.html"),
     (dt.date(2026, 11, 21), "Diwali in Basel", "Basel Tamil Sangam", "Aula Lysbüchel, Basel", None),
-    (dt.date(2026, 12, 13), "THADAM 2026, Networking- und Gala-Nacht", None, "Bern", None),
 ]
 KOMMEND = [(d, w, o, h) for d, w, _, o, h in FESTE if d >= HEUTE]
 NAECHST = min(d for d, *_ in FESTE if d >= HEUTE)
 
 # Die Kino-Tabelle (Film, Städte, Zahl der Kinos, Stand). „Scene“ und „Ramayana“ aus inhalte.json (Stand 9.11.),
-# „OM“ und „Jailer 2“ aus den wartenden Radar-Entwürfen 54 und 5 (docs/redaktion/rueckblick-2026.md, Stand 12.11.).
+# „OM“ und „Jailer 2“ (wartende Radar-Entwürfe) sind in Runde 2 gestrichen.
 KINO_TAB = [
     ("Scene", "Berlin, Bremen, Chemnitz, Dortmund, Düsseldorf und 6 weitere Städte", 11, dt.date(2026, 11, 9), None),
     ("Ramayana: Rise of a Legend", "Gütersloh, Ravensburg", 2, dt.date(2026, 11, 9), None),
-    ("OM", "in Deutschland", 12, dt.date(2026, 11, 12), "Orte folgen"),
-    ("Jailer 2", "Kloten, Kino Claudia, nur am Sonntag, 15. November", 1, dt.date(2026, 11, 12), None),
 ]
 
 # Verzeichnis: nur Einrichtungen, die in den Rückblick-Beiträgen vorkommen; keine erfundenen Kontaktdaten.
@@ -177,7 +174,7 @@ def kino_tabelle(titel, kopf_id="kt-h", hn="h2", mehr=None, teilen=False, kompak
             rows += (f'<tr><td class="was">„{e(film)}“</td><td class="wo">{e(wo)}{f_}</td>{zahl}'
                      f'<td class="t-stand"><span class="m">Stand </span><time datetime="{stand.isoformat()}">{stand.day}. {mon_kurz(stand)}</time></td>{tz}</tr>')
     m = f'<p class="bogen-fuss"><a class="textlink" href="{mehr[0]}">{e(mehr[1])}</a></p>' if mehr else ""
-    st = '<p class="bogen-stand">Stand: 9. und 12. November</p>' if kompakt else ""
+    st = '<p class="bogen-stand">Stand: 9. November</p>' if kompakt else ""
     kopf_z = ('<th scope="col">Film und Städte</th><th scope="col" class="zahl">Kinos</th>' if kompakt else
               '<th scope="col">Film</th><th scope="col">Städte</th><th scope="col" class="zahl">Kinos</th><th scope="col" class="t-stand">Stand</th>' + ('<th scope="col">Weitersagen</th>' if teilen else ""))
     return (f'<section class="bogen" aria-labelledby="{kopf_id}"><div class="bogen-kopf"><{hn} id="{kopf_id}">{e(titel)}</{hn}>{st}</div>'
@@ -371,8 +368,8 @@ MITMACHEN = [("Termin einreichen", "einreichen.html"), ("Werben", "werben.html")
 
 def kopf(aktiv=""):
     cur = lambda n: ' aria-current="page"' if aktiv == n else ""
-    haupt = "".join(f'<a href="{h}"{cur(n)}>{n}</a>' for n, h in HAUPT)
-    weitere = [(n, h) for n, h in NAV_R if n != "Community"] + [("Rückblick 2026", "rueckblick.html")] + MITMACHEN
+    haupt = "".join(f'<a href="{h}"{cur(n)}{" class=\"breit\"" if n in ("Community", "Verzeichnis") else ""}>{n}</a>' for n, h in HAUPT)
+    weitere = [("Community", "rubrik.html"), ("Verzeichnis", "verzeichnis.html")] + [(n, h) for n, h in NAV_R if n != "Community"] + [("Rückblick 2026", "rueckblick.html")] + MITMACHEN
     menue = "".join(f'<li><a href="{h}"{cur(n)}>{n}</a></li>' for n, h in weitere)
     kdat = "" if aktiv == "Start" else f'<p class="kopf-datum"><time datetime="{HEUTE.isoformat()}">{TAGE[HEUTE.weekday()]}, {datum(HEUTE)}</time></p>'
     return (f'<a class="skip" href="#inhalt">Zum Inhalt</a>'
@@ -484,14 +481,11 @@ hero = (f'<section class="blatt" aria-label="Heute"><div class="wrap">'
         f'<div class="blatt-text"><div class="blatt-tag">{blatt(HEUTE)}</div>'
         f'<article class="aufmacher"><h1><a class="titel-link" href="artikel.html">{e(a["titel"])}</a></h1>'
         f'<p class="vorspann">{e(a["teaser"])}</p>'
-        f'<p class="aktionen"><a class="textlink" href="{e(wa(a["titel"]))}">Per WhatsApp schicken</a></p></article></div>'
-        f'{figur(a, cls="bild aufmacher-bild", lazy=False, link="artikel.html")}'
+        f'<p class="aktionen"><a class="textlink" href="{e(wa(a["titel"]))}">Per WhatsApp schicken</a></p></article>'
+        f'<div class="blatt-feste">{feste_tabelle([f for f in FESTE if f[0] >= HEUTE], "Die nächsten Feste", kopf_id="t-h", mehr=("termine.html", "Ganzer Festkalender"))}</div></div>'
+        f'<div class="blatt-rechts">{figur(a, cls="bild aufmacher-bild", lazy=False, link="artikel.html")}'
+        f'<div class="blatt-kino">{kino_tabelle("Im Kino", kopf_id="k-h", mehr=("kino.html", "Kino nach Stadt"), kompakt=True)}</div></div>'
         f'</div></section>')
-
-kalender = (f'<section class="kalender" aria-label="Termine und Kino"><div class="wrap">'
-            f'<div class="kal-feste">{feste_tabelle(FESTE, "Die nächsten Feste", kopf_id="t-h", mehr=("termine.html", "Ganzer Festkalender"))}</div>'
-            f'<div class="kal-kino">{kino_tabelle("Im Kino", kopf_id="k-h", mehr=("kino.html", "Kino nach Stadt"), kompakt=True)}</div>'
-            f'</div></section>')
 
 ZULETZT = [i for i in BEI if i != 30 and BEI[i]["datum"] >= "2026-07-01"]
 zuletzt = (f'<section class="abschnitt" id="zuletzt" aria-labelledby="z-h"><div class="wrap">'
@@ -500,7 +494,7 @@ zuletzt = (f'<section class="abschnitt" id="zuletzt" aria-labelledby="z-h"><div 
 
 schreib("index.html", "tamil.de | Nachrichten, Termine und Kino der tamilischen Community",
         "Nachrichten, Termine und Kino der tamilischen Community in Deutschland, Österreich und der Schweiz.",
-        hero + kalender + zuletzt, "Start")
+        hero + zuletzt, "Start")
 
 
 # ======================================================================
@@ -617,7 +611,6 @@ STADT_TAB = [
     ("Deutschland", [("Berlin", "Scene", None), ("Bremen", "Scene", None), ("Chemnitz", "Scene", None),
                      ("Dortmund", "Scene", None), ("Düsseldorf", "Scene", None), ("Gütersloh", "Ramayana: Rise of a Legend", None),
                      ("Ravensburg", "Ramayana: Rise of a Legend", None)]),
-    ("Schweiz", [("Kloten", "Jailer 2", "Kino Claudia, nur am Sonntag, 15. November")]),
 ]
 stadt_rows = ""
 for land, zeilen in STADT_TAB:
@@ -628,7 +621,7 @@ for land, zeilen in STADT_TAB:
 stadt_tab = (f'<section class="bogen" aria-labelledby="s-h"><div class="bogen-kopf"><h2 id="s-h">Nach Stadt</h2></div>'
              f'<table class="tafel orte"><thead><tr><th scope="col">Stadt</th><th scope="col">Film</th></tr></thead>'
              f'<tbody>{stadt_rows}</tbody></table>'
-             f'<p class="bogen-fuss notiz">„Scene“ läuft außerdem in 6 weiteren Städten, „OM“ an 12 Spielorten in Deutschland. Diese Orte, die Namen der Kinos und die Uhrzeiten folgen.</p></section>')
+             f'<p class="bogen-fuss notiz">„Scene“ läuft außerdem in 6 weiteren Städten. Diese Orte, die Namen der Kinos und die Uhrzeiten folgen.</p></section>')
 kinojahr = sorted([(d, sid, t) for d, sid, t in CHRONIK if sid in KINO_IDS], reverse=True)
 kino_body = (seitenkopf("Kino", "Welcher tamilische Film in welcher Stadt läuft, aus den Programmen der Kinos.",
                         f'<p class="aktionen"><a class="textlink" href="#s-h">Meine Stadt finden</a>'

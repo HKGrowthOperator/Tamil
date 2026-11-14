@@ -1,5 +1,5 @@
 /* Hallmark · shape: Tageskalender (custom, Mischung aus Tagesblatt und Kalenderblatt) · genre: editorial · theme: custom · job: read · copy: verbatim · idea: "tamil.de beginnt jeden Tag mit seinem Datum, dem Aufmacher im Foto und den nächsten Festen als gedruckte Tabelle; Rot zeigt nur, was als Nächstes kommt" · vibe: "Zeitungskopf mit Tagesziffer, Tabellen wie ein Kalenderblatt, ruhig"
- * paper: oklch(97.6% 0.007 120) · sheet: oklch(99.3% 0.004 120) · accent: oklch(50.5% 0.175 25) · display: Rethink Sans 600 (Ziffern 800) · body: Golos Text · hero: Tagesziffer, Aufmacher-Schlagzeile und Vorspann links, großes Foto mit Nachweis rechts; darunter die Feste und das Kino als Tabellen · nav: schmale Leiste Rückblick über dem Kopf, Logo, vier Ziele (Termine, Kino, Community, Verzeichnis), Menü Mehr · footer: Feld paper-2 mit Logo, Rubriken, Diensten, Bildnachweisen · imagery: photographs (Commons, Nachweis an jedem Bild) · signature: die Feste-Tabelle mit großer Tagesziffer je Zeile, der nächste Termin zwischen zwei festen Linien in Rot mit „als Nächstes“
+ * paper: oklch(96.8% 0.007 245) (kühles Papier aus B) · sheet: oklch(99.3% 0.003 245) · accent: oklch(50.5% 0.175 25) · display: Rethink Sans 600 (Ziffern 800) · body: Golos Text · hero: Tagesziffer, Aufmacher-Schlagzeile, Vorspann und die nächsten Feste als Tabelle links, Foto mit Nachweis und Kino-Tabelle rechts · nav: schmale Leiste Rückblick über dem Kopf, Logo, vier Ziele (Termine, Kino, Community, Verzeichnis), Menü Mehr · footer: Feld paper-2 mit Logo, Rubriken, Diensten, Bildnachweisen · imagery: photographs (Commons, Nachweis an jedem Bild) · signature: die Feste-Tabelle mit großer Tagesziffer je Zeile, der nächste Termin zwischen zwei festen Linien in Rot mit „als Nächstes“
  * axes: light/grotesk/chromatic-red · posture: split · contrast: pass · fold: pass · v2.0.0 */
 /* Hallmark · pre-emit critique: P3 H4 E4 S4 R4 V3 · weakest: V, Tabellen und Tageszeilen sind Ordnung, kein Effekt; dafür trägt jede Seite ein echtes Foto mit Nachweis im ersten Bildschirm */
 /* Hallmark · waive 49b · verlinkte Titel, Termine und Feste in Tabellen und Listen · jeder Titel steht wörtlich wie von der Redaktion von tamil.de geschrieben und bricht am Handy in der schmalen Spalte um */
@@ -18,17 +18,17 @@
 @font-face { font-family: "Golos Text"; src: url("schriften/golos-text-latin-ext-wght-normal.woff2") format("woff2-variations"); font-weight: 400 900; font-display: swap; unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
 
 :root {
-  --color-paper: oklch(97.6% 0.007 120);
-  --color-paper-2: oklch(94.6% 0.012 125);
-  --color-paper-3: oklch(91% 0.016 128);
-  --color-ink: oklch(21% 0.022 155);
-  --color-ink-2: oklch(30% 0.02 155);
-  --color-muted: oklch(42% 0.02 150);
-  --color-rule: oklch(84% 0.015 130);
-  --color-rule-2: oklch(32% 0.02 155);
-  --color-sheet: oklch(99.3% 0.004 120);
+  --color-paper: oklch(96.8% 0.007 245);
+  --color-paper-2: oklch(93.5% 0.009 245);
+  --color-paper-3: oklch(90% 0.011 245);
+  --color-ink: oklch(19% 0.02 245);
+  --color-ink-2: oklch(28% 0.018 245);
+  --color-muted: oklch(44% 0.016 245);
+  --color-rule: oklch(84% 0.01 240);
+  --color-rule-2: oklch(32% 0.018 240);
+  --color-sheet: oklch(99.3% 0.003 245);
   --color-accent: oklch(50.5% 0.175 25);
-  --color-accent-ink: oklch(97.6% 0.007 120);
+  --color-accent-ink: oklch(99.3% 0.003 245);
   --color-focus: oklch(50.5% 0.175 25);
   --color-error: oklch(50% 0.19 27);
   --font-display: "Rethink Sans", ui-sans-serif, system-ui, sans-serif;
@@ -683,3 +683,47 @@ ol.stand li.jetzt { color: var(--color-ink); font-weight: var(--weight-head); te
   .tafel.kino td.t-teilen { grid-row: 4; }
   .tafel .t-teilen .teilen { margin: 0; }
 }
+
+/* ================================================================
+   Runde 2 (Kritik r1): A und B gemeinsam im ersten Bildschirm
+   ================================================================ */
+.fill { display: inline-block; max-width: 100%; padding: var(--space-2xs) var(--space-sm); line-height: 1.6; }
+.tage.strom .b-titel { hyphens: auto; -webkit-hyphens: auto; }
+
+/* Kopf: am Handy eine Zeile wie bei A; Rückblick, Community und Verzeichnis stehen dort im Menü */
+@media (max-width: 760px) {
+  .leiste { display: none; }
+  .kopf .wrap { flex-wrap: nowrap; padding-bottom: var(--space-xs); min-height: 60px; gap: var(--space-2xs); }
+  .haupt { order: 2; flex-basis: auto; margin-left: auto; border-top: 0; justify-content: flex-end; }
+  .menue { order: 3; margin-left: 0; }
+}
+@media (max-width: 520px) { .haupt .breit { display: none; } }
+@media (max-width: 400px) { .haupt a, .menue summary { padding-inline: var(--space-xs); } }
+
+/* Tagesblatt: links Datum, Aufmacher und die nächsten Feste, rechts Foto und Kino */
+.blatt { padding-block: var(--space-xl) var(--space-2xl); }
+.blatt .wrap { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
+.blatt-text { gap: var(--space-lg); }
+.blatt-rechts { display: flex; flex-direction: column; gap: var(--space-xl); }
+.aufmacher h1 { max-width: 26ch; }
+.blatt-feste .bogen, .blatt-kino .bogen { margin: 0; }
+@media (max-width: 860px) {
+  .blatt .wrap { display: flex; flex-direction: column; gap: 0; }
+  .blatt-text, .blatt .aufmacher, .blatt-rechts { display: contents; }
+  .blatt-tag { order: 1; margin-bottom: var(--space-md); }
+  .blatt-feste { order: 2; margin-bottom: var(--space-lg); }
+  .aufmacher h1 { order: 3; }
+  .bild.aufmacher-bild { order: 4; }
+  .aufmacher .vorspann { order: 5; }
+  .aufmacher .aktionen { order: 6; }
+  .blatt-kino { order: 7; margin-top: var(--space-lg); }
+}
+
+/* Blatt am Handy randlos: eine linke Kante für Text in allen Abschnitten */
+@media (max-width: 640px) {
+  .bogen { margin-inline: calc(-1 * var(--gutter)); padding-inline: var(--gutter); }
+  .tafel .t-tag .als { display: block; }
+}
+@media (max-width: 640px) { .blatt-feste .bogen, .blatt-kino .bogen { margin-inline: calc(-1 * var(--gutter)); } }
+.blatt { padding-bottom: var(--space-lg); }
+.tage.strom .b-titel { hyphenate-limit-chars: 12 5 5; }

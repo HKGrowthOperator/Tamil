@@ -8,10 +8,10 @@
   --color-error: oklch(52% 0.19 27); --color-success: oklch(50% 0.12 150);
   --container: 1440px; --gutter: 64px; --gap-columns: 32px; --section-gap-s: 120px; --section-gap: 144px; --section-gap-l: 176px;
   --z-base: 1; --z-raised: 10; --z-dropdown: 100; --z-sticky: 200; --z-sticky-nav: 300; --z-modal: 400; --z-toast: 500; --z-tooltip: 600;
-  --color-paper: oklch(97.6% 0.007 120); --color-paper-2: oklch(94.6% 0.012 125); --color-paper-3: oklch(91% 0.016 128);
-  --color-ink: oklch(21% 0.022 155); --color-ink-2: oklch(30% 0.02 155); --color-muted: oklch(42% 0.02 150);
-  --color-rule: oklch(84% 0.015 130);
-  --color-accent: oklch(50.5% 0.175 25); --color-accent-ink: oklch(97.6% 0.007 120); --color-focus: oklch(50.5% 0.175 25);
+  --color-paper: oklch(96.8% 0.007 245); --color-paper-2: oklch(93.5% 0.009 245); --color-paper-3: oklch(90% 0.011 245);
+  --color-ink: oklch(19% 0.02 245); --color-ink-2: oklch(28% 0.018 245); --color-muted: oklch(44% 0.016 245);
+  --color-rule: oklch(84% 0.01 240);
+  --color-accent: oklch(50.5% 0.175 25); --color-accent-ink: oklch(99.3% 0.003 245); --color-focus: oklch(50.5% 0.175 25);
   --font-display: "Rethink Sans", ui-sans-serif, system-ui, sans-serif; --font-body: "Golos Text", ui-sans-serif, system-ui, sans-serif; --font-outlier: var(--font-body);
   --radius-card: 4px; --radius-pill: 999px; --rule-hair: 1px; --shadow-card: none;
   --tracking-display: -0.02em;
