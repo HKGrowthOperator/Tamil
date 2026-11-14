@@ -1,45 +1,56 @@
 /*
- * Tamil.de – Theme-Stylesheet. Modernes Community-Magazin: warmes Papier, Braungrau, Rot aus dem Logo.
+ * Tamil.de – Theme-Stylesheet „Tageskalender“: kühles Papier, Tinte, Tabellen auf hellem Blatt, Rot nur für „als Nächstes“.
  * Farben und Schriften kommen aus theme.json (--wp--preset--…); Grundlage und Regeln stehen in DESIGN.md.
  */
 
-/* ---------- Tokens ---------- */
+/* ---------- Tokens (Tageskalender, siehe design/tokens.css) ---------- */
 :root {
-  --papier: var(--wp--preset--color--papier, #FDF9F5);
-  --weiss: var(--wp--preset--color--weiss, #FFFDFB);
-  --sand: var(--wp--preset--color--sand, #F8EFE4);
-  --sand-2: var(--wp--preset--color--sand-2, #F2E6D9);
-  --linie: var(--wp--preset--color--linie, #E5DCD5);
-  --tinte: var(--wp--preset--color--tinte, #332924);
-  --tinte-2: var(--wp--preset--color--tinte-2, #655851);
-  --tinte-3: var(--wp--preset--color--tinte-3, #72665F);
-  --rot: var(--wp--preset--color--rot, #B5282A);
-  --rot-tief: var(--wp--preset--color--rot-tief, #921A1D);
-  --rot-hell: var(--wp--preset--color--rot-hell, #FFEAE8);
-  --safran: var(--wp--preset--color--safran, #F8AC3D);
-  --rot-auf-dunkel: #F47B73;
+  --color-paper: var(--wp--preset--color--papier, #F1F5F9);
+  --color-paper-2: var(--wp--preset--color--papier-2, #E5EAEF);
+  --color-paper-3: var(--wp--preset--color--papier-3, #D8DFE5);
+  --color-sheet: var(--wp--preset--color--blatt, #FBFDFF);
+  --color-ink: var(--wp--preset--color--tinte, #0C151C);
+  --color-ink-2: var(--wp--preset--color--tinte-2, #222A31);
+  --color-muted: var(--wp--preset--color--grau, #4B545B);
+  --color-rule: var(--wp--preset--color--linie, #C5CBD0);
+  --color-rule-2: var(--wp--preset--color--linie-fest, #2B343B);
+  --color-accent: var(--wp--preset--color--rot, #B5282A);
+  --color-focus: var(--color-accent);
+  --color-error: #B7191C;
+  --font-display: var(--wp--preset--font-family--titel, "Rethink Sans", ui-sans-serif, system-ui, sans-serif);
+  --font-body: var(--wp--preset--font-family--text, "Golos Text", ui-sans-serif, system-ui, sans-serif);
+  --font-tamil: var(--wp--preset--font-family--tamil, Catamaran, sans-serif);
 
-  /* Rubrikpunkte */
-  --c-news: var(--rot);
-  --c-kino: #8A57AE;
-  --c-events: #DA8A11;
-  --c-community: #3D8E53;
-  --c-kueche: #C96736;
-  --c-kultur: #346AAC;
-  --c-sport: #0D9298;
-  --c-entertainment: #C65085;
+  /* Alte Namen: Übergang, bis alle Abschnitte umgestellt sind; --tinte, --weiss, --linie, --r, --r-klein, --titel
+     und --rot liest auch das Plugin tamil-site (consent.css). */
+  --papier: var(--color-paper);
+  --weiss: var(--color-sheet);
+  --sand: var(--color-paper-2);
+  --sand-2: var(--color-paper-3);
+  --linie: var(--color-rule);
+  --tinte: var(--color-ink);
+  --tinte-2: var(--color-ink-2);
+  --tinte-3: var(--color-muted);
+  --rot: var(--color-accent);
+  --rot-tief: var(--color-ink);
+  --rot-hell: var(--color-paper-2);
+  --safran: var(--color-paper-3);
+  --rot-auf-dunkel: var(--color-paper);
 
-  --titel: var(--wp--preset--font-family--titel, Catamaran, "Segoe UI", system-ui, sans-serif);
-  --text: var(--wp--preset--font-family--text, Literata, Georgia, serif);
+  --c-news: var(--color-ink); --c-kino: var(--color-ink); --c-events: var(--color-ink); --c-community: var(--color-ink);
+  --c-kueche: var(--color-ink); --c-kultur: var(--color-ink); --c-sport: var(--color-ink); --c-entertainment: var(--color-ink);
 
-  --breite: 1240px;
-  --rand: clamp(16px, 4vw, 40px);
-  --r-gross: 22px;
-  --r: 14px;
-  --r-klein: 10px;
+  --titel: var(--font-display);
+  --text: var(--font-body);
+
+  --breite: 1320px;
+  --rand: clamp(16px, 4vw, 56px);
+  --r-gross: 2px;
+  --r: 2px;
+  --r-klein: 2px;
   --kopf-h: 76px;
-  --ease: cubic-bezier(.22, 1, .36, 1);
-  --abstand: clamp(56px, 6vw, 80px);
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --abstand: 64px;
 }
 .r-news { --punkt: var(--c-news); } .r-kino { --punkt: var(--c-kino); } .r-events { --punkt: var(--c-events); }
 .r-community { --punkt: var(--c-community); } .r-kueche { --punkt: var(--c-kueche); } .r-kultur { --punkt: var(--c-kultur); }
@@ -60,7 +71,7 @@ a:hover { color: var(--rot-tief); }
 h1, h2, h3, h4 { font-family: var(--titel); color: var(--tinte); margin: 0; line-height: 1.12; font-weight: 800; letter-spacing: -0.015em; text-wrap: balance; }
 h1 a, h2 a, h3 a, h4 a { color: inherit; }
 p { margin: 0; }
-[lang="ta"] { font-family: var(--titel); }
+[lang="ta"] { font-family: var(--font-tamil); }
 :focus-visible { outline: 3px solid var(--rot); outline-offset: 3px; border-radius: 4px; }
 ::selection { background: var(--rot-hell); color: var(--tinte); }
 .wrap { width: 100%; max-width: calc(var(--breite) + 2 * var(--rand)); margin: 0 auto; padding: 0 var(--rand); }
