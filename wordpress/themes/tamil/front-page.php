@@ -19,21 +19,30 @@ if ( ! $auswahl['lead'] ) :
 endif;
 
 get_template_part( 'template-parts/home/blatt', null, array( 'auswahl' => $auswahl ) );
+// Werbeplatz 01 unter dem Tagesblatt (nicht über dem Aufmacher, Kritik theme-tageskalender-r1 P1-1).
+tamil_leaderboard();
 
+// Werbeplatz Billboard steht mitten im Strom „Zuletzt“, nicht direkt unter dem Tagesblatt (dort steht schon Platz 01).
 $billboard = function_exists( 'tamil_site_anzeige' ) ? tamil_site_anzeige( 'billboard', false ) : '';
-if ( '' !== $billboard ) :
-	?>
-	<div class="wrap anzeige-mitte"><?php echo $billboard; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Werbeplatz aus dem Plugin, dort escapt ?></div>
-	<?php
-endif;
-
-$zuletzt = tamil_ids( array( 'posts_per_page' => 12 ), array( (int) $auswahl['lead'] ) );
+$zuletzt   = tamil_ids( array( 'posts_per_page' => 12 ), array( (int) $auswahl['lead'] ) );
 if ( $zuletzt ) :
+	$teil_1 = array_slice( $zuletzt, 0, 6 );
+	$teil_2 = array_slice( $zuletzt, 6 );
 	?>
 	<section class="abschnitt zuletzt" id="zuletzt" aria-labelledby="zuletzt-titel">
 		<div class="wrap">
 			<h2 id="zuletzt-titel" class="strom-kopf"><?php esc_html_e( 'Zuletzt bei tamil.de', 'tamil' ); ?></h2>
-			<?php tamil_strom( $zuletzt ); ?>
+			<?php tamil_strom( $teil_1 ); ?>
+			<?php
+			if ( '' !== $billboard ) :
+				?>
+				<div class="anzeige-zwischen"><?php echo $billboard; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Werbeplatz aus dem Plugin, dort escapt ?></div>
+				<?php
+			endif;
+			if ( $teil_2 ) {
+				tamil_strom( $teil_2, array( 'weiter' => wp_date( 'Y-m', (int) get_post_timestamp( (int) end( $teil_1 ) ) ) ) );
+			}
+			?>
 			<p class="weiter-links">
 				<?php foreach ( array_keys( tamil_rubriken_standard() ) as $slug ) : ?>
 					<?php $rubrik = tamil_rubrik( $slug ); ?>

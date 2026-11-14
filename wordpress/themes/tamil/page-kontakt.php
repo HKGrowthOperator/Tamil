@@ -91,6 +91,7 @@ $erlaubt  = array(
 		</aside>
 	</div>
 </section>
+<?php tamil_leaderboard(); ?>
 
 <section class="abschnitt" id="werben" aria-labelledby="werben-titel">
 	<div class="wrap schmal">

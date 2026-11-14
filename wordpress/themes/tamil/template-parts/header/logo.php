@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
 $class = $args['class'] ?? 'logo-wrap';
 $logo  = (int) get_theme_mod( 'custom_logo' );
 ?>
-<a class="<?php echo esc_attr( $class ); ?>" href="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="<?php echo esc_attr( get_bloginfo( 'name' ) . ' – ' . __( 'Startseite', 'tamil' ) ); ?>" rel="home">
+<a class="<?php echo esc_attr( $class ); ?>" href="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="<?php echo esc_attr( get_bloginfo( 'name' ) . ', ' . __( 'zur Startseite', 'tamil' ) ); ?>" rel="home">
 	<?php
 	if ( $logo ) {
 		echo wp_get_attachment_image( $logo, 'medium', false, array( 'alt' => get_bloginfo( 'name' ) ) );

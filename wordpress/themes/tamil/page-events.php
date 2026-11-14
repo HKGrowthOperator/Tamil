@@ -36,15 +36,20 @@ $monate  = array();
 foreach ( $vorbei as $id ) {
 	$monate[ substr( (string) get_post_meta( $id, 'event_datum', true ), 0, 7 ) ][] = $id;
 }
-// Foto im Kopf: der nächste Termin mit Bild, sonst der neueste Beitrag der Rubrik mit Bild.
-$bild_id = 0;
-foreach ( array_merge( $kommend, $vorbei ) as $id ) {
-	if ( tamil_hat_bild( $id ) ) {
-		$bild_id = $id;
-		break;
-	}
-}
-$figur = $bild_id ? tamil_figur(
+// Foto im Kopf: der erste Termin oder Beitrag der Rubrik mit Foto; eine Grafik nur, wenn es kein Foto gibt (ungeschnitten).
+$bild_id = tamil_leitbild(
+	array_merge(
+		$kommend,
+		$vorbei,
+		get_category_by_slug( 'events' ) ? tamil_ids(
+			array(
+				'posts_per_page' => 12,
+				'category_name'  => 'events',
+			)
+		) : array()
+	)
+);
+$figur   = $bild_id ? tamil_figur(
 	$bild_id,
 	array(
 		'klasse' => 'bild kopf-bild',
@@ -81,6 +86,7 @@ $figur = $bild_id ? tamil_figur(
 		<?php echo $figur; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_figur() ?>
 	</div>
 </header>
+<?php tamil_leaderboard(); ?>
 
 <?php if ( $monate ) : ?>
 	<section class="abschnitt" aria-labelledby="das-jahr">

@@ -83,7 +83,7 @@ add_action( 'init', 'tamil_cleanup_head' );
  * Trenner im Seitentitel.
  */
 function tamil_title_separator(): string {
-	return '–';
+	return '|';
 }
 add_filter( 'document_title_separator', 'tamil_title_separator' );
 
