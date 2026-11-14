@@ -470,6 +470,8 @@ input:hover, textarea:hover, select:hover { background: var(--color-paper); }
 .tafel.orte tbody tr.land:first-child th { padding-top: var(--space-sm); }
 .tafel.orte tbody th.stadt { width: 40%; font-family: var(--font-display); font-weight: 600; font-size: var(--text-body); color: var(--color-ink); border-bottom: 0; white-space: normal; }
 .tafel.orte .was { font-family: var(--font-body); font-weight: 400; }
+.tafel .ticket { display: flex; align-items: center; width: max-content; min-height: 44px; margin-bottom: calc(-1 * var(--space-xs)); }
+.wrap.schmal > .seiten { margin-top: var(--space-lg); padding-bottom: 0; }
 @media (max-width: 860px) {
   .seitenkopf.mit-bild .wrap, .wrap.schmal { grid-template-columns: minmax(0, 1fr); }
 }
