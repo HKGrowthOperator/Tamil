@@ -5,6 +5,14 @@ Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
 ## 14.11.2026
 
+- **Theme „Tageskalender“: Wortdichte (Hallmark Gate 58) bewusst über der Grenze.** Die Dichte entsteht aus der
+  Termintabelle Tag · Was · Wer · Wo, dem Teil aus Linie B, den Luis ausdrücklich wollte; sie liegt im Rahmen großer
+  Nachrichtenseiten (Kritik r3). Keine Ausnahme im CSS-Stempel (Hallmark lehnt sie ab), sondern dieser Eintrag. ·
+  Hauptsitzung · Wieder ansehen, wenn Luis die Seite mit echten Daten gesehen hat.
+- **Eigenanzeigen auf ungebuchten Werbeplätzen bleiben (F3), bis Luis anders entscheidet.** Die Kritik r3 empfiehlt,
+  ungebuchte Plätze leer zu lassen; das widerspricht der bestätigten Festlegung F3 („nach dem Ende steht wieder die
+  Eigenanzeige“). Frage an Luis im Morgenbericht. · Hauptsitzung
+
 - **Satzprüfung im Agent-Import strenger, aber ohne Überstrenge:** Zahlen nur als ganze Zahl, Zahlwörter und
   Verneinungen sind Fakten, höchstens drei überlappende Claims je Satz (nicht überlappende zählen nicht, statt den Satz
   abzulehnen), ein Name am Satzanfang braucht einen Beleg; Datum und Uhrzeit im Beleg tragen ihre Zahlen nur in ihrer
