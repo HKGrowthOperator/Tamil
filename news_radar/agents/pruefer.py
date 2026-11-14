@@ -161,10 +161,14 @@ _WORT_RE = re.compile(r"[\wäöüßÄÖÜ]+")
 _ZAHLWORT_RE = re.compile(r"(?:ein|zwei|drei|vier|fünf|sechs|sieben|sieb|acht|neun|zehn|elf|zwölf|zwanzig|dreißig|"
                           r"vierzig|fünfzig|sechzig|siebzig|achtzig|neunzig|hundert|tausend|und)+(?:e|en)?|"
                           r"millionen?|milliarden?|dutzende?|eins|null")
-_KEIN_ZAHLWORT = {"ein", "eine", "einen", "und", "unde", "unden", "einund", "sieb", "siebe", "elfe", "elfen"}
+_KEIN_ZAHLWORT = {"ein", "eine", "einen", "und", "unde", "unden", "einund", "sieb", "siebe", "elfe", "elfen", "achten"}
 _ZIFFER = {"null": "0", "eins": "1", "zwei": "2", "drei": "3", "vier": "4", "fünf": "5", "sechs": "6", "sieben": "7",
-           "acht": "8", "neun": "9", "zehn": "10", "elf": "11", "zwölf": "12", "zwanzig": "20", "dreißig": "30",
-           "hundert": "100", "tausend": "1000"}
+           "acht": "8", "neun": "9", "zehn": "10", "elf": "11", "zwölf": "12", "dreizehn": "13", "vierzehn": "14",
+           "fünfzehn": "15", "sechzehn": "16", "siebzehn": "17", "achtzehn": "18", "neunzehn": "19", "zwanzig": "20",
+           "dreißig": "30", "vierzig": "40", "fünfzig": "50", "sechzig": "60", "siebzig": "70", "achtzig": "80",
+           "neunzig": "90", "hundert": "100", "tausend": "1000"}
+# Datum und Uhrzeit im Beleg: „14.11.2026“ trägt 14, 11 und 2026, „19.00 Uhr“ trägt 19
+_DATUM_ZEIT_RE = re.compile(r"(?<!\d)\d{1,2}\.\d{1,2}\.(?:\d{2,4})?|(?<![\d.,])\d{1,2}[.:]\d{2}(?![\d.,])")
 _VERNEINUNG_RE = re.compile(r"nicht|nichts|nie|niemals|niemand|keine?[mnrs]?|weder")
 # Funktionswörter am Satzanfang tragen keinen Fakt (sonst zählt das erste Wort mit, z. B. ein Name)
 _ANFANG_FREI = {
@@ -175,6 +179,11 @@ _ANFANG_FREI = {
     "hier", "da", "dann", "danach", "dabei", "damit", "daher", "deshalb", "trotzdem", "außerdem", "zudem", "zuvor",
     "anschließend", "nun", "jetzt", "bereits", "schon", "erst", "wie", "was", "wer", "wo", "wann", "warum", "wenn",
     "als", "ob", "dass", "weil", "während", "sein", "seine", "ihre", "unser", "unsere", "alle", "viele", "insgesamt",
+    # Präpositionen und Partikeln (Code-Prüfung P2-4)
+    "laut", "beim", "vom", "ins", "ans", "aufs", "etwa", "rund", "knapp", "fast", "neben", "wegen", "trotz",
+    "gemeinsam", "zunächst", "zuerst", "später", "inzwischen", "gleichzeitig", "ebenfalls", "außer", "statt",
+    "innerhalb", "außerhalb", "gegenüber", "zwischen", "hinter", "ab",
+    "gut", "nur", "noch", "sogar", "allein", "dafür", "dazu", "darum", "dennoch", "jedoch", "zwar",
 }
 
 
@@ -206,13 +215,17 @@ def _traegt(fakt: str, beleg: str, anfang: bool = False) -> bool:
     Zahlwörter und Verneinungen nur als ganzes Wort (ein Zahlwort bis zwölf auch als Ziffer), sonst als Teilfolge.
     Das erste Wort darf gebeugt sein („Tamilischer“ zu „tamilische“): ohne Endung als Teilfolge."""
     f = fakt.lower()
+    zahlen = set(_ZAHL_RE.findall(beleg)) | {z for m in _DATUM_ZEIT_RE.finditer(beleg)
+                                             for z in re.findall(r"\d+", m.group(0))}
     if _ZAHL_RE.fullmatch(f):
-        return f in _ZAHL_RE.findall(beleg)
+        return f in zahlen
     if _ist_zahlwort(f) or _VERNEINUNG_RE.fullmatch(f):
         worte = set(_WORT_RE.findall(beleg))
-        return f in worte or (f in _ZIFFER and _ZIFFER[f] in _ZAHL_RE.findall(beleg))
+        return f in worte or (f in _ZIFFER and _ZIFFER[f] in zahlen)
     if anfang and len(f) > 5:
         f = re.sub(r"(?:e[mnrs]?|[ns])$", "", f)
+    elif anfang and len(f) > 3 and f.endswith("s"):  # Genitiv-s auch bei kurzen Namen („Kölns“)
+        f = f[:-1]
     return f in beleg
 
 
@@ -259,8 +272,10 @@ def belegt(urteile: list[SatzUrteil], claims: list[Claim]) -> list[SatzUrteil]:
             out.append(u)
             continue
         ids = list(dict.fromkeys(i for i in u.claim_ids if i in by_id))
-        beleg = " ".join(f"{by_id[i].aussage} {by_id[i].fundstelle}" for i in ids).lower()
-        ok = (bool(ids) and len(ids) <= MAX_CLAIMS_JE_SATZ and all(ueberlappt(u.satz, f"{by_id[i].aussage} {by_id[i].fundstelle}") for i in ids)
+        # nur Claims, die mit dem Satz überlappen, zählen (ein fremder Zusatzclaim lehnt nicht ab, trägt aber nichts)
+        tragend = [i for i in ids if ueberlappt(u.satz, f"{by_id[i].aussage} {by_id[i].fundstelle}")]
+        beleg = " ".join(f"{by_id[i].aussage} {by_id[i].fundstelle}" for i in tragend).lower()
+        ok = (bool(tragend) and len(tragend) <= MAX_CLAIMS_JE_SATZ
               and all(_traegt(f, beleg, f == _erstes_wort(u.satz)) for f in fakten_beleg(u.satz)))
         out.append(u if ok else u.model_copy(update={"urteil": "ungedeckt", "claim_ids": ids}))
     return out
