@@ -183,3 +183,37 @@ Community und Verzeichnis nur im Menü. Die Rückblick-Leiste ist am Handy ausge
 - Silbentrennung im Strom trennt auch mittellange Wörter („Ta-milalayams“).
 - Die anderen Seitentypen (Verzeichnis, Formulare, Werben, Buchen, Kontakt) sind nur technisch geprüft
   (shots.mjs: 18 Aufnahmen, 0 Fehler), nicht angesehen. Papier und Kopf haben sich dort mitgeändert.
+
+## Runde 3 (nach Kritik r2)
+
+Behoben sind P1 sowie P2-2 und P2-5; sonst ist nichts Neues dazugekommen.
+
+**P1 Kino und Termine bei 1280.** Die erste Tafel steht jetzt wie auf der Startseite in der linken Spalte direkt unter
+der Einleitung („Ab heute“ auf `termine.html`, „Im Programm“ auf `kino.html`); das Foto bleibt rechts. Alle weiteren
+Tafeln und Listen enden an derselben Kante wie die linke Spalte (7 von 12 Spalten, x 719), nicht mehr bei x 1043.
+Gemessen bei 1280 × 800 (über http):
+
+| | erste Tabellenzeile | zweite Tabellenzeile | rechte Kante der Tafeln |
+|---|---|---|---|
+| `kino.html` | y 472 bis 578 | y 578 bis 656 | x 719 |
+| `termine.html` | y 441 bis 519 | y 519 bis 623 | x 719 |
+
+„Im Programm“ ist dafür die kompakte Kino-Tafel (Film und Städte, Kinos, Weitersagen); der Stand steht einmal im
+Tafelkopf.
+
+**P2-2 Eine Form für Daten.**
+- Überall „Stand: 9. November“ bzw. „Stand: 13. November“, ohne Wochentag und ohne Abkürzung; am Handy ebenfalls mit
+  Doppelpunkt.
+- Unter jeder Tagesziffer steht „So., Nov.“ (Wochentag und Monat abgekürzt, beide mit Punkt): in Tafeln, im Strom
+  und in den Monatslisten.
+
+**P2-5 Eine Kante im Datumsbereich am Handy.** Die Ziffernspalte des Datumsblocks ist am Handy so breit wie die der
+Tafel (4,25 rem plus 12 px Abstand); „November 2026“ und die zweite Tabellenspalte stehen beide bei x 96 (index, 390).
+
+Nebenbei behoben, weil es auf `kino.html` direkt neben der Änderung lag: Die Städtenamen in „Nach Stadt“ hatten den
+Stil der Tabellenköpfe (15 px, Linie darunter); jetzt 18 px ohne Linie.
+
+**Prüfung Runde 3.**
+- `sloplint --genre editorial` über index, termine, kino (Dateien plus je `--url`): **0 FAIL, 0 REFLEX, 3 WARN,
+  110 WAIVED, 3 ANSWERED, 11 NOTE.** Die 3 WARN sind „fallback font“ aus dem Datei-Durchgang über `file://`.
+- `tools/shots.mjs` über dieselben drei Seiten bei 390/820/1280: **9 Aufnahmen, 0 Fehler.**
