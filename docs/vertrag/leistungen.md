@@ -52,7 +52,7 @@ Bausteine und Reihenfolge: siehe unten. Einzelheiten je Baustein: `festlegung-<b
 | B3.1 | WhatsApp-Channel-Inhalte (Text, Link, Bild) automatisch vorbereitet und bereitgestellt; Veröffentlichung von Hand, solange es keine offizielle Schnittstelle gibt | 5 | offen |
 | B3.2 | E-Mail bleibt vollständig manuell | – | erfüllt: im Code wird keine E-Mail verschickt; ein Test sichert das ab (Baustein 1) |
 | B4 | Vier Wochen Feinjustierung nach Inbetriebnahme des Agenten, drei Monate Betreuung nach dem Livegang | 7 | beginnt nach dem Livegang |
-| B5 | Sieben wesentliche Abnahmetests | 7 | offen: Tabelle unten |
+| B5 | Sieben wesentliche Abnahmetests | 7 | teilweise (15.11.2026): automatisch 6 von 7 bestanden, T5 ohne die genannte Testdatei; Handtests offen oder wartend (`docs/abnahme/2026-11-15-B5.md`) |
 
 ## Bausteine und Reihenfolge (mit Luis am 11.11.2026 festgelegt)
 
@@ -72,15 +72,15 @@ unabhängige Code-Prüfung → auf dem Testsystem zeigen → Abnahmetest ins Pro
 
 ## Abnahmetests (B5)
 
-| Nr. | Test laut Vertrag | Baustein | Automatisch | Von Hand auf dem Testsystem |
-|---|---|---|---|---|
-| T1 | Artikel zu Instagram und Facebook (tatsächlich oder durch die Schnittstelle bestätigt) | 5 | `tests/test_social.py`, Abnahme-Szenarien | Beitrag freigeben; Kennung und Link beider Kanäle stehen in der Historie |
-| T2 | Veranstaltung zu Instagram und Facebook | 5 | Szenarien „Termin in der Zukunft“, „Termin vorbei“ | Termin aus einer Einsendung veröffentlichen, beide Beiträge prüfen |
-| T3 | WhatsApp-Beitragsentwurf | 5 | `tests/test_social.py` | Text kopieren, im Kanal posten, „gepostet“ markieren |
-| T4 | Verzeichnis-Neueintrag und Änderungsfreigabe | 3 | `tests/wp/test_verzeichnis.py`, `tests/test_verzeichnis_agent.py` | Eintrag vorschlagen, freigeben, öffentlich finden; Telefonnummer ändern lassen, Unterschied prüfen, freigeben |
-| T5 | Werbebuchung mit erfolgreichem und fehlgeschlagenem Checkout | 4 | `tests/wp/test_buchung.py` | Testkarte mit Erfolg und mit Ablehnung; die Kundenübersicht zeigt den Stand |
-| T6 | Geprüfte Kampagnenaktivierung und Laufzeitende | 4 | Aktiv-Funktion mit gestellter Uhr | Buchung mit einem Tag Laufzeit: freigeben, Banner sehen, am Folgetag wieder Eigenanzeige |
-| T7 | Agenten-Stopp und Fehlerbehandlung; redaktionelle Verwaltung | 1, 2 | `tests/test_schalter.py`, `tests/test_rechte.py`, `tests/test_eingang.py` | Kanal stoppen, Beitrag freigeben: nichts geht hinaus, das Protokoll nennt den Grund; Fehler auslösen, „Erneut“; Termin einreichen bis zum Kalender |
+| Nr. | Test laut Vertrag | Baustein | Automatisch | Von Hand auf dem Testsystem | Stand 15.11.2026 |
+|---|---|---|---|---|---|
+| T1 | Artikel zu Instagram und Facebook (tatsächlich oder durch die Schnittstelle bestätigt) | 5 | `tests/test_social.py`, Abnahme-Szenarien | Beitrag freigeben; Kennung und Link beider Kanäle stehen in der Historie | automatisch bestanden (nachgestellte Schnittstelle); Handtest wartet auf Meta-Konten und Regelwerk-Freigabe |
+| T2 | Veranstaltung zu Instagram und Facebook | 5 | Szenarien „Termin in der Zukunft“, „Termin vorbei“ | Termin aus einer Einsendung veröffentlichen, beide Beiträge prüfen | automatisch bestanden; Handtest wartet auf Meta-Konten und Auftragsverarbeitung |
+| T3 | WhatsApp-Beitragsentwurf | 5 | `tests/test_social.py` | Text kopieren, im Kanal posten, „gepostet“ markieren | automatisch bestanden; Handtest wartet auf Einschalten von Social und den Kanal von KBS |
+| T4 | Verzeichnis-Neueintrag und Änderungsfreigabe | 3 | `tests/wp/test_verzeichnis.py`, `tests/test_verzeichnis_agent.py` | Eintrag vorschlagen, freigeben, öffentlich finden; Telefonnummer ändern lassen, Unterschied prüfen, freigeben | automatisch bestanden; Handtest wartet auf Auftragsverarbeitung |
+| T5 | Werbebuchung mit erfolgreichem und fehlgeschlagenem Checkout | 4 | `tests/wp/test_buchung.py` | Testkarte mit Erfolg und mit Ablehnung; die Kundenübersicht zeigt den Stand | offen: `tests/wp/test_buchung.py` fehlt, Ersatz `test_werbung.py` bestanden; Handtest wartet auf Stripe-Konto |
+| T6 | Geprüfte Kampagnenaktivierung und Laufzeitende | 4 | Aktiv-Funktion mit gestellter Uhr | Buchung mit einem Tag Laufzeit: freigeben, Banner sehen, am Folgetag wieder Eigenanzeige | automatisch bestanden; Handtest wartet auf Stripe-Konto |
+| T7 | Agenten-Stopp und Fehlerbehandlung; redaktionelle Verwaltung | 1, 2 | `tests/test_schalter.py`, `tests/test_rechte.py`, `tests/test_eingang.py` | Kanal stoppen, Beitrag freigeben: nichts geht hinaus, das Protokoll nennt den Grund; Fehler auslösen, „Erneut“; Termin einreichen bis zum Kalender | automatisch bestanden; Handtest offen (Stopp und „Erneut“ sofort möglich, Termin wartet auf Auftragsverarbeitung) |
 
 Protokoll: `docs/abnahme/<datum>-B5.md`, erzeugt mit `/abnahme-vertrag`.
 
