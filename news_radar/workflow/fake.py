@@ -166,17 +166,20 @@ def satz_urteile(saetze: list[str], claims: list[dict]) -> list[dict]:
                    or c["aussage"].rstrip(".")[:50] in satz or satz.rstrip(".")[:50] in c["aussage"]]
         worte = [w[:6] for w in re.findall(r"[\wäöüß]{4,}", satz.lower())]  # Wortanfänge: „tamilischer“ ~ „tamilische“
         abgedeckt = bool(worte) and sum(1 for w in worte if w in alle) / len(worte) >= 0.7
-        if abgedeckt and not treffer:  # die Claims, die die meisten Wörter tragen
+        from ..agents.pruefer import MAX_CLAIMS_JE_SATZ, fakten_beleg, ueberlappt
+
+        def text(c):
+            return f"{c['aussage']} {c.get('fundstelle', '')}"
+
+        if abgedeckt and not treffer:  # die Claims, die die meisten Wörter tragen (und mit dem Satz überlappen)
             wertung = sorted(((sum(1 for w in worte if w in c["aussage"].lower()), c) for c in claims),
                              key=lambda x: -x[0])
-            treffer = [c for n, c in wertung[:3] if n]
+            treffer = [c for n, c in wertung[:MAX_CLAIMS_JE_SATZ] if n and ueberlappt(satz, text(c))]
         if treffer:  # wie eine sorgfältige Prüferin: für jede Zahl und jeden Namen den Claim nennen, der sie trägt
-            from ..agents.pruefer import fakten
-
-            for f in fakten(satz):
-                beleg = " ".join(f"{c['aussage']} {c.get('fundstelle', '')}" for c in treffer).lower()
-                if f.lower() not in beleg:
-                    treffer += [c for c in claims if f.lower() in f"{c['aussage']} {c.get('fundstelle', '')}".lower()][:1]
+            for f in fakten_beleg(satz):
+                beleg = " ".join(text(c) for c in treffer).lower()
+                if f.lower() not in beleg and len(treffer) < MAX_CLAIMS_JE_SATZ:
+                    treffer += [c for c in claims if f.lower() in text(c).lower() and ueberlappt(satz, text(c))][:1]
         out.append({"nr": nr, "satz": satz, "urteil": "gedeckt" if treffer or abgedeckt else "ungedeckt",
                     "claim_ids": [c["id"] for c in treffer], "fundstelle": treffer[0]["fundstelle"] if treffer else "",
                     "kern": any(c.get("kern") for c in treffer)})

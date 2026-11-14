@@ -155,6 +155,87 @@ def fakten(satz: str) -> list[str]:
     return zahlen + [m.group(0) for m in _DATUM_WORT_RE.finditer(satz or "")] + _grosse_woerter(satz)
 
 
+_ZAHL_RE = re.compile(r"\d+(?:[.,]\d+)?")
+_WORT_RE = re.compile(r"[\wäöüßÄÖÜ]+")
+# Zahlwörter (auch zusammengesetzt: „dreihundert“, „einundzwanzig“) und Verneinungen sind Fakten wie Zahlen
+_ZAHLWORT_RE = re.compile(r"(?:ein|zwei|drei|vier|fünf|sechs|sieben|sieb|acht|neun|zehn|elf|zwölf|zwanzig|dreißig|"
+                          r"vierzig|fünfzig|sechzig|siebzig|achtzig|neunzig|hundert|tausend|und)+(?:e|en)?|"
+                          r"millionen?|milliarden?|dutzende?|eins|null")
+_KEIN_ZAHLWORT = {"ein", "eine", "einen", "und", "unde", "unden", "einund", "sieb", "siebe", "elfe", "elfen"}
+_ZIFFER = {"null": "0", "eins": "1", "zwei": "2", "drei": "3", "vier": "4", "fünf": "5", "sechs": "6", "sieben": "7",
+           "acht": "8", "neun": "9", "zehn": "10", "elf": "11", "zwölf": "12", "zwanzig": "20", "dreißig": "30",
+           "hundert": "100", "tausend": "1000"}
+_VERNEINUNG_RE = re.compile(r"nicht|nichts|nie|niemals|niemand|keine?[mnrs]?|weder")
+# Funktionswörter am Satzanfang tragen keinen Fakt (sonst zählt das erste Wort mit, z. B. ein Name)
+_ANFANG_FREI = {
+    "der", "die", "das", "den", "dem", "des", "ein", "eine", "einen", "einem", "einer", "eines", "es", "er", "sie",
+    "wir", "ich", "ihr", "man", "dies", "diese", "dieser", "dieses", "diesen", "diesem", "jede", "jeder", "jedes",
+    "am", "im", "in", "an", "auf", "aus", "bei", "mit", "nach", "von", "vor", "zu", "zum", "zur", "für", "um", "über",
+    "unter", "seit", "bis", "durch", "gegen", "ohne", "und", "oder", "aber", "doch", "denn", "auch", "so", "dort",
+    "hier", "da", "dann", "danach", "dabei", "damit", "daher", "deshalb", "trotzdem", "außerdem", "zudem", "zuvor",
+    "anschließend", "nun", "jetzt", "bereits", "schon", "erst", "wie", "was", "wer", "wo", "wann", "warum", "wenn",
+    "als", "ob", "dass", "weil", "während", "sein", "seine", "ihre", "unser", "unsere", "alle", "viele", "insgesamt",
+}
+
+
+def _ist_zahlwort(wort: str) -> bool:
+    w = wort.lower()
+    return w not in _KEIN_ZAHLWORT and bool(_ZAHLWORT_RE.fullmatch(w))
+
+
+def fakten_beleg(satz: str) -> list[str]:
+    """Was ein Beleg im Agent-Import tragen muss: `fakten` plus Zahlwörter, Verneinungen und das erste Wort des
+    Satzes (außer Funktionswörtern) – ein Name oder eine Zahl am Satzanfang zählt."""
+    out = fakten(satz)
+    worte = _WORT_RE.findall(satz or "")
+    out += [w for w in worte if _ist_zahlwort(w) or _VERNEINUNG_RE.fullmatch(w.lower())]
+    anfang = _erstes_wort(satz)
+    if anfang:
+        out.append(anfang)
+    return list(dict.fromkeys(out))
+
+
+def _erstes_wort(satz: str) -> str:
+    """Das erste Wort des Satzes, wenn es einen Fakt tragen kann (kein Funktionswort, keine Ziffernfolge)."""
+    worte = _WORT_RE.findall(satz or "")
+    return worte[0] if worte and not worte[0].isdigit() and worte[0].lower() not in _ANFANG_FREI else ""
+
+
+def _traegt(fakt: str, beleg: str, anfang: bool = False) -> bool:
+    """Steht der Fakt im Beleg (klein geschrieben)? Zahlen nur als ganze Zahl („12“ nicht in „2012“ oder „120“),
+    Zahlwörter und Verneinungen nur als ganzes Wort (ein Zahlwort bis zwölf auch als Ziffer), sonst als Teilfolge.
+    Das erste Wort darf gebeugt sein („Tamilischer“ zu „tamilische“): ohne Endung als Teilfolge."""
+    f = fakt.lower()
+    if _ZAHL_RE.fullmatch(f):
+        return f in _ZAHL_RE.findall(beleg)
+    if _ist_zahlwort(f) or _VERNEINUNG_RE.fullmatch(f):
+        worte = set(_WORT_RE.findall(beleg))
+        return f in worte or (f in _ZIFFER and _ZIFFER[f] in _ZAHL_RE.findall(beleg))
+    if anfang and len(f) > 5:
+        f = re.sub(r"(?:e[mnrs]?|[ns])$", "", f)
+    return f in beleg
+
+
+MAX_CLAIMS_JE_SATZ = 3
+# Inhaltswörter ohne häufige Funktionswörter; Überlappung über die ersten sechs Buchstaben („tamilischer“ ~ „tamilische“)
+_FUELLWORT = {"einer", "eine", "einen", "einem", "eines", "werden", "wird", "wurde", "wurden", "sind", "haben", "hatte",
+              "sein", "seine", "seiner", "ihre", "ihrer", "ihren", "nach", "über", "unter", "auch", "aber", "oder", "dass",
+              "diese", "dieser", "dieses", "sich", "noch", "schon", "sehr", "mehr", "kann", "können", "beim", "eins"}
+
+
+def _stamm(text: str) -> set[str]:
+    worte = {w[:6] for w in re.findall(r"[\wäöüß]{4,}", (text or "").lower()) if w not in _FUELLWORT}
+    return worte | set(_ZAHL_RE.findall(text or ""))
+
+
+def ueberlappt(satz: str, claim_text: str) -> bool:
+    """Mindestüberlappung: Satz und Claim (Aussage und Fundstelle) teilen mindestens zwei Inhaltswörter bzw. Zahlen
+    (oder alle, wenn einer von beiden weniger hat) – ein Claim, der nur eine Zahl oder einen Namen beisteuert, trägt
+    den Satz nicht."""
+    a, b = _stamm(satz), _stamm(claim_text)
+    return len(a & b) >= min(2, len(a), len(b))
+
+
 def darf_kein_fakt(satz: str) -> bool:
     """„kein_fakt“ gilt (im Worker) nur für reine Überleitungen: keine Zahl, kein Datum, kein großgeschriebenes Wort
     außer am Satzanfang (Anrede ausgenommen)."""
@@ -168,17 +249,19 @@ def streng(urteile: list[SatzUrteil], agent: bool = False) -> list[SatzUrteil]:
 
 
 def belegt(urteile: list[SatzUrteil], claims: list[Claim]) -> list[SatzUrteil]:
-    """„gedeckt“ ist keine Selbstauskunft: nur mit claim_ids bestätigter Claims, und jede Zahl, jedes Datum und jeder
-    Name des Satzes steht in Aussage oder Fundstelle dieser Claims – sonst „ungedeckt“."""
+    """„gedeckt“ ist keine Selbstauskunft: nur mit claim_ids bestätigter Claims (höchstens drei, jeder mit
+    Mindestüberlappung zum Satz), und jede Zahl, jedes Zahlwort, jede Verneinung, jedes Datum und jeder Name des Satzes
+    (auch am Satzanfang) steht in Aussage oder Fundstelle dieser Claims – sonst „ungedeckt“."""
     by_id = {c.id: c for c in claims if c.support == "bestaetigt"}
     out = []
     for u in urteile:
         if u.urteil != "gedeckt":
             out.append(u)
             continue
-        ids = [i for i in u.claim_ids if i in by_id]
+        ids = list(dict.fromkeys(i for i in u.claim_ids if i in by_id))
         beleg = " ".join(f"{by_id[i].aussage} {by_id[i].fundstelle}" for i in ids).lower()
-        ok = bool(ids) and all(f.lower() in beleg for f in fakten(u.satz))
+        ok = (bool(ids) and len(ids) <= MAX_CLAIMS_JE_SATZ and all(ueberlappt(u.satz, f"{by_id[i].aussage} {by_id[i].fundstelle}") for i in ids)
+              and all(_traegt(f, beleg, f == _erstes_wort(u.satz)) for f in fakten_beleg(u.satz)))
         out.append(u if ok else u.model_copy(update={"urteil": "ungedeckt", "claim_ids": ids}))
     return out
 
