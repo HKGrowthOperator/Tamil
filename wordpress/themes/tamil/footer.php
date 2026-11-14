@@ -9,6 +9,7 @@ defined( 'ABSPATH' ) || exit;
 $tamil_social    = tamil_social();
 $tamil_nachweise = tamil_nachweise();
 ?>
+<?php tamil_leaderboard(); ?>
 </main>
 <?php
 $tamil_footer_ad = function_exists( 'tamil_site_anzeige' ) ? tamil_site_anzeige( 'footer', false ) : '';

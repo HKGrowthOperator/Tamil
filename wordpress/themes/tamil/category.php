@@ -67,6 +67,7 @@ if ( $kino ) {
 				</div>
 			</div>
 		</section>
+		<?php tamil_leaderboard(); ?>
 	<?php endif; ?>
 	<?php if ( $ids ) : ?>
 		<section class="abschnitt" aria-label="<?php esc_attr_e( 'Beiträge', 'tamil' ); ?>">

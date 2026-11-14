@@ -48,15 +48,9 @@ foreach ( $filme as $f ) {
 	}
 }
 uksort( $orte, static fn( $a, $b ) => array_search( $a, array_keys( $laender ), true ) <=> array_search( $b, array_keys( $laender ), true ) );
-// Foto im Kopf: der erste Film mit Bild, sonst der neueste Beitrag der Rubrik mit Bild.
-$bild_id = 0;
-foreach ( array_merge( wp_list_pluck( $filme, 'post' ), $ids ) as $id ) {
-	if ( tamil_hat_bild( (int) $id ) ) {
-		$bild_id = (int) $id;
-		break;
-	}
-}
-$figur = $bild_id ? tamil_figur(
+// Foto im Kopf: der erste Film oder Beitrag der Rubrik mit Foto; eine Grafik nur, wenn es kein Foto gibt (ungeschnitten).
+$bild_id = tamil_leitbild( array_merge( wp_list_pluck( $filme, 'post' ), $ids ) );
+$figur   = $bild_id ? tamil_figur(
 	$bild_id,
 	array(
 		'klasse' => 'bild kopf-bild',
@@ -65,7 +59,7 @@ $figur = $bild_id ? tamil_figur(
 		'alt'    => true,
 	)
 ) : '';
-$stand = max( wp_list_pluck( $filme, 'stand' ) );
+$stand   = max( wp_list_pluck( $filme, 'stand' ) );
 ?>
 <header class="seitenkopf<?php echo '' !== $figur ? ' mit-bild' : ''; ?>">
 	<div class="wrap">
@@ -90,6 +84,7 @@ $stand = max( wp_list_pluck( $filme, 'stand' ) );
 		<?php echo $figur; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_figur() ?>
 	</div>
 </header>
+<?php tamil_leaderboard(); ?>
 
 <?php if ( $orte ) : ?>
 	<section class="abschnitt" aria-labelledby="nach-stadt">

@@ -29,6 +29,60 @@ function tamil_hat_bild( int $post_id ): bool {
 }
 
 /**
+ * Ist das Beitragsbild ein Foto (und keine Grafik mit Schrift)? Grafiken tragen den Nachweis „Grafik: …“; sie werden nie
+ * beschnitten und für Leitbilder (Seitenköpfe) nur genommen, wenn es kein Foto gibt.
+ */
+function tamil_ist_foto( int $post_id ): bool {
+	return tamil_hat_bild( $post_id ) && ! str_starts_with( strtolower( tamil_bildnachweis( $post_id ) ), 'grafik' );
+}
+
+/**
+ * Leitbild für einen Seitenkopf: der erste Beitrag mit Foto, sonst der erste mit Bild (dann als Grafik ungeschnitten).
+ *
+ * @param int[] $ids Kandidaten in der gewünschten Reihenfolge.
+ */
+function tamil_leitbild( array $ids ): int {
+	$erstes = 0;
+	foreach ( $ids as $id ) {
+		$id = (int) $id;
+		if ( tamil_ist_foto( $id ) ) {
+			return $id;
+		}
+		if ( ! $erstes && tamil_hat_bild( $id ) ) {
+			$erstes = $id;
+		}
+	}
+	return $erstes;
+}
+
+/**
+ * „Wer“ in der Festtafel: nur der Name des Veranstalters, ohne Telefonnummer und Zusätze; leer, wenn er schon im
+ * Titel oder im Ort steht.
+ */
+function tamil_wer_kurz( string $wer, string $titel, string $ort ): string {
+	$wer = (string) preg_replace( '/\b(?:Tel\.?|Telefon|Tel)\s*:?\s*[\d+()\/\s-]{5,}/iu', '', $wer );
+	$wer = trim( (string) preg_split( '/\s*[·,;|]\s*/u', $wer )[0] );
+	if ( '' === $wer || false !== mb_stripos( $titel, $wer ) || false !== mb_stripos( $ort, $wer ) ) {
+		return '';
+	}
+	return $wer;
+}
+
+/**
+ * „Wo“ in der Festtafel: nur die Stadt (letzter Teil der Ortsangabe ohne Postleitzahl); „Ort folgt“, wenn der Ort
+ * noch nicht feststeht.
+ */
+function tamil_ort_kurz( string $ort ): string {
+	$ort = trim( $ort );
+	if ( '' === $ort || preg_match( '/bekannt gegeben|wird noch|folgt|tba|tbd/iu', $ort ) ) {
+		return __( 'Ort folgt', 'tamil' );
+	}
+	$teile = array_values( array_filter( array_map( 'trim', explode( ',', $ort ) ) ) );
+	$stadt = (string) preg_replace( '/^(?:[A-Z]{1,2}-)?\d{4,5}\s+/u', '', (string) end( $teile ) );
+	return '' !== $stadt ? $stadt : $ort;
+}
+
+/**
  * Beitragsbild als <figure> mit Nachweis darunter; leer, wenn der Beitrag kein Bild hat.
  *
  * @param array<string,mixed> $opt {
@@ -62,11 +116,11 @@ function tamil_figur( int $post_id, array $opt = array() ): string {
 	if ( $opt['link'] ) {
 		$img = sprintf( '<a class="bild-link" href="%1$s" tabindex="-1" aria-hidden="true">%2$s</a>', esc_url( get_permalink( $post_id ) ), $img );
 	}
-	$nachweis = tamil_bildnachweis( $post_id );
+	$nachweis = str_replace( ' · ', ', ', tamil_bildnachweis( $post_id ) ); // Quellen aus dem Altbestand ohne Trennpunkte
 	tamil_nachweise( $nachweis );
 	return sprintf(
 		'<figure class="%1$s">%2$s%3$s</figure>',
-		esc_attr( $opt['klasse'] ),
+		esc_attr( $opt['klasse'] . ( tamil_ist_foto( $post_id ) ? '' : ' grafik' ) ),
 		$img,
 		'' !== $nachweis ? '<figcaption>' . esc_html( $nachweis ) . '</figcaption>' : ''
 	);
@@ -141,22 +195,26 @@ function tamil_zeilen_tag( int $ts, string $art = 'z' ): string {
  *     @type string $titel   Ebene der Titel (h3|h4).
  *     @type string $teaser  'breit' (nur ab 761 px), 'immer' oder ''.
  *     @type bool   $rubrik  Rubrik unter dem Titel nennen.
+ *     @type string $weiter  Monat (Y-m), mit dem ein vorheriger Strom endete: kein zweiter Monatskopf dafür.
  * }
  */
 function tamil_strom( array $ids, array $opt = array() ): void {
-	$opt   = array_merge(
+	$opt    = array_merge(
 		array(
 			'monat'  => 'h3',
 			'titel'  => 'h4',
 			'teaser' => 'breit',
 			'rubrik' => true,
+			'weiter' => '',
 		),
 		$opt
 	);
-	$titel = in_array( $opt['titel'], array( 'h2', 'h3', 'h4' ), true ) ? $opt['titel'] : 'h3';
-	$monat = in_array( $opt['monat'], array( 'h2', 'h3' ), true ) ? $opt['monat'] : '';
-	$jahr  = wp_date( 'Y' );
-	$offen = '';
+	$titel  = in_array( $opt['titel'], array( 'h2', 'h3', 'h4' ), true ) ? $opt['titel'] : 'h3';
+	$monat  = in_array( $opt['monat'], array( 'h2', 'h3' ), true ) ? $opt['monat'] : '';
+	$jahr   = wp_date( 'Y' );
+	$offen  = '';
+	$weiter = (string) $opt['weiter'];
+	$vortag = '';
 	foreach ( $ids as $id ) {
 		$ts = (int) get_post_timestamp( $id );
 		$m  = wp_date( 'Y-m', $ts );
@@ -164,22 +222,26 @@ function tamil_strom( array $ids, array $opt = array() ): void {
 			if ( '' !== $offen ) {
 				echo '</ul>';
 			}
-			if ( '' !== $monat ) {
+			if ( '' !== $monat && $m !== $weiter ) {
 				$name = wp_date( 'Y', $ts ) === $jahr ? wp_date( 'F', $ts ) : wp_date( 'F Y', $ts );
 				printf( '<%1$s class="monat-kopf">%2$s</%1$s>', $monat, esc_html( $name ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $monat ist geprüft
 			}
 			echo '<ul class="tage strom' . ( '' !== $opt['teaser'] ? ' mit-teaser' : '' ) . '">';
-			$offen = '' !== $monat ? $m : 'alle';
+			$offen  = '' !== $monat ? $m : 'alle';
+			$weiter = '';
+			$vortag = '';
 		}
-		$link  = get_permalink( $id );
-		$figur = tamil_figur(
+		$link    = get_permalink( $id );
+		$figur   = tamil_figur(
 			$id,
 			array(
 				'klasse' => 'daumen',
 				'size'   => 'tamil-card',
 			)
 		);
-		echo '<li' . ( '' === $figur ? ' class="ohne-bild"' : '' ) . '>';
+		$klassen = array_filter( array( '' === $figur ? 'ohne-bild' : '', wp_date( 'Y-m-d', $ts ) === $vortag ? 'gleicher-tag' : '' ) );
+		$vortag  = wp_date( 'Y-m-d', $ts );
+		echo '<li' . ( $klassen ? ' class="' . esc_attr( implode( ' ', $klassen ) ) . '"' : '' ) . '>';
 		echo tamil_zeilen_tag( $ts ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_zeilen_tag()
 		echo '<div class="s-text">';
 		printf( '<%1$s class="b-titel"><a href="%2$s">%3$s</a></%1$s>', $titel, esc_url( $link ), esc_html( get_the_title( $id ) ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $titel ist geprüft
@@ -234,13 +296,15 @@ function tamil_feste_tafel( array $ids, array $opt = array() ): void {
 		echo '<tr' . ( '' !== $klasse ? ' class="' . esc_attr( $klasse ) . '"' : '' ) . '>';
 		echo '<td class="t-tag">' . ( $ts ? tamil_zeilen_tag( $ts, 't' ) : '' ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_zeilen_tag()
 		$verlinkt = ! isset( $opt['verlinken'] ) || $opt['verlinken'];
-		echo '<td class="was">' . ( $verlinkt ? '<a href="' . esc_url( get_permalink( (int) $id ) ) . '">' . esc_html( $titel ) . '</a>' : esc_html( $titel ) );
+		echo '<td class="was">' . ( $verlinkt ? '<a href="' . esc_url( get_permalink( (int) $id ) ) . '"><span class="k">' . esc_html( $titel ) . '</span></a>' : '<span class="k">' . esc_html( $titel ) . '</span>' );
 		if ( $ist ) {
 			echo '<span class="als">' . esc_html__( 'als Nächstes', 'tamil' ) . '</span>';
 		}
 		echo '</td>';
-		echo '<td class="wer">' . ( '' !== $e['veranstalter'] ? esc_html( $e['veranstalter'] ) : '<span class="leer">' . esc_html__( 'nicht angegeben', 'tamil' ) . '</span>' ) . '</td>';
-		echo '<td class="wo">' . ( '' !== $e['ort'] ? esc_html( $e['ort'] ) : '<span class="leer">' . esc_html__( 'nicht angegeben', 'tamil' ) . '</span>' ) . '</td>';
+		$wo  = tamil_ort_kurz( $e['ort'] );
+		$wer = tamil_wer_kurz( $e['veranstalter'], $titel, $e['ort'] );
+		echo '<td class="wer">' . esc_html( $wer ) . '</td>';
+		echo '<td class="wo">' . esc_html( $wo ) . '</td>';
 		if ( $teilen ) {
 			/* translators: %s: Titel des Termins */
 			$label = sprintf( __( '%s per WhatsApp schicken', 'tamil' ), $titel );

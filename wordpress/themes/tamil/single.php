@@ -133,6 +133,7 @@ while ( have_posts() ) :
 			</div>
 		</div>
 	</article>
+	<?php tamil_leaderboard(); ?>
 
 	<?php $related = tamil_related( $post_id ); ?>
 	<?php if ( $related ) : ?>

@@ -14,9 +14,21 @@
     document.addEventListener("click", function (e) { if (menue.open && !menue.contains(e.target)) menue.open = false; });
   }
 
-  // Mobiler Werbeplatz: schließen
+  // Mobiler Werbeplatz: erst einblenden, wenn der erste Abschnitt (Aufmacher, Seitenkopf) aus dem Bild ist; schließen
   var sticky = $("#ad-mobile");
-  if (sticky && $(".schliessen", sticky)) $(".schliessen", sticky).addEventListener("click", function () { sticky.hidden = true; var site = $(".site"); site && site.classList.remove("has-sticky-ad"); });
+  if (sticky) {
+    var zeigen = function () { sticky.classList.add("ist-sichtbar"); };
+    var erster = $("main > section, main > header, main > article");
+    if (erster && "IntersectionObserver" in window) {
+      new IntersectionObserver(function (eintraege, beob) {
+        eintraege.forEach(function (e) { if (!e.isIntersecting && e.boundingClientRect.top < 0) { zeigen(); beob.disconnect(); } });
+      }).observe(erster);
+    } else {
+      zeigen();
+    }
+    var zu = $(".schliessen", sticky);
+    zu && zu.addEventListener("click", function () { sticky.hidden = true; var site = $(".site"); site && site.classList.remove("has-sticky-ad"); });
+  }
 
   // Lesebalken (Artikel)
   var balken = $(".lesebalken");

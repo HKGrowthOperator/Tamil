@@ -47,7 +47,7 @@ function tamil_bildnachweis( int $post_id ): string {
 		$credit = trim( (string) get_post_meta( $post_id, 'bild_credit', true ) );
 	}
 	if ( 'ki' === get_post_meta( $post_id, 'bild_origin', true ) && ! str_contains( strtolower( $credit ), 'ki' ) ) {
-		$credit = trim( __( 'Symbolbild: KI-generiert', 'tamil' ) . ( $credit ? ' · ' . $credit : '' ) );
+		$credit = trim( __( 'Symbolbild: KI-generiert', 'tamil' ) . ( $credit ? ', ' . $credit : '' ) );
 	}
 	if ( '' === $credit && ! $thumb ) {
 		$credit = __( 'Grafik: Tamil.de', 'tamil' );
@@ -61,6 +61,25 @@ function tamil_bildnachweis( int $post_id ): string {
 function tamil_anzeige( string $platz ): void {
 	if ( function_exists( 'tamil_site_anzeige' ) ) {
 		tamil_site_anzeige( $platz );
+	}
+}
+
+/**
+ * Werbeplatz 01 (Leaderboard, am Handy Banner) einmal je Seite, unter dem ersten Abschnitt statt über dem Aufmacher.
+ * Die Vorlagen rufen ihn an ihrer Stelle auf; footer.php ruft ihn zuletzt noch einmal auf, falls eine Vorlage ihn
+ * nicht gesetzt hat (dann steht er über dem Fuß). Ein ungebuchter Platz zeigt die Eigenanzeige (Festlegung F3).
+ *
+ * @param string $klasse Klasse des umgebenden Elements („wrap anzeige-zwischen“ oder ein Rasterbereich).
+ */
+function tamil_leaderboard( string $klasse = 'wrap anzeige-zwischen' ): void {
+	static $gezeigt = false;
+	if ( $gezeigt || ! function_exists( 'tamil_site_anzeige' ) ) {
+		return;
+	}
+	$gezeigt = true;
+	$html    = tamil_site_anzeige( 'leaderboard', false );
+	if ( '' !== $html ) {
+		echo '<div class="' . esc_attr( $klasse ) . '">' . $html . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Werbeplatz aus dem Plugin, dort escapt
 	}
 }
 
@@ -147,7 +166,7 @@ function tamil_termin_text( string $datum, string $ende = '' ): string {
 	$text     = wp_date( 'D, j. F Y', $start->getTimestamp() ) . ( $mit_zeit ? ', ' . $start->format( 'H:i' ) . ' Uhr' : '' );
 	$bis      = '' !== $ende ? date_create_immutable( $ende, wp_timezone() ) : false;
 	if ( $bis && $bis->format( 'Y-m-d' ) !== $start->format( 'Y-m-d' ) ) {
-		$text = wp_date( 'j. F', $start->getTimestamp() ) . ' – ' . wp_date( 'j. F Y', $bis->getTimestamp() );
+		$text = wp_date( 'j. F', $start->getTimestamp() ) . ' bis ' . wp_date( 'j. F Y', $bis->getTimestamp() );
 	}
 	return str_replace( '.,', ',', $text );
 }
@@ -163,7 +182,7 @@ function tamil_kinowoche( string $woche ): string {
 	$ende  = $start->modify( '+6 days' );
 	return sprintf(
 		/* translators: 1: Beginn, 2: Ende */
-		__( 'Kinowoche %1$s–%2$s', 'tamil' ),
+		__( 'Kinowoche %1$s bis %2$s', 'tamil' ),
 		wp_date( 'j.', $start->getTimestamp() ),
 		wp_date( 'j. F', $ende->getTimestamp() )
 	);
