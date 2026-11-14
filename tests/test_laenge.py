@@ -45,7 +45,8 @@ def _doc(key, verlag, art="volltext", primaer=False):
 
 
 def _claims(n, *quellen):
-    return [Claim(id=f"C{i}", aussage=f"Aussage {i}", art="was", kern=i == 1, quellen=list(quellen),
+    # Bezeichnung ohne Ziffer: Zahlen einer Aussage müssen im Dokument stehen (test_haertung_zahlbeleg)
+    return [Claim(id=f"C{i}", aussage=f"Aussage {chr(64 + i)}", art="was", kern=i == 1, quellen=list(quellen),
                   fundstelle="Wort Wort Wort Wort", sicherheit=0.9) for i in range(1, n + 1)]
 
 
