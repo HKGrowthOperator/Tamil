@@ -116,7 +116,7 @@ function tamil_figur( int $post_id, array $opt = array() ): string {
 	if ( $opt['link'] ) {
 		$img = sprintf( '<a class="bild-link" href="%1$s" tabindex="-1" aria-hidden="true">%2$s</a>', esc_url( get_permalink( $post_id ) ), $img );
 	}
-	$nachweis = tamil_bildnachweis( $post_id );
+	$nachweis = str_replace( ' · ', ', ', tamil_bildnachweis( $post_id ) ); // Quellen aus dem Altbestand ohne Trennpunkte
 	tamil_nachweise( $nachweis );
 	return sprintf(
 		'<figure class="%1$s">%2$s%3$s</figure>',
