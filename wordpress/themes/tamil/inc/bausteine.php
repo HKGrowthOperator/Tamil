@@ -160,7 +160,7 @@ function tamil_strom( array $ids, array $opt = array() ): void {
 	foreach ( $ids as $id ) {
 		$ts = (int) get_post_timestamp( $id );
 		$m  = wp_date( 'Y-m', $ts );
-		if ( $m !== $offen ) {
+		if ( ( '' !== $monat && $m !== $offen ) || '' === $offen ) {
 			if ( '' !== $offen ) {
 				echo '</ul>';
 			}
@@ -188,7 +188,7 @@ function tamil_strom( array $ids, array $opt = array() ): void {
 			echo '<p class="wo">' . esc_html( $wo ) . '</p>';
 		}
 		if ( '' !== $opt['teaser'] ) {
-			echo '<p class="teaser' . ( 'breit' === $opt['teaser'] ? ' nur-breit' : '' ) . '">' . esc_html( wp_trim_words( tamil_standfirst( $id ), 32, ' …' ) ) . '</p>';
+			echo '<p class="teaser' . ( 'breit' === $opt['teaser'] ? ' nur-breit' : '' ) . '">' . tamil_text( wp_trim_words( tamil_standfirst( $id ), 32, ' …' ) ) . '</p>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_text()
 		}
 		echo '</div>';
 		echo $figur; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_figur()
@@ -203,7 +203,7 @@ function tamil_strom( array $ids, array $opt = array() ): void {
  * Feste-Tafel: Tag, Was, Wer, Wo (und optional Weitersagen). Der erste kommende Termin ist „als Nächstes“.
  *
  * @param int[]               $ids Beiträge mit Termin (früheste zuerst).
- * @param array<string,mixed> $opt { @type bool $teilen Spalte „Weitersagen“, @type string $klasse Zusatzklasse. }
+ * @param array<string,mixed> $opt { @type bool $teilen Spalte „Weitersagen“, @type bool $verlinken Titel verlinken (Standard ja), @type string $klasse Zusatzklasse. }
  */
 function tamil_feste_tafel( array $ids, array $opt = array() ): void {
 	if ( ! function_exists( 'tamil_site_event' ) ) {
@@ -233,7 +233,8 @@ function tamil_feste_tafel( array $ids, array $opt = array() ): void {
 		$klasse  = $vorbei ? 'vorbei' : ( $ist ? 'ist-naechst' : '' );
 		echo '<tr' . ( '' !== $klasse ? ' class="' . esc_attr( $klasse ) . '"' : '' ) . '>';
 		echo '<td class="t-tag">' . ( $ts ? tamil_zeilen_tag( $ts, 't' ) : '' ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_zeilen_tag()
-		echo '<td class="was"><a href="' . esc_url( get_permalink( (int) $id ) ) . '">' . esc_html( $titel ) . '</a>';
+		$verlinkt = ! isset( $opt['verlinken'] ) || $opt['verlinken'];
+		echo '<td class="was">' . ( $verlinkt ? '<a href="' . esc_url( get_permalink( (int) $id ) ) . '">' . esc_html( $titel ) . '</a>' : esc_html( $titel ) );
 		if ( $ist ) {
 			echo '<span class="als">' . esc_html__( 'als Nächstes', 'tamil' ) . '</span>';
 		}
@@ -326,4 +327,43 @@ function tamil_kino_tafel( array $filme, bool $teilen = false ): void {
 function tamil_stand( int $ts ): string {
 	/* translators: %s: Datum */
 	return sprintf( __( 'Stand: %s', 'tamil' ), wp_date( 'j. F', $ts ) );
+}
+
+/**
+ * Tamilische Wörter in HTML mit lang="ta" auszeichnen (nur im Text, nie in Tags oder Attributen), damit Vorleser
+ * und Schrift (Catamaran-Untermenge) sie richtig behandeln.
+ */
+function tamil_lang_ta( string $html ): string {
+	if ( ! preg_match( '/[\x{0B80}-\x{0BFF}]/u', $html ) ) {
+		return $html;
+	}
+	$teile = preg_split( '/(<[^>]*>)/u', $html, -1, PREG_SPLIT_DELIM_CAPTURE );
+	if ( ! is_array( $teile ) ) {
+		return $html;
+	}
+	$ueberspringen = false; // in <script>, <style> und <textarea> nichts ändern
+	foreach ( $teile as $i => $teil ) {
+		if ( '' === $teil ) {
+			continue;
+		}
+		if ( '<' === $teil[0] ) {
+			if ( preg_match( '/^<(script|style|textarea)\b/i', $teil ) ) {
+				$ueberspringen = true;
+			} elseif ( preg_match( '/^<\/(script|style|textarea)>/i', $teil ) ) {
+				$ueberspringen = false;
+			}
+			continue;
+		}
+		if ( ! $ueberspringen ) {
+			$teile[ $i ] = (string) preg_replace( '/[\x{0B80}-\x{0BFF}](?:[\x{0B80}-\x{0BFF}\x{200C}\x{200D} ]*[\x{0B80}-\x{0BFF}])?/u', '<span lang="ta">$0</span>', $teil );
+		}
+	}
+	return implode( '', $teile );
+}
+
+/**
+ * Text escapen und tamilische Wörter auszeichnen (für Vorspann und Anrisse).
+ */
+function tamil_text( string $text ): string {
+	return tamil_lang_ta( esc_html( $text ) );
 }

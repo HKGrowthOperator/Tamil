@@ -22,7 +22,7 @@ $jetzt = time();
 			<div class="blatt-tag"><?php tamil_tag_block( $jetzt ); ?></div>
 			<article class="aufmacher">
 				<h1><a class="titel-link" href="<?php echo esc_url( $link ); ?>"><?php echo esc_html( $titel ); ?></a></h1>
-				<p class="vorspann"><?php echo esc_html( tamil_standfirst( $lead ) ); ?></p>
+				<p class="vorspann"><?php echo tamil_text( tamil_standfirst( $lead ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_text() ?></p>
 				<p class="aktionen"><a class="textlink" href="<?php echo esc_url( tamil_wa_teilen( $titel, $link ) ); ?>"><?php esc_html_e( 'Per WhatsApp schicken', 'tamil' ); ?></a></p>
 			</article>
 			<?php if ( function_exists( 'tamil_site_upcoming_events' ) ) : ?>

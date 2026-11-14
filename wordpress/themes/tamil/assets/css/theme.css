@@ -109,7 +109,7 @@ a:hover { text-decoration-thickness: 2px; }
 .knopf-leise { background: transparent; color: var(--color-ink); border-color: var(--color-muted); }
 .knopf-leise:hover { background: var(--color-paper-2); color: var(--color-ink); }
 .zeile-feld { display: flex; gap: var(--space-xs); }
-.zeile-feld input { flex: 1; min-width: 0; }
+.zeile-feld input { flex: 1 1 12rem; min-width: 10rem; }
 input[type="search"], input[type="text"], input[type="email"], input[type="tel"], input[type="url"], input[type="number"], input[type="date"], textarea, select { min-height: 48px; padding: var(--space-xs) var(--space-md); border: 1px solid var(--color-muted); border-radius: var(--radius-card); background: var(--color-sheet); color: var(--color-ink); }
 input:hover, textarea:hover, select:hover { background: var(--color-paper); }
 
@@ -170,7 +170,7 @@ input:hover, textarea:hover, select:hover { background: var(--color-paper); }
 .mulde { background: var(--color-paper-2); }
 .kopfzeile { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0 var(--space-xl); margin-bottom: var(--space-md); }
 .kopfzeile h2 { font-size: var(--text-h2); }
-.kopfzeile .mehr { font-weight: 600; min-height: 44px; display: inline-flex; align-items: center; }
+.kopfzeile .mehr { font-weight: 600; min-height: 44px; display: inline-flex; align-items: center; color: var(--color-ink); }
 .satz { margin: var(--space-sm) 0 0; max-width: 60ch; color: var(--color-ink-2); }
 .weiter-links { display: flex; flex-wrap: wrap; gap: 0 var(--space-lg); margin: var(--space-md) 0 0; }
 .seitenkopf { padding-block: var(--space-xl) var(--space-lg); border-bottom: 1px solid var(--color-rule); }
@@ -187,7 +187,7 @@ input:hover, textarea:hover, select:hover { background: var(--color-paper); }
 .tag .wochentag { color: var(--color-muted); line-height: 1.3; }
 .tag .marke { color: var(--color-ink-2); font-weight: 600; line-height: 1.3; }
 .tag-ort { color: var(--color-ink-2); line-height: 1.35; margin-top: var(--space-2xs); }
-.tag-ort a { text-decoration-color: var(--color-rule); }
+.tag-ort a { display: inline-block; min-width: 44px; padding-block: var(--space-sm); margin-block: calc(-1 * var(--space-sm)); text-decoration-color: var(--color-muted); }
 
 /* ---------- Bogen und Tafel: Tabellen auf hellem Blatt mit fester Linie oben ---------- */
 .bogen { background: var(--color-sheet); border-top: 2px solid var(--color-rule-2); padding: var(--space-md) var(--space-lg) var(--space-xs); }
@@ -313,6 +313,107 @@ input:hover, textarea:hover, select:hover { background: var(--color-paper); }
   .blatt-tag .tag { grid-template-columns: 4.25rem minmax(0, 1fr); column-gap: var(--space-sm); }
 }
 
+/* ---------- Artikel ---------- */
+.artikel-kopf { padding-block: var(--space-xl) var(--space-lg); }
+.artikel-kopf .wrap { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 6fr) minmax(0, 3fr); gap: var(--space-md) var(--gap-columns); align-items: start; }
+.artikel-kopf .wrap > .artikel-kopf-text { grid-column: 2 / -1; }
+.artikel-kopf .tag { grid-template-columns: minmax(0, 1fr); row-gap: var(--space-xs); align-items: start; }
+.artikel-kopf h1 { font-size: var(--text-h1); max-width: 24ch; }
+.artikel-kopf .vorspann { margin: var(--space-md) 0 0; max-width: 60ch; font-size: var(--text-lead); line-height: 1.5; color: var(--color-ink-2); }
+.artikel-kopf .autor { margin-top: var(--space-sm); font-size: var(--text-md); color: var(--color-muted); }
+.artikel-bild { padding-bottom: var(--space-xl); }
+.artikel-bild .bild img { aspect-ratio: 16 / 9; }
+.artikel-text .wrap { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 6fr) minmax(0, 3fr); gap: var(--gap-columns); }
+.artikel-text .text { grid-column: 2; min-width: 0; }
+.artikel-rand { grid-column: 3; }
+.artikel-rand .ad { position: sticky; top: var(--space-lg); }
+.inhalt { font-size: 1.1875rem; line-height: 1.7; container-type: inline-size; }
+/* Werbeplatz 03: 728 × 90 nur, wenn die Textspalte breit genug ist, sonst 300 × 250 (Textspalte bei 1280 rund 590 px) */
+@container (min-width: 740px) { .inhalt .ad-inarticle .flaeche { width: 728px; height: 90px; } }
+.inhalt > * { max-width: 66ch; margin: 0 0 1.2em; }
+.inhalt > :last-child { margin-bottom: 0; }
+.inhalt h2 { font-size: var(--text-h2); margin: 1.6em 0 0.6em; }
+.inhalt h3 { font-size: var(--text-lg); margin: 1.4em 0 0.5em; }
+.inhalt a { text-decoration-thickness: 1px; text-decoration-color: var(--color-muted); }
+.inhalt a:hover { text-decoration-color: currentColor; text-decoration-thickness: 2px; }
+.inhalt ul, .inhalt ol { padding-left: 1.3em; }
+.inhalt li + li { margin-top: 0.4em; }
+.inhalt blockquote, .inhalt .wp-block-quote { margin-inline: 0; padding: var(--space-2xs) 0 var(--space-2xs) var(--space-lg); border-left: 2px solid var(--color-rule-2); font-size: 1.1em; color: var(--color-ink-2); }
+.inhalt blockquote cite { display: block; margin-top: var(--space-xs); font-style: normal; font-size: var(--text-sm); color: var(--color-muted); }
+.inhalt figure { margin-inline: 0; }
+.inhalt img { border-radius: var(--radius-card); }
+.inhalt figcaption { font-size: var(--text-sm); color: var(--color-muted); margin-top: var(--space-xs); }
+.inhalt table { width: 100%; border-collapse: collapse; font-size: var(--text-body); background: var(--color-sheet); border-top: 2px solid var(--color-rule-2); }
+.inhalt th { text-align: left; font-weight: 400; font-size: var(--text-sm); color: var(--color-muted); padding: var(--space-xs) var(--space-md) var(--space-xs) var(--space-sm); border-bottom: 2px solid var(--color-rule-2); }
+.inhalt td { text-align: left; padding: var(--space-sm) var(--space-md) var(--space-sm) var(--space-sm); border-top: 1px solid var(--color-rule); vertical-align: top; }
+.inhalt .wp-block-table { overflow-x: auto; }
+.inhalt hr { border: 0; border-top: 1px solid var(--color-rule); }
+.inhalt .alignwide, .inhalt .ad { max-width: none; }
+.inhalt .ad a, .inhalt .anzeige-wrap, .inhalt .anzeige * { text-decoration: none; }
+.inhalt .kino-liste { list-style: none; padding: 0; border-top: 2px solid var(--color-rule-2); background: var(--color-sheet); }
+.inhalt .kino-liste li { margin: 0; padding: var(--space-sm) var(--space-md); border-top: 1px solid var(--color-rule); font-size: var(--text-body); line-height: 1.45; }
+.inhalt .kino-liste li:first-child { border-top: 0; }
+.inhalt .kino-liste strong { font-family: var(--font-display); font-weight: 600; }
+.hinweis-box, .tipp { padding: var(--space-sm) var(--space-md); background: var(--color-paper-2); border-top: 2px solid var(--color-rule-2); font-size: var(--text-body); line-height: 1.5; }
+.inhalt .hinweis { font-size: var(--text-md); color: var(--color-muted); }
+.event-box { padding: var(--space-md) var(--space-lg); background: var(--color-sheet); border-top: 2px solid var(--color-rule-2); font-size: var(--text-body); line-height: 1.5; }
+.event-box > * + * { margin-top: 0.4em; }
+.inhalt .rezept-layout { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: var(--space-lg); align-items: start; max-width: none; }
+.zutaten { padding: var(--space-md) var(--space-lg); background: var(--color-sheet); border-top: 2px solid var(--color-rule-2); }
+.zutaten h3, .rezept-layout h3 { margin-top: 0; }
+.rezept-zutaten { list-style: none; padding: 0 !important; margin-top: var(--space-sm); }
+.rezept-zutaten li { display: flex; gap: var(--space-sm); padding: var(--space-xs) 0; border-bottom: 1px solid var(--color-rule); cursor: pointer; }
+.rezept-zutaten li::before { content: ""; width: 18px; height: 18px; flex: none; margin-top: 4px; border: 1.5px solid var(--color-muted); border-radius: var(--radius-card); }
+.inhalt .schritte { counter-reset: s; list-style: none; padding: 0; }
+.inhalt .schritte li { counter-increment: s; position: relative; padding-left: 3rem; }
+.inhalt .schritte li::before { content: counter(s); position: absolute; left: 0; top: -0.1em; font-family: var(--font-display); font-weight: 800; font-size: 1.5rem; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.rezept-fakten { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0 var(--space-lg); border-top: 2px solid var(--color-rule-2); }
+.rezept-fakten div { padding-block: var(--space-xs); border-bottom: 1px solid var(--color-rule); }
+.rezept-fakten dt { font-size: var(--text-sm); color: var(--color-muted); }
+.rezept-fakten dd { margin: 0; font-weight: 600; }
+.tamil-zitat { font-family: var(--font-display) !important; font-weight: 600; font-size: var(--text-title) !important; line-height: 1.35; }
+.video-embed { aspect-ratio: 16 / 9; background: var(--color-paper-2); border-top: 2px solid var(--color-rule-2); display: grid; place-content: center; justify-items: center; gap: var(--space-sm); text-align: center; padding: var(--space-lg); }
+.video-embed .video-load { min-height: 48px; padding: 0 var(--space-lg); border: 1px solid var(--color-ink); border-radius: var(--radius-card); background: var(--color-ink); color: var(--color-paper); font-weight: 600; cursor: pointer; }
+.video-embed .video-hint { font-size: var(--text-sm); color: var(--color-muted); }
+.video-embed .video-hint a { display: inline-flex; min-height: 44px; align-items: center; }
+.video-embed.is-geladen { display: block; padding: 0; border: 0; }
+.video-embed iframe { display: block; width: 100%; height: 100%; border: 0; }
+.quelle { margin-top: var(--space-xl); padding-top: var(--space-sm); border-top: 1px solid var(--color-rule); font-size: var(--text-md); color: var(--color-muted); }
+.quelle a { color: var(--color-ink); font-weight: 600; }
+.schlagworte { display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--space-md); margin-top: var(--space-md); }
+.schlagworte a { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; min-width: 44px; }
+.teilen-block { border-top: 2px solid var(--color-ink); padding-top: var(--space-md); margin-top: var(--space-lg); display: flex; flex-wrap: wrap; gap: var(--space-xs) var(--space-lg); align-items: center; }
+.teilen-block .textlink { min-width: 44px; justify-content: center; }
+.knopf-text { padding: 0; border: 0; background: none; color: inherit; cursor: pointer; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
+.autor-text { margin-top: var(--space-lg); font-size: var(--text-md); color: var(--color-ink-2); max-width: 66ch; }
+.seiten-links { display: flex; flex-wrap: wrap; gap: 0 var(--space-md); margin-top: var(--space-lg); }
+.seiten-links a, .seiten-links > span { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; min-width: 44px; }
+.termin-bogen { margin: 0 0 var(--space-xl); }
+.angaben { margin: 0; border-top: 1px solid var(--color-rule); }
+.termin-bogen .tafel:has(tr.ist-naechst:last-child) + .angaben { border-top: 0; }
+.angaben > div { display: grid; grid-template-columns: minmax(0, 8rem) minmax(0, 1fr); gap: var(--space-2xs) var(--space-lg); padding-block: var(--space-xs); border-bottom: 1px solid var(--color-rule); }
+.angaben > div:last-child { border-bottom: 0; }
+.angaben dt { color: var(--color-muted); }
+.angaben dd { margin: 0; }
+.weiterlesen { border-top: 1px solid var(--color-rule); }
+@media (max-width: 960px) {
+  .artikel-text .wrap { grid-template-columns: minmax(0, 1fr); }
+  .artikel-text .text, .artikel-rand { grid-column: 1; }
+  .artikel-rand .ad { position: static; }
+  .inhalt { font-size: var(--text-body); }
+}
+@media (max-width: 860px) {
+  .artikel-kopf { padding-top: var(--space-lg); }
+  .artikel-kopf .wrap { grid-template-columns: minmax(0, 1fr); }
+  .artikel-kopf .wrap > .artikel-kopf-text { grid-column: 1; }
+  .artikel-kopf .tag { grid-template-columns: auto minmax(0, 1fr); }
+  .inhalt .rezept-layout { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 640px) {
+  .artikel-kopf .tag { grid-template-columns: 4.25rem minmax(0, 1fr); column-gap: var(--space-sm); }
+  .angaben > div { grid-template-columns: minmax(0, 1fr); }
+}
+
 /* ---------- Anzeigen (Plätze aus dem Plugin „Tamil.de Website“) ---------- */
 .ad { display: flex; flex-direction: column; align-items: center; gap: var(--space-2xs); max-width: 100%; min-width: 0; }
 .ad .ad-label { align-self: flex-start; font-size: var(--text-sm); color: var(--color-muted); }
@@ -371,7 +472,7 @@ input:hover, textarea:hover, select:hover { background: var(--color-paper); }
   .anzeige .bild { width: 40%; height: 100%; }
 }
 @media (min-width: 768px) {
-  .ad-leaderboard .flaeche, .ad-inarticle .flaeche, .ad-footer .flaeche { width: 728px; height: 90px; }
+  .ad-leaderboard .flaeche, .ad-footer .flaeche { width: 728px; height: 90px; }
   .ad-mobile { display: none; }
   .has-sticky-ad { padding-bottom: 0; }
 }

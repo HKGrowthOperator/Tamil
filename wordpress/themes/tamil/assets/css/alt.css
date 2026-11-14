@@ -34,7 +34,6 @@ a.rubrik:hover { color: var(--rot-tief); }
 .abschnitt-kopf h1::before, .abschnitt-kopf h2::before, .abschnitt-kopf h3::before { content: ""; width: 14px; height: 14px; border-radius: 50%; background: var(--punkt, var(--rot)); flex: none; }
 
 /* ---------- Bild ---------- */
-.artikel-bild { container-type: inline-size; }
 
 /* ---------- Karten ---------- */
 .karte { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
@@ -63,7 +62,6 @@ a.rubrik:hover { color: var(--rot-tief); }
 .kartenraster.zwei { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
 /* ---------- Startseite: Bühne ---------- */
-.vorspann { font-size: clamp(19px, .6vw + 15px, 22px); line-height: 1.55; color: var(--tinte-2); max-width: 60ch; }
 
 /* ---------- Kinoliste ---------- */
 .kinoliste { margin-top: 40px; background: var(--sand); border-radius: var(--r-gross); padding: clamp(22px, 3vw, 36px); display: grid; gap: 22px; }
@@ -139,91 +137,15 @@ a.rubrik:hover { color: var(--rot-tief); }
 .seitenspalte .widget h2 { font-size: 20px; margin-bottom: 10px; }
 
 /* ---------- Artikel ---------- */
-.artikel { min-width: 0; }
-.artikel-kopf { display: grid; gap: 18px; padding: 8px 0 28px; }
-.artikel-kopf h1 { font-size: clamp(34px, 2.8vw + 16px, 56px); line-height: 1.04; letter-spacing: -0.025em; max-width: 22ch; }
-.artikel-kopf .vorspann { font-size: clamp(20px, .7vw + 15px, 23px); }
-.artikel-kopf .stand { color: var(--c-community); font-weight: 700; }
-.artikel-zeile { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding-top: 18px; border-top: 1px solid var(--linie); }
 .autor { display: flex; align-items: center; gap: 12px; font-family: var(--titel); font-size: 15px; color: var(--tinte-3); line-height: 1.35; }
 .autor strong { display: block; color: var(--tinte); font-size: 16px; }
 .avatar { width: 44px; height: 44px; flex: none; border-radius: 50%; display: grid; place-items: center; background: var(--rot); color: var(--weiss); font-family: var(--titel); font-weight: 800; font-size: 20px; }
 .teilen { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.artikel-bild { margin: 0 0 36px; }
-.artikel-bild > img, .artikel-bild > .bildkarte { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: var(--r-gross); background: var(--sand); }
-.artikel-bild > .bildkarte { position: relative; display: flex; }
-.artikel-bild figcaption { margin-top: 10px; font-family: var(--titel); font-size: 14px; color: var(--tinte-3); }
-.artikel-text { font-size: clamp(18px, .4vw + 16px, 20px); line-height: 1.7; }
-.artikel-text > * { max-width: 68ch; }
-.artikel-text > * + * { margin-top: 1.15em; }
-.artikel-text h2 { font-size: clamp(25px, 1vw + 18px, 31px); margin-top: 1.7em; }
-.artikel-text h3 { font-size: clamp(21px, .6vw + 17px, 24px); margin-top: 1.5em; }
-.artikel-text h2 + *, .artikel-text h3 + * { margin-top: .6em; }
-.artikel-text a { color: var(--rot); text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 3px; text-decoration-color: color-mix(in srgb, var(--rot) 45%, transparent); }
-.artikel-text a:hover { color: var(--rot-tief); text-decoration-color: currentColor; }
-.artikel-text ul, .artikel-text ol { padding-left: 1.3em; }
-.artikel-text li + li { margin-top: .4em; }
-.artikel-text li::marker { color: var(--rot); }
-.artikel-text blockquote, .artikel-text .wp-block-quote { margin-left: 0; margin-right: 0; padding: 4px 0 4px 24px; border-left: 3px solid var(--rot); font-style: italic; font-size: 1.12em; color: var(--tinte); }
-.artikel-text blockquote cite { display: block; margin-top: 8px; font-family: var(--titel); font-style: normal; font-size: 15px; color: var(--tinte-3); }
-.artikel-text figure { margin-left: 0; margin-right: 0; }
-.artikel-text img { border-radius: var(--r); }
-.artikel-text figcaption { font-family: var(--titel); font-size: 14px; color: var(--tinte-3); margin-top: 8px; }
-.artikel-text table { border-collapse: collapse; width: 100%; font-family: var(--titel); font-size: 16px; }
-.artikel-text td, .artikel-text th { border-bottom: 1px solid var(--linie); padding: 10px 8px; text-align: left; }
-.artikel-text hr { border: 0; border-top: 1px solid var(--linie); }
-.artikel-text .alignwide { max-width: none; }
-.artikel-text .ad { max-width: none; }
-.artikel-text .ad a, .artikel-text .anzeige-wrap, .artikel-text .anzeige * { text-decoration: none; }
-.quelle { margin-top: 32px; padding-top: 18px; border-top: 1px solid var(--linie); font-family: var(--titel); font-size: 16px; color: var(--tinte-3); }
-.quelle a { color: var(--tinte); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--linie); }
-.artikel-fuss { display: grid; gap: 24px; margin-top: 32px; }
-.schlagworte { display: flex; flex-wrap: wrap; gap: 8px; }
-.autorenbox { display: flex; gap: 16px; align-items: flex-start; background: var(--sand); border-radius: var(--r); padding: 22px; }
-.autorenbox strong { font-family: var(--titel); font-size: 18px; }
-.autorenbox p { font-size: 17px; line-height: 1.55; color: var(--tinte-2); margin-top: 4px; }
-.mehr-aus { margin-top: 56px; }
-.mehr-aus .abschnitt-kopf h2 { font-size: clamp(24px, 1vw + 18px, 30px); }
-.lesebalken { position: fixed; top: 0; left: 0; height: 3px; width: 0; background: var(--rot); z-index: 70; }
 .seiten { display: flex; gap: 8px; margin-top: 24px; font-family: var(--titel); }
 
 /* Termin-Kasten im Artikel */
-.termin-box { margin: 0 0 36px; background: var(--sand); border-radius: var(--r); padding: 24px; display: grid; gap: 18px; }
-.fakten { margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px 24px; }
-.fakten dt { font-family: var(--titel); font-weight: 700; font-size: 14px; color: var(--tinte-3); }
-.fakten dd { margin: 2px 0 0; font-family: var(--titel); font-weight: 700; font-size: 18px; line-height: 1.3; }
-.termin-box .klein { font-family: var(--titel); color: var(--tinte-3); }
 
 /* Bausteine im Text: Kinoliste, Hinweis, Event-Box, Rezept, Zitat, Video */
-.kino-liste { list-style: none; padding: 0 !important; display: grid; gap: 10px; }
-.kino-liste li { background: var(--sand); border-radius: var(--r-klein); padding: 14px 18px; font-family: var(--titel); font-size: 16px; line-height: 1.45; }
-.kino-liste li + li { margin-top: 0; }
-.kino-liste li::marker { content: none; }
-.kino-liste li a { font-weight: 700; }
-.hinweis-box { background: var(--rot-hell); border-radius: var(--r-klein); padding: 14px 18px; font-family: var(--titel); font-size: 16px; line-height: 1.5; color: var(--tinte); }
-.artikel-text .hinweis { font-family: var(--titel); font-size: 15px; color: var(--tinte-3); }
-.event-box { background: var(--sand); border-radius: var(--r); padding: 20px 24px; font-family: var(--titel); font-size: 17px; line-height: 1.5; }
-.event-box > * + * { margin-top: .4em; }
-.rezept-layout { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 28px; align-items: start; max-width: none !important; }
-.zutaten { background: var(--sand); border-radius: var(--r); padding: 22px; }
-.zutaten h3, .rezept-layout h3 { margin-top: 0; }
-.rezept-zutaten { list-style: none; padding: 0 !important; margin-top: 12px; }
-.rezept-zutaten li { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--sand-2); font-family: var(--titel); font-size: 17px; cursor: pointer; }
-.rezept-zutaten li::before { content: ""; width: 18px; height: 18px; flex: none; margin-top: 3px; border: 1.5px solid var(--tinte-3); border-radius: 5px; }
-.schritte { counter-reset: s; list-style: none; padding: 0 !important; }
-.schritte li { counter-increment: s; position: relative; padding-left: 48px; min-height: 34px; }
-.schritte li::before { content: counter(s); position: absolute; left: 0; top: 0; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--rot); color: var(--weiss); font-family: var(--titel); font-weight: 800; font-size: 16px; }
-.tipp { background: var(--rot-hell); border-radius: var(--r-klein); padding: 14px 18px; font-size: 17px; }
-.rezept-fakten { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
-.rezept-fakten div { background: var(--sand); border-radius: var(--r-klein); padding: 10px 14px; }
-.rezept-fakten dt { font-family: var(--titel); font-size: 13px; font-weight: 700; color: var(--tinte-3); }
-.rezept-fakten dd { margin: 0; font-family: var(--titel); font-weight: 800; font-size: 17px; }
-.tamil-zitat { font-family: var(--titel) !important; font-style: normal !important; font-weight: 700; font-size: clamp(22px, 1vw + 16px, 28px) !important; line-height: 1.3; border-left-color: var(--rot) !important; }
-.video-embed { aspect-ratio: 16 / 9; background: var(--sand); border-radius: var(--r); display: grid; place-content: center; justify-items: center; gap: 12px; text-align: center; padding: 24px; }
-.video-embed .video-load { min-height: 46px; padding: 0 22px; border: 0; border-radius: 999px; background: var(--rot); color: var(--weiss); font-family: var(--titel); font-weight: 700; font-size: 16px; cursor: pointer; }
-.video-embed .video-hint { font-family: var(--titel); font-size: 14px; color: var(--tinte-3); }
-.video-embed.is-geladen { display: block; padding: 0; }
-.video-embed iframe { display: block; width: 100%; height: 100%; border: 0; border-radius: var(--r); }
 
 /* ---------- Veranstaltungskalender ---------- */
 .events-werkzeuge { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 6px; }
@@ -301,11 +223,7 @@ a.rubrik:hover { color: var(--rot-tief); }
   .kinoliste-kopf { grid-template-columns: auto minmax(0, 1fr); }
   .kinoliste-kopf .knopf { grid-column: 1 / -1; justify-self: start; }
   .kinoliste-zahl { min-width: 0; } .kinoliste-zahl b { font-size: 48px; }
-  .rezept-layout { grid-template-columns: minmax(0, 1fr); }
-  .artikel-zeile { flex-direction: column; align-items: flex-start; }
   .brotkrumen { padding-top: 16px; } .brotkrumen > span:last-child, .brotkrumen > span:nth-last-child(2) { display: none; }
-  .vorspann, .artikel-kopf .vorspann { font-size: 19px; }
-  .artikel-kopf { gap: 14px; }
   .monatsraster td { height: 64px; padding: 4px; }
   .monatsraster .pill { font-size: 0; padding: 0; height: 8px; border-radius: 4px; }
 }
@@ -316,7 +234,7 @@ a.rubrik:hover { color: var(--rot-tief); }
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
 @media print {
-  .kopf, .menue, .fuss, .seitenspalte, .ad, .teilen, .lesebalken, .mehr-aus { display: none !important; }
+  .kopf, .menue, .fuss, .seitenspalte, .ad, .teilen { display: none !important; }
   .mit-spalte { display: block; }
   body { background: #fff; }
 }

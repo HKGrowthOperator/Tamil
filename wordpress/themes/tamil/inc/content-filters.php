@@ -130,3 +130,11 @@ function tamil_youtube_nach_klick_gespeichert( $html, $url ) {
 	return '' === $id ? $html : tamil_youtube_box( $id );
 }
 add_filter( 'embed_oembed_html', 'tamil_youtube_nach_klick_gespeichert', 10, 2 );
+
+/**
+ * Tamilische Wörter im Beitragstext mit lang="ta" auszeichnen (Altbestand hat Namen und Zitate auf Tamil).
+ */
+function tamil_inhalt_lang_ta( string $content ): string {
+	return tamil_lang_ta( $content );
+}
+add_filter( 'the_content', 'tamil_inhalt_lang_ta', 40 );
