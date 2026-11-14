@@ -224,7 +224,7 @@ def _traegt(fakt: str, beleg: str, anfang: bool = False) -> bool:
         return f in worte or (f in _ZIFFER and _ZIFFER[f] in zahlen)
     if anfang and len(f) > 5:
         f = re.sub(r"(?:e[mnrs]?|[ns])$", "", f)
-    elif anfang and len(f) > 3 and f.endswith("s"):  # Genitiv-s auch bei kurzen Namen („Kölns“)
+    elif anfang and len(f) > 4 and f.endswith("s"):  # Genitiv-s auch bei kurzen Namen („Kölns“), Rest ≥ 4 Zeichen
         f = f[:-1]
     return f in beleg
 
