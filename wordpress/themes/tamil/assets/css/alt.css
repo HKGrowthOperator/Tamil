@@ -14,7 +14,6 @@
 .chip { display: inline-flex; align-items: center; min-height: 40px; padding: 0 16px; border-radius: 999px; border: 0; background: var(--sand); color: var(--tinte); font-family: var(--titel); font-weight: 600; font-size: 15px; cursor: pointer; transition: background-color .25s var(--ease), color .25s var(--ease); }
 .chip:hover { background: var(--sand-2); color: var(--tinte); }
 .chip[aria-pressed="true"] { background: var(--tinte); color: var(--papier); }
-.chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .aktionen { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 .mehr { display: inline-flex; align-items: center; gap: 6px; font-family: var(--titel); font-weight: 700; font-size: 16px; color: var(--rot); }
 .mehr .ico { transition: transform .25s var(--ease); }
@@ -57,9 +56,6 @@ a.rubrik:hover { color: var(--rot-tief); }
 .mosaik { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 40px; align-items: start; }
 .stapel { display: grid; gap: 28px; align-content: start; }
 .reihe { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; }
-.kartenraster { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px 32px; }
-.kartenraster > .karte-gross { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 32px; align-items: center; }
-.kartenraster.zwei { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
 /* ---------- Startseite: Bühne ---------- */
 
@@ -104,12 +100,7 @@ a.rubrik:hover { color: var(--rot-tief); }
 .brotkrumen { display: flex; flex-wrap: wrap; gap: 8px; padding: 24px 0 8px; font-family: var(--titel); font-size: 15px; color: var(--tinte-3); }
 .brotkrumen a { color: var(--tinte-2); }
 .brotkrumen a:hover { color: var(--rot); }
-.seitenkopf { padding: 16px 0 36px; display: grid; gap: 14px; }
-.seitenkopf h1 { display: flex; align-items: center; gap: 16px; font-size: clamp(38px, 3vw + 18px, 64px); line-height: 1; letter-spacing: -0.03em; }
-.seitenkopf h1::before { content: ""; width: 18px; height: 18px; border-radius: 50%; background: var(--punkt, var(--rot)); flex: none; }
-.seitenkopf .beschreibung { font-size: 20px; line-height: 1.55; color: var(--tinte-2); max-width: 62ch; }
 .zaehler { font-family: var(--titel); font-weight: 600; font-size: 15px; color: var(--tinte-3); }
-.seitenkopf + .kinoliste { margin: 0 0 48px; }
 .mit-spalte { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 56px; align-items: start; padding-bottom: var(--abstand); }
 .seitenband { background: var(--sand); padding: clamp(40px, 5vw, 72px) 0; margin-bottom: var(--abstand); }
 .seitenband .wrap { display: grid; gap: 18px; justify-items: start; }
@@ -199,10 +190,6 @@ a.rubrik:hover { color: var(--rot-tief); }
 .fehlerseite p { font-size: 20px; color: var(--tinte-2); max-width: 56ch; }
 .suchformular { display: flex; flex-wrap: wrap; gap: 10px; width: 100%; max-width: 560px; }
 .suchformular input { flex: 1 1 240px; }
-.pagination { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 48px; font-family: var(--titel); }
-.pagination a, .pagination span { min-width: 44px; height: 44px; padding: 0 14px; display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; background: var(--sand); color: var(--tinte); font-weight: 700; }
-.pagination a:hover { background: var(--sand-2); color: var(--tinte); }
-.pagination .current { background: var(--tinte); color: var(--papier); }
 
 /* ---------- Brüche ---------- */
 @media (max-width: 1023px) {
@@ -210,11 +197,10 @@ a.rubrik:hover { color: var(--rot-tief); }
   .reihe { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .reihe > :nth-child(3) { display: none; }
   .seitenspalte { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
-  .kartenraster > .karte-gross { grid-template-columns: minmax(0, 1fr); gap: 16px; }
 }
 @media (max-width: 680px) {
   body { font-size: 18px; }
-  .reihe, .kartenraster, .kartenraster.zwei { grid-template-columns: minmax(0, 1fr); }
+  .reihe { grid-template-columns: minmax(0, 1fr); }
   .reihe > :nth-child(3) { display: grid; }
   .karte-neben { grid-template-columns: 112px minmax(0, 1fr); gap: 14px; }
   .karte-neben .bild { aspect-ratio: 1; border-radius: var(--r-klein); }

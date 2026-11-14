@@ -414,6 +414,36 @@ input:hover, textarea:hover, select:hover { background: var(--color-paper); }
   .angaben > div { grid-template-columns: minmax(0, 1fr); }
 }
 
+/* ---------- Rubrik: Aufmacher, Strom, Seitennavigation ---------- */
+.rubrik-lead + .abschnitt { border-top: 1px solid var(--color-rule); }
+.lead { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--space-lg) var(--gap-columns); align-items: start; }
+.lead.ohne-bild { grid-template-columns: minmax(0, 8fr) minmax(0, 4fr); }
+.lead-text { display: grid; gap: var(--space-md); align-content: start; }
+.lead-text .tag { align-items: start; }
+.lead-titel { font-size: var(--text-h1); line-height: 1.15; }
+.lead-titel a { text-decoration: none; }
+.lead-titel a:hover { text-decoration: underline; text-decoration-thickness: 2px; }
+.lead .teaser { color: var(--color-ink-2); font-size: var(--text-lead); line-height: 1.5; max-width: 60ch; }
+.lead .aktionen { margin-top: 0; }
+.seiten { padding-block: 0 var(--section-gap-s); }
+.seiten-zeile { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-xs) var(--space-lg); border-top: 2px solid var(--color-ink); padding-top: var(--space-sm); }
+.seiten p { margin: 0; color: var(--color-muted); }
+.seiten .seiten-links { margin-top: 0; }
+.seiten-links .current { font-weight: var(--weight-head); }
+.seiten-links .prev, .seiten-links .next { font-weight: 600; }
+@media (max-width: 860px) {
+  .lead, .lead.ohne-bild { display: flex; flex-direction: column; gap: 0; }
+  .lead .lead-text { display: contents; }
+  .lead .tag { order: 1; margin-bottom: var(--space-md); }
+  .lead .lead-titel { order: 2; }
+  .lead > .bild { order: 3; margin-top: var(--space-md); }
+  .lead .teaser { order: 4; margin-top: var(--space-sm); }
+  .lead .aktionen { order: 5; margin-top: var(--space-xs); }
+}
+@media (max-width: 640px) {
+  .lead .tag { grid-template-columns: 4.25rem minmax(0, 1fr); column-gap: var(--space-sm); }
+}
+
 /* ---------- Anzeigen (Plätze aus dem Plugin „Tamil.de Website“) ---------- */
 .ad { display: flex; flex-direction: column; align-items: center; gap: var(--space-2xs); max-width: 100%; min-width: 0; }
 .ad .ad-label { align-self: flex-start; font-size: var(--text-sm); color: var(--color-muted); }
