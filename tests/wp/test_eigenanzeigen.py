@@ -50,7 +50,8 @@ def test_frontend_quellen_ohne_trennpunkt_und_gedankenstrich():
     vz = (plugin / "verzeichnis-ansicht.php").read_text(encoding="utf-8")
     assert "implode( ' · '" not in vz and "implode( ', ', array_filter( $teile ) )" in vz
     wb = (plugin / "werbung-ansichten.php").read_text(encoding="utf-8")
-    assert "' – '" not in wb
+    assert "' – '" not in wb and "'–'" not in wb  # auch kein Strich als Platzhalter (r3 P2-1)
+    assert "__( 'auf Anfrage', 'tamil-site' )" in wb
 
 
 def test_ungebuchter_platz_zeigt_eigenanzeige_mit_label(wp_cli):
