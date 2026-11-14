@@ -57,7 +57,14 @@ $figur   = $bild_id ? tamil_figur(
 		'eager'  => true,
 		'alt'    => true,
 	)
-) : '';
+) : tamil_rubrikfoto_figur(
+	'events',
+	array(
+		'klasse' => 'bild kopf-bild',
+		'eager'  => true,
+		'alt'    => true,
+	)
+);
 ?>
 <header class="seitenkopf<?php echo '' !== $figur ? ' mit-bild' : ''; ?>">
 	<div class="wrap">
@@ -78,10 +85,6 @@ $figur   = $bild_id ? tamil_figur(
 				}
 				?>
 			</section>
-			<?php
-			if ( $kommend ) :
-				?>
-				<p class="legende"><?php esc_html_e( 'Rot steht auf tamil.de für den nächsten Termin.', 'tamil' ); ?></p><?php endif; ?>
 		</div>
 		<?php echo $figur; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_figur() ?>
 	</div>
@@ -89,7 +92,7 @@ $figur   = $bild_id ? tamil_figur(
 
 <?php if ( $monate ) : ?>
 	<section class="abschnitt" aria-labelledby="das-jahr">
-		<div class="wrap schmal">
+		<div class="wrap">
 			<div class="kopfzeile">
 				<?php /* translators: %s: Jahr */ ?>
 				<h2 id="das-jahr"><?php echo esc_html( sprintf( __( 'Das Jahr %s', 'tamil' ), $jahr ) ); ?></h2>
@@ -104,25 +107,22 @@ $figur   = $bild_id ? tamil_figur(
 						<?php /* translators: %d: Anzahl */ ?>
 						<span class="anzahl"><?php echo esc_html( sprintf( _n( '%d Termin', '%d Termine', count( $liste ), 'tamil' ), count( $liste ) ) ); ?></span>
 					</summary>
-					<table class="tafel jahr">
-						<thead><tr><th scope="col"><?php esc_html_e( 'Tag', 'tamil' ); ?></th><th scope="col"><?php esc_html_e( 'Was und wo', 'tamil' ); ?></th></tr></thead>
-						<tbody>
-							<?php foreach ( $liste as $id ) : ?>
-								<?php
-								$start = date_create_immutable( (string) get_post_meta( $id, 'event_datum', true ), wp_timezone() );
-								$ort   = trim( (string) get_post_meta( $id, 'event_ort', true ) );
-								?>
-								<tr>
-									<td class="t-tag"><?php echo $start ? tamil_zeilen_tag( $start->getTimestamp(), 't' ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_zeilen_tag() ?></td>
-									<td class="was"><a href="<?php echo esc_url( get_permalink( $id ) ); ?>"><?php echo esc_html( get_the_title( $id ) ); ?></a>
-									<?php
-									if ( '' !== $ort ) :
-										?>
-										<span class="unter"><?php echo esc_html( $ort ); ?></span><?php endif; ?></td>
-								</tr>
-							<?php endforeach; ?>
-						</tbody>
-					</table>
+					<?php
+					$zeiten = array();
+					foreach ( $liste as $id ) {
+						$zeiten[ $id ] = (int) strtotime( (string) get_post_meta( $id, 'event_datum', true ) );
+					}
+					tamil_strom(
+						$liste,
+						array(
+							'monat'  => '',
+							'titel'  => 'h3',
+							'teaser' => '',
+							'rubrik' => false,
+							'zeiten' => $zeiten,
+						)
+					);
+					?>
 				</details>
 				<?php $erster = false; ?>
 			<?php endforeach; ?>

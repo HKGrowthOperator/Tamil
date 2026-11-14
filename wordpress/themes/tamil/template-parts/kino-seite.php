@@ -22,7 +22,14 @@ $figur   = $bild_id ? tamil_figur(
 		'eager'  => true,
 		'alt'    => true,
 	)
-) : '';
+) : tamil_rubrikfoto_figur(
+	'kino',
+	array(
+		'klasse' => 'bild kopf-bild',
+		'eager'  => true,
+		'alt'    => true,
+	)
+);
 ?>
 <header class="seitenkopf<?php echo '' !== $figur ? ' mit-bild' : ''; ?>">
 	<div class="wrap">
@@ -48,7 +55,7 @@ $figur   = $bild_id ? tamil_figur(
 				if ( $filme ) {
 					tamil_kino_tafel( $filme, true );
 				} else {
-					echo '<p class="bogen-leer">' . esc_html__( 'Für diese Woche kennen wir keine tamilische Vorstellung. Kennt ihr eine? Schickt sie der Redaktion.', 'tamil' ) . '</p>';
+					echo tamil_kino_leer(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_kino_leer()
 				}
 				?>
 			</section>
@@ -72,24 +79,19 @@ $figur   = $bild_id ? tamil_figur(
 
 <?php if ( $ids ) : ?>
 	<section class="abschnitt" aria-labelledby="kinojahr">
-		<div class="wrap schmal">
+		<div class="wrap">
 			<div class="kopfzeile"><h2 id="kinojahr"><?php esc_html_e( 'Aus dem Kinojahr', 'tamil' ); ?></h2></div>
-			<table class="tafel jahr">
-				<thead><tr><th scope="col"><?php esc_html_e( 'Tag', 'tamil' ); ?></th><th scope="col"><?php esc_html_e( 'Was und wo', 'tamil' ); ?></th></tr></thead>
-				<tbody>
-					<?php foreach ( $ids as $id ) : ?>
-						<?php $ort = trim( (string) get_post_meta( $id, 'ort', true ) ); ?>
-						<tr>
-							<td class="t-tag"><?php echo tamil_zeilen_tag( (int) get_post_timestamp( $id ), 't' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_zeilen_tag() ?></td>
-							<td class="was"><a href="<?php echo esc_url( get_permalink( $id ) ); ?>"><?php echo esc_html( get_the_title( $id ) ); ?></a>
-							<?php
-							if ( '' !== $ort ) :
-								?>
-								<span class="unter"><?php echo esc_html( $ort ); ?></span><?php endif; ?></td>
-						</tr>
-					<?php endforeach; ?>
-				</tbody>
-			</table>
+			<?php
+			tamil_strom(
+				$ids,
+				array(
+					'monat'  => '',
+					'titel'  => 'h3',
+					'teaser' => '',
+					'rubrik' => false,
+				)
+			);
+			?>
 			<?php get_template_part( 'template-parts/pagination' ); ?>
 		</div>
 	</section>

@@ -22,7 +22,7 @@ $jetzt = time();
 			<div class="blatt-tag"><?php tamil_tag_block( $jetzt ); ?></div>
 			<article class="aufmacher">
 				<h1><a class="titel-link" href="<?php echo esc_url( $link ); ?>"><?php echo esc_html( $titel ); ?></a></h1>
-				<p class="vorspann"><?php echo tamil_text( tamil_standfirst( $lead ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_text() ?></p>
+				<p class="vorspann"><?php echo tamil_text( tamil_saetze( tamil_standfirst( $lead ), 2 ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_text() ?></p>
 				<p class="aktionen"><a class="textlink" href="<?php echo esc_url( tamil_wa_teilen( $titel, $link ) ); ?>"><?php esc_html_e( 'Per WhatsApp schicken', 'tamil' ); ?></a></p>
 			</article>
 			<?php if ( function_exists( 'tamil_site_upcoming_events' ) ) : ?>
@@ -73,7 +73,7 @@ $jetzt = time();
 						if ( $filme ) {
 							tamil_kino_tafel( $filme );
 						} else {
-							echo '<p class="bogen-leer">' . esc_html__( 'Für diese Woche kennen wir keine tamilische Vorstellung. Ältere Kinolisten stehen in der Rubrik Kino.', 'tamil' ) . '</p>';
+							echo tamil_kino_leer(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_kino_leer()
 						}
 						?>
 						<p class="bogen-fuss"><a class="textlink" href="<?php echo esc_url( tamil_rubrik( 'kino' )['url'] ); ?>"><?php esc_html_e( 'Kino nach Stadt', 'tamil' ); ?></a></p>

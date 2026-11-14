@@ -63,7 +63,7 @@ function tamil_site_werbung_html_angebote(): string {
 			}
 		);
 		$frei    = $buchbar ? tamil_site_werbung_freie_starts( $platz, min( $buchbar ), 1 ) : array();
-		$termin  = $frei ? tamil_site_werbung_datum_text( $frei[0] ) : '–';
+		$termin  = $frei ? tamil_site_werbung_datum_text( $frei[0] ) : __( 'auf Anfrage', 'tamil-site' );
 		$link    = $buchbar ? '<a class="wb-knopf" href="' . esc_url(
 			add_query_arg(
 				array(
