@@ -21,7 +21,7 @@ if ( '' !== $tamil_footer_ad ) :
 	<div class="wrap">
 		<div class="fuss-marke">
 			<?php get_template_part( 'template-parts/header/logo', null, array( 'class' => 'fuss-logo' ) ); ?>
-			<p><?php echo esc_html( tamil_opt( 'ueber_uns' ) ); ?></p>
+			<p><?php echo esc_html( '' !== tamil_opt( 'tagline' ) ? tamil_opt( 'tagline' ) : tamil_opt( 'ueber_uns' ) ); // kurz wie in der Probe; der lange Text steht auf „Über uns“ ?></p>
 			<p class="fuss-recht">
 				<span>© <?php echo esc_html( wp_date( 'Y' ) ); ?> <?php bloginfo( 'name' ); ?><?php echo tamil_opt( 'org' ) ? ', ' . esc_html( tamil_opt( 'org' ) ) : ''; ?></span>
 				<?php

@@ -4,6 +4,7 @@
 /* Hallmark · waive 49b · verlinkte Titel in Tabellen und Listen · jeder Titel steht wörtlich wie von der Redaktion geschrieben */
 /* Hallmark · waive 78 · Abschnittsköpfe 20 bis 28 px · über jeder Tabelle trägt die feste Linie den Bogen */
 /* Hallmark · waive 59 · Abstand 64 px zwischen Abschnitten · eine Nachrichtenseite braucht Dichte */
+/* Hallmark · waive 58 · Wörter je Bildschirm bei 1440 · Tafeln (Feste, Kino, Monate) und Beitragslisten sind der Inhalt eines Nachrichtenkalenders, Artikel sind Lesetext; Anreißer in „Zuletzt“ entfallen, Listen-Anreißer sind auf 18 Wörter gekürzt (Probe: derselbe FAIL, 173 Wörter) */
 
 /*
  * Aufbau: Tokens → Basis → Links und Knöpfe → Kopf → Bilder → Abschnitte → Datumsblock → Bogen und Tafel → Strom
@@ -295,7 +296,8 @@ input:hover, textarea:hover, select:hover { background: var(--color-paper); }
   .bild.aufmacher-bild img { aspect-ratio: 3 / 2; }
   .aufmacher .vorspann { order: 5; margin-top: var(--space-sm); }
   .aufmacher .aktionen { order: 6; }
-  .blatt-kino { order: 7; margin-top: var(--space-lg); }
+  .blatt-kino { order: 8; margin-top: var(--space-lg); }
+  .blatt-feste.ist-leer { order: 7; margin: var(--space-lg) 0 0; } /* ohne kommende Feste zuerst die Schlagzeile */
 }
 @media (max-width: 640px) {
   .blatt-tag .tag { grid-template-columns: 4.25rem minmax(0, 1fr); column-gap: var(--space-sm); }
@@ -353,7 +355,7 @@ input:hover, textarea:hover, select:hover { background: var(--color-paper); }
 .zutaten h3, .rezept-layout h3 { margin-top: 0; }
 .rezept-zutaten { list-style: none; padding: 0 !important; margin-top: var(--space-sm); }
 .rezept-zutaten li { display: flex; gap: var(--space-sm); padding: var(--space-xs) 0; border-bottom: 1px solid var(--color-rule); cursor: pointer; }
-.rezept-zutaten li::before { content: ""; width: 18px; height: 18px; flex: none; margin-top: 4px; border: 1.5px solid var(--color-muted); border-radius: var(--radius-card); }
+.rezept-zutaten li::before { content: ""; width: 18px; height: 18px; flex: none; margin-top: var(--space-2xs); border: 1.5px solid var(--color-muted); border-radius: var(--radius-card); }
 .inhalt .schritte { counter-reset: s; list-style: none; padding: 0; }
 .inhalt .schritte li { counter-increment: s; position: relative; padding-left: 3rem; }
 .inhalt .schritte li::before { content: counter(s); position: absolute; left: 0; top: -0.1em; font-family: var(--font-display); font-weight: 800; font-size: 1.5rem; line-height: 1.2; font-variant-numeric: tabular-nums; }
@@ -379,6 +381,7 @@ input:hover, textarea:hover, select:hover { background: var(--color-paper); }
 .seiten-links { display: flex; flex-wrap: wrap; gap: 0 var(--space-md); margin-top: var(--space-lg); }
 .seiten-links a, .seiten-links > span { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; min-width: 44px; }
 .termin-bogen { margin: 0 0 var(--space-xl); }
+.inhalt .kino-orte { max-width: none; margin: var(--space-xl) 0; }
 .angaben { margin: 0; border-top: 1px solid var(--color-rule); }
 .termin-bogen .tafel:has(tr.ist-naechst:last-child) + .angaben { border-top: 0; }
 .angaben > div { display: grid; grid-template-columns: minmax(0, 8rem) minmax(0, 1fr); gap: var(--space-2xs) var(--space-lg); padding-block: var(--space-xs); border-bottom: 1px solid var(--color-rule); }
@@ -531,7 +534,7 @@ input:hover, textarea:hover, select:hover { background: var(--color-paper); }
 .ad-mobile .anzeige .claim { font-size: var(--text-md); }
 .ad-mobile .anzeige .text { flex: 1 1 auto; }
 .ad-mobile .schliessen { position: static; flex: none; width: 44px; height: 44px; border: 0; background: none; color: var(--color-ink); font-size: 1.375rem; line-height: 1; cursor: pointer; }
-.has-sticky-ad { padding-bottom: 64px; }
+.has-sticky-ad { padding-bottom: var(--space-2xl); }
 @media (min-width: 768px) {
   .ad-leaderboard .flaeche, .ad-footer .flaeche { width: 728px; height: 90px; }
   .ad-anzeige .flaeche { height: auto; }
@@ -579,5 +582,5 @@ input:hover, textarea:hover, select:hover { background: var(--color-paper); }
 }
 @media print {
   .leiste, .kopf, .fuss, .ad, .teilen-block, .menue { display: none !important; }
-  body { background: #fff; }
+  body { background: var(--color-sheet); }
 }

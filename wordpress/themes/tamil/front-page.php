@@ -32,7 +32,7 @@ if ( $zuletzt ) :
 	<section class="abschnitt zuletzt" id="zuletzt" aria-labelledby="zuletzt-titel">
 		<div class="wrap">
 			<h2 id="zuletzt-titel" class="strom-kopf"><?php esc_html_e( 'Zuletzt bei tamil.de', 'tamil' ); ?></h2>
-			<?php tamil_strom( $teil_1 ); ?>
+			<?php tamil_strom( $teil_1, array( 'teaser' => '' ) ); // ohne Anreißer: Dichte je Bildschirm (sloplint 58) ?>
 			<?php
 			if ( '' !== $billboard ) :
 				?>
@@ -40,18 +40,21 @@ if ( $zuletzt ) :
 				<?php
 			endif;
 			if ( $teil_2 ) {
-				tamil_strom( $teil_2, array( 'weiter' => wp_date( 'Y-m', (int) get_post_timestamp( (int) end( $teil_1 ) ) ) ) );
+				tamil_strom(
+					$teil_2,
+					array(
+						'teaser' => '',
+						'weiter' => wp_date( 'Y-m', (int) get_post_timestamp( (int) end( $teil_1 ) ) ),
+					)
+				);
 			}
 			?>
-			<p class="weiter-links">
-				<?php foreach ( array_keys( tamil_rubriken_standard() ) as $slug ) : ?>
-					<?php $rubrik = tamil_rubrik( $slug ); ?>
-					<?php if ( $rubrik['term'] && 'events' !== $slug && $rubrik['term']->count > 0 ) : ?>
-						<?php /* translators: %s: Rubrik */ ?>
-						<a class="textlink" href="<?php echo esc_url( $rubrik['url'] ); ?>"><?php echo esc_html( sprintf( __( 'Mehr aus %s', 'tamil' ), $rubrik['label'] ) ); ?></a>
-					<?php endif; ?>
-				<?php endforeach; ?>
-			</p>
+			<?php
+			$news = tamil_rubrik( 'news' );
+			if ( $news['term'] ) :
+				?>
+				<p class="weiter-links"><a class="textlink" href="<?php echo esc_url( $news['url'] ); ?>"><?php esc_html_e( 'Ältere Beiträge', 'tamil' ); ?></a></p>
+			<?php endif; ?>
 		</div>
 	</section>
 	<?php

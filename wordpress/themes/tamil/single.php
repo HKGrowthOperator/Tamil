@@ -27,9 +27,10 @@ while ( have_posts() ) :
 	if ( '' !== $zeile ) {
 		$zeilen[] = $zeile;
 	}
-	if ( $kino ) {
-		/* translators: %s: Datum */
-		$zeilen[] = esc_html( sprintf( __( 'Kinoliste, Stand: %s', 'tamil' ), get_the_modified_date( 'j. F' ) ) );
+	$kino_film = $kino ? tamil_kino_film( $post_id ) : array();
+	if ( $kino_film && '' !== $kino_film['stand'] ) {
+		// Stand aus den Kinodaten (Kinowoche), nicht aus dem Änderungsdatum; vorbei ist vorbei.
+		$zeilen[] = esc_html( $kino_film['stand'] . ( $kino_film['bis'] < current_time( 'Y-m-d' ) ? ', ' . __( 'Spielzeit vorbei', 'tamil' ) : '' ) );
 	}
 	$minuten = tamil_lesezeit( $post_id );
 	$sidebar = function_exists( 'tamil_site_anzeige' ) ? tamil_site_anzeige( 'sidebar', false ) : '';

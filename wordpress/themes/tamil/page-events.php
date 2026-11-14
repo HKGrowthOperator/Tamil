@@ -86,7 +86,6 @@ $figur   = $bild_id ? tamil_figur(
 		<?php echo $figur; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_figur() ?>
 	</div>
 </header>
-<?php tamil_leaderboard(); ?>
 
 <?php if ( $monate ) : ?>
 	<section class="abschnitt" aria-labelledby="das-jahr">
