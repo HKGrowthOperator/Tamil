@@ -231,7 +231,7 @@ def _traegt(fakt: str, beleg: str, anfang: bool = False, tage_monate: tuple = ()
         return (f in zahlen or any(f in (str(d), str(m), j) for d, m, j in daten)
                 or f in {u.group(1) for u in _BELEG_UHR_RE.finditer(beleg)})
     if f in _MONAT_NR and f not in beleg:  # „15. November“ gegen „15.11.2026“: gleicher Tag und Monat
-        return any((d, m) in {(x, y) for x, y, _ in daten} for d, m in tage_monate)
+        return any((d, m) in {(x, y) for x, y, _ in daten} for d, m in tage_monate if m == _MONAT_NR[f])
     if _ist_zahlwort(f) or _VERNEINUNG_RE.fullmatch(f):
         worte = set(_WORT_RE.findall(beleg))
         return f in worte or (f in _ZIFFER and _ZIFFER[f] in zahlen)

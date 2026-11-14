@@ -90,3 +90,13 @@ def test_gegenpruefung_bleibt_ungedeckt(satz, aussage):
 ])
 def test_gegenpruefung_bleibt_gedeckt(satz, aussage):
     assert _urteil(satz, ["C1"], [_claim("C1", aussage)]) == "gedeckt"
+
+
+def test_monatsname_nur_ueber_ein_datum_desselben_monats():
+    """Hauptsitzung, Durchsicht von c15b044: „Dezember“ darf nicht über das Datum eines anderen Monats im Satz
+    („15. November“ ↔ „15.11.2026“) als belegt gelten; die „3“ steht zufällig im Beleg."""
+    from news_radar.agents import pruefer as p
+    beleg = "am 15.11.2026 feiern 3 vereine im saal"
+    satz = "Am 15. November und 3. Dezember feiern 3 Vereine."
+    assert not p._traegt("dezember", beleg, False, p._tage_monate(satz))
+    assert p._traegt("november", beleg, False, p._tage_monate(satz))
