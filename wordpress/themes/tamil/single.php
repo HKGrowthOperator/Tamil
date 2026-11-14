@@ -33,6 +33,18 @@ while ( have_posts() ) :
 		$zeilen[] = esc_html( $kino_film['stand'] . ( $kino_film['bis'] < current_time( 'Y-m-d' ) ? ', ' . __( 'Spielzeit vorbei', 'tamil' ) : '' ) );
 	}
 	$minuten = tamil_lesezeit( $post_id );
+	// Tagesziffer: bei Terminen der Tag des Termins, bei Kinolisten der Beginn der Kinowoche; sonst die Veröffentlichung.
+	$tag_ts = (int) get_post_timestamp( $post_id );
+	$marke  = '';
+	if ( $event && strtotime( $event['datum'] ) ) {
+		$tag_ts = (int) strtotime( $event['datum'] );
+		/* translators: %s: Wochentag */
+		$marke = sprintf( __( '%s, Tag des Termins', 'tamil' ), wp_date( 'l', $tag_ts ) );
+	} elseif ( $kino_film && '' !== $kino_film['beginn'] ) {
+		$tag_ts = (int) strtotime( $kino_film['beginn'] );
+		/* translators: %s: Wochentag */
+		$marke = sprintf( __( '%s, Beginn der Kinowoche', 'tamil' ), wp_date( 'l', $tag_ts ) );
+	}
 	$sidebar = function_exists( 'tamil_site_anzeige' ) ? tamil_site_anzeige( 'sidebar', false ) : '';
 	$teilen  = array(
 		array( 'Facebook', 'https://www.facebook.com/sharer/sharer.php?u=' . rawurlencode( $url ) ),
@@ -43,14 +55,14 @@ while ( have_posts() ) :
 	<article <?php post_class( 'artikel' ); ?>>
 		<header class="artikel-kopf">
 			<div class="wrap">
-				<?php tamil_tag_block( (int) get_post_timestamp( $post_id ), $zeilen ); ?>
+				<?php tamil_tag_block( $tag_ts, $zeilen, $marke ); ?>
 				<div class="artikel-kopf-text">
 					<h1><?php echo esc_html( $titel ); ?></h1>
 					<p class="vorspann"><?php echo tamil_text( tamil_standfirst( $post_id ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_text() ?></p>
 					<p class="autor">
 						<?php
-						/* translators: 1: Autor, 2: Minuten */
-						echo esc_html( sprintf( _n( '%1$s, %2$d Minute Lesezeit', '%1$s, %2$d Minuten Lesezeit', $minuten, 'tamil' ), tamil_opt( 'autor_name' ), $minuten ) );
+						/* translators: 1: Autor, 2: Datum der Veröffentlichung, 3: Minuten */
+						echo esc_html( sprintf( _n( '%1$s, veröffentlicht am %2$s, %3$d Minute Lesezeit', '%1$s, veröffentlicht am %2$s, %3$d Minuten Lesezeit', $minuten, 'tamil' ), tamil_opt( 'autor_name' ), get_the_date( 'j. F Y' ), $minuten ) );
 						?>
 					</p>
 					<p class="aktionen"><a class="textlink" href="<?php echo esc_url( tamil_wa_teilen( $titel, $url ) ); ?>"><?php esc_html_e( 'Per WhatsApp schicken', 'tamil' ); ?></a></p>
