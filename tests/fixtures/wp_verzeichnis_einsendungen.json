@@ -1,0 +1,32 @@
+{
+  "einsendungen": [
+    {
+      "id": 5,
+      "vorgangsnummer": "V261114-K7M3Q",
+      "typ": "neu",
+      "eintrag_id": 0,
+      "status": "neu",
+      "eingang": "2026-11-14T19:12:03+00:00",
+      "abgeschlossen": null,
+      "einsender": {"name": "Erika Beispiel", "email": "erika@example.test"},
+      "berechtigung": "inhaber",
+      "felder": {
+        "name": {"wert": "Tamilischer Kulturverein Essen", "oeffentlich": true},
+        "art": {"wert": "verein", "oeffentlich": true},
+        "beschreibung": {"wert": "Tanz, Musik und Sprachkurse.", "oeffentlich": true},
+        "plz": {"wert": "45127", "oeffentlich": true},
+        "stadt": {"wert": "Essen", "oeffentlich": true},
+        "land": {"wert": "DE", "oeffentlich": true},
+        "bundesland_kanton": {"wert": "Nordrhein-Westfalen", "oeffentlich": true},
+        "telefon": {"wert": "+49 201 1234567", "oeffentlich": true},
+        "email": {"wert": "verein@example.test", "oeffentlich": false}
+      },
+      "anmerkung": "",
+      "einwilligung": {"erteilt": true, "fassung": "2026-11-vorlaeufig"},
+      "regeln": {"fehlt": [], "formfehler": [], "dubletten": []},
+      "pruefung": {},
+      "entscheidung": {}
+    }
+  ],
+  "naechster": 5
+}

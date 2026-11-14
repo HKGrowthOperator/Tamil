@@ -440,11 +440,25 @@ SZENARIEN += [
                                                            "konflikt_vermerkt": 1, "offen_danach": 0}}),
     Szenario(87, "Löschfrist: 90 Tage nach Abschluss, Spam nach 7 Tagen", "Eingang", [], nachher="eingang_loeschfrist",
              erwartet={"stats": {"geloescht": 1, "spam_geloescht": 1, "bleibt": 1, "protokoll": 1}}),
+    # ---- Verzeichnis: Radar-Seite (Festlegung F2, Abnahmetest T4) ----
+    Szenario(88, "Verzeichnis T4: vorschlagen → Hinweise → freigeben; Telefon ändern → alt/neu → freigeben; Ablehnen "
+             "ändert nichts; Dublette; Premium nie; ohne Stadt unvollständig", "Verzeichnis", [],
+             nachher="verzeichnis_t4",
+             erwartet={"aufrufe": 3, "rolle_anzahl": {"verzeichnis": 3}, "entwuerfe": 0,
+                       "stats": {"vz_neu": 2, "vz_geprueft": 2, "vz_modell": 2, "kategorie_vorschlag": 1,
+                                 "pruefung_bei_wp": 1, "premium_abgewiesen": 1, "premium_ohne_aufruf": 1,
+                                 "veroeffentlicht": 1, "premium_aus": 1, "unvollstaendig": 1, "dublette": 1,
+                                 "alt_neu": 1, "neue_nummer": 1, "ablehnen_aendert_nichts": 1, "leser_darf": 0,
+                                 "ohne_personendaten": 1}}),
+    Szenario(89, "Verzeichnis: Schalter an – kein Aufruf, nichts verloren; ohne Schlüssel nur Regeln", "Verzeichnis", [],
+             nachher="verzeichnis_stopp", einstellungen={"_ohne_modell": True},
+             erwartet={"aufrufe": 0, "stats": {"aufrufe_im_stopp": 0, "angehalten": 1, "liegt_auf_website": 1,
+                                               "geprueft_danach": 1, "ohne_kategorie": 1, "regeln_ok": 1}}),
     Szenario(90, "Gedenktermin aus einer Feed-Quelle wird nie automatisch zur Story", "Event", [GEDENKEN],
              erwartet={"storys": 0, "aufrufe": 0, "stats": {"gedenktermin": 1}}),
 ]
 
-# Nummer 91–94 (70–78 Social, 79 Lizenz-Gate, 80–87 F1-Eingang, 90 Gedenk-Sperre): „Recherche nötig“ ist kein Endzustand (Auftrag Luis, 13.11.2026).
+# Nummer 91–94 (70–78 Social, 79 Lizenz-Gate, 80–87 F1-Eingang, 88–89 F2-Verzeichnis, 90 Gedenk-Sperre): „Recherche nötig“ ist kein Endzustand (Auftrag Luis, 13.11.2026).
 # Gate scheitert → Nachrecherche (ohne Modell, höchstens zwei Runden) → Recherche und Gate erneut; danach entscheidet
 # die zweite KI („pruefer“). Jeder Entwurf geht vorher Satz für Satz durch die zweite KI.
 VEREIN_URL = "https://www.tamilverein-koeln.de/integrationspreis"

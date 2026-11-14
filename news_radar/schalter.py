@@ -6,7 +6,8 @@ aus ist. Jede Änderung braucht eine Person, ein Stopp zusätzlich einen Grund, 
 (editorial_actions). Ein Kanal ohne Zeile in der Tabelle läuft.
 
 Heute fragen ab: `redaktion` (Scan, Job-Übernahme, Modellaufruf), `website` (Übertragung nach WordPress),
-`instagram`, `facebook`, `whatsapp` (Baustein F4, `social/ablauf.py`). Die übrigen Kanäle sind schaltbar und sichtbar;
+`instagram`, `facebook`, `whatsapp` (Baustein F4, `social/ablauf.py`), `eingang` (F1), `verzeichnis`
+(F2, `verzeichnis.py`). Die übrigen Kanäle sind schaltbar und sichtbar;
 spätere Bausteine fragen `gestoppt()` ab. Der Budget-Stopp ist davon unabhängig.
 """
 
@@ -22,7 +23,7 @@ HAELT_AN = {
     "redaktion": "Scan der Quellen und die Agenten-Redaktion (keine Job-Übernahme, kein Modellaufruf)",
     "website": "das Übertragen freigegebener Beiträge nach WordPress",
     "eingang": "Abholen und Vorbereiten von Einsendungen (noch ohne Abnehmer)",
-    "verzeichnis": "die Prüfung von Verzeichniseinträgen (noch ohne Abnehmer)",
+    "verzeichnis": "Abholen und Prüfen von Verzeichnis-Einsendungen und jede Freigabe an die Website",
     "instagram": "Senden an Instagram, auch während der Karenz (Facebook wartet mit, weil Instagram zuerst geht)",
     "facebook": "Senden an die Facebook-Seite, auch während der Karenz",
     "whatsapp": "die WhatsApp-Entwürfe im Cockpit (ausgeblendet)",

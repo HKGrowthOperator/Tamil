@@ -226,9 +226,21 @@ def eingang(user: str, system: str, req: dict) -> dict:
             "absaetze": [text] if entwurf and text else []}
 
 
+def verzeichnis(user: str, system: str, req: dict) -> dict:
+    """Verzeichnis (F2): erste Kategorie aus <kategorien>, deren Bezeichnung in Name oder Beschreibung vorkommt."""
+    e = block(user, "eintrag") or {}
+    text = f"{e.get('name', '')} {e.get('beschreibung', '')}".lower()
+    for k in block(user, "kategorien") or []:
+        woerter = [w for w in re.findall(r"\w+", str(k.get("label", "")).lower()) if len(w) >= 4]
+        if woerter and any(w in text for w in woerter):
+            return {"kategorie": k.get("slug", "")}
+    return {"kategorie": ""}
+
+
 STANDARD: dict[str, Responder] = {
     "signal": signal, "cluster": cluster, "recherche": recherche, "text": text, "dossier": text,
     "faktencheck": faktencheck, "lektorat": lektorat, "seo": seo, "eingang": eingang, "pruefer": pruefer,
+    "verzeichnis": verzeichnis,
 }
 
 

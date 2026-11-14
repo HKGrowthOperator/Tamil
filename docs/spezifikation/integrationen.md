@@ -99,7 +99,8 @@ Code: `wordpress/plugins/tamil-radar/includes/verzeichnis.php` (Routen), Logik u
 | Premium | nur ein Administrator in wp-admin; weder Formular noch diese Routen setzen es |
 | Protokoll | Tabelle `tamil_vz_protokoll`: Zeit, wer (Benutzername, `website`, `cron`), Aktion, Vorgangsnummer, Eintrag, Feldnamen; keine Inhalte oder Personendaten; Frist 12 Monate |
 | Testmodus | `tests/wp/test_verzeichnis.py` gegen das lokale WordPress |
-| Stand | gebaut auf der Website; die Gegenseite im Radar (Abholen, Prüfung durch den Agenten, Cockpit alt/neu) fehlt noch |
+| Stand | gebaut auf der Website; Gegenseite im Radar gebaut (`news_radar/verzeichnis.py`, Cockpit „Verzeichnis“, Migration 13, `RADAR_VERZEICHNIS` aus, Fake `abnahme/wp_verzeichnis.py`, `tests/test_verzeichnis_agent.py`, Szenarien 88/89) |
+| Abweichung Doku ↔ Code | Die Liste hat kein Feld `mehr`: der Radar liest weiter, solange eine Seite voll ist. Die Antwort auf `POST …/status` mit 409 nennt den aktuellen Status nicht; der Radar liest ihn mit `GET einsendung/{vorgang}` nach. Kategorie-Slugs sind `<art>-<Name>` mit de_DE-Umschrift (`dienstleister-uebersetzung`, `tempel-weitere-gebetsstaette`); der Radar hält die Liste aus der Festlegung, eine von KBS geänderte Liste muss dort nachgezogen werden |
 
 ## 4. Anthropic (Agenten-Redaktion)
 

@@ -237,7 +237,35 @@ V11 = [
 # V12: Datenbanken, die V11 vor V8 und V9 bekommen haben (Eingang-Zweig bis 5aab944, user_version 11), holen Social
 # und Lizenzen nach. Alles idempotent: CREATE … IF NOT EXISTS, ADD COLUMN wird übersprungen, wenn die Spalte da ist.
 V12 = [*V8, *V9]
-MIGRATIONS: dict[int, list[str]] = {2: V2, 3: V3, 4: V4, 5: V5, 6: V6, 7: V7, 8: V8, 9: V9, 11: V11, 12: V12}
+# V13: Verzeichnis (Festlegung F2, datenmodell.md §13) – abgeholte Verzeichnis-Einsendungen mit den Befunden der
+# Website (`regeln`), der Prüfung des Agenten (`pruefung`), dem gelesenen Eintrag für alt/neu (`alt`, `alt_stand`) und
+# der Entscheidung. Personendaten (einsender_name, einsender_email, anmerkung) nur hier; Löschung 90 Tage nach Eingang
+# wie auf der Website (verzeichnis.loeschen). `wp_status` ist der zuletzt von WordPress bestätigte Status.
+V13 = [
+    """CREATE TABLE IF NOT EXISTS verzeichnis_einsendungen (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        wp_id INTEGER NOT NULL UNIQUE,          -- id auf der Website (Cursor)
+        vorgangsnummer TEXT NOT NULL UNIQUE,    -- V261114-K7M3Q
+        typ TEXT NOT NULL,                      -- neu | aenderung | entfernen
+        eintrag_id INTEGER NOT NULL DEFAULT 0,  -- betroffener Eintrag (Änderung, Entfernen; nach Freigabe auch neu)
+        status TEXT NOT NULL DEFAULT 'abgeholt',-- abgeholt | geprueft | freigegeben | abgelehnt
+        wp_status TEXT,                         -- zuletzt bestätigt: neu | geprueft | freigegeben | abgelehnt | fehlt
+        eingang_at TEXT, abgeholt_at TEXT NOT NULL, geprueft_at TEXT, abgeschlossen_at TEXT,
+        einsender_name TEXT, einsender_email TEXT, berechtigung TEXT,
+        einwilligung INTEGER NOT NULL DEFAULT 0, einwilligung_fassung TEXT,
+        felder TEXT NOT NULL DEFAULT '{}',      -- JSON je Feld {wert, oeffentlich}
+        anmerkung TEXT,
+        regeln TEXT NOT NULL DEFAULT '{}',      -- JSON: Befunde der Website (fehlt, formfehler, dubletten)
+        pruefung TEXT,                          -- JSON: Prüfung des Agenten (wie an WordPress gemeldet)
+        alt TEXT, alt_stand TEXT, alt_status TEXT, -- gelesener Eintrag (Felder JSON), Prüfsumme, Status
+        entscheidung TEXT,                      -- JSON: Aktion, Felder, wer
+        hinweise TEXT NOT NULL DEFAULT '[]',    -- JSON-Liste: Vermerke aus dem Abgleich mit der Website
+        bearbeitet_von TEXT, versuche INTEGER NOT NULL DEFAULT 0,
+        aktualisiert TEXT NOT NULL)""",
+    "CREATE INDEX IF NOT EXISTS vz_einsendungen_status ON verzeichnis_einsendungen(status, eingang_at)",
+    "CREATE TABLE IF NOT EXISTS verzeichnis_stand (schluessel TEXT PRIMARY KEY, wert TEXT)",  # Cursor der Abholung
+]
+MIGRATIONS: dict[int, list[str]] = {2: V2, 3: V3, 4: V4, 5: V5, 6: V6, 7: V7, 8: V8, 9: V9, 11: V11, 12: V12, 13: V13}
 LATEST = max(MIGRATIONS)
 
 

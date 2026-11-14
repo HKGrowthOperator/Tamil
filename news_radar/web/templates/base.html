@@ -23,6 +23,8 @@
     <a href="/recherche" class="{{ 'aktiv' if request.endpoint == 'red.recherche' }}"><span>In Nachrecherche</span>{% if rn %}<span class="count leise-count">{{ rn }}</span>{% endif %}</a>
     {% set eo = eingang_offen() %}
     <a href="/eingang" class="{{ 'aktiv' if request.endpoint and request.endpoint.startswith('eingang.') }}"><span>Eingang</span>{% if eo %}<span class="count leise-count">{{ eo }}</span>{% endif %}</a>
+    {% set vo = verzeichnis_offen() %}
+    <a href="/verzeichnis" class="{{ 'aktiv' if request.endpoint and request.endpoint.startswith('verzeichnis.') }}"><span>Verzeichnis</span>{% if vo %}<span class="count leise-count">{{ vo }}</span>{% endif %}</a>
     <a href="/dashboard" class="{{ 'aktiv' if request.endpoint == 'ui.dashboard' }}"><span>Dashboard</span></a>
     <a href="/kosten" class="{{ 'aktiv' if request.endpoint == 'red.kosten' }}"><span>Kosten</span></a>
     <a href="/quellen" class="{{ 'aktiv' if request.endpoint == 'red.quellen' }}"><span>Quellen</span></a>

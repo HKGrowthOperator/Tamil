@@ -322,7 +322,8 @@ def test_migration_12_holt_social_und_lizenz_nach(tmp_path, monkeypatch):
     from news_radar.workflow import schema
 
     pfad = tmp_path / "alt.sqlite"
-    monkeypatch.setattr(schema, "MIGRATIONS", {k: v for k, v in schema.MIGRATIONS.items() if k not in (8, 9, 12)})
+    # Stand 5aab944 kannte nur Migrationen bis 11 (spätere wie 13 gab es noch nicht)
+    monkeypatch.setattr(schema, "MIGRATIONS", {k: v for k, v in schema.MIGRATIONS.items() if k <= 11 and k not in (8, 9)})
     Store(pfad).close()  # Stand 5aab944: V11 ohne V8 und V9
     monkeypatch.undo()
     with Store(pfad) as st:

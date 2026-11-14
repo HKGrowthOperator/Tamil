@@ -212,9 +212,68 @@ class TamilRadarClient:
             raise self._fehler("GET einsendung/bild", code, data)
         return data
 
+    # ---- Verzeichnis (F2, integrationen.md §3 „Verzeichnis“): abholen, prüfen ablegen, nach Freigabe schreiben ------
+    # Lesen wirft bei Fehlern (nur Status und Fehlercode im Text); Schreiben gibt (HTTP-Status, Antwort) zurück, damit
+    # verzeichnis.py 409 (Stand, Konflikt) und 4xx (Abweisung mit Feldnamen) unterscheiden kann.
+    @staticmethod
+    def _vz_vorgang(vorgang: str) -> str:
+        if not VZ_VORGANG_RE.fullmatch(vorgang or ""):
+            raise ValueError("keine gültige Vorgangsnummer des Verzeichnisses")
+        return vorgang
+
+    def _vz_liste(self, was: str, nach: int, anzahl: int) -> dict | None:
+        code, data = self._req("GET", f"verzeichnis/{was}", params={"nach": int(nach), "anzahl": int(anzahl)})
+        if code == 503:  # Funktion „verzeichnis“ aus oder tamil-site fehlt: nichts abzuholen
+            return None
+        if code != 200 or not isinstance(data.get(was), list):
+            raise self._fehler(f"GET verzeichnis/{was}", code, data)
+        return data
+
+    def vz_einsendungen(self, nach: int, anzahl: int = 50) -> dict | None:
+        """{einsendungen: [...], naechster: id} ab dem Cursor; None bei 503."""
+        return self._vz_liste("einsendungen", nach, anzahl)
+
+    def vz_eintraege(self, nach: int, anzahl: int = 100) -> dict | None:
+        """{eintraege: [...], naechster: id} (alle Status) für die Dublettenprüfung; None bei 503."""
+        return self._vz_liste("eintraege", nach, anzahl)
+
+    def vz_einsendung(self, vorgang: str) -> dict | None:
+        code, data = self._req("GET", f"verzeichnis/einsendung/{self._vz_vorgang(vorgang)}")
+        if code == 404:
+            return None
+        if code != 200:
+            raise self._fehler("GET verzeichnis/einsendung", code, data)
+        return data
+
+    def vz_eintrag(self, eintrag_id: int) -> dict | None:
+        code, data = self._req("GET", f"verzeichnis/eintrag/{int(eintrag_id)}")
+        if code == 404:
+            return None
+        if code != 200:
+            raise self._fehler("GET verzeichnis/eintrag", code, data)
+        return data
+
+    def vz_status(self, vorgang: str, status: str, pruefung: dict | None = None) -> tuple[int, dict]:
+        body: dict = {"status": status}
+        if pruefung is not None:
+            body["pruefung"] = pruefung
+        return self._req("POST", f"verzeichnis/einsendung/{self._vz_vorgang(vorgang)}/status", json=body)
+
+    def vz_anlegen(self, vorgang: str, felder: dict) -> tuple[int, dict]:
+        return self._req("POST", "verzeichnis/eintrag", json={"einsendung": self._vz_vorgang(vorgang), "felder": felder})
+
+    def vz_aendern(self, eintrag_id: int, vorgang: str, stand: str, felder: dict) -> tuple[int, dict]:
+        return self._req("POST", f"verzeichnis/eintrag/{int(eintrag_id)}",
+                         json={"einsendung": self._vz_vorgang(vorgang), "stand": stand, "felder": felder})
+
+    def vz_entfernen(self, eintrag_id: int, vorgang: str, stand: str) -> tuple[int, dict]:
+        return self._req("POST", f"verzeichnis/eintrag/{int(eintrag_id)}/entfernen",
+                         json={"einsendung": self._vz_vorgang(vorgang), "stand": stand})
+
 
 VORUEBERGEHEND = (401, 403, 408, 429)  # Anmeldung, Recht, Zeit, Drossel: beim nächsten Lauf erneut
 VORGANG_RE = re.compile(r"T\d{6}-[A-HJ-NP-Z2-9]{5}")
+VZ_VORGANG_RE = re.compile(r"V\d{6}-[A-HJ-NP-Z2-9]{5}")  # Verzeichnis (F2): V + Datum + fünf Zeichen
 
 
 def make_client(base_url: str, user: str, app_password: str, session: requests.Session | None = None):
