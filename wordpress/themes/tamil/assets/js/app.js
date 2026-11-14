@@ -5,21 +5,14 @@
   var $$ = function (s, root) { return Array.prototype.slice.call((root || document).querySelectorAll(s)); };
   var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  // Menü (Seitenpaneel)
-  var menue = $("#menue"), burger = $("#burger");
-  function openMenue() { if (!menue) return; menue.hidden = false; document.body.style.overflow = "hidden"; burger && burger.setAttribute("aria-expanded", "true"); var first = $("a, button", menue); first && first.focus(); }
-  function closeMenue() { if (!menue || menue.hidden) return; menue.hidden = true; document.body.style.overflow = ""; burger && burger.setAttribute("aria-expanded", "false"); burger && burger.focus(); }
-  burger && burger.addEventListener("click", function () { menue.hidden ? openMenue() : closeMenue(); });
-  menue && menue.addEventListener("click", function (e) { if (e.target === menue || e.target.closest("[data-close]")) closeMenue(); });
-  document.addEventListener("keydown", function (e) { if (e.key === "Escape") { closeMenue(); } });
-
-  // Suche im Kopf
-  var sucheBtn = $("#suche-btn"), suche = $("#suche");
-  sucheBtn && suche && sucheBtn.addEventListener("click", function () {
-    suche.hidden = !suche.hidden;
-    sucheBtn.setAttribute("aria-expanded", suche.hidden ? "false" : "true");
-    if (!suche.hidden) { var i = $("input", suche); i && i.focus(); }
-  });
+  // Menü „Mehr“ (details): mit Escape und Klick daneben schließen; ohne Skript öffnet und schließt es trotzdem
+  var menue = $(".kopf .menue");
+  if (menue) {
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && menue.open) { menue.open = false; var s = $("summary", menue); s && s.focus(); }
+    });
+    document.addEventListener("click", function (e) { if (menue.open && !menue.contains(e.target)) menue.open = false; });
+  }
 
   // Mobiler Werbeplatz: schließen
   var sticky = $("#ad-mobile");

@@ -11,7 +11,13 @@ function tamil_asset_version( string $rel ): string {
 }
 
 function tamil_enqueue(): void {
-	wp_enqueue_style( 'tamil-theme', TAMIL_THEME_URI . '/assets/css/theme.css', array(), tamil_asset_version( 'assets/css/theme.css' ) );
+	$abh = array();
+	if ( file_exists( TAMIL_THEME_DIR . '/assets/css/alt.css' ) ) {
+		// Übergang: Abschnitte des alten Themes für noch nicht umgestellte Seiten (vor theme.css, damit Neues gewinnt).
+		wp_enqueue_style( 'tamil-alt', TAMIL_THEME_URI . '/assets/css/alt.css', array(), tamil_asset_version( 'assets/css/alt.css' ) );
+		$abh[] = 'tamil-alt';
+	}
+	wp_enqueue_style( 'tamil-theme', TAMIL_THEME_URI . '/assets/css/theme.css', $abh, tamil_asset_version( 'assets/css/theme.css' ) );
 	wp_enqueue_script(
 		'tamil-app',
 		TAMIL_THEME_URI . '/assets/js/app.js',
