@@ -14,68 +14,58 @@
 				{
 					"slug": "papier",
 					"name": "Papier",
-					"color": "#FDF9F5"
+					"color": "#F1F5F9"
 				},
 				{
-					"slug": "weiss",
-					"name": "Weiß",
-					"color": "#FFFDFB"
+					"slug": "papier-2",
+					"name": "Papier 2 (Mulde, Fuß)",
+					"color": "#E5EAEF"
 				},
 				{
-					"slug": "sand",
-					"name": "Sand",
-					"color": "#F8EFE4"
+					"slug": "papier-3",
+					"name": "Papier 3 (Bildgrund)",
+					"color": "#D8DFE5"
 				},
 				{
-					"slug": "sand-2",
-					"name": "Sand 2",
-					"color": "#F2E6D9"
-				},
-				{
-					"slug": "linie",
-					"name": "Linie",
-					"color": "#E5DCD5"
+					"slug": "blatt",
+					"name": "Blatt (Tabellen)",
+					"color": "#FBFDFF"
 				},
 				{
 					"slug": "tinte",
 					"name": "Tinte",
-					"color": "#332924"
+					"color": "#0C151C"
 				},
 				{
 					"slug": "tinte-2",
-					"name": "Tinte 2",
-					"color": "#655851"
+					"name": "Tinte 2 (Vorspann)",
+					"color": "#222A31"
 				},
 				{
-					"slug": "tinte-3",
-					"name": "Tinte 3",
-					"color": "#72665F"
+					"slug": "grau",
+					"name": "Grau (Stand, Nachweise)",
+					"color": "#4B545B"
+				},
+				{
+					"slug": "linie",
+					"name": "Linie",
+					"color": "#C5CBD0"
+				},
+				{
+					"slug": "linie-fest",
+					"name": "Linie fest (Blattkante)",
+					"color": "#2B343B"
 				},
 				{
 					"slug": "rot",
-					"name": "Rot",
+					"name": "Rot (nur „als Nächstes“)",
 					"color": "#B5282A"
-				},
-				{
-					"slug": "rot-tief",
-					"name": "Rot tief",
-					"color": "#921A1D"
-				},
-				{
-					"slug": "rot-hell",
-					"name": "Rot hell",
-					"color": "#FFEAE8"
-				},
-				{
-					"slug": "safran",
-					"name": "Safran",
-					"color": "#F8AC3D"
 				}
 			]
 		},
 		"layout": {
 			"contentSize": "720px",
-			"wideSize": "1240px"
+			"wideSize": "1320px"
 		},
 		"spacing": {
 			"units": [
@@ -95,22 +85,22 @@
 				{
 					"slug": "2",
 					"name": "S",
-					"size": "16px"
+					"size": "12px"
 				},
 				{
 					"slug": "3",
 					"name": "M",
-					"size": "24px"
+					"size": "16px"
 				},
 				{
 					"slug": "4",
 					"name": "L",
-					"size": "32px"
+					"size": "24px"
 				},
 				{
 					"slug": "5",
 					"name": "XL",
-					"size": "48px"
+					"size": "40px"
 				},
 				{
 					"slug": "6",
@@ -126,29 +116,63 @@
 			"fontFamilies": [
 				{
 					"slug": "titel",
-					"name": "Catamaran",
-					"fontFamily": "Catamaran, \"Segoe UI\", system-ui, sans-serif",
+					"name": "Rethink Sans",
+					"fontFamily": "\"Rethink Sans\", Catamaran, ui-sans-serif, system-ui, sans-serif",
 					"fontFace": [
 						{
-							"fontFamily": "Catamaran",
-							"fontWeight": "100 900",
+							"fontFamily": "Rethink Sans",
+							"fontWeight": "400 800",
 							"fontStyle": "normal",
 							"fontDisplay": "swap",
 							"src": [
-								"file:./assets/fonts/catamaran-latin.woff2"
+								"file:./assets/fonts/rethink-sans-latin-wght-normal.woff2"
 							],
 							"unicodeRange": "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD"
 						},
 						{
-							"fontFamily": "Catamaran",
-							"fontWeight": "100 900",
+							"fontFamily": "Rethink Sans",
+							"fontWeight": "400 800",
 							"fontStyle": "normal",
 							"fontDisplay": "swap",
 							"src": [
-								"file:./assets/fonts/catamaran-latin-ext.woff2"
+								"file:./assets/fonts/rethink-sans-latin-ext-wght-normal.woff2"
 							],
-							"unicodeRange": "U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1E9F, U+2C60-2C7F, U+A720-A7FF"
+							"unicodeRange": "U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF"
+						}
+					]
+				},
+				{
+					"slug": "text",
+					"name": "Golos Text",
+					"fontFamily": "\"Golos Text\", Catamaran, ui-sans-serif, system-ui, sans-serif",
+					"fontFace": [
+						{
+							"fontFamily": "Golos Text",
+							"fontWeight": "400 900",
+							"fontStyle": "normal",
+							"fontDisplay": "swap",
+							"src": [
+								"file:./assets/fonts/golos-text-latin-wght-normal.woff2"
+							],
+							"unicodeRange": "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD"
 						},
+						{
+							"fontFamily": "Golos Text",
+							"fontWeight": "400 900",
+							"fontStyle": "normal",
+							"fontDisplay": "swap",
+							"src": [
+								"file:./assets/fonts/golos-text-latin-ext-wght-normal.woff2"
+							],
+							"unicodeRange": "U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF"
+						}
+					]
+				},
+				{
+					"slug": "tamil",
+					"name": "Catamaran (nur Tamil im Inhalt)",
+					"fontFamily": "Catamaran, \"Golos Text\", ui-sans-serif, sans-serif",
+					"fontFace": [
 						{
 							"fontFamily": "Catamaran",
 							"fontWeight": "100 900",
@@ -160,86 +184,49 @@
 							"unicodeRange": "U+0964-0965, U+0B82-0BFA, U+200C-200D, U+20B9, U+25CC"
 						}
 					]
-				},
-				{
-					"slug": "text",
-					"name": "Literata",
-					"fontFamily": "Literata, Catamaran, Georgia, serif",
-					"fontFace": [
-						{
-							"fontFamily": "Literata",
-							"fontWeight": "200 900",
-							"fontStyle": "normal",
-							"fontDisplay": "swap",
-							"src": [
-								"file:./assets/fonts/literata-latin.woff2"
-							],
-							"unicodeRange": "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD"
-						},
-						{
-							"fontFamily": "Literata",
-							"fontWeight": "200 900",
-							"fontStyle": "normal",
-							"fontDisplay": "swap",
-							"src": [
-								"file:./assets/fonts/literata-latin-ext.woff2"
-							],
-							"unicodeRange": "U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1E9F, U+2C60-2C7F, U+A720-A7FF"
-						},
-						{
-							"fontFamily": "Literata",
-							"fontWeight": "200 900",
-							"fontStyle": "italic",
-							"fontDisplay": "swap",
-							"src": [
-								"file:./assets/fonts/literata-italic-latin.woff2"
-							],
-							"unicodeRange": "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD"
-						}
-					]
 				}
 			],
 			"fontSizes": [
 				{
-					"slug": "meta",
-					"name": "Meta",
-					"size": "14px",
+					"slug": "klein",
+					"name": "Klein (Stand, Nachweise)",
+					"size": "0.875rem",
 					"fluid": false
 				},
 				{
-					"slug": "klein",
-					"name": "Klein",
-					"size": "16px",
+					"slug": "mittel",
+					"name": "Mittel",
+					"size": "1rem",
 					"fluid": false
 				},
 				{
 					"slug": "text",
 					"name": "Text",
-					"size": "clamp(18px, 1.1vw + 13px, 20px)",
+					"size": "1.125rem",
 					"fluid": false
 				},
 				{
 					"slug": "vorspann",
 					"name": "Vorspann",
-					"size": "clamp(20px, 1.3vw + 14px, 23px)",
+					"size": "clamp(1.125rem, 0.35vw + 1rem, 1.375rem)",
 					"fluid": false
 				},
 				{
-					"slug": "h3",
-					"name": "Zwischentitel",
-					"size": "clamp(21px, 1vw + 15px, 24px)",
+					"slug": "zeile",
+					"name": "Titel in Listen",
+					"size": "clamp(1.25rem, 0.75vw + 0.875rem, 1.625rem)",
 					"fluid": false
 				},
 				{
 					"slug": "h2",
-					"name": "Überschrift",
-					"size": "clamp(26px, 2vw + 16px, 34px)",
+					"name": "Abschnitt",
+					"size": "clamp(1.375rem, 0.5vw + 1.2rem, 1.75rem)",
 					"fluid": false
 				},
 				{
 					"slug": "h1",
-					"name": "Titel",
-					"size": "clamp(34px, 3.6vw + 14px, 58px)",
+					"name": "Schlagzeile",
+					"size": "clamp(1.875rem, 1.6vw + 1.2rem, 2.75rem)",
 					"fluid": false
 				}
 			]
@@ -253,18 +240,21 @@
 		"typography": {
 			"fontFamily": "var:preset|font-family|text",
 			"fontSize": "var:preset|font-size|text",
-			"lineHeight": "1.65"
+			"lineHeight": "1.6"
 		},
 		"elements": {
 			"link": {
 				"color": {
-					"text": "var:preset|color|rot"
+					"text": "currentColor"
 				}
 			},
 			"heading": {
+				"color": {
+					"text": "var:preset|color|tinte"
+				},
 				"typography": {
 					"fontFamily": "var:preset|font-family|titel",
-					"fontWeight": "800",
+					"fontWeight": "600",
 					"lineHeight": "1.12",
 					"letterSpacing": "-0.015em"
 				}
@@ -281,20 +271,20 @@
 			},
 			"h3": {
 				"typography": {
-					"fontSize": "var:preset|font-size|h3"
+					"fontSize": "var:preset|font-size|zeile"
 				}
 			},
 			"button": {
 				"color": {
-					"background": "var:preset|color|rot",
-					"text": "var:preset|color|weiss"
+					"background": "var:preset|color|tinte",
+					"text": "var:preset|color|papier"
 				},
 				"border": {
-					"radius": "999px"
+					"radius": "2px"
 				},
 				"typography": {
-					"fontFamily": "var:preset|font-family|titel",
-					"fontWeight": "700"
+					"fontFamily": "var:preset|font-family|text",
+					"fontWeight": "600"
 				}
 			}
 		},
@@ -302,19 +292,19 @@
 			"core/quote": {
 				"border": {
 					"left": {
-						"color": "var:preset|color|rot",
-						"width": "3px"
+						"color": "var:preset|color|linie-fest",
+						"width": "2px"
 					}
 				},
 				"typography": {
-					"fontStyle": "italic"
+					"fontStyle": "normal"
 				}
 			},
 			"core/pullquote": {
 				"border": {
 					"top": {
-						"color": "var:preset|color|linie",
-						"width": "1px"
+						"color": "var:preset|color|linie-fest",
+						"width": "2px"
 					},
 					"bottom": {
 						"color": "var:preset|color|linie",
@@ -323,7 +313,7 @@
 				},
 				"typography": {
 					"fontFamily": "var:preset|font-family|titel",
-					"fontWeight": "700"
+					"fontWeight": "600"
 				}
 			},
 			"core/separator": {

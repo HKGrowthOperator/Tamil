@@ -96,20 +96,3 @@ function tamil_favicon(): void {
 	}
 }
 add_action( 'wp_head', 'tamil_favicon', 2 );
-
-/**
- * Widget-Bereich unter den festen Bausteinen der Seitenspalte.
- */
-function tamil_widgets(): void {
-	register_sidebar(
-		array(
-			'id'            => 'seitenspalte',
-			'name'          => __( 'Seitenspalte (unten)', 'tamil' ),
-			'before_widget' => '<div id="%1$s" class="widget %2$s">',
-			'after_widget'  => '</div>',
-			'before_title'  => '<h2 class="kicker"><span class="ta" lang="ta"></span><span class="de">',
-			'after_title'   => '</span></h2>',
-		)
-	);
-}
-add_action( 'widgets_init', 'tamil_widgets' );

@@ -1,22 +1,26 @@
-/* Editor: gleiche Schrift und Textbausteine wie im Artikel (WordPress setzt .editor-styles-wrapper davor). */
+/* Editor: gleiche Schriften, Farben und Textbausteine wie im Artikel „Tageskalender“ (WordPress setzt
+   .editor-styles-wrapper davor; Farben und Schriften kommen aus theme.json). */
 :root {
-  --nacht: var(--wp--preset--color--nacht, #0E1226); --kumkum: var(--wp--preset--color--kumkum, #C8102E);
-  --manjal: var(--wp--preset--color--manjal, #E8B923); --manjal-tief: var(--wp--preset--color--manjal-tief, #B88E0E);
-  --manjal-hell: var(--wp--preset--color--manjal-hell, #FFF3C7); --feld: var(--wp--preset--color--feld, #F1F0EC);
-  --tinte: var(--wp--preset--color--tinte, #14161F); --nebel: var(--wp--preset--color--nebel, #6B6F7B);
+  --color-paper-2: var(--wp--preset--color--papier-2, #E5EAEF);
+  --color-sheet: var(--wp--preset--color--blatt, #FBFDFF);
+  --color-ink: var(--wp--preset--color--tinte, #0C151C);
+  --color-ink-2: var(--wp--preset--color--tinte-2, #222A31);
+  --color-muted: var(--wp--preset--color--grau, #4B545B);
+  --color-rule: var(--wp--preset--color--linie, #C5CBD0);
+  --color-rule-2: var(--wp--preset--color--linie-fest, #2B343B);
 }
-body { font-family: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif; font-size: 18px; line-height: 1.7; color: var(--tinte); }
-h1, h2, h3, h4 { font-family: Fraunces, Georgia, serif; font-variation-settings: "SOFT" 100, "WONK" 1; font-weight: 600; line-height: 1.12; letter-spacing: -.012em; }
-.editor-post-title__input, .wp-block-post-title { font-family: Fraunces, Georgia, serif; font-size: clamp(30px, 3.8vw, 52px); }
-a { color: var(--kumkum); text-decoration-color: var(--manjal); text-decoration-thickness: 2px; text-underline-offset: 3px; }
-blockquote, .wp-block-quote { border-left: 4px solid var(--manjal); padding-left: 20px; font-family: Fraunces, Georgia, serif; font-style: italic; }
-[lang="ta"] { font-family: "Noto Serif Tamil", "Tamil Sangam MN", Latha, serif; }
-.hinweis-box { background: var(--manjal-hell); border-left: 3px solid var(--manjal-tief); padding: 10px 14px; border-radius: 0 6px 6px 0; }
-.event-box { background: var(--feld); border-left: 4px solid var(--kumkum); border-radius: 0 6px 6px 0; padding: 12px 16px; }
-.event-box p { margin: 0 0 .4em; }
-.rezept-layout { display: grid; gap: 24px; grid-template-columns: 1fr 1.4fr; align-items: start; }
-.zutaten { background: var(--manjal-hell); border-radius: 6px; padding: 16px; }
+body { font-family: var(--wp--preset--font-family--text, "Golos Text", sans-serif); font-size: 1.1875rem; line-height: 1.7; color: var(--color-ink); }
+h1, h2, h3, h4 { font-family: var(--wp--preset--font-family--titel, "Rethink Sans", sans-serif); font-weight: 600; line-height: 1.12; letter-spacing: -0.015em; }
+.editor-post-title__input, .wp-block-post-title { font-family: var(--wp--preset--font-family--titel, "Rethink Sans", sans-serif); font-weight: 600; font-size: clamp(1.875rem, 1.6vw + 1.2rem, 2.75rem); }
+a { color: inherit; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em; text-decoration-color: var(--color-muted); }
+blockquote, .wp-block-quote { border-left: 2px solid var(--color-rule-2); padding-left: 24px; font-style: normal; color: var(--color-ink-2); }
+[lang="ta"] { font-family: var(--wp--preset--font-family--tamil, Catamaran, sans-serif); }
+.hinweis-box, .tipp { background: var(--color-paper-2); border-top: 2px solid var(--color-rule-2); padding: 12px 16px; }
+.event-box, .zutaten { background: var(--color-sheet); border-top: 2px solid var(--color-rule-2); padding: 16px 24px; }
+.event-box p { margin: 0 0 0.4em; }
+.rezept-layout { display: grid; gap: 24px; grid-template-columns: 0.8fr 1.2fr; align-items: start; }
 .zutaten ul { list-style: none; padding: 0; }
 .schritte { padding-left: 1.2em; }
-.schritte li::marker { color: var(--kumkum); font-weight: 700; }
-.tipp { background: var(--feld); border-radius: 6px; padding: 12px 14px; font-size: 16px; }
+.schritte li::marker { font-weight: 800; }
+table { border-collapse: collapse; width: 100%; border-top: 2px solid var(--color-rule-2); }
+td, th { border-top: 1px solid var(--color-rule); padding: 8px 12px; text-align: left; }

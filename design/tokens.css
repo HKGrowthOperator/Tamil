@@ -1,0 +1,66 @@
+/*
+ * tamil.de – verbindliche Tokens „Tageskalender“ (Mischung aus Linie A „Tagesblatt“ und Linie B „Kalenderblatt“).
+ * Quelle: design/richtungen/hm-tageskalender/ (tokens.css plus :root in hm-tageskalender.css, Stand Runde 3).
+ * Das WordPress-Theme liest Farben und Schriften aus theme.json (gleiche Werte als Hex, Namen in Klammern);
+ * das Cockpit nutzt dieselben Werte in ruhigerer Form.
+ *
+ * Stand 14.11.2026: Richtung gewählt (Luis), Tor G3 steht noch aus. Bis dahin gilt diese Datei nur auf dem
+ * Theme-Branch.
+ */
+:root {
+  /* Farben: kühles Papier aus B, blauschwarze Tinte, Rot nur für „als Nächstes“ */
+  --color-paper: oklch(96.8% 0.007 245);    /* #F1F5F9 (papier)      Seitengrund */
+  --color-paper-2: oklch(93.5% 0.009 245);  /* #E5EAEF (papier-2)    Mulde, Fuß, Leiste, Hover */
+  --color-paper-3: oklch(90% 0.011 245);    /* #D8DFE5 (papier-3)    Bildgrund beim Laden */
+  --color-sheet: oklch(99.3% 0.003 245);    /* #FBFDFF (blatt)       Tabellenblatt */
+  --color-ink: oklch(19% 0.02 245);         /* #0C151C (tinte)       Text, Köpfe, Linien über Listen */
+  --color-ink-2: oklch(28% 0.018 245);      /* #222A31 (tinte-2)     Vorspann, Nebentext */
+  --color-muted: oklch(44% 0.016 245);      /* #4B545B (grau)        Stand, Nachweise, Tabellenköpfe */
+  --color-rule: oklch(84% 0.01 240);        /* #C5CBD0 (linie)       Zeilenlinien */
+  --color-rule-2: oklch(32% 0.018 240);     /* #2B343B (linie-fest)  feste Kante des Blatts */
+  --color-accent: oklch(50.5% 0.175 25);    /* #B5282A (rot)         Logo-Rot; nur „als Nächstes“ */
+  --color-accent-ink: oklch(99.3% 0.003 245);
+  --color-focus: oklch(50.5% 0.175 25);
+  --color-error: oklch(50% 0.19 27);
+  --color-success: oklch(50% 0.12 150);
+
+  /* Schriften: zwei Familien, OFL, selbst gehostet */
+  --font-display: "Rethink Sans", ui-sans-serif, system-ui, sans-serif;  /* Köpfe 600, Ziffern 800 */
+  --font-body: "Golos Text", ui-sans-serif, system-ui, sans-serif;       /* Lesetext 400, Hervorhebung 600 */
+  --weight-head: 600;
+  --tracking-display: -0.015em;
+
+  /* Größen */
+  --text-xs: 0.8125rem;
+  --text-sm: 0.875rem;   /* 14 px: Stand, Nachweise, Tabellenköpfe */
+  --text-md: 1rem;
+  --text-body: 1.125rem; /* 18 px: Fließtext und Tabellenzellen, auch am Handy */
+  --text-lg: 1.25rem;
+  --text-lead: clamp(1.125rem, 0.35vw + 1rem, 1.375rem);
+  --text-title: clamp(1.25rem, 0.75vw + 0.875rem, 1.625rem);
+  --text-h2: clamp(1.375rem, 0.5vw + 1.2rem, 1.75rem);
+  --text-h1: clamp(1.875rem, 1.6vw + 1.2rem, 2.75rem);   /* Schlagzeile, rund 40 px bei 1280 */
+  --text-day: clamp(3rem, 4.5vw + 1rem, 5.5rem);          /* Tagesziffer, größte Schrift der Seite */
+  --text-row: clamp(2.125rem, 1vw + 1.6rem, 2.5rem);      /* Tagesziffer je Zeile im Strom */
+
+  /* Abstände */
+  --space-3xs: 2px; --space-2xs: 4px; --space-xs: 8px; --space-sm: 12px; --space-md: 16px;
+  --space-lg: 24px; --space-xl: 40px; --space-2xl: 64px; --space-3xl: 96px;
+  --section-gap-s: 64px;  /* 48 px unter 860 px */
+
+  /* Raster */
+  --container: 1320px;
+  --gutter: clamp(16px, 4vw, 56px);
+  --gap-columns: 32px;    /* 16 px unter 640 px */
+
+  /* Form und Bewegung */
+  --radius-card: 2px;
+  --rule-hair: 1px;
+  --shadow-card: none;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-micro: 120ms;
+  --dur-short: 220ms;
+
+  /* Ebenen */
+  --z-raised: 10; --z-dropdown: 100; --z-sticky: 200; --z-modal: 400;
+}

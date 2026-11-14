@@ -1,36 +1,78 @@
 <?php
 /**
- * Kopfleiste (klebt oben): Logo, Rubriken (ab Desktop), „Werben“, Suche, Menü; mobil darunter die Rubrik-Leiste.
+ * Leiste über dem Kopf (Unterzeile, Termin einreichen, Werben) und Kopfzeile: Logo, Datum (nur Unterseiten, ab
+ * 1100 px), vier Ziele, Menü „Mehr“ mit Suche, übrigen Rubriken, Diensten und Social.
  */
 
 defined( 'ABSPATH' ) || exit;
 
-$items = tamil_nav_items();
+$ziele   = tamil_kopf_ziele();
+$dienste = tamil_dienste();
+$urls    = wp_list_pluck( $ziele, 'url' );
+$weitere = array_filter( tamil_nav_items(), static fn( $item ) => ! in_array( $item['url'], $urls, true ) );
+$social  = tamil_social();
+$tagline = tamil_opt( 'tagline' );
 ?>
-<header class="kopf">
-	<div class="wrap kopf-zeile">
-		<?php get_template_part( 'template-parts/header/logo' ); ?>
-		<nav class="nav" aria-label="<?php esc_attr_e( 'Rubriken', 'tamil' ); ?>">
-			<?php foreach ( $items as $item ) : ?>
-				<a href="<?php echo esc_url( $item['url'] ); ?>"<?php echo $item['aktiv'] ? ' aria-current="page"' : ''; ?>><?php echo esc_html( $item['label'] ); ?></a>
+<div class="leiste">
+	<div class="wrap">
+		<?php
+		if ( '' !== $tagline ) :
+			?>
+			<p class="leiste-text"><?php echo esc_html( $tagline ); ?></p><?php endif; ?>
+		<nav class="leiste-links" aria-label="<?php esc_attr_e( 'Mitmachen', 'tamil' ); ?>">
+			<?php foreach ( array_slice( $dienste, 0, 2 ) as $d ) : ?>
+				<a href="<?php echo esc_url( $d['url'] ); ?>"<?php echo $d['aktiv'] ? ' aria-current="page"' : ''; ?>><?php echo esc_html( $d['label'] ); ?></a>
 			<?php endforeach; ?>
 		</nav>
-		<div class="kopf-aktionen">
-			<a class="werben" href="<?php echo esc_url( tamil_seiten_url( 'kontakt', 'werben' ) ); ?>"><?php esc_html_e( 'Werben', 'tamil' ); ?></a>
-			<button type="button" class="rund" id="suche-btn" aria-controls="suche" aria-expanded="false" aria-label="<?php esc_attr_e( 'Suche öffnen', 'tamil' ); ?>"><?php tamil_icon( 'search', 'ico ico-sm' ); ?></button>
-			<button type="button" class="rund" id="burger" aria-controls="menue" aria-expanded="false" aria-label="<?php esc_attr_e( 'Menü öffnen', 'tamil' ); ?>"><?php tamil_icon( 'menu', 'ico ico-sm' ); ?></button>
-		</div>
 	</div>
-	<form class="suche" id="suche" role="search" method="get" action="<?php echo esc_url( home_url( '/' ) ); ?>" hidden>
-		<div class="wrap">
-			<label class="screen-reader-text" for="q"><?php esc_html_e( 'Suche', 'tamil' ); ?></label>
-			<input id="q" type="search" name="s" value="<?php echo esc_attr( get_search_query() ); ?>" placeholder="<?php esc_attr_e( 'Film, Stadt, Fest …', 'tamil' ); ?>">
-			<button type="submit" class="knopf"><?php esc_html_e( 'Suchen', 'tamil' ); ?></button>
-		</div>
-	</form>
-	<nav class="rubriken-leiste" aria-label="<?php esc_attr_e( 'Rubriken', 'tamil' ); ?>">
-		<?php foreach ( $items as $item ) : ?>
-			<a href="<?php echo esc_url( $item['url'] ); ?>"<?php echo $item['aktiv'] ? ' aria-current="page"' : ''; ?>><?php echo esc_html( $item['label'] ); ?></a>
-		<?php endforeach; ?>
-	</nav>
+</div>
+<header class="kopf">
+	<div class="wrap">
+		<?php get_template_part( 'template-parts/header/logo', null, array( 'class' => 'logo' ) ); ?>
+		<?php
+		if ( ! is_front_page() ) :
+			?>
+			<p class="kopf-datum"><time datetime="<?php echo esc_attr( wp_date( 'Y-m-d' ) ); ?>"><?php echo esc_html( tamil_heute() ); ?></time></p><?php endif; ?>
+		<nav class="haupt" aria-label="<?php esc_attr_e( 'Hauptnavigation', 'tamil' ); ?>">
+			<?php foreach ( $ziele as $z ) : ?>
+				<a href="<?php echo esc_url( $z['url'] ); ?>"<?php echo $z['breit'] ? ' class="breit"' : ''; ?><?php echo $z['aktiv'] ? ' aria-current="page"' : ''; ?>><?php echo esc_html( $z['label'] ); ?></a>
+			<?php endforeach; ?>
+		</nav>
+		<details class="menue">
+			<summary><?php esc_html_e( 'Mehr', 'tamil' ); ?></summary>
+			<div class="menue-paneel">
+				<form class="menue-suche" role="search" method="get" action="<?php echo esc_url( home_url( '/' ) ); ?>">
+					<label for="kopf-suche"><?php esc_html_e( 'Suche', 'tamil' ); ?></label>
+					<span class="zeile-feld">
+						<input id="kopf-suche" type="search" name="s" value="<?php echo esc_attr( get_search_query() ); ?>" placeholder="<?php esc_attr_e( 'Film, Stadt, Fest', 'tamil' ); ?>">
+						<button type="submit" class="knopf"><?php esc_html_e( 'Suchen', 'tamil' ); ?></button>
+					</span>
+				</form>
+				<div class="menue-spalten">
+					<div>
+						<h2 class="menue-titel"><?php esc_html_e( 'Rubriken', 'tamil' ); ?></h2>
+						<ul>
+							<?php foreach ( array_filter( $ziele, static fn( $z ) => $z['breit'] ) as $z ) : ?>
+								<li><a href="<?php echo esc_url( $z['url'] ); ?>"<?php echo $z['aktiv'] ? ' aria-current="page"' : ''; ?>><?php echo esc_html( $z['label'] ); ?></a></li>
+							<?php endforeach; ?>
+							<?php foreach ( $weitere as $item ) : ?>
+								<li><a href="<?php echo esc_url( $item['url'] ); ?>"<?php echo $item['aktiv'] ? ' aria-current="page"' : ''; ?>><?php echo esc_html( $item['label'] ); ?></a></li>
+							<?php endforeach; ?>
+						</ul>
+					</div>
+					<div>
+						<h2 class="menue-titel"><?php esc_html_e( 'Dienste', 'tamil' ); ?></h2>
+						<ul>
+							<?php foreach ( $dienste as $d ) : ?>
+								<li><a href="<?php echo esc_url( $d['url'] ); ?>"<?php echo $d['aktiv'] ? ' aria-current="page"' : ''; ?>><?php echo esc_html( $d['label'] ); ?></a></li>
+							<?php endforeach; ?>
+							<?php foreach ( $social as $s ) : ?>
+								<li><a href="<?php echo esc_url( $s['url'] ); ?>" target="_blank" rel="noopener"><?php echo esc_html( $s['name'] ); ?></a></li>
+							<?php endforeach; ?>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</details>
+	</div>
 </header>
