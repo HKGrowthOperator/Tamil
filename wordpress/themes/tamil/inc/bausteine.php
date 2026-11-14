@@ -29,30 +29,48 @@ function tamil_hat_bild( int $post_id ): bool {
 }
 
 /**
- * Ist das Beitragsbild ein Foto (und keine Grafik mit Schrift)? Grafiken tragen den Nachweis „Grafik: …“; sie werden nie
- * beschnitten und für Leitbilder (Seitenköpfe) nur genommen, wenn es kein Foto gibt.
+ * Ist das Beitragsbild eine Titelkarte (Schlagzeile als Bild, Nachweis „Grafik: Tamil.de“)? Solche Karten zeigt das
+ * Theme nicht; der Beitrag erscheint dann ohne Bild (Kritik theme-tageskalender-r2 P1-D).
  */
-function tamil_ist_foto( int $post_id ): bool {
-	return tamil_hat_bild( $post_id ) && ! str_starts_with( strtolower( tamil_bildnachweis( $post_id ) ), 'grafik' );
+function tamil_ist_titelkarte( int $post_id ): bool {
+	return str_starts_with( strtolower( tamil_bildnachweis( $post_id ) ), 'grafik: tamil.de' );
 }
 
 /**
- * Leitbild für einen Seitenkopf: der erste Beitrag mit Foto, sonst der erste mit Bild (dann als Grafik ungeschnitten).
+ * Darf das Beitragsbild gezeigt werden (vorhanden und keine Titelkarte)?
+ */
+function tamil_bild_zeigbar( int $post_id ): bool {
+	return tamil_hat_bild( $post_id ) && ! tamil_ist_titelkarte( $post_id );
+}
+
+/**
+ * Ist das Beitragsbild ein Foto? Nur Bilder mit Nachweis „Foto: …“, ohne die Kennung einer Bildkarte oder eines
+ * KI-Bilds und mit einem eigenen Alternativtext (steht dort nur der Titel, ist es meist ein Plakat oder Flyer).
+ * Nur Fotos taugen als Leitbild im Seitenkopf; Grafiken werden nie beschnitten.
+ */
+function tamil_ist_foto( int $post_id ): bool {
+	if ( ! tamil_bild_zeigbar( $post_id ) || ! str_starts_with( strtolower( tamil_bildnachweis( $post_id ) ), 'foto:' ) ) {
+		return false;
+	}
+	if ( in_array( (string) get_post_meta( $post_id, 'bild_origin', true ), array( 'karte', 'ki' ), true ) ) {
+		return false;
+	}
+	$alt = trim( (string) get_post_meta( (int) get_post_thumbnail_id( $post_id ), '_wp_attachment_image_alt', true ) );
+	return '' !== $alt && wp_strip_all_tags( get_the_title( $post_id ) ) !== $alt;
+}
+
+/**
+ * Leitbild für einen Seitenkopf: der erste Beitrag mit Foto; ohne Foto kein Bild (keine Plakate, Flyer, Logos).
  *
  * @param int[] $ids Kandidaten in der gewünschten Reihenfolge.
  */
 function tamil_leitbild( array $ids ): int {
-	$erstes = 0;
 	foreach ( $ids as $id ) {
-		$id = (int) $id;
-		if ( tamil_ist_foto( $id ) ) {
-			return $id;
-		}
-		if ( ! $erstes && tamil_hat_bild( $id ) ) {
-			$erstes = $id;
+		if ( tamil_ist_foto( (int) $id ) ) {
+			return (int) $id;
 		}
 	}
-	return $erstes;
+	return 0;
 }
 
 /**
@@ -94,7 +112,7 @@ function tamil_ort_kurz( string $ort ): string {
  * }
  */
 function tamil_figur( int $post_id, array $opt = array() ): string {
-	if ( ! tamil_hat_bild( $post_id ) ) {
+	if ( ! tamil_bild_zeigbar( $post_id ) ) {
 		return '';
 	}
 	$opt  = array_merge(
@@ -120,7 +138,7 @@ function tamil_figur( int $post_id, array $opt = array() ): string {
 	tamil_nachweise( $nachweis );
 	return sprintf(
 		'<figure class="%1$s">%2$s%3$s</figure>',
-		esc_attr( $opt['klasse'] . ( tamil_ist_foto( $post_id ) ? '' : ' grafik' ) ),
+		esc_attr( $opt['klasse'] . ( str_starts_with( strtolower( $nachweis ), 'grafik' ) ? ' grafik' : '' ) ),
 		$img,
 		'' !== $nachweis ? '<figcaption>' . esc_html( $nachweis ) . '</figcaption>' : ''
 	);
@@ -250,7 +268,7 @@ function tamil_strom( array $ids, array $opt = array() ): void {
 			echo '<p class="wo">' . esc_html( $wo ) . '</p>';
 		}
 		if ( '' !== $opt['teaser'] ) {
-			echo '<p class="teaser' . ( 'breit' === $opt['teaser'] ? ' nur-breit' : '' ) . '">' . tamil_text( wp_trim_words( tamil_standfirst( $id ), 32, ' …' ) ) . '</p>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_text()
+			echo '<p class="teaser' . ( 'breit' === $opt['teaser'] ? ' nur-breit' : '' ) . '">' . tamil_text( wp_trim_words( tamil_standfirst( $id ), 18, ' …' ) ) . '</p>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_text()
 		}
 		echo '</div>';
 		echo $figur; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_figur()
@@ -302,6 +320,7 @@ function tamil_feste_tafel( array $ids, array $opt = array() ): void {
 		}
 		echo '</td>';
 		$wo  = tamil_ort_kurz( $e['ort'] );
+		$wo  = __( 'Ort folgt', 'tamil' ) !== $wo && false !== mb_stripos( $titel, $wo ) ? '' : $wo;
 		$wer = tamil_wer_kurz( $e['veranstalter'], $titel, $e['ort'] );
 		echo '<td class="wer">' . esc_html( $wer ) . '</td>';
 		echo '<td class="wo">' . esc_html( $wo ) . '</td>';
@@ -316,34 +335,158 @@ function tamil_feste_tafel( array $ids, array $opt = array() ): void {
 }
 
 /**
- * Kino in Kurzform: je Beitrag mit Kinoliste Film, Städte, Zahl der Kinos, Link und Stand.
+ * Spielzeit einer Kinoliste: bis wann sie gilt (letzter Spieltag, Ende der Kinowoche) und der Stand als Text aus den
+ * Kinodaten selbst (Kinowoche oder erster Spieltag), nicht aus dem Änderungsdatum des Beitrags.
  *
- * @return array<int,array{film:string,staedte:string[],kinos:int,link:string,stand:int,post:int,fakten:array}>
+ * @param array<string,mixed> $fakten Ergebnis von tamil_site_kino_fakten().
+ * @return array{bis:string,stand:string}
+ */
+function tamil_kino_spielzeit( array $fakten ): array {
+	$tage  = array();
+	$woche = (string) ( $fakten['woche'] ?? '' );
+	if ( preg_match( '/^(\d{4})-W(\d{2})$/', $woche, $m ) ) {
+		$tage[] = ( new DateTimeImmutable( 'now', wp_timezone() ) )->setISODate( (int) $m[1], (int) $m[2], 4 )->modify( '+6 days' )->format( 'Y-m-d' );
+	}
+	$erster = '';
+	foreach ( (array) ( $fakten['kinos'] ?? array() ) as $k ) {
+		foreach ( array_merge( (array) ( $k['termine'] ?? array() ), array( (string) ( $k['bis'] ?? '' ) ) ) as $d ) {
+			if ( '' !== (string) $d ) {
+				$tage[] = substr( (string) $d, 0, 10 );
+			}
+		}
+		$von = substr( (string) ( $k['von'] ?? ( $k['termine'][0] ?? '' ) ), 0, 10 );
+		if ( '' !== $von && ( '' === $erster || $von < $erster ) ) {
+			$erster = $von;
+		}
+	}
+	if ( ! $tage && '' !== $erster ) {
+		$tage[] = gmdate( 'Y-m-d', (int) strtotime( $erster . ' +6 days' ) );
+	}
+	$bis = $tage ? max( $tage ) : '';
+	if ( '' !== $woche ) {
+		/* translators: %s: Kinowoche */
+		$stand = sprintf( __( 'Stand: %s', 'tamil' ), tamil_kinowoche( $woche ) );
+	} elseif ( '' !== $erster ) {
+		/* translators: %s: Datum */
+		$stand = sprintf( __( 'Spielzeit ab %s', 'tamil' ), wp_date( 'j. F', (int) strtotime( $erster ) ) );
+	} else {
+		$stand = '';
+	}
+	return array(
+		'bis'   => $bis,
+		'stand' => $stand,
+	);
+}
+
+/**
+ * Kino in Kurzform: je Beitrag mit Kinoliste Film, Städte, Zahl der Kinos, Link, Stand und Spielzeit. Listen, deren
+ * Spielzeit vorbei ist, fallen weg (wie vergangene Feste).
+ *
+ * @return array<int,array{film:string,staedte:string[],kinos:int,link:string,stand:string,bis:string,post:int,fakten:array}>
  */
 function tamil_kino_filme( int $anzahl = 3 ): array {
 	if ( ! function_exists( 'tamil_site_kino_posts' ) ) {
 		return array();
 	}
+	$heute = current_time( 'Y-m-d' );
 	$filme = array();
 	foreach ( array_map( 'intval', tamil_site_kino_posts( $anzahl, array( 'fields' => 'ids' ) )->posts ) as $id ) {
-		$fakten = tamil_site_kino_fakten( $id );
-		$kinos  = is_array( $fakten['kinos'] ?? null ) ? $fakten['kinos'] : array();
-		if ( ! $kinos ) {
-			continue;
+		$f = tamil_kino_film( $id );
+		if ( $f && '' !== $f['bis'] && $f['bis'] >= $heute ) {
+			$filme[] = $f;
 		}
-		$staedte = array_values( array_unique( array_filter( array_map( static fn( $k ) => trim( (string) ( $k['stadt'] ?? '' ) ), $kinos ) ) ) );
-		$film    = trim( (string) ( $fakten['film'] ?? '' ) );
-		$filme[] = array(
-			'film'    => '' !== $film ? $film : get_the_title( $id ),
-			'staedte' => $staedte,
-			'kinos'   => count( $kinos ),
-			'link'    => (string) get_permalink( $id ),
-			'stand'   => (int) get_post_modified_time( 'U', true, $id ),
-			'post'    => $id,
-			'fakten'  => $fakten,
-		);
 	}
 	return $filme;
+}
+
+/**
+ * Ein Film aus einem Beitrag mit Kinoliste (auch, wenn die Spielzeit vorbei ist); leer ohne Kinoliste.
+ *
+ * @return array<string,mixed>
+ */
+function tamil_kino_film( int $id ): array {
+	$fakten = function_exists( 'tamil_site_kino_fakten' ) ? tamil_site_kino_fakten( $id ) : array();
+	$kinos  = is_array( $fakten['kinos'] ?? null ) ? $fakten['kinos'] : array();
+	if ( ! $kinos ) {
+		return array();
+	}
+	$film = trim( (string) ( $fakten['film'] ?? '' ) );
+	$zeit = tamil_kino_spielzeit( $fakten );
+	return array(
+		'film'    => '' !== $film ? $film : get_the_title( $id ),
+		'staedte' => array_values( array_unique( array_filter( array_map( static fn( $k ) => trim( (string) ( $k['stadt'] ?? '' ) ), $kinos ) ) ) ),
+		'kinos'   => count( $kinos ),
+		'link'    => (string) get_permalink( $id ),
+		'stand'   => $zeit['stand'],
+		'bis'     => $zeit['bis'],
+		'post'    => $id,
+		'fakten'  => $fakten,
+	);
+}
+
+/**
+ * Tafel „Nach Stadt“: Land, Stadt, Film, Kino, Termin und Link zu Tickets und Zeiten aus den Kinolisten.
+ *
+ * @param array<int,array> $filme Ergebnis von tamil_kino_filme() bzw. tamil_kino_film().
+ */
+function tamil_kino_orte_tafel( array $filme ): void {
+	$laender = array(
+		'DE' => __( 'Deutschland', 'tamil' ),
+		'AT' => __( 'Österreich', 'tamil' ),
+		'CH' => __( 'Schweiz', 'tamil' ),
+	);
+	$fmt     = static fn( string $d ): string => wp_date( 'j.n.', (int) strtotime( $d ) );
+	$orte    = array();
+	foreach ( $filme as $f ) {
+		foreach ( (array) ( $f['fakten']['kinos'] ?? array() ) as $k ) {
+			$stadt = trim( (string) ( $k['stadt'] ?? '' ) );
+			if ( '' === $stadt ) {
+				continue;
+			}
+			if ( ! empty( $k['termine'] ) ) {
+				/* translators: 1: Anzahl, 2: Datum */
+				$termin = sprintf( _n( '%1$d Vorstellung ab %2$s', '%1$d Vorstellungen ab %2$s', count( $k['termine'] ), 'tamil' ), count( $k['termine'] ), $fmt( (string) $k['termine'][0] ) );
+			} elseif ( ! empty( $k['von'] ) && ! empty( $k['bis'] ) && (string) $k['bis'] >= (string) $k['von'] ) {
+				/* translators: 1: Beginn, 2: Ende */
+				$termin = sprintf( __( '%1$s bis %2$s', 'tamil' ), $fmt( (string) $k['von'] ), $fmt( (string) $k['bis'] ) );
+			} else {
+				/* translators: %s: Datum */
+				$termin = ! empty( $k['von'] ) ? sprintf( __( 'ab %s', 'tamil' ), $fmt( (string) $k['von'] ) ) : '';
+			}
+			$orte[ (string) ( $k['land'] ?? '' ) ][ $stadt ][] = array(
+				'film'   => $f['film'],
+				'kino'   => trim( (string) ( $k['kino'] ?? '' ) ),
+				'termin' => $termin,
+				'url'    => (string) ( $k['url'] ?? '' ),
+			);
+		}
+	}
+	if ( ! $orte ) {
+		return;
+	}
+	$reihe = array_keys( $laender );
+	$rang  = static function ( $land ) use ( $reihe ): int {
+		$i = array_search( (string) $land, $reihe, true );
+		return false === $i ? 9 : (int) $i;
+	};
+	uksort( $orte, static fn( $a, $b ) => $rang( $a ) <=> $rang( $b ) );
+	echo '<table class="tafel orte"><thead><tr><th scope="col">' . esc_html__( 'Stadt', 'tamil' ) . '</th><th scope="col">' . esc_html__( 'Film, Kino und Termin', 'tamil' ) . '</th></tr></thead>';
+	foreach ( $orte as $land => $staedte ) {
+		ksort( $staedte, SORT_LOCALE_STRING );
+		echo '<tbody><tr class="land"><th scope="rowgroup" colspan="2">' . esc_html( $laender[ $land ] ?? $land ) . '</th></tr>';
+		foreach ( $staedte as $stadt => $eintraege ) {
+			foreach ( $eintraege as $e ) {
+				echo '<tr><th scope="row" class="stadt">' . esc_html( $stadt ) . '</th><td class="was">' . esc_html( '„' . $e['film'] . '“' );
+				echo '<span class="unter">' . esc_html( trim( $e['kino'] . ( '' !== $e['termin'] ? ', ' . $e['termin'] : '' ), ', ' ) );
+				if ( '' !== $e['url'] ) {
+					echo '<a class="ticket" href="' . esc_url( $e['url'] ) . '" target="_blank" rel="noopener nofollow">' . esc_html__( 'Tickets und Zeiten', 'tamil' ) . '</a>';
+				}
+				echo '</span></td></tr>';
+			}
+		}
+		echo '</tbody>';
+	}
+	echo '</table>';
 }
 
 /**

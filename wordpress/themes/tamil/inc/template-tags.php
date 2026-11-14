@@ -165,14 +165,14 @@ function tamil_termin_text( string $datum, string $ende = '' ): string {
 	$mit_zeit = strlen( $datum ) > 10 && '00:00' !== $start->format( 'H:i' );
 	$text     = wp_date( 'D, j. F Y', $start->getTimestamp() ) . ( $mit_zeit ? ', ' . $start->format( 'H:i' ) . ' Uhr' : '' );
 	$bis      = '' !== $ende ? date_create_immutable( $ende, wp_timezone() ) : false;
-	if ( $bis && $bis->format( 'Y-m-d' ) !== $start->format( 'Y-m-d' ) ) {
+	if ( $bis && $bis->format( 'Y-m-d' ) > $start->format( 'Y-m-d' ) ) { // ein Ende vor dem Beginn ist ein Datenfehler und wird nicht ausgegeben
 		$text = wp_date( 'j. F', $start->getTimestamp() ) . ' bis ' . wp_date( 'j. F Y', $bis->getTimestamp() );
 	}
 	return str_replace( '.,', ',', $text );
 }
 
 /**
- * Kinowoche lesbar: „2026-W42“ → „Kinowoche 15.–21. Oktober“, sonst der Text wie geliefert.
+ * Kinowoche lesbar: „2026-W42“ wird zu „Kinowoche 15. bis 21. Oktober“, sonst der Text wie geliefert.
  */
 function tamil_kinowoche( string $woche ): string {
 	if ( ! preg_match( '/^(\d{4})-W(\d{2})$/', $woche, $m ) ) {

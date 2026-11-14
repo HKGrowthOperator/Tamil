@@ -14,7 +14,7 @@ $slug   = $term instanceof WP_Term ? $term->slug : '';
 $rubrik = tamil_rubrik( $slug );
 $paged  = max( 1, (int) get_query_var( 'paged' ) );
 $ids    = array_map( 'intval', wp_list_pluck( $GLOBALS['wp_query']->posts, 'ID' ) );
-$kino   = 'kino' === $slug && 1 === $paged ? tamil_kino_filme( 6 ) : array();
+$kino   = 'kino' === $slug && 1 === $paged && function_exists( 'tamil_site_kino_posts' );
 
 if ( $kino ) {
 	get_template_part(
@@ -22,7 +22,7 @@ if ( $kino ) {
 		null,
 		array(
 			'rubrik' => $rubrik,
-			'filme'  => $kino,
+			'filme'  => tamil_kino_filme( 6 ),
 			'ids'    => $ids,
 		)
 	);

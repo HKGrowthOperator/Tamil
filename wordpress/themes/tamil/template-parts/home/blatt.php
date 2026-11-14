@@ -26,7 +26,7 @@ $jetzt = time();
 				<p class="aktionen"><a class="textlink" href="<?php echo esc_url( tamil_wa_teilen( $titel, $link ) ); ?>"><?php esc_html_e( 'Per WhatsApp schicken', 'tamil' ); ?></a></p>
 			</article>
 			<?php if ( function_exists( 'tamil_site_upcoming_events' ) ) : ?>
-				<div class="blatt-feste">
+				<div class="blatt-feste<?php echo $feste ? '' : ' ist-leer'; ?>">
 					<section class="bogen" aria-labelledby="feste-titel">
 						<div class="bogen-kopf">
 							<h2 id="feste-titel"><?php esc_html_e( 'Die nächsten Feste', 'tamil' ); ?></h2>
@@ -59,14 +59,23 @@ $jetzt = time();
 				)
 			);
 			?>
-			<?php if ( $filme ) : ?>
+			<?php if ( function_exists( 'tamil_site_kino_posts' ) ) : ?>
 				<div class="blatt-kino">
 					<section class="bogen" aria-labelledby="kino-titel">
 						<div class="bogen-kopf">
 							<h2 id="kino-titel"><?php esc_html_e( 'Im Kino', 'tamil' ); ?></h2>
-							<p class="bogen-stand"><?php echo esc_html( tamil_stand( max( wp_list_pluck( $filme, 'stand' ) ) ) ); ?></p>
+							<?php
+							if ( $filme && '' !== $filme[0]['stand'] ) :
+								?>
+								<p class="bogen-stand"><?php echo esc_html( $filme[0]['stand'] ); ?></p><?php endif; ?>
 						</div>
-						<?php tamil_kino_tafel( $filme ); ?>
+						<?php
+						if ( $filme ) {
+							tamil_kino_tafel( $filme );
+						} else {
+							echo '<p class="bogen-leer">' . esc_html__( 'Für diese Woche kennen wir keine tamilische Vorstellung. Ältere Kinolisten stehen in der Rubrik Kino.', 'tamil' ) . '</p>';
+						}
+						?>
 						<p class="bogen-fuss"><a class="textlink" href="<?php echo esc_url( tamil_rubrik( 'kino' )['url'] ); ?>"><?php esc_html_e( 'Kino nach Stadt', 'tamil' ); ?></a></p>
 					</section>
 				</div>
