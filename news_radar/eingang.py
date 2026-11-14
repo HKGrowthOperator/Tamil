@@ -633,12 +633,29 @@ class _Pruefung:
 _KALENDER = {_norm_wort(w) for w in WOCHENTAGE + MONATE} | {"sonnabend", "jaenner", "feber"}
 
 
+_MONAT_NR = {_norm_wort(m): n for n, m in enumerate(MONATE, 1)} | {"jaenner": 1, "feber": 2}
+_DATUM = re.compile(r"(?<!\d)(\d{1,2})\.\s*(?:(\d{1,2})\.|([^\W\d_]+))(?:\s*(\d{4}))?(?!\d)")
+
+
+def _daten(text: str) -> list[tuple[str, tuple[int, int, int | None]]]:
+    """Datumsangaben als Ganzes: (Fundstelle, (Tag, Monat, Jahr oder None)) – „16. Januar 2027“, „16.1.2027“."""
+    out = []
+    for m in _DATUM.finditer(text or ""):
+        monat = int(m.group(2)) if m.group(2) else _MONAT_NR.get(_norm_wort(m.group(3)))
+        if monat and 1 <= monat <= 12 and 1 <= int(m.group(1)) <= 31:  # „18.30.“ ist eine Uhrzeit, kein Datum
+            out.append((m.group(0), (int(m.group(1)), monat, int(m.group(4)) if m.group(4) else None)))
+    return out
+
+
 def fremde_angaben(texte: list[str], erlaubt: str) -> list[str]:
     """Fundstellen im Modelltext, die nicht in der Einsendung stehen („nichts Erfundenes“, Positivliste).
     Leer = nichts gefunden."""
     pruefung = _Pruefung(erlaubt)
     fremd: list[str] = []
+    # ein Datum gilt nur als Ganzes aus der Einsendung (Tag und Monat, mit Jahr genau dieses Jahr)
+    erlaubte_daten = {d for _, d in _daten(erlaubt)} | {(d[0], d[1], None) for _, d in _daten(erlaubt)}
     for t in texte:
+        fremd += [f[:30] for f, d in _daten(_URL.sub(" ", t)) if d not in erlaubte_daten]
         for url in _URL.findall(t):
             url = url.rstrip(".,;:!?)")
             if url.lower() not in pruefung.klein:

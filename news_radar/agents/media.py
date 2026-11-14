@@ -134,6 +134,11 @@ def _ki(ctx: Kontext, story_id: int, bild_prompt: str, thema: str, slug: str, po
     if not s.gemini_key or not bild_prompt.strip() or _ki_bilder(ctx, story_id) >= s.ki_bilder_je_artikel:
         return None
     betrag = costs.bild_kosten(s.bild_modell, s.bild_groesse)
+    story = repo.story(ctx.store, story_id)
+    if story and story.get("typ") != "dossier" and \
+            repo.kosten_story(ctx.store, story_id)["usd"] + betrag > s.kosten_story_usd:
+        log.info("KI-Bild übersprungen: Kostendeckel je Story erreicht")  # das Bild zählt zum Deckel
+        return None
     reservierung = None
     if ctx.budget is not None:
         try:

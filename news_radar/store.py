@@ -196,7 +196,11 @@ class Store:
                 self.db.rollback()
                 raise
             else:
-                self.db.commit()
+                try:
+                    self.db.commit()
+                except BaseException:  # gescheiterter Commit: nichts Halbes für den nächsten Schreibschritt
+                    self.db.rollback()
+                    raise
             finally:
                 self._transaktion = False
 

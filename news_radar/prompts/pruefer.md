@@ -25,7 +25,7 @@ Die Story hat das Gate nicht bestanden, auch nicht nach der Nachrecherche (Grün
 
 Prüfe genau die Sätze in `<saetze>` (Titel, Teaser, Haupttext ohne Quellenzeile) gegen die Dokumente, nicht gegen dein Wissen – jeden einzelnen, keinen auslassen, keinen hinzufügen:
 
-- `gedeckt`: die Aussage steht so in einem Dokument (Claim-IDs, wenn passend, und eine wörtliche Fundstelle).
+- `gedeckt`: die Aussage steht so in einem Dokument (Claim-IDs, wenn passend, und eine wörtliche Fundstelle). Nenne höchstens drei Claims je Satz, und nur solche, die mit dem Satz inhaltlich übereinstimmen (gemeinsame Wörter, nicht nur eine Zahl). Jede Zahl (als ganze Zahl), jedes Zahlwort („zwölf“), jede Verneinung („nicht“, „kein“), jedes Datum und jeder Name – auch ein Name am Satzanfang – muss in diesen Claims stehen.
 - `ungedeckt`: der Satz behauptet etwas, das in keinem Dokument steht – auch wenn es plausibel klingt.
 - `widerspruch`: der Satz widerspricht einem Dokument (Datum, Ort, Zahl, Name, Zitat).
 - `kein_fakt`: reine Überleitung oder Einordnung ohne Tatsachenbehauptung – nie bei einer Zahl, einem Datum oder einem Namen (das zählt sonst als `ungedeckt`).

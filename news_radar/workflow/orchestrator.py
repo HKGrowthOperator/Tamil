@@ -41,6 +41,7 @@ Handler = Callable[[Kontext, dict], list[tuple[str, dict]]]
 
 OHNE_MODELL = ("gate", "bild", "kino", "nachrecherche")  # Schritte, die auch ohne API-Schlüssel laufen
 BEZAHLT = ("recherche", "schreiben", "faktencheck", "lektorat", "seo", "pruefung", "endpruefung")  # Kostendeckel
+PRUEFSCHRITTE = ("pruefung", "endpruefung")  # zweite KI: eigener Anteil am Kostendeckel
 
 
 def kontext(settings: Settings, store: Store, client=None, **kw) -> Kontext:
@@ -669,11 +670,15 @@ def job_ausfuehren(ctx: Kontext, job: dict) -> str:
         store._write("UPDATE workflow_jobs SET status = 'fertig', fehler = ?, aktualisiert = ? WHERE id = ?",
                      (f"Story ist {story_jetzt['status']} – Schritt entfällt", now_iso(), job["id"]))
         return "entfallen"
+    # Die zweite KI hat einen eigenen Anteil: die übrigen bezahlten Schritte laufen nur bis Deckel minus Prüfanteil
+    deckel = ctx.settings.kosten_story_usd - (0 if job["schritt"] in PRUEFSCHRITTE
+                                               else max(ctx.settings.kosten_story_pruefung_usd, 0))
     if (story_jetzt and ctx.claude is not None and job["schritt"] in BEZAHLT and story_jetzt["typ"] != "dossier"
-            and repo.kosten_story(store, story_jetzt["id"])["usd"] >= ctx.settings.kosten_story_usd):
+            and repo.kosten_story(store, story_jetzt["id"])["usd"] >= deckel):
         usd = repo.kosten_story(store, story_jetzt["id"])["usd"]
-        _verwerfen(ctx, story_jetzt, f"Kostendeckel je Story erreicht ({usd:.2f} $ von "
-                                     f"{ctx.settings.kosten_story_usd:.2f} $, RADAR_KOSTEN_STORY_USD) vor „{job['schritt']}“")
+        _verwerfen(ctx, story_jetzt, f"Kostendeckel je Story erreicht ({usd:.2f} $ von {deckel:.2f} $ für "
+                                     f"„{job['schritt']}“; RADAR_KOSTEN_STORY_USD {ctx.settings.kosten_story_usd:.2f} $, "
+                                     f"davon {ctx.settings.kosten_story_pruefung_usd:.2f} $ für die zweite KI)")
         store._write("UPDATE workflow_jobs SET status = 'fertig', fehler = 'Kostendeckel', aktualisiert = ? WHERE id = ?",
                      (now_iso(), job["id"]))
         return "kostendeckel"
