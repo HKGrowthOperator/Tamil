@@ -876,6 +876,9 @@ def _freigegeben(store, e: dict, *, von: str, aktion: str, felder: dict, daten: 
         store.event("verzeichnis_freigegeben", vorgang=e["vorgangsnummer"], eintrag=eintrag_id, aktion=aktion, von=von)
     else:  # inzwischen anders entschieden (z. B. abgelehnt im zweiten Fenster), die Website hat aber freigegeben
         jetzt = holen(store, e["vorgangsnummer"]) or {}
+        if jetzt.get("status") == "freigegeben":  # Doppelklick oder zweites Fenster gab ebenfalls frei: kein Konflikt
+            daten.setdefault("nicht_uebernommen", [])
+            return daten
         status = STATUS_LABEL.get(jetzt.get("status"), jetzt.get("status") or "unbekannt")
         _protokoll(store, "verzeichnis_freigabe_konflikt", e["vorgangsnummer"], wer=von, ausloeser="person",
                    notiz=f"{aktion} auf der Website, im Cockpit {jetzt.get('status')}")

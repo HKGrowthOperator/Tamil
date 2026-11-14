@@ -66,3 +66,17 @@ def test_d_kategorie_des_einsenders_als_ersatz(store, wp, kategorie, erwartet):
     v = wp.einreichen("neu", {**VEREIN, "kategorie": kategorie})
     lauf(store, wp)  # ohne Modell: kein Vorschlag des Agenten
     assert verzeichnis.vorschlag(verzeichnis.holen(store, v))["kategorie"] == erwartet
+
+
+def test_a_doppelte_freigabe_ist_kein_konflikt(store, wp):
+    # Doppelklick bzw. zweites Fenster gibt ebenfalls frei: kein Fehlalarm, die Antwort kommt zurück
+    v = wp.einreichen("neu", {**VEREIN})
+    lauf(store, wp)
+
+    def anna_gibt_frei():
+        verzeichnis.freigeben(store, _client(_Sitzung(wp)), v, von="anna")
+
+    ergebnis = verzeichnis.freigeben(store, _client(_Sitzung(wp, vorher=anna_gibt_frei)), v, von="priya")
+    assert isinstance(ergebnis, dict) and "nicht_uebernommen" in ergebnis
+    assert not repo.aktionen_liste(store, aktion="verzeichnis_freigabe_konflikt")
+    assert verzeichnis.holen(store, v)["status"] == "freigegeben"
