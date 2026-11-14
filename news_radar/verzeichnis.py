@@ -728,11 +728,14 @@ def melden(store, client, *, nur: str | None = None, wer: str = DIENST, ausloese
 
 def vorschlag(e: dict) -> dict[str, str]:
     """Neuer Eintrag: je Feld der Wert aus der Einsendung; fehlt ein Pflichtfeld, steht dort „fehlt“ (nie geraten).
-    Kategorie: der Vorschlag des Agenten oder leer."""
+    Kategorie: der Vorschlag des Agenten, sonst die vom Einsender gewählte, wenn sie zur Art passt, sonst leer."""
     out = {}
     for k, _, pflicht, _ in FELDER:
         if k == "kategorie":
-            out[k] = (e.get("pruefung") or {}).get("kategorie_vorschlag") or ""
+            art = _wert(e, "art") or str((e.get("alt") or {}).get("art") or "")
+            eigene = _wert(e, "kategorie") or ""
+            out[k] = ((e.get("pruefung") or {}).get("kategorie_vorschlag")
+                      or (eigene if eigene in dict(KATEGORIEN.get(art, ())) else ""))
             continue
         w = _wert(e, k) or ""
         out[k] = w if w else (FEHLT if pflicht else "")
@@ -871,6 +874,16 @@ def _freigegeben(store, e: dict, *, von: str, aktion: str, felder: dict, daten: 
             notiz += f"; abweichend: {','.join(entscheidung['abweichend'])}"
         _protokoll(store, "verzeichnis_freigegeben", e["vorgangsnummer"], wer=von, ausloeser="person", notiz=notiz)
         store.event("verzeichnis_freigegeben", vorgang=e["vorgangsnummer"], eintrag=eintrag_id, aktion=aktion, von=von)
+    else:  # inzwischen anders entschieden (z. B. abgelehnt im zweiten Fenster), die Website hat aber freigegeben
+        jetzt = holen(store, e["vorgangsnummer"]) or {}
+        status = STATUS_LABEL.get(jetzt.get("status"), jetzt.get("status") or "unbekannt")
+        _protokoll(store, "verzeichnis_freigabe_konflikt", e["vorgangsnummer"], wer=von, ausloeser="person",
+                   notiz=f"{aktion} auf der Website, im Cockpit {jetzt.get('status')}")
+        _hinweis_dazu(store, e["id"], f"Website hat freigegeben ({aktion}), im Cockpit inzwischen „{status}“ – "
+                                      "bitte auf der Website prüfen")
+        raise Konflikt(f"Einsendung {e['vorgangsnummer']} wurde gleichzeitig {status} – die Website hat aber "
+                       f"freigegeben ({aktion}{f', Eintrag {eintrag_id}' if eintrag_id else ''}). Bitte auf der Website "
+                       "prüfen")
     return daten
 
 
@@ -942,7 +955,10 @@ def freigeben(store, client, vorgang: str, *, von: str, werte: dict | None = Non
     if stand and stand.get("status") == "freigegeben":
         raise Konflikt("Die Freigabe ist auf der Website begonnen, aber nicht bestätigt – in zwei Minuten noch einmal "
                        "freigeben (die Website setzt fort, nichts doppelt)")
-    raise Konflikt(f"Website nicht erreichbar oder Fehler (HTTP {code or 'ohne Antwort'}) – nichts geändert, bitte "
+    if code == 0 or code >= 500:  # die Anfrage kann angekommen sein: kein „nichts geändert“
+        raise Konflikt(f"Ausgang unklar (HTTP {code or 'ohne Antwort'}) – noch einmal freigeben, es entsteht nichts "
+                       "doppelt")
+    raise Konflikt(f"Website nicht erreichbar oder Fehler (HTTP {code}) – nichts geändert, bitte "
                    "später noch einmal freigeben")
 
 
