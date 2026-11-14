@@ -11,6 +11,7 @@ Zeitplan (Europe/Berlin; jeweils als eigener Prozess mit Timeout, nie doppelt):
   sicherung `sicherung erstellen` 03:00     (Backup-Cron) – nach $RADAR_DATA_DIR/backup
   bildpool  montags 04:30, nur mit GEMINI_API_KEY (news-radar-bildpool.timer)
   eingang   `eingang lauf` alle 3 Minuten, nur mit WordPress und RADAR_EINGANG=an (Einsendungen F1); `eingang loeschen` täglich 03:30
+  verzeichnis `verzeichnis lauf` alle 3 Minuten, nur mit WordPress und RADAR_VERZEICHNIS=an (F2); `verzeichnis loeschen` 03:40
 
 Startet der Container als root, gehört der Datenordner danach dem Nutzer `radar` und der Dienst gibt die Rechte ab
 (Coolify-Volumes gehören anfangs root). SIGTERM (Redeploy) beendet alle Kinder geordnet.
@@ -276,6 +277,13 @@ def plan(settings: Settings, env: Mapping[str, str] | None = None) -> list[PlanE
                                      "Einsendungen der Website abholen, vorbereiten, Status zurückmelden"))
         eintraege.append(PlanEintrag("eingang-frist", ("eingang", "loeschen"), Regel(um=(3, 30)), 300, (),
                                      "Einsendungen 90 Tage nach Abschluss löschen, Spam nach 7 Tagen (läuft auch im Stopp)"))
+    # Verzeichnis (F2): Abholen und Prüfen bei der Website. Funktionsschalter RADAR_VERZEICHNIS (Standard aus, im
+    # Echtbetrieb aus bis Auftragsverarbeitung und Rechtstexte vorliegen); die Löschfrist läuft auch im Stopp
+    if settings.wordpress_enabled and env.get("RADAR_VERZEICHNIS", "").strip().lower() in ("an", "1", "ja"):
+        eintraege.append(PlanEintrag("verzeichnis", ("verzeichnis", "lauf"), Regel(alle=180), 300, ("verzeichnis",),
+                                     "Verzeichnis-Einsendungen abholen, prüfen, Prüfung an die Website melden"))
+        eintraege.append(PlanEintrag("verzeichnis-frist", ("verzeichnis", "loeschen"), Regel(um=(3, 40)), 300, (),
+                                     "Verzeichnis-Einsendungen 90 Tage nach Eingang löschen (läuft auch im Stopp)"))
     if env.get("GEMINI_API_KEY"):
         eintraege.append(PlanEintrag("bildpool", ("bildpool", "fuellen", "--anzahl", "3", "--mit-budget"),
                                      Regel(um=(4, 30), wochentag=0), 1800, ("redaktion",),

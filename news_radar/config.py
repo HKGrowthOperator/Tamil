@@ -134,6 +134,7 @@ ROLLEN_MODELLE = {
     "seo": "claude-haiku-5-5",
     "dossier": "claude-opus-5-5",
     "eingang": "claude-haiku-5-5",  # Einsendungen (F1): Zusammenfassung und Entwurf nur aus den Angaben
+    "verzeichnis": "claude-haiku-5-5",  # Verzeichnis (F2): nur der Kategorie-Vorschlag aus der Liste der Art
     # Zweite KI (Auftrag 13.11.2026): prüft aus frischem Kontext nach der Nachrecherche und jeden fertigen Entwurf –
     # standardmäßig das stärkste Modell der Konfiguration (RADAR_MODELL_PRUEFER)
     "pruefer": "claude-opus-5-5",

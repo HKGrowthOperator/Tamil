@@ -857,6 +857,9 @@ NACHHER: dict[str, Callable] = {
 from .eingang_ablauf import NACHHER as _EINGANG  # noqa: E402 – Szenarien ab 80 (Festlegung F1)
 
 NACHHER.update(_EINGANG)
+from .verzeichnis_ablauf import NACHHER as _VERZEICHNIS  # noqa: E402 – Szenarien 88, 89 (Festlegung F2, T4)
+
+NACHHER.update(_VERZEICHNIS)
 
 
 def _social(ctx, sz: Szenario, now: datetime) -> dict:

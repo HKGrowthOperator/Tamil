@@ -185,6 +185,8 @@ def main(argv: list[str] | None = None) -> int:
     bw.add_argument("--ordner", default="data/bewertung")
     eg = sub.add_parser("eingang", help="Einsendungen der Website (F1): lauf = abholen + vorbereiten, loeschen = Frist")
     eg.add_argument("aktion", choices=["lauf", "loeschen", "status"])
+    vz = sub.add_parser("verzeichnis", help="Verzeichnis (F2): lauf = abholen + prüfen, loeschen = Frist, status")
+    vz.add_argument("aktion", choices=["lauf", "loeschen", "status"])
     ab = sub.add_parser("abnahme", help="Abnahme-Szenarien mit FakeClaude")
     ab.add_argument("--bericht", default="data/abnahme-bericht.md")
     ab.add_argument("--nur", type=int, nargs="*", help="nur diese Szenario-Nummern")
@@ -460,6 +462,24 @@ def main(argv: list[str] | None = None) -> int:
                 from .workflow.orchestrator import kontext
 
                 out = eingang.lauf(store, eingang.client_fuer(settings), kontext(settings, store).claude)
+        print(", ".join(f"{k} {v}" for k, v in out.items() if v) or "nichts zu tun")
+        return 0
+
+    if args.cmd == "verzeichnis":
+        from . import verzeichnis
+
+        with Store(settings.db_path) as store:
+            if args.aktion == "loeschen":
+                out = verzeichnis.loeschen(store)
+            elif args.aktion == "status":
+                out = verzeichnis.zaehlen(store)
+            elif not settings.wordpress_enabled:
+                print("WordPress nicht eingerichtet (WP_URL, WP_USER, WP_APP_PASSWORD) – nichts abzuholen")
+                return 0
+            else:
+                from .workflow.orchestrator import kontext
+
+                out = verzeichnis.lauf(store, verzeichnis.client_fuer(settings), kontext(settings, store).claude)
         print(", ".join(f"{k} {v}" for k, v in out.items() if v) or "nichts zu tun")
         return 0
 
