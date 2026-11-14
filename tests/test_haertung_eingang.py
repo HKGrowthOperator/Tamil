@@ -59,3 +59,9 @@ def test_b_transaktion_rollt_zurueck_wenn_der_commit_scheitert(store):
     assert not echt.in_transaction
     assert echt.execute("SELECT COUNT(*) FROM log WHERE event = 'halb'").fetchone()[0] == 0
     assert echt.execute("SELECT COUNT(*) FROM log WHERE event = 'danach'").fetchone()[0] == 1
+
+
+def test_p3_uhrzeit_mit_punkt_ist_kein_datum():
+    # „18.30.“ (Satzende nach der Uhrzeit) ist kein Datum mit Monat 30
+    erlaubt = _erlaubt(beschreibung="Einlass 18.30 Uhr. Tanz, Musik und Essen.")
+    assert eingang.fremde_angaben(["Einlass 18.30."], erlaubt) == []

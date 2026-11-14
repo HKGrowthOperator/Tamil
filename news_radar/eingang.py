@@ -642,7 +642,7 @@ def _daten(text: str) -> list[tuple[str, tuple[int, int, int | None]]]:
     out = []
     for m in _DATUM.finditer(text or ""):
         monat = int(m.group(2)) if m.group(2) else _MONAT_NR.get(_norm_wort(m.group(3)))
-        if monat:
+        if monat and 1 <= monat <= 12 and 1 <= int(m.group(1)) <= 31:  # „18.30.“ ist eine Uhrzeit, kein Datum
             out.append((m.group(0), (int(m.group(1)), monat, int(m.group(4)) if m.group(4) else None)))
     return out
 
