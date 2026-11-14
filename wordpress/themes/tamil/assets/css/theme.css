@@ -49,28 +49,14 @@
   --dur-short: 220ms;
   --z-dropdown: 100; --z-modal: 400;
 
-  /* Namen, die das Plugin tamil-site liest (consent.css), und alte Namen für alt.css */
-  --papier: var(--color-paper);
-  --weiss: var(--color-sheet);
-  --sand: var(--color-paper-2);
-  --sand-2: var(--color-paper-3);
-  --linie: var(--color-rule);
+  /* Namen, die das Plugin tamil-site liest (consent.css, mit eigenem Rückfall) */
   --tinte: var(--color-ink);
-  --tinte-2: var(--color-ink-2);
-  --tinte-3: var(--color-muted);
+  --weiss: var(--color-sheet);
+  --linie: var(--color-rule);
   --rot: var(--color-accent);
-  --rot-tief: var(--color-ink);
-  --rot-hell: var(--color-paper-2);
-  --safran: var(--color-paper-3);
-  --c-news: var(--color-ink); --c-kino: var(--color-ink); --c-events: var(--color-ink); --c-community: var(--color-ink);
-  --c-kueche: var(--color-ink); --c-kultur: var(--color-ink); --c-sport: var(--color-ink); --c-entertainment: var(--color-ink);
   --titel: var(--font-display);
-  --text: var(--font-body);
-  --breite: var(--container);
-  --rand: var(--gutter);
-  --r-gross: var(--radius-card); --r: var(--radius-card); --r-klein: var(--radius-card);
-  --ease: var(--ease-out);
-  --abstand: var(--section-gap-s);
+  --r: var(--radius-card);
+  --r-klein: var(--radius-card);
 }
 
 /* ---------- Basis ---------- */
@@ -395,6 +381,7 @@ input:hover, textarea:hover, select:hover { background: var(--color-paper); }
 .angaben > div:last-child { border-bottom: 0; }
 .angaben dt { color: var(--color-muted); }
 .angaben dd { margin: 0; }
+.angaben dd a { display: inline-flex; align-items: center; min-height: 44px; margin-block: calc(-1 * var(--space-sm)); }
 .weiterlesen { border-top: 1px solid var(--color-rule); }
 @media (max-width: 960px) {
   .artikel-text .wrap { grid-template-columns: minmax(0, 1fr); }
@@ -482,6 +469,30 @@ input:hover, textarea:hover, select:hover { background: var(--color-paper); }
   .tafel.orte .land th { padding-top: var(--space-md); border-bottom: 0; }
   .tafel.orte tr.land { border-top: 0; }
   .tafel.kino td.t-stand { grid-column: 1 / -1; grid-row: 3; padding: 0; width: auto; font-size: var(--text-sm); }
+}
+
+/* ---------- Seiten und Formulare: Kontakt, Suche, 404, Production, TV ---------- */
+.form-raster { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); gap: var(--space-xl) var(--space-3xl); align-items: start; }
+.ablauf { border-top: 2px solid var(--color-ink); padding-top: var(--space-sm); }
+.ablauf h2 { font-size: var(--text-lg); margin: 0 0 var(--space-sm); }
+.ablauf * + h2 { margin-top: var(--space-lg); }
+.wege { list-style: none; padding: 0; margin: 0; }
+.wege a { display: inline-flex; align-items: center; min-height: 44px; font-weight: 600; }
+.kontaktformular .hinweis-box { margin-top: var(--space-lg); }
+.suchformular { margin-top: var(--space-lg); max-width: 36rem; }
+.suchformular label { display: block; font-weight: 600; margin-bottom: var(--space-2xs); }
+.tafel.plaetze tbody th { font-family: var(--font-display); font-weight: 600; color: var(--color-ink); border-bottom: 0; font-size: var(--text-body); white-space: normal; }
+.tafel.plaetze .masse { white-space: nowrap; }
+.sender { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr)); gap: var(--space-lg) var(--gap-columns); border-top: 2px solid var(--color-ink); padding-top: var(--space-md); }
+.player { aspect-ratio: 16 / 9; display: grid; place-items: center; background: var(--color-paper-2); border-top: 2px solid var(--color-rule-2); margin-bottom: var(--space-xs); }
+.player video { width: 100%; height: 100%; }
+.seite-text { margin-top: var(--space-xl); }
+.formular-wrap { margin-top: var(--space-md); }
+@media (max-width: 960px) { .form-raster { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 640px) {
+  .tafel.plaetze tr { grid-template-columns: minmax(0, 1fr); }
+  .tafel.plaetze tbody th, .tafel.plaetze td { grid-column: 1; }
+  .tafel.plaetze .masse { white-space: normal; }
 }
 
 /* ---------- Anzeigen (Plätze aus dem Plugin „Tamil.de Website“) ---------- */

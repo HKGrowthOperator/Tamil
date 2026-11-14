@@ -1,36 +1,38 @@
 <?php
 /**
- * Seite nicht gefunden: Suche und die neuesten Beiträge.
+ * Seite nicht gefunden: Suche und die neuesten Beiträge als Strom.
  */
 
 defined( 'ABSPATH' ) || exit;
 
 get_header();
+$neu = tamil_ids( array( 'posts_per_page' => 5 ) );
 ?>
-<div class="wrap">
-	<section class="abschnitt fehlerseite">
-		<p class="rubrik r-news"><?php esc_html_e( 'Seite nicht gefunden', 'tamil' ); ?></p>
-		<h1><?php esc_html_e( 'Diese Seite gibt es (nicht mehr).', 'tamil' ); ?></h1>
-		<p><?php esc_html_e( 'Vielleicht ist der Beitrag umgezogen. Die Suche hilft weiter – oder ihr startet bei den neuesten Beiträgen.', 'tamil' ); ?></p>
+<header class="seitenkopf">
+	<div class="wrap">
+		<h1><?php esc_html_e( 'Diese Seite gibt es nicht (mehr).', 'tamil' ); ?></h1>
+		<p class="satz"><?php esc_html_e( 'Vielleicht ist der Beitrag umgezogen. Die Suche hilft weiter, oder ihr startet bei den neuesten Beiträgen.', 'tamil' ); ?></p>
 		<?php get_search_form(); ?>
-	</section>
-	<section class="abschnitt">
-		<?php tamil_kicker( 'news', __( 'Neu auf Tamil.de', 'tamil' ), home_url( '/' ), __( 'Zur Startseite', 'tamil' ) ); ?>
-		<div class="reihe">
-			<?php foreach ( tamil_ids( array( 'posts_per_page' => 3 ) ) as $id ) : ?>
-				<?php
-				get_template_part(
-					'template-parts/card',
-					null,
-					array(
-						'post'  => $id,
-						'badge' => true,
-					)
-				);
-				?>
-			<?php endforeach; ?>
+	</div>
+</header>
+<?php if ( $neu ) : ?>
+	<section class="abschnitt" aria-labelledby="neu-titel">
+		<div class="wrap">
+			<div class="kopfzeile">
+				<h2 id="neu-titel"><?php esc_html_e( 'Zuletzt bei tamil.de', 'tamil' ); ?></h2>
+				<a class="mehr" href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php esc_html_e( 'Zur Startseite', 'tamil' ); ?></a>
+			</div>
+			<?php
+			tamil_strom(
+				$neu,
+				array(
+					'monat' => '',
+					'titel' => 'h3',
+				)
+			);
+			?>
 		</div>
 	</section>
-</div>
+<?php endif; ?>
 <?php
 get_footer();
