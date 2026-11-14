@@ -3,6 +3,18 @@
 Neueste oben. Format: Datum · Entscheidung · wer · warum. Was hier steht, gilt, bis ein neuerer Eintrag es ändert.
 Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
+## 14.11.2026
+
+- **Design: Mischung aus A (Tagesblatt) und B (Kalenderblatt), noch nicht fertig.** A gibt das Gerüst (Datum als
+  Hauptfigur, Aufmacher mit großem Foto), B die Ordnung (Feste als Tabelle Tag · Was · Wer · Wo, Kino als Tabelle).
+  Probe `hm-tageskalender`, danach Theme auf eigenem Branch; aufs Testsystem erst nach dem Ja von Luis. · Luis
+  (`docs/abnahme/2026-11-14-design-luis.md`)
+- **Stand vom 12.11. in `claude/radar-multiagent` zusammengeführt** (`d0e088c`, ohne Konflikte; 1491 Tests, 86 von 86,
+  WordPress 177 von 177). · Luis
+- **Nachtschicht 14./15.11. mit drei Ästen** statt zehn Aufgaben: Probe und Theme „Tageskalender“, Verzeichnis
+  Radar-Seite (B1.4) mit Härtungen, Abnahmeprotokoll B5 (`docs/nachtschicht/2026-11-14.md`). Ohne Agent-Token keine
+  Storys in dieser Nacht. · Hauptsitzung
+
 ## 13.11.2026
 
 - **Bezahlte Werbebuchungen überdauern die Deinstallation** (steuerliche Aufbewahrung): Buchungen und Protokoll
