@@ -57,6 +57,41 @@ def fundstelle_belegt(claim: Claim, doc: SourceDocument) -> bool:
     return stelle in _norm(f"{doc.titel}. {doc.text}") or stelle in _norm(doc.text) or stelle in _norm(doc.titel)
 
 
+def _ziffern(text: str) -> set[str]:
+    """Ziffernfolgen ohne führende Nullen: „1.500“ und „1,500“ → {1, 500}, „09:30“ → {9, 30}."""
+    return {str(int(z)) for z in re.findall(r"\d+", text or "")}
+
+
+_MONATSNAME = [("januar", "january", "jan"), ("februar", "february", "feb"), ("märz", "maerz", "march", "mar"),
+               ("april", "apr"), ("mai", "may"), ("juni", "june", "jun"), ("juli", "july", "jul"), ("august", "aug"),
+               ("september", "sept", "sep"), ("oktober", "october", "okt", "oct"), ("november", "nov"),
+               ("dezember", "december", "dez", "dec")]
+_MONAT_RE = re.compile(r"\b(" + "|".join(n for namen in _MONATSNAME for n in namen) + r")\b\.?", re.I)
+_PM_RE = re.compile(r"\b(\d{1,2})(?:[:.]\d{2})?\s*(?:pm|p\.\s?m\.)", re.I)
+
+
+def _ziffern_gelesen(text: str) -> set[str]:
+    """Ziffern eines Dokuments plus die Formen, in die eine deutsche Aussage sie übersetzt: Monatsname → Monatszahl
+    („November 21“ trägt „21.11.“), Uhrzeit mit pm → 24-Stunden-Form („7 pm“ trägt „19 Uhr“)."""
+    out = _ziffern(text)
+    for m in _MONAT_RE.finditer(text or ""):
+        name = m.group(1).lower()
+        out |= {str(nr) for nr, namen in enumerate(_MONATSNAME, 1) if name in namen}
+    for m in _PM_RE.finditer(text or ""):
+        if 1 <= int(m.group(1)) <= 11:
+            out.add(str(int(m.group(1)) + 12))
+    return out
+
+
+def zahlen_belegt(claim: Claim, docs: list[SourceDocument]) -> bool:
+    """Jede Zahl der Aussage steht in einem der gelesenen Dokumente (Titel, Text, Veröffentlichungs- und Abrufdatum). Die Aussage
+    schreibt der Agent selbst; ohne diese Prüfung trüge eine echte Fundstelle eine erfundene Zahl. Zahlen sind
+    sprachunabhängig, die Regel gilt auch für deutsche Aussagen zu englischen oder tamilischen Quellen."""
+    gelesen = set().union(*(_ziffern_gelesen(f"{d.titel} {d.text} {d.published_at} {d.retrieved_at}")
+                             for d in docs)) if docs else set()
+    return _ziffern(claim.aussage) <= gelesen
+
+
 def support(claim: Claim, docs: dict[str, SourceDocument], widerspruch_ids: set[str]) -> str:
     if claim.id in widerspruch_ids:
         return "widerspruch"
@@ -65,6 +100,8 @@ def support(claim: Claim, docs: dict[str, SourceDocument], widerspruch_ids: set[
     inhalt = [d for d in belegt if d.art != "hinweis" and fundstelle_belegt(claim, d)]
     if not inhalt and any(d.art != "hinweis" for d in belegt):
         return "einzelquelle"
+    if inhalt and not zahlen_belegt(claim, [d for d in belegt if d.art != "hinweis"]):
+        return "unbestaetigt"  # Zahl der Aussage in keinem gelesenen Dokument: erfunden oder falsch übernommen
     if any(d.primaer for d in inhalt):
         return "bestaetigt"
     if len({_verlag(d) for d in inhalt}) >= 2:

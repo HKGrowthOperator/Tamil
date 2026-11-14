@@ -115,7 +115,9 @@ done
 
 echo "== Testdaten (nur lokal: Weiterleitungen, Cockpit-Adresse)"
 if "${WP[@]}" plugin is-active tamil-site >/dev/null 2>&1; then
-  "${WP[@]}" option update tamil_site_redirects "{\"/category/anirudh/\":\"$URL/category/events/\",\"/category/blog/\":\"$URL/category/community/\"}" --format=json >/dev/null
+  # wie die Übernahme über REST: CSV und Tabelle zusammen (sonst baut das Speichern der Einstellungen die Tabelle
+  # aus einer leeren CSV neu und die Weiterleitungen sind weg)
+  "${WP[@]}" eval '$p = tamil_site_prepare_redirects( "alt,neu\n/category/anirudh/,/category/events/\n/category/blog/,/category/community/\n" ); if ( ! is_wp_error( $p ) ) { update_option( "tamil_site_redirects_csv", $p["csv"], false ); update_option( "tamil_site_redirects", $p["table"], false ); }' >/dev/null
 fi
 if "${WP[@]}" plugin is-active tamil-radar >/dev/null 2>&1; then
   "${WP[@]}" option get tamil_radar_settings >/dev/null 2>&1 \
