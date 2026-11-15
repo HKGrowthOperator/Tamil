@@ -180,7 +180,7 @@ function tamil_ort_kurz( string $ort ): string {
  */
 function tamil_figur( int $post_id, array $opt = array() ): string {
 	if ( ! tamil_bild_zeigbar( $post_id ) ) {
-		if ( array_key_exists( 'ersatz', $opt ) && ! $opt['ersatz'] ) {
+		if ( empty( $opt['ersatz'] ) ) { // Rubrikfotos nur in Seitenköpfen, nie als Ersatz für einen einzelnen Beitrag
 			return '';
 		}
 		return tamil_rubrikfoto_figur(
@@ -695,4 +695,37 @@ function tamil_kino_leer(): string {
 		return '<p class="bogen-leer">' . sprintf( esc_html__( 'Nächste Vorstellung am %1$s: %2$s, unter %3$s.', 'tamil' ), esc_html( wp_date( 'j. F', $v['ts'] ) ), '<a href="' . esc_url( $v['link'] ) . '">' . esc_html( $v['titel'] ) . '</a>', '<a href="' . esc_url( tamil_rubrik( 'events' )['url'] ) . '">' . esc_html__( 'Termine', 'tamil' ) . '</a>' ) . '</p>';
 	}
 	return '<p class="bogen-leer">' . esc_html__( 'Für diese Woche kennen wir keine tamilische Vorstellung. Kennt ihr eine? Schickt sie der Redaktion.', 'tamil' ) . '</p>';
+}
+
+/**
+ * Leerzustand der Feste-Tafel: ein kurzer Satz und darunter „Zuletzt im Kalender“ mit den letzten zwei Terminen,
+ * grau als vergangen gesetzt (unabhängige Prüfung Runde 4, P1-3), statt nur „nichts da“.
+ */
+function tamil_feste_leer(): string {
+	$satz = '<p class="bogen-leer">' . esc_html__( 'Gerade steht kein kommender Termin im Kalender. Kennt ihr einen? Schickt ihn der Redaktion.', 'tamil' ) . '</p>';
+	if ( ! function_exists( 'tamil_site_event' ) ) {
+		return $satz;
+	}
+	$letzte = tamil_ids(
+		array(
+			'posts_per_page' => 2,
+			'meta_key'       => 'event_datum', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+			'orderby'        => 'meta_value',
+			'order'          => 'DESC',
+			'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+				array(
+					'key'     => 'event_datum',
+					'value'   => current_time( 'Y-m-d' ),
+					'compare' => '<',
+					'type'    => 'CHAR',
+				),
+			),
+		)
+	);
+	if ( ! $letzte ) {
+		return $satz;
+	}
+	ob_start();
+	tamil_feste_tafel( $letzte, array( 'klasse' => 'zuletzt-im-kalender' ) );
+	return $satz . '<h3 class="bogen-unterkopf">' . esc_html__( 'Zuletzt im Kalender', 'tamil' ) . '</h3>' . ob_get_clean();
 }

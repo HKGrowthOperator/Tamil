@@ -22,6 +22,20 @@ $jetzt = time();
 			<div class="blatt-tag"><?php tamil_tag_block( $jetzt ); ?></div>
 			<article class="aufmacher">
 				<h1><a class="titel-link" href="<?php echo esc_url( $link ); ?>"><?php echo esc_html( $titel ); ?></a></h1>
+				<?php
+				// Eigenes Datum des Aufmachers, damit eine ältere Meldung unter der Tagesziffer nicht wie von heute wirkt.
+				$lead_ts = (int) get_post_timestamp( $lead );
+				?>
+				<p class="aufmacher-datum"><time datetime="<?php echo esc_attr( wp_date( 'Y-m-d', $lead_ts ) ); ?>">
+				<?php
+				echo esc_html(
+					wp_date( 'Y-m-d', $lead_ts ) === wp_date( 'Y-m-d' )
+						? __( 'Heute', 'tamil' )
+						/* translators: %s: Datum */
+						: sprintf( __( 'Vom %s', 'tamil' ), wp_date( wp_date( 'Y', $lead_ts ) === wp_date( 'Y' ) ? 'j. F' : 'j. F Y', $lead_ts ) )
+				);
+				?>
+				</time></p>
 				<p class="vorspann"><?php echo tamil_text( tamil_saetze( tamil_standfirst( $lead ), 2 ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_text() ?></p>
 				<p class="aktionen"><a class="textlink" href="<?php echo esc_url( tamil_wa_teilen( $titel, $link ) ); ?>"><?php esc_html_e( 'Per WhatsApp schicken', 'tamil' ); ?></a></p>
 			</article>
@@ -36,7 +50,7 @@ $jetzt = time();
 						if ( $feste ) {
 							tamil_feste_tafel( $feste );
 						} else {
-							echo '<p class="bogen-leer">' . esc_html__( 'Gerade steht kein kommendes Fest im Kalender. Kennt ihr eins? Schickt es der Redaktion.', 'tamil' ) . '</p>';
+							echo tamil_feste_leer(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_feste_leer()
 						}
 						?>
 						<p class="bogen-fuss aktionen">

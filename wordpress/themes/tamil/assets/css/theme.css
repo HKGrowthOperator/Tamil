@@ -183,6 +183,7 @@ input:hover, textarea:hover, select:hover { background: var(--color-paper); }
 .bogen-fuss { margin: 0; padding-top: var(--space-2xs); border-top: 2px solid var(--color-rule-2); }
 .bogen-fuss.notiz { padding-block: var(--space-sm); color: var(--color-ink-2); }
 .bogen-leer { padding-block: var(--space-sm) var(--space-md); border-top: 2px solid var(--color-rule-2); color: var(--color-ink-2); }
+.bogen-unterkopf { margin: var(--space-xs) 0 0; font-family: var(--font-body); font-size: var(--text-md); font-weight: 600; color: var(--color-muted); letter-spacing: 0; }
 .tafel { width: 100%; border-collapse: collapse; font-size: var(--text-body); line-height: 1.45; font-variant-numeric: tabular-nums lining-nums; }
 .tafel th { font-family: var(--font-body); font-weight: 400; font-size: var(--text-sm); color: var(--color-muted); text-align: left; padding: var(--space-xs) var(--space-md) var(--space-xs) 0; border-bottom: 2px solid var(--color-rule-2); white-space: nowrap; }
 .tafel td, .tafel tbody th { padding: var(--space-sm) var(--space-md) var(--space-sm) 0; border-top: 1px solid var(--color-rule); vertical-align: top; text-align: left; }
@@ -273,9 +274,15 @@ input:hover, textarea:hover, select:hover { background: var(--color-paper); }
 
 /* ---------- Startseite: Tagesblatt ---------- */
 .blatt { padding-block: var(--space-xl) var(--space-lg); }
-.blatt .wrap { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--space-lg) var(--gap-columns); align-items: start; }
-.blatt-text { display: flex; flex-direction: column; gap: var(--space-lg); }
-.blatt-rechts { display: flex; flex-direction: column; gap: var(--space-xl); }
+/* Raster: Datum und Aufmacher links, Foto rechts; darunter Feste und Kino in einer Zeile mit gleicher Oberkante */
+.blatt .wrap { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); grid-template-areas: "tag bild" "auf bild" "feste kino"; gap: var(--space-lg) var(--gap-columns); align-items: start; }
+.blatt-text, .blatt-rechts { display: contents; }
+.blatt-tag { grid-area: tag; }
+.blatt .aufmacher { grid-area: auf; }
+.blatt-feste { grid-area: feste; }
+.bild.aufmacher-bild { grid-area: bild; }
+.blatt-kino { grid-area: kino; }
+.aufmacher-datum { margin-top: var(--space-xs); color: var(--color-muted); font-size: var(--text-md); }
 .aufmacher { display: flex; flex-direction: column; }
 .aufmacher h1 { font-size: var(--text-h1); line-height: 1.12; max-width: 26ch; }
 .aufmacher .vorspann { margin: var(--space-md) 0 0; max-width: 60ch; font-size: var(--text-lead); line-height: 1.5; color: var(--color-ink-2); }
@@ -289,7 +296,7 @@ input:hover, textarea:hover, select:hover { background: var(--color-paper); }
   .blatt-text, .blatt .aufmacher, .blatt-rechts { display: contents; }
   .blatt-tag { order: 1; margin-bottom: var(--space-md); }
   .blatt-feste { order: 2; margin-bottom: var(--space-lg); }
-  .aufmacher h1 { order: 3; }
+  .aufmacher h1, .aufmacher .aufmacher-datum { order: 3; }
   .bild.aufmacher-bild { order: 4; margin-top: var(--space-md); }
   .bild.aufmacher-bild img { aspect-ratio: 3 / 2; }
   .aufmacher .vorspann { order: 5; margin-top: var(--space-sm); }
