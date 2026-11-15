@@ -24,6 +24,14 @@ def test_eigenanzeige_ohne_icon_dachzeile_und_striche(wp_cli, vorlage):
     assert '<span class="claim">' in html and '<span class="cta">' in html
 
 
+def test_production_behauptet_nichts_ueber_die_quelle_hinaus(wp_cli):
+    """Nichts Erfundenes (unabhängige Prüfung Runde 4, P1-5): die Quelle (site.json) sagt „standen oder stehen … auf
+    deutschen Bühnen“, nicht „Konzertreihe in Deutschland, Österreich und der Schweiz“, und belegt keine Tickets."""
+    html = _html(wp_cli, "production")
+    assert "standen oder stehen mit Tamil.de Production auf deutschen Bühnen" in html
+    assert "Österreich" not in html and "Schweiz" not in html and ">Tickets<" not in html
+
+
 def test_unbekannte_vorlage_bleibt_leer(wp_cli):
     assert _html(wp_cli, "gibt-es-nicht") == ""
 

@@ -102,7 +102,7 @@ $erlaubt  = array(
 				?>
 				<a class="mehr" href="<?php echo esc_url( tamil_seiten_url( 'werben' ) ); ?>"><?php esc_html_e( 'Werbeplatz buchen', 'tamil' ); ?></a><?php endif; ?>
 		</div>
-		<p class="satz"><?php esc_html_e( 'Fünf feste Werbeplätze, die auf jeder Seite an derselben Stelle stehen: Leserinnen und Leser wissen, wo Werbung steht, und Kunden wissen, was sie buchen. Formate nach IAB-Standard, monatlicher Bericht mit Einblendungen und Klicks.', 'tamil' ); ?></p>
+		<p class="satz"><?php esc_html_e( 'Fünf feste Werbeplätze, die auf jeder Seite an derselben Stelle stehen: Leserinnen und Leser wissen, wo Werbung steht, und Kunden wissen, was sie buchen.', 'tamil' ); ?></p>
 		<section class="bogen" aria-label="<?php esc_attr_e( 'Werbeplätze', 'tamil' ); ?>">
 			<table class="tafel plaetze">
 				<thead><tr><th scope="col"><?php esc_html_e( 'Platz', 'tamil' ); ?></th><th scope="col"><?php esc_html_e( 'Format', 'tamil' ); ?></th><th scope="col"><?php esc_html_e( 'Wo', 'tamil' ); ?></th></tr></thead>
