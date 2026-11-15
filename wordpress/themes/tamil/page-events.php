@@ -81,7 +81,7 @@ $figur   = $bild_id ? tamil_figur(
 				if ( $kommend ) {
 					tamil_feste_tafel( $kommend, array( 'teilen' => true ) );
 				} else {
-					echo '<p class="bogen-leer">' . esc_html__( 'Gerade steht kein kommender Termin im Kalender. Kennt ihr einen? Schickt ihn der Redaktion.', 'tamil' ) . '</p>';
+					echo tamil_feste_leer(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_feste_leer()
 				}
 				?>
 			</section>

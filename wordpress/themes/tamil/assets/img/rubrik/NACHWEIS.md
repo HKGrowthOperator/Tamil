@@ -5,8 +5,8 @@ Verkleinert auf 960 px Breite (JPEG, Qualität 80). Am Bild steht „Archivbild�
 
 | Datei | Rubrik | Original | Nachweis (Urheber, Lizenz) | Quelle |
 |---|---|---|---|---|
-| `events.jpg` | Termine und Feste | `rb-43.jpg` | Foto: D Neethidoss / Wikimedia Commons, CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:Kovagam_koothandavar_temple.jpg |
-| `kino.jpg` | Kino | `rb-84.jpg` | Foto: Sriram Narasimhan Silverscreen Media Inc. (https://silverscreen.in) / Wikimedia Commons, CC BY-SA 3.0 | https://commons.wikimedia.org/wiki/File:Karthi_Sivakumar_at_Nenjil_Thunivirunthal_Audio_Launch.jpg |
+| `events.jpg` | Termine und Feste | `rb-49.jpg` | Foto: 18quirl08 / Wikimedia Commons, CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:Sri_Ganesha_Hindutempel_1_Berlin_2026.jpg |
+| `kino.jpg` | Kino | `rb-43.jpg` | Foto: D Neethidoss / Wikimedia Commons, CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:Kovagam_koothandavar_temple.jpg |
 | `community.jpg` | Community | `rb-71.jpg` | Foto: Rainer Halama / Wikimedia Commons, CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:Hamm-Tempel-Farbgestaltung2014-11-02-13-07.jpg |
 | `kultur.jpg` | Kultur | `rb-83.jpg` | Foto: Bobinson / Wikimedia Commons, CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:Bharatanatyam_dancer_amrutha_naresh_rao_1.jpg |
 | `kultur.jpg` | Entertainment | `rb-83.jpg` | wie oben | wie oben |

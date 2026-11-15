@@ -80,10 +80,10 @@ function tamil_site_eigenanzeige_html( string $vorlage ): string {
 	$vorlagen = array(
 		'production'     => array(
 			'url'   => home_url( '/production/' ),
-			'label' => __( 'Tamil.de Production: Live mit dir! Zu den Tickets', 'tamil-site' ),
+			'label' => __( 'Tamil.de Production: Konzertreihe „Live mit dir!“', 'tamil-site' ),
 			'titel' => __( 'Live mit dir!', 'tamil-site' ),
-			'satz'  => __( 'Die Konzertreihe von Tamil.de mit A.R. Rahman, Ilaiyaraaja, Anirudh und Santhosh Narayanan in Deutschland, Österreich und der Schweiz.', 'tamil-site' ),
-			'link'  => __( 'Tickets', 'tamil-site' ),
+			'satz'  => __( 'A.R. Rahman, Ilaiyaraaja, Anirudh und Santhosh Narayanan standen oder stehen mit Tamil.de Production auf deutschen Bühnen.', 'tamil-site' ),
+			'link'  => __( 'Zur Konzertreihe', 'tamil-site' ),
 			'neu'   => false,
 		),
 		'event'          => array(
