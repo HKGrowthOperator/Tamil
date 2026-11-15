@@ -77,7 +77,7 @@ $formate  = array(
 
 	<section class="abschnitt" id="werben">
 		<?php tamil_kicker( 'news', __( 'Werben auf Tamil.de', 'tamil' ) ); ?>
-		<p class="lesebreite"><?php esc_html_e( 'Fünf feste Werbeplätze, die auf jeder Seite an derselben Stelle stehen – Leserinnen und Leser wissen, wo Werbung steht, und Kunden wissen, was sie buchen. Formate nach IAB-Standard, monatlicher Bericht mit Einblendungen und Klicks.', 'tamil' ); ?></p>
+		<p class="lesebreite"><?php esc_html_e( 'Fünf feste Werbeplätze, die auf jeder Seite an derselben Stelle stehen – Leserinnen und Leser wissen, wo Werbung steht, und Kunden wissen, was sie buchen.', 'tamil' ); ?></p>
 		<div class="formate">
 			<?php foreach ( $formate as [ $nr, $name, $masse, $position ] ) : ?>
 				<div class="format"><span class="nr"><?php echo esc_html( $nr ); ?></span><div><h3><?php echo esc_html( $name ); ?></h3><p class="masse"><?php echo esc_html( $masse ); ?></p><p><?php echo esc_html( $position ); ?></p></div></div>
