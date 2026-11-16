@@ -201,7 +201,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   }
   .kopfzeile__hinweise strong { flex: none; color: var(--tinte); font-weight: 600; }
   .kopfzeile .kopfzeile__hinweise a { display: block; min-width: 0; line-height: 44px; overflow: hidden; text-overflow: ellipsis; }
-  .kopfzeile__hinweise a + a { display: none; } /* bis 1023 px nur der erste Hinweis, damit er nicht gekürzt wird */
+  .kopfzeile .kopfzeile__hinweise a + a { display: none; } /* bis 1023 px nur der erste Hinweis, damit er nicht gekürzt wird */
   .kopfzeile__hinweise a + a::before {
     content: ""; display: inline-block; width: 1px; height: 0.95em; margin-right: 14px;
     vertical-align: -0.12em; background: var(--linie);
