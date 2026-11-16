@@ -995,17 +995,116 @@ body .tz-dialog::backdrop { background: oklch(0.21 0.012 255 / 0.6); }
 .alignleft { float: left; margin: 0.3em 1.4em 1em 0; }
 .alignright { float: right; margin: 0.3em 0 1em 1.4em; }
 .aligncenter { margin-left: auto; margin-right: auto; }
-.wp-block-image img { border-radius: var(--radius-card); }
-.wp-block-separator { border: 0; border-top: 1px solid var(--color-rule); }
-.wp-caption-text, .wp-element-caption { font-size: var(--text-sm); color: var(--color-muted); }
+.wp-block-image img { border-radius: 0; }
+.wp-block-separator { border: 0; border-top: 1px solid var(--linie); }
+.wp-block-button__link { border-radius: 0; }
 
-/* ---------- Bewegung und Druck ---------- */
-@media (max-width: 860px) { :root { --section-gap-s: 48px; } .seitenkopf { padding-top: var(--space-lg); } }
-@media (max-width: 640px) { :root { --gap-columns: 16px; } }
+/* ---------- Bewegung beim Scrollen: Variante D (Wahl von Luis am 16.11.2026) ----------
+   Quelle: design/richtungen/klar2/bewegung/ (#d). Kopf und Fläche hängen am Scrollweg, große Bilder und Blocktitel
+   decken sich auf, alles in Listen steigt ruhig nach. Bewegt werden nur translate/scale (Einzeleigenschaften, damit der
+   Zoom beim Überfahren erhalten bleibt), opacity und clip-path. Versteckt wird nur unter html.bewegt und nur, wo
+   assets/js/app.js data-art gesetzt hat: ohne Skript, vor dem Skript und mit „Bewegung reduzieren“ ist alles
+   sichtbar. Der erste Bildschirm bewegt sich nie von selbst. */
+@media (prefers-reduced-motion: no-preference) {
+  /* Steigen: 16 px nach oben und einblenden */
+  .bewegt [data-art~="steigen"] {
+    transition:
+      translate var(--t-steigen) var(--expo) var(--verz, 0ms),
+      opacity calc(var(--t-steigen) * 0.8) var(--sanft) var(--verz, 0ms);
+  }
+  .bewegt [data-art~="steigen"]:not(.da) { opacity: 0; translate: 0 var(--hub); }
+
+  /* Aufdecken: Bild von unten freigeben, dabei von 1,06 auf 1 */
+  .bewegt [data-art~="aufdecken"] .rahmen { transition: clip-path var(--t-bild) var(--expo) var(--verz, 0ms); }
+  .bewegt [data-art~="aufdecken"]:not(.da) .rahmen { clip-path: inset(100% 0 0 0); }
+  /* Ziel ausdrücklich inset(0) (nach „none“ gäbe es keinen Übergang); nach dem Auftritt wieder none, damit
+     Fokusrahmen außerhalb der Kachel nicht beschnitten werden */
+  .bewegt .laeuft[data-art~="aufdecken"] .rahmen { clip-path: inset(0 0 0 0); }
+  .bewegt [data-art~="aufdecken"] .rahmen img { transition: var(--zoom), scale var(--t-zoom) var(--expo) var(--verz, 0ms); }
+  .bewegt [data-art~="aufdecken"]:not(.da) .rahmen img { scale: 1.06; }
+  .bewegt [data-art~="aufdecken"] .meta { --nach: 100ms; }
+  .bewegt [data-art~="aufdecken"] .meta, .bewegt [data-art~="blenden"] {
+    transition: opacity var(--t-blenden) var(--sanft) calc(var(--verz, 0ms) + var(--nach, 0ms));
+  }
+  .bewegt [data-art~="aufdecken"]:not(.da) .meta, .bewegt [data-art~="blenden"]:not(.da) { opacity: 0; }
+
+  /* Zeilen: Überschrift steigt Zeile für Zeile aus einer Kante. Das Skript legt die gemessenen Zeilen in Spannen;
+     der Text bleibt echter Text und wird nach dem Auftritt zurückgesetzt. */
+  .bewegt [data-zeilen] .zeilenteil { display: block; clip-path: inset(-0.4em -0.3em -0.08em -0.3em); }
+  .bewegt [data-zeilen] .zeilenteil__in {
+    display: inline-block; vertical-align: top; white-space: nowrap;
+    transition: translate var(--t-zeile) var(--expo)
+      calc(var(--verz, 0ms) + var(--zeilen-start, 0ms) + var(--zi, 0) * var(--zeilen-takt, 80ms));
+  }
+  .bewegt [data-art="zeilen"] { --zeilen-start: 0ms; }
+  .bewegt [data-art~="zeilen"]:not(.da) .zeilenteil__in { translate: 0 115%; }
+
+  /* Vorhang: die dunkle Fläche „Diese Woche“ zieht von links auf (Deckfläche in Seitenfarbe schrumpft nach rechts) */
+  .bewegt [data-art~="vorhang"] { position: relative; }
+  .bewegt [data-art~="vorhang"]::after {
+    content: ""; position: absolute; inset: 0; z-index: 3;
+    background: var(--grund); transform-origin: 100% 50%; scale: 0 1; pointer-events: none;
+    transition: scale var(--t-vorhang) var(--vorhang) var(--verz, 0ms);
+  }
+  .bewegt [data-art~="vorhang"]:not(.da)::after { scale: 1 1; }
+
+  /* will-change nur, solange es läuft (.laeuft setzt und entfernt das Skript) */
+  .bewegt .laeuft[data-art~="steigen"] { will-change: translate, opacity; }
+  .bewegt .laeuft[data-art~="aufdecken"] .rahmen { will-change: clip-path; }
+  .bewegt .laeuft[data-art~="aufdecken"] .rahmen img { will-change: scale; }
+  .bewegt .laeuft[data-art~="vorhang"]::after { will-change: scale; }
+  .bewegt .laeuft .zeilenteil__in { will-change: translate; }
+
+  /* Kopf und Band: an den Scrollweg gebunden, nicht an die Zeit */
+  html.bewegt .kopf__logo { transform-origin: 0 100%; }
+  /* rote Leselinie, 2 px, an der Unterkante des Rubrikbands */
+  html.bewegt .band::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px;
+    background: var(--rot); transform-origin: 0 50%; scale: 0 1; pointer-events: none;
+  }
+
+  /* Weg 1: CSS-Scroll-Timelines (html.sda setzt das Skript, wenn der Browser sie kann) */
+  @supports (animation-timeline: scroll()) {
+    html.sda.bewegt .kopf { view-timeline: --kopf block; view-timeline-inset: 0px; }
+    /* Kopfzeile verblasst auf den ersten 45 % des Wegs, bis das Band oben steht */
+    html.sda.bewegt .kopfzeile { animation: k2-kopfzeile linear both; animation-timeline: --kopf; animation-range: exit 0% exit 45%; }
+    /* Logo wird kleiner, bleibt etwas zurück und schiebt sich unter das Band */
+    html.sda.bewegt .kopf__logo { animation: k2-logo linear both; animation-timeline: --kopf; animation-range: exit 0% exit 100%; }
+    html.sda.bewegt .band::after { animation: k2-fortschritt linear both; animation-timeline: scroll(root block); }
+    /* Aufmacherbild: läuft beim Hinausscrollen bis zu 40 px langsamer als die Seite; der Weg beginnt, wenn die
+       Bildoberkante unter dem Band ist, der freie Streifen oben bleibt verdeckt */
+    html.sda.bewegt .aufmacher .rahmen { view-timeline: --aufmacher block; view-timeline-inset: var(--band-hoehe) 0px; }
+    html.sda.bewegt .aufmacher .rahmen img { animation: k2-tiefe linear both; animation-timeline: --aufmacher; animation-range: exit 0% exit 100%; }
+  }
+
+  /* Weg 2: ohne Scroll-Timelines rechnet ein passiver Scroll-Handler (rAF) dieselben Werte als Variablen */
+  html.bewegt:not(.sda) .kopfzeile { opacity: clamp(0, 1 - var(--kopf, 0) / 0.45, 1); }
+  html.bewegt:not(.sda) .kopf__logo {
+    translate: 0 calc(var(--kopf, 0) * 40px);
+    scale: calc(1 - var(--kopf, 0) * 0.2);
+    opacity: clamp(0, (0.9 - var(--kopf, 0)) / 0.4, 1);
+  }
+  html.bewegt:not(.sda) .band::after { scale: var(--fortschritt, 0) 1; }
+  html.bewegt:not(.sda) .aufmacher .rahmen img { translate: 0 var(--tiefe, 0px); }
+}
+@keyframes k2-kopfzeile { to { opacity: 0; } }
+@keyframes k2-logo {
+  from { translate: 0 0; scale: 1; opacity: 1; }
+  50% { opacity: 1; }
+  90% { opacity: 0; }
+  to { translate: 0 40px; scale: 0.8; opacity: 0; }
+}
+@keyframes k2-fortschritt { from { scale: 0 1; } to { scale: 1 1; } }
+@keyframes k2-tiefe { from { translate: 0 0; } to { translate: 0 40px; } }
+
+/* ---------- Reduzierte Bewegung und Druck ---------- */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  .anr:hover .rahmen img, .kacheln a:hover .rahmen img { transform: none; }
 }
 @media print {
-  .leiste, .kopf, .fuss, .ad, .teilen-block, .menue { display: none !important; }
-  body { background: var(--color-sheet); }
+  .kopfzeile, .band, .fuss, .ad, .anzeige-zwischen, .anzeige-unten, .teilen, .mehr, .kacheln { display: none !important; }
+  body { background: #fff; }
+  .woche { background: none; color: var(--tinte); }
 }
+
