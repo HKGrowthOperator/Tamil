@@ -25,7 +25,8 @@ function tamil_bild_alt( int $post_id ): string {
  * @param array<string,mixed> $opt {
  *     @type string $size  Bildgröße (Standard „large“, ungeschnitten; der Rahmen schneidet).
  *     @type string $sizes sizes-Angabe für srcset.
- *     @type bool   $eager Sofort laden (erster Bildschirm).
+ *     @type bool   $eager  Sofort und vorrangig laden (erster Bildschirm).
+ *     @type bool   $sofort Sofort laden, ohne Vorrang (kleine Bilder im seitlichen Streifen).
  *     @type string $klasse Klasse des Bilds.
  * }
  */
@@ -41,7 +42,8 @@ function tamil_bild( int $post_id, array $opt = array() ): string {
 		$attr['loading']       = 'eager';
 		$attr['fetchpriority'] = 'high';
 	} else {
-		$attr['loading'] = 'lazy';
+		// Bilder in seitlich laufenden Streifen lädt der Browser bei „lazy“ erst, wenn sie hineingewischt werden.
+		$attr['loading'] = ! empty( $opt['sofort'] ) ? 'eager' : 'lazy';
 	}
 	if ( ! empty( $opt['sizes'] ) ) {
 		$attr['sizes'] = (string) $opt['sizes'];
@@ -59,7 +61,7 @@ function tamil_bild( int $post_id, array $opt = array() ): string {
 /**
  * Rubrikfoto als <img> (Rubrikkacheln und Seitenköpfe ohne eigenes Foto); merkt den Nachweis.
  *
- * @param array<string,mixed> $opt { @type bool $alt Alternativtext setzen, @type bool $eager. }
+ * @param array<string,mixed> $opt { @type bool $alt Alternativtext setzen, @type bool $eager, @type bool $sofort. }
  */
 function tamil_rubrikfoto_img( string $slug, array $opt = array() ): string {
 	$f = tamil_rubrikfoto( $slug );
@@ -70,7 +72,7 @@ function tamil_rubrikfoto_img( string $slug, array $opt = array() ): string {
 		(int) $f['w'],
 		(int) $f['h'],
 		esc_attr( ! empty( $opt['alt'] ) ? $f['alt'] : '' ),
-		! empty( $opt['eager'] ) ? 'loading="eager" fetchpriority="high"' : 'loading="lazy"'
+		! empty( $opt['eager'] ) ? 'loading="eager" fetchpriority="high"' : ( ! empty( $opt['sofort'] ) ? 'loading="eager"' : 'loading="lazy"' )
 	);
 }
 
@@ -171,11 +173,12 @@ function tamil_anr_stueck( int $post_id, array $opt = array() ): string {
  *     @type int    $ts       anderer Zeitpunkt für die Dachzeile (Termine).
  *     @type string $sizes.
  *     @type string $markiere Suchwort, das in Titel und Vorspann hervorgehoben wird.
+ *     @type bool   $bild     Bild zeigen (Standard ja; nein in zugeklappten Listen).
  * }
  */
 function tamil_anr_zeile( int $post_id, array $opt = array() ): string {
 	$klasse = (string) ( $opt['klasse'] ?? 'meldung' );
-	$img    = tamil_bild( $post_id, array( 'sizes' => $opt['sizes'] ?? '(min-width: 600px) 240px, 96px' ) );
+	$img    = ( $opt['bild'] ?? true ) ? tamil_bild( $post_id, array( 'sizes' => $opt['sizes'] ?? '(min-width: 600px) 240px, 96px' ) ) : '';
 	$ebene  = tamil_ebene( (string) ( $opt['ebene'] ?? 'h3' ) );
 	$meta   = array( 'rubrik' => $opt['rubrik'] ?? true );
 	if ( ! empty( $opt['ts'] ) ) {
@@ -249,9 +252,15 @@ function tamil_kacheln( array $kacheln, string $label ): string {
 	}
 	$html = '<nav class="kacheln" aria-label="' . esc_attr( $label ) . '"><ul>';
 	foreach ( $kacheln as $k ) {
-		$img = $k['bild'] ? tamil_bild( (int) $k['bild'], array( 'sizes' => '(min-width: 1024px) 160px, 160px' ) ) : '';
+		$img = $k['bild'] ? tamil_bild(
+			(int) $k['bild'],
+			array(
+				'sizes'  => '160px',
+				'sofort' => true,
+			)
+		) : '';
 		if ( '' === $img ) {
-			$img = tamil_rubrikfoto_img( $k['slug'] );
+			$img = tamil_rubrikfoto_img( $k['slug'], array( 'sofort' => true ) );
 		} else {
 			$img = (string) preg_replace( '/ alt="[^"]*"/', ' alt=""', $img, 1 ); // der Name steht im Bild
 		}

@@ -4,7 +4,7 @@
  *
  * Termine in klar2: Seitenkopf mit „Termin einreichen“; „Ab heute“ als dunkler Bereich mit den kommenden Terminen als
  * gestaltete Kacheln (Datum als größte Angabe nach dem Titel); „Das Jahr“ mit den vergangenen Terminen dieses Jahres
- * nach Monaten als Liste mit Bild. Greift automatisch für die Seite mit dem Slug „events“.
+ * nach Monaten zum Aufklappen. Greift automatisch für die Seite mit dem Slug „events“.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -92,6 +92,7 @@ tamil_cache_fuellen( $tamil_kommend );
 									'klasse'   => 'zeile',
 									'rubrik'   => false,
 									'vorspann' => false,
+									'bild'     => false, // zugeklappt lädt der Browser keine Bilder; die Zeile trägt Datum und Titel
 									'ts'       => (int) strtotime( (string) get_post_meta( $tamil_id, 'event_datum', true ) ),
 								)
 							);
