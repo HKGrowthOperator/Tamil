@@ -133,8 +133,7 @@ add_filter( 'embed_oembed_html', 'tamil_youtube_nach_klick_gespeichert', 10, 2 )
 
 /**
  * Kino-Artikel: Die Spielortliste aus dem Radar (ul.kino-liste mit Überschrift davor) ersetzt das Theme durch die
- * Tafel „Nach Stadt“ aus kino_fakten, wie in der Rubrik Kino (Kritik theme-tageskalender-r2 P1-E). Der gespeicherte
- * Inhalt bleibt unverändert.
+ * Tabelle „Spielorte und Termine“ aus kino_fakten, wie in der Rubrik Kino. Der gespeicherte Inhalt bleibt unverändert.
  */
 function tamil_kino_liste_ersetzen( string $content ): string {
 	if ( ! is_singular( 'post' ) || ! in_the_loop() || ! str_contains( $content, 'class="kino-liste"' ) ) {
@@ -145,13 +144,12 @@ function tamil_kino_liste_ersetzen( string $content ): string {
 		return $content;
 	}
 	ob_start();
-	echo '<section class="bogen kino-orte" aria-labelledby="spielorte-titel"><div class="bogen-kopf"><h2 id="spielorte-titel">' . esc_html__( 'Spielorte und Termine', 'tamil' ) . '</h2>';
+	echo '<section class="kino-orte" aria-labelledby="spielorte-titel"><h2 id="spielorte-titel">' . esc_html__( 'Spielorte und Termine', 'tamil' ) . '</h2>';
 	if ( '' !== $film['stand'] ) {
-		echo '<p class="bogen-stand">' . esc_html( $film['stand'] ) . '</p>';
+		echo '<p class="kino-orte__stand">' . esc_html( $film['stand'] ) . '</p>';
 	}
-	echo '</div>';
 	tamil_kino_orte_tafel( array( $film ) );
-	echo '<p class="bogen-fuss notiz">' . esc_html__( 'Aus den Programmen der Kinos, Angaben ohne Gewähr.', 'tamil' ) . '</p></section>';
+	echo '<p class="kino-orte__notiz">' . esc_html__( 'Aus den Programmen der Kinos, Angaben ohne Gewähr.', 'tamil' ) . '</p></section>';
 	$tafel = (string) ob_get_clean();
 	$neu   = preg_replace( '#(?:<h[23][^>]*>[^<]*</h[23]>\s*)?<ul class="kino-liste">.*?</ul>#s', $tafel, $content, 1 );
 	return is_string( $neu ) ? $neu : $content;

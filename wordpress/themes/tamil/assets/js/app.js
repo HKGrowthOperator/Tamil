@@ -119,5 +119,5 @@
   externeMedien();
 
   // Zutaten abhaken
-  $$(".rezept-zutaten li").forEach(function (li) { li.addEventListener("click", function () { var an = li.style.opacity === "0.45"; li.style.opacity = an ? "" : "0.45"; li.style.textDecoration = an ? "" : "line-through"; }); });
+  $$(".rezept-zutaten li").forEach(function (li) { li.addEventListener("click", function () { li.classList.toggle("ist-ab"); }); });
 })();

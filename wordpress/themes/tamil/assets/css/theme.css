@@ -234,6 +234,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   }
   .kopfzeile__hinweise strong { flex: none; color: var(--tinte); font-weight: 600; }
   .kopfzeile .kopfzeile__hinweise a { display: block; min-width: 0; line-height: 44px; overflow: hidden; text-overflow: ellipsis; }
+  .kopfzeile__hinweise a + a { display: none; } /* bis 1023 px nur der erste Hinweis, damit er nicht gekürzt wird */
   .kopfzeile__hinweise a + a::before {
     content: ""; display: inline-block; width: 1px; height: 0.95em; margin-right: 14px;
     vertical-align: -0.12em; background: var(--linie);
@@ -243,6 +244,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   :root { --rand: 40px; --band-hoehe: 48px; }
   .kopfzeile__innen { min-height: 38px; }
   .kopfzeile a, .kopfzeile .kopfzeile__hinweise a { min-height: 38px; line-height: 38px; }
+  .kopfzeile .kopfzeile__hinweise a + a { display: block; }
   .kopf__logo { padding: 11px 0; }
   .kopf__logo img { height: 58px; }
   .band__innen { position: relative; padding: 0 calc(var(--rand) - 14px); }
@@ -618,108 +620,144 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .tage .daumen img { aspect-ratio: 1 / 1; }
 }
 
-/* ---------- Artikel ---------- */
-.artikel-kopf { padding-block: var(--space-xl) var(--space-lg); }
-.artikel-kopf .wrap { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 6fr) minmax(0, 3fr); gap: var(--space-md) var(--gap-columns); align-items: start; }
-.artikel-kopf .wrap > .artikel-kopf-text { grid-column: 2 / -1; }
-.artikel-kopf .tag { grid-template-columns: minmax(0, 1fr); row-gap: var(--space-xs); align-items: start; }
-.artikel-kopf h1 { font-size: var(--text-h1); max-width: 24ch; }
-.artikel-kopf .vorspann { margin: var(--space-md) 0 0; max-width: 60ch; font-size: var(--text-lead); line-height: 1.5; color: var(--color-ink-2); }
-.artikel-kopf .autor { margin-top: var(--space-sm); font-size: var(--text-md); color: var(--color-muted); }
-.artikel-bild { padding-bottom: var(--space-xl); }
-.artikel-bild .bild img { aspect-ratio: 16 / 9; }
-.artikel-text .wrap { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 6fr) minmax(0, 3fr); gap: var(--gap-columns); }
-.artikel-text .text { grid-column: 2; min-width: 0; }
-.artikel-rand { grid-column: 3; }
-.artikel-rand .ad { position: sticky; top: var(--space-lg); }
-.inhalt { font-size: 1.1875rem; line-height: 1.7; container-type: inline-size; }
-/* Werbeplatz 03: 728 × 90 nur, wenn die Textspalte breit genug ist, sonst 300 × 250 (Textspalte bei 1280 rund 590 px) */
-@container (min-width: 740px) { .inhalt .ad-inarticle .flaeche { width: 728px; height: 90px; } .inhalt .ad-inarticle.ad-anzeige .flaeche { height: auto; } }
-.inhalt > * { max-width: 66ch; margin: 0 0 1.2em; }
+/* ---------- Artikel: eine Spalte für Kopf und Text (höchstens 70 Zeichen), das Bild groß ---------- */
+.artikel { padding: 20px var(--rand) 0; }
+.artikel .meta { margin-bottom: 8px; }
+.artikel__titel { font-size: 28px; line-height: 1.14; font-weight: 650; letter-spacing: -0.012em; }
+.artikel__vorspann { margin-top: 12px; font-size: 19px; line-height: 1.45; font-weight: 500; max-width: 29em; }
+.artikel__leiste {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; column-gap: 16px;
+  margin-top: 16px; border-top: 1px solid var(--linie);
+  font-size: 14px; line-height: 1.35; color: var(--leise);
+}
+.artikel__teilen {
+  display: inline-flex; align-items: center; min-height: 44px;
+  color: var(--tinte); font-weight: 600;
+  text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em;
+}
+.artikel__teilen:hover { color: var(--rot); }
+.artikel__figur { margin: 8px calc(-1 * var(--rand)) 0; }
+.artikel__bild { width: 100%; max-width: none; aspect-ratio: 4 / 3; object-fit: cover; object-position: 50% 25%; background: var(--flaeche); }
+.artikel__nachweis { padding: 6px var(--rand) 0; font-size: 13px; line-height: 1.4; color: var(--leise); }
+.artikel__text { margin-top: 24px; min-width: 0; }
+.artikel__rand { display: none; }
+
+/* Fließtext */
+.inhalt { font-size: 18px; line-height: 1.6; container-type: inline-size; overflow-wrap: break-word; }
+.inhalt > * { margin: 0 0 1em; }
 .inhalt > :last-child { margin-bottom: 0; }
-.inhalt h2 { font-size: var(--text-h2); margin: 1.6em 0 0.6em; }
-.inhalt h3 { font-size: var(--text-lg); margin: 1.4em 0 0.5em; }
-.inhalt a { text-decoration-thickness: 1px; text-decoration-color: var(--color-muted); }
-.inhalt a:hover { text-decoration-color: currentColor; text-decoration-thickness: 2px; }
+.inhalt h2 { font-size: 22px; line-height: 1.25; margin: 1.6em 0 0.5em; }
+.inhalt h3 { font-size: 19px; line-height: 1.3; margin: 1.4em 0 0.4em; }
+.inhalt h4 { font-size: 18px; margin: 1.2em 0 0.3em; }
+.inhalt a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
+.inhalt a:hover { color: var(--rot); }
 .inhalt ul, .inhalt ol { padding-left: 1.3em; }
+.inhalt ul { list-style: disc; }
 .inhalt li + li { margin-top: 0.4em; }
-.inhalt blockquote, .inhalt .wp-block-quote { margin-inline: 0; padding: var(--space-2xs) 0 var(--space-2xs) var(--space-lg); border-left: 2px solid var(--color-rule-2); font-size: 1.1em; color: var(--color-ink-2); }
-.inhalt blockquote cite { display: block; margin-top: var(--space-xs); font-style: normal; font-size: var(--text-sm); color: var(--color-muted); }
+.inhalt blockquote, .inhalt .wp-block-quote { margin-inline: 0; padding: 2px 0 2px 20px; border-left: 2px solid var(--tinte); }
+.inhalt blockquote cite { display: block; margin-top: 8px; font-style: normal; font-size: 14px; color: var(--leise); }
+.inhalt .wp-block-pullquote { padding: 16px 0; text-align: left; font-size: 21px; font-weight: 650; line-height: 1.35; }
+.inhalt .wp-block-pullquote blockquote { border: 0; padding: 0; }
 .inhalt figure { margin-inline: 0; }
-.inhalt img { border-radius: var(--radius-card); }
-.inhalt figcaption { font-size: var(--text-sm); color: var(--color-muted); margin-top: var(--space-xs); }
-.inhalt table { width: 100%; border-collapse: collapse; font-size: var(--text-body); background: var(--color-sheet); border-top: 2px solid var(--color-rule-2); }
-.inhalt th { text-align: left; font-weight: 400; font-size: var(--text-sm); color: var(--color-muted); padding: var(--space-xs) var(--space-md) var(--space-xs) var(--space-sm); border-bottom: 2px solid var(--color-rule-2); }
-.inhalt td { text-align: left; padding: var(--space-sm) var(--space-md) var(--space-sm) var(--space-sm); border-top: 1px solid var(--color-rule); vertical-align: top; }
+.inhalt img { height: auto; }
+.inhalt figcaption, .wp-caption-text, .wp-element-caption { margin-top: 6px; font-size: 13px; line-height: 1.4; color: var(--leise); }
+.inhalt hr { border: 0; border-top: 1px solid var(--linie); margin: 2em 0; }
+.inhalt summary { display: flex; align-items: center; min-height: 44px; cursor: pointer; font-weight: 600; }
+.inhalt table { width: 100%; border-collapse: collapse; font-size: 16px; line-height: 1.45; border-top: 1px solid var(--tinte); }
+.inhalt th { text-align: left; font-weight: 600; font-size: 13px; color: var(--leise); padding: 8px 12px 8px 0; border-bottom: 1px solid var(--tinte); }
+.inhalt td { text-align: left; vertical-align: top; padding: 10px 12px 10px 0; border-top: 1px solid var(--linie); }
 .inhalt .wp-block-table { overflow-x: auto; }
-.inhalt hr { border: 0; border-top: 1px solid var(--color-rule); }
-.inhalt summary { display: flex; align-items: center; min-height: 44px; cursor: pointer; }
-.inhalt .alignwide, .inhalt .ad { max-width: none; }
+.inhalt .alignwide, .inhalt .alignfull, .inhalt .ad { max-width: none; }
 .inhalt .ad a, .inhalt .anzeige-wrap, .inhalt .anzeige * { text-decoration: none; }
-.inhalt .kino-liste { list-style: none; padding: 0; border-top: 2px solid var(--color-rule-2); background: var(--color-sheet); }
-.inhalt .kino-liste li { margin: 0; padding: var(--space-sm) var(--space-md); border-top: 1px solid var(--color-rule); font-size: var(--text-body); line-height: 1.45; }
+.inhalt .kino-liste { list-style: none; padding: 0; border-top: 1px solid var(--tinte); }
+.inhalt .kino-liste li { margin: 0; padding: 10px 0; border-top: 1px solid var(--linie); font-size: 16px; line-height: 1.45; }
 .inhalt .kino-liste li:first-child { border-top: 0; }
-.inhalt .kino-liste strong { font-family: var(--font-display); font-weight: 600; }
-.hinweis-box, .tipp { padding: var(--space-sm) var(--space-md); background: var(--color-paper-2); border-top: 2px solid var(--color-rule-2); font-size: var(--text-body); line-height: 1.5; }
-.inhalt .hinweis { font-size: var(--text-md); color: var(--color-muted); }
-.event-box { padding: var(--space-md) var(--space-lg); background: var(--color-sheet); border-top: 2px solid var(--color-rule-2); font-size: var(--text-body); line-height: 1.5; }
+.inhalt .hinweis { font-size: 15px; color: var(--leise); }
+.hinweis-box, .tipp { padding: 12px 16px; background: var(--flaeche); border-top: 1px solid var(--tinte); font-size: 17px; line-height: 1.5; }
+.event-box { padding: 12px 0 4px; border-top: 1px solid var(--tinte); border-bottom: 1px solid var(--linie); font-size: 17px; line-height: 1.5; }
 .event-box > * + * { margin-top: 0.4em; }
-.inhalt .rezept-layout { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: var(--space-lg); align-items: start; max-width: none; }
-.zutaten { padding: var(--space-md) var(--space-lg); background: var(--color-sheet); border-top: 2px solid var(--color-rule-2); }
-.zutaten h3, .rezept-layout h3 { margin-top: 0; }
-.rezept-zutaten { list-style: none; padding: 0 !important; margin-top: var(--space-sm); }
-.rezept-zutaten li { display: flex; gap: var(--space-sm); padding: var(--space-xs) 0; border-bottom: 1px solid var(--color-rule); cursor: pointer; }
-.rezept-zutaten li::before { content: ""; width: 18px; height: 18px; flex: none; margin-top: var(--space-2xs); border: 1.5px solid var(--color-muted); border-radius: var(--radius-card); }
+.inhalt .rezept-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; align-items: start; }
+.zutaten { padding-top: 4px; border-top: 1px solid var(--tinte); }
+.zutaten h3, .rezept-layout h3 { margin-top: 8px; }
+.rezept-zutaten { list-style: none !important; padding: 0 !important; margin-top: 8px; }
+.rezept-zutaten li { display: flex; gap: 12px; min-height: 44px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--linie); cursor: pointer; }
+.rezept-zutaten li + li { margin-top: 0; }
+.rezept-zutaten li::before { content: ""; width: 18px; height: 18px; flex: none; border: 1.5px solid var(--leise); }
+.rezept-zutaten li.ist-ab { color: var(--leise); text-decoration: line-through; }
+.rezept-zutaten li.ist-ab::before { background: var(--leise); }
 .inhalt .schritte { counter-reset: s; list-style: none; padding: 0; }
-.inhalt .schritte li { counter-increment: s; position: relative; padding-left: 3rem; }
-.inhalt .schritte li::before { content: counter(s); position: absolute; left: 0; top: -0.1em; font-family: var(--font-display); font-weight: 800; font-size: 1.5rem; line-height: 1.2; font-variant-numeric: tabular-nums; }
-.rezept-fakten { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0 var(--space-lg); border-top: 2px solid var(--color-rule-2); }
-.rezept-fakten div { padding-block: var(--space-xs); border-bottom: 1px solid var(--color-rule); }
-.rezept-fakten dt { font-size: var(--text-sm); color: var(--color-muted); }
+.inhalt .schritte li { counter-increment: s; position: relative; padding-left: 2.6em; }
+.inhalt .schritte li::before { content: counter(s); position: absolute; left: 0; top: -0.05em; font-weight: 700; font-size: 22px; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.rezept-fakten { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0 24px; border-top: 1px solid var(--tinte); }
+.rezept-fakten div { padding: 8px 0; border-bottom: 1px solid var(--linie); }
+.rezept-fakten dt { font-size: 13px; color: var(--leise); }
 .rezept-fakten dd { margin: 0; font-weight: 600; }
-.tamil-zitat { font-family: var(--font-display) !important; font-weight: 600; font-size: var(--text-title) !important; line-height: 1.35; }
-.video-embed { aspect-ratio: 16 / 9; background: var(--color-paper-2); border-top: 2px solid var(--color-rule-2); display: grid; place-content: center; justify-items: center; gap: var(--space-sm); text-align: center; padding: var(--space-lg); }
-.video-embed .video-load { min-height: 48px; padding: 0 var(--space-lg); border: 1px solid var(--color-ink); border-radius: var(--radius-card); background: var(--color-ink); color: var(--color-paper); font-weight: 600; cursor: pointer; }
-.video-embed .video-hint { font-size: var(--text-sm); color: var(--color-muted); }
-.video-embed .video-hint a { display: inline-flex; min-height: 44px; align-items: center; }
-.video-embed.is-geladen { display: block; padding: 0; border: 0; }
+.tamil-zitat { font-weight: 650 !important; font-size: 21px !important; line-height: 1.35; }
+.video-embed {
+  aspect-ratio: 16 / 9; display: grid; place-content: center; justify-items: center; gap: 12px;
+  padding: 24px; text-align: center; background: var(--tinte); color: var(--hell);
+}
+.video-embed .video-load { min-height: 48px; padding: 0 20px; border: 1px solid var(--hell); border-radius: 0; background: var(--hell); color: var(--tinte); font-weight: 600; cursor: pointer; }
+.video-embed .video-load:hover { background: var(--hell-leise); }
+.video-embed .video-hint { font-size: 14px; color: var(--hell-leise); }
+.video-embed .video-hint a { display: inline-flex; min-height: 44px; align-items: center; color: var(--hell); }
+.video-embed.is-geladen { display: block; padding: 0; }
 .video-embed iframe { display: block; width: 100%; height: 100%; border: 0; }
-.quelle { margin-top: var(--space-xl); padding-top: var(--space-sm); border-top: 1px solid var(--color-rule); font-size: var(--text-md); color: var(--color-muted); }
-.quelle a { color: var(--color-ink); font-weight: 600; }
-.schlagworte { display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--space-md); margin-top: var(--space-md); }
-.schlagworte a { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; min-width: 44px; }
-.teilen-block { border-top: 2px solid var(--color-ink); padding-top: var(--space-md); margin-top: var(--space-lg); display: flex; flex-wrap: wrap; gap: var(--space-xs) var(--space-lg); align-items: center; }
-.teilen-block .textlink { min-width: 44px; justify-content: center; }
-.knopf-text { padding: 0; border: 0; background: none; color: inherit; cursor: pointer; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
-.autor-text { margin-top: var(--space-lg); font-size: var(--text-md); color: var(--color-ink-2); max-width: 66ch; }
-.seiten-links { display: flex; flex-wrap: wrap; gap: 0 var(--space-md); margin-top: var(--space-lg); }
+
+/* Termin im Beitrag, Spielorte, Quelle, Schlagworte, Teilen, Redaktion */
+.termin-box { margin: 0 0 28px; border-top: 1px solid var(--tinte); }
+.termin-box__titel { padding-top: 12px; font-size: 19px; font-weight: 700; }
+.termin-box .aktionen { margin-top: 4px; }
+.termin-box__hinweis { font-size: 13px; color: var(--leise); }
+.angaben { margin-top: 8px; border-top: 1px solid var(--linie); font-size: 17px; }
+.angaben > div { display: grid; grid-template-columns: minmax(0, 7rem) minmax(0, 1fr); gap: 2px 16px; padding: 8px 0; border-bottom: 1px solid var(--linie); }
+.angaben dt { color: var(--leise); font-size: 15px; padding-top: 2px; }
+.angaben dd { margin: 0; overflow-wrap: anywhere; }
+.angaben dd a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
+.inhalt .kino-orte { margin: 2em 0; }
+.kino-orte h2 { margin-top: 0; }
+.kino-orte__stand, .kino-orte__notiz { font-size: 14px; color: var(--leise); }
+.kino-orte__notiz { margin-top: 8px; }
+.quelle { margin-top: 32px; padding-top: 10px; border-top: 1px solid var(--linie); font-size: 15px; color: var(--leise); }
+.quelle a { color: var(--tinte); font-weight: 600; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
+.schlagworte { display: flex; flex-wrap: wrap; align-items: center; gap: 0 16px; margin-top: 16px; font-size: 15px; }
+.schlagworte__titel { color: var(--leise); font-size: 13px; font-weight: 600; }
+.schlagworte a { display: inline-flex; align-items: center; min-height: 44px; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
+.schlagworte a:hover { color: var(--rot); }
+.teilen { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--tinte); }
+.knopf-text { padding: 0; border: 0; background: none; cursor: pointer; }
+.autor { margin-top: 24px; font-size: 15px; line-height: 1.5; color: var(--leise); }
+.autor strong { color: var(--tinte); font-weight: 600; }
+.seiten-links { display: flex; flex-wrap: wrap; gap: 0 16px; margin-top: 24px; }
 .seiten-links a, .seiten-links > span { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; min-width: 44px; }
-.termin-bogen { margin: 0 0 var(--space-xl); }
-.inhalt .kino-orte { max-width: none; margin: var(--space-xl) 0; }
-.angaben { margin: 0; border-top: 1px solid var(--color-rule); }
-.termin-bogen .tafel:has(tr.ist-naechst:last-child) + .angaben { border-top: 0; }
-.angaben > div { display: grid; grid-template-columns: minmax(0, 8rem) minmax(0, 1fr); gap: var(--space-2xs) var(--space-lg); padding-block: var(--space-xs); border-bottom: 1px solid var(--color-rule); }
-.angaben > div:last-child { border-bottom: 0; }
-.angaben dt { color: var(--color-muted); }
-.angaben dd { margin: 0; }
-.angaben dd a { display: inline-flex; align-items: center; min-height: 44px; margin-block: calc(-1 * var(--space-sm)); }
-.weiterlesen { border-top: 1px solid var(--color-rule); }
-@media (max-width: 960px) {
-  .artikel-text .wrap { grid-template-columns: minmax(0, 1fr); }
-  .artikel-text .text, .artikel-rand { grid-column: 1; }
-  .artikel-rand .ad { position: static; }
-  .inhalt { font-size: var(--text-body); }
+.weiterlesen { margin-top: 48px; }
+.weiterlesen .neben { margin-top: 0; }
+.weiterlesen .stueck:first-child { border-top: 0; }
+
+/* Tablet: Kopf, Bild und Text auf einer gemeinsamen Spalte von 600 px, alle Kanten gleich */
+@media (min-width: 600px) {
+  .artikel { max-width: calc(600px + 2 * var(--rand)); margin: 0 auto; padding-top: 32px; }
+  .artikel__vorspann { max-width: none; }
+  .artikel__figur { margin-inline: 0; }
+  .artikel__bild { aspect-ratio: 16 / 9; }
+  .artikel__nachweis { padding-inline: 0; }
+  .inhalt .rezept-layout { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); }
 }
-@media (max-width: 860px) {
-  .artikel-kopf { padding-top: var(--space-lg); }
-  .artikel-kopf .wrap { grid-template-columns: minmax(0, 1fr); }
-  .artikel-kopf .wrap > .artikel-kopf-text { grid-column: 1; }
-  .artikel-kopf .tag { grid-template-columns: auto minmax(0, 1fr); }
-  .inhalt .rezept-layout { grid-template-columns: minmax(0, 1fr); }
-}
-@media (max-width: 640px) {
-  .artikel-kopf .tag { grid-template-columns: 4.25rem minmax(0, 1fr); column-gap: var(--space-sm); }
-  .angaben > div { grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 1024px) {
+  .artikel { max-width: 1120px; padding: 48px var(--rand) 0; }
+  /* eine Spalte für Kopf und Text: 560 px, höchstens 70 Zeichen je Zeile; das Bild über die volle Breite */
+  .artikel__kopf, .artikel__text { max-width: 560px; margin-inline: auto; }
+  .artikel__titel { font-size: 38px; line-height: 1.1; letter-spacing: -0.015em; }
+  .artikel__vorspann { font-size: 20px; margin-top: 14px; }
+  .artikel__figur { margin-top: 12px; }
+  .artikel__text { margin-top: 36px; }
+  .inhalt { font-size: 19px; }
+  /* mit Werbeplatz 02: Textspalte und Anzeige nebeneinander, der Kopf auf der Kante des Texts */
+  .artikel--mit-rand .artikel__haupt { display: grid; grid-template-columns: 560px 300px; column-gap: 48px; justify-content: center; align-items: start; }
+  .artikel--mit-rand .artikel__text { margin-inline: 0; }
+  .artikel--mit-rand .artikel__kopf { margin-inline: max(0px, (100% - 908px) / 2) auto; }
+  .artikel--mit-rand .artikel__rand { display: block; margin-top: 36px; position: sticky; top: calc(var(--band-hoehe) + 24px); }
+  .weiterlesen { margin-top: 64px; }
 }
 
 /* ---------- Rubrik: Aufmacher, Strom, Seitennavigation ---------- */
