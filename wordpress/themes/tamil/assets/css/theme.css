@@ -1,62 +1,88 @@
-/* Hallmark · shape: Tageskalender (custom, Mischung aus Tagesblatt und Kalenderblatt) · genre: editorial · theme: custom · job: read · copy: verbatim · idea: "tamil.de beginnt jeden Tag mit seinem Datum, dem Aufmacher im Foto und den nächsten Festen als gedruckte Tabelle; Rot zeigt nur, was als Nächstes kommt" · vibe: "Zeitungskopf mit Tagesziffer, Tabellen wie ein Kalenderblatt, ruhig"
- * paper: oklch(96.8% 0.007 245) · sheet: oklch(99.3% 0.003 245) · accent: oklch(50.5% 0.175 25) · display: Rethink Sans 600 (Ziffern 800) · body: Golos Text · hero: Tagesziffer, Aufmacher-Schlagzeile, Vorspann und die nächsten Feste als Tabelle links, Foto mit Nachweis und Kino-Tabelle rechts · nav: schmale Leiste über dem Kopf, Logo, vier Ziele, Menü Mehr · footer: Feld paper-2 mit Logo, Rubriken, Diensten, Bildnachweisen · imagery: photographs (Nachweis an jedem Bild) · signature: die Feste-Tabelle mit großer Tagesziffer je Zeile, der nächste Termin zwischen zwei festen Linien in Rot mit „als Nächstes“
- * axes: light/grotesk/chromatic-red · posture: split · v2.0.0 · Quelle: design/richtungen/hm-tageskalender (Runde 3), DESIGN.md, design/tokens.css */
-/* Hallmark · waive 49b · verlinkte Titel in Tabellen und Listen · jeder Titel steht wörtlich wie von der Redaktion geschrieben */
-/* Hallmark · waive 78 · Abschnittsköpfe 20 bis 28 px · über jeder Tabelle trägt die feste Linie den Bogen */
-/* Hallmark · waive 59 · Abstand 64 px zwischen Abschnitten · eine Nachrichtenseite braucht Dichte */
-
-/*
- * Aufbau: Tokens → Basis → Links und Knöpfe → Kopf → Bilder → Abschnitte → Datumsblock → Bogen und Tafel → Strom
- * → Startseite → Artikel → Rubrik → Kalender und Kino → Seiten und Formulare → Anzeigen → Fuß → Gutenberg
- * → Bewegung und Druck. Farben und Schriften kommen aus theme.json (--wp--preset--…).
+/* Tamil.de – Theme 3.0 „klar2“ (Wahl von Luis am 16.11.2026, docs/abnahme/2026-11-16-G2-klar2.md)
+ * Quelle: design/richtungen/klar2/ (index.html, artikel.html, klar2.css), Bewegung Variante D aus
+ * design/richtungen/klar2/bewegung/, Regeln in design/brief.md Abschnitt 10. Vorbild BBC News (Kopf, Ordnung),
+ * tagesschau (Titel im Bild), Spiegel (Bildblöcke). Kurzfassung: DESIGN.md, Tokens: design/tokens.css.
+ *
+ * Aufbau: Tokens → Basis → Kopf und Band → Bausteine (Rahmen, Dachzeile, Titel, Bild mit Titel) → Startseite →
+ * Artikel → Seitenkopf und Listen → Rubrik, Kino, Termine → Seiten und Formulare → Plugin-Bausteine → Anzeigen →
+ * Fuß → Gutenberg → Bewegung → reduzierte Bewegung und Druck.
  */
 
 /* ---------- Tokens ---------- */
+/* klar2: feste Farbwerte aus design/brief.md Abschnitt 3 und 10.1 (oklch; die Hex-Werte in theme.json sind nur
+   Rückfall für Editor und Farbklassen). Eine Schrift (Libre Franklin), Radius 0, keine Schatten, Rot nur als Akzent. */
 :root {
-  --color-paper: var(--wp--preset--color--papier, #F1F5F9);
-  --color-paper-2: var(--wp--preset--color--papier-2, #E5EAEF);
-  --color-paper-3: var(--wp--preset--color--papier-3, #D8DFE5);
-  --color-sheet: var(--wp--preset--color--blatt, #FBFDFF);
-  --color-ink: var(--wp--preset--color--tinte, #0C151C);
-  --color-ink-2: var(--wp--preset--color--tinte-2, #222A31);
-  --color-muted: var(--wp--preset--color--grau, #4B545B);
-  --color-rule: var(--wp--preset--color--linie, #C5CBD0);
-  --color-rule-2: var(--wp--preset--color--linie-fest, #2B343B);
-  --color-accent: var(--wp--preset--color--rot, #B5282A);
-  --color-focus: var(--color-accent);
-  --color-error: #B7191C;
-  --font-display: var(--wp--preset--font-family--titel, "Rethink Sans", ui-sans-serif, system-ui, sans-serif);
-  --font-body: var(--wp--preset--font-family--text, "Golos Text", ui-sans-serif, system-ui, sans-serif);
-  --font-tamil: var(--wp--preset--font-family--tamil, Catamaran, sans-serif);
+  --grund: oklch(0.985 0.002 250);
+  --flaeche: oklch(0.962 0.003 250);
+  --tinte: oklch(0.21 0.012 255);
+  --leise: oklch(0.45 0.012 255);
+  --linie: oklch(0.88 0.004 250);
+  --rot: oklch(0.508 0.177 25.6);
+  --hell: oklch(0.985 0.002 250);
+  --hell-leise: oklch(0.82 0.006 250);
+  --linie-dunkel: oklch(0.36 0.010 255);
+  --flaeche-dunkel: oklch(0.26 0.012 255);
+  --tinte-hover: oklch(0.3 0.012 255);
+  /* der einzige Verlauf: unter Schrift im Bild, von durchsichtig nach Tinte */
+  --verlauf: linear-gradient(to bottom, oklch(0.21 0.012 255 / 0) 0, oklch(0.21 0.012 255 / 0.74) 52px, oklch(0.21 0.012 255 / 0.9) 100%);
+  --verlauf-kurz: linear-gradient(to bottom, oklch(0.21 0.012 255 / 0) 0, oklch(0.21 0.012 255 / 0.8) 22px, oklch(0.21 0.012 255 / 0.92) 100%);
 
+  --schrift: var(--wp--preset--font-family--libre-franklin, "Libre Franklin", Catamaran, "Noto Sans Tamil", system-ui, sans-serif);
+  --schrift-tamil: var(--wp--preset--font-family--tamil, Catamaran, "Noto Sans Tamil", "Tamil Sangam MN", sans-serif);
+  --rand: 16px;
+  --breite: 1280px;
+  --band-hoehe: 46px;
+  --zoom: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  /* Bewegung D (assets/js/app.js) */
+  --expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --sanft: cubic-bezier(0.33, 1, 0.68, 1);
+  --vorhang: cubic-bezier(0.3, 0.1, 0.1, 1);
+  --t-steigen: 560ms; --hub: 16px;
+  --t-bild: 750ms; --t-zoom: 1100ms; --t-blenden: 500ms;
+  --t-zeile: 700ms; --zeilen-takt: 90ms; --zeilen-start: 160ms;
+  --t-vorhang: 800ms;
+
+  /* Namen, die das Plugin tamil-site liest (consent.css, mit eigenem Rückfall) */
+  --weiss: var(--grund);
+  --titel: var(--schrift);
+  --r: 0;
+  --r-klein: 0;
+
+  /* Übergang: alte Namen der Gestaltung „Tageskalender“, bis alle Abschnitte umgebaut sind */
+  --color-paper: var(--grund);
+  --color-paper-2: var(--flaeche);
+  --color-paper-3: var(--flaeche);
+  --color-sheet: var(--grund);
+  --color-ink: var(--tinte);
+  --color-ink-2: var(--tinte);
+  --color-muted: var(--leise);
+  --color-rule: var(--linie);
+  --color-rule-2: var(--tinte);
+  --color-accent: var(--rot);
+  --color-focus: var(--tinte);
+  --color-error: var(--rot);
+  --font-display: var(--schrift);
+  --font-body: var(--schrift);
+  --font-tamil: var(--schrift-tamil);
   --space-3xs: 2px; --space-2xs: 4px; --space-xs: 8px; --space-sm: 12px; --space-md: 16px;
   --space-lg: 24px; --space-xl: 40px; --space-2xl: 64px; --space-3xl: 96px;
-  --text-sm: 0.875rem; --text-md: 1rem; --text-body: 1.125rem; --text-lg: 1.25rem;
-  --text-lead: clamp(1.125rem, 0.35vw + 1rem, 1.375rem);
-  --text-title: clamp(1.25rem, 0.75vw + 0.875rem, 1.625rem);
-  --text-h2: clamp(1.375rem, 0.5vw + 1.2rem, 1.75rem);
-  --text-h1: clamp(1.875rem, 1.6vw + 1.2rem, 2.75rem);
+  --text-sm: 0.8125rem; --text-md: 0.9375rem; --text-body: 1.0625rem; --text-lg: 1.1875rem;
+  --text-lead: 1.1875rem;
+  --text-title: 1.1875rem;
+  --text-h2: 1.375rem;
+  --text-h1: clamp(1.75rem, 1.2vw + 1.45rem, 2.375rem);
   --text-day: clamp(3rem, 4.5vw + 1rem, 5.5rem);
-  --text-row: clamp(2.125rem, 1vw + 1.6rem, 2.5rem);
-  --weight-head: 600;
-  --container: 1320px;
-  --gutter: clamp(16px, 4vw, 56px);
+  --weight-head: 650;
+  --container: var(--breite);
+  --gutter: var(--rand);
   --gap-columns: 32px;
   --section-gap-s: 64px;
-  --radius-card: 2px;
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --radius-card: 0;
+  --ease-out: var(--expo);
   --dur-micro: 120ms;
   --dur-short: 220ms;
   --z-dropdown: 100; --z-modal: 400;
-
-  /* Namen, die das Plugin tamil-site liest (consent.css, mit eigenem Rückfall) */
-  --tinte: var(--color-ink);
-  --weiss: var(--color-sheet);
-  --linie: var(--color-rule);
-  --rot: var(--color-accent);
-  --titel: var(--font-display);
-  --r: var(--radius-card);
-  --r-klein: var(--radius-card);
 }
 
 /* ---------- Basis ---------- */

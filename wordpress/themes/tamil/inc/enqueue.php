@@ -28,12 +28,10 @@ function tamil_enqueue(): void {
 add_action( 'wp_enqueue_scripts', 'tamil_enqueue' );
 
 /**
- * Schriften vorladen (Titelschrift und Textschrift, jeweils der lateinische Teil).
+ * Schrift vorladen: Libre Franklin, nur der lateinische Teil (eine Datei für alle Stärken).
  */
 function tamil_preload_fonts(): void {
-	foreach ( array( 'rethink-sans-latin-wght-normal.woff2', 'golos-text-latin-wght-normal.woff2' ) as $font ) {
-		printf( '<link rel="preload" href="%s" as="font" type="font/woff2" crossorigin>' . "\n", esc_url( TAMIL_THEME_URI . '/assets/fonts/' . $font ) );
-	}
+	printf( '<link rel="preload" href="%s" as="font" type="font/woff2" crossorigin>' . "\n", esc_url( TAMIL_THEME_URI . '/assets/fonts/libre-franklin-latin-wght-normal.woff2' ) );
 }
 add_action( 'wp_head', 'tamil_preload_fonts', 1 );
 
