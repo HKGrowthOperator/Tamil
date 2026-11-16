@@ -63,7 +63,7 @@ function tamil_site_werbung_html_angebote(): string {
 			}
 		);
 		$frei    = $buchbar ? tamil_site_werbung_freie_starts( $platz, min( $buchbar ), 1 ) : array();
-		$termin  = $frei ? tamil_site_werbung_datum_text( $frei[0] ) : '–';
+		$termin  = $frei ? tamil_site_werbung_datum_text( $frei[0] ) : __( 'auf Anfrage', 'tamil-site' );
 		$link    = $buchbar ? '<a class="wb-knopf" href="' . esc_url(
 			add_query_arg(
 				array(
@@ -132,7 +132,7 @@ function tamil_site_werbung_html_buchen(): string {
 	$plaetze = '';
 	foreach ( tamil_site_werbung_formate() as $p => $f ) {
 		if ( ! empty( $a['plaetze'][ $p ]['aktiv'] ) ) {
-			$plaetze .= '<option value="' . esc_attr( $p ) . '"' . selected( $p, $platz, false ) . '>' . esc_html( $f['name'] . ' – ' . tamil_site_werbung_html_masse( $p ) ) . '</option>';
+			$plaetze .= '<option value="' . esc_attr( $p ) . '"' . selected( $p, $platz, false ) . '>' . esc_html( $f['name'] . ', ' . tamil_site_werbung_html_masse( $p ) ) . '</option>';
 		}
 	}
 	$laufzeiten = '';
@@ -141,7 +141,7 @@ function tamil_site_werbung_html_buchen(): string {
 		$laufzeiten .= '<label><input type="radio" name="laufzeit" value="' . esc_attr( (string) $tage ) . '"' . checked( $tage, $laufzeit, false ) . ' required> '
 			/* translators: %d: Tage */
 			. esc_html( sprintf( _n( '%d Tag', '%d Tage', $tage, 'tamil-site' ), $tage ) )
-			. ( $cent ? ' – ' . esc_html( tamil_site_werbung_betrag_text( $cent ) ) : '' ) . '</label>';
+			. ( $cent ? ', ' . esc_html( tamil_site_werbung_betrag_text( $cent ) ) : '' ) . '</label>';
 	}
 	$out .= '<form class="wb-formular wb-schritt" method="get" action="' . esc_url( strtok( $url, '?' ) ) . '"><h3>' . esc_html__( '1. Platz und Laufzeit', 'tamil-site' ) . '</h3>'
 		. tamil_site_werbung_html_versteckt( array( 'wb' => 'buchen' ) )
@@ -159,7 +159,7 @@ function tamil_site_werbung_html_buchen(): string {
 	$starts = tamil_site_werbung_freie_starts( $platz, $laufzeit );
 	$opt    = '';
 	foreach ( $starts as $s ) {
-		$opt .= '<option value="' . esc_attr( $s ) . '"' . selected( $s, $start, false ) . '>' . esc_html( tamil_site_werbung_datum_text( $s ) . ' – ' . tamil_site_werbung_datum_text( tamil_site_werbung_plus_tage( $s, $laufzeit - 1 ) ) ) . '</option>';
+		$opt .= '<option value="' . esc_attr( $s ) . '"' . selected( $s, $start, false ) . '>' . esc_html( tamil_site_werbung_datum_text( $s ) . ' bis ' . tamil_site_werbung_datum_text( tamil_site_werbung_plus_tage( $s, $laufzeit - 1 ) ) ) . '</option>';
 	}
 	$out .= '<form class="wb-formular wb-schritt" method="get" action="' . esc_url( strtok( $url, '?' ) ) . '"><h3>' . esc_html__( '2. Startdatum', 'tamil-site' ) . '</h3>'
 		. tamil_site_werbung_html_versteckt(
@@ -220,7 +220,7 @@ function tamil_site_werbung_html_daten( array $b ): string {
 	$zeilen = array(
 		__( 'Buchungsnummer', 'tamil-site' ) => $b['nummer'],
 		__( 'Platz', 'tamil-site' )          => $f['name'],
-		__( 'Zeitraum', 'tamil-site' )       => tamil_site_werbung_datum_text( $b['start'] ) . ' – ' . tamil_site_werbung_datum_text( $b['ende'] ),
+		__( 'Zeitraum', 'tamil-site' )       => tamil_site_werbung_datum_text( $b['start'] ) . ' bis ' . tamil_site_werbung_datum_text( $b['ende'] ),
 		__( 'Betrag', 'tamil-site' )         => tamil_site_werbung_betrag_text( (int) $b['betrag'] ) . ' ' . __( '(inkl. USt.)', 'tamil-site' ),
 		__( 'Zieladresse', 'tamil-site' )    => $b['ziel_url'],
 	);

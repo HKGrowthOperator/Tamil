@@ -18,7 +18,7 @@ function tamil_customizer_felder(): array {
 		'ueber_uns'               => array( 'allgemein', __( 'Über Tamil.de (Footer)', 'tamil' ), 'textarea', 'Tamil.de ist eine Plattform für deutschsprachige Tamilen in Deutschland, der Schweiz und Österreich: Nachrichten aus der tamilischen Welt, Kino, Veranstaltungen, Feste und praktische Hinweise.' ),
 		'org'                     => array( 'allgemein', __( 'Betreiber (Footer, Impressum)', 'tamil' ), 'text', 'KBS Management GmbH' ),
 		'autor_name'              => array( 'allgemein', __( 'Autorenbox: Name', 'tamil' ), 'text', 'Redaktion Tamil.de' ),
-		'autor_text'              => array( 'allgemein', __( 'Autorenbox: Text', 'tamil' ), 'textarea', 'Die Redaktion schreibt über die tamilische Community im deutschsprachigen Raum – auf Deutsch, mit Blick auf Deutschland, Österreich und die Schweiz.' ),
+		'autor_text'              => array( 'allgemein', __( 'Autorenbox: Text', 'tamil' ), 'textarea', 'Die Redaktion schreibt über die tamilische Community im deutschsprachigen Raum, auf Deutsch, mit Blick auf Deutschland, Österreich und die Schweiz.' ),
 		'telefon'                 => array( 'kontakt', __( 'Telefon', 'tamil' ), 'text', '' ),
 		'email'                   => array( 'kontakt', __( 'E-Mail', 'tamil' ), 'email', '' ),
 		'whatsapp'                => array( 'kontakt', __( 'WhatsApp-Nummer (international, z. B. +49 170 …)', 'tamil' ), 'text', '' ),

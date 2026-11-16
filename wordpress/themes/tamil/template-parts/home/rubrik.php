@@ -1,66 +1,24 @@
 <?php
 /**
- * Rubrik-Block der Startseite: eine große Geschichte links, drei Zeilen rechts. Leere Rubrik: Einladung zum Melden.
- * Im Kino-Block folgt die Kinoliste der Woche.
+ * Rubrikblock der Startseite: Blocktitel als Link zur Rubrik, darunter bis zu vier Nebenstücke (Bild über dem Text am
+ * Desktop, Bild links am Handy).
  *
- * @var array $args { @type string $slug, @type int[] $ids, @type int $kino Beitrag mit Kinoliste (optional). }
+ * @var array $args { @type string $slug Rubrik, @type int[] $ids Beiträge mit Bild. }
  */
 
 defined( 'ABSPATH' ) || exit;
 
-$slug   = (string) $args['slug'];
-$ids    = $args['ids'] ?? array();
-$rubrik = tamil_rubrik( $slug );
-$kino   = (int) ( $args['kino'] ?? 0 );
-if ( ! $rubrik['term'] ) {
-	return;
-}
+$tamil_rubrik = tamil_rubrik( (string) $args['slug'] );
+$tamil_id_t   = 't-rubrik-' . sanitize_html_class( (string) $args['slug'] );
 ?>
-<section class="abschnitt" id="rubrik-<?php echo esc_attr( $slug ); ?>">
-	<div class="wrap">
-		<?php tamil_kicker( $slug, '', $rubrik['url'] ); ?>
-		<?php if ( $ids ) : ?>
-			<div class="mosaik">
-				<?php
-				get_template_part(
-					'template-parts/card',
-					null,
-					array(
-						'post'    => $ids[0],
-						'variant' => 'gross',
-						'heading' => 'h3',
-						'rubrik'  => false,
-					)
-				);
-				?>
-				<div class="stapel">
-					<?php foreach ( array_slice( $ids, 1, 3 ) as $id ) : ?>
-						<?php
-						get_template_part(
-							'template-parts/card',
-							null,
-							array(
-								'post'    => $id,
-								'variant' => 'neben',
-								'excerpt' => false,
-								'rubrik'  => false,
-							)
-						);
-						?>
-					<?php endforeach; ?>
-				</div>
-			</div>
-		<?php elseif ( ! $kino ) : ?>
-			<div class="leer">
-				<?php /* translators: %s: Rubrik */ ?>
-				<h3><?php echo esc_html( sprintf( __( 'Noch keine Beiträge in %s', 'tamil' ), $rubrik['label'] ) ); ?></h3>
-				<p><?php echo esc_html( $rubrik['beschreibung'] ); ?></p>
-				<a class="knopf" href="<?php echo esc_url( tamil_seiten_url( 'kontakt', 'event-einreichen' ) ); ?>"><?php esc_html_e( 'Thema melden', 'tamil' ); ?></a>
-			</div>
-		<?php endif; ?>
+<section class="rubrikblock innen" aria-labelledby="<?php echo esc_attr( $tamil_id_t ); ?>">
+	<div class="block-kopf">
+		<h2 class="block-titel" id="<?php echo esc_attr( $tamil_id_t ); ?>"><a href="<?php echo esc_url( $tamil_rubrik['url'] ); ?>"><?php echo esc_html( $tamil_rubrik['label'] ); ?></a></h2>
+	</div>
+	<div class="neben">
 		<?php
-		if ( $kino ) {
-			get_template_part( 'template-parts/home/kino', null, array( 'post' => $kino ) );
+		foreach ( (array) $args['ids'] as $tamil_id ) {
+			echo tamil_anr_stueck( (int) $tamil_id, array( 'rubrik' => false ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_anr_stueck()
 		}
 		?>
 	</div>

@@ -1,7 +1,8 @@
 <?php
 /**
- * Beitrag: Kopf (Rubrik, Titel, Vorspann, Autor, Teilen), Beitragsbild mit Bildnachweis, Termin-Angaben, Text mit
- * Werbeplatz 03, Quelle, Schlagworte, „Mehr aus …“, Seitenspalte.
+ * Beitrag in klar2: Dachzeile, Titel, Vorspann, Leiste mit Lesezeit und „Per WhatsApp teilen“; großes Bild (am Handy
+ * randlos) mit Nachweis; Text in einer Spalte von höchstens 560 px (am Tablet eine gemeinsame Kante für Kopf, Bild und
+ * Text); Termin, Quelle, Schlagworte, Teilen und Redaktion; am Desktop rechts Werbeplatz 02; danach „Weiterlesen“.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -10,143 +11,146 @@ get_header();
 
 while ( have_posts() ) :
 	the_post();
-	$post_id = get_the_ID();
-	$kat     = tamil_hauptkategorie( $post_id );
-	$rubrik  = $kat ? tamil_rubrik( $kat->slug ) : null;
-	$url     = (string) get_permalink();
-	$titel   = get_the_title();
-	$kino    = function_exists( 'tamil_site_kino_fakten' ) ? tamil_site_kino_fakten( $post_id ) : array();
-	$event   = function_exists( 'tamil_site_event' ) ? tamil_site_event( $post_id ) : array();
-	$inhalt  = (string) get_post_field( 'post_content', $post_id );
-	$kette   = $kat ? array( array( $kat->name, (string) get_category_link( $kat ) ), array( $titel, '' ) ) : array( array( $titel, '' ) );
-	$ort     = trim( (string) get_post_meta( $post_id, 'ort', true ) );
+	$tamil_id      = (int) get_the_ID();
+	$tamil_kat     = tamil_hauptkategorie( $tamil_id );
+	$tamil_url     = (string) get_permalink();
+	$tamil_titel   = get_the_title();
+	$tamil_event   = function_exists( 'tamil_site_event' ) ? tamil_site_event( $tamil_id ) : array();
+	$tamil_inhalt  = (string) get_post_field( 'post_content', $tamil_id );
+	$tamil_ort     = trim( (string) get_post_meta( $tamil_id, 'ort', true ) );
+	$tamil_film    = tamil_kino_film( $tamil_id );
+	$tamil_minuten = tamil_lesezeit( $tamil_id );
+	$tamil_rand    = function_exists( 'tamil_site_anzeige' ) ? tamil_site_anzeige( 'sidebar', false ) : '';
+	$tamil_bild    = tamil_bild(
+		$tamil_id,
+		array(
+			'eager'  => true,
+			'klasse' => 'artikel__bild',
+			'sizes'  => '(min-width: 1024px) 1040px, (min-width: 600px) 600px, 100vw',
+		)
+	);
+	$tamil_teilen  = array(
+		array( 'Facebook', 'https://www.facebook.com/sharer/sharer.php?u=' . rawurlencode( $tamil_url ) ),
+		array( 'X', 'https://twitter.com/intent/tweet?url=' . rawurlencode( $tamil_url ) . '&text=' . rawurlencode( $tamil_titel ) ),
+		array( 'Telegram', 'https://t.me/share/url?url=' . rawurlencode( $tamil_url ) . '&text=' . rawurlencode( $tamil_titel ) ),
+	);
+	$tamil_leiste  = array(
+		/* translators: %d: Minuten */
+		sprintf( _n( '%d Min. Lesezeit', '%d Min. Lesezeit', $tamil_minuten, 'tamil' ), $tamil_minuten ),
+	);
+	if ( '' !== $tamil_ort ) {
+		$tamil_leiste[] = $tamil_ort;
+	}
+	if ( $tamil_film && '' !== $tamil_film['stand'] ) {
+		// Stand aus den Kinodaten (Kinowoche), nicht aus dem Änderungsdatum; vorbei ist vorbei.
+		$tamil_leiste[] = $tamil_film['stand'] . ( $tamil_film['bis'] < current_time( 'Y-m-d' ) ? ', ' . __( 'Spielzeit vorbei', 'tamil' ) : '' );
+	}
 	?>
-	<div class="lesebalken" aria-hidden="true"></div>
-	<div class="wrap">
-		<?php tamil_breadcrumb( $kette ); ?>
-		<div class="mit-spalte">
-			<article <?php post_class( 'artikel' ); ?>>
-				<header class="artikel-kopf">
-					<p class="meta">
-						<?php echo tamil_rubrik_punkt( $kat, true ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_rubrik_punkt() ?>
-						<?php if ( $kino ) : ?>
-							<?php /* translators: %s: Datum */ ?>
-							<span class="stand"><?php echo esc_html( sprintf( __( 'Kinoliste, aktualisiert %s', 'tamil' ), get_the_modified_date( 'j. F' ) ) ); ?></span>
-						<?php endif; ?>
-						<?php
-						if ( $event ) :
-							?>
-							<span><?php tamil_icon( 'calendar', 'ico ico-sm' ); ?> <?php echo esc_html( tamil_termin_text( $event['datum'], $event['ende'] ) ); ?></span><?php endif; ?>
-						<?php
-						if ( '' !== $ort && ! $event ) :
-							?>
-							<span><?php echo esc_html( $ort ); ?></span><?php endif; ?>
-					</p>
-					<h1><?php echo esc_html( $titel ); ?></h1>
-					<p class="vorspann"><?php echo esc_html( tamil_standfirst( $post_id ) ); ?></p>
-					<div class="artikel-zeile">
-						<p class="autor">
-							<span class="avatar" aria-hidden="true">T</span>
-							<span><strong><?php echo esc_html( tamil_opt( 'autor_name' ) ); ?></strong>
-							<?php
-							/* translators: 1: Datum, 2: Minuten */
-							echo esc_html( sprintf( _n( '%1$s · %2$d Minute Lesezeit', '%1$s · %2$d Minuten Lesezeit', tamil_lesezeit( $post_id ), 'tamil' ), get_the_date( 'j. F Y' ), tamil_lesezeit( $post_id ) ) );
-							?>
-							</span>
-						</p>
-						<?php tamil_share( $titel, $url ); ?>
-					</div>
-				</header>
+	<article <?php post_class( 'artikel' . ( '' !== $tamil_rand ? ' artikel--mit-rand' : '' ) ); ?>>
+		<header class="artikel__kopf">
+			<p class="meta">
+				<?php if ( $tamil_kat ) : ?>
+					<span class="meta__rubrik"><a href="<?php echo esc_url( get_category_link( $tamil_kat ) ); ?>"><?php echo esc_html( $tamil_kat->name ); ?></a></span>
+				<?php endif; ?>
+				<time datetime="<?php echo esc_attr( get_the_date( 'Y-m-d' ) ); ?>"><?php echo esc_html( get_the_date( 'j. F Y' ) ); ?></time>
+			</p>
+			<h1 class="artikel__titel"><?php echo tamil_text( $tamil_titel ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_text() ?></h1>
+			<?php $tamil_vorspann = tamil_vorspann_artikel( $tamil_id ); ?>
+			<?php if ( '' !== $tamil_vorspann ) : ?>
+				<p class="artikel__vorspann"><?php echo tamil_text( $tamil_vorspann ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_text() ?></p>
+			<?php endif; ?>
+			<div class="artikel__leiste">
+				<span><?php echo esc_html( implode( ', ', $tamil_leiste ) ); ?></span>
+				<a class="artikel__teilen" href="<?php echo esc_url( tamil_wa_teilen( $tamil_titel, $tamil_url ) ); ?>"><?php esc_html_e( 'Per WhatsApp teilen', 'tamil' ); ?></a>
+			</div>
+		</header>
 
-				<figure class="artikel-bild">
-					<?php
-					echo tamil_bild( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- tamil_bild() escapt selbst
-						$post_id,
-						'tamil-lead',
-						array(
-							'fetchpriority' => 'high',
-							'loading'       => 'eager',
-							'alt'           => (string) get_post_meta( (int) get_post_thumbnail_id(), '_wp_attachment_image_alt', true ),
-						)
-					);
-					?>
-					<figcaption><?php echo esc_html( tamil_bildnachweis( $post_id ) ); ?></figcaption>
-				</figure>
+		<?php if ( '' !== $tamil_bild ) : ?>
+			<figure class="artikel__figur">
+				<?php echo $tamil_bild; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_bild() ?>
+				<figcaption class="artikel__nachweis"><?php echo esc_html( str_replace( ' · ', ', ', tamil_bildnachweis( $tamil_id ) ) ); ?></figcaption>
+			</figure>
+		<?php endif; ?>
 
-				<?php if ( $event && ! str_contains( $inhalt, 'event-box' ) ) : ?>
-					<?php
+		<div class="artikel__haupt">
+			<div class="artikel__text">
+				<?php
+				if ( $tamil_event && ! str_contains( $tamil_inhalt, 'event-box' ) ) {
 					get_template_part(
 						'template-parts/article/termin',
 						null,
 						array(
-							'post'  => $post_id,
-							'event' => $event,
+							'post'  => $tamil_id,
+							'event' => $tamil_event,
 						)
 					);
-					?>
-				<?php endif; ?>
-
-				<div class="artikel-text">
+				}
+				?>
+				<div class="inhalt">
 					<?php the_content(); ?>
-					<?php
-					wp_link_pages(
-						array(
-							'before' => '<nav class="seiten" aria-label="' . esc_attr__( 'Seiten des Beitrags', 'tamil' ) . '">',
-							'after'  => '</nav>',
-						)
-					);
-					?>
 				</div>
-
 				<?php
+				wp_link_pages(
+					array(
+						'before' => '<nav class="seiten-links" aria-label="' . esc_attr__( 'Seiten des Beitrags', 'tamil' ) . '">',
+						'after'  => '</nav>',
+					)
+				);
 				get_template_part(
 					'template-parts/article/quelle',
 					null,
 					array(
-						'post'   => $post_id,
-						'inhalt' => $inhalt,
+						'post'   => $tamil_id,
+						'inhalt' => $tamil_inhalt,
 					)
 				);
 				?>
-
-				<footer class="artikel-fuss">
-					<?php if ( tamil_tags( $post_id ) ) : ?>
-						<div class="schlagworte">
-							<?php foreach ( tamil_tags( $post_id ) as $tag ) : ?>
-								<a class="chip" href="<?php echo esc_url( get_tag_link( $tag ) ); ?>"><?php echo esc_html( $tag->name ); ?></a>
-							<?php endforeach; ?>
-						</div>
-					<?php endif; ?>
-					<?php tamil_share( $titel, $url ); ?>
-					<div class="autorenbox"><span class="avatar" aria-hidden="true">T</span><div><strong><?php echo esc_html( tamil_opt( 'autor_name' ) ); ?></strong><p><?php echo esc_html( tamil_opt( 'autor_text' ) ); ?></p></div></div>
-				</footer>
-
-				<?php $related = tamil_related( $post_id ); ?>
-				<?php if ( $related ) : ?>
-					<section class="mehr-aus">
-						<?php /* translators: %s: Rubrik */ ?>
-						<?php tamil_kicker( $kat ? $kat->slug : 'news', $kat ? sprintf( __( 'Mehr aus %s', 'tamil' ), $kat->name ) : __( 'Auch interessant', 'tamil' ), $rubrik ? $rubrik['url'] : '' ); ?>
-						<div class="reihe">
-							<?php foreach ( $related as $id ) : ?>
-								<?php
-								get_template_part(
-									'template-parts/card',
-									null,
-									array(
-										'post'    => $id,
-										'excerpt' => false,
-										'rubrik'  => false,
-									)
-								);
-								?>
-							<?php endforeach; ?>
-						</div>
-					</section>
+				<?php if ( tamil_tags( $tamil_id ) ) : ?>
+					<p class="schlagworte">
+						<span class="schlagworte__titel"><?php esc_html_e( 'Schlagworte', 'tamil' ); ?></span>
+						<?php foreach ( tamil_tags( $tamil_id ) as $tamil_tag ) : ?>
+							<a href="<?php echo esc_url( get_tag_link( $tamil_tag ) ); ?>"><?php echo esc_html( $tamil_tag->name ); ?></a>
+						<?php endforeach; ?>
+					</p>
 				<?php endif; ?>
-			</article>
-			<?php get_sidebar(); ?>
+				<div class="teilen" role="group" aria-label="<?php esc_attr_e( 'Teilen', 'tamil' ); ?>">
+					<a class="knopf" href="<?php echo esc_url( tamil_wa_teilen( $tamil_titel, $tamil_url ) ); ?>"><?php esc_html_e( 'Per WhatsApp schicken', 'tamil' ); ?></a>
+					<?php foreach ( $tamil_teilen as [ $tamil_name, $tamil_href ] ) : ?>
+						<a class="textlink" href="<?php echo esc_url( $tamil_href ); ?>" target="_blank" rel="noopener"><?php echo esc_html( $tamil_name ); ?></a>
+					<?php endforeach; ?>
+					<a class="textlink" href="<?php echo esc_url( 'mailto:?subject=' . rawurlencode( $tamil_titel ) . '&body=' . rawurlencode( $tamil_url ), array( 'mailto' ) ); ?>"><?php esc_html_e( 'E-Mail', 'tamil' ); ?></a>
+					<button type="button" class="textlink knopf-text" data-copy="<?php echo esc_attr( $tamil_url ); ?>"><?php esc_html_e( 'Link kopieren', 'tamil' ); ?></button>
+				</div>
+				<p class="autor"><strong><?php echo esc_html( tamil_opt( 'autor_name' ) ); ?></strong> <?php echo esc_html( tamil_opt( 'autor_text' ) ); ?></p>
+			</div>
+			<?php
+			if ( '' !== $tamil_rand ) :
+				?>
+				<aside class="artikel__rand" aria-label="<?php esc_attr_e( 'Anzeige', 'tamil' ); ?>"><?php echo $tamil_rand; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Werbeplatz aus dem Plugin, dort escapt ?></aside>
+			<?php endif; ?>
 		</div>
-	</div>
+	</article>
+	<?php tamil_leaderboard( 'innen anzeige-zwischen' ); ?>
+
+	<?php $tamil_related = tamil_related( $tamil_id, 4 ); ?>
+	<?php if ( $tamil_related ) : ?>
+		<section class="weiterlesen innen" aria-labelledby="weiterlesen-titel">
+			<div class="block-kopf">
+				<h2 class="block-titel" id="weiterlesen-titel"><?php esc_html_e( 'Weiterlesen', 'tamil' ); ?></h2>
+				<?php if ( $tamil_kat ) : ?>
+					<?php /* translators: %s: Rubrik */ ?>
+					<a class="textlink" href="<?php echo esc_url( get_category_link( $tamil_kat ) ); ?>"><?php echo esc_html( sprintf( __( 'Mehr aus %s', 'tamil' ), $tamil_kat->name ) ); ?></a>
+				<?php endif; ?>
+			</div>
+			<div class="neben">
+				<?php
+				foreach ( $tamil_related as $tamil_r ) {
+					echo tamil_anr_stueck( $tamil_r ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_anr_stueck()
+				}
+				?>
+			</div>
+		</section>
+	<?php endif; ?>
 	<?php
 endwhile;
 

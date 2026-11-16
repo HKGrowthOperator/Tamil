@@ -1,36 +1,29 @@
 <?php
 /**
- * Seite nicht gefunden: Suche und die neuesten Beiträge.
+ * Seite nicht gefunden: Seitenkopf mit Suche, die neuesten Beiträge als Liste und die Rubriken als Kacheln.
  */
 
 defined( 'ABSPATH' ) || exit;
 
 get_header();
+$tamil_neu = tamil_ids( array( 'posts_per_page' => 5 ) );
 ?>
-<div class="wrap">
-	<section class="abschnitt fehlerseite">
-		<p class="rubrik r-news"><?php esc_html_e( 'Seite nicht gefunden', 'tamil' ); ?></p>
-		<h1><?php esc_html_e( 'Diese Seite gibt es (nicht mehr).', 'tamil' ); ?></h1>
-		<p><?php esc_html_e( 'Vielleicht ist der Beitrag umgezogen. Die Suche hilft weiter – oder ihr startet bei den neuesten Beiträgen.', 'tamil' ); ?></p>
+<div class="innen">
+	<header class="seitenkopf">
+		<h1 class="seitenkopf__titel"><?php esc_html_e( 'Diese Seite gibt es nicht (mehr).', 'tamil' ); ?></h1>
+		<p class="seitenkopf__zeile"><?php esc_html_e( 'Vielleicht ist der Beitrag umgezogen. Die Suche hilft weiter, oder ihr startet bei den neuesten Beiträgen.', 'tamil' ); ?></p>
 		<?php get_search_form(); ?>
-	</section>
-	<section class="abschnitt">
-		<?php tamil_kicker( 'news', __( 'Neu auf Tamil.de', 'tamil' ), home_url( '/' ), __( 'Zur Startseite', 'tamil' ) ); ?>
-		<div class="reihe">
-			<?php foreach ( tamil_ids( array( 'posts_per_page' => 3 ) ) as $id ) : ?>
-				<?php
-				get_template_part(
-					'template-parts/card',
-					null,
-					array(
-						'post'  => $id,
-						'badge' => true,
-					)
-				);
-				?>
-			<?php endforeach; ?>
-		</div>
-	</section>
+	</header>
+	<?php if ( $tamil_neu ) : ?>
+		<section class="block" aria-labelledby="neu-titel">
+			<div class="block-kopf">
+				<h2 class="block-titel" id="neu-titel"><?php esc_html_e( 'Zuletzt bei tamil.de', 'tamil' ); ?></h2>
+				<a class="textlink" href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php esc_html_e( 'Zur Startseite', 'tamil' ); ?></a>
+			</div>
+			<?php echo tamil_zeilen( $tamil_neu ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_zeilen() ?>
+		</section>
+	<?php endif; ?>
+	<?php echo tamil_kacheln( tamil_kacheln_ohne(), __( 'Rubriken', 'tamil' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_kacheln() ?>
 </div>
 <?php
 get_footer();

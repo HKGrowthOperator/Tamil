@@ -41,7 +41,7 @@ function tamil_event_schema( int $post_id ): array {
 	);
 	if ( '' !== $e['ende'] ) {
 		$ende = date_create_immutable( $e['ende'], wp_timezone() );
-		if ( $ende ) {
+		if ( $ende && $ende >= $start ) { // Ende vor Beginn nicht ausgeben
 			$data['endDate'] = strlen( $e['ende'] ) > 10 ? $ende->format( 'c' ) : $ende->format( 'Y-m-d' );
 		}
 	}

@@ -73,63 +73,66 @@ function tamil_site_ico( string $name, string $cls = 'ico ico-sm' ): string {
 }
 
 /**
- * HTML einer Eigenanzeige (Gestaltung kommt aus dem Theme, Klassen .anzeige-wrap / .anzeige).
+ * HTML einer Eigenanzeige (Gestaltung kommt aus dem Theme, Klassen .anzeige-wrap / .anzeige): Titel, ein Satz und ein
+ * Linktext, ohne Icon, Dachzeile, Gedankenstrich oder Trennpunkte, damit sie sich wie ein Anreißer der Seite liest.
  */
 function tamil_site_eigenanzeige_html( string $vorlage ): string {
-	$wm = '<span class="wm">tamil<span class="de">.de</span></span>';
-	switch ( $vorlage ) {
-		case 'production':
-			return sprintf(
-				'<a class="flaeche anzeige-wrap" href="%1$s" aria-label="%2$s"><div class="anzeige a-production"><span class="marke">%3$s<span class="eyebrow">Production</span></span><span class="rule"></span><span class="text"><span class="claim">%4$s</span><span class="sub">%5$s</span></span><span class="cta">%6$s %7$s</span></div></a>',
-				esc_url( home_url( '/production/' ) ),
-				esc_attr__( 'Tamil.de Production: Live mit dir! – Tickets', 'tamil-site' ),
-				$wm,
-				esc_html__( 'Live mit dir!', 'tamil-site' ),
-				esc_html__( 'A.R. Rahman · Ilaiyaraaja · Anirudh · Santhosh Narayanan – die Konzertreihe für DE, AT und CH', 'tamil-site' ),
-				tamil_site_ico( 'ticket' ),
-				esc_html__( 'Tickets', 'tamil-site' )
-			);
-		case 'event':
-			return sprintf(
-				'<a class="flaeche anzeige-wrap" href="%1$s" aria-label="%2$s"><div class="anzeige a-event"><svg class="kolam kolam-gross" aria-hidden="true"><use href="#i-kolam"/></svg><span class="text"><span class="eyebrow">%3$s</span><span class="claim">%4$s</span><span class="sub">%5$s</span></span><span class="cta">%6$s</span></div></a>',
-				esc_url( home_url( '/kontakt/#event-einreichen' ) ),
-				esc_attr__( 'Event bei Tamil.de melden', 'tamil-site' ),
-				esc_html__( 'Veranstaltungskalender', 'tamil-site' ),
-				esc_html__( 'Dein Fest im Kalender.', 'tamil-site' ),
-				esc_html__( 'Tempelfest, Konzert, Turnier: kostenlos melden, die Redaktion trägt es ein.', 'tamil-site' ),
-				esc_html__( 'Event melden', 'tamil-site' )
-			);
-		case 'werben':
-			return sprintf(
-				'<a class="flaeche anzeige-wrap" href="%1$s" aria-label="%2$s"><div class="anzeige a-werben hell"><span class="text"><span class="eyebrow">%3$s</span><span class="claim">%4$s</span><span class="sub">%5$s</span></span><span class="cta">%6$s</span></div></a>',
-				esc_url( home_url( '/kontakt/#werben' ) ),
-				esc_attr__( 'Werben auf Tamil.de – Mediadaten', 'tamil-site' ),
-				esc_html__( 'Werben auf Tamil.de', 'tamil-site' ),
-				esc_html__( 'Eine Community. Drei Länder. Fünf Formate.', 'tamil-site' ),
-				esc_html__( 'Leaderboard, Half Page, In-Article, Footer, Mobile Sticky – Mediadaten auf Anfrage', 'tamil-site' ),
-				esc_html__( 'Mediadaten', 'tamil-site' )
-			);
-		case 'whatsapp-klein':
-			return sprintf(
-				'<a class="flaeche anzeige-wrap" href="%1$s" target="_blank" rel="noopener" aria-label="%2$s"><div class="anzeige a-whatsapp-klein">%3$s<span class="text"><span class="claim">%4$s</span></span><span class="cta">%5$s</span></div></a>',
-				esc_url( tamil_site_settings()['whatsapp_url'] ),
-				esc_attr__( 'Tamil.de WhatsApp-Kanal öffnen', 'tamil-site' ),
-				tamil_site_ico( 'whatsapp', 'ico' ),
-				esc_html__( 'Tamil.de auf WhatsApp', 'tamil-site' ),
-				esc_html__( 'Abonnieren', 'tamil-site' )
-			);
-		case 'whatsapp':
-			return sprintf(
-				'<a class="flaeche anzeige-wrap" href="%1$s" target="_blank" rel="noopener" aria-label="%2$s"><div class="anzeige a-whatsapp">%3$s<span class="text"><span class="claim">%4$s</span><span class="sub">%5$s</span></span><span class="cta">%6$s</span></div></a>',
-				esc_url( tamil_site_settings()['whatsapp_url'] ),
-				esc_attr__( 'Tamil.de WhatsApp-Kanal öffnen', 'tamil-site' ),
-				tamil_site_ico( 'whatsapp', 'ico ico-lg' ),
-				esc_html__( 'Kinostarts und Events direkt aufs Handy.', 'tamil-site' ),
-				esc_html__( 'Der Tamil.de-Kanal auf WhatsApp – keine Gruppe, keine Nummern sichtbar', 'tamil-site' ),
-				esc_html__( 'Kanal öffnen', 'tamil-site' )
-			);
+	$vorlagen = array(
+		'production'     => array(
+			'url'   => home_url( '/production/' ),
+			'label' => __( 'Tamil.de Production: Konzertreihe „Live mit dir!“', 'tamil-site' ),
+			'titel' => __( 'Live mit dir!', 'tamil-site' ),
+			'satz'  => __( 'A.R. Rahman, Ilaiyaraaja, Anirudh und Santhosh Narayanan standen oder stehen mit Tamil.de Production auf deutschen Bühnen.', 'tamil-site' ),
+			'link'  => __( 'Zur Konzertreihe', 'tamil-site' ),
+			'neu'   => false,
+		),
+		'event'          => array(
+			'url'   => home_url( '/kontakt/#event-einreichen' ),
+			'label' => __( 'Termin bei Tamil.de melden', 'tamil-site' ),
+			'titel' => __( 'Dein Fest im Kalender.', 'tamil-site' ),
+			'satz'  => __( 'Tempelfest, Konzert, Turnier: kostenlos melden, die Redaktion trägt es ein.', 'tamil-site' ),
+			'link'  => __( 'Termin melden', 'tamil-site' ),
+			'neu'   => false,
+		),
+		'werben'         => array(
+			'url'   => home_url( '/kontakt/#werben' ),
+			'label' => __( 'Werben auf Tamil.de: Mediadaten', 'tamil-site' ),
+			'titel' => __( 'Werben auf Tamil.de', 'tamil-site' ),
+			'satz'  => __( 'Eine Community in drei Ländern, fünf feste Werbeplätze. Mediadaten gibt es auf Anfrage.', 'tamil-site' ),
+			'link'  => __( 'Mediadaten', 'tamil-site' ),
+			'neu'   => false,
+		),
+		'whatsapp-klein' => array(
+			'url'   => tamil_site_settings()['whatsapp_url'],
+			'label' => __( 'Tamil.de WhatsApp-Kanal öffnen', 'tamil-site' ),
+			'titel' => __( 'Tamil.de auf WhatsApp', 'tamil-site' ),
+			'satz'  => '',
+			'link'  => __( 'Abonnieren', 'tamil-site' ),
+			'neu'   => true,
+		),
+		'whatsapp'       => array(
+			'url'   => tamil_site_settings()['whatsapp_url'],
+			'label' => __( 'Tamil.de WhatsApp-Kanal öffnen', 'tamil-site' ),
+			'titel' => __( 'Kinostarts und Termine direkt aufs Handy.', 'tamil-site' ),
+			'satz'  => __( 'Der Kanal von Tamil.de auf WhatsApp. Keine Gruppe, eure Nummern bleiben unsichtbar.', 'tamil-site' ),
+			'link'  => __( 'Kanal öffnen', 'tamil-site' ),
+			'neu'   => true,
+		),
+	);
+	if ( ! isset( $vorlagen[ $vorlage ] ) ) {
+		return '';
 	}
-	return '';
+	$v = $vorlagen[ $vorlage ];
+	return sprintf(
+		'<a class="flaeche anzeige-wrap" href="%1$s"%2$s aria-label="%3$s"><div class="anzeige a-%4$s"><span class="text"><span class="claim">%5$s</span>%6$s</span><span class="cta">%7$s</span></div></a>',
+		esc_url( $v['url'] ),
+		$v['neu'] ? ' target="_blank" rel="noopener"' : '',
+		esc_attr( $v['label'] ),
+		esc_attr( $vorlage ),
+		esc_html( $v['titel'] ),
+		'' !== $v['satz'] ? '<span class="sub">' . esc_html( $v['satz'] ) . '</span>' : '',
+		esc_html( $v['link'] )
+	);
 }
 
 /**

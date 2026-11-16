@@ -2,125 +2,119 @@
 /**
  * Template Name: Veranstaltungskalender
  *
- * Kommende Termine als Liste (nach Monat) und als Monatsraster, Filter nach Land und Art (Schlagwort des Termins).
- * Greift automatisch für die Seite mit dem Slug „events“.
+ * Termine in klar2: Seitenkopf mit „Termin einreichen“; „Ab heute“ als dunkler Bereich mit den kommenden Terminen als
+ * gestaltete Kacheln (Datum als größte Angabe nach dem Titel); „Das Jahr“ mit den vergangenen Terminen dieses Jahres
+ * nach Monaten zum Aufklappen. Greift automatisch für die Seite mit dem Slug „events“.
  */
 
 defined( 'ABSPATH' ) || exit;
 
 get_header();
 
-$rubrik = tamil_rubrik( 'events' );
-$ids    = function_exists( 'tamil_site_upcoming_events' ) ? array_map( 'intval', tamil_site_upcoming_events( 60, array( 'fields' => 'ids' ) )->posts ) : array();
-$monate = array();
-foreach ( $ids as $id ) {
-	$ts                                = (int) strtotime( (string) get_post_meta( $id, 'event_datum', true ) );
-	$monate[ wp_date( 'Y-m', $ts ) ][] = $id;
+$tamil_rubrik  = tamil_rubrik( 'events' );
+$tamil_kommend = function_exists( 'tamil_site_upcoming_events' ) ? array_map( 'intval', tamil_site_upcoming_events( 60, array( 'fields' => 'ids' ) )->posts ) : array();
+$tamil_jahr    = wp_date( 'Y' );
+$tamil_heute   = current_time( 'Y-m-d' );
+$tamil_vorbei  = function_exists( 'tamil_site_upcoming_events' ) ? tamil_ids(
+	array(
+		'posts_per_page' => 100,
+		'meta_key'       => 'event_datum', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+		'orderby'        => 'meta_value',
+		'order'          => 'DESC',
+		'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+			array(
+				'key'     => 'event_datum',
+				'value'   => array( $tamil_jahr . '-01-01', $tamil_heute ),
+				'compare' => 'BETWEEN',
+				'type'    => 'CHAR',
+			),
+		),
+	)
+) : array();
+$tamil_vorbei  = array_values( array_filter( $tamil_vorbei, static fn( $id ) => substr( (string) get_post_meta( $id, 'event_datum', true ), 0, 10 ) < $tamil_heute ) );
+$tamil_monate  = array();
+foreach ( $tamil_vorbei as $tamil_id ) {
+	$tamil_monate[ substr( (string) get_post_meta( $tamil_id, 'event_datum', true ), 0, 7 ) ][] = $tamil_id;
 }
-$heute    = current_datetime();
-$erster   = $heute->modify( 'first day of this month' )->setTime( 0, 0 );
-$tage     = (int) $erster->format( 't' );
-$offset   = (int) $erster->format( 'N' ) - 1;
-$im_monat = array();
-foreach ( $monate[ $erster->format( 'Y-m' ) ] ?? array() as $id ) {
-	$im_monat[ (int) wp_date( 'j', (int) strtotime( (string) get_post_meta( $id, 'event_datum', true ) ) ) ][] = $id;
-}
-$filter = array(
-	'DE'      => __( 'Deutschland', 'tamil' ),
-	'AT'      => __( 'Österreich', 'tamil' ),
-	'CH'      => __( 'Schweiz', 'tamil' ),
-	'kino'    => __( 'Kino', 'tamil' ),
-	'konzert' => __( 'Konzerte', 'tamil' ),
-	'kultur'  => __( 'Kultur', 'tamil' ),
-	'tanz'    => __( 'Tanz', 'tamil' ),
-);
+tamil_cache_fuellen( $tamil_kommend );
 ?>
-<div class="wrap">
-	<?php tamil_breadcrumb( array( array( get_the_title(), '' ) ) ); ?>
+<div class="innen">
 	<header class="seitenkopf">
-		<h1><?php the_title(); ?></h1>
-		<p class="beschreibung"><?php echo esc_html( $rubrik['beschreibung'] ); ?></p>
-		<div class="events-werkzeuge">
-			<div class="toggle" role="group" aria-label="<?php esc_attr_e( 'Ansicht', 'tamil' ); ?>"><button type="button" data-view="liste" aria-pressed="true"><?php esc_html_e( 'Liste', 'tamil' ); ?></button><button type="button" data-view="monat" aria-pressed="false"><?php esc_html_e( 'Monat', 'tamil' ); ?></button></div>
-			<div class="chips" data-filter-group="ev" role="group" aria-label="<?php esc_attr_e( 'Filter', 'tamil' ); ?>">
-				<button type="button" class="chip" data-filter="alle" aria-pressed="true"><?php esc_html_e( 'Alle', 'tamil' ); ?></button>
-				<?php foreach ( $filter as $key => $label ) : ?>
-					<button type="button" class="chip" data-filter="<?php echo esc_attr( $key ); ?>" aria-pressed="false"><?php echo esc_html( $label ); ?></button>
-				<?php endforeach; ?>
-			</div>
-		</div>
+		<h1 class="seitenkopf__titel"><?php the_title(); ?></h1>
+		<p class="seitenkopf__zeile"><?php echo esc_html( $tamil_rubrik['beschreibung'] ); ?></p>
+		<p class="aktionen"><a class="textlink" href="<?php echo esc_url( tamil_seiten_url( 'kontakt', 'event-einreichen' ) ); ?>"><?php esc_html_e( 'Termin einreichen', 'tamil' ); ?></a></p>
 	</header>
-	<div class="mit-spalte">
-		<div>
+</div>
+
+<section class="woche woche--seite" aria-labelledby="ab-heute">
+	<div class="innen">
+		<h2 class="woche__titel" id="ab-heute"><?php esc_html_e( 'Ab heute', 'tamil' ); ?></h2>
+		<p class="woche__art"><time datetime="<?php echo esc_attr( $tamil_heute ); ?>"><?php echo esc_html( tamil_stand( time() ) ); ?></time></p>
+		<ul class="termine-raster">
 			<?php
-			while ( have_posts() ) :
-				the_post();
-				?>
-				<?php
-				if ( '' !== trim( (string) get_the_content() ) ) :
-					?>
-					<div class="artikel-text"><?php the_content(); ?></div><?php endif; ?>
-			<?php endwhile; ?>
-			<div data-view-panel="liste">
-				<?php foreach ( $monate as $monat => $liste ) : ?>
-					<?php /* translators: %d: Anzahl */ ?>
-					<h2 class="monat-kopf"><?php echo esc_html( wp_date( 'F Y', (int) strtotime( $monat . '-01' ) ) ); ?> <span class="n"><?php echo esc_html( sprintf( _n( '%d Event', '%d Events', count( $liste ), 'tamil' ), count( $liste ) ) ); ?></span></h2>
-					<div class="event-liste">
-						<?php foreach ( $liste as $id ) : ?>
-							<?php get_template_part( 'template-parts/event-card', null, array( 'post' => $id ) ); ?>
-						<?php endforeach; ?>
-					</div>
-				<?php endforeach; ?>
-				<p class="leer" data-filter-leer="ev"<?php echo $ids ? ' hidden' : ''; ?>><?php esc_html_e( 'Für diese Auswahl sind gerade keine Termine eingetragen.', 'tamil' ); ?> <a href="<?php echo esc_url( tamil_seiten_url( 'kontakt', 'event-einreichen' ) ); ?>"><?php esc_html_e( 'Event einreichen', 'tamil' ); ?></a></p>
-			</div>
-			<div data-view-panel="monat" hidden>
-				<h2 class="monat-kopf"><?php echo esc_html( wp_date( 'F Y', $erster->getTimestamp() ) ); ?> <span class="n"><?php esc_html_e( 'Monatsansicht', 'tamil' ); ?></span></h2>
-				<table class="monatsraster">
-					<thead><tr>
-					<?php
-					foreach ( array( 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So' ) as $d ) :
-						?>
-						<th scope="col"><?php echo esc_html( $d ); ?></th><?php endforeach; ?></tr></thead>
-					<tbody><tr>
-						<?php
-						for ( $i = 0; $i < $offset; $i++ ) {
-							echo '<td class="leer"></td>';
-						}
-						for ( $tag = 1; $tag <= $tage; $tag++ ) {
-							$wochentag = ( $offset + $tag - 1 ) % 7;
-							echo '<td class="' . ( $wochentag >= 5 ? 'wochenende' : '' ) . '"><span class="tag-nr">' . (int) $tag . '</span>';
-							$liste = $im_monat[ $tag ] ?? array();
-							foreach ( array_slice( $liste, 0, 2 ) as $id ) {
-								$tags = get_the_tags( $id );
-								$k    = $tags ? $tags[0]->slug : '';
-								echo '<a class="pill ' . esc_attr( $k ) . '" href="' . esc_url( get_permalink( $id ) ) . '" title="' . esc_attr( get_the_title( $id ) ) . '">' . esc_html( get_the_title( $id ) ) . '</a>';
-							}
-							if ( count( $liste ) > 2 ) {
-								/* translators: %d: Anzahl */
-								echo '<span class="mehr">' . esc_html( sprintf( __( '+%d weitere', 'tamil' ), count( $liste ) - 2 ) ) . '</span>';
-							}
-							echo '</td>';
-							if ( 6 === $wochentag && $tag < $tage ) {
-								echo '</tr><tr>';
-							}
-						}
-						$rest = ( 7 - ( $offset + $tage ) % 7 ) % 7;
-						for ( $i = 0; $i < $rest; $i++ ) {
-							echo '<td class="leer"></td>';
-						}
-						?>
-					</tr></tbody>
-				</table>
-			</div>
-			<div class="mitmachen mitmachen-schmal"><div class="mitmachen-text">
-				<p class="rubrik r-safran"><?php esc_html_e( 'Event einreichen', 'tamil' ); ?></p>
-				<h2><?php esc_html_e( 'Du veranstaltest etwas? Trag dein Event kostenlos ein.', 'tamil' ); ?></h2>
-				<p><?php esc_html_e( 'Konzert, Tempelfest, Turnier oder Kinoabend – die Redaktion prüft die Angaben und nimmt das Event in den Kalender auf.', 'tamil' ); ?></p>
-				<div class="aktionen"><a class="knopf knopf-hell" href="<?php echo esc_url( tamil_seiten_url( 'kontakt', 'event-einreichen' ) ); ?>"><?php tamil_icon( 'plus', 'ico ico-sm' ); ?> <?php esc_html_e( 'Event einreichen', 'tamil' ); ?></a></div>
-			</div></div>
-		</div>
-		<?php get_sidebar( null, array( 'events' => false ) ); ?>
+			foreach ( $tamil_kommend as $tamil_id ) {
+				echo tamil_grafik_termin( $tamil_id, 'h3', true ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_grafik_termin()
+			}
+			if ( ! $tamil_kommend ) {
+				echo tamil_grafik_leer( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_grafik_leer()
+					__( 'Termin einreichen', 'tamil' ),
+					__( 'Gerade steht kein kommender Termin im Kalender. Kennt ihr einen? Schickt ihn der Redaktion, kostenlos für Vereine, Tempel und Schulen.', 'tamil' ),
+					tamil_seiten_url( 'kontakt', 'event-einreichen' )
+				);
+			}
+			?>
+		</ul>
 	</div>
+</section>
+
+<div class="innen">
+	<?php tamil_leaderboard( 'anzeige-zwischen' ); ?>
+	<?php if ( $tamil_monate ) : ?>
+		<section class="block" aria-labelledby="das-jahr">
+			<?php /* translators: %s: Jahr */ ?>
+			<h2 class="block-titel" id="das-jahr"><?php echo esc_html( sprintf( __( 'Das Jahr %s', 'tamil' ), $tamil_jahr ) ); ?></h2>
+			<p class="block__zeile"><?php esc_html_e( 'Feste und Aufführungen, die schon waren, nach Monaten.', 'tamil' ); ?></p>
+			<?php $tamil_erster = true; ?>
+			<?php foreach ( $tamil_monate as $tamil_monat => $tamil_liste ) : ?>
+				<?php $tamil_ts = (int) strtotime( $tamil_monat . '-01' ); ?>
+				<details class="monat"<?php echo $tamil_erster ? ' open' : ''; ?>>
+					<summary>
+						<span class="monat__name"><?php echo esc_html( wp_date( 'F', $tamil_ts ) ); ?></span>
+						<?php /* translators: %d: Anzahl */ ?>
+						<span class="monat__zahl"><?php echo esc_html( sprintf( _n( '%d Termin', '%d Termine', count( $tamil_liste ), 'tamil' ), count( $tamil_liste ) ) ); ?></span>
+					</summary>
+					<ul class="liste">
+						<?php
+						foreach ( $tamil_liste as $tamil_id ) {
+							echo tamil_anr_zeile( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_anr_zeile()
+								$tamil_id,
+								array(
+									'klasse'   => 'zeile',
+									'rubrik'   => false,
+									'vorspann' => false,
+									'bild'     => false, // zugeklappt lädt der Browser keine Bilder; die Zeile trägt Datum und Titel
+									'ts'       => (int) strtotime( (string) get_post_meta( $tamil_id, 'event_datum', true ) ),
+								)
+							);
+						}
+						?>
+					</ul>
+				</details>
+				<?php $tamil_erster = false; ?>
+			<?php endforeach; ?>
+		</section>
+	<?php endif; ?>
+
+	<?php
+	while ( have_posts() ) :
+		the_post();
+		if ( '' !== trim( (string) get_the_content() ) ) :
+			?>
+			<section class="block seite__text"><div class="inhalt"><?php the_content(); ?></div></section>
+			<?php
+		endif;
+	endwhile;
+	?>
 </div>
 <?php
 get_footer();

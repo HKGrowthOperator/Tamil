@@ -230,7 +230,7 @@ function tamil_site_vz_kurzinfo( int $id ): string {
 		$teile[] = $term ? $term->name : '';
 	}
 	$teile[] = (string) ( $w['stadt'] ?? '' );
-	return implode( ' · ', array_filter( $teile ) );
+	return implode( ', ', array_filter( $teile ) );
 }
 
 /**

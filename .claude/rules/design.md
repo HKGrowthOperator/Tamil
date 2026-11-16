@@ -11,6 +11,11 @@ paths:
 
 # Regeln: Gestaltung
 
+- **Seit 16.11.2026 gilt die Richtung `klar2`** (Wahl von Luis, `docs/abnahme/2026-11-16-G2-klar2.md`). Grundlage:
+  - `design/richtungen/klar2/` und `design/brief.md` §10.
+  - Bewegung beim Scrollen ist neu erlaubt: ruhig, nur unter `prefers-reduced-motion: no-preference`; die Art wählt
+    Luis.
+  - Wo die folgenden Punkte zu brief-v3 und Hallmark klar2 widersprechen, gilt klar2.
 - **Seit 13.11.2026 gilt `design/brief-v3.md` mit Hallmark** (`/home/user/hkgrowthoperator/hallmark/skills/hallmark/`,
   Repo `HKGrowthOperator/hallmark`): Floor, Reflex-Gates, Stempel oben im CSS, `sloplint --genre editorial --render`
   ohne FAIL, Prüfung aus frischem Kontext. Der Floor geht den alten Punkten unten vor (keine Dachzeilen, keine

@@ -3,7 +3,44 @@
 Neueste oben. Format: Datum · Entscheidung · wer · warum. Was hier steht, gilt, bis ein neuerer Eintrag es ändert.
 Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
+## 16.11.2026
+
+- **Bewegung D, Theme direkt in klar2, ohne Probeseite und Tor G3, direkt aufs Testsystem.**
+  - Luis wählt aus der Vorschau die Variante D: Kopf faltet ins Band, rote Leselinie, Tiefe am Aufmacher, dunkle
+    Fläche zieht auf, große Bilder decken auf, Listen steigen.
+  - Statt Probeseite und Tor G3 wird das WordPress-Theme sofort umgebaut und über `claude/radar-multiagent` auf
+    das Testsystem gebracht. Die Abnahme geschieht dort mit echten Beiträgen.
+  - Das Cockpit folgt im zweiten Schritt.
+
+  · Luis (`docs/abnahme/2026-11-16-G2-klar2.md`, Nachtrag)
+- **Design: `klar2` statt „Tageskalender“, auf allen Seiten von Website und Cockpit.** Das kehrt zwei frühere
+  Entscheidungen um:
+  - das Urteil vom 13.11. („komplett generisch“, gilt für klar2);
+  - die Wahl vom 14.11. (Mischung A + B, „Tageskalender“).
+
+  Was daraus folgt:
+  - Die Verbote aus „Runden 5–7“ in `abgelehnt.md` sind für die Bestandteile von klar2 aufgehoben. Das betrifft
+    Dachzeilen, Bildkacheln mit Verlauf und Titel im Bild, den dunklen „Diese Woche“-Bereich, Rubrikkacheln und
+    Metazeilen mit „·“.
+  - Für die Gestaltung gelten wieder `design/brief.md` §10 (klar2) und diese Wahl. `design/brief-v3.md` und der
+    Hallmark-Floor gelten nicht mehr, wo sie klar2 widersprechen.
+  - Neu ist **Bewegung beim Scrollen**: ruhig, nicht hyperrealistisch, nur unter
+    `prefers-reduced-motion: no-preference`. Luis wählt die Art aus einer Vorschau. Damit ist §10.1 („kein
+    Einblenden beim Scrollen“) aufgehoben.
+  - Tageskalender bleibt in der Git-Historie (`claude/mache-weiter-i23fs9`, Theme 2.0.0) und wird nicht weitergebaut.
+
+  Weg: Vorschau Bewegung → `/design-ausbau klar2` für Website und Cockpit → Tor G3 → `/design-umsetzung`. · Luis
+  (`docs/abnahme/2026-11-16-G2-klar2.md`)
+
 ## 14.11.2026
+
+- **Theme „Tageskalender“: Wortdichte (Hallmark Gate 58) bewusst über der Grenze.** Die Dichte entsteht aus der
+  Termintabelle Tag · Was · Wer · Wo, dem Teil aus Linie B, den Luis ausdrücklich wollte; sie liegt im Rahmen großer
+  Nachrichtenseiten (Kritik r3). Keine Ausnahme im CSS-Stempel (Hallmark lehnt sie ab), sondern dieser Eintrag. ·
+  Hauptsitzung · Wieder ansehen, wenn Luis die Seite mit echten Daten gesehen hat.
+- **Eigenanzeigen auf ungebuchten Werbeplätzen bleiben (F3), bis Luis anders entscheidet.** Die Kritik r3 empfiehlt,
+  ungebuchte Plätze leer zu lassen; das widerspricht der bestätigten Festlegung F3 („nach dem Ende steht wieder die
+  Eigenanzeige“). Frage an Luis im Morgenbericht. · Hauptsitzung
 
 - **Satzprüfung im Agent-Import strenger, aber ohne Überstrenge:** Zahlen nur als ganze Zahl, Zahlwörter und
   Verneinungen sind Fakten, höchstens drei überlappende Claims je Satz (nicht überlappende zählen nicht, statt den Satz
