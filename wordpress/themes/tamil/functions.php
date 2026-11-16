@@ -18,6 +18,7 @@ require_once TAMIL_THEME_DIR . '/inc/rubriken.php';
 require_once TAMIL_THEME_DIR . '/inc/template-tags.php';
 require_once TAMIL_THEME_DIR . '/inc/rubrikfotos.php';
 require_once TAMIL_THEME_DIR . '/inc/bausteine.php';
+require_once TAMIL_THEME_DIR . '/inc/anreisser.php';
 require_once TAMIL_THEME_DIR . '/inc/navigation.php';
 require_once TAMIL_THEME_DIR . '/inc/queries.php';
 require_once TAMIL_THEME_DIR . '/inc/content-filters.php';

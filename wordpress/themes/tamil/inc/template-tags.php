@@ -69,9 +69,9 @@ function tamil_anzeige( string $platz ): void {
  * Die Vorlagen rufen ihn an ihrer Stelle auf; footer.php ruft ihn zuletzt noch einmal auf, falls eine Vorlage ihn
  * nicht gesetzt hat (dann steht er über dem Fuß). Ein ungebuchter Platz zeigt die Eigenanzeige (Festlegung F3).
  *
- * @param string $klasse Klasse des umgebenden Elements („wrap anzeige-zwischen“ oder ein Rasterbereich).
+ * @param string $klasse Klasse des umgebenden Elements („innen anzeige-zwischen“ oder ein Rasterbereich).
  */
-function tamil_leaderboard( string $klasse = 'wrap anzeige-zwischen' ): void {
+function tamil_leaderboard( string $klasse = 'innen anzeige-zwischen' ): void {
 	static $gezeigt = false;
 	if ( $gezeigt || ! function_exists( 'tamil_site_anzeige' ) ) {
 		return;

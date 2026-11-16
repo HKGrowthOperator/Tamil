@@ -1,0 +1,25 @@
+<?php
+/**
+ * Rubrikblock der Startseite: Blocktitel als Link zur Rubrik, darunter bis zu vier Nebenstücke (Bild über dem Text am
+ * Desktop, Bild links am Handy).
+ *
+ * @var array $args { @type string $slug Rubrik, @type int[] $ids Beiträge mit Bild. }
+ */
+
+defined( 'ABSPATH' ) || exit;
+
+$tamil_rubrik = tamil_rubrik( (string) $args['slug'] );
+$tamil_id_t   = 't-rubrik-' . sanitize_html_class( (string) $args['slug'] );
+?>
+<section class="rubrikblock innen" aria-labelledby="<?php echo esc_attr( $tamil_id_t ); ?>">
+	<div class="block-kopf">
+		<h2 class="block-titel" id="<?php echo esc_attr( $tamil_id_t ); ?>"><a href="<?php echo esc_url( $tamil_rubrik['url'] ); ?>"><?php echo esc_html( $tamil_rubrik['label'] ); ?></a></h2>
+	</div>
+	<div class="neben">
+		<?php
+		foreach ( (array) $args['ids'] as $tamil_id ) {
+			echo tamil_anr_stueck( (int) $tamil_id, array( 'rubrik' => false ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_anr_stueck()
+		}
+		?>
+	</div>
+</section>

@@ -253,20 +253,256 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .mehr__paneel { left: auto; right: calc(var(--rand) - 14px); width: 420px; padding: 16px 24px 20px; border: 1px solid var(--tinte); border-top: 0; }
 }
 
-/* ---------- Bilder ---------- */
-.bild { margin: 0; }
-.bild img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border-radius: var(--radius-card); background: var(--color-paper-3); }
-.bild-link { display: block; }
-.bild-link:hover img { opacity: 0.92; }
-.bild figcaption, .daumen figcaption { margin-top: var(--space-2xs); font-size: var(--text-sm); color: var(--color-muted); line-height: 1.4; }
+/* ---------- Bausteine: Anreißer, Rahmen, Dachzeile, Titel, Bild mit Titel ---------- */
+.anr { display: block; }
+.anr:hover .titel { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.14em; }
+
+/* Bildrahmen: Format per Klasse, Bild füllt (object-fit), schneidet den leichten Zoom beim Überfahren ab */
+.rahmen { position: relative; overflow: hidden; background: var(--flaeche); }
+.rahmen img { width: 100%; height: 100%; object-fit: cover; transition: var(--zoom); }
+.anr:hover .rahmen img { transform: scale(1.03); }
+.r169 { aspect-ratio: 16 / 9; }
+.r43 { aspect-ratio: 4 / 3; }
+.r83 { aspect-ratio: 8 / 3; }
+
+/* Dachzeile „Rubrik | Datum“, ein Format überall */
+.meta { font-size: 13px; line-height: 1.35; color: var(--leise); margin-bottom: 6px; }
+.meta__rubrik { color: var(--rot); font-weight: 600; }
+.meta__rubrik::after {
+  content: ""; display: inline-block; width: 1px; height: 0.95em; margin: 0 8px;
+  background: currentColor; opacity: 0.7; vertical-align: -0.12em;
+}
+.meta__rubrik a { color: inherit; }
+.meta__rubrik a:hover { text-decoration: underline; }
+.titel { font-weight: 650; text-wrap: balance; hyphens: manual; }
+.vorspann { margin-top: 8px; }
+
+.block-titel {
+  font-size: 19px; line-height: 1.25; font-weight: 700;
+  border-top: 1px solid var(--tinte); padding-top: 12px; margin-bottom: 4px;
+}
+.block-titel a:hover { color: var(--rot); }
+.block-kopf { display: flex; align-items: baseline; justify-content: space-between; gap: 0 24px; flex-wrap: wrap; border-top: 1px solid var(--tinte); }
+.block-kopf .block-titel { border-top: 0; }
+.block-kopf .textlink { font-size: 15px; }
+
+/* Titel im Bild: Text unten auf dem Verlauf; Dachzeile hell, weil Rot auf Dunkel zu schwach ist */
+.imbild {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  padding: 60px var(--rand) 16px;
+  background-image: var(--verlauf);
+  color: var(--hell);
+}
+.imbild .meta { color: var(--hell-leise); }
+.imbild .meta__rubrik { color: var(--hell); }
+.imbild-anr:focus-visible, .kacheln a:focus-visible { outline: none; }
+/* Fokus bei Bildern mit Titel im Bild: nach innen gezeichnet, dunkler Rand mit heller Linie */
+.imbild-anr:focus-visible .rahmen::after, .kacheln a:focus-visible .rahmen::after {
+  content: ""; position: absolute; inset: 0; z-index: 2;
+  border: 3px solid var(--tinte); outline: 2px solid var(--hell); outline-offset: -5px;
+}
+.imbild-anr:focus-visible .vorspann { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+
+/* ---------- Startseite: Aufmacher, Nebenstücke, Meldungen, Rubrikkacheln ---------- */
+.oben { padding-top: 0; }
+.aufmacher .rahmen { margin-inline: calc(-1 * var(--rand)); }
+.aufmacher .rahmen img { object-position: 50% 30%; }
+.aufmacher .titel { font-size: 30px; line-height: 1.12; letter-spacing: -0.012em; }
+.aufmacher .vorspann { margin-top: 12px; font-size: 17px; line-height: 1.5; }
+.aufmacher--ohne-bild .titel { font-size: 30px; }
+
+.kacheln { margin-top: 32px; }
+.kacheln ul {
+  display: flex; gap: 8px;
+  overflow-x: auto; scrollbar-width: none;
+  margin: -5px calc(-1 * var(--rand)); padding: 5px var(--rand);
+  scroll-padding-inline: var(--rand) 50%; scroll-snap-type: x proximity;
+}
+.kacheln ul::-webkit-scrollbar { display: none; }
+.kacheln li { flex: 0 0 138px; scroll-snap-align: start; }
+.kacheln a { position: relative; display: block; }
+.kacheln .rahmen { display: block; aspect-ratio: 16 / 9; }
+.kacheln a:hover .rahmen img { transform: scale(1.03); }
+.kachel__name {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  padding: 26px 10px 7px;
+  background-image: var(--verlauf-kurz); color: var(--hell);
+  font-size: 15px; line-height: 1.25; font-weight: 600;
+}
+.kacheln a:hover .kachel__name { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.14em; }
+
+.neben { margin-top: 20px; }
+.stueck { border-top: 1px solid var(--linie); }
+.stueck .anr {
+  display: grid; grid-template-columns: 112px minmax(0, 1fr); column-gap: 12px; align-items: start;
+  padding: 16px 0;
+}
+.stueck.ohne-bild .anr { grid-template-columns: minmax(0, 1fr); }
+.stueck .rahmen { margin-top: 3px; }
+.stueck .titel { font-size: 19px; line-height: 1.22; letter-spacing: -0.005em; }
+.stueck .vorspann { display: none; font-size: 16px; line-height: 1.5; }
+
+.meldungen { margin-top: 28px; }
+.meldung + .meldung { border-top: 1px solid var(--linie); }
+.meldung .anr {
+  display: grid; grid-template-columns: minmax(0, 1fr) 96px; column-gap: 14px; align-items: start;
+  padding: 14px 0;
+}
+.meldung.ohne-bild .anr { grid-template-columns: minmax(0, 1fr); }
+.meldung .rahmen { margin-top: 3px; }
+.meldung .titel { font-size: 17px; line-height: 1.3; font-weight: 600; }
+
+/* ---------- Bildkacheln mit Titel im Bild (Diese Woche, Küche) ---------- */
+.kachel { align-self: start; }
+.kachel .anr { position: relative; }
+.kachel .titel { font-size: 19px; line-height: 1.2; }
+.kachel--gross .titel { font-size: 22px; line-height: 1.18; }
+.kachel .imbild { padding-bottom: 14px; }
+.kachel__unter { padding-top: 12px; }
+
+/* ---------- Diese Woche (dunkel) ---------- */
+.woche { margin-top: 48px; padding: 28px 0 40px; background: var(--tinte); color: var(--hell); }
+.woche :focus-visible { outline-color: var(--hell); }
+.woche__titel {
+  font-size: 22px; line-height: 1.2; font-weight: 700;
+  padding-bottom: 14px; margin-bottom: 20px; border-bottom: 1px solid var(--linie-dunkel);
+}
+.woche__raster { display: grid; gap: 16px; }
+.woche .kachel--gross .rahmen { aspect-ratio: 4 / 3; }
+.woche .kachel__unter .meta { color: var(--hell-leise); }
+.woche .kachel__unter .meta__rubrik { color: var(--hell); }
+.woche__gruppe { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.woche__art { font-size: 13px; line-height: 1.35; font-weight: 600; color: var(--hell-leise); padding-top: 6px; }
+.woche__gruppe ul { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+.grafik { flex: 1; background: var(--flaeche-dunkel); }
+.grafik .anr { height: 100%; padding: 16px 16px 18px; }
+.grafik .titel { font-size: 20px; line-height: 1.2; }
+.grafik__zahl { margin-top: 6px; font-size: 18px; line-height: 1.3; font-weight: 600; font-variant-numeric: tabular-nums; }
+.grafik__orte { margin-top: 6px; font-size: 15px; line-height: 1.45; color: var(--hell-leise); }
+.grafik__text { margin-top: 8px; font-size: 16px; line-height: 1.5; max-width: 40em; }
+.grafik--leer .titel { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.14em; }
+.woche__weiter { display: flex; flex-wrap: wrap; gap: 0 24px; margin-top: 16px; }
+.woche .textlink { color: var(--hell); }
+.woche .textlink:hover { color: var(--hell-leise); }
+
+/* ---------- Küche (hell) und Rubrikblöcke: jede Kachel behält ihr Format auf allen Breiten ---------- */
+.kueche { margin-top: 44px; }
+.kueche__raster { display: grid; gap: 12px; padding-top: 14px; }
+.kueche .kachel--klein .imbild { padding: 30px var(--rand) 10px; background-image: var(--verlauf-kurz); }
+.kueche .kachel--klein .meta { margin-bottom: 2px; }
+.rubrikblock { margin-top: 44px; }
+.rubrikblock .neben { margin-top: 0; }
+.rubrikblock .stueck:first-child { border-top: 0; }
+
+/* ---------- Tablet ---------- */
+@media (min-width: 600px) {
+  .stueck .anr { grid-template-columns: 200px minmax(0, 1fr); column-gap: 20px; }
+  .stueck .rahmen { margin-top: 0; }
+  .stueck .vorspann { display: block; }
+  .meldung .anr { grid-template-columns: minmax(0, 1fr) 120px; }
+  .kacheln li { flex-basis: 160px; }
+  .woche__raster { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .woche .kachel--gross, .woche__gruppe--termine { grid-column: 1 / -1; }
+  .woche__raster.ohne-klein .woche__gruppe--kino { grid-column: 1 / -1; }
+  .woche__gruppe--termine ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .termine-1 .woche__gruppe--termine ul { grid-template-columns: minmax(0, 1fr); }
+  .termine-3 .woche__gruppe--termine li:last-child { grid-column: 1 / -1; }
+  /* Küche: große Kachel 16:9 links, kleine 8:3 rechts gestapelt. Die Spaltenbreite ist so gerechnet, dass beide Seiten
+     auf derselben Linie enden (bei 1200 px Inhalt 803 : 373, wie klar2). */
+  .kueche__raster { column-gap: 24px; row-gap: 16px; padding-top: 16px; }
+  .kueche__raster--4 { grid-template-columns: minmax(0, 1fr) calc((100% - 24px) / 3 - 18.963px); }
+  .kueche__raster--3 { grid-template-columns: minmax(0, 1fr) calc((100% - 24px) * 0.428571 - 12.19px); }
+  .kueche__raster--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kueche__raster--4 .kachel--gross { grid-row: 1 / 4; }
+  .kueche__raster--3 .kachel--gross { grid-row: 1 / 3; }
+  .kueche__raster--2 .kachel--klein .rahmen { aspect-ratio: 16 / 9; }
+  .kueche__raster--1 .kachel--gross { max-width: 803px; }
+  .kueche .kachel--klein .titel { font-size: 17px; line-height: 1.2; }
+}
+/* Die Meldungen zweispaltig, solange sie unter dem Aufmacher stehen */
+@media (min-width: 600px) and (max-width: 1023px) {
+  .aufmacher .rahmen { margin-inline: 0; }
+  .aufmacher .titel { font-size: 34px; line-height: 1.1; }
+  .aufmacher .imbild { padding: 90px 28px 22px; }
+  .meldungen ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 24px; }
+  .meldung { border-top: 1px solid var(--linie); }
+  .meldung:nth-child(-n+2) { border-top: 0; }
+  .kueche .kachel--klein .meta { display: none; }
+  .kueche .kachel--klein .imbild { padding: 24px 12px 8px; }
+}
+
+/* ---------- Desktop ---------- */
+@media (min-width: 1024px) {
+  .oben {
+    display: grid; grid-template-columns: minmax(0, 1fr) 388px;
+    grid-template-areas: "auf mel" "neb neb" "kach kach";
+    column-gap: 32px; align-items: start; padding-top: 24px;
+  }
+  .aufmacher { grid-area: auf; }
+  .meldungen { grid-area: mel; margin-top: 0; }
+  .meldungen .block-titel { margin-bottom: 0; }
+  .neben { grid-area: neb; margin-top: 40px; }
+  .kacheln { grid-area: kach; margin-top: 40px; padding: 20px 0; border-top: 1px solid var(--linie); border-bottom: 1px solid var(--linie); }
+
+  .aufmacher .rahmen { margin-inline: 0; }
+  .aufmacher .imbild { padding: 120px 32px 26px; }
+  .aufmacher .titel { font-size: 40px; line-height: 1.1; letter-spacing: -0.015em; max-width: 17em; }
+  .aufmacher .vorspann { margin-top: 14px; max-width: 40em; }
+
+  .meldung .anr { grid-template-columns: minmax(0, 1fr) 120px; column-gap: 16px; padding: 13px 0 14px; }
+
+  .kacheln ul { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 16px; overflow: visible; margin: 0; padding: 0; }
+  .kachel__name { font-size: 16px; padding: 26px 12px 9px; }
+
+  .neben { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); column-gap: 24px; }
+  .neben .stueck { border-top: 0; }
+  .neben .stueck .anr { display: block; padding: 0 0 8px; }
+  .neben .stueck .rahmen { margin: 0 0 12px; }
+  .neben .stueck .titel { font-size: 20px; line-height: 1.22; }
+  .neben .stueck .vorspann { margin-top: 8px; font-size: 16px; }
+  .rubrikblock .neben { padding-top: 16px; }
+
+  .woche { margin-top: 64px; padding: 36px 0 48px; }
+  .woche__titel { font-size: 24px; margin-bottom: 24px; }
+  .woche__raster {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-areas: "gross gross klein" "gross gross kino" "termin termin termin";
+    grid-template-rows: auto 1fr auto;
+    gap: 24px;
+  }
+  .woche__raster.ohne-klein { grid-template-areas: "gross gross kino" "gross gross kino" "termin termin termin"; }
+  .woche__raster.ohne-gross { grid-template-areas: "klein klein kino" "termin termin termin"; grid-template-rows: auto auto; }
+  .woche__raster.ohne-gross.ohne-klein { grid-template-areas: "kino termin termin"; grid-template-rows: auto; }
+  .woche .kachel--gross { grid-area: gross; }
+  .woche .kachel--klein { grid-area: klein; }
+  .woche__gruppe--kino { grid-area: kino; align-self: stretch; }
+  .woche__gruppe--termine { grid-area: termin; }
+  .woche__raster.ohne-klein .woche__gruppe--kino { grid-column: auto; }
+  .kachel--gross .imbild { padding: 120px 28px 24px; }
+  .kachel .titel { font-size: 20px; }
+  .kachel--gross .titel { font-size: 26px; line-height: 1.16; max-width: 22em; }
+  .kachel .imbild { padding-inline: 20px; }
+  .grafik .anr { padding: 18px 20px 20px; }
+  .woche__gruppe--termine ul { grid-auto-flow: column; grid-template-columns: none; grid-auto-columns: minmax(0, 1fr); gap: 24px; }
+  .termine-3 .woche__gruppe--termine li:last-child { grid-column: auto; }
+  /* ein Termin: zwei Gruppen über die volle Breite, kein leeres Viertel */
+  .termine-1 .woche__gruppe--termine .anr { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); column-gap: 48px; align-content: start; }
+  .termine-1 .woche__gruppe--termine .titel, .termine-1 .woche__gruppe--termine .grafik__zahl { grid-column: 1; }
+  .termine-1 .woche__gruppe--termine .grafik__orte, .termine-1 .woche__gruppe--termine .grafik__text { grid-column: 2; }
+  .termine-1 .woche__gruppe--termine .grafik__orte { grid-row: 1; margin-top: 2px; }
+  .termine-1 .woche__gruppe--termine .grafik__text { grid-row: 2 / 4; }
+  .termine-1 .ohne-gross.ohne-klein .woche__gruppe--termine .anr, .ohne-gross.ohne-klein.termine-1 .woche__gruppe--termine .anr { display: block; }
+
+  .kueche { margin-top: 64px; }
+  .kueche .kachel--klein .imbild { padding: 30px 16px 10px; }
+  .rubrikblock { margin-top: 64px; }
+}
 
 /* ---------- Abschnitte ---------- */
 .abschnitt { padding-block: var(--section-gap-s); }
 .abschnitt + .abschnitt { border-top: 1px solid var(--color-rule); }
 .mulde { background: var(--color-paper-2); }
-.kopfzeile { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0 var(--space-xl); margin-bottom: var(--space-md); }
-.kopfzeile h2 { font-size: var(--text-h2); }
-.kopfzeile .mehr { font-weight: 600; min-height: 44px; display: inline-flex; align-items: center; color: var(--color-ink); }
+.wrap { width: 100%; max-width: var(--breite); margin-inline: auto; padding-inline: var(--rand); }
 .satz { margin: var(--space-sm) 0 0; max-width: 60ch; color: var(--color-ink-2); }
 .weiter-links { display: flex; flex-wrap: wrap; gap: 0 var(--space-lg); margin: var(--space-md) 0 0; }
 .seitenkopf { padding-block: var(--space-xl) var(--space-lg); border-bottom: 1px solid var(--color-rule); }
@@ -380,43 +616,6 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .tage .daumen a { grid-area: bild; }
   .tage .daumen figcaption { grid-area: cap; margin-top: var(--space-2xs); }
   .tage .daumen img { aspect-ratio: 1 / 1; }
-}
-
-/* ---------- Startseite: Tagesblatt ---------- */
-.blatt { padding-block: var(--space-xl) var(--space-lg); }
-/* Raster: Datum und Aufmacher links, Foto rechts; darunter Feste und Kino in einer Zeile mit gleicher Oberkante */
-.blatt .wrap { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); grid-template-areas: "tag bild" "auf bild" "feste kino"; gap: var(--space-lg) var(--gap-columns); align-items: start; }
-.blatt-text, .blatt-rechts { display: contents; }
-.blatt-tag { grid-area: tag; }
-.blatt .aufmacher { grid-area: auf; }
-.blatt-feste { grid-area: feste; }
-.bild.aufmacher-bild { grid-area: bild; }
-.blatt-kino { grid-area: kino; }
-.aufmacher-datum { margin-top: var(--space-xs); color: var(--color-muted); font-size: var(--text-md); }
-.aufmacher { display: flex; flex-direction: column; }
-.aufmacher h1 { font-size: var(--text-h1); line-height: 1.12; max-width: 26ch; }
-.aufmacher .vorspann { margin: var(--space-md) 0 0; max-width: 60ch; font-size: var(--text-lead); line-height: 1.5; color: var(--color-ink-2); }
-.aufmacher .aktionen { margin-top: var(--space-xs); }
-.bild.aufmacher-bild img { aspect-ratio: 4 / 3; }
-.titel-link { text-decoration: none; }
-.titel-link:hover { text-decoration: underline; text-decoration-thickness: 2px; }
-@media (max-width: 860px) {
-  .blatt { padding-block: var(--space-md) var(--space-lg); }
-  .blatt .wrap { display: flex; flex-direction: column; gap: 0; }
-  .blatt-text, .blatt .aufmacher, .blatt-rechts { display: contents; }
-  .blatt-tag { order: 1; margin-bottom: var(--space-md); }
-  .blatt-feste { order: 2; margin-bottom: var(--space-lg); }
-  .aufmacher h1, .aufmacher .aufmacher-datum { order: 3; }
-  .bild.aufmacher-bild { order: 4; margin-top: var(--space-md); }
-  .bild.aufmacher-bild img { aspect-ratio: 3 / 2; }
-  .aufmacher .vorspann { order: 5; margin-top: var(--space-sm); }
-  .aufmacher .aktionen { order: 6; }
-  .blatt-kino { order: 8; margin-top: var(--space-lg); }
-  .blatt-feste.ist-leer { order: 7; margin: var(--space-lg) 0 0; } /* ohne kommende Feste zuerst die Schlagzeile */
-}
-@media (max-width: 640px) {
-  .blatt-tag .tag { grid-template-columns: 4.25rem minmax(0, 1fr); column-gap: var(--space-sm); }
-  .blatt-feste .tafel tbody tr:nth-child(n+3) { display: none; }
 }
 
 /* ---------- Artikel ---------- */

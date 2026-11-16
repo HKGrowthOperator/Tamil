@@ -210,9 +210,6 @@
 				}
 			},
 			"heading": {
-				"color": {
-					"text": "var:preset|color|tinte"
-				},
 				"typography": {
 					"fontFamily": "var:preset|font-family|libre-franklin",
 					"fontWeight": "650",
