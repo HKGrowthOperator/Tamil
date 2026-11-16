@@ -55,7 +55,10 @@ while ( have_posts() ) :
 				<time datetime="<?php echo esc_attr( get_the_date( 'Y-m-d' ) ); ?>"><?php echo esc_html( get_the_date( 'j. F Y' ) ); ?></time>
 			</p>
 			<h1 class="artikel__titel"><?php echo tamil_text( $tamil_titel ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_text() ?></h1>
-			<p class="artikel__vorspann"><?php echo tamil_text( tamil_standfirst( $tamil_id ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_text() ?></p>
+			<?php $tamil_vorspann = tamil_vorspann_artikel( $tamil_id ); ?>
+			<?php if ( '' !== $tamil_vorspann ) : ?>
+				<p class="artikel__vorspann"><?php echo tamil_text( $tamil_vorspann ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_text() ?></p>
+			<?php endif; ?>
 			<div class="artikel__leiste">
 				<span><?php echo esc_html( implode( ', ', $tamil_leiste ) ); ?></span>
 				<a class="artikel__teilen" href="<?php echo esc_url( tamil_wa_teilen( $tamil_titel, $tamil_url ) ); ?>"><?php esc_html_e( 'Per WhatsApp teilen', 'tamil' ); ?></a>

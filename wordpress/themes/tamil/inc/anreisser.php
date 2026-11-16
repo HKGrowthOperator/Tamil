@@ -137,7 +137,7 @@ function tamil_anr_imbild( int $post_id, array $opt = array() ): string {
 	$html .= '<div class="rahmen' . ( ! empty( $opt['rahmen'] ) ? ' ' . esc_attr( (string) $opt['rahmen'] ) : '' ) . '">' . $img;
 	$html .= $unter ? '</div><div class="kachel__unter">' . $text . '</div>' : '<div class="imbild">' . $text . '</div></div>';
 	if ( ! empty( $opt['vorspann'] ) ) {
-		$html .= '<p class="vorspann">' . tamil_text( tamil_saetze( tamil_standfirst( $post_id ), 2 ) ) . '</p>';
+		$html .= '<p class="vorspann">' . tamil_text( tamil_ganze_saetze( tamil_saetze( tamil_standfirst( $post_id ), 2 ) ) ) . '</p>';
 	}
 	return $html . '</a></article>';
 }

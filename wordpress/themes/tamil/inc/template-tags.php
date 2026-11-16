@@ -37,6 +37,41 @@ function tamil_standfirst( int $post_id ): string {
 }
 
 /**
+ * Vorspann im Artikel: Meta „standfirst“, sonst der eigene Textauszug, sonst die ersten ganzen Sätze des Texts
+ * (höchstens zwei und etwa 260 Zeichen), damit kein Satz mitten im Wort endet.
+ */
+function tamil_vorspann_artikel( int $post_id ): string {
+	$text = trim( (string) get_post_meta( $post_id, 'standfirst', true ) );
+	if ( '' === $text && has_excerpt( $post_id ) ) {
+		$text = trim( (string) get_the_excerpt( $post_id ) );
+	}
+	if ( '' !== $text ) {
+		return tamil_ganze_saetze( $text );
+	}
+	$roh   = trim( (string) preg_replace( '/\s+/u', ' ', wp_strip_all_tags( strip_shortcodes( (string) get_post_field( 'post_content', $post_id ) ) ) ) );
+	$saetz = tamil_saetze( $roh, 2 );
+	if ( mb_strlen( $saetz ) > 260 ) {
+		$saetz = tamil_saetze( $roh, 1 );
+	}
+	return mb_strlen( $saetz ) > 320 ? wp_trim_words( $saetz, 40, ' …' ) : $saetz;
+}
+
+/**
+ * Endet ein Text mitten im Satz (gekürzt, „…“), bis zum letzten ganzen Satz kürzen; gibt es keinen, bleibt er.
+ */
+function tamil_ganze_saetze( string $text ): string {
+	$text = trim( $text );
+	if ( '' === $text || preg_match( '/[.!?“"»)]$/u', $text ) ) {
+		return $text;
+	}
+	// Satzende: Punkt, Frage- oder Ausrufezeichen nicht nach einer Ziffer („4. Juli“ ist kein Satzende)
+	if ( preg_match( '/^(.*[^\d\s][.!?][“"»)]?)\s/us', $text, $m ) && mb_strlen( $m[1] ) >= 40 ) {
+		return $m[1];
+	}
+	return $text;
+}
+
+/**
  * Bildnachweis des Beitragsbilds: Bildunterschrift des Anhangs, sonst Meta „bild_credit“.
  * KI-Symbolbilder tragen immer den Hinweis (EU-KI-Verordnung Art. 50).
  */
