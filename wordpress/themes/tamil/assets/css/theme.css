@@ -501,25 +501,6 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .rubrikblock { margin-top: 64px; }
 }
 
-/* ---------- Abschnitte ---------- */
-.abschnitt { padding-block: var(--section-gap-s); }
-.abschnitt + .abschnitt { border-top: 1px solid var(--color-rule); }
-.mulde { background: var(--color-paper-2); }
-.wrap { width: 100%; max-width: var(--breite); margin-inline: auto; padding-inline: var(--rand); }
-.satz { margin: var(--space-sm) 0 0; max-width: 60ch; color: var(--color-ink-2); }
-.weiter-links { display: flex; flex-wrap: wrap; gap: 0 var(--space-lg); margin: var(--space-md) 0 0; }
-.fill { display: inline-block; max-width: 100%; padding: var(--space-2xs) var(--space-sm); line-height: 1.6; border: 1px dashed var(--color-muted); border-radius: 3px; color: var(--color-muted); }
-
-/* ---------- Datumsblock ---------- */
-.tag { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: var(--space-md); align-items: end; margin: 0; }
-.tag .ziffer { font-family: var(--font-display); font-weight: 800; font-size: var(--text-day); line-height: 0.8; letter-spacing: -0.04em; font-variant-numeric: tabular-nums lining-nums; color: var(--color-ink); }
-.tag-rest { display: grid; gap: var(--space-3xs); padding-bottom: 0.1em; }
-.tag .monat { font-family: var(--font-display); font-weight: 600; font-size: var(--text-lg); line-height: 1.2; }
-.tag .wochentag { color: var(--color-muted); line-height: 1.3; }
-.tag .marke { color: var(--color-ink-2); font-weight: 600; line-height: 1.3; }
-.tag-ort { color: var(--color-ink-2); line-height: 1.35; margin-top: var(--space-2xs); }
-.tag-ort a { padding-block: var(--space-sm); text-decoration-color: var(--color-muted); }
-
 /* ---------- Seitenkopf, Blöcke und Listen (Rubrik, Suche, Archive, Termine, Seiten) ---------- */
 .seitenkopf { padding: 24px 0 8px; }
 .seitenkopf__titel { font-size: 28px; line-height: 1.15; font-weight: 700; letter-spacing: -0.01em; }
@@ -634,44 +615,6 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .programm.ohne-gross .woche__gruppe ul { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
   .termine-raster { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
   .tafel-wrap, .block > .tafel-wrap { max-width: 900px; }
-}
-
-/* ---------- Strom: Beiträge nach Monaten, Tagesziffer je Zeile, Bild mit Nachweis rechts ---------- */
-.strom-kopf { font-size: var(--text-h2); margin-bottom: var(--space-md); }
-.monat-kopf { font-family: var(--font-display); font-weight: var(--weight-head); font-size: var(--text-lg); margin: var(--space-xl) 0 var(--space-xs); }
-.strom-kopf + .monat-kopf, .kopfzeile + .monat-kopf, .wrap > .monat-kopf:first-child { margin-top: 0; }
-.tage { list-style: none; margin: 0; padding: 0; border-top: 2px solid var(--color-ink); }
-.tage li { display: grid; grid-template-columns: 5rem minmax(0, 1fr) minmax(0, 12rem); gap: var(--space-2xs) var(--space-lg); align-items: start; padding-block: var(--space-sm); border-bottom: 1px solid var(--color-rule); }
-.tage.mit-teaser li { grid-template-columns: 5rem minmax(0, 1fr) minmax(0, 15rem); }
-.tage li.ohne-bild { grid-template-columns: 5rem minmax(0, 1fr); }
-.tage li.gleicher-tag .z { visibility: hidden; }
-.tage .z { font-family: var(--font-display); font-weight: 800; font-size: var(--text-row); line-height: 0.95; letter-spacing: -0.03em; font-variant-numeric: tabular-nums lining-nums; }
-.tage .z time { display: block; }
-.tage .z small { display: block; font-family: var(--font-body); font-weight: 400; font-size: var(--text-sm); letter-spacing: 0; color: var(--color-muted); margin-top: var(--space-2xs); line-height: 1.3; }
-.b-titel { margin: 0; font-size: var(--text-title); line-height: 1.3; font-weight: 600; hyphens: auto; -webkit-hyphens: auto; hyphenate-limit-chars: 12 5 5; }
-.b-titel a { text-decoration: none; padding-block: 0.6em; }
-.b-titel a:hover { text-decoration: underline; }
-.tage .wo { margin: var(--space-2xs) 0 0; font-size: var(--text-md); color: var(--color-muted); }
-.tage .teaser { margin: var(--space-xs) 0 0; color: var(--color-ink-2); max-width: 58ch; }
-.daumen { margin: 0; }
-.daumen a { display: block; }
-.daumen img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border-radius: var(--radius-card); background: var(--color-paper-3); }
-.grafik img { object-fit: contain; background: var(--color-paper-2); }
-.daumen a:hover img { opacity: 0.92; }
-.daumen figcaption { line-height: 1.35; }
-@media (max-width: 760px) {
-  .tage li, .tage.mit-teaser li { grid-template-columns: 3rem minmax(0, 1fr) 5.5rem; grid-template-areas: "z titel bild" "z wo bild" "z cap bild" "z teaser teaser"; column-gap: var(--space-sm); row-gap: 0; }
-  .tage li.ohne-bild { grid-template-columns: 3rem minmax(0, 1fr); grid-template-areas: "z titel" "z wo" "z teaser"; }
-  .tage .s-text { display: contents; }
-  .tage .z { grid-area: z; font-size: 1.75rem; }
-  .tage .b-titel { grid-area: titel; font-size: var(--text-body); line-height: 1.35; }
-  .tage .wo { grid-area: wo; }
-  .tage .teaser { grid-area: teaser; }
-  .tage .nur-breit { display: none; }
-  .tage .daumen { display: contents; }
-  .tage .daumen a { grid-area: bild; }
-  .tage .daumen figcaption { grid-area: cap; margin-top: var(--space-2xs); }
-  .tage .daumen img { aspect-ratio: 1 / 1; }
 }
 
 /* ---------- Artikel: eine Spalte für Kopf und Text (höchstens 70 Zeichen), das Bild groß ---------- */
@@ -814,28 +757,39 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .weiterlesen { margin-top: 64px; }
 }
 
-/* ---------- Seiten und Formulare: Kontakt, Suche, 404, Production, TV ---------- */
-.form-raster { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); gap: var(--space-xl) var(--space-3xl); align-items: start; }
-.ablauf { border-top: 2px solid var(--color-ink); padding-top: var(--space-sm); }
-.ablauf h2 { font-size: var(--text-lg); margin: 0 0 var(--space-sm); }
-.ablauf * + h2 { margin-top: var(--space-lg); }
-.wege { list-style: none; padding: 0; margin: 0; }
-.wege a { display: inline-flex; align-items: center; min-height: 44px; font-weight: 600; }
-.kontaktformular .hinweis-box { margin-top: var(--space-lg); }
-.suchformular { margin-top: var(--space-lg); max-width: 36rem; }
-.suchformular label { display: block; font-weight: 600; margin-bottom: var(--space-2xs); }
-.tafel.plaetze tbody th { font-family: var(--font-display); font-weight: 600; color: var(--color-ink); border-bottom: 0; font-size: var(--text-body); white-space: normal; }
+/* ---------- Seiten: Kontakt, Suche, 404, Seiten mit Plugin-Inhalt, Production, TV ---------- */
+.knoepfe { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; margin-top: 16px; }
+.kontakt { display: grid; gap: 40px; margin-top: 16px; }
+.kontakt__formular .hinweis-box { margin-top: 24px; }
+.kontakt__daten .angaben { margin-top: 4px; border-top: 0; }
+.kontakt__daten .angaben dd a { display: inline-flex; align-items: center; min-height: 44px; margin-block: -10px; }
+.kontakt__wege-titel { margin-top: 32px; }
+.wege li a { display: flex; align-items: center; min-height: 44px; border-bottom: 1px solid var(--linie); font-weight: 600; }
+.wege li a:hover { color: var(--rot); }
+.formular-wrap { margin-top: 16px; }
 .tafel.plaetze .masse { white-space: nowrap; }
-.sender { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr)); gap: var(--space-lg) var(--gap-columns); border-top: 2px solid var(--color-ink); padding-top: var(--space-md); }
-.player { aspect-ratio: 16 / 9; display: grid; place-items: center; background: var(--color-paper-2); border-top: 2px solid var(--color-rule-2); margin-bottom: var(--space-xs); }
+.block--treffer .liste { margin-top: 0; }
+.seite__text .inhalt > p, .seite__text .inhalt > ul, .seite__text .inhalt > ol, .seite__text .inhalt > h2, .seite__text .inhalt > h3 { max-width: 34em; }
+
+/* Seiten nutzen die Artikelspalte; Fließtext bleibt auf Lesebreite, Plugin-Inhalte (Formulare, Tabellen, Listen) dürfen breiter */
+.seite .artikel__titel { font-size: 28px; }
+.seite .inhalt > p, .seite .inhalt > ul, .seite .inhalt > ol, .seite .inhalt > h2, .seite .inhalt > h3, .seite .inhalt > h4, .seite .inhalt > blockquote { max-width: 34em; }
+
+.sender { display: grid; grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr)); gap: 24px 32px; border-top: 1px solid var(--tinte); padding-top: 16px; }
+.player { aspect-ratio: 16 / 9; display: grid; place-items: center; background: var(--tinte); }
+.player .knopf { background: var(--hell); color: var(--tinte); border-color: var(--hell); }
+.player .knopf:hover { background: var(--hell-leise); }
 .player video { width: 100%; height: 100%; }
-.seite-text { margin-top: var(--space-xl); }
-.formular-wrap { margin-top: var(--space-md); }
-@media (max-width: 960px) { .form-raster { grid-template-columns: minmax(0, 1fr); } }
-@media (max-width: 640px) {
-  .tafel.plaetze tr { grid-template-columns: minmax(0, 1fr); }
-  .tafel.plaetze tbody th, .tafel.plaetze td { grid-column: 1; }
-  .tafel.plaetze .masse { white-space: normal; }
+.sender__name { margin-top: 10px; font-size: 19px; }
+.sender__zeile { font-size: 15px; color: var(--leise); }
+
+@media (min-width: 600px) {
+  .seite .artikel__titel { font-size: 32px; }
+}
+@media (min-width: 1024px) {
+  .kontakt { grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); gap: 64px; align-items: start; }
+  .seite .artikel__kopf, .seite .artikel__text { max-width: 720px; }
+  .seite .artikel__titel { font-size: 34px; }
 }
 
 /* ---------- Anzeigen (Plätze aus dem Plugin „Tamil.de Website“) ----------

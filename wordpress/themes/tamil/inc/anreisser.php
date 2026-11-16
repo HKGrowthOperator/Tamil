@@ -170,6 +170,7 @@ function tamil_anr_stueck( int $post_id, array $opt = array() ): string {
  *     @type bool   $rubrik   Rubrik in der Dachzeile.
  *     @type int    $ts       anderer Zeitpunkt für die Dachzeile (Termine).
  *     @type string $sizes.
+ *     @type string $markiere Suchwort, das in Titel und Vorspann hervorgehoben wird.
  * }
  */
 function tamil_anr_zeile( int $post_id, array $opt = array() ): string {
@@ -180,6 +181,7 @@ function tamil_anr_zeile( int $post_id, array $opt = array() ): string {
 	if ( ! empty( $opt['ts'] ) ) {
 		$meta['ts'] = (int) $opt['ts'];
 	}
+	$wort = (string) ( $opt['markiere'] ?? '' );
 	return sprintf(
 		'<li class="%1$s"><a class="anr" href="%2$s"><div class="%3$s__text">%4$s<%5$s class="titel">%6$s</%5$s>%7$s</div>%8$s</a></li>',
 		esc_attr( $klasse . ( '' === $img ? ' ohne-bild' : '' ) ),
@@ -187,10 +189,31 @@ function tamil_anr_zeile( int $post_id, array $opt = array() ): string {
 		esc_attr( $klasse ),
 		tamil_meta( $post_id, $meta ),
 		$ebene,
-		tamil_titel( $post_id ),
-		! empty( $opt['vorspann'] ) ? '<p class="vorspann">' . tamil_text( wp_trim_words( tamil_standfirst( $post_id ), 30, ' …' ) ) . '</p>' : '',
+		tamil_markiere( tamil_titel( $post_id ), $wort ),
+		! empty( $opt['vorspann'] ) ? '<p class="vorspann">' . tamil_markiere( tamil_text( wp_trim_words( tamil_standfirst( $post_id ), 30, ' …' ) ), $wort ) . '</p>' : '',
 		'' !== $img ? '<div class="rahmen r169">' . $img . '</div>' : ''
 	);
+}
+
+/**
+ * Suchwort in schon escaptem HTML mit <mark> hervorheben (nur im Text, nie in Tags oder Attributen).
+ */
+function tamil_markiere( string $html, string $wort ): string {
+	$wort = trim( $wort );
+	if ( mb_strlen( $wort ) < 2 ) {
+		return $html;
+	}
+	$muster = '/' . preg_quote( esc_html( $wort ), '/' ) . '/iu';
+	$teile  = preg_split( '/(<[^>]*>)/u', $html, -1, PREG_SPLIT_DELIM_CAPTURE );
+	if ( ! is_array( $teile ) ) {
+		return $html;
+	}
+	foreach ( $teile as $i => $teil ) {
+		if ( '' !== $teil && '<' !== $teil[0] ) {
+			$teile[ $i ] = (string) preg_replace( $muster, '<mark>$0</mark>', $teil );
+		}
+	}
+	return implode( '', $teile );
 }
 
 /**

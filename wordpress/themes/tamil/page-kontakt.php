@@ -2,9 +2,9 @@
 /**
  * Template Name: Kontakt
  *
- * Kontakt: Nachricht an die Redaktion (Formular-Shortcode aus dem Customizer oder E-Mail/WhatsApp), rechts die
- * Redaktionsdaten (nur, wenn sie im Customizer stehen) und andere Wege; darunter Werben, Event einreichen und der
- * Seiteninhalt. Greift automatisch für die Seite mit dem Slug „kontakt“.
+ * Kontakt in klar2: Nachricht an die Redaktion (Formular-Shortcode aus dem Customizer oder E-Mail/WhatsApp), daneben
+ * die Redaktionsdaten (nur, wenn sie im Customizer stehen) und andere Wege; darunter Werben mit den Werbeplätzen,
+ * Termin einreichen und der Seiteninhalt. Greift automatisch für die Seite mit dem Slug „kontakt“.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -42,22 +42,20 @@ $erlaubt  = array(
 	'br' => array(),
 );
 ?>
-<header class="seitenkopf">
-	<div class="wrap">
-		<h1><?php the_title(); ?></h1>
-		<p class="satz"><?php esc_html_e( 'Redaktion, Werbung oder ein Termin für den Kalender: hier erreicht ihr uns. Auf Deutsch, Tamil oder Englisch.', 'tamil' ); ?></p>
-	</div>
-</header>
+<div class="innen">
+	<header class="seitenkopf">
+		<h1 class="seitenkopf__titel"><?php the_title(); ?></h1>
+		<p class="seitenkopf__zeile"><?php esc_html_e( 'Redaktion, Werbung oder ein Termin für den Kalender: hier erreicht ihr uns. Auf Deutsch, Tamil oder Englisch.', 'tamil' ); ?></p>
+	</header>
 
-<section class="abschnitt">
-	<div class="wrap form-raster">
-		<div class="kontaktformular" id="kontaktformular">
-			<h2 class="strom-kopf"><?php esc_html_e( 'Nachricht an die Redaktion', 'tamil' ); ?></h2>
+	<div class="kontakt">
+		<section class="kontakt__formular" id="kontaktformular" aria-labelledby="t-nachricht">
+			<h2 class="block-titel" id="t-nachricht"><?php esc_html_e( 'Nachricht an die Redaktion', 'tamil' ); ?></h2>
 			<?php if ( '' !== $formular ) : ?>
-				<?php echo do_shortcode( $formular ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Formular-Plugin ?>
+				<div class="formular-wrap"><?php echo do_shortcode( $formular ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Formular-Plugin ?></div>
 			<?php else : ?>
-				<p class="satz"><?php esc_html_e( 'Schreibt uns direkt, wir antworten so schnell wie möglich.', 'tamil' ); ?></p>
-				<p class="aktionen">
+				<p class="block__zeile"><?php esc_html_e( 'Schreibt uns direkt, wir antworten so schnell wie möglich.', 'tamil' ); ?></p>
+				<p class="knoepfe">
 					<?php
 					if ( $email ) :
 						?>
@@ -72,62 +70,58 @@ $erlaubt  = array(
 					?>
 					<p class="hinweis-box"><?php esc_html_e( 'Hinweis für die Redaktion: Im Customizer (Tamil.de, Kontakt und Formulare) den Shortcode eines Formulars eintragen, dann steht hier das Formular.', 'tamil' ); ?></p><?php endif; ?>
 			<?php endif; ?>
-		</div>
-		<aside class="ablauf" aria-labelledby="redaktion-titel">
-			<h2 id="redaktion-titel"><?php esc_html_e( 'Redaktion und Verlag', 'tamil' ); ?></h2>
+		</section>
+		<aside class="kontakt__daten" aria-labelledby="redaktion-titel">
+			<h2 class="block-titel" id="redaktion-titel"><?php esc_html_e( 'Redaktion und Verlag', 'tamil' ); ?></h2>
 			<dl class="angaben">
 				<?php foreach ( $angaben as $label => $wert ) : ?>
 					<div><dt><?php echo esc_html( $label ); ?></dt><dd><?php echo wp_kses( $wert, $erlaubt ); ?></dd></div>
 				<?php endforeach; ?>
 			</dl>
-			<h2><?php esc_html_e( 'Andere Wege', 'tamil' ); ?></h2>
+			<h2 class="block-titel kontakt__wege-titel"><?php esc_html_e( 'Andere Wege', 'tamil' ); ?></h2>
 			<ul class="wege">
 				<?php foreach ( tamil_dienste() as $d ) : ?>
-					<?php if ( ! is_page( 'kontakt' ) || ! $d['aktiv'] ) : ?>
+					<?php if ( ! $d['aktiv'] ) : ?>
 						<li><a href="<?php echo esc_url( $d['url'] ); ?>"><?php echo esc_html( $d['label'] ); ?></a></li>
 					<?php endif; ?>
 				<?php endforeach; ?>
 			</ul>
 		</aside>
 	</div>
-</section>
-<?php tamil_leaderboard(); ?>
+	<?php tamil_leaderboard( 'anzeige-zwischen' ); ?>
 
-<section class="abschnitt" id="werben" aria-labelledby="werben-titel">
-	<div class="wrap schmal">
-		<div class="kopfzeile">
-			<h2 id="werben-titel"><?php esc_html_e( 'Werben auf Tamil.de', 'tamil' ); ?></h2>
+	<section class="block" id="werben" aria-labelledby="werben-titel">
+		<div class="block-kopf">
+			<h2 class="block-titel" id="werben-titel"><?php esc_html_e( 'Werben auf Tamil.de', 'tamil' ); ?></h2>
 			<?php
 			if ( tamil_seite( 'werben' ) ) :
 				?>
-				<a class="mehr" href="<?php echo esc_url( tamil_seiten_url( 'werben' ) ); ?>"><?php esc_html_e( 'Werbeplatz buchen', 'tamil' ); ?></a><?php endif; ?>
+				<a class="textlink" href="<?php echo esc_url( tamil_seiten_url( 'werben' ) ); ?>"><?php esc_html_e( 'Werbeplatz buchen', 'tamil' ); ?></a><?php endif; ?>
 		</div>
-		<p class="satz"><?php esc_html_e( 'Fünf feste Werbeplätze, die auf jeder Seite an derselben Stelle stehen: Leserinnen und Leser wissen, wo Werbung steht, und Kunden wissen, was sie buchen.', 'tamil' ); ?></p>
-		<section class="bogen" aria-label="<?php esc_attr_e( 'Werbeplätze', 'tamil' ); ?>">
+		<p class="block__zeile"><?php esc_html_e( 'Fünf feste Werbeplätze, die auf jeder Seite an derselben Stelle stehen: Leserinnen und Leser wissen, wo Werbung steht, und Kunden wissen, was sie buchen.', 'tamil' ); ?></p>
+		<div class="tafel-wrap">
 			<table class="tafel plaetze">
 				<thead><tr><th scope="col"><?php esc_html_e( 'Platz', 'tamil' ); ?></th><th scope="col"><?php esc_html_e( 'Format', 'tamil' ); ?></th><th scope="col"><?php esc_html_e( 'Wo', 'tamil' ); ?></th></tr></thead>
 				<tbody>
 					<?php foreach ( $formate as [ $name, $masse, $wo ] ) : ?>
-						<tr><th scope="row" class="was"><?php echo esc_html( $name ); ?></th><td class="masse"><?php echo esc_html( $masse ); ?></td><td class="wo"><?php echo esc_html( $wo ); ?></td></tr>
+						<tr><th scope="row"><?php echo esc_html( $name ); ?></th><td class="masse"><?php echo esc_html( $masse ); ?></td><td><?php echo esc_html( $wo ); ?></td></tr>
 					<?php endforeach; ?>
 				</tbody>
 			</table>
-			<?php
-			if ( $email ) :
-				?>
-				<p class="bogen-fuss"><a class="textlink" href="mailto:<?php echo esc_attr( antispambot( $email ) ); ?>?subject=<?php echo rawurlencode( __( 'Werbeanfrage', 'tamil' ) ); ?>"><?php esc_html_e( 'Werbeanfrage stellen', 'tamil' ); ?></a></p><?php endif; ?>
-		</section>
-	</div>
-</section>
+		</div>
+		<?php
+		if ( $email ) :
+			?>
+			<p class="aktionen"><a class="textlink" href="mailto:<?php echo esc_attr( antispambot( $email ) ); ?>?subject=<?php echo rawurlencode( __( 'Werbeanfrage', 'tamil' ) ); ?>"><?php esc_html_e( 'Werbeanfrage stellen', 'tamil' ); ?></a></p><?php endif; ?>
+	</section>
 
-<section class="abschnitt" id="event-einreichen" aria-labelledby="einreichen-titel">
-	<div class="wrap schmal">
-		<div class="kopfzeile"><h2 id="einreichen-titel"><?php esc_html_e( 'Termin einreichen', 'tamil' ); ?></h2></div>
-		<p class="satz"><?php esc_html_e( 'Kostenlos für Vereine, Tempel, Schulen und Veranstalter. Die Redaktion prüft jede Einreichung; freigegebene Termine erscheinen im Festkalender.', 'tamil' ); ?></p>
+	<section class="block" id="event-einreichen" aria-labelledby="einreichen-titel">
+		<h2 class="block-titel" id="einreichen-titel"><?php esc_html_e( 'Termin einreichen', 'tamil' ); ?></h2>
+		<p class="block__zeile"><?php esc_html_e( 'Kostenlos für Vereine, Tempel, Schulen und Veranstalter. Die Redaktion prüft jede Einreichung; freigegebene Termine erscheinen im Kalender.', 'tamil' ); ?></p>
 		<?php if ( '' !== $event_f ) : ?>
 			<div class="formular-wrap"><?php echo do_shortcode( $event_f ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Formular-Plugin ?></div>
 		<?php else : ?>
-			<p class="aktionen">
+			<p class="knoepfe">
 				<?php
 				if ( $wa ) :
 					?>
@@ -138,17 +132,18 @@ $erlaubt  = array(
 					<a class="knopf knopf-leise" href="mailto:<?php echo esc_attr( antispambot( $email ) ); ?>?subject=<?php echo rawurlencode( __( 'Termin einreichen', 'tamil' ) ); ?>"><?php esc_html_e( 'Per E-Mail schicken', 'tamil' ); ?></a><?php endif; ?>
 			</p>
 		<?php endif; ?>
-	</div>
-</section>
+	</section>
 
+	<?php
+	while ( have_posts() ) :
+		the_post();
+		if ( '' !== trim( (string) get_the_content() ) ) :
+			?>
+			<section class="block seite__text"><div class="inhalt"><?php the_content(); ?></div></section>
+			<?php
+		endif;
+	endwhile;
+	?>
+</div>
 <?php
-while ( have_posts() ) :
-	the_post();
-	if ( '' !== trim( (string) get_the_content() ) ) :
-		?>
-		<section class="abschnitt"><div class="wrap schmal"><div class="inhalt"><?php the_content(); ?></div></div></section>
-		<?php
-	endif;
-endwhile;
-
 get_footer();

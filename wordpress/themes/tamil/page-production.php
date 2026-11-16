@@ -2,9 +2,9 @@
 /**
  * Template Name: Production
  *
- * Konzertreihe von Tamil.de: Claim, Tickets, die Konzertbeiträge (Schlagwort aus dem Customizer) als Strom,
- * Seiteninhalt (Service für Konzertbesucher) und die nächsten Termine als Tafel. Greift automatisch für die Seite
- * „production“.
+ * Konzertreihe von Tamil.de: Claim, Tickets, die nächsten Termine und die Konzertbeiträge (Schlagwort aus dem
+ * Customizer) als Listen mit Bild, danach der Seiteninhalt (Service für Konzertbesucher). Greift automatisch für die
+ * Seite „production“.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -21,55 +21,57 @@ $ids    = '' !== $tag ? tamil_ids(
 $ticket = tamil_opt( 'production_ticket_url' );
 $events = function_exists( 'tamil_site_upcoming_events' ) ? array_map( 'intval', tamil_site_upcoming_events( 4, array( 'fields' => 'ids' ) )->posts ) : array();
 ?>
-<header class="seitenkopf">
-	<div class="wrap">
-		<h1><?php echo esc_html( tamil_opt( 'production_titel' ) ); ?></h1>
-		<p class="satz"><?php echo esc_html( tamil_opt( 'production_claim' ) ); ?></p>
-		<p class="satz"><?php echo esc_html( tamil_opt( 'production_text' ) ); ?></p>
-		<p class="aktionen">
+<div class="innen">
+	<header class="seitenkopf">
+		<h1 class="seitenkopf__titel"><?php echo esc_html( tamil_opt( 'production_titel' ) ); ?></h1>
+		<p class="seitenkopf__zeile"><?php echo esc_html( tamil_opt( 'production_claim' ) ); ?></p>
+		<p class="seitenkopf__zeile"><?php echo esc_html( tamil_opt( 'production_text' ) ); ?></p>
+		<p class="knoepfe">
 			<?php
 			if ( $ticket ) :
 				?>
 				<a class="knopf" href="<?php echo esc_url( $ticket ); ?>" target="_blank" rel="noopener nofollow"><?php echo esc_html( tamil_opt( 'production_ticket_label' ) ); ?></a><?php endif; ?>
 			<a class="textlink" href="<?php echo esc_url( tamil_seiten_url( 'kontakt' ) ); ?>"><?php esc_html_e( 'Als Veranstalter anfragen', 'tamil' ); ?></a>
 		</p>
-	</div>
-</header>
-<?php if ( $events ) : ?>
-	<section class="abschnitt" aria-labelledby="naechste-titel">
-		<div class="wrap schmal">
-			<section class="bogen">
-				<div class="bogen-kopf"><h2 id="naechste-titel"><?php esc_html_e( 'Die nächsten Termine', 'tamil' ); ?></h2></div>
-				<?php tamil_feste_tafel( $events, array( 'teilen' => true ) ); ?>
-				<p class="bogen-fuss"><a class="textlink" href="<?php echo esc_url( tamil_rubrik( 'events' )['url'] ); ?>"><?php esc_html_e( 'Ganzer Festkalender', 'tamil' ); ?></a></p>
-			</section>
-		</div>
-	</section>
-<?php endif; ?>
-<?php if ( $ids ) : ?>
-	<section class="abschnitt" aria-labelledby="konzerte-titel">
-		<div class="wrap">
-			<h2 id="konzerte-titel" class="strom-kopf"><?php esc_html_e( 'Die Konzerte', 'tamil' ); ?></h2>
-			<?php
-			tamil_strom(
-				$ids,
-				array(
-					'monat' => '',
-					'titel' => 'h3',
-				)
-			);
+	</header>
+	<?php if ( $events ) : ?>
+		<section class="block" aria-labelledby="naechste-titel">
+			<div class="block-kopf">
+				<h2 class="block-titel" id="naechste-titel"><?php esc_html_e( 'Die nächsten Termine', 'tamil' ); ?></h2>
+				<a class="textlink" href="<?php echo esc_url( tamil_rubrik( 'events' )['url'] ); ?>"><?php esc_html_e( 'Alle Termine', 'tamil' ); ?></a>
+			</div>
+			<ul class="liste">
+				<?php
+				foreach ( $events as $tamil_id ) {
+					echo tamil_anr_zeile( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_anr_zeile()
+						$tamil_id,
+						array(
+							'klasse' => 'zeile',
+							'rubrik' => false,
+							'ts'     => (int) strtotime( (string) get_post_meta( $tamil_id, 'event_datum', true ) ),
+						)
+					);
+				}
+				?>
+			</ul>
+		</section>
+	<?php endif; ?>
+	<?php if ( $ids ) : ?>
+		<section class="block" aria-labelledby="konzerte-titel">
+			<h2 class="block-titel" id="konzerte-titel"><?php esc_html_e( 'Die Konzerte', 'tamil' ); ?></h2>
+			<?php echo tamil_zeilen( $ids ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_zeilen() ?>
+		</section>
+	<?php endif; ?>
+	<?php
+	while ( have_posts() ) :
+		the_post();
+		if ( '' !== trim( (string) get_the_content() ) ) :
 			?>
-		</div>
-	</section>
-<?php endif; ?>
+			<section class="block seite__text"><div class="inhalt"><?php the_content(); ?></div></section>
+			<?php
+		endif;
+	endwhile;
+	?>
+</div>
 <?php
-while ( have_posts() ) :
-	the_post();
-	if ( '' !== trim( (string) get_the_content() ) ) :
-		?>
-		<section class="abschnitt"><div class="wrap schmal"><div class="inhalt"><?php the_content(); ?></div></div></section>
-		<?php
-	endif;
-endwhile;
-
 get_footer();

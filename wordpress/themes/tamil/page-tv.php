@@ -18,14 +18,12 @@ foreach ( (array) preg_split( '/\r\n|\r|\n/', tamil_opt( 'tv_sender' ) ) as $zei
 	}
 }
 ?>
-<header class="seitenkopf">
-	<div class="wrap">
-		<h1><?php the_title(); ?></h1>
-		<p class="satz"><?php echo esc_html( tamil_opt( 'tv_text' ) ); ?></p>
-	</div>
-</header>
-<section class="abschnitt">
-	<div class="wrap">
+<div class="innen">
+	<header class="seitenkopf">
+		<h1 class="seitenkopf__titel"><?php the_title(); ?></h1>
+		<p class="seitenkopf__zeile"><?php echo esc_html( tamil_opt( 'tv_text' ) ); ?></p>
+	</header>
+	<section class="block">
 		<?php if ( $sender ) : ?>
 			<ul class="sender">
 				<?php foreach ( $sender as [ $name, $stream ] ) : ?>
@@ -34,26 +32,26 @@ foreach ( (array) preg_split( '/\r\n|\r|\n/', tamil_opt( 'tv_sender' ) ) as $zei
 							<?php /* translators: %s: Sender */ ?>
 							<button type="button" class="play knopf" aria-label="<?php echo esc_attr( sprintf( __( '%s abspielen', 'tamil' ), $name ) ); ?>"><?php esc_html_e( 'Abspielen', 'tamil' ); ?></button>
 						</div>
-						<h2 class="b-titel"><?php echo esc_html( $name ); ?></h2>
-						<p class="klein"><?php esc_html_e( 'Live-Stream im Browser, startet erst nach Klick.', 'tamil' ); ?></p>
+						<h2 class="sender__name"><?php echo esc_html( $name ); ?></h2>
+						<p class="sender__zeile"><?php esc_html_e( 'Live-Stream im Browser, startet erst nach Klick.', 'tamil' ); ?></p>
 					</li>
 				<?php endforeach; ?>
 			</ul>
 		<?php else : ?>
-			<h2 class="strom-kopf"><?php esc_html_e( 'Die Sender werden gerade eingerichtet.', 'tamil' ); ?></h2>
-			<p class="satz"><?php esc_html_e( 'Sobald neue Stream-Adressen vorliegen, laufen die Player hier wieder.', 'tamil' ); ?></p>
+			<h2 class="block-titel"><?php esc_html_e( 'Die Sender werden gerade eingerichtet.', 'tamil' ); ?></h2>
+			<p class="leer__satz"><?php esc_html_e( 'Sobald neue Stream-Adressen vorliegen, laufen die Player hier wieder.', 'tamil' ); ?></p>
 		<?php endif; ?>
-		<?php
-		while ( have_posts() ) :
-			the_post();
-			if ( '' !== trim( (string) get_the_content() ) ) :
-				?>
-				<div class="inhalt seite-text"><?php the_content(); ?></div>
-				<?php
-			endif;
-		endwhile;
-		?>
-	</div>
-</section>
+	</section>
+	<?php
+	while ( have_posts() ) :
+		the_post();
+		if ( '' !== trim( (string) get_the_content() ) ) :
+			?>
+			<section class="block seite__text"><div class="inhalt"><?php the_content(); ?></div></section>
+			<?php
+		endif;
+	endwhile;
+	?>
+</div>
 <?php
 get_footer();
