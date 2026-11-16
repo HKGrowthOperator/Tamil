@@ -5,6 +5,14 @@ Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
 ## 16.11.2026
 
+- **Bewegung D, Theme direkt in klar2, ohne Probeseite und Tor G3, direkt aufs Testsystem.**
+  - Luis wählt aus der Vorschau die Variante D: Kopf faltet ins Band, rote Leselinie, Tiefe am Aufmacher, dunkle
+    Fläche zieht auf, große Bilder decken auf, Listen steigen.
+  - Statt Probeseite und Tor G3 wird das WordPress-Theme sofort umgebaut und über `claude/radar-multiagent` auf
+    das Testsystem gebracht. Die Abnahme geschieht dort mit echten Beiträgen.
+  - Das Cockpit folgt im zweiten Schritt.
+
+  · Luis (`docs/abnahme/2026-11-16-G2-klar2.md`, Nachtrag)
 - **Design: `klar2` statt „Tageskalender“, auf allen Seiten von Website und Cockpit.** Das kehrt zwei frühere
   Entscheidungen um:
   - das Urteil vom 13.11. („komplett generisch“, gilt für klar2);
