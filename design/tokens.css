@@ -1,66 +1,56 @@
 /*
- * tamil.de – verbindliche Tokens „Tageskalender“ (Mischung aus Linie A „Tagesblatt“ und Linie B „Kalenderblatt“).
- * Quelle: design/richtungen/hm-tageskalender/ (tokens.css plus :root in hm-tageskalender.css, Stand Runde 3).
- * Das WordPress-Theme liest Farben und Schriften aus theme.json (gleiche Werte als Hex, Namen in Klammern);
- * das Cockpit nutzt dieselben Werte in ruhigerer Form.
- *
- * Stand 14.11.2026: Richtung gewählt (Luis), Tor G3 steht noch aus. Bis dahin gilt diese Datei nur auf dem
- * Theme-Branch.
+ * tamil.de – verbindliche Tokens „klar2“ mit Bewegung D (Wahl von Luis am 16.11.2026,
+ * docs/abnahme/2026-11-16-G2-klar2.md). Quelle: design/richtungen/klar2/klar2.css und bewegung/bewegung.css,
+ * Regeln in design/brief.md §10. Das Theme (wordpress/themes/tamil/assets/css/theme.css) führt dieselben Namen;
+ * theme.json trägt die Farben als Hex-Rückfall. Das Cockpit folgt mit denselben Werten in ruhigerer Form.
  */
 :root {
-  /* Farben: kühles Papier aus B, blauschwarze Tinte, Rot nur für „als Nächstes“ */
-  --color-paper: oklch(96.8% 0.007 245);    /* #F1F5F9 (papier)      Seitengrund */
-  --color-paper-2: oklch(93.5% 0.009 245);  /* #E5EAEF (papier-2)    Mulde, Fuß, Leiste, Hover */
-  --color-paper-3: oklch(90% 0.011 245);    /* #D8DFE5 (papier-3)    Bildgrund beim Laden */
-  --color-sheet: oklch(99.3% 0.003 245);    /* #FBFDFF (blatt)       Tabellenblatt */
-  --color-ink: oklch(19% 0.02 245);         /* #0C151C (tinte)       Text, Köpfe, Linien über Listen */
-  --color-ink-2: oklch(28% 0.018 245);      /* #222A31 (tinte-2)     Vorspann, Nebentext */
-  --color-muted: oklch(44% 0.016 245);      /* #4B545B (grau)        Stand, Nachweise, Tabellenköpfe */
-  --color-rule: oklch(84% 0.01 240);        /* #C5CBD0 (linie)       Zeilenlinien */
-  --color-rule-2: oklch(32% 0.018 240);     /* #2B343B (linie-fest)  feste Kante des Blatts */
-  --color-accent: oklch(50.5% 0.175 25);    /* #B5282A (rot)         Logo-Rot; nur „als Nächstes“ */
-  --color-accent-ink: oklch(99.3% 0.003 245);
-  --color-focus: oklch(50.5% 0.175 25);
-  --color-error: oklch(50% 0.19 27);
-  --color-success: oklch(50% 0.12 150);
+  /* Farben auf hellem Grund (brief §3) */
+  --grund: oklch(0.985 0.002 250);          /* #F9FAFB  Seitengrund */
+  --flaeche: oklch(0.962 0.003 250);        /* #F1F3F4  Bildgrund, Hinweise */
+  --tinte: oklch(0.21 0.012 255);           /* #15191E  Text, Linien über Blöcken, dunkle Flächen */
+  --leise: oklch(0.45 0.012 255);           /* #51565C  Datum, Orte, Nachweise */
+  --linie: oklch(0.88 0.004 250);           /* #D5D8DA  Zeilenlinien */
+  --rot: oklch(0.508 0.177 25.6);           /* #B5282A  nur Akzent, nie Fläche, nie Schrift über 20 px */
 
-  /* Schriften: zwei Familien, OFL, selbst gehostet */
-  --font-display: "Rethink Sans", ui-sans-serif, system-ui, sans-serif;  /* Köpfe 600, Ziffern 800 */
-  --font-body: "Golos Text", ui-sans-serif, system-ui, sans-serif;       /* Lesetext 400, Hervorhebung 600 */
-  --weight-head: 600;
-  --tracking-display: -0.015em;
+  /* auf Dunkel (brief §10.1): Rubrikband und „Diese Woche“, sonst keine dunklen Flächen */
+  --hell: oklch(0.985 0.002 250);           /* Titel, aktive Rubrik */
+  --hell-leise: oklch(0.82 0.006 250);      /* #C1C4C8  Rubriken, Datum, Orte */
+  --linie-dunkel: oklch(0.36 0.010 255);    /* #3A3D42  Trennlinien */
+  --flaeche-dunkel: oklch(0.26 0.012 255);  /* #20242A  gestaltete Kacheln ohne Foto */
+  --tinte-hover: oklch(0.3 0.012 255);      /* Knopf beim Überfahren */
 
-  /* Größen */
-  --text-xs: 0.8125rem;
-  --text-sm: 0.875rem;   /* 14 px: Stand, Nachweise, Tabellenköpfe */
-  --text-md: 1rem;
-  --text-body: 1.125rem; /* 18 px: Fließtext und Tabellenzellen, auch am Handy */
-  --text-lg: 1.25rem;
-  --text-lead: clamp(1.125rem, 0.35vw + 1rem, 1.375rem);
-  --text-title: clamp(1.25rem, 0.75vw + 0.875rem, 1.625rem);
-  --text-h2: clamp(1.375rem, 0.5vw + 1.2rem, 1.75rem);
-  --text-h1: clamp(1.875rem, 1.6vw + 1.2rem, 2.75rem);   /* Schlagzeile, rund 40 px bei 1280 */
-  --text-day: clamp(3rem, 4.5vw + 1rem, 5.5rem);          /* Tagesziffer, größte Schrift der Seite */
-  --text-row: clamp(2.125rem, 1vw + 1.6rem, 2.5rem);      /* Tagesziffer je Zeile im Strom */
+  /* der einzige Verlauf: unter Schrift im Bild */
+  --verlauf: linear-gradient(to bottom, oklch(0.21 0.012 255 / 0) 0, oklch(0.21 0.012 255 / 0.74) 52px, oklch(0.21 0.012 255 / 0.9) 100%);
+  --verlauf-kurz: linear-gradient(to bottom, oklch(0.21 0.012 255 / 0) 0, oklch(0.21 0.012 255 / 0.8) 22px, oklch(0.21 0.012 255 / 0.92) 100%);
 
-  /* Abstände */
-  --space-3xs: 2px; --space-2xs: 4px; --space-xs: 8px; --space-sm: 12px; --space-md: 16px;
-  --space-lg: 24px; --space-xl: 40px; --space-2xl: 64px; --space-3xl: 96px;
-  --section-gap-s: 64px;  /* 48 px unter 860 px */
+  /* Schrift: eine Familie, Tamil über unicode-range und :lang(ta) */
+  --schrift: "Libre Franklin", Catamaran, "Noto Sans Tamil", system-ui, sans-serif;
+  --schrift-tamil: Catamaran, "Noto Sans Tamil", "Tamil Sangam MN", sans-serif;
+  --text-klein: 13px;        /* Dachzeile, Nachweise */
+  --text-leise: 15px;        /* Orte, Beschriftungen */
+  --text: 17px;              /* Text */
+  --text-lesen: 18px;        /* Artikel am Handy; 19 px ab 1024 px */
+  --text-titel: 19px;        /* Nebenstück, Blocktitel; Meldung 17 px */
+  --text-kachel: 22px;       /* große Kachel; 26 px ab 1024 px */
+  --text-artikel: 28px;      /* Artikeltitel; 38 px ab 1024 px */
+  --text-aufmacher: 30px;    /* Titel im Aufmacher; 34 px Tablet, 40 px Desktop */
 
-  /* Raster */
-  --container: 1320px;
-  --gutter: clamp(16px, 4vw, 56px);
-  --gap-columns: 32px;    /* 16 px unter 640 px */
+  /* Raster und Form */
+  --breite: 1280px;
+  --rand: 16px;              /* 24 px ab 600, 40 px ab 1024 */
+  --band-hoehe: 46px;        /* 48 px ab 1024 */
+  --spalte-artikel: 560px;   /* 600 px am Tablet */
+  --radius: 0;
+  --schatten: none;
+  --zoom: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);   /* Überfahren: Maßstab 1,03 */
 
-  /* Form und Bewegung */
-  --radius-card: 2px;
-  --rule-hair: 1px;
-  --shadow-card: none;
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --dur-micro: 120ms;
-  --dur-short: 220ms;
-
-  /* Ebenen */
-  --z-raised: 10; --z-dropdown: 100; --z-sticky: 200; --z-modal: 400;
+  /* Bewegung D, nur unter prefers-reduced-motion: no-preference */
+  --expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --sanft: cubic-bezier(0.33, 1, 0.68, 1);
+  --vorhang: cubic-bezier(0.3, 0.1, 0.1, 1);
+  --t-steigen: 560ms; --hub: 16px;
+  --t-bild: 750ms; --t-zoom: 1100ms; --t-blenden: 500ms;
+  --t-zeile: 700ms; --zeilen-takt: 90ms; --zeilen-start: 160ms;
+  --t-vorhang: 800ms;
 }

@@ -1,90 +1,108 @@
-# Design – Tamil.de: „Tageskalender“
+# Design – Tamil.de: „klar2“ mit Bewegung D
 
-> **Stand 14.11.2026:** Richtung gewählt von Luis („eine Mischung aus A und B“, `docs/abnahme/2026-11-14-design-luis.md`).
-> Tor G3 steht noch aus; diese Datei gilt bis dahin nur auf dem Theme-Branch. Quelle ist die Probe
-> `design/richtungen/hm-tageskalender/` (Runde 3), Tokens in `design/tokens.css`, Kritik in
-> `design/kritik/hm-tageskalender-r*.md`. Maßstab: `design/brief-v3.md` mit Hallmark.
+> **Stand 16.11.2026:** Richtung `klar2` und Bewegung D gewählt von Luis (`docs/abnahme/2026-11-16-G2-klar2.md`,
+> `docs/entscheidungen.md`). Eine Probeseite und Tor G3 entfallen; das Theme `wordpress/themes/tamil` (Version 3.0)
+> wird direkt umgebaut und auf dem Testsystem mit echten Beiträgen abgenommen. Quellen: `design/richtungen/klar2/`
+> (Startseite, Artikel, CSS), `design/richtungen/klar2/bewegung/` (Variante D), Regeln in `design/brief.md` §10.
+> Tokens: `design/tokens.css`.
 
-**Idee:** tamil.de beginnt jeden Tag wie eine Zeitung mit seinem Datum und dem Aufmacher im Foto (Linie A) und ordnet
-darunter, was kommt, als gedrucktes Kalenderblatt in Tabellen (Linie B). Rot zeigt nur, was als Nächstes kommt.
+**Idee:** eine ruhige Nachrichtenseite mit mehr Bild und mehr Bühne. Vorbild BBC News für Kopf und Ordnung,
+tagesschau für den Titel im Bild, Spiegel für die Bildblöcke. Das Wow kommt aus Fotos, Fläche und dem Wechsel von
+Hell und Dunkel, nicht aus Schriftgröße, Rot oder Effekten.
 
 ## Farben
 
-Hex in `theme.json` (Palette), oklch in `design/tokens.css`, im Theme als `--color-*` aus `--wp--preset--color--*`.
+oklch im CSS (`theme.css`, `design/tokens.css`), Hex nur als Rückfall in `theme.json`.
 
-| Token (theme.json) | Hex | Rolle |
-|---|---|---|
-| `papier` | `#F1F5F9` | Seitengrund (kühles Papier aus B) |
-| `papier-2` | `#E5EAEF` | Fuß, Leiste über dem Kopf, Mulden, Hover |
-| `papier-3` | `#D8DFE5` | Bildgrund beim Laden |
-| `blatt` | `#FBFDFF` | helles Tabellenblatt mit fester Linie oben |
-| `tinte` | `#0C151C` | Text, Köpfe, 2-px-Linie über Listen (über 14:1 auf Papier) |
-| `tinte-2` | `#222A31` | Vorspann, Nebentext |
-| `grau` | `#4B545B` | Stand, Nachweise, Tabellenköpfe, Wochentag |
-| `linie` | `#C5CBD0` | Zeilenlinien |
-| `linie-fest` | `#2B343B` | feste Kante des Blatts, Linien um „als Nächstes“ |
-| `rot` | `#B5282A` | Logo-Rot. **Nur** Tagesziffer und Titel des nächsten Termins und das Wort „als Nächstes“ (6:1 auf Papier) |
+| Token | oklch | Hex | Rolle |
+|---|---|---|---|
+| `grund` | 0.985 0.002 250 | `#F9FAFB` | Seitengrund; Schrift auf Dunkel („hell“) |
+| `flaeche` | 0.962 0.003 250 | `#F1F3F4` | Bildgrund beim Laden, Hinweise, Meldungen der Formulare |
+| `tinte` | 0.21 0.012 255 | `#15191E` | Text, Linien über Blöcken, Rubrikband, „Diese Woche“ |
+| `leise` | 0.45 0.012 255 | `#51565C` | Datum, Orte, Nachweise, Beschriftungen |
+| `linie` | 0.88 0.004 250 | `#D5D8DA` | Trennlinien zwischen Zeilen |
+| `rot` | 0.508 0.177 25.6 | `#B5282A` | nur Akzent: Rubrik in der Dachzeile, Linie unter der aktiven Rubrik, Leselinie, Fehler |
+| `hell-leise` | 0.82 0.006 250 | `#C1C4C8` | Nebeninfos auf Dunkel |
+| `linie-dunkel` | 0.36 0.010 255 | `#3A3D42` | Linien auf Dunkel |
+| `flaeche-dunkel` | 0.26 0.012 255 | `#20242A` | gestaltete Kacheln ohne Foto (Kino, Termine) |
 
-Keine Flächen in Rot, keine Verläufe, keine Schatten, keine dunklen Bänder. Sonntage und Festtage sind nicht rot.
+Genau zwei dunkle Flächen je Seite: das Rubrikband und „Diese Woche“ (auf Kino und Termine „Im Programm“ bzw.
+„Ab heute“). Der einzige Verlauf liegt unter Schrift im Bild (durchsichtig nach Tinte). Radius 0, keine Schatten,
+nichts gedreht. Rot nie als Fläche und nie als Schrift über 20 px; auf Dunkel ist die Dachzeile hell.
 
 ## Schrift
 
-| Rolle | Schrift | Schnitt | Größe |
-|---|---|---|---|
-| Köpfe, Tabellentitel | **Rethink Sans** | 600 | Schlagzeile `clamp(1.875rem, 1.6vw + 1.2rem, 2.75rem)` (rund 40 px bei 1280), Abschnitt 22–28 px, Listentitel 20–26 px |
-| Ziffern (Tag) | Rethink Sans | 800 | Tagesziffer `clamp(3rem, 4.5vw + 1rem, 5.5rem)`, je Zeile 34–40 px, in Tabellen 30 px |
-| Lesetext, Tabellenzellen | **Golos Text** | 400, 600 | 18 px überall (auch am Handy), Artikeltext 19 px, Vorspann 18–22 px, Stand/Nachweise 14 px |
-| Tamil im Inhalt | Catamaran (nur Tamil-Untermenge) | – | greift nur für `lang="ta"` und Tamil-Zeichen |
+Eine Familie: **Libre Franklin** (variabel 100–900, OFL, selbst gehostet, nur der lateinische Teil wird vorgeladen).
+Tamil fällt über `unicode-range` und `:lang(ta)` auf die Tamil-Untermenge von **Catamaran**.
 
-OFL, selbst gehostet in `wordpress/themes/tamil/assets/fonts/` (Lizenzen daneben). Keine Versalien, keine Sperrung,
-keine Kursive, keine „·“-Metazeilen, keine Dachzeilen über Titeln.
+| Rolle | Größe Handy / Desktop | Gewicht |
+|---|---|---|
+| Aufmacher (Titel im Bild) | 30 / 34 (Tablet) / 40 px | 650 |
+| Artikeltitel | 28 / 38 px | 650 |
+| Seitenkopf | 28 / 34 px | 700 |
+| Titel große Kachel | 22 / 26 px | 650 |
+| Nebenstück, Blocktitel | 19 / 20 px | 650 / 700 |
+| Meldung, Listenzeile | 17 / 19 px | 600 |
+| Fließtext im Artikel | 18 / 19 px, Zeilenhöhe 1,6 | 400 |
+| Text sonst | 17 px | 400 |
+| Dachzeile „Rubrik \| Datum“, Nachweise | 13 px | 600 / 400 |
+
+Keine Versalien, keine Kursive. Der Artikel steht in einer Spalte von höchstens 560 px (am Tablet 600 px mit
+gemeinsamer Kante für Kopf, Bild und Text), höchstens 70 Zeichen je Zeile.
 
 ## Bausteine
 
-- **Leiste über dem Kopf** (ab 761 px): schmal, `papier-2`, Unterzeile der Marke links, Termin einreichen und Werben
-  rechts. Am Handy ausgeblendet; die Ziele stehen im Menü.
-- **Kopf:** Logo, vier Ziele (Termine, Kino, Community, Verzeichnis) in Golos 600 mit Unterstrich für die aktuelle
-  Seite, Menü „Mehr +“ als Aufklapper (übrige Rubriken, Dienste, Suche). Bis 760 px eine Zeile: Logo, Termine, Kino,
-  Mehr; bis 520 px stehen Community und Verzeichnis nur im Menü.
-- **Datumsblock:** große Tagesziffer (800), daneben Monat und Jahr (600) und Wochentag (grau); im Artikel und im
-  Rubrik-Aufmacher zusätzlich Rubrik und Ort.
-- **Bogen (Tabellenblatt):** `blatt` mit 2-px-Kante `linie-fest` oben, Kopf mit Titel links und „Stand: …“ rechts,
-  Fuß mit Textlink über einer zweiten festen Linie.
-- **Tafel (Tabelle):** Tag (Ziffer 30 px + „So., Nov.“), Was, Wer, Wo, Weitersagen. Der nächste Termin steht zwischen
-  zwei festen Linien, Ziffer und Titel rot, darunter „als Nächstes“. Vergangene Zeilen grau. Am Handy zweispaltig:
-  Ziffer links (4,25 rem), alles andere rechts auf einer Kante.
-- **Strom:** Beiträge nach Monaten, je Zeile Tagesziffer, Titel, „Rubrik, Ort“, Vorspann (nur breit) und Bild mit
-  Nachweis rechts; am Handy Bild als kleines Quadrat rechts.
-- **Bilder:** immer mit Nachweis (Urheber, Lizenz, Quelle) unter dem Bild, Radius 2 px.
-- **Knöpfe:** eckig (2 px), Tinte auf Papier; sonst Textlinks mit 44 px Tippfläche.
-- **Anzeigen:** Label „Anzeige“, ruhige Fläche `papier-2`, dem Inhalt untergeordnet (Plätze aus dem Plugin).
-- **Fuß:** Fläche `papier-2` mit Logo, Rubriken, Diensten, Rechtlichem und den Bildnachweisen der Seite.
+- **Kopf:** Kopfzeile (Datum, ab 800 px „Diese Woche“ mit nächstem Termin und Film, Suche), Logo 44/52/58 px auf
+  hellem Grund, dunkles Rubrikband (`nav`, 46/48 px, steht beim Scrollen), aktive Rubrik hell mit 3 px Rot darunter,
+  am Handy seitlich mit Einrasten; „Mehr“ am Ende mit Suche, Diensten und Social.
+- **Anreißer:** ein Link um Bild und Text; Dachzeile „Rubrik | Datum“; Bild füllt seinen Rahmen. Formate: 4:3
+  (Aufmacher, große Kachel in „Diese Woche“), 16:9 (Nebenstücke, Meldungen, Rubrikkacheln, Küche groß), 8:3 (kleine
+  Kacheln). Beim Überfahren Zoom 1,03 in 0,35 s, Titel unterstrichen.
+- **Bild mit Titel im Bild:** Aufmacher und große Kacheln; Fokus als Rahmen nach innen.
+- **Rubrikkacheln:** Navigation mit Bild (Foto des neuesten Beitrags der Rubrik, sonst Rubrikfoto), Name im Bild.
+- **Gestaltete Kacheln** (`data-grafik`, Fläche auf Dunkel): Kino (Film, Zahl der Kinos, Städte) und Termine
+  (Titel, Datum als größte Angabe, Ort, Vorspann); leer sagen sie, wo es weitergeht.
+- **Blocktitel:** 19 px, Linie in Tinte darüber; Listen mit Linien statt Kästen; Tabellen ebenso.
+- **Knöpfe** nur für Formulare und Bedienung: Tinte, eckig, 48 px hoch. Sonst unterstrichene Textlinks, 44 px tippbar.
+- **Anzeigen:** Label „Anzeige“, feste Formate aus dem Plugin; Eigenanzeige wie ein Anreißer mit Linien.
+- **Fuß:** heller Grund mit Linie in Tinte; Logo und Unterzeile, Rubriken, Dienste, Social (nur mit Adresse),
+  Bildnachweise der Seite, Rechtliches mit Platz für „Cookie-Einstellungen“.
 
 ## Seiten
 
-- **Startseite:** links Datum, Aufmacher-Schlagzeile, Vorspann, WhatsApp, darunter „Die nächsten Feste“ (Bogen);
-  rechts Foto 4:3 mit Nachweis und „Im Kino“. Am Handy: Datum, Feste, Schlagzeile, Foto, Vorspann, Kino. Danach
-  „Zuletzt bei tamil.de“ als Strom nach Monaten.
-- **Artikel:** Kopf 3/6/3 (Datumsblock links, Titel, Vorspann, WhatsApp), Foto 16:9 über die volle Breite,
-  Text in der Mitte (max. 66 Zeichen), rechts Anzeige; Termin als Bogen; „Weiterlesen“ als Strom.
-- **Rubrik:** Seitenkopf, neuester Beitrag als Aufmacher (Foto links, Datum und Titel rechts), dann Strom nach
-  Monaten, Seitennavigation.
-- **Termine / Kino:** Seitenkopf mit Foto rechts, die Tafel links direkt unter der Einleitung (Kante bei 7 von 12
-  Spalten), darunter Monate bzw. Städte als Tafeln.
+- **Startseite:** Aufmacher 4:3 (am Desktop daneben „Weitere Meldungen“), vier Nebenstücke, Rubrikkacheln,
+  Werbeplatz 01, „Diese Woche“ (Kino groß und klein, „Im Kino“, „Termine“), „Küche“ (groß 16:9, klein 8:3 auf einer
+  Kante), Billboard, Rubrikblöcke mit je vier Nebenstücken.
+- **Artikel:** Dachzeile, Titel, Vorspann, Leiste mit Lesezeit und „Per WhatsApp teilen“, Bild (randlos am Handy) mit
+  Nachweis, Text, Termin als Angaben, Quelle, Schlagworte, Teilen, Redaktion; Werbeplatz 02 rechts ab 1024 px;
+  „Weiterlesen“ mit vier Nebenstücken.
+- **Rubrik:** Seitenkopf, Aufmacher mit „Neu in der Rubrik“ daneben, Liste mit Bild und Vorspann, Seiten, Kacheln.
+- **Kino / Termine:** Seitenkopf, dunkler Bereich „Im Programm“ bzw. „Ab heute“, dann „Nach Stadt“ (Tabelle) bzw.
+  „Das Jahr“ (Monate zum Aufklappen).
+- **Kontakt, Suche, 404, Seiten, Archive:** Seitenkopf, Blöcke mit Blocktitel, Listen mit Bild; Seiten in der
+  Artikelspalte, Plugin-Inhalte bis 720 px.
 
-## Raster und Abstände
+## Bewegung D
 
-- Inhalt max. 1320 px, Rand `clamp(16px, 4vw, 56px)`, Spaltenabstand 32 px (16 px am Handy).
-- Abschnitte 64 px (48 px unter 860 px), getrennt durch 1-px-Linien oder die Mulde `papier-2`.
-- Brüche: 1100 (Datum im Kopf), 1040, 960 (Artikel einspaltig), 860 (Startseite und Seitenköpfe einspaltig),
-  760 (Kopf eine Zeile, Strom Handy), 640 (Tafeln zweispaltig, Blatt randlos), 520, 400.
+Nur unter `prefers-reduced-motion: no-preference`, nur `transform` (als `translate`/`scale`), `opacity` und
+`clip-path`; ohne Skript und mit „Bewegung reduzieren“ ist alles sichtbar und still. Der erste Bildschirm bewegt sich
+nie von selbst; was einmal erschienen ist, bleibt.
 
-## Bewegung
+| Teil | Bewegung | Dauer |
+|---|---|---|
+| Kopf | Kopfzeile verblasst, Logo wird 0,8 und schiebt sich unter das Band (am Scrollweg) | Weg = Kopfhöhe |
+| Band | rote Leselinie 2 px wächst mit dem Lesefortschritt | ganze Seite |
+| Aufmacherbild | bis 40 px langsamer als die Seite | beim Hinausscrollen |
+| „Diese Woche“ | dunkle Fläche zieht von links auf, danach steigt der Inhalt | 800 ms, Inhalt ab 55 % |
+| Große Kacheln | Bild deckt sich von unten auf, Maßstab 1,06 → 1, Titel zeilenweise | 750 / 1100 / 700 ms |
+| Blocktitel | steigen aus ihrer Linie | 700 ms |
+| Kacheln, Nebenstücke, Meldungen, Listen | 16 px nach oben, einblenden, gestaffelt 60 ms je Spalte, 100 ms je Reihe | 560 ms |
 
-Nur auf Zeigen: Unterstrich wird dicker, Bild leicht heller, Knopf 1 px tiefer. `prefers-reduced-motion` schaltet
-alles ab. Keine Laufbänder, keine automatischen Animationen.
+Am Scrollweg per CSS-Scroll-Timeline (`@supports (animation-timeline: scroll())`), sonst ein passiver Scroll-Handler
+mit `requestAnimationFrame`. Auftritte über IntersectionObserver (Auslöser 10 % über der Unterkante). Code:
+`assets/js/app.js` (Abschnitt „Bewegung“) und `theme.css` (Abschnitt „Bewegung beim Scrollen“).
 
-## Cockpit (Produkt-Register)
+## Raster
 
-Gleiche Tokens und Schriften, ruhiger: Listen und Tabellen auf `blatt`, Linien statt Kästen, ein dunkler Hauptknopf
-je Ansicht, Rot nur für Fehler und Fristen.
+Inhalt höchstens 1280 px, Rand 16 / 24 / 40 px (ab 600 / 1024 px). Desktop-Startseite: Aufmacher und 388 px
+Meldungen mit 32 px Abstand; „Diese Woche“ dreispaltig. Brüche bei 600, 800 (Hinweise im Kopf) und 1024 px.
