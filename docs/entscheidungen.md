@@ -3,6 +3,27 @@
 Neueste oben. Format: Datum · Entscheidung · wer · warum. Was hier steht, gilt, bis ein neuerer Eintrag es ändert.
 Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
+## 16.11.2026
+
+- **Design: `klar2` statt „Tageskalender“, auf allen Seiten von Website und Cockpit.** Das kehrt zwei frühere
+  Entscheidungen um:
+  - das Urteil vom 13.11. („komplett generisch“, gilt für klar2);
+  - die Wahl vom 14.11. (Mischung A + B, „Tageskalender“).
+
+  Was daraus folgt:
+  - Die Verbote aus „Runden 5–7“ in `abgelehnt.md` sind für die Bestandteile von klar2 aufgehoben. Das betrifft
+    Dachzeilen, Bildkacheln mit Verlauf und Titel im Bild, den dunklen „Diese Woche“-Bereich, Rubrikkacheln und
+    Metazeilen mit „·“.
+  - Für die Gestaltung gelten wieder `design/brief.md` §10 (klar2) und diese Wahl. `design/brief-v3.md` und der
+    Hallmark-Floor gelten nicht mehr, wo sie klar2 widersprechen.
+  - Neu ist **Bewegung beim Scrollen**: ruhig, nicht hyperrealistisch, nur unter
+    `prefers-reduced-motion: no-preference`. Luis wählt die Art aus einer Vorschau. Damit ist §10.1 („kein
+    Einblenden beim Scrollen“) aufgehoben.
+  - Tageskalender bleibt in der Git-Historie (`claude/mache-weiter-i23fs9`, Theme 2.0.0) und wird nicht weitergebaut.
+
+  Weg: Vorschau Bewegung → `/design-ausbau klar2` für Website und Cockpit → Tor G3 → `/design-umsetzung`. · Luis
+  (`docs/abnahme/2026-11-16-G2-klar2.md`)
+
 ## 14.11.2026
 
 - **Theme „Tageskalender“: Wortdichte (Hallmark Gate 58) bewusst über der Grenze.** Die Dichte entsteht aus der
