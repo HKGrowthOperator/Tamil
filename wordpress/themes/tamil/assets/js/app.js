@@ -6,7 +6,7 @@
   var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   // Menü „Mehr“ (details): mit Escape und Klick daneben schließen; ohne Skript öffnet und schließt es trotzdem
-  var menue = $(".kopf .menue");
+  var menue = $(".band .mehr");
   if (menue) {
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape" && menue.open) { menue.open = false; var s = $("summary", menue); s && s.focus(); }

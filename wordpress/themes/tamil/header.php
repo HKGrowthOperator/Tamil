@@ -1,7 +1,7 @@
 <?php
 /**
- * Kopf: schmale Leiste (ab 761 px), Kopfzeile mit Logo, vier Zielen und dem Menü „Mehr“. Werbeplatz 01 steht nicht
- * hier, sondern unter dem ersten Abschnitt der Seite (tamil_leaderboard()).
+ * Kopf jeder Seite (klar2): Kopfzeile, Logo und das dunkle Rubrikband, das beim Scrollen stehen bleibt. Werbeplatz 01
+ * steht nicht hier, sondern unter dem ersten Abschnitt der Seite (tamil_leaderboard()).
  */
 
 defined( 'ABSPATH' ) || exit;

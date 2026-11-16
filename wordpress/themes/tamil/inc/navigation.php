@@ -1,12 +1,14 @@
 <?php
 /**
- * Navigation: Einträge aus dem Menü „Hauptnavigation“, sonst aus den Rubriken. Kopfleiste, Rubrik-Leiste (mobil)
- * und Menü nutzen dieselbe Liste.
+ * Navigation: das dunkle Rubrikband (Einträge aus dem Menü „Hauptnavigation“, sonst die Rubriken in der Reihenfolge
+ * von klar2 und „Kontakt“), die Dienste für „Mehr“ und den Fuß und die zwei Hinweise „Diese Woche“ in der Kopfzeile.
  */
 
 defined( 'ABSPATH' ) || exit;
 
 /**
+ * Einträge des Rubrikbands.
+ *
  * @return array<int,array{label:string,url:string,aktiv:bool,slug:string}>
  */
 function tamil_nav_items(): array {
@@ -25,22 +27,30 @@ function tamil_nav_items(): array {
 			$items[] = array(
 				'label' => $item->title,
 				'url'   => $item->url,
-				'aktiv' => tamil_nav_aktiv( $item->url ),
+				'aktiv' => tamil_nav_aktiv( $item->url ) || ( '' !== $slug && is_category( $slug ) ),
 				'slug'  => $slug,
 			);
 		}
 		return $items;
 	}
-	foreach ( array( 'news', 'kino', 'events', 'community', 'entertainment', 'kueche', 'kultur', 'sport' ) as $slug ) {
+	foreach ( array( 'news', 'entertainment', 'events', 'community', 'kueche', 'kino', 'sport', 'kultur' ) as $slug ) {
 		$rubrik = tamil_rubrik( $slug );
-		if ( ! $rubrik['term'] && 'events' !== $slug ) {
+		if ( ! $rubrik['term'] && ! ( 'events' === $slug && tamil_seite( 'events' ) ) ) {
 			continue;
 		}
 		$items[] = array(
 			'label' => $rubrik['label'],
 			'url'   => $rubrik['url'],
-			'aktiv' => tamil_nav_aktiv( $rubrik['url'] ) || ( is_category( $slug ) ),
+			'aktiv' => tamil_nav_aktiv( $rubrik['url'] ) || is_category( $slug ) || ( 'events' === $slug && is_page( 'events' ) ),
 			'slug'  => $slug,
+		);
+	}
+	if ( tamil_seite( 'kontakt' ) ) {
+		$items[] = array(
+			'label' => __( 'Kontakt', 'tamil' ),
+			'url'   => tamil_seiten_url( 'kontakt' ),
+			'aktiv' => is_page( 'kontakt' ),
+			'slug'  => '',
 		);
 	}
 	return $items;
@@ -62,63 +72,7 @@ function tamil_nav_aktiv( string $url ): bool {
 }
 
 /**
- * Die vier Ziele im Kopf (Termine, Kino, Community, Verzeichnis). Ist das Menü „Hauptnavigation“ gesetzt, kommen
- * seine ersten vier Einträge; sonst die Rubriken und Seiten, die es gibt. „breit“ heißt: am Handy nur im Menü.
- *
- * @return array<int,array{label:string,url:string,aktiv:bool,breit:bool,dienst:bool}>
- */
-function tamil_kopf_ziele(): array {
-	$ziele     = array();
-	$locations = get_nav_menu_locations();
-	if ( ! empty( $locations['haupt'] ) ) {
-		foreach ( array_slice( tamil_nav_items(), 0, 4 ) as $i => $item ) {
-			$ziele[] = array(
-				'label'  => $item['label'],
-				'url'    => $item['url'],
-				'aktiv'  => $item['aktiv'],
-				'breit'  => $i >= 2,
-				'dienst' => false,
-			);
-		}
-		return $ziele;
-	}
-	$events = tamil_seite( 'events' );
-	if ( $events ) {
-		$ziele[] = array(
-			'label'  => __( 'Termine', 'tamil' ),
-			'url'    => (string) get_permalink( $events ),
-			'aktiv'  => is_page( 'events' ),
-			'breit'  => false,
-			'dienst' => true,
-		);
-	}
-	foreach ( array( 'kino', 'community' ) as $slug ) {
-		$rubrik = tamil_rubrik( $slug );
-		if ( $rubrik['term'] ) {
-			$ziele[] = array(
-				'label'  => $rubrik['label'],
-				'url'    => $rubrik['url'],
-				'aktiv'  => is_category( $slug ) || ( is_singular( 'post' ) && tamil_nav_aktiv( $rubrik['url'] ) ),
-				'breit'  => 'community' === $slug,
-				'dienst' => 'kino' === $slug,
-			);
-		}
-	}
-	$verzeichnis = tamil_seite( 'verzeichnis' );
-	if ( $verzeichnis ) {
-		$ziele[] = array(
-			'label'  => __( 'Verzeichnis', 'tamil' ),
-			'url'    => (string) get_permalink( $verzeichnis ),
-			'aktiv'  => is_page( 'verzeichnis' ),
-			'breit'  => true,
-			'dienst' => true,
-		);
-	}
-	return $ziele;
-}
-
-/**
- * Dienste für das Menü „Mehr“ und den Fuß: Termin einreichen, Werben und die Seiten, die es gibt.
+ * Dienste für „Mehr“ und den Fuß: Termin einreichen, Werben und die Seiten, die es gibt.
  *
  * @return array<int,array{label:string,url:string,aktiv:bool}>
  */
@@ -136,10 +90,11 @@ function tamil_dienste(): array {
 		),
 	);
 	foreach ( array(
-		'production' => tamil_opt( 'production_titel' ),
-		'tv'         => __( 'Tamil TV', 'tamil' ),
-		'ueber-uns'  => __( 'Über Tamil.de', 'tamil' ),
-		'kontakt'    => __( 'Kontakt', 'tamil' ),
+		'verzeichnis' => __( 'Verzeichnis', 'tamil' ),
+		'production'  => tamil_opt( 'production_titel' ),
+		'tv'          => __( 'Tamil TV', 'tamil' ),
+		'ueber-uns'   => __( 'Über Tamil.de', 'tamil' ),
+		'kontakt'     => __( 'Kontakt', 'tamil' ),
 	) as $slug => $label ) {
 		if ( tamil_seite( $slug ) ) {
 			$dienste[] = array(
@@ -150,4 +105,41 @@ function tamil_dienste(): array {
 		}
 	}
 	return $dienste;
+}
+
+/**
+ * Die Hinweise „Diese Woche“ in der Kopfzeile (ab 800 px): der nächste Termin und der Film mit den meisten Kinos.
+ * Beide nur, wenn es sie gibt; Titel gekürzt, damit die Kopfzeile einzeilig bleibt.
+ *
+ * @return array<int,array{text:string,url:string}>
+ */
+function tamil_kopf_hinweise(): array {
+	static $hinweise = null;
+	if ( null !== $hinweise ) {
+		return $hinweise;
+	}
+	$hinweise = array();
+	if ( function_exists( 'tamil_site_upcoming_events' ) && function_exists( 'tamil_site_event' ) ) {
+		$id = (int) ( tamil_site_upcoming_events( 1, array( 'fields' => 'ids' ) )->posts[0] ?? 0 );
+		$e  = $id ? tamil_site_event( $id ) : array();
+		$ts = $e ? strtotime( (string) $e['datum'] ) : false;
+		if ( $ts ) {
+			$hinweise[] = array(
+				/* translators: 1: Termin, 2: Datum */
+				'text' => sprintf( __( '%1$s am %2$s', 'tamil' ), tamil_titel_kurz( get_the_title( $id ), 30 ), wp_date( 'j. F', $ts ) ),
+				'url'  => (string) get_permalink( $id ),
+			);
+		}
+	}
+	$filme = tamil_kino_filme( 3 );
+	usort( $filme, static fn( $a, $b ) => $b['kinos'] <=> $a['kinos'] );
+	if ( $filme ) {
+		$f          = $filme[0];
+		$hinweise[] = array(
+			/* translators: 1: Film, 2: Anzahl Kinos */
+			'text' => sprintf( _n( '„%1$s“ läuft in %2$d Kino', '„%1$s“ läuft in %2$d Kinos', $f['kinos'], 'tamil' ), tamil_titel_kurz( $f['film'], 24 ), $f['kinos'] ),
+			'url'  => $f['link'],
+		);
+	}
+	return $hinweise;
 }
