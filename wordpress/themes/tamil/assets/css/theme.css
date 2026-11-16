@@ -661,8 +661,9 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .inhalt hr { border: 0; border-top: 1px solid var(--linie); margin: 2em 0; }
 .inhalt summary { display: flex; align-items: center; min-height: 44px; cursor: pointer; font-weight: 600; }
 .inhalt table { width: 100%; border-collapse: collapse; font-size: 16px; line-height: 1.45; border-top: 1px solid var(--tinte); }
-.inhalt th { text-align: left; font-weight: 600; font-size: 13px; color: var(--leise); padding: 8px 12px 8px 0; border-bottom: 1px solid var(--tinte); }
-.inhalt td { text-align: left; vertical-align: top; padding: 10px 12px 10px 0; border-top: 1px solid var(--linie); }
+.inhalt thead th { text-align: left; font-weight: 600; font-size: 13px; color: var(--leise); padding: 8px 12px 8px 0; border-bottom: 1px solid var(--tinte); }
+.inhalt td, .inhalt tbody th { text-align: left; vertical-align: top; padding: 10px 12px 10px 0; border-top: 1px solid var(--linie); }
+.inhalt tbody th { font-weight: 650; }
 .inhalt .wp-block-table { overflow-x: auto; }
 .inhalt .alignwide, .inhalt .alignfull, .inhalt .ad { max-width: none; }
 .inhalt .ad a, .inhalt .anzeige-wrap, .inhalt .anzeige * { text-decoration: none; }
@@ -792,39 +793,156 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .seite .artikel__titel { font-size: 34px; }
 }
 
-/* ---------- Anzeigen (Plätze aus dem Plugin „Tamil.de Website“) ----------
-   Gebuchte und fremde Werbemittel in festen Formaten; ungebuchte Plätze zeigen eine Eigenanzeige (Festlegung F3), die
-   wie ein Anreißer gesetzt ist: Linie oben, Titel, ein Satz, Link, Höhe nach Inhalt. „Anzeige“ steht an der Kante. */
-.ad { display: grid; justify-content: center; gap: var(--space-2xs); max-width: 100%; min-width: 0; }
-.ad .ad-label { justify-self: start; font-size: var(--text-sm); color: var(--color-muted); }
-.ad .flaeche { display: block; max-width: calc(100vw - 2 * var(--gutter)); overflow: hidden; }
+/* ---------- Plugin-Bausteine (tamil-site): Einsendungen tf-, Verzeichnis vz-, Werbebuchung wb-, Zustimmung tz- ----------
+   Nur Aussehen; die Logik bleibt im Plugin. Linien statt Kästen, Knöpfe in Tinte, Fehler mit roter Linie und Text. */
+.tf, .vz, .wb-werbung { font-size: 17px; line-height: 1.5; }
+.inhalt .tf, .inhalt .vz, .inhalt .wb-werbung { max-width: none; }
+.tf + .tf { margin-top: 48px; }
+.tf-formular, .vz-form, .wb-formular { display: grid; gap: 18px; max-width: 640px; }
+.tf-feld, .vz-feld { margin: 0; min-width: 0; }
+.tf-feld label, .vz-feld > label, .vz-feld legend, .wb-formular label { display: block; margin-bottom: 6px; font-size: 15px; font-weight: 600; line-height: 1.35; }
+.wb-formular label { margin: 8px 0 6px; }
+.tf-feld input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), .tf-feld select, .tf-feld textarea,
+.vz-feld input:not([type="checkbox"]):not([type="radio"]), .vz-feld select, .vz-feld textarea,
+.wb-formular input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), .wb-formular select, .wb-formular textarea { width: 100%; max-width: 100%; }
+input[type="datetime-local"], input[type="file"] { min-height: 48px; padding: 8px 14px; border: 1px solid var(--leise); border-radius: 0; background: var(--grund); color: var(--tinte); font-size: 17px; }
+input[type="file"] { padding: 10px; font-size: 15px; }
+.tf-pflicht, .vz-pflicht { font-weight: 400; font-size: 13px; color: var(--leise); }
+.tf-hilfe, .vz-hilfe, .wb-feldhinweis { display: block; margin-top: 4px; font-size: 14px; line-height: 1.4; color: var(--leise); }
+.tf-fehler, .vz-fehler { display: block; margin-top: 4px; font-size: 15px; font-weight: 600; color: var(--rot); }
+.tf-feld:has(.tf-fehler) :is(input, select, textarea), .vz-feld:has(.vz-fehler) :is(input, select, textarea) { border: 2px solid var(--rot); }
+.tf-auswahl, .vz-auswahl label, .vz-oeffentlich { display: grid; grid-template-columns: 24px minmax(0, 1fr); column-gap: 10px; align-items: start; }
+.tf-auswahl label, .vz-auswahl label { margin: 0; font-size: 15px; font-weight: 400; }
+.tf-auswahl input, .vz-auswahl input { margin: 2px 0 0; }
+.tf-auswahl .tf-fehler { grid-column: 2; }
+.vz-auswahl { border: 0; padding: 0; margin: 0; }
+.vz-auswahl label { min-height: 44px; align-items: center; }
+.tf-hinweis, .vz-hinweis, .wb-hinweis { font-size: 14px; line-height: 1.45; color: var(--leise); }
+.tf-einwilligung label { font-size: 14px; line-height: 1.45; }
+.tf-senden, .vz-aktion button, .vz-suche button, .vz-form button[type="submit"], .wb-formular button, .wb-knopf, .wb-buchen a, .wb-aktion button, .wb-aktion a {
+  display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 20px;
+  border: 1px solid var(--tinte); border-radius: 0; background: var(--tinte); color: var(--hell);
+  font-size: 16px; font-weight: 600; line-height: 1.2; text-decoration: none; cursor: pointer;
+}
+.tf-senden:hover, .vz-aktion button:hover, .vz-suche button:hover, .vz-form button[type="submit"]:hover, .wb-formular button:hover, .wb-knopf:hover, .wb-buchen a:hover, .wb-aktion button:hover, .wb-aktion a:hover { background: var(--tinte-hover); color: var(--hell); }
+.tf-aktion, .vz-aktion { margin: 4px 0 0; }
+/* Rückmeldungen: Danke mit Vorgangsnummer, Fehler, ausgeschaltet */
+.tf-danke, .vz-danke, .tf-meldung, .vz-meldung, .wb-fehler, .tf-aus, .vz-aus {
+  padding: 12px 16px; background: var(--flaeche); border-top: 1px solid var(--tinte); border-left: 0;
+}
+.tf-meldung, .vz-meldung, .wb-fehler { border-top: 2px solid var(--rot); }
+.tf-meldung ul, .vz-meldung ul, .wb-fehler ul { padding-left: 1.2em; list-style: disc; }
+.tf-vorgang, .vz-vorgang { font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
+
+/* Verzeichnis */
+.vz-suche { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px 16px; align-items: end; padding: 16px 0; border-top: 1px solid var(--tinte); border-bottom: 1px solid var(--linie); }
+.vz-suche .vz-aktion { margin: 0; }
+.vz-vorschlagen a, .vz-zurueck a, .vz-aenderung a, .vz-seiten a {
+  display: inline-flex; align-items: center; min-height: 44px; font-weight: 600;
+  text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em;
+}
+.vz-vorschlagen a:hover, .vz-zurueck a:hover, .vz-aenderung a:hover, .vz-seiten a:hover { color: var(--rot); }
+.vz-leer { padding: 16px 0; color: var(--leise); }
+.vz-liste { margin-top: 8px; border-top: 1px solid var(--tinte); list-style: none !important; padding: 0 !important; }
+.inhalt .vz-liste li + li { margin-top: 0; }
+.vz-eintrag { display: grid; gap: 2px; padding: 12px 0; border-bottom: 1px solid var(--linie); }
+.vz-name { font-size: 19px; line-height: 1.25; font-weight: 650; text-decoration: none !important; }
+.vz-name:hover { text-decoration: underline !important; }
+.vz-meta { font-size: 15px; color: var(--leise); }
+.vz-premium-marke { font-size: 13px; font-weight: 600; color: var(--rot); }
+.vz-seiten { display: flex; flex-wrap: wrap; gap: 0 16px; margin-top: 16px; }
+.vz-profil .vz-beschreibung { margin-top: 8px; }
+.vz-angaben { margin-top: 16px; border-top: 1px solid var(--tinte); }
+.vz-angaben dt { padding-top: 8px; font-size: 13px; color: var(--leise); }
+.vz-angaben dd { margin: 0; padding-bottom: 8px; border-bottom: 1px solid var(--linie); overflow-wrap: anywhere; }
+
+/* Werbebuchung */
+.wb-werbung h2 { margin: 40px 0 8px; padding-top: 12px; border-top: 1px solid var(--tinte); font-size: 22px; }
+.wb-werbung > :first-child h2, .wb-werbung > h2:first-child { margin-top: 0; }
+.wb-werbung h3 { margin: 24px 0 6px; font-size: 19px; }
+.wb-tabelle-wrap { margin-top: 8px; }
+.wb-tabelle { border-collapse: collapse; font-size: 15px; line-height: 1.45; }
+.wb-tabelle thead th { padding: 8px 12px 8px 0; border-bottom: 1px solid var(--tinte); font-size: 13px; font-weight: 600; color: var(--leise); }
+.wb-tabelle td, .wb-tabelle tbody th { padding: 10px 12px 10px 0; border-top: 1px solid var(--linie); }
+.wb-tabelle tbody th { font-weight: 650; }
+.inhalt .wb-preise { list-style: none; padding: 0; }
+.inhalt .wb-preise li + li { margin-top: 2px; }
+.wb-platzhalter { font-style: normal; color: var(--leise); }
+.wb-hinweis { margin-top: 12px; }
+.wb-zusammenfassung, .wb-daten, .wb-buchung { margin-top: 16px; }
+.wb-stand { font-weight: 600; }
+@media (max-width: 640px) {
+  .wb-tabelle tr { padding: 10px 0; border-bottom: 1px solid var(--linie); }
+  .wb-tabelle td, .wb-tabelle tbody th { border-top: 0; padding: 2px 0; }
+  .wb-tabelle td[data-label]::before { font-weight: 600; color: var(--leise); }
+}
+
+/* Cookie-Zustimmung: Hinweis unten und Dialog, ohne Radius und Schatten */
+body .tz-hinweis, body .tz-dialog {
+  border: 1px solid var(--tinte); border-radius: 0; box-shadow: none;
+  background: var(--grund); color: var(--tinte); font-family: var(--schrift); font-size: 15px; line-height: 1.5;
+}
+body .tz-hinweis { border-top-width: 3px; }
+body .tz-titel { font-size: 19px; font-weight: 700; line-height: 1.25; }
+body .tz-knopf { border-radius: 0; border-color: var(--tinte); background: var(--grund); color: var(--tinte); font-weight: 600; }
+body .tz-knopf:hover { background: var(--flaeche); }
+body .tz-knopf-haupt { background: var(--tinte); color: var(--hell); }
+body .tz-knopf-haupt:hover { background: var(--tinte-hover); }
+body .tz-knopf-leise { border-color: transparent; background: transparent; text-decoration: underline; text-underline-offset: 0.2em; }
+body .tz-knopf:focus-visible, body .tz-link:focus-visible, body .tz-kategorie input:focus-visible { outline: 2px solid var(--tinte); outline-offset: 2px; }
+body .tz-kategorie { border-top-color: var(--linie); }
+body .tz-dialog::backdrop { background: oklch(0.21 0.012 255 / 0.6); }
+@media (prefers-reduced-motion: reduce) { body .tz-hinweis:not([hidden]) { animation: none; } }
+
+/* ---------- Anzeigen (Plätze aus dem Plugin): feste Formate, „Anzeige“ an der Kante; ungebuchte Plätze zeigen eine
+   Eigenanzeige (Festlegung F3), gesetzt wie ein Anreißer mit Linien, Höhe nach Inhalt ---------- */
+.ad { display: grid; justify-content: center; gap: 4px; max-width: 100%; min-width: 0; }
+.ad .ad-label { justify-self: start; font-size: 13px; color: var(--leise); }
+.ad .flaeche { display: block; max-width: calc(100vw - 2 * var(--rand)); overflow: hidden; }
+.ad img { display: block; max-width: 100%; height: auto; }
 .ad-leaderboard .flaeche { width: 320px; height: 50px; }
 .ad-billboard .flaeche { width: 300px; height: 250px; }
-.ad-inarticle { margin: var(--space-xl) 0; } .ad-inarticle .flaeche { width: 300px; height: 250px; }
-.ad-inarticle.ad-anzeige { justify-content: stretch; } .ad-inarticle.ad-anzeige .flaeche { width: auto; max-width: 66ch; }
-.ad-sidebar { display: none; } .ad-sidebar .flaeche { width: 300px; height: 600px; }
+.ad-inarticle { margin: 32px 0; }
+.ad-inarticle .flaeche { width: 300px; height: 250px; }
+.ad-inarticle.ad-anzeige { justify-content: stretch; }
+.ad-inarticle.ad-anzeige .flaeche { width: auto; }
+.ad-sidebar .flaeche { width: 300px; height: 600px; }
 .ad-footer .flaeche { width: 320px; height: 100px; }
 .ad-anzeige .flaeche { height: auto; }
-.anzeige-zwischen { padding-block: var(--space-lg); }
-.anzeige-unten { padding-bottom: var(--space-xl); }
-.anzeige-wrap { display: block; color: var(--color-ink); text-decoration: none; }
-.anzeige { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-2xs) var(--space-lg); padding-block: var(--space-sm) var(--space-2xs); border-top: 2px solid var(--color-rule-2); border-bottom: 1px solid var(--color-rule); text-align: left; }
-.anzeige .text { display: grid; gap: var(--space-3xs); flex: 1 1 18rem; min-width: 0; }
-.anzeige .claim { font-family: var(--font-display); font-weight: 600; font-size: var(--text-lg); line-height: 1.25; }
-.anzeige .sub { color: var(--color-ink-2); font-size: var(--text-md); line-height: 1.45; }
-.anzeige .cta { display: inline-flex; align-items: center; min-height: 44px; font-weight: 600; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
-.anzeige-wrap:hover .claim { text-decoration: underline; text-decoration-thickness: 2px; }
-.ad-mobile { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: var(--space-sm); padding: var(--space-2xs) var(--space-2xs) max(var(--space-2xs), env(safe-area-inset-bottom)) var(--gutter); background: var(--color-paper); border-top: 2px solid var(--color-rule-2); }
+/* Eigenanzeigen: Breite nach Platz, höchstens 728 px, am Handy über die volle Breite */
+.ad-anzeige:not(.ad-mobile) { grid-template-columns: minmax(0, 728px); }
+.ad-anzeige:not(.ad-mobile) .flaeche { width: auto; max-width: none; }
+.anzeige-zwischen { padding-block: 24px; }
+.anzeige-unten { padding-top: 32px; }
+.anzeige-unten + .fuss { margin-top: 32px; }
+.anzeige-wrap { display: block; color: var(--tinte); text-decoration: none; }
+.anzeige {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 24px;
+  padding: 12px 0 8px; border-top: 1px solid var(--tinte); border-bottom: 1px solid var(--linie); text-align: left;
+}
+.anzeige .text { display: grid; gap: 2px; flex: 1 1 18rem; min-width: 0; }
+.anzeige .claim { font-size: 19px; font-weight: 650; line-height: 1.25; }
+.anzeige .sub { font-size: 15px; line-height: 1.45; color: var(--leise); }
+.anzeige .cta { display: inline-flex; align-items: center; min-height: 44px; font-weight: 600; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+.anzeige-wrap:hover .claim { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.14em; }
+.anzeige-wrap:hover .cta { color: var(--rot); }
+.ad-mobile {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+  display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 12px;
+  padding: 4px 4px max(4px, env(safe-area-inset-bottom)) var(--rand);
+  background: var(--grund); border-top: 1px solid var(--tinte);
+}
 .ad-mobile[hidden] { display: none; }
 .ad-mobile:not(.ist-sichtbar) { display: none; } /* app.js blendet sie nach dem ersten Abschnitt ein */
 .ad-mobile .ad-label { justify-self: auto; flex: none; }
 .ad-mobile .flaeche { flex: 1 1 auto; width: auto; min-width: 0; }
 .ad-mobile:not(.ad-anzeige) .flaeche { flex: none; width: 320px; height: 50px; }
-.ad-mobile .anzeige { flex-wrap: nowrap; align-items: center; padding: 0; border: 0; gap: var(--space-sm); }
-.ad-mobile .anzeige .claim { font-size: var(--text-md); }
+.ad-mobile .anzeige { flex-wrap: nowrap; align-items: center; padding: 0; border: 0; gap: 12px; }
+.ad-mobile .anzeige .claim { font-size: 15px; }
+.ad-mobile .anzeige .sub { display: none; }
 .ad-mobile .anzeige .text { flex: 1 1 auto; }
-.ad-mobile .schliessen { position: static; flex: none; width: 44px; height: 44px; border: 0; background: none; color: var(--color-ink); font-size: 1.375rem; line-height: 1; cursor: pointer; }
-.has-sticky-ad { padding-bottom: var(--space-2xl); }
+.ad-mobile .schliessen { position: static; flex: none; width: 44px; height: 44px; border: 0; background: none; color: var(--tinte); font-size: 22px; line-height: 1; cursor: pointer; }
+.has-sticky-ad { padding-bottom: 64px; }
 @media (min-width: 768px) {
   .ad-leaderboard .flaeche, .ad-footer .flaeche { width: 728px; height: 90px; }
   .ad-anzeige .flaeche { height: auto; }
@@ -834,8 +952,9 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 @media (min-width: 1024px) {
   .ad-billboard .flaeche { width: 970px; height: 250px; }
   .ad-billboard.ad-anzeige .flaeche { height: auto; }
-  .ad-sidebar { display: grid; }
 }
+/* Werbeplatz 03 im Text: 728 × 90 nur, wenn die Textspalte breit genug ist, sonst 300 × 250 */
+@container (min-width: 740px) { .inhalt .ad-inarticle .flaeche { width: 728px; height: 90px; } .inhalt .ad-inarticle.ad-anzeige .flaeche { height: auto; } }
 
 /* ---------- Fuß: heller Grund, Linie in Tinte oben (dunkel bleiben nur Band und „Diese Woche“) ---------- */
 .fuss {
