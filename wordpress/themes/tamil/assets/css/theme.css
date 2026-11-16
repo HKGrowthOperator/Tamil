@@ -146,24 +146,25 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 
 .band { position: sticky; top: 0; z-index: 20; background: var(--tinte); color: var(--hell); }
 .band__innen { display: flex; align-items: stretch; max-width: var(--breite); margin: 0 auto; padding: 0 4px; }
-.band ul {
+.band__liste {
   display: flex; flex: 1 1 auto; min-width: 0;
   overflow-x: auto; scrollbar-width: none;
   scroll-snap-type: x proximity; scroll-padding-inline: 4px 50%;
 }
-.band ul::-webkit-scrollbar { display: none; }
-.band li { scroll-snap-align: start; }
-.band a, .mehr summary {
+.band__liste::-webkit-scrollbar { display: none; }
+.band__liste li { scroll-snap-align: start; }
+.band__liste a, .mehr summary {
   position: relative; display: block;
   padding: 0 12px; line-height: var(--band-hoehe);
   font-size: 15px; font-weight: 500; color: var(--hell-leise); white-space: nowrap;
 }
-.band a:hover, .mehr summary:hover { color: var(--hell); }
-.band a[aria-current] { color: var(--hell); font-weight: 600; }
-.band a[aria-current]::after {
+.band__liste a:hover, .mehr summary:hover { color: var(--hell); }
+.band__liste a[aria-current] { color: var(--hell); font-weight: 600; }
+.band__liste a[aria-current]::after {
   content: ""; position: absolute; left: 12px; right: 12px; bottom: 0; height: 3px; background: var(--rot);
 }
-.band :focus-visible { outline-color: var(--hell); outline-offset: -4px; }
+.band__liste :focus-visible, .mehr summary:focus-visible { outline-color: var(--hell); outline-offset: -4px; }
+.mehr__paneel :focus-visible { outline-color: var(--tinte); outline-offset: 2px; }
 .admin-bar .band { top: 0; }
 @media (min-width: 601px) { .admin-bar .band { top: var(--wp-admin--admin-bar--height, 32px); } }
 
@@ -214,11 +215,11 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .kopf__logo { padding: 11px 0; }
   .kopf__logo img { height: 58px; }
   .band__innen { position: relative; padding: 0 calc(var(--rand) - 14px); }
-  .band ul { overflow: visible; }
-  .band a, .mehr summary { padding: 0 14px; font-size: 16px; }
-  .band a[aria-current]::after { left: 14px; right: 14px; }
+  .band__liste { overflow: visible; }
+  .band__liste a, .mehr summary { padding: 0 14px; font-size: 16px; }
+  .band__liste a[aria-current]::after { left: 14px; right: 14px; }
   .mehr { margin-left: auto; border-left: 0; }
-  .mehr__paneel { left: auto; right: calc(var(--rand) - 14px); width: 420px; padding: 16px 24px 20px; border: 1px solid var(--tinte); border-top: 0; }
+  .mehr__paneel { left: auto; right: var(--rand); width: 420px; padding: 16px 24px 20px; border: 1px solid var(--tinte); border-top: 0; }
 }
 
 /* ---------- Bausteine: Anreißer, Rahmen, Dachzeile, Titel, Bild mit Titel ---------- */

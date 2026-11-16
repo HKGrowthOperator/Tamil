@@ -32,7 +32,7 @@ $tamil_lupe     = '<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"
 </header>
 <nav class="band" aria-label="<?php esc_attr_e( 'Rubriken', 'tamil' ); ?>">
 	<div class="band__innen">
-		<ul>
+		<ul class="band__liste">
 			<?php foreach ( $tamil_items as $tamil_item ) : ?>
 				<li><a href="<?php echo esc_url( $tamil_item['url'] ); ?>"<?php echo $tamil_item['aktiv'] ? ' aria-current="page"' : ''; ?>><?php echo esc_html( $tamil_item['label'] ); ?></a></li>
 			<?php endforeach; ?>
