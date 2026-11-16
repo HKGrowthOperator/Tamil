@@ -197,6 +197,16 @@ function tamil_kacheln_auswahl(): array {
 }
 
 /**
+ * Rubrikkacheln ohne die aktuelle Rubrik (Rubrik- und Fehlerseiten), aus dem Transient der Startseite.
+ *
+ * @return array<int,array{label:string,url:string,slug:string,bild:int}>
+ */
+function tamil_kacheln_ohne( string $slug = '' ): array {
+	$kacheln = tamil_start_auswahl()['kacheln'];
+	return array_values( array_filter( $kacheln, static fn( $k ) => $k['slug'] !== $slug ) );
+}
+
+/**
  * Cache verwerfen, sobald sich an Beiträgen oder Einstellungen etwas ändert.
  */
 function tamil_flush_auswahl(): void {

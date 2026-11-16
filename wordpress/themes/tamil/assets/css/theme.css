@@ -404,7 +404,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .meldung .anr { grid-template-columns: minmax(0, 1fr) 120px; }
   .kacheln li { flex-basis: 160px; }
   .woche__raster { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .woche .kachel--gross, .woche__gruppe--termine { grid-column: 1 / -1; }
+  .woche__raster .kachel--gross, .woche__gruppe--termine { grid-column: 1 / -1; }
   .woche__raster.ohne-klein .woche__gruppe--kino { grid-column: 1 / -1; }
   .woche__gruppe--termine ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .termine-1 .woche__gruppe--termine ul { grid-template-columns: minmax(0, 1fr); }
@@ -440,11 +440,12 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
     grid-template-areas: "auf mel" "neb neb" "kach kach";
     column-gap: 32px; align-items: start; padding-top: 24px;
   }
-  .aufmacher { grid-area: auf; }
-  .meldungen { grid-area: mel; margin-top: 0; }
+  .oben .aufmacher { grid-area: auf; }
+  .oben .meldungen { grid-area: mel; margin-top: 0; }
   .meldungen .block-titel { margin-bottom: 0; }
-  .neben { grid-area: neb; margin-top: 40px; }
-  .kacheln { grid-area: kach; margin-top: 40px; padding: 20px 0; border-top: 1px solid var(--linie); border-bottom: 1px solid var(--linie); }
+  .oben .neben { grid-area: neb; margin-top: 40px; }
+  .oben .kacheln { grid-area: kach; }
+  .kacheln { margin-top: 40px; padding: 20px 0; border-top: 1px solid var(--linie); border-bottom: 1px solid var(--linie); }
 
   .aufmacher .rahmen { margin-inline: 0; }
   .aufmacher .imbild { padding: 120px 32px 26px; }
@@ -475,8 +476,8 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .woche__raster.ohne-klein { grid-template-areas: "gross gross kino" "gross gross kino" "termin termin termin"; }
   .woche__raster.ohne-gross { grid-template-areas: "klein klein kino" "termin termin termin"; grid-template-rows: auto auto; }
   .woche__raster.ohne-gross.ohne-klein { grid-template-areas: "kino termin termin"; grid-template-rows: auto; }
-  .woche .kachel--gross { grid-area: gross; }
-  .woche .kachel--klein { grid-area: klein; }
+  .woche__raster .kachel--gross { grid-area: gross; }
+  .woche__raster .kachel--klein { grid-area: klein; }
   .woche__gruppe--kino { grid-area: kino; align-self: stretch; }
   .woche__gruppe--termine { grid-area: termin; }
   .woche__raster.ohne-klein .woche__gruppe--kino { grid-column: auto; }
@@ -507,10 +508,6 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .wrap { width: 100%; max-width: var(--breite); margin-inline: auto; padding-inline: var(--rand); }
 .satz { margin: var(--space-sm) 0 0; max-width: 60ch; color: var(--color-ink-2); }
 .weiter-links { display: flex; flex-wrap: wrap; gap: 0 var(--space-lg); margin: var(--space-md) 0 0; }
-.seitenkopf { padding-block: var(--space-xl) var(--space-lg); border-bottom: 1px solid var(--color-rule); }
-.seitenkopf h1 { font-size: var(--text-h1); max-width: 24ch; }
-.seitenkopf .satz { font-size: var(--text-lead); line-height: 1.5; }
-.seitenkopf + .abschnitt { border-top: 0; padding-top: var(--space-xl); }
 .fill { display: inline-block; max-width: 100%; padding: var(--space-2xs) var(--space-sm); line-height: 1.6; border: 1px dashed var(--color-muted); border-radius: 3px; color: var(--color-muted); }
 
 /* ---------- Datumsblock ---------- */
@@ -523,63 +520,120 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .tag-ort { color: var(--color-ink-2); line-height: 1.35; margin-top: var(--space-2xs); }
 .tag-ort a { padding-block: var(--space-sm); text-decoration-color: var(--color-muted); }
 
-/* ---------- Bogen und Tafel: Tabellen auf hellem Blatt mit fester Linie oben ---------- */
-.bogen { background: var(--color-sheet); border-top: 2px solid var(--color-rule-2); padding: var(--space-md) var(--space-lg) var(--space-xs); }
-.bogen-kopf { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--space-2xs) var(--space-lg); padding-bottom: var(--space-sm); }
-.bogen-kopf h2 { font-size: var(--text-h2); }
-.bogen-stand { margin: 0; color: var(--color-muted); font-size: var(--text-sm); }
-.bogen-fuss { margin: 0; padding-top: var(--space-2xs); border-top: 2px solid var(--color-rule-2); }
-.bogen-fuss.notiz { padding-block: var(--space-sm); color: var(--color-ink-2); }
-.bogen-leer { padding-block: var(--space-sm) var(--space-md); border-top: 2px solid var(--color-rule-2); color: var(--color-ink-2); }
-.bogen-unterkopf { margin: var(--space-xs) 0 0; font-family: var(--font-body); font-size: var(--text-md); font-weight: 600; color: var(--color-muted); letter-spacing: 0; }
-.tafel { width: 100%; border-collapse: collapse; font-size: var(--text-body); line-height: 1.45; font-variant-numeric: tabular-nums lining-nums; }
-.tafel th { font-family: var(--font-body); font-weight: 400; font-size: var(--text-sm); color: var(--color-muted); text-align: left; padding: var(--space-xs) var(--space-md) var(--space-xs) 0; border-bottom: 2px solid var(--color-rule-2); white-space: nowrap; }
-.tafel td, .tafel tbody th { padding: var(--space-sm) var(--space-md) var(--space-sm) 0; border-top: 1px solid var(--color-rule); vertical-align: top; text-align: left; }
+/* ---------- Seitenkopf, Blöcke und Listen (Rubrik, Suche, Archive, Termine, Seiten) ---------- */
+.seitenkopf { padding: 24px 0 8px; }
+.seitenkopf__titel { font-size: 28px; line-height: 1.15; font-weight: 700; letter-spacing: -0.01em; }
+.seitenkopf__zeile { margin-top: 6px; max-width: 40em; font-size: 17px; line-height: 1.5; color: var(--leise); }
+.seitenkopf .suchfeld { margin-top: 16px; }
+.seitenkopf .aktionen { margin-top: 4px; }
+.block { margin-top: 40px; }
+.block__zeile, .block__notiz { margin-top: 4px; font-size: 15px; color: var(--leise); }
+.block__notiz { margin-top: 12px; }
+.leer__satz { margin-top: 8px; max-width: 40em; }
+
+/* Liste: Zeilen mit Dachzeile, Titel, Vorspann; Bild 16:9 rechts (Handy), links (ab 600 px) */
+.liste { border-top: 0; }
+.zeile + .zeile { border-top: 1px solid var(--linie); }
+.zeile .anr { display: grid; grid-template-columns: minmax(0, 1fr) 96px; column-gap: 14px; align-items: start; padding: 14px 0; }
+.zeile.ohne-bild .anr { grid-template-columns: minmax(0, 1fr); }
+.zeile .rahmen { grid-column: 2; grid-row: 1; margin-top: 3px; }
+.zeile__text { grid-column: 1; grid-row: 1; }
+.zeile .titel { font-size: 17px; line-height: 1.3; font-weight: 600; }
+.zeile .vorspann { display: none; font-size: 16px; line-height: 1.5; color: var(--tinte); }
+.zeile mark, .treffer mark { background: none; color: inherit; font-weight: 750; }
+
+/* Bühne der Rubrik: Aufmacher und die nächsten vier daneben (Desktop) */
+.buehne .aufmacher .rahmen { margin-inline: calc(-1 * var(--rand)); }
+.buehne__seite { margin-top: 24px; }
+
+/* Seitennavigation */
+.seiten { margin-top: 24px; }
+.seiten-zeile { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 24px; border-top: 1px solid var(--tinte); padding-top: 8px; }
+.seiten p { margin: 0; font-size: 15px; color: var(--leise); }
+.seiten .seiten-links { margin-top: 0; gap: 0 4px; }
+.seiten .seiten-links a, .seiten .seiten-links > span { padding: 0 8px; }
+.seiten .seiten-links a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
+.seiten .seiten-links a:hover { color: var(--rot); }
+.seiten .seiten-links .current { font-weight: 700; }
+.seiten .seiten-links .prev, .seiten .seiten-links .next { font-weight: 600; }
+
+/* Tabellen (Kino nach Stadt, Werbeplätze): Linien statt Kästen */
+.tafel-wrap { max-width: 100%; }
+.tafel { width: 100%; border-collapse: collapse; font-size: 16px; line-height: 1.45; font-variant-numeric: tabular-nums; }
+.tafel thead th { padding: 8px 16px 8px 0; border-bottom: 1px solid var(--tinte); font-size: 13px; font-weight: 600; color: var(--leise); text-align: left; white-space: nowrap; }
+.tafel td, .tafel tbody th { padding: 10px 16px 10px 0; border-top: 1px solid var(--linie); vertical-align: top; text-align: left; }
 .tafel tbody tr:first-child td, .tafel tbody tr:first-child th { border-top: 0; }
 .tafel td:last-child { padding-right: 0; }
-.tafel .t-tag { width: 5.5rem; white-space: nowrap; }
-.tafel .t-tag time { display: grid; }
-.t-z { font-family: var(--font-display); font-weight: 800; font-size: 1.875rem; line-height: 1; letter-spacing: -0.03em; color: var(--color-ink); padding-top: var(--space-3xs); }
-.t-wt { font-size: var(--text-sm); color: var(--color-muted); line-height: 1.3; margin-top: var(--space-3xs); }
-.tafel .was { font-family: var(--font-display); font-weight: 600; color: var(--color-ink); }
-.tafel .was > a { display: inline-block; padding-block: var(--space-sm); margin-block: calc(-1 * var(--space-sm)); text-decoration: none; }
-.tafel .was > a:hover { text-decoration: underline; }
-.tafel .wer, .tafel .wo { color: var(--color-ink-2); }
-.tafel .leer { color: var(--color-muted); }
-.tafel.feste .was { width: 44%; }
-.tafel.feste .wer { width: 22%; }
-.tafel .teilen { display: flex; align-items: center; min-height: 44px; width: max-content; font-weight: 400; font-size: var(--text-md); color: var(--color-ink-2); }
-.tafel .t-teilen { white-space: nowrap; width: 1%; }
-.tafel .t-teilen .teilen { margin: calc(-1 * var(--space-sm)) 0; }
-.tafel tr.vorbei td, .tafel tr.vorbei .t-z, .tafel tr.vorbei .was { color: var(--color-muted); }
-.tafel tr.ist-naechst td { border-top: 2px solid var(--color-rule-2); border-bottom: 2px solid var(--color-rule-2); }
-.tafel tr.ist-naechst + tr td { border-top: 0; }
-.tafel tr.ist-naechst .t-z, .tafel tr.ist-naechst .was, .tafel tr.ist-naechst .was > a { color: var(--color-accent); }
-.als { display: block; margin-top: var(--space-3xs); font-family: var(--font-body); font-size: var(--text-md); font-weight: 600; color: var(--color-accent); }
-.tafel .unter { display: block; margin-top: var(--space-3xs); font-family: var(--font-body); font-weight: 400; color: var(--color-ink-2); }
-.tafel.kino .zahl { text-align: right; width: 4.5rem; font-family: var(--font-display); font-weight: 800; font-size: var(--text-lg); }
-.tafel.kino th.zahl { font-family: var(--font-body); font-weight: 400; font-size: var(--text-sm); }
-.tafel .m { display: none; }
-@media (max-width: 640px) {
-  .bogen { margin-inline: calc(-1 * var(--gutter)); padding: var(--space-sm) var(--gutter) var(--space-2xs); }
+.tafel tbody th { font-weight: 600; }
+.tafel .land th { padding-top: 20px; font-size: 17px; font-weight: 700; border-top: 0; border-bottom: 1px solid var(--tinte); }
+.tafel tbody:first-of-type .land th { padding-top: 12px; }
+.tafel .land + tr td, .tafel .land + tr th { border-top: 0; }
+.tafel.orte .stadt { width: 32%; }
+.tafel .film { display: block; font-weight: 600; }
+.tafel .unter { display: block; }
+.tafel .ticket { display: flex; align-items: center; width: max-content; min-height: 44px; margin-bottom: -10px; font-weight: 600; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
+.tafel .ticket:hover { color: var(--rot); }
+@media (max-width: 599px) {
   .tafel thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-  .tafel, .tafel tbody { display: block; }
-  .tafel tr { display: grid; grid-template-columns: 4.25rem minmax(0, 1fr); column-gap: var(--space-sm); padding-block: var(--space-sm); border-top: 1px solid var(--color-rule); }
-  .tafel tbody tr:first-child { border-top: 0; }
-  .tafel td, .tafel tbody th { display: block; grid-column: 2; padding: 0; border: 0; width: auto; }
-  .tafel td.t-tag { grid-column: 1; grid-row: 1 / span 4; }
-  .tafel tr.ist-naechst { border-top: 2px solid var(--color-rule-2); border-bottom: 2px solid var(--color-rule-2); }
-  .tafel tr.ist-naechst + tr { border-top: 0; }
-  .tafel tr.ist-naechst td { border: 0; }
-  .tafel.feste .was, .tafel.feste .wer { width: auto; }
-  .tafel td.t-teilen { grid-column: 2; }
-  .tafel .t-teilen .teilen { margin: 0; }
-  .tafel.kino tr { grid-template-columns: minmax(0, 1fr) 5.5rem; }
-  .tafel.kino td.was { grid-column: 1; grid-row: 1; }
-  .tafel.kino td.zahl { grid-column: 2; grid-row: 1; text-align: right; font-size: var(--text-body); white-space: nowrap; }
-  .tafel.kino td.t-teilen { grid-column: 1 / -1; grid-row: 2; }
-  .tafel .m { display: inline; }
-  .tafel.kino td.zahl .m { font-family: var(--font-body); font-weight: 400; }
+  .tafel, .tafel tbody, .tafel tr, .tafel td, .tafel tbody th { display: block; width: auto !important; }
+  .tafel tr { padding: 10px 0; border-top: 1px solid var(--linie); }
+  .tafel tbody tr:first-child, .tafel .land + tr { border-top: 0; }
+  .tafel td, .tafel tbody th { padding: 0; border: 0; }
+  .tafel .land { padding: 0; }
+  .tafel .land th { padding: 16px 0 6px; border-bottom: 1px solid var(--tinte); }
+}
+
+/* ---------- Kino und Termine: dunkler Bereich wie „Diese Woche“ ---------- */
+.woche--seite { margin-top: 32px; }
+.woche--seite .woche__titel { margin-bottom: 12px; }
+.woche--seite > .innen > .woche__art { margin: -4px 0 16px; padding-top: 0; }
+.programm { display: grid; gap: 16px; }
+.programm .woche__gruppe ul { gap: 16px; }
+.programm .kachel--gross .rahmen { aspect-ratio: 4 / 3; }
+.termine-raster { display: grid; gap: 12px; }
+.termine-raster .grafik .anr { display: block; }
+.monat { border-top: 1px solid var(--linie); }
+.monat:last-of-type { border-bottom: 1px solid var(--linie); }
+.monat summary { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 56px; cursor: pointer; list-style: none; }
+.monat summary::-webkit-details-marker { display: none; }
+.monat__name { font-size: 19px; font-weight: 650; }
+.monat__zahl { display: inline-flex; align-items: center; gap: 12px; font-size: 15px; color: var(--leise); }
+.monat__zahl::after { content: "+"; font-size: 20px; color: var(--tinte); }
+.monat[open] .monat__zahl::after { content: "\2212"; }
+.monat .liste { margin-bottom: 16px; }
+.block > .monat:first-of-type { margin-top: 16px; }
+
+@media (min-width: 600px) {
+  .seitenkopf { padding-top: 32px; }
+  .seitenkopf__titel { font-size: 32px; }
+  .zeile .anr { grid-template-columns: 240px minmax(0, 1fr); column-gap: 20px; }
+  .zeile .rahmen { grid-column: 1; margin-top: 0; }
+  .zeile__text { grid-column: 2; }
+  .zeile.ohne-bild .zeile__text { grid-column: 1; }
+  .zeile .titel { font-size: 19px; line-height: 1.25; }
+  .zeile .vorspann { display: block; }
+  .monat .zeile .anr { grid-template-columns: 160px minmax(0, 1fr); }
+  .termine-raster { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .programm { grid-template-columns: minmax(0, 1fr); }
+  .buehne .aufmacher .rahmen { margin-inline: 0; }
+  .buehne .aufmacher .titel { font-size: 34px; line-height: 1.1; }
+  .buehne .aufmacher .imbild { padding: 90px 28px 22px; }
+}
+@media (min-width: 1024px) {
+  .seitenkopf { padding-top: 40px; }
+  .seitenkopf__titel { font-size: 34px; }
+  .buehne { display: grid; grid-template-columns: minmax(0, 1fr) 388px; column-gap: 32px; align-items: start; padding-top: 16px; }
+  .buehne__seite { margin-top: 0; }
+  .buehne__seite .block-titel { margin-bottom: 0; }
+  .buehne .aufmacher .imbild { padding: 120px 32px 26px; }
+  .buehne .aufmacher .titel { font-size: 38px; }
+  .block { margin-top: 56px; }
+  .liste { max-width: 900px; }
+  .programm { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 24px; }
+  .programm.ohne-gross { grid-template-columns: minmax(0, 1fr); }
+  .programm.ohne-gross .woche__gruppe ul { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+  .termine-raster { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+  .tafel-wrap, .block > .tafel-wrap { max-width: 900px; }
 }
 
 /* ---------- Strom: Beiträge nach Monaten, Tagesziffer je Zeile, Bild mit Nachweis rechts ---------- */
@@ -758,76 +812,6 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .artikel--mit-rand .artikel__kopf { margin-inline: max(0px, (100% - 908px) / 2) auto; }
   .artikel--mit-rand .artikel__rand { display: block; margin-top: 36px; position: sticky; top: calc(var(--band-hoehe) + 24px); }
   .weiterlesen { margin-top: 64px; }
-}
-
-/* ---------- Rubrik: Aufmacher, Strom, Seitennavigation ---------- */
-.rubrik-lead + .abschnitt { border-top: 1px solid var(--color-rule); }
-.lead { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--space-lg) var(--gap-columns); align-items: start; }
-.lead.ohne-bild { grid-template-columns: minmax(0, 8fr) minmax(0, 4fr); }
-.lead-text { display: grid; gap: var(--space-md); align-content: start; }
-.lead-text .tag { align-items: start; }
-.lead-titel { font-size: var(--text-h1); line-height: 1.15; }
-.lead-titel a { text-decoration: none; padding-block: 0.3em; }
-.lead-titel a:hover { text-decoration: underline; text-decoration-thickness: 2px; }
-.lead .teaser { color: var(--color-ink-2); font-size: var(--text-lead); line-height: 1.5; max-width: 60ch; }
-.lead .aktionen { margin-top: 0; }
-.seiten { padding-block: 0 var(--section-gap-s); }
-.seiten-zeile { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-xs) var(--space-lg); border-top: 2px solid var(--color-ink); padding-top: var(--space-sm); }
-.seiten p { margin: 0; color: var(--color-muted); }
-.seiten .seiten-links { margin-top: 0; }
-.seiten-links .current { font-weight: var(--weight-head); }
-.seiten-links .prev, .seiten-links .next { font-weight: 600; }
-@media (max-width: 860px) {
-  .lead, .lead.ohne-bild { display: flex; flex-direction: column; gap: 0; }
-  .lead .lead-text { display: contents; }
-  .lead .tag { order: 1; margin-bottom: var(--space-md); }
-  .lead .lead-titel { order: 2; }
-  .lead > .bild { order: 3; margin-top: var(--space-md); }
-  .lead .teaser { order: 4; margin-top: var(--space-sm); }
-  .lead .aktionen { order: 5; margin-top: var(--space-xs); }
-}
-@media (max-width: 640px) {
-  .lead .tag { grid-template-columns: 4.25rem minmax(0, 1fr); column-gap: var(--space-sm); }
-}
-
-/* ---------- Festkalender und Kino: Seitenkopf mit Foto, Tafel links unter der Einleitung (Kante bei 7/12) ---------- */
-.seitenkopf.mit-bild { padding-bottom: var(--space-xl); }
-.seitenkopf.mit-bild .wrap { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--space-lg) var(--gap-columns); align-items: start; }
-.seitenkopf.mit-bild .bild img { aspect-ratio: 3 / 2; }
-.sk-text > .bogen { margin-top: var(--space-xl); }
-.sk-text > .legende { margin-top: var(--space-sm); }
-.legende { color: var(--color-muted); font-size: var(--text-body); }
-.wrap.schmal { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); column-gap: var(--gap-columns); }
-.wrap.schmal > * { grid-column: 1; }
-.kopfzeile + .satz { margin: 0 0 var(--space-lg); }
-.monat-block { border-top: 1px solid var(--color-rule); }
-.monat-block:last-of-type { border-bottom: 1px solid var(--color-rule); }
-.monat-block summary { display: flex; align-items: center; justify-content: space-between; gap: var(--space-md); min-height: 56px; cursor: pointer; list-style: none; }
-.monat-block summary::-webkit-details-marker { display: none; }
-.monat-name { font-family: var(--font-display); font-weight: var(--weight-head); font-size: var(--text-lg); }
-.anzahl { color: var(--color-muted); display: inline-flex; align-items: center; gap: var(--space-sm); }
-.anzahl::after { content: "+"; font-size: 1.25rem; color: var(--color-ink); }
-.monat-block[open] .anzahl::after { content: "\2212"; }
-.monat-block .tafel { margin-bottom: var(--space-lg); }
-.tafel.jahr .was { font-weight: 600; }
-.tafel.kino .t-stand { white-space: nowrap; color: var(--color-muted); font-size: var(--text-md); width: 6.5rem; padding-left: var(--space-md); }
-.tafel.kino th.t-stand { font-size: var(--text-sm); }
-.tafel.orte .land th { font-family: var(--font-display); font-weight: 600; font-size: var(--text-lg); color: var(--color-ink); padding-top: var(--space-lg); border-top: 0; border-bottom: 1px solid var(--color-rule); }
-.tafel.orte tbody tr.land:first-child th { padding-top: var(--space-sm); }
-.tafel.orte tbody th.stadt { width: 40%; font-family: var(--font-display); font-weight: 600; font-size: var(--text-body); color: var(--color-ink); border-bottom: 0; white-space: normal; }
-.tafel.orte .was { font-family: var(--font-body); font-weight: 400; }
-.tafel .ticket { display: flex; align-items: center; width: max-content; min-height: 44px; margin-bottom: calc(-1 * var(--space-xs)); }
-.wrap.schmal > .seiten { margin-top: var(--space-lg); padding-bottom: 0; }
-@media (max-width: 860px) {
-  .seitenkopf.mit-bild .wrap, .wrap.schmal { grid-template-columns: minmax(0, 1fr); }
-}
-@media (max-width: 640px) {
-  .tafel.jahr tr { grid-template-columns: 4.25rem minmax(0, 1fr); }
-  .tafel.orte tr { grid-template-columns: minmax(0, 1fr); }
-  .tafel.orte tbody th, .tafel.orte td { grid-column: 1; }
-  .tafel.orte .land th { padding-top: var(--space-md); border-bottom: 0; }
-  .tafel.orte tr.land { border-top: 0; }
-  .tafel.kino td.t-stand { grid-column: 1 / -1; grid-row: 3; padding: 0; width: auto; font-size: var(--text-sm); }
 }
 
 /* ---------- Seiten und Formulare: Kontakt, Suche, 404, Production, TV ---------- */

@@ -554,13 +554,14 @@ function tamil_kino_orte_tafel( array $filme ): void {
 		return false === $i ? 9 : (int) $i;
 	};
 	uksort( $orte, static fn( $a, $b ) => $rang( $a ) <=> $rang( $b ) );
-	echo '<table class="tafel orte"><thead><tr><th scope="col">' . esc_html__( 'Stadt', 'tamil' ) . '</th><th scope="col">' . esc_html__( 'Film, Kino und Termin', 'tamil' ) . '</th></tr></thead>';
+	$ein_film = 1 === count( $filme ); // bei einem Film steht er schon im Titel; der Name je Zeile entfällt
+	echo '<div class="tafel-wrap"><table class="tafel orte"><thead><tr><th scope="col">' . esc_html__( 'Stadt', 'tamil' ) . '</th><th scope="col">' . esc_html( $ein_film ? __( 'Kino und Termin', 'tamil' ) : __( 'Film, Kino und Termin', 'tamil' ) ) . '</th></tr></thead>';
 	foreach ( $orte as $land => $staedte ) {
 		ksort( $staedte, SORT_LOCALE_STRING );
 		echo '<tbody><tr class="land"><th scope="rowgroup" colspan="2">' . esc_html( $laender[ $land ] ?? $land ) . '</th></tr>';
 		foreach ( $staedte as $stadt => $eintraege ) {
 			foreach ( $eintraege as $e ) {
-				echo '<tr><th scope="row" class="stadt">' . esc_html( $stadt ) . '</th><td class="was">' . esc_html( '„' . $e['film'] . '“' );
+				echo '<tr><th scope="row" class="stadt">' . esc_html( $stadt ) . '</th><td class="was">' . ( $ein_film ? '' : '<span class="film">' . esc_html( '„' . $e['film'] . '“' ) . '</span>' );
 				echo '<span class="unter">' . esc_html( trim( $e['kino'] . ( '' !== $e['termin'] ? ', ' . $e['termin'] : '' ), ', ' ) );
 				if ( '' !== $e['url'] ) {
 					echo '<a class="ticket" href="' . esc_url( $e['url'] ) . '" target="_blank" rel="noopener nofollow">' . esc_html__( 'Tickets und Zeiten', 'tamil' ) . '</a>';
@@ -570,7 +571,7 @@ function tamil_kino_orte_tafel( array $filme ): void {
 		}
 		echo '</tbody>';
 	}
-	echo '</table>';
+	echo '</table></div>';
 }
 
 /**
