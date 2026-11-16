@@ -1,26 +1,36 @@
-/* Editor: gleiche Schriften, Farben und Textbausteine wie im Artikel „Tageskalender“ (WordPress setzt
-   .editor-styles-wrapper davor; Farben und Schriften kommen aus theme.json). */
+/* Editor: dieselbe Schrift, dieselben Farben und Textbausteine wie im Artikel „klar2“ (WordPress setzt
+   .editor-styles-wrapper davor; Farben und Schriften kommen aus theme.json, hier mit oklch wie im Theme). */
 :root {
-  --color-paper-2: var(--wp--preset--color--papier-2, #E5EAEF);
-  --color-sheet: var(--wp--preset--color--blatt, #FBFDFF);
-  --color-ink: var(--wp--preset--color--tinte, #0C151C);
-  --color-ink-2: var(--wp--preset--color--tinte-2, #222A31);
-  --color-muted: var(--wp--preset--color--grau, #4B545B);
-  --color-rule: var(--wp--preset--color--linie, #C5CBD0);
-  --color-rule-2: var(--wp--preset--color--linie-fest, #2B343B);
+  --grund: oklch(0.985 0.002 250);
+  --flaeche: oklch(0.962 0.003 250);
+  --tinte: oklch(0.21 0.012 255);
+  --leise: oklch(0.45 0.012 255);
+  --linie: oklch(0.88 0.004 250);
+  --rot: oklch(0.508 0.177 25.6);
+  --schrift: var(--wp--preset--font-family--libre-franklin, "Libre Franklin", Catamaran, system-ui, sans-serif);
 }
-body { font-family: var(--wp--preset--font-family--text, "Golos Text", sans-serif); font-size: 1.1875rem; line-height: 1.7; color: var(--color-ink); }
-h1, h2, h3, h4 { font-family: var(--wp--preset--font-family--titel, "Rethink Sans", sans-serif); font-weight: 600; line-height: 1.12; letter-spacing: -0.015em; }
-.editor-post-title__input, .wp-block-post-title { font-family: var(--wp--preset--font-family--titel, "Rethink Sans", sans-serif); font-weight: 600; font-size: clamp(1.875rem, 1.6vw + 1.2rem, 2.75rem); }
-a { color: inherit; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em; text-decoration-color: var(--color-muted); }
-blockquote, .wp-block-quote { border-left: 2px solid var(--color-rule-2); padding-left: 24px; font-style: normal; color: var(--color-ink-2); }
+body { font-family: var(--schrift); font-size: 19px; line-height: 1.6; color: var(--tinte); background: var(--grund); }
+h1, h2, h3, h4 { font-family: var(--schrift); font-weight: 650; line-height: 1.2; color: var(--tinte); text-wrap: balance; }
+.editor-post-title__input, .wp-block-post-title { font-family: var(--schrift); font-weight: 650; font-size: 38px; line-height: 1.1; letter-spacing: -0.015em; }
+h2 { font-size: 22px; line-height: 1.25; }
+h3 { font-size: 19px; line-height: 1.3; }
+a { color: inherit; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
+blockquote, .wp-block-quote { border-left: 2px solid var(--tinte); padding-left: 20px; font-style: normal; }
+.wp-block-pullquote { font-size: 21px; font-weight: 650; line-height: 1.35; text-align: left; }
+figcaption, .wp-element-caption { font-size: 13px; line-height: 1.4; color: var(--leise); }
 [lang="ta"] { font-family: var(--wp--preset--font-family--tamil, Catamaran, sans-serif); }
-.hinweis-box, .tipp { background: var(--color-paper-2); border-top: 2px solid var(--color-rule-2); padding: 12px 16px; }
-.event-box, .zutaten { background: var(--color-sheet); border-top: 2px solid var(--color-rule-2); padding: 16px 24px; }
+.hinweis-box, .tipp { background: var(--flaeche); border-top: 1px solid var(--tinte); padding: 12px 16px; font-size: 17px; }
+.event-box { border-top: 1px solid var(--tinte); border-bottom: 1px solid var(--linie); padding: 12px 0 4px; font-size: 17px; }
 .event-box p { margin: 0 0 0.4em; }
+.zutaten { border-top: 1px solid var(--tinte); padding-top: 4px; }
 .rezept-layout { display: grid; gap: 24px; grid-template-columns: 0.8fr 1.2fr; align-items: start; }
-.zutaten ul { list-style: none; padding: 0; }
-.schritte { padding-left: 1.2em; }
-.schritte li::marker { font-weight: 800; }
-table { border-collapse: collapse; width: 100%; border-top: 2px solid var(--color-rule-2); }
-td, th { border-top: 1px solid var(--color-rule); padding: 8px 12px; text-align: left; }
+.rezept-zutaten { list-style: none; padding: 0; }
+.rezept-zutaten li { padding: 6px 0; border-bottom: 1px solid var(--linie); }
+.schritte { padding-left: 1.4em; }
+.schritte li::marker { font-weight: 700; }
+.tamil-zitat { font-weight: 650; font-size: 21px; line-height: 1.35; }
+table { border-collapse: collapse; width: 100%; border-top: 1px solid var(--tinte); font-size: 16px; }
+th { text-align: left; font-size: 13px; font-weight: 600; color: var(--leise); }
+td, th { border-top: 1px solid var(--linie); padding: 8px 12px 8px 0; text-align: left; vertical-align: top; }
+.wp-block-button__link { border-radius: 0; }
+img { border-radius: 0; }
