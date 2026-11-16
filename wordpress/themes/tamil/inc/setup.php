@@ -26,8 +26,8 @@ function tamil_setup(): void {
 	);
 	add_editor_style( 'assets/css/editor.css' );
 
-	// 16:10 für Aufmacher und Artikelbild, 4:3 für Karten, quadratisch für Zeilen (wie im Design). Nach einem
-	// Wechsel der Größen die Vorschaubilder neu erzeugen (z. B. „wp media regenerate“ oder ein Regenerate-Plugin).
+	// Geschnittene Größen für die Mediathek und ältere Inhalte. Die Vorlagen (klar2) laden die ungeschnittene Größe
+	// „large“ mit srcset und schneiden per CSS auf 4:3, 16:9 und 8:3; neu erzeugte Vorschaubilder braucht es nicht.
 	add_image_size( 'tamil-lead', 1600, 1000, true );
 	add_image_size( 'tamil-card', 960, 720, true );
 	add_image_size( 'tamil-zeile', 480, 480, true );
