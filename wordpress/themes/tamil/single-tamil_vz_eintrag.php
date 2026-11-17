@@ -12,14 +12,14 @@ get_header();
 
 while ( have_posts() ) :
 	the_post();
-	$tamil_id     = (int) get_the_ID();
-	$tamil_werte  = function_exists( 'tamil_site_vz_eintrag_werte' ) ? (array) tamil_site_vz_eintrag_werte( $tamil_id ) : array();
-	$tamil_info   = function_exists( 'tamil_site_vz_kurzinfo' ) ? tamil_site_vz_kurzinfo( $tamil_id ) : '';
-	$tamil_eigen  = 'eigen' === tamil_bildwahl( $tamil_id )['art'];
-	$tamil_ort    = trim( ( $tamil_werte['plz'] ?? '' ) . ' ' . ( $tamil_werte['stadt'] ?? '' ) );
-	$tamil_karte  = implode( ', ', array_filter( array( (string) ( $tamil_werte['adresse'] ?? '' ), $tamil_ort, (string) ( function_exists( 'tamil_site_vz_laender' ) ? ( tamil_site_vz_laender()[ $tamil_werte['land'] ?? '' ] ?? '' ) : '' ) ) ) );
-	$tamil_liste  = function_exists( 'tamil_site_vz_seite_url' ) ? tamil_site_vz_seite_url() : home_url( '/verzeichnis/' );
-	$tamil_beisp  = '' !== (string) get_post_meta( $tamil_id, '_tamil_vz_beispiel', true );
+	$tamil_id    = (int) get_the_ID();
+	$tamil_werte = function_exists( 'tamil_site_vz_eintrag_werte' ) ? (array) tamil_site_vz_eintrag_werte( $tamil_id ) : array();
+	$tamil_info  = function_exists( 'tamil_site_vz_kurzinfo' ) ? tamil_site_vz_kurzinfo( $tamil_id ) : '';
+	$tamil_eigen = 'eigen' === tamil_bildwahl( $tamil_id )['art'];
+	$tamil_ort   = trim( ( $tamil_werte['plz'] ?? '' ) . ' ' . ( $tamil_werte['stadt'] ?? '' ) );
+	$tamil_karte = implode( ', ', array_filter( array( (string) ( $tamil_werte['adresse'] ?? '' ), $tamil_ort, (string) ( function_exists( 'tamil_site_vz_laender' ) ? ( tamil_site_vz_laender()[ $tamil_werte['land'] ?? '' ] ?? '' ) : '' ) ) ) );
+	$tamil_liste = function_exists( 'tamil_site_vz_seite_url' ) ? tamil_site_vz_seite_url() : home_url( '/verzeichnis/' );
+	$tamil_beisp = '' !== (string) get_post_meta( $tamil_id, '_tamil_vz_beispiel', true );
 	?>
 	<article <?php post_class( 'artikel vz-artikel' ); ?>>
 		<header class="artikel__kopf">
