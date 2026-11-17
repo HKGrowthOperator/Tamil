@@ -3,7 +3,8 @@
 #   1. Code (Core, Theme, Plugins) frisch aus dem Image nach /var/www/html – nur uploads/ und database/ bleiben
 #   2. wp-config.php aus den Variablen; Salts einmalig erzeugt und im Datenbank-Volume aufbewahrt
 #   3. Erstinstallation (nur wenn noch nicht installiert) und Grundeinrichtung (bis sie einmal durchgelaufen ist)
-#   4. Jeder Start: Benutzer ki-agent, Anwendungspasswörter „radar“ (ki-agent) und „migration“ (Admin), Cockpit
+#   4. Jeder Start: Benutzer ki-agent, Anwendungspasswörter „radar“ (ki-agent) und „migration“ (Admin), Cockpit;
+#      außerhalb des Echtbetriebs zusätzlich die Einrichtung des Testsystems (Fehler dort halten den Start nicht an)
 #   5. Apache über das Entrypoint-Skript des offiziellen Images
 #
 # Variablen:
@@ -160,6 +161,14 @@ fi
 
 # --- 4. Zugänge (jeder Start) ----------------------------------------------------------------------------------------
 wp eval-file "$HELFER" zugaenge
+
+# --- 4b. Testsystem (jeder Start, nie im Echtbetrieb) ---------------------------------------------------------------
+# Seiten production, einreichen, werben, verzeichnis; einmalig Bausteine an und Beispiel-Einträge im Verzeichnis
+# (Entscheidung Luis 17.11.). Ein Fehler hier hält den Container nicht an: Apache startet trotzdem (Healthcheck).
+if [ "$WP_ENVIRONMENT_TYPE" != "production" ]; then
+  log "Testsystem einrichten (Umgebung $WP_ENVIRONMENT_TYPE)"
+  wp eval-file "$HELFER" testsystem || log "WARNUNG: Einrichtung des Testsystems fehlgeschlagen – siehe Meldungen oben, Website läuft weiter."
+fi
 
 # --- 5. Apache -------------------------------------------------------------------------------------------------------
 # Geheimnisse nicht an Apache/PHP weiterreichen

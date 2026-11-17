@@ -5,6 +5,10 @@
  *   admin-passwort  Passwort des Admins (WP_ADMIN_USER) aus WP_ADMIN_PASSWORD setzen – nur nach der Installation
  *   einrichtung     WordPress-Beispielinhalte entfernen, Rubriken anlegen, leere Seiten events + kontakt
  *   zugaenge        bei jedem Start: Benutzer ki-agent, Anwendungspasswörter „radar“ und „migration“, Cockpit-Adresse
+ *   testsystem      bei jedem Start, nur außerhalb des Echtbetriebs: Seiten production, einreichen, werben, verzeichnis;
+ *                   einmalig die Bausteine Einreichungen, Verzeichnis und Werbebuchung an und Beispiel-Einträge im
+ *                   Verzeichnis (Entscheidung Luis 17.11.: auf dem Testsystem mit Testdaten an)
+ *   beispiele-entfernen  alle Beispiel-Einträge des Verzeichnisses löschen (vor dem Start der echten Website)
  *
  * Geheimnisse kommen nur aus Umgebungsvariablen und werden nie ausgegeben.
  *
@@ -229,6 +233,230 @@ function tamil_c_zugaenge(): void {
 	}
 }
 
+/** Archivbeiträge der Konzertreihe „Live mit dir!“ (IDs der Übernahme auf dem Testsystem). */
+const TAMIL_C_PRODUCTION_BEITRAEGE = array( 2420, 2423, 2417, 2494 );
+
+/** Meta-Schlüssel, der Beispiel-Einträge im Verzeichnis kennzeichnet (vor dem Start der echten Website löschen). */
+const TAMIL_C_BEISPIEL_META = '_tamil_vz_beispiel';
+
+/**
+ * Inhalt der Seite „production“: der Satz aus den Eigenanzeigen (aus dem Altbestand) und die Archivbeiträge der
+ * Konzertreihe, soweit es sie auf dieser Installation gibt. Links ohne Domain (überleben die Umschaltung auf tamil.de).
+ */
+function tamil_c_production_inhalt(): string {
+	$text  = '<!-- wp:paragraph --><p>A.R. Rahman, Ilaiyaraaja, Anirudh und Santhosh Narayanan standen oder stehen mit Tamil.de Production auf deutschen Bühnen.</p><!-- /wp:paragraph -->';
+	$links = array();
+	foreach ( TAMIL_C_PRODUCTION_BEITRAEGE as $id ) {
+		$post = get_post( $id );
+		if ( $post instanceof WP_Post && 'post' === $post->post_type && 'publish' === $post->post_status ) {
+			$links[] = '<li><a href="' . esc_url( wp_make_link_relative( (string) get_permalink( $post ) ) ) . '">' . esc_html( get_the_title( $post ) ) . '</a></li>';
+		}
+	}
+	if ( $links ) {
+		$text .= '<!-- wp:heading --><h2 class="wp-block-heading">Die Konzerte im Archiv</h2><!-- /wp:heading -->'
+			. '<!-- wp:list --><ul class="wp-block-list">' . implode( '', $links ) . '</ul><!-- /wp:list -->';
+	}
+	return $text;
+}
+
+/**
+ * Inhalt der Seite „einreichen“: Wege zu allen Formularen, zuerst „Event einreichen“.
+ */
+function tamil_c_einreichen_inhalt(): string {
+	$formulare = array(
+		'event'       => 'Event einreichen',
+		'beitrag'     => 'Beitrag oder Thema vorschlagen',
+		'kooperation' => 'Kooperation',
+		'werbung'     => 'Werbeanfrage',
+	);
+	$links     = '';
+	$abschnitt = '';
+	foreach ( $formulare as $art => $titel ) {
+		$links     .= '<li><a href="#tf-' . $art . '">' . $titel . '</a></li>';
+		$abschnitt .= '<!-- wp:heading --><h2 class="wp-block-heading">' . $titel . '</h2><!-- /wp:heading -->'
+			. '<!-- wp:shortcode -->[tamil_einsendung art="' . $art . '"]<!-- /wp:shortcode -->';
+	}
+	return '<!-- wp:paragraph --><p>Termine, Themen, Kooperationen und Werbeanfragen an die Redaktion. Jede Einsendung wird geprüft; die Vorgangsnummer steht nach dem Absenden auf dieser Seite.</p><!-- /wp:paragraph -->'
+		. '<!-- wp:list --><ul class="wp-block-list">' . $links . '</ul><!-- /wp:list -->' . $abschnitt;
+}
+
+/**
+ * Seite mit Slug sicherstellen: fehlt sie, wird sie veröffentlicht angelegt; ein Entwurf mit genau dem erwarteten
+ * Shortcode (von der Upgrade-Routine angelegt) wird veröffentlicht; alles andere bleibt, wie es ist.
+ *
+ * @param string $vorlage Seitenvorlage des Themes (leer = keine).
+ * @param string $kennung Shortcode, an dem ein Entwurf der Upgrade-Routine erkannt wird (leer = keiner).
+ */
+function tamil_c_seite( string $slug, string $titel, string $inhalt, string $vorlage = '', string $kennung = '' ): void {
+	$seite = get_page_by_path( $slug, OBJECT, 'page' );
+	if ( $seite instanceof WP_Post ) {
+		if ( 'draft' === $seite->post_status && '' !== $kennung && str_contains( (string) $seite->post_content, $kennung ) ) {
+			wp_update_post(
+				array(
+					'ID'          => $seite->ID,
+					'post_status' => 'publish',
+				)
+			);
+			WP_CLI::log( "Seite veröffentlicht: {$slug}" );
+		} elseif ( 'publish' !== $seite->post_status ) {
+			WP_CLI::log( "Seite {$slug} steht als {$seite->post_status} – unverändert." );
+		}
+		return;
+	}
+	$admin = tamil_c_admin();
+	$id    = wp_insert_post(
+		array(
+			'post_type'    => 'page',
+			'post_status'  => 'publish',
+			'post_name'    => $slug,
+			'post_title'   => $titel,
+			'post_content' => $inhalt,
+			'post_author'  => $admin ? $admin->ID : 0,
+		),
+		true
+	);
+	if ( is_wp_error( $id ) ) {
+		WP_CLI::warning( "Seite {$slug}: " . $id->get_error_message() );
+		return;
+	}
+	if ( '' !== $vorlage && array_key_exists( $vorlage, wp_get_theme()->get_page_templates( null, 'page' ) ) ) {
+		update_post_meta( (int) $id, '_wp_page_template', $vorlage );
+	}
+	WP_CLI::log( "Seite angelegt: {$slug}" );
+}
+
+/**
+ * Beispiel-Einträge im Verzeichnis: erkennbar erfunden („Beispiel:“ im Namen und in der Beschreibung, Musterstadt,
+ * Adressen unter example.org), mit TAMIL_C_BEISPIEL_META gekennzeichnet.
+ *
+ * @return array<int,array<string,string>>
+ */
+function tamil_c_beispiele(): array {
+	$text = 'Beispiel-Eintrag für das Testsystem, kein echter Betrieb. Wird vor dem Start der Website entfernt.';
+	$mit  = static function ( array $werte ) use ( $text ): array {
+		return array_merge(
+			array(
+				'beschreibung' => $text,
+				'plz'          => '12345',
+				'stadt'        => 'Musterstadt',
+				'land'         => 'DE',
+				'website'      => 'https://example.org/',
+			),
+			$werte
+		);
+	};
+	return array(
+		$mit(
+			array(
+				'name'      => 'Beispiel: Tempelverein Musterstadt',
+				'art'       => 'tempel',
+				'kategorie' => sanitize_title( 'tempel-Hindu-Tempel' ),
+			)
+		),
+		$mit(
+			array(
+				'name'      => 'Beispiel: Tamilischer Kulturverein Musterstadt',
+				'art'       => 'verein',
+				'kategorie' => sanitize_title( 'verein-Kultur' ),
+			)
+		),
+		$mit(
+			array(
+				'name'      => 'Beispiel: Restaurant Musterstadt',
+				'art'       => 'business',
+				'kategorie' => sanitize_title( 'business-Restaurant und Imbiss' ),
+			)
+		),
+		$mit(
+			array(
+				'name'      => 'Beispiel: Übersetzungsbüro Musterstadt',
+				'art'       => 'dienstleister',
+				'kategorie' => sanitize_title( 'dienstleister-Übersetzung' ),
+			)
+		),
+	);
+}
+
+/**
+ * Testsystem einrichten (nie im Echtbetrieb). Idempotent: Seiten nach Slug, Schalter und Beispiele nur beim ersten
+ * Lauf (Merker in der Option tamil_c_testsystem), damit späteres Ausschalten im Backend bestehen bleibt.
+ */
+function tamil_c_testsystem(): void {
+	if ( 'production' === wp_get_environment_type() ) {
+		WP_CLI::log( 'Echtbetrieb: Testsystem-Einrichtung übersprungen.' );
+		return;
+	}
+	if ( ! function_exists( 'tamil_site_funktionen' ) ) {
+		WP_CLI::warning( 'Plugin tamil-site nicht aktiv – Testsystem-Einrichtung übersprungen.' );
+		return;
+	}
+	if ( defined( 'TAMIL_SITE_DATENVERSION' ) && tamil_site_datenversion() < TAMIL_SITE_DATENVERSION && ! tamil_site_upgrade_ausfuehren() ) {
+		WP_CLI::warning( 'Upgrade-Routine nicht durchgelaufen – Bausteine bleiben aus.' );
+		return;
+	}
+
+	tamil_c_seite( 'production', 'Live mit dir!', tamil_c_production_inhalt(), 'page-production.php' );
+	tamil_c_seite( 'einreichen', 'Einreichen', tamil_c_einreichen_inhalt(), '', '[tamil_einsendung' );
+	tamil_c_seite( 'werben', 'Werben', '[tamil_werbung]', '', '[tamil_werbung]' );
+	tamil_c_seite( 'verzeichnis', 'Verzeichnis', '[tamil_verzeichnis]', '', '[tamil_verzeichnis]' );
+
+	$merker = get_option( 'tamil_c_testsystem', array() );
+	$merker = is_array( $merker ) ? $merker : array();
+	if ( empty( $merker['schalter'] ) ) {
+		$an = (array) get_option( 'tamil_site_funktionen', array() );
+		foreach ( array( 'einreichungen', 'verzeichnis', 'werbung' ) as $name ) {
+			$an[ $name ] = tamil_site_funktion_bereit( $name );
+		}
+		update_option( 'tamil_site_funktionen', $an );
+		$merker['schalter'] = gmdate( 'c' );
+		WP_CLI::log( 'Bausteine eingeschaltet: Einreichungen, Verzeichnis, Werbebuchung (nur Testsystem).' );
+	}
+	if ( empty( $merker['beispiele'] ) && function_exists( 'tamil_site_vz_eintrag_schreiben' ) ) {
+		$vorhanden = get_posts(
+			array(
+				'post_type'   => TAMIL_SITE_VZ_TYP,
+				'post_status' => 'any',
+				'numberposts' => 1,
+				'fields'      => 'ids',
+				'meta_key'    => TAMIL_C_BEISPIEL_META, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- einmalig beim Start
+			)
+		);
+		foreach ( $vorhanden ? array() : tamil_c_beispiele() as $werte ) {
+			if ( ! term_exists( $werte['kategorie'], TAMIL_SITE_VZ_KATEGORIE ) ) {
+				$werte['kategorie'] = '';
+			}
+			$id = tamil_site_vz_eintrag_schreiben( 0, $werte, 'publish' );
+			if ( is_wp_error( $id ) ) {
+				WP_CLI::warning( 'Beispiel-Eintrag: ' . $id->get_error_message() );
+				continue;
+			}
+			update_post_meta( (int) $id, TAMIL_C_BEISPIEL_META, '1' );
+			WP_CLI::log( 'Beispiel-Eintrag angelegt: ' . $werte['name'] );
+		}
+		$merker['beispiele'] = gmdate( 'c' );
+	}
+	update_option( 'tamil_c_testsystem', $merker, false );
+}
+
+/**
+ * Alle Beispiel-Einträge des Verzeichnisses löschen (vor dem Start der echten Website).
+ */
+function tamil_c_beispiele_entfernen(): void {
+	$ids = get_posts(
+		array(
+			'post_type'   => defined( 'TAMIL_SITE_VZ_TYP' ) ? TAMIL_SITE_VZ_TYP : 'tamil_vz_eintrag',
+			'post_status' => 'any',
+			'numberposts' => -1,
+			'fields'      => 'ids',
+			'meta_key'    => TAMIL_C_BEISPIEL_META, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- einmalige Aufräumaktion
+		)
+	);
+	foreach ( $ids as $id ) {
+		wp_delete_post( (int) $id, true );
+	}
+	WP_CLI::log( count( $ids ) . ' Beispiel-Einträge entfernt.' );
+}
+
 $tamil_c_aufgabe = $args[0] ?? '';
 switch ( $tamil_c_aufgabe ) {
 	case 'admin-passwort':
@@ -239,6 +467,12 @@ switch ( $tamil_c_aufgabe ) {
 		break;
 	case 'zugaenge':
 		tamil_c_zugaenge();
+		break;
+	case 'testsystem':
+		tamil_c_testsystem();
+		break;
+	case 'beispiele-entfernen':
+		tamil_c_beispiele_entfernen();
 		break;
 	default:
 		WP_CLI::error( "Unbekannte Aufgabe: {$tamil_c_aufgabe}" );
