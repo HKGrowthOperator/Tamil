@@ -19,9 +19,10 @@ $tamil_heute   = current_time( 'Y-m-d' );
 $tamil_grenze  = wp_date( 'Y-m-d', (int) strtotime( $tamil_heute . ' +14 days' ) );
 tamil_cache_fuellen( $tamil_kommend );
 
-// Ab heute: die Termine der nächsten 14 Tage (höchstens sechs), sonst die nächsten drei
+// Ab heute: die Termine der nächsten 14 Tage (höchstens sechs); sind es weniger als drei, die nächsten drei. Ein
+// einzelner Termin steht quer (Bild links, Text rechts) über die volle Breite, zwei teilen sie sich.
 $tamil_bald = array_values( array_filter( $tamil_kommend, static fn( $id ) => substr( (string) get_post_meta( $id, 'event_datum', true ), 0, 10 ) <= $tamil_grenze ) );
-$tamil_bald = $tamil_bald ? array_slice( $tamil_bald, 0, 6 ) : array_slice( $tamil_kommend, 0, 3 );
+$tamil_bald = count( $tamil_bald ) >= 3 ? array_slice( $tamil_bald, 0, 6 ) : array_slice( $tamil_kommend, 0, 3 );
 
 // Kommende Termine nach Monaten, dazu die Filterwerte (Land, Stadt) der Zeilen
 $tamil_laender = array(
@@ -96,7 +97,7 @@ foreach ( $tamil_vorbei as $tamil_id ) {
 	<div class="innen">
 		<h2 class="woche__titel" id="ab-heute"><?php esc_html_e( 'Ab heute', 'tamil' ); ?></h2>
 		<p class="woche__art"><time datetime="<?php echo esc_attr( $tamil_heute ); ?>"><?php echo esc_html( tamil_stand( time() ) ); ?></time></p>
-		<ul class="termine-raster">
+		<ul class="termine-raster<?php echo 1 === count( $tamil_bald ) ? ' termine-raster--eins' : ( 2 === count( $tamil_bald ) ? ' termine-raster--zwei' : '' ); ?>">
 			<?php
 			foreach ( $tamil_bald as $tamil_id ) {
 				echo tamil_grafik_termin( $tamil_id, 'h3', true ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_grafik_termin()

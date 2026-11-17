@@ -1,9 +1,10 @@
 <?php
 /**
- * Rubrik Kino, Seite 1: Seitenkopf; „Im Programm“ als dunkler Bereich wie „Diese Woche“ (der neueste Kino-Beitrag mit
- * eigenem Bild groß, daneben die Filme mit Spieltagen ab heute als Bildkacheln); „Nach Stadt“ als Tabelle mit dem Bild
- * des Films in jeder Zeile; „Aus dem Kinojahr“ mit den übrigen Beiträgen als Liste mit Bild; die übrigen Rubriken als
- * Kacheln.
+ * Rubrik Kino, Seite 1: Seitenkopf; „Im Programm“ als dunkler Bereich wie „Diese Woche“ – nur Filme mit Spieltagen
+ * ab heute: der erste (mit eigenem Bild, sonst der erste überhaupt) groß, daneben die übrigen als Bildkacheln; läuft
+ * nur einer, stehen neben ihm seine Angaben (Zahl der Kinos, Städte, Link zur Tabelle). „Nach Stadt“ als Tabelle mit
+ * dem Bild des Films in jeder Zeile; „Aus dem Kinojahr“ mit den übrigen Beiträgen als Liste mit Bild; die übrigen
+ * Rubriken als Kacheln.
  *
  * @var array $args { @type array $rubrik, @type array $filme Ergebnis von tamil_kino_filme(), @type int[] $ids }
  */
@@ -12,10 +13,11 @@ defined( 'ABSPATH' ) || exit;
 
 $tamil_rubrik = $args['rubrik'];
 $tamil_filme  = $args['filme'];
-$tamil_ids    = array_values( array_diff( $args['ids'], wp_list_pluck( $tamil_filme, 'post' ) ) );
-$tamil_kand   = array_values( array_unique( array_map( 'intval', array_merge( wp_list_pluck( $tamil_filme, 'post' ), $tamil_ids ) ) ) );
-$tamil_lead   = (int) ( array_values( array_filter( $tamil_kand, 'tamil_bild_zeigbar' ) )[0] ?? ( $tamil_kand[0] ?? 0 ) );
-$tamil_ids    = array_values( array_diff( $tamil_ids, array( $tamil_lead ) ) );
+$tamil_posts  = array_map( 'intval', wp_list_pluck( $tamil_filme, 'post' ) );
+$tamil_ids    = array_values( array_diff( array_map( 'intval', $args['ids'] ), $tamil_posts ) );
+$tamil_lead   = (int) ( array_values( array_filter( $tamil_posts, 'tamil_bild_zeigbar' ) )[0] ?? ( $tamil_posts[0] ?? 0 ) );
+$tamil_lfilm  = array_values( array_filter( $tamil_filme, static fn( $f ) => (int) $f['post'] === $tamil_lead ) )[0] ?? array();
+$tamil_rest   = array_values( array_filter( $tamil_filme, static fn( $f ) => (int) $f['post'] !== $tamil_lead ) );
 $tamil_gross  = $tamil_lead ? tamil_anr_imbild(
 	$tamil_lead,
 	array(
@@ -47,9 +49,19 @@ $tamil_gross  = $tamil_lead ? tamil_anr_imbild(
 			<?php echo $tamil_gross; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_anr_imbild() ?>
 			<div class="woche__gruppe">
 				<p class="woche__art" id="t-filme"><?php echo esc_html( $tamil_filme && '' !== $tamil_filme[0]['stand'] ? $tamil_filme[0]['stand'] : __( 'Filme mit laufender Spielzeit', 'tamil' ) ); ?></p>
+				<?php if ( $tamil_lfilm && ! $tamil_rest ) : ?>
+					<div class="programm__fakten">
+						<?php /* translators: %d: Anzahl der Kinos */ ?>
+						<p class="grafik__zahl"><?php echo esc_html( sprintf( _n( '%d Kino', '%d Kinos', (int) $tamil_lfilm['kinos'], 'tamil' ), (int) $tamil_lfilm['kinos'] ) ); ?></p>
+						<?php if ( $tamil_lfilm['staedte'] ) : ?>
+							<p class="grafik__orte"><?php echo esc_html( tamil_staedte_kurz( $tamil_lfilm['staedte'], 8 ) ); ?></p>
+						<?php endif; ?>
+						<p><a class="textlink" href="#nach-stadt"><?php esc_html_e( 'Kinos und Termine nach Stadt', 'tamil' ); ?></a></p>
+					</div>
+				<?php endif; ?>
 				<ul aria-labelledby="t-filme">
 					<?php
-					foreach ( $tamil_filme as $tamil_f ) {
+					foreach ( $tamil_rest as $tamil_f ) {
 						echo tamil_grafik_kino( $tamil_f ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_grafik_kino()
 					}
 					if ( ! $tamil_filme ) {
