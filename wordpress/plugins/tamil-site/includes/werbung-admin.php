@@ -32,7 +32,7 @@ function tamil_site_werbung_admin_hinweise(): string {
 		$out .= '<div class="notice notice-warning inline"><p>' . esc_html__( 'Der Funktionsschalter „Werbebuchung“ ist aus (Einstellungen → Tamil.de Website). Die Seite „Werben“, die Auslieferung gebuchter Anzeigen und die Zahlungsmeldungen sind abgeschaltet.', 'tamil-site' ) . '</p></div>';
 	}
 	if ( ! tamil_site_stripe_bereit() ) {
-		$out .= '<div class="notice notice-warning inline"><p>' . esc_html__( 'Stripe ist nicht eingerichtet: STRIPE_SECRET_KEY und STRIPE_WEBHOOK_SECRET fehlen in der Umgebung.', 'tamil-site' ) . '</p></div>';
+		$out .= '<div class="notice notice-warning inline"><p>' . esc_html__( 'Stripe ist nicht eingerichtet: STRIPE_SECRET_KEY und STRIPE_WEBHOOK_SECRET fehlen in der Umgebung. Die Seite „Werben“ zeigt „Online-Zahlung noch nicht eingerichtet“; kein Platz ist online buchbar.', 'tamil-site' ) . '</p></div>';
 	} elseif ( tamil_site_stripe_testmodus() ) {
 		$out .= '<div class="notice notice-info inline"><p>' . esc_html__( 'Stripe im Testmodus: Zahlungen sind nicht echt.', 'tamil-site' ) . '</p></div>';
 	}
@@ -263,7 +263,7 @@ function tamil_site_werbung_admin_export(): void {
 add_action( 'admin_post_tamil_wb_export', 'tamil_site_werbung_admin_export' );
 
 /**
- * Euro-Eingabe in Cent; leer = 0 (Preis folgt), unlesbar = null.
+ * Euro-Eingabe in Cent; leer = 0 (auf Anfrage), unlesbar = null.
  * Deutsche Schreibweise: Punkt mit genau drei Ziffern danach trennt Tausender („1.250“ = 1250 €), Komma trennt Cent
  * („1.250,50“). Ein Punkt mit einer oder zwei Ziffern danach gilt als Dezimalpunkt („12.50“).
  */
@@ -303,7 +303,7 @@ function tamil_site_werbung_admin_angebote(): void {
 		/* translators: %d: Anzahl */
 		echo '<div class="notice notice-error"><p>' . esc_html( sprintf( _n( '%d Preis war nicht lesbar und wurde nicht übernommen (bisheriger Wert bleibt). Beispiele: 1.250 oder 1.250,50 oder 99,90.', '%d Preise waren nicht lesbar und wurden nicht übernommen (bisherige Werte bleiben). Beispiele: 1.250 oder 1.250,50 oder 99,90.', $ungueltig, 'tamil-site' ), $ungueltig ) ) . '</p></div>';
 	}
-	echo '<p>' . esc_html__( 'Preise in Euro inklusive Umsatzsteuer. Ein leeres Feld heißt „Preis folgt“: Dann ist die Laufzeit an diesem Platz nicht buchbar. Je Platz läuft zur selben Zeit eine Anzeige (exklusiv); Wechsel mehrerer Anzeigen ist nicht Teil dieses Bausteins.', 'tamil-site' ) . '</p>';
+	echo '<p>' . esc_html__( 'Preise in Euro inklusive Umsatzsteuer. Ein leeres Feld heißt „auf Anfrage“: Dann ist die Laufzeit an diesem Platz nicht online buchbar. Je Platz läuft zur selben Zeit eine Anzeige (exklusiv); Wechsel mehrerer Anzeigen ist nicht Teil dieses Bausteins.', 'tamil-site' ) . '</p>';
 	echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
 	wp_nonce_field( 'tamil_wb_angebote' );
 	echo '<input type="hidden" name="action" value="tamil_wb_angebote"><table class="form-table" role="presentation"><tbody>';
@@ -321,7 +321,7 @@ function tamil_site_werbung_admin_angebote(): void {
 		echo '<td><input type="checkbox" name="plaetze[' . esc_attr( $platz ) . '][aktiv]" value="1"' . checked( ! empty( $a['plaetze'][ $platz ]['aktiv'] ), true, false ) . ' aria-label="' . esc_attr( $f['name'] ) . '"></td>';
 		foreach ( $a['laufzeiten'] as $tage ) {
 			$cent = (int) $a['plaetze'][ $platz ]['preise'][ $tage ];
-			echo '<td><input type="text" inputmode="decimal" size="9" name="plaetze[' . esc_attr( $platz ) . '][preise][' . esc_attr( (string) $tage ) . ']" value="' . esc_attr( $cent ? number_format( $cent / 100, 2, ',', '' ) : '' ) . '" placeholder="' . esc_attr__( 'Preis folgt', 'tamil-site' ) . '"></td>';
+			echo '<td><input type="text" inputmode="decimal" size="9" name="plaetze[' . esc_attr( $platz ) . '][preise][' . esc_attr( (string) $tage ) . ']" value="' . esc_attr( $cent ? number_format( $cent / 100, 2, ',', '' ) : '' ) . '" placeholder="' . esc_attr__( 'auf Anfrage', 'tamil-site' ) . '"></td>';
 		}
 		echo '<td>1</td></tr>';
 	}
