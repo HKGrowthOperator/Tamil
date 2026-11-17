@@ -56,7 +56,8 @@ gemeinsamer Kante für Kopf, Bild und Text), höchstens 70 Zeichen je Zeile.
 
 ## Bausteine
 
-- **Kopf:** Kopfzeile (Datum und Suche; die Hinweise „Diese Woche“ sind seit 17.11. entfallen), Logo 44/52/58 px auf
+- **Kopf:** Kopfzeile (Datum, Top-News „Neu“ mit den Überschriften der neuesten Beiträge in Rot, ab 1024 px zwei mit
+  feiner Linie, darunter einer, einzeilig mit Auslassung, am Handy ohne Datum; Suche), Logo 44/52/58 px auf
   hellem Grund, rotes Rubrikband mit weißer Schrift (`nav`, 46/48 px, steht beim Scrollen), aktive Rubrik mit
   Gewicht 600 und 3 px Weiß darunter, beim Überfahren etwas hellerer Grund, Fokusring weiß, am Handy seitlich mit
   Einrasten; „Mehr“ am Ende mit Suche, Diensten und Social.
@@ -64,9 +65,10 @@ gemeinsamer Kante für Kopf, Bild und Text), höchstens 70 Zeichen je Zeile.
   (Aufmacher, große Kachel in „Diese Woche“), 16:9 (Nebenstücke, Meldungen, Rubrikkacheln, Küche groß), 8:3 (kleine
   Kacheln). Beim Überfahren Zoom 1,03 in 0,35 s, Titel unterstrichen.
 - **Bilderpflicht** (Luis, 17.11.): Jeder Anreißer, jede Listenzeile, Kachel, jedes Suchergebnis, „Weiterlesen“ und
-  jeder Kino- und Termineintrag zeigt ein echtes Bild; nichts nur als Text. Ausgenommen sind Rubrikband, Fußlisten,
-  Formulare und reine Textseiten. Bildkette an einer Stelle (`inc/bildkette.php`): eigenes Foto (Titelkarten nie;
-  Bänder über 2,5:1 werden beschnitten, Nachweis „zugeschnitten“) → erstes Bild aus dem Text ab 600 px → Symbolbild
+  jeder Kino- und Termineintrag zeigt ein echtes Bild; nichts nur als Text. Ausgenommen sind Rubrikband, Top-News im
+  Kopf, Fußlisten, Formulare und reine Textseiten. Bildkette an einer Stelle (`inc/bildkette.php`): eigenes Foto (Titelkarten nie;
+  Bänder über 2,5:1 werden beschnitten, Nachweis „zugeschnitten“) → erstes Bild aus dem Text ab 600 px → bei Kino und
+  Terminen das Foto eines anderen Beitrags zum selben Film bzw. zur selben Veranstaltung (ohne Schild) → Symbolbild
   aus dem Rubrik-Pool (Commons, je Beitrag fest gewählt, Schild „Symbolbild“ oben rechts ab 150 px Rahmenbreite,
   voller Nachweis mit Links im Fuß und unter dem Artikelbild). Prüfung: `node wordpress/dev/bilder_pflicht.mjs`.
 - **Bild mit Titel im Bild:** Aufmacher und große Kacheln; Fokus als Rahmen nach innen.

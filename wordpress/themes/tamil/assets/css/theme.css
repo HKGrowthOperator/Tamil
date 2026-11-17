@@ -142,6 +142,26 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .kopfzeile a { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; color: var(--tinte); }
 .kopfzeile a:hover { color: var(--rot); }
 .kopfzeile__suche { flex: none; font-size: 14px; font-weight: 600; padding-left: 12px; }
+/* Top-News „Neu“ (Luis, 17.11.): Überschriften der neuesten Beiträge in Rot (6,1 : 1 auf dem Grund), einzeilig mit
+   Auslassung; am Handy und Tablet einer, ab 1024 px zwei mit feiner Linie dazwischen. Am Handy weicht das Datum. */
+.kopfzeile__neu { display: flex; align-items: center; gap: 12px; flex: 1 1 auto; min-width: 0; overflow: hidden; white-space: nowrap; }
+.kopfzeile__neu strong { flex: none; color: var(--tinte); font-weight: 700; }
+.kopfzeile .kopfzeile__neu a {
+  display: block; flex: 0 1 auto; min-width: 0; line-height: 44px; padding-inline: 4px; margin-inline: -4px;
+  overflow: hidden; text-overflow: ellipsis; color: var(--rot); font-weight: 600;
+}
+.kopfzeile .kopfzeile__neu a:hover, .kopfzeile .kopfzeile__neu a:focus-visible {
+  color: var(--rot); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em;
+}
+.kopfzeile__neu a:focus-visible { outline-offset: -2px; } /* innen, sonst schneidet die einzeilige Zeile den Rahmen */
+.kopfzeile .kopfzeile__neu a + a { display: none; }
+.kopfzeile__neu a + a::before {
+  content: ""; display: inline-block; width: 1px; height: 0.95em; margin-right: 12px;
+  vertical-align: -0.12em; background: var(--linie);
+}
+@media (max-width: 599px) {
+  .kopfzeile__innen.mit-neu .kopfzeile__datum { display: none; }
+}
 .kopfzeile__suche svg { width: 16px; height: 16px; flex: none; }
 .kopf__logo { display: block; width: max-content; padding: 6px 0; }
 .kopf__logo img { height: 44px; width: auto; }
@@ -199,7 +219,8 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 @media (min-width: 1024px) {
   :root { --rand: 40px; --band-hoehe: 48px; }
   .kopfzeile__innen { min-height: 38px; }
-  .kopfzeile a { min-height: 38px; line-height: 38px; }
+  .kopfzeile a, .kopfzeile .kopfzeile__neu a { min-height: 38px; line-height: 38px; }
+  .kopfzeile .kopfzeile__neu a + a { display: block; }
   .kopf__logo { padding: 11px 0; }
   .kopf__logo img { height: 58px; }
   .band__innen { position: relative; padding: 0 calc(var(--rand) - 14px); }

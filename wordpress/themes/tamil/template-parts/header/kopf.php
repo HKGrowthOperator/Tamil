@@ -1,7 +1,7 @@
 <?php
 /**
- * Kopf in drei Teilen wie klar2: Kopfzeile (Datum und Suche), Logo auf hellem Grund und das rote Rubrikband als
- * eigenes <nav>. Im Band rechts „Mehr“ mit Suche, Diensten und Social.
+ * Kopf in drei Teilen wie klar2: Kopfzeile (Datum, Top-News „Neu“ in Rot, Suche), Logo auf hellem Grund und das rote
+ * Rubrikband als eigenes <nav>. Im Band rechts „Mehr“ mit Suche, Diensten und Social.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -9,12 +9,21 @@ defined( 'ABSPATH' ) || exit;
 $tamil_items   = tamil_nav_items();
 $tamil_dienste = tamil_dienste();
 $tamil_social  = tamil_social();
+$tamil_neu     = tamil_kopf_neu();
 $tamil_lupe    = '<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="6.8" cy="6.8" r="5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10.6 10.6 14.5 14.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
 ?>
 <header class="kopf">
 	<div class="kopfzeile">
-		<div class="innen kopfzeile__innen">
+		<div class="innen kopfzeile__innen<?php echo $tamil_neu ? ' mit-neu' : ''; ?>">
 			<time class="kopfzeile__datum" datetime="<?php echo esc_attr( wp_date( 'Y-m-d' ) ); ?>"><?php echo esc_html( tamil_heute() ); ?></time>
+			<?php if ( $tamil_neu ) : ?>
+				<nav class="kopfzeile__neu" aria-label="<?php esc_attr_e( 'Neueste Beiträge', 'tamil' ); ?>">
+					<strong><?php esc_html_e( 'Neu', 'tamil' ); ?></strong>
+					<?php foreach ( $tamil_neu as $tamil_n ) : ?>
+						<a href="<?php echo esc_url( get_permalink( $tamil_n ) ); ?>"><?php echo tamil_titel( $tamil_n ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_titel() ?></a>
+					<?php endforeach; ?>
+				</nav>
+			<?php endif; ?>
 			<a class="kopfzeile__suche" href="<?php echo esc_url( add_query_arg( 's', '', home_url( '/' ) ) ); ?>"><?php echo $tamil_lupe; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- festes SVG ?><?php esc_html_e( 'Suche', 'tamil' ); ?></a>
 		</div>
 	</div>
