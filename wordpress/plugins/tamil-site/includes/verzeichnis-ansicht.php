@@ -25,9 +25,12 @@ function tamil_site_vz_css(): void {
 
 /**
  * CSS schon im Kopf laden, wenn die Seite das Verzeichnis oder ein Profil zeigt (sonst springen die Bilder der Liste,
- * weil das CSS erst im Fuß käme).
+ * weil das CSS erst im Fuß käme). Mit ausgeschaltetem Baustein nie.
  */
 function tamil_site_vz_css_frueh(): void {
+	if ( ! tamil_site_funktion_an( 'verzeichnis' ) ) {
+		return;
+	}
 	$post = is_singular() ? get_queried_object() : null;
 	if ( is_singular( TAMIL_SITE_VZ_TYP ) || ( $post instanceof WP_Post && has_shortcode( $post->post_content, 'tamil_verzeichnis' ) ) ) {
 		tamil_site_vz_css();
