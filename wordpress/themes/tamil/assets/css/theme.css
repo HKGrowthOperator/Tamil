@@ -836,7 +836,8 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .wege li a { display: flex; align-items: center; min-height: 44px; border-bottom: 1px solid var(--linie); font-weight: 600; }
 .wege li a:hover { color: var(--rot); }
 .formular-wrap { margin-top: 16px; }
-.tafel.plaetze .masse, .tafel.plaetze .preis { white-space: nowrap; }
+/* Maße aus dem Plugin halten „728 × 90“ und „768 px“ mit geschützten Leerzeichen zusammen; sonst darf die Zelle umbrechen */
+.tafel.plaetze .preis { white-space: nowrap; }
 .kontakt__formular + .kontakt__formular { margin-top: 48px; }
 /* Rechtstexte außerhalb des Echtbetriebs: Hinweis „Entwurf“ unter dem Titel */
 .seite__entwurf { margin-top: 16px; border-top-color: var(--rot); }
@@ -978,56 +979,51 @@ body .tz-kategorie { border-top-color: var(--linie); }
 body .tz-dialog::backdrop { background: oklch(0.21 0.012 255 / 0.6); }
 @media (prefers-reduced-motion: reduce) { body .tz-hinweis:not([hidden]) { animation: none; } }
 
-/* ---------- Anzeigen (Plätze aus dem Plugin): feste Formate, „Anzeige“ an der Kante. Ungebuchte Plätze zeigen eine
-   Eigenanzeige als Bildbanner (Festlegung F3); deren Gestaltung kommt aus dem Plugin (tamil-site/assets/anzeigen.css,
-   .ad.ad-bild). Hier stehen nur der Rahmen, die Maße gebuchter Banner und die Handy-Leiste. ---------- */
+/* ---------- Anzeigen (Plätze aus dem Plugin, je Platz ein benannter Bereich <aside class="ad ad-…">): „Anzeige“ an
+   der Kante. Größen kommen aus einer Quelle, tamil_site_werbung_formate(): Breite und Seitenverhältnis der Eigenanzeigen
+   und gebuchten Anzeigen erzeugt das Plugin (tamil_site_anzeigen_formate_css()), das Seitenverhältnis für Banner-Code
+   aus den Einstellungen oder Advanced Ads das Theme (tamil_anzeigen_flaechen_css() in inc/enqueue.php). So steht jede
+   Art von Werbung in derselben Fläche. Die Gestaltung der Eigenanzeigen kommt aus dem Plugin (anzeigen.css, .ad.ad-bild). ---------- */
 .ad { display: grid; justify-content: center; gap: 4px; max-width: 100%; min-width: 0; }
 .ad .ad-label { justify-self: start; font-size: 13px; color: var(--leise); }
-.ad .flaeche { display: block; max-width: calc(100vw - 2 * var(--rand)); overflow: hidden; }
+.ad .flaeche { display: block; width: 100%; height: auto; max-width: calc(100vw - 2 * var(--rand)); overflow: hidden; }
 .ad img { display: block; max-width: 100%; height: auto; }
-/* gebuchte Banner (Code aus den Einstellungen oder Advanced Ads): feste Fläche je Platz */
-.ad-leaderboard .flaeche { width: 320px; height: 50px; }
-.ad-billboard .flaeche { width: 300px; height: 250px; }
 .ad-inarticle { margin: 32px 0; }
-.ad-inarticle .flaeche { width: 300px; height: 250px; }
-.ad-sidebar .flaeche { width: 300px; height: 600px; }
-.ad-footer .flaeche { width: 320px; height: 100px; }
 /* Abstände: ein Werbeplatz zwischen Abschnitten hat Luft nach oben und unten, über dem Fuß etwas mehr */
 .anzeige-zwischen { padding-block: 24px; }
 .anzeige-zwischen + .anzeige-zwischen { padding-top: 0; }
 .anzeige-unten { padding-top: 32px; }
 .anzeige-unten + .fuss { margin-top: 32px; }
 .artikel__rand .ad { justify-content: start; }
-/* Handy-Leiste: fest am unteren Rand, erst nach dem ersten Abschnitt sichtbar (app.js), schließbar */
+/* Handy-Leiste (Platz „mobile“, 320 × 50): fest am unteren Rand, erst nach dem ersten Abschnitt sichtbar (app.js),
+   schließbar. Für jeden Inhalt gleich (Eigenanzeige, gebuchte Anzeige, Banner-Code): „Anzeige“ über dem Banner,
+   Schließen daneben. Unten an der Seite Platz dafür, damit sie nichts verdeckt; oben bleiben Band und Leselinie frei. */
 .ad-mobile {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
-  display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 12px;
-  padding: 4px 4px max(4px, env(safe-area-inset-bottom)) var(--rand);
+  display: grid; grid-template-columns: minmax(0, 320px) 44px; grid-template-rows: auto auto;
+  justify-content: center; align-items: center; column-gap: 6px; row-gap: 2px;
+  padding: 2px 4px max(4px, env(safe-area-inset-bottom)) 4px;
   background: var(--grund); border-top: 1px solid var(--tinte);
 }
-.ad-mobile[hidden] { display: none; }
-.ad-mobile:not(.ist-sichtbar) { display: none; } /* app.js blendet sie nach dem ersten Abschnitt ein */
-.ad-mobile .ad-label { justify-self: auto; flex: none; }
-.ad-mobile .flaeche { flex: 1 1 auto; width: auto; min-width: 0; }
-.ad-mobile:not(.ad-bild) .flaeche { flex: none; width: 320px; height: 50px; }
-.ad-mobile .schliessen { position: static; flex: none; width: 44px; height: 44px; border: 0; background: none; color: var(--tinte); font-size: 22px; line-height: 1; cursor: pointer; }
-.has-sticky-ad { padding-bottom: 64px; }
+.ad-mobile[hidden], .ad-mobile:not(.ist-sichtbar) { display: none; }
+.ad-mobile .ad-label { grid-column: 1; grid-row: 1; justify-self: start; font-size: 12px; line-height: 16px; }
+.ad-mobile > :not(.ad-label):not(.schliessen) { grid-column: 1; grid-row: 2; min-width: 0; }
+.ad-mobile .flaeche { width: 100%; max-width: 320px; aspect-ratio: 320 / 50; }
+.ad-mobile .schliessen {
+  grid-column: 2; grid-row: 1 / span 2; align-self: center;
+  width: 44px; height: 44px; border: 0; background: none; color: var(--tinte); font-size: 22px; line-height: 1; cursor: pointer;
+}
+.has-sticky-ad { padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
 /* niedriges Fenster (Handy quer, unter 500 px Höhe): keine feste Leiste, sie verdeckte zu viel vom Inhalt */
 @media (max-height: 499px) {
-  .ad-mobile, .anzeige-mobil { display: none !important; }
+  .ad-mobile { display: none !important; }
   .has-sticky-ad { padding-bottom: 0; }
+  .site.has-sticky-ad:has(#ad-mobile) { padding-bottom: 0; } /* schlägt die Regel des Plugins für die Eigenanzeige */
 }
-@media (min-width: 768px) { .anzeige-mobil { display: none; } }
 @media (min-width: 768px) {
-  .ad-leaderboard .flaeche, .ad-footer .flaeche { width: 728px; height: 90px; }
   .ad-mobile { display: none !important; }
   .has-sticky-ad { padding-bottom: 0; }
 }
-@media (min-width: 1024px) {
-  .ad-billboard .flaeche { width: 970px; height: 250px; }
-}
-/* Werbeplatz 03 im Text: 728 × 90 nur, wenn die Textspalte breit genug ist, sonst 300 × 250 */
-@container (min-width: 740px) { .inhalt .ad-inarticle:not(.ad-bild) .flaeche { width: 728px; height: 90px; } }
 
 /* ---------- Fuß: heller Grund, Linie in Tinte oben (dunkel bleiben nur Band und „Diese Woche“) ---------- */
 .fuss {

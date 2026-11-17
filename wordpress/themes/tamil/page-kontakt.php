@@ -41,10 +41,12 @@ $tamil_bloecke   = array(
 	'kooperation' => array( 'kooperation', __( 'Kooperation', 'tamil' ), __( 'Für Vereine, Veranstalter und Unternehmen, die mit Tamil.de zusammenarbeiten möchten.', 'tamil' ), '' ),
 );
 $tamil_formate   = function_exists( 'tamil_site_werbung_formate' ) ? tamil_site_werbung_formate() : array();
-$tamil_masse     = static function ( array $f ): string {
-	$desktop = $f['desktop'][0] . ' × ' . $f['desktop'][1];
-	/* translators: 1: Maße Desktop, 2: Maße Handy */
-	return $f['desktop'] === $f['mobil'] ? $desktop : sprintf( __( '%1$s, mobil %2$s', 'tamil' ), $desktop, $f['mobil'][0] . ' × ' . $f['mobil'][1] );
+// Maße wie auf „Werben“ und in den Einstellungen, aus dem Plugin (z. B. „728 × 90, unter 768 px Breite 320 × 100“)
+$tamil_masse = static function ( string $platz, array $f ): string {
+	if ( function_exists( 'tamil_site_werbung_masse_text' ) ) {
+		return tamil_site_werbung_masse_text( $platz );
+	}
+	return $f['desktop'][0] . "\u{00A0}×\u{00A0}" . $f['desktop'][1];
 };
 ?>
 <div class="innen">
@@ -121,10 +123,10 @@ $tamil_masse     = static function ( array $f ): string {
 				<table class="tafel plaetze">
 					<thead><tr><th scope="col"><?php esc_html_e( 'Platz', 'tamil' ); ?></th><th scope="col"><?php esc_html_e( 'Format', 'tamil' ); ?></th><th scope="col"><?php esc_html_e( 'Wo', 'tamil' ); ?></th><th scope="col"><?php esc_html_e( 'Preis', 'tamil' ); ?></th></tr></thead>
 					<tbody>
-						<?php foreach ( $tamil_formate as $tamil_f ) : ?>
+						<?php foreach ( $tamil_formate as $tamil_platz => $tamil_f ) : ?>
 							<tr>
 								<th scope="row"><?php echo esc_html( $tamil_f['name'] ); ?></th>
-								<td class="masse"><?php echo esc_html( $tamil_masse( $tamil_f ) ); ?></td>
+								<td class="masse"><?php echo esc_html( $tamil_masse( (string) $tamil_platz, $tamil_f ) ); ?></td>
 								<td><?php echo esc_html( ucfirst( $tamil_f['wo'] ) ); ?></td>
 								<td class="preis"><?php esc_html_e( 'auf Anfrage', 'tamil' ); ?></td>
 							</tr>
