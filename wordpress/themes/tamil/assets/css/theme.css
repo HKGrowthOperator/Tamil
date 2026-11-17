@@ -836,7 +836,8 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .wege li a { display: flex; align-items: center; min-height: 44px; border-bottom: 1px solid var(--linie); font-weight: 600; }
 .wege li a:hover { color: var(--rot); }
 .formular-wrap { margin-top: 16px; }
-.tafel.plaetze .masse, .tafel.plaetze .preis { white-space: nowrap; }
+/* Maße aus dem Plugin halten „728 × 90“ und „768 px“ mit geschützten Leerzeichen zusammen; sonst darf die Zelle umbrechen */
+.tafel.plaetze .preis { white-space: nowrap; }
 .kontakt__formular + .kontakt__formular { margin-top: 48px; }
 /* Rechtstexte außerhalb des Echtbetriebs: Hinweis „Entwurf“ unter dem Titel */
 .seite__entwurf { margin-top: 16px; border-top-color: var(--rot); }
