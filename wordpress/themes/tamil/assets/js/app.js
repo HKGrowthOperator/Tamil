@@ -1,5 +1,5 @@
-/* Tamil.de Theme – Menü „Mehr“, mobiler Werbeplatz, Videos, Link kopieren, TV-Player, Zutaten abhaken und die
-   Bewegung beim Scrollen (Variante D). Kein Framework. */
+/* Tamil.de Theme – Menü „Mehr“, mobiler Werbeplatz, Filter im Kalender, Videos, Link kopieren, TV-Player, Zutaten
+   abhaken und die Bewegung beim Scrollen (Variante D). Kein Framework. */
 (function () {
   "use strict";
   var $ = function (s, root) { return (root || document).querySelector(s); };
@@ -30,6 +30,30 @@
     var zu = $(".schliessen", sticky);
     zu && zu.addEventListener("click", function () { sticky.hidden = true; var site = $(".site"); site && site.classList.remove("has-sticky-ad"); });
   }
+
+  // Filter im Kalender (Land, Stadt): Knöpfe mit aria-pressed, erst mit Skript sichtbar; ohne Skript steht die ganze
+  // Liste da. Monate ohne passende Termine verschwinden, die Zahl oben wird mitgezählt (aria-live).
+  $$("[data-filter]").forEach(function (block) {
+    var leiste = $(".filter", block); if (!leiste) return;
+    var wahl = { land: "", stadt: "" };
+    var zeilen = $$("li[data-land]", block);
+    var zahl = $("[data-filter-zahl]", block), leer = $("[data-filter-leer]", block);
+    leiste.hidden = false;
+    leiste.addEventListener("click", function (e) {
+      var knopf = e.target.closest(".chip"); if (!knopf) return;
+      var gruppe = knopf.closest("[data-filter-art]"); if (!gruppe) return;
+      wahl[gruppe.getAttribute("data-filter-art")] = knopf.getAttribute("data-wert") || "";
+      $$(".chip", gruppe).forEach(function (c) { c.setAttribute("aria-pressed", c === knopf ? "true" : "false"); });
+      var n = 0;
+      zeilen.forEach(function (z) {
+        var ok = (!wahl.land || z.getAttribute("data-land") === wahl.land) && (!wahl.stadt || z.getAttribute("data-stadt") === wahl.stadt);
+        z.hidden = !ok; if (ok) n++;
+      });
+      $$(".kalender__monat", block).forEach(function (m) { m.hidden = !$("li[data-land]:not([hidden])", m); });
+      if (zahl) zahl.textContent = n === 1 ? "1 Termin" : n + " Termine";
+      if (leer) leer.hidden = n > 0;
+    });
+  });
 
   // YouTube erst nach Klick laden – oder sofort, wenn die Zustimmung „externe_medien“ vorliegt (Plugin tamil-site)
   function ladeVideo(box, perKlick) {

@@ -190,7 +190,8 @@ function tamil_heute(): string {
 }
 
 /**
- * Datumsangabe eines Termins: „Sa, 25. Oktober 2026, 18:00 Uhr“ bzw. Zeitraum.
+ * Datumsangabe eines Termins: „Sa, 25. Oktober 2026, 18:00 Uhr“, mit Ende am selben Tag „18:00 bis 23:00 Uhr“,
+ * über mehrere Tage als Zeitraum.
  */
 function tamil_termin_text( string $datum, string $ende = '' ): string {
 	$start = date_create_immutable( $datum, wp_timezone() );
@@ -202,6 +203,8 @@ function tamil_termin_text( string $datum, string $ende = '' ): string {
 	$bis      = '' !== $ende ? date_create_immutable( $ende, wp_timezone() ) : false;
 	if ( $bis && $bis->format( 'Y-m-d' ) > $start->format( 'Y-m-d' ) ) { // ein Ende vor dem Beginn ist ein Datenfehler und wird nicht ausgegeben
 		$text = wp_date( 'j. F', $start->getTimestamp() ) . ' bis ' . wp_date( 'j. F Y', $bis->getTimestamp() );
+	} elseif ( $bis && $mit_zeit && strlen( $ende ) > 10 && $bis > $start && $bis->format( 'Y-m-d' ) === $start->format( 'Y-m-d' ) ) {
+		$text = wp_date( 'D, j. F Y', $start->getTimestamp() ) . ', ' . $start->format( 'H:i' ) . ' bis ' . $bis->format( 'H:i' ) . ' Uhr';
 	}
 	return str_replace( '.,', ',', $text );
 }
