@@ -978,20 +978,16 @@ body .tz-kategorie { border-top-color: var(--linie); }
 body .tz-dialog::backdrop { background: oklch(0.21 0.012 255 / 0.6); }
 @media (prefers-reduced-motion: reduce) { body .tz-hinweis:not([hidden]) { animation: none; } }
 
-/* ---------- Anzeigen (Plätze aus dem Plugin): feste Formate, „Anzeige“ an der Kante. Ungebuchte Plätze zeigen eine
-   Eigenanzeige als Bildbanner (Festlegung F3); deren Gestaltung kommt aus dem Plugin (tamil-site/assets/anzeigen.css,
-   .ad.ad-bild). Hier stehen nur der Rahmen, die Maße gebuchter Banner und die Handy-Leiste. ---------- */
+/* ---------- Anzeigen (Plätze aus dem Plugin, je Platz ein benannter Bereich <aside class="ad ad-…">): „Anzeige“ an
+   der Kante. Größen kommen aus einer Quelle, tamil_site_werbung_formate(): Breite und Seitenverhältnis der Eigenanzeigen
+   und gebuchten Anzeigen erzeugt das Plugin (tamil_site_anzeigen_formate_css()), das Seitenverhältnis für Banner-Code
+   aus den Einstellungen oder Advanced Ads das Theme (tamil_anzeigen_flaechen_css() in inc/enqueue.php). So steht jede
+   Art von Werbung in derselben Fläche. Die Gestaltung der Eigenanzeigen kommt aus dem Plugin (anzeigen.css, .ad.ad-bild). ---------- */
 .ad { display: grid; justify-content: center; gap: 4px; max-width: 100%; min-width: 0; }
 .ad .ad-label { justify-self: start; font-size: 13px; color: var(--leise); }
-.ad .flaeche { display: block; max-width: calc(100vw - 2 * var(--rand)); overflow: hidden; }
+.ad .flaeche { display: block; width: 100%; height: auto; max-width: calc(100vw - 2 * var(--rand)); overflow: hidden; }
 .ad img { display: block; max-width: 100%; height: auto; }
-/* gebuchte Banner (Code aus den Einstellungen oder Advanced Ads): feste Fläche je Platz */
-.ad-leaderboard .flaeche { width: 320px; height: 50px; }
-.ad-billboard .flaeche { width: 300px; height: 250px; }
 .ad-inarticle { margin: 32px 0; }
-.ad-inarticle .flaeche { width: 300px; height: 250px; }
-.ad-sidebar .flaeche { width: 300px; height: 600px; }
-.ad-footer .flaeche { width: 320px; height: 100px; }
 /* Abstände: ein Werbeplatz zwischen Abschnitten hat Luft nach oben und unten, über dem Fuß etwas mehr */
 .anzeige-zwischen { padding-block: 24px; }
 .anzeige-zwischen + .anzeige-zwischen { padding-top: 0; }
@@ -1024,15 +1020,9 @@ body .tz-dialog::backdrop { background: oklch(0.21 0.012 255 / 0.6); }
   .site.has-sticky-ad:has(#ad-mobile) { padding-bottom: 0; } /* schlägt die Regel des Plugins für die Eigenanzeige */
 }
 @media (min-width: 768px) {
-  .ad-leaderboard .flaeche, .ad-footer .flaeche { width: 728px; height: 90px; }
   .ad-mobile { display: none !important; }
   .has-sticky-ad { padding-bottom: 0; }
 }
-@media (min-width: 1024px) {
-  .ad-billboard .flaeche { width: 970px; height: 250px; }
-}
-/* Werbeplatz 03 im Text: 728 × 90 nur, wenn die Textspalte breit genug ist, sonst 300 × 250 */
-@container (min-width: 740px) { .inhalt .ad-inarticle:not(.ad-bild) .flaeche { width: 728px; height: 90px; } }
 
 /* ---------- Fuß: heller Grund, Linie in Tinte oben (dunkel bleiben nur Band und „Diese Woche“) ---------- */
 .fuss {

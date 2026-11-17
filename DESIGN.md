@@ -83,7 +83,10 @@ gemeinsamer Kante für Kopf, Bild und Text), höchstens 70 Zeichen je Zeile.
   zeigen sie ein Symbolbild und sagen, wo es weitergeht.
 - **Blocktitel:** 19 px, Linie in Tinte darüber; Listen mit Linien statt Kästen; Tabellen ebenso.
 - **Knöpfe** nur für Formulare und Bedienung: Tinte, eckig, 48 px hoch. Sonst unterstrichene Textlinks, 44 px tippbar.
-- **Anzeigen:** Label „Anzeige“, feste Formate aus dem Plugin; Eigenanzeige wie ein Anreißer mit Linien.
+- **Anzeigen:** Label „Anzeige“, je Platz ein benannter Bereich des Plugins; Formate aus
+  `tamil_site_werbung_formate()`, dieselbe Fläche für Eigenanzeige (Bildbanner), gebuchte Anzeige und Banner-Code.
+  Handy-Leiste 320 × 50 fest unten, erst wenn der erste Abschnitt aus dem Bild ist (spätestens nach einem
+  Bildschirm), schließbar, nur unter 768 px Breite und ab 500 px Fensterhöhe.
 - **Fuß:** heller Grund mit Linie in Tinte; Logo und Unterzeile, Rubriken, Dienste, Social (nur mit Adresse),
   Bildnachweise der Seite, Rechtliches mit Platz für „Cookie-Einstellungen“.
 
