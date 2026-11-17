@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
  */
 function tamil_production_titel( $titel, $id = 0 ) {
 	$eigen = tamil_opt( 'production_titel' );
-	return '' !== $eigen && ( 0 === (int) $id || (int) $id === (int) get_queried_object_id() ) ? $eigen : $titel;
+	return '' !== $eigen && ( 0 === (int) $id || (int) get_queried_object_id() === (int) $id ) ? $eigen : $titel;
 }
 add_filter( 'single_post_title', 'tamil_production_titel' );
 add_filter( 'the_title', 'tamil_production_titel', 10, 2 );
