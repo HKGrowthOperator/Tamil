@@ -1,7 +1,7 @@
 <?php
 /**
  * Navigation: das rote Rubrikband (Einträge aus dem Menü „Hauptnavigation“, sonst die Rubriken in der Reihenfolge
- * von klar2 und „Kontakt“) und die Dienste für „Mehr“ und den Fuß.
+ * von klar2 und „Kontakt“), die Dienste für „Mehr“ und den Fuß und die Top-News „Neu“ in der Kopfzeile.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -105,4 +105,29 @@ function tamil_dienste(): array {
 		}
 	}
 	return $dienste;
+}
+
+/**
+ * Top-News „Neu“ in der Kopfzeile: die neuesten veröffentlichten Beiträge aller Rubriken, ohne den Aufmacher der
+ * Startseite und ohne den Beitrag, der gerade offen ist. Navigation, daher ohne Bild (Ausnahme der Bilderpflicht).
+ * Die Kandidaten liegen zehn Minuten im Transient und werden mit der Startseite verworfen (tamil_flush_auswahl()).
+ *
+ * @return int[] Höchstens zwei Beiträge.
+ */
+function tamil_kopf_neu(): array {
+	static $neu = null;
+	if ( null !== $neu ) {
+		return $neu;
+	}
+	$kandidaten = get_transient( 'tamil_kopf_neu' );
+	if ( ! is_array( $kandidaten ) ) {
+		$kandidaten = tamil_ids(
+			array( 'posts_per_page' => 4 ),
+			array( (int) tamil_start_auswahl()['lead'] )
+		);
+		set_transient( 'tamil_kopf_neu', $kandidaten, 10 * MINUTE_IN_SECONDS );
+	}
+	$offen = is_singular( 'post' ) ? (int) get_queried_object_id() : 0;
+	$neu   = array_slice( array_values( array_diff( array_map( 'intval', $kandidaten ), array( $offen ) ) ), 0, 2 );
+	return $neu;
 }

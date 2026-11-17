@@ -7,8 +7,10 @@
  *      werden im Rahmen beschnitten; ihr Nachweis bekommt „zugeschnitten“.
  *   b) sonst das erste Bild aus dem Text des Beitrags, das in der Mediathek liegt und mindestens 600 px breit ist
  *      (mit seinen Größen, srcset und Nachweis).
- *   c) sonst ein Symbolbild aus dem Rubrik-Pool (inc/bildpool.php): vier echte Fotos je Rubrik, fest nach Beitrags-ID
- *      gewählt, damit Nachbarn verschieden sind; sichtbar als „Symbolbild“ gekennzeichnet, mit vollem Nachweis.
+ *   c) sonst, bei Kino- und Terminbeiträgen, das Foto des neuesten anderen Beitrags zum selben Film bzw. zur selben
+ *      Veranstaltung (inc/filmbilder.php), mit dessen Nachweis und ohne Schild, weil es den Film zeigt;
+ *   d) sonst ein Symbolbild aus dem Rubrik-Pool (inc/bildpool.php): bis zu vier echte Fotos je Rubrik, fest nach
+ *      Beitrags-ID gewählt, damit Nachbarn verschieden sind; sichtbar als „Symbolbild“ gekennzeichnet, mit Nachweis.
  *
  * Die Nachweise sammelt der Fuß („Bildnachweise dieser Seite“) als HTML mit Links auf Dateiseite und Lizenz.
  */
@@ -34,8 +36,8 @@ function tamil_ist_titelkarte( int $post_id ): bool {
 /**
  * Bildwahl eines Beitrags über die Kette (je Aufruf der Seite einmal gerechnet).
  *
- * @return array{art:string,id:int,pool:array<string,mixed>,breit:bool,alt:string,nachweis:string}
- *         art „eigen“, „inhalt“ oder „pool“; nachweis ist escaptes HTML.
+ * @return array{art:string,id:int,pool:array<string,mixed>,breit:bool,alt:string,nachweis:string,quelle:int}
+ *         art „eigen“, „inhalt“, „film“ oder „pool“; nachweis ist escaptes HTML; quelle = Beitrag des Filmbilds.
  */
 function tamil_bildwahl( int $post_id ): array {
 	static $wahl = array();
@@ -53,6 +55,7 @@ function tamil_bildwahl( int $post_id ): array {
 			'breit'    => $breit,
 			'alt'      => tamil_bild_alt( $post_id ),
 			'nachweis' => '' !== $text ? esc_html( $text . ( $breit ? ', ' . __( 'zugeschnitten', 'tamil' ) : '' ) ) : '',
+			'quelle'   => 0,
 		);
 		return $wahl[ $post_id ];
 	}
@@ -67,6 +70,23 @@ function tamil_bildwahl( int $post_id ): array {
 			'breit'    => $breit,
 			'alt'      => wp_strip_all_tags( get_the_title( $post_id ) ) === $alt ? '' : $alt,
 			'nachweis' => '' !== $inhalt['nachweis'] ? esc_html( $inhalt['nachweis'] . ( $breit ? ', ' . __( 'zugeschnitten', 'tamil' ) : '' ) ) : '',
+			'quelle'   => 0,
+		);
+		return $wahl[ $post_id ];
+	}
+	$quelle = tamil_film_quelle( $post_id );
+	if ( $quelle ) {
+		$foto             = tamil_eigenes_foto( $quelle );
+		$alt              = trim( (string) get_post_meta( $foto, '_wp_attachment_image_alt', true ) );
+		$text             = str_replace( ' · ', ', ', tamil_bildnachweis( $quelle ) );
+		$wahl[ $post_id ] = array(
+			'art'      => 'film',
+			'id'       => $foto,
+			'pool'     => array(),
+			'breit'    => false,
+			'alt'      => wp_strip_all_tags( get_the_title( $post_id ) ) === $alt ? '' : $alt,
+			'nachweis' => esc_html( $text ),
+			'quelle'   => $quelle,
 		);
 		return $wahl[ $post_id ];
 	}
@@ -79,6 +99,7 @@ function tamil_bildwahl( int $post_id ): array {
 		/* translators: %s: Bildbeschreibung */
 		'alt'      => sprintf( __( 'Symbolbild: %s', 'tamil' ), $pool['alt'] ),
 		'nachweis' => tamil_pool_nachweis( $pool ),
+		'quelle'   => 0,
 	);
 	return $wahl[ $post_id ];
 }

@@ -261,6 +261,8 @@ function tamil_kacheln_ohne( string $slug = '' ): array {
  */
 function tamil_flush_auswahl(): void {
 	delete_transient( tamil_start_schluessel() );
+	delete_transient( 'tamil_filmbilder' ); // Verzeichnis der Filmbilder (inc/filmbilder.php)
+	delete_transient( 'tamil_kopf_neu' ); // Top-News in der Kopfzeile (inc/navigation.php)
 }
 add_action( 'transition_post_status', 'tamil_flush_auswahl' );
 add_action( 'deleted_post', 'tamil_flush_auswahl' );

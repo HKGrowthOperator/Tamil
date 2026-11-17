@@ -115,14 +115,15 @@ folgt der abgenommenen Kachel aus dem neuen Design (Entscheidung 10.11.).
 ### 2.7 Theme: Bild für jeden Anreißer (Bilderpflicht, 17.11.2026)
 
 Luis am 17.11.: Jeder sichtbare Anreißer der Website zeigt ein echtes Bild, nichts nur als Text (Ausnahmen: Rubrikband,
-Fußlisten, Formulare, reine Textseiten). Das Theme wählt das Bild in `inc/bildkette.php`, unabhängig von der Bildkette
+die Top-News-Zeile „Neu“ im Kopf, beide Navigation, Fußlisten, Formulare, reine Textseiten). Das Theme wählt das Bild in `inc/bildkette.php`, unabhängig von der Bildkette
 des Radars:
 
 | Stufe | Bild | Nachweis |
 |---|---|---|
 | a | eigenes Beitragsbild, wenn es keine Titelkarte ist (Nachweis „Grafik: Tamil.de“ oder Herkunft `karte`/Lizenz `tamil-grafik` ohne „Foto: …“); Bänder über 2,5:1 werden im Rahmen beschnitten | wie gespeichert, bei Bändern mit „zugeschnitten“ |
 | b | erstes Bild aus dem Text desselben Beitrags, das in der Mediathek liegt (Adresse unter `uploads/` dieser Website) und mindestens 600 px breit ist | Bildunterschrift des Anhangs, sonst die figcaption im Text |
-| c | Symbolbild aus dem Rubrik-Pool (`assets/img/rubrik/`, Liste `inc/bildpool.php`): je Rubrik bis zu vier Fotos von Wikimedia Commons, nur CC0, CC BY, CC BY-SA; fest nach Beitrags-ID gewählt | „Symbolbild, Foto: Urheber / Wikimedia Commons, Lizenz, zugeschnitten“ mit Links auf Dateiseite und Lizenz; Schild „Symbolbild“ am Bild |
+| c | nur Kino und Termine (Rubrik Kino, Entertainment, Events, Kinoliste oder Termin): das eigene Foto des neuesten anderen Beitrags zum selben Film bzw. zur selben Veranstaltung (`inc/filmbilder.php`; Schlüssel: Film aus `kino_fakten`, Titel in Anführungszeichen, Titelkopf eines Termins, normalisiert) | Nachweis des Originalbilds, kein Schild, weil es den Film zeigt; Plakate bleiben so im Bericht über genau diesen Film (2.2) |
+| d | Symbolbild aus dem Rubrik-Pool (`assets/img/rubrik/`, Liste `inc/bildpool.php`): je Rubrik bis zu vier Fotos von Wikimedia Commons, nur CC0, CC BY, CC BY-SA; fest nach Beitrags-ID gewählt. Kino und Entertainment nehmen ohne eigenen Pool den Events-Pool, nie Stadtansichten, Kirchen oder Rathäuser | „Symbolbild, Foto: Urheber / Wikimedia Commons, Lizenz, zugeschnitten“ mit Links auf Dateiseite und Lizenz; Schild „Symbolbild“ am Bild |
 
 Der Pool entsteht mit `design/inhalte/bildpool/holen.py` aus `kandidaten.json`; Urheber, Lizenz und Lizenz-Adresse
 liest das Skript aus der Commons-API (Regeln wie 2.3: keine NC/ND, keine Dateien mit Hinweisen zu Persönlichkeits- oder
