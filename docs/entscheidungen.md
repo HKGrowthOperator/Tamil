@@ -3,6 +3,30 @@
 Neueste oben. Format: Datum · Entscheidung · wer · warum. Was hier steht, gilt, bis ein neuerer Eintrag es ändert.
 Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
+## 17.11.2026
+
+- **Aufteilung:** Luis' Sitzung macht nur noch Website, Design und Fulfillment. Dazu gehören das Theme, die
+  Frontend-Teile von `tamil-site` und das Testsystem der Website. Nick macht das Backend: News-Radar, Cockpit, Agenten,
+  Publisher, Social-Automatik und `tamil-radar`. Die Übergabe an Nick steht in `docs/uebergabe/backend-nick.md`. · Luis
+- **Website-Ergebnisse direkt auf `main`, nur Website-Dateien.**
+  - Was auf `main` kommt: `wordpress/themes/tamil`, `wordpress/plugins/tamil-site`, `wordpress/dev`,
+    `wordpress/docker`, `wordpress/Dockerfile`, `design/`, `DESIGN.md` und `tests/wp`, als eigener Commit je
+    Ergebnis. Ohne Radar und Backend.
+  - Das Testsystem baut weiter aus `claude/radar-multiagent`. Dorthin wird jedes Ergebnis zuerst gemergt.
+  - Weicht für diese Pfade bewusst von „nie direkt auf main“ ab (`CLAUDE.md`). · Luis
+- **Bilderpflicht auf der Website:** Jeder sichtbare Anreißer, jede Listenzeile, Kachel, jedes Suchergebnis,
+  „Weiterlesen“ und jeder Kino- und Termineintrag zeigt ein echtes Bild. Ausnahmen: Rubrikband, Fußlisten, Formulare,
+  reine Textseiten (Impressum, Datenschutz). Das Theme nimmt das eigene Foto, sonst ein Bild aus dem Text, sonst ein
+  gekennzeichnetes Symbolbild aus einem Commons-Pool je Rubrik (`docs/spezifikation/bilder-und-lizenzen.md` 2.7).
+  Kehrt die frühere Regel um, Beiträge ohne Foto als reine Textzeile zu zeigen. · Luis
+- **„Diese Woche“ nur mit Aktuellem:** Filme mit Spieltagen ab heute, Termine der nächsten 14 Tage (sonst die nächsten
+  drei), nie Beiträge älter als 30 Tage ohne kommenden Termin; die Hinweise „Diese Woche“ in der Kopfzeile entfallen.
+  · Luis
+- **Rubrikband rot mit weißer Schrift** statt dunkel (Tinte). Aktive Rubrik mit 3 px Weiß darunter, Leselinie der
+  Bewegung D hell, Fokusring weiß. Damit ist „Diese Woche“ die einzige dunkle Fläche; Rot ist als Fläche nur im Band
+  erlaubt. Kehrt §10.1 von `design/brief.md` („Dunkle Flächen, genau zwei“, „Rot nie als Fläche“) für das Band um. ·
+  Luis
+
 ## 16.11.2026
 
 - **Bewegung D, Theme direkt in klar2, ohne Probeseite und Tor G3, direkt aufs Testsystem.**

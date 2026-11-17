@@ -1,28 +1,20 @@
 <?php
 /**
- * Kopf in drei Teilen wie klar2: Kopfzeile (Datum, ab 800 px die Hinweise „Diese Woche“, Suche), Logo auf hellem
- * Grund und das dunkle Rubrikband als eigenes <nav>. Im Band rechts „Mehr“ mit Suche, Diensten und Social.
+ * Kopf in drei Teilen wie klar2: Kopfzeile (Datum und Suche), Logo auf hellem Grund und das rote Rubrikband als
+ * eigenes <nav>. Im Band rechts „Mehr“ mit Suche, Diensten und Social.
  */
 
 defined( 'ABSPATH' ) || exit;
 
-$tamil_items    = tamil_nav_items();
-$tamil_dienste  = tamil_dienste();
-$tamil_social   = tamil_social();
-$tamil_hinweise = tamil_kopf_hinweise();
-$tamil_lupe     = '<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="6.8" cy="6.8" r="5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10.6 10.6 14.5 14.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
+$tamil_items   = tamil_nav_items();
+$tamil_dienste = tamil_dienste();
+$tamil_social  = tamil_social();
+$tamil_lupe    = '<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="6.8" cy="6.8" r="5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10.6 10.6 14.5 14.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
 ?>
 <header class="kopf">
 	<div class="kopfzeile">
 		<div class="innen kopfzeile__innen">
 			<time class="kopfzeile__datum" datetime="<?php echo esc_attr( wp_date( 'Y-m-d' ) ); ?>"><?php echo esc_html( tamil_heute() ); ?></time>
-			<?php if ( $tamil_hinweise ) : ?>
-				<p class="kopfzeile__hinweise"><strong><?php esc_html_e( 'Diese Woche', 'tamil' ); ?></strong>
-					<?php foreach ( $tamil_hinweise as $tamil_h ) : ?>
-						<a href="<?php echo esc_url( $tamil_h['url'] ); ?>"><?php echo esc_html( $tamil_h['text'] ); ?></a>
-					<?php endforeach; ?>
-				</p>
-			<?php endif; ?>
 			<a class="kopfzeile__suche" href="<?php echo esc_url( add_query_arg( 's', '', home_url( '/' ) ) ); ?>"><?php echo $tamil_lupe; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- festes SVG ?><?php esc_html_e( 'Suche', 'tamil' ); ?></a>
 		</div>
 	</div>

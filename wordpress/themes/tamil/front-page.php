@@ -37,19 +37,7 @@ $tamil_aufmacher = tamil_anr_imbild(
 <h1 class="nur-vorlesen"><?php echo esc_html( get_bloginfo( 'name' ) . ', ' . __( 'Startseite', 'tamil' ) ); ?></h1>
 
 <div class="innen oben">
-	<?php
-	if ( '' !== $tamil_aufmacher ) {
-		echo $tamil_aufmacher; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_anr_imbild()
-	} else {
-		echo tamil_anr_stueck( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_anr_stueck()
-			$tamil_a['lead'],
-			array(
-				'klasse' => 'aufmacher aufmacher--ohne-bild stueck',
-				'ebene'  => 'h2',
-			)
-		);
-	}
-	?>
+	<?php echo $tamil_aufmacher; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_anr_imbild() ?>
 
 	<?php if ( $tamil_a['neben'] ) : ?>
 		<section class="neben" aria-label="<?php esc_attr_e( 'Weitere Geschichten', 'tamil' ); ?>">
@@ -81,7 +69,7 @@ $tamil_aufmacher = tamil_anr_imbild(
 // Werbeplatz 01 unter dem ersten Abschnitt (nicht über dem Aufmacher).
 tamil_leaderboard( 'innen anzeige-zwischen' );
 
-get_template_part( 'template-parts/home/woche', null, array( 'ids' => $tamil_a['woche'] ) );
+get_template_part( 'template-parts/home/woche', null, array( 'woche' => $tamil_a['woche'] ) );
 
 if ( $tamil_a['kueche'] ) {
 	get_template_part( 'template-parts/home/kueche', null, array( 'ids' => $tamil_a['kueche'] ) );

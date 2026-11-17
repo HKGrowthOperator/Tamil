@@ -3,9 +3,10 @@
  * Anreißer in klar2: Bild im Rahmen, Dachzeile „Rubrik | Datum“, Titel, Vorspann. Jeder Anreißer ist ein einziger
  * Link (a.anr) um Bild und Text; Bilder füllen ihren Rahmen (object-fit: cover), Nachweise sammelt der Fuß.
  *
- * Bausteine: tamil_bild(), tamil_meta(), tamil_anr_imbild() (Titel im Bild), tamil_anr_stueck() (Nebenstück),
- * tamil_anr_zeile() (Meldung, Listenzeile), tamil_kacheln() (Rubrikkacheln), tamil_grafik_kino(),
- * tamil_grafik_termin() (gestaltete Kacheln ohne Foto auf Dunkel).
+ * Jeder Anreißer hat ein Bild: tamil_bild() (inc/bildkette.php) liefert das eigene Foto, ein Bild aus dem Text oder ein
+ * Symbolbild aus dem Rubrik-Pool. Bausteine: tamil_meta(), tamil_anr_imbild() (Titel im Bild), tamil_anr_stueck()
+ * (Nebenstück), tamil_anr_zeile() (Meldung, Listenzeile), tamil_kacheln() (Rubrikkacheln), tamil_grafik_kino(),
+ * tamil_grafik_termin(), tamil_grafik_leer() (Bildkacheln auf Dunkel für Kino und Termine).
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -17,63 +18,6 @@ defined( 'ABSPATH' ) || exit;
 function tamil_bild_alt( int $post_id ): string {
 	$alt = trim( (string) get_post_meta( (int) get_post_thumbnail_id( $post_id ), '_wp_attachment_image_alt', true ) );
 	return wp_strip_all_tags( get_the_title( $post_id ) ) === $alt ? '' : $alt;
-}
-
-/**
- * Beitragsbild als <img> für einen Rahmen; merkt den Nachweis für den Fuß. Leer ohne zeigbares Bild.
- *
- * @param array<string,mixed> $opt {
- *     @type string $size  Bildgröße (Standard „large“, ungeschnitten; der Rahmen schneidet).
- *     @type string $sizes sizes-Angabe für srcset.
- *     @type bool   $eager  Sofort und vorrangig laden (erster Bildschirm).
- *     @type bool   $sofort Sofort laden, ohne Vorrang (kleine Bilder im seitlichen Streifen).
- *     @type string $klasse Klasse des Bilds.
- * }
- */
-function tamil_bild( int $post_id, array $opt = array() ): string {
-	if ( ! tamil_bild_zeigbar( $post_id ) ) {
-		return '';
-	}
-	$attr = array(
-		'alt'      => tamil_bild_alt( $post_id ),
-		'decoding' => 'async',
-	);
-	if ( ! empty( $opt['eager'] ) ) {
-		$attr['loading']       = 'eager';
-		$attr['fetchpriority'] = 'high';
-	} else {
-		// Bilder in seitlich laufenden Streifen lädt der Browser bei „lazy“ erst, wenn sie hineingewischt werden.
-		$attr['loading'] = ! empty( $opt['sofort'] ) ? 'eager' : 'lazy';
-	}
-	if ( ! empty( $opt['sizes'] ) ) {
-		$attr['sizes'] = (string) $opt['sizes'];
-	}
-	if ( ! empty( $opt['klasse'] ) ) {
-		$attr['class'] = (string) $opt['klasse'];
-	}
-	$img = (string) get_the_post_thumbnail( $post_id, (string) ( $opt['size'] ?? 'large' ), $attr );
-	if ( '' !== $img ) {
-		tamil_nachweise( str_replace( ' · ', ', ', tamil_bildnachweis( $post_id ) ) );
-	}
-	return $img;
-}
-
-/**
- * Rubrikfoto als <img> (Rubrikkacheln und Seitenköpfe ohne eigenes Foto); merkt den Nachweis.
- *
- * @param array<string,mixed> $opt { @type bool $alt Alternativtext setzen, @type bool $eager, @type bool $sofort. }
- */
-function tamil_rubrikfoto_img( string $slug, array $opt = array() ): string {
-	$f = tamil_rubrikfoto( $slug );
-	tamil_nachweise( __( 'Archivbild der Rubrik.', 'tamil' ) . ' ' . $f['nachweis'] );
-	return sprintf(
-		'<img src="%1$s" width="%2$d" height="%3$d" alt="%4$s" decoding="async" %5$s>',
-		esc_url( TAMIL_THEME_URI . '/assets/img/rubrik/' . $f['datei'] ),
-		(int) $f['w'],
-		(int) $f['h'],
-		esc_attr( ! empty( $opt['alt'] ) ? $f['alt'] : '' ),
-		! empty( $opt['eager'] ) ? 'loading="eager" fetchpriority="high"' : ( ! empty( $opt['sofort'] ) ? 'loading="eager"' : 'loading="lazy"' )
-	);
 }
 
 /**
@@ -107,7 +51,7 @@ function tamil_ebene( string $ebene, string $sonst = 'h3' ): string {
 }
 
 /**
- * Bild mit Titel im Bild (Aufmacher, große Kacheln in „Diese Woche“ und „Küche“). Ohne zeigbares Bild leer.
+ * Bild mit Titel im Bild (Aufmacher, große Kacheln in „Diese Woche“ und „Küche“).
  *
  * @param array<string,mixed> $opt {
  *     @type string $klasse   Klassen des <article> (z. B. „aufmacher“, „kachel kachel--gross“).
@@ -119,16 +63,13 @@ function tamil_ebene( string $ebene, string $sonst = 'h3' ): string {
  * }
  */
 function tamil_anr_imbild( int $post_id, array $opt = array() ): string {
-	$img = tamil_bild(
+	$img   = tamil_bild(
 		$post_id,
 		array(
 			'sizes' => $opt['sizes'] ?? '',
 			'eager' => ! empty( $opt['eager'] ),
 		)
 	);
-	if ( '' === $img ) {
-		return '';
-	}
 	$ebene = tamil_ebene( (string) ( $opt['ebene'] ?? 'h3' ) );
 	$text  = tamil_meta( $post_id ) . sprintf( '<%1$s class="titel">%2$s</%1$s>', $ebene, tamil_titel( $post_id ) );
 	$unter = ! empty( $opt['unter'] );
@@ -151,10 +92,10 @@ function tamil_anr_stueck( int $post_id, array $opt = array() ): string {
 	$img   = tamil_bild( $post_id, array( 'sizes' => $opt['sizes'] ?? '(min-width: 1024px) 290px, (min-width: 600px) 200px, 112px' ) );
 	$ebene = tamil_ebene( (string) ( $opt['ebene'] ?? 'h3' ) );
 	return sprintf(
-		'<article class="%1$s"><a class="anr" href="%2$s">%3$s<div class="stueck__text">%4$s<%5$s class="titel">%6$s</%5$s><p class="vorspann">%7$s</p></div></a></article>',
-		esc_attr( (string) ( $opt['klasse'] ?? 'stueck' ) . ( '' === $img ? ' ohne-bild' : '' ) ),
+		'<article class="%1$s"><a class="anr" href="%2$s"><div class="rahmen r169">%3$s</div><div class="stueck__text">%4$s<%5$s class="titel">%6$s</%5$s><p class="vorspann">%7$s</p></div></a></article>',
+		esc_attr( (string) ( $opt['klasse'] ?? 'stueck' ) ),
 		esc_url( get_permalink( $post_id ) ),
-		'' !== $img ? '<div class="rahmen r169">' . $img . '</div>' : '',
+		$img,
 		tamil_meta( $post_id, array( 'rubrik' => $opt['rubrik'] ?? true ) ),
 		$ebene,
 		tamil_titel( $post_id ),
@@ -163,7 +104,7 @@ function tamil_anr_stueck( int $post_id, array $opt = array() ): string {
 }
 
 /**
- * Zeile einer Liste: Text links, kleines Bild 16:9 rechts (Meldungen) oder links (große Listen). Ohne Bild nur Text.
+ * Zeile einer Liste: Text links, kleines Bild 16:9 rechts (Meldungen) oder links (große Listen).
  *
  * @param array<string,mixed> $opt {
  *     @type string $klasse   „meldung“ (Standard) oder „zeile“.
@@ -173,12 +114,14 @@ function tamil_anr_stueck( int $post_id, array $opt = array() ): string {
  *     @type int    $ts       anderer Zeitpunkt für die Dachzeile (Termine).
  *     @type string $sizes.
  *     @type string $markiere Suchwort, das in Titel und Vorspann hervorgehoben wird.
- *     @type bool   $bild     Bild zeigen (Standard ja; nein in zugeklappten Listen).
+ *     @type string $zusatz   weitere Angaben unter dem Titel (escaptes HTML, etwa Ort und Eintritt eines Termins).
+ *     @type string $dach     eigene Dachzeile statt „Rubrik | Datum“ (escaptes HTML, etwa Datum mit Uhrzeit).
+ *     @type string $attr     weitere Attribute des <li> (escapt, etwa data-land für Filter).
  * }
  */
 function tamil_anr_zeile( int $post_id, array $opt = array() ): string {
 	$klasse = (string) ( $opt['klasse'] ?? 'meldung' );
-	$img    = ( $opt['bild'] ?? true ) ? tamil_bild( $post_id, array( 'sizes' => $opt['sizes'] ?? '(min-width: 600px) 240px, 96px' ) ) : '';
+	$img    = tamil_bild( $post_id, array( 'sizes' => $opt['sizes'] ?? '(min-width: 600px) 240px, 96px' ) );
 	$ebene  = tamil_ebene( (string) ( $opt['ebene'] ?? 'h3' ) );
 	$meta   = array( 'rubrik' => $opt['rubrik'] ?? true );
 	if ( ! empty( $opt['ts'] ) ) {
@@ -186,15 +129,17 @@ function tamil_anr_zeile( int $post_id, array $opt = array() ): string {
 	}
 	$wort = (string) ( $opt['markiere'] ?? '' );
 	return sprintf(
-		'<li class="%1$s"><a class="anr" href="%2$s"><div class="%3$s__text">%4$s<%5$s class="titel">%6$s</%5$s>%7$s</div>%8$s</a></li>',
-		esc_attr( $klasse . ( '' === $img ? ' ohne-bild' : '' ) ),
+		'<li class="%1$s"%9$s><a class="anr" href="%2$s"><div class="%3$s__text">%4$s<%5$s class="titel">%6$s</%5$s>%10$s%7$s</div><div class="rahmen r169">%8$s</div></a></li>',
+		esc_attr( $klasse ),
 		esc_url( get_permalink( $post_id ) ),
 		esc_attr( $klasse ),
-		tamil_meta( $post_id, $meta ),
+		isset( $opt['dach'] ) ? (string) $opt['dach'] : tamil_meta( $post_id, $meta ),
 		$ebene,
 		tamil_markiere( tamil_titel( $post_id ), $wort ),
 		! empty( $opt['vorspann'] ) ? '<p class="vorspann">' . tamil_markiere( tamil_text( wp_trim_words( tamil_standfirst( $post_id ), 30, ' …' ) ), $wort ) . '</p>' : '',
-		'' !== $img ? '<div class="rahmen r169">' . $img . '</div>' : ''
+		$img,
+		(string) ( $opt['attr'] ?? '' ),
+		(string) ( $opt['zusatz'] ?? '' )
 	);
 }
 
@@ -252,18 +197,27 @@ function tamil_kacheln( array $kacheln, string $label ): string {
 	}
 	$html = '<nav class="kacheln" aria-label="' . esc_attr( $label ) . '"><ul>';
 	foreach ( $kacheln as $k ) {
-		$img = $k['bild'] ? tamil_bild(
-			(int) $k['bild'],
+		// Der Name steht im Bild: kein Alternativtext, kein Schild; ohne Beitrag mit Foto das erste Bild des Pools.
+		$img   = $k['bild'] ? (string) preg_replace(
+			'/ alt="[^"]*"/',
+			' alt=""',
+			tamil_bild(
+				(int) $k['bild'],
+				array(
+					'sizes'  => '160px',
+					'sofort' => true,
+					'schild' => false,
+				)
+			),
+			1
+		) : tamil_pool_img(
+			$k['slug'],
 			array(
-				'sizes'  => '160px',
 				'sofort' => true,
+				'schild' => false,
+				'alt'    => false,
 			)
-		) : '';
-		if ( '' === $img ) {
-			$img = tamil_rubrikfoto_img( $k['slug'], array( 'sofort' => true ) );
-		} else {
-			$img = (string) preg_replace( '/ alt="[^"]*"/', ' alt=""', $img, 1 ); // der Name steht im Bild
-		}
+		);
 		$html .= sprintf(
 			'<li><a href="%1$s"><span class="rahmen">%2$s</span><span class="kachel__name">%3$s</span></a></li>',
 			esc_url( $k['url'] ),
@@ -275,7 +229,7 @@ function tamil_kacheln( array $kacheln, string $label ): string {
 }
 
 /**
- * Gestaltete Kachel „Im Kino“ (Fläche auf Dunkel): Film, Zahl der Kinos, Städte.
+ * Bildkachel „Im Kino“ (auf Dunkel): Bild des Kino-Beitrags, Film, Zahl der Kinos, Städte.
  *
  * @param array<string,mixed> $f Ergebnis von tamil_kino_film().
  */
@@ -291,53 +245,75 @@ function tamil_grafik_kino( array $f, string $ebene = 'h3' ): string {
 	$zahl  = sprintf( _n( '%d Kino', '%d Kinos', (int) $f['kinos'], 'tamil' ), (int) $f['kinos'] ) . $wo;
 	$ebene = tamil_ebene( $ebene );
 	return sprintf(
-		'<li class="grafik" data-grafik="kino"><a class="anr" href="%1$s"><%2$s class="titel">%3$s</%2$s><p class="grafik__zahl">%4$s</p>%5$s</a></li>',
+		'<li class="grafik grafik--quer" data-grafik="kino"><a class="anr" href="%1$s"><div class="rahmen r43">%6$s</div><div class="grafik__inhalt"><%2$s class="titel">%3$s</%2$s><p class="grafik__zahl">%4$s</p>%5$s</div></a></li>',
 		esc_url( $f['link'] ),
 		$ebene,
 		esc_html( $f['film'] ),
 		esc_html( $zahl ),
-		$f['staedte'] ? '<p class="grafik__orte">' . esc_html( tamil_staedte_kurz( $f['staedte'] ) ) . '</p>' : ''
+		$f['staedte'] ? '<p class="grafik__orte">' . esc_html( tamil_staedte_kurz( $f['staedte'] ) ) . '</p>' : '',
+		tamil_bild( (int) $f['post'], array( 'sizes' => '(min-width: 600px) 160px, 112px' ) )
 	);
 }
 
 /**
- * Gestaltete Kachel „Termin“ (Fläche auf Dunkel): Titel, Datum als größte Angabe, Ort und Veranstalter, Vorspann.
+ * Angaben eines Termins für Kacheln und Zeilen: Datum mit Uhrzeit und Ende, Ort, Veranstalter, Eintritt.
+ *
+ * @param array<string,string> $e Ergebnis von tamil_site_event().
+ * @return array{datum:string,iso:string,orte:string,eintritt:string,stadt:string,land:string}
+ */
+function tamil_termin_angaben( int $post_id, array $e ): array {
+	$start = date_create_immutable( (string) $e['datum'], wp_timezone() );
+	$orte  = array_filter(
+		array(
+			tamil_ort_kurz( (string) $e['ort'] ),
+			tamil_wer_kurz( (string) $e['veranstalter'], get_the_title( $post_id ), (string) $e['ort'] ),
+		)
+	);
+	$preis = trim( (string) ( $e['preis'] ?? '' ) );
+	return array(
+		'datum'    => tamil_termin_text( (string) $e['datum'], (string) $e['ende'] ),
+		'iso'      => $start ? $start->format( 'Y-m-d' ) : '',
+		'orte'     => implode( ', ', $orte ),
+		/* translators: %s: Eintrittspreis */
+		'eintritt' => '' !== $preis ? sprintf( __( 'Eintritt: %s', 'tamil' ), $preis ) : '',
+		'stadt'    => tamil_ort_kurz( (string) $e['ort'] ),
+		'land'     => strtoupper( trim( (string) ( $e['land'] ?? '' ) ) ),
+	);
+}
+
+/**
+ * Bildkachel „Termin“ (auf Dunkel): Bild, Titel, Datum als größte Angabe, Ort und Veranstalter, Eintritt, Vorspann.
  */
 function tamil_grafik_termin( int $post_id, string $ebene = 'h3', bool $text = true ): string {
 	$e = function_exists( 'tamil_site_event' ) ? tamil_site_event( $post_id ) : array();
 	if ( ! $e ) {
 		return '';
 	}
-	$start = date_create_immutable( (string) $e['datum'], wp_timezone() );
-	$titel = get_the_title( $post_id );
-	$orte  = array_filter(
-		array(
-			tamil_ort_kurz( (string) $e['ort'] ),
-			tamil_wer_kurz( (string) $e['veranstalter'], $titel, (string) $e['ort'] ),
-		)
-	);
+	$a     = tamil_termin_angaben( $post_id, $e );
 	$ebene = tamil_ebene( $ebene );
 	return sprintf(
-		'<li class="grafik" data-grafik="termin"><a class="anr" href="%1$s"><%2$s class="titel">%3$s</%2$s><p class="grafik__zahl">%4$s</p>%5$s%6$s</a></li>',
+		'<li class="grafik" data-grafik="termin"><a class="anr" href="%1$s"><div class="rahmen r169">%7$s</div><div class="grafik__inhalt"><%2$s class="titel">%3$s</%2$s><p class="grafik__zahl">%4$s</p>%5$s%6$s</div></a></li>',
 		esc_url( get_permalink( $post_id ) ),
 		$ebene,
 		tamil_titel( $post_id ),
-		$start ? '<time datetime="' . esc_attr( $start->format( 'Y-m-d' ) ) . '">' . esc_html( tamil_termin_text( (string) $e['datum'], (string) $e['ende'] ) ) . '</time>' : '',
-		$orte ? '<p class="grafik__orte">' . esc_html( implode( ', ', $orte ) ) . '</p>' : '',
-		$text ? '<p class="grafik__text">' . tamil_text( wp_trim_words( tamil_standfirst( $post_id ), 28, ' …' ) ) . '</p>' : ''
+		'' !== $a['iso'] ? '<time datetime="' . esc_attr( $a['iso'] ) . '">' . esc_html( $a['datum'] ) . '</time>' : esc_html( $a['datum'] ),
+		'' !== $a['orte'] || '' !== $a['eintritt'] ? '<p class="grafik__orte">' . esc_html( implode( '. ', array_filter( array( $a['orte'], $a['eintritt'] ) ) ) ) . '</p>' : '',
+		$text ? '<p class="grafik__text">' . tamil_text( wp_trim_words( tamil_standfirst( $post_id ), 28, ' …' ) ) . '</p>' : '',
+		tamil_bild( $post_id, array( 'sizes' => '(min-width: 1024px) 380px, (min-width: 600px) 50vw, 100vw' ) )
 	);
 }
 
 /**
- * Gestaltete Kachel ohne Eintrag (Leerzustand in „Diese Woche“): Titel, Satz, Ziel.
+ * Bildkachel ohne Eintrag (Leerzustand in „Diese Woche“, Kino und Termine): Symbolbild der Rubrik, Titel, Satz, Ziel.
  */
-function tamil_grafik_leer( string $titel, string $satz, string $url, string $ebene = 'h3' ): string {
+function tamil_grafik_leer( string $titel, string $satz, string $url, string $rubrik = 'events', string $ebene = 'h3' ): string {
 	$ebene = tamil_ebene( $ebene );
 	return sprintf(
-		'<li class="grafik grafik--leer"><a class="anr" href="%1$s"><%2$s class="titel">%3$s</%2$s><p class="grafik__orte">%4$s</p></a></li>',
+		'<li class="grafik grafik--leer"><a class="anr" href="%1$s"><div class="rahmen r169">%5$s</div><div class="grafik__inhalt"><%2$s class="titel">%3$s</%2$s><p class="grafik__orte">%4$s</p></div></a></li>',
 		esc_url( $url ),
 		$ebene,
 		esc_html( $titel ),
-		esc_html( $satz )
+		esc_html( $satz ),
+		tamil_pool_img( $rubrik, array( 'n' => 1 ) )
 	);
 }

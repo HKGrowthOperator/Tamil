@@ -1,9 +1,9 @@
 <?php
 /**
- * Rubrik in klar2: Seitenkopf mit Name und Beschreibung; auf Seite 1 der neueste Beitrag mit Bild als Aufmacher (4:3,
- * Titel im Bild) und daneben die nächsten vier als Meldungen; dann alle weiteren als Liste mit Bild und Vorspann,
- * Seitennavigation und die übrigen Rubriken als Kacheln. Die Rubrik „Kino“ zeigt auf Seite 1 vorn das Kinoprogramm
- * (template-parts/kino-seite.php).
+ * Rubrik in klar2: Seitenkopf mit Name und Beschreibung; auf Seite 1 der neueste Beitrag mit eigenem Bild (sonst der
+ * neueste) als Aufmacher (4:3, Titel im Bild) und daneben die nächsten vier als Meldungen; dann alle weiteren als Liste
+ * mit Bild und Vorspann, Seitennavigation und die übrigen Rubriken als Kacheln. Die Rubrik „Kino“ zeigt auf Seite 1
+ * vorn das Kinoprogramm (template-parts/kino-seite.php).
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -35,9 +35,9 @@ $tamil_lead  = 0;
 $tamil_seite = array();
 if ( 1 === $tamil_paged && $tamil_ids ) {
 	$tamil_mit_bild = array_values( array_filter( $tamil_ids, 'tamil_bild_zeigbar' ) );
-	$tamil_lead     = (int) ( $tamil_mit_bild[0] ?? 0 );
+	$tamil_lead     = (int) ( $tamil_mit_bild[0] ?? $tamil_ids[0] );
 	$tamil_rest     = array_values( array_diff( $tamil_ids, array( $tamil_lead ) ) );
-	$tamil_seite    = $tamil_lead ? array_slice( $tamil_rest, 0, 4 ) : array();
+	$tamil_seite    = array_slice( $tamil_rest, 0, 4 );
 	$tamil_ids      = array_values( array_diff( $tamil_rest, $tamil_seite ) );
 }
 ?>

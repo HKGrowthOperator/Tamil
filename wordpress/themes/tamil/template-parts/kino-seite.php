@@ -1,8 +1,9 @@
 <?php
 /**
  * Rubrik Kino, Seite 1: Seitenkopf; „Im Programm“ als dunkler Bereich wie „Diese Woche“ (der neueste Kino-Beitrag mit
- * Bild groß, daneben die Filme mit laufender Spielzeit als gestaltete Kacheln); „Nach Stadt“ als Tabelle; „Aus dem
- * Kinojahr“ mit den übrigen Beiträgen; die übrigen Rubriken als Kacheln.
+ * eigenem Bild groß, daneben die Filme mit Spieltagen ab heute als Bildkacheln); „Nach Stadt“ als Tabelle mit dem Bild
+ * des Films in jeder Zeile; „Aus dem Kinojahr“ mit den übrigen Beiträgen als Liste mit Bild; die übrigen Rubriken als
+ * Kacheln.
  *
  * @var array $args { @type array $rubrik, @type array $filme Ergebnis von tamil_kino_filme(), @type int[] $ids }
  */
@@ -12,7 +13,8 @@ defined( 'ABSPATH' ) || exit;
 $tamil_rubrik = $args['rubrik'];
 $tamil_filme  = $args['filme'];
 $tamil_ids    = array_values( array_diff( $args['ids'], wp_list_pluck( $tamil_filme, 'post' ) ) );
-$tamil_lead   = (int) ( array_values( array_filter( array_merge( wp_list_pluck( $tamil_filme, 'post' ), $tamil_ids ), 'tamil_bild_zeigbar' ) )[0] ?? 0 );
+$tamil_kand   = array_values( array_unique( array_map( 'intval', array_merge( wp_list_pluck( $tamil_filme, 'post' ), $tamil_ids ) ) ) );
+$tamil_lead   = (int) ( array_values( array_filter( $tamil_kand, 'tamil_bild_zeigbar' ) )[0] ?? ( $tamil_kand[0] ?? 0 ) );
 $tamil_ids    = array_values( array_diff( $tamil_ids, array( $tamil_lead ) ) );
 $tamil_gross  = $tamil_lead ? tamil_anr_imbild(
 	$tamil_lead,
@@ -54,7 +56,8 @@ $tamil_gross  = $tamil_lead ? tamil_anr_imbild(
 						echo tamil_grafik_leer( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_grafik_leer()
 							__( 'Kino melden', 'tamil' ),
 							__( 'Für diese Woche kennen wir keine tamilische Vorstellung. Kennt ihr eine? Schickt sie der Redaktion.', 'tamil' ),
-							tamil_seiten_url( 'kontakt' )
+							tamil_seiten_url( 'kontakt' ),
+							'kino'
 						);
 					}
 					?>
@@ -68,7 +71,7 @@ $tamil_gross  = $tamil_lead ? tamil_anr_imbild(
 	<?php if ( $tamil_filme ) : ?>
 		<section class="block" id="nach-stadt" aria-labelledby="t-nach-stadt">
 			<h2 class="block-titel" id="t-nach-stadt"><?php esc_html_e( 'Nach Stadt', 'tamil' ); ?></h2>
-			<?php tamil_kino_orte_tafel( $tamil_filme ); ?>
+			<?php tamil_kino_orte_tafel( $tamil_filme, true ); ?>
 			<p class="block__notiz"><?php esc_html_e( 'Aus den Programmen der Kinos, Angaben ohne Gewähr. Fehlt ein Kino? Schreibt der Redaktion.', 'tamil' ); ?></p>
 		</section>
 	<?php endif; ?>

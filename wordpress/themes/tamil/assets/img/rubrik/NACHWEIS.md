@@ -1,16 +1,24 @@
-# Rubrikfotos (Ersatzbilder für Beiträge und Seitenköpfe ohne eigenes Foto)
+# Rubrik-Pool (Symbolbilder für Beiträge ohne eigenes Foto)
 
-Quelle: `design/inhalte/rueckblick/rueckblick.json` und `design/inhalte/rueckblick/bilder/` (Wikimedia Commons).
-Verkleinert auf 960 px Breite (JPEG, Qualität 80). Am Bild steht „Archivbild“ bzw. „Symbolbild“ und der Nachweis.
+Je Rubrik bis zu vier echte Fotos von Wikimedia Commons, nur CC0, CC BY und CC BY-SA; eine Rubrik ohne eigene
+Bilder nimmt den allgemeinen Pool. Urheber, Lizenz und Lizenz-Adresse hat `design/inhalte/bildpool/holen.py`
+aus `design/inhalte/rueckblick/rueckblick.json` übernommen (dort beim Rückblick aus der Commons-API); Beleg je Bild in `design/inhalte/bildpool/bildpool.json`. Auf 960 px Breite verkleinert, höchstens
+auf 4:3 zugeschnitten (WebP, Qualität 78). Am Bild steht „Symbolbild“, im Fuß der volle Nachweis mit Links und
+„zugeschnitten“.
 
-| Datei | Rubrik | Original | Nachweis (Urheber, Lizenz) | Quelle |
+| Datei | Rubrik | Nachweis | Lizenz | Dateiseite |
 |---|---|---|---|---|
-| `events.jpg` | Termine und Feste | `rb-49.jpg` | Foto: 18quirl08 / Wikimedia Commons, CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:Sri_Ganesha_Hindutempel_1_Berlin_2026.jpg |
-| `kino.jpg` | Kino | `rb-43.jpg` | Foto: D Neethidoss / Wikimedia Commons, CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:Kovagam_koothandavar_temple.jpg |
-| `community.jpg` | Community | `rb-71.jpg` | Foto: Rainer Halama / Wikimedia Commons, CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:Hamm-Tempel-Farbgestaltung2014-11-02-13-07.jpg |
-| `kultur.jpg` | Kultur | `rb-83.jpg` | Foto: Bobinson / Wikimedia Commons, CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:Bharatanatyam_dancer_amrutha_naresh_rao_1.jpg |
-| `kultur.jpg` | Entertainment | `rb-83.jpg` | wie oben | wie oben |
-| `kueche.jpg` | Küche | `rb-48.jpg` | Foto: KARTY JazZ / Wikimedia Commons, CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:Veg_Full_Meals_in_Tamil_Nadu.JPG |
-| `news.jpg` | Nachrichten | `rb-85.jpg` | Foto: Jörg Braukmann / Wikimedia Commons, CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:Reichstagsgebäude_von_Westen.jpg |
-| `sport.jpg` | Sport | `rb-67.jpg` | Foto: Vincenzo.togni / Wikimedia Commons, CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:The_Stade_Municipal_of_Yverdon_in_2022.jpg |
-| `allgemein.jpg` | alle übrigen | `rb-49.jpg` | Foto: 18quirl08 / Wikimedia Commons, CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:Sri_Ganesha_Hindutempel_1_Berlin_2026.jpg |
+| `news-1.webp` | Nachrichten | Foto: Jörg Braukmann / Wikimedia Commons, zugeschnitten | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | https://commons.wikimedia.org/wiki/File:Reichstagsgeb%C3%A4ude_von_Westen.jpg |
+| `news-2.webp` | Nachrichten | Foto: Ewe vonDetten / Wikimedia Commons, zugeschnitten | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | https://commons.wikimedia.org/wiki/File:Am_Markt_01_-_Rathaus.jpg |
+| `news-3.webp` | Nachrichten | Foto: ANKAN / Wikimedia Commons, zugeschnitten | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | https://commons.wikimedia.org/wiki/File:Bandaranaike_International_Airport_(2).jpg |
+| `events-1.webp` | Events | Foto: D Neethidoss / Wikimedia Commons, zugeschnitten | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | https://commons.wikimedia.org/wiki/File:Kovagam_koothandavar_temple.jpg |
+| `community-1.webp` | Community | Foto: 18quirl08 / Wikimedia Commons, zugeschnitten | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | https://commons.wikimedia.org/wiki/File:Sri_Ganesha_Hindutempel_1_Berlin_2026.jpg |
+| `community-2.webp` | Community | Foto: Rainer Halama / Wikimedia Commons, zugeschnitten | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | https://commons.wikimedia.org/wiki/File:Hamm-Tempel-Farbgestaltung2014-11-02-13-07.jpg |
+| `kultur-1.webp` | Kultur | Foto: Roland zh / Wikimedia Commons, zugeschnitten | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/) | https://commons.wikimedia.org/wiki/File:Arulmigu_Sivan_Temple,_Glattbrugg_-_Innenansicht_20210320_133243.jpg |
+| `kueche-1.webp` | Küche | Foto: KARTY JazZ / Wikimedia Commons, zugeschnitten | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | https://commons.wikimedia.org/wiki/File:Veg_Full_Meals_in_Tamil_Nadu.JPG |
+| `kueche-2.webp` | Küche | Foto: Janice99999999999 / Wikimedia Commons, zugeschnitten | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | https://commons.wikimedia.org/wiki/File:Kottu.jpg |
+| `kueche-3.webp` | Küche | Foto: Dan arndt / Wikimedia Commons, zugeschnitten | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | https://commons.wikimedia.org/wiki/File:Chicken_Kottu.jpg |
+| `sport-1.webp` | Sport | Foto: Vincenzo.togni / Wikimedia Commons, zugeschnitten | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | https://commons.wikimedia.org/wiki/File:The_Stade_Municipal_of_Yverdon_in_2022.jpg |
+| `allgemein-1.webp` | alle übrigen | Foto: DXR / Wikimedia Commons, zugeschnitten | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | https://commons.wikimedia.org/wiki/File:Hauptwache,_Frankfurt,_South_view_20190915_1.jpg |
+| `allgemein-2.webp` | alle übrigen | Foto: Lutz Fischer / Wikimedia Commons, zugeschnitten | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | https://commons.wikimedia.org/wiki/File:Aarau_Altstadt_Kirche_8941.jpg |
+| `allgemein-3.webp` | alle übrigen | Foto: Björrn Sothmann / Wikimedia Commons, zugeschnitten | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | https://commons.wikimedia.org/wiki/File:Leuk_20_12_2014_01.jpg |

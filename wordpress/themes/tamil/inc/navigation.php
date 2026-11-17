@@ -1,7 +1,7 @@
 <?php
 /**
- * Navigation: das dunkle Rubrikband (Einträge aus dem Menü „Hauptnavigation“, sonst die Rubriken in der Reihenfolge
- * von klar2 und „Kontakt“), die Dienste für „Mehr“ und den Fuß und die zwei Hinweise „Diese Woche“ in der Kopfzeile.
+ * Navigation: das rote Rubrikband (Einträge aus dem Menü „Hauptnavigation“, sonst die Rubriken in der Reihenfolge
+ * von klar2 und „Kontakt“) und die Dienste für „Mehr“ und den Fuß.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -105,41 +105,4 @@ function tamil_dienste(): array {
 		}
 	}
 	return $dienste;
-}
-
-/**
- * Die Hinweise „Diese Woche“ in der Kopfzeile (ab 800 px): der nächste Termin und der Film mit den meisten Kinos.
- * Beide nur, wenn es sie gibt; Titel gekürzt, damit die Kopfzeile einzeilig bleibt.
- *
- * @return array<int,array{text:string,url:string}>
- */
-function tamil_kopf_hinweise(): array {
-	static $hinweise = null;
-	if ( null !== $hinweise ) {
-		return $hinweise;
-	}
-	$hinweise = array();
-	if ( function_exists( 'tamil_site_upcoming_events' ) && function_exists( 'tamil_site_event' ) ) {
-		$id = (int) ( tamil_site_upcoming_events( 1, array( 'fields' => 'ids' ) )->posts[0] ?? 0 );
-		$e  = $id ? tamil_site_event( $id ) : array();
-		$ts = $e ? strtotime( (string) $e['datum'] ) : false;
-		if ( $ts ) {
-			$hinweise[] = array(
-				/* translators: 1: Termin, 2: Datum */
-				'text' => sprintf( __( '%1$s am %2$s', 'tamil' ), tamil_titel_kurz( get_the_title( $id ), 30 ), wp_date( 'j. F', $ts ) ),
-				'url'  => (string) get_permalink( $id ),
-			);
-		}
-	}
-	$filme = tamil_kino_filme( 3 );
-	usort( $filme, static fn( $a, $b ) => $b['kinos'] <=> $a['kinos'] );
-	if ( $filme ) {
-		$f          = $filme[0];
-		$hinweise[] = array(
-			/* translators: 1: Film, 2: Anzahl Kinos */
-			'text' => sprintf( _n( '„%1$s“ läuft in %2$d Kino', '„%1$s“ läuft in %2$d Kinos', $f['kinos'], 'tamil' ), tamil_titel_kurz( $f['film'], 24 ), $f['kinos'] ),
-			'url'  => $f['link'],
-		);
-	}
-	return $hinweise;
 }
