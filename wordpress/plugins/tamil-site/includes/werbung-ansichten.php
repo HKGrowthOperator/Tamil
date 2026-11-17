@@ -22,15 +22,10 @@ function tamil_site_werbung_html_versteckt( array $weitere ): string {
 }
 
 /**
- * Formatbeschreibung, z. B. „728 × 90 (Desktop) / 320 × 50 (Handy)“.
+ * Formatbeschreibung aus der Konfiguration, z. B. „728 × 90, unter 768 px Breite 320 × 100“.
  */
 function tamil_site_werbung_html_masse( string $platz ): string {
-	$f = tamil_site_werbung_formate()[ $platz ];
-	if ( ! tamil_site_werbung_zwei_bilder( $platz ) ) {
-		return sprintf( '%d × %d', $f['desktop'][0], $f['desktop'][1] );
-	}
-	/* translators: 1–4: Pixelmaße */
-	return sprintf( __( '%1$d × %2$d (Desktop) / %3$d × %4$d (Handy)', 'tamil-site' ), $f['desktop'][0], $f['desktop'][1], $f['mobil'][0], $f['mobil'][1] );
+	return tamil_site_werbung_masse_text( $platz );
 }
 
 function tamil_site_werbung_datum_text( string $tag ): string {
@@ -114,6 +109,7 @@ function tamil_site_werbung_html_angebote(): string {
 		. esc_html__( 'Preis je Laufzeit', 'tamil-site' ) . '</th><th scope="col">' . esc_html__( 'Nächster freier Termin', 'tamil-site' )
 		. '</th><th scope="col"><span class="screen-reader-text">' . esc_html__( 'Buchen', 'tamil-site' ) . '</span></th></tr></thead><tbody>' . $zeilen . '</tbody></table></div>';
 	$out .= '<p class="wb-hinweis">' . esc_html__( 'Preise inklusive Umsatzsteuer. Je Platz läuft zur selben Zeit genau eine Anzeige. Jedes Werbemittel wird vor dem Start geprüft; Vorlauf zwei Werktage. Bilder als JPEG oder PNG in den genannten Maßen.', 'tamil-site' ) . '</p>';
+	$out .= '<p class="wb-hinweis">' . esc_html__( 'Am Handy (unter 600 px Breite) füllen Banner die Breite der Spalte; das Seitenverhältnis bleibt.', 'tamil-site' ) . '</p>';
 	if ( $fehlt ) {
 		$out .= '<p class="wb-hinweis wb-platzhalter">' . esc_html__( 'Preise auf Anfrage: Plätze und Laufzeiten ohne Preis sind noch nicht online buchbar.', 'tamil-site' ) . '</p>';
 	}

@@ -10,19 +10,17 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Die Werbeplätze des Designs (Nummern wie im Angebot; Billboard ist die In-Article-Fläche der Startseite).
+ * Die Werbeplätze mit Beschriftung für die Einstellungen: Name, Ort und Maße aus tamil_site_werbung_formate() (eine
+ * Quelle für Tabelle, Einstellungen und Darstellung).
  *
  * @return array<string,string>
  */
 function tamil_site_werbeplaetze(): array {
-	return array(
-		'leaderboard' => __( '01 Leaderboard unter der Navigation (728×90 / 320×50)', 'tamil-site' ),
-		'sidebar'     => __( '02 Half Page in der Seitenspalte (300×600)', 'tamil-site' ),
-		'inarticle'   => __( '03 Im Artikel nach dem zweiten Absatz (728×90 / 300×250)', 'tamil-site' ),
-		'billboard'   => __( '03 Startseite zwischen den Rubriken (970×250 / 300×250)', 'tamil-site' ),
-		'footer'      => __( '04 Über dem Footer (728×90 / 320×100)', 'tamil-site' ),
-		'mobile'      => __( '05 Mobil, fixiert am unteren Rand (320×50)', 'tamil-site' ),
-	);
+	$plaetze = array();
+	foreach ( tamil_site_werbung_formate() as $platz => $f ) {
+		$plaetze[ $platz ] = sprintf( '%1$s: %2$s (%3$s)', $f['name'], $f['wo'], tamil_site_werbung_masse_text( $platz ) );
+	}
+	return $plaetze;
 }
 
 /**
@@ -251,18 +249,54 @@ function tamil_site_eigenanzeige_bild( string $bild ): ?array {
 }
 
 /**
- * Bildgrößen je Werbeplatz für sizes (Breite der Fläche bei den Formaten aus anzeigen.css).
+ * Bildgrößen je Werbeplatz für sizes, aus den Formaten: ab der Grenze die Desktop-Breite, am Handy die Spaltenbreite,
+ * dazwischen die Handy-Breite.
  */
 function tamil_site_eigenanzeige_sizes( string $platz ): string {
-	$sizes = array(
-		'leaderboard' => '(min-width: 768px) 728px, 100vw',
-		'footer'      => '(min-width: 768px) 728px, 100vw',
-		'billboard'   => '(min-width: 1024px) 970px, (min-width: 600px) 100vw, 336px',
-		'inarticle'   => '(min-width: 1024px) 728px, 336px',
-		'sidebar'     => '300px',
-		'mobile'      => '320px',
-	);
-	return $sizes[ $platz ] ?? '(min-width: 768px) 728px, 100vw';
+	$f = tamil_site_werbung_formate()[ '' !== $platz ? $platz : 'leaderboard' ] ?? null;
+	if ( ! $f ) {
+		return '100vw';
+	}
+	if ( 'mobile' === $platz ) {
+		return (int) $f['mobil'][0] . 'px';
+	}
+	$sizes = array();
+	if ( (int) $f['ab'] && tamil_site_werbung_zwei_bilder( $platz ) ) {
+		$sizes[] = sprintf( '(min-width: %1$dpx) %2$dpx', (int) $f['ab'], (int) $f['desktop'][0] );
+	}
+	$sizes[] = '(max-width: 599px) 100vw';
+	$sizes[] = (int) $f['mobil'][0] . 'px';
+	return implode( ', ', $sizes );
+}
+
+/**
+ * Größen der Werbeflächen als CSS, erzeugt aus tamil_site_werbung_formate() (Prüfung 17.11., P1-8: Angabe und
+ * Darstellung aus derselben Konfiguration). Gilt für Eigenanzeigen (.anzeige-wrap) und gebuchte Anzeigen
+ * (.wb-anzeige); fremdes Banner-HTML behält die festen Flächen des Themes. Breite höchstens das Format, am Handy
+ * (unter 600 px) die Spaltenbreite bis 20 % darüber; die Höhe folgt dem Seitenverhältnis.
+ */
+function tamil_site_anzeigen_formate_css(): string {
+	$css   = '';
+	$handy = '';
+	foreach ( tamil_site_werbung_formate() as $platz => $f ) {
+		$p           = '.ad.ad-' . sanitize_key( $platz );
+		$flaeche     = $p . ' .flaeche.anzeige-wrap,' . $p . ' .flaeche.wb-anzeige';
+		[ $mw, $mh ] = array_map( 'intval', $f['mobil'] );
+		[ $dw, $dh ] = array_map( 'intval', $f['desktop'] );
+		if ( 'mobile' === $platz ) {
+			// Handy-Leiste: nur die Eigenanzeige (Raster aus anzeigen.css); gebuchte behalten die Leiste des Themes.
+			$css .= sprintf( '%1$s .flaeche.anzeige-wrap{width:100%%;max-width:%2$dpx;height:auto;aspect-ratio:%2$d/%3$d}', $p, $mw, $mh );
+			continue;
+		}
+		$css   .= sprintf( '%1$s{grid-template-columns:minmax(0,%2$dpx)}', $p, $mw );
+		$css   .= sprintf( '%1$s{width:100%%;max-width:100%%;height:auto;aspect-ratio:%2$d/%3$d}', $flaeche, $mw, $mh );
+		$handy .= sprintf( '%1$s{grid-template-columns:minmax(0,%2$dpx)}', $p, (int) round( $mw * 1.2 ) );
+		if ( (int) $f['ab'] && tamil_site_werbung_zwei_bilder( $platz ) ) {
+			$css .= sprintf( '@media (min-width:%1$dpx){%2$s{grid-template-columns:minmax(0,%3$dpx)}%4$s{aspect-ratio:%3$d/%5$d}}', (int) $f['ab'], $p, $dw, $flaeche, $dh );
+		}
+	}
+	$css .= '.ad .flaeche.wb-anzeige a,.ad .flaeche.wb-anzeige picture{display:block}.ad .flaeche.wb-anzeige img{width:100%;height:auto}';
+	return $css . '@media (max-width:599px){' . $handy . '}';
 }
 
 /**
@@ -498,6 +532,7 @@ add_action( 'get_footer', 'tamil_site_anzeige_nachweise_vormerken' );
 function tamil_site_anzeigen_css(): void {
 	$css = 'assets/anzeigen.css';
 	wp_enqueue_style( 'tamil-site-anzeigen', TAMIL_SITE_URL . $css, array(), TAMIL_SITE_VERSION . '.' . filemtime( TAMIL_SITE_DIR . $css ) );
+	wp_add_inline_style( 'tamil-site-anzeigen', tamil_site_anzeigen_formate_css() );
 }
 add_action( 'wp_enqueue_scripts', 'tamil_site_anzeigen_css', 20 );
 

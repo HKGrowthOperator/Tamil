@@ -10,12 +10,18 @@ zuerst im Testmodus.
 
 | Platz | Wo | Format Desktop / Handy |
 |---|---|---|
-| Leaderboard | unter der Navigation, alle Seiten | 728 × 90 / 320 × 50 |
-| Half Page | Seitenspalte | 300 × 600 |
-| Im Artikel | nach dem zweiten Absatz | 728 × 90 / 300 × 250 |
-| Billboard | Startseite, zwischen den Rubriken | 970 × 250 / 300 × 250 |
-| Fuß | über dem Fuß der Seite | 728 × 90 / 320 × 100 |
-| Mobil | am Handy fest am unteren Rand | 320 × 50 |
+| Leaderboard | unter dem ersten Abschnitt jeder Seite (Startseite nach den Rubrikkacheln, Artikel unter dem Text) | 728 × 90 ab 768 px / 320 × 100 |
+| Half Page | Seitenspalte neben dem Artikel, ab 1024 px | 300 × 600 |
+| Im Artikel | nach dem zweiten Absatz | 336 × 280 |
+| Billboard | Startseite, nach „Küche“ vor den Rubrikblöcken | 970 × 250 ab 1024 px / 336 × 280 |
+| Fuß | über dem Fuß jeder Seite | 728 × 90 ab 768 px / 320 × 100 |
+| Mobil | am Handy fest am unteren Rand, schließbar | 320 × 50 |
+
+Stand 17.11.2026 (Korrekturrunde nach der Prüfung des Testsystems, P1-8): Formate und Orte an die Darstellung des
+Themes 3.2.0 angepasst; vorher Leaderboard am Handy 320 × 50, „Im Artikel“ 728 × 90 / 300 × 250, Billboard am Handy
+300 × 250, Leaderboard „unter der Navigation“. Am Handy (unter 600 px) füllt ein Banner die Spaltenbreite, das
+Seitenverhältnis bleibt. Quelle im Code: `tamil_site_werbung_formate()` (Tabelle, Prüfung der Werbemittel und
+Darstellung). **Bestätigung durch Luis offen.**
 
 **Öffentlich: die Seite „Werben“** mit Plätzen, Maßen, Position, Preisen je Laufzeit und dem nächsten freien Termin.
 

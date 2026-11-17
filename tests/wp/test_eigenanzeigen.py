@@ -188,7 +188,8 @@ def test_ungebuchter_platz_zeigt_eigenanzeige_mit_label_und_bild(wp_cli):
         pytest.skip("Footer-Platz ist lokal gebucht oder mit fremdem Code belegt")
     assert 'class="ad ad-footer ad-anzeige ad-bild"' in html and '<span class="ad-label">Anzeige</span>' in html
     assert _attr(_img(html), "alt").strip()
-    assert 'sizes="(min-width: 768px) 728px, 100vw"' in html
+    # Bildgrößen aus den Formaten (728 × 90 ab 768 px, am Handy Spaltenbreite, dazwischen 320 × 100)
+    assert 'sizes="(min-width: 768px) 728px, (max-width: 599px) 100vw, 320px"' in html
 
 
 def test_seite_mit_eigenanzeigen_nennt_ihre_bildnachweise_im_fuss(wp, wp_cli, seite_production):
