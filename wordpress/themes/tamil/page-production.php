@@ -10,6 +10,19 @@
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Titel der Seite wie die Überschrift (Customizer „production_titel“): <title> und Vorschau sagen dasselbe wie das h1.
+ *
+ * @param string $titel Titel.
+ * @param int    $id    Beitrag (bei the_title).
+ */
+function tamil_production_titel( $titel, $id = 0 ) {
+	$eigen = tamil_opt( 'production_titel' );
+	return '' !== $eigen && ( 0 === (int) $id || (int) $id === (int) get_queried_object_id() ) ? $eigen : $titel;
+}
+add_filter( 'single_post_title', 'tamil_production_titel' );
+add_filter( 'the_title', 'tamil_production_titel', 10, 2 );
+
 get_header();
 
 $tag    = sanitize_title( tamil_opt( 'production_tag' ) );
