@@ -37,7 +37,9 @@ def test_formate_wie_mit_dem_theme_abgestimmt(wp_cli):
 
 def test_tabelle_und_labels_aus_der_konfiguration(wp_cli):
     texte = json.loads(wp_cli("$t = array(); foreach ( array_keys( tamil_site_werbung_formate() ) as $p ) {"
-                              " $t[ $p ] = array( tamil_site_werbung_masse_text( $p ), tamil_site_werbeplaetze()[ $p ] ); } echo wp_json_encode( $t );"))
+                              " $t[ $p ] = array( tamil_site_werbung_masse_text( $p ), tamil_site_werbeplaetze()[ $p ] ); } echo wp_json_encode( $t );")
+                       .replace("\\u00a0", " "))  # geschützte Leerzeichen wie normale lesen
+    assert "\u00a0" in wp_cli("echo tamil_site_werbung_masse_text( 'inarticle' );")  # 336 × 280 bricht nicht um
     assert texte["leaderboard"][0] == "728 × 90, unter 768 px Breite 320 × 100"
     assert texte["inarticle"][0] == "336 × 280"
     assert texte["billboard"][0] == "970 × 250, unter 1024 px Breite 336 × 280"
@@ -66,7 +68,7 @@ def test_seite_werben_nennt_die_formate(wp, wp_cli):
         zeile = re.search(r'<tr><th scope="row">Leaderboard</th>.*?</tr>', html, re.S)
         if not zeile:
             pytest.skip("Seite Werben lokal ohne Tabelle (Schalter aus)")
-        assert "728 × 90, unter 768 px Breite 320 × 100" in zeile.group(0)
+        assert "728 × 90, unter 768 px Breite 320 × 100" in zeile.group(0).replace("\u00a0", " ").replace("&nbsp;", " ")
         assert "unter dem ersten Abschnitt jeder Seite" in zeile.group(0)
         assert "füllen Banner die Breite der Spalte" in html
     finally:

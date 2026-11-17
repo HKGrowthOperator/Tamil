@@ -241,12 +241,16 @@ function tamil_site_werbung_masse_text( string $platz ): string {
 	if ( ! $f ) {
 		return '';
 	}
-	$desktop = sprintf( '%d × %d', $f['desktop'][0], $f['desktop'][1] );
+	// Geschützte Leerzeichen: „728 × 90“ und „768 px“ brechen in der Tabelle nicht um.
+	$masse   = static function ( array $m ): string {
+		return sprintf( "%d\u{00A0}×\u{00A0}%d", $m[0], $m[1] );
+	};
+	$desktop = $masse( $f['desktop'] );
 	if ( ! tamil_site_werbung_zwei_bilder( $platz ) ) {
 		return $desktop;
 	}
 	/* translators: 1: Maße ab der Grenze, 2: Grenze in px, 3: Maße darunter */
-	return sprintf( __( '%1$s, unter %2$d px Breite %3$s', 'tamil-site' ), $desktop, (int) $f['ab'], sprintf( '%d × %d', $f['mobil'][0], $f['mobil'][1] ) );
+	return str_replace( ' px', "\u{00A0}px", sprintf( __( '%1$s, unter %2$d px Breite %3$s', 'tamil-site' ), $desktop, (int) $f['ab'], $masse( $f['mobil'] ) ) );
 }
 
 /**
