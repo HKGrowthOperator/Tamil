@@ -8,7 +8,6 @@
 defined( 'ABSPATH' ) || exit;
 
 $tamil_social    = tamil_social();
-$tamil_nachweise = tamil_nachweise();
 $tamil_unterzeil = '' !== tamil_opt( 'tagline' ) ? tamil_opt( 'tagline' ) : tamil_opt( 'ueber_uns' );
 ?>
 <?php tamil_leaderboard(); ?>
@@ -72,15 +71,21 @@ if ( '' !== $tamil_footer_ad ) :
 			</div>
 		<?php endif; ?>
 	</div>
+	<?php
+	// Erst hier auslesen: Werbeplätze und Bilder darüber haben ihre Nachweise dann gemerkt (die Handy-Leiste unter dem
+	// Fuß meldet ihren vorab über get_footer im Plugin).
+	$tamil_nachweise = tamil_nachweise();
+	?>
 	<?php if ( $tamil_nachweise ) : ?>
-		<div class="innen fuss__nachweise">
-			<h2><?php esc_html_e( 'Bildnachweise dieser Seite', 'tamil' ); ?></h2>
+		<details class="innen fuss__nachweise">
+			<?php /* translators: %d: Anzahl der Nachweise */ ?>
+			<summary><?php echo esc_html( sprintf( __( 'Bildnachweise dieser Seite (%d)', 'tamil' ), count( $tamil_nachweise ) ) ); ?></summary>
 			<ul class="nachweise">
 				<?php foreach ( $tamil_nachweise as $tamil_n ) : ?>
 					<li><?php echo wp_kses( $tamil_n, tamil_nachweis_kses() ); ?></li>
 				<?php endforeach; ?>
 			</ul>
-		</div>
+		</details>
 	<?php endif; ?>
 	<div class="innen">
 		<p class="fuss__recht">

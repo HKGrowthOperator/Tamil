@@ -772,7 +772,17 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .wege li a { display: flex; align-items: center; min-height: 44px; border-bottom: 1px solid var(--linie); font-weight: 600; }
 .wege li a:hover { color: var(--rot); }
 .formular-wrap { margin-top: 16px; }
-.tafel.plaetze .masse { white-space: nowrap; }
+.tafel.plaetze .masse, .tafel.plaetze .preis { white-space: nowrap; }
+.kontakt__formular + .kontakt__formular { margin-top: 48px; }
+/* Rechtstexte außerhalb des Echtbetriebs: Hinweis „Entwurf“ unter dem Titel */
+.seite__entwurf { margin-top: 16px; border-top-color: var(--rot); }
+/* Tamil TV pausiert: Text und Symbolbild, am Desktop nebeneinander */
+.tv-pause { display: grid; gap: 24px; padding: 24px 0 8px; }
+.tv-pause .aktionen { margin-top: 8px; }
+@media (min-width: 1024px) {
+  .tv-pause { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 48px; align-items: center; padding-top: 40px; }
+}
+.kontakt__formulare > .block__notiz { margin-top: 24px; }
 .block--treffer .liste { margin-top: 0; }
 .seite__text .inhalt > p, .seite__text .inhalt > ul, .seite__text .inhalt > ol, .seite__text .inhalt > h2, .seite__text .inhalt > h3 { max-width: 34em; }
 
@@ -819,6 +829,11 @@ input[type="file"] { padding: 10px; font-size: 15px; }
 .tf-auswahl label, .vz-auswahl label { margin: 0; font-size: 15px; font-weight: 400; }
 .tf-auswahl input, .vz-auswahl input { margin: 2px 0 0; }
 .tf-auswahl .tf-fehler { grid-column: 2; }
+/* Link zur Datenschutzerklärung unter der Einwilligung: in der Textspalte, 44 px tippbar */
+.tf-auswahl .tf-datenschutz {
+  grid-column: 2; justify-self: start; display: inline-flex; align-items: center; min-height: 44px;
+  font-size: 15px; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em;
+}
 .vz-auswahl { border: 0; padding: 0; margin: 0; }
 .vz-auswahl label { min-height: 44px; align-items: center; }
 .tf-hinweis, .vz-hinweis, .wb-hinweis { font-size: 14px; line-height: 1.45; color: var(--leise); }
@@ -859,6 +874,7 @@ input[type="file"] { padding: 10px; font-size: 15px; }
 .vz-angaben { margin-top: 16px; border-top: 1px solid var(--tinte); }
 .vz-angaben dt { padding-top: 8px; font-size: 13px; color: var(--leise); }
 .vz-angaben dd { margin: 0; padding-bottom: 8px; border-bottom: 1px solid var(--linie); overflow-wrap: anywhere; }
+.vz-angaben dd a { display: inline-flex; align-items: center; min-height: 44px; margin-block: -10px; }
 
 /* Werbebuchung */
 .wb-werbung h2 { margin: 40px 0 8px; padding-top: 12px; border-top: 1px solid var(--tinte); font-size: 22px; }
@@ -898,38 +914,27 @@ body .tz-kategorie { border-top-color: var(--linie); }
 body .tz-dialog::backdrop { background: oklch(0.21 0.012 255 / 0.6); }
 @media (prefers-reduced-motion: reduce) { body .tz-hinweis:not([hidden]) { animation: none; } }
 
-/* ---------- Anzeigen (Plätze aus dem Plugin): feste Formate, „Anzeige“ an der Kante; ungebuchte Plätze zeigen eine
-   Eigenanzeige (Festlegung F3), gesetzt wie ein Anreißer mit Linien, Höhe nach Inhalt ---------- */
+/* ---------- Anzeigen (Plätze aus dem Plugin): feste Formate, „Anzeige“ an der Kante. Ungebuchte Plätze zeigen eine
+   Eigenanzeige als Bildbanner (Festlegung F3); deren Gestaltung kommt aus dem Plugin (tamil-site/assets/anzeigen.css,
+   .ad.ad-bild). Hier stehen nur der Rahmen, die Maße gebuchter Banner und die Handy-Leiste. ---------- */
 .ad { display: grid; justify-content: center; gap: 4px; max-width: 100%; min-width: 0; }
 .ad .ad-label { justify-self: start; font-size: 13px; color: var(--leise); }
 .ad .flaeche { display: block; max-width: calc(100vw - 2 * var(--rand)); overflow: hidden; }
 .ad img { display: block; max-width: 100%; height: auto; }
+/* gebuchte Banner (Code aus den Einstellungen oder Advanced Ads): feste Fläche je Platz */
 .ad-leaderboard .flaeche { width: 320px; height: 50px; }
 .ad-billboard .flaeche { width: 300px; height: 250px; }
 .ad-inarticle { margin: 32px 0; }
 .ad-inarticle .flaeche { width: 300px; height: 250px; }
-.ad-inarticle.ad-anzeige { justify-content: stretch; }
-.ad-inarticle.ad-anzeige .flaeche { width: auto; }
 .ad-sidebar .flaeche { width: 300px; height: 600px; }
 .ad-footer .flaeche { width: 320px; height: 100px; }
-.ad-anzeige .flaeche { height: auto; }
-/* Eigenanzeigen: Breite nach Platz, höchstens 728 px, am Handy über die volle Breite */
-.ad-anzeige:not(.ad-mobile) { grid-template-columns: minmax(0, 728px); }
-.ad-anzeige:not(.ad-mobile) .flaeche { width: auto; max-width: none; }
+/* Abstände: ein Werbeplatz zwischen Abschnitten hat Luft nach oben und unten, über dem Fuß etwas mehr */
 .anzeige-zwischen { padding-block: 24px; }
+.anzeige-zwischen + .anzeige-zwischen { padding-top: 0; }
 .anzeige-unten { padding-top: 32px; }
 .anzeige-unten + .fuss { margin-top: 32px; }
-.anzeige-wrap { display: block; color: var(--tinte); text-decoration: none; }
-.anzeige {
-  display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 24px;
-  padding: 12px 0 8px; border-top: 1px solid var(--tinte); border-bottom: 1px solid var(--linie); text-align: left;
-}
-.anzeige .text { display: grid; gap: 2px; flex: 1 1 18rem; min-width: 0; }
-.anzeige .claim { font-size: 19px; font-weight: 650; line-height: 1.25; }
-.anzeige .sub { font-size: 15px; line-height: 1.45; color: var(--leise); }
-.anzeige .cta { display: inline-flex; align-items: center; min-height: 44px; font-weight: 600; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
-.anzeige-wrap:hover .claim { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.14em; }
-.anzeige-wrap:hover .cta { color: var(--rot); }
+.artikel__rand .ad { justify-content: start; }
+/* Handy-Leiste: fest am unteren Rand, erst nach dem ersten Abschnitt sichtbar (app.js), schließbar */
 .ad-mobile {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
   display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 12px;
@@ -940,25 +945,19 @@ body .tz-dialog::backdrop { background: oklch(0.21 0.012 255 / 0.6); }
 .ad-mobile:not(.ist-sichtbar) { display: none; } /* app.js blendet sie nach dem ersten Abschnitt ein */
 .ad-mobile .ad-label { justify-self: auto; flex: none; }
 .ad-mobile .flaeche { flex: 1 1 auto; width: auto; min-width: 0; }
-.ad-mobile:not(.ad-anzeige) .flaeche { flex: none; width: 320px; height: 50px; }
-.ad-mobile .anzeige { flex-wrap: nowrap; align-items: center; padding: 0; border: 0; gap: 12px; }
-.ad-mobile .anzeige .claim { font-size: 15px; }
-.ad-mobile .anzeige .sub { display: none; }
-.ad-mobile .anzeige .text { flex: 1 1 auto; }
+.ad-mobile:not(.ad-bild) .flaeche { flex: none; width: 320px; height: 50px; }
 .ad-mobile .schliessen { position: static; flex: none; width: 44px; height: 44px; border: 0; background: none; color: var(--tinte); font-size: 22px; line-height: 1; cursor: pointer; }
 .has-sticky-ad { padding-bottom: 64px; }
 @media (min-width: 768px) {
   .ad-leaderboard .flaeche, .ad-footer .flaeche { width: 728px; height: 90px; }
-  .ad-anzeige .flaeche { height: auto; }
   .ad-mobile { display: none !important; }
   .has-sticky-ad { padding-bottom: 0; }
 }
 @media (min-width: 1024px) {
   .ad-billboard .flaeche { width: 970px; height: 250px; }
-  .ad-billboard.ad-anzeige .flaeche { height: auto; }
 }
 /* Werbeplatz 03 im Text: 728 × 90 nur, wenn die Textspalte breit genug ist, sonst 300 × 250 */
-@container (min-width: 740px) { .inhalt .ad-inarticle .flaeche { width: 728px; height: 90px; } .inhalt .ad-inarticle.ad-anzeige .flaeche { height: auto; } }
+@container (min-width: 740px) { .inhalt .ad-inarticle:not(.ad-bild) .flaeche { width: 728px; height: 90px; } }
 
 /* ---------- Fuß: heller Grund, Linie in Tinte oben (dunkel bleiben nur Band und „Diese Woche“) ---------- */
 .fuss {
@@ -978,6 +977,14 @@ body .tz-dialog::backdrop { background: oklch(0.21 0.012 255 / 0.6); }
 .fuss__spalte li a { display: flex; align-items: center; min-height: 44px; color: var(--tinte); }
 .fuss__spalte li a:hover { color: var(--rot); }
 .fuss__nachweise { margin-top: 28px; }
+.fuss__nachweise summary {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 44px;
+  border-bottom: 1px solid var(--linie); font-size: 13px; font-weight: 600; color: var(--leise); cursor: pointer; list-style: none;
+}
+.fuss__nachweise summary::-webkit-details-marker { display: none; }
+.fuss__nachweise summary::after { content: "+"; font-size: 18px; font-weight: 400; color: var(--tinte); }
+.fuss__nachweise[open] summary::after { content: "\2212"; }
+.fuss__nachweise summary:hover { color: var(--tinte); }
 .nachweise { font-size: 13px; line-height: 1.4; color: var(--leise); }
 .nachweise li { padding: 6px 0; border-bottom: 1px solid var(--linie); overflow-wrap: anywhere; }
 .nachweise a, .artikel__nachweis a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em; }

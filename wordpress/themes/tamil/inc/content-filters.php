@@ -157,6 +157,14 @@ function tamil_kino_liste_ersetzen( string $content ): string {
 add_filter( 'the_content', 'tamil_kino_liste_ersetzen', 15 );
 
 /**
+ * Teilen-Feld des alten WhatsApp-Plugins („Share on: WhatsApp“) nicht anzeigen; der gespeicherte Inhalt bleibt.
+ */
+function tamil_inhalt_altreste( string $content ): string {
+	return tamil_altreste_entfernen( $content );
+}
+add_filter( 'the_content', 'tamil_inhalt_altreste', 1 );
+
+/**
  * Tamilische Wörter im Beitragstext mit lang="ta" auszeichnen (Altbestand hat Namen und Zitate auf Tamil).
  */
 function tamil_inhalt_lang_ta( string $content ): string {

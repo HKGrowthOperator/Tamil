@@ -8,7 +8,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'TAMIL_THEME_VERSION', '3.1.0' );
+define( 'TAMIL_THEME_VERSION', '3.2.0' );
 define( 'TAMIL_THEME_DIR', get_template_directory() );
 define( 'TAMIL_THEME_URI', get_template_directory_uri() );
 
@@ -27,3 +27,4 @@ require_once TAMIL_THEME_DIR . '/inc/content-filters.php';
 require_once TAMIL_THEME_DIR . '/inc/enqueue.php';
 require_once TAMIL_THEME_DIR . '/inc/patterns.php';
 require_once TAMIL_THEME_DIR . '/inc/schema.php';
+require_once TAMIL_THEME_DIR . '/inc/seo.php';

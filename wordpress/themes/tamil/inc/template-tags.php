@@ -26,12 +26,47 @@ function tamil_lesezeit( int $post_id ): int {
 }
 
 /**
- * Vorspann: Meta „standfirst“, sonst der Textauszug.
+ * Text ohne Reste der alten tamil.de: Teilen-Knopf des alten WhatsApp-Plugins („Share on: WhatsApp“), Hinweis des
+ * alten Video-Players. Nutzt die Bereinigung des Plugins tamil-site, sonst eine eigene, kleinere. Gibt reinen Text.
+ */
+function tamil_text_bereinigen( string $text ): string {
+	if ( function_exists( 'tamil_site_seo_text_bereinigen' ) ) {
+		return tamil_site_seo_text_bereinigen( $text );
+	}
+	$text = html_entity_decode( wp_strip_all_tags( tamil_altreste_entfernen( $text ) ), ENT_QUOTES, 'UTF-8' );
+	$text = (string) preg_replace( array( '/\bShare on:\s*(?:WhatsApp|Facebook|Twitter)?/iu', '/To view this video please enable JavaScript[^.]*\./iu' ), ' ', $text );
+	return trim( (string) preg_replace( '/\s+/u', ' ', $text ) );
+}
+
+/**
+ * Teilen-Feld des alten WhatsApp-Plugins aus HTML entfernen (steht im Altbestand am Ende fast jedes Beitrags und
+ * mancher Seiten: <div class="share-to-whatsapp-wrapper">…<div class="clear"></div></div>).
+ */
+function tamil_altreste_entfernen( string $html ): string {
+	if ( ! str_contains( $html, 'share-to-whatsapp' ) && ! str_contains( $html, 'share-on-whsp' ) && ! str_contains( $html, 'whatsapp-button' ) ) {
+		return $html;
+	}
+	return (string) preg_replace(
+		array(
+			'#<div[^>]*class="[^"]*share-to-whatsapp-wrapper[^"]*"[^>]*>.*?<div[^>]*class="clear\s*"[^>]*>\s*</div>\s*</div>#is',
+			'#<div[^>]*class="[^"]*share-on-whsp[^"]*"[^>]*>.*?</div>#is',
+			'#(?:<p>\s*)?<a[^>]*class="[^"]*whatsapp-button[^"]*"[^>]*>.*?</a>(?:\s*</p>)?#is',
+		),
+		'',
+		$html
+	);
+}
+
+/**
+ * Vorspann: Meta „standfirst“, sonst der Textauszug, sonst der Anfang des Texts – ohne Reste der alten Seite.
  */
 function tamil_standfirst( int $post_id ): string {
-	$text = trim( (string) get_post_meta( $post_id, 'standfirst', true ) );
+	$text = tamil_text_bereinigen( (string) get_post_meta( $post_id, 'standfirst', true ) );
+	if ( '' === $text && has_excerpt( $post_id ) ) {
+		$text = tamil_text_bereinigen( (string) get_the_excerpt( $post_id ) );
+	}
 	if ( '' === $text ) {
-		$text = has_excerpt( $post_id ) ? (string) get_the_excerpt( $post_id ) : wp_trim_words( wp_strip_all_tags( (string) get_post_field( 'post_content', $post_id ) ), 34, ' …' );
+		$text = wp_trim_words( tamil_text_bereinigen( strip_shortcodes( (string) get_post_field( 'post_content', $post_id ) ) ), 34, ' …' );
 	}
 	return $text;
 }
@@ -41,14 +76,14 @@ function tamil_standfirst( int $post_id ): string {
  * (höchstens zwei und etwa 260 Zeichen), damit kein Satz mitten im Wort endet.
  */
 function tamil_vorspann_artikel( int $post_id ): string {
-	$text = trim( (string) get_post_meta( $post_id, 'standfirst', true ) );
+	$text = tamil_text_bereinigen( (string) get_post_meta( $post_id, 'standfirst', true ) );
 	if ( '' === $text && has_excerpt( $post_id ) ) {
-		$text = trim( (string) get_the_excerpt( $post_id ) );
+		$text = tamil_text_bereinigen( (string) get_the_excerpt( $post_id ) );
 	}
 	if ( '' !== $text ) {
 		return tamil_ganze_saetze( $text );
 	}
-	$roh   = trim( (string) preg_replace( '/\s+/u', ' ', wp_strip_all_tags( strip_shortcodes( (string) get_post_field( 'post_content', $post_id ) ) ) ) );
+	$roh   = tamil_text_bereinigen( strip_shortcodes( (string) get_post_field( 'post_content', $post_id ) ) );
 	$saetz = tamil_saetze( $roh, 2 );
 	if ( mb_strlen( $saetz ) > 260 ) {
 		$saetz = tamil_saetze( $roh, 1 );
@@ -234,4 +269,16 @@ function tamil_kinowoche( string $woche ): string {
 function tamil_tags( int $post_id ): array {
 	$tags = get_the_tags( $post_id );
 	return is_array( $tags ) ? $tags : array();
+}
+
+/**
+ * Impressum oder Datenschutzerklärung außerhalb des Echtbetriebs? Dort steht ein Hinweis, dass der Text von KBS noch
+ * folgt (Vertrag: Rechtstexte liefert KBS); im Echtbetrieb (WP_ENVIRONMENT_TYPE „production“) nie.
+ */
+function tamil_ist_rechtstext_entwurf( int $page_id ): bool {
+	if ( 'production' === wp_get_environment_type() ) {
+		return false;
+	}
+	$slug = (string) get_post_field( 'post_name', $page_id );
+	return in_array( $slug, array( 'impressum', 'datenschutz', 'datenschutzerklaerung' ), true ) || (int) get_option( 'wp_page_for_privacy_policy' ) === $page_id;
 }

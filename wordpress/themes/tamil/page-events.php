@@ -88,7 +88,7 @@ foreach ( $tamil_vorbei as $tamil_id ) {
 	<header class="seitenkopf">
 		<h1 class="seitenkopf__titel"><?php the_title(); ?></h1>
 		<p class="seitenkopf__zeile"><?php echo esc_html( $tamil_rubrik['beschreibung'] ); ?></p>
-		<p class="aktionen"><a class="textlink" href="<?php echo esc_url( tamil_seiten_url( 'kontakt', 'event-einreichen' ) ); ?>"><?php esc_html_e( 'Termin einreichen', 'tamil' ); ?></a></p>
+		<p class="aktionen"><a class="textlink" href="<?php echo esc_url( tamil_einreichen_url() ); ?>"><?php esc_html_e( 'Termin einreichen', 'tamil' ); ?></a></p>
 	</header>
 </div>
 
@@ -105,7 +105,7 @@ foreach ( $tamil_vorbei as $tamil_id ) {
 				echo tamil_grafik_leer( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_grafik_leer()
 					__( 'Termin einreichen', 'tamil' ),
 					__( 'Gerade steht kein kommender Termin im Kalender. Kennt ihr einen? Schickt ihn der Redaktion, kostenlos für Vereine, Tempel und Schulen.', 'tamil' ),
-					tamil_seiten_url( 'kontakt', 'event-einreichen' ),
+					tamil_einreichen_url(),
 					'events'
 				);
 			}
@@ -150,7 +150,7 @@ foreach ( $tamil_vorbei as $tamil_id ) {
 					</ul>
 				</section>
 			<?php endforeach; ?>
-			<p class="leer__satz" data-filter-leer hidden><?php esc_html_e( 'Für diese Auswahl steht gerade kein Termin im Kalender.', 'tamil' ); ?> <a class="textlink" href="<?php echo esc_url( tamil_seiten_url( 'kontakt', 'event-einreichen' ) ); ?>"><?php esc_html_e( 'Termin einreichen', 'tamil' ); ?></a></p>
+			<p class="leer__satz" data-filter-leer hidden><?php esc_html_e( 'Für diese Auswahl steht gerade kein Termin im Kalender.', 'tamil' ); ?> <a class="textlink" href="<?php echo esc_url( tamil_einreichen_url() ); ?>"><?php esc_html_e( 'Termin einreichen', 'tamil' ); ?></a></p>
 		</section>
 	<?php endif; ?>
 
