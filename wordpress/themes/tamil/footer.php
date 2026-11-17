@@ -2,7 +2,8 @@
 /**
  * Fuß jeder Seite (klar2 auf hellem Grund, die zwei dunklen Flächen bleiben Band und „Diese Woche“): Werbeplatz
  * „Footer“, Logo mit Unterzeile, Rubriken, Dienste, Social (nur mit Adresse), die Bildnachweise der Seite und die
- * Zeile mit Rechtlichem. Am Handy danach der feste Werbeplatz.
+ * Zeile mit Rechtlichem. Am Handy danach der feste Werbeplatz. Jeder Werbeplatz ist schon ein benannter Bereich des
+ * Plugins (<aside aria-label="Anzeige: …">); das Theme legt keinen zweiten darum.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -16,7 +17,7 @@ $tamil_unterzeil = '' !== tamil_opt( 'tagline' ) ? tamil_opt( 'tagline' ) : tami
 $tamil_footer_ad = function_exists( 'tamil_site_anzeige' ) ? tamil_site_anzeige( 'footer', false ) : '';
 if ( '' !== $tamil_footer_ad ) :
 	?>
-	<aside class="innen anzeige-unten" aria-label="<?php esc_attr_e( 'Anzeige über dem Fuß', 'tamil' ); ?>"><?php echo $tamil_footer_ad; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Werbeplatz aus dem Plugin, dort escapt ?></aside>
+	<div class="innen anzeige-unten"><?php echo $tamil_footer_ad; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Werbeplatz aus dem Plugin (benannter Bereich „Anzeige: Fuß“), dort escapt ?></div>
 <?php endif; ?>
 <footer class="fuss">
 	<div class="innen fuss__innen">
@@ -120,12 +121,7 @@ if ( '' !== $tamil_footer_ad ) :
 		</p>
 	</div>
 </footer>
-<?php
-$tamil_mobil_ad = function_exists( 'tamil_site_anzeige' ) ? tamil_site_anzeige( 'mobile', false ) : '';
-if ( '' !== $tamil_mobil_ad ) :
-	?>
-	<aside class="anzeige-mobil" aria-label="<?php esc_attr_e( 'Anzeige am unteren Rand', 'tamil' ); ?>"><?php echo $tamil_mobil_ad; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Werbeplatz aus dem Plugin, dort escapt ?></aside>
-<?php endif; ?>
+<?php tamil_anzeige( 'mobile' ); // Handy-Leiste: ein benannter Bereich des Plugins („Anzeige: Mobil“, id ad-mobile), ohne Rahmen ?>
 </div>
 <?php wp_footer(); ?>
 </body>

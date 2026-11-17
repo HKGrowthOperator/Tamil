@@ -22,10 +22,35 @@ function tamil_enqueue(): void {
 			'in_footer' => true,
 		)
 	);
+	wp_add_inline_style( 'tamil-theme', tamil_anzeigen_flaechen_css() );
 	// Gutenberg-Grundstile braucht das Theme nur für Blöcke im Inhalt; die globalen Stile aus theme.json bleiben.
 	wp_dequeue_style( 'classic-theme-styles' );
 }
 add_action( 'wp_enqueue_scripts', 'tamil_enqueue' );
+
+/**
+ * Seitenverhältnis der Werbeflächen für Banner-Code (Einstellungen, Advanced Ads) aus derselben Konfiguration wie
+ * Eigenanzeigen und gebuchte Anzeigen (Plugin: tamil_site_werbung_formate(), dort auch die Breite je Platz als Raster):
+ * Banner-Code steht so in derselben Fläche, und das Handy-Format wechselt an derselben Grenze. Ohne Plugin: nichts.
+ * Die Handy-Leiste (320 × 50) steht in theme.css.
+ */
+function tamil_anzeigen_flaechen_css(): string {
+	if ( ! function_exists( 'tamil_site_werbung_formate' ) ) {
+		return '';
+	}
+	$css = '';
+	foreach ( tamil_site_werbung_formate() as $platz => $f ) {
+		if ( 'mobile' === $platz ) {
+			continue;
+		}
+		$flaeche = '.ad.ad-' . sanitize_key( $platz ) . ' .flaeche';
+		$css    .= sprintf( '%1$s{aspect-ratio:%2$d/%3$d}', $flaeche, (int) $f['mobil'][0], (int) $f['mobil'][1] );
+		if ( (int) $f['ab'] && $f['desktop'] !== $f['mobil'] ) {
+			$css .= sprintf( '@media (min-width:%1$dpx){%2$s{aspect-ratio:%3$d/%4$d}}', (int) $f['ab'], $flaeche, (int) $f['desktop'][0], (int) $f['desktop'][1] );
+		}
+	}
+	return $css;
+}
 
 /**
  * Schrift vorladen: Libre Franklin, nur der lateinische Teil (eine Datei für alle Stärken).

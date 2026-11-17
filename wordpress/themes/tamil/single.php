@@ -133,7 +133,7 @@ while ( have_posts() ) :
 			<?php
 			if ( '' !== $tamil_rand ) :
 				?>
-				<aside class="artikel__rand" aria-label="<?php esc_attr_e( 'Anzeige neben dem Artikel', 'tamil' ); ?>"><?php echo $tamil_rand; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Werbeplatz aus dem Plugin, dort escapt ?></aside>
+				<div class="artikel__rand"><?php echo $tamil_rand; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Werbeplatz aus dem Plugin (benannter Bereich „Anzeige: Half Page“), dort escapt ?></div>
 			<?php endif; ?>
 		</div>
 	</article>

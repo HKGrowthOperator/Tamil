@@ -48,18 +48,30 @@
     });
   }
 
-  // Mobiler Werbeplatz: erst einblenden, wenn der erste Abschnitt (Aufmacher, Seitenkopf) aus dem Bild ist; schließen
+  // Handy-Leiste (Werbeplatz „mobile“ des Plugins, aside#ad-mobile; genau eine je Seite): erst einblenden, wenn der
+  // erste Abschnitt aus dem Bild unter dem Rubrikband verschwunden ist – der Aufmacher, sonst der erste Block in main –,
+  // spätestens nach einem Bildschirm. Früher hing das am ersten main > section/header/article: Im Artikel ist das der
+  // ganze Beitrag (am Handy über 4000 px), auf der Startseite „Diese Woche“ weit unten; die Leiste kam dort erst am Ende.
+  // Gemessen beim Scrollen (ein Mal je Bild), nach dem Einblenden hört das auf. Schließen blendet sie für die Seite aus.
   var sticky = $("#ad-mobile");
   if (sticky) {
-    var zeigen = function () { sticky.classList.add("ist-sichtbar"); };
-    var erster = $("main > section, main > header, main > article");
-    if (erster && "IntersectionObserver" in window) {
-      new IntersectionObserver(function (eintraege, beob) {
-        eintraege.forEach(function (e) { if (!e.isIntersecting && e.boundingClientRect.top < 0) { zeigen(); beob.disconnect(); } });
-      }).observe(erster);
-    } else {
-      zeigen();
-    }
+    var hauptteil = $("main");
+    var erster = $("main .aufmacher") || (hauptteil && Array.prototype.filter.call(hauptteil.children, function (el) { return el.offsetHeight > 40; })[0]);
+    var leiste = $(".band");
+    var geplant = false;
+    var pruefe = function () {
+      geplant = false;
+      var kante = leiste ? leiste.getBoundingClientRect().bottom : 0;
+      var weg = erster ? erster.getBoundingClientRect().bottom <= kante : false;
+      if (!weg && window.scrollY < window.innerHeight) return;
+      sticky.classList.add("ist-sichtbar");
+      window.removeEventListener("scroll", plane);
+      window.removeEventListener("resize", plane);
+    };
+    var plane = function () { if (!geplant) { geplant = true; requestAnimationFrame(pruefe); } };
+    window.addEventListener("scroll", plane, { passive: true });
+    window.addEventListener("resize", plane, { passive: true });
+    pruefe();
     var zu = $(".schliessen", sticky);
     zu && zu.addEventListener("click", function () { sticky.hidden = true; var site = $(".site"); site && site.classList.remove("has-sticky-ad"); });
   }
