@@ -7,7 +7,8 @@
  * Legt Beiträge an, die die Ränder der Bildkette treffen (idempotent über das Meta „bilder_testfall“):
  * ohne Beitragsbild, nur mit Bild im Text (≥ 600 px, mit figcaption), Titelkarte („Grafik: Tamil.de“,
  * bild_origin=karte), Band 3:1 als Beitragsbild, Termine ab heute in DE/AT/CH (mit Ende, Eintritt, Veranstalter),
- * ein Film mit Spieltagen ab heute, ein vergangener Kino-Beitrag und ein neuer Kino-Beitrag ohne Kinoliste.
+ * ein Film mit Spieltagen ab heute, ein vergangener Kino-Beitrag, ein neuer Kino-Beitrag ohne Kinoliste und zwei
+ * Beiträge, die das Bild eines anderen Beitrags zum selben Film übernehmen (Titelkarte, Kritik ohne Bild).
  * Die Testbilder sind einfarbige Flächen aus GD (keine fremden Fotos). Danach: node wordpress/dev/bilder_pflicht.mjs.
  */
 
@@ -252,5 +253,38 @@ bt_beitrag(
 		'post_date'     => wp_date( 'Y-m-d H:i:s', strtotime( '-5 days' ) ),
 	)
 );
+bt_beitrag(
+	'film-ramayana',
+	array(
+		'post_title'    => 'Testfall: Ramayana: Rise of a Legend im Kino',
+		'post_content'  => '<p>Kinoliste mit Titelkarte; das Bild kommt aus dem älteren Beitrag zum selben Film.</p>',
+		'post_category' => $kat( 'kino' ),
+	),
+	array(
+		'bild_origin' => 'karte',
+		'kino_fakten' => array(
+			'film'  => 'Ramayana: Rise of a Legend',
+			'kinos' => array(
+				array(
+					'kino'    => 'Testkino Nord',
+					'stadt'   => 'Hamburg',
+					'land'    => 'DE',
+					'termine' => array( $tag( 5, '19:00' ) ),
+				),
+			),
+		),
+	),
+	$karte
+);
+bt_beitrag(
+	'film-kritik',
+	array(
+		'post_title'    => 'Testfall: „Testfilm“ – Kritik',
+		'post_content'  => '<p>Kritik ohne eigenes Bild; das Bild kommt aus dem Beitrag mit der Kinoliste.</p>',
+		'post_category' => $kat( 'kino' ),
+		'post_date'     => wp_date( 'Y-m-d H:i:s', strtotime( '-2 days' ) ),
+	)
+);
 delete_transient( 'tamil_start_' . current_time( 'Ymd' ) );
+delete_transient( 'tamil_filmbilder' );
 WP_CLI::success( 'Testfälle angelegt (' . $heute . ').' );

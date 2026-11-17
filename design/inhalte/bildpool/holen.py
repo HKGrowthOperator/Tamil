@@ -262,15 +262,24 @@ function tamil_bildpool(): array {{
 }}
 
 /**
- * Ein Bild aus dem Pool einer Rubrik, fest nach Nummer (Beitrags-ID) gewählt, damit Nachbarn verschieden sind;
- * unbekannte Rubriken nehmen den allgemeinen Pool.
+ * Ein Bild aus dem Pool einer Rubrik, fest nach Nummer (Beitrags-ID) gewählt, damit Nachbarn verschieden sind.
+ * Ohne eigenen Pool: Kino und Entertainment nehmen den Pool „kino“ bzw. „events“, nie den allgemeinen (Stadtansichten,
+ * Kirchen, Rathäuser passen nicht zu Filmen und Bühnen); alle übrigen den allgemeinen Pool.
  *
  * @return array{{datei:string,w:int,h:int,alt:string,urheber:string,lizenz:string,lizenz_url:string,seite:string,fokus:string}}
  */
 function tamil_pool_bild( string $slug, int $n = 0 ): array {{
-	$pool  = tamil_bildpool();
-	$liste = $pool[ $slug ] ?? $pool['allgemein'];
-	return $liste[ abs( $n ) % count( $liste ) ];
+	$pool   = tamil_bildpool();
+	$ersatz = array(
+		'kino'          => array( 'kino', 'entertainment', 'events' ),
+		'entertainment' => array( 'entertainment', 'events', 'kino' ),
+	);
+	foreach ( $ersatz[ $slug ] ?? array( $slug ) as $versuch ) {{
+		if ( ! empty( $pool[ $versuch ] ) ) {{
+			return $pool[ $versuch ][ abs( $n ) % count( $pool[ $versuch ] ) ];
+		}}
+	}}
+	return $pool['allgemein'][ abs( $n ) % count( $pool['allgemein'] ) ];
 }}
 """
     (THEME / "inc" / "bildpool.php").write_text(php, encoding="utf-8")
