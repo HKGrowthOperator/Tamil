@@ -772,7 +772,15 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .wege li a { display: flex; align-items: center; min-height: 44px; border-bottom: 1px solid var(--linie); font-weight: 600; }
 .wege li a:hover { color: var(--rot); }
 .formular-wrap { margin-top: 16px; }
-.tafel.plaetze .masse { white-space: nowrap; }
+.tafel.plaetze .masse, .tafel.plaetze .preis { white-space: nowrap; }
+.kontakt__formular + .kontakt__formular { margin-top: 48px; }
+/* Tamil TV pausiert: Text und Symbolbild, am Desktop nebeneinander */
+.tv-pause { display: grid; gap: 24px; padding: 24px 0 8px; }
+.tv-pause .aktionen { margin-top: 8px; }
+@media (min-width: 1024px) {
+  .tv-pause { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 48px; align-items: center; padding-top: 40px; }
+}
+.kontakt__formulare > .block__notiz { margin-top: 24px; }
 .block--treffer .liste { margin-top: 0; }
 .seite__text .inhalt > p, .seite__text .inhalt > ul, .seite__text .inhalt > ol, .seite__text .inhalt > h2, .seite__text .inhalt > h3 { max-width: 34em; }
 
