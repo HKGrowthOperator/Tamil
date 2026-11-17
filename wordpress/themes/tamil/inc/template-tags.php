@@ -39,22 +39,105 @@ function tamil_text_bereinigen( string $text ): string {
 }
 
 /**
- * Teilen-Feld des alten WhatsApp-Plugins aus HTML entfernen (steht im Altbestand am Ende fast jedes Beitrags und
- * mancher Seiten: <div class="share-to-whatsapp-wrapper">…<div class="clear"></div></div>).
+ * Teilen-Feld des alten WhatsApp-Plugins aus HTML entfernen. Es steht im Altbestand am Ende fast jedes Beitrags und
+ * mancher Seiten, mit einfachen oder doppelten Anführungszeichen:
+ * <div class='share-to-whatsapp-wrapper'><div class='share-on-whsp'>Share on: </div><p><a … class='whatsapp-button
+ * whatsapp-share'>WhatsApp</a></p><div class='clear '></div></div>. Der Block wird samt allen inneren div bis zu
+ * seinem eigenen Ende entfernt (gezählt, nicht per Muster bis zum ersten </div>); Reste ohne Hülle ebenso.
  */
 function tamil_altreste_entfernen( string $html ): string {
-	if ( ! str_contains( $html, 'share-to-whatsapp' ) && ! str_contains( $html, 'share-on-whsp' ) && ! str_contains( $html, 'whatsapp-button' ) ) {
+	if ( ! preg_match( '/share-to-whatsapp|share-on-whsp|whatsapp-button/i', $html ) ) {
 		return $html;
 	}
-	return (string) preg_replace(
+	$html = tamil_div_entfernen( $html, 'share-to-whatsapp-wrapper' );
+	$html = tamil_div_entfernen( $html, 'share-on-whsp' );
+	$ohne = preg_replace(
 		array(
-			'#<div[^>]*class="[^"]*share-to-whatsapp-wrapper[^"]*"[^>]*>.*?<div[^>]*class="clear\s*"[^>]*>\s*</div>\s*</div>#is',
-			'#<div[^>]*class="[^"]*share-on-whsp[^"]*"[^>]*>.*?</div>#is',
-			'#(?:<p>\s*)?<a[^>]*class="[^"]*whatsapp-button[^"]*"[^>]*>.*?</a>(?:\s*</p>)?#is',
+			'#(?:<p>\s*)?<a\b[^>]*class\s*=\s*["\'][^"\']*whatsapp-button[^"\']*["\'][^>]*>.*?</a>(?:\s*</p>)?#is',
+			'#<div\b[^>]*class\s*=\s*["\']clear\s*["\'][^>]*>\s*</div>#i',
 		),
 		'',
 		$html
 	);
+	return null === $ohne ? $html : $ohne;
+}
+
+/**
+ * Jedes <div> mit der Klasse $klasse samt Inhalt bis zu seinem passenden </div> entfernen (verschachtelte div
+ * werden gezählt). Ohne passendes Ende bleibt der Rest stehen.
+ */
+function tamil_div_entfernen( string $html, string $klasse ): string {
+	$muster = '/<div\b[^>]*\bclass\s*=\s*(["\'])[^"\']*\b' . preg_quote( $klasse, '/' ) . '\b[^"\']*\1[^>]*>/i';
+	$runden = 0;
+	while ( $runden++ < 50 && preg_match( $muster, $html, $m, PREG_OFFSET_CAPTURE ) ) {
+		$anfang = (int) $m[0][1];
+		$pos    = $anfang + strlen( $m[0][0] );
+		$tiefe  = 1;
+		while ( $tiefe > 0 && preg_match( '#<(/?)div\b[^>]*>#i', $html, $t, PREG_OFFSET_CAPTURE, $pos ) ) {
+			$tiefe += '/' === $t[1][0] ? -1 : 1;
+			$pos    = (int) $t[0][1] + strlen( $t[0][0] );
+		}
+		if ( $tiefe > 0 ) {
+			break;
+		}
+		$html = substr( $html, 0, $anfang ) . substr( $html, $pos );
+	}
+	return $html;
+}
+
+/**
+ * Bilder der alten Adresse www.tamil.de/wp-content/uploads/… im Text: Liegt die Datei in den Uploads dieser Website,
+ * zeigt die Adresse dorthin; sonst fallen das Bild und eine Hülle (figure, Link auf die Datei) weg, statt ein kaputtes
+ * Bild zu zeigen. srcset mit alten Adressen entfällt (WordPress rechnet es für lokale Bilder neu).
+ */
+function tamil_alte_uploads( string $html ): string {
+	if ( ! preg_match( '#(?:https?:)?//(?:www\.)?tamil\.de/wp-content/uploads/#i', $html ) ) {
+		return $html;
+	}
+	$uploads = wp_get_upload_dir();
+	$basis   = trailingslashit( (string) $uploads['basedir'] );
+	$url     = trailingslashit( (string) $uploads['baseurl'] );
+	$alt     = '~(?:https?:)?//(?:www\.)?tamil\.de/wp-content/uploads/([^"\'\s?#>]+)~i';
+	$da      = static function ( string $pfad ) use ( $basis ): bool {
+		$pfad = rawurldecode( $pfad );
+		return ! str_contains( $pfad, '..' ) && is_file( $basis . $pfad );
+	};
+	$roh     = $html;
+	// Bilder (mit Hülle) ohne lokale Datei entfernen
+	$html = preg_replace_callback(
+		'#(?:<figure\b[^>]*>\s*)?(?:<a\b[^>]*>\s*)?<img\b[^>]*>(?:\s*</a>)?(?:\s*<figcaption\b.*?</figcaption>)?(?:\s*</figure>)?#is',
+		static function ( array $m ) use ( $alt, $da ): string {
+			if ( ! preg_match( '#<img\b[^>]*\ssrc\s*=\s*["\']([^"\']+)["\']#i', $m[0], $src ) || ! preg_match( $alt, $src[1], $pfad ) ) {
+				return $m[0];
+			}
+			if ( $da( $pfad[1] ) ) {
+				return (string) preg_replace( '#\ssrcset\s*=\s*(["\'])[^"\']*tamil\.de/wp-content/uploads/[^"\']*\1#i', '', $m[0] );
+			}
+			return '';
+		},
+		$html
+	);
+	if ( null === $html ) {
+		return $roh;
+	}
+	// Links auf alte Dateien: mit lokaler Datei dorthin, sonst bleibt nur der Linktext
+	$html = preg_replace_callback(
+		'#<a\b([^>]*)\shref\s*=\s*(["\'])([^"\']+)\2([^>]*)>(.*?)</a>#is',
+		static function ( array $m ) use ( $alt, $da, $url ): string {
+			if ( ! preg_match( $alt, $m[3], $pfad ) ) {
+				return $m[0];
+			}
+			return $da( $pfad[1] ) ? '<a' . $m[1] . ' href="' . esc_url( $url . $pfad[1] ) . '"' . $m[4] . '>' . $m[5] . '</a>' : $m[5];
+		},
+		$html
+	);
+	// übrige Adressen (etwa in Attributen) auf die eigenen Uploads, wenn es die Datei gibt
+	$html = null === $html ? null : preg_replace_callback(
+		$alt,
+		static fn( array $m ): string => $da( $m[1] ) ? $url . $m[1] : $m[0],
+		$html
+	);
+	return null === $html ? $roh : $html;
 }
 
 /**
