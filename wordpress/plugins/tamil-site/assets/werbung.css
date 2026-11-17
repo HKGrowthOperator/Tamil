@@ -9,6 +9,8 @@
 .wb-formular input[type="text"], .wb-formular input[type="email"], .wb-formular input[type="url"],
 .wb-formular input[type="tel"], .wb-formular textarea, .wb-formular select { display: block; width: 100%; max-width: 32em; box-sizing: border-box; }
 .wb-fehler { border-left: 4px solid currentColor; padding-left: 1em; }
+.wb-feldfehler { display: block; margin-top: 4px; font-weight: 600; color: var(--rot, #b5282a); }
+.wb-formular [aria-invalid="true"] { border: 2px solid var(--rot, #b5282a); }
 .wb-platzhalter { font-style: italic; }
 .wb-preise .wb-platzhalter { white-space: nowrap; }
 .wb-zahlung-aus strong { font-weight: 600; }

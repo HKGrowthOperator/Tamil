@@ -10,19 +10,17 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Die Werbeplätze des Designs (Nummern wie im Angebot; Billboard ist die In-Article-Fläche der Startseite).
+ * Die Werbeplätze mit Beschriftung für die Einstellungen: Name, Ort und Maße aus tamil_site_werbung_formate() (eine
+ * Quelle für Tabelle, Einstellungen und Darstellung).
  *
  * @return array<string,string>
  */
 function tamil_site_werbeplaetze(): array {
-	return array(
-		'leaderboard' => __( '01 Leaderboard unter der Navigation (728×90 / 320×50)', 'tamil-site' ),
-		'sidebar'     => __( '02 Half Page in der Seitenspalte (300×600)', 'tamil-site' ),
-		'inarticle'   => __( '03 Im Artikel nach dem zweiten Absatz (728×90 / 300×250)', 'tamil-site' ),
-		'billboard'   => __( '03 Startseite zwischen den Rubriken (970×250 / 300×250)', 'tamil-site' ),
-		'footer'      => __( '04 Über dem Footer (728×90 / 320×100)', 'tamil-site' ),
-		'mobile'      => __( '05 Mobil, fixiert am unteren Rand (320×50)', 'tamil-site' ),
-	);
+	$plaetze = array();
+	foreach ( tamil_site_werbung_formate() as $platz => $f ) {
+		$plaetze[ $platz ] = sprintf( '%1$s: %2$s (%3$s)', $f['name'], $f['wo'], tamil_site_werbung_masse_text( $platz ) );
+	}
+	return $plaetze;
 }
 
 /**
@@ -84,10 +82,11 @@ function tamil_site_ico( string $name, string $cls = 'ico ico-sm' ): string {
 
 /**
  * Mitgelieferte Standardbilder der Eigenanzeigen (assets/img/anzeigen/, Herkunft und Lizenz in NACHWEIS.md). Je Bild:
- * Datei in voller Breite (höchstens 1200 px) und in 600 px, Maße, Alternativtext, Nachweis für den Fuß der Seite,
+ * Datei in voller Breite (höchstens 1200 px) und in 600 px, Maße, Alternativtext, Nachweis für den Fuß der Seite
+ * („zugeschnitten“: das Banner zeigt immer einen Ausschnitt), Dateiseite und Lizenz-URL (für verlinkte Nachweise),
  * Bildausschnitt (object-position) und die Seite, auf der die Schrift steht (links oder rechts im Bild).
  *
- * @return array<string,array{datei:string,klein:string,w:int,h:int,alt:string,nachweis:string,fokus:string,seite:string}>
+ * @return array<string,array{datei:string,klein:string,w:int,h:int,alt:string,nachweis:string,quelle:string,lizenz:string,fokus:string,seite:string}>
  */
 function tamil_site_eigenanzeige_standardbilder(): array {
 	$bilder = array(
@@ -98,6 +97,8 @@ function tamil_site_eigenanzeige_standardbilder(): array {
 			'h'        => 359,
 			'alt'      => __( 'A.R. Rahman singt mit Mikrofon auf der Bühne eines Konzerts der Reihe „Live mit dir!“', 'tamil-site' ),
 			'nachweis' => __( 'Foto: Archiv Tamil.de', 'tamil-site' ),
+			'quelle'   => '',
+			'lizenz'   => '',
 			'fokus'    => '45% 30%',
 			'seite'    => 'rechts',
 		),
@@ -107,7 +108,9 @@ function tamil_site_eigenanzeige_standardbilder(): array {
 			'w'        => 1200,
 			'h'        => 930,
 			'alt'      => __( 'Tempelfest am Sri-Kamadchi-Ampal-Tempel in Hamm: Besucher mit bunten Schirmen vor Tempelturm und Festwagen (Archivbild)', 'tamil-site' ),
-			'nachweis' => __( 'Foto: Rainer Halama / Wikimedia Commons, CC BY-SA 2.5', 'tamil-site' ),
+			'nachweis' => __( 'Foto: Rainer Halama / Wikimedia Commons, CC BY-SA 2.5, zugeschnitten', 'tamil-site' ),
+			'quelle'   => 'https://commons.wikimedia.org/wiki/File:Hamm_Tempelfest_2118.jpg',
+			'lizenz'   => 'https://creativecommons.org/licenses/by-sa/2.5/',
 			'fokus'    => '30% 62%',
 			'seite'    => 'links',
 		),
@@ -117,7 +120,9 @@ function tamil_site_eigenanzeige_standardbilder(): array {
 			'w'        => 1200,
 			'h'        => 900,
 			'alt'      => __( 'Fußgängerzone mit Geschäften und Passanten, die Gorkistraße in Berlin-Tegel (Symbolbild)', 'tamil-site' ),
-			'nachweis' => __( 'Foto: Fridolin freudenfett / Wikimedia Commons, CC BY-SA 4.0', 'tamil-site' ),
+			'nachweis' => __( 'Foto: Fridolin freudenfett / Wikimedia Commons, CC BY-SA 4.0, zugeschnitten', 'tamil-site' ),
+			'quelle'   => 'https://commons.wikimedia.org/wiki/File:Tegel_Gorkistra%C3%9Fe_Fu%C3%9Fg%C3%A4ngerzone-001.JPG',
+			'lizenz'   => 'https://creativecommons.org/licenses/by-sa/4.0/',
 			'fokus'    => '50% 62%',
 			'seite'    => 'links',
 		),
@@ -127,7 +132,9 @@ function tamil_site_eigenanzeige_standardbilder(): array {
 			'w'        => 1200,
 			'h'        => 800,
 			'alt'      => __( 'Hände mit einem Smartphone und einem Kaffeebecher (Symbolbild)', 'tamil-site' ),
-			'nachweis' => __( 'Foto: Pixel.la / Wikimedia Commons, CC0', 'tamil-site' ),
+			'nachweis' => __( 'Foto: Pixel.la / Wikimedia Commons, CC0, zugeschnitten', 'tamil-site' ),
+			'quelle'   => 'https://commons.wikimedia.org/wiki/File:Hands-coffee-smartphone-technology_(23698591814).jpg',
+			'lizenz'   => 'https://creativecommons.org/publicdomain/zero/1.0/',
 			'fokus'    => '40% 45%',
 			'seite'    => 'rechts',
 		),
@@ -153,7 +160,7 @@ function tamil_site_seite_oder( string $slug, string $ersatz ): string {
  * Trennpunkte) und welches Bild. Eine Vorlage ohne Ziel (url leer) wird nicht gezeigt: „Live mit dir!“ braucht die
  * Seite „production“, sonst führte die Anzeige ins Leere.
  *
- * @return array<string,array{url:string,label:string,titel:string,satz:string,link:string,neu:bool,bild:string}>
+ * @return array<string,array{url:string,titel:string,satz:string,link:string,neu:bool,bild:string}>
  */
 function tamil_site_eigenanzeige_vorlagen(): array {
 	$wa      = tamil_site_settings()['whatsapp_url'];
@@ -163,7 +170,6 @@ function tamil_site_eigenanzeige_vorlagen(): array {
 	return array(
 		'production'     => array(
 			'url'   => tamil_site_seite_oder( 'production', '' ),
-			'label' => __( 'Tamil.de Production: Konzertreihe „Live mit dir!“', 'tamil-site' ),
 			'titel' => __( 'Live mit dir!', 'tamil-site' ),
 			'satz'  => __( 'A.R. Rahman, Ilaiyaraaja, Anirudh und Santhosh Narayanan standen oder stehen mit Tamil.de Production auf deutschen Bühnen.', 'tamil-site' ),
 			'link'  => __( 'Zur Konzertreihe', 'tamil-site' ),
@@ -172,7 +178,6 @@ function tamil_site_eigenanzeige_vorlagen(): array {
 		),
 		'event'          => array(
 			'url'   => '' !== $einr ? $einr : $kontakt . '#event-einreichen',
-			'label' => __( 'Termin bei Tamil.de melden', 'tamil-site' ),
 			'titel' => __( 'Dein Fest im Kalender.', 'tamil-site' ),
 			'satz'  => __( 'Tempelfest, Konzert, Turnier: kostenlos melden, die Redaktion trägt es ein.', 'tamil-site' ),
 			'link'  => __( 'Termin melden', 'tamil-site' ),
@@ -181,7 +186,6 @@ function tamil_site_eigenanzeige_vorlagen(): array {
 		),
 		'werben'         => array(
 			'url'   => '' !== $werben ? $werben : $kontakt . '#werben',
-			'label' => __( 'Werben auf Tamil.de: Werbeplätze und Mediadaten', 'tamil-site' ),
 			'titel' => __( 'Werben auf Tamil.de', 'tamil-site' ),
 			'satz'  => __( 'Eine Community in drei Ländern, sechs feste Werbeplätze. Mediadaten gibt es auf Anfrage.', 'tamil-site' ),
 			'link'  => __( 'Werbeplätze ansehen', 'tamil-site' ),
@@ -190,7 +194,6 @@ function tamil_site_eigenanzeige_vorlagen(): array {
 		),
 		'whatsapp-klein' => array(
 			'url'   => $wa,
-			'label' => __( 'Tamil.de WhatsApp-Kanal öffnen', 'tamil-site' ),
 			'titel' => __( 'Tamil.de auf WhatsApp', 'tamil-site' ),
 			'satz'  => '',
 			'link'  => __( 'Abonnieren', 'tamil-site' ),
@@ -199,7 +202,6 @@ function tamil_site_eigenanzeige_vorlagen(): array {
 		),
 		'whatsapp'       => array(
 			'url'   => $wa,
-			'label' => __( 'Tamil.de WhatsApp-Kanal öffnen', 'tamil-site' ),
 			'titel' => __( 'Kinostarts und Termine direkt aufs Handy.', 'tamil-site' ),
 			'satz'  => __( 'Der Kanal von Tamil.de auf WhatsApp. Keine Gruppe, eure Nummern bleiben unsichtbar.', 'tamil-site' ),
 			'link'  => __( 'Kanal öffnen', 'tamil-site' ),
@@ -213,7 +215,7 @@ function tamil_site_eigenanzeige_vorlagen(): array {
  * Bild einer Eigenanzeige: das in den Einstellungen gewählte Bild aus der Mediathek, sonst das mitgelieferte
  * Standardbild. Null, wenn keins von beiden da ist – dann wird die Anzeige nicht gezeigt (jede Anzeige hat ein Bild).
  *
- * @return array{src:string,srcset:string,w:int,h:int,alt:string,nachweis:string,fokus:string,seite:string}|null
+ * @return array{src:string,srcset:string,w:int,h:int,alt:string,nachweis:string,quelle:string,lizenz:string,fokus:string,seite:string}|null
  */
 function tamil_site_eigenanzeige_bild( string $bild ): ?array {
 	$standard = tamil_site_eigenanzeige_standardbilder()[ $bild ] ?? null;
@@ -230,6 +232,8 @@ function tamil_site_eigenanzeige_bild( string $bild ): ?array {
 				'h'        => (int) $src[2],
 				'alt'      => $alt,
 				'nachweis' => trim( (string) wp_get_attachment_caption( $id ) ),
+				'quelle'   => '',
+				'lizenz'   => '',
 				'fokus'    => '50% 50%',
 				'seite'    => $standard['seite'] ?? 'links',
 			);
@@ -250,24 +254,62 @@ function tamil_site_eigenanzeige_bild( string $bild ): ?array {
 		'h'        => (int) $standard['h'],
 		'alt'      => (string) $standard['alt'],
 		'nachweis' => (string) $standard['nachweis'],
+		'quelle'   => (string) ( $standard['quelle'] ?? '' ),
+		'lizenz'   => (string) ( $standard['lizenz'] ?? '' ),
 		'fokus'    => (string) $standard['fokus'],
 		'seite'    => (string) $standard['seite'],
 	);
 }
 
 /**
- * Bildgrößen je Werbeplatz für sizes (Breite der Fläche bei den Formaten aus anzeigen.css).
+ * Bildgrößen je Werbeplatz für sizes, aus den Formaten: ab der Grenze die Desktop-Breite, am Handy die Spaltenbreite,
+ * dazwischen die Handy-Breite.
  */
 function tamil_site_eigenanzeige_sizes( string $platz ): string {
-	$sizes = array(
-		'leaderboard' => '(min-width: 768px) 728px, 100vw',
-		'footer'      => '(min-width: 768px) 728px, 100vw',
-		'billboard'   => '(min-width: 1024px) 970px, (min-width: 600px) 100vw, 336px',
-		'inarticle'   => '(min-width: 1024px) 728px, 336px',
-		'sidebar'     => '300px',
-		'mobile'      => '320px',
-	);
-	return $sizes[ $platz ] ?? '(min-width: 768px) 728px, 100vw';
+	$f = tamil_site_werbung_formate()[ '' !== $platz ? $platz : 'leaderboard' ] ?? null;
+	if ( ! $f ) {
+		return '100vw';
+	}
+	if ( 'mobile' === $platz ) {
+		return (int) $f['mobil'][0] . 'px';
+	}
+	$sizes = array();
+	if ( (int) $f['ab'] && tamil_site_werbung_zwei_bilder( $platz ) ) {
+		$sizes[] = sprintf( '(min-width: %1$dpx) %2$dpx', (int) $f['ab'], (int) $f['desktop'][0] );
+	}
+	$sizes[] = '(max-width: 599px) 100vw';
+	$sizes[] = (int) $f['mobil'][0] . 'px';
+	return implode( ', ', $sizes );
+}
+
+/**
+ * Größen der Werbeflächen als CSS, erzeugt aus tamil_site_werbung_formate() (Prüfung 17.11., P1-8: Angabe und
+ * Darstellung aus derselben Konfiguration). Gilt für Eigenanzeigen (.anzeige-wrap) und gebuchte Anzeigen
+ * (.wb-anzeige); fremdes Banner-HTML behält die festen Flächen des Themes. Breite höchstens das Format, am Handy
+ * (unter 600 px) die Spaltenbreite bis 20 % darüber; die Höhe folgt dem Seitenverhältnis.
+ */
+function tamil_site_anzeigen_formate_css(): string {
+	$css   = '';
+	$handy = '';
+	foreach ( tamil_site_werbung_formate() as $platz => $f ) {
+		$p           = '.ad.ad-' . sanitize_key( $platz );
+		$flaeche     = $p . ' .flaeche.anzeige-wrap,' . $p . ' .flaeche.wb-anzeige';
+		[ $mw, $mh ] = array_map( 'intval', $f['mobil'] );
+		[ $dw, $dh ] = array_map( 'intval', $f['desktop'] );
+		if ( 'mobile' === $platz ) {
+			// Handy-Leiste: nur die Eigenanzeige (Raster aus anzeigen.css); gebuchte behalten die Leiste des Themes.
+			$css .= sprintf( '%1$s .flaeche.anzeige-wrap{width:100%%;max-width:%2$dpx;height:auto;aspect-ratio:%2$d/%3$d}', $p, $mw, $mh );
+			continue;
+		}
+		$css   .= sprintf( '%1$s{grid-template-columns:minmax(0,%2$dpx)}', $p, $mw );
+		$css   .= sprintf( '%1$s{width:100%%;max-width:100%%;height:auto;aspect-ratio:%2$d/%3$d}', $flaeche, $mw, $mh );
+		$handy .= sprintf( '%1$s{grid-template-columns:minmax(0,%2$dpx)}', $p, (int) round( $mw * 1.2 ) );
+		if ( (int) $f['ab'] && tamil_site_werbung_zwei_bilder( $platz ) ) {
+			$css .= sprintf( '@media (min-width:%1$dpx){%2$s{grid-template-columns:minmax(0,%3$dpx)}%4$s{aspect-ratio:%3$d/%5$d}}', (int) $f['ab'], $p, $dw, $flaeche, $dh );
+		}
+	}
+	$css .= '.ad .flaeche.wb-anzeige a,.ad .flaeche.wb-anzeige picture{display:block}.ad .flaeche.wb-anzeige img{width:100%;height:auto}';
+	return $css . '@media (max-width:599px){' . $handy . '}';
 }
 
 /**
@@ -292,15 +334,20 @@ function tamil_site_eigenanzeige_html( string $vorlage, string $platz = '' ): st
 		// Ohne das Theme Tamil.de sammelt kein Fuß die Bildnachweise: dann steht der Nachweis klein im Banner.
 		$nachweis = '<span class="anzeige__nachweis">' . esc_html( $bild['nachweis'] ) . '</span>';
 	}
+	// Kein aria-label: Der Name des Links kommt aus dem sichtbaren Text (Titel, Satz, Linktext), danach der
+	// Alternativtext des Bilds (axe label-content-name-mismatch, WCAG 2.5.3). Das Bild steht darum hinter dem Text.
 	return sprintf(
-		'<a class="flaeche anzeige-wrap" href="%1$s"%2$s aria-label="%3$s"><div class="anzeige a-%4$s anzeige--bild anzeige--%5$s">'
-		. '<img class="anzeige__bild" src="%6$s" srcset="%7$s" sizes="%8$s" width="%9$d" height="%10$d" alt="%11$s" loading="lazy" decoding="async" style="object-position: %12$s">'
-		. '<span class="text"><span class="claim">%13$s</span>%14$s<span class="cta">%15$s</span></span>%16$s</div></a>',
+		'<a class="flaeche anzeige-wrap" href="%1$s"%2$s><div class="anzeige a-%3$s anzeige--bild anzeige--%4$s">'
+		. '<span class="text"><span class="claim">%5$s</span>%6$s<span class="cta">%7$s</span></span>'
+		. '<img class="anzeige__bild" src="%8$s" srcset="%9$s" sizes="%10$s" width="%11$d" height="%12$d" alt="%13$s" loading="lazy" decoding="async" style="object-position: %14$s">'
+		. '%15$s</div></a>',
 		esc_url( $v['url'] ),
 		$v['neu'] ? ' target="_blank" rel="noopener"' : '',
-		esc_attr( $v['label'] ),
 		esc_attr( $vorlage ),
 		'rechts' === $bild['seite'] ? 'rechts' : 'links',
+		esc_html( $v['titel'] ),
+		'' !== $v['satz'] ? '<span class="sub">' . esc_html( $v['satz'] ) . '</span>' : '',
+		esc_html( $v['link'] ),
 		esc_url( $bild['src'] ),
 		esc_attr( $bild['srcset'] ),
 		esc_attr( tamil_site_eigenanzeige_sizes( $platz ) ),
@@ -308,11 +355,33 @@ function tamil_site_eigenanzeige_html( string $vorlage, string $platz = '' ): st
 		(int) $bild['h'],
 		esc_attr( $bild['alt'] ),
 		esc_attr( (string) preg_replace( '/[^0-9% .a-z]/', '', $bild['fokus'] ) ),
-		esc_html( $v['titel'] ),
-		'' !== $v['satz'] ? '<span class="sub">' . esc_html( $v['satz'] ) . '</span>' : '',
-		esc_html( $v['link'] ),
 		$nachweis
 	);
+}
+
+/**
+ * Einen Bildnachweis an das Theme melden: als Text an tamil_nachweise() (Liste im Fuß) und mit Dateiseite und
+ * Lizenz-URL an die Aktion tamil_site_bildnachweis (für verlinkte Nachweise, Prüfung 17.11. P0-1 im Theme).
+ *
+ * @param string $text   Nachweis, z. B. „Foto: … / Wikimedia Commons, CC BY-SA 4.0, zugeschnitten“.
+ * @param string $quelle Dateiseite (leer, wenn unbekannt).
+ * @param string $lizenz Lizenz-URL (leer, wenn unbekannt).
+ */
+function tamil_site_nachweis_melden( string $text, string $quelle = '', string $lizenz = '' ): void {
+	if ( '' === trim( $text ) ) {
+		return;
+	}
+	if ( function_exists( 'tamil_nachweise' ) ) {
+		tamil_nachweise( $text );
+	}
+	/**
+	 * Bildnachweis einer vom Plugin gezeigten Abbildung (Eigenanzeige, Symbolbild im Verzeichnis).
+	 *
+	 * @param string $text   Nachweis als Text.
+	 * @param string $quelle Dateiseite (leer, wenn unbekannt).
+	 * @param string $lizenz Lizenz-URL (leer, wenn unbekannt).
+	 */
+	do_action( 'tamil_site_bildnachweis', $text, $quelle, $lizenz );
 }
 
 /**
@@ -321,12 +390,12 @@ function tamil_site_eigenanzeige_html( string $vorlage, string $platz = '' ): st
  */
 function tamil_site_eigenanzeige_nachweis_merken( string $vorlage ): void {
 	$v = tamil_site_eigenanzeige_vorlagen()[ $vorlage ] ?? null;
-	if ( ! function_exists( 'tamil_nachweise' ) || ! $v || '' === $v['url'] ) {
+	if ( ! $v || '' === $v['url'] ) {
 		return;
 	}
 	$bild = tamil_site_eigenanzeige_bild( $v['bild'] );
-	if ( $bild && '' !== $bild['nachweis'] ) {
-		tamil_nachweise( $bild['nachweis'] );
+	if ( $bild ) {
+		tamil_site_nachweis_melden( $bild['nachweis'], $bild['quelle'], $bild['lizenz'] );
 	}
 }
 
@@ -458,14 +527,18 @@ function tamil_site_anzeige( string $platz, bool $ausgeben = true ): string {
 		tamil_site_eigenanzeige_nachweis_merken( $vorlage );
 	}
 	$mobil = 'mobile' === $platz;
-	$out   = sprintf(
-		'<div class="ad ad-%1$s%2$s"%3$s data-platz="%1$s"><span class="ad-label">%4$s</span>%5$s%6$s</div>',
+	// Ein eigener, je Platz anders benannter Bereich (aside): Werbung steht auch außerhalb von main und footer (Fuß,
+	// Handy-Leiste) in einem Landmark (axe region) und lässt sich mit dem Screenreader überspringen.
+	$out = sprintf(
+		'<aside class="ad ad-%1$s%2$s"%3$s data-platz="%1$s" aria-label="%7$s"><span class="ad-label">%4$s</span>%5$s%6$s</aside>',
 		esc_attr( $platz ),
 		$eigen ? ' ad-anzeige ad-bild' : '',
 		$mobil ? ' id="ad-mobile"' : '',
 		esc_html__( 'Anzeige', 'tamil-site' ),
 		$inhalt, // Banner-Code aus den Einstellungen (nur Administratoren), Advanced Ads oder die Vorlagen oben.
-		$mobil ? '<button type="button" class="schliessen" aria-label="' . esc_attr__( 'Werbung schließen', 'tamil-site' ) . '">×</button>' : ''
+		$mobil ? '<button type="button" class="schliessen" aria-label="' . esc_attr__( 'Werbung schließen', 'tamil-site' ) . '">×</button>' : '',
+		/* translators: %s: Name des Werbeplatzes */
+		esc_attr( sprintf( __( 'Anzeige: %s', 'tamil-site' ), tamil_site_werbung_formate()[ $platz ]['name'] ?? $platz ) )
 	);
 	if ( $ausgeben ) {
 		echo $out; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -501,6 +574,7 @@ add_action( 'get_footer', 'tamil_site_anzeige_nachweise_vormerken' );
 function tamil_site_anzeigen_css(): void {
 	$css = 'assets/anzeigen.css';
 	wp_enqueue_style( 'tamil-site-anzeigen', TAMIL_SITE_URL . $css, array(), TAMIL_SITE_VERSION . '.' . filemtime( TAMIL_SITE_DIR . $css ) );
+	wp_add_inline_style( 'tamil-site-anzeigen', tamil_site_anzeigen_formate_css() );
 }
 add_action( 'wp_enqueue_scripts', 'tamil_site_anzeigen_css', 20 );
 

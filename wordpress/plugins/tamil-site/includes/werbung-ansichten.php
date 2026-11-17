@@ -22,15 +22,10 @@ function tamil_site_werbung_html_versteckt( array $weitere ): string {
 }
 
 /**
- * Formatbeschreibung, z. B. „728 × 90 (Desktop) / 320 × 50 (Handy)“.
+ * Formatbeschreibung aus der Konfiguration, z. B. „728 × 90, unter 768 px Breite 320 × 100“.
  */
 function tamil_site_werbung_html_masse( string $platz ): string {
-	$f = tamil_site_werbung_formate()[ $platz ];
-	if ( ! tamil_site_werbung_zwei_bilder( $platz ) ) {
-		return sprintf( '%d × %d', $f['desktop'][0], $f['desktop'][1] );
-	}
-	/* translators: 1–4: Pixelmaße */
-	return sprintf( __( '%1$d × %2$d (Desktop) / %3$d × %4$d (Handy)', 'tamil-site' ), $f['desktop'][0], $f['desktop'][1], $f['mobil'][0], $f['mobil'][1] );
+	return tamil_site_werbung_masse_text( $platz );
 }
 
 function tamil_site_werbung_datum_text( string $tag ): string {
@@ -53,9 +48,10 @@ function tamil_site_werbung_html_zahlung_aus(): string {
  * Ohne Preis von KBS steht „auf Anfrage“; erfunden wird kein Preis.
  */
 function tamil_site_werbung_html_angebote(): string {
-	$a      = tamil_site_werbung_angebote();
-	$zeilen = '';
-	$fehlt  = false;
+	$a         = tamil_site_werbung_angebote();
+	$zeilen    = array();
+	$fehlt     = false;
+	$mit_preis = false;
 	foreach ( tamil_site_werbung_formate() as $platz => $f ) {
 		if ( empty( $a['plaetze'][ $platz ]['aktiv'] ) ) {
 			continue;
@@ -65,6 +61,7 @@ function tamil_site_werbung_html_angebote(): string {
 		foreach ( $a['laufzeiten'] as $tage ) {
 			$keiner = $keiner && ! tamil_site_werbung_preis( $platz, $tage );
 		}
+		$mit_preis = $mit_preis || ! $keiner;
 		foreach ( $keiner ? array() : $a['laufzeiten'] as $tage ) {
 			$cent  = tamil_site_werbung_preis( $platz, $tage );
 			$fehlt = $fehlt || ! $cent;
@@ -76,15 +73,15 @@ function tamil_site_werbung_html_angebote(): string {
 			$fehlt  = true;
 			$preise = '<li><span class="wb-platzhalter">' . esc_html__( 'auf Anfrage', 'tamil-site' ) . '</span></li>';
 		}
-		$buchbar = array_filter(
+		$buchbar  = array_filter(
 			$a['laufzeiten'],
 			static function ( $tage ) use ( $platz ) {
 				return tamil_site_werbung_buchbar( $platz, $tage );
 			}
 		);
-		$frei    = $buchbar ? tamil_site_werbung_freie_starts( $platz, min( $buchbar ), 1 ) : array();
-		$termin  = $frei ? tamil_site_werbung_datum_text( $frei[0] ) : __( 'auf Anfrage', 'tamil-site' );
-		$link    = $buchbar ? '<a class="wb-knopf" href="' . esc_url(
+		$frei     = $buchbar ? tamil_site_werbung_freie_starts( $platz, min( $buchbar ), 1 ) : array();
+		$termin   = $frei ? tamil_site_werbung_datum_text( $frei[0] ) : __( 'auf Anfrage', 'tamil-site' );
+		$link     = $buchbar ? '<a class="wb-knopf" href="' . esc_url(
 			add_query_arg(
 				array(
 					'wb'    => 'buchen',
@@ -93,27 +90,39 @@ function tamil_site_werbung_html_angebote(): string {
 				tamil_site_werbung_seite_url()
 			)
 		) . '">' . esc_html__( 'Buchen', 'tamil-site' ) . '</a>' : '';
-		$zeilen .= sprintf(
-			'<tr><th scope="row">%1$s</th><td data-label="%7$s">%2$s</td><td data-label="%8$s">%3$s</td><td data-label="%9$s"><ul class="wb-preise">%4$s</ul></td><td data-label="%10$s">%5$s</td><td>%6$s</td></tr>',
-			esc_html( $f['name'] ),
-			esc_html( $f['wo'] ),
-			esc_html( tamil_site_werbung_html_masse( $platz ) ),
-			$preise,
-			esc_html( $termin ),
+		$zeilen[] = array(
+			sprintf(
+				'<tr><th scope="row">%1$s</th><td data-label="%6$s">%2$s</td><td data-label="%7$s">%3$s</td><td data-label="%8$s"><ul class="wb-preise">%4$s</ul></td><td data-label="%9$s">%5$s</td>',
+				esc_html( $f['name'] ),
+				esc_html( $f['wo'] ),
+				esc_html( tamil_site_werbung_html_masse( $platz ) ),
+				$preise,
+				esc_html( $termin ),
+				esc_attr__( 'Wo', 'tamil-site' ),
+				esc_attr__( 'Maße in Pixel', 'tamil-site' ),
+				esc_attr__( 'Preis je Laufzeit', 'tamil-site' ),
+				esc_attr__( 'Nächster freier Termin', 'tamil-site' )
+			),
 			$link,
-			esc_attr__( 'Wo', 'tamil-site' ),
-			esc_attr__( 'Maße in Pixel', 'tamil-site' ),
-			esc_attr__( 'Preis je Laufzeit', 'tamil-site' ),
-			esc_attr__( 'Nächster freier Termin', 'tamil-site' )
 		);
+	}
+	// Die Spalte „Buchen“ nur, wenn mindestens ein Platz buchbar ist (Prüfung 17.11., P2: keine leere Spalte).
+	$buchen = (bool) array_filter( array_column( $zeilen, 1 ) );
+	$tbody  = '';
+	foreach ( $zeilen as [ $zeile, $link ] ) {
+		$tbody .= $zeile . ( $buchen ? '<td>' . $link . '</td>' : '' ) . '</tr>';
 	}
 	$out  = '<section class="wb-angebote"><h2>' . esc_html__( 'Werbeplätze und Preise', 'tamil-site' ) . '</h2>';
 	$out .= tamil_site_werbung_zahlung_bereit() ? '' : tamil_site_werbung_html_zahlung_aus();
 	$out .= '<div class="wb-tabelle-wrap"><table class="wb-tabelle"><thead><tr><th scope="col">' . esc_html__( 'Platz', 'tamil-site' ) . '</th><th scope="col">'
 		. esc_html__( 'Wo', 'tamil-site' ) . '</th><th scope="col">' . esc_html__( 'Maße in Pixel', 'tamil-site' ) . '</th><th scope="col">'
-		. esc_html__( 'Preis je Laufzeit', 'tamil-site' ) . '</th><th scope="col">' . esc_html__( 'Nächster freier Termin', 'tamil-site' )
-		. '</th><th scope="col"><span class="screen-reader-text">' . esc_html__( 'Buchen', 'tamil-site' ) . '</span></th></tr></thead><tbody>' . $zeilen . '</tbody></table></div>';
-	$out .= '<p class="wb-hinweis">' . esc_html__( 'Preise inklusive Umsatzsteuer. Je Platz läuft zur selben Zeit genau eine Anzeige. Jedes Werbemittel wird vor dem Start geprüft; Vorlauf zwei Werktage. Bilder als JPEG oder PNG in den genannten Maßen.', 'tamil-site' ) . '</p>';
+		. esc_html__( 'Preis je Laufzeit', 'tamil-site' ) . '</th><th scope="col">' . esc_html__( 'Nächster freier Termin', 'tamil-site' ) . '</th>'
+		. ( $buchen ? '<th scope="col"><span class="screen-reader-text">' . esc_html__( 'Buchen', 'tamil-site' ) . '</span></th>' : '' )
+		. '</tr></thead><tbody>' . $tbody . '</tbody></table></div>';
+	// „Preise inklusive Umsatzsteuer“ nur, wenn es Preise gibt (P2).
+	$out .= '<p class="wb-hinweis">' . ( $mit_preis ? esc_html__( 'Preise inklusive Umsatzsteuer.', 'tamil-site' ) . ' ' : '' )
+		. esc_html__( 'Je Platz läuft zur selben Zeit genau eine Anzeige. Jedes Werbemittel wird vor dem Start geprüft; Vorlauf zwei Werktage. Bilder als JPEG oder PNG in den genannten Maßen.', 'tamil-site' ) . '</p>';
+	$out .= '<p class="wb-hinweis">' . esc_html__( 'Am Handy (unter 600 px Breite) füllen Banner die Breite der Spalte; das Seitenverhältnis bleibt.', 'tamil-site' ) . '</p>';
 	if ( $fehlt ) {
 		$out .= '<p class="wb-hinweis wb-platzhalter">' . esc_html__( 'Preise auf Anfrage: Plätze und Laufzeiten ohne Preis sind noch nicht online buchbar.', 'tamil-site' ) . '</p>';
 	}
@@ -125,14 +134,24 @@ function tamil_site_werbung_html_angebote(): string {
  * Formular „Buchung wiederfinden“.
  */
 function tamil_site_werbung_html_wiederfinden(): string {
-	$alt = tamil_site_werbung_zustand()['alt'];
+	$z    = tamil_site_werbung_zustand();
+	$alt  = $z['alt'];
+	$ff   = (array) ( $z['feldfehler'] ?? array() );
+	$feld = static function ( string $name, string $id, string $label, string $typ, string $wert, string $auto ) use ( $ff ): string {
+		$fehler = (string) ( $ff[ $name ] ?? '' );
+		return '<label for="' . esc_attr( $id ) . '">' . esc_html( $label ) . '</label>'
+			. '<input type="' . esc_attr( $typ ) . '" id="' . esc_attr( $id ) . '" name="' . esc_attr( $name ) . '" required autocomplete="' . esc_attr( $auto ) . '" value="' . esc_attr( $wert ) . '"'
+			. ( '' !== $fehler ? ' aria-invalid="true" aria-describedby="' . esc_attr( $id . '-fehler' ) . '"' : '' ) . '>'
+			. ( '' !== $fehler ? '<span class="wb-feldfehler" id="' . esc_attr( $id . '-fehler' ) . '">' . esc_html( $fehler ) . '</span>' : '' );
+	};
 	return '<section class="wb-wiederfinden"><h2>' . esc_html__( 'Buchung wiederfinden', 'tamil-site' ) . '</h2>'
 		. '<p>' . esc_html__( 'Link zur Buchung verloren? Mit Buchungsnummer und E-Mail-Adresse erhalten Sie hier einen neuen Link; der alte gilt dann nicht mehr.', 'tamil-site' ) . '</p>'
-		. '<form class="wb-formular" method="post" action="' . esc_url( tamil_site_werbung_seite_url() ) . '">'
+		// novalidate: eigene deutsche Fehlertexte am Feld statt der Meldungen des Browsers (Prüfung 17.11., P2).
+		. '<form class="wb-formular" method="post" action="' . esc_url( tamil_site_werbung_seite_url() ) . '" novalidate>'
 		. wp_nonce_field( 'tamil_wb_wiederfinden', '_wpnonce', false, false )
 		. '<input type="hidden" name="tamil_wb_aktion" value="wiederfinden">'
-		. '<label for="wb-such-nummer">' . esc_html__( 'Buchungsnummer', 'tamil-site' ) . '</label><input type="text" id="wb-such-nummer" name="nummer" required autocomplete="off" value="' . esc_attr( (string) ( $alt['nummer'] ?? '' ) ) . '">'
-		. '<label for="wb-such-email">' . esc_html__( 'E-Mail-Adresse der Buchung', 'tamil-site' ) . '</label><input type="email" id="wb-such-email" name="email" required autocomplete="email">'
+		. $feld( 'nummer', 'wb-such-nummer', __( 'Buchungsnummer', 'tamil-site' ), 'text', (string) ( $alt['nummer'] ?? '' ), 'off' )
+		. $feld( 'email', 'wb-such-email', __( 'E-Mail-Adresse der Buchung', 'tamil-site' ), 'email', '', 'email' )
 		. '<p><button type="submit">' . esc_html__( 'Buchung anzeigen', 'tamil-site' ) . '</button></p></form></section>';
 }
 

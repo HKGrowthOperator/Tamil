@@ -2,14 +2,14 @@
  * Eigenanzeigen als Bildbanner (klar2): echtes Foto, dunkler Verlauf unter der Schrift, Titel, ein Satz und Linktext
  * im Bild; Radius 0, kein Schatten. Farben und Schrift aus dem Theme (Variablen mit Rückfall).
  *
- * Formate je Platz (Breite nach Platz, Höhe aus dem Seitenverhältnis):
- *   Leaderboard, Fuß   728 × 90 ab 768 px, darunter 320 × 100 (volle Breite)
- *   Billboard          970 × 250 ab 600 px (mitwachsend), darunter 336 × 280
- *   Im Artikel         728 × 90 in breiter Textspalte, sonst 336 × 280
- *   Half Page          300 × 600
- *   Handy-Leiste       50 px hoch, bis 320 px breit
- * Schmale Formate: Schrift seitlich auf dem Verlauf (links oder rechts, je Bild). Hohe Formate: Schrift unten wie
- * „Titel im Bild“. Die Selektoren beginnen mit .ad.ad-bild, damit sie die Regeln des Themes für Textanzeigen schlagen.
+ * Größen stehen nicht hier: Breite und Seitenverhältnis je Platz erzeugt das Plugin aus tamil_site_werbung_formate()
+ * (tamil_site_anzeigen_formate_css(), als Inline-CSS hinter dieser Datei) – dieselbe Quelle wie die Tabelle auf
+ * „Werben“. Hier steht nur das Aussehen, und es folgt der tatsächlichen Form der Fläche (Container-Abfrage):
+ *   hoch (über 130 px, z. B. 336 × 280, 970 × 250, 300 × 600): Schrift unten wie „Titel im Bild“, der Verlauf liegt
+ *     nur hinter dem Textblock;
+ *   flach (bis 130 px, z. B. 728 × 90, 320 × 100, 320 × 50): Foto auf einer Seite (62 % der Breite), Schrift auf der
+ *     anderen auf Tinte, der Verlauf blendet das Foto über. So bleibt ein Gesicht im Bild ganz.
+ * Die Selektoren beginnen mit .ad.ad-bild, damit sie die Regeln des Themes für gebuchte Flächen schlagen.
  */
 
 .ad.ad-bild {
@@ -17,25 +17,16 @@
 	--anz-hell: var(--hell, oklch(0.985 0.002 250));
 	--anz-hell-leise: var(--hell-leise, oklch(0.82 0.006 250));
 	--anz-verlauf: var(--verlauf, linear-gradient(to bottom, oklch(0.21 0.012 255 / 0) 0, oklch(0.21 0.012 255 / 0.74) 52px, oklch(0.21 0.012 255 / 0.9) 100%));
-	--anz-verlauf-links: linear-gradient(to right, oklch(0.21 0.012 255 / 0.92) 0, oklch(0.21 0.012 255 / 0.8) 38%, oklch(0.21 0.012 255 / 0) 78%);
-	--anz-verlauf-rechts: linear-gradient(to left, oklch(0.21 0.012 255 / 0.92) 0, oklch(0.21 0.012 255 / 0.8) 38%, oklch(0.21 0.012 255 / 0) 78%);
-	--anz-breite: 728px;
-	--anz-format: 32 / 10;
-}
-
-.ad.ad-bild:not(.ad-mobile) {
-	grid-template-columns: minmax(0, var(--anz-breite));
+	--anz-verlauf-links: linear-gradient(to right, oklch(0.21 0.012 255 / 0.96) 0, oklch(0.21 0.012 255 / 0.9) 38%, oklch(0.21 0.012 255 / 0) 62%);
+	--anz-verlauf-rechts: linear-gradient(to left, oklch(0.21 0.012 255 / 0.96) 0, oklch(0.21 0.012 255 / 0.9) 38%, oklch(0.21 0.012 255 / 0) 62%);
 	justify-content: center;
 }
 
-/* Fläche: der Link selbst, Höhe aus dem Seitenverhältnis */
+/* Fläche: der Link selbst; Breite und Seitenverhältnis aus dem erzeugten CSS */
 .ad.ad-bild .anzeige-wrap.flaeche {
 	position: relative;
 	display: block;
-	width: 100%;
-	max-width: 100%;
-	height: auto;
-	aspect-ratio: var(--anz-format);
+	container: anzeige / size;
 	overflow: hidden;
 	border-radius: 0;
 	box-shadow: none;
@@ -71,8 +62,7 @@
 	border-radius: 0;
 }
 
-/* der einzige Verlauf: unter der Schrift, von durchsichtig nach Tinte. Hohe Formate wie „Titel im Bild“: der Verlauf
-   liegt nur hinter dem Textblock unten; schmale Formate: seitlich über die ganze Höhe (::before, siehe unten). */
+/* der einzige Verlauf: unter der Schrift, von durchsichtig nach Tinte */
 .ad.ad-bild .anzeige--bild .text {
 	position: relative;
 	z-index: 2;
@@ -81,7 +71,7 @@
 	flex: none;
 	min-width: 0;
 	max-width: none;
-	padding: 48px 16px 16px;
+	padding: 40px 16px 16px;
 	background-image: var(--anz-verlauf);
 }
 
@@ -91,7 +81,7 @@
 
 .ad.ad-bild .anzeige--bild .claim {
 	font-family: var(--schrift, "Libre Franklin", system-ui, sans-serif);
-	font-size: 22px;
+	font-size: 20px;
 	font-weight: 650;
 	line-height: 1.2;
 	color: var(--anz-hell);
@@ -160,203 +150,49 @@
 	}
 }
 
-/* ---------- schmale Formate: Schrift seitlich auf dem Verlauf ---------- */
-.ad.ad-bild.ad-leaderboard .anzeige--bild,
-.ad.ad-bild.ad-footer .anzeige--bild,
-.ad.ad-bild.ad-mobile .anzeige--bild {
-	justify-content: center;
-	align-items: flex-start;
-	padding: 10px 16px;
-}
+/* große hohe Flächen (Billboard breit, Half Page): größerer Titel, Satz in zwei Zeilen beim breiten Billboard */
+@container anzeige (min-width: 600px) {
 
-.ad.ad-bild.ad-leaderboard .anzeige--bild::before,
-.ad.ad-bild.ad-footer .anzeige--bild::before,
-.ad.ad-bild.ad-mobile .anzeige--bild::before {
-	content: "";
-	position: absolute;
-	inset: 0;
-	z-index: 1;
-	background-image: var(--anz-verlauf-links);
-}
-
-.ad.ad-bild.ad-leaderboard .anzeige--bild .text,
-.ad.ad-bild.ad-footer .anzeige--bild .text,
-.ad.ad-bild.ad-mobile .anzeige--bild .text {
-	padding: 0;
-	background: none;
-}
-
-.ad.ad-bild.ad-leaderboard .anzeige--rechts,
-.ad.ad-bild.ad-footer .anzeige--rechts,
-.ad.ad-bild.ad-mobile .anzeige--rechts {
-	align-items: flex-end;
-}
-
-.ad.ad-bild.ad-leaderboard .anzeige--rechts::before,
-.ad.ad-bild.ad-footer .anzeige--rechts::before,
-.ad.ad-bild.ad-mobile .anzeige--rechts::before {
-	background-image: var(--anz-verlauf-rechts);
-}
-
-.ad.ad-bild.ad-leaderboard .anzeige--bild .text,
-.ad.ad-bild.ad-footer .anzeige--bild .text {
-	max-width: 62%;
-	gap: 2px;
-}
-
-.ad.ad-bild.ad-leaderboard .anzeige--bild .claim,
-.ad.ad-bild.ad-footer .anzeige--bild .claim {
-	font-size: 19px;
-}
-
-.ad.ad-bild.ad-leaderboard .anzeige--bild .sub,
-.ad.ad-bild.ad-footer .anzeige--bild .sub {
-	display: none;
-}
-
-.ad.ad-bild.ad-leaderboard .anzeige--bild .cta,
-.ad.ad-bild.ad-footer .anzeige--bild .cta {
-	margin-top: 2px;
-}
-
-/* ---------- Leaderboard und Fuß ---------- */
-.ad.ad-bild.ad-leaderboard,
-.ad.ad-bild.ad-footer {
-	--anz-breite: 728px;
-	--anz-format: 32 / 10;
-}
-
-/* ---------- Billboard und Im Artikel: Rechteck, ab genug Breite das breite Format ---------- */
-.ad.ad-bild.ad-billboard,
-.ad.ad-bild.ad-inarticle {
-	--anz-breite: 336px;
-	--anz-format: 6 / 5;
-}
-
-.ad.ad-bild.ad-inarticle {
-	justify-content: center;
-}
-
-.ad.ad-bild.ad-billboard .anzeige--bild .claim,
-.ad.ad-bild.ad-inarticle .anzeige--bild .claim {
-	font-size: 20px;
-}
-
-.ad.ad-bild.ad-billboard .anzeige--bild .text,
-.ad.ad-bild.ad-inarticle .anzeige--bild .text {
-	padding-top: 40px;
-}
-
-/* ---------- Half Page ---------- */
-.ad.ad-bild.ad-sidebar {
-	--anz-breite: 300px;
-	--anz-format: 1 / 2;
-}
-
-.ad.ad-bild.ad-sidebar .anzeige--bild .claim {
-	font-size: 26px;
-}
-
-/* ---------- Handy-Leiste unten: 50 px hoch, nur Titel und Linktext ---------- */
-.ad.ad-bild.ad-mobile .anzeige-wrap.flaeche {
-	flex: 1 1 auto;
-	width: auto;
-	max-width: 320px;
-	height: 50px;
-	aspect-ratio: auto;
-}
-
-.ad.ad-bild.ad-mobile .anzeige--bild {
-	padding: 4px 12px;
-}
-
-.ad.ad-bild.ad-mobile .anzeige--bild .text {
-	gap: 0;
-	max-width: 80%;
-}
-
-.ad.ad-bild.ad-mobile .anzeige--bild .claim {
-	overflow: hidden;
-	font-size: 15px;
-	line-height: 1.25;
-	white-space: nowrap;
-	text-overflow: ellipsis;
-}
-
-.ad.ad-bild.ad-mobile .anzeige--bild .sub {
-	display: none;
-}
-
-.ad.ad-bild.ad-mobile .anzeige--bild .cta {
-	margin-top: 0;
-	font-size: 13px;
-}
-
-@media (min-width: 600px) {
-
-	.ad.ad-bild.ad-billboard {
-		--anz-breite: 970px;
-		--anz-format: 970 / 250;
+	.ad.ad-bild .anzeige--bild .text {
+		padding: 56px 32px 24px;
 	}
 
-	.ad.ad-bild.ad-billboard .anzeige--bild .text {
-		padding: 56px 24px 20px;
+	.ad.ad-bild .anzeige--bild .claim {
+		font-size: 26px;
 	}
 
-	.ad.ad-bild.ad-billboard .anzeige--bild .claim {
-		font-size: 24px;
-	}
-
-	.ad.ad-bild.ad-billboard .anzeige--bild .sub {
+	.ad.ad-bild .anzeige--bild .sub {
 		-webkit-line-clamp: 2;
 		line-clamp: 2;
 	}
 }
 
-@media (min-width: 768px) {
+@container anzeige (min-height: 500px) {
 
-	.ad.ad-bild.ad-leaderboard,
-	.ad.ad-bild.ad-footer {
-		--anz-format: 728 / 90;
-	}
-
-	.ad.ad-bild.ad-leaderboard .anzeige--bild,
-	.ad.ad-bild.ad-footer .anzeige--bild {
-		padding: 8px 20px;
-	}
-
-	.ad.ad-bild.ad-leaderboard .anzeige--bild .text,
-	.ad.ad-bild.ad-footer .anzeige--bild .text {
-		max-width: 56%;
-	}
-}
-
-@media (min-width: 1024px) {
-
-	.ad.ad-bild.ad-billboard .anzeige--bild .text {
-		padding: 64px 32px 24px;
-	}
-
-	.ad.ad-bild.ad-billboard .anzeige--bild .claim {
+	.ad.ad-bild .anzeige--bild .claim {
 		font-size: 26px;
 	}
 }
 
-/* Im Artikel: 728 × 90 nur in einer breiten Textspalte (wie die gebuchten Formate im Theme) */
-@container (min-width: 740px) {
+/* ---------- flache Flächen (bis 130 px hoch): Foto auf einer Seite, Schrift auf Tinte ---------- */
+@container anzeige (max-height: 130px) {
 
-	.ad.ad-bild.ad-inarticle {
-		--anz-breite: 728px;
-		--anz-format: 728 / 90;
-	}
-
-	.ad.ad-bild.ad-inarticle .anzeige--bild {
+	.ad.ad-bild .anzeige.anzeige--bild {
 		justify-content: center;
 		align-items: flex-start;
-		padding: 8px 20px;
+		padding: 8px 16px;
 	}
 
-	.ad.ad-bild.ad-inarticle .anzeige--bild::before {
+	.ad.ad-bild .anzeige--bild .anzeige__bild {
+		inset: 0 0 0 auto;
+		width: 62%;
+	}
+
+	.ad.ad-bild .anzeige--rechts .anzeige__bild {
+		inset: 0 auto 0 0;
+	}
+
+	.ad.ad-bild .anzeige--bild::before {
 		content: "";
 		position: absolute;
 		inset: 0;
@@ -364,30 +200,97 @@
 		background-image: var(--anz-verlauf-links);
 	}
 
-	.ad.ad-bild.ad-inarticle .anzeige--bild .text {
+	.ad.ad-bild .anzeige.anzeige--rechts {
+		align-items: flex-end;
+	}
+
+	.ad.ad-bild .anzeige--rechts::before {
+		background-image: var(--anz-verlauf-rechts);
+	}
+
+	.ad.ad-bild .anzeige--bild .text {
+		gap: 2px;
+		max-width: 52%;
 		padding: 0;
 		background: none;
 	}
 
-	.ad.ad-bild.ad-inarticle .anzeige--rechts {
-		align-items: flex-end;
-	}
-
-	.ad.ad-bild.ad-inarticle .anzeige--rechts::before {
-		background-image: var(--anz-verlauf-rechts);
-	}
-
-	.ad.ad-bild.ad-inarticle .anzeige--bild .text {
-		max-width: 56%;
-		gap: 2px;
-	}
-
-	.ad.ad-bild.ad-inarticle .anzeige--bild .claim {
+	.ad.ad-bild .anzeige--bild .claim {
 		font-size: 19px;
 	}
 
-	.ad.ad-bild.ad-inarticle .anzeige--bild .sub {
+	.ad.ad-bild .anzeige--bild .sub {
 		display: none;
+	}
+
+	.ad.ad-bild .anzeige--bild .cta {
+		margin-top: 2px;
+	}
+}
+
+/* sehr flach (Handy-Leiste 320 × 50): kleinere Schrift, eine Zeile Titel */
+@container anzeige (max-height: 60px) {
+
+	.ad.ad-bild .anzeige.anzeige--bild {
+		padding: 3px 10px;
+	}
+
+	.ad.ad-bild .anzeige--bild .text {
+		gap: 0;
+		max-width: 58%;
+	}
+
+	.ad.ad-bild .anzeige--bild .claim {
+		overflow: hidden;
+		font-size: 14px;
+		line-height: 1.25;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+
+	.ad.ad-bild .anzeige--bild .cta {
+		margin-top: 0;
+		font-size: 13px;
+	}
+}
+
+/* ---------- Handy-Leiste unten: „Anzeige“ über dem Banner, Banner 320 × 50, Schließen daneben ---------- */
+@media (max-width: 767px) {
+
+	.ad.ad-bild.ad-mobile.ist-sichtbar:not([hidden]) {
+		display: grid;
+		grid-template-columns: minmax(0, 320px) 44px;
+		grid-template-rows: auto auto;
+		column-gap: 6px;
+		row-gap: 2px;
+		justify-content: center;
+		align-items: center;
+		padding: 2px 4px max(4px, env(safe-area-inset-bottom)) 4px;
+	}
+
+	.ad.ad-bild.ad-mobile .ad-label {
+		grid-column: 1;
+		grid-row: 1;
+		justify-self: start;
+		font-size: 12px;
+		line-height: 16px;
+	}
+
+	.ad.ad-bild.ad-mobile .anzeige-wrap.flaeche {
+		flex: none;
+		grid-column: 1;
+		grid-row: 2;
+	}
+
+	.ad.ad-bild.ad-mobile .schliessen {
+		grid-column: 2;
+		grid-row: 1 / span 2;
+		align-self: center;
+	}
+
+	/* die Leiste ist mit Label höher als die des Themes (64 px): Platz am Seitenende dafür */
+	.has-sticky-ad:has(.ad-mobile.ad-bild) {
+		padding-bottom: 84px;
 	}
 }
 

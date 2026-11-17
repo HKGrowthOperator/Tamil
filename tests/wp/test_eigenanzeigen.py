@@ -5,6 +5,7 @@ Bild wird nicht gezeigt. Dazu weiter: kein Icon, keine Dachzeile, kein Gedankens
 19 und Floor 10, Kritik theme-tageskalender-r1 P1-3 und P1-5); Platz, Kennzeichnung „Anzeige“ und Ziel bleiben.
 """
 
+import html
 import json
 import re
 
@@ -25,6 +26,12 @@ def _img(html: str) -> str:
     return m.group(0)
 
 
+def _ohne_tags(html_text: str) -> str:
+    """Sichtbarer Text ohne Tags und Entitäten, Leerraum zusammengefasst: Das Theme verlinkt Urheber und Lizenz im
+    Nachweis (Theme 3.3.0, tamil_nachweis_bauen()), die Aussage bleibt dieselbe."""
+    return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", "", html_text))).strip()
+
+
 def _attr(tag: str, name: str) -> str:
     m = re.search(rf'\s{name}="([^"]*)"', tag)
     return m.group(1) if m else ""
@@ -40,6 +47,17 @@ def test_eigenanzeige_ist_bildbanner_ohne_icon_dachzeile_und_striche(wp_cli, sei
     img = _img(html)
     assert _attr(img, "alt").strip(), "Bild ohne Alternativtext"
     assert _attr(img, "width") and _attr(img, "height") and 'loading="lazy"' in img
+
+
+@pytest.mark.parametrize("vorlage", VORLAGEN)
+def test_linkname_beginnt_mit_dem_sichtbaren_text(wp_cli, seite_production, vorlage):
+    """axe label-content-name-mismatch (Prüfung 17.11., P1-11): kein aria-label, das vom sichtbaren Text abweicht. Der
+    Name kommt aus dem Inhalt; Titel und Linktext stehen vor dem Bild, damit der Name mit dem sichtbaren Text beginnt."""
+    html = _html(wp_cli, vorlage)
+    link = re.match(r"<a [^>]*>", html).group(0)
+    assert "aria-label" not in link and "aria-labelledby" not in link
+    assert html.index('<span class="claim">') < html.index('<img class="anzeige__bild"')
+    assert html.index('<span class="cta">') < html.index('<img class="anzeige__bild"')
 
 
 @pytest.mark.parametrize("vorlage", ["production", "event", "werben", "whatsapp"])
@@ -177,7 +195,8 @@ def test_ungebuchter_platz_zeigt_eigenanzeige_mit_label_und_bild(wp_cli):
         pytest.skip("Footer-Platz ist lokal gebucht oder mit fremdem Code belegt")
     assert 'class="ad ad-footer ad-anzeige ad-bild"' in html and '<span class="ad-label">Anzeige</span>' in html
     assert _attr(_img(html), "alt").strip()
-    assert 'sizes="(min-width: 768px) 728px, 100vw"' in html
+    # Bildgrößen aus den Formaten (728 × 90 ab 768 px, am Handy Spaltenbreite, dazwischen 320 × 100)
+    assert 'sizes="(min-width: 768px) 728px, (max-width: 599px) 100vw, 320px"' in html
 
 
 def test_seite_mit_eigenanzeigen_nennt_ihre_bildnachweise_im_fuss(wp, wp_cli, seite_production):
@@ -187,10 +206,26 @@ def test_seite_mit_eigenanzeigen_nennt_ihre_bildnachweise_im_fuss(wp, wp_cli, se
         pytest.skip("Theme ohne tamil_nachweise()")
     seite = wp.get("/").text
     assert re.search(r"<link[^>]+tamil-site-anzeigen-css[^>]+anzeigen\.css", seite.split("</head>")[0])
-    nachweise = seite.split("Bildnachweise dieser Seite", 1)[1] if "Bildnachweise dieser Seite" in seite else ""
+    nachweise = _ohne_tags(seite.split("Bildnachweise dieser Seite", 1)[1] if "Bildnachweise dieser Seite" in seite else "")
     for platz in ("footer", "mobile"):
         vorlage = json.loads(wp_cli(f"echo wp_json_encode( tamil_site_anzeige_inhalt( '{platz}' ) );"))[2]
         if not vorlage:
             continue
         bild = json.loads(wp_cli(f"echo wp_json_encode( tamil_site_eigenanzeige_bild( tamil_site_eigenanzeige_vorlagen()['{vorlage}']['bild'] ) );"))
         assert bild["nachweis"] and bild["nachweis"] in nachweise, f"{platz}: Nachweis fehlt im Fuß"
+
+
+def test_werbeplatz_ist_ein_benannter_bereich(wp_cli, seite_production):
+    """axe „region“ (Prüfung 17.11.): Werbeplätze außerhalb von main und footer (Fuß-Anzeige, Handy-Leiste) liegen in
+    einem eigenen Bereich; je Platz ein anderer Name (sonst landmark-unique)."""
+    namen = set()
+    for platz in ("leaderboard", "footer", "mobile"):
+        html = wp_cli(f"echo tamil_site_anzeige( '{platz}', false );")
+        if not html:
+            continue
+        kopf = re.match(r"<aside class=\"ad ad-[a-z]+[^\"]*\"[^>]*>", html)
+        assert kopf, html[:120]
+        name = re.search(r'aria-label="([^"]+)"', kopf.group(0)).group(1)
+        assert name.startswith("Anzeige"), name
+        namen.add(name)
+    assert len(namen) >= 2
