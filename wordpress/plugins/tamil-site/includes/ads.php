@@ -153,7 +153,7 @@ function tamil_site_seite_oder( string $slug, string $ersatz ): string {
  * Trennpunkte) und welches Bild. Eine Vorlage ohne Ziel (url leer) wird nicht gezeigt: „Live mit dir!“ braucht die
  * Seite „production“, sonst führte die Anzeige ins Leere.
  *
- * @return array<string,array{url:string,label:string,titel:string,satz:string,link:string,neu:bool,bild:string}>
+ * @return array<string,array{url:string,titel:string,satz:string,link:string,neu:bool,bild:string}>
  */
 function tamil_site_eigenanzeige_vorlagen(): array {
 	$wa      = tamil_site_settings()['whatsapp_url'];
@@ -163,7 +163,6 @@ function tamil_site_eigenanzeige_vorlagen(): array {
 	return array(
 		'production'     => array(
 			'url'   => tamil_site_seite_oder( 'production', '' ),
-			'label' => __( 'Tamil.de Production: Konzertreihe „Live mit dir!“', 'tamil-site' ),
 			'titel' => __( 'Live mit dir!', 'tamil-site' ),
 			'satz'  => __( 'A.R. Rahman, Ilaiyaraaja, Anirudh und Santhosh Narayanan standen oder stehen mit Tamil.de Production auf deutschen Bühnen.', 'tamil-site' ),
 			'link'  => __( 'Zur Konzertreihe', 'tamil-site' ),
@@ -172,7 +171,6 @@ function tamil_site_eigenanzeige_vorlagen(): array {
 		),
 		'event'          => array(
 			'url'   => '' !== $einr ? $einr : $kontakt . '#event-einreichen',
-			'label' => __( 'Termin bei Tamil.de melden', 'tamil-site' ),
 			'titel' => __( 'Dein Fest im Kalender.', 'tamil-site' ),
 			'satz'  => __( 'Tempelfest, Konzert, Turnier: kostenlos melden, die Redaktion trägt es ein.', 'tamil-site' ),
 			'link'  => __( 'Termin melden', 'tamil-site' ),
@@ -181,7 +179,6 @@ function tamil_site_eigenanzeige_vorlagen(): array {
 		),
 		'werben'         => array(
 			'url'   => '' !== $werben ? $werben : $kontakt . '#werben',
-			'label' => __( 'Werben auf Tamil.de: Werbeplätze und Mediadaten', 'tamil-site' ),
 			'titel' => __( 'Werben auf Tamil.de', 'tamil-site' ),
 			'satz'  => __( 'Eine Community in drei Ländern, sechs feste Werbeplätze. Mediadaten gibt es auf Anfrage.', 'tamil-site' ),
 			'link'  => __( 'Werbeplätze ansehen', 'tamil-site' ),
@@ -190,7 +187,6 @@ function tamil_site_eigenanzeige_vorlagen(): array {
 		),
 		'whatsapp-klein' => array(
 			'url'   => $wa,
-			'label' => __( 'Tamil.de WhatsApp-Kanal öffnen', 'tamil-site' ),
 			'titel' => __( 'Tamil.de auf WhatsApp', 'tamil-site' ),
 			'satz'  => '',
 			'link'  => __( 'Abonnieren', 'tamil-site' ),
@@ -199,7 +195,6 @@ function tamil_site_eigenanzeige_vorlagen(): array {
 		),
 		'whatsapp'       => array(
 			'url'   => $wa,
-			'label' => __( 'Tamil.de WhatsApp-Kanal öffnen', 'tamil-site' ),
 			'titel' => __( 'Kinostarts und Termine direkt aufs Handy.', 'tamil-site' ),
 			'satz'  => __( 'Der Kanal von Tamil.de auf WhatsApp. Keine Gruppe, eure Nummern bleiben unsichtbar.', 'tamil-site' ),
 			'link'  => __( 'Kanal öffnen', 'tamil-site' ),
@@ -292,15 +287,20 @@ function tamil_site_eigenanzeige_html( string $vorlage, string $platz = '' ): st
 		// Ohne das Theme Tamil.de sammelt kein Fuß die Bildnachweise: dann steht der Nachweis klein im Banner.
 		$nachweis = '<span class="anzeige__nachweis">' . esc_html( $bild['nachweis'] ) . '</span>';
 	}
+	// Kein aria-label: Der Name des Links kommt aus dem sichtbaren Text (Titel, Satz, Linktext), danach der
+	// Alternativtext des Bilds (axe label-content-name-mismatch, WCAG 2.5.3). Das Bild steht darum hinter dem Text.
 	return sprintf(
-		'<a class="flaeche anzeige-wrap" href="%1$s"%2$s aria-label="%3$s"><div class="anzeige a-%4$s anzeige--bild anzeige--%5$s">'
-		. '<img class="anzeige__bild" src="%6$s" srcset="%7$s" sizes="%8$s" width="%9$d" height="%10$d" alt="%11$s" loading="lazy" decoding="async" style="object-position: %12$s">'
-		. '<span class="text"><span class="claim">%13$s</span>%14$s<span class="cta">%15$s</span></span>%16$s</div></a>',
+		'<a class="flaeche anzeige-wrap" href="%1$s"%2$s><div class="anzeige a-%3$s anzeige--bild anzeige--%4$s">'
+		. '<span class="text"><span class="claim">%5$s</span>%6$s<span class="cta">%7$s</span></span>'
+		. '<img class="anzeige__bild" src="%8$s" srcset="%9$s" sizes="%10$s" width="%11$d" height="%12$d" alt="%13$s" loading="lazy" decoding="async" style="object-position: %14$s">'
+		. '%15$s</div></a>',
 		esc_url( $v['url'] ),
 		$v['neu'] ? ' target="_blank" rel="noopener"' : '',
-		esc_attr( $v['label'] ),
 		esc_attr( $vorlage ),
 		'rechts' === $bild['seite'] ? 'rechts' : 'links',
+		esc_html( $v['titel'] ),
+		'' !== $v['satz'] ? '<span class="sub">' . esc_html( $v['satz'] ) . '</span>' : '',
+		esc_html( $v['link'] ),
 		esc_url( $bild['src'] ),
 		esc_attr( $bild['srcset'] ),
 		esc_attr( tamil_site_eigenanzeige_sizes( $platz ) ),
@@ -308,9 +308,6 @@ function tamil_site_eigenanzeige_html( string $vorlage, string $platz = '' ): st
 		(int) $bild['h'],
 		esc_attr( $bild['alt'] ),
 		esc_attr( (string) preg_replace( '/[^0-9% .a-z]/', '', $bild['fokus'] ) ),
-		esc_html( $v['titel'] ),
-		'' !== $v['satz'] ? '<span class="sub">' . esc_html( $v['satz'] ) . '</span>' : '',
-		esc_html( $v['link'] ),
 		$nachweis
 	);
 }

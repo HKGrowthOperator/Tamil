@@ -42,6 +42,17 @@ def test_eigenanzeige_ist_bildbanner_ohne_icon_dachzeile_und_striche(wp_cli, sei
     assert _attr(img, "width") and _attr(img, "height") and 'loading="lazy"' in img
 
 
+@pytest.mark.parametrize("vorlage", VORLAGEN)
+def test_linkname_beginnt_mit_dem_sichtbaren_text(wp_cli, seite_production, vorlage):
+    """axe label-content-name-mismatch (Prüfung 17.11., P1-11): kein aria-label, das vom sichtbaren Text abweicht. Der
+    Name kommt aus dem Inhalt; Titel und Linktext stehen vor dem Bild, damit der Name mit dem sichtbaren Text beginnt."""
+    html = _html(wp_cli, vorlage)
+    link = re.match(r"<a [^>]*>", html).group(0)
+    assert "aria-label" not in link and "aria-labelledby" not in link
+    assert html.index('<span class="claim">') < html.index('<img class="anzeige__bild"')
+    assert html.index('<span class="cta">') < html.index('<img class="anzeige__bild"')
+
+
 @pytest.mark.parametrize("vorlage", ["production", "event", "werben", "whatsapp"])
 def test_bild_der_eigenanzeige_wird_geladen(wp, wp_cli, seite_production, vorlage):
     img = _img(_html(wp_cli, vorlage))
