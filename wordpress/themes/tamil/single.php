@@ -2,7 +2,9 @@
 /**
  * Beitrag in klar2: Dachzeile, Titel, Vorspann, Leiste mit Lesezeit und „Per WhatsApp teilen“; großes Bild (am Handy
  * randlos) mit Nachweis; Text in einer Spalte von höchstens 560 px (am Tablet eine gemeinsame Kante für Kopf, Bild und
- * Text); Termin, Quelle, Schlagworte, Teilen und Redaktion; am Desktop rechts Werbeplatz 02; danach „Weiterlesen“.
+ * Text, am Desktop in der Mitte); Termin, Quelle, Schlagworte, Teilen und Redaktion; Werbeplatz 02 ab 1280 px rechts
+ * neben der Spalte, von 1024 bis 1279 px nach dem Bild; danach „Weiterlesen“. Ein Vorspann, der nur den Anfang des
+ * Texts wiederholt (Altbestand), entfällt.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -27,7 +29,6 @@ while ( have_posts() ) :
 		array(
 			'eager'  => true,
 			'klasse' => 'artikel__bild',
-			'schild' => false,
 			'sizes'  => '(min-width: 1024px) 1040px, (min-width: 600px) 600px, 100vw',
 		)
 	);
@@ -58,7 +59,7 @@ while ( have_posts() ) :
 			</p>
 			<h1 class="artikel__titel"><?php echo tamil_text( $tamil_titel ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_text() ?></h1>
 			<?php $tamil_vorspann = tamil_vorspann_artikel( $tamil_id ); ?>
-			<?php if ( '' !== $tamil_vorspann ) : ?>
+			<?php if ( '' !== $tamil_vorspann && ! tamil_vorspann_wiederholt_text( $tamil_vorspann, $tamil_inhalt ) ) : ?>
 				<p class="artikel__vorspann"><?php echo tamil_text( $tamil_vorspann ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_text() ?></p>
 			<?php endif; ?>
 			<div class="artikel__leiste">
@@ -119,18 +120,20 @@ while ( have_posts() ) :
 				<?php endif; ?>
 				<div class="teilen" role="group" aria-label="<?php esc_attr_e( 'Teilen', 'tamil' ); ?>">
 					<a class="knopf" href="<?php echo esc_url( tamil_wa_teilen( $tamil_titel, $tamil_url ) ); ?>"><?php esc_html_e( 'Per WhatsApp schicken', 'tamil' ); ?></a>
-					<?php foreach ( $tamil_teilen as [ $tamil_name, $tamil_href ] ) : ?>
-						<a class="textlink" href="<?php echo esc_url( $tamil_href ); ?>" target="_blank" rel="noopener"><?php echo esc_html( $tamil_name ); ?></a>
-					<?php endforeach; ?>
-					<a class="textlink" href="<?php echo esc_url( 'mailto:?subject=' . rawurlencode( $tamil_titel ) . '&body=' . rawurlencode( $tamil_url ), array( 'mailto' ) ); ?>"><?php esc_html_e( 'E-Mail', 'tamil' ); ?></a>
-					<button type="button" class="textlink knopf-text" data-copy="<?php echo esc_attr( $tamil_url ); ?>"><?php esc_html_e( 'Link kopieren', 'tamil' ); ?></button>
+					<div class="teilen__links">
+						<?php foreach ( $tamil_teilen as [ $tamil_name, $tamil_href ] ) : ?>
+							<a class="textlink" href="<?php echo esc_url( $tamil_href ); ?>" target="_blank" rel="noopener"><?php echo esc_html( $tamil_name ); ?></a>
+						<?php endforeach; ?>
+						<a class="textlink" href="<?php echo esc_url( 'mailto:?subject=' . rawurlencode( $tamil_titel ) . '&body=' . rawurlencode( $tamil_url ), array( 'mailto' ) ); ?>"><?php esc_html_e( 'E-Mail', 'tamil' ); ?></a>
+						<button type="button" class="textlink knopf-text" data-copy="<?php echo esc_attr( $tamil_url ); ?>"><?php esc_html_e( 'Link kopieren', 'tamil' ); ?></button>
+					</div>
 				</div>
 				<p class="autor"><strong><?php echo esc_html( tamil_opt( 'autor_name' ) ); ?></strong> <?php echo esc_html( tamil_opt( 'autor_text' ) ); ?></p>
 			</div>
 			<?php
 			if ( '' !== $tamil_rand ) :
 				?>
-				<aside class="artikel__rand" aria-label="<?php esc_attr_e( 'Anzeige', 'tamil' ); ?>"><?php echo $tamil_rand; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Werbeplatz aus dem Plugin, dort escapt ?></aside>
+				<aside class="artikel__rand" aria-label="<?php esc_attr_e( 'Anzeige neben dem Artikel', 'tamil' ); ?>"><?php echo $tamil_rand; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Werbeplatz aus dem Plugin, dort escapt ?></aside>
 			<?php endif; ?>
 		</div>
 	</article>

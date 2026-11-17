@@ -7,6 +7,7 @@ Gegen ein lokales WordPress (wordpress/dev/setup.sh + serve.sh). Der Schalter �
 """
 
 import base64
+import html
 import io
 import json
 import re
@@ -89,15 +90,18 @@ def test_liste_jeder_eintrag_mit_bild(eintraege):
 
 
 def test_profil_symbolbild_mit_nachweis_und_fuss(eintraege):
-    html = requests.get(eintraege["seite"] + f"?vz_suche=Bildprobe+{eintraege['kennung']}", headers=AN, timeout=30).text
-    profil = re.search(rf'<a class="vz-name" href="([^"]+)">Bildprobe tempel {eintraege["kennung"]}<', html).group(1)
+    liste = requests.get(eintraege["seite"] + f"?vz_suche=Bildprobe+{eintraege['kennung']}", headers=AN, timeout=30).text
+    profil = re.search(rf'<a class="vz-name" href="([^"]+)">Bildprobe tempel {eintraege["kennung"]}<', liste).group(1)
     seite = requests.get(profil, headers=AN, timeout=30).text
     figur = re.search(r'<figure class="vz-bild vz-bild--profil">.*?</figure>', seite, re.S)
     assert figur, "Profil ohne Bild"
-    assert _attr(_img(figur.group(0)), "alt").startswith("Symbolbild") and "Symbolbild." in figur.group(0)
+    assert _attr(_img(figur.group(0)), "alt").startswith("Symbolbild") and "Symbolbild, Foto: Fridolin freudenfett" in figur.group(0)
     assert "Wikimedia Commons" in figur.group(0)
     if "Bildnachweise dieser Seite" in seite:
-        assert "Symbolbild. Foto:" in seite.split("Bildnachweise dieser Seite", 1)[1]
+        fuss = re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", "", seite.split("Bildnachweise dieser Seite", 1)[1])))
+        assert "Symbolbild, Foto: Fridolin freudenfett / Wikimedia Commons, CC BY-SA 4.0, zugeschnitten" in fuss
+        # Theme 3.3.0 verlinkt nur den Urheber, nicht „Symbolbild, Foto:“
+        assert not re.search(r"<a [^>]*>Symbolbild", seite.split("Bildnachweise dieser Seite", 1)[1])
 
 
 def test_profil_mit_beitragsbild_ein_bild(eintraege, wp_cli):
@@ -118,3 +122,30 @@ def test_ersatzbilder_mit_nachweis_und_dateien(wp_cli):
     text = nachweis.read_text(encoding="utf-8")
     for b in bilder.values():
         assert b["datei"] in text and b["klein"] in text
+
+
+def test_leere_auswahl_ausgeblendet_und_aenderungslink_sauber(eintraege, wp_cli):
+    """Prüfung 17.11. (P2): „Bundesland oder Kanton“ fehlt, solange kein Eintrag eines hat; der Link „Änderung melden“
+    trägt genau vz_formular=aenderung und vz_eintrag (im HTML ist & als &#038; kodiert)."""
+    hat_region = wp_cli("echo wp_json_encode( tamil_site_vz_vorhandene_werte( 'bundesland_kanton' ) );").strip() != "[]"
+    html = requests.get(eintraege["seite"], headers=AN, timeout=30).text
+    assert ('id="vz-filter-region"' in html) == hat_region
+    assert 'id="vz-filter-stadt"' in html  # Dortmund gibt es
+    profil = requests.get(wp_cli(f"echo get_permalink( {eintraege['ohne']['tempel']} );").strip(), headers=AN, timeout=30).text
+    href = re.search(r'<p class="vz-aenderung"><a href="([^"]+)"', profil).group(1).replace("&#038;", "&")
+    abfrage = href.split("?", 1)[1].split("#", 1)[0]
+    assert abfrage == f"vz_formular=aenderung&vz_eintrag={eintraege['ohne']['tempel']}", href
+
+
+def test_nachweise_zugeschnitten_mit_quelle_und_lizenz(wp_cli):
+    """Symbolbilder und Bannerfotos sind im Bild beschnitten: Nachweis mit „zugeschnitten“, Dateiseite und Lizenz-URL
+    gehen mit der Aktion tamil_site_bildnachweis ans Theme."""
+    daten = json.loads(wp_cli("echo wp_json_encode( array( tamil_site_vz_ersatzbilder(), tamil_site_eigenanzeige_standardbilder() ) );"))
+    for b in list(daten[0].values()) + [v for k, v in daten[1].items() if k != "production"]:
+        assert b["nachweis"].endswith(", zugeschnitten") and "(Ausschnitt)" not in b["nachweis"], b["nachweis"]
+        assert b["quelle"].startswith("https://commons.wikimedia.org/wiki/File:") and b["lizenz"].startswith("https://creativecommons.org/")
+    gemeldet = json.loads(wp_cli("$m = array(); add_action( 'tamil_site_bildnachweis', static function ( $t, $q, $l ) use ( &$m ) { $m[] = array( $t, $q, $l ); }, 10, 3 );"
+                                 " tamil_site_nachweis_melden( 'Foto: X / Wikimedia Commons, CC BY-SA 4.0, zugeschnitten', 'https://commons.wikimedia.org/wiki/File:X.jpg',"
+                                 " 'https://creativecommons.org/licenses/by-sa/4.0/' ); echo wp_json_encode( $m );"))
+    assert gemeldet == [["Foto: X / Wikimedia Commons, CC BY-SA 4.0, zugeschnitten", "https://commons.wikimedia.org/wiki/File:X.jpg",
+                         "https://creativecommons.org/licenses/by-sa/4.0/"]]

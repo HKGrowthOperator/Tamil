@@ -279,6 +279,27 @@ def test_ohne_stripe_klarer_stand_statt_fehler(ohne_stripe):
     assert fehler is True
 
 
+def _buchen_spalte(html: str) -> bool:
+    kopf = re.search(r"<thead>.*?</thead>", html, re.S).group(0)
+    return "Buchen" in kopf
+
+
+def test_buchen_spalte_und_steuerhinweis_nur_wenn_sinnvoll(wb):
+    """Prüfung 17.11. (P2): Die Spalte „Buchen“ steht nur da, wenn etwas buchbar ist; „Preise inklusive Umsatzsteuer“
+    nur, wenn es Preise gibt."""
+    html = requests.get(wb.seite, timeout=30).text  # Fake-Stripe, Preise gesetzt: buchbar
+    assert _buchen_spalte(html) and "Preise inklusive Umsatzsteuer" in html
+    _php("update_option( 'tamil_site_werbung_angebote', array( 'laufzeiten' => array( 7 ), 'vorlauf' => 2 ), false );")
+    html = requests.get(wb.seite, timeout=30).text  # keine Preise: nichts buchbar, kein Steuerhinweis
+    assert not _buchen_spalte(html) and "Preise inklusive Umsatzsteuer" not in html and "<td></td></tr>" not in html
+    assert "auf Anfrage" in html
+
+
+def test_ohne_stripe_preise_ohne_buchen_spalte(ohne_stripe):
+    html = requests.get(ohne_stripe, timeout=30).text  # Preise da, aber ohne Online-Zahlung nichts buchbar
+    assert not _buchen_spalte(html) and "Preise inklusive Umsatzsteuer" in html
+
+
 # --- Aktiv-Funktion --------------------------------------------------------------------------------------------------
 
 def test_aktiv_nur_wenn_bezahlt_und_geprueft_und_nicht_pausiert_und_im_zeitraum(wb):

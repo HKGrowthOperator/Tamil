@@ -42,8 +42,14 @@ def testsystem(wp_cli):
         "global $wpdb; $seiten = array(); foreach ( array( 'production', 'einreichen', 'werben', 'verzeichnis' ) as $slug ) {"
         " $p = get_page_by_path( $slug, OBJECT, 'page' ); $seiten[ $slug ] = $p ? array( $p->ID, $p->post_status ) : null; }"
         " echo base64_encode( wp_json_encode( array( 'seiten' => $seiten, 'funktionen' => get_option( 'tamil_site_funktionen', null ),"
-        " 'merker' => get_option( 'tamil_c_testsystem', null ), 'max' => (int) $wpdb->get_var( \"SELECT MAX(ID) FROM {$wpdb->posts}\" ) ) ) );")
-    wp_cli("delete_option( 'tamil_c_testsystem' );")
+        " 'merker' => get_option( 'tamil_c_testsystem', null ), 'max' => (int) $wpdb->get_var( \"SELECT MAX(ID) FROM {$wpdb->posts}\" ),"
+        " 'beispiele' => get_posts( array( 'post_type' => TAMIL_SITE_VZ_TYP, 'post_status' => 'any', 'numberposts' => -1, 'fields' => 'ids',"
+        " 'meta_key' => '_tamil_vz_beispiel' ) ) ) ) );")
+    # Schon vorhandene Beispiel-Einträge (etwa auf einem eingerichteten Testbett) vorübergehend ohne Kennzeichen: Der
+    # Helfer legt dann eigene an, und „beispiele-entfernen“ löscht die vorhandenen nicht mit.
+    vorhanden = ", ".join(str(int(i)) for i in json.loads(base64.b64decode(sicher))["beispiele"])
+    wp_cli("delete_option( 'tamil_c_testsystem' );"
+           f" foreach ( array( {vorhanden} ) as $id ) {{ delete_post_meta( (int) $id, '_tamil_vz_beispiel' ); }}")
     yield json.loads(base64.b64decode(sicher))
     alt = json.loads(base64.b64decode(sicher))
     wp_cli(f"$alt = json_decode( base64_decode( '{sicher}' ), true ); global $wpdb;"
@@ -51,7 +57,8 @@ def testsystem(wp_cli):
            f" if ( $id > {int(alt['max'])} ) {{ wp_delete_post( $id, true ); }} }}"
            " foreach ( $alt['seiten'] as $slug => $s ) { if ( $s ) { wp_update_post( array( 'ID' => $s[0], 'post_status' => $s[1] ) ); } }"
            " foreach ( array( 'funktionen' => 'tamil_site_funktionen', 'merker' => 'tamil_c_testsystem' ) as $k => $o ) {"
-           " if ( null === $alt[ $k ] ) { delete_option( $o ); } else { update_option( $o, $alt[ $k ] ); } }")
+           " if ( null === $alt[ $k ] ) { delete_option( $o ); } else { update_option( $o, $alt[ $k ] ); } }"
+           " foreach ( $alt['beispiele'] as $id ) { update_post_meta( (int) $id, '_tamil_vz_beispiel', '1' ); }")
 
 
 def _stand(wp_cli) -> dict:
@@ -68,6 +75,7 @@ def _stand(wp_cli) -> dict:
 
 def test_testsystem_einrichten_zweimal_gleich(wp, wp_cli, testsystem):
     zustimmung_vorher = _php(wp_cli, "echo wp_json_encode( tamil_site_funktion_an( 'zustimmung' ) );")
+    vorher = _stand(wp_cli)["seiten"]
     erste = _helfer("testsystem")
     stand = _stand(wp_cli)
     zweite = _helfer("testsystem")
@@ -78,15 +86,24 @@ def test_testsystem_einrichten_zweimal_gleich(wp, wp_cli, testsystem):
     seiten = stand["seiten"]
     for slug in SEITEN:
         assert seiten[slug] and seiten[slug]["status"] == "publish", slug
-    assert seiten["production"]["titel"] == "Live mit dir!"
-    if "page-production.php" in wp_cli("echo wp_json_encode( array_keys( wp_get_theme()->get_page_templates() ) );"):
-        assert seiten["production"]["vorlage"] == "page-production.php"
-    # Archivbeiträge der Konzertreihe (Testsystem) oder, ohne sie, der Satz aus dem Altbestand
-    assert "Die Konzerte im Archiv" in seiten["production"]["inhalt"] or "auf deutschen Bühnen" in seiten["production"]["inhalt"]
-    assert '[tamil_einsendung art="event"]' in seiten["einreichen"]["inhalt"]
-    for art in ("beitrag", "kooperation", "werbung"):
-        assert f'href="#tf-{art}"' in seiten["einreichen"]["inhalt"], art
-    assert "[tamil_werbung]" in seiten["werben"]["inhalt"] and "[tamil_verzeichnis]" in seiten["verzeichnis"]["inhalt"]
+    # Eine schon veröffentlichte Seite (etwa „Production“ aus einer Übernahme) behält Titel, Inhalt und Vorlage; geprüft
+    # wird der Inhalt nur bei Seiten, die der Helfer selbst angelegt oder veröffentlicht hat.
+    gepflegt = {slug for slug in SEITEN if vorher[slug] and vorher[slug]["status"] == "publish"}
+    for slug in gepflegt:
+        assert seiten[slug] == vorher[slug], f"{slug}: bestehende Seite verändert"
+    if "production" not in gepflegt:
+        assert seiten["production"]["titel"] == "Live mit dir!"
+        if "page-production.php" in wp_cli("echo wp_json_encode( array_keys( wp_get_theme()->get_page_templates() ) );"):
+            assert seiten["production"]["vorlage"] == "page-production.php"
+        # Archivbeiträge der Konzertreihe (Testsystem) oder, ohne sie, der Satz aus dem Altbestand
+        assert "Die Konzerte im Archiv" in seiten["production"]["inhalt"] or "auf deutschen Bühnen" in seiten["production"]["inhalt"]
+    if "einreichen" not in gepflegt:
+        assert '[tamil_einsendung art="event"]' in seiten["einreichen"]["inhalt"]
+        for art in ("beitrag", "kooperation", "werbung"):
+            assert f'href="#tf-{art}"' in seiten["einreichen"]["inhalt"], art
+    for slug, kennung in (("werben", "[tamil_werbung]"), ("verzeichnis", "[tamil_verzeichnis]")):
+        if slug not in gepflegt:
+            assert kennung in seiten[slug]["inhalt"], slug
 
     assert stand["funktionen"] == {"einreichungen": True, "verzeichnis": True, "werbung": True, "zustimmung": zustimmung_vorher}
 
@@ -99,11 +116,12 @@ def test_testsystem_einrichten_zweimal_gleich(wp, wp_cli, testsystem):
         assert not b["werte"]["telefon"] and not b["werte"]["email"], "keine echt wirkenden Kontaktdaten"
 
     # Die Seiten antworten, die Formulare und das Verzeichnis sind da, Werben sagt den Stand der Zahlung
-    assert "tf-formular" in requests.get(f"{URL}/einreichen/", timeout=30).text
-    verzeichnis = requests.get(f"{URL}/verzeichnis/", timeout=30).text
-    assert "Beispiel: Tempelverein Musterstadt" in verzeichnis
-    werben = requests.get(f"{URL}/werben/", timeout=30).text
-    assert "auf Anfrage" in werben
+    if "einreichen" not in gepflegt:
+        assert "tf-formular" in requests.get(f"{URL}/einreichen/", timeout=30).text
+    if "verzeichnis" not in gepflegt:
+        assert "Beispiel: Tempelverein Musterstadt" in requests.get(f"{URL}/verzeichnis/", timeout=30).text
+    if "werben" not in gepflegt:
+        assert "auf Anfrage" in requests.get(f"{URL}/werben/", timeout=30).text
     assert requests.get(f"{URL}/production/", timeout=30).status_code == 200
 
 

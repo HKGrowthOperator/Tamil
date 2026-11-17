@@ -18,9 +18,13 @@ Fremde Bilder nur von Wikimedia Commons mit CC0, CC BY oder CC BY-SA; geladen am
 Angezeigter Nachweis (wie in `ads.php`):
 
 - Production: „Foto: Archiv Tamil.de“
-- Event: „Foto: Rainer Halama / Wikimedia Commons, CC BY-SA 2.5“
-- Werben: „Foto: Fridolin freudenfett / Wikimedia Commons, CC BY-SA 4.0“
-- WhatsApp: „Foto: Pixel.la / Wikimedia Commons, CC0“ (bei CC0 nicht verlangt, steht trotzdem da)
+- Event: „Foto: Rainer Halama / Wikimedia Commons, CC BY-SA 2.5, zugeschnitten“
+- Werben: „Foto: Fridolin freudenfett / Wikimedia Commons, CC BY-SA 4.0, zugeschnitten“
+- WhatsApp: „Foto: Pixel.la / Wikimedia Commons, CC0, zugeschnitten“ (bei CC0 nicht verlangt, steht trotzdem da)
+
+„zugeschnitten“, weil jedes Banner nur einen Ausschnitt des Fotos zeigt (`object-fit: cover`). Dateiseite und
+Lizenz-URL stehen zusätzlich im Code (`quelle`, `lizenz`) und gehen mit der Aktion `tamil_site_bildnachweis` an das
+Theme (verlinkte Nachweise).
 
 Weitergabe unter gleichen Bedingungen (BY-SA): Die verkleinerten Dateien stehen unter derselben Lizenz wie das
 Original.

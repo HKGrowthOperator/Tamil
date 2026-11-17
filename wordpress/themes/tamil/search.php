@@ -23,7 +23,7 @@ tamil_cache_fuellen( $tamil_ids );
 				esc_html_e( 'Sucht nach einem Film, einer Stadt, einem Fest oder einem Namen.', 'tamil' );
 			} else {
 				/* translators: 1: Anzahl, 2: Suchbegriff */
-				echo esc_html( sprintf( _n( '%1$d Beitrag zu „%2$s“, die neuesten zuerst', '%1$d Beiträge zu „%2$s“, die neuesten zuerst', $tamil_n, 'tamil' ), $tamil_n, $tamil_q ) );
+				echo tamil_text( sprintf( _n( '%1$d Beitrag zu „%2$s“, die neuesten zuerst', '%1$d Beiträge zu „%2$s“, die neuesten zuerst', $tamil_n, 'tamil' ), $tamil_n, $tamil_q ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_text(), tamilische Wörter mit lang="ta"
 			}
 			?>
 		</p>

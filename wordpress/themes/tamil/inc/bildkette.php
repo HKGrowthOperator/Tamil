@@ -9,10 +9,13 @@
  *      (mit seinen Größen, srcset und Nachweis).
  *   c) sonst, bei Kino- und Terminbeiträgen, das Foto des neuesten anderen Beitrags zum selben Film bzw. zur selben
  *      Veranstaltung (inc/filmbilder.php), mit dessen Nachweis und ohne Schild, weil es den Film zeigt;
- *   d) sonst ein Symbolbild aus dem Rubrik-Pool (inc/bildpool.php): bis zu vier echte Fotos je Rubrik, fest nach
- *      Beitrags-ID gewählt, damit Nachbarn verschieden sind; sichtbar als „Symbolbild“ gekennzeichnet, mit Nachweis.
+ *   d) sonst ein Symbolbild aus dem Rubrik-Pool (inc/bildpool.php): echte Fotos je Rubrik, bevorzugt nach Beitrags-ID
+ *      gewählt; auf einer Seite reihum vergeben, damit kein Ersatzbild doppelt erscheint (tamil_pool_seite()); sichtbar
+ *      als „Symbolbild“ gekennzeichnet, mit Nachweis.
  *
- * Die Nachweise sammelt der Fuß („Bildnachweise dieser Seite“) als HTML mit Links auf Dateiseite und Lizenz.
+ * Nachweise entstehen an einer Stelle (tamil_nachweis_bauen()): Urheber mit Link auf die Dateiseite, Lizenz mit Link
+ * auf den Lizenztext, „zugeschnitten“ bei Fotos unter freier Lizenz (die Rahmen schneiden per object-fit) und bei
+ * Bändern; redaktionelle Symbolbilder beginnen mit „Symbolbild“. Der Fuß sammelt sie („Bildnachweise dieser Seite“).
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -36,8 +39,10 @@ function tamil_ist_titelkarte( int $post_id ): bool {
 /**
  * Bildwahl eines Beitrags über die Kette (je Aufruf der Seite einmal gerechnet).
  *
- * @return array{art:string,id:int,pool:array<string,mixed>,breit:bool,alt:string,nachweis:string,quelle:int}
- *         art „eigen“, „inhalt“, „film“ oder „pool“; nachweis ist escaptes HTML; quelle = Beitrag des Filmbilds.
+ * @return array{art:string,id:int,pool:array<string,mixed>,breit:bool,symbol:bool,alt:string,nachweis:string,quelle:int}
+ *         art „eigen“, „inhalt“, „film“ oder „pool“; nachweis ist escaptes HTML (beim Pool leer, siehe
+ *         tamil_bild_nachweis_html()); symbol = Symbolbild (Pool oder redaktionell gekennzeichnet); quelle = Beitrag
+ *         des Filmbilds.
  */
 function tamil_bildwahl( int $post_id ): array {
 	static $wahl = array();
@@ -47,14 +52,15 @@ function tamil_bildwahl( int $post_id ): array {
 	$thumb = (int) get_post_thumbnail_id( $post_id );
 	if ( $thumb && wp_attachment_is_image( $thumb ) && ! tamil_ist_titelkarte( $post_id ) ) {
 		$breit            = tamil_bild_ist_breit( $thumb );
-		$text             = str_replace( ' · ', ', ', tamil_bildnachweis( $post_id ) );
+		$symbol           = tamil_ist_symbolbild( $post_id, $thumb );
 		$wahl[ $post_id ] = array(
 			'art'      => 'eigen',
 			'id'       => $thumb,
 			'pool'     => array(),
 			'breit'    => $breit,
+			'symbol'   => $symbol,
 			'alt'      => tamil_bild_alt( $post_id ),
-			'nachweis' => '' !== $text ? esc_html( $text . ( $breit ? ', ' . __( 'zugeschnitten', 'tamil' ) : '' ) ) : '',
+			'nachweis' => tamil_nachweis_bauen( tamil_bildnachweis( $post_id ), tamil_nachweis_angaben( $post_id, $breit, $symbol ) ),
 			'quelle'   => 0,
 		);
 		return $wahl[ $post_id ];
@@ -63,13 +69,21 @@ function tamil_bildwahl( int $post_id ): array {
 	if ( $inhalt ) {
 		$breit            = tamil_bild_ist_breit( $inhalt['id'] );
 		$alt              = trim( (string) get_post_meta( $inhalt['id'], '_wp_attachment_image_alt', true ) );
+		$symbol           = tamil_ist_symbolbild( 0, $inhalt['id'], $inhalt['nachweis'] );
 		$wahl[ $post_id ] = array(
 			'art'      => 'inhalt',
 			'id'       => $inhalt['id'],
 			'pool'     => array(),
 			'breit'    => $breit,
+			'symbol'   => $symbol,
 			'alt'      => wp_strip_all_tags( get_the_title( $post_id ) ) === $alt ? '' : $alt,
-			'nachweis' => '' !== $inhalt['nachweis'] ? esc_html( $inhalt['nachweis'] . ( $breit ? ', ' . __( 'zugeschnitten', 'tamil' ) : '' ) ) : '',
+			'nachweis' => tamil_nachweis_bauen(
+				$inhalt['nachweis'],
+				array(
+					'zuschnitt' => $breit,
+					'symbol'    => $symbol,
+				)
+			),
 			'quelle'   => 0,
 		);
 		return $wahl[ $post_id ];
@@ -78,30 +92,197 @@ function tamil_bildwahl( int $post_id ): array {
 	if ( $quelle ) {
 		$foto             = tamil_eigenes_foto( $quelle );
 		$alt              = trim( (string) get_post_meta( $foto, '_wp_attachment_image_alt', true ) );
-		$text             = str_replace( ' · ', ', ', tamil_bildnachweis( $quelle ) );
+		$symbol           = tamil_ist_symbolbild( $quelle, $foto );
 		$wahl[ $post_id ] = array(
 			'art'      => 'film',
 			'id'       => $foto,
 			'pool'     => array(),
 			'breit'    => false,
+			'symbol'   => $symbol,
 			'alt'      => wp_strip_all_tags( get_the_title( $post_id ) ) === $alt ? '' : $alt,
-			'nachweis' => esc_html( $text ),
+			'nachweis' => tamil_nachweis_bauen( tamil_bildnachweis( $quelle ), tamil_nachweis_angaben( $quelle, false, $symbol ) ),
 			'quelle'   => $quelle,
 		);
 		return $wahl[ $post_id ];
 	}
-	$pool             = tamil_pool_bild( tamil_rubrik_slug( $post_id ), $post_id );
+	// Symbolbild aus dem Pool: welches Bild, entscheidet erst die Ausgabe (tamil_pool_fuer()), damit nur gezeigte
+	// Bilder auf der Seite als vergeben gelten
 	$wahl[ $post_id ] = array(
 		'art'      => 'pool',
 		'id'       => 0,
-		'pool'     => $pool,
+		'pool'     => array(),
 		'breit'    => false,
-		/* translators: %s: Bildbeschreibung */
-		'alt'      => sprintf( __( 'Symbolbild: %s', 'tamil' ), $pool['alt'] ),
-		'nachweis' => tamil_pool_nachweis( $pool ),
+		'symbol'   => true,
+		'alt'      => '',
+		'nachweis' => '',
 		'quelle'   => 0,
 	);
 	return $wahl[ $post_id ];
+}
+
+/**
+ * Symbolbild aus dem Pool für einen Beitrag ohne eigenes Bild: einmal je Seite gewählt (tamil_pool_seite()), danach
+ * für denselben Beitrag immer dasselbe.
+ *
+ * @return array{datei:string,w:int,h:int,alt:string,urheber:string,lizenz:string,lizenz_url:string,seite:string,fokus:string}
+ */
+function tamil_pool_fuer( int $post_id ): array {
+	static $gewaehlt = array();
+	if ( ! isset( $gewaehlt[ $post_id ] ) ) {
+		$gewaehlt[ $post_id ] = tamil_pool_seite( tamil_rubrik_slug( $post_id ), $post_id );
+	}
+	return $gewaehlt[ $post_id ];
+}
+
+/**
+ * Pool-Bild für einen Rahmen dieser Seite: bevorzugt das zur Nummer gehörende (Beitrags-ID, damit ein Beitrag auf
+ * allen Seiten möglichst dasselbe Bild zeigt); ist es auf der Seite schon vergeben, das nächste freie desselben Pools.
+ * Erst wenn alle vergeben sind, kommt das am seltensten gezeigte wieder.
+ *
+ * @return array{datei:string,w:int,h:int,alt:string,urheber:string,lizenz:string,lizenz_url:string,seite:string,fokus:string}
+ */
+function tamil_pool_seite( string $slug, int $n ): array {
+	static $gezeigt = array();
+	$liste          = tamil_pool_liste( $slug );
+	$anzahl         = count( $liste );
+	$start          = abs( $n ) % $anzahl;
+	$wahl           = $liste[ $start ];
+	for ( $i = 0; $i < $anzahl; $i++ ) {
+		$p = $liste[ ( $start + $i ) % $anzahl ];
+		if ( ( $gezeigt[ $p['datei'] ] ?? 0 ) < ( $gezeigt[ $wahl['datei'] ] ?? 0 ) ) {
+			$wahl = $p;
+		}
+		if ( empty( $gezeigt[ $p['datei'] ] ) ) {
+			$wahl = $p;
+			break;
+		}
+	}
+	$gezeigt[ $wahl['datei'] ] = ( $gezeigt[ $wahl['datei'] ] ?? 0 ) + 1;
+	return $wahl;
+}
+
+/**
+ * Ist ein redaktionelles Beitragsbild ein Symbolbild? Erkennbar an „Symbolbild“ im Alternativtext oder in der
+ * Bildunterschrift des Anhangs, im Nachweis oder am Meta „bild_symbolbild“ des Beitrags.
+ */
+function tamil_ist_symbolbild( int $post_id, int $attachment_id, string $nachweis = '' ): bool {
+	$texte = array(
+		$nachweis,
+		$attachment_id ? (string) get_post_meta( $attachment_id, '_wp_attachment_image_alt', true ) : '',
+		$attachment_id ? (string) wp_get_attachment_caption( $attachment_id ) : '',
+		$post_id ? (string) get_post_meta( $post_id, 'bild_credit', true ) : '',
+	);
+	if ( $post_id && '' !== (string) get_post_meta( $post_id, 'bild_symbolbild', true ) && '0' !== (string) get_post_meta( $post_id, 'bild_symbolbild', true ) ) {
+		return true;
+	}
+	return (bool) preg_grep( '/symbolbild/iu', $texte );
+}
+
+/**
+ * Angaben eines Beitrags für den Nachweis seines Bilds: Dateiseite und Lizenz-Adresse aus den Radar-Feldern
+ * (bild_quelle_url, bild_lizenz_url, bild_lizenz), dazu Zuschnitt und Symbolbild.
+ *
+ * @return array{seite:string,lizenz_url:string,zuschnitt:bool,symbol:bool}
+ */
+function tamil_nachweis_angaben( int $post_id, bool $breit, bool $symbol ): array {
+	$lizenz_url = (string) get_post_meta( $post_id, 'bild_lizenz_url', true );
+	if ( '' === $lizenz_url ) {
+		$lizenz_url = tamil_lizenz_url( (string) get_post_meta( $post_id, 'bild_lizenz', true ) );
+	}
+	return array(
+		'seite'      => (string) get_post_meta( $post_id, 'bild_quelle_url', true ),
+		'lizenz_url' => $lizenz_url,
+		'zuschnitt'  => $breit,
+		'symbol'     => $symbol,
+	);
+}
+
+/**
+ * Lizenz-Adresse zu einem Lizenznamen aus dem Nachweis („CC BY-SA 4.0“, „CC BY 2.0 at“, „CC0 1.0“, „Public Domain“)
+ * oder einem Kürzel des Radars („cc-by-sa-4.0“, „cc0-1.0“, „pdm-1.0“). Unbekannt: leer.
+ */
+function tamil_lizenz_url( string $name ): string {
+	$name = strtolower( trim( str_replace( array( '_', '-' ), array( ' ', ' ' ), $name ) ) );
+	if ( preg_match( '/^cc ?by( sa| nd| nc| nc sa| nc nd)? ?([1-4]\.[05])(?: ([a-z]{2}))?$/', $name, $m ) ) {
+		$art = 'by' . str_replace( ' ', '-', (string) $m[1] );
+		return 'https://creativecommons.org/licenses/' . $art . '/' . $m[2] . '/' . ( ! empty( $m[3] ) ? $m[3] . '/' : '' );
+	}
+	if ( preg_match( '/^cc ?0(?: 1\.0)?$/', $name ) ) {
+		return 'https://creativecommons.org/publicdomain/zero/1.0/';
+	}
+	if ( preg_match( '/^(?:pd|pdm(?: 1\.0)?|public domain(?: mark)?(?: 1\.0)?|gemeinfrei)$/', $name ) ) {
+		return 'https://creativecommons.org/publicdomain/mark/1.0/';
+	}
+	return '';
+}
+
+/**
+ * Nachweis als HTML aus dem Text („Foto: Urheber / Wikimedia Commons, CC BY-SA 4.0“): Urheber verlinkt auf die
+ * Dateiseite, Lizenz auf den Lizenztext, dazu „zugeschnitten“ und bei Symbolbildern „Symbolbild,“ davor.
+ *
+ * Ohne bekannte Dateiseite, aber mit Wikimedia Commons als Herkunft verlinkt „Wikimedia Commons“ die Suche nach dem
+ * Urheber auf Commons (keine erfundene Dateiseite). „zugeschnitten“ steht bei Bändern und bei jedem Foto unter freier
+ * Lizenz, denn die Rahmen schneiden Bilder per object-fit auf ihr Format zu.
+ *
+ * @param array<string,mixed> $angaben { @type string $seite, @type string $lizenz_url, @type bool $zuschnitt, @type bool $symbol }
+ */
+function tamil_nachweis_bauen( string $text, array $angaben = array() ): string {
+	$text = trim( (string) preg_replace( '/\s+/u', ' ', str_replace( ' · ', ', ', $text ) ) );
+	if ( '' === $text ) {
+		return '';
+	}
+	$seite      = (string) ( $angaben['seite'] ?? '' );
+	$lizenz_url = (string) ( $angaben['lizenz_url'] ?? '' );
+	$zuschnitt  = ! empty( $angaben['zuschnitt'] );
+	$symbol     = ! empty( $angaben['symbol'] );
+
+	// Lizenz am Ende: „…, CC BY-SA 4.0“ (danach höchstens Zusätze wie „zugeschnitten“)
+	$lizenz = '';
+	$rest   = '';
+	if ( preg_match( '/^(.*?),\s*(CC0(?: 1\.0)?|CC BY(?:-(?:SA|ND|NC|NC-SA|NC-ND))? [1-4]\.[05](?: [a-z]{2})?|Public Domain(?: Mark)?(?: 1\.0)?|PD)\b\s*(?:,\s*(.*))?$/iu', $text, $m ) ) {
+		$text   = $m[1];
+		$lizenz = $m[2];
+		$rest   = trim( (string) ( $m[3] ?? '' ) );
+		if ( '' === $lizenz_url ) {
+			$lizenz_url = tamil_lizenz_url( $lizenz );
+		}
+	}
+	$frei = '' !== $lizenz && '' !== tamil_lizenz_url( $lizenz );
+
+	// Kopf: „Foto: Urheber / Wikimedia Commons“
+	$praefix = '';
+	if ( preg_match( '/^((?:Symbolbild,?\s*)?(?:Foto|Bild|Filmbild|Grafik|Illustration)\s*:\s*)(.*)$/iu', $text, $k ) ) {
+		$praefix = $k[1];
+		$text    = $k[2];
+	}
+	$commons = '';
+	if ( preg_match( '#^(.*?)\s*[/,]\s*(Wikimedia Commons)$#iu', $text, $c ) ) {
+		$text    = $c[1];
+		$commons = $c[2];
+	}
+	$urheber = esc_html( $text );
+	if ( '' !== $seite && preg_match( '#^https?://#i', $seite ) ) {
+		$urheber = '<a href="' . esc_url( $seite ) . '">' . $urheber . '</a>';
+	}
+	$html = esc_html( $praefix ) . $urheber;
+	if ( '' !== $commons ) {
+		$html .= ' / ' . ( '' === $seite && '' !== $text
+			? '<a href="' . esc_url( 'https://commons.wikimedia.org/w/index.php?title=Special:MediaSearch&type=image&search=' . rawurlencode( trim( (string) preg_replace( '/\s*\(https?:[^)]*\)/i', '', $text ) ) ) ) . '">' . esc_html( $commons ) . '</a>'
+			: esc_html( $commons ) );
+	}
+	if ( '' !== $lizenz ) {
+		$html .= ', ' . ( '' !== $lizenz_url ? '<a href="' . esc_url( $lizenz_url ) . '" rel="license">' . esc_html( $lizenz ) . '</a>' : esc_html( $lizenz ) );
+	}
+	if ( '' !== $rest ) {
+		$html .= ', ' . esc_html( $rest );
+	}
+	if ( ( $zuschnitt || $frei || '' !== $commons ) && ! preg_match( '/zugeschnitten|ausschnitt/iu', $rest . ' ' . $text ) ) {
+		$html .= ', ' . esc_html__( 'zugeschnitten', 'tamil' );
+	}
+	if ( $symbol && ! preg_match( '/^\s*symbolbild/iu', $praefix . $text ) ) {
+		$html = esc_html__( 'Symbolbild', 'tamil' ) . ', ' . $html;
+	}
+	return $html;
 }
 
 /**
@@ -195,11 +376,14 @@ function tamil_anhang_aus_url( string $url ): int {
  * @param array<string,mixed> $pool Eintrag aus tamil_bildpool().
  */
 function tamil_pool_nachweis( array $pool ): string {
-	return sprintf(
-		/* translators: 1: Urheber mit Link, 2: Lizenz mit Link */
-		__( 'Symbolbild, Foto: %1$s / Wikimedia Commons, %2$s, zugeschnitten', 'tamil' ),
-		'<a href="' . esc_url( (string) $pool['seite'] ) . '">' . esc_html( (string) $pool['urheber'] ) . '</a>',
-		'<a href="' . esc_url( (string) $pool['lizenz_url'] ) . '" rel="license">' . esc_html( (string) $pool['lizenz'] ) . '</a>'
+	return tamil_nachweis_bauen(
+		'Foto: ' . $pool['urheber'] . ' / Wikimedia Commons, ' . $pool['lizenz'],
+		array(
+			'seite'      => (string) $pool['seite'],
+			'lizenz_url' => (string) $pool['lizenz_url'],
+			'zuschnitt'  => true,
+			'symbol'     => true,
+		)
 	);
 }
 
@@ -221,7 +405,40 @@ function tamil_nachweis_kses(): array {
  * Nachweis eines Beitragsbilds aus der Kette als HTML (für Bildunterschrift und Fuß).
  */
 function tamil_bild_nachweis_html( int $post_id ): string {
-	return tamil_bildwahl( $post_id )['nachweis'];
+	$w = tamil_bildwahl( $post_id );
+	return 'pool' === $w['art'] ? tamil_pool_nachweis( tamil_pool_fuer( $post_id ) ) : $w['nachweis'];
+}
+
+/**
+ * Schild „Symbolbild“ im Rahmen; in Rahmen unter 150 px nur „S“ (CSS, Container-Abfrage), der volle Hinweis steht im
+ * Alternativtext, in der Bildunterschrift und im Fuß.
+ */
+function tamil_symbolbild_schild(): string {
+	return '<span class="symbolbild" aria-hidden="true"><span class="symbolbild__lang">' . esc_html__( 'Symbolbild', 'tamil' ) . '</span><span class="symbolbild__kurz" title="' . esc_attr__( 'Symbolbild', 'tamil' ) . '">S</span></span>';
+}
+
+/**
+ * <img> eines Pool-Bilds mit kleiner Fassung (320 px) im srcset.
+ *
+ * @param array<string,mixed> $p    Eintrag aus tamil_bildpool().
+ * @param array<string,string> $attr alt, loading, sizes, class, fetchpriority.
+ */
+function tamil_pool_tag( array $p, array $attr ): string {
+	$basis = TAMIL_THEME_URI . '/assets/img/rubrik/';
+	$klein = str_replace( '.webp', '-320.webp', (string) $p['datei'] );
+	return sprintf(
+		'<img src="%1$s" srcset="%2$s 320w, %1$s %3$dw" sizes="%4$s" width="%3$d" height="%5$d" alt="%6$s" decoding="async" loading="%7$s"%8$s%9$s style="object-position: %10$s">',
+		esc_url( $basis . $p['datei'] ),
+		esc_url( $basis . $klein ),
+		(int) $p['w'],
+		esc_attr( '' !== ( $attr['sizes'] ?? '' ) ? $attr['sizes'] : '100vw' ),
+		(int) $p['h'],
+		esc_attr( (string) ( $attr['alt'] ?? '' ) ),
+		esc_attr( (string) ( $attr['loading'] ?? 'lazy' ) ),
+		! empty( $attr['fetchpriority'] ) ? ' fetchpriority="high"' : '',
+		! empty( $attr['class'] ) ? ' class="' . esc_attr( $attr['class'] ) . '"' : '',
+		esc_attr( (string) $p['fokus'] )
+	);
 }
 
 /**
@@ -259,26 +476,20 @@ function tamil_bild( int $post_id, array $opt = array() ): string {
 		$attr['class'] = implode( ' ', $klassen );
 	}
 	if ( 'pool' === $w['art'] ) {
-		$p   = $w['pool'];
-		$img = sprintf(
-			'<img src="%1$s" width="%2$d" height="%3$d" alt="%4$s" decoding="async" loading="%5$s"%6$s%7$s style="object-position: %8$s">',
-			esc_url( TAMIL_THEME_URI . '/assets/img/rubrik/' . $p['datei'] ),
-			(int) $p['w'],
-			(int) $p['h'],
-			esc_attr( $attr['alt'] ),
-			esc_attr( $attr['loading'] ),
-			isset( $attr['fetchpriority'] ) ? ' fetchpriority="high"' : '',
-			isset( $attr['class'] ) ? ' class="' . esc_attr( $attr['class'] ) . '"' : '',
-			esc_attr( (string) $p['fokus'] )
-		);
-		if ( $opt['schild'] ?? true ) {
-			$img .= '<span class="symbolbild" aria-hidden="true">' . esc_html__( 'Symbolbild', 'tamil' ) . '</span>';
-		}
+		$p             = tamil_pool_fuer( $post_id );
+		$w['nachweis'] = tamil_pool_nachweis( $p );
+		/* translators: %s: Bildbeschreibung */
+		$attr['alt']   = sprintf( __( 'Symbolbild: %s', 'tamil' ), $p['alt'] );
+		$attr['sizes'] = (string) ( $opt['sizes'] ?? '' );
+		$img           = tamil_pool_tag( $p, $attr );
 	} else {
 		if ( ! empty( $opt['sizes'] ) ) {
 			$attr['sizes'] = (string) $opt['sizes'];
 		}
 		$img = (string) wp_get_attachment_image( $w['id'], (string) ( $opt['size'] ?? 'large' ), false, $attr );
+	}
+	if ( '' !== $img && $w['symbol'] && ( $opt['schild'] ?? true ) ) {
+		$img .= tamil_symbolbild_schild();
 	}
 	if ( '' !== $img ) {
 		tamil_nachweise( $w['nachweis'] );
@@ -287,25 +498,25 @@ function tamil_bild( int $post_id, array $opt = array() ): string {
 }
 
 /**
- * Ein Bild aus dem Rubrik-Pool als <img> (Rubrikkacheln ohne Beitrag mit Foto, Leerzustände); merkt den Nachweis.
+ * Ein Bild aus dem Rubrik-Pool als <img> (Rubrikkacheln ohne Beitrag mit Foto, Leerzustände), reihum auf der Seite;
+ * merkt den Nachweis.
  *
- * @param array<string,mixed> $opt { @type int $n Nummer im Pool, @type bool $schild, @type bool $sofort, @type bool $alt. }
+ * @param array<string,mixed> $opt { @type int $n bevorzugte Nummer im Pool, @type bool $schild, @type bool $sofort, @type bool $alt, @type string $sizes. }
  */
 function tamil_pool_img( string $slug, array $opt = array() ): string {
-	$p = tamil_pool_bild( $slug, (int) ( $opt['n'] ?? 0 ) );
+	$p = tamil_pool_seite( $slug, (int) ( $opt['n'] ?? 0 ) );
 	tamil_nachweise( tamil_pool_nachweis( $p ) );
-	$img = sprintf(
-		'<img src="%1$s" width="%2$d" height="%3$d" alt="%4$s" decoding="async" loading="%5$s" style="object-position: %6$s">',
-		esc_url( TAMIL_THEME_URI . '/assets/img/rubrik/' . $p['datei'] ),
-		(int) $p['w'],
-		(int) $p['h'],
-		/* translators: %s: Bildbeschreibung */
-		esc_attr( ( $opt['alt'] ?? true ) ? sprintf( __( 'Symbolbild: %s', 'tamil' ), $p['alt'] ) : '' ),
-		! empty( $opt['sofort'] ) ? 'eager' : 'lazy',
-		esc_attr( (string) $p['fokus'] )
+	$img = tamil_pool_tag(
+		$p,
+		array(
+			/* translators: %s: Bildbeschreibung */
+			'alt'     => ( $opt['alt'] ?? true ) ? sprintf( __( 'Symbolbild: %s', 'tamil' ), $p['alt'] ) : '',
+			'loading' => ! empty( $opt['sofort'] ) ? 'eager' : 'lazy',
+			'sizes'   => (string) ( $opt['sizes'] ?? '' ),
+		)
 	);
 	if ( $opt['schild'] ?? true ) {
-		$img .= '<span class="symbolbild" aria-hidden="true">' . esc_html__( 'Symbolbild', 'tamil' ) . '</span>';
+		$img .= tamil_symbolbild_schild();
 	}
 	return $img;
 }

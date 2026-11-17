@@ -157,10 +157,12 @@ function tamil_kino_liste_ersetzen( string $content ): string {
 add_filter( 'the_content', 'tamil_kino_liste_ersetzen', 15 );
 
 /**
- * Teilen-Feld des alten WhatsApp-Plugins („Share on: WhatsApp“) nicht anzeigen; der gespeicherte Inhalt bleibt.
+ * Reste der alten Seite im Text nicht anzeigen: das Teilen-Feld des alten WhatsApp-Plugins („Share on: WhatsApp“, steht
+ * über der neuen Teilen-Leiste und verlinkt auf www.tamil.de) und Bilder unter www.tamil.de/wp-content/uploads/ (auf
+ * die eigenen Uploads umgeschrieben oder, ohne lokale Datei, weggelassen). Der gespeicherte Inhalt bleibt unverändert.
  */
 function tamil_inhalt_altreste( string $content ): string {
-	return tamil_altreste_entfernen( $content );
+	return tamil_alte_uploads( tamil_altreste_entfernen( $content ) );
 }
 add_filter( 'the_content', 'tamil_inhalt_altreste', 1 );
 

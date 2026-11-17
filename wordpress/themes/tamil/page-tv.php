@@ -10,6 +10,23 @@
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Titel der Seite in normaler Schreibung: Der Altbestand heißt „TAMIL TV CHANNEL“; <title>, Vorschau und Überschrift
+ * sagen „Tamil TV“.
+ *
+ * @param string $titel Titel.
+ * @param int    $id    Beitrag (bei the_title).
+ */
+function tamil_tv_titel( $titel, $id = 0 ) {
+	$seite = (int) get_queried_object_id();
+	if ( ( 0 === (int) $id || (int) $id === $seite ) && preg_match( '/^[^a-z]*$/u', wp_strip_all_tags( (string) $titel ) ) ) {
+		return __( 'Tamil TV', 'tamil' );
+	}
+	return $titel;
+}
+add_filter( 'single_post_title', 'tamil_tv_titel' );
+add_filter( 'the_title', 'tamil_tv_titel', 10, 2 );
+
 get_header();
 
 $tamil_sender = array();

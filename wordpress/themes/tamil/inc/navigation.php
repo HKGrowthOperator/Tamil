@@ -41,7 +41,7 @@ function tamil_nav_items(): array {
 		$items[] = array(
 			'label' => $rubrik['label'],
 			'url'   => $rubrik['url'],
-			'aktiv' => tamil_nav_aktiv( $rubrik['url'] ) || is_category( $slug ) || ( 'events' === $slug && is_page( 'events' ) ),
+			'aktiv' => tamil_nav_aktiv( $rubrik['url'] ) || is_category( $slug ) || ( 'events' === $slug && is_page( 'events' ) ) || tamil_beitrag_in_rubrik( $slug ),
 			'slug'  => $slug,
 		);
 	}
@@ -54,6 +54,18 @@ function tamil_nav_items(): array {
 		);
 	}
 	return $items;
+}
+
+/**
+ * Gehört der angezeigte Beitrag zur Rubrik? (Ein Events-Artikel markiert „Events“, auch wenn das Band auf die Seite
+ * /events/ statt auf /category/events/ führt.)
+ */
+function tamil_beitrag_in_rubrik( string $slug ): bool {
+	if ( ! is_singular( 'post' ) ) {
+		return false;
+	}
+	$kat = tamil_hauptkategorie( (int) get_queried_object_id() );
+	return $kat && $kat->slug === $slug;
 }
 
 /**

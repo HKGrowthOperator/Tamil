@@ -78,7 +78,7 @@ function tamil_anr_imbild( int $post_id, array $opt = array() ): string {
 	$html .= '<div class="rahmen' . ( ! empty( $opt['rahmen'] ) ? ' ' . esc_attr( (string) $opt['rahmen'] ) : '' ) . '">' . $img;
 	$html .= $unter ? '</div><div class="kachel__unter">' . $text . '</div>' : '<div class="imbild">' . $text . '</div></div>';
 	if ( ! empty( $opt['vorspann'] ) ) {
-		$html .= '<p class="vorspann">' . tamil_text( tamil_ganze_saetze( tamil_saetze( tamil_standfirst( $post_id ), 2 ) ) ) . '</p>';
+		$html .= '<p class="vorspann">' . tamil_text( tamil_ganze_saetze( tamil_saetze_bis( tamil_standfirst( $post_id ), 260 ) ) ) . '</p>';
 	}
 	return $html . '</a></article>';
 }
@@ -187,6 +187,43 @@ function tamil_zeilen( array $ids, array $opt = array() ): string {
 }
 
 /**
+ * Listen im Seiteninhalt, deren Punkte nur je einen Link auf einen Beitrag dieser Website enthalten (etwa „Die
+ * Konzerte im Archiv“ auf /production/), als Liste mit Bild ausgeben (Bilderpflicht, Tippflächen). Andere Listen
+ * bleiben, wie sie sind; Beiträge aus $ohne (stehen auf der Seite schon) fallen aus der Liste.
+ *
+ * @param int[] $ohne Beiträge, die schon gezeigt werden.
+ */
+function tamil_beitragslisten_mit_bild( string $html, array $ohne = array() ): string {
+	if ( ! str_contains( $html, '<ul' ) ) {
+		return $html;
+	}
+	$neu = preg_replace_callback(
+		'#<ul\b[^>]*>(.*?)</ul>#is',
+		static function ( array $m ) use ( $ohne ): string {
+			if ( ! preg_match_all( '#<li\b[^>]*>(.*?)</li>#is', $m[1], $punkte ) ) {
+				return $m[0];
+			}
+			$ids = array();
+			foreach ( $punkte[1] as $punkt ) {
+				if ( 1 !== preg_match_all( '#<a\b[^>]*\shref\s*=\s*(["\'])([^"\']+)\1#i', $punkt, $links ) || '' !== trim( wp_strip_all_tags( (string) preg_replace( '#<a\b.*?</a>#is', '', $punkt ) ) ) ) {
+					return $m[0]; // mehr als ein Link oder Text neben dem Link: eine normale Liste
+				}
+				$url = html_entity_decode( $links[2][0], ENT_QUOTES );
+				$id  = url_to_postid( str_starts_with( $url, '/' ) ? home_url( $url ) : $url );
+				if ( ! $id || 'post' !== get_post_type( $id ) || 'publish' !== get_post_status( $id ) ) {
+					return $m[0];
+				}
+				$ids[] = $id;
+			}
+			$ids = array_values( array_diff( array_unique( $ids ), array_map( 'intval', $ohne ) ) );
+			return $ids ? tamil_zeilen( $ids, array( 'rubrik' => false ) ) : '';
+		},
+		$html
+	);
+	return is_string( $neu ) ? $neu : $html;
+}
+
+/**
  * Rubrikkacheln: kleine Bildkacheln mit dem Rubriknamen im Bild. Navigation, keine Schlagzeilen.
  *
  * @param array<int,array{label:string,url:string,slug:string,bild:int}> $kacheln Bild = Beitrag mit Foto oder 0.
@@ -197,7 +234,8 @@ function tamil_kacheln( array $kacheln, string $label ): string {
 	}
 	$html = '<nav class="kacheln" aria-label="' . esc_attr( $label ) . '"><ul>';
 	foreach ( $kacheln as $k ) {
-		// Der Name steht im Bild: kein Alternativtext, kein Schild; ohne Beitrag mit Foto das erste Bild des Pools.
+		// Der Name steht im Bild: kein Alternativtext, kein Schild; ohne Beitrag mit Foto ein Bild des Pools. Die Bilder
+		// laden „lazy“, app.js lädt sie gesammelt, sobald der Streifen in die Nähe kommt.
 		$img   = $k['bild'] ? (string) preg_replace(
 			'/ alt="[^"]*"/',
 			' alt=""',
@@ -205,7 +243,6 @@ function tamil_kacheln( array $kacheln, string $label ): string {
 				(int) $k['bild'],
 				array(
 					'sizes'  => '160px',
-					'sofort' => true,
 					'schild' => false,
 				)
 			),
@@ -213,9 +250,9 @@ function tamil_kacheln( array $kacheln, string $label ): string {
 		) : tamil_pool_img(
 			$k['slug'],
 			array(
-				'sofort' => true,
 				'schild' => false,
 				'alt'    => false,
+				'sizes'  => '160px',
 			)
 		);
 		$html .= sprintf(
@@ -314,6 +351,12 @@ function tamil_grafik_leer( string $titel, string $satz, string $url, string $ru
 		$ebene,
 		esc_html( $titel ),
 		esc_html( $satz ),
-		tamil_pool_img( $rubrik, array( 'n' => 1 ) )
+		tamil_pool_img(
+			$rubrik,
+			array(
+				'n'     => 1,
+				'sizes' => '(min-width: 1024px) 380px, (min-width: 600px) 50vw, 100vw',
+			)
+		)
 	);
 }

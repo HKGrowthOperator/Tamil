@@ -176,48 +176,98 @@ tamil_site_seite_anmelden( 'werbebedingungen', 'Verkaufsbedingungen Werbung' );
 tamil_site_rechte_anmelden( 'administrator', array( 'tamil_werbung_verwalten' ) );
 
 /**
- * Formate je Platz: Desktop und Handy (Breite, Höhe). Gleiche Maße heißen: ein Bild für beide.
+ * Formate je Platz – die eine Quelle für die Tabelle auf „Werben“ (und im Theme auf „Kontakt“), die Labels in den
+ * Einstellungen, die Prüfung hochgeladener Werbemittel, den Bildwechsel gebuchter Anzeigen und die Darstellung
+ * (tamil_site_anzeigen_formate_css()). desktop gilt ab der Breite ab (px), darunter mobil; gleiche Maße heißen: ein
+ * Bild für beide (ab 0). Abgestimmt mit dem Theme 3.2.0 (Prüfung 17.11., P1-8): Leaderboard und Fuß 728 × 90 ab
+ * 768 px, darunter 320 × 100; Billboard 970 × 250 ab 1024 px, darunter 336 × 280; im Artikel 336 × 280; Half Page
+ * 300 × 600; Handy-Leiste 320 × 50. Am Handy (unter 600 px) füllt eine Fläche die Spaltenbreite, höchstens 20 % über
+ * dem Format; das Seitenverhältnis bleibt.
  *
- * @return array<string,array{desktop:array{0:int,1:int},mobil:array{0:int,1:int},wo:string,name:string}>
+ * @return array<string,array{desktop:array{0:int,1:int},mobil:array{0:int,1:int},ab:int,wo:string,name:string}>
  */
 function tamil_site_werbung_formate(): array {
 	return array(
 		'leaderboard' => array(
 			'name'    => __( 'Leaderboard', 'tamil-site' ),
-			'wo'      => __( 'unter der Navigation, alle Seiten', 'tamil-site' ),
+			'wo'      => __( 'unter dem ersten Abschnitt jeder Seite (Startseite nach den Rubrikkacheln, Artikel unter dem Text)', 'tamil-site' ),
 			'desktop' => array( 728, 90 ),
-			'mobil'   => array( 320, 50 ),
+			'mobil'   => array( 320, 100 ),
+			'ab'      => 768,
 		),
 		'sidebar'     => array(
 			'name'    => __( 'Half Page', 'tamil-site' ),
-			'wo'      => __( 'Seitenspalte', 'tamil-site' ),
+			'wo'      => __( 'Seitenspalte neben dem Artikel, ab 1024 px Breite', 'tamil-site' ),
 			'desktop' => array( 300, 600 ),
 			'mobil'   => array( 300, 600 ),
+			'ab'      => 0,
 		),
 		'inarticle'   => array(
 			'name'    => __( 'Im Artikel', 'tamil-site' ),
-			'wo'      => __( 'nach dem zweiten Absatz', 'tamil-site' ),
-			'desktop' => array( 728, 90 ),
-			'mobil'   => array( 300, 250 ),
+			'wo'      => __( 'im Artikel nach dem zweiten Absatz', 'tamil-site' ),
+			'desktop' => array( 336, 280 ),
+			'mobil'   => array( 336, 280 ),
+			'ab'      => 0,
 		),
 		'billboard'   => array(
 			'name'    => __( 'Billboard', 'tamil-site' ),
-			'wo'      => __( 'Startseite, zwischen den Rubriken', 'tamil-site' ),
+			'wo'      => __( 'Startseite, nach „Küche“ vor den Rubrikblöcken', 'tamil-site' ),
 			'desktop' => array( 970, 250 ),
-			'mobil'   => array( 300, 250 ),
+			'mobil'   => array( 336, 280 ),
+			'ab'      => 1024,
 		),
 		'footer'      => array(
 			'name'    => __( 'Fuß', 'tamil-site' ),
-			'wo'      => __( 'über dem Fuß der Seite', 'tamil-site' ),
+			'wo'      => __( 'über dem Fuß jeder Seite', 'tamil-site' ),
 			'desktop' => array( 728, 90 ),
 			'mobil'   => array( 320, 100 ),
+			'ab'      => 768,
 		),
 		'mobile'      => array(
 			'name'    => __( 'Mobil', 'tamil-site' ),
-			'wo'      => __( 'am Handy fest am unteren Rand', 'tamil-site' ),
+			'wo'      => __( 'am Handy fest am unteren Rand, schließbar', 'tamil-site' ),
 			'desktop' => array( 320, 50 ),
 			'mobil'   => array( 320, 50 ),
+			'ab'      => 0,
 		),
+	);
+}
+
+/**
+ * Maße eines Platzes als Text, z. B. „728 × 90, unter 768 px Breite 320 × 100“ oder „336 × 280“.
+ */
+function tamil_site_werbung_masse_text( string $platz ): string {
+	$f = tamil_site_werbung_formate()[ $platz ] ?? null;
+	if ( ! $f ) {
+		return '';
+	}
+	// Geschützte Leerzeichen: „728 × 90“ und „768 px“ brechen in der Tabelle nicht um.
+	$masse   = static function ( array $m ): string {
+		return sprintf( "%d\u{00A0}×\u{00A0}%d", $m[0], $m[1] );
+	};
+	$desktop = $masse( $f['desktop'] );
+	if ( ! tamil_site_werbung_zwei_bilder( $platz ) ) {
+		return $desktop;
+	}
+	/* translators: 1: Maße ab der Grenze, 2: Grenze in px, 3: Maße darunter */
+	return str_replace( ' px', "\u{00A0}px", sprintf( __( '%1$s, unter %2$d px Breite %3$s', 'tamil-site' ), $desktop, (int) $f['ab'], $masse( $f['mobil'] ) ) );
+}
+
+/**
+ * <source> für das Handy-Bild einer gebuchten Anzeige: gilt unterhalb derselben Grenze wie die Darstellung. Leer,
+ * wenn der Platz ein Bild für beide hat.
+ */
+function tamil_site_werbung_picture_quelle( string $platz, string $mobil_url ): string {
+	$f = tamil_site_werbung_formate()[ $platz ] ?? null;
+	if ( ! $f || ! tamil_site_werbung_zwei_bilder( $platz ) ) {
+		return '';
+	}
+	return sprintf(
+		'<source media="(max-width: %1$dpx)" srcset="%2$s" width="%3$d" height="%4$d">',
+		max( 0, (int) $f['ab'] - 1 ),
+		esc_url( $mobil_url ),
+		(int) $f['mobil'][0],
+		(int) $f['mobil'][1]
 	);
 }
 
@@ -979,13 +1029,7 @@ function tamil_site_werbung_ausliefern( string $platz ): string {
 	$f       = tamil_site_werbung_formate()[ $platz ];
 	$desktop = tamil_site_werbung_bild_url( (string) $b['werbemittel_desktop'] );
 	$mobil   = tamil_site_werbung_bild_url( '' !== $b['werbemittel_mobil'] ? (string) $b['werbemittel_mobil'] : (string) $b['werbemittel_desktop'] );
-	$quelle  = tamil_site_werbung_zwei_bilder( $platz ) ? sprintf(
-		'<source media="(max-width: %1$dpx)" srcset="%2$s" width="%3$d" height="%4$d">',
-		(int) $f['desktop'][0],
-		esc_url( $mobil ),
-		(int) $f['mobil'][0],
-		(int) $f['mobil'][1]
-	) : '';
+	$quelle  = tamil_site_werbung_picture_quelle( $platz, $mobil );
 	wp_enqueue_script( 'tamil-site-werbung' );
 	return sprintf(
 		'<div class="flaeche wb-anzeige" data-wb-buchung="%1$d" data-wb-zaehlen="%2$s"><a href="%3$s" rel="sponsored noopener" target="_blank"><picture>%4$s<img src="%5$s" width="%6$d" height="%7$d" alt="%8$s" decoding="async"></picture></a></div>',
