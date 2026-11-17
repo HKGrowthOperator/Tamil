@@ -829,6 +829,11 @@ input[type="file"] { padding: 10px; font-size: 15px; }
 .tf-auswahl label, .vz-auswahl label { margin: 0; font-size: 15px; font-weight: 400; }
 .tf-auswahl input, .vz-auswahl input { margin: 2px 0 0; }
 .tf-auswahl .tf-fehler { grid-column: 2; }
+/* Link zur Datenschutzerklärung unter der Einwilligung: in der Textspalte, 44 px tippbar */
+.tf-auswahl .tf-datenschutz {
+  grid-column: 2; justify-self: start; display: inline-flex; align-items: center; min-height: 44px;
+  font-size: 15px; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em;
+}
 .vz-auswahl { border: 0; padding: 0; margin: 0; }
 .vz-auswahl label { min-height: 44px; align-items: center; }
 .tf-hinweis, .vz-hinweis, .wb-hinweis { font-size: 14px; line-height: 1.45; color: var(--leise); }
@@ -869,6 +874,7 @@ input[type="file"] { padding: 10px; font-size: 15px; }
 .vz-angaben { margin-top: 16px; border-top: 1px solid var(--tinte); }
 .vz-angaben dt { padding-top: 8px; font-size: 13px; color: var(--leise); }
 .vz-angaben dd { margin: 0; padding-bottom: 8px; border-bottom: 1px solid var(--linie); overflow-wrap: anywhere; }
+.vz-angaben dd a { display: inline-flex; align-items: center; min-height: 44px; margin-block: -10px; }
 
 /* Werbebuchung */
 .wb-werbung h2 { margin: 40px 0 8px; padding-top: 12px; border-top: 1px solid var(--tinte); font-size: 22px; }
