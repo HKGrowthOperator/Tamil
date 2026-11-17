@@ -16,7 +16,7 @@ $tamil_unterzeil = '' !== tamil_opt( 'tagline' ) ? tamil_opt( 'tagline' ) : tami
 $tamil_footer_ad = function_exists( 'tamil_site_anzeige' ) ? tamil_site_anzeige( 'footer', false ) : '';
 if ( '' !== $tamil_footer_ad ) :
 	?>
-	<div class="innen anzeige-unten"><?php echo $tamil_footer_ad; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Werbeplatz aus dem Plugin, dort escapt ?></div>
+	<aside class="innen anzeige-unten" aria-label="<?php esc_attr_e( 'Anzeige über dem Fuß', 'tamil' ); ?>"><?php echo $tamil_footer_ad; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Werbeplatz aus dem Plugin, dort escapt ?></aside>
 <?php endif; ?>
 <footer class="fuss">
 	<div class="innen fuss__innen">
@@ -27,8 +27,8 @@ if ( '' !== $tamil_footer_ad ) :
 				?>
 				<p class="fuss__satz"><?php echo esc_html( $tamil_unterzeil ); ?></p><?php endif; ?>
 		</div>
-		<nav class="fuss__spalte" aria-labelledby="fuss-rubriken">
-			<h2 id="fuss-rubriken"><?php esc_html_e( 'Rubriken', 'tamil' ); ?></h2>
+		<nav class="fuss__spalte" aria-label="<?php esc_attr_e( 'Rubriken im Fuß', 'tamil' ); ?>">
+			<h2><?php esc_html_e( 'Rubriken', 'tamil' ); ?></h2>
 			<ul>
 				<?php foreach ( tamil_nav_items() as $tamil_item ) : ?>
 					<?php
@@ -40,8 +40,8 @@ if ( '' !== $tamil_footer_ad ) :
 				<?php endforeach; ?>
 			</ul>
 		</nav>
-		<nav class="fuss__spalte" aria-labelledby="fuss-dienste">
-			<h2 id="fuss-dienste"><?php esc_html_e( 'Dienste', 'tamil' ); ?></h2>
+		<nav class="fuss__spalte" aria-label="<?php esc_attr_e( 'Dienste im Fuß', 'tamil' ); ?>">
+			<h2><?php esc_html_e( 'Dienste', 'tamil' ); ?></h2>
 			<?php
 			if ( has_nav_menu( 'footer_service' ) ) {
 				wp_nav_menu(
@@ -120,7 +120,12 @@ if ( '' !== $tamil_footer_ad ) :
 		</p>
 	</div>
 </footer>
-<?php tamil_anzeige( 'mobile' ); ?>
+<?php
+$tamil_mobil_ad = function_exists( 'tamil_site_anzeige' ) ? tamil_site_anzeige( 'mobile', false ) : '';
+if ( '' !== $tamil_mobil_ad ) :
+	?>
+	<aside class="anzeige-mobil" aria-label="<?php esc_attr_e( 'Anzeige am unteren Rand', 'tamil' ); ?>"><?php echo $tamil_mobil_ad; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Werbeplatz aus dem Plugin, dort escapt ?></aside>
+<?php endif; ?>
 </div>
 <?php wp_footer(); ?>
 </body>

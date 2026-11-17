@@ -120,13 +120,21 @@ des Radars:
 
 | Stufe | Bild | Nachweis |
 |---|---|---|
-| a | eigenes Beitragsbild, wenn es keine Titelkarte ist (Nachweis „Grafik: Tamil.de“ oder Herkunft `karte`/Lizenz `tamil-grafik` ohne „Foto: …“); Bänder über 2,5:1 werden im Rahmen beschnitten | wie gespeichert, bei Bändern mit „zugeschnitten“ |
+| a | eigenes Beitragsbild, wenn es keine Titelkarte ist (Nachweis „Grafik: Tamil.de“ oder Herkunft `karte`/Lizenz `tamil-grafik` ohne „Foto: …“); Bänder über 2,5:1 werden im Rahmen beschnitten | wie gespeichert, mit Links (siehe unten) und „zugeschnitten“; redaktionelle Symbolbilder mit Schild und „Symbolbild,“ davor |
 | b | erstes Bild aus dem Text desselben Beitrags, das in der Mediathek liegt (Adresse unter `uploads/` dieser Website) und mindestens 600 px breit ist | Bildunterschrift des Anhangs, sonst die figcaption im Text |
 | c | nur Kino und Termine (Rubrik Kino, Entertainment, Events, Kinoliste oder Termin): das eigene Foto des neuesten anderen Beitrags zum selben Film bzw. zur selben Veranstaltung (`inc/filmbilder.php`; Schlüssel: Film aus `kino_fakten`, Titel in Anführungszeichen, Titelkopf eines Termins, normalisiert) | Nachweis des Originalbilds, kein Schild, weil es den Film zeigt; Plakate bleiben so im Bericht über genau diesen Film (2.2) |
-| d | Symbolbild aus dem Rubrik-Pool (`assets/img/rubrik/`, Liste `inc/bildpool.php`): je Rubrik bis zu vier Fotos von Wikimedia Commons, nur CC0, CC BY, CC BY-SA; fest nach Beitrags-ID gewählt. Kino und Entertainment nehmen ohne eigenen Pool den Events-Pool, nie Stadtansichten, Kirchen oder Rathäuser | „Symbolbild, Foto: Urheber / Wikimedia Commons, Lizenz, zugeschnitten“ mit Links auf Dateiseite und Lizenz; Schild „Symbolbild“ am Bild |
+| d | Symbolbild aus dem Rubrik-Pool (`assets/img/rubrik/`, Liste `inc/bildpool.php`): Fotos von Wikimedia Commons, nur CC0, CC BY, CC BY-SA; Kino (acht Bilder: Kinosäle, Leinwand, Projektor, Kinofassade) und Events (acht: Tempelfeste, Festwagen, Umzug, Bühne) eigene Pools. Bevorzugt nach Beitrags-ID gewählt, auf einer Seite aber reihum vergeben (`tamil_pool_seite()`): kein Ersatzbild doppelt, solange der Pool reicht. Entertainment nimmt den Events-Pool, nie Stadtansichten, Kirchen oder Rathäuser | „Symbolbild, Foto: Urheber / Wikimedia Commons, Lizenz, zugeschnitten“ mit Links auf Dateiseite und Lizenz; Schild „Symbolbild“ am Bild, in Rahmen unter 150 px ein „S“ |
+
+Alle Nachweise (Bildunterschrift im Artikel, Fußliste „Bildnachweise dieser Seite“) entstehen in
+`tamil_nachweis_bauen()`: Urheber mit Link auf die Dateiseite (Meta `bild_quelle_url`), Lizenz mit Link auf den
+Lizenztext (Meta `bild_lizenz_url`, Kürzel `bild_lizenz` oder aus dem Lizenznamen im Nachweis), „zugeschnitten“ bei
+Fotos unter freier Lizenz und bei Bändern, weil die Rahmen per `object-fit` beschneiden. Fehlt die Dateiseite, verlinkt
+„Wikimedia Commons“ nur die Commons-Suche nach dem Urheber; eine Dateiseite wird nie geraten. Für vollständige Links
+braucht der Altbestand `bild_quelle_url` und `bild_lizenz_url` aus dem Lizenz-Datensatz des Radars.
 
 Der Pool entsteht mit `design/inhalte/bildpool/holen.py` aus `kandidaten.json`; Urheber, Lizenz und Lizenz-Adresse
-liest das Skript aus der Commons-API (Regeln wie 2.3: keine NC/ND, keine Dateien mit Hinweisen zu Persönlichkeits- oder
+liest das Skript aus der Commons-API, bei einer Sperre (429) aus der Dateiseite selbst (maschinenlesbare Felder der
+Lizenzvorlage, `--html`), mit 2,2 s Abstand je Anfrage und Zwischenspeicher (Regeln wie 2.3: keine NC/ND, keine Dateien mit Hinweisen zu Persönlichkeits- oder
 Markenrechten, Urheber bekannt). Motive allgemein: keine erkennbaren Privatpersonen als Hauptmotiv, kein Bild, das ein
 bestimmtes Ereignis vortäuscht (G5). Bilder aus dem Text (Stufe b) bleiben an ihrem eigenen Beitrag; sie werden nicht
 für andere Beiträge verwendet (2.1). Prüfung: `node wordpress/dev/bilder_pflicht.mjs <url>`.

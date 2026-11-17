@@ -9,17 +9,45 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Bildnachweise der aktuellen Seite sammeln (der Fuß zeigt sie gesammelt) oder abrufen.
  *
- * @param string $nachweis Nachweis zum Merken als escaptes HTML (Links auf Dateiseite und Lizenz); leer = nur abrufen.
+ * Ein Nachweis als reiner Text (etwa aus dem Plugin) läuft durch tamil_nachweis_bauen(): Lizenz verlinkt, Herkunft
+ * und Zuschnitt wie überall. Kommt derselbe Text später mit Dateiseite und Lizenz-Adresse (Aktion
+ * tamil_site_bildnachweis des Plugins), ersetzt die verlinkte Fassung den Eintrag.
+ *
+ * @param string $nachweis   Nachweis als escaptes HTML (Links auf Dateiseite und Lizenz) oder als reiner Text; leer =
+ *                           nur abrufen.
+ * @param string $seite      Dateiseite zum reinen Text (leer, wenn unbekannt).
+ * @param string $lizenz_url Lizenz-Adresse zum reinen Text (leer, wenn unbekannt).
  * @return string[]
  */
-function tamil_nachweise( string $nachweis = '' ): array {
+function tamil_nachweise( string $nachweis = '', string $seite = '', string $lizenz_url = '' ): array {
 	static $liste = array();
-	$nachweis     = trim( $nachweis );
-	if ( '' !== $nachweis && ! in_array( $nachweis, $liste, true ) ) {
-		$liste[] = $nachweis;
+	$schluessel   = trim( $nachweis );
+	if ( '' !== $schluessel ) {
+		$html = str_contains( $schluessel, '<' ) ? $schluessel : tamil_nachweis_bauen(
+			html_entity_decode( $schluessel, ENT_QUOTES, 'UTF-8' ),
+			array(
+				'seite'      => $seite,
+				'lizenz_url' => $lizenz_url,
+			)
+		);
+		if ( ! isset( $liste[ $schluessel ] ) || '' !== $seite || '' !== $lizenz_url ) {
+			$liste[ $schluessel ] = $html;
+		}
 	}
-	return $liste;
+	return array_values( array_unique( $liste ) );
 }
+
+/**
+ * Nachweis einer Abbildung aus dem Plugin mit Dateiseite und Lizenz-Adresse (Aktion tamil_site_bildnachweis).
+ *
+ * @param mixed $text   Nachweis als Text.
+ * @param mixed $quelle Dateiseite.
+ * @param mixed $lizenz Lizenz-Adresse.
+ */
+function tamil_nachweis_aus_plugin( $text, $quelle = '', $lizenz = '' ): void {
+	tamil_nachweise( (string) $text, (string) $quelle, (string) $lizenz );
+}
+add_action( 'tamil_site_bildnachweis', 'tamil_nachweis_aus_plugin', 10, 3 );
 
 /**
  * Rubrik-Slug eines Beitrags für den Rubrik-Pool.
@@ -44,11 +72,28 @@ function tamil_titel_kurz( string $titel, int $zeichen = 60 ): string {
 }
 
 /**
- * Höchstens $anzahl Sätze eines Texts (für den Vorspann des Aufmachers).
+ * Höchstens $anzahl Sätze eines Texts (für den Vorspann des Aufmachers). Kein Satzende ist ein Punkt nach einer Zahl
+ * („Am 8. November“) oder nach einer Abkürzung („Dr.“, „St.“, „z. B.“).
  */
 function tamil_saetze( string $text, int $anzahl = 2 ): string {
-	$teile = preg_split( '/(?<=[.!?])\s+(?=[A-ZÄÖÜ„"0-9])/u', trim( $text ) );
+	$teile = preg_split( '/(?<=[.!?])(?<![0-9]\.)(?<!\bDr\.)(?<!\bSt\.)(?<!\bNr\.)(?<!\bca\.)(?<!\bvgl\.)(?<!\bbzw\.)(?<!\bz\. B\.)(?<!\bProf\.)\s+(?=[A-ZÄÖÜ„"0-9])/u', trim( $text ) );
 	return is_array( $teile ) ? implode( ' ', array_slice( $teile, 0, $anzahl ) ) : $text;
+}
+
+/**
+ * Ganze Sätze eines Texts bis etwa $zeichen Zeichen (Vorspann des Aufmachers: bis zum Satzende innerhalb von etwa vier
+ * Zeilen), mindestens ein Satz.
+ */
+function tamil_saetze_bis( string $text, int $zeichen = 260 ): string {
+	$wahl = tamil_saetze( $text, 1 );
+	for ( $n = 2; $n <= 4; $n++ ) {
+		$mehr = tamil_saetze( $text, $n );
+		if ( mb_strlen( $mehr ) > $zeichen || $mehr === $wahl ) {
+			break;
+		}
+		$wahl = $mehr;
+	}
+	return $wahl;
 }
 
 /**
@@ -265,6 +310,7 @@ function tamil_kino_orte_tafel( array $filme, bool $bilder = false ): void {
 	};
 	uksort( $orte, static fn( $a, $b ) => $rang( $a ) <=> $rang( $b ) );
 	$ein_film = 1 === count( $filme ); // bei einem Film steht er schon im Titel; der Name je Zeile entfällt
+	$zeile    = 0;
 	echo '<div class="tafel-wrap"><table class="tafel orte' . ( $bilder ? ' tafel--bilder' : '' ) . '"><thead><tr><th scope="col">' . esc_html__( 'Stadt', 'tamil' ) . '</th><th scope="col">' . esc_html( $ein_film ? __( 'Kino und Termin', 'tamil' ) : __( 'Film, Kino und Termin', 'tamil' ) ) . '</th></tr></thead>';
 	foreach ( $orte as $land => $staedte ) {
 		ksort( $staedte, SORT_LOCALE_STRING );
@@ -273,7 +319,16 @@ function tamil_kino_orte_tafel( array $filme, bool $bilder = false ): void {
 			foreach ( $eintraege as $e ) {
 				echo '<tr><th scope="row" class="stadt">' . esc_html( $stadt ) . '</th><td class="was">';
 				if ( $bilder ) {
-					echo '<span class="tafel__bild rahmen r169">' . tamil_bild( $e['post'], array( 'sizes' => '96px' ) ) . '</span><span class="tafel__text">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_bild()
+					// Zeigt der Film ein eigenes Bild, steht es in jeder seiner Zeilen; ein Symbolbild wechselt je Zeile (reihum
+					// aus dem Kino-Pool), damit nicht dasselbe Ersatzbild untereinander steht
+					$bild = 'pool' === tamil_bildwahl( $e['post'] )['art'] ? tamil_pool_img(
+						'kino',
+						array(
+							'n'     => $e['post'] + ( ++$zeile ),
+							'sizes' => '96px',
+						)
+					) : tamil_bild( $e['post'], array( 'sizes' => '96px' ) );
+					echo '<span class="tafel__bild rahmen r169">' . $bild . '</span><span class="tafel__text">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_bild() bzw. tamil_pool_img()
 				}
 				echo $ein_film ? '' : '<span class="film">' . esc_html( '„' . $e['film'] . '“' ) . '</span>';
 				echo '<span class="unter">' . esc_html( trim( $e['kino'] . ( '' !== $e['termin'] ? ', ' . $e['termin'] : '' ), ', ' ) );
