@@ -82,10 +82,11 @@ function tamil_site_ico( string $name, string $cls = 'ico ico-sm' ): string {
 
 /**
  * Mitgelieferte Standardbilder der Eigenanzeigen (assets/img/anzeigen/, Herkunft und Lizenz in NACHWEIS.md). Je Bild:
- * Datei in voller Breite (höchstens 1200 px) und in 600 px, Maße, Alternativtext, Nachweis für den Fuß der Seite,
+ * Datei in voller Breite (höchstens 1200 px) und in 600 px, Maße, Alternativtext, Nachweis für den Fuß der Seite
+ * („zugeschnitten“: das Banner zeigt immer einen Ausschnitt), Dateiseite und Lizenz-URL (für verlinkte Nachweise),
  * Bildausschnitt (object-position) und die Seite, auf der die Schrift steht (links oder rechts im Bild).
  *
- * @return array<string,array{datei:string,klein:string,w:int,h:int,alt:string,nachweis:string,fokus:string,seite:string}>
+ * @return array<string,array{datei:string,klein:string,w:int,h:int,alt:string,nachweis:string,quelle:string,lizenz:string,fokus:string,seite:string}>
  */
 function tamil_site_eigenanzeige_standardbilder(): array {
 	$bilder = array(
@@ -96,6 +97,8 @@ function tamil_site_eigenanzeige_standardbilder(): array {
 			'h'        => 359,
 			'alt'      => __( 'A.R. Rahman singt mit Mikrofon auf der Bühne eines Konzerts der Reihe „Live mit dir!“', 'tamil-site' ),
 			'nachweis' => __( 'Foto: Archiv Tamil.de', 'tamil-site' ),
+			'quelle'   => '',
+			'lizenz'   => '',
 			'fokus'    => '45% 30%',
 			'seite'    => 'rechts',
 		),
@@ -105,7 +108,9 @@ function tamil_site_eigenanzeige_standardbilder(): array {
 			'w'        => 1200,
 			'h'        => 930,
 			'alt'      => __( 'Tempelfest am Sri-Kamadchi-Ampal-Tempel in Hamm: Besucher mit bunten Schirmen vor Tempelturm und Festwagen (Archivbild)', 'tamil-site' ),
-			'nachweis' => __( 'Foto: Rainer Halama / Wikimedia Commons, CC BY-SA 2.5', 'tamil-site' ),
+			'nachweis' => __( 'Foto: Rainer Halama / Wikimedia Commons, CC BY-SA 2.5, zugeschnitten', 'tamil-site' ),
+			'quelle'   => 'https://commons.wikimedia.org/wiki/File:Hamm_Tempelfest_2118.jpg',
+			'lizenz'   => 'https://creativecommons.org/licenses/by-sa/2.5/',
 			'fokus'    => '30% 62%',
 			'seite'    => 'links',
 		),
@@ -115,7 +120,9 @@ function tamil_site_eigenanzeige_standardbilder(): array {
 			'w'        => 1200,
 			'h'        => 900,
 			'alt'      => __( 'Fußgängerzone mit Geschäften und Passanten, die Gorkistraße in Berlin-Tegel (Symbolbild)', 'tamil-site' ),
-			'nachweis' => __( 'Foto: Fridolin freudenfett / Wikimedia Commons, CC BY-SA 4.0', 'tamil-site' ),
+			'nachweis' => __( 'Foto: Fridolin freudenfett / Wikimedia Commons, CC BY-SA 4.0, zugeschnitten', 'tamil-site' ),
+			'quelle'   => 'https://commons.wikimedia.org/wiki/File:Tegel_Gorkistra%C3%9Fe_Fu%C3%9Fg%C3%A4ngerzone-001.JPG',
+			'lizenz'   => 'https://creativecommons.org/licenses/by-sa/4.0/',
 			'fokus'    => '50% 62%',
 			'seite'    => 'links',
 		),
@@ -125,7 +132,9 @@ function tamil_site_eigenanzeige_standardbilder(): array {
 			'w'        => 1200,
 			'h'        => 800,
 			'alt'      => __( 'Hände mit einem Smartphone und einem Kaffeebecher (Symbolbild)', 'tamil-site' ),
-			'nachweis' => __( 'Foto: Pixel.la / Wikimedia Commons, CC0', 'tamil-site' ),
+			'nachweis' => __( 'Foto: Pixel.la / Wikimedia Commons, CC0, zugeschnitten', 'tamil-site' ),
+			'quelle'   => 'https://commons.wikimedia.org/wiki/File:Hands-coffee-smartphone-technology_(23698591814).jpg',
+			'lizenz'   => 'https://creativecommons.org/publicdomain/zero/1.0/',
 			'fokus'    => '40% 45%',
 			'seite'    => 'rechts',
 		),
@@ -206,7 +215,7 @@ function tamil_site_eigenanzeige_vorlagen(): array {
  * Bild einer Eigenanzeige: das in den Einstellungen gewählte Bild aus der Mediathek, sonst das mitgelieferte
  * Standardbild. Null, wenn keins von beiden da ist – dann wird die Anzeige nicht gezeigt (jede Anzeige hat ein Bild).
  *
- * @return array{src:string,srcset:string,w:int,h:int,alt:string,nachweis:string,fokus:string,seite:string}|null
+ * @return array{src:string,srcset:string,w:int,h:int,alt:string,nachweis:string,quelle:string,lizenz:string,fokus:string,seite:string}|null
  */
 function tamil_site_eigenanzeige_bild( string $bild ): ?array {
 	$standard = tamil_site_eigenanzeige_standardbilder()[ $bild ] ?? null;
@@ -223,6 +232,8 @@ function tamil_site_eigenanzeige_bild( string $bild ): ?array {
 				'h'        => (int) $src[2],
 				'alt'      => $alt,
 				'nachweis' => trim( (string) wp_get_attachment_caption( $id ) ),
+				'quelle'   => '',
+				'lizenz'   => '',
 				'fokus'    => '50% 50%',
 				'seite'    => $standard['seite'] ?? 'links',
 			);
@@ -243,6 +254,8 @@ function tamil_site_eigenanzeige_bild( string $bild ): ?array {
 		'h'        => (int) $standard['h'],
 		'alt'      => (string) $standard['alt'],
 		'nachweis' => (string) $standard['nachweis'],
+		'quelle'   => (string) ( $standard['quelle'] ?? '' ),
+		'lizenz'   => (string) ( $standard['lizenz'] ?? '' ),
 		'fokus'    => (string) $standard['fokus'],
 		'seite'    => (string) $standard['seite'],
 	);
@@ -347,17 +360,42 @@ function tamil_site_eigenanzeige_html( string $vorlage, string $platz = '' ): st
 }
 
 /**
+ * Einen Bildnachweis an das Theme melden: als Text an tamil_nachweise() (Liste im Fuß) und mit Dateiseite und
+ * Lizenz-URL an die Aktion tamil_site_bildnachweis (für verlinkte Nachweise, Prüfung 17.11. P0-1 im Theme).
+ *
+ * @param string $text   Nachweis, z. B. „Foto: … / Wikimedia Commons, CC BY-SA 4.0, zugeschnitten“.
+ * @param string $quelle Dateiseite (leer, wenn unbekannt).
+ * @param string $lizenz Lizenz-URL (leer, wenn unbekannt).
+ */
+function tamil_site_nachweis_melden( string $text, string $quelle = '', string $lizenz = '' ): void {
+	if ( '' === trim( $text ) ) {
+		return;
+	}
+	if ( function_exists( 'tamil_nachweise' ) ) {
+		tamil_nachweise( $text );
+	}
+	/**
+	 * Bildnachweis einer vom Plugin gezeigten Abbildung (Eigenanzeige, Symbolbild im Verzeichnis).
+	 *
+	 * @param string $text   Nachweis als Text.
+	 * @param string $quelle Dateiseite (leer, wenn unbekannt).
+	 * @param string $lizenz Lizenz-URL (leer, wenn unbekannt).
+	 */
+	do_action( 'tamil_site_bildnachweis', $text, $quelle, $lizenz );
+}
+
+/**
  * Bildnachweis einer Eigenanzeige für den Fuß der Seite merken (Theme: tamil_nachweise()). Gemerkt wird nur, was
  * auch gezeigt wird.
  */
 function tamil_site_eigenanzeige_nachweis_merken( string $vorlage ): void {
 	$v = tamil_site_eigenanzeige_vorlagen()[ $vorlage ] ?? null;
-	if ( ! function_exists( 'tamil_nachweise' ) || ! $v || '' === $v['url'] ) {
+	if ( ! $v || '' === $v['url'] ) {
 		return;
 	}
 	$bild = tamil_site_eigenanzeige_bild( $v['bild'] );
-	if ( $bild && '' !== $bild['nachweis'] ) {
-		tamil_nachweise( $bild['nachweis'] );
+	if ( $bild ) {
+		tamil_site_nachweis_melden( $bild['nachweis'], $bild['quelle'], $bild['lizenz'] );
 	}
 }
 

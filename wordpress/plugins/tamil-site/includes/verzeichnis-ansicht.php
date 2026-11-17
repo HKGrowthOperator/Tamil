@@ -42,7 +42,7 @@ add_action( 'wp_enqueue_scripts', 'tamil_site_vz_css_frueh' );
  * Ersatzbilder je Art, wenn ein Eintrag kein eigenes Bild hat (assets/img/verzeichnis/, Herkunft und Lizenz in
  * NACHWEIS.md). Sie zeigen nie den Eintrag selbst und tragen darum immer „Symbolbild“.
  *
- * @return array<string,array{datei:string,klein:string,w:int,h:int,alt:string,nachweis:string}>
+ * @return array<string,array{datei:string,klein:string,w:int,h:int,alt:string,nachweis:string,quelle:string,lizenz:string}>
  */
 function tamil_site_vz_ersatzbilder(): array {
 	$firma = array(
@@ -51,7 +51,9 @@ function tamil_site_vz_ersatzbilder(): array {
 		'w'        => 820,
 		'h'        => 461,
 		'alt'      => __( 'Symbolbild: Gewürze in Schalen an einem Marktstand', 'tamil-site' ),
-		'nachweis' => __( 'Foto: Markusurlaub / Wikimedia Commons, CC BY-SA 4.0 (Ausschnitt)', 'tamil-site' ),
+		'nachweis' => __( 'Foto: Markusurlaub / Wikimedia Commons, CC BY-SA 4.0, zugeschnitten', 'tamil-site' ),
+		'quelle'   => 'https://commons.wikimedia.org/wiki/File:Carmel_Markt_Sep_2018.jpg',
+		'lizenz'   => 'https://creativecommons.org/licenses/by-sa/4.0/',
 	);
 	return array(
 		'business'      => $firma,
@@ -62,7 +64,9 @@ function tamil_site_vz_ersatzbilder(): array {
 			'w'        => 1200,
 			'h'        => 800,
 			'alt'      => __( 'Symbolbild: eine Gruppe tanzt Bharatanatyam auf einer Bühne', 'tamil-site' ),
-			'nachweis' => __( 'Foto: Mohd Zishan / Wikimedia Commons, CC BY-SA 4.0', 'tamil-site' ),
+			'nachweis' => __( 'Foto: Mohd Zishan / Wikimedia Commons, CC BY-SA 4.0, zugeschnitten', 'tamil-site' ),
+			'quelle'   => 'https://commons.wikimedia.org/wiki/File:A_Vibrant_Bharatanatyam_Group_Interpretation.jpg',
+			'lizenz'   => 'https://creativecommons.org/licenses/by-sa/4.0/',
 		),
 		'tempel'        => array(
 			'datei'    => 'tempel.webp',
@@ -70,7 +74,9 @@ function tamil_site_vz_ersatzbilder(): array {
 			'w'        => 1200,
 			'h'        => 900,
 			'alt'      => __( 'Symbolbild: der Sri-Mayurapathy-Murugan-Tempel in Berlin-Britz mit seinem bunten Turm', 'tamil-site' ),
-			'nachweis' => __( 'Foto: Fridolin freudenfett / Wikimedia Commons, CC BY-SA 4.0', 'tamil-site' ),
+			'nachweis' => __( 'Foto: Fridolin freudenfett / Wikimedia Commons, CC BY-SA 4.0, zugeschnitten', 'tamil-site' ),
+			'quelle'   => 'https://commons.wikimedia.org/wiki/File:Britz_Blaschkoallee_Sri-Mayurapathy-Murugan-Tempel.JPG',
+			'lizenz'   => 'https://creativecommons.org/licenses/by-sa/4.0/',
 		),
 	);
 }
@@ -84,8 +90,10 @@ function tamil_site_vz_ersatzbilder(): array {
  */
 function tamil_site_vz_bild( int $id, string $wo = 'liste' ): array {
 	$sizes = 'profil' === $wo ? '(min-width: 760px) 720px, 100vw' : '(min-width: 600px) 160px, 112px';
-	$thumb = (int) get_post_thumbnail_id( $id );
-	$aus   = array(
+	$thumb  = (int) get_post_thumbnail_id( $id );
+	$quelle = '';
+	$lizenz = '';
+	$aus    = array(
 		'html'     => '',
 		'symbol'   => false,
 		'nachweis' => '',
@@ -125,10 +133,10 @@ function tamil_site_vz_bild( int $id, string $wo = 'liste' ): array {
 		);
 		$aus['symbol']   = true;
 		$aus['nachweis'] = trim( __( 'Symbolbild.', 'tamil-site' ) . ' ' . $e['nachweis'] );
+		$quelle          = (string) ( $e['quelle'] ?? '' );
+		$lizenz          = (string) ( $e['lizenz'] ?? '' );
 	}
-	if ( '' !== $aus['nachweis'] && function_exists( 'tamil_nachweise' ) ) {
-		tamil_nachweise( $aus['nachweis'] );
-	}
+	tamil_site_nachweis_melden( $aus['nachweis'], $quelle, $lizenz );
 	return $aus;
 }
 

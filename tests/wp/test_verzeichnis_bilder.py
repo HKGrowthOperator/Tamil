@@ -118,3 +118,17 @@ def test_ersatzbilder_mit_nachweis_und_dateien(wp_cli):
     text = nachweis.read_text(encoding="utf-8")
     for b in bilder.values():
         assert b["datei"] in text and b["klein"] in text
+
+
+def test_nachweise_zugeschnitten_mit_quelle_und_lizenz(wp_cli):
+    """Symbolbilder und Bannerfotos sind im Bild beschnitten: Nachweis mit „zugeschnitten“, Dateiseite und Lizenz-URL
+    gehen mit der Aktion tamil_site_bildnachweis ans Theme."""
+    daten = json.loads(wp_cli("echo wp_json_encode( array( tamil_site_vz_ersatzbilder(), tamil_site_eigenanzeige_standardbilder() ) );"))
+    for b in list(daten[0].values()) + [v for k, v in daten[1].items() if k != "production"]:
+        assert b["nachweis"].endswith(", zugeschnitten") and "(Ausschnitt)" not in b["nachweis"], b["nachweis"]
+        assert b["quelle"].startswith("https://commons.wikimedia.org/wiki/File:") and b["lizenz"].startswith("https://creativecommons.org/")
+    gemeldet = json.loads(wp_cli("$m = array(); add_action( 'tamil_site_bildnachweis', static function ( $t, $q, $l ) use ( &$m ) { $m[] = array( $t, $q, $l ); }, 10, 3 );"
+                                 " tamil_site_nachweis_melden( 'Foto: X / Wikimedia Commons, CC BY-SA 4.0, zugeschnitten', 'https://commons.wikimedia.org/wiki/File:X.jpg',"
+                                 " 'https://creativecommons.org/licenses/by-sa/4.0/' ); echo wp_json_encode( $m );"))
+    assert gemeldet == [["Foto: X / Wikimedia Commons, CC BY-SA 4.0, zugeschnitten", "https://commons.wikimedia.org/wiki/File:X.jpg",
+                         "https://creativecommons.org/licenses/by-sa/4.0/"]]
