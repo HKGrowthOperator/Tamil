@@ -9,22 +9,45 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Bildnachweise der aktuellen Seite sammeln (der Fuß zeigt sie gesammelt) oder abrufen.
  *
- * @param string $nachweis Nachweis zum Merken als escaptes HTML (Links auf Dateiseite und Lizenz) oder als reiner
- *                         Text (wird über tamil_nachweis_bauen() verlinkt); leer = nur abrufen.
+ * Ein Nachweis als reiner Text (etwa aus dem Plugin) läuft durch tamil_nachweis_bauen(): Lizenz verlinkt, Herkunft
+ * und Zuschnitt wie überall. Kommt derselbe Text später mit Dateiseite und Lizenz-Adresse (Aktion
+ * tamil_site_bildnachweis des Plugins), ersetzt die verlinkte Fassung den Eintrag.
+ *
+ * @param string $nachweis   Nachweis als escaptes HTML (Links auf Dateiseite und Lizenz) oder als reiner Text; leer =
+ *                           nur abrufen.
+ * @param string $seite      Dateiseite zum reinen Text (leer, wenn unbekannt).
+ * @param string $lizenz_url Lizenz-Adresse zum reinen Text (leer, wenn unbekannt).
  * @return string[]
  */
-function tamil_nachweise( string $nachweis = '' ): array {
+function tamil_nachweise( string $nachweis = '', string $seite = '', string $lizenz_url = '' ): array {
 	static $liste = array();
-	$nachweis     = trim( $nachweis );
-	if ( '' !== $nachweis && ! str_contains( $nachweis, '<' ) ) {
-		// Nachweis als reiner Text (etwa aus dem Plugin): Lizenz verlinken, Herkunft und Zuschnitt wie überall
-		$nachweis = tamil_nachweis_bauen( html_entity_decode( $nachweis, ENT_QUOTES, 'UTF-8' ) );
+	$schluessel   = trim( $nachweis );
+	if ( '' !== $schluessel ) {
+		$html = str_contains( $schluessel, '<' ) ? $schluessel : tamil_nachweis_bauen(
+			html_entity_decode( $schluessel, ENT_QUOTES, 'UTF-8' ),
+			array(
+				'seite'      => $seite,
+				'lizenz_url' => $lizenz_url,
+			)
+		);
+		if ( ! isset( $liste[ $schluessel ] ) || '' !== $seite || '' !== $lizenz_url ) {
+			$liste[ $schluessel ] = $html;
+		}
 	}
-	if ( '' !== $nachweis && ! in_array( $nachweis, $liste, true ) ) {
-		$liste[] = $nachweis;
-	}
-	return $liste;
+	return array_values( array_unique( $liste ) );
 }
+
+/**
+ * Nachweis einer Abbildung aus dem Plugin mit Dateiseite und Lizenz-Adresse (Aktion tamil_site_bildnachweis).
+ *
+ * @param mixed $text   Nachweis als Text.
+ * @param mixed $quelle Dateiseite.
+ * @param mixed $lizenz Lizenz-Adresse.
+ */
+function tamil_nachweis_aus_plugin( $text, $quelle = '', $lizenz = '' ): void {
+	tamil_nachweise( (string) $text, (string) $quelle, (string) $lizenz );
+}
+add_action( 'tamil_site_bildnachweis', 'tamil_nachweis_aus_plugin', 10, 3 );
 
 /**
  * Rubrik-Slug eines Beitrags für den Rubrik-Pool.
