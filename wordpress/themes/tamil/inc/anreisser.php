@@ -187,6 +187,43 @@ function tamil_zeilen( array $ids, array $opt = array() ): string {
 }
 
 /**
+ * Listen im Seiteninhalt, deren Punkte nur je einen Link auf einen Beitrag dieser Website enthalten (etwa „Die
+ * Konzerte im Archiv“ auf /production/), als Liste mit Bild ausgeben (Bilderpflicht, Tippflächen). Andere Listen
+ * bleiben, wie sie sind; Beiträge aus $ohne (stehen auf der Seite schon) fallen aus der Liste.
+ *
+ * @param int[] $ohne Beiträge, die schon gezeigt werden.
+ */
+function tamil_beitragslisten_mit_bild( string $html, array $ohne = array() ): string {
+	if ( ! str_contains( $html, '<ul' ) ) {
+		return $html;
+	}
+	$neu = preg_replace_callback(
+		'#<ul\b[^>]*>(.*?)</ul>#is',
+		static function ( array $m ) use ( $ohne ): string {
+			if ( ! preg_match_all( '#<li\b[^>]*>(.*?)</li>#is', $m[1], $punkte ) ) {
+				return $m[0];
+			}
+			$ids = array();
+			foreach ( $punkte[1] as $punkt ) {
+				if ( 1 !== preg_match_all( '#<a\b[^>]*\shref\s*=\s*(["\'])([^"\']+)\1#i', $punkt, $links ) || '' !== trim( wp_strip_all_tags( (string) preg_replace( '#<a\b.*?</a>#is', '', $punkt ) ) ) ) {
+					return $m[0]; // mehr als ein Link oder Text neben dem Link: eine normale Liste
+				}
+				$url = html_entity_decode( $links[2][0], ENT_QUOTES );
+				$id  = url_to_postid( str_starts_with( $url, '/' ) ? home_url( $url ) : $url );
+				if ( ! $id || 'post' !== get_post_type( $id ) || 'publish' !== get_post_status( $id ) ) {
+					return $m[0];
+				}
+				$ids[] = $id;
+			}
+			$ids = array_values( array_diff( array_unique( $ids ), array_map( 'intval', $ohne ) ) );
+			return $ids ? tamil_zeilen( $ids, array( 'rubrik' => false ) ) : '';
+		},
+		$html
+	);
+	return is_string( $neu ) ? $neu : $html;
+}
+
+/**
  * Rubrikkacheln: kleine Bildkacheln mit dem Rubriknamen im Bild. Navigation, keine Schlagzeilen.
  *
  * @param array<int,array{label:string,url:string,slug:string,bild:int}> $kacheln Bild = Beitrag mit Foto oder 0.

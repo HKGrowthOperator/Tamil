@@ -3,8 +3,9 @@
  * Template Name: Production
  *
  * Konzertreihe von Tamil.de: Claim, Tickets, die nächsten Termine und die Konzertbeiträge (Schlagwort aus dem
- * Customizer) als Listen mit Bild, danach der Seiteninhalt (Service für Konzertbesucher). Greift automatisch für die
- * Seite „production“.
+ * Customizer) als Listen mit Bild, danach der Seiteninhalt (Service für Konzertbesucher). Listen im Seiteninhalt, die
+ * nur auf Beiträge dieser Website verlinken („Die Konzerte im Archiv“), erscheinen als Liste mit Bild wie alle Listen.
+ * Greift automatisch für die Seite „production“.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -66,8 +67,11 @@ $events = function_exists( 'tamil_site_upcoming_events' ) ? array_map( 'intval',
 	while ( have_posts() ) :
 		the_post();
 		if ( '' !== trim( (string) get_the_content() ) ) :
+			ob_start();
+			the_content();
+			$tamil_inhalt = (string) ob_get_clean();
 			?>
-			<section class="block seite__text"><div class="inhalt"><?php the_content(); ?></div></section>
+			<section class="block seite__text"><div class="inhalt"><?php echo tamil_beitragslisten_mit_bild( $tamil_inhalt, $ids ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Inhalt aus the_content(), Listen escapt in tamil_zeilen() ?></div></section>
 			<?php
 		endif;
 	endwhile;
