@@ -270,3 +270,15 @@ function tamil_tags( int $post_id ): array {
 	$tags = get_the_tags( $post_id );
 	return is_array( $tags ) ? $tags : array();
 }
+
+/**
+ * Impressum oder Datenschutzerklärung außerhalb des Echtbetriebs? Dort steht ein Hinweis, dass der Text von KBS noch
+ * folgt (Vertrag: Rechtstexte liefert KBS); im Echtbetrieb (WP_ENVIRONMENT_TYPE „production“) nie.
+ */
+function tamil_ist_rechtstext_entwurf( int $page_id ): bool {
+	if ( 'production' === wp_get_environment_type() ) {
+		return false;
+	}
+	$slug = (string) get_post_field( 'post_name', $page_id );
+	return in_array( $slug, array( 'impressum', 'datenschutz', 'datenschutzerklaerung' ), true ) || (int) get_option( 'wp_page_for_privacy_policy' ) === $page_id;
+}

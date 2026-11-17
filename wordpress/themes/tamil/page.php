@@ -23,6 +23,9 @@ while ( have_posts() ) :
 	<article <?php post_class( 'artikel seite' ); ?>>
 		<header class="artikel__kopf">
 			<h1 class="artikel__titel"><?php the_title(); ?></h1>
+			<?php if ( tamil_ist_rechtstext_entwurf( (int) get_the_ID() ) ) : ?>
+				<p class="hinweis-box seite__entwurf" role="note"><strong><?php esc_html_e( 'Entwurf:', 'tamil' ); ?></strong> <?php esc_html_e( 'Der Text von KBS folgt.', 'tamil' ); ?></p>
+			<?php endif; ?>
 		</header>
 		<?php if ( '' !== $tamil_bild ) : ?>
 			<figure class="artikel__figur">

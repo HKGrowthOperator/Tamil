@@ -774,6 +774,8 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .formular-wrap { margin-top: 16px; }
 .tafel.plaetze .masse, .tafel.plaetze .preis { white-space: nowrap; }
 .kontakt__formular + .kontakt__formular { margin-top: 48px; }
+/* Rechtstexte außerhalb des Echtbetriebs: Hinweis „Entwurf“ unter dem Titel */
+.seite__entwurf { margin-top: 16px; border-top-color: var(--rot); }
 /* Tamil TV pausiert: Text und Symbolbild, am Desktop nebeneinander */
 .tv-pause { display: grid; gap: 24px; padding: 24px 0 8px; }
 .tv-pause .aktionen { margin-top: 8px; }
