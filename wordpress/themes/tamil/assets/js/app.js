@@ -36,6 +36,18 @@
     window.addEventListener("resize", rand);
   }
 
+  // Rubrikkacheln laden „lazy“ (sie liegen weit unten); am Handy laufen sie seitlich, dort lädt der Browser Bilder
+  // außerhalb des Streifens sonst erst beim Wischen: kommt der Streifen in die Nähe, laden alle auf einmal
+  if ("IntersectionObserver" in window) {
+    $$(".kacheln").forEach(function (k) {
+      new IntersectionObserver(function (e, beob) {
+        if (!e[0].isIntersecting) return;
+        $$("img[loading=lazy]", k).forEach(function (i) { i.loading = "eager"; });
+        beob.disconnect();
+      }, { rootMargin: "800px 0px" }).observe(k);
+    });
+  }
+
   // Mobiler Werbeplatz: erst einblenden, wenn der erste Abschnitt (Aufmacher, Seitenkopf) aus dem Bild ist; schließen
   var sticky = $("#ad-mobile");
   if (sticky) {
