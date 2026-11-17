@@ -82,9 +82,13 @@ function tamil_site_sanitize_settings( $input ): array {
 }
 
 /**
- * CSV speichern und daraus die Tabelle für template_redirect ableiten.
+ * CSV speichern und daraus die Tabelle für template_redirect ableiten. Fehlt das Feld in der Anfrage ganz (null),
+ * bleiben CSV und Tabelle, wie sie sind (B5 Nebenbefund 1: sonst leert jedes Speichern die Weiterleitungen).
  */
 function tamil_site_sanitize_redirects_csv( $input ): string {
+	if ( null === $input ) {
+		return (string) get_option( 'tamil_site_redirects_csv', '' );
+	}
 	$prep = tamil_site_prepare_redirects( (string) $input );
 	if ( is_wp_error( $prep ) ) {
 		add_settings_error( 'tamil_site_redirects_csv', 'zu_gross', $prep->get_error_message() );
@@ -104,6 +108,9 @@ function tamil_site_page_settings(): void {
 	$settings = tamil_site_settings();
 	$csv      = (string) get_option( 'tamil_site_redirects_csv', '' );
 	$table    = tamil_site_redirects();
+	if ( '' === trim( $csv ) && $table ) {
+		$csv = tamil_site_redirects_als_csv( $table ); // nur die Tabelle gespeichert: so zeigen, dass Speichern sie behält
+	}
 	?>
 	<div class="wrap">
 		<h1><?php esc_html_e( 'Tamil.de Website', 'tamil-site' ); ?></h1>

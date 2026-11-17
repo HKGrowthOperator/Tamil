@@ -150,6 +150,19 @@ function tamil_site_parse_redirect_csv( string $csv, array &$verworfen = array()
 }
 
 /**
+ * Tabelle Pfad → Ziel zurück in CSV mit den Spalten „alt“ und „neu“ (für das Formular, wenn nur die Tabelle steht).
+ *
+ * @param array<string,string> $table Weiterleitungen.
+ */
+function tamil_site_redirects_als_csv( array $table ): string {
+	$zeilen = array( 'alt,neu' );
+	foreach ( $table as $von => $nach ) {
+		$zeilen[] = $von . ',' . $nach; // nur Pfade (normalisiert), ohne Komma und Anführungszeichen
+	}
+	return implode( "\n", $zeilen );
+}
+
+/**
  * @return array<string,string>
  */
 function tamil_site_redirects(): array {
