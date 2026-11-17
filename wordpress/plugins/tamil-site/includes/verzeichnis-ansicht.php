@@ -120,9 +120,9 @@ function tamil_site_vz_bild( int $id, string $wo = 'liste' ): array {
 		if ( ! is_readable( TAMIL_SITE_DIR . 'assets/img/verzeichnis/' . $e['datei'] ) ) {
 			return $aus;
 		}
-		$url             = TAMIL_SITE_URL . 'assets/img/verzeichnis/';
-		$srcset          = ( is_readable( TAMIL_SITE_DIR . 'assets/img/verzeichnis/' . $e['klein'] ) ? $url . $e['klein'] . ' 600w, ' : '' ) . $url . $e['datei'] . ' ' . (int) $e['w'] . 'w';
-		$aus['html']     = sprintf(
+		$url           = TAMIL_SITE_URL . 'assets/img/verzeichnis/';
+		$srcset        = ( is_readable( TAMIL_SITE_DIR . 'assets/img/verzeichnis/' . $e['klein'] ) ? $url . $e['klein'] . ' 600w, ' : '' ) . $url . $e['datei'] . ' ' . (int) $e['w'] . 'w';
+		$aus['html']   = sprintf(
 			'<img class="vz-bild__img" src="%1$s" srcset="%2$s" sizes="%3$s" width="%4$d" height="%5$d" alt="%6$s" loading="lazy" decoding="async">',
 			esc_url( $url . $e['datei'] ),
 			esc_attr( $srcset ),
@@ -131,8 +131,9 @@ function tamil_site_vz_bild( int $id, string $wo = 'liste' ): array {
 			(int) $e['h'],
 			esc_attr( $e['alt'] )
 		);
-		$aus['symbol']   = true;
-		$aus['nachweis'] = trim( __( 'Symbolbild.', 'tamil-site' ) . ' ' . $e['nachweis'] );
+		$aus['symbol'] = true;
+		// „Symbolbild, Foto: …“: in dieser Form erkennt das Theme Präfix, Urheber und Lizenz und verlinkt nur den Urheber.
+		$aus['nachweis'] = trim( __( 'Symbolbild,', 'tamil-site' ) . ' ' . $e['nachweis'] );
 		$quelle          = (string) ( $e['quelle'] ?? '' );
 		$lizenz          = (string) ( $e['lizenz'] ?? '' );
 	}

@@ -95,11 +95,13 @@ def test_profil_symbolbild_mit_nachweis_und_fuss(eintraege):
     seite = requests.get(profil, headers=AN, timeout=30).text
     figur = re.search(r'<figure class="vz-bild vz-bild--profil">.*?</figure>', seite, re.S)
     assert figur, "Profil ohne Bild"
-    assert _attr(_img(figur.group(0)), "alt").startswith("Symbolbild") and "Symbolbild." in figur.group(0)
+    assert _attr(_img(figur.group(0)), "alt").startswith("Symbolbild") and "Symbolbild, Foto: Fridolin freudenfett" in figur.group(0)
     assert "Wikimedia Commons" in figur.group(0)
     if "Bildnachweise dieser Seite" in seite:
         fuss = re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", "", seite.split("Bildnachweise dieser Seite", 1)[1])))
-        assert "Symbolbild" in fuss and "Fridolin freudenfett / Wikimedia Commons, CC BY-SA 4.0, zugeschnitten" in fuss
+        assert "Symbolbild, Foto: Fridolin freudenfett / Wikimedia Commons, CC BY-SA 4.0, zugeschnitten" in fuss
+        # Theme 3.3.0 verlinkt nur den Urheber, nicht „Symbolbild, Foto:“
+        assert not re.search(r"<a [^>]*>Symbolbild", seite.split("Bildnachweise dieser Seite", 1)[1])
 
 
 def test_profil_mit_beitragsbild_ein_bild(eintraege, wp_cli):
