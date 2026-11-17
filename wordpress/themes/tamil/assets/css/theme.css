@@ -18,6 +18,9 @@
   --leise: oklch(0.45 0.012 255);
   --linie: oklch(0.88 0.004 250);
   --rot: oklch(0.508 0.177 25.6);
+  --rot-hell: oklch(0.55 0.175 25.6);   /* Rubrikband beim Überfahren (weiß darauf 5,1 : 1) */
+  --rot-linie: oklch(0.62 0.15 25.6);   /* feine Trennlinie im Rubrikband */
+  --rot-dunkel: oklch(0.42 0.15 25.6);  /* Spur der Leselinie im Rubrikband */
   --hell: oklch(0.985 0.002 250);
   --hell-leise: oklch(0.82 0.006 250);
   --linie-dunkel: oklch(0.36 0.010 255);
@@ -144,7 +147,8 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .kopf__logo { display: block; width: max-content; padding: 6px 0; }
 .kopf__logo img { height: 44px; width: auto; }
 
-.band { position: sticky; top: 0; z-index: 20; background: var(--tinte); color: var(--hell); }
+/* Rubrikband in Rot mit weißer Schrift (Luis, 17.11.2026): weiß auf Rot 6,1 : 1, beim Überfahren 5,1 : 1 */
+.band { position: sticky; top: 0; z-index: 20; background: var(--rot); color: var(--hell); }
 .band__innen { display: flex; align-items: stretch; max-width: var(--breite); margin: 0 auto; padding: 0 4px; }
 .band__liste {
   display: flex; flex: 1 1 auto; min-width: 0;
@@ -156,12 +160,12 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .band__liste a, .mehr summary {
   position: relative; display: block;
   padding: 0 12px; line-height: var(--band-hoehe);
-  font-size: 15px; font-weight: 500; color: var(--hell-leise); white-space: nowrap;
+  font-size: 15px; font-weight: 500; color: var(--hell); white-space: nowrap;
 }
-.band__liste a:hover, .mehr summary:hover { color: var(--hell); }
+.band__liste a:hover, .mehr summary:hover { background: var(--rot-hell); color: var(--hell); }
 .band__liste a[aria-current] { color: var(--hell); font-weight: 600; }
 .band__liste a[aria-current]::after {
-  content: ""; position: absolute; left: 12px; right: 12px; bottom: 0; height: 3px; background: var(--rot);
+  content: ""; position: absolute; left: 12px; right: 12px; bottom: 0; height: 3px; background: var(--hell);
 }
 .band__liste :focus-visible, .mehr summary:focus-visible { outline-color: var(--hell); outline-offset: -4px; }
 .mehr__paneel :focus-visible { outline-color: var(--tinte); outline-offset: 2px; }
@@ -169,11 +173,11 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 @media (min-width: 601px) { .admin-bar .band { top: var(--wp-admin--admin-bar--height, 32px); } }
 
 /* „Mehr“: Dienste, Suche und Social; ohne Skript ein einfaches <details> */
-.mehr { flex: none; border-left: 1px solid var(--linie-dunkel); }
+.mehr { flex: none; border-left: 1px solid var(--rot-linie); }
 .mehr summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 6px; }
 .mehr summary::-webkit-details-marker { display: none; }
 .mehr summary::after { content: "+"; font-weight: 400; font-size: 18px; line-height: 1; }
-.mehr[open] summary { color: var(--hell); }
+.mehr[open] summary { background: var(--rot-hell); color: var(--hell); }
 .mehr[open] summary::after { content: "\2212"; }
 .mehr:not([open]) .mehr__paneel { display: none; }
 .mehr__paneel {
@@ -1026,10 +1030,15 @@ body .tz-dialog::backdrop { background: oklch(0.21 0.012 255 / 0.6); }
 
   /* Kopf und Band: an den Scrollweg gebunden, nicht an die Zeit */
   html.bewegt .kopf__logo { transform-origin: 0 100%; }
-  /* rote Leselinie, 2 px, an der Unterkante des Rubrikbands */
+  /* helle Leselinie, 2 px, an der Unterkante des roten Rubrikbands; darunter eine dunkelrote Spur, damit die Linie
+     auch dort steht, wo der helle Seitengrund an das Band grenzt */
+  html.bewegt .band::before {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px;
+    background: var(--rot-dunkel); pointer-events: none;
+  }
   html.bewegt .band::after {
     content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px;
-    background: var(--rot); transform-origin: 0 50%; scale: 0 1; pointer-events: none;
+    background: var(--hell); transform-origin: 0 50%; scale: 0 1; pointer-events: none;
   }
 
   /* Weg 1: CSS-Scroll-Timelines (html.sda setzt das Skript, wenn der Browser sie kann) */

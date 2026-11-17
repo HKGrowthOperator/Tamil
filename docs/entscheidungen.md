@@ -3,6 +3,13 @@
 Neueste oben. Format: Datum · Entscheidung · wer · warum. Was hier steht, gilt, bis ein neuerer Eintrag es ändert.
 Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
+## 17.11.2026
+
+- **Rubrikband rot mit weißer Schrift** statt dunkel (Tinte). Aktive Rubrik mit 3 px Weiß darunter, Leselinie der
+  Bewegung D hell, Fokusring weiß. Damit ist „Diese Woche“ die einzige dunkle Fläche; Rot ist als Fläche nur im Band
+  erlaubt. Kehrt §10.1 von `design/brief.md` („Dunkle Flächen, genau zwei“, „Rot nie als Fläche“) für das Band um. ·
+  Luis
+
 ## 16.11.2026
 
 - **Bewegung D, Theme direkt in klar2, ohne Probeseite und Tor G3, direkt aufs Testsystem.**

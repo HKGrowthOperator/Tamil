@@ -18,17 +18,21 @@ oklch im CSS (`theme.css`, `design/tokens.css`), Hex nur als Rückfall in `theme
 |---|---|---|---|
 | `grund` | 0.985 0.002 250 | `#F9FAFB` | Seitengrund; Schrift auf Dunkel („hell“) |
 | `flaeche` | 0.962 0.003 250 | `#F1F3F4` | Bildgrund beim Laden, Hinweise, Meldungen der Formulare |
-| `tinte` | 0.21 0.012 255 | `#15191E` | Text, Linien über Blöcken, Rubrikband, „Diese Woche“ |
+| `tinte` | 0.21 0.012 255 | `#15191E` | Text, Linien über Blöcken, „Diese Woche“ |
 | `leise` | 0.45 0.012 255 | `#51565C` | Datum, Orte, Nachweise, Beschriftungen |
 | `linie` | 0.88 0.004 250 | `#D5D8DA` | Trennlinien zwischen Zeilen |
-| `rot` | 0.508 0.177 25.6 | `#B5282A` | nur Akzent: Rubrik in der Dachzeile, Linie unter der aktiven Rubrik, Leselinie, Fehler |
+| `rot` | 0.508 0.177 25.6 | `#B5282A` | Fläche des Rubrikbands (seit 17.11.); sonst nur Akzent: Rubrik in der Dachzeile, Fehler |
+| `rot-hell` | 0.55 0.175 25.6 | `#C33937` | Rubrikband beim Überfahren und bei offenem „Mehr“ (weiß darauf 5,1 : 1) |
+| `rot-linie` | 0.62 0.15 25.6 | `#D15C55` | feine Trennlinie im Rubrikband |
+| `rot-dunkel` | 0.42 0.15 25.6 | `#8D1A1D` | Spur unter der hellen Leselinie (Bewegung D) |
 | `hell-leise` | 0.82 0.006 250 | `#C1C4C8` | Nebeninfos auf Dunkel |
 | `linie-dunkel` | 0.36 0.010 255 | `#3A3D42` | Linien auf Dunkel |
 | `flaeche-dunkel` | 0.26 0.012 255 | `#20242A` | gestaltete Kacheln ohne Foto (Kino, Termine) |
 
-Genau zwei dunkle Flächen je Seite: das Rubrikband und „Diese Woche“ (auf Kino und Termine „Im Programm“ bzw.
-„Ab heute“). Der einzige Verlauf liegt unter Schrift im Bild (durchsichtig nach Tinte). Radius 0, keine Schatten,
-nichts gedreht. Rot nie als Fläche und nie als Schrift über 20 px; auf Dunkel ist die Dachzeile hell.
+Das Rubrikband ist rot mit weißer Schrift (Luis, 17.11.2026; weiß auf Rot 6,1 : 1). Damit bleibt genau eine
+dunkle Fläche je Seite: „Diese Woche“ (auf Kino und Termine „Im Programm“ bzw. „Ab heute“). Der einzige Verlauf
+liegt unter Schrift im Bild (durchsichtig nach Tinte). Radius 0, keine Schatten, nichts gedreht. Rot als Fläche nur im
+Band, als Schrift nie über 20 px; auf Dunkel ist die Dachzeile hell.
 
 ## Schrift
 
@@ -53,8 +57,9 @@ gemeinsamer Kante für Kopf, Bild und Text), höchstens 70 Zeichen je Zeile.
 ## Bausteine
 
 - **Kopf:** Kopfzeile (Datum, ab 800 px „Diese Woche“ mit nächstem Termin und Film, Suche), Logo 44/52/58 px auf
-  hellem Grund, dunkles Rubrikband (`nav`, 46/48 px, steht beim Scrollen), aktive Rubrik hell mit 3 px Rot darunter,
-  am Handy seitlich mit Einrasten; „Mehr“ am Ende mit Suche, Diensten und Social.
+  hellem Grund, rotes Rubrikband mit weißer Schrift (`nav`, 46/48 px, steht beim Scrollen), aktive Rubrik mit
+  Gewicht 600 und 3 px Weiß darunter, beim Überfahren etwas hellerer Grund, Fokusring weiß, am Handy seitlich mit
+  Einrasten; „Mehr“ am Ende mit Suche, Diensten und Social.
 - **Anreißer:** ein Link um Bild und Text; Dachzeile „Rubrik | Datum“; Bild füllt seinen Rahmen. Formate: 4:3
   (Aufmacher, große Kachel in „Diese Woche“), 16:9 (Nebenstücke, Meldungen, Rubrikkacheln, Küche groß), 8:3 (kleine
   Kacheln). Beim Überfahren Zoom 1,03 in 0,35 s, Titel unterstrichen.
@@ -91,7 +96,7 @@ nie von selbst; was einmal erschienen ist, bleibt.
 | Teil | Bewegung | Dauer |
 |---|---|---|
 | Kopf | Kopfzeile verblasst, Logo wird 0,8 und schiebt sich unter das Band (am Scrollweg) | Weg = Kopfhöhe |
-| Band | rote Leselinie 2 px wächst mit dem Lesefortschritt | ganze Seite |
+| Band | helle Leselinie 2 px auf dem roten Band wächst mit dem Lesefortschritt | ganze Seite |
 | Aufmacherbild | bis 40 px langsamer als die Seite | beim Hinausscrollen |
 | „Diese Woche“ | dunkle Fläche zieht von links auf, danach steigt der Inhalt | 800 ms, Inhalt ab 55 % |
 | Große Kacheln | Bild deckt sich von unten auf, Maßstab 1,06 → 1, Titel zeilenweise | 750 / 1100 / 700 ms |
