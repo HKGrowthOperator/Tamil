@@ -527,14 +527,18 @@ function tamil_site_anzeige( string $platz, bool $ausgeben = true ): string {
 		tamil_site_eigenanzeige_nachweis_merken( $vorlage );
 	}
 	$mobil = 'mobile' === $platz;
-	$out   = sprintf(
-		'<div class="ad ad-%1$s%2$s"%3$s data-platz="%1$s"><span class="ad-label">%4$s</span>%5$s%6$s</div>',
+	// Ein eigener, je Platz anders benannter Bereich (aside): Werbung steht auch außerhalb von main und footer (Fuß,
+	// Handy-Leiste) in einem Landmark (axe region) und lässt sich mit dem Screenreader überspringen.
+	$out = sprintf(
+		'<aside class="ad ad-%1$s%2$s"%3$s data-platz="%1$s" aria-label="%7$s"><span class="ad-label">%4$s</span>%5$s%6$s</aside>',
 		esc_attr( $platz ),
 		$eigen ? ' ad-anzeige ad-bild' : '',
 		$mobil ? ' id="ad-mobile"' : '',
 		esc_html__( 'Anzeige', 'tamil-site' ),
 		$inhalt, // Banner-Code aus den Einstellungen (nur Administratoren), Advanced Ads oder die Vorlagen oben.
-		$mobil ? '<button type="button" class="schliessen" aria-label="' . esc_attr__( 'Werbung schließen', 'tamil-site' ) . '">×</button>' : ''
+		$mobil ? '<button type="button" class="schliessen" aria-label="' . esc_attr__( 'Werbung schließen', 'tamil-site' ) . '">×</button>' : '',
+		/* translators: %s: Name des Werbeplatzes */
+		esc_attr( sprintf( __( 'Anzeige: %s', 'tamil-site' ), tamil_site_werbung_formate()[ $platz ]['name'] ?? $platz ) )
 	);
 	if ( $ausgeben ) {
 		echo $out; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped

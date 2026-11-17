@@ -206,3 +206,19 @@ def test_seite_mit_eigenanzeigen_nennt_ihre_bildnachweise_im_fuss(wp, wp_cli, se
             continue
         bild = json.loads(wp_cli(f"echo wp_json_encode( tamil_site_eigenanzeige_bild( tamil_site_eigenanzeige_vorlagen()['{vorlage}']['bild'] ) );"))
         assert bild["nachweis"] and bild["nachweis"] in nachweise, f"{platz}: Nachweis fehlt im Fuß"
+
+
+def test_werbeplatz_ist_ein_benannter_bereich(wp_cli, seite_production):
+    """axe „region“ (Prüfung 17.11.): Werbeplätze außerhalb von main und footer (Fuß-Anzeige, Handy-Leiste) liegen in
+    einem eigenen Bereich; je Platz ein anderer Name (sonst landmark-unique)."""
+    namen = set()
+    for platz in ("leaderboard", "footer", "mobile"):
+        html = wp_cli(f"echo tamil_site_anzeige( '{platz}', false );")
+        if not html:
+            continue
+        kopf = re.match(r"<aside class=\"ad ad-[a-z]+[^\"]*\"[^>]*>", html)
+        assert kopf, html[:120]
+        name = re.search(r'aria-label="([^"]+)"', kopf.group(0)).group(1)
+        assert name.startswith("Anzeige"), name
+        namen.add(name)
+    assert len(namen) >= 2
