@@ -5,6 +5,11 @@ Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
 ## 17.11.2026
 
+- **Kopfzeile mit Top-News in Rot:** Zwischen Datum und Suche steht wieder eine Zeile mit Direktlinks, jetzt als
+  „Neu“ mit den Überschriften der neuesten Beiträge in Rot (ab 1024 px zwei, darunter einer, einzeilig mit
+  Auslassung, am Handy ohne Datum), ohne den Aufmacher der Startseite und ohne den offenen Artikel. Kein Laufband,
+  keine Bewegung. Die Zeile ist Navigation und deshalb von der Bilderpflicht ausgenommen. Ersetzt den Wegfall der
+  Hinweise „Diese Woche“ vom selben Tag. · Luis
 - **Aufteilung:** Luis' Sitzung macht nur noch Website, Design und Fulfillment. Dazu gehören das Theme, die
   Frontend-Teile von `tamil-site` und das Testsystem der Website. Nick macht das Backend: News-Radar, Cockpit, Agenten,
   Publisher, Social-Automatik und `tamil-radar`. Die Übergabe an Nick steht in `docs/uebergabe/backend-nick.md`. · Luis

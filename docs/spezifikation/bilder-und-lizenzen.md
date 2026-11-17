@@ -115,7 +115,7 @@ folgt der abgenommenen Kachel aus dem neuen Design (Entscheidung 10.11.).
 ### 2.7 Theme: Bild für jeden Anreißer (Bilderpflicht, 17.11.2026)
 
 Luis am 17.11.: Jeder sichtbare Anreißer der Website zeigt ein echtes Bild, nichts nur als Text (Ausnahmen: Rubrikband,
-Fußlisten, Formulare, reine Textseiten). Das Theme wählt das Bild in `inc/bildkette.php`, unabhängig von der Bildkette
+die Top-News-Zeile „Neu“ im Kopf, beide Navigation, Fußlisten, Formulare, reine Textseiten). Das Theme wählt das Bild in `inc/bildkette.php`, unabhängig von der Bildkette
 des Radars:
 
 | Stufe | Bild | Nachweis |
