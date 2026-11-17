@@ -5,6 +5,7 @@ Bild wird nicht gezeigt. Dazu weiter: kein Icon, keine Dachzeile, kein Gedankens
 19 und Floor 10, Kritik theme-tageskalender-r1 P1-3 und P1-5); Platz, Kennzeichnung „Anzeige“ und Ziel bleiben.
 """
 
+import html
 import json
 import re
 
@@ -23,6 +24,12 @@ def _img(html: str) -> str:
     m = re.search(r'<img class="anzeige__bild"[^>]*>', html)
     assert m, "Bild im Banner fehlt"
     return m.group(0)
+
+
+def _ohne_tags(html_text: str) -> str:
+    """Sichtbarer Text ohne Tags und Entitäten, Leerraum zusammengefasst: Das Theme verlinkt Urheber und Lizenz im
+    Nachweis (Theme 3.3.0, tamil_nachweis_bauen()), die Aussage bleibt dieselbe."""
+    return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", "", html_text))).strip()
 
 
 def _attr(tag: str, name: str) -> str:
@@ -199,7 +206,7 @@ def test_seite_mit_eigenanzeigen_nennt_ihre_bildnachweise_im_fuss(wp, wp_cli, se
         pytest.skip("Theme ohne tamil_nachweise()")
     seite = wp.get("/").text
     assert re.search(r"<link[^>]+tamil-site-anzeigen-css[^>]+anzeigen\.css", seite.split("</head>")[0])
-    nachweise = seite.split("Bildnachweise dieser Seite", 1)[1] if "Bildnachweise dieser Seite" in seite else ""
+    nachweise = _ohne_tags(seite.split("Bildnachweise dieser Seite", 1)[1] if "Bildnachweise dieser Seite" in seite else "")
     for platz in ("footer", "mobile"):
         vorlage = json.loads(wp_cli(f"echo wp_json_encode( tamil_site_anzeige_inhalt( '{platz}' ) );"))[2]
         if not vorlage:

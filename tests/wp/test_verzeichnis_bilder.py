@@ -7,6 +7,7 @@ Gegen ein lokales WordPress (wordpress/dev/setup.sh + serve.sh). Der Schalter â€
 """
 
 import base64
+import html
 import io
 import json
 import re
@@ -89,15 +90,16 @@ def test_liste_jeder_eintrag_mit_bild(eintraege):
 
 
 def test_profil_symbolbild_mit_nachweis_und_fuss(eintraege):
-    html = requests.get(eintraege["seite"] + f"?vz_suche=Bildprobe+{eintraege['kennung']}", headers=AN, timeout=30).text
-    profil = re.search(rf'<a class="vz-name" href="([^"]+)">Bildprobe tempel {eintraege["kennung"]}<', html).group(1)
+    liste = requests.get(eintraege["seite"] + f"?vz_suche=Bildprobe+{eintraege['kennung']}", headers=AN, timeout=30).text
+    profil = re.search(rf'<a class="vz-name" href="([^"]+)">Bildprobe tempel {eintraege["kennung"]}<', liste).group(1)
     seite = requests.get(profil, headers=AN, timeout=30).text
     figur = re.search(r'<figure class="vz-bild vz-bild--profil">.*?</figure>', seite, re.S)
     assert figur, "Profil ohne Bild"
     assert _attr(_img(figur.group(0)), "alt").startswith("Symbolbild") and "Symbolbild." in figur.group(0)
     assert "Wikimedia Commons" in figur.group(0)
     if "Bildnachweise dieser Seite" in seite:
-        assert "Symbolbild. Foto:" in seite.split("Bildnachweise dieser Seite", 1)[1]
+        fuss = re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", "", seite.split("Bildnachweise dieser Seite", 1)[1])))
+        assert "Symbolbild" in fuss and "Fridolin freudenfett / Wikimedia Commons, CC BY-SA 4.0, zugeschnitten" in fuss
 
 
 def test_profil_mit_beitragsbild_ein_bild(eintraege, wp_cli):
