@@ -14,4 +14,4 @@ if ( '' === $url || str_contains( (string) ( $args['inhalt'] ?? '' ), 'class="qu
 }
 $name = (string) get_post_meta( $post_id, 'quelle_name', true );
 ?>
-<p class="quelle"><?php esc_html_e( 'Quelle:', 'tamil' ); ?> <a href="<?php echo esc_url( $url ); ?>" target="_blank" rel="noopener nofollow"><?php echo esc_html( ( '' !== $name ? $name : (string) wp_parse_url( $url, PHP_URL_HOST ) ) ); ?></a></p>
+<p class="quelle"><?php esc_html_e( 'Quelle:', 'tamil' ); ?> <a href="<?php echo esc_url( $url ); ?>" target="_blank" rel="noopener nofollow"><?php echo esc_html( str_replace( ' · ', ', ', '' !== $name ? $name : (string) wp_parse_url( $url, PHP_URL_HOST ) ) ); ?></a></p>

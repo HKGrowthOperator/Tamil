@@ -18,40 +18,40 @@ foreach ( (array) preg_split( '/\r\n|\r|\n/', tamil_opt( 'tv_sender' ) ) as $zei
 	}
 }
 ?>
-<div class="wrap">
-	<?php tamil_breadcrumb( array( array( get_the_title(), '' ) ) ); ?>
+<div class="innen">
 	<header class="seitenkopf">
-		<h1><?php the_title(); ?></h1>
-		<p class="beschreibung"><?php echo esc_html( tamil_opt( 'tv_text' ) ); ?></p>
+		<h1 class="seitenkopf__titel"><?php the_title(); ?></h1>
+		<p class="seitenkopf__zeile"><?php echo esc_html( tamil_opt( 'tv_text' ) ); ?></p>
 	</header>
-	<div class="mit-spalte">
-		<div>
-			<?php if ( $sender ) : ?>
-				<div class="kartenraster zwei">
-					<?php foreach ( $sender as [ $name, $stream ] ) : ?>
-						<article class="card">
-							<div class="media player" data-stream="<?php echo esc_url( $stream ); ?>">
-								<button type="button" class="play" aria-label="<?php /* translators: %s: Sender */ echo esc_attr( sprintf( __( '%s abspielen', 'tamil' ), $name ) ); ?>"><?php tamil_icon( 'play' ); ?></button>
-							</div>
-							<div class="text"><h3><?php echo esc_html( $name ); ?></h3><p class="excerpt"><?php esc_html_e( 'Live-Stream im Browser, startet erst nach Klick.', 'tamil' ); ?></p></div>
-						</article>
-					<?php endforeach; ?>
-				</div>
-			<?php else : ?>
-				<div class="leer"><h2><?php esc_html_e( 'Die Sender werden gerade eingerichtet.', 'tamil' ); ?></h2><p><?php esc_html_e( 'Sobald neue Stream-Adressen vorliegen, laufen die Player hier wieder.', 'tamil' ); ?></p></div>
-			<?php endif; ?>
+	<section class="block">
+		<?php if ( $sender ) : ?>
+			<ul class="sender">
+				<?php foreach ( $sender as [ $name, $stream ] ) : ?>
+					<li>
+						<div class="player" data-stream="<?php echo esc_url( $stream ); ?>">
+							<?php /* translators: %s: Sender */ ?>
+							<button type="button" class="play knopf" aria-label="<?php echo esc_attr( sprintf( __( '%s abspielen', 'tamil' ), $name ) ); ?>"><?php esc_html_e( 'Abspielen', 'tamil' ); ?></button>
+						</div>
+						<h2 class="sender__name"><?php echo esc_html( $name ); ?></h2>
+						<p class="sender__zeile"><?php esc_html_e( 'Live-Stream im Browser, startet erst nach Klick.', 'tamil' ); ?></p>
+					</li>
+				<?php endforeach; ?>
+			</ul>
+		<?php else : ?>
+			<h2 class="block-titel"><?php esc_html_e( 'Die Sender werden gerade eingerichtet.', 'tamil' ); ?></h2>
+			<p class="leer__satz"><?php esc_html_e( 'Sobald neue Stream-Adressen vorliegen, laufen die Player hier wieder.', 'tamil' ); ?></p>
+		<?php endif; ?>
+	</section>
+	<?php
+	while ( have_posts() ) :
+		the_post();
+		if ( '' !== trim( (string) get_the_content() ) ) :
+			?>
+			<section class="block seite__text"><div class="inhalt"><?php the_content(); ?></div></section>
 			<?php
-			while ( have_posts() ) :
-				the_post();
-				?>
-				<?php
-				if ( '' !== trim( (string) get_the_content() ) ) :
-					?>
-					<div class="artikel-text section"><?php the_content(); ?></div><?php endif; ?>
-			<?php endwhile; ?>
-		</div>
-		<?php get_sidebar(); ?>
-	</div>
+		endif;
+	endwhile;
+	?>
 </div>
 <?php
 get_footer();

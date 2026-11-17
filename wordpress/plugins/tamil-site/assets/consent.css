@@ -1,0 +1,84 @@
+/* Tamil.de – Cookie-Zustimmung: nur das Nötigste. Farben und Schriften kommen aus dem Theme, falls vorhanden;
+   die Gestaltung übernimmt das Theme nach Tor G3. */
+.tz-hinweis,
+.tz-dialog {
+	box-sizing: border-box;
+	color: var(--tinte, #1d1a17);
+	background: var(--weiss, #fff);
+	border: 1px solid var(--linie, #d9d2c7);
+	border-radius: var(--r, 12px);
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+	font-size: 15px;
+	line-height: 1.5;
+}
+.tz-hinweis *,
+.tz-dialog * { box-sizing: border-box; }
+.tz-hinweis {
+	position: fixed;
+	z-index: 90;
+	left: 12px;
+	right: 12px;
+	bottom: max(12px, env(safe-area-inset-bottom));
+	max-width: 40rem;
+	max-height: calc(100vh - 24px);
+	overflow-y: auto;
+	margin: 0 auto;
+	padding: 16px;
+}
+.tz-hinweis[hidden] { display: none; }
+@media (prefers-reduced-motion: no-preference) {
+	.tz-hinweis:not([hidden]) { animation: tz-ein 0.25s ease-out; }
+	@keyframes tz-ein { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+}
+.tz-titel {
+	margin: 0 0 6px;
+	font-family: var(--titel, inherit);
+	font-size: 1.1rem;
+	line-height: 1.25;
+}
+.tz-text { margin: 0 0 12px; overflow-wrap: anywhere; }
+.tz-text a { color: inherit; }
+.tz-knoepfe { display: flex; flex-wrap: wrap; gap: 8px; }
+.tz-knopf {
+	flex: 1 1 auto;
+	min-height: 44px;
+	min-width: 44px;
+	padding: 10px 16px;
+	border: 1px solid var(--tinte, #1d1a17);
+	border-radius: var(--r-klein, 8px);
+	background: var(--weiss, #fff);
+	color: var(--tinte, #1d1a17);
+	font: inherit;
+	font-weight: 700;
+	cursor: pointer;
+}
+.tz-knopf-haupt { background: var(--tinte, #1d1a17); color: var(--weiss, #fff); }
+.tz-knopf-leise { border-color: transparent; text-decoration: underline; }
+.tz-knopf:focus-visible,
+.tz-kategorie input:focus-visible,
+.tz-link:focus-visible { outline: 3px solid var(--rot, #c8102e); outline-offset: 2px; }
+.tz-dialog {
+	width: min(36rem, calc(100vw - 24px));
+	max-height: calc(100vh - 24px);
+	padding: 20px;
+}
+.tz-dialog::backdrop { background: rgba(0, 0, 0, 0.45); }
+.tz-kategorien { margin: 0 0 16px; padding: 0; border: 0; }
+.tz-kategorie {
+	display: flex;
+	gap: 12px;
+	align-items: flex-start;
+	min-height: 44px;
+	padding: 10px 0;
+	border-top: 1px solid var(--linie, #d9d2c7);
+	cursor: pointer;
+}
+.tz-kategorie input { flex: none; width: 22px; height: 22px; margin: 2px 0 0; }
+.tz-unsichtbar {
+	position: absolute !important;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	white-space: nowrap;
+}

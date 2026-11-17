@@ -1,0 +1,3 @@
+# Ganzseiten-Aufnahmen aus tools/shots.mjs: groß und jederzeit neu erzeugbar (wie design/richtungen/*/shots/).
+# bericht.json und frames/*.jpg bleiben.
+*.png

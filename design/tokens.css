@@ -1,0 +1,60 @@
+/*
+ * tamil.de – verbindliche Tokens „klar2“ mit Bewegung D (Wahl von Luis am 16.11.2026,
+ * docs/abnahme/2026-11-16-G2-klar2.md). Quelle: design/richtungen/klar2/klar2.css und bewegung/bewegung.css,
+ * Regeln in design/brief.md §10. Das Theme (wordpress/themes/tamil/assets/css/theme.css) führt dieselben Namen;
+ * theme.json trägt die Farben als Hex-Rückfall. Das Cockpit folgt mit denselben Werten in ruhigerer Form.
+ */
+:root {
+  /* Farben auf hellem Grund (brief §3) */
+  --grund: oklch(0.985 0.002 250);          /* #F9FAFB  Seitengrund */
+  --flaeche: oklch(0.962 0.003 250);        /* #F1F3F4  Bildgrund, Hinweise */
+  --tinte: oklch(0.21 0.012 255);           /* #15191E  Text, Linien über Blöcken, „Diese Woche“ */
+  --leise: oklch(0.45 0.012 255);           /* #51565C  Datum, Orte, Nachweise */
+  --linie: oklch(0.88 0.004 250);           /* #D5D8DA  Zeilenlinien */
+  --rot: oklch(0.508 0.177 25.6);           /* #B5282A  Fläche nur im Rubrikband (seit 17.11.), sonst Akzent; Schrift nie über 20 px */
+  --rot-hell: oklch(0.55 0.175 25.6);       /* #C33937  Rubrikband beim Überfahren, weiß darauf 5,1 : 1 */
+  --rot-linie: oklch(0.62 0.15 25.6);       /* #D15C55  Trennlinie im Rubrikband */
+  --rot-dunkel: oklch(0.42 0.15 25.6);      /* Spur unter der hellen Leselinie (Bewegung D) */
+
+  /* auf Dunkel und Rot: „Diese Woche“ ist die einzige dunkle Fläche; das Rubrikband ist rot mit weißer Schrift
+     (Luis, 17.11.2026; weiß auf Rot 6,1 : 1) */
+  --hell: oklch(0.985 0.002 250);           /* Titel, Schrift im Rubrikband, Linie unter der aktiven Rubrik, Leselinie */
+  --hell-leise: oklch(0.82 0.006 250);      /* #C1C4C8  Rubriken, Datum, Orte */
+  --linie-dunkel: oklch(0.36 0.010 255);    /* #3A3D42  Trennlinien */
+  --flaeche-dunkel: oklch(0.26 0.012 255);  /* #20242A  gestaltete Kacheln ohne Foto */
+  --tinte-hover: oklch(0.3 0.012 255);      /* Knopf beim Überfahren */
+
+  /* der einzige Verlauf: unter Schrift im Bild */
+  --verlauf: linear-gradient(to bottom, oklch(0.21 0.012 255 / 0) 0, oklch(0.21 0.012 255 / 0.74) 52px, oklch(0.21 0.012 255 / 0.9) 100%);
+  --verlauf-kurz: linear-gradient(to bottom, oklch(0.21 0.012 255 / 0) 0, oklch(0.21 0.012 255 / 0.8) 22px, oklch(0.21 0.012 255 / 0.92) 100%);
+
+  /* Schrift: eine Familie, Tamil über unicode-range und :lang(ta) */
+  --schrift: "Libre Franklin", Catamaran, "Noto Sans Tamil", system-ui, sans-serif;
+  --schrift-tamil: Catamaran, "Noto Sans Tamil", "Tamil Sangam MN", sans-serif;
+  --text-klein: 13px;        /* Dachzeile, Nachweise */
+  --text-leise: 15px;        /* Orte, Beschriftungen */
+  --text: 17px;              /* Text */
+  --text-lesen: 18px;        /* Artikel am Handy; 19 px ab 1024 px */
+  --text-titel: 19px;        /* Nebenstück, Blocktitel; Meldung 17 px */
+  --text-kachel: 22px;       /* große Kachel; 26 px ab 1024 px */
+  --text-artikel: 28px;      /* Artikeltitel; 38 px ab 1024 px */
+  --text-aufmacher: 30px;    /* Titel im Aufmacher; 34 px Tablet, 40 px Desktop */
+
+  /* Raster und Form */
+  --breite: 1280px;
+  --rand: 16px;              /* 24 px ab 600, 40 px ab 1024 */
+  --band-hoehe: 46px;        /* 48 px ab 1024 */
+  --spalte-artikel: 560px;   /* 600 px am Tablet */
+  --radius: 0;
+  --schatten: none;
+  --zoom: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);   /* Überfahren: Maßstab 1,03 */
+
+  /* Bewegung D, nur unter prefers-reduced-motion: no-preference */
+  --expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --sanft: cubic-bezier(0.33, 1, 0.68, 1);
+  --vorhang: cubic-bezier(0.3, 0.1, 0.1, 1);
+  --t-steigen: 560ms; --hub: 16px;
+  --t-bild: 750ms; --t-zoom: 1100ms; --t-blenden: 500ms;
+  --t-zeile: 700ms; --zeilen-takt: 90ms; --zeilen-start: 160ms;
+  --t-vorhang: 800ms;
+}

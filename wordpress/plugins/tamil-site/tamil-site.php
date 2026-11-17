@@ -17,15 +17,43 @@ define( 'TAMIL_SITE_VERSION', '1.1.0' );
 define( 'TAMIL_SITE_DIR', plugin_dir_path( __FILE__ ) );
 define( 'TAMIL_SITE_URL', plugin_dir_url( __FILE__ ) );
 
+require_once TAMIL_SITE_DIR . 'includes/upgrade.php';
+require_once TAMIL_SITE_DIR . 'includes/funktionen.php';
 require_once TAMIL_SITE_DIR . 'includes/meta.php';
 require_once TAMIL_SITE_DIR . 'includes/metabox.php';
 require_once TAMIL_SITE_DIR . 'includes/queries.php';
 require_once TAMIL_SITE_DIR . 'includes/ads.php';
 require_once TAMIL_SITE_DIR . 'includes/redirects.php';
+require_once TAMIL_SITE_DIR . 'includes/seo.php';
+require_once TAMIL_SITE_DIR . 'includes/autoren.php';
+require_once TAMIL_SITE_DIR . 'includes/indexierung.php';
+require_once TAMIL_SITE_DIR . 'includes/leistung.php';
+require_once TAMIL_SITE_DIR . 'includes/consent.php';
+require_once TAMIL_SITE_DIR . 'includes/einsendungen.php';
+require_once TAMIL_SITE_DIR . 'includes/einsendungen-formular.php';
+require_once TAMIL_SITE_DIR . 'includes/einsendungen-admin.php';
 require_once TAMIL_SITE_DIR . 'includes/admin.php';
+require_once TAMIL_SITE_DIR . 'includes/werbung.php';
+require_once TAMIL_SITE_DIR . 'includes/werbung-stripe.php';
+require_once TAMIL_SITE_DIR . 'includes/werbung-zaehlung.php';
+require_once TAMIL_SITE_DIR . 'includes/werbung-seiten.php';
+require_once TAMIL_SITE_DIR . 'includes/werbung-admin.php';
+require_once TAMIL_SITE_DIR . 'includes/verzeichnis.php';
+require_once TAMIL_SITE_DIR . 'includes/verzeichnis-formular.php';
+require_once TAMIL_SITE_DIR . 'includes/verzeichnis-ansicht.php';
+require_once TAMIL_SITE_DIR . 'includes/verzeichnis-admin.php';
 
-register_activation_hook( __FILE__, 'flush_rewrite_rules' );
-register_deactivation_hook( __FILE__, 'flush_rewrite_rules' );
+/**
+ * Aktivieren und Deaktivieren: Umschreibregeln nicht sofort neu erzeugen. Beim Aktivieren lief init noch ohne das
+ * Plugin (das Verzeichnis fehlte in den Regeln), beim Deaktivieren ist es noch registriert (alte Regeln blieben).
+ * Gelöschte Regeln erzeugt WordPress beim nächsten Aufruf neu, und zwar erst nach wp_loaded, wenn alle Beitragstypen
+ * registriert sind.
+ */
+function tamil_site_regeln_erneuern(): void {
+	delete_option( 'rewrite_rules' );
+}
+register_activation_hook( __FILE__, 'tamil_site_regeln_erneuern' );
+register_deactivation_hook( __FILE__, 'tamil_site_regeln_erneuern' );
 
 /**
  * init (früh, Priorität 5): Meta registrieren, bevor andere Plugins dieselben Schlüssel anfassen.

@@ -22,6 +22,7 @@ import shlex
 import subprocess
 import sys
 from pathlib import Path
+from urllib.parse import urlsplit
 
 import requests
 
@@ -43,7 +44,10 @@ class WP:
         self.http.headers["User-Agent"] = "TamilDE-Import/1.0"
 
     def req(self, method: str, path: str, **kw) -> tuple[int, dict | list]:
-        r = self.http.request(method, f"{self.url}/wp-json/{path}", timeout=120, **kw)
+        r = self.http.request(method, f"{self.url}/wp-json/{path}", timeout=120, allow_redirects=False, **kw)
+        if 300 <= r.status_code < 400:  # nie folgen: ein POST ginge sonst samt Anmeldung an die Weiterleitungsadresse
+            ziel = urlsplit(r.headers.get("Location", "")).netloc or "?"
+            raise RuntimeError(f"Weiterleitung {r.status_code} der Ziel-Website bei {path} auf {ziel} (Adresse prüfen, nicht gefolgt)")
         try:
             data = r.json()
         except ValueError:

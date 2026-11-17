@@ -1,0 +1,36 @@
+/* Verzeichnis (F2): nur das Nötigste. Die Gestaltung übernimmt das Theme nach Tor G3. */
+.vz-falle {
+	position: absolute;
+	left: -9999px;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+}
+
+.vz-feld input,
+.vz-feld select,
+.vz-feld textarea {
+	display: block;
+	max-width: 100%;
+}
+
+.vz-auswahl label,
+.vz-oeffentlich {
+	display: block;
+}
+
+.vz-fehler {
+	display: block;
+	font-weight: 700;
+}
+
+.vz-liste {
+	list-style: none;
+	padding: 0;
+}
+
+.vz-name,
+.vz-meta,
+.vz-email a {
+	overflow-wrap: anywhere;
+}

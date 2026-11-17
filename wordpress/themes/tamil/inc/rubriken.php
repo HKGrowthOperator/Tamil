@@ -16,13 +16,13 @@ function tamil_rubriken_standard(): array {
 		'news'          => array(
 			'label'        => 'Nachrichten',
 			'tamil'        => 'செய்திகள்',
-			'beschreibung' => 'Was die tamilische Community in Deutschland, Österreich und der Schweiz bewegt: Politik, Diaspora, Sri Lanka und Tamil Nadu – eingeordnet auf Deutsch.',
+			'beschreibung' => 'Was die tamilische Community in Deutschland, Österreich und der Schweiz bewegt: Politik, Diaspora, Sri Lanka und Tamil Nadu, eingeordnet auf Deutsch.',
 			'chips'        => array(),
 		),
 		'entertainment' => array(
 			'label'        => 'Entertainment',
 			'tamil'        => 'பொழுதுபோக்கு',
-			'beschreibung' => 'Musik, Stars, Serien und Konzerte – von Kollywood bis zur Diaspora-Szene in Europa.',
+			'beschreibung' => 'Musik, Stars, Serien und Konzerte von Kollywood bis zur Diaspora-Szene in Europa.',
 			'chips'        => array(
 				'konzert' => 'Konzerte',
 				'musik'   => 'Musik',
@@ -31,7 +31,7 @@ function tamil_rubriken_standard(): array {
 		'events'        => array(
 			'label'        => 'Events',
 			'tamil'        => 'நிகழ்வுகள்',
-			'beschreibung' => 'Konzerte, Feste, Wettbewerbe und Kinoabende – der Veranstaltungskalender für DE, AT und CH.',
+			'beschreibung' => 'Feste, Konzerte, Wettbewerbe und Kinoabende der tamilischen Community in Deutschland, Österreich und der Schweiz.',
 			'chips'        => array(),
 		),
 		'community'     => array(
@@ -43,13 +43,13 @@ function tamil_rubriken_standard(): array {
 		'kueche'        => array(
 			'label'        => 'Küche',
 			'tamil'        => 'சமையல்',
-			'beschreibung' => 'Rezepte aus Jaffna, Chennai und der Diaspora – mit Zutatenliste und Schritt-für-Schritt-Anleitung.',
+			'beschreibung' => 'Rezepte aus Jaffna, Chennai und der Diaspora, mit Zutatenliste und Anleitung Schritt für Schritt.',
 			'chips'        => array(),
 		),
 		'kino'          => array(
 			'label'        => 'Kino',
 			'tamil'        => 'சினிமா',
-			'beschreibung' => 'Tamilische Filme im deutschsprachigen Raum: Kinostarts, Spielorte, Kritiken und Hintergründe – aktualisiert mit jedem neuen Kinoprogramm.',
+			'beschreibung' => 'Tamilische Filme im deutschsprachigen Raum: Kinostarts, Spielorte, Kritiken und Hintergründe. Aktualisiert mit jedem neuen Kinoprogramm.',
 			'chips'        => array(
 				'kritik'      => 'Kritik',
 				'kinostart'   => 'Kinostart',
@@ -59,13 +59,13 @@ function tamil_rubriken_standard(): array {
 		'sport'         => array(
 			'label'        => 'Sport',
 			'tamil'        => 'விளையாட்டு',
-			'beschreibung' => 'Cricket, Fußball, Kabaddi und Turniere der tamilischen Vereine – Ergebnisse, Termine und Porträts.',
+			'beschreibung' => 'Cricket, Fußball, Kabaddi und Turniere der tamilischen Vereine: Ergebnisse, Termine und Porträts.',
 			'chips'        => array(),
 		),
 		'kultur'        => array(
 			'label'        => 'Kultur',
 			'tamil'        => 'பண்பாடு',
-			'beschreibung' => 'Pongal, Parai, Tempelfeste, Tanz und Literatur: tamilische Kultur erklärt und gelebt – hier und in der Heimat.',
+			'beschreibung' => 'Pongal, Parai, Tempelfeste, Tanz und Literatur: tamilische Kultur erklärt und gelebt, hier und in der Heimat.',
 			'chips'        => array(),
 		),
 	);

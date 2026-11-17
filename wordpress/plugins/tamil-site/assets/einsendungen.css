@@ -1,0 +1,30 @@
+/*
+ * Einsendungen (F1): nur das Nötigste. Gestaltet werden die Formulare im Theme (Klassen tf-…, nach Tor G3).
+ */
+.tf-falle {
+	position: absolute !important;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+.tf-feld label,
+.tf-feld .tf-hilfe,
+.tf-feld .tf-fehler {
+	display: block;
+}
+.tf-auswahl label {
+	display: inline;
+}
+.tf-feld input:not([type="checkbox"]),
+.tf-feld select,
+.tf-feld textarea {
+	box-sizing: border-box;
+	max-width: 100%;
+	width: 100%;
+}
+.tf-fehler {
+	font-weight: 700;
+}

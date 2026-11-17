@@ -64,8 +64,8 @@ fi
 
 ENV_LOCAL="$WP_DIR/.env.local"
 touch "$ENV_LOCAL"
-setenv() { grep -q "^$1=" "$ENV_LOCAL" && sed -i "s|^$1=.*|$1=$2|" "$ENV_LOCAL" || echo "$1=$2" >> "$ENV_LOCAL"; }
-getenv() { grep "^$1=" "$ENV_LOCAL" | head -1 | cut -d= -f2-; }
+# setenv/getenv: Werte gequotet, damit `set -a; . .env.local; set +a` sie unverändert lädt
+. "$HERE/env_local.sh"
 
 echo "== Installation"
 if ! "${WP[@]}" core is-installed >/dev/null 2>&1; then
@@ -115,7 +115,9 @@ done
 
 echo "== Testdaten (nur lokal: Weiterleitungen, Cockpit-Adresse)"
 if "${WP[@]}" plugin is-active tamil-site >/dev/null 2>&1; then
-  "${WP[@]}" option update tamil_site_redirects "{\"/category/anirudh/\":\"$URL/category/events/\",\"/category/blog/\":\"$URL/category/community/\"}" --format=json >/dev/null
+  # wie die Übernahme über REST: CSV und Tabelle zusammen (sonst baut das Speichern der Einstellungen die Tabelle
+  # aus einer leeren CSV neu und die Weiterleitungen sind weg)
+  "${WP[@]}" eval '$p = tamil_site_prepare_redirects( "alt,neu\n/category/anirudh/,/category/events/\n/category/blog/,/category/community/\n" ); if ( ! is_wp_error( $p ) ) { update_option( "tamil_site_redirects_csv", $p["csv"], false ); update_option( "tamil_site_redirects", $p["table"], false ); }' >/dev/null
 fi
 if "${WP[@]}" plugin is-active tamil-radar >/dev/null 2>&1; then
   "${WP[@]}" option get tamil_radar_settings >/dev/null 2>&1 \
@@ -140,6 +142,7 @@ setenv WP_POST_STATUS publish
 setenv WP_TEST_URL "$URL"
 setenv WP_TEST_USER ki-agent
 setenv WP_TEST_APP_PASSWORD "$(getenv WP_APP_PASSWORD)"
+setenv WP_TEST_WP_CLI "php $WP_DIR/wp-cli.phar --path=$WP_DIR --allow-root"
 chmod 600 "$ENV_LOCAL"
 
 echo

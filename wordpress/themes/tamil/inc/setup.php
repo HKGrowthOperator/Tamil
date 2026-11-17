@@ -26,8 +26,8 @@ function tamil_setup(): void {
 	);
 	add_editor_style( 'assets/css/editor.css' );
 
-	// 16:10 für Aufmacher und Artikelbild, 4:3 für Karten, quadratisch für Zeilen (wie im Design). Nach einem
-	// Wechsel der Größen die Vorschaubilder neu erzeugen (z. B. „wp media regenerate“ oder ein Regenerate-Plugin).
+	// Geschnittene Größen für die Mediathek und ältere Inhalte. Die Vorlagen (klar2) laden die ungeschnittene Größe
+	// „large“ mit srcset und schneiden per CSS auf 4:3, 16:9 und 8:3; neu erzeugte Vorschaubilder braucht es nicht.
 	add_image_size( 'tamil-lead', 1600, 1000, true );
 	add_image_size( 'tamil-card', 960, 720, true );
 	add_image_size( 'tamil-zeile', 480, 480, true );
@@ -83,7 +83,7 @@ add_action( 'init', 'tamil_cleanup_head' );
  * Trenner im Seitentitel.
  */
 function tamil_title_separator(): string {
-	return '–';
+	return '|';
 }
 add_filter( 'document_title_separator', 'tamil_title_separator' );
 
@@ -96,20 +96,3 @@ function tamil_favicon(): void {
 	}
 }
 add_action( 'wp_head', 'tamil_favicon', 2 );
-
-/**
- * Widget-Bereich unter den festen Bausteinen der Seitenspalte.
- */
-function tamil_widgets(): void {
-	register_sidebar(
-		array(
-			'id'            => 'seitenspalte',
-			'name'          => __( 'Seitenspalte (unten)', 'tamil' ),
-			'before_widget' => '<div id="%1$s" class="widget %2$s">',
-			'after_widget'  => '</div>',
-			'before_title'  => '<h2 class="kicker"><span class="ta" lang="ta"></span><span class="de">',
-			'after_title'   => '</span></h2>',
-		)
-	);
-}
-add_action( 'widgets_init', 'tamil_widgets' );

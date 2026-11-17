@@ -1,67 +1,78 @@
-/* Tamil.de Theme – Menü, Suche, Lesebalken, Filter, Monatsansicht, Videos, Link kopieren, TV-Player. Kein Framework. */
+/* Tamil.de Theme – Menü „Mehr“, mobiler Werbeplatz, Filter im Kalender, Videos, Link kopieren, TV-Player, Zutaten
+   abhaken und die Bewegung beim Scrollen (Variante D). Kein Framework. */
 (function () {
   "use strict";
   var $ = function (s, root) { return (root || document).querySelector(s); };
   var $$ = function (s, root) { return Array.prototype.slice.call((root || document).querySelectorAll(s)); };
   var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  // Menü (Seitenpaneel)
-  var menue = $("#menue"), burger = $("#burger");
-  function openMenue() { if (!menue) return; menue.hidden = false; document.body.style.overflow = "hidden"; burger && burger.setAttribute("aria-expanded", "true"); var first = $("a, button", menue); first && first.focus(); }
-  function closeMenue() { if (!menue || menue.hidden) return; menue.hidden = true; document.body.style.overflow = ""; burger && burger.setAttribute("aria-expanded", "false"); burger && burger.focus(); }
-  burger && burger.addEventListener("click", function () { menue.hidden ? openMenue() : closeMenue(); });
-  menue && menue.addEventListener("click", function (e) { if (e.target === menue || e.target.closest("[data-close]")) closeMenue(); });
-  document.addEventListener("keydown", function (e) { if (e.key === "Escape") { closeMenue(); } });
-
-  // Suche im Kopf
-  var sucheBtn = $("#suche-btn"), suche = $("#suche");
-  sucheBtn && suche && sucheBtn.addEventListener("click", function () {
-    suche.hidden = !suche.hidden;
-    sucheBtn.setAttribute("aria-expanded", suche.hidden ? "false" : "true");
-    if (!suche.hidden) { var i = $("input", suche); i && i.focus(); }
-  });
-
-  // Mobiler Werbeplatz: schließen
-  var sticky = $("#ad-mobile");
-  if (sticky && $(".schliessen", sticky)) $(".schliessen", sticky).addEventListener("click", function () { sticky.hidden = true; var site = $(".site"); site && site.classList.remove("has-sticky-ad"); });
-
-  // Lesebalken (Artikel)
-  var balken = $(".lesebalken");
-  if (balken) {
-    var tick = function () { var h = document.documentElement; var max = h.scrollHeight - h.clientHeight; balken.style.width = (max > 0 ? Math.min(100, h.scrollTop / max * 100) : 0) + "%"; };
-    window.addEventListener("scroll", tick, { passive: true }); tick();
+  // Menü „Mehr“ (details): mit Escape und Klick daneben schließen; ohne Skript öffnet und schließt es trotzdem
+  var menue = $(".band .mehr");
+  if (menue) {
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && menue.open) { menue.open = false; var s = $("summary", menue); s && s.focus(); }
+    });
+    document.addEventListener("click", function (e) { if (menue.open && !menue.contains(e.target)) menue.open = false; });
   }
 
-  // Filter-Chips (Kategorieseite, Events)
-  $$("[data-filter-group]").forEach(function (group) {
-    var key = group.getAttribute("data-filter-group");
-    var items = $$("[data-" + key + "]");
-    group.addEventListener("click", function (e) {
-      var chip = e.target.closest("[data-filter]"); if (!chip) return;
-      $$("[data-filter]", group).forEach(function (c) { c.setAttribute("aria-pressed", c === chip ? "true" : "false"); });
-      var wert = chip.getAttribute("data-filter"), sichtbar = 0;
-      items.forEach(function (el) { var ok = wert === "alle" || (" " + el.getAttribute("data-" + key) + " ").indexOf(" " + wert + " ") >= 0; el.hidden = !ok; if (ok) sichtbar++; });
-      var leer = $("[data-filter-leer='" + key + "']"); if (leer) leer.hidden = sichtbar > 0;
-      $$("[data-filter-count='" + key + "']").forEach(function (el) { el.textContent = sichtbar; });
+  // Mobiler Werbeplatz: erst einblenden, wenn der erste Abschnitt (Aufmacher, Seitenkopf) aus dem Bild ist; schließen
+  var sticky = $("#ad-mobile");
+  if (sticky) {
+    var zeigen = function () { sticky.classList.add("ist-sichtbar"); };
+    var erster = $("main > section, main > header, main > article");
+    if (erster && "IntersectionObserver" in window) {
+      new IntersectionObserver(function (eintraege, beob) {
+        eintraege.forEach(function (e) { if (!e.isIntersecting && e.boundingClientRect.top < 0) { zeigen(); beob.disconnect(); } });
+      }).observe(erster);
+    } else {
+      zeigen();
+    }
+    var zu = $(".schliessen", sticky);
+    zu && zu.addEventListener("click", function () { sticky.hidden = true; var site = $(".site"); site && site.classList.remove("has-sticky-ad"); });
+  }
+
+  // Filter im Kalender (Land, Stadt): Knöpfe mit aria-pressed, erst mit Skript sichtbar; ohne Skript steht die ganze
+  // Liste da. Monate ohne passende Termine verschwinden, die Zahl oben wird mitgezählt (aria-live).
+  $$("[data-filter]").forEach(function (block) {
+    var leiste = $(".filter", block); if (!leiste) return;
+    var wahl = { land: "", stadt: "" };
+    var zeilen = $$("li[data-land]", block);
+    var zahl = $("[data-filter-zahl]", block), leer = $("[data-filter-leer]", block);
+    leiste.hidden = false;
+    leiste.addEventListener("click", function (e) {
+      var knopf = e.target.closest(".chip"); if (!knopf) return;
+      var gruppe = knopf.closest("[data-filter-art]"); if (!gruppe) return;
+      wahl[gruppe.getAttribute("data-filter-art")] = knopf.getAttribute("data-wert") || "";
+      $$(".chip", gruppe).forEach(function (c) { c.setAttribute("aria-pressed", c === knopf ? "true" : "false"); });
+      var n = 0;
+      zeilen.forEach(function (z) {
+        var ok = (!wahl.land || z.getAttribute("data-land") === wahl.land) && (!wahl.stadt || z.getAttribute("data-stadt") === wahl.stadt);
+        z.hidden = !ok; if (ok) n++;
+      });
+      $$(".kalender__monat", block).forEach(function (m) { m.hidden = !$("li[data-land]:not([hidden])", m); });
+      if (zahl) zahl.textContent = n === 1 ? "1 Termin" : n + " Termine";
+      if (leer) leer.hidden = n > 0;
     });
   });
 
-  // Events: Liste / Monat
-  $$("[data-view]").forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      var ziel = btn.getAttribute("data-view");
-      $$("[data-view]").forEach(function (b) { b.setAttribute("aria-pressed", b === btn ? "true" : "false"); });
-      $$("[data-view-panel]").forEach(function (p) { p.hidden = p.getAttribute("data-view-panel") !== ziel; });
-    });
-  });
-
-  // YouTube erst nach Klick laden
+  // YouTube erst nach Klick laden – oder sofort, wenn die Zustimmung „externe_medien“ vorliegt (Plugin tamil-site)
+  function ladeVideo(box, perKlick) {
+    if (box.classList.contains("is-geladen")) return;
+    var id = box.getAttribute("data-video");
+    var frame = document.createElement("iframe");
+    frame.src = "https://www.youtube-nocookie.com/embed/" + encodeURIComponent(id) + (perKlick ? "?autoplay=1" : "");
+    frame.title = "YouTube-Video";
+    frame.allow = "autoplay; encrypted-media; picture-in-picture";
+    frame.allowFullscreen = true;
+    if (!perKlick) frame.loading = "lazy";
+    box.classList.add("is-geladen");
+    box.textContent = "";
+    box.appendChild(frame);
+    if (perKlick) frame.focus(); // der Knopf ist weg; der Fokus bleibt beim Video statt an den Seitenanfang zu springen
+  }
   $$(".video-embed").forEach(function (box) {
     var btn = $(".video-load", box); if (!btn) return;
-    btn.addEventListener("click", function () {
-      var id = box.getAttribute("data-video");
-      box.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + encodeURIComponent(id) + '?autoplay=1" title="YouTube-Video" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>';
-    });
+    btn.addEventListener("click", function () { ladeVideo(box, true); });
   });
 
   // Link kopieren
@@ -74,20 +85,316 @@
   });
 
 
-  // Tamil TV: Stream erst nach Klick laden (Safari/iOS spielen HLS direkt, sonst Link zum Stream)
+  // Tamil TV: Stream erst nach Klick laden (Safari/iOS spielen HLS direkt, sonst Link zum Stream) – oder sofort bei Zustimmung
+  function ladeStream(box, perKlick) {
+    if (box.classList.contains("is-geladen")) return;
+    var src = box.getAttribute("data-stream"), v = document.createElement("video");
+    box.classList.add("is-geladen");
+    if (v.canPlayType("application/vnd.apple.mpegurl")) {
+      v.src = src; v.controls = true; v.autoplay = perKlick; v.playsInline = true; v.preload = perKlick ? "auto" : "metadata";
+      v.style.width = "100%"; v.style.height = "100%";
+      box.innerHTML = ""; box.appendChild(v);
+    } else {
+      box.innerHTML = '<a class="knopf" href="' + src.replace(/"/g, "") + '" target="_blank" rel="noopener">Stream öffnen</a>';
+    }
+  }
   $$(".player[data-stream]").forEach(function (box) {
     var btn = $(".play", box); if (!btn) return;
-    btn.addEventListener("click", function () {
-      var src = box.getAttribute("data-stream"), v = document.createElement("video");
-      if (v.canPlayType("application/vnd.apple.mpegurl")) {
-        v.src = src; v.controls = true; v.autoplay = true; v.playsInline = true; v.style.width = "100%"; v.style.height = "100%";
-        box.innerHTML = ""; box.appendChild(v);
-      } else {
-        box.innerHTML = '<a class="knopf knopf-rot" href="' + src.replace(/"/g, "") + '" target="_blank" rel="noopener">Stream öffnen</a>';
-      }
-    });
+    btn.addEventListener("click", function () { ladeStream(box, true); });
   });
 
+  // Zustimmung „externe_medien“: Videos und Streams ohne Klick laden (nur wenn das Plugin die Zustimmung anbietet)
+  function externeMedien() {
+    var z = window.tamilZustimmung;
+    if (!z || !z.hat("externe_medien")) return;
+    $$(".video-embed").forEach(function (box) { if ($(".video-load", box)) ladeVideo(box, false); });
+    $$(".player[data-stream]").forEach(function (box) { if ($(".play", box)) ladeStream(box, false); });
+  }
+  document.addEventListener("tamil:zustimmung", externeMedien);
+  externeMedien();
+
   // Zutaten abhaken
-  $$(".rezept-zutaten li").forEach(function (li) { li.addEventListener("click", function () { var an = li.style.opacity === "0.45"; li.style.opacity = an ? "" : "0.45"; li.style.textDecoration = an ? "" : "line-through"; }); });
+  $$(".rezept-zutaten li").forEach(function (li) { li.addEventListener("click", function () { li.classList.toggle("ist-ab"); }); });
+})();
+
+/* Bewegung beim Scrollen, Variante D (Quelle: design/richtungen/klar2/bewegung/, Wahl von Luis am 16.11.2026).
+   1. Jede Einheit (Kachel, Nebenstück, Meldung, Listenzeile, Blocktitel …) bekommt data-art (steigen, aufdecken,
+      zeilen, vorhang). Erst damit greifen die versteckenden Regeln in theme.css.
+   2. Was beim Laden schon im Bild (oder darüber) ist, steht sofort da: nichts startet von selbst.
+   3. Der Rest erscheint einmal, wenn er ins Bild kommt (IntersectionObserver, Klasse .da); was gemeinsam kommt,
+      gestaffelt in Lesereihenfolge.
+   Kopf, Leselinie und Aufmacher-Tiefe hängen am Scrollweg: per CSS-Scroll-Timeline, sonst über einen einzigen
+   passiven Scroll-Handler mit requestAnimationFrame. Mit „Bewegung reduzieren“ passiert nichts davon. */
+(() => {
+  "use strict";
+
+  const html = document.documentElement;
+  const reduziert = window.matchMedia ? matchMedia("(prefers-reduced-motion: reduce)") : { matches: true };
+  const kannIo = "IntersectionObserver" in window;
+  const kannSda = !!(window.CSS && CSS.supports && CSS.supports("animation-timeline: scroll()"));
+  if (reduziert.matches || !kannIo) return;
+
+  const TAKT = 60;            // Staffel zwischen Stücken einer Reihe, die gemeinsam ins Bild kommen
+  const STAFFEL_MAX = 6;      // höchstens 6 × 60 ms
+  const REIHE = 100;          // jede weitere Reihe im selben Moment 100 ms später
+  const REIHEN_MAX = 3;       // höchstens 300 ms
+  const REIHE_TOLERANZ = 24;  // gleiche Reihe: Oberkanten weniger als 24 px auseinander
+  const NACH_VORHANG = 0.55;  // Inhalt der dunklen Fläche beginnt nach 55 % des Vorhangs
+  const GRUPPE = ".kacheln";  // Rubrikkacheln erscheinen gemeinsam, auch die rechts angeschnittenen
+  const TIEFE = 40;           // Aufmacherbild höchstens 40 px langsamer
+  const REGELN = [
+    [".kacheln li, .neben .stueck, .meldung, .zeile, .woche .kachel--klein, .woche__art, .grafik, .kueche .kachel--klein", "steigen"],
+    [".block-titel, .woche__titel", "zeilen"],
+    [".woche", "vorhang"],
+    [".kachel--gross", "aufdecken zeilen"],
+  ];
+
+  let io = null;
+  let vorhangAb = 0;
+  let aktiv = true;
+  let T = {};
+  let breite = innerWidth;
+  const einheiten = new Set();
+  const gruppen = new Map();
+  const original = new Map();
+  const uhren = new Set();
+  const kopf = document.querySelector(".kopf");
+  const band = document.querySelector(".band");
+  const aufRahmen = document.querySelector(".aufmacher .rahmen");
+  const aufBild = aufRahmen && aufRahmen.querySelector("img");
+
+  const warte = (ms) => new Promise((ok) => setTimeout(ok, ms));
+  const klemme = (x) => Math.min(1, Math.max(0, x));
+  const ueberschrift = (el) => (el.matches("h2, h3") ? el : el.querySelector(".titel"));
+
+  function zeiten() {
+    const s = getComputedStyle(html);
+    const ms = (name, sonst) => { const v = parseFloat(s.getPropertyValue(name)); return Number.isFinite(v) ? v : sonst; };
+    return {
+      steigen: ms("--t-steigen", 560), bild: ms("--t-bild", 750), zoom: ms("--t-zoom", 1100), blenden: ms("--t-blenden", 500),
+      zeile: ms("--t-zeile", 700), takt: ms("--zeilen-takt", 90), zeilenStart: ms("--zeilen-start", 160), vorhang: ms("--t-vorhang", 800),
+    };
+  }
+
+  // Zeilenumbrüche hängen an der Webschrift: erst messen, wenn sie geladen ist (höchstens 1,2 s warten)
+  function schriften() {
+    if (!document.fonts) return Promise.resolve();
+    return Promise.race([
+      Promise.all([document.fonts.load('650 20px "Libre Franklin"'), document.fonts.ready]).catch(() => {}),
+      warte(1200),
+    ]);
+  }
+
+  // Überschrift in ihre gemessenen Zeilen legen; der Text bleibt Text, nach dem Auftritt kommt das Original zurück
+  function teile(h) {
+    if (original.has(h)) return;
+    const vorher = h.innerHTML;
+    const stuecke = [];
+    let raum = false;
+    for (const n of [...h.childNodes]) {
+      if (n.nodeType === Node.TEXT_NODE) {
+        for (const t of n.nodeValue.split(/([ \t\n\r]+)/)) {
+          if (!t) continue;
+          if (/^[ \t\n\r]+$/.test(t)) { raum = true; continue; }
+          const s = document.createElement("span");
+          s.textContent = t;
+          stuecke.push({ knoten: s, raum });
+          raum = false;
+        }
+      } else if (n.nodeType === Node.ELEMENT_NODE) {
+        stuecke.push({ knoten: n.cloneNode(true), raum });
+        raum = false;
+      }
+    }
+    if (!stuecke.length) return;
+    h.replaceChildren(...stuecke.flatMap((s, i) => (i && s.raum ? [" ", s.knoten] : [s.knoten])));
+    const zeilen = [];
+    let oben = null;
+    for (const s of stuecke) {
+      const y = Math.round(s.knoten.getBoundingClientRect().top);
+      if (oben === null || Math.abs(y - oben) > 4) { zeilen.push([]); oben = y; }
+      zeilen[zeilen.length - 1].push(s);
+    }
+    h.replaceChildren(...zeilen.map((zeile, i) => {
+      const aussen = document.createElement("span");
+      const innen = document.createElement("span");
+      aussen.className = "zeilenteil";
+      innen.className = "zeilenteil__in";
+      innen.style.setProperty("--zi", String(i));
+      zeile.forEach((s, j) => { if (j && s.raum) innen.append(" "); innen.append(s.knoten); });
+      aussen.append(innen);
+      if (i < zeilen.length - 1) aussen.append(" ");
+      return aussen;
+    }));
+    h.dataset.zeilen = String(zeilen.length);
+    original.set(h, vorher);
+  }
+
+  function wiederher(h) {
+    if (!original.has(h)) return;
+    h.innerHTML = original.get(h);
+    original.delete(h);
+    delete h.dataset.zeilen;
+  }
+
+  function dauer(el) {
+    const art = el.dataset.art || "";
+    let t = 0;
+    if (art.includes("steigen")) t = Math.max(t, T.steigen);
+    if (art.includes("aufdecken")) t = Math.max(t, T.bild, T.zoom, 100 + T.blenden);
+    if (art.includes("vorhang")) t = Math.max(t, T.vorhang);
+    if (art.includes("zeilen")) {
+      const h = ueberschrift(el);
+      const n = h ? Number(h.dataset.zeilen || 1) : 1;
+      t = Math.max(t, (art === "zeilen" ? 0 : T.zeilenStart) + (n - 1) * T.takt + T.zeile);
+    }
+    return t;
+  }
+
+  // Bilder erst aufdecken, wenn sie da sind (höchstens 0,7 s warten)
+  function bilderBereit(el) {
+    const offen = [...el.querySelectorAll("img")].filter((i) => !i.complete);
+    if (!offen.length) return Promise.resolve();
+    return Promise.race([Promise.all(offen.map((i) => i.decode().catch(() => {}))), warte(700)]);
+  }
+
+  function zeige(el, verz, unterVorhang = false) {
+    const art = el.dataset.art || "";
+    const jetzt = performance.now();
+    if (art.includes("vorhang")) vorhangAb = jetzt + verz;
+    else if (unterVorhang && vorhangAb) verz += Math.max(0, vorhangAb + T.vorhang * NACH_VORHANG - jetzt);
+    el.style.setProperty("--verz", Math.round(verz) + "ms");
+    const los = () => {
+      if (!aktiv) return;
+      el.classList.add("da", "laeuft");
+      const uhr = setTimeout(() => {
+        uhren.delete(uhr);
+        el.classList.remove("laeuft");
+        const h = art.includes("zeilen") && ueberschrift(el);
+        if (h) wiederher(h);
+      }, verz + dauer(el) + 80);
+      uhren.add(uhr);
+    };
+    if (art.includes("aufdecken")) bilderBereit(el).then(los); else los();
+  }
+
+  function beobachtet(eintraege) {
+    const neu = [];
+    for (const e of eintraege) {
+      if (!e.isIntersecting) continue;
+      io.unobserve(e.target);
+      neu.push(...(gruppen.get(e.target) || [e.target]));
+    }
+    // Schon über dem Bild (schnell vorbeigescrollt): ohne Staffel. Im Bild: oben vor unten, links vor rechts.
+    const lage = new Map(neu.map((el) => [el, el.getBoundingClientRect()]));
+    neu.filter((el) => lage.get(el).bottom <= 0).forEach((el) => zeige(el, 0));
+    const imBild = neu.filter((el) => lage.get(el).bottom > 0).sort((x, y) => {
+      const a = lage.get(x), b = lage.get(y);
+      return Math.abs(a.top - b.top) > REIHE_TOLERANZ ? a.top - b.top : a.left - b.left;
+    });
+    const unter = (el) => !el.matches('[data-art~="vorhang"]') && !!el.closest('[data-art~="vorhang"]');
+    for (const teil of [imBild.filter((el) => !unter(el)), imBild.filter(unter)]) {
+      let reihe = -1, spalte = 0, oberkante = null;
+      for (const el of teil) {
+        const top = lage.get(el).top;
+        if (oberkante === null || Math.abs(top - oberkante) > REIHE_TOLERANZ) { reihe++; spalte = 0; oberkante = top; }
+        zeige(el, Math.min(reihe, REIHEN_MAX) * REIHE + Math.min(spalte++, STAFFEL_MAX) * TAKT, unter(el));
+      }
+    }
+  }
+
+  function beobachte() {
+    // Auslöselinie 10 % über der Unterkante; nach oben reicht der Rahmen weit über die Seite hinaus, damit auch
+    // schnell Übersprungenes erscheint
+    io = new IntersectionObserver(beobachtet, { rootMargin: "100000px 0px -10% 0px", threshold: 0 });
+    for (const el of einheiten) {
+      if (el.classList.contains("da")) continue;
+      const g = el.closest(GRUPPE);
+      if (g) {
+        if (!gruppen.has(g)) { gruppen.set(g, []); io.observe(g); }
+        gruppen.get(g).push(el);
+      } else {
+        io.observe(el);
+      }
+    }
+  }
+
+  async function scharf() {
+    await schriften();
+    if (!aktiv) return;
+    T = zeiten();
+    for (const [sel, art] of REGELN) {
+      for (const el of document.querySelectorAll(sel)) {
+        if (el.closest(".mehr, .fuss, .ad")) continue;
+        el.dataset.art = ((el.dataset.art || "") + " " + art).trim();
+        einheiten.add(el);
+      }
+    }
+    // Was schon im Bild (oder darüber) ist, steht sofort da
+    const hoch = innerHeight;
+    for (const el of einheiten) if (el.getBoundingClientRect().top < hoch) el.classList.add("da");
+    for (const el of einheiten) {
+      if (el.classList.contains("da") || !el.dataset.art.includes("zeilen")) continue;
+      const h = ueberschrift(el);
+      if (h) teile(h);
+    }
+    requestAnimationFrame(() => { if (aktiv) beobachte(); });
+  }
+
+  // Abschalten (Fehler oder „Bewegung reduzieren“ bei offener Seite): alles sichtbar, nichts geteilt
+  function aus(fehler) {
+    aktiv = false;
+    html.classList.remove("bewegt", "sda");
+    if (io) io.disconnect();
+    uhren.forEach(clearTimeout);
+    for (const h of [...original.keys()]) wiederher(h);
+    for (const el of einheiten) { el.classList.remove("laeuft"); el.classList.add("da"); }
+    if (fehler) console.warn("Bewegung abgeschaltet:", fehler);
+  }
+
+  // Ersatzweg ohne Scroll-Timelines: ein passiver Handler, gedrosselt auf ein Bild (rAF)
+  let geplant = false;
+  function aufScroll() { if (!geplant) { geplant = true; requestAnimationFrame(rechne); } }
+  function rechne() {
+    geplant = false;
+    if (kannSda || !aktiv || !kopf) return;
+    const y = scrollY;
+    kopf.style.setProperty("--kopf", klemme(y / kopf.offsetHeight).toFixed(4));
+    const weg = html.scrollHeight - innerHeight;
+    if (band) band.style.setProperty("--fortschritt", (weg > 0 ? klemme(y / weg) : 0).toFixed(4));
+    if (aufRahmen && aufBild) {
+      const r = aufRahmen.getBoundingClientRect();
+      const kante = band ? band.offsetHeight : 48;
+      aufBild.style.setProperty("--tiefe", (klemme((kante - r.top) / r.height) * TIEFE).toFixed(1) + "px");
+    }
+  }
+
+  // Neue Breite: noch nicht gezeigte Überschriften neu in Zeilen legen
+  let breitenUhr = 0;
+  function neueBreite() {
+    clearTimeout(breitenUhr);
+    breitenUhr = setTimeout(() => {
+      if (innerWidth === breite) return;
+      breite = innerWidth;
+      for (const h of [...original.keys()]) {
+        const einheit = h.closest("[data-art]");
+        if (einheit && !einheit.classList.contains("da")) { wiederher(h); teile(h); }
+      }
+    }, 200);
+  }
+
+  try {
+    html.classList.add("bewegt");
+    if (kannSda) html.classList.add("sda");
+    if (reduziert.addEventListener) reduziert.addEventListener("change", () => { if (reduziert.matches) aus(); });
+    addEventListener("resize", neueBreite, { passive: true });
+    if (!kannSda) {
+      addEventListener("scroll", aufScroll, { passive: true });
+      addEventListener("resize", aufScroll, { passive: true });
+    }
+    rechne();
+    scharf().catch(aus);
+  } catch (f) {
+    aus(f);
+  }
 })();

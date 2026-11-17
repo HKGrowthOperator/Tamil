@@ -80,3 +80,86 @@ function tamil_links_noopener( string $content ): string {
 	return (string) preg_replace( '/<a ((?:(?!rel=)[^>])*?)target="_blank"((?:(?!rel=)[^>])*)>/i', '<a $1target="_blank" rel="noopener"$2>', $content );
 }
 add_filter( 'the_content', 'tamil_links_noopener', 30 );
+
+/**
+ * YouTube-Kennung aus einer Video-Adresse (watch, embed, shorts, youtu.be); leer, wenn es keine ist.
+ */
+function tamil_youtube_id( string $url ): string {
+	if ( preg_match( '~^https?://(?:www\.|m\.)?(?:youtube(?:-nocookie)?\.com/(?:watch\?(?:[^#\s]*&)?v=|embed/|shorts/)|youtu\.be/)([\w-]{6,20})~i', $url, $treffer ) ) {
+		return $treffer[1];
+	}
+	return '';
+}
+
+/**
+ * Die Box „Video laden“ für eine YouTube-Kennung. Sie enthält nur Zeilenelemente, damit wpautop sie nicht zerlegt.
+ */
+function tamil_youtube_box( string $id ): string {
+	return sprintf(
+		'<div class="video-embed" data-video="%1$s"><button type="button" class="video-load">%2$s</button><span class="video-hint">%3$s <a href="%4$s" rel="noopener">%5$s</a></span></div>',
+		esc_attr( $id ),
+		esc_html__( 'Video laden', 'tamil' ),
+		esc_html__( 'Beim Laden werden Daten an YouTube übertragen.', 'tamil' ),
+		esc_url( 'https://www.youtube.com/watch?v=' . $id ),
+		esc_html__( 'Bei YouTube ansehen', 'tamil' )
+	);
+}
+
+/**
+ * YouTube erst nach Klick laden (DSGVO). Statt des eingebetteten Players erscheint die Box .video-embed mit Knopf;
+ * assets/js/app.js lädt das Video dann von youtube-nocookie.com. Der Filter greift vor dem oEmbed-Abruf, beim Aufbau
+ * der Seite geht also keine Anfrage an YouTube hinaus, und der feste iframe (läuft am Handy seitlich über) entfällt.
+ *
+ * @param string|null $result Vorab-Ergebnis anderer Filter.
+ * @param string      $url    Adresse, die eingebettet werden soll.
+ */
+function tamil_youtube_nach_klick( $result, $url ) {
+	$id = tamil_youtube_id( (string) $url );
+	return '' === $id ? $result : tamil_youtube_box( $id );
+}
+add_filter( 'pre_oembed_result', 'tamil_youtube_nach_klick', 10, 2 );
+
+/**
+ * Dasselbe für schon zwischengespeicherte Einbettungen (Metadaten _oembed_*), die noch den festen Player enthalten.
+ *
+ * @param string|false $html Gespeichertes oder frisch geholtes Einbettungs-HTML.
+ * @param string       $url  Adresse der Einbettung.
+ */
+function tamil_youtube_nach_klick_gespeichert( $html, $url ) {
+	$id = tamil_youtube_id( (string) $url );
+	return '' === $id ? $html : tamil_youtube_box( $id );
+}
+add_filter( 'embed_oembed_html', 'tamil_youtube_nach_klick_gespeichert', 10, 2 );
+
+/**
+ * Kino-Artikel: Die Spielortliste aus dem Radar (ul.kino-liste mit Überschrift davor) ersetzt das Theme durch die
+ * Tabelle „Spielorte und Termine“ aus kino_fakten, wie in der Rubrik Kino. Der gespeicherte Inhalt bleibt unverändert.
+ */
+function tamil_kino_liste_ersetzen( string $content ): string {
+	if ( ! is_singular( 'post' ) || ! in_the_loop() || ! str_contains( $content, 'class="kino-liste"' ) ) {
+		return $content;
+	}
+	$film = tamil_kino_film( (int) get_the_ID() );
+	if ( ! $film ) {
+		return $content;
+	}
+	ob_start();
+	echo '<section class="kino-orte" aria-labelledby="spielorte-titel"><h2 id="spielorte-titel">' . esc_html__( 'Spielorte und Termine', 'tamil' ) . '</h2>';
+	if ( '' !== $film['stand'] ) {
+		echo '<p class="kino-orte__stand">' . esc_html( $film['stand'] ) . '</p>';
+	}
+	tamil_kino_orte_tafel( array( $film ) );
+	echo '<p class="kino-orte__notiz">' . esc_html__( 'Aus den Programmen der Kinos, Angaben ohne Gewähr.', 'tamil' ) . '</p></section>';
+	$tafel = (string) ob_get_clean();
+	$neu   = preg_replace( '#(?:<h[23][^>]*>[^<]*</h[23]>\s*)?<ul class="kino-liste">.*?</ul>#s', $tafel, $content, 1 );
+	return is_string( $neu ) ? $neu : $content;
+}
+add_filter( 'the_content', 'tamil_kino_liste_ersetzen', 15 );
+
+/**
+ * Tamilische Wörter im Beitragstext mit lang="ta" auszeichnen (Altbestand hat Namen und Zitate auf Tamil).
+ */
+function tamil_inhalt_lang_ta( string $content ): string {
+	return tamil_lang_ta( $content );
+}
+add_filter( 'the_content', 'tamil_inhalt_lang_ta', 40 );
