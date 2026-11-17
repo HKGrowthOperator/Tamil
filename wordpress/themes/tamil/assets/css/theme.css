@@ -139,7 +139,6 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   min-height: 44px;
   font-size: 13px; line-height: 1.3; color: var(--leise);
 }
-.kopfzeile__hinweise { display: none; }
 .kopfzeile a { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; color: var(--tinte); }
 .kopfzeile a:hover { color: var(--rot); }
 .kopfzeile__suche { flex: none; font-size: 14px; font-weight: 600; padding-left: 12px; }
@@ -197,25 +196,10 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .kopfzeile__datum { flex: none; }
   .kopf__logo img { height: 52px; }
 }
-/* Die Hinweise erst, wenn sie einzeilig neben Datum und Suche passen */
-@media (min-width: 800px) {
-  .kopfzeile__hinweise {
-    display: flex; align-items: center; gap: 14px;
-    min-width: 0; overflow: hidden; white-space: nowrap;
-  }
-  .kopfzeile__hinweise strong { flex: none; color: var(--tinte); font-weight: 600; }
-  .kopfzeile .kopfzeile__hinweise a { display: block; min-width: 0; line-height: 44px; overflow: hidden; text-overflow: ellipsis; }
-  .kopfzeile .kopfzeile__hinweise a + a { display: none; } /* bis 1023 px nur der erste Hinweis, damit er nicht gekürzt wird */
-  .kopfzeile__hinweise a + a::before {
-    content: ""; display: inline-block; width: 1px; height: 0.95em; margin-right: 14px;
-    vertical-align: -0.12em; background: var(--linie);
-  }
-}
 @media (min-width: 1024px) {
   :root { --rand: 40px; --band-hoehe: 48px; }
   .kopfzeile__innen { min-height: 38px; }
-  .kopfzeile a, .kopfzeile .kopfzeile__hinweise a { min-height: 38px; line-height: 38px; }
-  .kopfzeile .kopfzeile__hinweise a + a { display: block; }
+  .kopfzeile a { min-height: 38px; line-height: 38px; }
   .kopf__logo { padding: 11px 0; }
   .kopf__logo img { height: 58px; }
   .band__innen { position: relative; padding: 0 calc(var(--rand) - 14px); }

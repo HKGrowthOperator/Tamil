@@ -56,7 +56,7 @@ gemeinsamer Kante für Kopf, Bild und Text), höchstens 70 Zeichen je Zeile.
 
 ## Bausteine
 
-- **Kopf:** Kopfzeile (Datum, ab 800 px „Diese Woche“ mit nächstem Termin und Film, Suche), Logo 44/52/58 px auf
+- **Kopf:** Kopfzeile (Datum und Suche; die Hinweise „Diese Woche“ sind seit 17.11. entfallen), Logo 44/52/58 px auf
   hellem Grund, rotes Rubrikband mit weißer Schrift (`nav`, 46/48 px, steht beim Scrollen), aktive Rubrik mit
   Gewicht 600 und 3 px Weiß darunter, beim Überfahren etwas hellerer Grund, Fokusring weiß, am Handy seitlich mit
   Einrasten; „Mehr“ am Ende mit Suche, Diensten und Social.
@@ -110,4 +110,4 @@ mit `requestAnimationFrame`. Auftritte über IntersectionObserver (Auslöser 10 
 ## Raster
 
 Inhalt höchstens 1280 px, Rand 16 / 24 / 40 px (ab 600 / 1024 px). Desktop-Startseite: Aufmacher und 388 px
-Meldungen mit 32 px Abstand; „Diese Woche“ dreispaltig. Brüche bei 600, 800 (Hinweise im Kopf) und 1024 px.
+Meldungen mit 32 px Abstand; „Diese Woche“ dreispaltig. Brüche bei 600 und 1024 px.
