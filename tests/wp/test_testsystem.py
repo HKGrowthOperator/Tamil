@@ -81,7 +81,8 @@ def test_testsystem_einrichten_zweimal_gleich(wp, wp_cli, testsystem):
     assert seiten["production"]["titel"] == "Live mit dir!"
     if "page-production.php" in wp_cli("echo wp_json_encode( array_keys( wp_get_theme()->get_page_templates() ) );"):
         assert seiten["production"]["vorlage"] == "page-production.php"
-    assert "auf deutschen Bühnen" in seiten["production"]["inhalt"]
+    # Archivbeiträge der Konzertreihe (Testsystem) oder, ohne sie, der Satz aus dem Altbestand
+    assert "Die Konzerte im Archiv" in seiten["production"]["inhalt"] or "auf deutschen Bühnen" in seiten["production"]["inhalt"]
     assert '[tamil_einsendung art="event"]' in seiten["einreichen"]["inhalt"]
     for art in ("beitrag", "kooperation", "werbung"):
         assert f'href="#tf-{art}"' in seiten["einreichen"]["inhalt"], art

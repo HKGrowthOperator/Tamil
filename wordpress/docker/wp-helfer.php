@@ -240,11 +240,11 @@ const TAMIL_C_PRODUCTION_BEITRAEGE = array( 2420, 2423, 2417, 2494 );
 const TAMIL_C_BEISPIEL_META = '_tamil_vz_beispiel';
 
 /**
- * Inhalt der Seite „production“: der Satz aus den Eigenanzeigen (aus dem Altbestand) und die Archivbeiträge der
- * Konzertreihe, soweit es sie auf dieser Installation gibt. Links ohne Domain (überleben die Umschaltung auf tamil.de).
+ * Inhalt der Seite „production“: die Archivbeiträge der Konzertreihe, soweit es sie auf dieser Installation gibt
+ * (Links ohne Domain, überleben die Umschaltung auf tamil.de). Den Text über der Liste setzt das Theme
+ * (page-production.php, Customizer); nur ohne Archivbeiträge steht hier der Satz aus dem Altbestand.
  */
 function tamil_c_production_inhalt(): string {
-	$text  = '<!-- wp:paragraph --><p>A.R. Rahman, Ilaiyaraaja, Anirudh und Santhosh Narayanan standen oder stehen mit Tamil.de Production auf deutschen Bühnen.</p><!-- /wp:paragraph -->';
 	$links = array();
 	foreach ( TAMIL_C_PRODUCTION_BEITRAEGE as $id ) {
 		$post = get_post( $id );
@@ -252,11 +252,11 @@ function tamil_c_production_inhalt(): string {
 			$links[] = '<li><a href="' . esc_url( wp_make_link_relative( (string) get_permalink( $post ) ) ) . '">' . esc_html( get_the_title( $post ) ) . '</a></li>';
 		}
 	}
-	if ( $links ) {
-		$text .= '<!-- wp:heading --><h2 class="wp-block-heading">Die Konzerte im Archiv</h2><!-- /wp:heading -->'
-			. '<!-- wp:list --><ul class="wp-block-list">' . implode( '', $links ) . '</ul><!-- /wp:list -->';
+	if ( ! $links ) {
+		return '<!-- wp:paragraph --><p>A.R. Rahman, Ilaiyaraaja, Anirudh und Santhosh Narayanan standen oder stehen mit Tamil.de Production auf deutschen Bühnen.</p><!-- /wp:paragraph -->';
 	}
-	return $text;
+	return '<!-- wp:heading --><h2 class="wp-block-heading">Die Konzerte im Archiv</h2><!-- /wp:heading -->'
+		. '<!-- wp:list --><ul class="wp-block-list">' . implode( '', $links ) . '</ul><!-- /wp:list -->';
 }
 
 /**
