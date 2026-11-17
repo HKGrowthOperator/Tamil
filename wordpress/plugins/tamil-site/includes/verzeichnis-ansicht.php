@@ -277,6 +277,9 @@ function tamil_site_vz_shortcode(): string {
 				'stadt'     => array( __( 'Stadt', 'tamil-site' ), array_combine( tamil_site_vz_vorhandene_werte( 'stadt' ), tamil_site_vz_vorhandene_werte( 'stadt' ) ) ),
 			);
 			foreach ( $auswahl as $k => $def ) :
+				if ( ! $def[1] ) {
+					continue; // leere Auswahl (z. B. noch kein Eintrag mit Bundesland) nicht zeigen (Prüfung 17.11., P2)
+				}
 				?>
 			<p class="vz-feld">
 				<label for="vz-filter-<?php echo esc_attr( $k ); ?>"><?php echo esc_html( $def[0] ); ?></label>

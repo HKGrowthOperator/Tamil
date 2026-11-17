@@ -120,6 +120,19 @@ def test_ersatzbilder_mit_nachweis_und_dateien(wp_cli):
         assert b["datei"] in text and b["klein"] in text
 
 
+def test_leere_auswahl_ausgeblendet_und_aenderungslink_sauber(eintraege, wp_cli):
+    """Prüfung 17.11. (P2): „Bundesland oder Kanton“ fehlt, solange kein Eintrag eines hat; der Link „Änderung melden“
+    trägt genau vz_formular=aenderung und vz_eintrag (im HTML ist & als &#038; kodiert)."""
+    hat_region = wp_cli("echo wp_json_encode( tamil_site_vz_vorhandene_werte( 'bundesland_kanton' ) );").strip() != "[]"
+    html = requests.get(eintraege["seite"], headers=AN, timeout=30).text
+    assert ('id="vz-filter-region"' in html) == hat_region
+    assert 'id="vz-filter-stadt"' in html  # Dortmund gibt es
+    profil = requests.get(wp_cli(f"echo get_permalink( {eintraege['ohne']['tempel']} );").strip(), headers=AN, timeout=30).text
+    href = re.search(r'<p class="vz-aenderung"><a href="([^"]+)"', profil).group(1).replace("&#038;", "&")
+    abfrage = href.split("?", 1)[1].split("#", 1)[0]
+    assert abfrage == f"vz_formular=aenderung&vz_eintrag={eintraege['ohne']['tempel']}", href
+
+
 def test_nachweise_zugeschnitten_mit_quelle_und_lizenz(wp_cli):
     """Symbolbilder und Bannerfotos sind im Bild beschnitten: Nachweis mit „zugeschnitten“, Dateiseite und Lizenz-URL
     gehen mit der Aktion tamil_site_bildnachweis ans Theme."""
