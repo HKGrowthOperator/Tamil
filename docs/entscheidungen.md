@@ -5,6 +5,15 @@ Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
 ## 17.11.2026
 
+- **Aufteilung:** Luis' Sitzung macht nur noch Website, Design und Fulfillment. Dazu gehören das Theme, die
+  Frontend-Teile von `tamil-site` und das Testsystem der Website. Nick macht das Backend: News-Radar, Cockpit, Agenten,
+  Publisher, Social-Automatik und `tamil-radar`. Die Übergabe an Nick steht in `docs/uebergabe/backend-nick.md`. · Luis
+- **Website-Ergebnisse direkt auf `main`, nur Website-Dateien.**
+  - Was auf `main` kommt: `wordpress/themes/tamil`, `wordpress/plugins/tamil-site`, `wordpress/dev`,
+    `wordpress/docker`, `wordpress/Dockerfile`, `design/`, `DESIGN.md` und `tests/wp`, als eigener Commit je
+    Ergebnis. Ohne Radar und Backend.
+  - Das Testsystem baut weiter aus `claude/radar-multiagent`. Dorthin wird jedes Ergebnis zuerst gemergt.
+  - Weicht für diese Pfade bewusst von „nie direkt auf main“ ab (`CLAUDE.md`). · Luis
 - **Bilderpflicht auf der Website:** Jeder sichtbare Anreißer, jede Listenzeile, Kachel, jedes Suchergebnis,
   „Weiterlesen“ und jeder Kino- und Termineintrag zeigt ein echtes Bild. Ausnahmen: Rubrikband, Fußlisten, Formulare,
   reine Textseiten (Impressum, Datenschutz). Das Theme nimmt das eigene Foto, sonst ein Bild aus dem Text, sonst ein
