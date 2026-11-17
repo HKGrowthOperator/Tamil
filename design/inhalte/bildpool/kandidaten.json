@@ -37,27 +37,9 @@
   },
   {
    "rubrik": "events",
-   "titel": "File:Hamm Tempelfest 2185.jpg",
-   "fokus_y": 0.45,
-   "alt": "Tempelfest in Hamm: Festwagen neben den Tempeltürmen, Besucher mit Regenschirmen"
-  },
-  {
-   "rubrik": "events",
    "titel": "File:Theer the Temple Car.jpg",
    "fokus_y": 0.5,
    "alt": "Ein geschmückter Tempelwagen mit bunten Stoffbahnen und Säulen vor grauem Himmel"
-  },
-  {
-   "rubrik": "events",
-   "titel": "File:Sri Muthumariamman Temple(Hindu temple) Teru Festival Chariot.jpg",
-   "fokus_y": 0.4,
-   "alt": "Geschmückter Festwagen des Sri-Muthumariamman-Tempels beim Wagenfest"
-  },
-  {
-   "rubrik": "events",
-   "titel": "File:Thaipusam Festival The Golden Chariot.jpg",
-   "fokus_y": 0.45,
-   "alt": "Der goldene Festwagen beim Thaipusam-Fest unter dem Abendhimmel"
   },
   {
    "rubrik": "events",
@@ -67,9 +49,27 @@
   },
   {
    "rubrik": "events",
+   "titel": "File:Hamm Tempelfest 2185.jpg",
+   "fokus_y": 0.45,
+   "alt": "Tempelfest in Hamm: Festwagen neben den Tempeltürmen, Besucher mit Regenschirmen"
+  },
+  {
+   "rubrik": "events",
+   "titel": "File:Sri Muthumariamman Temple(Hindu temple) Teru Festival Chariot.jpg",
+   "fokus_y": 0.4,
+   "alt": "Geschmückter Festwagen des Sri-Muthumariamman-Tempels beim Wagenfest"
+  },
+  {
+   "rubrik": "events",
    "titel": "File:KDK in B 2025 03.jpg",
    "fokus_y": 0.5,
    "alt": "Umzug beim Karneval der Kulturen in Berlin mit Tänzerinnen und Tänzern in bunten Kostümen"
+  },
+  {
+   "rubrik": "events",
+   "titel": "File:Thaipusam Festival The Golden Chariot.jpg",
+   "fokus_y": 0.45,
+   "alt": "Der goldene Festwagen beim Thaipusam-Fest unter dem Abendhimmel"
   },
   {
    "rubrik": "community",
@@ -149,15 +149,33 @@
   },
   {
    "rubrik": "kino",
+   "titel": "File:ESML Eden-Lichtspiele Lübeck Projektor.jpg",
+   "fokus_y": 0.45,
+   "alt": "Alter Filmprojektor in den Eden-Lichtspielen in Lübeck"
+  },
+  {
+   "rubrik": "kino",
    "titel": "File:Kinosaal Savoy Filmtheater.jpg",
    "fokus_y": 0.5,
    "alt": "Kinosaal des Savoy Filmtheaters, Sitzreihen vor dem Vorhang in blauem und rotem Licht"
   },
   {
    "rubrik": "kino",
+   "titel": "File:Lichtspiele Zell am See.JPG",
+   "fokus_y": 0.5,
+   "alt": "Das Kino in Zell am See von außen mit dem Schriftzug „Kino“ über dem Eingang"
+  },
+  {
+   "rubrik": "kino",
    "titel": "File:Doberan Kamp-Theater Kinosaal 1.jpg",
    "fokus_y": 0.55,
    "alt": "Kinosaal des Kamp-Theaters in Bad Doberan mit roten Sitzreihen vor der Leinwand"
+  },
+  {
+   "rubrik": "kino",
+   "titel": "File:Zeughauskino Leinwand (2).jpg",
+   "fokus_y": 0.5,
+   "alt": "Leinwand und Sitzreihen im Zeughauskino in Berlin"
   },
   {
    "rubrik": "kino",
@@ -170,24 +188,6 @@
    "titel": "File:RIALTO Lichtspiele Kinosaal - Leinwand im Rücken.jpg",
    "fokus_y": 0.5,
    "alt": "Kinosaal der Rialto-Lichtspiele mit Sitzreihen in warmem Licht"
-  },
-  {
-   "rubrik": "kino",
-   "titel": "File:Zeughauskino Leinwand (2).jpg",
-   "fokus_y": 0.5,
-   "alt": "Leinwand und Sitzreihen im Zeughauskino in Berlin"
-  },
-  {
-   "rubrik": "kino",
-   "titel": "File:ESML Eden-Lichtspiele Lübeck Projektor.jpg",
-   "fokus_y": 0.45,
-   "alt": "Alter Filmprojektor in den Eden-Lichtspielen in Lübeck"
-  },
-  {
-   "rubrik": "kino",
-   "titel": "File:Lichtspiele Zell am See.JPG",
-   "fokus_y": 0.5,
-   "alt": "Das Kino in Zell am See von außen mit dem Schriftzug „Kino“ über dem Eingang"
   }
  ]
 }
