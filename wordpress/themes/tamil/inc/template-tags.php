@@ -234,7 +234,9 @@ function tamil_anzeige( string $platz ): void {
 /**
  * Werbeplatz 01 (Leaderboard, am Handy Banner) einmal je Seite, unter dem ersten Abschnitt statt über dem Aufmacher.
  * Die Vorlagen rufen ihn an ihrer Stelle auf; footer.php ruft ihn zuletzt noch einmal auf, falls eine Vorlage ihn
- * nicht gesetzt hat (dann steht er über dem Fuß). Ein ungebuchter Platz zeigt die Eigenanzeige (Festlegung F3).
+ * nicht gesetzt hat (dann steht er über dem Fuß). Ein ungebuchter Platz zeigt die Eigenanzeige (Festlegung F3). Der
+ * benannte Bereich ist das <aside> des Plugins („Anzeige: Leaderboard“); der Rahmen hier ist nur ein <div> für den
+ * Abstand (kein Bereich im Bereich, axe landmark-complementary-is-top-level).
  *
  * @param string $klasse Klasse des umgebenden Elements („innen anzeige-zwischen“ oder ein Rasterbereich).
  */
@@ -246,7 +248,7 @@ function tamil_leaderboard( string $klasse = 'innen anzeige-zwischen' ): void {
 	$gezeigt = true;
 	$html    = tamil_site_anzeige( 'leaderboard', false );
 	if ( '' !== $html ) {
-		echo '<aside class="' . esc_attr( $klasse ) . '" aria-label="' . esc_attr__( 'Anzeige', 'tamil' ) . '">' . $html . '</aside>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Werbeplatz aus dem Plugin, dort escapt
+		echo '<div class="' . esc_attr( $klasse ) . '">' . $html . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Werbeplatz aus dem Plugin, dort escapt
 	}
 }
 

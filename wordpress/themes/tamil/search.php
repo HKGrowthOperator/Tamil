@@ -50,7 +50,7 @@ tamil_cache_fuellen( $tamil_ids );
 	<?php endif; ?>
 
 	<?php if ( ! $tamil_ids ) : ?>
-		<?php echo tamil_kacheln( tamil_kacheln_ohne(), __( 'Rubriken', 'tamil' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_kacheln() ?>
+		<?php echo tamil_kacheln( tamil_kacheln_ohne(), __( 'Rubriken mit Bild', 'tamil' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_kacheln() ?>
 	<?php endif; ?>
 </div>
 <?php

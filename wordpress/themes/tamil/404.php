@@ -23,7 +23,7 @@ $tamil_neu = tamil_ids( array( 'posts_per_page' => 5 ) );
 			<?php echo tamil_zeilen( $tamil_neu ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_zeilen() ?>
 		</section>
 	<?php endif; ?>
-	<?php echo tamil_kacheln( tamil_kacheln_ohne(), __( 'Rubriken', 'tamil' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_kacheln() ?>
+	<?php echo tamil_kacheln( tamil_kacheln_ohne(), __( 'Rubriken mit Bild', 'tamil' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_kacheln() ?>
 </div>
 <?php
 get_footer();
