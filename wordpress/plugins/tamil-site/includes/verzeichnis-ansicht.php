@@ -89,7 +89,7 @@ function tamil_site_vz_ersatzbilder(): array {
  * @return array{html:string,symbol:bool,nachweis:string} html leer, wenn es weder Beitragsbild noch Ersatzbild gibt.
  */
 function tamil_site_vz_bild( int $id, string $wo = 'liste' ): array {
-	$sizes = 'profil' === $wo ? '(min-width: 760px) 720px, 100vw' : '(min-width: 600px) 160px, 112px';
+	$sizes  = 'profil' === $wo ? '(min-width: 760px) 720px, 100vw' : '(min-width: 600px) 160px, 112px';
 	$thumb  = (int) get_post_thumbnail_id( $id );
 	$quelle = '';
 	$lizenz = '';
