@@ -32,6 +32,11 @@ function tamil_setup(): void {
 	add_image_size( 'tamil-card', 960, 720, true );
 	add_image_size( 'tamil-zeile', 480, 480, true );
 	set_post_thumbnail_size( 960, 720, true );
+	// Ungeschnittene kleine Breiten für srcset: Rubrikkacheln (160 px), Listenbilder (96 bis 240 px) und Nebenstücke
+	// (112 bis 290 px) laden so 320 bzw. 640 px statt 768. Gilt für neue Uploads; der Bestand bekommt sie erst mit
+	// „wp media regenerate --only-missing“.
+	add_image_size( 'tamil-320', 320, 0, false );
+	add_image_size( 'tamil-640', 640, 0, false );
 
 	register_nav_menus(
 		array(
@@ -50,6 +55,22 @@ function tamil_content_width(): void {
 	$GLOBALS['content_width'] = 720;
 }
 add_action( 'after_setup_theme', 'tamil_content_width', 0 );
+
+/**
+ * Neue Uploads: verkleinerte Fassungen als WebP (das Original bleibt JPEG). Nur, wenn der Server WebP schreiben kann;
+ * PNG (Logos, Grafiken) bleibt PNG. Der Bestand wird nicht neu gerechnet.
+ *
+ * @param array<string,string> $formate Zuordnung Quelltyp → Zieltyp.
+ * @return array<string,string>
+ */
+function tamil_webp_ausgabe( $formate ): array {
+	$formate = is_array( $formate ) ? $formate : array();
+	if ( wp_image_editor_supports( array( 'mime_type' => 'image/webp' ) ) ) {
+		$formate['image/jpeg'] = 'image/webp';
+	}
+	return $formate;
+}
+add_filter( 'image_editor_output_format', 'tamil_webp_ausgabe' );
 
 /**
  * Bildgrößen in der Mediathek wählbar machen.
