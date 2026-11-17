@@ -120,12 +120,7 @@ if ( '' !== $tamil_footer_ad ) :
 		</p>
 	</div>
 </footer>
-<?php
-$tamil_mobil_ad = function_exists( 'tamil_site_anzeige' ) ? tamil_site_anzeige( 'mobile', false ) : '';
-if ( '' !== $tamil_mobil_ad ) :
-	?>
-	<aside class="anzeige-mobil" aria-label="<?php esc_attr_e( 'Anzeige am unteren Rand', 'tamil' ); ?>"><?php echo $tamil_mobil_ad; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Werbeplatz aus dem Plugin, dort escapt ?></aside>
-<?php endif; ?>
+<?php tamil_anzeige( 'mobile' ); // Handy-Leiste: ein benannter Bereich des Plugins („Anzeige: Mobil“, id ad-mobile), ohne Rahmen ?>
 </div>
 <?php wp_footer(); ?>
 </body>
