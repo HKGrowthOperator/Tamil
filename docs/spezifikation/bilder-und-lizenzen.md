@@ -112,7 +112,25 @@ Eigene Grafik aus Rubrikfarbe, Titel, Kolam und Wortmarke (`images.py` `branded_
 SIL Open Font License). Lizenz `tamil-grafik`, Umfang Website, Social, Print. Nachweis „Grafik: Tamil.de“. Das Aussehen
 folgt der abgenommenen Kachel aus dem neuen Design (Entscheidung 10.11.).
 
-### 2.7 Verboten
+### 2.7 Theme: Bild für jeden Anreißer (Bilderpflicht, 17.11.2026)
+
+Luis am 17.11.: Jeder sichtbare Anreißer der Website zeigt ein echtes Bild, nichts nur als Text (Ausnahmen: Rubrikband,
+Fußlisten, Formulare, reine Textseiten). Das Theme wählt das Bild in `inc/bildkette.php`, unabhängig von der Bildkette
+des Radars:
+
+| Stufe | Bild | Nachweis |
+|---|---|---|
+| a | eigenes Beitragsbild, wenn es keine Titelkarte ist (Nachweis „Grafik: Tamil.de“ oder Herkunft `karte`/Lizenz `tamil-grafik` ohne „Foto: …“); Bänder über 2,5:1 werden im Rahmen beschnitten | wie gespeichert, bei Bändern mit „zugeschnitten“ |
+| b | erstes Bild aus dem Text desselben Beitrags, das in der Mediathek liegt (Adresse unter `uploads/` dieser Website) und mindestens 600 px breit ist | Bildunterschrift des Anhangs, sonst die figcaption im Text |
+| c | Symbolbild aus dem Rubrik-Pool (`assets/img/rubrik/`, Liste `inc/bildpool.php`): je Rubrik bis zu vier Fotos von Wikimedia Commons, nur CC0, CC BY, CC BY-SA; fest nach Beitrags-ID gewählt | „Symbolbild, Foto: Urheber / Wikimedia Commons, Lizenz, zugeschnitten“ mit Links auf Dateiseite und Lizenz; Schild „Symbolbild“ am Bild |
+
+Der Pool entsteht mit `design/inhalte/bildpool/holen.py` aus `kandidaten.json`; Urheber, Lizenz und Lizenz-Adresse
+liest das Skript aus der Commons-API (Regeln wie 2.3: keine NC/ND, keine Dateien mit Hinweisen zu Persönlichkeits- oder
+Markenrechten, Urheber bekannt). Motive allgemein: keine erkennbaren Privatpersonen als Hauptmotiv, kein Bild, das ein
+bestimmtes Ereignis vortäuscht (G5). Bilder aus dem Text (Stufe b) bleiben an ihrem eigenen Beitrag; sie werden nicht
+für andere Beiträge verwendet (2.1). Prüfung: `node wordpress/dev/bilder_pflicht.mjs <url>`.
+
+### 2.8 Verboten
 
 | Verboten | Warum | Abgesichert durch |
 |---|---|---|

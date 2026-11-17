@@ -13,9 +13,10 @@ while ( have_posts() ) :
 	$tamil_bild = tamil_bild(
 		(int) get_the_ID(),
 		array(
-			'eager'  => true,
-			'klasse' => 'artikel__bild',
-			'sizes'  => '(min-width: 1024px) 1040px, (min-width: 600px) 720px, 100vw',
+			'eager'     => true,
+			'nur_eigen' => true, // Seiten (Impressum, Datenschutz …) bekommen kein Symbolbild
+			'klasse'    => 'artikel__bild',
+			'sizes'     => '(min-width: 1024px) 1040px, (min-width: 600px) 720px, 100vw',
 		)
 	);
 	?>
@@ -26,7 +27,7 @@ while ( have_posts() ) :
 		<?php if ( '' !== $tamil_bild ) : ?>
 			<figure class="artikel__figur">
 				<?php echo $tamil_bild; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_bild() ?>
-				<figcaption class="artikel__nachweis"><?php echo esc_html( str_replace( ' · ', ', ', tamil_bildnachweis( (int) get_the_ID() ) ) ); ?></figcaption>
+				<figcaption class="artikel__nachweis"><?php echo wp_kses( tamil_bild_nachweis_html( (int) get_the_ID() ), tamil_nachweis_kses() ); ?></figcaption>
 			</figure>
 		<?php endif; ?>
 		<div class="artikel__haupt">

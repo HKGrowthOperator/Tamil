@@ -77,7 +77,7 @@ if ( '' !== $tamil_footer_ad ) :
 			<h2><?php esc_html_e( 'Bildnachweise dieser Seite', 'tamil' ); ?></h2>
 			<ul class="nachweise">
 				<?php foreach ( $tamil_nachweise as $tamil_n ) : ?>
-					<li><?php echo esc_html( $tamil_n ); ?></li>
+					<li><?php echo wp_kses( $tamil_n, tamil_nachweis_kses() ); ?></li>
 				<?php endforeach; ?>
 			</ul>
 		</div>

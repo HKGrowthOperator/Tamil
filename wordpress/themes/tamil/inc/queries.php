@@ -48,25 +48,33 @@ function tamil_cache_fuellen( array $ids ): void {
 }
 
 /**
- * Beiträge mit zeigbarem Bild (Foto, keine Titelkarte, kein Banner).
+ * Beiträge mit eigenem Bild (Foto als Beitragsbild oder Bild im Text, keine Titelkarte). Die übrigen bekommen ein
+ * Symbolbild aus dem Pool; für die vorderen Plätze werden eigene Bilder bevorzugt.
  *
  * @param array<string,mixed> $args WP_Query-Argumente.
  * @param int[]               $ohne Ausschließen.
  * @return int[]
  */
 function tamil_ids_mit_bild( array $args, array $ohne = array(), int $anzahl = 0 ): array {
-	$ids = array_values( array_filter( tamil_ids( array_merge( array( 'meta_key' => '_thumbnail_id' ), $args ), $ohne ), 'tamil_bild_zeigbar' ) ); // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+	$ids = array_values( array_filter( tamil_ids( $args, $ohne ), 'tamil_bild_zeigbar' ) );
 	return $anzahl ? array_slice( $ids, 0, $anzahl ) : $ids;
+}
+
+/**
+ * Schlüssel des Transients der Startseite (mit dem heutigen Datum).
+ */
+function tamil_start_schluessel(): string {
+	return 'tamil_start_' . current_time( 'Ymd' );
 }
 
 /**
  * Startseite klar2: Aufmacher, vier Nebenstücke, sechs Meldungen, Rubrikkacheln, „Diese Woche“ (zwei Kino-Beiträge
  * mit Bild), „Küche“ (vier mit Bild) und weitere Rubrikblöcke. Ohne Dubletten; Ergebnis zehn Minuten im Transient.
  *
- * @return array{lead:int,neben:int[],meldungen:int[],kacheln:array,woche:int[],kueche:int[],rubriken:array<string,int[]>}
+ * @return array{lead:int,neben:int[],meldungen:int[],kacheln:array,woche:array,kueche:int[],rubriken:array<string,int[]>}
  */
 function tamil_start_auswahl(): array {
-	$cached = get_transient( 'tamil_start_auswahl' );
+	$cached = get_transient( tamil_start_schluessel() );
 	if ( is_array( $cached ) && isset( $cached['lead'] ) ) {
 		return $cached;
 	}
@@ -74,7 +82,8 @@ function tamil_start_auswahl(): array {
 	$sticky   = array_map( 'intval', (array) get_option( 'sticky_posts', array() ) );
 	$mit_bild = tamil_ids_mit_bild( array( 'posts_per_page' => 60 ) );
 
-	// Aufmacher: im Customizer gesetzt, sonst neuester markierter Beitrag mit Bild, sonst neuester mit Bild.
+	// Aufmacher: im Customizer gesetzt, sonst neuester markierter Beitrag mit Bild, sonst neuester mit Foto (kein
+	// beschnittenes Band), sonst neuester mit Bild.
 	$lead = absint( tamil_opt( 'aufmacher_id' ) );
 	if ( ! $lead || 'publish' !== get_post_status( $lead ) || ! tamil_bild_zeigbar( $lead ) ) {
 		$lead = $sticky ? ( tamil_ids_mit_bild(
@@ -87,9 +96,15 @@ function tamil_start_auswahl(): array {
 		)[0] ?? 0 ) : 0;
 	}
 	if ( ! $lead ) {
-		$lead = $mit_bild[0] ?? ( tamil_ids( array( 'posts_per_page' => 1 ) )[0] ?? 0 );
+		$fotos = array_values( array_filter( $mit_bild, static fn( $id ) => ! tamil_bildwahl( $id )['breit'] ) );
+		$lead  = $fotos[0] ?? ( $mit_bild[0] ?? ( tamil_ids( array( 'posts_per_page' => 1 ) )[0] ?? 0 ) );
 	}
 	$used[] = $lead;
+
+	// Diese Woche zuerst (nur Aktuelles, tamil_woche_auswahl()): Filme und Termine stehen dort und nicht noch einmal
+	// unter den Nebenstücken oder Meldungen.
+	$woche = tamil_woche_auswahl( $used );
+	$used  = array_merge( $used, $woche['bilder'], array_map( 'intval', wp_list_pluck( $woche['filme'], 'post' ) ), $woche['termine'] );
 
 	// Nebenstücke: vier mit Bild; Meldungen: sechs, mit Bild bevorzugt, sonst die neuesten.
 	$neben     = array_slice( array_values( array_diff( $mit_bild, $used ) ), 0, 4 );

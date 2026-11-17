@@ -1,0 +1,31 @@
+{
+ "hinweis": "Kandidaten für den Rubrik-Pool (holen.py). Allgemeine Motive ohne erkennbare Privatpersonen als Hauptmotiv und ohne Bezug auf ein bestimmtes Ereignis. Lizenzangaben liest holen.py selbst aus der Commons-API.",
+ "kandidaten": [
+  {"rubrik": "news", "titel": "File:Reichstagsgebäude von Westen.jpg", "archiv": "rb-85.jpg", "fokus_y": 0.55,
+   "alt": "Das Reichstagsgebäude in Berlin, Sitz des Bundestags"},
+  {"rubrik": "news", "titel": "File:Am Markt 01 - Rathaus.jpg", "archiv": "rb-38.jpg", "fokus_y": 0.5,
+   "alt": "Das Rathaus von Emsdetten im Münsterland"},
+  {"rubrik": "events", "titel": "File:Kovagam koothandavar temple.jpg", "archiv": "rb-43.jpg", "fokus_y": 0.45,
+   "alt": "Geschmückter Festwagen bei einem Tempelfest in Tamil Nadu, davor eine Menschenmenge von hinten"},
+  {"rubrik": "community", "titel": "File:Sri Ganesha Hindutempel 1 Berlin 2026.jpg", "archiv": "rb-49.jpg", "fokus_y": 0.42,
+   "alt": "Der Sri-Ganesha-Hindutempel an der Hasenheide in Berlin mit Turm und Festzelt"},
+  {"rubrik": "community", "titel": "File:Hamm-Tempel-Farbgestaltung2014-11-02-13-07.jpg", "archiv": "rb-71.jpg", "fokus_y": 0.4,
+   "alt": "Der bunt bemalte Tempelturm des Sri-Kamadchi-Ampal-Tempels in Hamm-Uentrop"},
+  {"rubrik": "kultur", "titel": "File:Arulmigu Sivan Temple, Glattbrugg - Innenansicht 20210320 133243.jpg", "archiv": "rb-76.jpg", "fokus_y": 0.6,
+   "alt": "Messingleuchter, Blumen und Bananen auf einem Tisch im Arulmigu-Sivan-Tempel in Glattbrugg"},
+  {"rubrik": "kueche", "titel": "File:Veg Full Meals in Tamil Nadu.JPG", "archiv": "rb-48.jpg", "fokus_y": 0.5,
+   "alt": "Vegetarisches Essen nach Art Tamil Nadus auf einem Bananenblatt"},
+  {"rubrik": "kueche", "titel": "File:Kottu.jpg", "archiv": "rb-39.jpg", "fokus_y": 0.5,
+   "alt": "Kottu Roti, ein Gericht aus Sri Lanka, auf einem Teller"},
+  {"rubrik": "kueche", "titel": "File:Chicken Kottu.jpg", "archiv": "rb-37.jpg", "fokus_y": 0.5,
+   "alt": "Ein Teller Chicken Kottu, gehacktes Fladenbrot mit Huhn und Gemüse"},
+  {"rubrik": "sport", "titel": "File:The Stade Municipal of Yverdon in 2022.jpg", "archiv": "rb-67.jpg", "fokus_y": 0.6,
+   "alt": "Rasen und Tribüne eines Fußballstadions in der Schweiz"},
+  {"rubrik": "allgemein", "titel": "File:Hauptwache, Frankfurt, South view 20190915 1.jpg", "archiv": "rb-78.jpg", "fokus_y": 0.55,
+   "alt": "Die Hauptwache in Frankfurt am Main mit Cafétischen davor"},
+  {"rubrik": "allgemein", "titel": "File:Aarau Altstadt Kirche 8941.jpg", "archiv": "rb-60.jpg", "fokus_y": 0.5,
+   "alt": "Die Altstadt von Aarau mit der Stadtkirche"},
+  {"rubrik": "allgemein", "titel": "File:Leuk 20 12 2014 01.jpg", "archiv": "rb-80.jpg", "fokus_y": 0.5,
+   "alt": "Blick auf das Städtchen Leuk im Wallis unter Wolken"}
+ ]
+}

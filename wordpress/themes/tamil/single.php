@@ -21,20 +21,22 @@ while ( have_posts() ) :
 	$tamil_film    = tamil_kino_film( $tamil_id );
 	$tamil_minuten = tamil_lesezeit( $tamil_id );
 	$tamil_rand    = function_exists( 'tamil_site_anzeige' ) ? tamil_site_anzeige( 'sidebar', false ) : '';
-	$tamil_bild    = tamil_bild(
+	// Bild aus der Kette; ein Bild aus dem Text steht schon im Text und wird oben nicht wiederholt
+	$tamil_bild   = 'inhalt' === tamil_bildwahl( $tamil_id )['art'] ? '' : tamil_bild(
 		$tamil_id,
 		array(
 			'eager'  => true,
 			'klasse' => 'artikel__bild',
+			'schild' => false,
 			'sizes'  => '(min-width: 1024px) 1040px, (min-width: 600px) 600px, 100vw',
 		)
 	);
-	$tamil_teilen  = array(
+	$tamil_teilen = array(
 		array( 'Facebook', 'https://www.facebook.com/sharer/sharer.php?u=' . rawurlencode( $tamil_url ) ),
 		array( 'X', 'https://twitter.com/intent/tweet?url=' . rawurlencode( $tamil_url ) . '&text=' . rawurlencode( $tamil_titel ) ),
 		array( 'Telegram', 'https://t.me/share/url?url=' . rawurlencode( $tamil_url ) . '&text=' . rawurlencode( $tamil_titel ) ),
 	);
-	$tamil_leiste  = array(
+	$tamil_leiste = array(
 		/* translators: %d: Minuten */
 		sprintf( _n( '%d Min. Lesezeit', '%d Min. Lesezeit', $tamil_minuten, 'tamil' ), $tamil_minuten ),
 	);
@@ -68,7 +70,9 @@ while ( have_posts() ) :
 		<?php if ( '' !== $tamil_bild ) : ?>
 			<figure class="artikel__figur">
 				<?php echo $tamil_bild; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_bild() ?>
-				<figcaption class="artikel__nachweis"><?php echo esc_html( str_replace( ' · ', ', ', tamil_bildnachweis( $tamil_id ) ) ); ?></figcaption>
+				<?php if ( '' !== tamil_bild_nachweis_html( $tamil_id ) ) : ?>
+					<figcaption class="artikel__nachweis"><?php echo wp_kses( tamil_bild_nachweis_html( $tamil_id ), tamil_nachweis_kses() ); ?></figcaption>
+				<?php endif; ?>
 			</figure>
 		<?php endif; ?>
 

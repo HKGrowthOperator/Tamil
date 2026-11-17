@@ -27,7 +27,7 @@ oklch im CSS (`theme.css`, `design/tokens.css`), Hex nur als Rückfall in `theme
 | `rot-dunkel` | 0.42 0.15 25.6 | `#8D1A1D` | Spur unter der hellen Leselinie (Bewegung D) |
 | `hell-leise` | 0.82 0.006 250 | `#C1C4C8` | Nebeninfos auf Dunkel |
 | `linie-dunkel` | 0.36 0.010 255 | `#3A3D42` | Linien auf Dunkel |
-| `flaeche-dunkel` | 0.26 0.012 255 | `#20242A` | gestaltete Kacheln ohne Foto (Kino, Termine) |
+| `flaeche-dunkel` | 0.26 0.012 255 | `#20242A` | Bildkacheln auf Dunkel (Kino, Termine), Text unter dem Bild |
 
 Das Rubrikband ist rot mit weißer Schrift (Luis, 17.11.2026; weiß auf Rot 6,1 : 1). Damit bleibt genau eine
 dunkle Fläche je Seite: „Diese Woche“ (auf Kino und Termine „Im Programm“ bzw. „Ab heute“). Der einzige Verlauf
@@ -63,10 +63,18 @@ gemeinsamer Kante für Kopf, Bild und Text), höchstens 70 Zeichen je Zeile.
 - **Anreißer:** ein Link um Bild und Text; Dachzeile „Rubrik | Datum“; Bild füllt seinen Rahmen. Formate: 4:3
   (Aufmacher, große Kachel in „Diese Woche“), 16:9 (Nebenstücke, Meldungen, Rubrikkacheln, Küche groß), 8:3 (kleine
   Kacheln). Beim Überfahren Zoom 1,03 in 0,35 s, Titel unterstrichen.
+- **Bilderpflicht** (Luis, 17.11.): Jeder Anreißer, jede Listenzeile, Kachel, jedes Suchergebnis, „Weiterlesen“ und
+  jeder Kino- und Termineintrag zeigt ein echtes Bild; nichts nur als Text. Ausgenommen sind Rubrikband, Fußlisten,
+  Formulare und reine Textseiten. Bildkette an einer Stelle (`inc/bildkette.php`): eigenes Foto (Titelkarten nie;
+  Bänder über 2,5:1 werden beschnitten, Nachweis „zugeschnitten“) → erstes Bild aus dem Text ab 600 px → Symbolbild
+  aus dem Rubrik-Pool (Commons, je Beitrag fest gewählt, Schild „Symbolbild“ oben rechts ab 150 px Rahmenbreite,
+  voller Nachweis mit Links im Fuß und unter dem Artikelbild). Prüfung: `node wordpress/dev/bilder_pflicht.mjs`.
 - **Bild mit Titel im Bild:** Aufmacher und große Kacheln; Fokus als Rahmen nach innen.
-- **Rubrikkacheln:** Navigation mit Bild (Foto des neuesten Beitrags der Rubrik, sonst Rubrikfoto), Name im Bild.
-- **Gestaltete Kacheln** (`data-grafik`, Fläche auf Dunkel): Kino (Film, Zahl der Kinos, Städte) und Termine
-  (Titel, Datum als größte Angabe, Ort, Vorspann); leer sagen sie, wo es weitergeht.
+- **Rubrikkacheln:** Navigation mit Bild (Foto des neuesten Beitrags der Rubrik, sonst das erste Bild ihres Pools),
+  Name im Bild.
+- **Bildkacheln auf Dunkel** (`data-grafik`): Kino mit Bild 4:3 links (Film, Zahl der Kinos, Städte) und Termine mit
+  Bild 16:9 oben (Titel, Datum mit Uhrzeit und Ende als größte Angabe, Ort, Veranstalter, Eintritt, Vorspann); leer
+  zeigen sie ein Symbolbild und sagen, wo es weitergeht.
 - **Blocktitel:** 19 px, Linie in Tinte darüber; Listen mit Linien statt Kästen; Tabellen ebenso.
 - **Knöpfe** nur für Formulare und Bedienung: Tinte, eckig, 48 px hoch. Sonst unterstrichene Textlinks, 44 px tippbar.
 - **Anzeigen:** Label „Anzeige“, feste Formate aus dem Plugin; Eigenanzeige wie ein Anreißer mit Linien.
