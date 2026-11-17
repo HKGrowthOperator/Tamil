@@ -88,11 +88,19 @@ function tamil_title_separator(): string {
 add_filter( 'document_title_separator', 'tamil_title_separator' );
 
 /**
- * Favicon aus dem Theme, solange kein Website-Icon im Customizer gesetzt ist.
+ * Icons aus dem Theme („t.“ auf dem Rot des Rubrikbands), solange kein Website-Icon im Customizer gesetzt ist: SVG,
+ * PNG 32 als Rückfall, 180 für iOS, Manifest mit 192 und 512. Die Farbe der Browserleiste (theme-color) ist immer das
+ * Rot des Bands.
  */
 function tamil_favicon(): void {
-	if ( ! has_site_icon() ) {
-		echo '<link rel="icon" href="' . esc_url( TAMIL_THEME_URI . '/assets/img/favicon.svg' ) . '" type="image/svg+xml">' . "\n";
+	echo '<meta name="theme-color" content="#B5282A">' . "\n";
+	if ( has_site_icon() ) {
+		return; // WordPress gibt das Website-Icon selbst aus
 	}
+	$img = TAMIL_THEME_URI . '/assets/img/';
+	printf( '<link rel="icon" href="%s" type="image/svg+xml">' . "\n", esc_url( $img . 'favicon.svg' ) );
+	printf( '<link rel="icon" href="%s" type="image/png" sizes="32x32">' . "\n", esc_url( $img . 'icon-32.png' ) );
+	printf( '<link rel="apple-touch-icon" href="%s" sizes="180x180">' . "\n", esc_url( $img . 'apple-touch-icon.png' ) );
+	printf( '<link rel="manifest" href="%s">' . "\n", esc_url( TAMIL_THEME_URI . '/assets/manifest.webmanifest' ) );
 }
 add_action( 'wp_head', 'tamil_favicon', 2 );
