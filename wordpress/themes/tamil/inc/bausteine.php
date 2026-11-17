@@ -49,11 +49,28 @@ function tamil_titel_kurz( string $titel, int $zeichen = 60 ): string {
 }
 
 /**
- * Höchstens $anzahl Sätze eines Texts (für den Vorspann des Aufmachers).
+ * Höchstens $anzahl Sätze eines Texts (für den Vorspann des Aufmachers). Kein Satzende ist ein Punkt nach einer Zahl
+ * („Am 8. November“) oder nach einer Abkürzung („Dr.“, „St.“, „z. B.“).
  */
 function tamil_saetze( string $text, int $anzahl = 2 ): string {
-	$teile = preg_split( '/(?<=[.!?])\s+(?=[A-ZÄÖÜ„"0-9])/u', trim( $text ) );
+	$teile = preg_split( '/(?<=[.!?])(?<![0-9]\.)(?<!\bDr\.)(?<!\bSt\.)(?<!\bNr\.)(?<!\bca\.)(?<!\bvgl\.)(?<!\bbzw\.)(?<!\bz\. B\.)(?<!\bProf\.)\s+(?=[A-ZÄÖÜ„"0-9])/u', trim( $text ) );
 	return is_array( $teile ) ? implode( ' ', array_slice( $teile, 0, $anzahl ) ) : $text;
+}
+
+/**
+ * Ganze Sätze eines Texts bis etwa $zeichen Zeichen (Vorspann des Aufmachers: bis zum Satzende innerhalb von etwa vier
+ * Zeilen), mindestens ein Satz.
+ */
+function tamil_saetze_bis( string $text, int $zeichen = 260 ): string {
+	$wahl = tamil_saetze( $text, 1 );
+	for ( $n = 2; $n <= 4; $n++ ) {
+		$mehr = tamil_saetze( $text, $n );
+		if ( mb_strlen( $mehr ) > $zeichen || $mehr === $wahl ) {
+			break;
+		}
+		$wahl = $mehr;
+	}
+	return $wahl;
 }
 
 /**

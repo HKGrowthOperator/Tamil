@@ -78,7 +78,7 @@ function tamil_anr_imbild( int $post_id, array $opt = array() ): string {
 	$html .= '<div class="rahmen' . ( ! empty( $opt['rahmen'] ) ? ' ' . esc_attr( (string) $opt['rahmen'] ) : '' ) . '">' . $img;
 	$html .= $unter ? '</div><div class="kachel__unter">' . $text . '</div>' : '<div class="imbild">' . $text . '</div></div>';
 	if ( ! empty( $opt['vorspann'] ) ) {
-		$html .= '<p class="vorspann">' . tamil_text( tamil_ganze_saetze( tamil_saetze( tamil_standfirst( $post_id ), 2 ) ) ) . '</p>';
+		$html .= '<p class="vorspann">' . tamil_text( tamil_ganze_saetze( tamil_saetze_bis( tamil_standfirst( $post_id ), 260 ) ) ) . '</p>';
 	}
 	return $html . '</a></article>';
 }
@@ -234,7 +234,8 @@ function tamil_kacheln( array $kacheln, string $label ): string {
 	}
 	$html = '<nav class="kacheln" aria-label="' . esc_attr( $label ) . '"><ul>';
 	foreach ( $kacheln as $k ) {
-		// Der Name steht im Bild: kein Alternativtext, kein Schild; ohne Beitrag mit Foto das erste Bild des Pools.
+		// Der Name steht im Bild: kein Alternativtext, kein Schild; ohne Beitrag mit Foto ein Bild des Pools. Die Bilder
+		// laden „lazy“, app.js lädt sie gesammelt, sobald der Streifen in die Nähe kommt.
 		$img   = $k['bild'] ? (string) preg_replace(
 			'/ alt="[^"]*"/',
 			' alt=""',
@@ -242,7 +243,6 @@ function tamil_kacheln( array $kacheln, string $label ): string {
 				(int) $k['bild'],
 				array(
 					'sizes'  => '160px',
-					'sofort' => true,
 					'schild' => false,
 				)
 			),
@@ -250,7 +250,6 @@ function tamil_kacheln( array $kacheln, string $label ): string {
 		) : tamil_pool_img(
 			$k['slug'],
 			array(
-				'sofort' => true,
 				'schild' => false,
 				'alt'    => false,
 				'sizes'  => '160px',

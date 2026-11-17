@@ -30,6 +30,9 @@ function tamil_lesezeit( int $post_id ): int {
  * alten Video-Players. Nutzt die Bereinigung des Plugins tamil-site, sonst eine eigene, kleinere. Gibt reinen Text.
  */
 function tamil_text_bereinigen( string $text ): string {
+	// Blockgrenzen (Absatz, Überschrift, Listenpunkt, Zeilenumbruch) werden zu Leerzeichen, sonst kleben Überschrift und
+	// Text im Auszug zusammen („…?Arabisch“)
+	$text = (string) preg_replace( '#(</(?:p|h[1-6]|li|div|figcaption|blockquote|td|th|dt|dd)>|<br\s*/?>)#i', '$1 ', $text );
 	if ( function_exists( 'tamil_site_seo_text_bereinigen' ) ) {
 		return tamil_site_seo_text_bereinigen( $text );
 	}
@@ -175,6 +178,17 @@ function tamil_vorspann_artikel( int $post_id ): string {
 }
 
 /**
+ * Wiederholt der Vorspann nur den Anfang des Texts (Altbestand ohne eigenen Vorspann)? Verglichen wird ohne Tags,
+ * Satzzeichen und Groß-/Kleinschreibung; ein gekürzter Vorspann („…“) zählt mit seinem Anfang.
+ */
+function tamil_vorspann_wiederholt_text( string $vorspann, string $inhalt ): bool {
+	$norm  = static fn( string $t ): string => trim( (string) preg_replace( '/[^\p{L}\p{N}]+/u', ' ', mb_strtolower( $t ) ) );
+	$kopf  = $norm( (string) preg_replace( '/\s*(?:…|\.\.\.)\s*$/u', '', $vorspann ) );
+	$start = $norm( mb_substr( tamil_text_bereinigen( strip_shortcodes( $inhalt ) ), 0, mb_strlen( $vorspann ) + 80 ) );
+	return mb_strlen( $kopf ) >= 20 && str_starts_with( $start, $kopf );
+}
+
+/**
  * Endet ein Text mitten im Satz (gekürzt, „…“), bis zum letzten ganzen Satz kürzen; gibt es keinen, bleibt er.
  */
 function tamil_ganze_saetze( string $text ): string {
@@ -232,7 +246,7 @@ function tamil_leaderboard( string $klasse = 'innen anzeige-zwischen' ): void {
 	$gezeigt = true;
 	$html    = tamil_site_anzeige( 'leaderboard', false );
 	if ( '' !== $html ) {
-		echo '<div class="' . esc_attr( $klasse ) . '">' . $html . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Werbeplatz aus dem Plugin, dort escapt
+		echo '<aside class="' . esc_attr( $klasse ) . '" aria-label="' . esc_attr__( 'Anzeige', 'tamil' ) . '">' . $html . '</aside>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Werbeplatz aus dem Plugin, dort escapt
 	}
 }
 
