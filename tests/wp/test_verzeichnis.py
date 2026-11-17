@@ -252,7 +252,8 @@ def test_t4_premium_weder_formular_noch_schnittstelle(wp, wp_cli, wp_admin, seit
     wp_cli(f"update_post_meta( {eintrag['id']}, '_tamil_vz_premium', '1' );")
     html = requests.get(seite, params={"vz_stadt": "Essen"}, headers=AN, timeout=30).text
     assert html.index(f"Kulturverein Essen {s}") < html.index(f"AAA Verein {s2}")
-    li = re.search(rf'<li class="vz-eintrag vz-premium">\s*<a[^>]*>Tamilischer Kulturverein Essen {s}</a>\s*<span class="vz-premium-marke">Premium</span>', html)
+    # Seit 17.11. steht vor dem Namen das Bild des Eintrags (Klasse vz-mit-bild, Bildlink vz-bild)
+    li = re.search(rf'<li class="vz-eintrag vz-premium[^"]*">(?:(?!</li>).)*?<a class="vz-name"[^>]*>Tamilischer Kulturverein Essen {s}</a>\s*<span class="vz-premium-marke">Premium</span>', html, re.S)
     assert li, "Premium-Eintrag ohne Kennzeichen"
     assert _rest(wp, "GET", f"/eintrag/{eintrag['id']}").json()["premium"] is True
     assert _rest(wp, "GET", f"/eintrag/{anderer['id']}").json()["premium"] is False

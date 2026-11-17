@@ -9,7 +9,7 @@
  * - Zustandswechsel sind bedingte UPDATEs (WHERE alter Stand): Wer zuerst kommt, gewinnt; Wiederholungen ändern nichts.
  * - Start, Wechsel und Ende folgen allein aus dem Datum; abgelaufene Reservierungen räumt der nächste Aufruf ab, der
  *   Verfügbarkeit braucht (kein Zeitdienst).
- * - Preise kommen von KBS und stehen nur in der Datenbank (Menü Werbung → Angebote); ohne Preis heißt es „Preis folgt“
+ * - Preise kommen von KBS und stehen nur in der Datenbank (Menü Werbung → Angebote); ohne Preis heißt es „auf Anfrage“
  *   und der Platz ist nicht buchbar.
  * - Alles Öffentliche hängt am Funktionsschalter „werbung“ (Standard aus).
  */
@@ -230,7 +230,7 @@ function tamil_site_werbung_zwei_bilder( string $platz ): bool {
 }
 
 /**
- * Angebote mit Standardwerten (Vorschläge der Festlegung; Preise leer = „Preis folgt“).
+ * Angebote mit Standardwerten (Vorschläge der Festlegung; Preise leer = „auf Anfrage“).
  *
  * @return array{laufzeiten:array<int,int>,vorlauf:int,bedingungen_fassung:string,plaetze:array<string,array{aktiv:bool,preise:array<int,int>}>}
  */
@@ -260,7 +260,7 @@ function tamil_site_werbung_angebote(): array {
 }
 
 /**
- * Preis in Cent für Platz und Laufzeit; 0 = noch kein Preis („Preis folgt“).
+ * Preis in Cent für Platz und Laufzeit; 0 = noch kein Preis („auf Anfrage“).
  */
 function tamil_site_werbung_preis( string $platz, int $laufzeit ): int {
 	$a = tamil_site_werbung_angebote();
@@ -312,14 +312,15 @@ function tamil_site_werbung_datum_ok( string $tag ): bool {
 }
 
 /**
- * Ist der Platz buchbar (Schalter an, Angebot aktiv, Preis gesetzt)?
+ * Ist der Platz buchbar (Schalter an, Angebot aktiv, Preis gesetzt, Online-Zahlung eingerichtet)?
  */
 function tamil_site_werbung_buchbar( string $platz, int $laufzeit ): bool {
 	$a = tamil_site_werbung_angebote();
 	return tamil_site_funktion_an( 'werbung' )
 		&& ! empty( $a['plaetze'][ $platz ]['aktiv'] )
 		&& in_array( $laufzeit, $a['laufzeiten'], true )
-		&& tamil_site_werbung_preis( $platz, $laufzeit ) > 0;
+		&& tamil_site_werbung_preis( $platz, $laufzeit ) > 0
+		&& tamil_site_werbung_zahlung_bereit();
 }
 
 /**

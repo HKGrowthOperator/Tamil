@@ -114,6 +114,56 @@ def test_auszug_gekuerzt(wp, wp_cli):
         wp_cli(f"wp_delete_post( {pid}, true );")
 
 
+# Echte Fälle aus dem Altbestand (Testsystem, 17.11.2026): Teilen-Knopf des alten Plugins und Hinweis des alten
+# Video-Players landeten als Beschreibung im Kopf der Seite.
+_ALT_TEILEN = ("<figure class=\"wp-block-embed is-type-video\"><div class=\"wp-block-embed__wrapper\"><div class=\"video-embed\" "
+               "data-video=\"ioA8hoTD8wo\"><button type=\"button\" class=\"video-load\">Video laden</button><span class=\"video-hint\">"
+               "Beim Laden werden Daten an YouTube übertragen. <a href=\"https://www.youtube.com/watch?v=ioA8hoTD8wo\">Bei YouTube ansehen</a>"
+               "</span></div></div></figure><div class='share-to-whatsapp-wrapper'><div class='share-on-whsp'>Share on: </div>"
+               "<p><a data-text='A.R.Rahman Live mit dir!' class='whatsapp-button whatsapp-share'>WhatsApp</a></p><div class='clear '></div></div>")
+_ALT_VIDEO = ("<p>To view this video please enable JavaScript, and consider upgrading to a web browser that supports HTML5 video</p>"
+              "<p>www.santhora.tv</p>")
+
+
+@pytest.mark.parametrize("fall", [
+    {"post_content": _ALT_TEILEN, "post_excerpt": "Share on: WhatsApp"},
+    {"post_content": _ALT_TEILEN},
+    {"post_content": _ALT_VIDEO},
+    {"post_content": "<p>Share on: […]</p>", "meta_input": {"standfirst": "Share on: WhatsApp"}},
+])
+def test_altlasten_nie_als_beschreibung(wp, wp_cli, fall):
+    """Ohne echten Text: Beschreibung der Website statt „Share on: WhatsApp“ oder „To view this video…“."""
+    daten = {"post_title": "Altbestand ohne Text", "post_status": "publish", "post_name": f"seo-test-alt-{uuid.uuid4().hex[:8]}"} | fall
+    pid = int(wp_cli(f"echo wp_insert_post( json_decode( base64_decode( '{base64.b64encode(json.dumps(daten).encode()).decode()}' ), true ) );"))
+    try:
+        seite = wp.get(f"/{daten['post_name']}/").text
+        erwartet = wp_cli("echo tamil_site_seo_kuerzen( (string) get_bloginfo( 'description' ) );").strip()
+        for attr, name in (("name", "description"), ("property", "og:description"), ("name", "twitter:description")):
+            werte = _meta(seite, attr, name)
+            assert werte == ([erwartet] if erwartet else []), (name, werte)
+        for d in _jsonld(seite):
+            assert "Share on" not in json.dumps(d) and "enable JavaScript" not in json.dumps(d)
+    finally:
+        wp_cli(f"wp_delete_post( {pid}, true );")
+
+
+def test_altlasten_aus_echtem_text_entfernt(wp, wp_cli):
+    """Echter Text bleibt, der angehängte Teilen-Knopf fällt weg (Altbestand: „… Kheer genannt. Share on: WhatsApp“)."""
+    text = ("Dies ist ein traditionelles Gericht, das als Nachspeise serviert wird. In anderen Teilen Südindiens wird es oft "
+            "auch Kheer genannt.")
+    pid = int(wp_cli("echo wp_insert_post( array( 'post_title' => 'Payasam', 'post_status' => 'publish', 'post_name' => 'seo-test-payasam', "
+                     f"'post_content' => '<p>{text}</p>' . \"<div class='share-to-whatsapp-wrapper'><div class='share-on-whsp'>Share on: </div>"
+                     "<p><a class='whatsapp-button'>WhatsApp</a></p></div>\", 'post_excerpt' => '' ) );"))
+    try:
+        beschreibung = _meta(wp.get("/seo-test-payasam/").text, "name", "description")
+        assert len(beschreibung) == 1 and beschreibung[0].startswith("Dies ist ein traditionelles Gericht")
+        assert "Share on" not in beschreibung[0] and "WhatsApp" not in beschreibung[0]
+        auszug = wp_cli("echo tamil_site_seo_text_bereinigen( 'Hier ein paar Fotos und ein Video. Share on: WhatsApp' );").strip()
+        assert auszug == "Hier ein paar Fotos und ein Video."
+    finally:
+        wp_cli(f"wp_delete_post( {pid}, true );")
+
+
 def test_startseite_website_mit_suche(wp):
     seite = wp.get("/").text
     website = [d for d in _jsonld(seite) if d.get("@type") == "WebSite"]

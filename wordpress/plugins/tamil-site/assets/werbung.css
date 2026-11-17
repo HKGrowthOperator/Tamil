@@ -10,6 +10,8 @@
 .wb-formular input[type="tel"], .wb-formular textarea, .wb-formular select { display: block; width: 100%; max-width: 32em; box-sizing: border-box; }
 .wb-fehler { border-left: 4px solid currentColor; padding-left: 1em; }
 .wb-platzhalter { font-style: italic; }
+.wb-preise .wb-platzhalter { white-space: nowrap; }
+.wb-zahlung-aus strong { font-weight: 600; }
 .wb-vorschau img { max-width: 100%; height: auto; }
 
 /* Schmale Bildschirme: Zeilen untereinander statt seitlich scrollen; Kopfzeile bleibt für Screenreader. */

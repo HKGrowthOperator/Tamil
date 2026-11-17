@@ -360,6 +360,11 @@ function tamil_site_werbung_post_bezahlen(): void {
 		tamil_site_werbung_zustand( array( 'fehler' => array( __( 'Bitte die Verkaufsbedingungen annehmen.', 'tamil-site' ) ) ) );
 		return;
 	}
+	if ( ! tamil_site_werbung_zahlung_bereit() ) {
+		tamil_site_werbung_protokoll( (int) $b['id'], 'website', 'Zahlung nicht gestartet: Online-Zahlung nicht eingerichtet' );
+		tamil_site_werbung_zustand( array( 'fehler' => array( __( 'Online-Zahlung noch nicht eingerichtet. Die Buchung kann gerade nicht bezahlt werden; die Tage werden nach Ablauf der Reservierung wieder frei.', 'tamil-site' ) ) ) );
+		return;
+	}
 	global $wpdb;
 	$fassung = tamil_site_werbung_angebote()['bedingungen_fassung'];
 	$fehler  = __( 'Die Zahlung kann gerade nicht gestartet werden. Bitte in einigen Minuten erneut versuchen.', 'tamil-site' );
