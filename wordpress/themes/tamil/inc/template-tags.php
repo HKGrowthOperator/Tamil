@@ -61,7 +61,7 @@ function tamil_altreste_entfernen( string $html ): string {
  * Vorspann: Meta „standfirst“, sonst der Textauszug, sonst der Anfang des Texts – ohne Reste der alten Seite.
  */
 function tamil_standfirst( int $post_id ): string {
-	$text = trim( (string) get_post_meta( $post_id, 'standfirst', true ) );
+	$text = tamil_text_bereinigen( (string) get_post_meta( $post_id, 'standfirst', true ) );
 	if ( '' === $text && has_excerpt( $post_id ) ) {
 		$text = tamil_text_bereinigen( (string) get_the_excerpt( $post_id ) );
 	}
@@ -76,7 +76,7 @@ function tamil_standfirst( int $post_id ): string {
  * (höchstens zwei und etwa 260 Zeichen), damit kein Satz mitten im Wort endet.
  */
 function tamil_vorspann_artikel( int $post_id ): string {
-	$text = trim( (string) get_post_meta( $post_id, 'standfirst', true ) );
+	$text = tamil_text_bereinigen( (string) get_post_meta( $post_id, 'standfirst', true ) );
 	if ( '' === $text && has_excerpt( $post_id ) ) {
 		$text = tamil_text_bereinigen( (string) get_the_excerpt( $post_id ) );
 	}
