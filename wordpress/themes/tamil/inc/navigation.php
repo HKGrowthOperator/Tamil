@@ -16,8 +16,8 @@ function tamil_nav_items(): array {
 	$locations = get_nav_menu_locations();
 	if ( ! empty( $locations['haupt'] ) ) {
 		foreach ( (array) wp_get_nav_menu_items( $locations['haupt'] ) as $item ) {
-			if ( (int) $item->menu_item_parent ) {
-				continue;
+			if ( (int) $item->menu_item_parent || tamil_ist_tv_link( (string) $item->url ) ) {
+				continue; // Tamil TV ist pausiert (Seite „Tamil TV kommt“) und steht nicht im Band
 			}
 			$slug = '';
 			if ( 'taxonomy' === $item->type && 'category' === $item->object ) {
@@ -80,8 +80,8 @@ function tamil_dienste(): array {
 	$dienste = array(
 		array(
 			'label' => __( 'Termin einreichen', 'tamil' ),
-			'url'   => tamil_seiten_url( 'kontakt', 'event-einreichen' ),
-			'aktiv' => false,
+			'url'   => tamil_einreichen_url(),
+			'aktiv' => is_page( 'einreichen' ),
 		),
 		array(
 			'label' => __( 'Werben', 'tamil' ),
@@ -92,7 +92,6 @@ function tamil_dienste(): array {
 	foreach ( array(
 		'verzeichnis' => __( 'Verzeichnis', 'tamil' ),
 		'production'  => tamil_opt( 'production_titel' ),
-		'tv'          => __( 'Tamil TV', 'tamil' ),
 		'ueber-uns'   => __( 'Über Tamil.de', 'tamil' ),
 		'kontakt'     => __( 'Kontakt', 'tamil' ),
 	) as $slug => $label ) {
@@ -130,4 +129,19 @@ function tamil_kopf_neu(): array {
 	$offen = is_singular( 'post' ) ? (int) get_queried_object_id() : 0;
 	$neu   = array_slice( array_values( array_diff( array_map( 'intval', $kandidaten ), array( $offen ) ) ), 0, 2 );
 	return $neu;
+}
+
+/**
+ * Adresse für „Termin einreichen“: die Seite „einreichen“ (Formulare des Plugins), sonst der Abschnitt auf „Kontakt“.
+ */
+function tamil_einreichen_url(): string {
+	return tamil_seite( 'einreichen' ) ? tamil_seiten_url( 'einreichen' ) : tamil_seiten_url( 'kontakt', 'event-einreichen' );
+}
+
+/**
+ * Zeigt ein Menüeintrag auf die Seite „Tamil TV“?
+ */
+function tamil_ist_tv_link( string $url ): bool {
+	$tv = tamil_seite( 'tv' );
+	return $tv && untrailingslashit( (string) get_permalink( $tv ) ) === untrailingslashit( $url );
 }

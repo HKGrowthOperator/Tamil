@@ -77,7 +77,7 @@ $tamil_klassen[] = 'termine-' . max( 1, count( $tamil_termine ) );
 						echo tamil_grafik_leer( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_grafik_leer()
 							__( 'Termin einreichen', 'tamil' ),
 							__( 'Gerade steht kein kommender Termin im Kalender. Kennt ihr einen? Schickt ihn der Redaktion, kostenlos für Vereine, Tempel und Schulen.', 'tamil' ),
-							tamil_seiten_url( 'kontakt', 'event-einreichen' ),
+							tamil_einreichen_url(),
 							'events'
 						);
 					}

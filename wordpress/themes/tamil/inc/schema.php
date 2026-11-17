@@ -1,6 +1,7 @@
 <?php
 /**
- * Strukturierte Daten (JSON-LD) für Termine: schema.org/Event aus den Feldern „Vorspann und Termin“.
+ * Strukturierte Daten (JSON-LD) für Termine: schema.org/Event aus den Feldern „Vorspann und Termin“ (Ort mit Stadt und
+ * Land, Veranstalter, Tickets, Bild aus der Bildkette ohne Symbolbilder). Organization-Schema der Startseite: inc/seo.php.
  *
  * SEO-Plugins (Rank Math, Yoast) liefern Artikel-Schema, aber kein Event; das ergänzt das Theme. Ausgegeben wird nur,
  * wenn der Beitrag ein Datum hat (tamil_site_event aus dem Plugin tamil-site).
@@ -37,7 +38,7 @@ function tamil_event_schema( int $post_id ): array {
 		'eventStatus'         => 'https://schema.org/EventScheduled',
 		'eventAttendanceMode' => 'https://schema.org/OfflineEventAttendanceMode',
 		'url'                 => get_permalink( $post_id ),
-		'description'         => wp_strip_all_tags( get_the_excerpt( $post_id ) ),
+		'description'         => function_exists( 'tamil_standfirst' ) ? tamil_standfirst( $post_id ) : wp_strip_all_tags( get_the_excerpt( $post_id ) ),
 	);
 	if ( '' !== $e['ende'] ) {
 		$ende = date_create_immutable( $e['ende'], wp_timezone() );
@@ -46,15 +47,30 @@ function tamil_event_schema( int $post_id ): array {
 		}
 	}
 	if ( '' !== $e['ort'] ) {
+		$stadt            = function_exists( 'tamil_ort_kurz' ) ? tamil_ort_kurz( $e['ort'] ) : '';
 		$data['location'] = array(
 			'@type'   => 'Place',
 			'name'    => $e['ort'],
 			'address' => array_filter(
 				array(
-					'@type'          => 'PostalAddress',
-					'streetAddress'  => $e['ort'],
-					'addressCountry' => in_array( $e['land'], array( 'DE', 'AT', 'CH' ), true ) ? $e['land'] : '',
+					'@type'           => 'PostalAddress',
+					'streetAddress'   => $e['ort'],
+					'addressLocality' => __( 'Ort folgt', 'tamil' ) !== $stadt ? $stadt : '',
+					'addressCountry'  => in_array( $e['land'], array( 'DE', 'AT', 'CH' ), true ) ? $e['land'] : '',
 				)
+			),
+		);
+	} elseif ( in_array( $e['land'], array( 'DE', 'AT', 'CH' ), true ) ) {
+		$data['location'] = array(
+			'@type'   => 'Place',
+			'name'    => array(
+				'DE' => 'Deutschland',
+				'AT' => 'Österreich',
+				'CH' => 'Schweiz',
+			)[ $e['land'] ],
+			'address' => array(
+				'@type'          => 'PostalAddress',
+				'addressCountry' => $e['land'],
 			),
 		);
 	}
@@ -75,9 +91,9 @@ function tamil_event_schema( int $post_id ): array {
 			$data['offers']['priceCurrency'] = in_array( $m[2], array( 'CHF', 'Fr.' ), true ) ? 'CHF' : 'EUR';
 		}
 	}
-	$bild = get_the_post_thumbnail_url( $post_id, 'tamil-lead' );
+	$bild = function_exists( 'tamil_bildwahl' ) && 'pool' !== tamil_bildwahl( $post_id )['art'] ? wp_get_attachment_image_url( tamil_bildwahl( $post_id )['id'], 'tamil-lead' ) : '';
 	if ( $bild ) {
-		$data['image'] = array( $bild );
+		$data['image'] = array( $bild ); // eigenes Foto, Bild aus dem Text oder Filmbild; kein Symbolbild, keine Titelkarte
 	}
 	return $data;
 }
