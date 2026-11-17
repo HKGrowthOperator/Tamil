@@ -1,7 +1,8 @@
 <?php
 /**
- * Rubrik-Pool: je Rubrik vier echte Fotos von Wikimedia Commons (CC0, CC BY, CC BY-SA) als Symbolbilder für Beiträge
- * ohne eigenes Foto (inc/bildkette.php, Stufe c). Urheber, Lizenz und Lizenz-Adresse stammen aus der Commons-API.
+ * Rubrik-Pool: je Rubrik bis zu vier echte Fotos von Wikimedia Commons (CC0, CC BY, CC BY-SA) als Symbolbilder für
+ * Beiträge ohne eigenes Foto (inc/bildkette.php, Stufe c). Urheber, Lizenz und Lizenz-Adresse stammen aus der
+ * Commons-API (Beleg je Bild in design/inhalte/bildpool/bildpool.json).
  * Erzeugt von design/inhalte/bildpool/holen.py aus kandidaten.json – nicht von Hand ändern; Nachweise auch in
  * assets/img/rubrik/NACHWEIS.md.
  */
@@ -19,6 +20,7 @@ function tamil_bildpool(): array {
 		'news'      => array(
 			array( 'datei' => 'news-1.webp', 'w' => 960, 'h' => 566, 'alt' => 'Das Reichstagsgebäude in Berlin, Sitz des Bundestags', 'urheber' => 'Jörg Braukmann', 'lizenz' => 'CC BY-SA 4.0', 'lizenz_url' => 'https://creativecommons.org/licenses/by-sa/4.0/', 'seite' => 'https://commons.wikimedia.org/wiki/File:Reichstagsgeb%C3%A4ude_von_Westen.jpg', 'fokus' => '50% 55%' ),
 			array( 'datei' => 'news-2.webp', 'w' => 960, 'h' => 720, 'alt' => 'Das Rathaus von Emsdetten im Münsterland', 'urheber' => 'Ewe vonDetten', 'lizenz' => 'CC BY-SA 4.0', 'lizenz_url' => 'https://creativecommons.org/licenses/by-sa/4.0/', 'seite' => 'https://commons.wikimedia.org/wiki/File:Am_Markt_01_-_Rathaus.jpg', 'fokus' => '50% 50%' ),
+			array( 'datei' => 'news-3.webp', 'w' => 960, 'h' => 720, 'alt' => 'Terminal und Vorfeld des Flughafens Bandaranaike bei Colombo in Sri Lanka', 'urheber' => 'ANKAN', 'lizenz' => 'CC BY-SA 4.0', 'lizenz_url' => 'https://creativecommons.org/licenses/by-sa/4.0/', 'seite' => 'https://commons.wikimedia.org/wiki/File:Bandaranaike_International_Airport_(2).jpg', 'fokus' => '50% 50%' ),
 		),
 		'events'    => array(
 			array( 'datei' => 'events-1.webp', 'w' => 960, 'h' => 720, 'alt' => 'Geschmückter Festwagen bei einem Tempelfest in Tamil Nadu, davor eine Menschenmenge von hinten', 'urheber' => 'D Neethidoss', 'lizenz' => 'CC BY-SA 4.0', 'lizenz_url' => 'https://creativecommons.org/licenses/by-sa/4.0/', 'seite' => 'https://commons.wikimedia.org/wiki/File:Kovagam_koothandavar_temple.jpg', 'fokus' => '50% 45%' ),

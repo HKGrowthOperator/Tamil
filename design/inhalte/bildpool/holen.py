@@ -29,6 +29,7 @@ import io
 import json
 import re
 import sys
+import tempfile
 import time
 import urllib.parse
 import urllib.request
@@ -50,6 +51,8 @@ NAMEN = {
 }
 LIZENZ_OK = re.compile(r"^https?://creativecommons\.org/(licenses/(by|by-sa)/[\d.]+(/[a-z-]+)?|publicdomain/zero/1\.0)/?$")
 BREITE = 960
+# Zwischenspeicher für API-Antworten und Vorschauen, damit ein Abbruch (429) beim nächsten Lauf nichts wiederholt
+CACHE = Path(tempfile.gettempdir()) / "tamil-bildpool"
 _letzte = 0.0
 
 
@@ -61,11 +64,21 @@ def _warte() -> None:
     _letzte = time.monotonic()
 
 
+def _cachedatei(url: str) -> Path:
+    return CACHE / re.sub(r"[^A-Za-z0-9._-]+", "_", url)[-180:]
+
+
 def holen(url: str) -> bytes:
+    CACHE.mkdir(parents=True, exist_ok=True)
+    datei = _cachedatei(url)
+    if datei.exists():
+        return datei.read_bytes()
     _warte()
     req = urllib.request.Request(url, headers={"User-Agent": UA})
     with urllib.request.urlopen(req, timeout=60) as r:  # noqa: S310 - feste Commons-Adressen
-        return r.read()
+        daten = r.read()
+    datei.write_bytes(daten)
+    return daten
 
 
 def text(wert: str) -> str:
@@ -73,13 +86,30 @@ def text(wert: str) -> str:
     return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", "", wert or ""))).strip()
 
 
+_SEITEN: dict = {}
+
+
+def metadaten_vorab(titel: list[str]) -> None:
+    """Angaben aller Dateien in Anfragen zu je 50 Titeln holen (schont die Commons-Grenzen)."""
+    for i in range(0, len(titel), 50):
+        q = urllib.parse.urlencode({
+            "action": "query", "format": "json", "formatversion": "2", "titles": "|".join(titel[i:i + 50]),
+            "prop": "imageinfo", "iiprop": "url|size|mime|extmetadata", "iiurlwidth": "1280",
+        })
+        daten = json.loads(holen(f"{API}?{q}"))
+        abruf = dt.datetime.fromtimestamp(_cachedatei(f"{API}?{q}").stat().st_mtime, dt.timezone.utc)
+        namen = {n["to"]: n["from"] for n in daten["query"].get("normalized", [])}
+        for seite in daten["query"]["pages"]:
+            seite["_abruf"] = abruf
+            _SEITEN[namen.get(seite["title"], seite["title"])] = seite
+            _SEITEN[seite["title"]] = seite
+
+
 def metadaten(titel: str) -> dict:
-    q = urllib.parse.urlencode({
-        "action": "query", "format": "json", "formatversion": "2", "titles": titel, "prop": "imageinfo",
-        "iiprop": "url|size|mime|extmetadata", "iiurlwidth": "1280",
-    })
-    daten = json.loads(holen(f"{API}?{q}"))
-    seite = daten["query"]["pages"][0]
+    if titel not in _SEITEN:
+        metadaten_vorab([titel])
+    seite = _SEITEN[titel]
+    abruf = seite["_abruf"]
     if seite.get("missing"):
         raise ValueError(f"{titel}: Datei fehlt")
     info = seite["imageinfo"][0]
@@ -107,7 +137,7 @@ def metadaten(titel: str) -> dict:
         "vorschau": info.get("thumburl") or info["url"],
         "breite_original": info["width"],
         "hoehe_original": info["height"],
-        "beleg": "commons-api " + dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%MZ"),
+        "beleg": "commons-api " + abruf.strftime("%Y-%m-%dT%H:%MZ"),
     }
 
 
@@ -150,6 +180,13 @@ def bauen(kandidaten: list[dict], offline: bool, archiv: bool = False) -> list[d
         alt = {b["titel"]: b for b in json.loads((HIER / "bildpool.json").read_text(encoding="utf-8"))["bilder"]}
     zaehler = {r: 0 for r in RUBRIKEN}
     bilder = []
+    if not offline and not archiv:
+        try:
+            metadaten_vorab([k["titel"] for k in kandidaten])
+        except urllib.error.HTTPError as f:
+            if f.code == 429:
+                sys.exit("Commons: 429 (zu viele Anfragen) – später erneut versuchen")
+            raise
     for k in kandidaten:
         titel = k["titel"]
         if archiv and not k.get("archiv"):
@@ -202,8 +239,9 @@ def php_schreiben(bilder: list[dict]) -> None:
         zeilen.append("\t\t),")
     php = f"""<?php
 /**
- * Rubrik-Pool: je Rubrik vier echte Fotos von Wikimedia Commons (CC0, CC BY, CC BY-SA) als Symbolbilder für Beiträge
- * ohne eigenes Foto (inc/bildkette.php, Stufe c). Urheber, Lizenz und Lizenz-Adresse stammen aus der Commons-API.
+ * Rubrik-Pool: je Rubrik bis zu vier echte Fotos von Wikimedia Commons (CC0, CC BY, CC BY-SA) als Symbolbilder für
+ * Beiträge ohne eigenes Foto (inc/bildkette.php, Stufe c). Urheber, Lizenz und Lizenz-Adresse stammen aus der
+ * Commons-API (Beleg je Bild in design/inhalte/bildpool/bildpool.json).
  * Erzeugt von design/inhalte/bildpool/holen.py aus kandidaten.json – nicht von Hand ändern; Nachweise auch in
  * assets/img/rubrik/NACHWEIS.md.
  */
@@ -238,14 +276,19 @@ function tamil_pool_bild( string $slug, int $n = 0 ): array {{
     (THEME / "inc" / "bildpool.php").write_text(php, encoding="utf-8")
 
 
-def nachweis_schreiben(bilder: list[dict], abruf: str) -> None:
+def nachweis_schreiben(bilder: list[dict]) -> None:
+    api = sorted({b["beleg"].split()[-1][:10] for b in bilder if b["beleg"].startswith("commons-api")})
+    herkunft = (f"aus der Commons-API gelesen (Abruf {', '.join(api)})" if api else "") + (
+        (" bzw. " if api else "") + "aus `design/inhalte/rueckblick/rueckblick.json` übernommen (dort beim Rückblick aus der"
+        " Commons-API)" if any(not b["beleg"].startswith("commons-api") for b in bilder) else "")
     zeilen = [
         "# Rubrik-Pool (Symbolbilder für Beiträge ohne eigenes Foto)",
         "",
-        "Je Rubrik vier echte Fotos von Wikimedia Commons, nur CC0, CC BY und CC BY-SA. Urheber, Lizenz und Lizenz-Adresse",
-        f"hat `design/inhalte/bildpool/holen.py` aus der Commons-API gelesen (Abruf {abruf}); Beleg je Bild in",
-        "`design/inhalte/bildpool/bildpool.json`. Auf 960 px Breite verkleinert, höchstens auf 4:3 zugeschnitten (WebP,",
-        "Qualität 78). Am Bild steht „Symbolbild“, im Fuß der volle Nachweis mit Links und „zugeschnitten“.",
+        "Je Rubrik bis zu vier echte Fotos von Wikimedia Commons, nur CC0, CC BY und CC BY-SA; eine Rubrik ohne eigene",
+        "Bilder nimmt den allgemeinen Pool. Urheber, Lizenz und Lizenz-Adresse hat `design/inhalte/bildpool/holen.py`",
+        f"{herkunft}; Beleg je Bild in `design/inhalte/bildpool/bildpool.json`. Auf 960 px Breite verkleinert, höchstens",
+        "auf 4:3 zugeschnitten (WebP, Qualität 78). Am Bild steht „Symbolbild“, im Fuß der volle Nachweis mit Links und",
+        "„zugeschnitten“.",
         "",
         "| Datei | Rubrik | Nachweis | Lizenz | Dateiseite |",
         "|---|---|---|---|---|",
@@ -270,12 +313,11 @@ def main() -> None:
         print(f"Rubriken mit weniger als vier Bildern (fallen auf „allgemein“ zurück, wenn leer): {fehlt}")
     if not any(b["rubrik"] == "allgemein" for b in bilder):
         sys.exit("Der allgemeine Pool braucht mindestens ein Bild")
-    abruf = max(b["beleg"].split()[-1][:10] for b in bilder)
     (HIER / "bildpool.json").write_text(json.dumps(
         {"hinweis": "Erzeugt von holen.py; Lizenzangaben aus der Commons-API (Beleg je Bild).", "bilder": bilder},
         ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     php_schreiben(bilder)
-    nachweis_schreiben(bilder, abruf)
+    nachweis_schreiben(bilder)
     groesse = sum((ZIEL / b["datei"]).stat().st_size for b in bilder)
     print(f"{len(bilder)} Bilder, {groesse / 1e6:.2f} MB")
 

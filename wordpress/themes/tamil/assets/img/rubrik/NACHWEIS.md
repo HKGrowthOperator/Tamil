@@ -1,14 +1,16 @@
 # Rubrik-Pool (Symbolbilder für Beiträge ohne eigenes Foto)
 
-Je Rubrik vier echte Fotos von Wikimedia Commons, nur CC0, CC BY und CC BY-SA. Urheber, Lizenz und Lizenz-Adresse
-hat `design/inhalte/bildpool/holen.py` aus der Commons-API gelesen (Abruf Rückblick)); Beleg je Bild in
-`design/inhalte/bildpool/bildpool.json`. Auf 960 px Breite verkleinert, höchstens auf 4:3 zugeschnitten (WebP,
-Qualität 78). Am Bild steht „Symbolbild“, im Fuß der volle Nachweis mit Links und „zugeschnitten“.
+Je Rubrik bis zu vier echte Fotos von Wikimedia Commons, nur CC0, CC BY und CC BY-SA; eine Rubrik ohne eigene
+Bilder nimmt den allgemeinen Pool. Urheber, Lizenz und Lizenz-Adresse hat `design/inhalte/bildpool/holen.py`
+aus `design/inhalte/rueckblick/rueckblick.json` übernommen (dort beim Rückblick aus der Commons-API); Beleg je Bild in `design/inhalte/bildpool/bildpool.json`. Auf 960 px Breite verkleinert, höchstens
+auf 4:3 zugeschnitten (WebP, Qualität 78). Am Bild steht „Symbolbild“, im Fuß der volle Nachweis mit Links und
+„zugeschnitten“.
 
 | Datei | Rubrik | Nachweis | Lizenz | Dateiseite |
 |---|---|---|---|---|
 | `news-1.webp` | Nachrichten | Foto: Jörg Braukmann / Wikimedia Commons, zugeschnitten | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | https://commons.wikimedia.org/wiki/File:Reichstagsgeb%C3%A4ude_von_Westen.jpg |
 | `news-2.webp` | Nachrichten | Foto: Ewe vonDetten / Wikimedia Commons, zugeschnitten | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | https://commons.wikimedia.org/wiki/File:Am_Markt_01_-_Rathaus.jpg |
+| `news-3.webp` | Nachrichten | Foto: ANKAN / Wikimedia Commons, zugeschnitten | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | https://commons.wikimedia.org/wiki/File:Bandaranaike_International_Airport_(2).jpg |
 | `events-1.webp` | Events | Foto: D Neethidoss / Wikimedia Commons, zugeschnitten | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | https://commons.wikimedia.org/wiki/File:Kovagam_koothandavar_temple.jpg |
 | `community-1.webp` | Community | Foto: 18quirl08 / Wikimedia Commons, zugeschnitten | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | https://commons.wikimedia.org/wiki/File:Sri_Ganesha_Hindutempel_1_Berlin_2026.jpg |
 | `community-2.webp` | Community | Foto: Rainer Halama / Wikimedia Commons, zugeschnitten | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | https://commons.wikimedia.org/wiki/File:Hamm-Tempel-Farbgestaltung2014-11-02-13-07.jpg |
