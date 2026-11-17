@@ -27,3 +27,4 @@ require_once TAMIL_THEME_DIR . '/inc/content-filters.php';
 require_once TAMIL_THEME_DIR . '/inc/enqueue.php';
 require_once TAMIL_THEME_DIR . '/inc/patterns.php';
 require_once TAMIL_THEME_DIR . '/inc/schema.php';
+require_once TAMIL_THEME_DIR . '/inc/seo.php';
