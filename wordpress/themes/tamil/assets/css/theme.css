@@ -175,6 +175,8 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   scroll-snap-type: x proximity; scroll-padding-inline: 4px 50%;
 }
 .band__liste::-webkit-scrollbar { display: none; }
+/* folgen rechts noch Rubriken, läuft die letzte sichtbar aus (statt hart an „Mehr“ abgeschnitten zu wirken) */
+.band__liste.mehr-rechts { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent); }
 .band__liste li { scroll-snap-align: start; }
 .band__liste a, .mehr summary {
   position: relative; display: block;
@@ -215,6 +217,11 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   :root { --rand: 24px; }
   .kopfzeile__datum { flex: none; }
   .kopf__logo img { height: 52px; }
+}
+/* Tablet: etwas engere Abstände, damit alle Rubriken samt „Kontakt“ ab etwa 800 px neben „Mehr“ passen */
+@media (min-width: 600px) and (max-width: 1023px) {
+  .band__liste a, .mehr summary { padding: 0 10px; }
+  .band__liste a[aria-current]::after { left: 10px; right: 10px; }
 }
 @media (min-width: 1024px) {
   :root { --rand: 40px; --band-hoehe: 48px; }
@@ -268,7 +275,13 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 }
 .meta__rubrik a { color: inherit; }
 .meta__rubrik a:hover { text-decoration: underline; }
-.titel { font-weight: 650; text-wrap: balance; hyphens: manual; }
+/* Lange Wörter (Bundesverwaltungsgericht) mit Trennstrich statt hartem Umbruch; nur Wörter ab zehn Zeichen, je
+   Teil mindestens vier */
+.titel, .artikel__titel, .seitenkopf__titel {
+  font-weight: 650; text-wrap: pretty;
+  -webkit-hyphens: auto; hyphens: auto; hyphenate-limit-chars: 10 4 4; overflow-wrap: break-word;
+}
+.vorspann, .artikel__vorspann { text-wrap: pretty; }
 .vorspann { margin-top: 8px; }
 
 .block-titel {
@@ -281,9 +294,13 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .block-kopf .block-titel { border-top: 0; }
 .block-kopf .textlink { font-size: 15px; }
 
-/* Titel im Bild: Text unten auf dem Verlauf; Dachzeile hell, weil Rot auf Dunkel zu schwach ist */
+/* Titel im Bild: Text unten auf dem Verlauf; Dachzeile hell, weil Rot auf Dunkel zu schwach ist. Das Format des
+   Rahmens ist das Mindestmaß: Braucht der Titel mehr Platz, wird der Rahmen höher, statt den Titel abzuschneiden
+   (overflow: clip lässt die Mindesthöhe aus dem Inhalt zu, das Bild liegt absolut darunter). */
+.imbild-anr .rahmen { display: flex; flex-direction: column; justify-content: flex-end; overflow: clip; }
+.imbild-anr .rahmen > img { position: absolute; inset: 0; }
 .imbild {
-  position: absolute; left: 0; right: 0; bottom: 0;
+  position: relative;
   padding: 60px var(--rand) 16px;
   background-image: var(--verlauf);
   color: var(--hell);
@@ -365,9 +382,11 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .woche .kachel__unter .meta__rubrik { color: var(--hell); }
 .woche__gruppe { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
 .woche__art { font-size: 13px; line-height: 1.35; font-weight: 600; color: var(--hell-leise); padding-top: 6px; }
-.woche__gruppe ul { display: flex; flex-direction: column; gap: 10px; flex: 1; }
-/* Bildkacheln auf Dunkel (Kino, Termine, Leerzustand): Bild oben, Text darunter; Kino quer mit Bild links */
-.grafik { flex: 1; background: var(--flaeche-dunkel); }
+.woche__gruppe ul { display: flex; flex-direction: column; gap: 10px; }
+.woche__gruppe ul:empty { display: none; }
+/* Bildkacheln auf Dunkel (Kino, Termine, Leerzustand): Bild oben, Text darunter; Kino quer mit Bild links. Die
+   Kacheln wachsen nicht in die Höhe des Nachbarn (keine leere Fläche unter einem einzelnen Film) */
+.grafik { background: var(--flaeche-dunkel); }
 .grafik .anr { height: 100%; }
 .grafik .rahmen { background: var(--linie-dunkel); }
 .grafik__inhalt { padding: 14px 16px 18px; }
@@ -388,6 +407,16 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .kueche__raster { display: grid; gap: 12px; padding-top: 14px; }
 .kueche .kachel--klein .imbild { padding: 30px var(--rand) 10px; background-image: var(--verlauf-kurz); }
 .kueche .kachel--klein .meta { margin-bottom: 2px; }
+/* Unter 1024 px sind die kleinen Küche-Kacheln zu niedrig für den Titel im Bild: Bild oben, Titel darunter */
+@media (max-width: 1023px) {
+  .kueche .kachel--klein .rahmen { aspect-ratio: auto; display: block; overflow: visible; background: none; }
+  .kueche .kachel--klein .rahmen > img { position: static; display: block; height: auto; aspect-ratio: 8 / 3; background: var(--flaeche); }
+  .kueche .kachel--klein .anr:hover .rahmen img { transform: none; }
+  .kueche .kachel--klein .imbild { padding: 10px 0 0; background: none; color: var(--tinte); }
+  .kueche .kachel--klein .imbild .meta { display: block; color: var(--leise); }
+  .kueche .kachel--klein .imbild .meta__rubrik { color: var(--rot); }
+  .kueche .kachel--klein .titel { font-size: 17px; line-height: 1.25; }
+}
 .rubrikblock { margin-top: 44px; }
 .rubrikblock .neben { margin-top: 0; }
 .rubrikblock .stueck:first-child { border-top: 0; }
@@ -425,8 +454,11 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .meldungen ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 24px; }
   .meldung { border-top: 1px solid var(--linie); }
   .meldung:nth-child(-n+2) { border-top: 0; }
-  .kueche .kachel--klein .meta { display: none; }
-  .kueche .kachel--klein .imbild { padding: 24px 12px 8px; }
+  /* Küche am Tablet: große Kachel über die volle Breite, die kleinen nebeneinander darunter (Bild 16:9, Titel darunter) */
+  .kueche__raster--4 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .kueche__raster--3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kueche__raster--4 .kachel--gross, .kueche__raster--3 .kachel--gross { grid-column: 1 / -1; grid-row: auto; }
+  .kueche__raster .kachel--klein .rahmen > img { aspect-ratio: 16 / 9; }
 }
 
 /* ---------- Desktop ---------- */
@@ -474,7 +506,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .woche__raster.ohne-gross.ohne-klein { grid-template-areas: "kino termin termin"; grid-template-rows: auto; }
   .woche__raster .kachel--gross { grid-area: gross; }
   .woche__raster .kachel--klein { grid-area: klein; }
-  .woche__gruppe--kino { grid-area: kino; align-self: stretch; }
+  .woche__gruppe--kino { grid-area: kino; align-self: start; }
   .woche__gruppe--termine { grid-area: termin; }
   .woche__raster.ohne-klein .woche__gruppe--kino { grid-column: auto; }
   .kachel--gross .imbild { padding: 120px 28px 24px; }
@@ -562,8 +594,12 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .woche--seite { margin-top: 32px; }
 .woche--seite .woche__titel { margin-bottom: 12px; }
 .woche--seite > .innen > .woche__art { margin: -4px 0 16px; padding-top: 0; }
-.programm { display: grid; gap: 16px; }
+.programm { display: grid; gap: 16px; align-items: start; }
 .programm .woche__gruppe ul { gap: 16px; }
+.programm__fakten { padding: 4px 0 8px; }
+.programm__fakten .grafik__zahl { margin-top: 0; font-size: 22px; }
+.programm__fakten .grafik__orte { font-size: 16px; }
+.programm__fakten p:last-child { margin-top: 12px; }
 .programm .kachel--gross .rahmen { aspect-ratio: 4 / 3; }
 .termine-raster { display: grid; gap: 12px; }
 .termine-raster .grafik .anr { display: block; }
@@ -604,6 +640,8 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .zeile .vorspann { display: block; }
   .monat .zeile .anr { grid-template-columns: 160px minmax(0, 1fr); }
   .termine-raster { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .termine-raster--eins { grid-template-columns: minmax(0, 1fr); }
+  .termine-raster--eins .grafik .anr { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
   .programm { grid-template-columns: minmax(0, 1fr); }
   .buehne .aufmacher .rahmen { margin-inline: 0; }
   .buehne .aufmacher .titel { font-size: 34px; line-height: 1.1; }
@@ -624,6 +662,12 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .programm.ohne-gross .woche__gruppe ul { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
   .termine-raster { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
   .tafel-wrap, .block > .tafel-wrap { max-width: 900px; }
+  /* ein einziger Termin: quer über die volle Breite, Bild links, Text rechts; zwei teilen sich die Breite */
+  .termine-raster--zwei { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .termine-raster--eins { grid-template-columns: minmax(0, 1fr); }
+  .termine-raster--eins .grafik .anr { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: start; }
+  .termine-raster--eins .grafik__inhalt { padding: 24px 32px 28px; }
+  .termine-raster--eins .grafik .titel { font-size: 26px; line-height: 1.16; }
 }
 
 /* ---------- Artikel: eine Spalte für Kopf und Text (höchstens 70 Zeichen), das Bild groß ---------- */
@@ -660,6 +704,11 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .inhalt ul, .inhalt ol { padding-left: 1.3em; }
 .inhalt ul { list-style: disc; }
 .inhalt li + li { margin-top: 0.4em; }
+/* Beitragslisten im Seiteninhalt (tamil_beitragslisten_mit_bild()) wie die Listen der Rubriken */
+.inhalt ul.liste { padding-left: 0; list-style: none; max-width: 900px; }
+.inhalt .liste li + li { margin-top: 0; }
+.inhalt .liste a { text-decoration: none; }
+.inhalt .liste .rahmen img { height: 100%; }
 .inhalt blockquote, .inhalt .wp-block-quote { margin-inline: 0; padding: 2px 0 2px 20px; border-left: 2px solid var(--tinte); }
 .inhalt blockquote cite { display: block; margin-top: 8px; font-style: normal; font-size: 14px; color: var(--leise); }
 .inhalt .wp-block-pullquote { padding: 16px 0; text-align: left; font-size: 21px; font-weight: 650; line-height: 1.35; }
@@ -790,7 +839,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 }
 .kontakt__formulare > .block__notiz { margin-top: 24px; }
 .block--treffer .liste { margin-top: 0; }
-.seite__text .inhalt > p, .seite__text .inhalt > ul, .seite__text .inhalt > ol, .seite__text .inhalt > h2, .seite__text .inhalt > h3 { max-width: 34em; }
+.seite__text .inhalt > p, .seite__text .inhalt > ul:not(.liste), .seite__text .inhalt > ol, .seite__text .inhalt > h2, .seite__text .inhalt > h3 { max-width: 34em; }
 
 /* Seiten nutzen die Artikelspalte; Fließtext bleibt auf Lesebreite, Plugin-Inhalte (Formulare, Tabellen, Listen) dürfen breiter */
 .seite .artikel__titel { font-size: 28px; }
