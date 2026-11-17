@@ -780,7 +780,9 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .schlagworte__titel { color: var(--leise); font-size: 13px; font-weight: 600; }
 .schlagworte a { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; min-width: 44px; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
 .schlagworte a:hover { color: var(--rot); }
-.teilen { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--tinte); }
+/* Teilen: der WhatsApp-Knopf in einer eigenen Zeile, darunter die übrigen Wege in einer ruhigen Zeile */
+.teilen { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--tinte); }
+.teilen__links { display: flex; flex-wrap: wrap; align-items: center; gap: 0 20px; margin-top: 8px; }
 .teilen .textlink { min-width: 44px; justify-content: center; }
 .knopf-text { padding: 0; border: 0; background: none; cursor: pointer; }
 .autor { margin-top: 24px; font-size: 15px; line-height: 1.5; color: var(--leise); }
@@ -809,12 +811,19 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .artikel__figur { margin-top: 12px; }
   .artikel__text { margin-top: 36px; }
   .inhalt { font-size: 19px; }
-  /* mit Werbeplatz 02: Textspalte und Anzeige nebeneinander, der Kopf auf der Kante des Texts */
-  .artikel--mit-rand .artikel__haupt { display: grid; grid-template-columns: 560px 300px; column-gap: 48px; justify-content: center; align-items: start; }
-  .artikel--mit-rand .artikel__text { margin-inline: 0; }
-  .artikel--mit-rand .artikel__kopf { margin-inline: max(0px, (100% - 908px) / 2) auto; }
-  .artikel--mit-rand .artikel__rand { display: block; margin-top: 36px; position: sticky; top: calc(var(--band-hoehe) + 24px); }
+  /* mit Werbeplatz 02: Kopf und Text bleiben in der Mitte; bis 1279 px steht die Anzeige nach dem Bild */
+  .artikel--mit-rand .artikel__haupt { display: flex; flex-direction: column; }
+  .artikel--mit-rand .artikel__text { width: 100%; }
+  .artikel--mit-rand .artikel__rand { display: block; order: -1; align-self: center; margin-top: 36px; }
   .weiterlesen { margin-top: 64px; }
+}
+/* ab 1280 px: die Spalte mittig (wie im Entwurf 360–920), die Anzeige rechts daneben, das Bild bleibt 1040 px */
+@media (min-width: 1280px) {
+  .artikel--mit-rand { max-width: calc(1200px + 2 * var(--rand)); }
+  .artikel--mit-rand .artikel__figur { max-width: 1040px; margin-inline: auto; }
+  .artikel--mit-rand .artikel__haupt { display: grid; grid-template-columns: minmax(0, 1fr) 560px minmax(0, 1fr); align-items: start; }
+  .artikel--mit-rand .artikel__text { grid-column: 2; grid-row: 1; }
+  .artikel--mit-rand .artikel__rand { grid-column: 3; grid-row: 1; justify-self: end; align-self: start; order: 0; position: sticky; top: calc(var(--band-hoehe) + 24px); }
 }
 
 /* ---------- Seiten: Kontakt, Suche, 404, Seiten mit Plugin-Inhalt, Production, TV ---------- */
@@ -1003,6 +1012,12 @@ body .tz-dialog::backdrop { background: oklch(0.21 0.012 255 / 0.6); }
 .ad-mobile:not(.ad-bild) .flaeche { flex: none; width: 320px; height: 50px; }
 .ad-mobile .schliessen { position: static; flex: none; width: 44px; height: 44px; border: 0; background: none; color: var(--tinte); font-size: 22px; line-height: 1; cursor: pointer; }
 .has-sticky-ad { padding-bottom: 64px; }
+/* niedriges Fenster (Handy quer, unter 500 px Höhe): keine feste Leiste, sie verdeckte zu viel vom Inhalt */
+@media (max-height: 499px) {
+  .ad-mobile, .anzeige-mobil { display: none !important; }
+  .has-sticky-ad { padding-bottom: 0; }
+}
+@media (min-width: 768px) { .anzeige-mobil { display: none; } }
 @media (min-width: 768px) {
   .ad-leaderboard .flaeche, .ad-footer .flaeche { width: 728px; height: 90px; }
   .ad-mobile { display: none !important; }
