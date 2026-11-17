@@ -971,6 +971,14 @@ body .tz-dialog::backdrop { background: oklch(0.21 0.012 255 / 0.6); }
 .fuss__spalte li a { display: flex; align-items: center; min-height: 44px; color: var(--tinte); }
 .fuss__spalte li a:hover { color: var(--rot); }
 .fuss__nachweise { margin-top: 28px; }
+.fuss__nachweise summary {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 44px;
+  border-bottom: 1px solid var(--linie); font-size: 13px; font-weight: 600; color: var(--leise); cursor: pointer; list-style: none;
+}
+.fuss__nachweise summary::-webkit-details-marker { display: none; }
+.fuss__nachweise summary::after { content: "+"; font-size: 18px; font-weight: 400; color: var(--tinte); }
+.fuss__nachweise[open] summary::after { content: "\2212"; }
+.fuss__nachweise summary:hover { color: var(--tinte); }
 .nachweise { font-size: 13px; line-height: 1.4; color: var(--leise); }
 .nachweise li { padding: 6px 0; border-bottom: 1px solid var(--linie); overflow-wrap: anywhere; }
 .nachweise a, .artikel__nachweis a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
