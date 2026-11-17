@@ -19,7 +19,7 @@ Formular. Stand je Punkt hier nachtragen.
 | 11 | Wer bei KBS welche Rolle im Cockpit bekommt (`admin`, `redaktion`, `leser`); die Person für die verbindliche Abnahme | Cockpit, Abnahme (§7, §9) | Abnahme | offen |
 | 12 | **Konten auf KBS anlegen, damit alle laufenden Kosten beim Kunden liegen** (Luis, 13.11.: „Wir dürfen nicht selbst die API-Kosten zahlen“): Anthropic (Konsole, Zahlungsmittel, Ausgabenlimit; Schlüssel für die Agenten-Redaktion), Google AI Studio (Gemini, nur falls KI-Symbolbilder freigegeben werden), Meta (siehe 9), Stripe (siehe 8), optional Pexels. Freigabe der laufenden Kosten (§3 Abs. 2). Die Schlüssel trägt Luis in Coolify ein, nie in den Chat | §3 Abs. 2 | Betrieb der Agenten mit Modell, Nachrecherche und zweite Prüfung | offen (Tor B1) |
 | 13 | Umschalten der Domain tamil.de | Livegang (Tor B3) | Livegang; danach beginnt die Betreuung | offen |
-| 14 | Bildrechte: Nachweis für eigene Archiv- und Pressebilder, die automatisch verwendet werden sollen | Bildkette des Radars, Social | automatische Nutzung solcher Bilder | offen |
+| 14 | Bildrechte: Nachweis für eigene Archiv- und Pressebilder, die automatisch verwendet werden sollen. Dazu ausdrücklich das Konzertfoto von A.R. Rahman (Archiv tamil.de, Medien-ID 2424, Beitrag „A.R.Rahman Live mit dir!“), das die Eigenanzeige „Live mit dir!“ zeigt (`wordpress/plugins/tamil-site/assets/img/anzeigen/production.webp`): Wer hat es aufgenommen, darf tamil.de es für Werbung in eigener Sache nutzen, welcher Nachweis gehört dazu? Bis dahin steht „Foto: Archiv Tamil.de“ | Bildkette des Radars, Social, Eigenanzeige „Live mit dir!“ | automatische Nutzung solcher Bilder; Livegang der Eigenanzeige | offen |
 
 ## Schon geklärt
 
