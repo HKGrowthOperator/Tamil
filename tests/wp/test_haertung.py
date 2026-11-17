@@ -223,6 +223,38 @@ def test_admin_formular_schaltet_baustein_ohne_daten_nicht_ein(wp_cli, wp_sitzun
     assert ohne_leere(json.loads(wp_cli(lesen))) == ohne_leere(json.loads(vorher)), "übrige Einstellungen bleiben beim Speichern unverändert"
 
 
+@pytest.fixture
+def weiterleitungen_sichern(wp_cli):
+    """Weiterleitungen (CSV und Tabelle) vor dem Test merken und danach genau so zurückschreiben."""
+    alt = wp_cli("echo base64_encode( wp_json_encode( array( get_option( 'tamil_site_redirects_csv', null ), get_option( 'tamil_site_redirects', null ) ) ) );")
+    yield
+    wp_cli(f"$a = json_decode( base64_decode( '{alt}' ), true );"
+           " foreach ( array( 'tamil_site_redirects_csv', 'tamil_site_redirects' ) as $i => $n ) {"
+           " if ( null === $a[ $i ] ) { delete_option( $n ); } else { update_option( $n, $a[ $i ], false ); } }")
+
+
+def test_speichern_behaelt_weiterleitungen_ohne_csv(wp_cli, wp_sitzung, weiterleitungen_sichern):
+    """B5 Nebenbefund 1: Steht nur die Tabelle (Übernahme ohne CSV), leert das Speichern des Formulars sie nicht. Das
+    Formular zeigt die aktive Tabelle als CSV, und fehlt das Feld ganz (manipuliert), bleibt alles, wie es war."""
+    tabelle = {"/category/alt-probe/": "/category/events/", "/seite-alt-probe/": "/kontakt/"}
+    wp_cli("delete_option( 'tamil_site_redirects_csv' );"
+           f" update_option( 'tamil_site_redirects', json_decode( '{json.dumps(tabelle)}', true ), false );")
+    lesen = "echo wp_json_encode( get_option( 'tamil_site_redirects' ) );"
+    seite = f"{URL}/wp-admin/options-general.php?page=tamil-site"
+    html = wp_sitzung.get(seite, timeout=30).text
+    felder = _formularfelder(html, "options.php")
+    csv = dict(felder).get("tamil_site_redirects_csv", "")
+    assert "/category/alt-probe/" in csv and "/seite-alt-probe/" in csv, "Formular zeigt die aktive Tabelle"
+    assert wp_sitzung.post(f"{URL}/wp-admin/options.php", data=felder, allow_redirects=False, timeout=30).status_code == 302
+    assert _json(wp_cli, lesen) == tabelle, "Speichern des ganzen Formulars behält die Weiterleitungen"
+    r = requests.get(f"{URL}/category/alt-probe/", allow_redirects=False, timeout=30)
+    assert r.status_code == 301 and r.headers["Location"].rstrip("/").endswith("/category/events")
+
+    ohne = [(n, w) for n, w in _formularfelder(wp_sitzung.get(seite, timeout=30).text, "options.php") if n != "tamil_site_redirects_csv"]
+    assert wp_sitzung.post(f"{URL}/wp-admin/options.php", data=ohne, allow_redirects=False, timeout=30).status_code == 302
+    assert _json(wp_cli, lesen) == tabelle, "fehlt das Feld, bleiben die Weiterleitungen"
+
+
 # --- 3. Umschreibregeln erst, wenn alle Beitragstypen registriert sind ----------------------------------------------
 
 def _wp(*args: str) -> str:

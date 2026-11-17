@@ -150,8 +150,9 @@ def _drossel_leeren() -> None:
 
 
 @pytest.fixture
-def wb(wp, wp_cli):
-    """Werbung an, Fake-Stripe als mu-plugin, Testpreise, eigene Seite; danach alles zurück."""
+def wb(wp, wp_cli, seite_production):
+    """Werbung an, Fake-Stripe als mu-plugin, Testpreise, eigene Seite; danach alles zurück. Die Seite „production“
+    braucht die Eigenanzeige des Leaderboards als Ziel (ohne Ziel bleibt der Platz nach dem Ende einer Buchung leer)."""
     mu = _wp_dir() / "wp-content" / "mu-plugins"
     mu.mkdir(exist_ok=True)
     geheimnis = "whsec_test_" + secrets.token_hex(16)
@@ -227,13 +228,55 @@ def test_schalter_aus_nichts_oeffentlich(wb):
 
 
 def test_preisseite_platzhalter_und_naechster_termin(wb):
+    """Alle sechs Plätze der Festlegung F3; ohne Preis von KBS „auf Anfrage“ (kein erfundener Preis)."""
     html = requests.get(wb.seite, timeout=30).text
-    assert "Preis folgt" in html and "Platzhalter" in html
+    assert "auf Anfrage" in html and "Preise auf Anfrage" in html and "Preis folgt" not in html
+    for name in ("Leaderboard", "Half Page", "Im Artikel", "Billboard", "Fuß", "Mobil"):
+        assert f'<tr><th scope="row">{name}</th>' in html, name
     assert "200,00 €" in html  # sidebar 7 Tage
+    zeile = re.search(r"<tr><th scope=\"row\">Billboard</th>.*?</tr>", html, re.S).group(0)
+    assert zeile.count("auf Anfrage") == 2 and "€" not in zeile  # Preis und Termin, keine Tage-Liste ohne Preis
+    assert "Online-Zahlung noch nicht eingerichtet" not in html  # Stripe (Fake) ist eingerichtet
     zeile = re.search(r"<tr><th scope=\"row\">Half Page</th>.*?</tr>", html, re.S).group(0)
     assert "wb=buchen" in zeile and re.search(r"\d\d\.\d\d\.\d{4}", zeile)
     zeile = re.search(r"<tr><th scope=\"row\">Billboard</th>.*?</tr>", html, re.S).group(0)
     assert "wb=buchen" not in zeile  # ohne Preis nicht buchbar
+
+
+@pytest.fixture
+def ohne_stripe(wp, wp_cli):
+    """Werbung an, Preise gesetzt, aber ohne Stripe-Schlüssel (kein Fake): so steht das Testsystem bis KBS liefert."""
+    if _php("echo wp_json_encode( tamil_site_stripe_bereit() );") is True:
+        pytest.skip("Stripe-Schlüssel sind in dieser Umgebung gesetzt")
+    alt = _php("echo wp_json_encode( array( get_option( 'tamil_site_funktionen', array() ), get_option( 'tamil_site_werbung_angebote', null ) ) );")
+    seite_id = _php(f"""tamil_site_upgrade_ausfuehren();
+        $f = (array) get_option( 'tamil_site_funktionen', array() ); $f['werbung'] = true; update_option( 'tamil_site_funktionen', $f );
+        update_option( 'tamil_site_werbung_angebote', array( 'laufzeiten' => array( 7 ), 'vorlauf' => 2, 'bedingungen_fassung' => 'Test 1',
+          'plaetze' => array( 'sidebar' => array( 'aktiv' => true, 'preise' => array( 7 => 20000 ) ) ) ), false );
+        $alt = get_page_by_path( '{SEITE}', OBJECT, 'page' ); if ( $alt ) {{ wp_delete_post( $alt->ID, true ); }}
+        echo wp_json_encode( wp_insert_post( array( 'post_type' => 'page', 'post_status' => 'publish', 'post_title' => 'Werben (Test)',
+          'post_name' => '{SEITE}', 'post_content' => '[tamil_werbung]' ) ) );""")
+    yield f"{URL}/{SEITE}/"
+    _php(f"""wp_delete_post( {int(seite_id)}, true );
+        update_option( 'tamil_site_funktionen', json_decode( '{json.dumps(alt[0] or {})}', true ) ?: array() );
+        $a = json_decode( '{json.dumps(alt[1])}', true ); if ( null === $a ) {{ delete_option( 'tamil_site_werbung_angebote' ); }} else {{ update_option( 'tamil_site_werbung_angebote', $a, false ); }}""")
+
+
+def test_ohne_stripe_klarer_stand_statt_fehler(ohne_stripe):
+    """Ohne Schlüssel: „Online-Zahlung noch nicht eingerichtet“ auf der Preisseite und im Buchungsweg, kein Buchen-Knopf,
+    kein Formular für Kundendaten und keine Reservierung."""
+    html = requests.get(ohne_stripe, timeout=30).text
+    assert "Online-Zahlung noch nicht eingerichtet" in html and "wb=buchen" not in html
+    assert "200,00 €" in html  # der Preis steht trotzdem da
+    for adresse in (f"{ohne_stripe}?wb=buchen", f"{ohne_stripe}?wb=buchen&platz=sidebar&laufzeit=7"):
+        html = requests.get(adresse, timeout=30).text
+        assert "Online-Zahlung noch nicht eingerichtet" in html, adresse
+        assert 'name="tamil_wb_aktion" value="buchen"' not in html and "Freie Termine zeigen" not in html
+        assert "kritischer Fehler" not in html and "Fatal" not in html
+    assert _php("echo wp_json_encode( tamil_site_werbung_buchbar( 'sidebar', 7 ) );") is False
+    fehler = _php("echo wp_json_encode( is_wp_error( tamil_site_werbung_reservieren( array( 'platz' => 'sidebar', 'laufzeit' => 7,"
+                  " 'start' => tamil_site_werbung_fruehester_start() ) ) ) );")
+    assert fehler is True
 
 
 # --- Aktiv-Funktion --------------------------------------------------------------------------------------------------

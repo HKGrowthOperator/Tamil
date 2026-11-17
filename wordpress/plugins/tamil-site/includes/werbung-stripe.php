@@ -38,6 +38,14 @@ function tamil_site_stripe_bereit(): bool {
 }
 
 /**
+ * Kann die Website gerade eine Zahlung starten (Schlüssel da, mit einem echten Schlüssel auch die Bedingungen)? Ohne
+ * das ist kein Platz online buchbar; die Seite „Werben“ sagt dann „Online-Zahlung noch nicht eingerichtet“.
+ */
+function tamil_site_werbung_zahlung_bereit(): bool {
+	return tamil_site_stripe_bereit() && tamil_site_stripe_checkout_erlaubt( tamil_site_stripe_wert( 'STRIPE_SECRET_KEY' ) );
+}
+
+/**
  * Testmodus? Folgt aus dem Schlüssel.
  */
 function tamil_site_stripe_testmodus(): bool {

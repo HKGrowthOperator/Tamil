@@ -85,3 +85,16 @@ def funktion(wp_cli):
 
     yield an
     _cli(f"update_option( 'tamil_site_funktionen', json_decode( '{alt or '[]'}', true ) ?: array() );")
+
+
+@pytest.fixture
+def seite_production(wp_cli):
+    """Seite „production“ (Ziel der Eigenanzeige „Live mit dir!“) für die Dauer eines Tests; nur angelegt, wenn sie
+    fehlt, und dann danach wieder entfernt."""
+    neu = _cli("$s = get_page_by_path( 'production', OBJECT, 'page' );"
+               " if ( $s && 'publish' === $s->post_status ) { echo 0; } else {"
+               " echo (int) wp_insert_post( array( 'post_type' => 'page', 'post_status' => 'publish', 'post_name' => 'production',"
+               " 'post_title' => 'Live mit dir! (Test)', 'post_content' => '' ) ); }").strip()
+    yield
+    if neu not in ("", "0"):
+        _cli(f"wp_delete_post( {int(neu)}, true );")
