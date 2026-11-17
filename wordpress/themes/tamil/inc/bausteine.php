@@ -9,12 +9,17 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Bildnachweise der aktuellen Seite sammeln (der Fuß zeigt sie gesammelt) oder abrufen.
  *
- * @param string $nachweis Nachweis zum Merken als escaptes HTML (Links auf Dateiseite und Lizenz); leer = nur abrufen.
+ * @param string $nachweis Nachweis zum Merken als escaptes HTML (Links auf Dateiseite und Lizenz) oder als reiner
+ *                         Text (wird über tamil_nachweis_bauen() verlinkt); leer = nur abrufen.
  * @return string[]
  */
 function tamil_nachweise( string $nachweis = '' ): array {
 	static $liste = array();
 	$nachweis     = trim( $nachweis );
+	if ( '' !== $nachweis && ! str_contains( $nachweis, '<' ) ) {
+		// Nachweis als reiner Text (etwa aus dem Plugin): Lizenz verlinken, Herkunft und Zuschnitt wie überall
+		$nachweis = tamil_nachweis_bauen( html_entity_decode( $nachweis, ENT_QUOTES, 'UTF-8' ) );
+	}
 	if ( '' !== $nachweis && ! in_array( $nachweis, $liste, true ) ) {
 		$liste[] = $nachweis;
 	}

@@ -243,15 +243,21 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .r43 { aspect-ratio: 4 / 3; }
 .r83 { aspect-ratio: 8 / 3; }
 .rahmen img.bild--breit { object-position: 50% 50%; }
-/* Symbolbild aus dem Rubrik-Pool: Schild oben rechts im Rahmen; in sehr kleinen Rahmen (unter 150 px) entfällt es,
-   dort steht „Symbolbild“ im Alternativtext und mit vollem Nachweis im Fuß */
-.rahmen:has(> .symbolbild) { container-type: inline-size; }
+/* Symbolbild (Pool oder redaktionell gekennzeichnet): Schild oben rechts im Rahmen; in kleinen Rahmen (unter 150 px)
+   nur „S“, der volle Hinweis steht im Alternativtext, in der Bildunterschrift und im Fuß */
+.rahmen:has(> .symbolbild), .artikel__figur:has(> .symbolbild) { container-type: inline-size; }
+.artikel__figur:has(> .symbolbild) { position: relative; }
 .symbolbild {
   position: absolute; top: 0; right: 0; z-index: 1;
   padding: 2px 7px; font-size: 12px; line-height: 1.4; font-weight: 600;
   background: oklch(0.21 0.012 255 / 0.8); color: var(--hell); pointer-events: none;
 }
-@container (max-width: 149px) { .symbolbild { display: none; } }
+.symbolbild__kurz { display: none; }
+@container (max-width: 149px) {
+  .symbolbild { padding: 0 5px; font-size: 11px; }
+  .symbolbild__lang { display: none; }
+  .symbolbild__kurz { display: inline; }
+}
 
 /* Dachzeile „Rubrik | Datum“, ein Format überall */
 .meta { font-size: 13px; line-height: 1.35; color: var(--leise); margin-bottom: 6px; }

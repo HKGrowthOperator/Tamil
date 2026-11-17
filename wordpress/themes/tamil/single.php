@@ -27,7 +27,6 @@ while ( have_posts() ) :
 		array(
 			'eager'  => true,
 			'klasse' => 'artikel__bild',
-			'schild' => false,
 			'sizes'  => '(min-width: 1024px) 1040px, (min-width: 600px) 600px, 100vw',
 		)
 	);

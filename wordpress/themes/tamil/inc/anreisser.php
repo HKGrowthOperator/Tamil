@@ -216,6 +216,7 @@ function tamil_kacheln( array $kacheln, string $label ): string {
 				'sofort' => true,
 				'schild' => false,
 				'alt'    => false,
+				'sizes'  => '160px',
 			)
 		);
 		$html .= sprintf(
@@ -314,6 +315,12 @@ function tamil_grafik_leer( string $titel, string $satz, string $url, string $ru
 		$ebene,
 		esc_html( $titel ),
 		esc_html( $satz ),
-		tamil_pool_img( $rubrik, array( 'n' => 1 ) )
+		tamil_pool_img(
+			$rubrik,
+			array(
+				'n'     => 1,
+				'sizes' => '(min-width: 1024px) 380px, (min-width: 600px) 50vw, 100vw',
+			)
+		)
 	);
 }
