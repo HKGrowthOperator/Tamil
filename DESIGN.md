@@ -69,9 +69,13 @@ gemeinsamer Kante für Kopf, Bild und Text), höchstens 70 Zeichen je Zeile.
   Kopf, Fußlisten, Formulare und reine Textseiten. Bildkette an einer Stelle (`inc/bildkette.php`): eigenes Foto (Titelkarten nie;
   Bänder über 2,5:1 werden beschnitten, Nachweis „zugeschnitten“) → erstes Bild aus dem Text ab 600 px → bei Kino und
   Terminen das Foto eines anderen Beitrags zum selben Film bzw. zur selben Veranstaltung (ohne Schild) → Symbolbild
-  aus dem Rubrik-Pool (Commons, je Beitrag fest gewählt, Schild „Symbolbild“ oben rechts ab 150 px Rahmenbreite,
-  voller Nachweis mit Links im Fuß und unter dem Artikelbild). Prüfung: `node wordpress/dev/bilder_pflicht.mjs`.
-- **Bild mit Titel im Bild:** Aufmacher und große Kacheln; Fokus als Rahmen nach innen.
+  aus dem Rubrik-Pool (Commons; je Seite reihum vergeben, damit kein Ersatzbild auf einer Seite doppelt erscheint;
+  Kino und Events mit eigenen Pools, nie Kirchen oder Rathäuser für Kino und Entertainment; Schild „Symbolbild“
+  oben rechts ab 150 px Rahmenbreite, darunter ein „S“; „Symbolbild,“ vor dem Nachweis). Nachweise entstehen an
+  einer Stelle (`tamil_nachweis_bauen()`): Urheber verlinkt auf die Dateiseite, Lizenz auf den Lizenztext,
+  „zugeschnitten“ bei freien Lizenzen und Bändern. Prüfung: `node wordpress/dev/bilder_pflicht.mjs`.
+- **Bild mit Titel im Bild:** Aufmacher und große Kacheln; das Format ist nur Mindesthöhe, längere Titel machen die
+  Kachel höher statt abzuschneiden; Fokus als Rahmen nach innen.
 - **Rubrikkacheln:** Navigation mit Bild (Foto des neuesten Beitrags der Rubrik, sonst das erste Bild ihres Pools),
   Name im Bild.
 - **Bildkacheln auf Dunkel** (`data-grafik`): Kino mit Bild 4:3 links (Film, Zahl der Kinos, Städte) und Termine mit
@@ -87,11 +91,11 @@ gemeinsamer Kante für Kopf, Bild und Text), höchstens 70 Zeichen je Zeile.
 
 - **Startseite:** Aufmacher 4:3 (am Desktop daneben „Weitere Meldungen“), vier Nebenstücke, Rubrikkacheln,
   Werbeplatz 01, „Diese Woche“ (Kino groß und klein, „Im Kino“, „Termine“), „Küche“ (groß 16:9, klein 8:3 auf einer
-  Kante), Billboard, Rubrikblöcke mit je vier Nebenstücken. „Diese Woche“ zeigt nur Aktuelles: Filme mit Spieltagen
+  Kante; unter 1024 px Titel unter dem Bild, am Tablet die große Kachel oben), Billboard, Rubrikblöcke mit je vier Nebenstücken. „Diese Woche“ zeigt nur Aktuelles: Filme mit Spieltagen
   ab heute, Kino-Beiträge der letzten 30 Tage, Termine der nächsten 14 Tage (sonst die nächsten drei); was dort
   steht, kommt oben nicht noch einmal.
 - **Artikel:** Dachzeile, Titel, Vorspann, Leiste mit Lesezeit und „Per WhatsApp teilen“, Bild (randlos am Handy) mit
-  Nachweis, Text, Termin als Angaben, Quelle, Schlagworte, Teilen, Redaktion; Werbeplatz 02 rechts ab 1024 px;
+  Nachweis, Text, Termin als Angaben, Quelle, Schlagworte, Teilen, Redaktion; Textspalte mittig wie im Entwurf; Werbeplatz 02 ab 1280 px rechts daneben, darunter nach dem Bild;
   „Weiterlesen“ mit vier Nebenstücken.
 - **Rubrik:** Seitenkopf, Aufmacher mit „Neu in der Rubrik“ daneben, Liste mit Bild und Vorspann, Seiten, Kacheln.
 - **Kino:** Seitenkopf, dunkler Bereich „Im Programm“, „Nach Stadt“ (Tabelle, jede Zeile mit dem Bild des Films),
