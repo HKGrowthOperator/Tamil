@@ -54,7 +54,11 @@ Passwörter, Tokens und Schlüssel liegen ausschließlich in den Coolify-Variabl
 2. `python tools/coolify.py deploy <uuid>` startet den Deploy und wartet bis `finished` oder `failed`, zeigt die
    letzten Log-Zeilen.
 3. Prüfen: Radar `curl -fsS https://tamil.hk-growthoperator.de/gesund`; Website `curl -fsSI <domain>/`.
-4. Bei Fehler: Logs lesen, beheben, erneut. **Rollback:** in Coolify den letzten grünen Deploy erneut ausrollen
+4. Nach einem Theme-Update mit neuen Bildgrößen (zuletzt `tamil-320`/`tamil-640`, Theme 3.1): einmalig
+   `wp media regenerate --only-missing --yes` als `www-data` im Container, damit der Bestand die kleinen Größen für
+   srcset bekommt (neue Uploads haben sie automatisch, verkleinert als WebP). Läuft lange; nicht nötig für die
+   Funktion, nur für das Tempo.
+5. Bei Fehler: Logs lesen, beheben, erneut. **Rollback:** in Coolify den letzten grünen Deploy erneut ausrollen
    (Deployments → Redeploy) oder den fehlerhaften Commit per PR zurücknehmen.
 
 ## Variablen setzen (Stolperfallen)
