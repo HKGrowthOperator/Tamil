@@ -134,14 +134,24 @@ function tamil_site_werbung_html_angebote(): string {
  * Formular „Buchung wiederfinden“.
  */
 function tamil_site_werbung_html_wiederfinden(): string {
-	$alt = tamil_site_werbung_zustand()['alt'];
+	$z    = tamil_site_werbung_zustand();
+	$alt  = $z['alt'];
+	$ff   = (array) ( $z['feldfehler'] ?? array() );
+	$feld = static function ( string $name, string $id, string $label, string $typ, string $wert, string $auto ) use ( $ff ): string {
+		$fehler = (string) ( $ff[ $name ] ?? '' );
+		return '<label for="' . esc_attr( $id ) . '">' . esc_html( $label ) . '</label>'
+			. '<input type="' . esc_attr( $typ ) . '" id="' . esc_attr( $id ) . '" name="' . esc_attr( $name ) . '" required autocomplete="' . esc_attr( $auto ) . '" value="' . esc_attr( $wert ) . '"'
+			. ( '' !== $fehler ? ' aria-invalid="true" aria-describedby="' . esc_attr( $id . '-fehler' ) . '"' : '' ) . '>'
+			. ( '' !== $fehler ? '<span class="wb-feldfehler" id="' . esc_attr( $id . '-fehler' ) . '">' . esc_html( $fehler ) . '</span>' : '' );
+	};
 	return '<section class="wb-wiederfinden"><h2>' . esc_html__( 'Buchung wiederfinden', 'tamil-site' ) . '</h2>'
 		. '<p>' . esc_html__( 'Link zur Buchung verloren? Mit Buchungsnummer und E-Mail-Adresse erhalten Sie hier einen neuen Link; der alte gilt dann nicht mehr.', 'tamil-site' ) . '</p>'
-		. '<form class="wb-formular" method="post" action="' . esc_url( tamil_site_werbung_seite_url() ) . '">'
+		// novalidate: eigene deutsche Fehlertexte am Feld statt der Meldungen des Browsers (Prüfung 17.11., P2).
+		. '<form class="wb-formular" method="post" action="' . esc_url( tamil_site_werbung_seite_url() ) . '" novalidate>'
 		. wp_nonce_field( 'tamil_wb_wiederfinden', '_wpnonce', false, false )
 		. '<input type="hidden" name="tamil_wb_aktion" value="wiederfinden">'
-		. '<label for="wb-such-nummer">' . esc_html__( 'Buchungsnummer', 'tamil-site' ) . '</label><input type="text" id="wb-such-nummer" name="nummer" required autocomplete="off" value="' . esc_attr( (string) ( $alt['nummer'] ?? '' ) ) . '">'
-		. '<label for="wb-such-email">' . esc_html__( 'E-Mail-Adresse der Buchung', 'tamil-site' ) . '</label><input type="email" id="wb-such-email" name="email" required autocomplete="email">'
+		. $feld( 'nummer', 'wb-such-nummer', __( 'Buchungsnummer', 'tamil-site' ), 'text', (string) ( $alt['nummer'] ?? '' ), 'off' )
+		. $feld( 'email', 'wb-such-email', __( 'E-Mail-Adresse der Buchung', 'tamil-site' ), 'email', '', 'email' )
 		. '<p><button type="submit">' . esc_html__( 'Buchung anzeigen', 'tamil-site' ) . '</button></p></form></section>';
 }
 
