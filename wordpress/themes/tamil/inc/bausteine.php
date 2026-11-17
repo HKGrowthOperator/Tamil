@@ -310,6 +310,7 @@ function tamil_kino_orte_tafel( array $filme, bool $bilder = false ): void {
 	};
 	uksort( $orte, static fn( $a, $b ) => $rang( $a ) <=> $rang( $b ) );
 	$ein_film = 1 === count( $filme ); // bei einem Film steht er schon im Titel; der Name je Zeile entfällt
+	$zeile    = 0;
 	echo '<div class="tafel-wrap"><table class="tafel orte' . ( $bilder ? ' tafel--bilder' : '' ) . '"><thead><tr><th scope="col">' . esc_html__( 'Stadt', 'tamil' ) . '</th><th scope="col">' . esc_html( $ein_film ? __( 'Kino und Termin', 'tamil' ) : __( 'Film, Kino und Termin', 'tamil' ) ) . '</th></tr></thead>';
 	foreach ( $orte as $land => $staedte ) {
 		ksort( $staedte, SORT_LOCALE_STRING );
@@ -318,7 +319,16 @@ function tamil_kino_orte_tafel( array $filme, bool $bilder = false ): void {
 			foreach ( $eintraege as $e ) {
 				echo '<tr><th scope="row" class="stadt">' . esc_html( $stadt ) . '</th><td class="was">';
 				if ( $bilder ) {
-					echo '<span class="tafel__bild rahmen r169">' . tamil_bild( $e['post'], array( 'sizes' => '96px' ) ) . '</span><span class="tafel__text">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_bild()
+					// Zeigt der Film ein eigenes Bild, steht es in jeder seiner Zeilen; ein Symbolbild wechselt je Zeile (reihum
+					// aus dem Kino-Pool), damit nicht dasselbe Ersatzbild untereinander steht
+					$bild = 'pool' === tamil_bildwahl( $e['post'] )['art'] ? tamil_pool_img(
+						'kino',
+						array(
+							'n'     => $e['post'] + ( ++$zeile ),
+							'sizes' => '96px',
+						)
+					) : tamil_bild( $e['post'], array( 'sizes' => '96px' ) );
+					echo '<span class="tafel__bild rahmen r169">' . $bild . '</span><span class="tafel__text">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_bild() bzw. tamil_pool_img()
 				}
 				echo $ein_film ? '' : '<span class="film">' . esc_html( '„' . $e['film'] . '“' ) . '</span>';
 				echo '<span class="unter">' . esc_html( trim( $e['kino'] . ( '' !== $e['termin'] ? ', ' . $e['termin'] : '' ), ', ' ) );
