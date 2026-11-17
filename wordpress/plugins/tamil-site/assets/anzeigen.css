@@ -50,10 +50,10 @@
 	display: flex;
 	flex-direction: column;
 	justify-content: flex-end;
-	align-items: flex-start;
+	align-items: stretch;
 	gap: 0;
 	margin: 0;
-	padding: 16px;
+	padding: 0;
 	border: 0;
 	text-align: left;
 }
@@ -71,15 +71,8 @@
 	border-radius: 0;
 }
 
-/* der einzige Verlauf: unter der Schrift, von durchsichtig nach Tinte */
-.ad.ad-bild .anzeige--bild::before {
-	content: "";
-	position: absolute;
-	inset: 0;
-	z-index: 1;
-	background-image: var(--anz-verlauf);
-}
-
+/* der einzige Verlauf: unter der Schrift, von durchsichtig nach Tinte. Hohe Formate wie „Titel im Bild“: der Verlauf
+   liegt nur hinter dem Textblock unten; schmale Formate: seitlich über die ganze Höhe (::before, siehe unten). */
 .ad.ad-bild .anzeige--bild .text {
 	position: relative;
 	z-index: 2;
@@ -87,6 +80,12 @@
 	gap: 4px;
 	flex: none;
 	min-width: 0;
+	max-width: none;
+	padding: 48px 16px 16px;
+	background-image: var(--anz-verlauf);
+}
+
+.ad.ad-bild .anzeige--bild .text > * {
 	max-width: 36rem;
 }
 
@@ -128,7 +127,7 @@
 	position: absolute;
 	right: 8px;
 	bottom: 4px;
-	z-index: 2;
+	z-index: 3;
 	font-size: 11px;
 	line-height: 1.3;
 	color: var(--anz-hell-leise);
@@ -166,13 +165,25 @@
 .ad.ad-bild.ad-footer .anzeige--bild,
 .ad.ad-bild.ad-mobile .anzeige--bild {
 	justify-content: center;
+	align-items: flex-start;
 	padding: 10px 16px;
 }
 
 .ad.ad-bild.ad-leaderboard .anzeige--bild::before,
 .ad.ad-bild.ad-footer .anzeige--bild::before,
 .ad.ad-bild.ad-mobile .anzeige--bild::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 1;
 	background-image: var(--anz-verlauf-links);
+}
+
+.ad.ad-bild.ad-leaderboard .anzeige--bild .text,
+.ad.ad-bild.ad-footer .anzeige--bild .text,
+.ad.ad-bild.ad-mobile .anzeige--bild .text {
+	padding: 0;
+	background: none;
 }
 
 .ad.ad-bild.ad-leaderboard .anzeige--rechts,
@@ -224,6 +235,16 @@
 
 .ad.ad-bild.ad-inarticle {
 	justify-content: center;
+}
+
+.ad.ad-bild.ad-billboard .anzeige--bild .claim,
+.ad.ad-bild.ad-inarticle .anzeige--bild .claim {
+	font-size: 20px;
+}
+
+.ad.ad-bild.ad-billboard .anzeige--bild .text,
+.ad.ad-bild.ad-inarticle .anzeige--bild .text {
+	padding-top: 40px;
 }
 
 /* ---------- Half Page ---------- */
@@ -278,8 +299,12 @@
 		--anz-format: 970 / 250;
 	}
 
-	.ad.ad-bild.ad-billboard .anzeige--bild {
-		padding: 20px 24px;
+	.ad.ad-bild.ad-billboard .anzeige--bild .text {
+		padding: 56px 24px 20px;
+	}
+
+	.ad.ad-bild.ad-billboard .anzeige--bild .claim {
+		font-size: 24px;
 	}
 
 	.ad.ad-bild.ad-billboard .anzeige--bild .sub {
@@ -308,8 +333,8 @@
 
 @media (min-width: 1024px) {
 
-	.ad.ad-bild.ad-billboard .anzeige--bild {
-		padding: 24px 32px;
+	.ad.ad-bild.ad-billboard .anzeige--bild .text {
+		padding: 64px 32px 24px;
 	}
 
 	.ad.ad-bild.ad-billboard .anzeige--bild .claim {
@@ -327,11 +352,21 @@
 
 	.ad.ad-bild.ad-inarticle .anzeige--bild {
 		justify-content: center;
+		align-items: flex-start;
 		padding: 8px 20px;
 	}
 
 	.ad.ad-bild.ad-inarticle .anzeige--bild::before {
+		content: "";
+		position: absolute;
+		inset: 0;
+		z-index: 1;
 		background-image: var(--anz-verlauf-links);
+	}
+
+	.ad.ad-bild.ad-inarticle .anzeige--bild .text {
+		padding: 0;
+		background: none;
 	}
 
 	.ad.ad-bild.ad-inarticle .anzeige--rechts {
