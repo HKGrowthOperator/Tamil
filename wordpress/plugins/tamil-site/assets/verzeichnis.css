@@ -129,3 +129,10 @@
 		transform: scale(1.03);
 	}
 }
+
+/* Name des Eintrags: 44 px tippbar, ohne die Zeile zu strecken (Prüfung tools/shots.mjs bei 820 px) */
+.vz-eintrag .vz-name {
+	display: inline-block;
+	padding-block: 11px;
+	margin-block: -11px;
+}
