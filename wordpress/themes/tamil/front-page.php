@@ -69,7 +69,7 @@ $tamil_aufmacher = tamil_anr_imbild(
 // Werbeplatz 01 unter dem ersten Abschnitt (nicht über dem Aufmacher).
 tamil_leaderboard( 'innen anzeige-zwischen' );
 
-get_template_part( 'template-parts/home/woche', null, array( 'ids' => $tamil_a['woche'] ) );
+get_template_part( 'template-parts/home/woche', null, array( 'woche' => $tamil_a['woche'] ) );
 
 if ( $tamil_a['kueche'] ) {
 	get_template_part( 'template-parts/home/kueche', null, array( 'ids' => $tamil_a['kueche'] ) );

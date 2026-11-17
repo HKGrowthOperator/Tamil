@@ -1,7 +1,8 @@
 <?php
 /**
- * Auswahl für Startseite und „Weiterlesen“. Ergebnisse der Startseite sind ID-Listen im Transient (10 Minuten) und
- * werden bei jeder Statusänderung eines Beitrags verworfen – die Startseite kostet so wenige Abfragen.
+ * Auswahl für Startseite, „Diese Woche“ und „Weiterlesen“. Ergebnisse der Startseite sind ID-Listen im Transient
+ * (10 Minuten, Schlüssel mit dem heutigen Datum, damit um Mitternacht nichts Vergangenes stehen bleibt) und werden bei
+ * jeder Statusänderung eines Beitrags verworfen – die Startseite kostet so wenige Abfragen.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -115,17 +116,6 @@ function tamil_start_auswahl(): array {
 	}
 	$used = array_merge( $used, $meldungen );
 
-	// Diese Woche: zwei Beiträge aus Kino mit Bild (der erste groß).
-	$woche = get_category_by_slug( 'kino' ) ? tamil_ids_mit_bild(
-		array(
-			'posts_per_page' => 12,
-			'category_name'  => 'kino',
-		),
-		$used,
-		2
-	) : array();
-	$used  = array_merge( $used, $woche );
-
 	// Küche: Rezept der Woche aus dem Customizer zuerst, dann die neuesten mit Bild.
 	$kueche = array();
 	$rezept = absint( tamil_opt( 'rezept_id' ) );
@@ -176,8 +166,53 @@ function tamil_start_auswahl(): array {
 		'kueche'    => $kueche,
 		'rubriken'  => $rubriken,
 	);
-	set_transient( 'tamil_start_auswahl', $auswahl, 10 * MINUTE_IN_SECONDS );
+	set_transient( tamil_start_schluessel(), $auswahl, 10 * MINUTE_IN_SECONDS );
 	return $auswahl;
+}
+
+/**
+ * „Diese Woche“: nur, was diese Woche zählt.
+ * - Im Kino: Filme mit Spieltagen ab heute (aus kino_fakten), höchstens zwei.
+ * - Bildkacheln groß und klein: Kino-Beiträge der letzten 30 Tage, sonst weitere Filme mit Spieltagen ab heute; nie
+ *   ältere Beiträge ohne kommenden Termin.
+ * - Termine: die kommenden der nächsten 14 Tage (höchstens drei), sonst die nächsten drei.
+ *
+ * @param int[] $ohne Schon auf der Seite verwendete Beiträge.
+ * @return array{bilder:int[],filme:array<int,array<string,mixed>>,termine:int[]}
+ */
+function tamil_woche_auswahl( array $ohne = array() ): array {
+	$heute  = current_time( 'Y-m-d' );
+	$alle   = tamil_kino_filme( 6 );
+	$filme  = array_slice( $alle, 0, 2 );
+	$bilder = array();
+	if ( get_category_by_slug( 'kino' ) ) {
+		$bilder = tamil_ids(
+			array(
+				'posts_per_page' => 2,
+				'category_name'  => 'kino',
+				'date_query'     => array( array( 'after' => wp_date( 'Y-m-d', (int) strtotime( $heute . ' -30 days' ) ) ) ),
+			),
+			array_merge( $ohne, wp_list_pluck( $filme, 'post' ) )
+		);
+	}
+	foreach ( array_slice( $alle, 2 ) as $f ) {
+		if ( count( $bilder ) < 2 && ! in_array( (int) $f['post'], $bilder, true ) && ! in_array( (int) $f['post'], $ohne, true ) ) {
+			$bilder[] = (int) $f['post'];
+		}
+	}
+	$termine = array();
+	if ( function_exists( 'tamil_site_upcoming_events' ) ) {
+		$kommend = array_values( array_diff( array_map( 'intval', tamil_site_upcoming_events( 12, array( 'fields' => 'ids' ) )->posts ), $ohne ) );
+		$grenze  = wp_date( 'Y-m-d', (int) strtotime( $heute . ' +14 days' ) );
+		$bald    = array_values( array_filter( $kommend, static fn( $id ) => substr( (string) get_post_meta( $id, 'event_datum', true ), 0, 10 ) <= $grenze ) );
+		$termine = array_slice( $bald ? $bald : $kommend, 0, 3 );
+		tamil_cache_fuellen( $termine );
+	}
+	return array(
+		'bilder'  => $bilder,
+		'filme'   => $filme,
+		'termine' => $termine,
+	);
 }
 
 /**
@@ -225,16 +260,17 @@ function tamil_kacheln_ohne( string $slug = '' ): array {
  * Cache verwerfen, sobald sich an Beiträgen oder Einstellungen etwas ändert.
  */
 function tamil_flush_auswahl(): void {
-	delete_transient( 'tamil_start_auswahl' );
+	delete_transient( tamil_start_schluessel() );
 }
 add_action( 'transition_post_status', 'tamil_flush_auswahl' );
 add_action( 'deleted_post', 'tamil_flush_auswahl' );
 add_action( 'customize_save_after', 'tamil_flush_auswahl' );
 add_action( 'update_option_sticky_posts', 'tamil_flush_auswahl' );
 add_action( 'updated_post_meta', 'tamil_flush_auswahl_meta', 10, 3 );
+add_action( 'added_post_meta', 'tamil_flush_auswahl_meta', 10, 3 );
 
 function tamil_flush_auswahl_meta( $meta_id, $post_id, $meta_key ): void {
-	if ( in_array( $meta_key, array( '_thumbnail_id', 'kino_fakten', 'event_datum' ), true ) ) {
+	if ( in_array( $meta_key, array( '_thumbnail_id', 'kino_fakten', 'event_datum', 'bild_origin', 'bild_credit' ), true ) ) {
 		tamil_flush_auswahl();
 	}
 }

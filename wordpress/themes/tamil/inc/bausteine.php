@@ -166,8 +166,8 @@ function tamil_kino_spielzeit( array $fakten ): array {
 }
 
 /**
- * Kino in Kurzform: je Beitrag mit Kinoliste Film, Städte, Zahl der Kinos, Link, Stand und Spielzeit. Listen, deren
- * Spielzeit vorbei ist, fallen weg (wie vergangene Feste).
+ * Kino in Kurzform: je Beitrag mit Kinoliste Film, Städte, Zahl der Kinos, Link, Stand und Spielzeit. Nur Listen mit
+ * Spieltagen ab heute; was vorbei ist, fällt weg (wie vergangene Feste). Geprüft werden die 20 neuesten Kinolisten.
  *
  * @return array<int,array{film:string,staedte:string[],kinos:int,link:string,stand:string,bis:string,post:int,fakten:array}>
  */
@@ -177,10 +177,13 @@ function tamil_kino_filme( int $anzahl = 3 ): array {
 	}
 	$heute = current_time( 'Y-m-d' );
 	$filme = array();
-	foreach ( array_map( 'intval', tamil_site_kino_posts( $anzahl, array( 'fields' => 'ids' ) )->posts ) as $id ) {
+	foreach ( array_map( 'intval', tamil_site_kino_posts( max( 20, $anzahl ), array( 'fields' => 'ids' ) )->posts ) as $id ) {
 		$f = tamil_kino_film( $id );
 		if ( $f && '' !== $f['bis'] && $f['bis'] >= $heute ) {
 			$filme[] = $f;
+		}
+		if ( count( $filme ) >= $anzahl ) {
+			break;
 		}
 	}
 	return $filme;

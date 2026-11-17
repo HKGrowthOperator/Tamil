@@ -1,15 +1,18 @@
 <?php
 /**
- * „Diese Woche“ (dunkel, volle Breite): zwei Kino-Beiträge als Bildkacheln (der erste groß 4:3 mit Titel im Bild, der
- * zweite 8:3 mit Titel darunter), „Im Kino“ mit den laufenden Kinolisten und „Termine“ mit den nächsten Terminen als
- * gestaltete Kacheln ohne Foto. Fehlt etwas, sagt eine Kachel, wo es weitergeht.
+ * „Diese Woche“ (dunkel, volle Breite): Kino-Beiträge der letzten 30 Tage als Bildkacheln (die erste groß 4:3 mit
+ * Titel im Bild, die zweite 8:3 mit Titel darunter), „Im Kino“ mit den Filmen, die ab heute laufen, und „Termine“ mit
+ * den nächsten Terminen, alle als Bildkacheln. Fehlt etwas, sagt eine Bildkachel, wo es weitergeht.
  *
- * @var array $args { @type int[] $ids Kino-Beiträge mit Bild (höchstens zwei). }
+ * @var array $args { @type array $woche Ergebnis von tamil_woche_auswahl(). }
  */
 
 defined( 'ABSPATH' ) || exit;
 
-$tamil_ids     = array_map( 'intval', (array) ( $args['ids'] ?? array() ) );
+$tamil_woche   = (array) ( $args['woche'] ?? array() );
+$tamil_ids     = array_map( 'intval', (array) ( $tamil_woche['bilder'] ?? array() ) );
+$tamil_filme   = (array) ( $tamil_woche['filme'] ?? array() );
+$tamil_termine = array_map( 'intval', (array) ( $tamil_woche['termine'] ?? array() ) );
 $tamil_gross   = isset( $tamil_ids[0] ) ? tamil_anr_imbild(
 	$tamil_ids[0],
 	array(
@@ -28,8 +31,6 @@ $tamil_klein   = isset( $tamil_ids[1] ) ? tamil_anr_imbild(
 		'sizes'  => '(min-width: 1024px) 380px, (min-width: 600px) 50vw, 100vw',
 	)
 ) : '';
-$tamil_filme   = array_slice( tamil_kino_filme( 4 ), 0, 2 );
-$tamil_termine = function_exists( 'tamil_site_upcoming_events' ) ? array_map( 'intval', tamil_site_upcoming_events( 3, array( 'fields' => 'ids' ) )->posts ) : array();
 $tamil_kino    = tamil_rubrik( 'kino' );
 $tamil_klassen = array( 'woche__raster' );
 if ( '' === $tamil_gross ) {
@@ -58,7 +59,8 @@ $tamil_klassen[] = 'termine-' . max( 1, count( $tamil_termine ) );
 						echo tamil_grafik_leer( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_grafik_leer()
 							__( 'Kinoprogramm', 'tamil' ),
 							__( 'Für diese Woche kennen wir keine tamilische Vorstellung. Kinostarts, Kritiken und frühere Spielorte stehen in der Rubrik Kino.', 'tamil' ),
-							$tamil_kino['url']
+							$tamil_kino['url'],
+							'kino'
 						);
 					}
 					?>
@@ -75,7 +77,8 @@ $tamil_klassen[] = 'termine-' . max( 1, count( $tamil_termine ) );
 						echo tamil_grafik_leer( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_grafik_leer()
 							__( 'Termin einreichen', 'tamil' ),
 							__( 'Gerade steht kein kommender Termin im Kalender. Kennt ihr einen? Schickt ihn der Redaktion, kostenlos für Vereine, Tempel und Schulen.', 'tamil' ),
-							tamil_seiten_url( 'kontakt', 'event-einreichen' )
+							tamil_seiten_url( 'kontakt', 'event-einreichen' ),
+							'events'
 						);
 					}
 					?>

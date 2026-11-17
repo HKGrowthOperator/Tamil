@@ -85,13 +85,18 @@ gemeinsamer Kante für Kopf, Bild und Text), höchstens 70 Zeichen je Zeile.
 
 - **Startseite:** Aufmacher 4:3 (am Desktop daneben „Weitere Meldungen“), vier Nebenstücke, Rubrikkacheln,
   Werbeplatz 01, „Diese Woche“ (Kino groß und klein, „Im Kino“, „Termine“), „Küche“ (groß 16:9, klein 8:3 auf einer
-  Kante), Billboard, Rubrikblöcke mit je vier Nebenstücken.
+  Kante), Billboard, Rubrikblöcke mit je vier Nebenstücken. „Diese Woche“ zeigt nur Aktuelles: Filme mit Spieltagen
+  ab heute, Kino-Beiträge der letzten 30 Tage, Termine der nächsten 14 Tage (sonst die nächsten drei); was dort
+  steht, kommt oben nicht noch einmal.
 - **Artikel:** Dachzeile, Titel, Vorspann, Leiste mit Lesezeit und „Per WhatsApp teilen“, Bild (randlos am Handy) mit
   Nachweis, Text, Termin als Angaben, Quelle, Schlagworte, Teilen, Redaktion; Werbeplatz 02 rechts ab 1024 px;
   „Weiterlesen“ mit vier Nebenstücken.
 - **Rubrik:** Seitenkopf, Aufmacher mit „Neu in der Rubrik“ daneben, Liste mit Bild und Vorspann, Seiten, Kacheln.
-- **Kino / Termine:** Seitenkopf, dunkler Bereich „Im Programm“ bzw. „Ab heute“, dann „Nach Stadt“ (Tabelle) bzw.
-  „Das Jahr“ (Monate zum Aufklappen).
+- **Kino:** Seitenkopf, dunkler Bereich „Im Programm“, „Nach Stadt“ (Tabelle, jede Zeile mit dem Bild des Films),
+  „Aus dem Kinojahr“ (Liste mit Bild).
+- **Termine:** Seitenkopf, dunkler Bereich „Ab heute“ (Termine der nächsten 14 Tage, sonst die nächsten drei),
+  „Kommende Termine“ nach Monaten (Zeilen mit Bild, Datum mit Uhrzeit, Ort, Veranstalter, Eintritt; Filter nach Land
+  und Stadt als Knöpfe mit `aria-pressed`, nur mit Skript), „Das Jahr“ (vergangene Termine, Monate zum Aufklappen).
 - **Kontakt, Suche, 404, Seiten, Archive:** Seitenkopf, Blöcke mit Blocktitel, Listen mit Bild; Seiten in der
   Artikelspalte, Plugin-Inhalte bis 720 px.
 
