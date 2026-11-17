@@ -6,13 +6,34 @@
   var $$ = function (s, root) { return Array.prototype.slice.call((root || document).querySelectorAll(s)); };
   var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  // Menü „Mehr“ (details): mit Escape und Klick daneben schließen; ohne Skript öffnet und schließt es trotzdem
+  // Menü „Mehr“ (details): mit Escape, Klick daneben und wenn der Fokus das Menü verlässt schließen (am Handy
+  // verdeckt das offene Menü sonst den Aufmacher, WCAG 2.4.11); ohne Skript öffnet und schließt es trotzdem
   var menue = $(".band .mehr");
   if (menue) {
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape" && menue.open) { menue.open = false; var s = $("summary", menue); s && s.focus(); }
     });
     document.addEventListener("click", function (e) { if (menue.open && !menue.contains(e.target)) menue.open = false; });
+    menue.addEventListener("focusout", function (e) {
+      if (menue.open && e.relatedTarget && !menue.contains(e.relatedTarget)) menue.open = false;
+    });
+  }
+
+  // Rubrikband am Handy und Tablet: die aktive Rubrik beim Laden in die Mitte holen (nur der Streifen scrollt, nie die
+  // Seite) und einen Verlauf am rechten Rand zeigen, solange rechts noch Rubriken folgen
+  var streifen = $(".band__liste");
+  if (streifen) {
+    var aktiv = $("a[aria-current]", streifen);
+    if (aktiv && streifen.scrollWidth > streifen.clientWidth) {
+      var abstand = aktiv.getBoundingClientRect().left - streifen.getBoundingClientRect().left;
+      streifen.scrollLeft += abstand - (streifen.clientWidth - aktiv.offsetWidth) / 2;
+    }
+    var rand = function () {
+      streifen.classList.toggle("mehr-rechts", streifen.scrollLeft + streifen.clientWidth < streifen.scrollWidth - 2);
+    };
+    rand();
+    streifen.addEventListener("scroll", rand, { passive: true });
+    window.addEventListener("resize", rand);
   }
 
   // Mobiler Werbeplatz: erst einblenden, wenn der erste Abschnitt (Aufmacher, Seitenkopf) aus dem Bild ist; schließen
