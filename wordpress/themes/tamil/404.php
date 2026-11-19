@@ -9,10 +9,11 @@ get_header();
 $tamil_neu = tamil_ids( array( 'posts_per_page' => 5 ) );
 ?>
 <div class="innen">
-	<header class="seitenkopf">
+	<header class="seitenkopf seitenkopf--raum">
 		<h1 class="seitenkopf__titel"><?php esc_html_e( 'Diese Seite gibt es nicht (mehr).', 'tamil' ); ?></h1>
 		<p class="seitenkopf__zeile"><?php esc_html_e( 'Vielleicht ist der Beitrag umgezogen. Die Suche hilft weiter, oder ihr startet bei den neuesten Beiträgen.', 'tamil' ); ?></p>
 		<?php get_search_form(); ?>
+		<?php tamil_signatur( 'raum' ); ?>
 	</header>
 	<?php if ( $tamil_neu ) : ?>
 		<section class="block" aria-labelledby="neu-titel">

@@ -118,6 +118,7 @@ if ( '' !== $tamil_footer_ad ) :
 			 */
 			do_action( 'tamil_footer_legal' );
 			?>
+			<span class="fuss__signet" aria-hidden="true"><?php tamil_signatur( 'band' ); ?></span>
 		</p>
 	</div>
 </footer>

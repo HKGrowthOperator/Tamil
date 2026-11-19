@@ -29,7 +29,8 @@ $tamil_gross  = $tamil_lead ? tamil_anr_imbild(
 ) : '';
 ?>
 <div class="innen">
-	<header class="seitenkopf">
+	<header class="seitenkopf seitenkopf--signet">
+		<?php tamil_signatur( 'kopf' ); ?>
 		<h1 class="seitenkopf__titel"><?php echo esc_html( $tamil_rubrik['label'] ); ?></h1>
 		<p class="seitenkopf__zeile"><?php echo esc_html( $tamil_rubrik['beschreibung'] ); ?></p>
 		<p class="aktionen">

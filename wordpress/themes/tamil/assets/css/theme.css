@@ -8,7 +8,9 @@
  *
  * Aufbau: Tokens → Basis → Kopf und Band → Bausteine (Rahmen, Dachzeile, Titel, Bild mit Titel) → Startseite →
  * Artikel → Seitenkopf und Listen → Rubrik, Kino, Termine → Seiten und Formulare → Plugin-Bausteine → Anzeigen →
- * Fuß → Gutenberg → Bewegung → reduzierte Bewegung und Druck.
+ * Fuß → Signet → Gutenberg → Bewegung → reduzierte Bewegung und Druck.
+ *
+ * Signet seit 3.5.0: „Tamil Dots 04A“ als Hintergrund in Band, Seitenköpfen, Titan-Flächen, Fuß und an Sonderstellen.
  */
 
 /* ---------- Tokens ---------- */
@@ -24,7 +26,7 @@
   --tamil-color-primary: #660000;      /* Titan Red, oklch(0.3204 0.1315 29.23); Weiß darauf 13,4 : 1 */
   --tamil-color-accent: #B30000;       /* Impact Red, oklch(0.4815 0.1976 29.23); auf Weiß 7,2 : 1 */
   --tamil-color-text: #000000;         /* Schwarz: Fließtext und Überschriften auf Weiß, 21 : 1 */
-  /* Signet „Tamil Dots 04A“ folgt nach Datei und Anleitung von Luis (Platz für --signatur-*; noch keine Grafik). */
+  /* Signet „Tamil Dots 04A“: Form freigegeben am 19.11.2026; Einbau im Abschnitt „Signet“ (nur diese Farben mit Deckkraft). */
 
   /* Ableitungen aus Titan (nur dunkler, kein neuer Ton) */
   --titan-tief: #520000;               /* Titan mit 20 % Schwarz: Bildkacheln auf Titan; Weiß darauf 15,5 : 1 */
@@ -1116,6 +1118,72 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
   .nachweise li { break-inside: avoid; }
 }
 
+/* ---------- Signet „Tamil Dots 04A“ als Hintergrund (Theme 3.5.0) ----------
+   Form freigegeben von Luis am 19.11.2026 (docs/abnahme/2026-11-19-signature.md); Einbau inc/signatur.php, Dateien
+   assets/img/signatur/ (bauen.py), Regeln DESIGN.md „Signet“. Das Signet ist nicht das Logo: nie am, im oder hinter dem
+   Logo, nie hinter Überschriften, Text oder Gesichtern, nicht im Artikeltext, über Fotos oder in Kacheln. Es sitzt in
+   freier Fläche, von der Kante seines Bereichs angeschnitten, und ist immer dekorativ (aria-hidden). Farben: nur Titan,
+   Impact und Weiß, abgestuft über Deckkraft. Statisch als CSS-Hintergrund (zwischengespeichert); inline nur auf den
+   Titan-Flächen, wo die Punkte beim Hineinscrollen die Form aufbauen (Abschnitt „Bewegung“). */
+.signatur { display: block; pointer-events: none; background-repeat: no-repeat; }
+.signatur svg { display: block; width: 100%; height: auto; }
+.signatur ellipse { transform-box: fill-box; transform-origin: center; }
+
+/* Rubrikband und Zeile mit Rechtlichem (ab 1024 px): ein Streifen der Kuppel (Fuß links, Auslauf rechts) in Impact auf
+   Titan, leise (Impact gegen Titan 1,9 : 1). Er füllt nur die freie Fläche – im Band zwischen letzter Rubrik und
+   „Mehr“, im Fuß rechts neben den Links – und erscheint erst, wenn dort genug Platz ist (Container-Abfrage); so liegt er
+   nie unter Schrift, auch bei mehr Rubriken oder längeren Links. */
+.band__signet, .fuss__signet { display: none; }
+.signatur--band {
+  position: absolute; top: 0; right: 12px; height: 100%; aspect-ratio: 1000 / 221; display: none;
+  background-image: url("../img/signatur/band.svg?ver=3.5.0"); background-size: 100% 100%;
+}
+@container signet (min-width: 300px) { .signatur--band { display: block; } }
+@media (min-width: 1024px) {
+  .band__liste { flex: 0 1 auto; }
+  .band__signet { display: block; position: relative; flex: 1 1 0; min-width: 0; container: signet / inline-size; }
+  /* im Fuß bis an den rechten Rand des Fensters, über die ganze Höhe der Zeile; dort angeschnitten */
+  .fuss__signet {
+    display: block; position: relative; flex: 1 1 0; min-width: 0; align-self: stretch;
+    margin-block: -8px; margin-right: calc((100% - 100vw) / 2); container: signet / inline-size;
+  }
+  .fuss__signet .signatur--band { right: 0; aspect-ratio: 760 / 221; background-size: auto 100%; background-position: 0 50%; }
+}
+
+/* Seitenköpfe (Rubrik, Kino, Termine, Kontakt, Suche, Archive; Werben, Verzeichnis, Einreichen): eine kleine Kuppel in
+   leiser Tönung auf Weiß, vom rechten Fensterrand angeschnitten (das Bild ist breiter als sein Rahmen, der Rahmen
+   endet am Fensterrand). Unter 1024 px schwimmt sie rechts oben, und Titel und Zeile fließen um sie herum; ab 1024 px
+   steht sie rechts neben der Kopfzeile, wo die Textspalte (höchstens 40em) längst geendet hat. */
+.seitenkopf--signet { position: relative; display: flow-root; }
+.signatur--kopf {
+  --b: 128px;                                    /* Breite der ganzen Kuppel; sichtbar sind 80 % */
+  float: right; width: calc(var(--b) * 0.8); height: calc(var(--b) * 0.624);
+  margin: -2px calc(-1 * var(--rand)) 6px 12px;
+  background-image: url("../img/signatur/hell.svg?ver=3.5.0"); background-size: var(--b) auto; background-position: 0 50%;
+}
+/* das Suchfeld (Suche) bekommt die volle Breite unter der Kuppel */
+.seitenkopf--signet .suchfeld { clear: right; }
+@media (min-width: 1024px) {
+  .seitenkopf--signet { min-height: 152px; }
+  .signatur--kopf { --b: 196px; position: absolute; float: none; margin: 0; top: 20px; right: calc((100% - 100vw) / 2); }
+  /* Seiten (Werben, Verzeichnis, Einreichen): die Spalte ist mittig und 720 px breit; erst ab 1200 px ist rechts genug
+     frei, und der Kopf wird nicht höher */
+  .artikel__kopf.seitenkopf--signet { min-height: 0; }
+  .artikel__kopf .signatur--kopf { top: 0; display: none; }
+}
+@media (min-width: 1200px) { .artikel__kopf .signatur--kopf { display: block; } }
+
+/* Sonderstellen (404, Production „Live mit dir!“): 03 Spatial, ganz und ohne Anschnitt; am Handy unter dem Kopf, ab
+   1024 px rechts daneben */
+.signatur--raum {
+  width: min(100%, 340px); aspect-ratio: 1000 / 712; margin: 24px auto 0;
+  background-image: url("../img/signatur/raum.svg?ver=3.5.0"); background-size: 100% 100%;
+}
+@media (min-width: 1024px) {
+  .seitenkopf--raum { position: relative; min-height: 380px; padding-right: 44%; }
+  .signatur--raum { position: absolute; top: 20px; right: 0; width: 42%; margin: 0; }
+}
+
 /* ---------- Gutenberg ---------- */
 .alignleft { float: left; margin: 0.3em 1.4em 1em 0; }
 .alignright { float: right; margin: 0.3em 0 1em 1.4em; }
@@ -1229,7 +1297,7 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
   .anr:hover .rahmen img, .kacheln a:hover .rahmen img { transform: none; }
 }
 @media print {
-  .kopfzeile, .band, .fuss, .ad, .anzeige-zwischen, .anzeige-unten, .teilen, .mehr, .kacheln { display: none !important; }
+  .kopfzeile, .band, .fuss, .ad, .anzeige-zwischen, .anzeige-unten, .teilen, .mehr, .kacheln, .signatur { display: none !important; }
   body { background: #fff; }
   .woche { background: none; color: var(--tinte); }
 }

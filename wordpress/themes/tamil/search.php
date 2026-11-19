@@ -14,7 +14,8 @@ $tamil_n   = '' !== $tamil_q ? (int) $wp_query->found_posts : 0;
 tamil_cache_fuellen( $tamil_ids );
 ?>
 <div class="innen">
-	<header class="seitenkopf">
+	<header class="seitenkopf seitenkopf--signet">
+		<?php tamil_signatur( 'kopf' ); ?>
 		<h1 class="seitenkopf__titel"><?php esc_html_e( 'Suche', 'tamil' ); ?></h1>
 		<?php get_search_form(); ?>
 		<p class="seitenkopf__zeile">

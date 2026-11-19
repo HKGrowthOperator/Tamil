@@ -50,7 +50,8 @@ $tamil_masse = static function ( string $platz, array $f ): string {
 };
 ?>
 <div class="innen">
-	<header class="seitenkopf">
+	<header class="seitenkopf seitenkopf--signet">
+		<?php tamil_signatur( 'kopf' ); ?>
 		<h1 class="seitenkopf__titel"><?php the_title(); ?></h1>
 		<p class="seitenkopf__zeile"><?php esc_html_e( 'Redaktion, Werbung oder ein Termin für den Kalender: hier erreicht ihr uns. Auf Deutsch, Tamil oder Englisch.', 'tamil' ); ?></p>
 	</header>
