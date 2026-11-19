@@ -1,6 +1,6 @@
 <?php
 /**
- * Navigation: das rote Rubrikband (Einträge aus dem Menü „Hauptnavigation“, sonst die Rubriken in der Reihenfolge
+ * Navigation: das Rubrikband in Titan Red (Einträge aus dem Menü „Hauptnavigation“, sonst die Rubriken in der Reihenfolge
  * von klar2 und „Kontakt“), die Dienste für „Mehr“ und den Fuß und die Top-News „Neu“ in der Kopfzeile.
  */
 

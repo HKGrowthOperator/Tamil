@@ -1,6 +1,6 @@
 <?php
 /**
- * Rubrik Kino, Seite 1: Seitenkopf; „Im Programm“ als dunkler Bereich wie „Diese Woche“ – nur Filme mit Spieltagen
+ * Rubrik Kino, Seite 1: Seitenkopf; „Im Programm“ auf Titan Red wie „Diese Woche“ – nur Filme mit Spieltagen
  * ab heute: der erste (mit eigenem Bild, sonst der erste überhaupt) groß, daneben die übrigen als Bildkacheln; läuft
  * nur einer, stehen neben ihm seine Angaben (Zahl der Kinos, Städte, Link zur Tabelle). „Nach Stadt“ als Tabelle mit
  * dem Bild des Films in jeder Zeile; „Aus dem Kinojahr“ mit den übrigen Beiträgen als Liste mit Bild; die übrigen

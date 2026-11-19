@@ -1,8 +1,8 @@
 <?php
 /**
- * Fuß jeder Seite (klar2 auf hellem Grund, die zwei dunklen Flächen bleiben Band und „Diese Woche“): Werbeplatz
- * „Footer“, Logo mit Unterzeile, Rubriken, Dienste, Social (nur mit Adresse), die Bildnachweise der Seite und die
- * Zeile mit Rechtlichem. Am Handy danach der feste Werbeplatz. Jeder Werbeplatz ist schon ein benannter Bereich des
+ * Fuß jeder Seite (weißer Grund mit Linie in Titan Red oben): Werbeplatz „Footer“, Logo mit Unterzeile, Rubriken,
+ * Dienste, Social (nur mit Adresse), die Bildnachweise der Seite und die Zeile mit Rechtlichem (als Band in Titan Red,
+ * nur per CSS). Am Handy danach der feste Werbeplatz. Jeder Werbeplatz ist schon ein benannter Bereich des
  * Plugins (<aside aria-label="Anzeige: …">); das Theme legt keinen zweiten darum.
  */
 
