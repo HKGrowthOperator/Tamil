@@ -2,7 +2,7 @@
 /**
  * Template Name: Veranstaltungskalender
  *
- * Termine in klar2: Seitenkopf mit „Termin einreichen“; „Ab heute“ als dunkler Bereich mit den nächsten Terminen als
+ * Termine in klar2: Seitenkopf mit „Termin einreichen“; „Ab heute“ auf Titan Red mit den nächsten Terminen als
  * Bildkacheln (Datum als größte Angabe nach dem Titel); „Kommende Termine“ nach Monaten, jede Zeile mit Bild, Uhrzeit,
  * Ort, Veranstalter und Eintritt, mit Filtern nach Land und Stadt (nur mit Skript sichtbar); „Das Jahr“ mit den
  * vergangenen Terminen dieses Jahres nach Monaten zum Aufklappen. Greift automatisch für die Seite mit dem Slug „events“.

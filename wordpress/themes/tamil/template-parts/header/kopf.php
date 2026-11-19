@@ -1,7 +1,7 @@
 <?php
 /**
- * Kopf in drei Teilen wie klar2: Kopfzeile (Datum, Top-News „Neu“ in Rot, Suche), Logo auf hellem Grund und das rote
- * Rubrikband als eigenes <nav>. Im Band rechts „Mehr“ mit Suche, Diensten und Social.
+ * Kopf in drei Teilen wie klar2: Kopfzeile (Datum, Top-News „Neu“ in Impact Red, Suche), Logo auf weißem Grund und das
+ * Rubrikband in Titan Red als eigenes <nav>. Im Band rechts „Mehr“ mit Suche, Diensten und Social.
  */
 
 defined( 'ABSPATH' ) || exit;
