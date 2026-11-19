@@ -1,7 +1,9 @@
 # Tamil Dots 04A – Signature-Element
 
-> **Entwurf, vorläufig – Abgleich mit der Originalreferenz Feld A steht aus.**
-> Nichts hiervon ist freigegeben. Keine Einbindung in Website, Cockpit oder Social-Automatik, bevor Luis zustimmt.
+> **Status (19.11.2026):** Master-Form **freigegeben 19.11.** von Luis (`docs/abnahme/2026-11-19-signature.md`);
+> der Abgleich mit Feld A der Originalreferenz ist nicht erfolgt. Platzierungen als Website-Hintergrund **im Theme
+> 3.5.0, Freigabe vor Testsystem ausstehend** (`wordpress/themes/tamil/assets/img/signatur/`, DESIGN.md „Signet“).
+> Alles andere hier (Small, Mini, Farbvorschläge, Hintergründe, Animation, Variante C) bleibt Entwurf.
 
 Tamil Dots ist **nicht das Logo**. Es ist das Signature-Element des Content- und Interface-Designsystems: der
 Punktbogen in News-Karten, Website-Modulen und auf Instagram, Facebook und WhatsApp. Die Wortmarke tamil.de bleibt
@@ -36,7 +38,7 @@ python3 design/signature/werkzeug/vergleich.py        # vergleich.jpg + vergleic
 
 | Datei | Was | Punkte | Größe |
 |---|---|---|---|
-| `master.svg` | **01 Master** („Tamil Dots A“): flach, transparent, nur #660000 → #B30000 in 7 Stufen | 238 | 18 KB |
+| `master.svg` | **01 Master** („Tamil Dots A“), Form freigegeben 19.11.: flach, transparent, nur #660000 → #B30000 in 7 Stufen | 238 | 18 KB |
 | `small-entwurf.svg` | **02 Small**, eigener Entwurf nach Feld „02 Small“: weniger, größere Punkte, Teilbogen. Ersetzt den Master nicht | 60 | 5 KB |
 | `mini-entwurf.svg` | Mini für 24–48 px, aus Small abgeleitet (Größen gestaucht, Berührungen ausgedünnt) | 47 | 4 KB |
 | `mini-16-entwurf.svg` | Mini für 16–23 px, noch gröber | 23 | 2 KB |
@@ -125,7 +127,9 @@ Alle SVG haben eine `viewBox`, keine feste Breite oder Höhe und bleiben unter 3
 
 ## Offene Punkte
 
-- Abgleich mit Feld A („vier_rote_punktmarken_für_tamil.de.png“). Bis dahin bleibt alles Entwurf.
-- Freigabe der Farbvorschläge, der Hintergründe und der Animation durch Luis.
+- Abgleich mit Feld A („vier_rote_punktmarken_für_tamil.de.png“) nicht erfolgt; die Master-Form ist trotzdem
+  freigegeben (19.11.).
+- Platzierungen im Theme 3.5.0: Freigabe vor Testsystem ausstehend.
+- Freigabe der übrigen Farbvorschläge, der Hintergründe und der Animation durch Luis.
 - Spatial ist eine flache Annäherung (versetzte Kante plus Radialschatten). Für Druck oder große Sonderflächen besser
   einmal sauber in 3D rendern lassen.

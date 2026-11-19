@@ -13,7 +13,8 @@ $tamil_ids   = array_map( 'intval', wp_list_pluck( $GLOBALS['wp_query']->posts, 
 tamil_cache_fuellen( $tamil_ids );
 ?>
 <div class="innen">
-	<header class="seitenkopf">
+	<header class="seitenkopf seitenkopf--signet">
+		<?php tamil_signatur( 'kopf' ); ?>
 		<h1 class="seitenkopf__titel"><?php echo esc_html( $tamil_titel ); ?></h1>
 		<?php
 		if ( get_the_archive_description() ) :

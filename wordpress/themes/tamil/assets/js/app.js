@@ -163,8 +163,8 @@
 })();
 
 /* Bewegung beim Scrollen, Variante D (Quelle: design/richtungen/klar2/bewegung/, Wahl von Luis am 16.11.2026).
-   1. Jede Einheit (Kachel, Nebenstück, Meldung, Listenzeile, Blocktitel …) bekommt data-art (steigen, aufdecken,
-      zeilen, vorhang). Erst damit greifen die versteckenden Regeln in theme.css.
+   1. Jede Einheit (Kachel, Nebenstück, Meldung, Listenzeile, Blocktitel, Signet …) bekommt data-art (steigen,
+      aufdecken, zeilen, vorhang, aufbau). Erst damit greifen die versteckenden Regeln in theme.css.
    2. Was beim Laden schon im Bild (oder darüber) ist, steht sofort da: nichts startet von selbst.
    3. Der Rest erscheint einmal, wenn er ins Bild kommt (IntersectionObserver, Klasse .da); was gemeinsam kommt,
       gestaffelt in Lesereihenfolge.
@@ -192,6 +192,7 @@
     [".block-titel, .woche__titel", "zeilen"],
     [".woche", "vorhang"],
     [".kachel--gross", "aufdecken zeilen"],
+    [".signatur--flaeche", "aufbau"],   // Signet auf den Titan-Flächen: Punkte bauen die Form auf
   ];
 
   let io = null;
@@ -218,6 +219,7 @@
     return {
       steigen: ms("--t-steigen", 560), bild: ms("--t-bild", 750), zoom: ms("--t-zoom", 1100), blenden: ms("--t-blenden", 500),
       zeile: ms("--t-zeile", 700), takt: ms("--zeilen-takt", 90), zeilenStart: ms("--zeilen-start", 160), vorhang: ms("--t-vorhang", 800),
+      aufbau: ms("--t-aufbau", 1500),
     };
   }
 
@@ -288,6 +290,7 @@
     if (art.includes("steigen")) t = Math.max(t, T.steigen);
     if (art.includes("aufdecken")) t = Math.max(t, T.bild, T.zoom, 100 + T.blenden);
     if (art.includes("vorhang")) t = Math.max(t, T.vorhang);
+    if (art.includes("aufbau")) t = Math.max(t, T.aufbau);
     if (art.includes("zeilen")) {
       const h = ueberschrift(el);
       const n = h ? Number(h.dataset.zeilen || 1) : 1;
