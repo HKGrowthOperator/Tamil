@@ -36,7 +36,7 @@ $ticket = tamil_opt( 'production_ticket_url' );
 $events = function_exists( 'tamil_site_upcoming_events' ) ? array_map( 'intval', tamil_site_upcoming_events( 4, array( 'fields' => 'ids' ) )->posts ) : array();
 ?>
 <div class="innen">
-	<header class="seitenkopf">
+	<header class="seitenkopf seitenkopf--raum">
 		<h1 class="seitenkopf__titel"><?php echo esc_html( tamil_opt( 'production_titel' ) ); ?></h1>
 		<p class="seitenkopf__zeile"><?php echo esc_html( tamil_opt( 'production_claim' ) ); ?></p>
 		<p class="seitenkopf__zeile"><?php echo esc_html( tamil_opt( 'production_text' ) ); ?></p>
@@ -47,6 +47,7 @@ $events = function_exists( 'tamil_site_upcoming_events' ) ? array_map( 'intval',
 				<a class="knopf" href="<?php echo esc_url( $ticket ); ?>" target="_blank" rel="noopener nofollow"><?php echo esc_html( tamil_opt( 'production_ticket_label' ) ); ?></a><?php endif; ?>
 			<a class="textlink" href="<?php echo esc_url( tamil_seiten_url( 'kontakt' ) ); ?>"><?php esc_html_e( 'Als Veranstalter anfragen', 'tamil' ); ?></a>
 		</p>
+		<?php tamil_signatur( 'raum' ); ?>
 	</header>
 	<?php if ( $events ) : ?>
 		<section class="block" aria-labelledby="naechste-titel">

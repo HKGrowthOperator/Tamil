@@ -86,7 +86,8 @@ foreach ( $tamil_vorbei as $tamil_id ) {
 }
 ?>
 <div class="innen">
-	<header class="seitenkopf">
+	<header class="seitenkopf seitenkopf--signet">
+		<?php tamil_signatur( 'kopf' ); ?>
 		<h1 class="seitenkopf__titel"><?php the_title(); ?></h1>
 		<p class="seitenkopf__zeile"><?php echo esc_html( $tamil_rubrik['beschreibung'] ); ?></p>
 		<p class="aktionen"><a class="textlink" href="<?php echo esc_url( tamil_einreichen_url() ); ?>"><?php esc_html_e( 'Termin einreichen', 'tamil' ); ?></a></p>
@@ -94,6 +95,7 @@ foreach ( $tamil_vorbei as $tamil_id ) {
 </div>
 
 <section class="woche woche--seite" aria-labelledby="ab-heute">
+	<?php tamil_signatur( 'flaeche' ); ?>
 	<div class="innen">
 		<h2 class="woche__titel" id="ab-heute"><?php esc_html_e( 'Ab heute', 'tamil' ); ?></h2>
 		<p class="woche__art"><time datetime="<?php echo esc_attr( $tamil_heute ); ?>"><?php echo esc_html( tamil_stand( time() ) ); ?></time></p>

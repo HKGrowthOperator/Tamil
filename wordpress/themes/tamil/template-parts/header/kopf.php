@@ -38,6 +38,7 @@ $tamil_lupe    = '<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
 				<li><a href="<?php echo esc_url( $tamil_item['url'] ); ?>"<?php echo $tamil_item['aktiv'] ? ' aria-current="page"' : ''; ?>><?php echo esc_html( $tamil_item['label'] ); ?></a></li>
 			<?php endforeach; ?>
 		</ul>
+		<span class="band__signet" aria-hidden="true"><?php tamil_signatur( 'band' ); ?></span>
 		<details class="mehr">
 			<summary><?php esc_html_e( 'Mehr', 'tamil' ); ?></summary>
 			<div class="mehr__paneel">

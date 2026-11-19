@@ -29,7 +29,8 @@ $tamil_gross  = $tamil_lead ? tamil_anr_imbild(
 ) : '';
 ?>
 <div class="innen">
-	<header class="seitenkopf">
+	<header class="seitenkopf seitenkopf--signet">
+		<?php tamil_signatur( 'kopf' ); ?>
 		<h1 class="seitenkopf__titel"><?php echo esc_html( $tamil_rubrik['label'] ); ?></h1>
 		<p class="seitenkopf__zeile"><?php echo esc_html( $tamil_rubrik['beschreibung'] ); ?></p>
 		<p class="aktionen">
@@ -43,6 +44,10 @@ $tamil_gross  = $tamil_lead ? tamil_anr_imbild(
 </div>
 
 <section class="woche woche--seite" aria-labelledby="t-programm">
+	<?php
+	// Mit großem Bild bleibt rechts daneben Fläche frei: dort steht die Kuppel höher (ohne Bild nicht, sonst läge sie unter Text)
+	tamil_signatur( 'flaeche', array( 'klasse' => '' !== $tamil_gross ? 'signatur--hoch' : '' ) );
+	?>
 	<div class="innen">
 		<h2 class="woche__titel" id="t-programm"><?php esc_html_e( 'Im Programm', 'tamil' ); ?></h2>
 		<div class="programm<?php echo '' === $tamil_gross ? ' ohne-gross' : ''; ?>">

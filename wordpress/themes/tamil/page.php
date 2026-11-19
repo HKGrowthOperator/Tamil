@@ -3,6 +3,8 @@
  * Seite (Impressum, Datenschutz, Über uns, Verzeichnis, Werben …): Kopf und Text wie im Artikel; Fließtext auf
  * Lesebreite, Formulare, Tabellen und Listen aus den Plugins dürfen die breitere Spalte nutzen.
  *
+ * Werben, Verzeichnis und Einreichen tragen das Signet im Kopf (tamil_signatur_im_seitenkopf()); Rechtstexte nicht.
+ *
  * Impressum und Datenschutz außerhalb des Echtbetriebs: nur der Hinweis „Entwurf: Der Text von KBS folgt.“ Der alte
  * Inhalt (nennt Dienste, die nicht genutzt werden, und tote Links) wird nicht gezeigt; den Text liefert KBS.
  */
@@ -14,6 +16,7 @@ get_header();
 while ( have_posts() ) :
 	the_post();
 	$tamil_entwurf = tamil_ist_rechtstext_entwurf( (int) get_the_ID() );
+	$tamil_signet  = ! $tamil_entwurf && tamil_signatur_im_seitenkopf( (int) get_the_ID() );
 	$tamil_bild    = $tamil_entwurf ? '' : tamil_bild(
 		(int) get_the_ID(),
 		array(
@@ -25,7 +28,12 @@ while ( have_posts() ) :
 	);
 	?>
 	<article <?php post_class( 'artikel seite' ); ?>>
-		<header class="artikel__kopf">
+		<header class="artikel__kopf<?php echo $tamil_signet ? ' seitenkopf--signet' : ''; ?>">
+			<?php
+			if ( $tamil_signet ) {
+				tamil_signatur( 'kopf' );
+			}
+			?>
 			<h1 class="artikel__titel"><?php the_title(); ?></h1>
 			<?php if ( $tamil_entwurf ) : ?>
 				<p class="hinweis-box seite__entwurf" role="note"><strong><?php esc_html_e( 'Entwurf:', 'tamil' ); ?></strong> <?php esc_html_e( 'Der Text von KBS folgt.', 'tamil' ); ?></p>

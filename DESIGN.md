@@ -8,8 +8,11 @@
 >
 > **Stand 19.11.2026 (Theme 3.4.0):** Markenfarben von Luis (`docs/abnahme/2026-11-19-signature.md`, Branding Master
 > Handoff v1.1): Weiß, Titan Red dominant, Impact Red als Akzent, Schwarz für Schrift, Gewichtung „Red Dominance /
-> Power“. Sie ersetzen die Farbwerte von klar2 und die Regel „Rot nur als Akzent“. Das Signet „Tamil Dots 04A“ folgt
-> nach Vektordatei und Anleitung von Luis; das Logo bleibt unverändert.
+> Power“. Sie ersetzen die Farbwerte von klar2 und die Regel „Rot nur als Akzent“. Das Logo bleibt unverändert.
+>
+> **Stand 19.11.2026 (Theme 3.5.0):** Das Signet „Tamil Dots 04A“ steht als Hintergrund im Theme (Abschnitt „Signet“).
+> Freigegeben ist die Form (Luis, 19.11.); die Platzierungen im Theme 3.5.0 sind noch nicht freigegeben, Freigabe vor
+> dem Testsystem ausstehend.
 
 **Idee:** eine ruhige Nachrichtenseite mit mehr Bild und mehr Bühne. Vorbild BBC News für Kopf und Ordnung,
 tagesschau für den Titel im Bild, Spiegel für die Bildblöcke. Das Wow kommt aus Fotos, Fläche und dem Wechsel von
@@ -34,7 +37,7 @@ benannt. Quelle: `theme.css` (Abschnitt Tokens), `design/tokens.css`; `theme.jso
 | `neutral-leise` (`leise`) | `#555555` | Datum, Orte, Nachweise, Beschriftungen, „Anzeige“ |
 | `neutral-hell-leise` (`hell-leise`) | `#CCCCCC` | Nebeninfos auf Titan und im Bild |
 | `status-fehler` | = Impact | Formularfehler (Text, Rand) |
-| `--signatur-*` | – | Platz für das Signet „Tamil Dots 04A“, kommt nach Freigabe |
+| Signet | Titan, Impact, Weiß mit Deckkraft | „Tamil Dots 04A“ als Hintergrund (Abschnitt „Signet“); keine eigenen Farbwerte |
 
 Kontraste (WCAG 2.2 AA): Weiß auf Titan 13,4 : 1, Weiß auf Impact 7,2 : 1, Impact auf Weiß 7,2 : 1, Titan auf Weiß
 13,4 : 1, `#555` auf Weiß 7,5 : 1, `#CCC` auf Titan 8,4 : 1. Die aktive Rubrik ist in Impact markiert und trägt 3 px
@@ -126,6 +129,52 @@ gemeinsamer Kante für Kopf, Bild und Text), höchstens 70 Zeichen je Zeile.
 - **Suche, 404, Seiten, Archive:** Seitenkopf, Blöcke mit Blocktitel, Listen mit Bild; Seiten in der Artikelspalte,
   Plugin-Inhalte bis 720 px. Bildnachweise im Fuß eingeklappt („Bildnachweise dieser Seite (n)“).
 
+## Signet „Tamil Dots 04A“ (Theme 3.5.0)
+
+Die Form hat Luis am 19.11.2026 freigegeben (`docs/abnahme/2026-11-19-signature.md`, `design/signature/master.svg`,
+238 elliptische Punkte); der Abgleich mit Feld A der Originalreferenz ist nicht erfolgt. Die Platzierungen unten sind
+im Theme 3.5.0 gebaut und **vor dem Testsystem noch freizugeben**. Das Signet ist das wiedererkennbare Merkmal der
+Marke und wird vor allem als Hintergrund eingesetzt.
+
+**Regeln**
+
+- **Nicht das Logo.** Nie am, im, hinter oder verschmolzen mit dem Logo; das Logo bleibt unverändert.
+- **Nur in freier Fläche.** Nie hinter Überschriften, Text oder Gesichtern; nicht im Artikeltext, nicht über Fotos,
+  nicht in Anreißern oder Kacheln, nicht im Logobereich. Es rahmt, hinterlegt und gliedert und ist von der Kante seines
+  Bereichs angeschnitten (rechts, unten, am Fensterrand). Die freie Fläche unter dem Bogen bleibt frei.
+- **Form unverändert:** nicht drehen, spiegeln, stauchen; großer Fuß links, Auslauf rechts. Keine Pfeile oder anderen
+  Zeichen dazu. Variante C nur als abgeleitete Bewegung (im Theme nicht eingesetzt), Spatial nur an Sonderstellen.
+- **Farben:** nur Titan `#660000`, Impact `#B30000` und Weiß, abgestuft allein über Deckkraft (`fill-opacity`), keine
+  neuen Farbwerte. Auf Titan: Impact (leise, 1,9 : 1 gegen Titan); auf Weiß: Impact mit 8–17 % Deckkraft.
+- **Immer dekorativ:** `aria-hidden="true"`, inline zusätzlich `focusable="false"`, ohne Titel und Text; Hilfsmittel
+  lesen nichts vor. Im Druck ausgeblendet.
+
+**Platzierungen**
+
+| Ort | Fassung | Verhalten |
+|---|---|---|
+| Rubrikband | `band.svg`: Streifen der Kuppel, Impact auf Titan | ab 1024 px in der freien Fläche zwischen letzter Rubrik und „Mehr“, rechts vor „Mehr“; nur wenn dort mindestens 300 px frei sind (Container-Abfrage), nie unter Schrift |
+| Titan-Flächen „Diese Woche“, Termine „Ab heute“ | `flaeche.svg` inline: ganze Kuppel, Impact auf Titan | unten rechts angeschnitten, über der Fläche und unter Kacheln, Titeln und Links; der Bogen steigt in einer Zone unter dem letzten Inhalt auf (Handy 34vw, Tablet 196 px, Desktop 104 px Abstand unten) |
+| Kino „Im Programm“ | wie oben, `signatur--hoch` | Desktop höher, in der freien Fläche rechts neben dem großen Bild |
+| Seitenköpfe: Rubrik, Kino, Termine, Kontakt, Suche, Archive; Werben, Verzeichnis, Einreichen | `hell.svg`: leise Tönung auf Weiß | rechts vom Fensterrand angeschnitten; unter 1024 px schwimmt sie rechts oben und Titel und Zeile fließen herum, ab 1024 px rechts neben der Kopfzeile (Kopf mindestens 152 px hoch). Seiten mit mittiger Spalte (Werben …) ab 1200 px. Rechtstexte ohne |
+| Fuß | `band.svg` | ab 1024 px rechts in der Zeile mit Rechtlichem (Titan), am Fensterrand angeschnitten, nur bei freiem Platz |
+| 404, Production („Live mit dir!“) | `raum.svg` (03 Spatial) | ganz, ohne Anschnitt; am Handy unter dem Kopf (höchstens 340 px), ab 1024 px rechts daneben (42 %) |
+
+Nicht eingesetzt: ein kleiner Punktbogen über Blocktiteln (die Linie in Titan gliedert schon; er hätte unruhig gewirkt).
+
+**Technik.** `inc/signatur.php`: `tamil_signatur( $variante, $args )` gibt `<span class="signatur signatur--…"
+aria-hidden="true">` aus, inline mit SVG nur für `flaeche` (Animation), sonst leer mit CSS-Hintergrund (zwischengespeichert,
+`?ver=` im CSS bei Änderungen erhöhen). Dateien in `assets/img/signatur/` (je unter 30 KB), gebaut mit
+`assets/img/signatur/bauen.py` aus `design/signature/daten/punkte.json` über den Generator
+`design/signature/tamil_dots.py`. CSS: `theme.css`, Abschnitt „Signet“. Die Kuppel ragt nie aus dem Fenster: Bilder
+werden in ihrem Rahmen beschnitten, die Titan-Flächen schneiden mit `overflow: hidden`; was bis an den Fensterrand
+reicht, rechnet mit `100vw` und wird bei sichtbarer Bildlaufleiste von `html, body { overflow-x: clip }` abgeschnitten.
+
+**Animation „Punkte bauen die Form auf“** (Bewegung D, nur Titan-Flächen): Beim Hineinscrollen (IntersectionObserver
+wie alle Auftritte, nach dem Vorhang von „Diese Woche“) wächst jeder Punkt in der Reihenfolge `--i` vom großen linken
+Fuß zum Auslauf von `scale: 0` auf 1 und blendet ein, ease-out-expo, zusammen 1,5 s (`--t-aufbau`), einmal. Nur
+`scale` und `opacity`. Ohne Skript, mit „Bewegung reduzieren“ und im ersten Bildschirm steht die fertige Form still.
+
 ## Bewegung D
 
 Nur unter `prefers-reduced-motion: no-preference`, nur `transform` (als `translate`/`scale`), `opacity` und
@@ -141,6 +190,7 @@ nie von selbst; was einmal erschienen ist, bleibt.
 | Große Kacheln | Bild deckt sich von unten auf, Maßstab 1,06 → 1, Titel zeilenweise | 750 / 1100 / 700 ms |
 | Blocktitel | steigen aus ihrer Linie | 700 ms |
 | Kacheln, Nebenstücke, Meldungen, Listen | 16 px nach oben, einblenden, gestaffelt 60 ms je Spalte, 100 ms je Reihe | 560 ms |
+| Signet auf Titan-Flächen | Punkte bauen die Form auf (vom Fuß zum Auslauf, `scale` 0 → 1) | 1500 ms |
 
 Am Scrollweg per CSS-Scroll-Timeline (`@supports (animation-timeline: scroll())`), sonst ein passiver Scroll-Handler
 mit `requestAnimationFrame`. Auftritte über IntersectionObserver (Auslöser 10 % über der Unterkante). Code:
