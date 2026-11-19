@@ -1,0 +1,114 @@
+/*
+ * tamil.de – Kartensystem Social (Instagram, Facebook, WhatsApp)
+ * VORSCHLAG, NICHT FREIGEGEBEN. Signet „Tamil Dots 04A“ ist ein Entwurf (Abgleich mit Feld A steht aus).
+ * Maße und Regeln: design/social/README.md. Alle Größen in Pixeln der Zielgröße (1 CSS-px = 1 Bildpunkt).
+ */
+@font-face {
+  font-family: "Libre Franklin";
+  src: url("../schriften/libre-franklin-latin-wght-normal.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: block;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Libre Franklin";
+  src: url("../schriften/libre-franklin-latin-ext-wght-normal.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: block;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+:root {
+  --titan: #660000;      /* dominant, ~35 % */
+  --impact: #B30000;     /* Akzent, ~10 %   */
+  --weiss: #FFFFFF;      /* Grund, ~50 %    */
+  --schwarz: #000000;    /* Schrift, ~5 %   */
+  --schrift: "Libre Franklin", "Helvetica Neue", Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; background: #2b2b2b; }
+body { font-family: var(--schrift); -webkit-font-smoothing: antialiased; text-rendering: geometricPrecision; }
+
+.karte {
+  position: relative;
+  overflow: hidden;
+  width: var(--b);
+  height: var(--h);
+  background: var(--titan);
+  color: var(--weiss);
+  font-kerning: normal;
+  font-feature-settings: "kern", "liga";
+}
+
+/* Foto: randlos, nie unter dem Signet, nie mit Text darüber außer dem Nachweis */
+.foto {
+  position: absolute; left: 0; top: 0; width: 100%; height: var(--foto-h);
+  overflow: hidden; background: #222;
+}
+.foto img { width: 100%; height: 100%; object-fit: cover; object-position: var(--fokus, 55% 45%); display: block; }
+/* der einzige Verlauf: unten im Foto, nur unter dem Nachweis */
+.foto::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 120px;
+  background: linear-gradient(to bottom, rgb(0 0 0 / 0), rgb(0 0 0 / 0.55));
+}
+.nachweis {
+  position: absolute; z-index: 2; right: var(--rand); bottom: 18px; max-width: 70%;
+  font-size: var(--nachweis, 20px); line-height: 1.25; font-weight: 450; letter-spacing: 0.005em;
+  color: rgb(255 255 255 / 0.92); text-align: right;
+}
+
+/* Logo unverändert auf weißer Platte (eine weiße Logofassung liegt nicht vor) */
+.logo {
+  position: absolute; z-index: 3; left: var(--rand); top: var(--rand);
+  background: var(--weiss); padding: var(--logo-pad, 16px 20px 14px);
+}
+.logo img { display: block; width: var(--logo-b, 216px); height: auto; }
+
+/* Textfeld in Titan */
+.feld { position: absolute; left: 0; right: 0; top: var(--foto-h); bottom: 0; background: var(--titan); }
+.signet { position: absolute; z-index: 0; pointer-events: none; }
+.signet img { display: block; width: 100%; height: auto; }
+.text { position: absolute; z-index: 1; left: var(--rand); right: var(--rand-r, var(--rand)); top: var(--text-oben, 48px); }
+
+.dach {
+  display: flex; align-items: center; gap: 16px; margin: 0 0 22px;
+  font-size: var(--dach, 28px); line-height: 1; font-weight: 600; letter-spacing: 0.01em; color: rgb(255 255 255 / 0.9);
+}
+.dach::before { content: ""; width: 56px; height: 8px; background: var(--impact); flex: none; }
+
+h1, h2 { margin: 0; font-weight: 760; letter-spacing: -0.012em; text-wrap: balance; }
+h1 { font-size: var(--titel, 64px); line-height: 1.07; }
+
+.fuss {
+  position: absolute; z-index: 1; left: var(--rand); right: var(--rand); bottom: var(--fuss-unten, 40px);
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 24px; line-height: 1.2; font-weight: 500; color: rgb(255 255 255 / 0.82);
+}
+.fuss b { font-weight: 700; color: var(--weiss); }
+
+/* Weiße Folie (Karussell innen) */
+.karte.hell { background: var(--weiss); color: var(--schwarz); }
+.hell .kopf { position: absolute; left: var(--rand); top: 56px; }
+.hell .kopf img { width: 200px; display: block; }
+.hell .zahl { position: absolute; right: var(--rand); top: 64px; font-size: 26px; font-weight: 600; color: var(--titan); }
+.hell h2 { font-size: 66px; line-height: 1.06; color: var(--titan); max-width: 940px; }
+.hell .regel { width: 56px; height: 8px; background: var(--impact); margin: 0 0 30px; }
+.hell p { font-size: 42px; line-height: 1.32; font-weight: 420; margin: 34px 0 0; max-width: 940px; }
+.hell .liste { margin: 34px 0 0; padding: 0; list-style: none; }
+.hell .liste li { font-size: 40px; line-height: 1.28; font-weight: 420; padding: 26px 0; border-top: 2px solid rgb(102 0 0 / 0.18); }
+.hell .liste li:last-child { border-bottom: 2px solid rgb(102 0 0 / 0.18); }
+.hell .liste b { display: block; font-weight: 720; color: var(--titan); font-size: 32px; margin-bottom: 8px; letter-spacing: 0.005em; }
+
+/* Kennzeichnung der Muster – entfällt in der Automatik (Klasse „muster“ am body weglassen) */
+.muster-zeichen { display: none; }
+.muster .muster-zeichen {
+  display: block; position: absolute; z-index: 9; right: 0; top: 0;
+  background: var(--schwarz); color: var(--weiss); padding: 12px 18px;
+  font: 600 20px/1 var(--schrift); letter-spacing: 0.02em;
+}
+/* Hilfslinien für sichere Zonen (nur Vorschau, ?hilfe=1) */
+.hilfe .zone { position: absolute; z-index: 8; border: 3px dashed rgb(0 160 255 / 0.9); pointer-events: none; }
+.hilfe .zone span { position: absolute; left: 8px; top: 6px; font: 600 18px/1 var(--schrift); color: rgb(0 160 255); background: #fff; padding: 2px 6px; }

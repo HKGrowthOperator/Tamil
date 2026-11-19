@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>tamil.de Karte – Vorschlag, nicht freigegeben</title>
+<link rel="stylesheet" href="karten.css">
+<!--
+  Kartensystem tamil.de (VORSCHLAG, NICHT FREIGEGEBEN – Signet ist ein Entwurf, Abgleich mit Feld A steht aus).
+  Aufruf: karte.html?format=<feed|karussell|story|facebook|whatsapp>[&folie=1..n][&muster=1][&hilfe=1]
+  Daten: window.KARTE (siehe daten-muster.js). Die Automatik setzt window.KARTE vor dem Laden (addInitScript)
+  und lässt muster weg. Fotografiert wird das Element .karte in seiner Zielgröße (deviceScaleFactor 1).
+-->
+<script src="daten-muster.js"></script>
+</head>
+<body>
+<main id="buehne"></main>
+<script>
+(function () {
+  "use strict";
+  var q = new URLSearchParams(location.search);
+  var K = window.KARTE;
+  var SIG = "../../signature/";
+  var SIGNET = {
+    titan: SIG + "vorschlaege/master-impact-auf-titan.svg",  // Impact-Punkte auf Titan-Fläche
+    hell: SIG + "vorschlaege/master-hell.svg",               // leise Tönung auf Weiß
+    master: SIG + "master.svg"                                // Master auf Weiß
+  };
+  var LOGO = "../../inhalte/logo.png";
+
+  // Maße je Format. b/h Zielgröße, fotoH Höhe des Fotos (0 = kein Foto), titel Schriftgröße der Überschrift,
+  // signet: Platzierung des Signets (links/oben/breite in px, darf über den Rand ragen und wird beschnitten).
+  var FORMATE = {
+    feed:     { b: 1080, h: 1350, fotoH: 760, rand: 56, logoB: 216, titel: 74, dach: 28, textOben: 50,
+                signet: { quelle: "titan", links: 448, oben: 1086, breite: 840 } },
+    whatsapp: { b: 1080, h: 1080, fotoH: 590, rand: 56, logoB: 200, titel: 64, dach: 26, textOben: 44,
+                signet: { quelle: "titan", links: 560, oben: 880, breite: 680 } },
+    story:    { b: 1080, h: 1920, fotoH: 720, fotoOben: 420, rand: 64, logoB: 216, logoOben: 262, titel: 78, dach: 30,
+                textOben: 1190, signet: { quelle: "titan", links: 330, oben: -96, breite: 900 } },
+    facebook: { b: 1200, h: 630, fotoH: 630, fotoLinks: 480, rand: 40, logoB: 168, titel: 40, dach: 22, textOben: 176,
+                signet: { quelle: "titan", links: -150, oben: 452, breite: 560 } }
+  };
+
+  function el(tag, cls, html) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (html != null) e.innerHTML = html;
+    return e;
+  }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function signet(cfg, quelle) {
+    var s = el("div", "signet");
+    s.style.left = cfg.links + "px"; s.style.top = cfg.oben + "px"; s.style.width = cfg.breite + "px";
+    var i = el("img"); i.src = SIGNET[quelle || cfg.quelle]; i.alt = ""; i.setAttribute("aria-hidden", "true");
+    s.appendChild(i);
+    return s;
+  }
+  function logoPlatte(f, links, oben) {
+    var l = el("div", "logo");
+    l.style.left = links + "px"; l.style.top = oben + "px";
+    l.style.setProperty("--logo-b", f.logoB + "px");
+    var i = el("img"); i.src = LOGO; i.alt = "tamil.de"; l.appendChild(i);
+    return l;
+  }
+  function foto(f, links, oben, breite, hoehe) {
+    var fo = el("div", "foto");
+    fo.style.left = links + "px"; fo.style.top = oben + "px"; fo.style.width = breite + "px"; fo.style.height = hoehe + "px";
+    var i = el("img"); i.src = K.bild; i.alt = K.bild_alt || ""; i.style.setProperty("--fokus", K.fokus || "50% 45%");
+    fo.appendChild(i);
+    var n = el("div", "nachweis", esc(K.nachweis)); n.style.setProperty("--rand", Math.round(f.rand * 0.6) + "px");
+    fo.appendChild(n);
+    return fo;
+  }
+  function textblock(f, titel, links, oben, breite) {
+    var t = el("div", "text");
+    t.style.left = links + "px"; t.style.top = oben + "px"; t.style.width = breite + "px"; t.style.right = "auto";
+    t.style.setProperty("--titel", f.titel + "px"); t.style.setProperty("--dach", f.dach + "px");
+    t.appendChild(el("p", "dach", esc(K.rubrik)));
+    t.appendChild(el("h1", null, esc(titel)));
+    return t;
+  }
+  function karte(f, cls) {
+    var k = el("article", "karte" + (cls ? " " + cls : ""));
+    k.style.setProperty("--b", f.b + "px"); k.style.setProperty("--h", f.h + "px");
+    k.style.setProperty("--rand", f.rand + "px");
+    k.appendChild(el("div", "muster-zeichen", "MUSTER · Vorschlag, nicht freigegeben"));
+    return k;
+  }
+  function zone(k, x, y, w, h, name) {
+    var z = el("div", "zone", "<span>" + name + "</span>");
+    z.style.left = x + "px"; z.style.top = y + "px"; z.style.width = w + "px"; z.style.height = h + "px";
+    k.appendChild(z);
+  }
+
+  // Titelkarte: Foto oben, Titan-Feld mit Dachzeile und Überschrift, Signet unten rechts angeschnitten
+  function titelkarte(f, fussRechts) {
+    var k = karte(f);
+    var feld = el("div", "feld"); feld.style.top = f.fotoH + "px";
+    k.appendChild(foto(f, 0, 0, f.b, f.fotoH));
+    k.appendChild(feld);
+    k.appendChild(signet(f.signet));
+    k.appendChild(textblock(f, K.titel, f.rand, f.fotoH + f.textOben, f.b - 2 * f.rand));
+    k.appendChild(logoPlatte(f, f.rand, f.rand));
+    var fu = el("div", "fuss", "<span><b>" + esc(K.link_text) + "</b></span><span>" + esc(fussRechts || "Link in der Bio") + "</span>");
+    fu.style.right = "auto"; fu.style.gap = "40px";
+    k.appendChild(fu);
+    return k;
+  }
+
+  function story() {
+    var f = FORMATE.story;
+    var k = karte(f);
+    k.appendChild(signet(f.signet));
+    k.appendChild(foto(f, 0, f.fotoOben, f.b, f.fotoH));
+    k.appendChild(logoPlatte(f, f.rand, f.logoOben));
+    k.appendChild(textblock(f, K.kurztitel || K.titel, f.rand, f.textOben, f.b - 2 * f.rand));
+    var fu = el("div", "fuss", "<span><b>" + esc(K.link_text) + "</b></span><span>Den ganzen Beitrag lest ihr über den Link</span>");
+    fu.style.bottom = "auto"; fu.style.top = "1518px"; fu.style.right = "auto"; fu.style.gap = "28px";
+    k.appendChild(fu);
+    return k;
+  }
+
+  function facebook() {
+    var f = FORMATE.facebook;
+    var k = karte(f);
+    k.appendChild(foto(f, f.fotoLinks, 0, f.b - f.fotoLinks, f.fotoH));
+    k.appendChild(signet(f.signet));
+    k.appendChild(logoPlatte(f, f.rand, f.rand));
+    k.appendChild(textblock(f, K.kurztitel || K.titel, f.rand, f.textOben, f.fotoLinks - 2 * f.rand));
+    return k;
+  }
+
+  function karussell(n) {
+    var folien = K.folien || [];
+    var gesamt = folien.length + 2;
+    var f = FORMATE.feed;
+    if (n <= 1) return titelkarte(f, "1/" + gesamt + "  Wischen für mehr");
+    if (n >= gesamt) {
+      // Schluss: Master-Signet groß auf Weiß, Verweis auf den Link
+      var k = karte(f, "hell");
+      var kopf = el("div", "kopf"); var li = el("img"); li.src = LOGO; li.alt = "tamil.de"; kopf.appendChild(li);
+      k.appendChild(kopf);
+      k.appendChild(el("div", "zahl", gesamt + "/" + gesamt));
+      k.appendChild(signet({ links: 60, oben: 640, breite: 960 }, "master"));
+      var t = el("div", "text"); t.style.top = "236px";
+      t.appendChild(el("div", "regel"));
+      t.appendChild(el("h2", null, "Den ganzen Beitrag lest ihr auf tamil.de"));
+      t.appendChild(el("p", null, "Link in der Bio"));
+      k.appendChild(t);
+      return k;
+    }
+    var fo = folien[n - 2];
+    var k2 = karte(f, "hell");
+    var kopf2 = el("div", "kopf"); var li2 = el("img"); li2.src = LOGO; li2.alt = "tamil.de"; kopf2.appendChild(li2);
+    k2.appendChild(kopf2);
+    k2.appendChild(el("div", "zahl", n + "/" + gesamt));
+    k2.appendChild(signet({ links: 470, oben: 1040, breite: 860 }, "hell"));
+    var t2 = el("div", "text"); t2.style.top = "236px";
+    t2.appendChild(el("div", "regel"));
+    t2.appendChild(el("h2", null, esc(fo.titel)));
+    (fo.text || []).forEach(function (s) { t2.appendChild(el("p", null, esc(s))); });
+    if (fo.liste) {
+      var ul = el("ul", "liste");
+      fo.liste.forEach(function (z) { ul.appendChild(el("li", null, "<b>" + esc(z[0]) + "</b>" + esc(z[1]))); });
+      t2.appendChild(ul);
+    }
+    k2.appendChild(t2);
+    return k2;
+  }
+
+  var format = q.get("format") || "feed";
+  var k;
+  if (format === "story") k = story();
+  else if (format === "facebook") k = facebook();
+  else if (format === "karussell") k = karussell(parseInt(q.get("folie") || "1", 10));
+  else if (format === "whatsapp") k = titelkarte(FORMATE.whatsapp, "Mehr auf tamil.de");
+  else k = titelkarte(FORMATE.feed);
+  if (q.get("muster") === "1") document.body.classList.add("muster");
+  if (q.get("hilfe") === "1") {
+    document.body.classList.add("hilfe");
+    if (format === "story") { zone(k, 0, 0, 1080, 250, "oben frei halten (250)"); zone(k, 0, 1670, 1080, 250, "unten frei halten (250)"); zone(k, 64, 1572, 560, 92, "Link-Sticker"); }
+    else if (format === "facebook") zone(k, 0, 0, 1200, 630, "ganz sichtbar (1,91 : 1)");
+    else if (format !== "whatsapp") zone(k, 45, 0, 990, 1350, "Profilraster 3 : 4");
+  }
+  document.getElementById("buehne").appendChild(k);
+})();
+</script>
+</body>
+</html>
