@@ -1,6 +1,6 @@
 <?php
 /**
- * Termin eines Beitrags (Felder „Vorspann und Termin“) als Kasten ohne Kasten: Linie in Tinte oben, Titel, Angaben
+ * Termin eines Beitrags (Felder „Vorspann und Termin“) als Kasten ohne Kasten: Linie in Titan Red oben, Titel, Angaben
  * Zeile für Zeile, darunter Tickets, Weitersagen und der Weg zu allen Terminen.
  *
  * @var array $args { @type int $post, @type array $event }

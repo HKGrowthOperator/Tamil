@@ -3,32 +3,59 @@
  * design/richtungen/klar2/bewegung/, Regeln in design/brief.md Abschnitt 10. Vorbild BBC News (Kopf, Ordnung),
  * tagesschau (Titel im Bild), Spiegel (Bildblöcke). Kurzfassung: DESIGN.md, Tokens: design/tokens.css.
  *
+ * Farben seit 3.4.0: Markenfarben von Luis (19.11.2026) – Weiß, Titan Red dominant, Impact Red als Akzent, Schwarz
+ * für Schrift (Abschnitt Tokens, DESIGN.md „Farben“).
+ *
  * Aufbau: Tokens → Basis → Kopf und Band → Bausteine (Rahmen, Dachzeile, Titel, Bild mit Titel) → Startseite →
  * Artikel → Seitenkopf und Listen → Rubrik, Kino, Termine → Seiten und Formulare → Plugin-Bausteine → Anzeigen →
  * Fuß → Gutenberg → Bewegung → reduzierte Bewegung und Druck.
  */
 
 /* ---------- Tokens ---------- */
-/* klar2: feste Farbwerte aus design/brief.md Abschnitt 3 und 10.1 (oklch; die Hex-Werte in theme.json sind nur
-   Rückfall für Editor und Farbklassen). Eine Schrift (Libre Franklin), Radius 0, keine Schatten, Rot nur als Akzent. */
+/* Markenfarben (Luis, 19.11.2026; docs/abnahme/2026-11-19-signature.md, Branding Master Handoff v1.1): Weiß als Grund,
+   Titan Red als dominante Farbe (Rubrikband, „Diese Woche“, Knöpfe, Linien über Blöcken), Impact Red als Akzent
+   (Dachzeile, Top-News, Links im Text, Leselinie, Markierung im Band, Überfahren), Schwarz für Schrift. Richtwert
+   der Gewichtung: 50 % Weiß, 35 % Titan, 10 % Impact, 5 % Schwarz. Die vier Markenwerte stehen als Hex, damit sie
+   exakt so erscheinen; alles andere leitet sich hier davon ab oder ist neutral bzw. semantisch benannt (keine weiteren
+   Markenfarben). theme.json und design/tokens.css führen dieselben Werte. Radius 0, keine Schatten. */
 :root {
-  --grund: oklch(0.985 0.002 250);
-  --flaeche: oklch(0.962 0.003 250);
-  --tinte: oklch(0.21 0.012 255);
-  --leise: oklch(0.45 0.012 255);
-  --linie: oklch(0.88 0.004 250);
-  --rot: oklch(0.508 0.177 25.6);
-  --rot-hell: oklch(0.55 0.175 25.6);   /* Rubrikband beim Überfahren (weiß darauf 5,1 : 1) */
-  --rot-linie: oklch(0.62 0.15 25.6);   /* feine Trennlinie im Rubrikband */
-  --rot-dunkel: oklch(0.42 0.15 25.6);  /* Spur der Leselinie im Rubrikband */
-  --hell: oklch(0.985 0.002 250);
-  --hell-leise: oklch(0.82 0.006 250);
-  --linie-dunkel: oklch(0.36 0.010 255);
-  --flaeche-dunkel: oklch(0.26 0.012 255);
-  --tinte-hover: oklch(0.3 0.012 255);
-  /* der einzige Verlauf: unter Schrift im Bild, von durchsichtig nach Tinte */
-  --verlauf: linear-gradient(to bottom, oklch(0.21 0.012 255 / 0) 0, oklch(0.21 0.012 255 / 0.74) 52px, oklch(0.21 0.012 255 / 0.9) 100%);
-  --verlauf-kurz: linear-gradient(to bottom, oklch(0.21 0.012 255 / 0) 0, oklch(0.21 0.012 255 / 0.8) 22px, oklch(0.21 0.012 255 / 0.92) 100%);
+  /* Marke */
+  --tamil-color-background: #FFFFFF;   /* Reinweiß, oklch(1 0 0) */
+  --tamil-color-primary: #660000;      /* Titan Red, oklch(0.3204 0.1315 29.23); Weiß darauf 13,4 : 1 */
+  --tamil-color-accent: #B30000;       /* Impact Red, oklch(0.4815 0.1976 29.23); auf Weiß 7,2 : 1 */
+  --tamil-color-text: #000000;         /* Schwarz: Fließtext und Überschriften auf Weiß, 21 : 1 */
+  /* Signet „Tamil Dots 04A“ folgt nach Datei und Anleitung von Luis (Platz für --signatur-*; noch keine Grafik). */
+
+  /* Ableitungen aus Titan (nur dunkler, kein neuer Ton) */
+  --titan-tief: #520000;               /* Titan mit 20 % Schwarz: Bildkacheln auf Titan; Weiß darauf 15,5 : 1 */
+
+  /* neutral und semantisch (keine Markenfarben) */
+  --neutral-flaeche: #F2F2F2;          /* Bildgrund beim Laden, Hinweise, Meldungen der Formulare */
+  --neutral-linie: #D9D9D9;            /* Trennlinien zwischen Zeilen */
+  --neutral-leise: #555555;            /* Datum, Orte, Nachweise; auf Weiß 7,5 : 1 */
+  --neutral-hell-leise: #CCCCCC;       /* Nebeninfos auf Titan und im Bild; auf Titan 8,4 : 1, auf Titan-tief 9,6 : 1 */
+  --status-fehler: var(--tamil-color-accent);   /* Formularfehler: Text und Rand */
+
+  /* Kurznamen, wie sie Theme und Plugin lesen */
+  --grund: var(--tamil-color-background);
+  --weiss: var(--tamil-color-background);
+  --hell: #FFFFFF;                     /* Schrift auf Titan, Impact und im Bild */
+  --tinte: var(--tamil-color-text);
+  --titan: var(--tamil-color-primary);
+  --rot: var(--tamil-color-accent);
+  --flaeche: var(--neutral-flaeche);
+  --leise: var(--neutral-leise);
+  --linie: var(--neutral-linie);
+  --hell-leise: var(--neutral-hell-leise);
+  --linie-stark: var(--titan);         /* Linien über Blöcken, Tabellenköpfe, Kästen: Titan statt Schwarz */
+  --linie-titan: var(--rot);           /* feine Linien auf Titan (Band, „Diese Woche“) */
+  --fokus: var(--titan);               /* Fokusrahmen auf Weiß; auf Titan und Impact weiß */
+  /* Schrift im Bild: der einzige Verlauf, von durchsichtig nach Schwarz; auf Titan-Flächen nach Titan (.woche) */
+  --verlauf: linear-gradient(to bottom, rgb(0 0 0 / 0) 0, rgb(0 0 0 / 0.72) 52px, rgb(0 0 0 / 0.88) 100%);
+  --verlauf-kurz: linear-gradient(to bottom, rgb(0 0 0 / 0) 0, rgb(0 0 0 / 0.78) 22px, rgb(0 0 0 / 0.9) 100%);
+  --verlauf-titan: linear-gradient(to bottom, rgb(102 0 0 / 0) 0, rgb(102 0 0 / 0.8) 52px, rgb(102 0 0 / 0.94) 100%);
+  --verlauf-titan-kurz: linear-gradient(to bottom, rgb(102 0 0 / 0) 0, rgb(102 0 0 / 0.84) 22px, rgb(102 0 0 / 0.95) 100%);
+  --symbolbild-grund: rgb(102 0 0 / 0.86);   /* Schild „Symbolbild“: Titan, Weiß darauf mindestens 9,5 : 1 */
 
   --schrift: var(--wp--preset--font-family--libre-franklin, "Libre Franklin", Catamaran, "Noto Sans Tamil", system-ui, sans-serif);
   --schrift-tamil: var(--wp--preset--font-family--tamil, Catamaran, "Noto Sans Tamil", "Tamil Sangam MN", sans-serif);
@@ -47,7 +74,6 @@
   --t-vorhang: 800ms;
 
   /* Namen, die das Plugin tamil-site liest (consent.css, mit eigenem Rückfall) */
-  --weiss: var(--grund);
   --titel: var(--schrift);
   --r: 0;
   --r-klein: 0;
@@ -80,7 +106,7 @@ img, video { display: block; max-width: 100%; height: auto; }
 svg { display: block; }
 a { color: inherit; text-decoration: none; }
 button, input, select, textarea { font: inherit; color: inherit; }
-:focus-visible { outline: 2px solid var(--tinte); outline-offset: 3px; }
+:focus-visible { outline: 2px solid var(--fokus); outline-offset: 3px; }
 ::selection { background: color-mix(in oklab, var(--rot) 20%, transparent); }
 .zusammen { white-space: nowrap; }
 .nur-vorlesen, .screen-reader-text, .visually-hidden {
@@ -94,11 +120,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .skip {
   position: absolute; left: var(--rand); top: -96px; z-index: 400;
   display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px;
-  background: var(--tinte); color: var(--hell); font-weight: 600;
+  background: var(--titan); color: var(--hell); font-weight: 600;
 }
 .skip:focus-visible { top: 8px; outline-color: var(--hell); outline-offset: -4px; }
 
-/* Links im Fließtext und als Aktion: unterstrichen, 44 px hoch tippbar */
+/* Links als Aktion: schwarz und unterstrichen, beim Überfahren Impact; 44 px hoch tippbar (Links im Fließtext: .inhalt a) */
 .textlink {
   display: inline-flex; align-items: center; min-height: 44px;
   font-weight: 600; color: var(--tinte);
@@ -107,18 +133,19 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .textlink:hover { color: var(--rot); }
 .aktionen { display: flex; flex-wrap: wrap; align-items: center; gap: 0 24px; margin-top: 8px; }
 
-/* Knopf: Tinte, kein Radius, kein Schatten (nur für Formulare und Bedienung, nie an Anreißern) */
+/* Knopf: Titan mit weißer Schrift (13,4 : 1), beim Überfahren Impact (7,2 : 1); kein Radius, kein Schatten (nur für
+   Formulare und Bedienung, nie an Anreißern) */
 .knopf {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   min-height: 48px; padding: 0 20px;
-  border: 1px solid var(--tinte); border-radius: 0;
-  background: var(--tinte); color: var(--hell);
+  border: 1px solid var(--titan); border-radius: 0;
+  background: var(--titan); color: var(--hell);
   font-size: 16px; font-weight: 600; line-height: 1.2; white-space: nowrap;
   cursor: pointer;
 }
-.knopf:hover { background: var(--tinte-hover); border-color: var(--tinte-hover); color: var(--hell); }
-.knopf-leise { background: transparent; color: var(--tinte); }
-.knopf-leise:hover { background: var(--flaeche); color: var(--tinte); }
+.knopf:hover { background: var(--rot); border-color: var(--rot); color: var(--hell); }
+.knopf-leise { background: transparent; color: var(--titan); }
+.knopf-leise:hover { background: var(--flaeche); border-color: var(--titan); color: var(--titan); }
 input[type="search"], input[type="text"], input[type="email"], input[type="tel"], input[type="url"],
 input[type="number"], input[type="date"], input[type="password"], textarea, select {
   min-height: 48px; padding: 8px 14px;
@@ -128,7 +155,7 @@ input[type="number"], input[type="date"], input[type="password"], textarea, sele
 }
 textarea { min-height: 160px; resize: vertical; }
 input:focus-visible, textarea:focus-visible, select:focus-visible { outline-offset: 0; }
-input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-color: var(--tinte); }
+input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-color: var(--titan); }
 .suchfeld { display: flex; gap: 8px; max-width: 640px; }
 .suchfeld input { flex: 1 1 auto; min-width: 0; }
 
@@ -142,16 +169,17 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .kopfzeile a { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; color: var(--tinte); }
 .kopfzeile a:hover { color: var(--rot); }
 .kopfzeile__suche { flex: none; font-size: 14px; font-weight: 600; padding-left: 12px; }
-/* Top-News „Neu“ (Luis, 17.11.): Überschriften der neuesten Beiträge in Rot (6,1 : 1 auf dem Grund), einzeilig mit
-   Auslassung; am Handy und Tablet einer, ab 1024 px zwei mit feiner Linie dazwischen. Am Handy weicht das Datum. */
+/* Top-News „Neu“ (Luis, 17.11.): Überschriften der neuesten Beiträge in Impact Red (7,2 : 1 auf Weiß), beim Überfahren
+   Titan; einzeilig mit Auslassung; am Handy und Tablet einer, ab 1024 px zwei mit feiner Linie dazwischen. „Neu“ als
+   kleines Schild in Impact mit weißer Schrift. Am Handy weicht das Datum. */
 .kopfzeile__neu { display: flex; align-items: center; gap: 12px; flex: 1 1 auto; min-width: 0; overflow: hidden; white-space: nowrap; }
-.kopfzeile__neu strong { flex: none; color: var(--tinte); font-weight: 700; }
+.kopfzeile__neu strong { flex: none; padding: 1px 6px; background: var(--rot); color: var(--hell); font-size: 12px; font-weight: 700; line-height: 1.4; }
 .kopfzeile .kopfzeile__neu a {
   display: block; flex: 0 1 auto; min-width: 0; line-height: 44px; padding-inline: 4px; margin-inline: -4px;
   overflow: hidden; text-overflow: ellipsis; color: var(--rot); font-weight: 600;
 }
 .kopfzeile .kopfzeile__neu a:hover, .kopfzeile .kopfzeile__neu a:focus-visible {
-  color: var(--rot); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em;
+  color: var(--titan); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em;
 }
 .kopfzeile__neu a:focus-visible { outline-offset: -2px; } /* innen, sonst schneidet die einzeilige Zeile den Rahmen */
 .kopfzeile .kopfzeile__neu a + a { display: none; }
@@ -166,8 +194,10 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .kopf__logo { display: block; width: max-content; padding: 6px 0; }
 .kopf__logo img { height: 44px; width: auto; }
 
-/* Rubrikband in Rot mit weißer Schrift (Luis, 17.11.2026): weiß auf Rot 6,1 : 1, beim Überfahren 5,1 : 1 */
-.band { position: sticky; top: 0; z-index: 20; background: var(--rot); color: var(--hell); }
+/* Rubrikband in Titan Red mit weißer Schrift (Luis, 19.11.2026): weiß auf Titan 13,4 : 1. Beim Überfahren und bei
+   offenem „Mehr“ Impact Red (weiß darauf 7,2 : 1); die aktive Rubrik ist in Impact markiert und trägt 3 px Weiß darunter
+   (weiß auf Titan 13,4 : 1, auf Impact 7,2 : 1), damit der Zustand nicht nur am Rotton hängt. */
+.band { position: sticky; top: 0; z-index: 20; background: var(--titan); color: var(--hell); }
 .band__innen { display: flex; align-items: stretch; max-width: var(--breite); margin: 0 auto; padding: 0 4px; }
 .band__liste {
   display: flex; flex: 1 1 auto; min-width: 0;
@@ -183,29 +213,29 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   padding: 0 12px; line-height: var(--band-hoehe);
   font-size: 15px; font-weight: 500; color: var(--hell); white-space: nowrap;
 }
-.band__liste a:hover, .mehr summary:hover { background: var(--rot-hell); color: var(--hell); }
-.band__liste a[aria-current] { color: var(--hell); font-weight: 600; }
+.band__liste a:hover, .mehr summary:hover { background: var(--rot); color: var(--hell); }
+.band__liste a[aria-current] { background: var(--rot); color: var(--hell); font-weight: 600; }
 .band__liste a[aria-current]::after {
   content: ""; position: absolute; left: 12px; right: 12px; bottom: 0; height: 3px; background: var(--hell);
 }
 .band__liste :focus-visible, .mehr summary:focus-visible { outline-color: var(--hell); outline-offset: -4px; }
-.mehr__paneel :focus-visible { outline-color: var(--tinte); outline-offset: 2px; }
+.mehr__paneel :focus-visible { outline-color: var(--fokus); outline-offset: 2px; }
 .admin-bar .band { top: 0; }
 @media (min-width: 601px) { .admin-bar .band { top: var(--wp-admin--admin-bar--height, 32px); } }
 
 /* „Mehr“: Dienste, Suche und Social; ohne Skript ein einfaches <details> */
-.mehr { flex: none; border-left: 1px solid var(--rot-linie); }
+.mehr { flex: none; border-left: 1px solid var(--linie-titan); }
 .mehr summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 6px; }
 .mehr summary::-webkit-details-marker { display: none; }
 .mehr summary::after { content: "+"; font-weight: 400; font-size: 18px; line-height: 1; }
-.mehr[open] summary { background: var(--rot-hell); color: var(--hell); }
+.mehr[open] summary { background: var(--rot); color: var(--hell); }
 .mehr[open] summary::after { content: "\2212"; }
 .mehr:not([open]) .mehr__paneel { display: none; }
 .mehr__paneel {
   position: absolute; left: 0; right: 0; top: 100%; z-index: 30;
   padding: 16px var(--rand) 20px;
   background: var(--grund); color: var(--tinte);
-  border-bottom: 1px solid var(--tinte);
+  border-bottom: 1px solid var(--linie-stark);
 }
 .mehr__spalten { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 24px; margin-top: 8px; }
 .mehr__titel { margin: 12px 0 0; padding-bottom: 6px; border-bottom: 1px solid var(--linie); font-size: 13px; font-weight: 600; color: var(--leise); }
@@ -235,7 +265,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .band__liste a, .mehr summary { padding: 0 14px; font-size: 16px; }
   .band__liste a[aria-current]::after { left: 14px; right: 14px; }
   .mehr { margin-left: auto; border-left: 0; }
-  .mehr__paneel { left: auto; right: var(--rand); width: 420px; padding: 16px 24px 20px; border: 1px solid var(--tinte); border-top: 0; }
+  .mehr__paneel { left: auto; right: var(--rand); width: 420px; padding: 16px 24px 20px; border: 1px solid var(--linie-stark); border-top: 0; }
 }
 
 /* ---------- Bausteine: Anreißer, Rahmen, Dachzeile, Titel, Bild mit Titel ---------- */
@@ -257,7 +287,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .symbolbild {
   position: absolute; top: 0; right: 0; z-index: 1;
   padding: 2px 7px; font-size: 12px; line-height: 1.4; font-weight: 600;
-  background: oklch(0.21 0.012 255 / 0.8); color: var(--hell); pointer-events: none;
+  background: var(--symbolbild-grund); color: var(--hell); pointer-events: none;
 }
 .symbolbild__kurz { display: none; }
 @container (max-width: 149px) {
@@ -286,15 +316,15 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 
 .block-titel {
   font-size: 19px; line-height: 1.25; font-weight: 700;
-  border-top: 1px solid var(--tinte); padding-top: 12px; margin-bottom: 4px;
+  border-top: 2px solid var(--linie-stark); padding-top: 11px; margin-bottom: 4px;
 }
 .block-titel a { display: inline-block; padding: 11px 0; margin: -11px 0; } /* 44 px tippbar, ohne die Zeile zu strecken */
 .block-titel a:hover { color: var(--rot); }
-.block-kopf { display: flex; align-items: baseline; justify-content: space-between; gap: 0 24px; flex-wrap: wrap; border-top: 1px solid var(--tinte); }
+.block-kopf { display: flex; align-items: baseline; justify-content: space-between; gap: 0 24px; flex-wrap: wrap; border-top: 2px solid var(--linie-stark); }
 .block-kopf .block-titel { border-top: 0; }
 .block-kopf .textlink { font-size: 15px; }
 
-/* Titel im Bild: Text unten auf dem Verlauf; Dachzeile hell, weil Rot auf Dunkel zu schwach ist. Das Format des
+/* Titel im Bild: Text unten auf dem Verlauf; Dachzeile weiß, weil Impact auf dem Verlauf zu schwach ist. Das Format des
    Rahmens ist das Mindestmaß: Braucht der Titel mehr Platz, wird der Rahmen höher, statt den Titel abzuschneiden
    (overflow: clip lässt die Mindesthöhe aus dem Inhalt zu, das Bild liegt absolut darunter). */
 .imbild-anr .rahmen { display: flex; flex-direction: column; justify-content: flex-end; overflow: clip; }
@@ -308,10 +338,10 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .imbild .meta { color: var(--hell-leise); }
 .imbild .meta__rubrik { color: var(--hell); }
 .imbild-anr:focus-visible, .kacheln a:focus-visible { outline: none; }
-/* Fokus bei Bildern mit Titel im Bild: nach innen gezeichnet, dunkler Rand mit heller Linie */
+/* Fokus bei Bildern mit Titel im Bild: nach innen gezeichnet, Rand in Titan mit weißer Linie */
 .imbild-anr:focus-visible .rahmen::after, .kacheln a:focus-visible .rahmen::after {
   content: ""; position: absolute; inset: 0; z-index: 2;
-  border: 3px solid var(--tinte); outline: 2px solid var(--hell); outline-offset: -5px;
+  border: 3px solid var(--fokus); outline: 2px solid var(--hell); outline-offset: -5px;
 }
 .imbild-anr:focus-visible .vorspann { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
 
@@ -369,12 +399,17 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .kachel .imbild { padding-bottom: 14px; }
 .kachel__unter { padding-top: 12px; }
 
-/* ---------- Diese Woche (dunkel) ---------- */
-.woche { margin-top: 48px; padding: 28px 0 40px; background: var(--tinte); color: var(--hell); }
+/* ---------- Diese Woche: Fläche in Titan Red ----------
+   Weiß darauf 13,4 : 1, Nebeninfos 8,4 : 1. Schrift im Bild läuft hier auf einem Verlauf nach Titan, die Linie unter
+   dem Titel ist Impact. */
+.woche {
+  --verlauf: var(--verlauf-titan); --verlauf-kurz: var(--verlauf-titan-kurz);
+  margin-top: 48px; padding: 28px 0 40px; background: var(--titan); color: var(--hell);
+}
 .woche :focus-visible { outline-color: var(--hell); }
 .woche__titel {
   font-size: 22px; line-height: 1.2; font-weight: 700;
-  padding-bottom: 14px; margin-bottom: 20px; border-bottom: 1px solid var(--linie-dunkel);
+  padding-bottom: 14px; margin-bottom: 20px; border-bottom: 2px solid var(--linie-titan);
 }
 .woche__raster { display: grid; gap: 16px; }
 .woche .kachel--gross .rahmen { aspect-ratio: 4 / 3; }
@@ -384,11 +419,12 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .woche__art { font-size: 13px; line-height: 1.35; font-weight: 600; color: var(--hell-leise); padding-top: 6px; }
 .woche__gruppe ul { display: flex; flex-direction: column; gap: 10px; }
 .woche__gruppe ul:empty { display: none; }
-/* Bildkacheln auf Dunkel (Kino, Termine, Leerzustand): Bild oben, Text darunter; Kino quer mit Bild links. Die
-   Kacheln wachsen nicht in die Höhe des Nachbarn (keine leere Fläche unter einem einzelnen Film) */
-.grafik { background: var(--flaeche-dunkel); }
+/* Bildkacheln auf Titan (Kino, Termine, Leerzustand), eine Stufe dunkler als die Fläche: Bild oben, Text darunter;
+   Kino quer mit Bild links. Die Kacheln wachsen nicht in die Höhe des Nachbarn (keine leere Fläche unter einem
+   einzelnen Film) */
+.grafik { background: var(--titan-tief); }
 .grafik .anr { height: 100%; }
-.grafik .rahmen { background: var(--linie-dunkel); }
+.grafik .rahmen { background: var(--titan); }
 .grafik__inhalt { padding: 14px 16px 18px; }
 .grafik--quer .anr { display: grid; grid-template-columns: 112px minmax(0, 1fr); }
 .grafik--quer .rahmen { aspect-ratio: 4 / 3; align-self: start; }
@@ -555,24 +591,24 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 
 /* Seitennavigation */
 .seiten { margin-top: 24px; }
-.seiten-zeile { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 24px; border-top: 1px solid var(--tinte); padding-top: 8px; }
+.seiten-zeile { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 24px; border-top: 1px solid var(--linie-stark); padding-top: 8px; }
 .seiten p { margin: 0; font-size: 15px; color: var(--leise); }
 .seiten .seiten-links { margin-top: 0; gap: 0 4px; }
 .seiten .seiten-links a, .seiten .seiten-links > span { padding: 0 8px; }
 .seiten .seiten-links a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
 .seiten .seiten-links a:hover { color: var(--rot); }
-.seiten .seiten-links .current { font-weight: 700; }
+.seiten .seiten-links .current { background: var(--titan); color: var(--hell); font-weight: 700; }
 .seiten .seiten-links .prev, .seiten .seiten-links .next { font-weight: 600; }
 
 /* Tabellen (Kino nach Stadt, Werbeplätze): Linien statt Kästen */
 .tafel-wrap { max-width: 100%; }
 .tafel { width: 100%; border-collapse: collapse; font-size: 16px; line-height: 1.45; font-variant-numeric: tabular-nums; }
-.tafel thead th { padding: 8px 16px 8px 0; border-bottom: 1px solid var(--tinte); font-size: 13px; font-weight: 600; color: var(--leise); text-align: left; white-space: nowrap; }
+.tafel thead th { padding: 8px 16px 8px 0; border-bottom: 1px solid var(--linie-stark); font-size: 13px; font-weight: 600; color: var(--leise); text-align: left; white-space: nowrap; }
 .tafel td, .tafel tbody th { padding: 10px 16px 10px 0; border-top: 1px solid var(--linie); vertical-align: top; text-align: left; }
 .tafel tbody tr:first-child td, .tafel tbody tr:first-child th { border-top: 0; }
 .tafel td:last-child { padding-right: 0; }
 .tafel tbody th { font-weight: 600; }
-.tafel .land th { padding-top: 20px; font-size: 17px; font-weight: 700; border-top: 0; border-bottom: 1px solid var(--tinte); }
+.tafel .land th { padding-top: 20px; font-size: 17px; font-weight: 700; border-top: 0; border-bottom: 1px solid var(--linie-stark); }
 .tafel tbody:first-of-type .land th { padding-top: 12px; }
 .tafel .land + tr td, .tafel .land + tr th { border-top: 0; }
 .tafel.orte .stadt { width: 32%; }
@@ -587,10 +623,10 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .tafel tbody tr:first-child, .tafel .land + tr { border-top: 0; }
   .tafel td, .tafel tbody th { padding: 0; border: 0; }
   .tafel .land { padding: 0; }
-  .tafel .land th { padding: 16px 0 6px; border-bottom: 1px solid var(--tinte); }
+  .tafel .land th { padding: 16px 0 6px; border-bottom: 1px solid var(--linie-stark); }
 }
 
-/* ---------- Kino und Termine: dunkler Bereich wie „Diese Woche“ ---------- */
+/* ---------- Kino und Termine: Fläche in Titan Red wie „Diese Woche“ ---------- */
 .woche--seite { margin-top: 32px; }
 .woche--seite .woche__titel { margin-bottom: 12px; }
 .woche--seite > .innen > .woche__art { margin: -4px 0 16px; padding-top: 0; }
@@ -621,8 +657,8 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   min-height: 44px; padding: 0 14px; border: 1px solid var(--leise); border-radius: 0;
   background: var(--grund); color: var(--tinte); font: inherit; font-size: 15px; font-weight: 500; cursor: pointer;
 }
-.chip:hover { border-color: var(--tinte); }
-.chip[aria-pressed="true"] { background: var(--tinte); border-color: var(--tinte); color: var(--hell); font-weight: 600; }
+.chip:hover { border-color: var(--titan); }
+.chip[aria-pressed="true"] { background: var(--titan); border-color: var(--titan); color: var(--hell); font-weight: 600; }
 .kalender__titel { margin-top: 28px; padding-bottom: 8px; border-bottom: 1px solid var(--linie); font-size: 19px; line-height: 1.25; font-weight: 650; }
 .zeile__angaben { margin-top: 4px; font-size: 15px; line-height: 1.45; color: var(--leise); }
 
@@ -701,6 +737,10 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .inhalt h4 { font-size: 18px; margin: 1.2em 0 0.3em; }
 .inhalt a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
 .inhalt a:hover { color: var(--rot); }
+/* Links im Text (ohne Klasse, wie sie der Editor setzt): Impact Red (7,2 : 1 auf Weiß), beim Überfahren Titan.
+   Links von Bausteinen (Anreißer, Verzeichnisnamen, Anzeigen) tragen eine Klasse und bleiben schwarz. */
+.inhalt a:not([class]) { color: var(--rot); }
+.inhalt a:not([class]):hover { color: var(--titan); }
 .inhalt ul, .inhalt ol { padding-left: 1.3em; }
 .inhalt ul { list-style: disc; }
 .inhalt li + li { margin-top: 0.4em; }
@@ -709,7 +749,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .inhalt .liste li + li { margin-top: 0; }
 .inhalt .liste a { text-decoration: none; }
 .inhalt .liste .rahmen img { height: 100%; }
-.inhalt blockquote, .inhalt .wp-block-quote { margin-inline: 0; padding: 2px 0 2px 20px; border-left: 2px solid var(--tinte); }
+.inhalt blockquote, .inhalt .wp-block-quote { margin-inline: 0; padding: 2px 0 2px 20px; border-left: 2px solid var(--linie-stark); }
 .inhalt blockquote cite { display: block; margin-top: 8px; font-style: normal; font-size: 14px; color: var(--leise); }
 .inhalt .wp-block-pullquote { padding: 16px 0; text-align: left; font-size: 21px; font-weight: 650; line-height: 1.35; }
 .inhalt .wp-block-pullquote blockquote { border: 0; padding: 0; }
@@ -718,22 +758,22 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .inhalt figcaption, .wp-caption-text, .wp-element-caption { margin-top: 6px; font-size: 13px; line-height: 1.4; color: var(--leise); }
 .inhalt hr { border: 0; border-top: 1px solid var(--linie); margin: 2em 0; }
 .inhalt summary { display: flex; align-items: center; min-height: 44px; cursor: pointer; font-weight: 600; }
-.inhalt table { width: 100%; border-collapse: collapse; font-size: 16px; line-height: 1.45; border-top: 1px solid var(--tinte); }
-.inhalt thead th { text-align: left; font-weight: 600; font-size: 13px; color: var(--leise); padding: 8px 12px 8px 0; border-bottom: 1px solid var(--tinte); }
+.inhalt table { width: 100%; border-collapse: collapse; font-size: 16px; line-height: 1.45; border-top: 1px solid var(--linie-stark); }
+.inhalt thead th { text-align: left; font-weight: 600; font-size: 13px; color: var(--leise); padding: 8px 12px 8px 0; border-bottom: 1px solid var(--linie-stark); }
 .inhalt td, .inhalt tbody th { text-align: left; vertical-align: top; padding: 10px 12px 10px 0; border-top: 1px solid var(--linie); }
 .inhalt tbody th { font-weight: 650; }
 .inhalt .wp-block-table { overflow-x: auto; }
 .inhalt .alignwide, .inhalt .alignfull, .inhalt .ad { max-width: none; }
 .inhalt .ad a, .inhalt .anzeige-wrap, .inhalt .anzeige * { text-decoration: none; }
-.inhalt .kino-liste { list-style: none; padding: 0; border-top: 1px solid var(--tinte); }
+.inhalt .kino-liste { list-style: none; padding: 0; border-top: 1px solid var(--linie-stark); }
 .inhalt .kino-liste li { margin: 0; padding: 10px 0; border-top: 1px solid var(--linie); font-size: 16px; line-height: 1.45; }
 .inhalt .kino-liste li:first-child { border-top: 0; }
 .inhalt .hinweis { font-size: 15px; color: var(--leise); }
-.hinweis-box, .tipp { padding: 12px 16px; background: var(--flaeche); border-top: 1px solid var(--tinte); font-size: 17px; line-height: 1.5; }
-.event-box { padding: 12px 0 4px; border-top: 1px solid var(--tinte); border-bottom: 1px solid var(--linie); font-size: 17px; line-height: 1.5; }
+.hinweis-box, .tipp { padding: 12px 16px; background: var(--flaeche); border-top: 1px solid var(--linie-stark); font-size: 17px; line-height: 1.5; }
+.event-box { padding: 12px 0 4px; border-top: 1px solid var(--linie-stark); border-bottom: 1px solid var(--linie); font-size: 17px; line-height: 1.5; }
 .event-box > * + * { margin-top: 0.4em; }
 .inhalt .rezept-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; align-items: start; }
-.zutaten { padding-top: 4px; border-top: 1px solid var(--tinte); }
+.zutaten { padding-top: 4px; border-top: 1px solid var(--linie-stark); }
 .zutaten h3, .rezept-layout h3 { margin-top: 8px; }
 .rezept-zutaten { list-style: none !important; padding: 0 !important; margin-top: 8px; }
 .rezept-zutaten li { display: flex; gap: 12px; min-height: 44px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--linie); cursor: pointer; }
@@ -744,16 +784,16 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .inhalt .schritte { counter-reset: s; list-style: none; padding: 0; }
 .inhalt .schritte li { counter-increment: s; position: relative; padding-left: 2.6em; }
 .inhalt .schritte li::before { content: counter(s); position: absolute; left: 0; top: -0.05em; font-weight: 700; font-size: 22px; line-height: 1.2; font-variant-numeric: tabular-nums; }
-.rezept-fakten { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0 24px; border-top: 1px solid var(--tinte); }
+.rezept-fakten { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0 24px; border-top: 1px solid var(--linie-stark); }
 .rezept-fakten div { padding: 8px 0; border-bottom: 1px solid var(--linie); }
 .rezept-fakten dt { font-size: 13px; color: var(--leise); }
 .rezept-fakten dd { margin: 0; font-weight: 600; }
 .tamil-zitat { font-weight: 650 !important; font-size: 21px !important; line-height: 1.35; }
 .video-embed {
   aspect-ratio: 16 / 9; display: grid; place-content: center; justify-items: center; gap: 12px;
-  padding: 24px; text-align: center; background: var(--tinte); color: var(--hell);
+  padding: 24px; text-align: center; background: var(--titan); color: var(--hell);
 }
-.video-embed .video-load { min-height: 48px; padding: 0 20px; border: 1px solid var(--hell); border-radius: 0; background: var(--hell); color: var(--tinte); font-weight: 600; cursor: pointer; }
+.video-embed .video-load { min-height: 48px; padding: 0 20px; border: 1px solid var(--hell); border-radius: 0; background: var(--hell); color: var(--titan); font-weight: 600; cursor: pointer; }
 .video-embed .video-load:hover { background: var(--hell-leise); }
 .video-embed .video-hint { font-size: 14px; color: var(--hell-leise); }
 .video-embed .video-hint a { display: inline-flex; min-height: 44px; align-items: center; color: var(--hell); }
@@ -761,7 +801,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .video-embed iframe { display: block; width: 100%; height: 100%; border: 0; }
 
 /* Termin im Beitrag, Spielorte, Quelle, Schlagworte, Teilen, Redaktion */
-.termin-box { margin: 0 0 28px; border-top: 1px solid var(--tinte); }
+.termin-box { margin: 0 0 28px; border-top: 1px solid var(--linie-stark); }
 .termin-box__titel { padding-top: 12px; font-size: 19px; font-weight: 700; }
 .termin-box .aktionen { margin-top: 4px; }
 .termin-box__hinweis { font-size: 13px; color: var(--leise); }
@@ -769,19 +809,20 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .angaben > div { display: grid; grid-template-columns: minmax(0, 7rem) minmax(0, 1fr); gap: 2px 16px; padding: 8px 0; border-bottom: 1px solid var(--linie); }
 .angaben dt { color: var(--leise); font-size: 15px; padding-top: 2px; }
 .angaben dd { margin: 0; overflow-wrap: anywhere; }
-.angaben dd a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
+.angaben dd a { color: var(--rot); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
+.quelle a:hover, .angaben dd a:hover { color: var(--titan); }
 .inhalt .kino-orte { margin: 2em 0; }
 .kino-orte h2 { margin-top: 0; }
 .kino-orte__stand, .kino-orte__notiz { font-size: 14px; color: var(--leise); }
 .kino-orte__notiz { margin-top: 8px; }
 .quelle { margin-top: 32px; padding-top: 10px; border-top: 1px solid var(--linie); font-size: 15px; color: var(--leise); }
-.quelle a { color: var(--tinte); font-weight: 600; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
+.quelle a { color: var(--rot); font-weight: 600; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
 .schlagworte { display: flex; flex-wrap: wrap; align-items: center; gap: 0 16px; margin-top: 16px; font-size: 15px; }
 .schlagworte__titel { color: var(--leise); font-size: 13px; font-weight: 600; }
 .schlagworte a { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; min-width: 44px; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
 .schlagworte a:hover { color: var(--rot); }
 /* Teilen: der WhatsApp-Knopf in einer eigenen Zeile, darunter die übrigen Wege in einer ruhigen Zeile */
-.teilen { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--tinte); }
+.teilen { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--linie-stark); }
 .teilen__links { display: flex; flex-wrap: wrap; align-items: center; gap: 0 20px; margin-top: 8px; }
 .teilen .textlink { min-width: 44px; justify-content: center; }
 .knopf-text { padding: 0; border: 0; background: none; cursor: pointer; }
@@ -855,9 +896,9 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .seite .artikel__titel { font-size: 28px; }
 .seite .inhalt > p, .seite .inhalt > ul, .seite .inhalt > ol, .seite .inhalt > h2, .seite .inhalt > h3, .seite .inhalt > h4, .seite .inhalt > blockquote { max-width: 34em; }
 
-.sender { display: grid; grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr)); gap: 24px 32px; border-top: 1px solid var(--tinte); padding-top: 16px; }
-.player { aspect-ratio: 16 / 9; display: grid; place-items: center; background: var(--tinte); }
-.player .knopf { background: var(--hell); color: var(--tinte); border-color: var(--hell); }
+.sender { display: grid; grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr)); gap: 24px 32px; border-top: 1px solid var(--linie-stark); padding-top: 16px; }
+.player { aspect-ratio: 16 / 9; display: grid; place-items: center; background: var(--titan); }
+.player .knopf { background: var(--hell); color: var(--titan); border-color: var(--hell); }
 .player .knopf:hover { background: var(--hell-leise); }
 .player video { width: 100%; height: 100%; }
 .sender__name { margin-top: 10px; font-size: 19px; }
@@ -873,7 +914,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 }
 
 /* ---------- Plugin-Bausteine (tamil-site): Einsendungen tf-, Verzeichnis vz-, Werbebuchung wb-, Zustimmung tz- ----------
-   Nur Aussehen; die Logik bleibt im Plugin. Linien statt Kästen, Knöpfe in Tinte, Fehler mit roter Linie und Text. */
+   Nur Aussehen; die Logik bleibt im Plugin. Linien statt Kästen, Knöpfe in Titan, Fehler mit roter Linie und Text (--status-fehler). */
 .tf, .vz, .wb-werbung { font-size: 17px; line-height: 1.5; }
 .inhalt .tf, .inhalt .vz, .inhalt .wb-werbung { max-width: none; }
 .tf + .tf { margin-top: 48px; }
@@ -888,8 +929,8 @@ input[type="datetime-local"], input[type="file"] { min-height: 48px; padding: 8p
 input[type="file"] { padding: 10px; font-size: 15px; }
 .tf-pflicht, .vz-pflicht { font-weight: 400; font-size: 13px; color: var(--leise); }
 .tf-hilfe, .vz-hilfe, .wb-feldhinweis { display: block; margin-top: 4px; font-size: 14px; line-height: 1.4; color: var(--leise); }
-.tf-fehler, .vz-fehler { display: block; margin-top: 4px; font-size: 15px; font-weight: 600; color: var(--rot); }
-.tf-feld:has(.tf-fehler) :is(input, select, textarea), .vz-feld:has(.vz-fehler) :is(input, select, textarea) { border: 2px solid var(--rot); }
+.tf-fehler, .vz-fehler { display: block; margin-top: 4px; font-size: 15px; font-weight: 600; color: var(--status-fehler); }
+.tf-feld:has(.tf-fehler) :is(input, select, textarea), .vz-feld:has(.vz-fehler) :is(input, select, textarea) { border: 2px solid var(--status-fehler); }
 .tf-auswahl, .vz-auswahl label, .vz-oeffentlich { display: grid; grid-template-columns: 24px minmax(0, 1fr); column-gap: 10px; align-items: start; }
 .tf-auswahl label, .vz-auswahl label { margin: 0; font-size: 15px; font-weight: 400; }
 .tf-auswahl input, .vz-auswahl input { margin: 2px 0 0; }
@@ -905,21 +946,21 @@ input[type="file"] { padding: 10px; font-size: 15px; }
 .tf-einwilligung label { font-size: 14px; line-height: 1.45; }
 .tf-senden, .vz-aktion button, .vz-suche button, .vz-form button[type="submit"], .wb-formular button, .wb-knopf, .wb-buchen a, .wb-aktion button, .wb-aktion a {
   display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 20px;
-  border: 1px solid var(--tinte); border-radius: 0; background: var(--tinte); color: var(--hell);
+  border: 1px solid var(--titan); border-radius: 0; background: var(--titan); color: var(--hell);
   font-size: 16px; font-weight: 600; line-height: 1.2; text-decoration: none; cursor: pointer;
 }
-.tf-senden:hover, .vz-aktion button:hover, .vz-suche button:hover, .vz-form button[type="submit"]:hover, .wb-formular button:hover, .wb-knopf:hover, .wb-buchen a:hover, .wb-aktion button:hover, .wb-aktion a:hover { background: var(--tinte-hover); color: var(--hell); }
+.tf-senden:hover, .vz-aktion button:hover, .vz-suche button:hover, .vz-form button[type="submit"]:hover, .wb-formular button:hover, .wb-knopf:hover, .wb-buchen a:hover, .wb-aktion button:hover, .wb-aktion a:hover { background: var(--rot); border-color: var(--rot); color: var(--hell); }
 .tf-aktion, .vz-aktion { margin: 4px 0 0; }
 /* Rückmeldungen: Danke mit Vorgangsnummer, Fehler, ausgeschaltet */
 .tf-danke, .vz-danke, .tf-meldung, .vz-meldung, .wb-fehler, .tf-aus, .vz-aus {
-  padding: 12px 16px; background: var(--flaeche); border-top: 1px solid var(--tinte); border-left: 0;
+  padding: 12px 16px; background: var(--flaeche); border-top: 1px solid var(--linie-stark); border-left: 0;
 }
-.tf-meldung, .vz-meldung, .wb-fehler { border-top: 2px solid var(--rot); }
+.tf-meldung, .vz-meldung, .wb-fehler { border-top: 2px solid var(--status-fehler); }
 .tf-meldung ul, .vz-meldung ul, .wb-fehler ul { padding-left: 1.2em; list-style: disc; }
 .tf-vorgang, .vz-vorgang { font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
 
 /* Verzeichnis */
-.vz-suche { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px 16px; align-items: end; padding: 16px 0; border-top: 1px solid var(--tinte); border-bottom: 1px solid var(--linie); }
+.vz-suche { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px 16px; align-items: end; padding: 16px 0; border-top: 1px solid var(--linie-stark); border-bottom: 1px solid var(--linie); }
 .vz-suche .vz-aktion { margin: 0; }
 .vz-vorschlagen a, .vz-zurueck a, .vz-aenderung a, .vz-seiten a {
   display: inline-flex; align-items: center; min-height: 44px; font-weight: 600;
@@ -927,7 +968,7 @@ input[type="file"] { padding: 10px; font-size: 15px; }
 }
 .vz-vorschlagen a:hover, .vz-zurueck a:hover, .vz-aenderung a:hover, .vz-seiten a:hover { color: var(--rot); }
 .vz-leer { padding: 16px 0; color: var(--leise); }
-.vz-liste { margin-top: 8px; border-top: 1px solid var(--tinte); list-style: none !important; padding: 0 !important; }
+.vz-liste { margin-top: 8px; border-top: 1px solid var(--linie-stark); list-style: none !important; padding: 0 !important; }
 .inhalt .vz-liste li + li { margin-top: 0; }
 .vz-eintrag { display: grid; gap: 2px; padding: 12px 0; border-bottom: 1px solid var(--linie); }
 .vz-name { font-size: 19px; line-height: 1.25; font-weight: 650; text-decoration: none !important; }
@@ -936,18 +977,18 @@ input[type="file"] { padding: 10px; font-size: 15px; }
 .vz-premium-marke { font-size: 13px; font-weight: 600; color: var(--rot); }
 .vz-seiten { display: flex; flex-wrap: wrap; gap: 0 16px; margin-top: 16px; }
 .vz-profil .vz-beschreibung { margin-top: 8px; }
-.vz-angaben { margin-top: 16px; border-top: 1px solid var(--tinte); }
+.vz-angaben { margin-top: 16px; border-top: 1px solid var(--linie-stark); }
 .vz-angaben dt { padding-top: 8px; font-size: 13px; color: var(--leise); }
 .vz-angaben dd { margin: 0; padding-bottom: 8px; border-bottom: 1px solid var(--linie); overflow-wrap: anywhere; }
 .vz-angaben dd a { display: inline-flex; align-items: center; min-height: 44px; margin-block: -10px; }
 
 /* Werbebuchung */
-.wb-werbung h2 { margin: 40px 0 8px; padding-top: 12px; border-top: 1px solid var(--tinte); font-size: 22px; }
+.wb-werbung h2 { margin: 40px 0 8px; padding-top: 12px; border-top: 1px solid var(--linie-stark); font-size: 22px; }
 .wb-werbung > :first-child h2, .wb-werbung > h2:first-child { margin-top: 0; }
 .wb-werbung h3 { margin: 24px 0 6px; font-size: 19px; }
 .wb-tabelle-wrap { margin-top: 8px; }
 .wb-tabelle { border-collapse: collapse; font-size: 15px; line-height: 1.45; }
-.wb-tabelle thead th { padding: 8px 12px 8px 0; border-bottom: 1px solid var(--tinte); font-size: 13px; font-weight: 600; color: var(--leise); }
+.wb-tabelle thead th { padding: 8px 12px 8px 0; border-bottom: 1px solid var(--linie-stark); font-size: 13px; font-weight: 600; color: var(--leise); }
 .wb-tabelle td, .wb-tabelle tbody th { padding: 10px 12px 10px 0; border-top: 1px solid var(--linie); }
 .wb-tabelle tbody th { font-weight: 650; }
 .inhalt .wb-preise { list-style: none; padding: 0; }
@@ -964,19 +1005,19 @@ input[type="file"] { padding: 10px; font-size: 15px; }
 
 /* Cookie-Zustimmung: Hinweis unten und Dialog, ohne Radius und Schatten */
 body .tz-hinweis, body .tz-dialog {
-  border: 1px solid var(--tinte); border-radius: 0; box-shadow: none;
+  border: 1px solid var(--linie-stark); border-radius: 0; box-shadow: none;
   background: var(--grund); color: var(--tinte); font-family: var(--schrift); font-size: 15px; line-height: 1.5;
 }
 body .tz-hinweis { border-top-width: 3px; }
 body .tz-titel { font-size: 19px; font-weight: 700; line-height: 1.25; }
-body .tz-knopf { border-radius: 0; border-color: var(--tinte); background: var(--grund); color: var(--tinte); font-weight: 600; }
+body .tz-knopf { border-radius: 0; border-color: var(--titan); background: var(--grund); color: var(--titan); font-weight: 600; }
 body .tz-knopf:hover { background: var(--flaeche); }
-body .tz-knopf-haupt { background: var(--tinte); color: var(--hell); }
-body .tz-knopf-haupt:hover { background: var(--tinte-hover); }
+body .tz-knopf-haupt { background: var(--titan); color: var(--hell); }
+body .tz-knopf-haupt:hover { background: var(--rot); border-color: var(--rot); }
 body .tz-knopf-leise { border-color: transparent; background: transparent; text-decoration: underline; text-underline-offset: 0.2em; }
-body .tz-knopf:focus-visible, body .tz-link:focus-visible, body .tz-kategorie input:focus-visible { outline: 2px solid var(--tinte); outline-offset: 2px; }
+body .tz-knopf:focus-visible, body .tz-link:focus-visible, body .tz-kategorie input:focus-visible { outline: 2px solid var(--fokus); outline-offset: 2px; }
 body .tz-kategorie { border-top-color: var(--linie); }
-body .tz-dialog::backdrop { background: oklch(0.21 0.012 255 / 0.6); }
+body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
 @media (prefers-reduced-motion: reduce) { body .tz-hinweis:not([hidden]) { animation: none; } }
 
 /* ---------- Anzeigen (Plätze aus dem Plugin, je Platz ein benannter Bereich <aside class="ad ad-…">): „Anzeige“ an
@@ -1003,7 +1044,7 @@ body .tz-dialog::backdrop { background: oklch(0.21 0.012 255 / 0.6); }
   display: grid; grid-template-columns: minmax(0, 320px) 44px; grid-template-rows: auto auto;
   justify-content: center; align-items: center; column-gap: 6px; row-gap: 2px;
   padding: 2px 4px max(4px, env(safe-area-inset-bottom)) 4px;
-  background: var(--grund); border-top: 1px solid var(--tinte);
+  background: var(--grund); border-top: 1px solid var(--linie-stark);
 }
 .ad-mobile[hidden], .ad-mobile:not(.ist-sichtbar) { display: none; }
 .ad-mobile .ad-label { grid-column: 1; grid-row: 1; justify-self: start; font-size: 12px; line-height: 16px; }
@@ -1025,10 +1066,11 @@ body .tz-dialog::backdrop { background: oklch(0.21 0.012 255 / 0.6); }
   .has-sticky-ad { padding-bottom: 0; }
 }
 
-/* ---------- Fuß: heller Grund, Linie in Tinte oben (dunkel bleiben nur Band und „Diese Woche“) ---------- */
+/* ---------- Fuß: weißer Grund mit Linie in Titan oben; die Zeile mit Rechtlichem als Band in Titan über die volle
+   Breite (Schatten-Trick ohne zusätzliches Markup, html und body schneiden seitlich ab) ---------- */
 .fuss {
-  margin-top: 64px; padding: 28px 0 32px;
-  border-top: 1px solid var(--tinte);
+  margin-top: 64px; padding: 28px 0 0;
+  border-top: 3px solid var(--linie-stark);
   font-size: 15px; line-height: 1.45; color: var(--leise);
 }
 .fuss__innen { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 24px; }
@@ -1057,13 +1099,17 @@ body .tz-dialog::backdrop { background: oklch(0.21 0.012 255 / 0.6); }
 .nachweise a:hover, .artikel__nachweis a:hover { color: var(--tinte); }
 .fuss__recht {
   display: flex; flex-wrap: wrap; align-items: center; gap: 0 20px;
-  margin-top: 28px; padding-top: 8px; border-top: 1px solid var(--linie);
+  margin-top: 32px; padding: 6px 0 max(6px, env(safe-area-inset-bottom));
+  background: var(--titan); color: var(--hell);
+  box-shadow: 0 0 0 100vmax var(--titan); clip-path: inset(0 -100vmax);
   font-size: 14px;
 }
-.fuss__recht a { display: inline-flex; align-items: center; min-height: 44px; color: var(--tinte); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
-.fuss__recht a:hover { color: var(--rot); }
+.fuss__recht a { display: inline-flex; align-items: center; min-height: 44px; color: var(--hell); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+.fuss__recht a:hover { text-decoration-thickness: 2px; }
+.fuss__recht :focus-visible { outline-color: var(--hell); outline-offset: -2px; }
 @media (min-width: 1024px) {
-  .fuss { padding: 36px 0 40px; }
+  .fuss { padding: 36px 0 0; }
+  .fuss__recht { margin-top: 40px; padding-block: 8px; }
   .fuss__innen { grid-template-columns: minmax(0, 4fr) repeat(3, minmax(0, 2fr)); gap: 24px 32px; }
   .fuss__marke { grid-column: auto; }
   .nachweise { columns: 2; column-gap: 32px; }
@@ -1118,7 +1164,7 @@ body .tz-dialog::backdrop { background: oklch(0.21 0.012 255 / 0.6); }
   .bewegt [data-art="zeilen"] { --zeilen-start: 0ms; }
   .bewegt [data-art~="zeilen"]:not(.da) .zeilenteil__in { translate: 0 115%; }
 
-  /* Vorhang: die dunkle Fläche „Diese Woche“ zieht von links auf (Deckfläche in Seitenfarbe schrumpft nach rechts) */
+  /* Vorhang: die Titan-Fläche „Diese Woche“ zieht von links auf (Deckfläche in Seitenfarbe schrumpft nach rechts) */
   .bewegt [data-art~="vorhang"] { position: relative; }
   .bewegt [data-art~="vorhang"]::after {
     content: ""; position: absolute; inset: 0; z-index: 3;
@@ -1136,15 +1182,11 @@ body .tz-dialog::backdrop { background: oklch(0.21 0.012 255 / 0.6); }
 
   /* Kopf und Band: an den Scrollweg gebunden, nicht an die Zeit */
   html.bewegt .kopf__logo { transform-origin: 0 100%; }
-  /* helle Leselinie, 2 px, an der Unterkante des roten Rubrikbands; darunter eine dunkelrote Spur, damit die Linie
-     auch dort steht, wo der helle Seitengrund an das Band grenzt */
-  html.bewegt .band::before {
-    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px;
-    background: var(--rot-dunkel); pointer-events: none;
-  }
+  /* Leselinie in Impact Red, 2 px, an der Unterkante des Rubrikbands in Titan; sie steht auch gegen den weißen Grund
+     darunter (7,2 : 1) und braucht deshalb keine Spur */
   html.bewegt .band::after {
     content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px;
-    background: var(--hell); transform-origin: 0 50%; scale: 0 1; pointer-events: none;
+    background: var(--rot); transform-origin: 0 50%; scale: 0 1; pointer-events: none;
   }
 
   /* Weg 1: CSS-Scroll-Timelines (html.sda setzt das Skript, wenn der Browser sie kann) */

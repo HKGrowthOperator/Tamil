@@ -5,34 +5,43 @@
 > wird direkt umgebaut und auf dem Testsystem mit echten Beiträgen abgenommen. Quellen: `design/richtungen/klar2/`
 > (Startseite, Artikel, CSS), `design/richtungen/klar2/bewegung/` (Variante D), Regeln in `design/brief.md` §10.
 > Tokens: `design/tokens.css`.
+>
+> **Stand 19.11.2026 (Theme 3.4.0):** Markenfarben von Luis (`docs/abnahme/2026-11-19-signature.md`, Branding Master
+> Handoff v1.1): Weiß, Titan Red dominant, Impact Red als Akzent, Schwarz für Schrift, Gewichtung „Red Dominance /
+> Power“. Sie ersetzen die Farbwerte von klar2 und die Regel „Rot nur als Akzent“. Das Signet „Tamil Dots 04A“ folgt
+> nach Vektordatei und Anleitung von Luis; das Logo bleibt unverändert.
 
 **Idee:** eine ruhige Nachrichtenseite mit mehr Bild und mehr Bühne. Vorbild BBC News für Kopf und Ordnung,
 tagesschau für den Titel im Bild, Spiegel für die Bildblöcke. Das Wow kommt aus Fotos, Fläche und dem Wechsel von
-Hell und Dunkel, nicht aus Schriftgröße, Rot oder Effekten.
+Weiß und Titan Red, nicht aus Schriftgröße oder Effekten.
 
 ## Farben
 
-oklch im CSS (`theme.css`, `design/tokens.css`), Hex nur als Rückfall in `theme.json`.
+Markenfarben von Luis (19.11.2026). Richtwert der Gewichtung: **50 % Weiß, 35 % Titan Red, 10 % Impact Red, 5 %
+Schwarz**. Die vier Markenwerte stehen als Hex im CSS, damit sie exakt so erscheinen (oklch nur im Kommentar). Keine
+weiteren Markenfarben (kein Orange, Pink, Gold, Violett); Grauwerte und die Fehlerfarbe sind neutral bzw. semantisch
+benannt. Quelle: `theme.css` (Abschnitt Tokens), `design/tokens.css`; `theme.json` trägt dieselben Hex-Werte.
 
-| Token | oklch | Hex | Rolle |
-|---|---|---|---|
-| `grund` | 0.985 0.002 250 | `#F9FAFB` | Seitengrund; Schrift auf Dunkel („hell“) |
-| `flaeche` | 0.962 0.003 250 | `#F1F3F4` | Bildgrund beim Laden, Hinweise, Meldungen der Formulare |
-| `tinte` | 0.21 0.012 255 | `#15191E` | Text, Linien über Blöcken, „Diese Woche“ |
-| `leise` | 0.45 0.012 255 | `#51565C` | Datum, Orte, Nachweise, Beschriftungen |
-| `linie` | 0.88 0.004 250 | `#D5D8DA` | Trennlinien zwischen Zeilen |
-| `rot` | 0.508 0.177 25.6 | `#B5282A` | Fläche des Rubrikbands (seit 17.11.); sonst nur Akzent: Rubrik in der Dachzeile, Fehler |
-| `rot-hell` | 0.55 0.175 25.6 | `#C33937` | Rubrikband beim Überfahren und bei offenem „Mehr“ (weiß darauf 5,1 : 1) |
-| `rot-linie` | 0.62 0.15 25.6 | `#D15C55` | feine Trennlinie im Rubrikband |
-| `rot-dunkel` | 0.42 0.15 25.6 | `#8D1A1D` | Spur unter der hellen Leselinie (Bewegung D) |
-| `hell-leise` | 0.82 0.006 250 | `#C1C4C8` | Nebeninfos auf Dunkel |
-| `linie-dunkel` | 0.36 0.010 255 | `#3A3D42` | Linien auf Dunkel |
-| `flaeche-dunkel` | 0.26 0.012 255 | `#20242A` | Bildkacheln auf Dunkel (Kino, Termine), Text unter dem Bild |
+| Token | Wert | Rolle |
+|---|---|---|
+| `--tamil-color-background` (`grund`, `weiss`) | `#FFFFFF` | Seitengrund |
+| `--tamil-color-primary` (`titan`) | `#660000` | **dominant:** Rubrikband, „Diese Woche“, Kino „Im Programm“, Termine „Ab heute“, Knöpfe, aktive Filter und Seitenzahl, Linien über Blöcken (`linie-stark`), Fokusrahmen (`fokus`), Fuß (Linie oben, Zeile mit Rechtlichem), Schild „Symbolbild“, Icon und Browserleiste |
+| `--tamil-color-accent` (`rot`) | `#B30000` | **Akzent:** Rubrik in der Dachzeile, Top-News, Schild „Neu“, Links im Text, Leselinie, Markierung der aktiven Rubrik, Überfahren im Band und an Knöpfen, Linie unter Titeln auf Titan (`linie-titan`) |
+| `--tamil-color-text` (`tinte`) | `#000000` | Fließtext und Überschriften auf Weiß |
+| `titan-tief` | `#520000` | Ableitung (Titan mit 20 % Schwarz): Bildkacheln auf Titan |
+| `neutral-flaeche` (`flaeche`) | `#F2F2F2` | Bildgrund beim Laden, Hinweise, Meldungen der Formulare |
+| `neutral-linie` (`linie`) | `#D9D9D9` | Trennlinien zwischen Zeilen |
+| `neutral-leise` (`leise`) | `#555555` | Datum, Orte, Nachweise, Beschriftungen, „Anzeige“ |
+| `neutral-hell-leise` (`hell-leise`) | `#CCCCCC` | Nebeninfos auf Titan und im Bild |
+| `status-fehler` | = Impact | Formularfehler (Text, Rand) |
+| `--signatur-*` | – | Platz für das Signet „Tamil Dots 04A“, kommt nach Freigabe |
 
-Das Rubrikband ist rot mit weißer Schrift (Luis, 17.11.2026; weiß auf Rot 6,1 : 1). Damit bleibt genau eine
-dunkle Fläche je Seite: „Diese Woche“ (auf Kino und Termine „Im Programm“ bzw. „Ab heute“). Der einzige Verlauf
-liegt unter Schrift im Bild (durchsichtig nach Tinte). Radius 0, keine Schatten, nichts gedreht. Rot als Fläche nur im
-Band, als Schrift nie über 20 px; auf Dunkel ist die Dachzeile hell.
+Kontraste (WCAG 2.2 AA): Weiß auf Titan 13,4 : 1, Weiß auf Impact 7,2 : 1, Impact auf Weiß 7,2 : 1, Titan auf Weiß
+13,4 : 1, `#555` auf Weiß 7,5 : 1, `#CCC` auf Titan 8,4 : 1. Die aktive Rubrik ist in Impact markiert und trägt 3 px
+Weiß darunter, weil Impact gegen Titan nur 1,9 : 1 hat; der Zustand hängt so nicht am Rotton. Der einzige Verlauf liegt
+unter Schrift im Bild: durchsichtig nach Schwarz, auf Titan-Flächen nach Titan. Radius 0, keine Schatten, nichts
+gedreht. Rot als Schrift nie über 20 px; im Bild und auf Titan ist die Dachzeile weiß. Anzeigen bleiben neutral
+(Schwarz), damit sie sich vom redaktionellen Teil abheben.
 
 ## Schrift
 
@@ -56,10 +65,10 @@ gemeinsamer Kante für Kopf, Bild und Text), höchstens 70 Zeichen je Zeile.
 
 ## Bausteine
 
-- **Kopf:** Kopfzeile (Datum, Top-News „Neu“ mit den Überschriften der neuesten Beiträge in Rot, ab 1024 px zwei mit
+- **Kopf:** Kopfzeile (Datum, Top-News: Schild „Neu“ in Impact, die Überschriften der neuesten Beiträge in Impact, ab 1024 px zwei mit
   feiner Linie, darunter einer, einzeilig mit Auslassung, am Handy ohne Datum; Suche), Logo 44/52/58 px auf
-  hellem Grund, rotes Rubrikband mit weißer Schrift (`nav`, 46/48 px, steht beim Scrollen), aktive Rubrik mit
-  Gewicht 600 und 3 px Weiß darunter, beim Überfahren etwas hellerer Grund, Fokusring weiß, am Handy seitlich mit
+  weißem Grund, Rubrikband in Titan mit weißer Schrift (`nav`, 46/48 px, steht beim Scrollen), aktive Rubrik in
+  Impact mit Gewicht 600 und 3 px Weiß darunter, beim Überfahren Impact, Fokusring weiß, am Handy seitlich mit
   Einrasten; „Mehr“ am Ende mit Suche, Diensten und Social.
 - **Anreißer:** ein Link um Bild und Text; Dachzeile „Rubrik | Datum“; Bild füllt seinen Rahmen. Formate: 4:3
   (Aufmacher, große Kachel in „Diese Woche“), 16:9 (Nebenstücke, Meldungen, Rubrikkacheln, Küche groß), 8:3 (kleine
@@ -78,16 +87,17 @@ gemeinsamer Kante für Kopf, Bild und Text), höchstens 70 Zeichen je Zeile.
   Kachel höher statt abzuschneiden; Fokus als Rahmen nach innen.
 - **Rubrikkacheln:** Navigation mit Bild (Foto des neuesten Beitrags der Rubrik, sonst das erste Bild ihres Pools),
   Name im Bild.
-- **Bildkacheln auf Dunkel** (`data-grafik`): Kino mit Bild 4:3 links (Film, Zahl der Kinos, Städte) und Termine mit
+- **Bildkacheln auf Titan** (`data-grafik`, Grund `titan-tief`): Kino mit Bild 4:3 links (Film, Zahl der Kinos, Städte) und Termine mit
   Bild 16:9 oben (Titel, Datum mit Uhrzeit und Ende als größte Angabe, Ort, Veranstalter, Eintritt, Vorspann); leer
   zeigen sie ein Symbolbild und sagen, wo es weitergeht.
-- **Blocktitel:** 19 px, Linie in Tinte darüber; Listen mit Linien statt Kästen; Tabellen ebenso.
-- **Knöpfe** nur für Formulare und Bedienung: Tinte, eckig, 48 px hoch. Sonst unterstrichene Textlinks, 44 px tippbar.
+- **Blocktitel:** 19 px, schwarz, 2 px Linie in Titan darüber; Listen mit Linien statt Kästen; Tabellen ebenso
+  (Kopflinien in Titan, Zeilenlinien neutral).
+- **Knöpfe** nur für Formulare und Bedienung: Titan mit weißer Schrift, beim Überfahren Impact, eckig, 48 px hoch. Sonst unterstrichene Textlinks, 44 px tippbar.
 - **Anzeigen:** Label „Anzeige“, je Platz ein benannter Bereich des Plugins; Formate aus
   `tamil_site_werbung_formate()`, dieselbe Fläche für Eigenanzeige (Bildbanner), gebuchte Anzeige und Banner-Code.
   Handy-Leiste 320 × 50 fest unten, erst wenn der erste Abschnitt aus dem Bild ist (spätestens nach einem
   Bildschirm), schließbar, nur unter 768 px Breite und ab 500 px Fensterhöhe.
-- **Fuß:** heller Grund mit Linie in Tinte; Logo und Unterzeile, Rubriken, Dienste, Social (nur mit Adresse),
+- **Fuß:** weißer Grund mit 3 px Linie in Titan oben, die Zeile mit Rechtlichem als Band in Titan über die volle Breite; Logo und Unterzeile, Rubriken, Dienste, Social (nur mit Adresse),
   Bildnachweise der Seite, Rechtliches mit Platz für „Cookie-Einstellungen“.
 
 ## Seiten
@@ -101,9 +111,9 @@ gemeinsamer Kante für Kopf, Bild und Text), höchstens 70 Zeichen je Zeile.
   Nachweis, Text, Termin als Angaben, Quelle, Schlagworte, Teilen, Redaktion; Textspalte mittig wie im Entwurf; Werbeplatz 02 ab 1280 px rechts daneben, darunter nach dem Bild;
   „Weiterlesen“ mit vier Nebenstücken.
 - **Rubrik:** Seitenkopf, Aufmacher mit „Neu in der Rubrik“ daneben, Liste mit Bild und Vorspann, Seiten, Kacheln.
-- **Kino:** Seitenkopf, dunkler Bereich „Im Programm“, „Nach Stadt“ (Tabelle, jede Zeile mit dem Bild des Films),
+- **Kino:** Seitenkopf, Bereich „Im Programm“ in Titan, „Nach Stadt“ (Tabelle, jede Zeile mit dem Bild des Films),
   „Aus dem Kinojahr“ (Liste mit Bild).
-- **Termine:** Seitenkopf, dunkler Bereich „Ab heute“ (Termine der nächsten 14 Tage, sonst die nächsten drei),
+- **Termine:** Seitenkopf, Bereich „Ab heute“ in Titan (Termine der nächsten 14 Tage, sonst die nächsten drei),
   „Kommende Termine“ nach Monaten (Zeilen mit Bild, Datum mit Uhrzeit, Ort, Veranstalter, Eintritt; Filter nach Land
   und Stadt als Knöpfe mit `aria-pressed`, nur mit Skript), „Das Jahr“ (vergangene Termine, Monate zum Aufklappen).
 - **Kontakt:** Formulare des Plugins (Nachricht, Termin, Kooperation, mit Danke-Anzeige), daneben Redaktionsdaten nur
@@ -125,9 +135,9 @@ nie von selbst; was einmal erschienen ist, bleibt.
 | Teil | Bewegung | Dauer |
 |---|---|---|
 | Kopf | Kopfzeile verblasst, Logo wird 0,8 und schiebt sich unter das Band (am Scrollweg) | Weg = Kopfhöhe |
-| Band | helle Leselinie 2 px auf dem roten Band wächst mit dem Lesefortschritt | ganze Seite |
+| Band | Leselinie 2 px in Impact an der Unterkante des Bands in Titan wächst mit dem Lesefortschritt | ganze Seite |
 | Aufmacherbild | bis 40 px langsamer als die Seite | beim Hinausscrollen |
-| „Diese Woche“ | dunkle Fläche zieht von links auf, danach steigt der Inhalt | 800 ms, Inhalt ab 55 % |
+| „Diese Woche“ | Titan-Fläche zieht von links auf, danach steigt der Inhalt | 800 ms, Inhalt ab 55 % |
 | Große Kacheln | Bild deckt sich von unten auf, Maßstab 1,06 → 1, Titel zeilenweise | 750 / 1100 / 700 ms |
 | Blocktitel | steigen aus ihrer Linie | 700 ms |
 | Kacheln, Nebenstücke, Meldungen, Listen | 16 px nach oben, einblenden, gestaffelt 60 ms je Spalte, 100 ms je Reihe | 560 ms |

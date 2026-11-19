@@ -109,12 +109,12 @@ function tamil_title_separator(): string {
 add_filter( 'document_title_separator', 'tamil_title_separator' );
 
 /**
- * Icons aus dem Theme („t.“ auf dem Rot des Rubrikbands), solange kein Website-Icon im Customizer gesetzt ist: SVG,
- * PNG 32 als Rückfall, 180 für iOS, Manifest mit 192 und 512. Die Farbe der Browserleiste (theme-color) ist immer das
- * Rot des Bands.
+ * Icons aus dem Theme (weißes „t.“ auf Titan Red, der Farbe des Rubrikbands), solange kein Website-Icon im Customizer
+ * gesetzt ist: SVG, PNG 32 als Rückfall, 180 für iOS, Manifest mit 192 und 512. Die Farbe der Browserleiste
+ * (theme-color) ist immer Titan Red wie das Band.
  */
 function tamil_favicon(): void {
-	echo '<meta name="theme-color" content="#B5282A">' . "\n";
+	echo '<meta name="theme-color" content="#660000">' . "\n";
 	if ( has_site_icon() ) {
 		return; // WordPress gibt das Website-Icon selbst aus
 	}

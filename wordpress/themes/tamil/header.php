@@ -1,6 +1,6 @@
 <?php
 /**
- * Kopf jeder Seite (klar2): Kopfzeile, Logo und das dunkle Rubrikband, das beim Scrollen stehen bleibt. Werbeplatz 01
+ * Kopf jeder Seite (klar2): Kopfzeile, Logo und das Rubrikband in Titan Red, das beim Scrollen stehen bleibt. Werbeplatz 01
  * steht nicht hier, sondern unter dem ersten Abschnitt der Seite (tamil_leaderboard()).
  */
 

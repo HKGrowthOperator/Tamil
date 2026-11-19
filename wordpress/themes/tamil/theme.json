@@ -13,48 +13,48 @@
 			"palette": [
 				{
 					"slug": "grund",
-					"name": "Grund (oklch 0.985 0.002 250)",
-					"color": "#F9FAFB"
+					"name": "Grund: Reinweiß",
+					"color": "#FFFFFF"
 				},
 				{
-					"slug": "flaeche",
-					"name": "Fläche (oklch 0.962 0.003 250)",
-					"color": "#F1F3F4"
-				},
-				{
-					"slug": "tinte",
-					"name": "Tinte (oklch 0.21 0.012 255)",
-					"color": "#15191E"
-				},
-				{
-					"slug": "leise",
-					"name": "Leise (oklch 0.45 0.012 255)",
-					"color": "#51565C"
-				},
-				{
-					"slug": "linie",
-					"name": "Linie (oklch 0.88 0.004 250)",
-					"color": "#D5D8DA"
+					"slug": "titan",
+					"name": "Titan Red, Hauptfarbe (dominant)",
+					"color": "#660000"
 				},
 				{
 					"slug": "rot",
-					"name": "Rot, nur Akzent (oklch 0.508 0.177 25.6)",
-					"color": "#B5282A"
+					"name": "Impact Red, Akzent",
+					"color": "#B30000"
+				},
+				{
+					"slug": "tinte",
+					"name": "Schwarz, Schrift",
+					"color": "#000000"
+				},
+				{
+					"slug": "flaeche",
+					"name": "Neutral: Fläche",
+					"color": "#F2F2F2"
+				},
+				{
+					"slug": "leise",
+					"name": "Neutral: Leise (Datum, Nachweise)",
+					"color": "#555555"
+				},
+				{
+					"slug": "linie",
+					"name": "Neutral: Linie",
+					"color": "#D9D9D9"
 				},
 				{
 					"slug": "hell-leise",
-					"name": "Leise hell, auf Dunkel (oklch 0.82 0.006 250)",
-					"color": "#C1C4C8"
+					"name": "Neutral: Leise auf Titan",
+					"color": "#CCCCCC"
 				},
 				{
-					"slug": "linie-dunkel",
-					"name": "Linie auf Dunkel (oklch 0.36 0.010 255)",
-					"color": "#3A3D42"
-				},
-				{
-					"slug": "flaeche-dunkel",
-					"name": "Fläche auf Dunkel (oklch 0.26 0.012 255)",
-					"color": "#20242A"
+					"slug": "titan-tief",
+					"name": "Titan tief (Kacheln auf Titan)",
+					"color": "#520000"
 				}
 			]
 		},
@@ -236,7 +236,7 @@
 			},
 			"button": {
 				"color": {
-					"background": "var:preset|color|tinte",
+					"background": "var:preset|color|titan",
 					"text": "var:preset|color|grund"
 				},
 				"border": {
@@ -252,7 +252,7 @@
 			"core/quote": {
 				"border": {
 					"left": {
-						"color": "var:preset|color|tinte",
+						"color": "var:preset|color|titan",
 						"width": "2px"
 					}
 				},
@@ -263,7 +263,7 @@
 			"core/pullquote": {
 				"border": {
 					"top": {
-						"color": "var:preset|color|tinte",
+						"color": "var:preset|color|titan",
 						"width": "1px"
 					},
 					"bottom": {

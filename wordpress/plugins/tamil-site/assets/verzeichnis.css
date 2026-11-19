@@ -62,7 +62,7 @@
 	display: block;
 	overflow: hidden;
 	aspect-ratio: 16 / 9;
-	background: var(--flaeche, #f1f3f4);
+	background: var(--flaeche, #f2f2f2);
 	text-decoration: none;
 }
 
@@ -84,8 +84,8 @@
 	font-size: 12px;
 	font-weight: 600;
 	line-height: 1.35;
-	color: var(--hell, #f9fafb);
-	background: oklch(0.21 0.012 255 / 0.8);
+	color: var(--hell, #fff);
+	background: var(--symbolbild-grund, rgb(102 0 0 / 0.86));
 }
 
 .vz-profil .vz-bild--profil {
@@ -97,14 +97,14 @@
 .vz-bild--profil .vz-bild__img {
 	height: auto;
 	aspect-ratio: 16 / 9;
-	background: var(--flaeche, #f1f3f4);
+	background: var(--flaeche, #f2f2f2);
 }
 
 .vz-nachweis {
 	margin-top: 6px;
 	font-size: 13px;
 	line-height: 1.4;
-	color: var(--leise, #51565c);
+	color: var(--leise, #555);
 }
 
 @media (min-width: 600px) {

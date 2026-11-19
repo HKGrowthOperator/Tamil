@@ -1,7 +1,7 @@
 <?php
 /**
  * Startseite klar2: Aufmacher mit Titel im Bild, daneben (Desktop) „Weitere Meldungen“, darunter vier Nebenstücke
- * und die Rubrikkacheln; Werbeplatz 01; dunkler Bereich „Diese Woche“ (Kino und Termine); „Küche“; Werbeplatz
+ * und die Rubrikkacheln; Werbeplatz 01; „Diese Woche“ auf Titan Red (Kino und Termine); „Küche“; Werbeplatz
  * Billboard; weitere Rubrikblöcke. Auswahl aus tamil_start_auswahl() (inc/queries.php).
  */
 
