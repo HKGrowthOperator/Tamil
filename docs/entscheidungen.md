@@ -3,6 +3,21 @@
 Neueste oben. Format: Datum · Entscheidung · wer · warum. Was hier steht, gilt, bis ein neuerer Eintrag es ändert.
 Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
+## 19.11.2026
+
+- **Markenfarben und Signature-System:**
+  - **Farben:** Hintergrund Weiß #FFFFFF, Hauptfarbe Titan Red #660000, Akzentfarbe Impact Red #B30000,
+    Farbgewichtung „Red Dominance / Power“.
+  - **Signet:** „Tamil Dots 04A“, Haupt-Element Tamil Dots A, unabhängig vom Logo.
+    - Animation: Punkte bauen die Form auf.
+    - Variante C nur als abgeleitetes Bewegungselement, Spatial nur an Sonderstellen.
+    - Richtung: einheitliches Kartensystem für News, Social und Website.
+  - **Was das ändert:** Die Farbwerte von klar2 (kühles Off-White, Logo-Rot) gelten nicht mehr. Ebenso die Regel „Rot nur
+    als Akzent“.
+  - **Was bleibt:** Bewegung D, die Bilderpflicht und die Gestaltung von klar2.
+
+  · Luis (`docs/abnahme/2026-11-19-signature.md`)
+
 ## 17.11.2026
 
 - **Kopfzeile mit Top-News in Rot:** Zwischen Datum und Suche steht wieder eine Zeile mit Direktlinks, jetzt als
