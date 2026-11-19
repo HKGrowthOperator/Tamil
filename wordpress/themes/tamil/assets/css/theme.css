@@ -74,6 +74,7 @@
   --t-bild: 750ms; --t-zoom: 1100ms; --t-blenden: 500ms;
   --t-zeile: 700ms; --zeilen-takt: 90ms; --zeilen-start: 160ms;
   --t-vorhang: 800ms;
+  --t-aufbau: 1500ms;                  /* Signet: Punkte bauen die Form auf */
 
   /* Namen, die das Plugin tamil-site liest (consent.css, mit eigenem Rückfall) */
   --titel: var(--schrift);
@@ -1184,6 +1185,24 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
   .signatur--raum { position: absolute; top: 20px; right: 0; width: 42%; margin: 0; }
 }
 
+/* Titan-Flächen („Diese Woche“, Kino „Im Programm“, Termine „Ab heute“): die ganze Kuppel in Impact auf Titan, unten
+   rechts angeschnitten. Sie liegt über der Fläche und unter Kacheln, Titeln und Links (eigene Ebene, isolation) und
+   steigt in einer Zone unter dem letzten Inhalt auf: zu sehen ist der Bogen, darüber verschwindet sie unter den
+   Kacheln. In „Im Programm“ (Kino) steht sie höher, weil rechts neben dem großen Bild Fläche frei bleibt. */
+.woche { position: relative; isolation: isolate; overflow: hidden; }
+.woche > .innen { position: relative; z-index: 1; }
+.signatur--flaeche { position: absolute; z-index: 0; right: 0; bottom: 0; width: 132vw; translate: 30% 46%; }
+@media (max-width: 1023px) { .woche { padding-bottom: calc(40px + 34vw); } }
+@media (min-width: 600px) and (max-width: 1023px) {
+  .woche { padding-bottom: 196px; }
+  .signatur--flaeche { width: 640px; translate: 18% 52%; }
+}
+@media (min-width: 1024px) {
+  .woche { padding-bottom: 104px; }
+  .signatur--flaeche { width: min(780px, 62vw); translate: 14% 66%; }
+  .signatur--flaeche.signatur--hoch { width: min(820px, 66vw); translate: 16% 40%; }
+}
+
 /* ---------- Gutenberg ---------- */
 .alignleft { float: left; margin: 0.3em 1.4em 1em 0; }
 .alignright { float: right; margin: 0.3em 0 1em 1.4em; }
@@ -1240,6 +1259,16 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
     transition: scale var(--t-vorhang) var(--vorhang) var(--verz, 0ms);
   }
   .bewegt [data-art~="vorhang"]:not(.da)::after { scale: 1 1; }
+
+  /* Aufbau: „Punkte bauen die Form auf“ (Signet auf den Titan-Flächen). Jeder Punkt wächst vom großen linken Fuß zum
+     feinen Auslauf (Reihenfolge --i aus der Datei) von 0 auf volle Größe, ease-out-expo, zusammen rund 1,5 s, einmal. */
+  .bewegt [data-art~="aufbau"] .signatur__punkte { --takt: calc(var(--t-aufbau) * 0.6 / var(--n, 238)); }
+  .bewegt [data-art~="aufbau"] ellipse {
+    transition:
+      scale calc(var(--t-aufbau) * 0.4) var(--expo) calc(var(--verz, 0ms) + var(--i, 0) * var(--takt)),
+      opacity calc(var(--t-aufbau) * 0.16) linear calc(var(--verz, 0ms) + var(--i, 0) * var(--takt));
+  }
+  .bewegt [data-art~="aufbau"]:not(.da) ellipse { scale: 0; opacity: 0; }
 
   /* will-change nur, solange es läuft (.laeuft setzt und entfernt das Skript) */
   .bewegt .laeuft[data-art~="steigen"] { will-change: translate, opacity; }

@@ -42,6 +42,7 @@ if ( '' === $tamil_klein ) {
 $tamil_klassen[] = 'termine-' . max( 1, count( $tamil_termine ) );
 ?>
 <section class="woche" id="diese-woche" aria-labelledby="t-woche">
+	<?php tamil_signatur( 'flaeche' ); ?>
 	<div class="innen">
 		<h2 class="woche__titel" id="t-woche"><?php esc_html_e( 'Diese Woche', 'tamil' ); ?></h2>
 		<div class="<?php echo esc_attr( implode( ' ', $tamil_klassen ) ); ?>">
