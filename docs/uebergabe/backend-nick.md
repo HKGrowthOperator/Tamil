@@ -1,6 +1,6 @@
 # Übergabe Backend an Nick: tamil.de
 
-Stand: 17.11.2026, nach Abschluss der Frontend-Runde (Theme 3.3.1 auf dem Testsystem). Kommen weitere Punkte von Luis,
+Stand: 19.11.2026 (Theme 3.4.0 mit Markenfarben; Signet und Social-Kartensystem freigegeben). Kommen weitere Punkte von Luis,
 wird diese Datei ergänzt.
 
 **Website heute:** Testsystem `https://tamil-web.167.233.76.202.sslip.io`, gebaut aus `claude/radar-multiagent`.
@@ -21,6 +21,47 @@ lässt. Erst `CLAUDE.md`, `docs/architektur.md`, `docs/betrieb.md` und `docs/ent
 - **Nick:** das Backend. Das umfasst den News-Radar (`news_radar/`, `sources.toml`), das Redaktions-Cockpit
   (`news_radar/web/`), Agenten, Publisher, Bilderzeugung, Social-Automatik und das Plugin `tamil-radar` (REST zum
   WordPress).
+
+## 0. Neu seit 19.11.: Markenfarben, Signet und Social-Kartensystem (verbindlich)
+
+**Branding:** Grundlage ist `docs/branding/2026-11-19-branding-master-v1.1.md`. Die Freigaben stehen in
+`docs/abnahme/2026-11-19-signature.md`.
+
+**Farben:**
+
+| Rolle | Farbe | Anteil (Richtwert) |
+|---|---|---|
+| Grund | Weiß #FFFFFF | 50 % |
+| dominant | Titan Red #660000 | 35 % |
+| Akzent | Impact Red #B30000 | 10 % |
+| Schrift | Schwarz #000000 | 5 % |
+
+Tokens: `--tamil-color-background`, `--tamil-color-primary`, `--tamil-color-accent`, `--tamil-color-text`, umgesetzt in
+`wordpress/themes/tamil` 3.4.0 und `design/tokens.css`. Keine weiteren Markenfarben.
+
+**Signet Tamil Dots 04A:**
+- Die Form ist freigegeben: `design/signature/master.svg`. Es gibt nur diese zwei Rottöne, jeder Punkt ist eine Ellipse.
+- Generator: `design/signature/tamil_dots.py`.
+- Weitere Dateien: Small und Mini als Entwurf, Spatial nur für Sonderstellen, Animation `animiert.svg`.
+- Regeln stehen in `design/signature/README.md`.
+- Es ist **kein Logo**. Das Logo bleibt unverändert.
+
+**Social-Kartensystem:** Die Richtung ist freigegeben, pixelgenaue Exportstandards noch nicht.
+- Die Spezifikation in `design/social/README.md` ist die Vorgabe für das automatische Posten nach Instagram (Feed,
+  Karussell, Story), Facebook (Link-Post, Story) und WhatsApp. Sie enthält Datenfelder, Maße, sichere Zonen,
+  Schriftgrößen, Farbgewichtung, Regeln für das Signet, Bildnachweis und Einzelbild oder Karussell nach Länge.
+- Vorlage: `design/social/vorlagen/karte.html?format=…`, Muster in `design/social/muster/`.
+- **Aufbau:** Das Logo steht unverändert auf weißer Platte oben links, die Überschrift auf Titan. Der Punktbogen liegt
+  auf Titan, nie auf Foto, Überschrift oder Gesichtern. Jede Karte trägt den Bildnachweis.
+- Das ersetzt die Vorgaben zum Social-Bild in Punkt 1 und 5 unten: dort statt klar2-Look die neuen Farben und das
+  Signet.
+- **Noch offen:**
+  - eine weiße Logofassung (für „tamil.de weiß oben links“, liefert KBS);
+  - eine neue Fassung des Regelwerks F4 (heute gehen Storys und Karussells nie automatisch hinaus), mit Freigabe durch
+    KBS.
+
+**Bildkarte, Social-Bilder, Cockpit, Vorschau und `tamil-radar/admin.css`** bitte auf diese Farben und dieses Signet
+umstellen, nicht auf den älteren klar2-Look.
 
 ---
 
