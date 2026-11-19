@@ -28,3 +28,11 @@
   - eine MD-Anleitung, wo und wie Signet und Kartensystem eingesetzt werden
 - **Sofort umgesetzt (Antwort „Farben schon umsetzen“):** die festen Farben im Theme. Signet, Kartensystem und
   Animation folgen nach Datei und Anleitung.
+
+## Freigaben (Luis, 19.11.2026, im Chat)
+
+| Thema | Gezeigt | Urteil |
+|---|---|---|
+| Farben im Theme 3.4.0 | Vorher-Nachher von Startseite, „Diese Woche“ und Handy | **Freigegeben.** Kommt aufs Testsystem und auf `main`. |
+| Signet Tamil Dots 04A | Master nachgebaut als SVG (`design/signature/master.svg`); Vergleich und Overlay mit „01 Master“ der Vorlage; 87 % Überdeckung, nur #660000 und #B30000 | **Form freigegeben.** Abgleich mit Feld A der Originalreferenz nicht erfolgt, Luis hat ohne ihn freigegeben. |
+| Social-Karten | Muster für Feed, Karussell, Story, Facebook und WhatsApp (`design/social/`): Logo auf weißer Platte, Überschrift auf Titan, Punktbogen auf Titan und nie auf dem Foto | **Richtung stimmt.** Die Spezifikation geht als Vorgabe an Nick. Pixelgenaue Exportstandards sind noch nicht freigegeben. |

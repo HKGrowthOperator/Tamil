@@ -5,6 +5,14 @@ Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
 ## 19.11.2026
 
+- **Freigaben vom 19.11.:**
+  - Die Farben des Themes 3.4.0 kommen aufs Testsystem.
+  - Die Form des Signets Tamil Dots 04A (`design/signature/master.svg`) ist freigegeben.
+  - Die Richtung der Social-Karten (`design/social/`) stimmt und geht als Vorgabe ans Backend.
+  - Als Nächstes kommt das Signet als Hintergrund-Element in die Website. Gezeigt wird es vor dem Einbau aufs
+    Testsystem.
+
+  · Luis (`docs/abnahme/2026-11-19-signature.md`)
 - **Markenfarben und Signature-System:**
   - **Farben:** Hintergrund Weiß #FFFFFF, Hauptfarbe Titan Red #660000, Akzentfarbe Impact Red #B30000,
     Farbgewichtung „Red Dominance / Power“.
