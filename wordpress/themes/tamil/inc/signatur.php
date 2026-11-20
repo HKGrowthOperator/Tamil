@@ -230,7 +230,16 @@ function tamil_signatur_ecke_im_text( string $content ): string {
 				return $m[0];
 			}
 			$fertig = true;
-			return '<span class="bild-ecke">' . $m[0] . tamil_signatur_ecke_html( tamil_signatur_ecke_ton( (int) $wahl['id'] ) ) . '</span>';
+			// Ausrichtung des alten Editors (alignleft/-right/-center am <img>) geht auf die Hülle über, sonst wäre die
+			// Hülle bei einem schwebenden Bild 0 px hoch und der Bogen läge daneben
+			$tag        = $m[0];
+			$ausrichten = '';
+			if ( preg_match( '/\sclass\s*=\s*(["\'])([^"\']*)\1/i', $tag, $k ) && preg_match( '/\balign(left|right|center)\b/', $k[2], $a ) ) {
+				$ausrichten = ' align' . $a[1];
+				$rest       = trim( (string) preg_replace( '/\s*\balign(?:left|right|center|none)\b/', '', $k[2] ) );
+				$tag        = str_replace( $k[0], ' class=' . $k[1] . $rest . $k[1], $tag );
+			}
+			return '<span class="bild-ecke' . $ausrichten . '">' . $tag . tamil_signatur_ecke_html( tamil_signatur_ecke_ton( (int) $wahl['id'] ) ) . '</span>';
 		},
 		$content
 	);
