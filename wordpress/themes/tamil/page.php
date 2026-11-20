@@ -22,6 +22,7 @@ while ( have_posts() ) :
 		array(
 			'eager'     => true,
 			'nur_eigen' => true, // Seiten (Impressum, Datenschutz …) bekommen kein Symbolbild
+			'signet'    => false, // das Signet trägt jeder Beitrag, keine Seite
 			'klasse'    => 'artikel__bild',
 			'sizes'     => '(min-width: 1024px) 1040px, (min-width: 600px) 720px, 100vw',
 		)

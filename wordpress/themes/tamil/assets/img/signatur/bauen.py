@@ -12,11 +12,18 @@ Master (dunkel am großen linken Fuß, hell zum Auslauf).
     python3 wordpress/themes/tamil/assets/img/signatur/bauen.py          # schreibt alle Dateien hierher
     python3 wordpress/themes/tamil/assets/img/signatur/bauen.py --liste  # nur Übersicht
 
-Dateien (alle dekorativ: aria-hidden, focusable="false", ohne Titel, unter 30 KB):
+Dateien (alle dekorativ: aria-hidden, focusable="false", ohne Titel, unter 30 KB, die Ecke unter 6 KB):
     flaeche.svg  ganze Kuppel, Impact auf Titan, mit --i je Punkt (inline, Aufbau beim Hineinscrollen)
     band.svg     waagerechter Streifen der Kuppel, Impact auf Titan, leise (Rubrikband, Zeile mit Rechtlichem)
     hell.svg     ganze Kuppel, leise Tönung in Impact auf Weiß (Seitenköpfe)
     raum.svg     03 Spatial, nur an Sonderstellen (404, Production)
+    ecke.svg     „an jedem Post“ (Theme 3.6.0): kleiner Bogen für die Ecke unten rechts im Bild, weiß mit Deckkraft
+    ecke-rot.svg dieselbe Ecke in Titan (Fuß) und Impact (Bogen, Auslauf) für helle Bildecken
+
+Die Ecke nutzt nicht den Master, sondern die Small-Geometrie (`punkte.json`, Feld „small“) in der Mini-Fassung des
+Generators (`mini_aus`): Größenunterschiede leicht gestaucht, sich berührende Punkte ausgedünnt. So bleiben die Punkte
+auch bei 20–56 px Breite einzeln sichtbar. Der Ausschnitt schneidet rechts den Auslauf und unten ein Stück vom Fuß ab;
+die Datei sitzt bündig in der Bildecke, die Kanten der Datei sind also die Kanten des Bilds.
 """
 
 from __future__ import annotations
@@ -33,6 +40,7 @@ GENERATOR = os.path.join(WURZEL, "design", "signature", "tamil_dots.py")
 TITAN = "#660000"
 IMPACT = "#B30000"
 WEISS = "#FFFFFF"
+ECKE_AUSSCHNITT = (0.0, 0.0, 0.90, 0.95)   # Anteile der Formbox: links, oben, rechts, unten
 
 
 def generator():
@@ -92,6 +100,19 @@ def alle():
 
     # 03 Spatial, dekorativ (ohne Titel); Farben wie im Entwurf spatial.svg
     d["raum.svg"] = td.svg_raeumlich(pm, rm, None)
+
+    # Ecke „an jedem Post“: Small-Geometrie als Mini (Stauchung 0,9, Abstand 1,05), rechts 10 % und unten 5 %
+    # abgeschnitten. Weiß von 95 % (Fuß) bis 72 % Deckkraft (Auslauf); für helle Bildecken Titan und Impact.
+    pe, re_ = td.einpassen(td.mini_aus(td.lade("small"), 0.9, 1.05), breite=1000, ausschnitt=ECKE_AUSSCHNITT)
+    d["ecke.svg"] = "".join([kopf(re_)] + gruppen(td, pe, WEISS, deckkraft(0.95, 0.72, n)) + ["</svg>\n"])
+    # Rot nur in den beiden Markenwerten: die dunklen Stufen des Masters (Fuß) Titan, die hellen (Bogen, Auslauf) Impact
+    fuss = [p for p in pe if p.stufe <= 3]
+    bogen = [p for p in pe if p.stufe > 3]
+    d["ecke-rot.svg"] = "".join(
+        [kopf(re_)]
+        + [f'<g fill="{farbe}">' + "".join(td.ellipse(p) for p in teil) + "</g>\n" for farbe, teil in ((TITAN, fuss), (IMPACT, bogen)) if teil]
+        + ["</svg>\n"]
+    )
     return d
 
 
@@ -104,7 +125,8 @@ def main():
         if not a.liste:
             with open(os.path.join(HIER, name), "w", encoding="utf-8") as f:
                 f.write(text)
-        warnung = "  ZU GROSS" if groesse >= 30 * 1024 else ""
+        grenze = 6 if name.startswith("ecke") else 30   # die Ecke steht in jedem Bild: klein halten
+        warnung = "  ZU GROSS" if groesse >= grenze * 1024 else ""
         print(f"{name:14} {text.count('<ellipse'):4} Punkte {groesse / 1024:5.1f} KB{warnung}")
 
 

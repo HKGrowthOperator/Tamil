@@ -51,27 +51,30 @@ function tamil_ebene( string $ebene, string $sonst = 'h3' ): string {
 }
 
 /**
- * Bild mit Titel im Bild (Aufmacher, große Kacheln in „Diese Woche“ und „Küche“).
+ * Bild mit Titel im Bild (Aufmacher, Bildkarten der Startseite, Kacheln in „Diese Woche“ und „Küche“): Dachzeile
+ * „Rubrik | Datum“ und Titel auf dem Verlauf im Foto.
  *
  * @param array<string,mixed> $opt {
- *     @type string $klasse   Klassen des <article> (z. B. „aufmacher“, „kachel kachel--gross“).
+ *     @type string $klasse   Klassen des <article> (z. B. „aufmacher“, „karte karte--neben“, „kachel kachel--gross“).
  *     @type string $rahmen   Formatklasse des Rahmens (r43, r169, r83 oder leer, dann setzt das CSS das Format).
  *     @type string $ebene    h2 oder h3.
  *     @type bool   $vorspann Vorspann unter dem Bild.
  *     @type bool   $unter    Titel unter statt im Bild (Gesichter frei lassen).
- *     @type string $sizes, @type bool $eager.
+ *     @type bool   $rubrik   Rubrik in der Dachzeile (Standard ja; nein in Blöcken, deren Titel die Rubrik nennt).
+ *     @type string $sizes, @type bool $eager, @type bool $niedrig (Bild mit geringem Vorrang, siehe tamil_bild()).
  * }
  */
 function tamil_anr_imbild( int $post_id, array $opt = array() ): string {
 	$img   = tamil_bild(
 		$post_id,
 		array(
-			'sizes' => $opt['sizes'] ?? '',
-			'eager' => ! empty( $opt['eager'] ),
+			'sizes'   => $opt['sizes'] ?? '',
+			'eager'   => ! empty( $opt['eager'] ),
+			'niedrig' => ! empty( $opt['niedrig'] ),
 		)
 	);
 	$ebene = tamil_ebene( (string) ( $opt['ebene'] ?? 'h3' ) );
-	$text  = tamil_meta( $post_id ) . sprintf( '<%1$s class="titel">%2$s</%1$s>', $ebene, tamil_titel( $post_id ) );
+	$text  = tamil_meta( $post_id, array( 'rubrik' => $opt['rubrik'] ?? true ) ) . sprintf( '<%1$s class="titel">%2$s</%1$s>', $ebene, tamil_titel( $post_id ) );
 	$unter = ! empty( $opt['unter'] );
 	$html  = '<article class="' . esc_attr( (string) ( $opt['klasse'] ?? 'kachel' ) ) . '">';
 	$html .= '<a class="anr' . ( $unter ? '' : ' imbild-anr' ) . '" href="' . esc_url( get_permalink( $post_id ) ) . '">';
@@ -234,8 +237,9 @@ function tamil_kacheln( array $kacheln, string $label ): string {
 	}
 	$html = '<nav class="kacheln" aria-label="' . esc_attr( $label ) . '"><ul>';
 	foreach ( $kacheln as $k ) {
-		// Der Name steht im Bild: kein Alternativtext, kein Schild; ohne Beitrag mit Foto ein Bild des Pools. Die Bilder
-		// laden „lazy“, app.js lädt sie gesammelt, sobald der Streifen in die Nähe kommt.
+		// Der Name steht im Bild: kein Alternativtext, kein Schild und kein Signet (Navigation, kein Beitrag); ohne
+		// Beitrag mit Foto ein Bild des Pools. Die Bilder laden „lazy“, app.js lädt sie gesammelt, sobald der Streifen
+		// in die Nähe kommt.
 		$img   = $k['bild'] ? (string) preg_replace(
 			'/ alt="[^"]*"/',
 			' alt=""',
@@ -244,6 +248,7 @@ function tamil_kacheln( array $kacheln, string $label ): string {
 				array(
 					'sizes'  => '160px',
 					'schild' => false,
+					'signet' => false,
 				)
 			),
 			1
@@ -266,11 +271,13 @@ function tamil_kacheln( array $kacheln, string $label ): string {
 }
 
 /**
- * Bildkachel „Im Kino“ (auf Dunkel): Bild des Kino-Beitrags, Film, Zahl der Kinos, Städte.
+ * Bildkachel „Im Kino“ (auf Dunkel): Bild des Kino-Beitrags, Film, Zahl der Kinos, Städte. Als Karte (Startseite):
+ * Film und Zahl der Kinos im Bild, die Städte darunter.
  *
- * @param array<string,mixed> $f Ergebnis von tamil_kino_film().
+ * @param array<string,mixed> $f     Ergebnis von tamil_kino_film().
+ * @param bool                $karte Titel im Bild (Startseite „Diese Woche“).
  */
-function tamil_grafik_kino( array $f, string $ebene = 'h3' ): string {
+function tamil_grafik_kino( array $f, string $ebene = 'h3', bool $karte = false ): string {
 	$laender = array_unique( array_filter( array_map( static fn( $k ) => (string) ( $k['land'] ?? '' ), (array) ( $f['fakten']['kinos'] ?? array() ) ) ) );
 	$namen   = array(
 		'DE' => __( 'in Deutschland', 'tamil' ),
@@ -281,6 +288,19 @@ function tamil_grafik_kino( array $f, string $ebene = 'h3' ): string {
 	/* translators: %d: Anzahl der Kinos */
 	$zahl  = sprintf( _n( '%d Kino', '%d Kinos', (int) $f['kinos'], 'tamil' ), (int) $f['kinos'] ) . $wo;
 	$ebene = tamil_ebene( $ebene );
+	if ( $karte ) {
+		$kat = tamil_hauptkategorie( (int) $f['post'] );
+		return sprintf(
+			'<li class="grafik grafik--karte" data-grafik="kino"><a class="anr imbild-anr" href="%1$s"><div class="rahmen r169">%6$s<div class="imbild"><p class="meta">%5$s<span>%4$s</span></p><%2$s class="titel">%3$s</%2$s></div></div>%7$s</a></li>',
+			esc_url( $f['link'] ),
+			$ebene,
+			esc_html( $f['film'] ),
+			esc_html( $zahl ),
+			$kat ? '<span class="meta__rubrik">' . esc_html( $kat->name ) . '</span>' : '',
+			tamil_bild( (int) $f['post'], array( 'sizes' => '(min-width: 1024px) 380px, (min-width: 600px) 50vw, 100vw' ) ),
+			$f['staedte'] ? '<div class="grafik__inhalt"><p class="grafik__orte">' . esc_html( tamil_staedte_kurz( $f['staedte'] ) ) . '</p></div>' : ''
+		);
+	}
 	return sprintf(
 		'<li class="grafik grafik--quer" data-grafik="kino"><a class="anr" href="%1$s"><div class="rahmen r43">%6$s</div><div class="grafik__inhalt"><%2$s class="titel">%3$s</%2$s><p class="grafik__zahl">%4$s</p>%5$s</div></a></li>',
 		esc_url( $f['link'] ),
@@ -320,14 +340,32 @@ function tamil_termin_angaben( int $post_id, array $e ): array {
 
 /**
  * Bildkachel „Termin“ (auf Dunkel): Bild, Titel, Datum als größte Angabe, Ort und Veranstalter, Eintritt, Vorspann.
+ * Als Karte (Startseite): Dachzeile „Rubrik | Datum des Termins“ und Titel im Bild, Ort und Eintritt darunter.
+ *
+ * @param bool $karte Titel im Bild (Startseite „Diese Woche“).
  */
-function tamil_grafik_termin( int $post_id, string $ebene = 'h3', bool $text = true ): string {
+function tamil_grafik_termin( int $post_id, string $ebene = 'h3', bool $text = true, bool $karte = false ): string {
 	$e = function_exists( 'tamil_site_event' ) ? tamil_site_event( $post_id ) : array();
 	if ( ! $e ) {
 		return '';
 	}
 	$a     = tamil_termin_angaben( $post_id, $e );
 	$ebene = tamil_ebene( $ebene );
+	if ( $karte ) {
+		$kat   = tamil_hauptkategorie( $post_id );
+		$datum = '' !== $a['iso'] ? '<time datetime="' . esc_attr( $a['iso'] ) . '">' . esc_html( $a['datum'] ) . '</time>' : esc_html( $a['datum'] );
+		$unter = implode( '. ', array_filter( array( $a['orte'], $a['eintritt'] ) ) );
+		return sprintf(
+			'<li class="grafik grafik--karte" data-grafik="termin"><a class="anr imbild-anr" href="%1$s"><div class="rahmen r169">%6$s<div class="imbild"><p class="meta">%5$s%4$s</p><%2$s class="titel">%3$s</%2$s></div></div>%7$s</a></li>',
+			esc_url( get_permalink( $post_id ) ),
+			$ebene,
+			tamil_titel( $post_id ),
+			$datum,
+			$kat ? '<span class="meta__rubrik">' . esc_html( $kat->name ) . '</span>' : '',
+			tamil_bild( $post_id, array( 'sizes' => '(min-width: 1024px) 380px, (min-width: 600px) 50vw, 100vw' ) ),
+			'' !== $unter || $text ? '<div class="grafik__inhalt">' . ( '' !== $unter ? '<p class="grafik__orte">' . esc_html( $unter ) . '</p>' : '' ) . ( $text ? '<p class="grafik__text">' . tamil_text( wp_trim_words( tamil_standfirst( $post_id ), 28, ' …' ) ) . '</p>' : '' ) . '</div>' : ''
+		);
+	}
 	return sprintf(
 		'<li class="grafik" data-grafik="termin"><a class="anr" href="%1$s"><div class="rahmen r169">%7$s</div><div class="grafik__inhalt"><%2$s class="titel">%3$s</%2$s><p class="grafik__zahl">%4$s</p>%5$s%6$s</div></a></li>',
 		esc_url( get_permalink( $post_id ) ),
