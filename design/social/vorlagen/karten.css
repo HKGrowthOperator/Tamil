@@ -60,7 +60,7 @@ body { font-family: var(--schrift); -webkit-font-smoothing: antialiased; text-re
   color: rgb(255 255 255 / 0.92); text-align: right;
 }
 
-/* Logo unverändert auf weißer Platte (eine weiße Logofassung liegt nicht vor) */
+/* Logo (neu seit 20.11.2026, design/inhalte/logo.png freigestellt) auf weißer Platte; eine weiße Logofassung liegt nicht vor */
 .logo {
   position: absolute; z-index: 3; left: var(--rand); top: var(--rand);
   background: var(--weiss); padding: var(--logo-pad, 16px 20px 14px);

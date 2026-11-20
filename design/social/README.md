@@ -23,7 +23,8 @@ Ein Kartensystem für Instagram, Facebook und WhatsApp im Stil der Bild.de-Posts
 | `schriften/` | Libre Franklin (variabel, latin + latin-ext), OFL |
 | `muster/*.jpg` | gerenderte Muster; `*-zonen.jpg` mit eingezeichneten sicheren Zonen |
 
-Logo: `design/inhalte/logo.png`, unverändert. Signet: `design/signature/vorschlaege/master-impact-auf-titan.svg`
+Logo: `design/inhalte/logo.png`, das neue Logo von Luis (20.11.2026), aus `design/inhalte/logo-2026-11.webp`
+freigestellt (`design/inhalte/logo_freistellen.py`, durchsichtiger Grund, Farben unverändert). Signet: `design/signature/vorschlaege/master-impact-auf-titan.svg`
 (auf Titan), `…/master-hell.svg` (weiße Folien), `design/signature/master.svg` (Schlussfolie).
 
 ```bash
@@ -104,9 +105,11 @@ Alle Maße in Bildpunkten der Zielgröße. Rand links und rechts: 56 px (Feed, K
 
 ## Logo
 
-- Das Logo bleibt unverändert (`design/inhalte/logo.png`, rot und grau).
-- Eine weiße Fassung liegt nicht vor. Darum steht das rote Logo auf einer weißen Platte (Innenabstand 16 / 20 / 14 px,
-  Logo 216 px breit, Facebook 168 px).
+- Seit 20.11.2026 das neue Logo (Luis: „genau so übernehmen“): „tamil“ in Rot, „.de“ in Dunkelgrau, darunter
+  „portal • lifestyle • entertainment“ und „& KOMMUNITYPLATTFORM DER COMMUNITY“ – Schreibweise wie geliefert.
+  Datei: `design/inhalte/logo.png` (1920 × 695, freigestellt, ohne Rand). Kein Neuzeichnen, kein Vektor-Nachbau.
+- Eine weiße Fassung liegt nicht vor. Darum steht das Logo auf einer weißen Platte (Innenabstand 16 / 20 / 14 px,
+  Logo 216 px breit, Facebook 168 px). Die Muster in `muster/` sind mit dem neuen Logo neu gerendert.
 - Luis wünscht „tamil.de in weißer Schrift“. Das geht erst mit einer weißen Logofassung von KBS (offener Punkt).
 
 ## Einzelbild oder Karussell
