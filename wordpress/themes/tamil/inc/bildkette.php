@@ -418,7 +418,8 @@ function tamil_symbolbild_schild(): string {
 }
 
 /**
- * <img> eines Pool-Bilds mit kleiner Fassung (320 px) im srcset.
+ * <img> eines Pool-Bilds mit kleinen Fassungen (320 und 480 px) im srcset. Die 480er braucht die 160 px breite
+ * Rubrikkachel am Handy mit doppelter bis dreifacher Pixeldichte; sonst lädt es das ganze Bild (QA-19).
  *
  * @param array<string,mixed> $p    Eintrag aus tamil_bildpool().
  * @param array<string,string> $attr alt, loading, sizes, class, fetchpriority.
@@ -426,8 +427,9 @@ function tamil_symbolbild_schild(): string {
 function tamil_pool_tag( array $p, array $attr ): string {
 	$basis = TAMIL_THEME_URI . '/assets/img/rubrik/';
 	$klein = str_replace( '.webp', '-320.webp', (string) $p['datei'] );
+	$mittel = str_replace( '.webp', '-480.webp', (string) $p['datei'] );
 	return sprintf(
-		'<img src="%1$s" srcset="%2$s 320w, %1$s %3$dw" sizes="%4$s" width="%3$d" height="%5$d" alt="%6$s" decoding="async" loading="%7$s"%8$s%9$s style="object-position: %10$s">',
+		'<img src="%1$s" srcset="%2$s 320w, %11$s 480w, %1$s %3$dw" sizes="%4$s" width="%3$d" height="%5$d" alt="%6$s" decoding="async" loading="%7$s"%8$s%9$s style="object-position: %10$s">',
 		esc_url( $basis . $p['datei'] ),
 		esc_url( $basis . $klein ),
 		(int) $p['w'],
@@ -437,7 +439,8 @@ function tamil_pool_tag( array $p, array $attr ): string {
 		esc_attr( (string) ( $attr['loading'] ?? 'lazy' ) ),
 		! empty( $attr['fetchpriority'] ) ? ' fetchpriority="' . ( 'low' === $attr['fetchpriority'] ? 'low' : 'high' ) . '"' : '',
 		! empty( $attr['class'] ) ? ' class="' . esc_attr( $attr['class'] ) . '"' : '',
-		esc_attr( (string) $p['fokus'] )
+		esc_attr( (string) $p['fokus'] ),
+		esc_url( $basis . $mittel )
 	);
 }
 
