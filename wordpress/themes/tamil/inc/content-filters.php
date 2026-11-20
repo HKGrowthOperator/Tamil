@@ -173,3 +173,35 @@ function tamil_inhalt_lang_ta( string $content ): string {
 	return tamil_lang_ta( $content );
 }
 add_filter( 'the_content', 'tamil_inhalt_lang_ta', 40 );
+
+/**
+ * Quellenzeile im Text mit gleich benannten Links („Quelle: Eventfrog CH, Eventfrog CH“, zwei Seiten derselben Quelle):
+ * ab dem zweiten gleichen Namen eine Zahl anhängen („Eventfrog CH (2)“), damit Lesende und Vorleser die Links
+ * unterscheiden können (QA-08). Andere Inhalte bleiben unverändert.
+ *
+ * @param string $content Inhalt des Beitrags.
+ */
+function tamil_quelle_gleiche_namen( string $content ): string {
+	if ( ! str_contains( $content, 'class="quelle"' ) ) {
+		return $content;
+	}
+	$neu = preg_replace_callback(
+		'#(<p class="quelle">)(.*?)(</p>)#s',
+		static function ( array $m ): string {
+			$zahl  = array();
+			$innen = preg_replace_callback(
+				'#(<a\b[^>]*>)([^<]+)(</a>)#',
+				static function ( array $a ) use ( &$zahl ): string {
+					$name          = trim( $a[2] );
+					$zahl[ $name ] = ( $zahl[ $name ] ?? 0 ) + 1;
+					return $zahl[ $name ] > 1 ? $a[1] . $a[2] . ' (' . $zahl[ $name ] . ')' . $a[3] : $a[0];
+				},
+				$m[2]
+			);
+			return $m[1] . ( is_string( $innen ) ? $innen : $m[2] ) . $m[3];
+		},
+		$content
+	);
+	return is_string( $neu ) ? $neu : $content;
+}
+add_filter( 'the_content', 'tamil_quelle_gleiche_namen', 35 );
