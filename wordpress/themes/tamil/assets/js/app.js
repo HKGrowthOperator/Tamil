@@ -30,6 +30,7 @@
     }
     var rand = function () {
       streifen.classList.toggle("mehr-rechts", streifen.scrollLeft + streifen.clientWidth < streifen.scrollWidth - 2);
+      streifen.classList.toggle("mehr-links", streifen.scrollLeft > 2);
     };
     rand();
     streifen.addEventListener("scroll", rand, { passive: true });

@@ -210,11 +210,17 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .band__liste {
   display: flex; flex: 1 1 auto; min-width: 0;
   overflow-x: auto; scrollbar-width: none;
-  scroll-snap-type: x proximity; scroll-padding-inline: 4px 50%;
+  scroll-snap-type: x proximity; scroll-padding-inline: 32px 50%;
 }
 .band__liste::-webkit-scrollbar { display: none; }
 /* folgen rechts noch Rubriken, läuft die letzte sichtbar aus (statt hart an „Mehr“ abgeschnitten zu wirken) */
 .band__liste.mehr-rechts { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent); }
+/* ist die Reihe gewischt, läuft auch der linke Rand aus statt einen Wortrest hart abzuschneiden (QA-16) */
+.band__liste.mehr-links { -webkit-mask-image: linear-gradient(to right, transparent, #000 32px); mask-image: linear-gradient(to right, transparent, #000 32px); }
+.band__liste.mehr-links.mehr-rechts {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 32px, #000 calc(100% - 32px), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 32px, #000 calc(100% - 32px), transparent);
+}
 .band__liste li { scroll-snap-align: start; }
 .band__liste a, .mehr summary {
   position: relative; display: block;
