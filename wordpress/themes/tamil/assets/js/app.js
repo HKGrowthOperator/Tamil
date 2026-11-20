@@ -103,6 +103,8 @@
         var ok = (!wahl.land || z.getAttribute("data-land") === wahl.land) && (!wahl.stadt || z.getAttribute("data-stadt") === wahl.stadt);
         z.hidden = !ok; if (ok) n++;
       });
+      // Mit Filter zeigt die Liste auch die Termine aus „Ab heute“ (ohne Filter blendet das CSS sie hier aus)
+      block.classList.toggle("gefiltert", !!(wahl.land || wahl.stadt));
       $$(".kalender__monat", block).forEach(function (m) { m.hidden = !$("li[data-land]:not([hidden])", m); });
       if (zahl) zahl.textContent = n === 1 ? "1 Termin" : n + " Termine";
       if (leer) leer.hidden = n > 0;

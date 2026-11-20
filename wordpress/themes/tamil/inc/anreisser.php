@@ -362,9 +362,10 @@ function tamil_termin_angaben( int $post_id, array $e ): array {
  * Bildkachel „Termin“ (auf Dunkel): Bild, Titel, Datum als größte Angabe, Ort und Veranstalter, Eintritt, Vorspann.
  * Als Karte (Startseite): Dachzeile „Rubrik | Datum des Termins“ und Titel im Bild, Ort und Eintritt darunter.
  *
- * @param bool $karte Titel im Bild (Startseite „Diese Woche“).
+ * @param bool $karte  Titel im Bild (Startseite „Diese Woche“).
+ * @param bool $sofort Bild sofort und vorrangig laden (erste Karte im ersten Bildschirm, etwa „Ab heute“ auf /events/).
  */
-function tamil_grafik_termin( int $post_id, string $ebene = 'h3', bool $text = true, bool $karte = false ): string {
+function tamil_grafik_termin( int $post_id, string $ebene = 'h3', bool $text = true, bool $karte = false, bool $sofort = false ): string {
 	$e = function_exists( 'tamil_site_event' ) ? tamil_site_event( $post_id ) : array();
 	if ( ! $e ) {
 		return '';
@@ -382,7 +383,13 @@ function tamil_grafik_termin( int $post_id, string $ebene = 'h3', bool $text = t
 			tamil_titel( $post_id ),
 			$datum,
 			$kat ? '<span class="meta__rubrik">' . esc_html( $kat->name ) . '</span>' : '',
-			tamil_bild( $post_id, array( 'sizes' => '(min-width: 1024px) 380px, (min-width: 600px) 50vw, 100vw' ) ),
+			tamil_bild(
+				$post_id,
+				array(
+					'sizes' => '(min-width: 1024px) 380px, (min-width: 600px) 50vw, 100vw',
+					'eager' => $sofort,
+				)
+			),
 			'' !== $unter || $text ? '<div class="grafik__inhalt">' . ( '' !== $unter ? '<p class="grafik__orte">' . esc_html( $unter ) . '</p>' : '' ) . ( $text ? '<p class="grafik__text">' . tamil_text( wp_trim_words( tamil_standfirst( $post_id ), 28, ' …' ) ) . '</p>' : '' ) . '</div>' : ''
 		);
 	}

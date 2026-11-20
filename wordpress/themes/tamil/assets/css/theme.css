@@ -575,8 +575,14 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .karte__zusatz + .vorspann { margin-top: 4px; }
 /* Lange Listen: Karten ab der dritten erst rechnen, malen und ihre Bilder laden, wenn sie in die Nähe kommen
    (content-visibility); die gemerkte Höhe hält die Seite ruhig. Spart am Handy die Bilder unter dem ersten Bildschirm. */
-.karten--raster > li:nth-child(n+3) { content-visibility: auto; contain-intrinsic-size: auto 330px; }
+.karten--raster > li:nth-child(n+3) { content-visibility: auto; contain-intrinsic-size: auto 290px; }
+/* Termine ohne Vorspann sind niedriger (gemessen 223 / 246 px) */
+.kalender .karten--raster > li:nth-child(n+3), .monat .karten--raster > li:nth-child(n+3) { contain-intrinsic-size: auto 240px; }
 @media (min-width: 600px) and (max-width: 1023px) {
+  /* Tablet, zwei Spalten: eine übrig bleibende letzte Karte steht nicht allein neben einer Lücke, sondern über beide
+     Spalten in flacherem Format (21:9) */
+  .karten--raster > li:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .karten--raster > li:last-child:nth-child(odd) .rahmen { aspect-ratio: 21 / 9; }
   /* Tablet: „Weitere Meldungen“ bleibt eine wischbare Reihe (nicht das Zweierraster der Meldungszeilen) */
   .meldungen ul.karten--reihe { display: flex; column-gap: 12px; }
   /* „Im Kino“ über die volle Breite (ohne kleine Kachel daneben): Bild mit Titel links, Städte rechts */
@@ -709,6 +715,12 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .chip[aria-pressed="true"] { background: var(--titan); border-color: var(--titan); color: var(--hell); font-weight: 600; }
 .kalender__titel { margin-top: 28px; padding-bottom: 8px; border-bottom: 1px solid var(--linie); font-size: 19px; line-height: 1.25; font-weight: 650; }
 .zeile__angaben { font-size: 15px; line-height: 1.45; color: var(--leise); }
+/* Kommende Termine: was schon unter „Ab heute“ steht, erscheint hier nicht noch einmal – außer ein Filter ist gewählt
+   (app.js setzt .gefiltert). Bleibt ohne Filter nichts übrig, sagt ein Satz, wo die Termine stehen. */
+.kalender:not(.gefiltert) li[data-ab-heute] { display: none; }
+.kalender:not(.gefiltert) .kalender__monat:not(:has(li[data-land]:not([data-ab-heute]))) { display: none; }
+.kalender__alle-oben { display: none; }
+.kalender:not(.gefiltert):not(:has(li[data-land]:not([data-ab-heute]))) .kalender__alle-oben { display: block; }
 
 /* Kino „Nach Stadt“: Bild des Films in jeder Zeile */
 .tafel--bilder .was { display: grid; grid-template-columns: 96px minmax(0, 1fr); column-gap: 12px; align-items: start; }
