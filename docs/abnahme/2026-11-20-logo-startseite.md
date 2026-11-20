@@ -2,7 +2,7 @@
 
 - **Datum:** 19. und 20.11.2026, über Luis.
 - **Gezeigt / gebaut:** Theme 3.6.0 auf `claude/klar2-ausbau` (lokal geprüft, noch nicht auf dem Testsystem).
-- **Ergebnis:** Entscheidungen fest (unten); die Umsetzung ist zur Freigabe vorgelegt, **Freigabe ausstehend**.
+- **Ergebnis:** Entscheidungen fest (unten). Umsetzung am 20.11. von Luis **freigegeben** (Antworten unten).
 
 ## Entscheidungen von Luis
 
@@ -25,13 +25,18 @@ Das neue Logo hebt für dieses Logo die Regel „Logo bleibt unverändert“ aus
 
 **Vorlagebilder** (lokal, Testinhalte): Startseite 1280 und 390, Kopf 1280 und 390, drei Karten nah (2x), Artikel 1280.
 
-## Offene Fragen an Luis
+## Freigabe (20.11.2026, im Chat)
 
-- Favicon und App-Icon „t.“: so lassen oder aus dem neuen Logo ableiten?
-- „Weitere Meldungen“: drei statt bisher sechs (drei Karten 16:9 sind so hoch wie der Aufmacher); die übrigen Beiträge
-  stehen weiter unten in den Rubrikblöcken. Passt das?
-- Eine weiße Fassung des neuen Logos für Social-Karten (weiß auf Foto) liegt nicht vor.
+Gezeigt: die Vorlagebilder oben (Theme 3.6.0, Stand `5b475a4`). Antworten von Luis (Auswahl im Chat):
+
+| Frage | Antwort |
+|---|---|
+| Theme 3.6.0 freigeben, aufs Testsystem und Website-Dateien auf `main`? | „Freigeben“ |
+| „Weitere Meldungen“: drei Bildkarten statt sechs Zeilen? | „Drei ist gut“ |
+| Favicon und App-Icon „t.“ lassen oder aus dem neuen Logo ableiten? | „„t.“ lassen“ |
+
+Weiter offen: Eine weiße Fassung des neuen Logos für Social-Karten (weiß auf Foto) liegt nicht vor.
 
 ## Nächster Schritt
 
-Freigabe der Vorlagebilder durch Luis, danach Merge und Deploy aufs Testsystem.
+Merge in `claude/radar-multiagent`, Deploy aufs Testsystem, Prüfung dort, danach Website-Dateien auf `main`.
