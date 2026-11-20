@@ -198,7 +198,9 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 }
 .kopfzeile__suche svg { width: 16px; height: 16px; flex: none; }
 .kopf__logo { display: block; width: max-content; padding: 6px 0; }
-.kopf__logo img { height: 44px; width: auto; }
+/* Logo (neu seit 3.6.0, Luis 20.11.2026): so hoch, dass „portal • lifestyle • entertainment“ lesbar bleibt (die Zeile
+   ist rund ein Sechstel der Logohöhe: 9,5 / 11 / 12 px) */
+.kopf__logo img { height: 56px; width: auto; }
 
 /* Rubrikband in Titan Red mit weißer Schrift (Luis, 19.11.2026): weiß auf Titan 13,4 : 1. Beim Überfahren und bei
    offenem „Mehr“ Impact Red (weiß darauf 7,2 : 1); die aktive Rubrik ist in Impact markiert und trägt 3 px Weiß darunter
@@ -252,7 +254,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 @media (min-width: 600px) {
   :root { --rand: 24px; }
   .kopfzeile__datum { flex: none; }
-  .kopf__logo img { height: 52px; }
+  .kopf__logo img { height: 64px; }
 }
 /* Tablet: etwas engere Abstände, damit alle Rubriken samt „Kontakt“ ab etwa 800 px neben „Mehr“ passen */
 @media (min-width: 600px) and (max-width: 1023px) {
@@ -264,8 +266,8 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .kopfzeile__innen { min-height: 38px; }
   .kopfzeile a, .kopfzeile .kopfzeile__neu a { min-height: 38px; line-height: 38px; }
   .kopfzeile .kopfzeile__neu a + a { display: block; }
-  .kopf__logo { padding: 11px 0; }
-  .kopf__logo img { height: 58px; }
+  .kopf__logo { padding: 10px 0; }
+  .kopf__logo img { height: 72px; }
   .band__innen { position: relative; padding: 0 calc(var(--rand) - 14px); }
   .band__liste { overflow: visible; }
   .band__liste a, .mehr summary { padding: 0 14px; font-size: 16px; }
@@ -1137,7 +1139,7 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
 .fuss__innen { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 24px; }
 .fuss__marke { grid-column: 1 / -1; }
 .fuss__logo { display: inline-flex; align-items: center; min-height: 48px; }
-.fuss__logo img { height: 40px; width: auto; }
+.fuss__logo img { height: 56px; width: auto; }
 .fuss__satz { margin-top: 10px; max-width: 34em; color: var(--tinte); }
 .fuss h2 {
   padding-bottom: 6px; margin-bottom: 2px; border-bottom: 1px solid var(--linie);
