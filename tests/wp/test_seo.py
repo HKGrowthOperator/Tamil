@@ -277,6 +277,32 @@ def test_seo_titel_wird_escaped(wp, wp_cli):
         wp_cli(f"wp_delete_post( {pid}, true );")
 
 
+def test_seo_titel_mit_marke_und_laengenregel(wp, wp_cli):
+    """QA-14: Ein eigener SEO-Titel trägt wie alle anderen Seiten „| Marke“, solange er damit höchstens 60 Zeichen hat
+    und die Marke nicht schon enthält; ein langer Titel bleibt ohne Zusatz stehen."""
+    marke = wp_cli("echo get_bloginfo( 'name', 'display' );").strip()
+    pid = int(wp_cli(
+        "echo wp_insert_post( array( 'post_title' => 'Markentest', 'post_status' => 'publish', 'post_name' => 'seo-test-marke',"
+        " 'post_content' => '<p>x</p>' ) );"))
+
+    def titel(seo: str) -> str:
+        wp_cli(f"update_post_meta( {pid}, '_tamil_seo_title', {json.dumps(seo, ensure_ascii=False)} );")
+        seite = wp.get("/seo-test-marke/").text
+        return html.unescape(re.search(r"<title>(.*?)</title>", seite, re.DOTALL).group(1)).strip()
+
+    try:
+        kurz = "„Jailer 2“ in Kloten am 15.11."
+        assert titel(kurz) == f"{kurz} | {marke}"
+        lang = "x" * (61 - len(f" | {marke}"))
+        assert titel(lang) == lang
+        grenze = "y" * (60 - len(f" | {marke}"))
+        assert titel(grenze) == f"{grenze} | {marke}"
+        mit_marke = f"Neu auf {marke}: Termine"
+        assert titel(mit_marke) == mit_marke
+    finally:
+        wp_cli(f"wp_delete_post( {pid}, true );")
+
+
 # --- Prüfung 12.11.2026 (claude-seo, Abgleich mit Merzenich Aktuell): Autor, Herausgeber, Canonical, dünne Seiten ----
 
 

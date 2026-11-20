@@ -20,7 +20,7 @@ $tamil_lupe    = '<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
 				<nav class="kopfzeile__neu" aria-label="<?php esc_attr_e( 'Neueste Beiträge', 'tamil' ); ?>">
 					<strong><?php esc_html_e( 'Neu', 'tamil' ); ?></strong>
 					<?php foreach ( $tamil_neu as $tamil_n ) : ?>
-						<a href="<?php echo esc_url( get_permalink( $tamil_n ) ); ?>"><?php echo tamil_titel( $tamil_n ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_titel() ?></a>
+						<a href="<?php echo esc_url( get_permalink( $tamil_n ) ); ?>"><?php $tamil_t = html_entity_decode( get_the_title( $tamil_n ), ENT_QUOTES, 'UTF-8' ); ?><span class="neu__kurz"><?php echo tamil_text( tamil_titel_kurz( $tamil_t, 26 ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_text() ?></span><span class="neu__lang"><?php echo tamil_text( tamil_titel_kurz( $tamil_t, 44 ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_text() ?></span></a>
 					<?php endforeach; ?>
 				</nav>
 			<?php endif; ?>
