@@ -425,8 +425,8 @@ function tamil_symbolbild_schild(): string {
  * @param array<string,string> $attr alt, loading, sizes, class, fetchpriority.
  */
 function tamil_pool_tag( array $p, array $attr ): string {
-	$basis = TAMIL_THEME_URI . '/assets/img/rubrik/';
-	$klein = str_replace( '.webp', '-320.webp', (string) $p['datei'] );
+	$basis  = TAMIL_THEME_URI . '/assets/img/rubrik/';
+	$klein  = str_replace( '.webp', '-320.webp', (string) $p['datei'] );
 	$mittel = str_replace( '.webp', '-480.webp', (string) $p['datei'] );
 	return sprintf(
 		'<img src="%1$s" srcset="%2$s 320w, %11$s 480w, %1$s %3$dw" sizes="%4$s" width="%3$d" height="%5$d" alt="%6$s" decoding="async" loading="%7$s"%8$s%9$s style="object-position: %10$s">',
