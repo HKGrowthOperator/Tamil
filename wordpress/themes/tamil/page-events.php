@@ -105,7 +105,7 @@ foreach ( $tamil_vorbei as $tamil_id ) {
 			<?php
 			foreach ( $tamil_bald as $tamil_i => $tamil_id ) {
 				// die erste Karte ist das größte Bild im ersten Bildschirm: sofort und vorrangig laden
-				echo tamil_grafik_termin( $tamil_id, 'h3', true, true, 0 === $tamil_i ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_grafik_termin()
+				echo tamil_grafik_termin( $tamil_id, 'h3', true, 0 === $tamil_i ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_grafik_termin()
 			}
 			if ( ! $tamil_bald ) {
 				echo tamil_grafik_leer( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_grafik_leer()
