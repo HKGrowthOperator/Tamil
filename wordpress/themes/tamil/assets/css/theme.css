@@ -595,6 +595,13 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .karten--reihe > * { flex: 0 0 min(86%, 340px); scroll-snap-align: start; min-width: 0; }
 .neben.karten--reihe .titel { font-size: 19px; line-height: 1.2; }
 .meldungen .karten--reihe { margin-top: 10px; }
+@media (min-width: 600px) and (max-width: 1023px) {
+  /* Tablet: „Weitere Meldungen“ bleibt eine wischbare Reihe (nicht das Zweierraster der Meldungszeilen) */
+  .meldungen ul.karten--reihe { display: flex; column-gap: 12px; }
+  /* „Im Kino“ über die volle Breite (ohne kleine Kachel daneben): Bild mit Titel links, Städte rechts */
+  .woche__raster.ohne-klein .woche__gruppe--kino .grafik--karte .anr { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+  .woche__raster.ohne-klein .woche__gruppe--kino .grafik--karte .grafik__inhalt { padding: 16px 20px; }
+}
 .rubrikblock .karten--reihe { padding-top: 14px; }
 /* „Diese Woche“: Kino und Termine als Karten mit Titel im Bild, darunter Städte bzw. Ort und Eintritt auf Titan */
 .woche { --verlauf-karte: var(--verlauf-karte-titan); }
