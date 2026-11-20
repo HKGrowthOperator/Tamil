@@ -1133,6 +1133,8 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
 @media (max-width: 767px) and (min-height: 500px) {
   .site.has-sticky-ad, .site.has-sticky-ad:has(#ad-mobile), .site.has-sticky-ad:has(.ad-mobile.ad-bild) { padding-bottom: 0; }
   .has-sticky-ad .fuss__recht { padding-bottom: calc(6px + 84px + env(safe-area-inset-bottom, 0px)); }
+  /* Fokus und Sprungziele landen über der festen Leiste, nicht darunter (WCAG 2.2, 2.4.11; QA-18) */
+  html:has(.ad-mobile.ist-sichtbar) { scroll-padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
 }
 
 /* ---------- Fuß: weißer Grund mit Linie in Titan oben; die Zeile mit Rechtlichem als Band in Titan über die volle
