@@ -61,5 +61,11 @@ Merge in `claude/radar-multiagent`, Deploy aufs Testsystem, Prüfung dort, danac
   390/820/1280, Punktbogen 480 von 480; Ausnahmen mit Namen (Rubrikkachel, Tabelle, Verzeichnis, Artikel). Kontrast der
   Schrift im Bild ≥ 5,57 : 1 (5-%-Quantil), höchstens vier Titelzeilen.
 - **Vorlagebilder:** Rubrik, Suche und Artikelende mit „Weiterlesen“ je 1280 und 390, Kino-Rubrik und Termine.
-- **Freigabe:** ausstehend.
+- **Freigabe (20.11., im Chat, Stand `4ae2a61`):**
+
+| Frage | Antwort |
+|---|---|
+| Theme 3.7.0 freigeben, aufs Testsystem und Website-Dateien auf `main`? | „Freigeben“ |
+| „Neu in der Rubrik“: drei Karten statt vier Zeilen? | „Drei ist gut“ |
+| Kinotabelle „Nach Stadt“ als Tabelle lassen? | „Tabelle lassen“ |
 
