@@ -10,6 +10,11 @@ defined( 'ABSPATH' ) || exit;
 const TAMIL_START_RUBRIKEN = array( 'community', 'kultur', 'entertainment', 'sport', 'news' );
 
 /**
+ * Zahl der „Weiteren Meldungen“ auf der Startseite (Bildkarten 16:9 neben dem Aufmacher).
+ */
+const TAMIL_START_MELDUNGEN = 3;
+
+/**
  * Beitrags-IDs (veröffentlicht, ohne bereits verwendete). Beiträge, Meta und Rubriken landen gleich im Cache, damit
  * die Anreißer danach ohne weitere Abfragen auskommen.
  *
@@ -65,11 +70,11 @@ function tamil_ids_mit_bild( array $args, array $ohne = array(), int $anzahl = 0
  * Schlüssel des Transients der Startseite (mit dem heutigen Datum).
  */
 function tamil_start_schluessel(): string {
-	return 'tamil_start_' . current_time( 'Ymd' );
+	return 'tamil_start_' . TAMIL_THEME_VERSION . '_' . current_time( 'Ymd' );
 }
 
 /**
- * Startseite klar2: Aufmacher, vier Nebenstücke, sechs Meldungen, Rubrikkacheln, „Diese Woche“ (zwei Kino-Beiträge
+ * Startseite klar2: Aufmacher, vier Nebenstücke, drei Meldungen, Rubrikkacheln, „Diese Woche“ (zwei Kino-Beiträge
  * mit Bild), „Küche“ (vier mit Bild) und weitere Rubrikblöcke. Ohne Dubletten; Ergebnis zehn Minuten im Transient.
  *
  * @return array{lead:int,neben:int[],meldungen:int[],kacheln:array,woche:array,kueche:int[],rubriken:array<string,int[]>}
@@ -107,12 +112,13 @@ function tamil_start_auswahl(): array {
 	$woche = tamil_woche_auswahl( $used );
 	$used  = array_merge( $used, $woche['bilder'], array_map( 'intval', wp_list_pluck( $woche['filme'], 'post' ) ), $woche['termine'] );
 
-	// Nebenstücke: vier mit Bild; Meldungen: sechs, mit Bild bevorzugt, sonst die neuesten.
+	// Nebenstücke: vier mit Bild; Meldungen: drei Bildkarten 16:9 (so hoch wie der Aufmacher daneben), mit Bild
+	// bevorzugt, sonst die neuesten. Was hier nicht steht, rückt in die Rubrikblöcke.
 	$neben     = array_slice( array_values( array_diff( $mit_bild, $used ) ), 0, 4 );
 	$used      = array_merge( $used, $neben );
-	$meldungen = array_slice( array_values( array_diff( $mit_bild, $used ) ), 0, 6 );
-	if ( count( $meldungen ) < 6 ) {
-		$meldungen = array_merge( $meldungen, tamil_ids( array( 'posts_per_page' => 6 - count( $meldungen ) ), array_merge( $used, $meldungen ) ) );
+	$meldungen = array_slice( array_values( array_diff( $mit_bild, $used ) ), 0, TAMIL_START_MELDUNGEN );
+	if ( count( $meldungen ) < TAMIL_START_MELDUNGEN ) {
+		$meldungen = array_merge( $meldungen, tamil_ids( array( 'posts_per_page' => TAMIL_START_MELDUNGEN - count( $meldungen ) ), array_merge( $used, $meldungen ) ) );
 	}
 	$used = array_merge( $used, $meldungen );
 

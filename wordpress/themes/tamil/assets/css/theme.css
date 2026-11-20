@@ -56,6 +56,8 @@
   /* Schrift im Bild: der einzige Verlauf, von durchsichtig nach Schwarz; auf Titan-Flächen nach Titan (.woche) */
   --verlauf: linear-gradient(to bottom, rgb(0 0 0 / 0) 0, rgb(0 0 0 / 0.72) 52px, rgb(0 0 0 / 0.88) 100%);
   --verlauf-kurz: linear-gradient(to bottom, rgb(0 0 0 / 0) 0, rgb(0 0 0 / 0.78) 22px, rgb(0 0 0 / 0.9) 100%);
+  --verlauf-karte: linear-gradient(to bottom, rgb(0 0 0 / 0) 0, rgb(0 0 0 / 0.72) 40px, rgb(0 0 0 / 0.86) 100%);
+  --verlauf-karte-titan: linear-gradient(to bottom, rgb(102 0 0 / 0) 0, rgb(102 0 0 / 0.86) 40px, rgb(102 0 0 / 0.95) 100%);
   --verlauf-titan: linear-gradient(to bottom, rgb(102 0 0 / 0) 0, rgb(102 0 0 / 0.8) 52px, rgb(102 0 0 / 0.94) 100%);
   --verlauf-titan-kurz: linear-gradient(to bottom, rgb(102 0 0 / 0) 0, rgb(102 0 0 / 0.84) 22px, rgb(102 0 0 / 0.95) 100%);
   --symbolbild-grund: rgb(102 0 0 / 0.86);   /* Schild „Symbolbild“: Titan, Weiß darauf mindestens 9,5 : 1 */
@@ -447,16 +449,9 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .kueche__raster { display: grid; gap: 12px; padding-top: 14px; }
 .kueche .kachel--klein .imbild { padding: 30px var(--rand) 10px; background-image: var(--verlauf-kurz); }
 .kueche .kachel--klein .meta { margin-bottom: 2px; }
-/* Unter 1024 px sind die kleinen Küche-Kacheln zu niedrig für den Titel im Bild: Bild oben, Titel darunter */
-@media (max-width: 1023px) {
-  .kueche .kachel--klein .rahmen { aspect-ratio: auto; display: block; overflow: visible; background: none; }
-  .kueche .kachel--klein .rahmen > img { position: static; display: block; height: auto; aspect-ratio: 8 / 3; background: var(--flaeche); }
-  .kueche .kachel--klein .anr:hover .rahmen img { transform: none; }
-  .kueche .kachel--klein .imbild { padding: 10px 0 0; background: none; color: var(--tinte); }
-  .kueche .kachel--klein .imbild .meta { display: block; color: var(--leise); }
-  .kueche .kachel--klein .imbild .meta__rubrik { color: var(--rot); }
-  .kueche .kachel--klein .titel { font-size: 17px; line-height: 1.25; }
-}
+/* Kleine Küche-Kacheln: Titel im Bild auf allen Breiten (Text auf Bild, 20.11.2026); am Handy 8:3 über die volle
+   Breite, am Tablet 16:9 nebeneinander, am Desktop 8:3 gestapelt neben der großen */
+.kueche .kachel--klein .titel { font-size: 19px; line-height: 1.2; }
 .rubrikblock { margin-top: 44px; }
 .rubrikblock .neben { margin-top: 0; }
 .rubrikblock .stueck:first-child { border-top: 0; }
@@ -498,7 +493,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .kueche__raster--4 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .kueche__raster--3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .kueche__raster--4 .kachel--gross, .kueche__raster--3 .kachel--gross { grid-column: 1 / -1; grid-row: auto; }
-  .kueche__raster .kachel--klein .rahmen > img { aspect-ratio: 16 / 9; }
+  .kueche__raster .kachel--klein .rahmen { aspect-ratio: 16 / 9; }
 }
 
 /* ---------- Desktop ---------- */
@@ -566,6 +561,68 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .kueche { margin-top: 64px; }
   .kueche .kachel--klein .imbild { padding: 30px 16px 10px; }
   .rubrikblock { margin-top: 64px; }
+}
+
+/* ---------- Bildkarten „Text auf Bild“ (Startseite, Theme 3.6.0; Luis, 20.11.2026) ----------
+   Jeder Beitrag der Startseite steht als Bildkarte: Foto 16:9, darauf auf dem Verlauf nach Schwarz die Dachzeile
+   „Rubrik | Datum“ und der Titel, weiß, mindestens 19 px, ausgeglichen umbrochen. Das Format ist Mindestmaß: Ein langer
+   Titel macht die Karte höher, statt abgeschnitten zu werden. Der Verlauf erreicht 72 % Schwarz, bevor die Schrift
+   beginnt; Weiß darauf hält auch über hellem Foto mindestens 4,5 : 1. Das Foto sitzt in der Karte höher (Gesichter
+   bleiben über dem Verlauf), rechts unten hält der Text den Platz für den Bogen frei (Abschnitt „Signet“).
+   Handy: Nebenstücke untereinander über die volle Breite, „Weitere Meldungen“ und Rubrikblöcke als wischbare Reihe.
+   Tablet: Nebenstücke und Rubrikblöcke zwei mal zwei. Desktop: Meldungen als Stapel neben dem Aufmacher, Nebenstücke
+   und Rubrikblöcke zu viert im Format 4:3 (mehr Foto über dem Titel), mit drei Zeilen Vorspann unter dem Bild. */
+.karte .rahmen img { object-position: 50% 28%; }
+.karte .imbild, .grafik--karte .imbild { padding: 44px 14px 12px; background-image: var(--verlauf-karte); }
+.karte .meta, .grafik--karte .meta { margin-bottom: 4px; }
+.karte .titel, .grafik--karte .titel, .kachel .imbild .titel { text-wrap: balance; }
+.karte .titel { font-size: 19px; line-height: 1.2; }
+/* höchstens vier Zeilen: Sicherung für ungewöhnlich lange Titel (der volle Titel bleibt der Name des Links) */
+.karte .titel, .grafik--karte .titel {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; line-clamp: 4; overflow: hidden;
+}
+.karte .vorspann { display: none; }
+.neben.karten { display: grid; gap: 12px; margin-top: 16px; }
+.neben.karten .titel { font-size: 21px; line-height: 1.18; }
+.karten--reihe, .neben.karten--reihe {
+  display: flex; align-items: start; gap: 12px;
+  overflow-x: auto; scrollbar-width: none; scroll-snap-type: x mandatory;
+  margin: 0 calc(-1 * var(--rand)); padding: 4px var(--rand) 6px; scroll-padding-inline: var(--rand);
+}
+.karten--reihe::-webkit-scrollbar { display: none; }
+.karten--reihe > * { flex: 0 0 min(86%, 340px); scroll-snap-align: start; min-width: 0; }
+.neben.karten--reihe .titel { font-size: 19px; line-height: 1.2; }
+.meldungen .karten--reihe { margin-top: 10px; }
+.rubrikblock .karten--reihe { padding-top: 14px; }
+/* „Diese Woche“: Kino und Termine als Karten mit Titel im Bild, darunter Städte bzw. Ort und Eintritt auf Titan */
+.woche { --verlauf-karte: var(--verlauf-karte-titan); }
+.grafik--karte .titel { font-size: 20px; line-height: 1.2; }
+.grafik--karte .grafik__inhalt { padding: 10px 14px 14px; }
+.grafik--karte .grafik__orte { margin-top: 0; }
+.woche .kachel--klein .imbild { padding: 30px 14px 10px; background-image: var(--verlauf-titan-kurz); }
+.woche .kachel--klein .titel { font-size: 19px; }
+@media (min-width: 600px) {
+  .neben.karten, .rubrikblock .karten--reihe {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px;
+    overflow: visible; margin-inline: 0; padding-inline: 0;
+  }
+  .neben.karten .titel, .rubrikblock .karte .titel { font-size: 20px; line-height: 1.2; }
+}
+@media (min-width: 1024px) {
+  .oben .neben.karten { margin-top: 40px; }
+  .neben.karten, .rubrikblock .karten--reihe { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 24px; }
+  .rubrikblock .karten--reihe { padding-top: 16px; }
+  .neben.karten .rahmen, .rubrikblock .karten--reihe .rahmen { aspect-ratio: 4 / 3; }
+  .neben.karten .titel, .rubrikblock .karte .titel { font-size: 17px; line-height: 1.22; }
+  .karte .imbild { padding: 48px 14px 14px; }
+  .neben.karten .vorspann {
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden;
+    margin-top: 10px; font-size: 16px; line-height: 1.45;
+  }
+  /* „Weitere Meldungen“: drei Karten untereinander, zusammen so hoch wie der Aufmacher */
+  .meldungen .karten--reihe { display: grid; gap: 16px; overflow: visible; margin: 12px 0 0; padding: 0; }
+  .karte--meldung .titel { font-size: 20px; }
+  .grafik--karte .grafik__inhalt { padding: 12px 16px 16px; }
 }
 
 /* ---------- Seitenkopf, Blöcke und Listen (Rubrik, Suche, Archive, Termine, Seiten) ---------- */
@@ -1227,22 +1284,16 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
 .signatur-ecke::after { inset: 0; background: url("../img/signatur/ecke.svg?ver=3.6.0") 0 0 / 100% 100% no-repeat; }
 .signatur-ecke--rot::before { content: none; }
 .signatur-ecke--rot::after { background-image: url("../img/signatur/ecke-rot.svg?ver=3.6.0"); }
-/* Titel im Bild: weiß auf dem Verlauf; der Text lässt rechts die Breite des Bogens und 14 px frei */
+/* Titel im Bild: weiß auf dem Verlauf; der Text lässt rechts die Breite des Bogens und 10 px frei */
 .imbild-anr .rahmen > .signatur-ecke::before { content: none; }
 .imbild-anr .rahmen > .signatur-ecke::after { background-image: url("../img/signatur/ecke.svg?ver=3.6.0"); }
-.imbild-anr .rahmen > .imbild { padding-right: calc(var(--ecke) + 14px); }
-/* Artikel (Bild mit Nachweis darunter) und Küche unter 1024 px (Titel unter dem Bild): der Bogen an der Unterkante des
-   Bilds, nicht des Rahmens – aus seiner Lage direkt nach dem Bild um die eigene Höhe nach oben */
+.imbild-anr .rahmen > .imbild { padding-right: calc(var(--ecke) + 10px); }
+/* Artikel (Bild mit Nachweis darunter): der Bogen an der Unterkante des Bilds, nicht der Abbildung – aus seiner Lage
+   direkt nach dem Bild um die eigene Höhe nach oben */
 .artikel__figur:has(> .signatur-ecke) { position: relative; }
 .artikel__figur > .signatur-ecke { bottom: auto; translate: 0 -100%; }
 .bild-ecke { position: relative; display: block; width: fit-content; max-width: 100%; }
 .bild-ecke > img { display: block; }
-@media (max-width: 1023px) {
-  .kueche .kachel--klein .rahmen > .signatur-ecke { bottom: auto; translate: 0 -100%; }
-  .kueche .kachel--klein .rahmen > .signatur-ecke:not(.signatur-ecke--rot)::before { content: ""; }
-  .kueche .kachel--klein .rahmen > .signatur-ecke--rot::after { background-image: url("../img/signatur/ecke-rot.svg?ver=3.6.0"); }
-  .kueche .kachel--klein .rahmen > .imbild { padding-right: 0; }
-}
 
 /* ---------- Gutenberg ---------- */
 .alignleft { float: left; margin: 0.3em 1.4em 1em 0; }

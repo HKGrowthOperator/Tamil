@@ -185,10 +185,11 @@
   const REIHEN_MAX = 3;       // höchstens 300 ms
   const REIHE_TOLERANZ = 24;  // gleiche Reihe: Oberkanten weniger als 24 px auseinander
   const NACH_VORHANG = 0.55;  // Inhalt der dunklen Fläche beginnt nach 55 % des Vorhangs
-  const GRUPPE = ".kacheln";  // Rubrikkacheln erscheinen gemeinsam, auch die rechts angeschnittenen
+  // Rubrikkacheln und wischbare Kartenreihen erscheinen gemeinsam, auch die rechts angeschnittenen
+  const GRUPPE = ".kacheln, .karten--reihe";
   const TIEFE = 40;           // Aufmacherbild höchstens 40 px langsamer
   const REGELN = [
-    [".kacheln li, .neben .stueck, .meldung, .zeile, .woche .kachel--klein, .woche__art, .grafik, .kueche .kachel--klein", "steigen"],
+    [".kacheln li, .neben .stueck, .karte, .meldung, .zeile, .woche .kachel--klein, .woche__art, .grafik, .kueche .kachel--klein", "steigen"],
     [".block-titel, .woche__titel", "zeilen"],
     [".woche", "vorhang"],
     [".kachel--gross", "aufdecken zeilen"],

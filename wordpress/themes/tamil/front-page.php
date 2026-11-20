@@ -1,8 +1,10 @@
 <?php
 /**
- * Startseite klar2: Aufmacher mit Titel im Bild, daneben (Desktop) „Weitere Meldungen“, darunter vier Nebenstücke
- * und die Rubrikkacheln; Werbeplatz 01; „Diese Woche“ auf Titan Red (Kino und Termine); „Küche“; Werbeplatz
- * Billboard; weitere Rubrikblöcke. Auswahl aus tamil_start_auswahl() (inc/queries.php).
+ * Startseite klar2, „Text auf Bild“ (Luis, 20.11.2026): Jeder Beitrag steht als Bildkarte mit Dachzeile und Titel im
+ * Foto. Aufmacher, daneben (Desktop) „Weitere Meldungen“ als Stapel von drei Karten 16:9 (Handy und Tablet: wischbare
+ * Reihe), darunter vier Nebenstücke als Karten und die Rubrikkacheln; Werbeplatz 01; „Diese Woche“ auf Titan Red
+ * (Kino und Termine); „Küche“; Werbeplatz Billboard; weitere Rubrikblöcke mit Karten. Auswahl aus
+ * tamil_start_auswahl() (inc/queries.php).
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -40,10 +42,18 @@ $tamil_aufmacher = tamil_anr_imbild(
 	<?php echo $tamil_aufmacher; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_anr_imbild() ?>
 
 	<?php if ( $tamil_a['neben'] ) : ?>
-		<section class="neben" aria-label="<?php esc_attr_e( 'Weitere Geschichten', 'tamil' ); ?>">
+		<section class="neben karten" aria-label="<?php esc_attr_e( 'Weitere Geschichten', 'tamil' ); ?>">
 			<?php
 			foreach ( $tamil_a['neben'] as $tamil_id ) {
-				echo tamil_anr_stueck( $tamil_id ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_anr_stueck()
+				echo tamil_anr_imbild( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_anr_imbild()
+					$tamil_id,
+					array(
+						'klasse'   => 'karte',
+						'rahmen'   => 'r169',
+						'vorspann' => true,
+						'sizes'    => '(min-width: 1024px) 290px, (min-width: 600px) calc(50vw - 36px), calc(100vw - 32px)',
+					)
+				);
 			}
 			?>
 		</section>
@@ -52,10 +62,17 @@ $tamil_aufmacher = tamil_anr_imbild(
 	<?php if ( $tamil_a['meldungen'] ) : ?>
 		<section class="meldungen" aria-labelledby="t-meldungen">
 			<h2 class="block-titel" id="t-meldungen"><?php esc_html_e( 'Weitere Meldungen', 'tamil' ); ?></h2>
-			<ul>
+			<ul class="karten karten--reihe">
 				<?php
 				foreach ( $tamil_a['meldungen'] as $tamil_id ) {
-					echo tamil_anr_zeile( $tamil_id, array( 'sizes' => '(min-width: 600px) 120px, 96px' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_anr_zeile()
+					echo '<li>' . tamil_anr_imbild( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_anr_imbild()
+						$tamil_id,
+						array(
+							'klasse' => 'karte karte--meldung',
+							'rahmen' => 'r169',
+							'sizes'  => '(min-width: 1024px) 388px, 320px',
+						)
+					) . '</li>';
 				}
 				?>
 			</ul>
