@@ -995,6 +995,9 @@ input[type="file"] { padding: 10px; font-size: 15px; }
 .tf-auswahl, .vz-auswahl label, .vz-oeffentlich { display: grid; grid-template-columns: 24px minmax(0, 1fr); column-gap: 10px; align-items: start; }
 .tf-auswahl label, .vz-auswahl label { margin: 0; font-size: 15px; font-weight: 400; }
 .tf-auswahl input, .vz-auswahl input { margin: 2px 0 0; }
+/* Kontrollkästchen in Formularen mit 24 × 24 px Tippfläche (WCAG 2.2, 2.5.8); das Label daneben schaltet mit (QA-19) */
+.tf-auswahl input[type="checkbox"], .vz-auswahl input[type="checkbox"] { width: 24px; height: 24px; margin: 0; }
+.tf-auswahl label { min-height: 24px; padding-top: 2px; }
 .tf-auswahl .tf-fehler { grid-column: 2; }
 /* Link zur Datenschutzerklärung unter der Einwilligung: in der Textspalte, 44 px tippbar */
 .tf-auswahl .tf-datenschutz {
