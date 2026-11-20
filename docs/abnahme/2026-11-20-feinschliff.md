@@ -8,7 +8,9 @@
     axe, Lighthouse, Prüflisten aus den Skill-Repos `impeccable` (audit, polish) und `gstack` (qa, design-review).
   - Code-Prüfer: Diff `45b3108..ab57603`.
   - Ergebnis: 19 Befunde aus der QA (1 × P0, 3 × P1, 15 × P2), 8 aus dem Code (3 × P1, 5 × P2).
-- **Umsetzung:** Theme 3.7.2 auf `claude/klar2-ausbau` (`16b50ad`), Merge `79afa90` in `claude/radar-multiagent`.
+- **Umsetzung:**
+  - Theme 3.7.2 auf `claude/klar2-ausbau` (`16b50ad`), Merge `79afa90` in `claude/radar-multiagent`.
+  - Zweite Runde: Theme 3.7.3 (`9ba7de3`).
 
 ## Befunde und Stand
 
@@ -19,7 +21,7 @@
 | QA-03 (P1) Meta-Beschreibungen zusammengeklebt | behoben | Plugin `tamil-site`, mit Test `test_seo.py::test_beschreibung_trennt_bloecke` |
 | QA-04 (P1) einzelne Karte allein in einer Zeile (600–1023 px) | behoben | Eine allein stehende letzte Karte läuft über die volle Breite |
 | QA-05 Silbentrennung in großen Bildtiteln | behoben | |
-| QA-06 „Neu“-Zeile mit vergangenem Termin | teilweise | Vergangene Termine sind raus. Offen: bei 390 px Kürzung mitten im Wort |
+| QA-06 „Neu“-Zeile mit vergangenem Termin | behoben (3.7.2 und 3.7.3) | Vergangene Termine sind raus. Gekürzt wird serverseitig am Wortende |
 | QA-07 Zukunftsform nach dem Termin | offen | Ein Hinweis „hat bereits stattgefunden“ wäre neue Funktion und neuer Text, Frage an Luis |
 | QA-08 Quelle doppelt „Eventfrog CH“ | behoben im Theme, Ursache an Nick | Doppelte Namen bekommen „(2)“. Die Ursache liegt in den Radar-Inhalten |
 | QA-09 doppelte Linie unter dem Infokasten | behoben | |
@@ -27,12 +29,12 @@
 | QA-11 Kino-Stadtliste (Doppelte, Umbruch, fehlende Zahl) | offen | Daten und Kino-Logik, braucht eine eigene Runde mit Gegenprobe |
 | QA-12 Vorspann endet auf „19.…“ | behoben | Kürzung an der Satzgrenze |
 | QA-13 doppelte Meta-Beschreibungen | an Redaktion | Eigene Beschreibungen für Verzeichnis, Werben und Impressum sind Inhalt |
-| QA-14 Artikel-Titel ohne „\| Tamil.de“ | offen | Plugin-Änderung mit Test, nächste Runde |
+| QA-14 Artikel-Titel ohne „\| Tamil.de“ | behoben (3.7.3) | Plugin `tamil-site`: Zusatz bis 60 Zeichen. Test `test_seo_titel_mit_marke_und_laengenregel` mit Gegenprobe |
 | QA-15 zwei H2 vor der H1 | behoben | |
 | QA-16 Rubrikband ohne Auslauf links | behoben | |
-| QA-17 Fuß bei 390 px | teilweise | Die weiße Fläche ist weg. Offen: „Folgen“ steht nur links |
+| QA-17 Fuß bei 390 px | behoben (3.7.2 und 3.7.3) | Die weiße Fläche ist weg. „Folgen“ steht rechts unter „Dienste“ |
 | QA-18 Eigenwerbung als „Anzeige“ beschriftet | Frage an Luis (F3) | unverändert |
-| QA-19 Tippflächen, Rubrikbilder ohne `srcset` | teilweise | Bildnachweis-Link größer. Offen: Kontrollkästchen in den Formularen, `srcset` der Rubrikkacheln |
+| QA-19 Tippflächen, Rubrikbilder ohne `srcset` | behoben (3.7.3) | Bildnachweis-Link größer. Kontrollkästchen 24 × 24 px. Rubrikkacheln mit 480er-Fassung (35 statt 141 KiB) |
 | CODE-01 (P1) ausgerichtete Bilder im Text | behoben | Mit Testbeitrag geprüft, die Datenbank danach zurückgesetzt |
 | CODE-02 (P1) erstes Terminbild lud spät | behoben | `eager` und `fetchpriority=high` |
 | CODE-03 (P1) Termine doppelt auf `/events/` | behoben | Ohne Filter keine Doppel. Mit Land- oder Stadtfilter zeigt die Liste wieder alle passenden Termine |
