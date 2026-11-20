@@ -234,8 +234,9 @@ function tamil_kacheln( array $kacheln, string $label ): string {
 	}
 	$html = '<nav class="kacheln" aria-label="' . esc_attr( $label ) . '"><ul>';
 	foreach ( $kacheln as $k ) {
-		// Der Name steht im Bild: kein Alternativtext, kein Schild; ohne Beitrag mit Foto ein Bild des Pools. Die Bilder
-		// laden „lazy“, app.js lädt sie gesammelt, sobald der Streifen in die Nähe kommt.
+		// Der Name steht im Bild: kein Alternativtext, kein Schild und kein Signet (Navigation, kein Beitrag); ohne
+		// Beitrag mit Foto ein Bild des Pools. Die Bilder laden „lazy“, app.js lädt sie gesammelt, sobald der Streifen
+		// in die Nähe kommt.
 		$img   = $k['bild'] ? (string) preg_replace(
 			'/ alt="[^"]*"/',
 			' alt=""',
@@ -244,6 +245,7 @@ function tamil_kacheln( array $kacheln, string $label ): string {
 				array(
 					'sizes'  => '160px',
 					'schild' => false,
+					'signet' => false,
 				)
 			),
 			1
