@@ -3,6 +3,16 @@
 Neueste oben. Format: Datum · Entscheidung · wer · warum. Was hier steht, gilt, bis ein neuerer Eintrag es ändert.
 Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
+## 21.11.2026
+
+- **Punktbogen bleibt weiß auf dunklen, rot auf hellen Bildecken:** Luis fragte zuerst „warum sind die tamil dots nicht
+  in rot ??“ und wollte den Bogen überall in Titan/Impact. Nach Rückfrage bestätigte er die bestehende Regel aus
+  3.7.x (Wahl über den Ton der Bildecke, `tamil_signatur_ecke_ton`). Wortlaut: „Die weißen Punkte in den Bildecken
+  bleiben, weil diese Ecken meist dunkel sind; rot wäre dort kaum zu sehen, außer auf hellen Bildern. genau so
+  umsetzen“. Keine rote Fassung mit weißer Eckfläche.
+
+  · Luis
+
 ## 20.11.2026
 
 - **Jede Meldung als Karte (Theme 3.7.0):** Was auf der Startseite gilt, gilt jetzt überall, wo Beiträge angerissen
