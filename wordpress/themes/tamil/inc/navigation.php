@@ -120,7 +120,7 @@ function tamil_dienste(): array {
 
 /**
  * Top-News „Neu“ in der Kopfzeile: die neuesten veröffentlichten Beiträge aller Rubriken, ohne den Aufmacher der
- * Startseite und ohne den Beitrag, der gerade offen ist. Navigation, daher ohne Bild (Ausnahme der Bilderpflicht).
+ * Startseite, ohne Termine, deren Tag vorbei ist, und ohne den Beitrag, der gerade offen ist. Navigation, daher ohne Bild (Ausnahme der Bilderpflicht).
  * Die Kandidaten liegen zehn Minuten im Transient und werden mit der Startseite verworfen (tamil_flush_auswahl()).
  *
  * @return int[] Höchstens zwei Beiträge.
@@ -132,9 +132,23 @@ function tamil_kopf_neu(): array {
 	}
 	$kandidaten = get_transient( 'tamil_kopf_neu' );
 	if ( ! is_array( $kandidaten ) ) {
-		$kandidaten = tamil_ids(
-			array( 'posts_per_page' => 4 ),
-			array( (int) tamil_start_auswahl()['lead'] )
+		// Termine, deren Tag vorbei ist, sind nicht mehr „neu“ (QA-06: „Jailer 2 am 15. November“ am 20.11.)
+		$heute      = current_time( 'Y-m-d' );
+		$kandidaten = array_slice(
+			array_values(
+				array_filter(
+					tamil_ids(
+						array( 'posts_per_page' => 10 ),
+						array( (int) tamil_start_auswahl()['lead'] )
+					),
+					static function ( $id ) use ( $heute ): bool {
+						$datum = substr( (string) get_post_meta( (int) $id, 'event_datum', true ), 0, 10 );
+						return '' === $datum || $datum >= $heute;
+					}
+				)
+			),
+			0,
+			4
 		);
 		set_transient( 'tamil_kopf_neu', $kandidaten, 10 * MINUTE_IN_SECONDS );
 	}
