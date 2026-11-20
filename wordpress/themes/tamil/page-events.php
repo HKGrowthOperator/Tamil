@@ -3,9 +3,10 @@
  * Template Name: Veranstaltungskalender
  *
  * Termine in klar2: Seitenkopf mit „Termin einreichen“; „Ab heute“ auf Titan Red mit den nächsten Terminen als
- * Bildkacheln (Datum als größte Angabe nach dem Titel); „Kommende Termine“ nach Monaten, jede Zeile mit Bild, Uhrzeit,
- * Ort, Veranstalter und Eintritt, mit Filtern nach Land und Stadt (nur mit Skript sichtbar); „Das Jahr“ mit den
- * vergangenen Terminen dieses Jahres nach Monaten zum Aufklappen. Greift automatisch für die Seite mit dem Slug „events“.
+ * Bildkarten (Datum des Termins in der Dachzeile, Titel im Bild, Ort und Eintritt darunter); „Kommende Termine“ nach
+ * Monaten als Bildkarten (Datum mit Uhrzeit in der Dachzeile, Ort, Veranstalter und Eintritt unter dem Bild), mit
+ * Filtern nach Land und Stadt (nur mit Skript sichtbar); „Das Jahr“ mit den vergangenen Terminen dieses Jahres nach
+ * Monaten zum Aufklappen, ebenfalls als Karten. Greift automatisch für die Seite mit dem Slug „events“.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -51,7 +52,6 @@ foreach ( $tamil_kommend as $tamil_id ) {
 	$tamil_zeilen[ substr( $tamil_a['iso'], 0, 7 ) ][] = tamil_anr_zeile(
 		$tamil_id,
 		array(
-			'klasse'   => 'zeile',
 			'vorspann' => false,
 			'ebene'    => 'h4',
 			'dach'     => '<p class="meta"><time datetime="' . esc_attr( $tamil_a['iso'] ) . '">' . esc_html( $tamil_a['datum'] ) . '</time></p>',
@@ -102,7 +102,7 @@ foreach ( $tamil_vorbei as $tamil_id ) {
 		<ul class="termine-raster<?php echo 1 === count( $tamil_bald ) ? ' termine-raster--eins' : ( 2 === count( $tamil_bald ) ? ' termine-raster--zwei' : '' ); ?>">
 			<?php
 			foreach ( $tamil_bald as $tamil_id ) {
-				echo tamil_grafik_termin( $tamil_id, 'h3', true ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_grafik_termin()
+				echo tamil_grafik_termin( $tamil_id, 'h3', true, true ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_grafik_termin()
 			}
 			if ( ! $tamil_bald ) {
 				echo tamil_grafik_leer( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_grafik_leer()
@@ -148,7 +148,7 @@ foreach ( $tamil_vorbei as $tamil_id ) {
 			<?php foreach ( $tamil_zeilen as $tamil_monat => $tamil_liste ) : ?>
 				<section class="kalender__monat" aria-labelledby="<?php echo esc_attr( 'monat-' . $tamil_monat ); ?>">
 					<h3 class="kalender__titel" id="<?php echo esc_attr( 'monat-' . $tamil_monat ); ?>"><?php echo esc_html( wp_date( 'F Y', (int) strtotime( $tamil_monat . '-01' ) ) ); ?></h3>
-					<ul class="liste">
+					<ul class="karten karten--raster">
 						<?php echo implode( '', $tamil_liste ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_anr_zeile() ?>
 					</ul>
 				</section>
@@ -172,14 +172,13 @@ foreach ( $tamil_vorbei as $tamil_id ) {
 						<?php /* translators: %d: Anzahl */ ?>
 						<span class="monat__zahl"><?php echo esc_html( sprintf( _n( '%d Termin', '%d Termine', count( $tamil_liste ), 'tamil' ), count( $tamil_liste ) ) ); ?></span>
 					</summary>
-					<ul class="liste">
+					<ul class="karten karten--raster">
 						<?php
 						foreach ( $tamil_liste as $tamil_id ) {
 							// Bilder laden „lazy“: in zugeklappten Monaten holt der Browser sie erst beim Aufklappen
 							echo tamil_anr_zeile( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_anr_zeile()
 								$tamil_id,
 								array(
-									'klasse'   => 'zeile',
 									'rubrik'   => false,
 									'vorspann' => false,
 									'ts'       => (int) strtotime( (string) get_post_meta( $tamil_id, 'event_datum', true ) ),
