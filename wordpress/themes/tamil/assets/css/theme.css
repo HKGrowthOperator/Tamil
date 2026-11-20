@@ -189,6 +189,9 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 }
 .kopfzeile__neu a:focus-visible { outline-offset: -2px; } /* innen, sonst schneidet die einzeilige Zeile den Rahmen */
 .kopfzeile .kopfzeile__neu a + a { display: none; }
+/* bis 819 px die kurze, ab 820 px die längere am Wortende gekürzte Fassung; die Ellipse oben bleibt nur Sicherung (QA-06) */
+.kopfzeile__neu .neu__lang { display: none; }
+@media (min-width: 820px) { .kopfzeile__neu .neu__kurz { display: none; } .kopfzeile__neu .neu__lang { display: inline; } }
 .kopfzeile__neu a + a::before {
   content: ""; display: inline-block; width: 1px; height: 0.95em; margin-right: 12px;
   vertical-align: -0.12em; background: var(--linie);
@@ -992,6 +995,9 @@ input[type="file"] { padding: 10px; font-size: 15px; }
 .tf-auswahl, .vz-auswahl label, .vz-oeffentlich { display: grid; grid-template-columns: 24px minmax(0, 1fr); column-gap: 10px; align-items: start; }
 .tf-auswahl label, .vz-auswahl label { margin: 0; font-size: 15px; font-weight: 400; }
 .tf-auswahl input, .vz-auswahl input { margin: 2px 0 0; }
+/* Kontrollkästchen in Formularen mit 24 × 24 px Tippfläche (WCAG 2.2, 2.5.8); das Label daneben schaltet mit (QA-19) */
+.tf-auswahl input[type="checkbox"], .vz-auswahl input[type="checkbox"] { width: 24px; height: 24px; margin: 0; }
+.tf-auswahl label { min-height: 24px; padding-top: 2px; }
 .tf-auswahl .tf-fehler { grid-column: 2; }
 /* Link zur Datenschutzerklärung unter der Einwilligung: in der Textspalte, 44 px tippbar */
 .tf-auswahl .tf-datenschutz {
@@ -1138,6 +1144,8 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
 }
 .fuss__innen { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 24px; }
 .fuss__marke { grid-column: 1 / -1; }
+/* bis 1023 px zwei Spalten: „Rubriken“ links über zwei Zeilen, „Dienste“ und „Folgen“ rechts untereinander (QA-17) */
+@media (max-width: 1023px) { .fuss__innen > .fuss__spalte:nth-child(2) { grid-row: span 2; } }
 .fuss__logo { display: inline-flex; align-items: center; min-height: 48px; }
 .fuss__logo img { height: 56px; width: auto; }
 .fuss__satz { margin-top: 10px; max-width: 34em; color: var(--tinte); }
