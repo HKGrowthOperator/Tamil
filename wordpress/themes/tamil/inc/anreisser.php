@@ -97,7 +97,11 @@ function tamil_anr_imbild( int $post_id, array $opt = array() ): string {
 	$html .= $unter ? '</div><div class="kachel__unter">' . $text . '</div>' : '<div class="imbild">' . $text . '</div></div>';
 	$html .= (string) ( $opt['zusatz'] ?? '' );
 	if ( 'kurz' === ( $opt['vorspann'] ?? false ) ) {
-		$html .= '<p class="vorspann">' . tamil_markiere( tamil_text( wp_trim_words( tamil_standfirst( $post_id ), 30, ' …' ) ), $wort ) . '</p>';
+		// ganze Sätze bis etwa 130 Zeichen (drei Zeilen), damit die Begrenzung auf drei Zeilen kein Datum („19.…“) und
+		// keinen Satz mitten im Wort schneidet; nur ein überlanger erster Satz wird an einer Wortgrenze gekürzt
+		$kurz  = tamil_saetze_bis( tamil_standfirst( $post_id ), 130 );
+		$kurz  = mb_strlen( $kurz ) > 150 ? wp_trim_words( $kurz, 20, ' …' ) : $kurz;
+		$html .= '<p class="vorspann">' . tamil_markiere( tamil_text( $kurz ), $wort ) . '</p>';
 	} elseif ( ! empty( $opt['vorspann'] ) ) {
 		$html .= '<p class="vorspann">' . tamil_markiere( tamil_text( tamil_ganze_saetze( tamil_saetze_bis( tamil_standfirst( $post_id ), 260 ) ) ), $wort ) . '</p>';
 	}
