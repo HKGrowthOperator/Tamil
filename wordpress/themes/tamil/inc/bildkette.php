@@ -486,6 +486,20 @@ function tamil_bild( int $post_id, array $opt = array() ): string {
 	}
 	$signet = (bool) ( $opt['signet'] ?? true );
 	$ton    = 'dunkel';
+	// Ein geliehenes Filmbild, das ein anderer Beitrag auf dieser Seite schon als Kartenbild zeigt, weicht einem
+	// Symbolbild aus dem Pool (CODE-06). Eigene Bilder werden nie ersetzt; Rubrikkacheln (ohne Signet) zählen nicht.
+	if ( $signet && 'film' === $w['art'] && ! tamil_anhang_frei( (int) $w['id'], $post_id ) ) {
+		$w = array_merge(
+			$w,
+			array(
+				'art'      => 'pool',
+				'id'       => 0,
+				'breit'    => false,
+				'symbol'   => true,
+				'nachweis' => '',
+			)
+		);
+	}
 	if ( 'pool' === $w['art'] ) {
 		$p             = tamil_pool_fuer( $post_id );
 		$ton           = $signet ? tamil_signatur_ecke_ton_pool( (string) $p['datei'] ) : $ton;
@@ -497,6 +511,9 @@ function tamil_bild( int $post_id, array $opt = array() ): string {
 	} else {
 		if ( ! empty( $opt['sizes'] ) ) {
 			$attr['sizes'] = (string) $opt['sizes'];
+		}
+		if ( $signet ) {
+			tamil_anhang_frei( (int) $w['id'], $post_id ); // merken, damit spätere Filmbilder ausweichen
 		}
 		$img = (string) wp_get_attachment_image( $w['id'], (string) ( $opt['size'] ?? 'large' ), false, $attr );
 		if ( '' !== $img && $signet ) {
@@ -513,6 +530,22 @@ function tamil_bild( int $post_id, array $opt = array() ): string {
 		tamil_nachweise( $w['nachweis'] );
 	}
 	return $img;
+}
+
+/**
+ * Darf ein Beitrag diesen Anhang als Kartenbild zeigen? Ja, wenn ihn auf dieser Seite noch kein anderer Beitrag gezeigt
+ * hat; der erste Beitrag wird gemerkt. Die Seite wird immer in derselben Reihenfolge gebaut, die Wahl ist also bei
+ * gleichem Inhalt gleich (kein Flackern zwischen Aufrufen oder im Seiten-Cache).
+ */
+function tamil_anhang_frei( int $anhang, int $post_id ): bool {
+	static $gezeigt = array();
+	if ( $anhang <= 0 ) {
+		return true;
+	}
+	if ( ! isset( $gezeigt[ $anhang ] ) ) {
+		$gezeigt[ $anhang ] = $post_id;
+	}
+	return $gezeigt[ $anhang ] === $post_id;
 }
 
 /**
