@@ -10,7 +10,8 @@
  * Artikel → Seitenkopf und Listen → Rubrik, Kino, Termine → Seiten und Formulare → Plugin-Bausteine → Anzeigen →
  * Fuß → Signet → Gutenberg → Bewegung → reduzierte Bewegung und Druck.
  *
- * Signet seit 3.5.0: „Tamil Dots 04A“ als Hintergrund in Band, Seitenköpfen, Titan-Flächen, Fuß und an Sonderstellen.
+ * Signet seit 3.5.0: „Tamil Dots 04A“ als Hintergrund in Band, Seitenköpfen, Titan-Flächen, Fuß und an Sonderstellen;
+ * seit 3.6.0 zusätzlich klein in der Bildecke jedes Beitrags.
  */
 
 /* ---------- Tokens ---------- */
@@ -55,6 +56,8 @@
   /* Schrift im Bild: der einzige Verlauf, von durchsichtig nach Schwarz; auf Titan-Flächen nach Titan (.woche) */
   --verlauf: linear-gradient(to bottom, rgb(0 0 0 / 0) 0, rgb(0 0 0 / 0.72) 52px, rgb(0 0 0 / 0.88) 100%);
   --verlauf-kurz: linear-gradient(to bottom, rgb(0 0 0 / 0) 0, rgb(0 0 0 / 0.78) 22px, rgb(0 0 0 / 0.9) 100%);
+  --verlauf-karte: linear-gradient(to bottom, rgb(0 0 0 / 0) 0, rgb(0 0 0 / 0.72) 40px, rgb(0 0 0 / 0.86) 100%);
+  --verlauf-karte-titan: linear-gradient(to bottom, rgb(102 0 0 / 0) 0, rgb(102 0 0 / 0.86) 40px, rgb(102 0 0 / 0.95) 100%);
   --verlauf-titan: linear-gradient(to bottom, rgb(102 0 0 / 0) 0, rgb(102 0 0 / 0.8) 52px, rgb(102 0 0 / 0.94) 100%);
   --verlauf-titan-kurz: linear-gradient(to bottom, rgb(102 0 0 / 0) 0, rgb(102 0 0 / 0.84) 22px, rgb(102 0 0 / 0.95) 100%);
   --symbolbild-grund: rgb(102 0 0 / 0.86);   /* Schild „Symbolbild“: Titan, Weiß darauf mindestens 9,5 : 1 */
@@ -195,7 +198,9 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 }
 .kopfzeile__suche svg { width: 16px; height: 16px; flex: none; }
 .kopf__logo { display: block; width: max-content; padding: 6px 0; }
-.kopf__logo img { height: 44px; width: auto; }
+/* Logo (neu seit 3.6.0, Luis 20.11.2026): so hoch, dass „portal • lifestyle • entertainment“ lesbar bleibt (die Zeile
+   ist rund ein Sechstel der Logohöhe: 9,5 / 11 / 12 px) */
+.kopf__logo img { height: 56px; width: auto; }
 
 /* Rubrikband in Titan Red mit weißer Schrift (Luis, 19.11.2026): weiß auf Titan 13,4 : 1. Beim Überfahren und bei
    offenem „Mehr“ Impact Red (weiß darauf 7,2 : 1); die aktive Rubrik ist in Impact markiert und trägt 3 px Weiß darunter
@@ -249,7 +254,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 @media (min-width: 600px) {
   :root { --rand: 24px; }
   .kopfzeile__datum { flex: none; }
-  .kopf__logo img { height: 52px; }
+  .kopf__logo img { height: 64px; }
 }
 /* Tablet: etwas engere Abstände, damit alle Rubriken samt „Kontakt“ ab etwa 800 px neben „Mehr“ passen */
 @media (min-width: 600px) and (max-width: 1023px) {
@@ -261,8 +266,8 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .kopfzeile__innen { min-height: 38px; }
   .kopfzeile a, .kopfzeile .kopfzeile__neu a { min-height: 38px; line-height: 38px; }
   .kopfzeile .kopfzeile__neu a + a { display: block; }
-  .kopf__logo { padding: 11px 0; }
-  .kopf__logo img { height: 58px; }
+  .kopf__logo { padding: 10px 0; }
+  .kopf__logo img { height: 72px; }
   .band__innen { position: relative; padding: 0 calc(var(--rand) - 14px); }
   .band__liste { overflow: visible; }
   .band__liste a, .mehr summary { padding: 0 14px; font-size: 16px; }
@@ -446,16 +451,9 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .kueche__raster { display: grid; gap: 12px; padding-top: 14px; }
 .kueche .kachel--klein .imbild { padding: 30px var(--rand) 10px; background-image: var(--verlauf-kurz); }
 .kueche .kachel--klein .meta { margin-bottom: 2px; }
-/* Unter 1024 px sind die kleinen Küche-Kacheln zu niedrig für den Titel im Bild: Bild oben, Titel darunter */
-@media (max-width: 1023px) {
-  .kueche .kachel--klein .rahmen { aspect-ratio: auto; display: block; overflow: visible; background: none; }
-  .kueche .kachel--klein .rahmen > img { position: static; display: block; height: auto; aspect-ratio: 8 / 3; background: var(--flaeche); }
-  .kueche .kachel--klein .anr:hover .rahmen img { transform: none; }
-  .kueche .kachel--klein .imbild { padding: 10px 0 0; background: none; color: var(--tinte); }
-  .kueche .kachel--klein .imbild .meta { display: block; color: var(--leise); }
-  .kueche .kachel--klein .imbild .meta__rubrik { color: var(--rot); }
-  .kueche .kachel--klein .titel { font-size: 17px; line-height: 1.25; }
-}
+/* Kleine Küche-Kacheln: Titel im Bild auf allen Breiten (Text auf Bild, 20.11.2026); am Handy 8:3 über die volle
+   Breite, am Tablet 16:9 nebeneinander, am Desktop 8:3 gestapelt neben der großen */
+.kueche .kachel--klein .titel { font-size: 19px; line-height: 1.2; }
 .rubrikblock { margin-top: 44px; }
 .rubrikblock .neben { margin-top: 0; }
 .rubrikblock .stueck:first-child { border-top: 0; }
@@ -497,7 +495,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .kueche__raster--4 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .kueche__raster--3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .kueche__raster--4 .kachel--gross, .kueche__raster--3 .kachel--gross { grid-column: 1 / -1; grid-row: auto; }
-  .kueche__raster .kachel--klein .rahmen > img { aspect-ratio: 16 / 9; }
+  .kueche__raster .kachel--klein .rahmen { aspect-ratio: 16 / 9; }
 }
 
 /* ---------- Desktop ---------- */
@@ -565,6 +563,75 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .kueche { margin-top: 64px; }
   .kueche .kachel--klein .imbild { padding: 30px 16px 10px; }
   .rubrikblock { margin-top: 64px; }
+}
+
+/* ---------- Bildkarten „Text auf Bild“ (Startseite, Theme 3.6.0; Luis, 20.11.2026) ----------
+   Jeder Beitrag der Startseite steht als Bildkarte: Foto 16:9, darauf auf dem Verlauf nach Schwarz die Dachzeile
+   „Rubrik | Datum“ und der Titel, weiß, mindestens 19 px, ausgeglichen umbrochen. Das Format ist Mindestmaß: Ein langer
+   Titel macht die Karte höher, statt abgeschnitten zu werden. Der Verlauf erreicht 72 % Schwarz, bevor die Schrift
+   beginnt; Weiß darauf hält auch über hellem Foto mindestens 4,5 : 1. Das Foto sitzt in der Karte höher (Gesichter
+   bleiben über dem Verlauf), rechts unten hält der Text den Platz für den Bogen frei (Abschnitt „Signet“).
+   Handy: Nebenstücke untereinander über die volle Breite, „Weitere Meldungen“ und Rubrikblöcke als wischbare Reihe.
+   Tablet: Nebenstücke und Rubrikblöcke zwei mal zwei. Desktop: Meldungen als Stapel neben dem Aufmacher, Nebenstücke
+   und Rubrikblöcke zu viert im Format 4:3 (mehr Foto über dem Titel), mit drei Zeilen Vorspann unter dem Bild. */
+.karte .rahmen img { object-position: 50% 28%; }
+.karte .imbild, .grafik--karte .imbild { padding: 44px 14px 12px; background-image: var(--verlauf-karte); }
+.karte .meta, .grafik--karte .meta { margin-bottom: 4px; }
+.karte .titel, .grafik--karte .titel, .kachel .imbild .titel { text-wrap: balance; }
+.karte .titel { font-size: 19px; line-height: 1.2; }
+/* höchstens vier Zeilen: Sicherung für ungewöhnlich lange Titel (der volle Titel bleibt der Name des Links) */
+.karte .titel, .grafik--karte .titel {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; line-clamp: 4; overflow: hidden;
+}
+.karte .vorspann { display: none; }
+.neben.karten { display: grid; gap: 12px; margin-top: 16px; }
+.neben.karten .titel { font-size: 21px; line-height: 1.18; }
+.karten--reihe, .neben.karten--reihe {
+  display: flex; align-items: start; gap: 12px;
+  overflow-x: auto; scrollbar-width: none; scroll-snap-type: x mandatory;
+  margin: 0 calc(-1 * var(--rand)); padding: 4px var(--rand) 6px; scroll-padding-inline: var(--rand);
+}
+.karten--reihe::-webkit-scrollbar { display: none; }
+.karten--reihe > * { flex: 0 0 min(86%, 340px); scroll-snap-align: start; min-width: 0; }
+.neben.karten--reihe .titel { font-size: 19px; line-height: 1.2; }
+.meldungen .karten--reihe { margin-top: 10px; }
+@media (min-width: 600px) and (max-width: 1023px) {
+  /* Tablet: „Weitere Meldungen“ bleibt eine wischbare Reihe (nicht das Zweierraster der Meldungszeilen) */
+  .meldungen ul.karten--reihe { display: flex; column-gap: 12px; }
+  /* „Im Kino“ über die volle Breite (ohne kleine Kachel daneben): Bild mit Titel links, Städte rechts */
+  .woche__raster.ohne-klein .woche__gruppe--kino .grafik--karte .anr { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+  .woche__raster.ohne-klein .woche__gruppe--kino .grafik--karte .grafik__inhalt { padding: 16px 20px; }
+}
+.rubrikblock .karten--reihe { padding-top: 14px; }
+/* „Diese Woche“: Kino und Termine als Karten mit Titel im Bild, darunter Städte bzw. Ort und Eintritt auf Titan */
+.woche { --verlauf-karte: var(--verlauf-karte-titan); }
+.grafik--karte .titel { font-size: 20px; line-height: 1.2; }
+.grafik--karte .grafik__inhalt { padding: 10px 14px 14px; }
+.grafik--karte .grafik__orte { margin-top: 0; }
+.woche .kachel--klein .imbild { padding: 30px 14px 10px; background-image: var(--verlauf-titan-kurz); }
+.woche .kachel--klein .titel { font-size: 19px; }
+@media (min-width: 600px) {
+  .neben.karten, .rubrikblock .karten--reihe {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px;
+    overflow: visible; margin-inline: 0; padding-inline: 0;
+  }
+  .neben.karten .titel, .rubrikblock .karte .titel { font-size: 20px; line-height: 1.2; }
+}
+@media (min-width: 1024px) {
+  .oben .neben.karten { margin-top: 40px; }
+  .neben.karten, .rubrikblock .karten--reihe { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 24px; }
+  .rubrikblock .karten--reihe { padding-top: 16px; }
+  .neben.karten .rahmen, .rubrikblock .karten--reihe .rahmen { aspect-ratio: 4 / 3; }
+  .neben.karten .titel, .rubrikblock .karte .titel { font-size: 17px; line-height: 1.22; }
+  .karte .imbild { padding: 48px 14px 14px; }
+  .neben.karten .vorspann {
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden;
+    margin-top: 10px; font-size: 16px; line-height: 1.45;
+  }
+  /* „Weitere Meldungen“: drei Karten untereinander, zusammen so hoch wie der Aufmacher */
+  .meldungen .karten--reihe { display: grid; gap: 16px; overflow: visible; margin: 12px 0 0; padding: 0; }
+  .karte--meldung .titel { font-size: 20px; }
+  .grafik--karte .grafik__inhalt { padding: 12px 16px 16px; }
 }
 
 /* ---------- Seitenkopf, Blöcke und Listen (Rubrik, Suche, Archive, Termine, Seiten) ---------- */
@@ -1079,7 +1146,7 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
 .fuss__innen { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 24px; }
 .fuss__marke { grid-column: 1 / -1; }
 .fuss__logo { display: inline-flex; align-items: center; min-height: 48px; }
-.fuss__logo img { height: 40px; width: auto; }
+.fuss__logo img { height: 56px; width: auto; }
 .fuss__satz { margin-top: 10px; max-width: 34em; color: var(--tinte); }
 .fuss h2 {
   padding-bottom: 6px; margin-bottom: 2px; border-bottom: 1px solid var(--linie);
@@ -1122,8 +1189,9 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
 /* ---------- Signet „Tamil Dots 04A“ als Hintergrund (Theme 3.5.0) ----------
    Form freigegeben von Luis am 19.11.2026 (docs/abnahme/2026-11-19-signature.md); Einbau inc/signatur.php, Dateien
    assets/img/signatur/ (bauen.py), Regeln DESIGN.md „Signet“. Das Signet ist nicht das Logo: nie am, im oder hinter dem
-   Logo, nie hinter Überschriften, Text oder Gesichtern, nicht im Artikeltext, über Fotos oder in Kacheln. Es sitzt in
-   freier Fläche, von der Kante seines Bereichs angeschnitten, und ist immer dekorativ (aria-hidden). Farben: nur Titan,
+   Logo, nie hinter Überschriften, Text oder Gesichtern, nicht im Artikeltext; über Fotos nur als kleiner Bogen in der
+   Bildecke jedes Beitrags (seit 3.6.0, unten). Es sitzt in freier Fläche, von der Kante seines Bereichs angeschnitten,
+   und ist immer dekorativ (aria-hidden). Farben: nur Titan,
    Impact und Weiß, abgestuft über Deckkraft. Statisch als CSS-Hintergrund (zwischengespeichert); inline nur auf den
    Titan-Flächen, wo die Punkte beim Hineinscrollen die Form aufbauen (Abschnitt „Bewegung“). */
 .signatur { display: block; pointer-events: none; background-repeat: no-repeat; }
@@ -1202,6 +1270,39 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
   .signatur--flaeche { width: min(780px, 62vw); translate: 14% 66%; }
   .signatur--flaeche.signatur--hoch { width: min(820px, 66vw); translate: 16% 40%; }
 }
+
+/* Signet an jedem Post (Theme 3.6.0; Luis, 19.11.2026: „klein und dezent, aber auf jeden einzelnen Post“): ein kleiner
+   Bogen unten rechts im Bild jedes Beitrags – Anreißer, Kacheln, Listen, Kino- und Termineinträge, Suche, 404,
+   „Weiterlesen“ und das Bild des Artikels. Er sitzt bündig in der Ecke, die Bildkante schneidet rechts den Auslauf und
+   unten ein Stück vom Fuß ab (ecke.svg, Small-Geometrie als Mini, damit die Punkte klein einzeln bleiben). Breite 13 %
+   des Rahmens, 20 bis 56 px; das Prozent bezieht sich auf den Rahmen, in dem die Spanne absolut steht. Weiß auf dunklen
+   und mittleren Bildecken mit einem weichen dunklen Schein (nur Schwarz mit Deckkraft), Titan und Impact auf hellen
+   (inc/signatur.php misst die Ecke). Im Bild mit Titel liegt er auf dem Verlauf, ohne Schein, und der Text hält rechts
+   den Platz frei, damit er nie unter Schrift liegt; das Schild „Symbolbild“ steht oben rechts. Statisch: er erscheint
+   mit seinem Bild (Aufdecken, Steigen). Nicht an Rubrikkacheln, Leerzuständen, Seiten, Anzeigen und nie am Logo. */
+.rahmen, .artikel__figur, .bild-ecke { --ecke: clamp(20px, 13%, 56px); }
+.signatur-ecke {
+  position: absolute; right: 0; bottom: 0; z-index: 1;
+  width: var(--ecke); aspect-ratio: 1000 / 658; pointer-events: none;
+}
+.signatur-ecke::before, .signatur-ecke::after { content: ""; position: absolute; right: 0; bottom: 0; }
+.signatur-ecke::before {
+  width: 190%; height: 200%;
+  background: radial-gradient(farthest-side at 100% 100%, rgb(0 0 0 / 0.36), rgb(0 0 0 / 0.16) 52%, rgb(0 0 0 / 0));
+}
+.signatur-ecke::after { inset: 0; background: url("../img/signatur/ecke.svg?ver=3.6.0") 0 0 / 100% 100% no-repeat; }
+.signatur-ecke--rot::before { content: none; }
+.signatur-ecke--rot::after { background-image: url("../img/signatur/ecke-rot.svg?ver=3.6.0"); }
+/* Titel im Bild: weiß auf dem Verlauf; der Text lässt rechts die Breite des Bogens und 10 px frei */
+.imbild-anr .rahmen > .signatur-ecke::before { content: none; }
+.imbild-anr .rahmen > .signatur-ecke::after { background-image: url("../img/signatur/ecke.svg?ver=3.6.0"); }
+.imbild-anr .rahmen > .imbild { padding-right: calc(var(--ecke) + 10px); }
+/* Artikel (Bild mit Nachweis darunter): der Bogen an der Unterkante des Bilds, nicht der Abbildung – aus seiner Lage
+   direkt nach dem Bild um die eigene Höhe nach oben */
+.artikel__figur:has(> .signatur-ecke) { position: relative; }
+.artikel__figur > .signatur-ecke { bottom: auto; translate: 0 -100%; }
+.bild-ecke { position: relative; display: block; width: fit-content; max-width: 100%; }
+.bild-ecke > img { display: block; }
 
 /* ---------- Gutenberg ---------- */
 .alignleft { float: left; margin: 0.3em 1.4em 1em 0; }
@@ -1326,7 +1427,7 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
   .anr:hover .rahmen img, .kacheln a:hover .rahmen img { transform: none; }
 }
 @media print {
-  .kopfzeile, .band, .fuss, .ad, .anzeige-zwischen, .anzeige-unten, .teilen, .mehr, .kacheln, .signatur { display: none !important; }
+  .kopfzeile, .band, .fuss, .ad, .anzeige-zwischen, .anzeige-unten, .teilen, .mehr, .kacheln, .signatur, .signatur-ecke { display: none !important; }
   body { background: #fff; }
   .woche { background: none; color: var(--tinte); }
 }

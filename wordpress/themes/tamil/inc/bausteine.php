@@ -324,8 +324,9 @@ function tamil_kino_orte_tafel( array $filme, bool $bilder = false ): void {
 					$bild = 'pool' === tamil_bildwahl( $e['post'] )['art'] ? tamil_pool_img(
 						'kino',
 						array(
-							'n'     => $e['post'] + ( ++$zeile ),
-							'sizes' => '96px',
+							'n'      => $e['post'] + ( ++$zeile ),
+							'sizes'  => '96px',
+							'signet' => true, // das Bild steht für den Kino-Beitrag
 						)
 					) : tamil_bild( $e['post'], array( 'sizes' => '96px' ) );
 					echo '<span class="tafel__bild rahmen r169">' . $bild . '</span><span class="tafel__text">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_bild() bzw. tamil_pool_img()

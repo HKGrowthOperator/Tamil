@@ -42,6 +42,7 @@ while ( have_posts() ) :
 					$tamil_id,
 					array(
 						'eager'  => true,
+						'signet' => false, // Eintrag eines Betriebs, kein Beitrag der Redaktion
 						'klasse' => 'artikel__bild',
 						'sizes'  => '(min-width: 1024px) 1040px, (min-width: 600px) 600px, 100vw',
 					)
