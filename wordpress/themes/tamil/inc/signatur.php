@@ -159,11 +159,13 @@ function tamil_signatur_ecke_ton( int $attachment_id ): string {
 	$klein = image_get_intermediate_size( $attachment_id, 'medium' );
 	if ( is_array( $klein ) && ! empty( $klein['path'] ) ) {
 		$pfad = trailingslashit( wp_get_upload_dir()['basedir'] ) . $klein['path'];
+		$hell = tamil_signatur_ecke_datei_hell( $pfad );
+	} else {
+		// ohne kleine Fassung nur Originale bis 4 Megapixel lesen; größere nicht dekodieren (Speicher, Zeit)
+		$meta = wp_get_attachment_metadata( $attachment_id );
+		$hell = (int) ( $meta['width'] ?? 0 ) * (int) ( $meta['height'] ?? 0 ) <= 4000000 ? tamil_signatur_ecke_datei_hell( $pfad ) : null;
 	}
-	$hell = tamil_signatur_ecke_datei_hell( $pfad );
-	if ( null === $hell ) {
-		return 'dunkel';
-	}
+	// auch „nicht lesbar“ merken (dann weiß), sonst würde die Datei bei jedem Aufruf neu gelesen
 	$ton = $hell ? 'hell' : 'dunkel';
 	update_post_meta( $attachment_id, '_tamil_signet_ecke', $ton );
 	return $ton;
@@ -199,11 +201,8 @@ function tamil_signatur_ecke_ton_pool( string $datei ): string {
 	if ( isset( $alle[ $schluess ] ) ) {
 		return (string) $alle[ $schluess ];
 	}
-	$hell = tamil_signatur_ecke_datei_hell( $pfad );
-	if ( null === $hell ) {
-		return 'dunkel';
-	}
-	$alle[ $schluess ] = $hell ? 'hell' : 'dunkel';
+	$hell              = tamil_signatur_ecke_datei_hell( $pfad );
+	$alle[ $schluess ] = $hell ? 'hell' : 'dunkel'; // auch „nicht lesbar“ gemerkt (dann weiß)
 	set_transient( 'tamil_signet_ecke_pool', $alle );
 	return $alle[ $schluess ];
 }
@@ -230,7 +229,16 @@ function tamil_signatur_ecke_im_text( string $content ): string {
 				return $m[0];
 			}
 			$fertig = true;
-			return '<span class="bild-ecke">' . $m[0] . tamil_signatur_ecke_html( tamil_signatur_ecke_ton( (int) $wahl['id'] ) ) . '</span>';
+			// Ausrichtung des alten Editors (alignleft/-right/-center am <img>) geht auf die Hülle über, sonst wäre die
+			// Hülle bei einem schwebenden Bild 0 px hoch und der Bogen läge daneben
+			$tag        = $m[0];
+			$ausrichten = '';
+			if ( preg_match( '/\sclass\s*=\s*(["\'])([^"\']*)\1/i', $tag, $k ) && preg_match( '/\balign(left|right|center)\b/', $k[2], $a ) ) {
+				$ausrichten = ' align' . $a[1];
+				$rest       = trim( (string) preg_replace( '/\s*\balign(?:left|right|center|none)\b/', '', $k[2] ) );
+				$tag        = str_replace( $k[0], ' class=' . $k[1] . $rest . $k[1], $tag );
+			}
+			return '<span class="bild-ecke' . $ausrichten . '">' . $tag . tamil_signatur_ecke_html( tamil_signatur_ecke_ton( (int) $wahl['id'] ) ) . '</span>';
 		},
 		$content
 	);

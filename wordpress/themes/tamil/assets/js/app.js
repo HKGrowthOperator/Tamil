@@ -30,6 +30,7 @@
     }
     var rand = function () {
       streifen.classList.toggle("mehr-rechts", streifen.scrollLeft + streifen.clientWidth < streifen.scrollWidth - 2);
+      streifen.classList.toggle("mehr-links", streifen.scrollLeft > 2);
     };
     rand();
     streifen.addEventListener("scroll", rand, { passive: true });
@@ -103,6 +104,8 @@
         var ok = (!wahl.land || z.getAttribute("data-land") === wahl.land) && (!wahl.stadt || z.getAttribute("data-stadt") === wahl.stadt);
         z.hidden = !ok; if (ok) n++;
       });
+      // Mit Filter zeigt die Liste auch die Termine aus „Ab heute“ (ohne Filter blendet das CSS sie hier aus)
+      block.classList.toggle("gefiltert", !!(wahl.land || wahl.stadt));
       $$(".kalender__monat", block).forEach(function (m) { m.hidden = !$("li[data-land]:not([hidden])", m); });
       if (zahl) zahl.textContent = n === 1 ? "1 Termin" : n + " Termine";
       if (leer) leer.hidden = n > 0;

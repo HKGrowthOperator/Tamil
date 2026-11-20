@@ -53,7 +53,7 @@ $tamil_klassen[] = 'termine-' . max( 1, count( $tamil_termine ) );
 				<ul aria-labelledby="t-kino">
 					<?php
 					foreach ( $tamil_filme as $tamil_f ) {
-						echo tamil_grafik_kino( $tamil_f, 'h3', true ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_grafik_kino()
+						echo tamil_grafik_kino( $tamil_f, 'h3' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_grafik_kino()
 					}
 					if ( ! $tamil_filme ) {
 						echo tamil_grafik_leer( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_grafik_leer()
@@ -71,7 +71,7 @@ $tamil_klassen[] = 'termine-' . max( 1, count( $tamil_termine ) );
 				<ul aria-labelledby="t-termine">
 					<?php
 					foreach ( $tamil_termine as $tamil_id ) {
-						echo tamil_grafik_termin( $tamil_id, 'h3', count( $tamil_termine ) < 3, true ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_grafik_termin()
+						echo tamil_grafik_termin( $tamil_id, 'h3', count( $tamil_termine ) < 3 ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_grafik_termin()
 					}
 					if ( ! $tamil_termine ) {
 						echo tamil_grafik_leer( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_grafik_leer()

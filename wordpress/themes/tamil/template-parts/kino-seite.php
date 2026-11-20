@@ -67,7 +67,7 @@ $tamil_gross  = $tamil_lead ? tamil_anr_imbild(
 				<ul aria-labelledby="t-filme">
 					<?php
 					foreach ( $tamil_rest as $tamil_f ) {
-						echo tamil_grafik_kino( $tamil_f, 'h3', true ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_grafik_kino()
+						echo tamil_grafik_kino( $tamil_f, 'h3' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_grafik_kino()
 					}
 					if ( ! $tamil_filme ) {
 						echo tamil_grafik_leer( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_grafik_leer()

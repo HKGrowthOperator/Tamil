@@ -25,7 +25,9 @@ tamil_cache_fuellen( $tamil_kommend );
 $tamil_bald = array_values( array_filter( $tamil_kommend, static fn( $id ) => substr( (string) get_post_meta( $id, 'event_datum', true ), 0, 10 ) <= $tamil_grenze ) );
 $tamil_bald = count( $tamil_bald ) >= 3 ? array_slice( $tamil_bald, 0, 6 ) : array_slice( $tamil_kommend, 0, 3 );
 
-// Kommende Termine nach Monaten, dazu die Filterwerte (Land, Stadt) der Zeilen
+// Kommende Termine nach Monaten, dazu die Filterwerte (Land, Stadt) der Zeilen. Termine, die schon unter „Ab heute“
+// stehen, tragen data-ab-heute: ohne Filter blendet das CSS sie hier aus (keine doppelten Karten), mit Filter zeigt die
+// Liste wieder alle passenden Termine (app.js setzt dann .gefiltert).
 $tamil_laender = array(
 	'DE' => __( 'Deutschland', 'tamil' ),
 	'AT' => __( 'Österreich', 'tamil' ),
@@ -56,7 +58,7 @@ foreach ( $tamil_kommend as $tamil_id ) {
 			'ebene'    => 'h4',
 			'dach'     => '<p class="meta"><time datetime="' . esc_attr( $tamil_a['iso'] ) . '">' . esc_html( $tamil_a['datum'] ) . '</time></p>',
 			'zusatz'   => $tamil_zusatz ? '<p class="zeile__angaben">' . esc_html( implode( '. ', $tamil_zusatz ) ) . '</p>' : '',
-			'attr'     => ' data-land="' . esc_attr( $tamil_land ) . '" data-stadt="' . esc_attr( '' !== $tamil_stadt ? sanitize_title( $tamil_stadt ) : '' ) . '"',
+			'attr'     => ' data-land="' . esc_attr( $tamil_land ) . '" data-stadt="' . esc_attr( '' !== $tamil_stadt ? sanitize_title( $tamil_stadt ) : '' ) . '"' . ( in_array( $tamil_id, $tamil_bald, true ) ? ' data-ab-heute' : '' ),
 		)
 	);
 }
@@ -101,8 +103,9 @@ foreach ( $tamil_vorbei as $tamil_id ) {
 		<p class="woche__art"><time datetime="<?php echo esc_attr( $tamil_heute ); ?>"><?php echo esc_html( tamil_stand( time() ) ); ?></time></p>
 		<ul class="termine-raster<?php echo 1 === count( $tamil_bald ) ? ' termine-raster--eins' : ( 2 === count( $tamil_bald ) ? ' termine-raster--zwei' : '' ); ?>">
 			<?php
-			foreach ( $tamil_bald as $tamil_id ) {
-				echo tamil_grafik_termin( $tamil_id, 'h3', true, true ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_grafik_termin()
+			foreach ( $tamil_bald as $tamil_i => $tamil_id ) {
+				// die erste Karte ist das größte Bild im ersten Bildschirm: sofort und vorrangig laden
+				echo tamil_grafik_termin( $tamil_id, 'h3', true, 0 === $tamil_i ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_grafik_termin()
 			}
 			if ( ! $tamil_bald ) {
 				echo tamil_grafik_leer( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_grafik_leer()
@@ -153,6 +156,7 @@ foreach ( $tamil_vorbei as $tamil_id ) {
 					</ul>
 				</section>
 			<?php endforeach; ?>
+			<p class="leer__satz kalender__alle-oben"><?php esc_html_e( 'Alle kommenden Termine stehen oben unter „Ab heute“.', 'tamil' ); ?></p>
 			<p class="leer__satz" data-filter-leer hidden><?php esc_html_e( 'Für diese Auswahl steht gerade kein Termin im Kalender.', 'tamil' ); ?> <a class="textlink" href="<?php echo esc_url( tamil_einreichen_url() ); ?>"><?php esc_html_e( 'Termin einreichen', 'tamil' ); ?></a></p>
 		</section>
 	<?php endif; ?>
