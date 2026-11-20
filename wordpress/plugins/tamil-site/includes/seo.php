@@ -177,7 +177,14 @@ function tamil_site_seo_titel_feld( int $post_id ): string {
 }
 
 /**
- * <title> aus dem Feld _tamil_seo_title, wenn gesetzt.
+ * Längster <title> mit Markenzusatz; Suchmaschinen kürzen ab etwa 60 Zeichen.
+ */
+const TAMIL_SITE_SEO_TITEL_MAX = 60;
+
+/**
+ * <title> aus dem Feld _tamil_seo_title, wenn gesetzt. Wie bei allen anderen Seiten folgt „| Tamil.de“, solange der
+ * Titel damit höchstens TAMIL_SITE_SEO_TITEL_MAX Zeichen hat und die Marke nicht schon enthält; sonst bleibt der
+ * SEO-Titel allein stehen (er ist wichtiger als der Zusatz).
  *
  * @param string $titel Bisheriger Titel (leer = WordPress bildet ihn).
  */
@@ -185,6 +192,11 @@ function tamil_site_seo_document_title( $titel ) {
 	if ( tamil_site_seo_aktiv() && is_singular() ) {
 		$eigen = tamil_site_seo_titel_feld( (int) get_queried_object_id() );
 		if ( '' !== $eigen ) {
+			$marke  = trim( wp_strip_all_tags( (string) get_bloginfo( 'name', 'display' ) ) );
+			$zusatz = ' ' . apply_filters( 'document_title_separator', '-' ) . ' ' . $marke; // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Hook von WordPress.
+			if ( '' !== $marke && false === mb_stripos( $eigen, $marke ) && mb_strlen( $eigen . $zusatz ) <= TAMIL_SITE_SEO_TITEL_MAX ) {
+				$eigen .= $zusatz;
+			}
 			// WordPress gibt den Rückgabewert ungefiltert in <title> aus.
 			return esc_html( $eigen );
 		}
