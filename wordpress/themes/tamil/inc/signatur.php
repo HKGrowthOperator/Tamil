@@ -159,11 +159,13 @@ function tamil_signatur_ecke_ton( int $attachment_id ): string {
 	$klein = image_get_intermediate_size( $attachment_id, 'medium' );
 	if ( is_array( $klein ) && ! empty( $klein['path'] ) ) {
 		$pfad = trailingslashit( wp_get_upload_dir()['basedir'] ) . $klein['path'];
+		$hell = tamil_signatur_ecke_datei_hell( $pfad );
+	} else {
+		// ohne kleine Fassung nur Originale bis 4 Megapixel lesen; größere nicht dekodieren (Speicher, Zeit)
+		$meta = wp_get_attachment_metadata( $attachment_id );
+		$hell = (int) ( $meta['width'] ?? 0 ) * (int) ( $meta['height'] ?? 0 ) <= 4000000 ? tamil_signatur_ecke_datei_hell( $pfad ) : null;
 	}
-	$hell = tamil_signatur_ecke_datei_hell( $pfad );
-	if ( null === $hell ) {
-		return 'dunkel';
-	}
+	// auch „nicht lesbar“ merken (dann weiß), sonst würde die Datei bei jedem Aufruf neu gelesen
 	$ton = $hell ? 'hell' : 'dunkel';
 	update_post_meta( $attachment_id, '_tamil_signet_ecke', $ton );
 	return $ton;
@@ -199,11 +201,8 @@ function tamil_signatur_ecke_ton_pool( string $datei ): string {
 	if ( isset( $alle[ $schluess ] ) ) {
 		return (string) $alle[ $schluess ];
 	}
-	$hell = tamil_signatur_ecke_datei_hell( $pfad );
-	if ( null === $hell ) {
-		return 'dunkel';
-	}
-	$alle[ $schluess ] = $hell ? 'hell' : 'dunkel';
+	$hell              = tamil_signatur_ecke_datei_hell( $pfad );
+	$alle[ $schluess ] = $hell ? 'hell' : 'dunkel'; // auch „nicht lesbar“ gemerkt (dann weiß)
 	set_transient( 'tamil_signet_ecke_pool', $alle );
 	return $alle[ $schluess ];
 }
