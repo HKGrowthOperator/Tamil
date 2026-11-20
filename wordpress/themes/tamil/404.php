@@ -1,6 +1,6 @@
 <?php
 /**
- * Seite nicht gefunden: Seitenkopf mit Suche, die neuesten Beiträge als Liste und die Rubriken als Kacheln.
+ * Seite nicht gefunden: Seitenkopf mit Suche, die neuesten Beiträge als Bildkarten und die Rubriken als Kacheln.
  */
 
 defined( 'ABSPATH' ) || exit;

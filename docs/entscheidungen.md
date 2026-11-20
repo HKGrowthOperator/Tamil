@@ -5,6 +5,15 @@ Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
 ## 20.11.2026
 
+- **Jede Meldung als Karte (Theme 3.7.0):** Was auf der Startseite gilt, gilt jetzt überall, wo Beiträge angerissen
+  werden: jeder Beitrags-Anreißer ist eine Bildkarte mit Dachzeile „Rubrik | Datum“ und Titel im Foto, Punktbogen unten
+  rechts, Schild „Symbolbild“ oben rechts – Rubrikseiten („Neu in der Rubrik“, „Weitere Beiträge“), Suche, Archive,
+  404, Production, „Weiterlesen“, Termine („Ab heute“, „Kommende Termine“, „Das Jahr“) und Kino („Im Programm“, „Aus
+  dem Kinojahr“). Es bleiben: Top-News im Kopf, Navigation, Fußlisten, Rubrikkacheln, Verzeichnis, Anzeigen,
+  Formulare, reine Textseiten und die Kinotabelle (Spielorte; ihre Zeilen verlinken auf Kinos, nicht auf Beiträge).
+  Wortlaut Luis: „auf jeder meldung tamil dots und schrift auf der karte tamil dots auchh auf der akrte“.
+
+  · Luis (`docs/abnahme/2026-11-20-logo-startseite.md`, Nachtrag 3.7.0)
 - **Neues Logo, genau so übernommen:** Das Logo aus `design/inhalte/logo-2026-11.webp` („tamil“ in Rot, „.de“ in
   Dunkelgrau, darunter „portal • lifestyle • entertainment“ und „& KOMMUNITYPLATTFORM DER COMMUNITY“) ersetzt das
   bisherige Logo in Kopf, Fuß, Teilenbild, Theme-Vorschau und Social-Vorlagen – in genau dieser Form und

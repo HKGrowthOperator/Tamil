@@ -1,6 +1,6 @@
 <?php
 /**
- * Listen ohne eigene Vorlage (Schlagwort, Autor, Datum, Beitragsseite): Seitenkopf, Liste mit Bild und Vorspann,
+ * Listen ohne eigene Vorlage (Schlagwort, Autor, Datum, Beitragsseite): Seitenkopf, Bildkarten mit Vorspann,
  * Seitennavigation.
  */
 
@@ -23,7 +23,15 @@ tamil_cache_fuellen( $tamil_ids );
 	</header>
 	<?php if ( $tamil_ids ) : ?>
 		<section class="block" aria-label="<?php esc_attr_e( 'Beiträge', 'tamil' ); ?>">
-			<?php echo tamil_zeilen( $tamil_ids, array( 'ebene' => 'h2' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_zeilen() ?>
+			<?php
+			echo tamil_zeilen( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_zeilen()
+				$tamil_ids,
+				array(
+					'ebene'       => 'h2',
+					'erste_eager' => true,
+				)
+			);
+			?>
 		</section>
 		<?php get_template_part( 'template-parts/pagination' ); ?>
 	<?php else : ?>

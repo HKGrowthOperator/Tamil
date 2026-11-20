@@ -3,8 +3,8 @@
  * Rubrik Kino, Seite 1: Seitenkopf; „Im Programm“ auf Titan Red wie „Diese Woche“ – nur Filme mit Spieltagen
  * ab heute: der erste (mit eigenem Bild, sonst der erste überhaupt) groß, daneben die übrigen als Bildkacheln; läuft
  * nur einer, stehen neben ihm seine Angaben (Zahl der Kinos, Städte, Link zur Tabelle). „Nach Stadt“ als Tabelle mit
- * dem Bild des Films in jeder Zeile; „Aus dem Kinojahr“ mit den übrigen Beiträgen als Liste mit Bild; die übrigen
- * Rubriken als Kacheln.
+ * dem Bild des Films in jeder Zeile; „Aus dem Kinojahr“ mit den übrigen Beiträgen als Bildkarten; die übrigen
+ * Rubriken als Kacheln. Seit 3.7.0 stehen auch die Filme in „Im Programm“ als Karten mit Titel im Bild.
  *
  * @var array $args { @type array $rubrik, @type array $filme Ergebnis von tamil_kino_filme(), @type int[] $ids }
  */
@@ -67,7 +67,7 @@ $tamil_gross  = $tamil_lead ? tamil_anr_imbild(
 				<ul aria-labelledby="t-filme">
 					<?php
 					foreach ( $tamil_rest as $tamil_f ) {
-						echo tamil_grafik_kino( $tamil_f ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_grafik_kino()
+						echo tamil_grafik_kino( $tamil_f, 'h3', true ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_grafik_kino()
 					}
 					if ( ! $tamil_filme ) {
 						echo tamil_grafik_leer( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_grafik_leer()
