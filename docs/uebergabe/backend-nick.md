@@ -233,6 +233,21 @@ dem Testsystem.
   Symbolbild ersetzen.
 - **Seite „TAMIL TV CHANNEL“:** in den Daten auf „Tamil TV“ umbenennen. Das Theme gleicht den Titel bereits an.
 
+## 6c. Datenbefunde aus dem Feinschliff (20.11.)
+
+Ein frischer Prüfdurchgang hat Fehler in den Radar-Inhalten gefunden. Das Theme kann sie nicht sauber beheben,
+Einzelheiten stehen in `docs/abnahme/2026-11-20-feinschliff.md`.
+
+- **Falsches Bild bei „Jailer 2“ (P0):**
+  - Ein Jailer-2-Beitrag hat das Firmenlogo „KINOPOLIS – Mehr Kino geht nicht“ als Bild, mit dem Nachweis
+    „Filmplakat: via Kinopolis“.
+  - Über die Bildkette (Schritt „film“) erscheint es auch beim Beitrag über das Kino Claudia in Kloten (Beitrag 2620).
+  - Bitte: echtes Plakat mit korrektem Nachweis oder kein Bild. Logos von Kinoketten nie als Beitragsbild übernehmen.
+- **Quelle doppelt:** Radar-Beiträge schreiben zwei Links gleichen Namens („Eventfrog CH, Eventfrog CH“) mit
+  verschiedenen Zielen. Das Theme hängt jetzt „(2)“ an. Besser ist, die Quelle beim Schreiben eindeutig zu benennen.
+- **Meta-Beschreibungen:** Verzeichnis, Werben und Impressum haben noch keine eigene Beschreibung, sondern die
+  allgemeine. Das ist Redaktion oder Einstellung.
+
 ## 7. Cockpit im klar2-Look
 
 **Ursprünglich geplant:** Website und Cockpit bekommen dasselbe Design (Entscheidung vom 16.11.). Seit 17.11. liegt das
