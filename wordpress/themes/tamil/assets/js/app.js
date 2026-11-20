@@ -36,15 +36,18 @@
     window.addEventListener("resize", rand);
   }
 
-  // Rubrikkacheln laden „lazy“ (sie liegen weit unten); am Handy laufen sie seitlich, dort lädt der Browser Bilder
-  // außerhalb des Streifens sonst erst beim Wischen: kommt der Streifen in die Nähe, laden alle auf einmal
+  // Rubrikkacheln und wischbare Kartenreihen laden „lazy“; am Handy laufen sie seitlich, dort lädt der Browser Bilder
+  // außerhalb des Streifens sonst erst beim Wischen: kommt der Streifen in die Nähe, laden alle auf einmal (Kartenreihen
+  // erst kurz vor dem Bild, damit sie dem ersten Bildschirm nichts wegnehmen)
   if ("IntersectionObserver" in window) {
-    $$(".kacheln").forEach(function (k) {
-      new IntersectionObserver(function (e, beob) {
-        if (!e[0].isIntersecting) return;
-        $$("img[loading=lazy]", k).forEach(function (i) { i.loading = "eager"; });
-        beob.disconnect();
-      }, { rootMargin: "800px 0px" }).observe(k);
+    [[".kacheln", "800px 0px"], [".karten--reihe", "200px 0px"]].forEach(function (art) {
+      $$(art[0]).forEach(function (k) {
+        new IntersectionObserver(function (e, beob) {
+          if (!e[0].isIntersecting) return;
+          $$("img[loading=lazy]", k).forEach(function (i) { i.loading = "eager"; });
+          beob.disconnect();
+        }, { rootMargin: art[1] }).observe(k);
+      });
     });
   }
 
@@ -189,7 +192,7 @@
   const GRUPPE = ".kacheln, .karten--reihe";
   const TIEFE = 40;           // Aufmacherbild höchstens 40 px langsamer
   const REGELN = [
-    [".kacheln li, .neben .stueck, .karte, .meldung, .zeile, .woche .kachel--klein, .woche__art, .grafik, .kueche .kachel--klein", "steigen"],
+    [".kacheln li, .karte, .woche .kachel--klein, .woche__art, .grafik, .kueche .kachel--klein", "steigen"],
     [".block-titel, .woche__titel", "zeilen"],
     [".woche", "vorhang"],
     [".kachel--gross", "aufdecken zeilen"],

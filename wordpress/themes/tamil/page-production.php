@@ -3,8 +3,8 @@
  * Template Name: Production
  *
  * Konzertreihe von Tamil.de: Claim, Tickets, die nächsten Termine und die Konzertbeiträge (Schlagwort aus dem
- * Customizer) als Listen mit Bild, danach der Seiteninhalt (Service für Konzertbesucher). Listen im Seiteninhalt, die
- * nur auf Beiträge dieser Website verlinken („Die Konzerte im Archiv“), erscheinen als Liste mit Bild wie alle Listen.
+ * Customizer) als Bildkarten, danach der Seiteninhalt (Service für Konzertbesucher). Listen im Seiteninhalt, die
+ * nur auf Beiträge dieser Website verlinken („Die Konzerte im Archiv“), erscheinen als Bildkarten wie alle Listen.
  * Greift automatisch für die Seite „production“.
  */
 
@@ -55,15 +55,15 @@ $events = function_exists( 'tamil_site_upcoming_events' ) ? array_map( 'intval',
 				<h2 class="block-titel" id="naechste-titel"><?php esc_html_e( 'Die nächsten Termine', 'tamil' ); ?></h2>
 				<a class="textlink" href="<?php echo esc_url( tamil_rubrik( 'events' )['url'] ); ?>"><?php esc_html_e( 'Alle Termine', 'tamil' ); ?></a>
 			</div>
-			<ul class="liste">
+			<ul class="karten karten--raster">
 				<?php
 				foreach ( $events as $tamil_id ) {
 					echo tamil_anr_zeile( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_anr_zeile()
 						$tamil_id,
 						array(
-							'klasse' => 'zeile',
-							'rubrik' => false,
-							'ts'     => (int) strtotime( (string) get_post_meta( $tamil_id, 'event_datum', true ) ),
+							'rubrik'   => false,
+							'vorspann' => true,
+							'ts'       => (int) strtotime( (string) get_post_meta( $tamil_id, 'event_datum', true ) ),
 						)
 					);
 				}

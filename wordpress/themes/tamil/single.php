@@ -149,7 +149,7 @@ while ( have_posts() ) :
 					<a class="textlink" href="<?php echo esc_url( get_category_link( $tamil_kat ) ); ?>"><?php echo esc_html( sprintf( __( 'Mehr aus %s', 'tamil' ), $tamil_kat->name ) ); ?></a>
 				<?php endif; ?>
 			</div>
-			<div class="neben">
+			<div class="neben karten karten--reihe">
 				<?php
 				foreach ( $tamil_related as $tamil_r ) {
 					echo tamil_anr_stueck( $tamil_r ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_anr_stueck()

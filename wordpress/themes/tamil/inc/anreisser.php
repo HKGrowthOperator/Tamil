@@ -4,9 +4,13 @@
  * Link (a.anr) um Bild und Text; Bilder füllen ihren Rahmen (object-fit: cover), Nachweise sammelt der Fuß.
  *
  * Jeder Anreißer hat ein Bild: tamil_bild() (inc/bildkette.php) liefert das eigene Foto, ein Bild aus dem Text oder ein
- * Symbolbild aus dem Rubrik-Pool. Bausteine: tamil_meta(), tamil_anr_imbild() (Titel im Bild), tamil_anr_stueck()
- * (Nebenstück), tamil_anr_zeile() (Meldung, Listenzeile), tamil_kacheln() (Rubrikkacheln), tamil_grafik_kino(),
- * tamil_grafik_termin(), tamil_grafik_leer() (Bildkacheln auf Dunkel für Kino und Termine).
+ * Symbolbild aus dem Rubrik-Pool. Bausteine: tamil_meta(), tamil_anr_imbild() (Bildkarte, Titel im Bild),
+ * tamil_anr_stueck() (Nebenstück als Karte), tamil_anr_zeile() und tamil_zeilen() (Listen als Kartenraster),
+ * tamil_kacheln() (Rubrikkacheln), tamil_grafik_kino(), tamil_grafik_termin(), tamil_grafik_leer() (Bildkacheln auf
+ * Dunkel für Kino und Termine; als Karte mit Titel im Bild).
+ *
+ * Seit 3.7.0 ist jeder Beitrags-Anreißer der Website eine Bildkarte (Luis, 20.11.2026). Ausgenommen sind nur
+ * Rubrikkacheln (Navigation), Leerzustände, die Kinotabelle (Spielorte) und Verzeichniseinträge.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -51,21 +55,26 @@ function tamil_ebene( string $ebene, string $sonst = 'h3' ): string {
 }
 
 /**
- * Bild mit Titel im Bild (Aufmacher, Bildkarten der Startseite, Kacheln in „Diese Woche“ und „Küche“): Dachzeile
- * „Rubrik | Datum“ und Titel auf dem Verlauf im Foto.
+ * Bild mit Titel im Bild: Aufmacher, Kacheln und jede Bildkarte (seit 3.7.0 jeder Beitrags-Anreißer der Website, Luis
+ * 20.11.2026: „auf jeder Meldung Tamil Dots und Schrift auf der Karte“). Dachzeile „Rubrik | Datum“ und Titel auf dem
+ * Verlauf im Foto, Punktbogen unten rechts, Schild „Symbolbild“ oben rechts (beides aus tamil_bild()).
  *
  * @param array<string,mixed> $opt {
- *     @type string $klasse   Klassen des <article> (z. B. „aufmacher“, „karte karte--neben“, „kachel kachel--gross“).
+ *     @type string $klasse   Klassen des <article> (z. B. „aufmacher“, „karte“, „kachel kachel--gross“).
  *     @type string $rahmen   Formatklasse des Rahmens (r43, r169, r83 oder leer, dann setzt das CSS das Format).
- *     @type string $ebene    h2 oder h3.
- *     @type bool   $vorspann Vorspann unter dem Bild.
+ *     @type string $ebene    h2, h3 oder h4.
+ *     @type bool|string $vorspann Vorspann unter dem Bild: true (ganze Sätze bis 260 Zeichen) oder „kurz“ (30 Wörter).
  *     @type bool   $unter    Titel unter statt im Bild (Gesichter frei lassen).
  *     @type bool   $rubrik   Rubrik in der Dachzeile (Standard ja; nein in Blöcken, deren Titel die Rubrik nennt).
+ *     @type int    $ts       anderer Zeitpunkt für die Dachzeile.
+ *     @type string $dach     eigene Dachzeile statt „Rubrik | Datum“ (escaptes HTML, etwa das Datum eines Termins).
+ *     @type string $zusatz   Angaben unter dem Bild (escaptes HTML, etwa Ort und Eintritt eines Termins).
+ *     @type string $markiere Suchwort, das in Titel und Vorspann hervorgehoben wird.
  *     @type string $sizes, @type bool $eager, @type bool $niedrig (Bild mit geringem Vorrang, siehe tamil_bild()).
  * }
  */
 function tamil_anr_imbild( int $post_id, array $opt = array() ): string {
-	$img   = tamil_bild(
+	$img  = tamil_bild(
 		$post_id,
 		array(
 			'sizes'   => $opt['sizes'] ?? '',
@@ -73,77 +82,87 @@ function tamil_anr_imbild( int $post_id, array $opt = array() ): string {
 			'niedrig' => ! empty( $opt['niedrig'] ),
 		)
 	);
+	$meta = array( 'rubrik' => $opt['rubrik'] ?? true );
+	if ( ! empty( $opt['ts'] ) ) {
+		$meta['ts'] = (int) $opt['ts'];
+	}
+	$wort  = (string) ( $opt['markiere'] ?? '' );
 	$ebene = tamil_ebene( (string) ( $opt['ebene'] ?? 'h3' ) );
-	$text  = tamil_meta( $post_id, array( 'rubrik' => $opt['rubrik'] ?? true ) ) . sprintf( '<%1$s class="titel">%2$s</%1$s>', $ebene, tamil_titel( $post_id ) );
+	$dach  = isset( $opt['dach'] ) ? (string) $opt['dach'] : tamil_meta( $post_id, $meta );
+	$text  = $dach . sprintf( '<%1$s class="titel">%2$s</%1$s>', $ebene, tamil_markiere( tamil_titel( $post_id ), $wort ) );
 	$unter = ! empty( $opt['unter'] );
 	$html  = '<article class="' . esc_attr( (string) ( $opt['klasse'] ?? 'kachel' ) ) . '">';
 	$html .= '<a class="anr' . ( $unter ? '' : ' imbild-anr' ) . '" href="' . esc_url( get_permalink( $post_id ) ) . '">';
 	$html .= '<div class="rahmen' . ( ! empty( $opt['rahmen'] ) ? ' ' . esc_attr( (string) $opt['rahmen'] ) : '' ) . '">' . $img;
 	$html .= $unter ? '</div><div class="kachel__unter">' . $text . '</div>' : '<div class="imbild">' . $text . '</div></div>';
-	if ( ! empty( $opt['vorspann'] ) ) {
-		$html .= '<p class="vorspann">' . tamil_text( tamil_ganze_saetze( tamil_saetze_bis( tamil_standfirst( $post_id ), 260 ) ) ) . '</p>';
+	$html .= (string) ( $opt['zusatz'] ?? '' );
+	if ( 'kurz' === ( $opt['vorspann'] ?? false ) ) {
+		$html .= '<p class="vorspann">' . tamil_markiere( tamil_text( wp_trim_words( tamil_standfirst( $post_id ), 30, ' …' ) ), $wort ) . '</p>';
+	} elseif ( ! empty( $opt['vorspann'] ) ) {
+		$html .= '<p class="vorspann">' . tamil_markiere( tamil_text( tamil_ganze_saetze( tamil_saetze_bis( tamil_standfirst( $post_id ), 260 ) ) ), $wort ) . '</p>';
 	}
 	return $html . '</a></article>';
 }
 
 /**
- * Nebenstück: Bild 16:9, Dachzeile, Titel, Vorspann (am Handy Bild links, am Desktop Bild über dem Text).
+ * Nebenstück („Weiterlesen“): seit 3.7.0 eine Bildkarte mit Titel im Bild und Vorspann darunter.
  *
  * @param array<string,mixed> $opt { @type string $ebene, @type string $sizes, @type string $klasse, @type bool $rubrik. }
  */
 function tamil_anr_stueck( int $post_id, array $opt = array() ): string {
-	$img   = tamil_bild( $post_id, array( 'sizes' => $opt['sizes'] ?? '(min-width: 1024px) 290px, (min-width: 600px) 200px, 112px' ) );
-	$ebene = tamil_ebene( (string) ( $opt['ebene'] ?? 'h3' ) );
-	return sprintf(
-		'<article class="%1$s"><a class="anr" href="%2$s"><div class="rahmen r169">%3$s</div><div class="stueck__text">%4$s<%5$s class="titel">%6$s</%5$s><p class="vorspann">%7$s</p></div></a></article>',
-		esc_attr( (string) ( $opt['klasse'] ?? 'stueck' ) ),
-		esc_url( get_permalink( $post_id ) ),
-		$img,
-		tamil_meta( $post_id, array( 'rubrik' => $opt['rubrik'] ?? true ) ),
-		$ebene,
-		tamil_titel( $post_id ),
-		tamil_text( wp_trim_words( tamil_standfirst( $post_id ), 26, ' …' ) )
+	return tamil_anr_imbild(
+		$post_id,
+		array(
+			'klasse'   => (string) ( $opt['klasse'] ?? 'karte' ),
+			'rahmen'   => 'r169',
+			'ebene'    => (string) ( $opt['ebene'] ?? 'h3' ),
+			'rubrik'   => $opt['rubrik'] ?? true,
+			'vorspann' => 'kurz',
+			'niedrig'  => true,
+			'sizes'    => (string) ( $opt['sizes'] ?? '(min-width: 1024px) 290px, (min-width: 600px) calc(50vw - 36px), 320px' ),
+		)
 	);
 }
 
 /**
- * Zeile einer Liste: Text links, kleines Bild 16:9 rechts (Meldungen) oder links (große Listen).
+ * Eintrag einer Liste (Rubrik, Suche, Archive, Termine, Production, 404, Weiterlesen): seit 3.7.0 eine Bildkarte mit
+ * Titel im Bild in einem <li>; Vorspann und Angaben unter dem Bild.
  *
  * @param array<string,mixed> $opt {
- *     @type string $klasse   „meldung“ (Standard) oder „zeile“.
- *     @type string $ebene    h2 oder h3.
- *     @type bool   $vorspann Vorspann zeigen.
+ *     @type string $klasse   zusätzliche Klasse der Karte (Standard „karte--zeile“).
+ *     @type string $ebene    h2, h3 oder h4.
+ *     @type bool   $vorspann Vorspann unter dem Bild (kurz, 30 Wörter).
  *     @type bool   $rubrik   Rubrik in der Dachzeile.
  *     @type int    $ts       anderer Zeitpunkt für die Dachzeile (Termine).
  *     @type string $sizes.
  *     @type string $markiere Suchwort, das in Titel und Vorspann hervorgehoben wird.
- *     @type string $zusatz   weitere Angaben unter dem Titel (escaptes HTML, etwa Ort und Eintritt eines Termins).
+ *     @type string $zusatz   weitere Angaben unter dem Bild (escaptes HTML, etwa Ort und Eintritt eines Termins).
  *     @type string $dach     eigene Dachzeile statt „Rubrik | Datum“ (escaptes HTML, etwa Datum mit Uhrzeit).
  *     @type string $attr     weitere Attribute des <li> (escapt, etwa data-land für Filter).
+ *     @type bool   $eager    Bild sofort und vorrangig (erste Karte im ersten Bildschirm), sonst mit geringem Vorrang.
  * }
  */
 function tamil_anr_zeile( int $post_id, array $opt = array() ): string {
-	$klasse = (string) ( $opt['klasse'] ?? 'meldung' );
-	$img    = tamil_bild( $post_id, array( 'sizes' => $opt['sizes'] ?? '(min-width: 600px) 240px, 96px' ) );
-	$ebene  = tamil_ebene( (string) ( $opt['ebene'] ?? 'h3' ) );
-	$meta   = array( 'rubrik' => $opt['rubrik'] ?? true );
-	if ( ! empty( $opt['ts'] ) ) {
-		$meta['ts'] = (int) $opt['ts'];
-	}
-	$wort = (string) ( $opt['markiere'] ?? '' );
-	return sprintf(
-		'<li class="%1$s"%9$s><a class="anr" href="%2$s"><div class="%3$s__text">%4$s<%5$s class="titel">%6$s</%5$s>%10$s%7$s</div><div class="rahmen r169">%8$s</div></a></li>',
-		esc_attr( $klasse ),
-		esc_url( get_permalink( $post_id ) ),
-		esc_attr( $klasse ),
-		isset( $opt['dach'] ) ? (string) $opt['dach'] : tamil_meta( $post_id, $meta ),
-		$ebene,
-		tamil_markiere( tamil_titel( $post_id ), $wort ),
-		! empty( $opt['vorspann'] ) ? '<p class="vorspann">' . tamil_markiere( tamil_text( wp_trim_words( tamil_standfirst( $post_id ), 30, ' …' ) ), $wort ) . '</p>' : '',
-		$img,
-		(string) ( $opt['attr'] ?? '' ),
-		(string) ( $opt['zusatz'] ?? '' )
+	$zusatz = (string) ( $opt['zusatz'] ?? '' );
+	$karte  = array(
+		'klasse'   => trim( 'karte ' . (string) ( $opt['klasse'] ?? 'karte--zeile' ) ),
+		'rahmen'   => 'r169',
+		'ebene'    => (string) ( $opt['ebene'] ?? 'h3' ),
+		'rubrik'   => $opt['rubrik'] ?? true,
+		'vorspann' => ! empty( $opt['vorspann'] ) ? 'kurz' : false,
+		'markiere' => (string) ( $opt['markiere'] ?? '' ),
+		'zusatz'   => '' !== $zusatz ? '<div class="karte__zusatz">' . $zusatz . '</div>' : '',
+		'eager'    => ! empty( $opt['eager'] ),
+		'niedrig'  => empty( $opt['eager'] ),
+		'sizes'    => (string) ( $opt['sizes'] ?? '(min-width: 1024px) 384px, (min-width: 600px) calc(50vw - 36px), calc(100vw - 32px)' ),
 	);
+	if ( ! empty( $opt['ts'] ) ) {
+		$karte['ts'] = (int) $opt['ts'];
+	}
+	if ( isset( $opt['dach'] ) ) {
+		$karte['dach'] = (string) $opt['dach'];
+	}
+	return '<li class="karten__eintrag"' . (string) ( $opt['attr'] ?? '' ) . '>' . tamil_anr_imbild( $post_id, $karte ) . '</li>';
 }
 
 /**
@@ -168,23 +187,24 @@ function tamil_markiere( string $html, string $wort ): string {
 }
 
 /**
- * Liste von Zeilen (Rubrik, Suche, Archive, Weiterlesen).
+ * Liste von Beiträgen (Rubrik, Suche, Archive, Production, 404, Kinojahr) als Kartenraster: Handy eine Spalte, Tablet
+ * zwei, Desktop drei; Vorspann unter dem Bild.
  *
  * @param int[]               $ids Beiträge.
- * @param array<string,mixed> $opt wie tamil_anr_zeile(), dazu @type string $liste Klasse der Liste.
+ * @param array<string,mixed> $opt wie tamil_anr_zeile(), dazu @type string $liste weitere Klasse der Liste und
+ *                                 @type bool $erste_eager die erste Karte sofort laden (Liste im ersten Bildschirm).
  */
 function tamil_zeilen( array $ids, array $opt = array() ): string {
 	$opt  = array_merge(
 		array(
-			'klasse'   => 'zeile',
 			'vorspann' => true,
-			'liste'    => 'liste',
+			'liste'    => '',
 		),
 		$opt
 	);
-	$html = '<ul class="' . esc_attr( (string) $opt['liste'] ) . '">';
-	foreach ( $ids as $id ) {
-		$html .= tamil_anr_zeile( (int) $id, $opt );
+	$html = '<ul class="' . esc_attr( trim( 'karten karten--raster ' . (string) $opt['liste'] ) ) . '">';
+	foreach ( array_values( $ids ) as $i => $id ) {
+		$html .= tamil_anr_zeile( (int) $id, array_merge( $opt, array( 'eager' => 0 === $i && ! empty( $opt['erste_eager'] ) ) ) );
 	}
 	return $html . '</ul>';
 }
