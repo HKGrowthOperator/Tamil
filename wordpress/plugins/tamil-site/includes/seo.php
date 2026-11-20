@@ -102,7 +102,12 @@ function tamil_site_seo_text_bereinigen( string $text ): string {
 		' ',
 		$text
 	);
+	// Blockgrenzen nicht verkleben („Die Konzerte im ArchivIlaiyaraaja …“): Überschriften enden mit einem Punkt, andere
+	// Blöcke und Zeilenumbrüche mit einem Leerzeichen; ein Punkt hinter schon vorhandenem Satzzeichen entfällt.
+	$text = (string) preg_replace( '#</h[1-6]\s*>#i', '. ', $text );
+	$text = (string) preg_replace( '#</(?:p|div|li|ul|ol|dt|dd|figcaption|blockquote|td|th|tr|section|figure)\s*>|<br\s*/?>#i', ' ', $text );
 	$text = html_entity_decode( wp_strip_all_tags( $text ), ENT_QUOTES, 'UTF-8' );
+	$text = (string) preg_replace( '/([.:!?…])\s*\.(?=\s|$)/u', '$1', $text );
 	$text = (string) preg_replace(
 		array(
 			'/To view this video please enable JavaScript,?\s*and consider upgrading to a\s*web browser that\s*supports HTML5 video\.?/iu',
