@@ -8,7 +8,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'TAMIL_THEME_VERSION', '3.7.1' );
+define( 'TAMIL_THEME_VERSION', '3.7.2' );
 define( 'TAMIL_THEME_DIR', get_template_directory() );
 define( 'TAMIL_THEME_URI', get_template_directory_uri() );
 

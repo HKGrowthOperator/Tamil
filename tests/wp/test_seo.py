@@ -164,6 +164,13 @@ def test_altlasten_aus_echtem_text_entfernt(wp, wp_cli):
         wp_cli(f"wp_delete_post( {pid}, true );")
 
 
+def test_beschreibung_trennt_bloecke(wp_cli):
+    """Überschriften und Absätze kleben in der Beschreibung nicht zusammen (QA-03: „Die Konzerte im ArchivIlaiyaraaja …“)."""
+    php = ("echo tamil_site_seo_text_bereinigen( '<h2>Die Konzerte im Archiv</h2><ul><li><a href=\"/x/\">Ilaiyaraaja Live mit dir!</a></li>"
+           "<li>A.R.Rahman Live</li></ul><h3>Fragen?</h3><p>Schreibt uns.</p>' );")
+    assert wp_cli(php).strip() == "Die Konzerte im Archiv. Ilaiyaraaja Live mit dir! A.R.Rahman Live Fragen? Schreibt uns."
+
+
 def test_startseite_website_mit_suche(wp):
     seite = wp.get("/").text
     website = [d for d in _jsonld(seite) if d.get("@type") == "WebSite"]
