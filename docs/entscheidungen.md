@@ -3,6 +3,28 @@
 Neueste oben. Format: Datum · Entscheidung · wer · warum. Was hier steht, gilt, bis ein neuerer Eintrag es ändert.
 Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
+## 20.11.2026
+
+- **Neues Logo, genau so übernommen:** Das Logo aus `design/inhalte/logo-2026-11.webp` („tamil“ in Rot, „.de“ in
+  Dunkelgrau, darunter „portal • lifestyle • entertainment“ und „& KOMMUNITYPLATTFORM DER COMMUNITY“) ersetzt das
+  bisherige Logo in Kopf, Fuß, Teilenbild, Theme-Vorschau und Social-Vorlagen – in genau dieser Form und
+  Schreibweise, ohne Neuzeichnen oder Vektor-Nachbau, nur vom weißen Grund freigestellt. Das hebt die Regel
+  „Logo bleibt unverändert“ aus dem Branding-Handoff v1.1 für dieses Logo auf; alle anderen Logo-Regeln gelten weiter
+  (Signet nie am, im oder hinter dem Logo). Favicon und App-Icon „t.“ bleiben, bis Luis anders entscheidet.
+
+  · Luis (`docs/abnahme/2026-11-20-logo-startseite.md`)
+- **Startseite „Text auf Bild“:** Alle Beiträge der Startseite stehen als Bildkarten mit Dachzeile „Rubrik | Datum“ und
+  Titel im Foto (auf dem Verlauf nach Schwarz) – Nebenstücke, „Weitere Meldungen“, Küche, Rubrikblöcke und „Diese
+  Woche“. Die Rubrikkacheln (Navigation) bleiben. Bewegung D und die Bilderpflicht bleiben.
+
+  · Luis (`docs/abnahme/2026-11-20-logo-startseite.md`)
+- **Punktbogen an jedem Beitrag:** Das Signet steht klein und dezent an jedem einzelnen Beitrag, als Bogen unten rechts
+  im Bild (Anreißer, Listen, Kacheln, Kino, Termine, Suche, Artikelbild). Ausgenommen: Rubrikkacheln (Navigation),
+  Leerzustände, Seiten, Verzeichnis, Anzeigen, Logo. Das ergänzt die Regel „nicht über Fotos, nicht in Anreißern“ aus
+  dem Theme 3.5.0 um diese eine Ausnahme.
+
+  · Luis (19./20.11., `docs/abnahme/2026-11-20-logo-startseite.md`)
+
 ## 19.11.2026
 
 - **Freigaben vom 19.11.:**
