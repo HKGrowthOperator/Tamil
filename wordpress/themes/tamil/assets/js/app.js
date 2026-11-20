@@ -44,7 +44,13 @@
       $$(art[0]).forEach(function (k) {
         new IntersectionObserver(function (e, beob) {
           if (!e[0].isIntersecting) return;
-          $$("img[loading=lazy]", k).forEach(function (i) { i.loading = "eager"; });
+          $$("img[loading=lazy]", k).forEach(function (i) {
+            // „sizes=auto“ gilt nur für lazy-Bilder. Fiele es beim Umschalten weg, wählte der Browser ein größeres
+            // Bild und bräche das schon laufende kleine ab. Darum die gerenderte Breite fest eintragen.
+            var breite = Math.ceil(i.getBoundingClientRect().width);
+            if (breite > 0 && /^\s*auto\b/i.test(i.getAttribute("sizes") || "")) { i.sizes = breite + "px"; }
+            i.loading = "eager";
+          });
           beob.disconnect();
         }, { rootMargin: art[1] }).observe(k);
       });
