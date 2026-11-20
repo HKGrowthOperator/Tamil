@@ -51,6 +51,7 @@ $tamil_aufmacher = tamil_anr_imbild(
 						'klasse'   => 'karte',
 						'rahmen'   => 'r169',
 						'vorspann' => true,
+						'niedrig'  => true,
 						'sizes'    => '(min-width: 1024px) 290px, (min-width: 600px) calc(50vw - 36px), calc(100vw - 32px)',
 					)
 				);
@@ -68,9 +69,10 @@ $tamil_aufmacher = tamil_anr_imbild(
 					echo '<li>' . tamil_anr_imbild( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_anr_imbild()
 						$tamil_id,
 						array(
-							'klasse' => 'karte karte--meldung',
-							'rahmen' => 'r169',
-							'sizes'  => '(min-width: 1024px) 388px, 320px',
+							'klasse'  => 'karte karte--meldung',
+							'rahmen'  => 'r169',
+							'niedrig' => true,
+							'sizes'   => '(min-width: 1024px) 388px, 320px',
 						)
 					) . '</li>';
 				}

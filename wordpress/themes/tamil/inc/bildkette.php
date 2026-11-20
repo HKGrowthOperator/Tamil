@@ -435,7 +435,7 @@ function tamil_pool_tag( array $p, array $attr ): string {
 		(int) $p['h'],
 		esc_attr( (string) ( $attr['alt'] ?? '' ) ),
 		esc_attr( (string) ( $attr['loading'] ?? 'lazy' ) ),
-		! empty( $attr['fetchpriority'] ) ? ' fetchpriority="high"' : '',
+		! empty( $attr['fetchpriority'] ) ? ' fetchpriority="' . ( 'low' === $attr['fetchpriority'] ? 'low' : 'high' ) . '"' : '',
 		! empty( $attr['class'] ) ? ' class="' . esc_attr( $attr['class'] ) . '"' : '',
 		esc_attr( (string) $p['fokus'] )
 	);
@@ -450,6 +450,7 @@ function tamil_pool_tag( array $p, array $attr ): string {
  *     @type string $sizes     sizes-Angabe für srcset.
  *     @type bool   $eager     Sofort und vorrangig laden (erster Bildschirm).
  *     @type bool   $sofort    Sofort laden, ohne Vorrang (kleine Bilder im seitlichen Streifen).
+ *     @type bool   $niedrig   Mit geringem Vorrang laden (Bildkarten unter dem Aufmacher, damit dessen Bild zuerst kommt).
  *     @type string $klasse    Klasse des Bilds.
  *     @type bool   $schild    Schild „Symbolbild“ im Rahmen (Standard ja).
  *     @type bool   $signet    Signet unten rechts im Bild (Standard ja: jeder Beitrag trägt es; nein bei Rubrikkacheln,
@@ -472,6 +473,9 @@ function tamil_bild( int $post_id, array $opt = array() ): string {
 	} else {
 		// Bilder in seitlich laufenden Streifen lädt der Browser bei „lazy“ erst, wenn sie hineingewischt werden.
 		$attr['loading'] = ! empty( $opt['sofort'] ) ? 'eager' : 'lazy';
+		if ( ! empty( $opt['niedrig'] ) ) {
+			$attr['fetchpriority'] = 'low'; // Bildkarten nahe dem Aufmacher: nicht vor dessen Bild laden
+		}
 	}
 	$klassen = array_filter( array( (string) ( $opt['klasse'] ?? '' ), $w['breit'] ? 'bild--breit' : '' ) );
 	if ( $klassen ) {

@@ -61,15 +61,16 @@ function tamil_ebene( string $ebene, string $sonst = 'h3' ): string {
  *     @type bool   $vorspann Vorspann unter dem Bild.
  *     @type bool   $unter    Titel unter statt im Bild (Gesichter frei lassen).
  *     @type bool   $rubrik   Rubrik in der Dachzeile (Standard ja; nein in Blöcken, deren Titel die Rubrik nennt).
- *     @type string $sizes, @type bool $eager.
+ *     @type string $sizes, @type bool $eager, @type bool $niedrig (Bild mit geringem Vorrang, siehe tamil_bild()).
  * }
  */
 function tamil_anr_imbild( int $post_id, array $opt = array() ): string {
 	$img   = tamil_bild(
 		$post_id,
 		array(
-			'sizes' => $opt['sizes'] ?? '',
-			'eager' => ! empty( $opt['eager'] ),
+			'sizes'   => $opt['sizes'] ?? '',
+			'eager'   => ! empty( $opt['eager'] ),
+			'niedrig' => ! empty( $opt['niedrig'] ),
 		)
 	);
 	$ebene = tamil_ebene( (string) ( $opt['ebene'] ?? 'h3' ) );
