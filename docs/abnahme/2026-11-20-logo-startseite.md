@@ -40,3 +40,26 @@ Weiter offen: Eine weiße Fassung des neuen Logos für Social-Karten (weiß auf 
 ## Nächster Schritt
 
 Merge in `claude/radar-multiagent`, Deploy aufs Testsystem, Prüfung dort, danach Website-Dateien auf `main`.
+
+## Nachtrag 20.11.: Jede Meldung als Karte (Theme 3.7.0)
+
+- **Auftrag (Luis, wörtlich):** „auf jeder meldung tamil dots und schrift auf der karte tamil dots auchh auf der akrte“.
+  Gemeint: Was auf der Startseite gilt, gilt überall, wo Beiträge angerissen werden. Live zu sehen war es auf
+  `/category/kultur/` („Neu in der Rubrik“ und „Weitere Beiträge“ noch als Zeilen mit Daumenbild).
+- **Umsetzung (Theme 3.7.0, `claude/klar2-ausbau`, lokal geprüft):**
+
+| Ort | Vorher | Jetzt |
+|---|---|---|
+| Rubrik: „Neu in der Rubrik“ | vier Zeilen mit Daumenbild | drei Karten 16:9 als Stapel neben dem Aufmacher (Handy wischbar) |
+| Rubrik: „Weitere Beiträge“, Suche, Archive, 404, Production, „Aus dem Kinojahr“ | Zeilen mit Daumenbild | Kartenraster: Desktop 3, Tablet 2, Handy 1 Spalte, Vorspann unter dem Bild |
+| Termine: „Ab heute“, „Kommende Termine“, „Das Jahr“ | Bildkacheln mit Titel darunter, Zeilen | Karten, Datum des Termins in der Dachzeile, Ort und Eintritt darunter; Filter nach Land und Stadt bleiben |
+| Kino: „Im Programm“ | Bildkacheln quer | Karten mit Titel im Bild |
+| Artikel: „Weiterlesen“ | Nebenstücke mit Bild links | vier Karten (Desktop zu viert in 4:3, Tablet 2 × 2, Handy wischbar) |
+| bleiben | – | Kinotabelle (Spielorte), Rubrikkacheln, Verzeichnis, Kopf, Fuß, Blättern |
+
+- **Messung:** `bilder_pflicht.mjs` zählt jetzt auch den Titel im Bild: 450 von 450 Beitrags-Anreißern (100 %) bei
+  390/820/1280, Punktbogen 480 von 480; Ausnahmen mit Namen (Rubrikkachel, Tabelle, Verzeichnis, Artikel). Kontrast der
+  Schrift im Bild ≥ 5,57 : 1 (5-%-Quantil), höchstens vier Titelzeilen.
+- **Vorlagebilder:** Rubrik, Suche und Artikelende mit „Weiterlesen“ je 1280 und 390, Kino-Rubrik und Termine.
+- **Freigabe:** ausstehend.
+

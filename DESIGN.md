@@ -17,7 +17,11 @@
 > **Stand 20.11.2026 (Theme 3.6.0):** Entscheidungen von Luis (`docs/abnahme/2026-11-20-logo-startseite.md`,
 > `docs/entscheidungen.md`): **neues Logo** genau so übernommen (Abschnitt „Logo“; hebt für dieses Logo „das Logo bleibt
 > unverändert“ aus dem Branding-Handoff auf), **Startseite „Text auf Bild“** (jeder Beitrag als Bildkarte mit Titel im
-> Foto) und der **Punktbogen an jedem Beitrag** (Abschnitt „Signet“). Die Umsetzung ist zur Freigabe vorgelegt.
+> Foto) und der **Punktbogen an jedem Beitrag** (Abschnitt „Signet“). Freigegeben von Luis am 20.11.
+>
+> **Stand 20.11.2026 (Theme 3.7.0):** **Jede Meldung als Karte** (Luis, 20.11.: „auf jeder meldung tamil dots und
+> schrift auf der karte“): Jeder Beitrags-Anreißer der Website ist eine Bildkarte mit Titel im Foto und Punktbogen –
+> nicht nur auf der Startseite (Abschnitt „Bausteine“, „Seiten“). Freigabe ausstehend.
 
 **Idee:** eine ruhige Nachrichtenseite mit mehr Bild und mehr Bühne. Vorbild BBC News für Kopf und Ordnung,
 tagesschau für den Titel im Bild, Spiegel für die Bildblöcke. Das Wow kommt aus Fotos, Fläche und dem Wechsel von
@@ -81,7 +85,7 @@ Tamil fällt über `unicode-range` und `:lang(ta)` auf die Tamil-Untermenge von 
 | Artikeltitel | 28 / 38 px | 650 |
 | Seitenkopf | 28 / 34 px | 700 |
 | Titel große Kachel | 22 / 26 px | 650 |
-| Titel Bildkarte (Startseite) | 19–21 / 17–20 px, ausgeglichen, höchstens 4 Zeilen | 650 |
+| Titel Bildkarte | 19–21 / 17–20 px, ausgeglichen, höchstens 4 Zeilen | 650 |
 | Nebenstück, Blocktitel | 19 / 20 px | 650 / 700 |
 | Meldung, Listenzeile | 17 / 19 px | 600 |
 | Fließtext im Artikel | 18 / 19 px, Zeilenhöhe 1,6 | 400 |
@@ -99,8 +103,8 @@ gemeinsamer Kante für Kopf, Bild und Text), höchstens 70 Zeichen je Zeile.
   Impact mit Gewicht 600 und 3 px Weiß darunter, beim Überfahren Impact, Fokusring weiß, am Handy seitlich mit
   Einrasten; „Mehr“ am Ende mit Suche, Diensten und Social.
 - **Anreißer:** ein Link um Bild und Text; Dachzeile „Rubrik | Datum“; Bild füllt seinen Rahmen. Formate: 4:3
-  (Aufmacher, große Kachel in „Diese Woche“), 16:9 (Nebenstücke, Meldungen, Rubrikkacheln, Küche groß), 8:3 (kleine
-  Kacheln). Beim Überfahren Zoom 1,03 in 0,35 s, Titel unterstrichen.
+  (Aufmacher, große Kachel in „Diese Woche“, Viererreihen am Desktop), 16:9 (Bildkarten, Rubrikkacheln, Küche groß),
+  8:3 (kleine Kacheln). Beim Überfahren Zoom 1,03 in 0,35 s, Titel unterstrichen.
 - **Bilderpflicht** (Luis, 17.11.): Jeder Anreißer, jede Listenzeile, Kachel, jedes Suchergebnis, „Weiterlesen“ und
   jeder Kino- und Termineintrag zeigt ein echtes Bild; nichts nur als Text. Ausgenommen sind Rubrikband, Top-News im
   Kopf, Fußlisten, Formulare und reine Textseiten. Bildkette an einer Stelle (`inc/bildkette.php`): eigenes Foto (Titelkarten nie;
@@ -114,12 +118,21 @@ gemeinsamer Kante für Kopf, Bild und Text), höchstens 70 Zeichen je Zeile.
 - **Bild mit Titel im Bild:** Aufmacher, große Kacheln und seit 3.6.0 **jede Bildkarte der Startseite** („Text auf
   Bild“, unten); das Format ist nur Mindesthöhe, längere Titel machen die Kachel höher statt abzuschneiden (Bildkarten:
   höchstens vier Zeilen); Fokus als Rahmen nach innen. Rechts unten hält der Text den Platz für den Punktbogen frei.
-- **Bildkarte „Text auf Bild“** (Startseite, Luis 20.11.2026): Foto 16:9 (am Desktop in Viererreihen 4:3), darauf auf
+- **Bildkarte „Text auf Bild“** (Luis 20.11.2026; seit 3.7.0 **jeder Beitrags-Anreißer der Website**, nicht nur die
+  Startseite): Foto 16:9 (am Desktop in Viererreihen 4:3), darauf auf
   dem Verlauf nach Schwarz die Dachzeile „Rubrik | Datum“ und der Titel, weiß, ausgeglichen umbrochen
   (`text-wrap: balance`). Der Verlauf erreicht 72 % Schwarz (auf Titan 86 % Titan), bevor die Schrift beginnt; gemessen
   hält jede Textzeile im 5-%-Quantil mindestens 5,9 : 1 (Ziel 4,5 : 1). Das Foto sitzt höher im Rahmen (Position
-  50 % 28 %), damit Gesichter über dem Verlauf bleiben; Pool-Bilder behalten ihren Fokus. Vorspann nur am Desktop unter
-  dem Bild (drei Zeilen), sonst entfällt er.
+  50 % 28 %), damit Gesichter über dem Verlauf bleiben; Pool-Bilder behalten ihren Fokus. Vorspann unter dem Bild
+  (drei Zeilen): in Listen und „Weiterlesen“ immer, auf der Startseite nur am Desktop.
+- **Kartenraster** (`tamil_zeilen()`, seit 3.7.0 jede Liste von Beiträgen: Rubrik, Suche, Archive, 404, Production,
+  Termine, „Aus dem Kinojahr“): Handy eine Spalte, Tablet zwei, Desktop drei; Vorspann und Angaben (Ort, Eintritt)
+  unter dem Bild; Suchwort fett in Titel und Vorspann. Die erste Karte im ersten Bildschirm lädt sofort, alle anderen
+  mit geringem Vorrang; Karten ab der dritten mit `content-visibility: auto`, wischbare Reihen laden kurz vor dem Bild.
+- **Keine Karten** (gewollt, so gezählt): Top-News im Kopf, Rubrikband, Fußlisten, Rubrikkacheln (Navigation),
+  Kinotabelle „Nach Stadt“ (ihre Zeilen verlinken auf Kinos, nicht auf Beiträge), Verzeichnis, Anzeigen, Formulare,
+  reine Textseiten, der Artikel selbst (Titel über dem Bild). Prüfung: `bilder_pflicht.mjs`, Wert „Titel im Bild“
+  (Soll 100 %, Ausnahmen mit Namen).
 - **Rubrikkacheln:** Navigation mit Bild (Foto des neuesten Beitrags der Rubrik, sonst das erste Bild ihres Pools),
   Name im Bild.
 - **Bildkacheln auf Titan** (`data-grafik`, Grund `titan-tief`): Kino mit Bild 4:3 links (Film, Zahl der Kinos, Städte) und Termine mit
@@ -149,13 +162,15 @@ gemeinsamer Kante für Kopf, Bild und Text), höchstens 70 Zeichen je Zeile.
   steht, kommt oben nicht noch einmal.
 - **Artikel:** Dachzeile, Titel, Vorspann, Leiste mit Lesezeit und „Per WhatsApp teilen“, Bild (randlos am Handy) mit
   Nachweis, Text, Termin als Angaben, Quelle, Schlagworte, Teilen, Redaktion; Textspalte mittig wie im Entwurf; Werbeplatz 02 ab 1280 px rechts daneben, darunter nach dem Bild;
-  „Weiterlesen“ mit vier Nebenstücken.
-- **Rubrik:** Seitenkopf, Aufmacher mit „Neu in der Rubrik“ daneben, Liste mit Bild und Vorspann, Seiten, Kacheln.
-- **Kino:** Seitenkopf, Bereich „Im Programm“ in Titan, „Nach Stadt“ (Tabelle, jede Zeile mit dem Bild des Films),
-  „Aus dem Kinojahr“ (Liste mit Bild).
-- **Termine:** Seitenkopf, Bereich „Ab heute“ in Titan (Termine der nächsten 14 Tage, sonst die nächsten drei),
-  „Kommende Termine“ nach Monaten (Zeilen mit Bild, Datum mit Uhrzeit, Ort, Veranstalter, Eintritt; Filter nach Land
-  und Stadt als Knöpfe mit `aria-pressed`, nur mit Skript), „Das Jahr“ (vergangene Termine, Monate zum Aufklappen).
+  „Weiterlesen“ mit vier Bildkarten (Desktop zu viert in 4:3, Tablet 2 × 2, Handy wischbar).
+- **Rubrik:** Seitenkopf, Aufmacher mit „Neu in der Rubrik“ daneben (drei Karten 16:9 als Stapel, Handy wischbar),
+  „Weitere Beiträge“ als Kartenraster mit Vorspann, Seiten, Kacheln.
+- **Kino:** Seitenkopf, Bereich „Im Programm“ in Titan (Filme als Karten mit Titel im Bild), „Nach Stadt“ (Tabelle,
+  jede Zeile mit dem Bild des Films), „Aus dem Kinojahr“ (Kartenraster).
+- **Termine:** Seitenkopf, Bereich „Ab heute“ in Titan (Termine der nächsten 14 Tage, sonst die nächsten drei; Karten
+  mit dem Datum des Termins in der Dachzeile, Ort und Eintritt darunter), „Kommende Termine“ nach Monaten (Kartenraster:
+  Datum mit Uhrzeit in der Dachzeile, Ort, Veranstalter, Eintritt unter dem Bild; Filter nach Land und Stadt als Knöpfe
+  mit `aria-pressed`, nur mit Skript), „Das Jahr“ (vergangene Termine als Karten, Monate zum Aufklappen).
 - **Kontakt:** Formulare des Plugins (Nachricht, Termin, Kooperation, mit Danke-Anzeige), daneben Redaktionsdaten nur
   aus dem Customizer und „Andere Wege“; darunter die Werbeplätze aus dem Plugin mit „Preis: auf Anfrage“. Kein alter
   Seiteninhalt.
@@ -163,7 +178,7 @@ gemeinsamer Kante für Kopf, Bild und Text), höchstens 70 Zeichen je Zeile.
 - **Verzeichnisprofil** (`single-tamil_vz_eintrag.php`): Dachzeile, Name, Bild mit Nachweis, Profil des Plugins,
   Link zur Karte (OpenStreetMap, nicht eingebettet); ohne Lesezeit und Teilen-Leiste.
 - **Impressum, Datenschutz:** außerhalb des Echtbetriebs der Hinweis „Entwurf: Der Text von KBS folgt.“
-- **Suche, 404, Seiten, Archive:** Seitenkopf, Blöcke mit Blocktitel, Listen mit Bild; Seiten in der Artikelspalte,
+- **Suche, 404, Seiten, Archive:** Seitenkopf, Blöcke mit Blocktitel, Kartenraster; Seiten in der Artikelspalte,
   Plugin-Inhalte bis 720 px. Bildnachweise im Fuß eingeklappt („Bildnachweise dieser Seite (n)“).
 
 ## Signet „Tamil Dots 04A“ (Theme 3.5.0, an jedem Post seit 3.6.0)
