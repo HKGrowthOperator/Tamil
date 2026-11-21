@@ -558,6 +558,9 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .woche__gruppe--kino { grid-area: kino; align-self: start; }
   .woche__gruppe--termine { grid-area: termin; }
   .woche__raster.ohne-klein .woche__gruppe--kino { grid-column: auto; }
+  /* N-17: mit kleiner Kachel darüber stünde „Im Kino“ zwischen zwei Kinokarten derselben Spalte; die Zeile bleibt nur
+     für Vorleseprogramme (die Liste ist weiter danach benannt), die Karte trägt „Kino“ selbst */
+  .woche__raster:not(.ohne-klein) .woche__gruppe--kino > .woche__art { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .kachel--gross .imbild { padding: 120px 28px 24px; }
   .kachel .titel { font-size: 20px; }
   .kachel--gross .titel { font-size: 26px; line-height: 1.16; max-width: 22em; }
