@@ -1539,7 +1539,8 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
 }
 .aufmacher.wow .rahmen.wow-rahmen img { object-position: 50% 42%; }
 .wow-decke { display: none; position: absolute; inset: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; }
-.aufmacher.wow .imbild, .aufmacher.wow .signatur-ecke, .aufmacher.wow .symbolbild { z-index: 3; }
+.aufmacher.wow .imbild, .aufmacher.wow .symbolbild { z-index: 3; }
+.aufmacher.wow .rahmen > .signatur-ecke { z-index: 4; } /* über dem Titelblock, wie bei jeder Bildkarte */
 @media (min-width: 600px) { .aufmacher.wow { --wow-hoch: 60vw; } }
 @media (min-width: 1024px) { .aufmacher.wow { --wow-hoch: clamp(420px, calc(100vh - 250px), 620px); } }
 .wow-an .aufmacher.wow .wow-bahn::after { content: ""; display: block; height: var(--wow-weg); }
