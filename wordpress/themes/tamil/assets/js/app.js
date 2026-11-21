@@ -118,6 +118,13 @@
       $$(".kalender__monat", block).forEach(function (m) { m.hidden = !$("li[data-land]:not([hidden])", m); });
       if (zahl) zahl.textContent = n === 1 ? "1 Termin" : n + " Termine";
       if (leer) leer.hidden = n > 0;
+      // Der Filter gilt auch für „Ab heute“ darüber (Q2-12): eine Karte dort bleibt, wenn ihr Termin in der Liste passt
+      var aktiv = !!(wahl.land || wahl.stadt);
+      $$(".woche--seite .termine-raster > li").forEach(function (karte) {
+        var link = $("a[href]", karte), zeile = null;
+        if (link) zeilen.forEach(function (z) { var a = $("a[href]", z); if (a && a.href === link.href) zeile = z; });
+        karte.hidden = aktiv && !!zeile && zeile.hidden;
+      });
     });
   });
 
