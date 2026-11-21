@@ -3,6 +3,10 @@
  * Auswahl für Startseite, „Diese Woche“ und „Weiterlesen“. Ergebnisse der Startseite sind ID-Listen im Transient
  * (10 Minuten, Schlüssel mit dem heutigen Datum, damit um Mitternacht nichts Vergangenes stehen bleibt) und werden bei
  * jeder Statusänderung eines Beitrags verworfen – die Startseite kostet so wenige Abfragen.
+ *
+ * Das Cover (Aufmacher) verfällt (3.15.0, TML-W02): ein gesetztes höchstens bis „Aufmacher gilt bis“, sonst sieben
+ * Tage; ein markierter Beitrag sieben Tage nach Veröffentlichung. Danach greift die Kette (neuestes Foto). Regeln und
+ * Altbestand: tamil_cover_manuell().
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -13,6 +17,16 @@ const TAMIL_START_RUBRIKEN = array( 'community', 'kultur', 'entertainment', 'spo
  * Zahl der „Weiteren Meldungen“ auf der Startseite (Bildkarten 16:9 neben dem Aufmacher).
  */
 const TAMIL_START_MELDUNGEN = 3;
+
+/**
+ * So viele Tage bleibt ein Cover ohne eigenes Enddatum höchstens stehen (gesetzt oder markiert).
+ */
+const TAMIL_COVER_TAGE = 7;
+
+/**
+ * Option mit dem Zeitpunkt (Unix-Zeit), zu dem der Aufmacher im Customizer zuletzt geändert wurde.
+ */
+const TAMIL_COVER_SEIT = 'tamil_aufmacher_seit';
 
 /**
  * Beitrags-IDs (veröffentlicht, ohne bereits verwendete). Beiträge, Meta und Rubriken landen gleich im Cache, damit
@@ -67,32 +81,118 @@ function tamil_ids_mit_bild( array $args, array $ohne = array(), int $anzahl = 0
 }
 
 /**
- * Schlüssel des Transients der Startseite (mit dem heutigen Datum).
+ * Schlüssel des Transients der Startseite (mit dem heutigen Datum in der Zeitzone der Website: ein Cover, das mit dem
+ * Tag „Aufmacher gilt bis“ endet, fällt so um Mitternacht ohne Leeren des Zwischenspeichers weg).
  */
 function tamil_start_schluessel(): string {
 	return 'tamil_start_' . TAMIL_THEME_VERSION . '_' . current_time( 'Ymd' );
 }
 
 /**
- * Startseite klar2: Aufmacher, vier Nebenstücke, drei Meldungen, Rubrikkacheln, „Diese Woche“ (zwei Kino-Beiträge
- * mit Bild), „Küche“ (vier mit Bild) und weitere Rubrikblöcke. Ohne Dubletten; Ergebnis zehn Minuten im Transient.
+ * Das im Customizer gesetzte Cover mit seiner Frist.
  *
- * @return array{lead:int,neben:int[],meldungen:int[],kacheln:array,woche:array,kueche:int[],rubriken:array<string,int[]>}
+ * Regel (Masterplan 21.11.2026, TML-W02):
+ * 1. Ist „Aufmacher gilt bis“ gesetzt, gilt das Cover bis zum Ende dieses Tages (Zeitzone der Website), egal wie
+ *    lange es schon steht.
+ * 2. Ohne Datum gilt es höchstens TAMIL_COVER_TAGE Tage ab dem Zeitpunkt, an dem die Beitrags-ID zuletzt geändert
+ *    wurde (Option TAMIL_COVER_SEIT, geschrieben von tamil_cover_merken()).
+ * 3. Altbestand ohne diesen Zeitpunkt (Cover vor 3.15.0 gesetzt): Es zählt die Veröffentlichung des Beitrags plus
+ *    TAMIL_COVER_TAGE Tage. Bewusst nicht das Änderungsdatum: Eine Tippfehlerkorrektur am Beitrag darf ein altes
+ *    Cover nicht verlängern, und die Regel ist dieselbe wie bei markierten Beiträgen. Wer ein älteres Stück länger
+ *    oben halten will, setzt das Datum.
+ *
+ * @return array{id:int,ende:int,abgelaufen:bool,grund:string} ende: Unix-Zeit, ab der das Cover nicht mehr gilt
+ *                                                             (0 ohne gesetztes Cover); grund: datum|gesetzt|altbestand.
+ */
+function tamil_cover_manuell(): array {
+	$id = absint( tamil_opt( 'aufmacher_id' ) );
+	if ( ! $id ) {
+		return array(
+			'id'         => 0,
+			'ende'       => 0,
+			'abgelaufen' => false,
+			'grund'      => '',
+		);
+	}
+	$bis   = tamil_sanitize_datum( tamil_opt( 'aufmacher_bis' ) );
+	$seit  = (int) get_option( TAMIL_COVER_SEIT, 0 );
+	$dauer = TAMIL_COVER_TAGE * DAY_IN_SECONDS;
+	if ( '' !== $bis ) {
+		$grund = 'datum';
+		$ende  = ( new DateTimeImmutable( $bis . ' 00:00:00', wp_timezone() ) )->modify( '+1 day' )->getTimestamp();
+	} elseif ( $seit > 0 ) {
+		$grund = 'gesetzt';
+		$ende  = $seit + $dauer;
+	} else {
+		$grund = 'altbestand';
+		$ende  = (int) get_post_time( 'U', true, $id ) + $dauer;
+	}
+	return array(
+		'id'         => $id,
+		'ende'       => $ende,
+		'abgelaufen' => time() >= $ende,
+		'grund'      => $grund,
+	);
+}
+
+/**
+ * Zeitpunkt festhalten, sobald sich die Beitrags-ID des Aufmachers ändert (Customizer, wp-cli, Import), und die
+ * Auswahl der Startseite verwerfen. Hängt an der Option der Theme-Einstellungen; wird die ID geleert, verschwindet
+ * auch der Zeitpunkt.
+ *
+ * @param mixed $alt Bisherige Theme-Einstellungen.
+ * @param mixed $neu Neue Theme-Einstellungen.
+ */
+function tamil_cover_merken( $alt, $neu ): void {
+	$vorher  = absint( is_array( $alt ) ? ( $alt['tamil_aufmacher_id'] ?? 0 ) : 0 );
+	$nachher = absint( is_array( $neu ) ? ( $neu['tamil_aufmacher_id'] ?? 0 ) : 0 );
+	if ( $vorher !== $nachher ) {
+		if ( $nachher ) {
+			update_option( TAMIL_COVER_SEIT, time(), false );
+		} else {
+			delete_option( TAMIL_COVER_SEIT );
+		}
+	}
+	tamil_flush_auswahl();
+}
+add_action( 'update_option_theme_mods_' . get_option( 'stylesheet' ), 'tamil_cover_merken', 10, 2 );
+add_action( 'add_option_theme_mods_' . get_option( 'stylesheet' ), static fn( $name, $neu ) => tamil_cover_merken( array(), $neu ), 10, 2 );
+
+/**
+ * Markierte Beiträge, die noch als Cover taugen: veröffentlicht vor weniger als TAMIL_COVER_TAGE Tagen.
+ *
+ * @return int[]
+ */
+function tamil_cover_markierte(): array {
+	$grenze = time() - TAMIL_COVER_TAGE * DAY_IN_SECONDS;
+	$ids    = array_map( 'intval', (array) get_option( 'sticky_posts', array() ) );
+	return array_values( array_filter( $ids, static fn( $id ) => (int) get_post_time( 'U', true, $id ) > $grenze ) );
+}
+
+/**
+ * Startseite klar2: Aufmacher, vier Nebenstücke, drei Meldungen, Rubrikkacheln, „Diese Woche“ (zwei Kino-Beiträge
+ * mit Bild), „Küche“ (vier mit Bild) und weitere Rubrikblöcke. Ohne Dubletten; Ergebnis zehn Minuten im Transient,
+ * höchstens aber bis zum Ablauf des Covers (frist).
+ *
+ * @return array{lead:int,frist:int,neben:int[],meldungen:int[],kacheln:array,woche:array,kueche:int[],rubriken:array<string,int[]>}
  */
 function tamil_start_auswahl(): array {
 	$cached = get_transient( tamil_start_schluessel() );
-	if ( is_array( $cached ) && isset( $cached['lead'] ) ) {
+	if ( is_array( $cached ) && isset( $cached['lead'] ) && ( empty( $cached['frist'] ) || time() < (int) $cached['frist'] ) ) {
 		return $cached;
 	}
 	$used     = array();
-	$sticky   = array_map( 'intval', (array) get_option( 'sticky_posts', array() ) );
 	$mit_bild = tamil_ids_mit_bild( array( 'posts_per_page' => 60 ) );
 
-	// Aufmacher: im Customizer gesetzt, sonst neuester markierter Beitrag mit Bild, sonst neuester mit Foto (kein
-	// beschnittenes Band), sonst neuester mit Bild.
-	$lead = absint( tamil_opt( 'aufmacher_id' ) );
+	// Aufmacher: im Customizer gesetzt und noch gültig (tamil_cover_manuell()), sonst neuester markierter Beitrag mit
+	// Bild aus den letzten sieben Tagen, sonst neuester mit Foto (kein beschnittenes Band), sonst neuester mit Bild.
+	// Ein abgelaufenes Cover bleibt nie stehen. frist: wann das gewählte Cover verfällt (0 = kein Verfall).
+	$cover = tamil_cover_manuell();
+	$lead  = $cover['abgelaufen'] ? 0 : $cover['id'];
+	$frist = $cover['ende'];
 	if ( ! $lead || 'publish' !== get_post_status( $lead ) || ! tamil_bild_zeigbar( $lead ) ) {
-		$lead = $sticky ? ( tamil_ids_mit_bild(
+		$sticky = tamil_cover_markierte();
+		$lead   = $sticky ? ( tamil_ids_mit_bild(
 			array(
 				'post__in'       => $sticky,
 				'posts_per_page' => count( $sticky ),
@@ -100,10 +200,12 @@ function tamil_start_auswahl(): array {
 			array(),
 			1
 		)[0] ?? 0 ) : 0;
+		$frist  = $lead ? (int) get_post_time( 'U', true, $lead ) + TAMIL_COVER_TAGE * DAY_IN_SECONDS : 0;
 	}
 	if ( ! $lead ) {
 		$fotos = array_values( array_filter( $mit_bild, static fn( $id ) => ! tamil_bildwahl( $id )['breit'] ) );
 		$lead  = $fotos[0] ?? ( $mit_bild[0] ?? ( tamil_ids( array( 'posts_per_page' => 1 ) )[0] ?? 0 ) );
+		$frist = 0;
 	}
 	$used[] = $lead;
 
@@ -165,6 +267,7 @@ function tamil_start_auswahl(): array {
 
 	$auswahl = array(
 		'lead'      => (int) $lead,
+		'frist'     => (int) $frist,
 		'neben'     => $neben,
 		'meldungen' => $meldungen,
 		'kacheln'   => tamil_kacheln_auswahl(),
