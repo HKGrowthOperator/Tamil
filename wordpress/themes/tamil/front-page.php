@@ -127,9 +127,10 @@ foreach ( $tamil_a['rubriken'] as $tamil_slug => $tamil_ids ) {
 		array(
 			'slug'   => $tamil_slug,
 			'ids'    => $tamil_ids,
-			'buehne' => 1 === $tamil_nr++ % 2 && count( $tamil_ids ) >= 3,
+			'buehne' => 1 === $tamil_nr % 2 && count( $tamil_ids ) >= 3,
 		)
 	);
+	++$tamil_nr;
 }
 
 get_footer();
