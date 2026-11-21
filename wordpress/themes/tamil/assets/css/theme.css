@@ -319,7 +319,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 
 /* Bildrahmen: Format per Klasse, Bild füllt (object-fit), schneidet den leichten Zoom beim Überfahren ab */
 .rahmen { position: relative; overflow: hidden; border-radius: var(--rahmen-r, var(--radius)); background: var(--flaeche); }
-.rahmen img { width: 100%; height: 100%; object-fit: cover; transition: var(--zoom); }
+.rahmen img { width: 100%; height: 100%; object-fit: cover; transition: var(--zoom); color: transparent; } /* N-16: Alt-Text beim Nachladen nicht als Fließtext in der Fläche */
 .anr:hover .rahmen img { transform: scale(1.03); }
 .r169 { aspect-ratio: 16 / 9; }
 .r43 { aspect-ratio: 4 / 3; }
