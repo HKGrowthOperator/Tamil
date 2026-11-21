@@ -141,6 +141,29 @@
     btn.addEventListener("click", function () { ladeVideo(box, true); });
   });
 
+  // Wischbare Kartenreihen: eine Karte, die per Tastatur den Fokus bekommt, ganz ins Bild holen (sonst bleibt beim
+  // Einrasten jede zweite fast außerhalb, Q2-02); nur der Streifen rollt, die Seite höchstens so weit wie nötig
+  $$(".karten--reihe").forEach(function (reihe) {
+    reihe.addEventListener("focusin", function (e) {
+      var karte = e.target.closest(".karten--reihe > *");
+      if (!karte || karte.parentNode !== reihe) return;
+      var r = karte.getBoundingClientRect(), s = reihe.getBoundingClientRect();
+      if (r.left < s.left || r.right > s.right) karte.scrollIntoView({ inline: "start", block: "nearest", behavior: "auto" });
+    });
+  });
+
+  // Bilder im Text, die nicht laden (Altbestand mit Bildern fremder Server per http://, Q2-05): ausblenden statt eines
+  // leeren Rahmens mit Alternativtext als Link; der Inhalt selbst bleibt unverändert
+  var bildWeg = function (img) {
+    var huelle = img.closest(".blocks-gallery-item, .gallery-item, figure, .bild-ecke") || img;
+    var link = img.parentNode && img.parentNode.tagName === "A" && img.parentNode.textContent.trim() === "" ? img.parentNode : null;
+    (huelle !== img ? huelle : (link || img)).hidden = true;
+  };
+  $$(".inhalt img").forEach(function (img) {
+    if (!img.getAttribute("src") || (img.complete && img.naturalWidth === 0 && !/\.svg(\?|$)/i.test(img.src))) bildWeg(img);
+    else img.addEventListener("error", function () { bildWeg(img); }, { once: true });
+  });
+
   // Link kopieren
   $$("[data-copy]").forEach(function (btn) {
     btn.addEventListener("click", function () {
