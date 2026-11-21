@@ -5,6 +5,20 @@ Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
 ## 21.11.2026
 
+- **Wow-Aufmacher „Punkt für Punkt zum Bild“ (Theme 3.10.0):** Der Aufmacher der Startseite bekommt, wenn er ein
+  eigenes Foto ab 960 px Breite hat, eine Decke in Titan mit den 238 Punkten des Masters als Fenster aufs Foto; beim
+  Scrollen wachsen die Punkte, bis das volle Foto steht (Vorlage `design/richtungen/klar2/wow/punkt-zum-bild/`,
+  Variante A). Warum: Luis wollte ausdrücklich einen Wow-Effekt mit den Tamil Dots; das Signet tut hier etwas, statt
+  nur Dekor zu sein, und es kann nur tamil.de zeigen. Begrenzt auf eine Stelle, nur mit echtem Foto, der erste
+  Bildschirm bewegt sich nicht von selbst, Titel von Anfang an sichtbar. Gemessen: Lighthouse mobil Start (5 Läufe,
+  Median) 84 → 83, LCP 4,22 → 4,29 s, CLS 0. **Abschalten:** Customizer → Tamil.de → Startseite → „Wow-Aufmacher“
+  oder Filter `add_filter( 'tamil_wow_aufmacher', '__return_false' );`. Ohne Skript und mit „Bewegung reduzieren“
+  steht sofort das fertige Foto.
+
+  · Hauptsitzung im Auftrag von Luis (freie Hand bis 8 Uhr), umgesetzt vom Theme-Bauer
+- **Logo-Fläche im Band mit 3 px Impact unten** wie unter der aktiven Rubrik. Umkehren: `box-shadow` an
+  `.band__logo` entfernen. · Theme-Bauer im Auftrag von Luis
+
 Luis, 00:45 Uhr: Die Nacht wird ohne Rückfragen gearbeitet („entscheide selber … komplett automatisch“). Die folgenden
 Gestaltungsentscheidungen zu seinem Auftrag „tamil logo beim runterscrollen in der leitse theme ausarbeiten spezial
 mehr rein bilder nicht alle eckig also die karten auf einer höhe alles“ hat der Theme-Bauer getroffen; jede lässt sich
