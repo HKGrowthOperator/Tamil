@@ -229,3 +229,47 @@ def test_werbeplatz_ist_ein_benannter_bereich(wp_cli, seite_production):
         assert name.startswith("Anzeige"), name
         namen.add(name)
     assert len(namen) >= 2
+
+
+# --- Regeln für Hausanzeigen (Q2-10, Prüfdurchgang 2 vom 20.11.2026) ---------------------------------------------
+
+
+def test_keine_zweite_eigenanzeige_direkt_danach(wp_cli):
+    """Nennt das Theme den Platz unmittelbar davor und war dort eine Eigenanzeige, bleibt der folgende Platz leer;
+    ohne Nachbarn oder nach einer gebuchten Anzeige erscheint die Eigenanzeige."""
+    code = (" $s = tamil_site_settings(); foreach ( array( 'leaderboard', 'footer' ) as $p ) { $s['eigen'][ $p ] = 'event';"
+            " $s['anzeigen'][ $p ] = ''; $s['advanced_ads'][ $p ] = ''; }"
+            " add_filter( 'pre_option_tamil_site_settings', static function () use ( $s ) { return $s; } );"
+            " $lb = tamil_site_anzeige( 'leaderboard', false ); $direkt = tamil_site_anzeige( 'footer', false, 'leaderboard' );"
+            " $frei = tamil_site_anzeige( 'footer', false );"
+            " echo wp_json_encode( array( '' !== $lb, $direkt, '' !== $frei ) );")
+    lb, direkt, frei = json.loads(wp_cli(code))
+    assert lb is True, "die erste Eigenanzeige erscheint"
+    assert direkt == "", "keine zweite Eigenanzeige direkt dahinter"
+    assert frei is True, "ohne Nachbarn erscheint sie"
+
+
+def test_impressum_und_datenschutz_ohne_anzeigen(wp, wp_cli):
+    pid = int(wp_cli("echo (int) wp_insert_post( array( 'post_type' => 'page', 'post_status' => 'publish',"
+                     " 'post_name' => 'datenschutzerklaerung', 'post_title' => 'Datenschutz (Test)', 'post_content' => '<p>Text.</p>' ) );"))
+    try:
+        seite = wp.get("/datenschutzerklaerung/").text
+        assert '<aside class="ad ' not in seite, "auf Datenschutz keine Anzeigen"
+        assert '<aside class="ad ' in wp.get("/kontakt/").text, "Gegenprobe: andere Seiten behalten ihre Plätze"
+    finally:
+        wp_cli(f"wp_delete_post( {pid}, true );")
+
+
+def test_keine_werbung_fuer_die_eigene_seite(wp, wp_cli, seite_production):
+    """Eine Eigenanzeige führt nie auf die Seite, auf der sie steht: „Live mit dir!“ fehlt auf /production/, auf
+    /kontakt/ erscheint sie (gleiche Regel für „Werben auf Tamil.de“ auf /werben/)."""
+    alt = wp_cli("echo base64_encode( wp_json_encode( get_option( 'tamil_site_settings' ) ) );").strip()
+    wp_cli("$s = (array) get_option( 'tamil_site_settings', array() ); $s['eigen']['leaderboard'] = 'production';"
+           " $s['anzeigen']['leaderboard'] = ''; $s['advanced_ads']['leaderboard'] = '';"
+           " remove_all_filters( 'sanitize_option_tamil_site_settings' ); update_option( 'tamil_site_settings', $s );")
+    try:
+        assert "Zur Konzertreihe" not in wp.get("/production/").text
+        assert "Zur Konzertreihe" in wp.get("/kontakt/").text
+    finally:
+        wp_cli("remove_all_filters( 'sanitize_option_tamil_site_settings' );"
+               f" update_option( 'tamil_site_settings', json_decode( base64_decode( '{alt}' ), true ) );")

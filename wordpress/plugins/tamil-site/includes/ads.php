@@ -485,8 +485,53 @@ function tamil_site_anzeige_inhalt( string $platz ): array {
 		return array( tamil_site_anzeige_fremd( $html, $platz ), false, '' );
 	}
 	$vorlage = (string) ( $settings['eigen'][ $platz ] ?? '' );
-	$eigen   = tamil_site_eigenanzeige_html( $vorlage, $platz );
+	// Nie Werbung für die Seite, auf der man gerade ist („Werben auf Tamil.de“ auf /werben/)
+	$ziel = (string) ( tamil_site_eigenanzeige_vorlagen()[ $vorlage ]['url'] ?? '' );
+	if ( '' !== $ziel && tamil_site_ist_aktuelle_seite( $ziel ) ) {
+		return array( '', false, '' );
+	}
+	$eigen = tamil_site_eigenanzeige_html( $vorlage, $platz );
 	return array( $eigen, '' !== $eigen, '' !== $eigen ? $vorlage : '' );
+}
+
+/**
+ * Führt eine Adresse auf die gerade angezeigte Seite (ohne Anker und Abfrage)?
+ */
+function tamil_site_ist_aktuelle_seite( string $url ): bool {
+	if ( is_admin() || ! did_action( 'wp' ) ) {
+		return false;
+	}
+	$pfad  = static fn( string $u ): string => untrailingslashit( (string) wp_parse_url( $u, PHP_URL_PATH ) );
+	$jetzt = $pfad( home_url( add_query_arg( array(), $GLOBALS['wp']->request ?? '' ) ) );
+	return '' !== $pfad( $url ) && $pfad( $url ) === $jetzt && false === strpos( $url, '#' );
+}
+
+/**
+ * Seiten ohne jede Anzeige: Impressum und Datenschutz (Q2-10).
+ */
+function tamil_site_seite_ohne_anzeigen(): bool {
+	if ( ! is_page() ) {
+		return false;
+	}
+	$id = (int) get_queried_object_id();
+	if ( $id && (int) get_option( 'wp_page_for_privacy_policy' ) === $id ) {
+		return true;
+	}
+	$seite = get_post( $id );
+	return $seite instanceof WP_Post && in_array( $seite->post_name, array( 'impressum', 'datenschutz', 'datenschutzerklaerung' ), true );
+}
+
+/**
+ * Eigenanzeigen dieser Seite, je Platz (für die Regel „nie zwei Hausanzeigen direkt hintereinander“).
+ *
+ * @return array<string,bool>
+ */
+function tamil_site_eigenanzeige_gezeigt( string $platz = '', bool $eigen = false ): array {
+	static $gezeigt = array();
+	if ( '' !== $platz ) {
+		$gezeigt[ $platz ] = $eigen;
+	}
+	return $gezeigt;
 }
 
 /**
@@ -504,14 +549,19 @@ function tamil_site_anzeige_gezeigt( string $platz = '' ): array {
 
 /**
  * Fertiger Werbeplatz mit Label „Anzeige“; leer, wenn der Platz nichts zeigt. Eigenanzeigen tragen zusätzlich die
- * Klassen ad-anzeige und ad-bild; ihr Bildnachweis landet im Fuß der Seite.
+ * Klassen ad-anzeige und ad-bild; ihr Bildnachweis landet im Fuß der Seite. Auf Impressum und Datenschutz gibt es
+ * keine Anzeigen. Mit $direkt_nach nennt das Theme den Platz, der unmittelbar davor steht: war dort schon eine
+ * Eigenanzeige, folgt keine zweite direkt darauf.
  */
-function tamil_site_anzeige( string $platz, bool $ausgeben = true ): string {
+function tamil_site_anzeige( string $platz, bool $ausgeben = true, string $direkt_nach = '' ): string {
 	$platz = sanitize_key( $platz );
-	if ( ! array_key_exists( $platz, tamil_site_werbeplaetze() ) ) {
+	if ( ! array_key_exists( $platz, tamil_site_werbeplaetze() ) || tamil_site_seite_ohne_anzeigen() ) {
 		return '';
 	}
 	[ $inhalt, $eigen, $vorlage ] = tamil_site_anzeige_inhalt( $platz );
+	if ( $eigen && '' !== $direkt_nach && ! empty( tamil_site_eigenanzeige_gezeigt()[ sanitize_key( $direkt_nach ) ] ) ) {
+		return '';
+	}
 	/**
 	 * Inhalt eines Werbeplatzes ändern oder ersetzen.
 	 *
@@ -523,6 +573,7 @@ function tamil_site_anzeige( string $platz, bool $ausgeben = true ): string {
 		return '';
 	}
 	tamil_site_anzeige_gezeigt( $platz );
+	tamil_site_eigenanzeige_gezeigt( $platz, (bool) $eigen );
 	if ( $eigen ) {
 		tamil_site_eigenanzeige_nachweis_merken( $vorlage );
 	}

@@ -249,16 +249,17 @@ function tamil_anzeige( string $platz ): void {
  *
  * @param string $klasse Klasse des umgebenden Elements („innen anzeige-zwischen“ oder ein Rasterbereich).
  */
-function tamil_leaderboard( string $klasse = 'innen anzeige-zwischen' ): void {
+function tamil_leaderboard( string $klasse = 'innen anzeige-zwischen' ): bool {
 	static $gezeigt = false;
 	if ( $gezeigt || ! function_exists( 'tamil_site_anzeige' ) ) {
-		return;
+		return false;
 	}
 	$gezeigt = true;
 	$html    = tamil_site_anzeige( 'leaderboard', false );
 	if ( '' !== $html ) {
 		echo '<div class="' . esc_attr( $klasse ) . '">' . $html . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Werbeplatz aus dem Plugin, dort escapt
 	}
+	return '' !== $html;
 }
 
 /**
