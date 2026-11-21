@@ -1532,6 +1532,14 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
   .anr:hover .rahmen img, .kacheln a:hover .rahmen img { transform: none; }
 }
+/* Verzeichnis: Schild „Symbolbild“ oben rechts wie auf allen Karten (K-18) */
+.vz-bild .vz-symbolbild { top: 0; right: 0; bottom: auto; left: auto; border-radius: 0 var(--radius) 0 0; }
+/* Raster mit drei Spalten: eine allein stehende letzte Karte über die volle Breite in flachem Format (K-19) */
+@media (min-width: 1024px) {
+  .karten--raster > li:last-child:nth-child(3n+1) { grid-column: 1 / -1; }
+  .karten--raster > li:last-child:nth-child(3n+1) .rahmen { aspect-ratio: 21 / 9; }
+}
+
 /* ---------- Abgerundete Ecken (Theme 3.9.0) ----------
    Ein Radius für Karten und Bilder (--radius), kleiner für kleine Kacheln (--radius-klein). Der Punktbogen und das Schild
    „Symbolbild“ schließen mit der Rundung ab: der Rahmen schneidet sie an; wo kein Rahmen schneidet (Artikelbild, Bild im
