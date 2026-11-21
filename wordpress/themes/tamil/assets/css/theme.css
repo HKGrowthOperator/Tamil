@@ -846,6 +846,21 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .inhalt .wp-block-pullquote blockquote { border: 0; padding: 0; }
 .inhalt figure { margin-inline: 0; }
 .inhalt img { height: auto; }
+/* Galerien im Altbestand (Block-Galerie mit Liste, klassische [gallery]): Bildraster ohne Listenpunkte (Q2-06) */
+.inhalt .blocks-gallery-grid, .inhalt .wp-block-gallery:not(:has(> .blocks-gallery-grid)), .inhalt .gallery {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 1.5em 0; padding: 0; list-style: none;
+}
+.inhalt .wp-block-gallery:has(> .blocks-gallery-grid) { margin: 1.5em 0; }
+.inhalt .blocks-gallery-item, .inhalt .gallery-item, .inhalt .wp-block-gallery > figure { margin: 0; padding: 0; min-width: 0; }
+.inhalt .blocks-gallery-item figure, .inhalt .gallery-icon { margin: 0; }
+.inhalt .blocks-gallery-item img, .inhalt .gallery-item img, .inhalt .wp-block-gallery > figure img {
+  display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--radius-klein);
+}
+.inhalt .gallery > br { display: none; }
+.inhalt .blocks-gallery-item figcaption, .inhalt .gallery-caption { margin-top: 4px; font-size: 14px; line-height: 1.4; color: var(--leise); }
+@media (min-width: 600px) {
+  .inhalt .blocks-gallery-grid, .inhalt .wp-block-gallery:not(:has(> .blocks-gallery-grid)), .inhalt .gallery { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
 .inhalt figcaption, .wp-caption-text, .wp-element-caption { margin-top: 6px; font-size: 13px; line-height: 1.4; color: var(--leise); }
 .inhalt hr { border: 0; border-top: 1px solid var(--linie); margin: 2em 0; }
 .inhalt summary { display: flex; align-items: center; min-height: 44px; cursor: pointer; font-weight: 600; }
