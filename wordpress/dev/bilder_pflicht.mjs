@@ -76,15 +76,32 @@ async function durchscrollen(page) {
     await page.waitForTimeout(120);
   }
   await page.waitForTimeout(400);
-  // Bilder, die noch laden, einzeln ins Bild holen und auf sie warten (höchstens 4 s je Seite)
-  await page.evaluate(async () => {
-    const offen = [...document.images].filter((i) => !i.complete || i.naturalWidth === 0);
-    for (const img of offen) img.scrollIntoView({ block: "center" });
-    await Promise.race([
-      Promise.all(offen.map((i) => (i.decode ? i.decode().catch(() => {}) : Promise.resolve()))),
-      new Promise((ok) => setTimeout(ok, 4000)),
-    ]);
+  // Bilder, die noch laden, einzeln ins Bild holen und je Bild auf „load“ oder „error“ warten (höchstens 8 s je Bild).
+  // Früher sprang eine Schleife ohne Pause durch alle offenen Bilder: Ein „lazy“-Bild, das nur kurz im Bild war, wurde
+  // dann oft gar nicht angefragt und als „ohne Bild“ gemeldet, obwohl Besucher es geladen sehen (Kinokachel „Diese
+  // Woche“ bei 390, 21.11.). Ein Bild, das schon fertig ist (auch fehlerhaft: complete, naturalWidth 0), wird nicht
+  // abgewartet und bleibt so ein Fehler; ein Bild, das nach 8 s nicht da ist, ebenfalls.
+  const anzahl = await page.evaluate(() => {
+    const offen = [...document.images].filter((i) => !i.complete);
+    offen.forEach((img, n) => img.setAttribute("data-bp-offen", String(n)));
+    return offen.length;
   });
+  for (let n = 0; n < anzahl; n++) {
+    await page.evaluate(async (n) => {
+      const img = document.querySelector(`img[data-bp-offen="${n}"]`);
+      if (!img) return;
+      img.removeAttribute("data-bp-offen");
+      img.scrollIntoView({ block: "center" });
+      if (img.complete) return;
+      await new Promise((ok) => {
+        const fertig = () => { clearTimeout(uhr); ok(); };
+        const uhr = setTimeout(fertig, 8000);
+        img.addEventListener("load", fertig, { once: true });
+        img.addEventListener("error", fertig, { once: true });
+        if (img.complete) fertig();
+      });
+    }, n);
+  }
 }
 
 async function pruefen(page, sel) {
