@@ -88,16 +88,13 @@ function tamil_anr_imbild( int $post_id, array $opt = array() ): string {
 	$wort  = (string) ( $opt['markiere'] ?? '' );
 	$ebene = tamil_ebene( (string) ( $opt['ebene'] ?? 'h3' ) );
 	$dach  = isset( $opt['dach'] ) ? (string) $opt['dach'] : tamil_meta( $post_id, $meta );
-	$roh   = html_entity_decode( get_the_title( $post_id ), ENT_QUOTES, 'UTF-8' );
-	$max   = (int) ( $opt['titel_max'] ?? 0 );
-	if ( $max > 0 && mb_strlen( $roh ) > $max ) {
-		// zu lang für den Platz im Bild (K-02): sichtbar am Wortende gekürzt, der volle Titel bleibt für Vorleser und im
-		// Namen des Links
-		$titel = '<span class="nur-vorlesen">' . tamil_titel( $post_id ) . '</span><span aria-hidden="true">' . tamil_text( tamil_titel_kurz( $roh, $max ) ) . '</span>';
-	} else {
-		$titel = tamil_markiere( tamil_titel( $post_id ), $wort );
+	// Aufmacher (N-02): der Titel wird nie gekürzt; seine Schrift wird in Stufen kleiner, je länger er ist
+	$stufe = '';
+	if ( ! empty( $opt['titel_stufen'] ) ) {
+		$laenge = mb_strlen( html_entity_decode( get_the_title( $post_id ), ENT_QUOTES, 'UTF-8' ) );
+		$stufe  = $laenge > 90 ? ' titel--klein' : ( $laenge > 60 ? ' titel--mittel' : '' );
 	}
-	$text  = $dach . sprintf( '<%1$s class="titel">%2$s</%1$s>', $ebene, $titel );
+	$text  = $dach . sprintf( '<%1$s class="titel%3$s">%2$s</%1$s>', $ebene, tamil_markiere( tamil_titel( $post_id ), $wort ), $stufe );
 	$wow   = ! empty( $opt['wow'] ); // Wow-Aufmacher (inc/wow.php): Bahn und Halter um Bild und Vorspann, Decke über dem Foto
 	$html  = '<article class="' . esc_attr( (string) ( $opt['klasse'] ?? 'kachel' ) . ( $wow ? ' wow' : '' ) ) . '">';
 	$html .= '<a class="anr imbild-anr" href="' . esc_url( get_permalink( $post_id ) ) . '">';

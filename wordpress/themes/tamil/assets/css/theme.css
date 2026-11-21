@@ -1567,7 +1567,21 @@ body .ad.ad-bild .anzeige--bild .anzeige__bild { border-radius: 0; }
 /* Schmale Fenster (bis 599 px, auch 400 % Zoom): Titel im Bild und Verzeichnisnamen trennen mit Strich statt
    mitten im Wort umzubrechen (Q2-09); ab 600 px bleibt die manuelle Trennung der großen Titel (QA-05) */
 @media (max-width: 599px) {
-  .imbild .titel, .aufmacher .titel, .kachel--gross .titel, .vz-name { hyphens: auto; -webkit-hyphens: auto; }
+  .imbild .titel, .kachel--gross .titel, .vz-name { hyphens: auto; -webkit-hyphens: auto; }
+}
+/* Schlagzeilen ohne Worttrennung (N-02): Aufmacher und Artikeltitel trennen nie; ein überlanges Wort bricht im Notfall
+   ohne Strich um. Der Aufmacher-Titel wird nicht gekürzt, seine Schrift wird nach Länge kleiner (bis 60 Zeichen groß,
+   bis 90 mittel, darüber klein; inc/anreisser.php). */
+.aufmacher .titel, .artikel__titel { -webkit-hyphens: manual; hyphens: manual; overflow-wrap: break-word; }
+.aufmacher .titel.titel--mittel { font-size: 23px; }
+.aufmacher .titel.titel--klein { font-size: 21px; }
+@media (min-width: 600px) {
+  .aufmacher .titel.titel--mittel { font-size: 30px; }
+  .aufmacher .titel.titel--klein { font-size: 27px; }
+}
+@media (min-width: 1024px) {
+  .aufmacher .titel.titel--mittel { font-size: 33px; }
+  .aufmacher .titel.titel--klein { font-size: 29px; }
 }
 
 /* ---------- Wow-Aufmacher „Punkt für Punkt zum Bild“ (Theme 3.10.0, inc/wow.php, assets/js/wow.js) ----------
