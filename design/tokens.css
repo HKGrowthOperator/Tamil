@@ -64,7 +64,8 @@
   --rand: 16px;              /* 24 px ab 600, 40 px ab 1024 */
   --band-hoehe: 46px;        /* 48 px ab 1024 */
   --spalte-artikel: 560px;   /* 600 px am Tablet */
-  --radius: 0;
+  --radius: 10px;           /* Karten und Bilder */
+  --radius-klein: 6px;       /* Rubrikkacheln, Bilder der Kinotabelle, Bedienelemente */
   --schatten: none;
   --zoom: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);   /* Überfahren: Maßstab 1,03 */
 
