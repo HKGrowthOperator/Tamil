@@ -44,6 +44,45 @@ function tamil_site_werbung_html_zahlung_aus(): string {
 }
 
 /**
+ * Schematische Skizze eines Werbeplatzes (Prüfung 21.11., N-07): Seitenumriss, Kopf, Textzeilen und die Fläche des
+ * Platzes in Titan. Dekorativ (aria-hidden); die Lage steht in der Spalte „Wo“. Nur Rechtecke, keine erfundenen Zahlen.
+ */
+function tamil_site_werbung_skizze( string $platz ): string {
+	// je Platz: Umriss (Breite, Höhe) und die markierte Fläche (x, y, Breite, Höhe) in einer 48 × 64 großen Zeichnung
+	$flaechen = array(
+		'leaderboard' => array( 48, array( 4, 22, 40, 6 ) ),
+		'sidebar'     => array( 48, array( 33, 14, 11, 22 ) ),
+		'inarticle'   => array( 48, array( 9, 27, 22, 12 ) ),
+		'billboard'   => array( 48, array( 4, 28, 40, 10 ) ),
+		'footer'      => array( 48, array( 4, 48, 40, 5 ) ),
+		'mobile'      => array( 28, array( 3, 55, 22, 5 ) ),
+	);
+	if ( ! isset( $flaechen[ $platz ] ) ) {
+		return '';
+	}
+	[ $breite, $f ] = $flaechen[ $platz ];
+	$links          = ( 48 - $breite ) / 2;
+	$zeilen         = '';
+	foreach ( array( 14, 18, 42 ) as $y ) {
+		$zeilen .= sprintf( '<rect x="%d" y="%d" width="%d" height="2" fill="currentColor" opacity=".25"/>', $links + 4, $y, 'sidebar' === $platz ? 26 : $breite - 8 );
+	}
+	return sprintf(
+		'<svg class="wb-skizze" data-platz="%1$s" viewBox="0 0 48 64" width="48" height="64" aria-hidden="true" focusable="false">'
+		. '<rect x="%2$s" y=".5" width="%3$d" height="63" rx="2" fill="none" stroke="currentColor" opacity=".5"/>'
+		. '<rect x="%2$s" y=".5" width="%3$d" height="8" fill="currentColor" opacity=".25"/>%4$s'
+		. '<rect class="wb-skizze__flaeche" x="%5$d" y="%6$d" width="%7$d" height="%8$d" fill="#660000"/></svg>',
+		esc_attr( $platz ),
+		esc_attr( (string) ( $links + 0.5 ) ),
+		$breite - 1,
+		$zeilen,
+		$f[0] + $links,
+		$f[1],
+		$f[2],
+		$f[3]
+	);
+}
+
+/**
  * Preisseite: alle sechs Plätze (Festlegung F3) mit Maßen, Position, Preisen je Laufzeit und nächstem freien Termin.
  * Ohne Preis von KBS steht „auf Anfrage“; erfunden wird kein Preis.
  */
@@ -92,7 +131,7 @@ function tamil_site_werbung_html_angebote(): string {
 		) . '">' . esc_html__( 'Buchen', 'tamil-site' ) . '</a>' : '';
 		$zeilen[] = array(
 			sprintf(
-				'<tr><th scope="row">%1$s</th><td data-label="%6$s">%2$s</td><td data-label="%7$s">%3$s</td><td data-label="%8$s"><ul class="wb-preise">%4$s</ul></td><td data-label="%9$s">%5$s</td>',
+				'<tr><th scope="row">%10$s%1$s</th><td data-label="%6$s">%2$s</td><td data-label="%7$s">%3$s</td><td data-label="%8$s"><ul class="wb-preise">%4$s</ul></td><td data-label="%9$s">%5$s</td>',
 				esc_html( $f['name'] ),
 				esc_html( $f['wo'] ),
 				esc_html( tamil_site_werbung_html_masse( $platz ) ),
@@ -101,7 +140,8 @@ function tamil_site_werbung_html_angebote(): string {
 				esc_attr__( 'Wo', 'tamil-site' ),
 				esc_attr__( 'Maße in Pixel', 'tamil-site' ),
 				esc_attr__( 'Preis je Laufzeit', 'tamil-site' ),
-				esc_attr__( 'Nächster freier Termin', 'tamil-site' )
+				esc_attr__( 'Nächster freier Termin', 'tamil-site' ),
+				tamil_site_werbung_skizze( $platz )
 			),
 			$link,
 		);
