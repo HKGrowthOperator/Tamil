@@ -463,6 +463,15 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 
 /* ---------- Küche (hell) und Rubrikblöcke: jede Kachel behält ihr Format auf allen Breiten ---------- */
 .kueche { margin-top: 44px; }
+/* Rubrik-Bühne (K-06): wie die Küche gebaut; Titel auf kleinen Karten höchstens drei Zeilen */
+.rubrikblock .kachel--klein .titel { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; }
+/* Kacheln einer Bühne (Küche und Rubrik-Bühne) füllen ab 600 px ihre Rasterzelle, das Bild wächst mit: die große Kachel
+   schließt unten mit dem Stapel daneben ab, kleine Kacheln einer Reihe sind gleich hoch */
+@media (min-width: 600px) {
+  .kueche__raster > .kachel { align-self: stretch; }
+  .kueche__raster > .kachel > .anr { display: flex; flex-direction: column; height: 100%; }
+  .kueche__raster > .kachel > .anr > .rahmen { flex: 1 1 auto; }
+}
 .kueche__raster { display: grid; gap: 12px; padding-top: 14px; }
 .kueche .kachel--klein .imbild { padding: 30px var(--rand) 10px; background-image: var(--verlauf-kurz); }
 .kueche .kachel--klein .meta { margin-bottom: 2px; }

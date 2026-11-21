@@ -117,13 +117,17 @@ if ( '' !== $tamil_billboard ) :
 	<?php
 endif;
 
+// Rhythmus (K-06): die Rubrikblöcke wechseln zwischen der Reihe aus vier Karten und der Bühne (eine große Kachel, die
+// übrigen klein gestapelt daneben), damit nicht fünf gleich gebaute Reihen aufeinander folgen
+$tamil_nr = 0;
 foreach ( $tamil_a['rubriken'] as $tamil_slug => $tamil_ids ) {
 	get_template_part(
 		'template-parts/home/rubrik',
 		null,
 		array(
-			'slug' => $tamil_slug,
-			'ids'  => $tamil_ids,
+			'slug'   => $tamil_slug,
+			'ids'    => $tamil_ids,
+			'buehne' => 1 === $tamil_nr++ % 2 && count( $tamil_ids ) >= 3,
 		)
 	);
 }
