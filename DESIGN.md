@@ -31,6 +31,10 @@
 > **Stand 21.11.2026 (Theme 3.10.0):** **Wow-Aufmacher „Punkt für Punkt zum Bild“** auf der Startseite (Abschnitt
 > „Wow-Aufmacher“), Logo-Fläche im Band mit 3 px Impact unten, Terminkarten mit gleich hohen Bildflächen.
 
+> **Stand 21.11.2026 (Theme 3.11.0):** Korrekturen aus der unabhängigen Kritik: Wow-Aufmacher zeigt sofort das Foto,
+> kurzer Titel, halber Weg, eingebettet in die Seite; Rubrikblöcke im Wechsel aus Reihe und Bühne; runde Ecken auch an
+> Bedienelementen.
+
 **Idee:** eine ruhige Nachrichtenseite mit mehr Bild und mehr Bühne. Vorbild BBC News für Kopf und Ordnung,
 tagesschau für den Titel im Bild, Spiegel für die Bildblöcke. Das Wow kommt aus Fotos, Fläche und dem Wechsel von
 Weiß und Titan Red, nicht aus Schriftgröße oder Effekten.
@@ -59,7 +63,8 @@ benannt. Quelle: `theme.css` (Abschnitt Tokens), `design/tokens.css`; `theme.jso
 Kontraste (WCAG 2.2 AA): Weiß auf Titan 13,4 : 1, Weiß auf Impact 7,2 : 1, Impact auf Weiß 7,2 : 1, Titan auf Weiß
 13,4 : 1, `#555` auf Weiß 7,5 : 1, `#CCC` auf Titan 8,4 : 1. Die aktive Rubrik ist in Impact markiert und trägt 3 px
 Weiß darunter, weil Impact gegen Titan nur 1,9 : 1 hat; der Zustand hängt so nicht am Rotton. Der einzige Verlauf liegt
-unter Schrift im Bild: durchsichtig nach Schwarz, auf Titan-Flächen nach Titan. Radius 0, keine Schatten, nichts
+unter Schrift im Bild: durchsichtig nach Schwarz, auf Titan-Flächen nach Titan. Ecken seit 3.9.0 gerundet (10 px an
+Karten und Bildern, 6 px an kleinen Kacheln und Bedienelementen, Abschnitt „Ecken und Reihen“); keine Schatten, nichts
 gedreht. Rot als Schrift nie über 20 px; im Bild und auf Titan ist die Dachzeile weiß. Anzeigen bleiben neutral
 (Schwarz), damit sie sich vom redaktionellen Teil abheben.
 
@@ -283,26 +288,36 @@ mit `requestAnimationFrame`. Auftritte über IntersectionObserver (Auslöser 10 
 ## Ecken und Reihen (Theme 3.9.0)
 
 - **Radius:** `--radius` 10 px an Karten und Bildern (Aufmacher, Bildkarten, Kino- und Terminkarten als Ganzes,
-  Anzeigenflächen, Artikelbild, Bilder im Text, Verzeichnisbilder); `--radius-klein` 6 px an Rubrikkacheln und den
-  Bildern der Kinotabelle. Ein Rahmen setzt seinen Radius über `--rahmen-r`. Punktbogen und Schild „Symbolbild“
+  Anzeigenflächen, Artikelbild, Bilder im Text, Verzeichnisbilder); `--radius-klein` 6 px an Rubrikkacheln, den
+  Bildern der Kinotabelle und (seit 3.11.0) an Bedienelementen: Felder, Knöpfe, Filter, Seitenzahlen. Ein Rahmen setzt seinen Radius über `--rahmen-r`. Punktbogen und Schild „Symbolbild“
   schließen mit der Rundung ab (angeschnitten, kein Überstand). Gerade bleiben Bänder, Kopf, Fuß und Bilder, die am
   Handy von Rand zu Rand laufen (Aufmacher, Artikelbild unter 600 px). Nur Ecken, keine runden Bildformen.
+- **Rhythmus (3.11.0):** Die Rubrikblöcke der Startseite wechseln zwischen der Reihe aus vier Karten und der Bühne
+  (eine große Kachel, die übrigen klein gestapelt daneben, gebaut wie die Küche); Titel auf kleinen Karten höchstens drei
+  Zeilen. Kacheln einer Bühne füllen ihre Rasterzelle, das Bild wächst mit.
 - **Reihen:** Karten einer Reihe sind gleich hoch und schließen unten bündig: gleiches Bildformat je Reihe, Titel unten
   im Bild, der Vorspann darunter hält immer drei Zeilen Platz; in „Diese Woche“ ist die Kinokarte neben den Terminen so
-  hoch wie diese. Prüfung: `node wordpress/dev/kartenhoehe.mjs <basis-url>` (je Reihe Ober- und Unterkante ≤ 1 px).
+  hoch wie diese; Terminkarten einer Reihe haben gleich hohe Bildflächen. Prüfung: `node wordpress/dev/kartenhoehe.mjs
+  <basis-url>` (je Reihe Ober- und Unterkante und Unterkante der Bildfläche ≤ 1 px; Bühnen je Spalte).
 
-## Wow-Aufmacher „Punkt für Punkt zum Bild“ (Theme 3.10.0)
+## Wow-Aufmacher „Punkt für Punkt zum Bild“ (Theme 3.10.0, überarbeitet 3.11.0)
 
 - **Wo:** nur der Aufmacher der Startseite, nur mit eigenem Foto (kein Symbol-, Pool- oder Filmbild, keine
-  Titelkarte, kein Band) ab 960 px Breite (`inc/wow.php`). Sonst der normale Aufmacher.
+  Titelkarte, kein Band), dessen Originalfoto mindestens 960 px breit ist (`inc/wow.php`). Die Fensterbreite spielt
+  keine Rolle: die Decke läuft am Handy, Tablet und Desktop. Sonst der normale Aufmacher.
 - **Was:** Über dem Foto (`<img>`, `fetchpriority="high"`) liegt ein `<canvas>` in Titan mit den 238 Punkten des
   Masters „Tamil Dots 04A“ als Fenster aufs echte Foto. Die Form steht mittig über dem Titelfeld und berührt den Titel
-  nie; Dachzeile und Titel stehen von Anfang an unten auf der Decke (weiß auf Titan 13,4 : 1). Beim Scrollen bleibt
-  das Bild unter dem Band stehen (70 % einer Bildschirmhöhe, mindestens 420 px), die Punkte wachsen vom Fuß links zum
-  Auslauf rechts, der Blick fährt 3,2-fach hinein; am Ende löst sich das Titelfeld auf, der Titel liegt auf dem
-  Verlauf des Fotos, der Punktbogen erscheint. Zurückscrollen spielt es rückwärts.
-- **Rahmen:** am Handy hochkant (bis 148 vw, höchstens Bildschirm minus Band), von Rand zu Rand; ab 600 px 60 vw, ab
-  1024 px 420 bis 620 px hoch, mit dem Radius des Aufmachers.
+  nie; Dachzeile und Titel stehen von Anfang an unten auf der Decke (weiß auf Titan 13,4 : 1). Seit 3.11.0 ist die
+  Kuppel größer (Handy 98 %, sonst 90 % der Breite) und am Anfang schon halb geöffnet, so dass das Motiv sofort zu
+  erkennen ist (Titan im ersten Bildschirm samt Band: 390 × 844 34 %, 1280 × 800 26 %). Beim Scrollen bleibt das Bild
+  am Handy und am Desktop unter dem Band stehen (35 % einer Bildschirmhöhe, mindestens 260 px), am Desktop steht
+  „Weitere Meldungen“ mit; am Tablet steht nichts fest, der Weg ist 60 % der Rahmenhöhe. Punkte und Titelfeld lösen
+  sich über denselben Weg auf, der Titel liegt danach auf dem Verlauf des Fotos, der Punktbogen erscheint.
+  Zurückscrollen spielt es rückwärts. Nur Bild, Titel und Vorspann sind Link, nicht die leere Fläche des Wegs.
+- **Titel:** 26 px am Handy, 38 px am Desktop; länger als 84 Zeichen sichtbar am Wortende gekürzt, der volle Titel für
+  Vorleser im Link.
+- **Rahmen:** am Handy hochkant (bis 116 vw, höchstens Bildschirm minus Band; der Vorspann steht über der festen
+  Anzeige), von Rand zu Rand; ab 600 px 60 vw, ab 1024 px 420 bis 620 px hoch, mit dem Radius des Aufmachers.
 - **Ruhe:** Ohne Skript, ohne Canvas und mit „Bewegung reduzieren“ steht sofort das fertige Foto mit Titel. Bewegung D
   ist für diesen Aufmacher aus. Der erste Bildschirm bewegt sich nie von selbst.
 - **Abschalten:** Customizer (Tamil.de → Startseite → „Wow-Aufmacher“, Standard an) oder Filter `tamil_wow_aufmacher`.

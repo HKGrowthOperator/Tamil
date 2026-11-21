@@ -5,6 +5,21 @@ Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
 ## 21.11.2026
 
+- **Startseite im Wechsel: Reihe und Bühne (Theme 3.11.0, K-06):** Die Rubrikblöcke unter dem Aufmacher wechseln
+  zwischen der Reihe aus vier Karten und der Bühne (die erste Karte groß, die übrigen klein gestapelt daneben, gebaut
+  wie die Küche). Warum: Die unabhängige Kritik fand fünf gleich gebaute Reihen nacheinander (das „gleichförmige
+  Kartenraster“ der Verbotsliste); Luis will „was komplett Spezielles“. Kartenart, Titel im Bild und Punktbogen bleiben,
+  die Seite bekommt weitere Höhepunkte. Rückweg: in `front-page.php` beim Rubrik-Block `buehne` auf `false` setzen.
+
+  · Hauptsitzung im Auftrag von Luis, umgesetzt vom Theme-Bauer
+- **Wow-Aufmacher überarbeitet (Theme 3.11.0, K-01 bis K-05):** Kuppel größer und am Anfang halb geöffnet (Foto sofort
+  erkennbar), Titel 26/38 px und höchstens 84 Zeichen sichtbar, Weg halbiert, Punkte und Titelfeld zugleich, am Desktop
+  steht „Weitere Meldungen“ mit, am Tablet hängt der Weg an der Rahmenhöhe. Warum: Kritik-Note 6/10, Anfang fast nur
+  Titan, fünf Titelzeilen, Leere neben und unter dem Aufmacher. Rückweg: Werte in `assets/js/wow.js` (T0, Größe) und
+  `assets/css/theme.css` (Abschnitt Wow-Aufmacher).
+
+  · Hauptsitzung im Auftrag von Luis, umgesetzt vom Theme-Bauer
+
 - **Wow-Aufmacher „Punkt für Punkt zum Bild“ (Theme 3.10.0):** Der Aufmacher der Startseite bekommt, wenn er ein
   eigenes Foto ab 960 px Breite hat, eine Decke in Titan mit den 238 Punkten des Masters als Fenster aufs Foto; beim
   Scrollen wachsen die Punkte, bis das volle Foto steht (Vorlage `design/richtungen/klar2/wow/punkt-zum-bild/`,
