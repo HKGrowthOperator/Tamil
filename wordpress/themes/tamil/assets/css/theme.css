@@ -1369,7 +1369,7 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
    1024 px rechts daneben */
 .signatur--raum {
   width: min(100%, 340px); aspect-ratio: 1000 / 712; margin: 24px auto 0;
-  background-image: url("../img/signatur/raum.svg?ver=3.5.0"); background-size: 100% 100%;
+  background-image: url("../img/signatur/raum.svg?ver=3.12.0"); background-size: 100% 100%;
 }
 @media (min-width: 1024px) {
   .seitenkopf--raum { position: relative; min-height: 380px; padding-right: 44%; }
