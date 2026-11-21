@@ -336,6 +336,7 @@ function tamil_kino_orte_tafel( array $filme, bool $bilder = false ): void {
 						'kino',
 						array(
 							'n'      => $e['post'] + ( ++$zeile ),
+							'zaehlt' => false, // Tabelle: nicht vom Pool der Karten abziehen
 							'sizes'  => '96px',
 							'signet' => true, // das Bild steht für den Kino-Beitrag
 						)
