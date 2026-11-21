@@ -1568,7 +1568,7 @@ body .ad.ad-bild .anzeige--bild .anzeige__bild { border-radius: 0; }
    Bildschirmhöhe scrollt (mindestens 420 px); die Decke in Titan liegt darüber, Dachzeile und Titel unten auf ihr.
    Ohne wow-an ist es der normale Aufmacher in dieser Höhe. Am Desktop die Rundung des Aufmachers (der Rahmen
    schneidet die Decke), am Handy von Rand zu Rand. */
-.aufmacher.wow { --wow-hoch: 148vw; --wow-weg: max(35vh, 260px); } /* K-05: halber Weg, Punkte und Titelfeld zugleich */
+.aufmacher.wow { --wow-hoch: 122vw; --wow-weg: max(35vh, 260px); } /* K-16: Vorspann über der festen Handy-Anzeige */ /* K-05: halber Weg, Punkte und Titelfeld zugleich */
 .aufmacher.wow .rahmen.wow-rahmen { aspect-ratio: auto; height: min(var(--wow-hoch), calc(100vh - var(--band-hoehe) - 20px)); }
 @supports (height: 100svh) {
   .aufmacher.wow .rahmen.wow-rahmen { height: min(var(--wow-hoch), calc(100svh - var(--band-hoehe) - 20px)); }
@@ -1580,6 +1580,9 @@ body .ad.ad-bild .anzeige--bild .anzeige__bild { border-radius: 0; }
 @media (min-width: 600px) { .aufmacher.wow { --wow-hoch: 60vw; } }
 @media (min-width: 1024px) { .aufmacher.wow { --wow-hoch: clamp(420px, calc(100vh - 250px), 620px); } }
 .wow-an .aufmacher.wow .wow-bahn::after { content: ""; display: block; height: var(--wow-weg); }
+/* K-15: die leere Fläche des Wegs ist nicht Teil des Links; klickbar bleiben Bild, Titel und Vorspann */
+.wow-an .aufmacher.wow .anr { pointer-events: none; }
+.wow-an .aufmacher.wow .wow-halter { pointer-events: auto; }
 .wow-an .aufmacher.wow .wow-halter { position: sticky; top: var(--band-hoehe); }
 /* Tablet (K-04): das Bild steht nicht fest; der Weg hängt an der Rahmenhöhe (assets/js/wow.js), keine Leere darunter */
 @media (min-width: 600px) and (max-width: 1023px) {
