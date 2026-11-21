@@ -42,7 +42,7 @@
 .wow .imbild { z-index: 3; }
 .wow .signatur-ecke { z-index: 3; }
 @media (min-width: 600px) { .wow { --bandh: 48px; --hoch: 60vw; } }
-@media (min-width: 1024px) { .wow { --hoch: 620px; } .wow .vorspann { font-size: 19px; } }
+@media (min-width: 1024px) { .wow { --hoch: clamp(420px, calc(100vh - 250px), 620px); } .wow .vorspann { font-size: 19px; } }
 
 /* Nur mit Skript und ohne „weniger Bewegung“: Bild steht fest, die Decke mit den Punktfenstern liegt darüber. */
 /* Der Scrollweg ist ein leerer Block in der Bahn (Innenabstand zählt für „sticky“ nicht). */
@@ -50,8 +50,16 @@
 .wow-an .wow .wow-halter { position: sticky; top: var(--bandh); }
 .wow-an .wow-decke { display: block; background: var(--decke, #660000); }
 .wow-an .wow-decke.gezeichnet { background: none; }
-.wow-an .wow .imbild, .wow-an .wow .signatur-ecke { opacity: var(--titel, 0); }
-.wow-an .wow .imbild { translate: 0 calc((1 - var(--titel, 0)) * 14px); }
+/* Dachzeile und Titel stehen von Anfang an unten auf der Decke, außerhalb der Form, an derselben Stelle wie später
+   im Bild. Ihr Verlauf gehört zum Foto und liegt als eigene Ebene unter der Decke (vom Skript angelegt). */
+.wow-an .wow .imbild { background-image: none; }
+.wow-an .wow .wow-verlauf { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; background-image: var(--verlauf); }
+.wow-an .wow .wow-verlauf > * { visibility: hidden; }
+.wow-an .wow .signatur-ecke { opacity: var(--titel, 0); }
+/* Variante B: schwarz auf der weißen Decke, weiß erst, wenn der Verlauf des Fotos darunter trägt. */
+.wow-an.wow-weiss .wow-rahmen:not(.wow-foto) .imbild,
+.wow-an.wow-weiss .wow-rahmen:not(.wow-foto) .imbild .meta,
+.wow-an.wow-weiss .wow-rahmen:not(.wow-foto) .imbild .meta__rubrik { color: #000000; }
 .wow-weiss { --decke: #FFFFFF; }
 .wow-an.wow-weiss .wow .rahmen.wow-rahmen { outline: 1px solid rgb(0 0 0 / calc(0.14 * (1 - var(--titel, 0)))); outline-offset: -1px; }
 
@@ -163,6 +171,7 @@
   var decke = document.querySelector('.wow-decke');
   var ctx = decke.getContext('2d');
   var ZOOM = 3.2, mx = 0, my = 0;
+  var HO = 0;                       // Höhe der Bildzone über dem Titelfeld
   var B = 0, H = 0, dpr = 0, scharf = 1, grob = 1, f = 1, ox = 0, oy = 0, rmax = 0, ende = 1, letzter = -1, wartet = false;
 
   function messen() {
@@ -173,9 +182,11 @@
     scharf = Math.min(window.devicePixelRatio || 1, 2);
     grob = Math.max(1, Math.min(scharf, Math.sqrt(250000 / (B * H))));
     dpr = 0;
-    // Die Form steht mittig im Bild, mit Luft zum Rand; ihre Proportion bleibt unverändert.
-    f = Math.min(B * (B < 600 ? 0.86 : 0.74), H * 0.74 / SEITE);
-    ox = (B - f) / 2; oy = (H - f * SEITE) / 2;
+    // Unten steht das Titelfeld (Dachzeile und Titel auf der Decke). Die Form steht mittig in der Zone darüber,
+    // mit Luft zum Rand; ihre Proportion bleibt unverändert, sie berührt den Titel nie.
+    HO = Math.max(H * 0.4, rahmen.querySelector('.imbild .meta').getBoundingClientRect().top - r.top - 20);
+    f = Math.min(B * (B < 600 ? 0.86 : 0.74), HO * 0.78 / SEITE);
+    ox = (B - f) / 2; oy = (HO - f * SEITE) / 2;
     // Beim Wachsen fährt der Blick in die Form hinein (Faktor ZOOM, um ihren Schwerpunkt), damit die Punkte bis
     // zuletzt einzelne Fenster bleiben. Am Anfang steht die Form unverändert.
     mx = 0; my = 0;
@@ -184,9 +195,9 @@
     // Größter Abstand eines Bildpunkts zum nächsten Punktmittelpunkt im Endzustand: so weit müssen die Punkte wachsen.
     rmax = 0;
     for (var gy = 0; gy <= 12; gy++) for (var gx = 0; gx <= 16; gx++) {
-      var px = B * gx / 16, py = H * gy / 12, m = 1e9;
+      var px = B * gx / 16, py = HO * gy / 12, m = 1e9;
       for (var i = 0; i < P.length; i++) {
-        var dx = B / 2 + (P[i][0] - mx) * f * ZOOM - px, dy = H / 2 + (P[i][1] - my) * f * ZOOM - py, d = dx * dx + dy * dy;
+        var dx = B / 2 + (P[i][0] - mx) * f * ZOOM - px, dy = HO / 2 + (P[i][1] - my) * f * ZOOM - py, d = dx * dx + dy * dy;
         if (d < m) m = d;
       }
       if (m > rmax) rmax = m;
@@ -199,22 +210,27 @@
     letzter = -1;
   }
 
+  var weiss = html.classList.contains('wow-weiss'), farbe = weiss ? '#FFFFFF' : '#660000';
+
   function zeichnen(p) {
-    // p 0..1 über den Scrollweg. Bis 0,84 wachsen die Punkte, danach kommt der Titel.
-    var t = Math.min(1, p / 0.84), titel = Math.max(0, Math.min(1, (p - 0.84) / 0.13));
+    // p 0..1 über den Scrollweg. Bis 0,8 wachsen die Punkte, danach löst sich das Titelfeld in das Foto auf.
+    // In Variante A bleibt die Schrift weiß (auf Titan 13,4 : 1, auf dem Verlauf wie im Theme). In Variante B
+    // wechselt sie von Schwarz zu Weiß; dort ist die Auflösung kurz gehalten, der Wechsel liegt in ihrer Mitte.
+    var t = Math.min(1, p / 0.8), titel = Math.max(0, Math.min(1, (p - 0.8) / (weiss ? 0.05 : 0.17)));
     rahmen.style.setProperty('--titel', titel.toFixed(3));
+    rahmen.classList.toggle('wow-foto', titel >= 0.5);
     var soll = p === 0 ? scharf : grob;
     if (soll !== dpr) { dpr = soll; decke.width = Math.round(B * dpr); decke.height = Math.round(H * dpr); }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.globalCompositeOperation = 'source-over';
     ctx.clearRect(0, 0, B, H);
     if (t < 1) {
-      ctx.fillStyle = html.classList.contains('wow-weiss') ? '#FFFFFF' : '#660000';
-      ctx.fillRect(0, 0, B, H);
+      ctx.fillStyle = farbe;
+      ctx.fillRect(0, 0, B, HO);
       ctx.globalCompositeOperation = 'destination-out';
       ctx.beginPath();
       var g = t * t * (3 - 2 * t), zoom = 1 + (ZOOM - 1) * g, fz = f * zoom;
-      var cx = ox + mx * f + (B / 2 - ox - mx * f) * g, cy = oy + my * f + (H / 2 - oy - my * f) * g;
+      var cx = ox + mx * f + (B / 2 - ox - mx * f) * g, cy = oy + my * f + (HO / 2 - oy - my * f) * g;
       for (var i = 0; i < P.length; i++) {
         var q = P[i];
         // Der Fuß links beginnt, der Auslauf rechts folgt; jeder Punkt wächst erst sanft, dann schneller.
@@ -222,11 +238,17 @@
         z = z <= 0 ? 0 : z >= 1 ? 1 : z;
         var plus = z * z * z * z * rmax, mal = 1 + 0.9 * z;
         var x = cx + (q[0] - mx) * fz, y = cy + (q[1] - my) * fz, a = q[2] * fz * mal + plus, b = q[3] * fz * mal + plus;
-        if (x + a < 0 || x - a > B || y + a < 0 || y - a > H) continue;
+        if (x + a < 0 || x - a > B || y + a < 0 || y - a > HO) continue;
         ctx.moveTo(x + a * Math.cos(q[4]), y + a * Math.sin(q[4]));
         ctx.ellipse(x, y, a, b, q[4], 0, 6.2832);
       }
       ctx.fill();
+    }
+    if (titel < 1) {
+      // Titelfeld: bleibt geschlossen, bis das Foto steht, und wird dann durchsichtig.
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.clearRect(0, HO, B, H - HO);
+      ctx.globalAlpha = 1 - titel; ctx.fillStyle = farbe; ctx.fillRect(0, HO, B, H - HO); ctx.globalAlpha = 1;
     }
     decke.classList.add('gezeichnet');
   }
@@ -241,6 +263,10 @@
   function anfordern() { if (!wartet) { wartet = true; requestAnimationFrame(bild); } }
 
   if (html.classList.contains('wow-an')) {
+    // Der Verlauf unter der Schrift als eigene Ebene unter der Decke: gleiche Maße wie der Titelblock.
+    var verlauf = rahmen.querySelector('.imbild').cloneNode(true);
+    verlauf.classList.add('wow-verlauf'); verlauf.setAttribute('aria-hidden', 'true');
+    rahmen.insertBefore(verlauf, decke);
     messen(); bild();
     window.addEventListener('scroll', anfordern, { passive: true });
     window.addEventListener('resize', function () { messen(); anfordern(); });
