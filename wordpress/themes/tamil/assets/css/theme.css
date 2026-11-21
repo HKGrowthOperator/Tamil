@@ -1500,6 +1500,12 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
   .artikel__figur > img, .artikel__bild { border-radius: 0; }
 }
 
+/* Schmale Fenster (bis 599 px, auch 400 % Zoom): Titel im Bild und Verzeichnisnamen trennen mit Strich statt
+   mitten im Wort umzubrechen (Q2-09); ab 600 px bleibt die manuelle Trennung der großen Titel (QA-05) */
+@media (max-width: 599px) {
+  .imbild .titel, .aufmacher .titel, .kachel--gross .titel, .vz-name { hyphens: auto; -webkit-hyphens: auto; }
+}
+
 @media print {
   .kopfzeile, .band, .fuss, .ad, .anzeige-zwischen, .anzeige-unten, .teilen, .mehr, .kacheln, .signatur, .signatur-ecke { display: none !important; }
   body { background: #fff; }
