@@ -1508,6 +1508,10 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
 
 @media print {
   .kopfzeile, .band, .fuss, .ad, .anzeige-zwischen, .anzeige-unten, .teilen, .mehr, .kacheln, .signatur, .signatur-ecke { display: none !important; }
+  /* Q2-08: Teilen und „Weiterlesen“ nicht mitdrucken; Linkziele der Quellen und im Text als Adresse ausgeben */
+  .artikel__teilen, .weiterlesen, .ad-mobile, .tz-banner { display: none !important; }
+  .quelle a[href^="http"]::after, .inhalt a[href^="http"]:not(:has(img))::after { content: " (" attr(href) ")"; font-size: 0.85em; word-break: break-all; }
+  .artikel::after { content: "Beitrag: " attr(data-url); display: block; margin-top: 16px; font-size: 12px; }
   body { background: #fff; }
   .woche { background: none; color: var(--tinte); }
 }
