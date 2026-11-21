@@ -45,7 +45,7 @@ function tamil_site_werbung_html_zahlung_aus(): string {
 
 /**
  * Schematische Skizze eines Werbeplatzes (Prüfung 21.11., N-07): Seitenumriss, Kopf, Textzeilen und die Fläche des
- * Platzes in Titan. Dekorativ (aria-hidden); die Lage steht in der Spalte „Wo“. Nur Rechtecke, keine erfundenen Zahlen.
+ * Platzes in Titan, in der Spalte „Wo“ über der Beschreibung. Dekorativ (aria-hidden). Nur Rechtecke, keine erfundenen Zahlen.
  */
 function tamil_site_werbung_skizze( string $platz ): string {
 	// je Platz: Umriss (Breite, Höhe) und die markierte Fläche (x, y, Breite, Höhe) in einer 48 × 64 großen Zeichnung
@@ -131,7 +131,7 @@ function tamil_site_werbung_html_angebote(): string {
 		) . '">' . esc_html__( 'Buchen', 'tamil-site' ) . '</a>' : '';
 		$zeilen[] = array(
 			sprintf(
-				'<tr><th scope="row">%10$s%1$s</th><td data-label="%6$s">%2$s</td><td data-label="%7$s">%3$s</td><td data-label="%8$s"><ul class="wb-preise">%4$s</ul></td><td data-label="%9$s">%5$s</td>',
+				'<tr><th scope="row">%1$s</th><td data-label="%6$s">%10$s%2$s</td><td data-label="%7$s">%3$s</td><td data-label="%8$s"><ul class="wb-preise">%4$s</ul></td><td data-label="%9$s">%5$s</td>',
 				esc_html( $f['name'] ),
 				esc_html( $f['wo'] ),
 				esc_html( tamil_site_werbung_html_masse( $platz ) ),
