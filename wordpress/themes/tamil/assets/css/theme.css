@@ -1322,6 +1322,11 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
   margin: -2px calc(-1 * var(--rand)) 6px 12px;
   background-image: url("../img/signatur/hell.svg?ver=3.5.0"); background-size: var(--b) auto; background-position: 0 50%;
 }
+/* Seiten mit kurzem Kopf (Werben, Verzeichnis, Einreichen) unter 600 px: die Kuppel kleiner und ohne Abstand nach
+   unten, damit unter der H1 keine Lücke bleibt (Q2-17) */
+@media (max-width: 599px) {
+  .artikel__kopf .signatur--kopf { --b: 72px; margin-bottom: 0; }
+}
 /* das Suchfeld (Suche) bekommt die volle Breite unter der Kuppel */
 .seitenkopf--signet .suchfeld { clear: right; }
 @media (min-width: 1024px) {
