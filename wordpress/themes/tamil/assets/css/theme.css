@@ -538,6 +538,10 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .woche__raster.ohne-klein { grid-template-areas: "gross gross kino" "gross gross kino" "termin termin termin"; }
   .woche__raster.ohne-gross { grid-template-areas: "klein klein kino" "termin termin termin"; grid-template-rows: auto auto; }
   .woche__raster.ohne-gross.ohne-klein { grid-template-areas: "kino termin termin"; grid-template-rows: auto; }
+  /* Kino und Termine in einer Reihe: die Kinokarte so hoch wie die Terminkarten (Unterkanten bündig) */
+  .woche__raster.ohne-gross.ohne-klein .woche__gruppe--kino { align-self: stretch; }
+  .woche__raster.ohne-gross.ohne-klein .woche__gruppe ul { flex: 1 1 auto; }
+  .woche__raster.ohne-gross.ohne-klein .woche__gruppe--kino ul > li { flex: 1 1 auto; }
   .woche__raster .kachel--gross { grid-area: gross; }
   .woche__raster .kachel--klein { grid-area: klein; }
   .woche__gruppe--kino { grid-area: kino; align-self: start; }
@@ -602,6 +606,9 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden;
   margin-top: 10px; font-size: 16px; line-height: 1.45;
 }
+/* Karten einer Reihe gleich hoch (Luis 21.11.2026: „die karten auf einer höhe“): gleiches Bildformat je Reihe, Titel
+   unten im Bild, der Vorspann darunter hält immer drei Zeilen Platz, auch wenn er kürzer ist */
+.karten--raster .karte .vorspann, .neben.karten--reihe .vorspann { min-height: calc(3 * 1.45em); }
 .karte__zusatz { margin-top: 8px; }
 .karte__zusatz + .vorspann { margin-top: 4px; }
 /* Lange Listen: Karten ab der dritten erst rechnen, malen und ihre Bilder laden, wenn sie in die Nähe kommen
@@ -646,7 +653,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .karte .imbild { padding: 48px 14px 14px; }
   .neben.karten .vorspann {
     display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden;
-    margin-top: 10px; font-size: 16px; line-height: 1.45;
+    margin-top: 10px; font-size: 16px; line-height: 1.45; min-height: calc(3 * 1.45em);
   }
   .karten--raster { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px 24px; margin-top: 16px; }
   .karten--raster .karte .titel { font-size: 19px; }
