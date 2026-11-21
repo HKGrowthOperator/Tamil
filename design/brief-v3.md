@@ -1,5 +1,8 @@
 # Design-Brief v3 – tamil.de (13.11.2026)
 
+> **Abgelöst am 16.11.2026:** Luis hat `klar2` gewählt (`docs/abnahme/2026-11-16-G2-klar2.md`). Dieser Brief gilt nur
+> noch, wo er klar2 nicht widerspricht.
+
 Gilt ab 13.11.2026 für alle neuen Gestaltungen (Website und Redaktions-Cockpit). Ersetzt die messbaren
 „Nachrichtenmarken“-Kriterien aus `design/brief.md` (Fassung 2/2.1). Bleibt gültig: Logo, Sprache, Lesbarkeit,
 echte Inhalte, Bildnachweise.

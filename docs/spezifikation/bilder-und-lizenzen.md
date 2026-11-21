@@ -112,7 +112,34 @@ Eigene Grafik aus Rubrikfarbe, Titel, Kolam und Wortmarke (`images.py` `branded_
 SIL Open Font License). Lizenz `tamil-grafik`, Umfang Website, Social, Print. Nachweis „Grafik: Tamil.de“. Das Aussehen
 folgt der abgenommenen Kachel aus dem neuen Design (Entscheidung 10.11.).
 
-### 2.7 Verboten
+### 2.7 Theme: Bild für jeden Anreißer (Bilderpflicht, 17.11.2026)
+
+Luis am 17.11.: Jeder sichtbare Anreißer der Website zeigt ein echtes Bild, nichts nur als Text (Ausnahmen: Rubrikband,
+die Top-News-Zeile „Neu“ im Kopf, beide Navigation, Fußlisten, Formulare, reine Textseiten). Das Theme wählt das Bild in `inc/bildkette.php`, unabhängig von der Bildkette
+des Radars:
+
+| Stufe | Bild | Nachweis |
+|---|---|---|
+| a | eigenes Beitragsbild, wenn es keine Titelkarte ist (Nachweis „Grafik: Tamil.de“ oder Herkunft `karte`/Lizenz `tamil-grafik` ohne „Foto: …“); Bänder über 2,5:1 werden im Rahmen beschnitten | wie gespeichert, mit Links (siehe unten) und „zugeschnitten“; redaktionelle Symbolbilder mit Schild und „Symbolbild,“ davor |
+| b | erstes Bild aus dem Text desselben Beitrags, das in der Mediathek liegt (Adresse unter `uploads/` dieser Website) und mindestens 600 px breit ist | Bildunterschrift des Anhangs, sonst die figcaption im Text |
+| c | nur Kino und Termine (Rubrik Kino, Entertainment, Events, Kinoliste oder Termin): das eigene Foto des neuesten anderen Beitrags zum selben Film bzw. zur selben Veranstaltung (`inc/filmbilder.php`; Schlüssel: Film aus `kino_fakten`, Titel in Anführungszeichen, Titelkopf eines Termins, normalisiert) | Nachweis des Originalbilds, kein Schild, weil es den Film zeigt; Plakate bleiben so im Bericht über genau diesen Film (2.2) |
+| d | Symbolbild aus dem Rubrik-Pool (`assets/img/rubrik/`, Liste `inc/bildpool.php`): Fotos von Wikimedia Commons, nur CC0, CC BY, CC BY-SA; Kino (acht Bilder: Kinosäle, Leinwand, Projektor, Kinofassade) und Events (acht: Tempelfeste, Festwagen, Umzug, Bühne) eigene Pools. Bevorzugt nach Beitrags-ID gewählt, auf einer Seite aber reihum vergeben (`tamil_pool_seite()`): kein Ersatzbild doppelt, solange der Pool reicht. Entertainment nimmt den Events-Pool, nie Stadtansichten, Kirchen oder Rathäuser | „Symbolbild, Foto: Urheber / Wikimedia Commons, Lizenz, zugeschnitten“ mit Links auf Dateiseite und Lizenz; Schild „Symbolbild“ am Bild, in Rahmen unter 150 px ein „S“ |
+
+Alle Nachweise (Bildunterschrift im Artikel, Fußliste „Bildnachweise dieser Seite“) entstehen in
+`tamil_nachweis_bauen()`: Urheber mit Link auf die Dateiseite (Meta `bild_quelle_url`), Lizenz mit Link auf den
+Lizenztext (Meta `bild_lizenz_url`, Kürzel `bild_lizenz` oder aus dem Lizenznamen im Nachweis), „zugeschnitten“ bei
+Fotos unter freier Lizenz und bei Bändern, weil die Rahmen per `object-fit` beschneiden. Fehlt die Dateiseite, verlinkt
+„Wikimedia Commons“ nur die Commons-Suche nach dem Urheber; eine Dateiseite wird nie geraten. Für vollständige Links
+braucht der Altbestand `bild_quelle_url` und `bild_lizenz_url` aus dem Lizenz-Datensatz des Radars.
+
+Der Pool entsteht mit `design/inhalte/bildpool/holen.py` aus `kandidaten.json`; Urheber, Lizenz und Lizenz-Adresse
+liest das Skript aus der Commons-API, bei einer Sperre (429) aus der Dateiseite selbst (maschinenlesbare Felder der
+Lizenzvorlage, `--html`), mit 2,2 s Abstand je Anfrage und Zwischenspeicher (Regeln wie 2.3: keine NC/ND, keine Dateien mit Hinweisen zu Persönlichkeits- oder
+Markenrechten, Urheber bekannt). Motive allgemein: keine erkennbaren Privatpersonen als Hauptmotiv, kein Bild, das ein
+bestimmtes Ereignis vortäuscht (G5). Bilder aus dem Text (Stufe b) bleiben an ihrem eigenen Beitrag; sie werden nicht
+für andere Beiträge verwendet (2.1). Prüfung: `node wordpress/dev/bilder_pflicht.mjs <url>`.
+
+### 2.8 Verboten
 
 | Verboten | Warum | Abgesichert durch |
 |---|---|---|
@@ -236,6 +263,13 @@ gilt „keine KI-Bilder“. Diese Spezifikation legt fest, **wie** KI-Bilder ent
 Eingeschaltet wird die Stufe nur mit einem neuen Eintrag im Entscheidungslog **und** einer Freigabe der laufenden
 Kosten durch KBS (§3 Abs. 2) **und** dem Schlüssel `GEMINI_API_KEY`. Bis dahin endet die Kette nach Stock bei der
 Bildkarte, und der Bildpool wird nicht benutzt.
+
+**Nachtrag 21.11.2026:** Für die **Ersatzbilder des Rubrik-Pools im Theme** (Bildkette Stufe d, `inc/bildpool.php`)
+sind KI-Symbolbilder seit dem Auftrag von Luis vom 21.11. erlaubt (Eintrag in `docs/entscheidungen.md`, 21.11.2026,
+Theme 3.13.0): nur Symbolbilder ohne erkennbare Personen, Marken, Schrift oder nachgestellte Ereignisse, immer mit
+Schild „Symbolbild“ und dem Nachweis „Symbolbild: KI-generiert · Tamil.de“ (4.8); bei heiklen Themen keines (4.2,
+Punkt 3), im Theme umgesetzt als Sperre für die Rubrik Nachrichten. Das Erzeugen eines KI-Bilds je Story im Radar
+(Stufe 5) bleibt wie oben beschrieben ausgeschaltet.
 
 ### 4.2 Wann ein KI-Bild entsteht
 

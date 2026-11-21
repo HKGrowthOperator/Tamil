@@ -1,101 +1,122 @@
 <?php
 /**
- * Rubrik: Seitenkopf mit Beschreibung, der neueste Beitrag als Aufmacher (Foto, Datumsblock, Titel, Vorspann), dann
- * die übrigen Beiträge als Strom nach Monaten und die Seitennavigation. Die Rubrik „Kino“ zeigt auf Seite 1 vorn
- * das Kinoprogramm (template-parts/kino-seite.php).
+ * Rubrik in klar2: Seitenkopf mit Name und Beschreibung; auf Seite 1 der neueste Beitrag mit eigenem Bild (sonst der
+ * neueste) als Aufmacher (4:3, Titel im Bild) und daneben „Neu in der Rubrik“: die nächsten drei als Stapel von
+ * Bildkarten 16:9 (wie „Weitere Meldungen“ der Startseite); dann alle weiteren als Kartenraster mit Vorspann (seit 3.7.0
+ * jede Meldung als Karte), Seitennavigation und die übrigen Rubriken als Kacheln. Die Rubrik „Kino“ zeigt auf Seite 1
+ * vorn das Kinoprogramm (template-parts/kino-seite.php).
  */
 
 defined( 'ABSPATH' ) || exit;
 
 get_header();
 
-$term   = get_queried_object();
-$slug   = $term instanceof WP_Term ? $term->slug : '';
-$rubrik = tamil_rubrik( $slug );
-$paged  = max( 1, (int) get_query_var( 'paged' ) );
-$ids    = array_map( 'intval', wp_list_pluck( $GLOBALS['wp_query']->posts, 'ID' ) );
-$kino   = 'kino' === $slug && 1 === $paged && function_exists( 'tamil_site_kino_posts' );
+$tamil_term   = get_queried_object();
+$tamil_slug   = $tamil_term instanceof WP_Term ? $tamil_term->slug : '';
+$tamil_rubrik = tamil_rubrik( $tamil_slug );
+$tamil_paged  = max( 1, (int) get_query_var( 'paged' ) );
+$tamil_ids    = array_map( 'intval', wp_list_pluck( $GLOBALS['wp_query']->posts, 'ID' ) );
+tamil_cache_fuellen( $tamil_ids );
 
-if ( $kino ) {
+if ( 'kino' === $tamil_slug && 1 === $tamil_paged && function_exists( 'tamil_site_kino_posts' ) ) {
 	get_template_part(
 		'template-parts/kino-seite',
 		null,
 		array(
-			'rubrik' => $rubrik,
+			'rubrik' => $tamil_rubrik,
 			'filme'  => tamil_kino_filme( 6 ),
-			'ids'    => $ids,
+			'ids'    => $tamil_ids,
 		)
 	);
 	get_footer();
 	return;
 }
+
+$tamil_lead  = 0;
+$tamil_seite = array();
+if ( 1 === $tamil_paged && $tamil_ids ) {
+	$tamil_mit_bild = array_values( array_filter( $tamil_ids, 'tamil_bild_zeigbar' ) );
+	$tamil_lead     = (int) ( $tamil_mit_bild[0] ?? $tamil_ids[0] );
+	$tamil_rest     = array_values( array_diff( $tamil_ids, array( $tamil_lead ) ) );
+	$tamil_seite    = array_slice( $tamil_rest, 0, TAMIL_START_MELDUNGEN );
+	$tamil_ids      = array_values( array_diff( $tamil_rest, $tamil_seite ) );
+}
 ?>
-<header class="seitenkopf">
-	<div class="wrap">
-		<h1><?php echo esc_html( $rubrik['label'] ); ?></h1>
+<div class="innen">
+	<header class="seitenkopf seitenkopf--signet">
+		<?php tamil_signatur( 'kopf' ); ?>
+		<h1 class="seitenkopf__titel"><?php echo esc_html( $tamil_rubrik['label'] ); ?></h1>
 		<?php
-		if ( $rubrik['beschreibung'] ) :
+		if ( '' !== $tamil_rubrik['beschreibung'] ) :
 			?>
-			<p class="satz"><?php echo esc_html( $rubrik['beschreibung'] ); ?></p><?php endif; ?>
-	</div>
-</header>
-<?php if ( $ids ) : ?>
-	<?php
-	$lead = 1 === $paged ? array_shift( $ids ) : 0;
-	if ( $lead ) :
-		$link  = (string) get_permalink( $lead );
-		$titel = get_the_title( $lead );
-		$ort   = trim( (string) get_post_meta( $lead, 'ort', true ) );
-		$figur = tamil_figur(
-			$lead,
-			array(
-				'klasse' => 'bild',
-				'size'   => 'tamil-lead',
-				'eager'  => true,
-				'alt'    => true,
-			)
-		);
-		?>
-		<section class="abschnitt rubrik-lead" aria-label="<?php esc_attr_e( 'Neuester Beitrag', 'tamil' ); ?>">
-			<div class="wrap lead<?php echo '' === $figur ? ' ohne-bild' : ''; ?>">
-				<?php echo $figur; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_figur() ?>
-				<div class="lead-text">
-					<?php tamil_tag_block( (int) get_post_timestamp( $lead ), '' !== $ort ? array( esc_html( $ort ) ) : array() ); ?>
-					<h2 class="lead-titel"><a href="<?php echo esc_url( $link ); ?>"><?php echo esc_html( $titel ); ?></a></h2>
-					<p class="teaser"><?php echo tamil_text( tamil_standfirst( $lead ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_text() ?></p>
-					<p class="aktionen"><a class="textlink" href="<?php echo esc_url( tamil_wa_teilen( $titel, $link ) ); ?>"><?php esc_html_e( 'Per WhatsApp schicken', 'tamil' ); ?></a></p>
-				</div>
-			</div>
-		</section>
-		<?php tamil_leaderboard(); ?>
-	<?php endif; ?>
-	<?php if ( $ids ) : ?>
-		<section class="abschnitt" aria-label="<?php esc_attr_e( 'Beiträge', 'tamil' ); ?>">
-			<div class="wrap">
-				<?php
-				tamil_strom(
-					$ids,
-					array(
-						'monat'  => 'h2',
-						'titel'  => 'h3',
-						'teaser' => 'immer',
-						'rubrik' => false,
-					)
-				);
-				?>
-			</div>
-		</section>
-	<?php endif; ?>
-	<div class="wrap"><?php get_template_part( 'template-parts/pagination' ); ?></div>
-<?php else : ?>
-	<section class="abschnitt">
-		<div class="wrap">
-			<?php /* translators: %s: Rubrik */ ?>
-			<h2 class="strom-kopf"><?php echo esc_html( sprintf( __( 'Hier entsteht die Rubrik %s', 'tamil' ), $rubrik['label'] ) ); ?></h2>
-			<p class="satz"><?php esc_html_e( 'Noch keine Beiträge. Ihr habt ein Thema, ein Turnier oder ein Fest? Meldet es der Redaktion.', 'tamil' ); ?></p>
-			<p class="aktionen"><a class="textlink" href="<?php echo esc_url( tamil_seiten_url( 'kontakt' ) ); ?>"><?php esc_html_e( 'Thema vorschlagen', 'tamil' ); ?></a></p>
+			<p class="seitenkopf__zeile"><?php echo esc_html( $tamil_rubrik['beschreibung'] ); ?></p><?php endif; ?>
+	</header>
+
+	<?php if ( $tamil_lead ) : ?>
+		<div class="buehne">
+			<?php
+			echo tamil_anr_imbild( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_anr_imbild()
+				$tamil_lead,
+				array(
+					'klasse'   => 'aufmacher aufmacher--rubrik',
+					'rahmen'   => 'r43',
+					'ebene'    => 'h2',
+					'vorspann' => true,
+					'eager'    => true,
+					'sizes'    => '(min-width: 1024px) 780px, (min-width: 600px) calc(100vw - 48px), 100vw',
+				)
+			);
+			?>
+			<?php if ( $tamil_seite ) : ?>
+				<section class="meldungen buehne__seite" aria-labelledby="t-neu">
+					<h2 class="block-titel" id="t-neu"><?php esc_html_e( 'Neu in der Rubrik', 'tamil' ); ?></h2>
+					<ul class="karten karten--reihe">
+						<?php
+						foreach ( $tamil_seite as $tamil_id ) {
+							echo tamil_anr_zeile( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_anr_zeile()
+								$tamil_id,
+								array(
+									'klasse' => 'karte--meldung',
+									'rubrik' => false,
+									'sizes'  => '(min-width: 1024px) 388px, 320px',
+								)
+							);
+						}
+						?>
+					</ul>
+				</section>
+			<?php endif; ?>
 		</div>
-	</section>
-<?php endif; ?>
+		<?php tamil_leaderboard( 'anzeige-zwischen' ); ?>
+	<?php endif; ?>
+
+	<?php if ( $tamil_ids ) : ?>
+		<section class="block" aria-labelledby="t-alle">
+			<?php /* translators: %s: Rubrik */ ?>
+			<h2 class="block-titel" id="t-alle"><?php echo esc_html( 1 === $tamil_paged ? sprintf( __( 'Weitere Beiträge aus %s', 'tamil' ), $tamil_rubrik['label'] ) : sprintf( __( 'Beiträge aus %s', 'tamil' ), $tamil_rubrik['label'] ) ); ?></h2>
+			<?php
+			echo tamil_zeilen( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_zeilen()
+				$tamil_ids,
+				array(
+					'rubrik'      => false,
+					'erste_eager' => ! $tamil_lead, // ab Seite 2 steht die Liste im ersten Bildschirm
+				)
+			);
+			?>
+		</section>
+	<?php endif; ?>
+	<?php get_template_part( 'template-parts/pagination' ); ?>
+
+	<?php if ( ! $tamil_lead && ! $tamil_ids ) : ?>
+		<section class="block leer">
+			<?php /* translators: %s: Rubrik */ ?>
+			<h2 class="block-titel"><?php echo esc_html( sprintf( __( 'Hier entsteht die Rubrik %s', 'tamil' ), $tamil_rubrik['label'] ) ); ?></h2>
+			<p class="leer__satz"><?php esc_html_e( 'Noch keine Beiträge. Ihr habt ein Thema, ein Turnier oder ein Fest? Meldet es der Redaktion.', 'tamil' ); ?></p>
+			<p class="aktionen"><a class="textlink" href="<?php echo esc_url( tamil_seiten_url( 'kontakt' ) ); ?>"><?php esc_html_e( 'Thema vorschlagen', 'tamil' ); ?></a></p>
+		</section>
+	<?php endif; ?>
+
+	<?php echo tamil_kacheln( tamil_kacheln_ohne( $tamil_slug ), __( 'Weitere Rubriken', 'tamil' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_kacheln() ?>
+</div>
 <?php
 get_footer();

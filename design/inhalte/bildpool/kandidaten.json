@@ -1,0 +1,193 @@
+{
+ "hinweis": "Kandidaten für den Rubrik-Pool (holen.py). Allgemeine Motive ohne erkennbare Privatpersonen als Hauptmotiv und ohne Bezug auf ein bestimmtes Ereignis. Lizenzangaben liest holen.py selbst aus der Commons-API.",
+ "kandidaten": [
+  {
+   "rubrik": "news",
+   "titel": "File:Reichstagsgebäude von Westen.jpg",
+   "archiv": "rb-85.jpg",
+   "fokus_y": 0.55,
+   "alt": "Das Reichstagsgebäude in Berlin, Sitz des Bundestags"
+  },
+  {
+   "rubrik": "news",
+   "titel": "File:Am Markt 01 - Rathaus.jpg",
+   "archiv": "rb-38.jpg",
+   "fokus_y": 0.5,
+   "alt": "Das Rathaus von Emsdetten im Münsterland"
+  },
+  {
+   "rubrik": "news",
+   "titel": "File:Bandaranaike International Airport (2).jpg",
+   "archiv": "rb-51.jpg",
+   "fokus_y": 0.5,
+   "alt": "Terminal und Vorfeld des Flughafens Bandaranaike bei Colombo in Sri Lanka"
+  },
+  {
+   "rubrik": "events",
+   "titel": "File:Kovagam koothandavar temple.jpg",
+   "archiv": "rb-43.jpg",
+   "fokus_y": 0.45,
+   "alt": "Geschmückter Festwagen bei einem Tempelfest in Tamil Nadu, davor eine Menschenmenge von hinten"
+  },
+  {
+   "rubrik": "events",
+   "titel": "File:Hamm Tempelfest 2118.jpg",
+   "fokus_y": 0.5,
+   "alt": "Tempelfest in Hamm: geschmückter Festwagen und Tempeltürme, davor Besucher unter bunten Schirmen"
+  },
+  {
+   "rubrik": "events",
+   "titel": "File:Theer the Temple Car.jpg",
+   "fokus_y": 0.5,
+   "alt": "Ein geschmückter Tempelwagen mit bunten Stoffbahnen und Säulen vor grauem Himmel"
+  },
+  {
+   "rubrik": "events",
+   "titel": "File:Rock am See, Bühne 2006.jpg",
+   "fokus_y": 0.5,
+   "alt": "Bühne eines Open-Air-Festivals, davor viele Zuschauer von hinten"
+  },
+  {
+   "rubrik": "events",
+   "titel": "File:Hamm Tempelfest 2185.jpg",
+   "fokus_y": 0.45,
+   "alt": "Tempelfest in Hamm: Festwagen neben den Tempeltürmen, Besucher mit Regenschirmen"
+  },
+  {
+   "rubrik": "events",
+   "titel": "File:Sri Muthumariamman Temple(Hindu temple) Teru Festival Chariot.jpg",
+   "fokus_y": 0.4,
+   "alt": "Geschmückter Festwagen des Sri-Muthumariamman-Tempels beim Wagenfest"
+  },
+  {
+   "rubrik": "events",
+   "titel": "File:KDK in B 2025 03.jpg",
+   "fokus_y": 0.5,
+   "alt": "Umzug beim Karneval der Kulturen in Berlin mit Tänzerinnen und Tänzern in bunten Kostümen"
+  },
+  {
+   "rubrik": "events",
+   "titel": "File:Thaipusam Festival The Golden Chariot.jpg",
+   "fokus_y": 0.45,
+   "alt": "Der goldene Festwagen beim Thaipusam-Fest unter dem Abendhimmel"
+  },
+  {
+   "rubrik": "community",
+   "titel": "File:Sri Ganesha Hindutempel 1 Berlin 2026.jpg",
+   "archiv": "rb-49.jpg",
+   "fokus_y": 0.42,
+   "alt": "Der Sri-Ganesha-Hindutempel an der Hasenheide in Berlin mit Turm und Festzelt"
+  },
+  {
+   "rubrik": "community",
+   "titel": "File:Hamm-Tempel-Farbgestaltung2014-11-02-13-07.jpg",
+   "archiv": "rb-71.jpg",
+   "fokus_y": 0.4,
+   "alt": "Der bunt bemalte Tempelturm des Sri-Kamadchi-Ampal-Tempels in Hamm-Uentrop"
+  },
+  {
+   "rubrik": "kultur",
+   "titel": "File:Arulmigu Sivan Temple, Glattbrugg - Innenansicht 20210320 133243.jpg",
+   "archiv": "rb-76.jpg",
+   "fokus_y": 0.6,
+   "alt": "Messingleuchter, Blumen und Bananen auf einem Tisch im Arulmigu-Sivan-Tempel in Glattbrugg"
+  },
+  {
+   "rubrik": "kueche",
+   "titel": "File:Veg Full Meals in Tamil Nadu.JPG",
+   "archiv": "rb-48.jpg",
+   "fokus_y": 0.5,
+   "alt": "Vegetarisches Essen nach Art Tamil Nadus auf einem Bananenblatt"
+  },
+  {
+   "rubrik": "kueche",
+   "titel": "File:Kottu.jpg",
+   "archiv": "rb-39.jpg",
+   "fokus_y": 0.5,
+   "alt": "Kottu Roti, ein Gericht aus Sri Lanka, auf einem Teller"
+  },
+  {
+   "rubrik": "kueche",
+   "titel": "File:Chicken Kottu.jpg",
+   "archiv": "rb-37.jpg",
+   "fokus_y": 0.5,
+   "alt": "Ein Teller Chicken Kottu, gehacktes Fladenbrot mit Huhn und Gemüse"
+  },
+  {
+   "rubrik": "sport",
+   "titel": "File:The Stade Municipal of Yverdon in 2022.jpg",
+   "archiv": "rb-67.jpg",
+   "fokus_y": 0.6,
+   "alt": "Rasen und Tribüne eines Fußballstadions in der Schweiz"
+  },
+  {
+   "rubrik": "allgemein",
+   "titel": "File:Hauptwache, Frankfurt, South view 20190915 1.jpg",
+   "archiv": "rb-78.jpg",
+   "fokus_y": 0.55,
+   "alt": "Die Hauptwache in Frankfurt am Main mit Cafétischen davor"
+  },
+  {
+   "rubrik": "allgemein",
+   "titel": "File:Aarau Altstadt Kirche 8941.jpg",
+   "archiv": "rb-60.jpg",
+   "fokus_y": 0.5,
+   "alt": "Die Altstadt von Aarau mit der Stadtkirche"
+  },
+  {
+   "rubrik": "allgemein",
+   "titel": "File:Leuk 20 12 2014 01.jpg",
+   "archiv": "rb-80.jpg",
+   "fokus_y": 0.5,
+   "alt": "Blick auf das Städtchen Leuk im Wallis unter Wolken"
+  },
+  {
+   "rubrik": "kino",
+   "titel": "File:Lichtburg-Essen-Kinosaal-2025.jpg",
+   "fokus_y": 0.5,
+   "alt": "Der Kinosaal der Lichtburg in Essen mit rotem Vorhang, Rängen und Wandleuchten"
+  },
+  {
+   "rubrik": "kino",
+   "titel": "File:ESML Eden-Lichtspiele Lübeck Projektor.jpg",
+   "fokus_y": 0.45,
+   "alt": "Alter Filmprojektor in den Eden-Lichtspielen in Lübeck"
+  },
+  {
+   "rubrik": "kino",
+   "titel": "File:Kinosaal Savoy Filmtheater.jpg",
+   "fokus_y": 0.5,
+   "alt": "Kinosaal des Savoy Filmtheaters, Sitzreihen vor dem Vorhang in blauem und rotem Licht"
+  },
+  {
+   "rubrik": "kino",
+   "titel": "File:Lichtspiele Zell am See.JPG",
+   "fokus_y": 0.5,
+   "alt": "Das Kino in Zell am See von außen mit dem Schriftzug „Kino“ über dem Eingang"
+  },
+  {
+   "rubrik": "kino",
+   "titel": "File:Doberan Kamp-Theater Kinosaal 1.jpg",
+   "fokus_y": 0.55,
+   "alt": "Kinosaal des Kamp-Theaters in Bad Doberan mit roten Sitzreihen vor der Leinwand"
+  },
+  {
+   "rubrik": "kino",
+   "titel": "File:Zeughauskino Leinwand (2).jpg",
+   "fokus_y": 0.5,
+   "alt": "Leinwand und Sitzreihen im Zeughauskino in Berlin"
+  },
+  {
+   "rubrik": "kino",
+   "titel": "File:Innenansicht Kinosaal \"SchlachthofKino\".jpg",
+   "fokus_y": 0.55,
+   "alt": "Innenansicht des Schlachthofkinos mit Leinwand und gelben Sitzreihen"
+  },
+  {
+   "rubrik": "kino",
+   "titel": "File:RIALTO Lichtspiele Kinosaal - Leinwand im Rücken.jpg",
+   "fokus_y": 0.5,
+   "alt": "Kinosaal der Rialto-Lichtspiele mit Sitzreihen in warmem Licht"
+  }
+ ]
+}

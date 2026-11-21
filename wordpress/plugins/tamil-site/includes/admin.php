@@ -62,14 +62,49 @@ function tamil_site_register_settings(): void {
 }
 add_action( 'admin_init', 'tamil_site_register_settings' );
 
+/**
+ * Auf der Einstellungsseite: Auswahl aus der Mediathek für die Bilder der Eigenanzeigen (ohne Skript bleibt das
+ * Zahlenfeld für die Mediathek-ID).
+ *
+ * @param string $seite Hook der Admin-Seite.
+ */
+function tamil_site_admin_skripte( string $seite ): void {
+	if ( 'settings_page_tamil-site' !== $seite ) {
+		return;
+	}
+	wp_enqueue_media();
+	$js = 'assets/admin-anzeigen.js';
+	wp_enqueue_script( 'tamil-site-admin-anzeigen', TAMIL_SITE_URL . $js, array( 'media-editor' ), TAMIL_SITE_VERSION . '.' . filemtime( TAMIL_SITE_DIR . $js ), true );
+	wp_localize_script(
+		'tamil-site-admin-anzeigen',
+		'tamilSiteBild',
+		array(
+			'titel' => __( 'Bild für die Eigenanzeige wählen', 'tamil-site' ),
+			'knopf' => __( 'Dieses Bild verwenden', 'tamil-site' ),
+		)
+	);
+}
+add_action( 'admin_enqueue_scripts', 'tamil_site_admin_skripte' );
+
 function tamil_site_sanitize_settings( $input ): array {
 	$input = is_array( $input ) ? $input : array();
 	$out   = array(
 		'anzeigen'     => array(),
 		'advanced_ads' => array(),
 		'eigen'        => array(),
+		'eigen_bild'   => array(),
 		'whatsapp_url' => esc_url_raw( (string) ( $input['whatsapp_url'] ?? '' ) ),
 	);
+	foreach ( array_keys( tamil_site_eigenanzeige_standardbilder() ) as $bild ) {
+		// Nur Bilder aus der Mediathek; leer oder 0 = mitgeliefertes Standardbild.
+		$id = absint( $input['eigen_bild'][ $bild ] ?? 0 );
+		if ( $id && ! wp_attachment_is_image( $id ) ) {
+			/* translators: %d: Mediathek-ID */
+			add_settings_error( 'tamil_site_settings', 'kein_bild', sprintf( __( 'Mediathek-ID %d ist kein Bild; das Standardbild bleibt.', 'tamil-site' ), $id ), 'warning' );
+			$id = 0;
+		}
+		$out['eigen_bild'][ $bild ] = $id;
+	}
 	foreach ( array_keys( tamil_site_werbeplaetze() ) as $platz ) {
 		// Banner-HTML ungefiltert nur mit unfiltered_html (Administratoren einer Einzelinstallation).
 		$html                          = (string) ( $input['anzeigen'][ $platz ] ?? '' );
@@ -82,9 +117,13 @@ function tamil_site_sanitize_settings( $input ): array {
 }
 
 /**
- * CSV speichern und daraus die Tabelle für template_redirect ableiten.
+ * CSV speichern und daraus die Tabelle für template_redirect ableiten. Fehlt das Feld in der Anfrage ganz (null),
+ * bleiben CSV und Tabelle, wie sie sind (B5 Nebenbefund 1: sonst leert jedes Speichern die Weiterleitungen).
  */
 function tamil_site_sanitize_redirects_csv( $input ): string {
+	if ( null === $input ) {
+		return (string) get_option( 'tamil_site_redirects_csv', '' );
+	}
 	$prep = tamil_site_prepare_redirects( (string) $input );
 	if ( is_wp_error( $prep ) ) {
 		add_settings_error( 'tamil_site_redirects_csv', 'zu_gross', $prep->get_error_message() );
@@ -104,6 +143,9 @@ function tamil_site_page_settings(): void {
 	$settings = tamil_site_settings();
 	$csv      = (string) get_option( 'tamil_site_redirects_csv', '' );
 	$table    = tamil_site_redirects();
+	if ( '' === trim( $csv ) && $table ) {
+		$csv = tamil_site_redirects_als_csv( $table ); // nur die Tabelle gespeichert: so zeigen, dass Speichern sie behält
+	}
 	?>
 	<div class="wrap">
 		<h1><?php esc_html_e( 'Tamil.de Website', 'tamil-site' ); ?></h1>
@@ -183,6 +225,48 @@ function tamil_site_page_settings(): void {
 					</td>
 				</tr>
 				<?php endforeach; ?>
+			</table>
+			<h3><?php esc_html_e( 'Bilder der Eigenanzeigen', 'tamil-site' ); ?></h3>
+			<p class="description"><?php esc_html_e( 'Jede Eigenanzeige ist ein Bildbanner. Ohne eigene Wahl gilt das mitgelieferte Standardbild; eine Anzeige ohne Bild wird nicht gezeigt. Alternativtext und Bildunterschrift (als Bildnachweis) kommen aus der Mediathek.', 'tamil-site' ); ?></p>
+			<table class="form-table" role="presentation">
+				<?php
+				$tamil_bild_namen = array(
+					'production' => __( 'Live mit dir! (Production)', 'tamil-site' ),
+					'event'      => __( 'Event melden', 'tamil-site' ),
+					'werben'     => __( 'Werben auf Tamil.de', 'tamil-site' ),
+					'whatsapp'   => __( 'WhatsApp-Kanal (beide Größen)', 'tamil-site' ),
+				);
+				foreach ( tamil_site_eigenanzeige_standardbilder() as $tamil_bild => $tamil_std ) :
+					$tamil_feld  = 'tamil-site-eigen-bild-' . $tamil_bild;
+					$tamil_id    = (int) ( $settings['eigen_bild'][ $tamil_bild ] ?? 0 );
+					$tamil_jetzt = tamil_site_eigenanzeige_bild( $tamil_bild );
+					?>
+				<tr>
+					<th scope="row"><label for="<?php echo esc_attr( $tamil_feld ); ?>"><?php echo esc_html( $tamil_bild_namen[ $tamil_bild ] ?? $tamil_bild ); ?></label></th>
+					<td>
+						<?php if ( $tamil_jetzt ) : ?>
+						<img src="<?php echo esc_url( $tamil_jetzt['src'] ); ?>" alt="" width="240" style="display:block;max-width:240px;height:auto;margin-bottom:8px">
+						<?php endif; ?>
+						<input type="number" min="0" step="1" class="small-text" id="<?php echo esc_attr( $tamil_feld ); ?>" name="tamil_site_settings[eigen_bild][<?php echo esc_attr( $tamil_bild ); ?>]" value="<?php echo esc_attr( $tamil_id ? (string) $tamil_id : '' ); ?>" placeholder="<?php esc_attr_e( 'Standard', 'tamil-site' ); ?>">
+						<button type="button" class="button tamil-bild-waehlen" data-feld="<?php echo esc_attr( $tamil_feld ); ?>" hidden><?php esc_html_e( 'Aus der Mediathek wählen', 'tamil-site' ); ?></button>
+						<button type="button" class="button-link tamil-bild-standard" data-feld="<?php echo esc_attr( $tamil_feld ); ?>" hidden><?php esc_html_e( 'Standardbild', 'tamil-site' ); ?></button>
+						<p class="description">
+							<?php
+							if ( ! $tamil_jetzt ) {
+								esc_html_e( 'Kein Bild vorhanden: Diese Eigenanzeige wird nicht gezeigt.', 'tamil-site' );
+							} elseif ( $tamil_id ) {
+								esc_html_e( 'Bild aus der Mediathek. Feld leeren für das Standardbild.', 'tamil-site' );
+							} else {
+								/* translators: %s: Bildnachweis */
+								echo esc_html( sprintf( __( 'Standardbild (%s). Mediathek-ID eintragen, um es zu ersetzen.', 'tamil-site' ), '' !== $tamil_std['nachweis'] ? $tamil_std['nachweis'] : __( 'ohne Nachweis', 'tamil-site' ) ) );
+							}
+							?>
+						</p>
+					</td>
+				</tr>
+				<?php endforeach; ?>
+			</table>
+			<table class="form-table" role="presentation">
 				<tr>
 					<th scope="row"><label for="tamil-site-wa"><?php esc_html_e( 'WhatsApp-Kanal', 'tamil-site' ); ?></label></th>
 					<td><input type="url" class="regular-text" id="tamil-site-wa" name="tamil_site_settings[whatsapp_url]" value="<?php echo esc_attr( $settings['whatsapp_url'] ); ?>"></td>

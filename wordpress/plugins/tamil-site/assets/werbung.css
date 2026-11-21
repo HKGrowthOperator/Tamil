@@ -9,7 +9,11 @@
 .wb-formular input[type="text"], .wb-formular input[type="email"], .wb-formular input[type="url"],
 .wb-formular input[type="tel"], .wb-formular textarea, .wb-formular select { display: block; width: 100%; max-width: 32em; box-sizing: border-box; }
 .wb-fehler { border-left: 4px solid currentColor; padding-left: 1em; }
+.wb-feldfehler { display: block; margin-top: 4px; font-weight: 600; color: var(--status-fehler, #b30000); }
+.wb-formular [aria-invalid="true"] { border: 2px solid var(--status-fehler, #b30000); }
 .wb-platzhalter { font-style: italic; }
+.wb-preise .wb-platzhalter { white-space: nowrap; }
+.wb-zahlung-aus strong { font-weight: 600; }
 .wb-vorschau img { max-width: 100%; height: auto; }
 
 /* Schmale Bildschirme: Zeilen untereinander statt seitlich scrollen; Kopfzeile bleibt für Screenreader. */
@@ -20,3 +24,6 @@
 	.wb-tabelle th, .wb-tabelle td { padding: .15em 0; }
 	.wb-tabelle td[data-label]::before { content: attr(data-label) ": "; font-weight: bold; }
 }
+
+/* N-07: Skizze je Platz (Seitenumriss, markierte Fläche in Titan) über der Beschreibung in „Wo“ */
+.wb-skizze { display: block; width: 48px; height: 64px; margin: 0 0 .4em; color: currentColor; }

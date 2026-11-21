@@ -39,6 +39,7 @@ function tamil_customizer_felder(): array {
 		'production_text'         => array( 'production', __( 'Text', 'tamil' ), 'textarea', 'A.R. Rahman, Ilaiyaraaja, Anirudh und Santhosh Narayanan standen oder stehen mit Tamil.de Production auf deutschen Bühnen. Hier stehen alle Konzerte, Tickets, Saalpläne und Antworten auf die häufigsten Fragen rund um den Konzertbesuch.' ),
 		'production_ticket_label' => array( 'production', __( 'Ticket-Knopf: Beschriftung', 'tamil' ), 'text', 'Tickets' ),
 		'production_ticket_url'   => array( 'production', __( 'Ticket-Knopf: Link', 'tamil' ), 'url', '' ),
+		'wow_aufmacher'           => array( 'start', __( 'Wow-Aufmacher „Punkt für Punkt zum Bild“ (Decke mit Tamil Dots über dem Aufmacherfoto)', 'tamil' ), 'checkbox', '1' ),
 		'tv_text'                 => array( 'tv', __( 'Einleitung', 'tamil' ), 'textarea', 'Tamilisches Fernsehen im Browser. Die Streams starten erst nach Klick.' ),
 		'tv_sender'               => array( 'tv', __( 'Sender (eine Zeile pro Sender: Name | Stream-Adresse .m3u8)', 'tamil' ), 'textarea', '' ),
 	);
@@ -51,6 +52,15 @@ function tamil_opt( string $key ): string {
 	$felder   = tamil_customizer_felder();
 	$standard = $felder[ $key ][3] ?? '';
 	return (string) get_theme_mod( 'tamil_' . $key, $standard );
+}
+
+/**
+ * Schalter im Customizer: „1“ oder leer.
+ *
+ * @param mixed $wert Eingabe.
+ */
+function tamil_sanitize_schalter( $wert ): string {
+	return ! empty( $wert ) && 'false' !== $wert ? '1' : '';
 }
 
 function tamil_customize_register( WP_Customize_Manager $wp_customize ): void {
@@ -84,6 +94,7 @@ function tamil_customize_register( WP_Customize_Manager $wp_customize ): void {
 			'email'    => 'sanitize_email',
 			'number'   => 'absint',
 			'textarea' => 'sanitize_textarea_field',
+			'checkbox' => 'tamil_sanitize_schalter',
 			default    => 'sanitize_text_field',
 		};
 		$wp_customize->add_setting(

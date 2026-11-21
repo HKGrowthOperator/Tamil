@@ -34,3 +34,105 @@
 .vz-email a {
 	overflow-wrap: anywhere;
 }
+
+/* Bilder (Auftraggeber 17.11.: jeder Eintrag hat ein Bild): Beitragsbild oder Symbolbild der Art, 16 : 9, Radius 0.
+   Farben aus dem Theme, mit Rückfall. */
+.vz-eintrag.vz-mit-bild {
+	display: grid;
+	grid-template-columns: 112px minmax(0, 1fr);
+	column-gap: 14px;
+	row-gap: 2px;
+	align-content: start;
+	align-items: start;
+}
+
+.vz-eintrag.vz-mit-bild > :not(.vz-bild) {
+	grid-column: 2;
+}
+
+.vz-eintrag.vz-mit-bild > .vz-bild {
+	grid-column: 1;
+	grid-row: 1 / span 3;
+	margin-top: 3px;
+}
+
+.vz a.vz-bild,
+.vz-profil .vz-bild {
+	position: relative;
+	display: block;
+	overflow: hidden;
+	aspect-ratio: 16 / 9;
+	background: var(--flaeche, #f2f2f2);
+	text-decoration: none;
+}
+
+.vz-bild .vz-bild__img {
+	display: block;
+	width: 100%;
+	max-width: none;
+	height: 100%;
+	margin: 0;
+	object-fit: cover;
+	border-radius: 0;
+}
+
+.vz-symbolbild {
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	padding: 1px 6px;
+	font-size: 12px;
+	font-weight: 600;
+	line-height: 1.35;
+	color: var(--hell, #fff);
+	background: var(--symbolbild-grund, rgb(102 0 0 / 0.86));
+}
+
+.vz-profil .vz-bild--profil {
+	aspect-ratio: auto;
+	margin: 0 0 16px;
+	background: none;
+}
+
+.vz-bild--profil .vz-bild__img {
+	height: auto;
+	aspect-ratio: 16 / 9;
+	background: var(--flaeche, #f2f2f2);
+}
+
+.vz-nachweis {
+	margin-top: 6px;
+	font-size: 13px;
+	line-height: 1.4;
+	color: var(--leise, #555);
+}
+
+@media (min-width: 600px) {
+
+	.vz-eintrag.vz-mit-bild {
+		grid-template-columns: 160px minmax(0, 1fr);
+		column-gap: 20px;
+	}
+
+	.vz-eintrag.vz-mit-bild > .vz-bild {
+		margin-top: 0;
+	}
+}
+
+@media (prefers-reduced-motion: no-preference) {
+
+	.vz-bild .vz-bild__img {
+		transition: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+	}
+
+	.vz-eintrag:hover .vz-bild .vz-bild__img {
+		transform: scale(1.03);
+	}
+}
+
+/* Name des Eintrags: 44 px tippbar, ohne die Zeile zu strecken (Prüfung tools/shots.mjs bei 820 px) */
+.vz-eintrag .vz-name {
+	display: inline-block;
+	padding-block: 11px;
+	margin-block: -11px;
+}

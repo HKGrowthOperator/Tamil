@@ -72,6 +72,12 @@ andere kippen. Bilder: erster Bildschirm Desktop (1280) und Handy (390) im Ordne
   Kartenraster gleicher Größe, Verlauf-Bildkacheln mit Titel im Bild, „Diese Woche“-Bänder, Rubrikkacheln.
 - **Seitdem gilt:** `design/brief-v3.md` und der Hallmark-Floor (geht den Punkten unten vor, wo sie sich
   widersprechen).
+- **Aufgehoben am 16.11.2026 (Luis):** `klar2` ist doch die gewählte Richtung (`docs/abnahme/2026-11-16-G2-klar2.md`).
+  - Für klar2 gelten die neuen Verbote dieser Runde nicht mehr: Dachzeilen, „·“-Metazeilen, Verlauf-Bildkacheln mit
+    Titel im Bild, „Diese Woche“-Bereich, Rubrikkacheln.
+  - Es gilt, was klar2 zeigt. Neue Seitentypen folgen klar2 und nicht dem Hallmark-Floor.
+  - Weiter verboten bleiben `klar`, `mix-ordnung` und `mix-feed` als eigene Richtungen.
+  - Weiter verboten bleiben die Punkte aus den Runden 1–4.
 
 ## Was daraus folgt
 

@@ -3,6 +3,241 @@
 Neueste oben. Format: Datum · Entscheidung · wer · warum. Was hier steht, gilt, bis ein neuerer Eintrag es ändert.
 Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
+## 21.11.2026
+
+- **KI-Symbolbilder als Ersatzbilder im Rubrik-Pool erlaubt (Theme 3.13.0).** Auftrag von Luis am 21.11.: „suche
+  außerdem täglich beiträge und wenn keine bilder vorhanden oder sonst was gebe mir bitte ein generiertes bild das
+  aussieht wie echt hyperrealistisch nicht nach ki“ und „gehe mit higgsfield und skills noch mal über die bestehende
+  seite komplett rüber“. Das kehrt den Eintrag vom 11.11. („keine KI-Bilder“) für genau diesen Fall um: nur
+  Symbolbilder ohne erkennbare Personen, Marken, Schrift oder nachgestellte Ereignisse, immer mit Schild „Symbolbild“
+  und dem Nachweis genau „Symbolbild: KI-generiert · Tamil.de“ (Spezifikation 4.8; nachgezogen in
+  `docs/spezifikation/bilder-und-lizenzen.md` 4.1). Alles andere aus dem 11.11. bleibt. · Luis, umgesetzt vom
+  Theme-Bauer im Auftrag der Hauptsitzung
+  - **Heikle Themen ohne KI-Bild (Spezifikation 4.2 bleibt):** Das Theme kennt die Einstufung nicht. Darum kommen die
+    vier Nachrichten-Bilder `news-4` bis `news-7` nicht in den Pool (Dateien nur unter `design/inhalte/bilder-lauf/`),
+    und für Beiträge der Rubrik Nachrichten wählt die Bildkette nie ein Poolbild mit `'ki' => true`, auch nicht über
+    den allgemeinen Ausweich-Pool und auch nicht, wenn die Hauptrubrik eine andere ist (Test
+    `tests/wp/test_bildpool_ki.py`).
+  - **Vorbehalte:** `community-4` (Ganesha-Relief am Tempeleingang) bleibt draußen; `events-10` und `events-12` sind
+    drin. Im Pool stehen 27 KI-Bilder (Entertainment 4, Events 4, Community 3, Küche 4, Kino 4, Sport 4, Kultur 4),
+    je Rubrik abwechselnd mit den Commons-Fotos. Quelle, Prompt und Modell je Bild: `design/inhalte/bilder-lauf/pool/`;
+    erzeugt wird die Liste mit `design/inhalte/bildpool/holen.py --text`. Rückweg: in `holen.py` die Einträge über
+    `KI_AUS` ausschließen oder `KI_JSON` leeren und neu schreiben.
+
+- **Theme 3.12.0 / Plugin tamil-site 1.2.0 (Kritik-Bogen 3.11.0, Stufe 2):** · Hauptsitzung im Auftrag von Luis,
+  umgesetzt vom Theme-Bauer
+  - **Einzelne letzte Karte in normaler Breite (N-04):** Bleibt in einem Raster eine Karte allein in der letzten Zeile,
+    steht sie in normaler Spaltenbreite linksbündig, nie über die ganze Zeile (Rubrik, Suche, Events-Archiv, Production
+    einheitlich). Warum: aufgezogen wurde ihr Bild weit über die Dateibreite vergrößert und weich (Production 1280:
+    1200 statt 384 px). Rückweg: die
+    entfernten Regeln QA-04 und K-19 in `theme.css` (siehe Kommentar dort).
+  - **Bühnen einheitlich (N-03, N-08):** Küche und Rubrik-Bühnen nutzen dieselben Regeln (`.kueche__raster`), Titel der
+    kleinen Karten ganz. Rückweg: Commit 52bb761.
+  - **„Kommende Termine“ entfällt, wenn alles unter „Ab heute“ steht (N-05):** die Filter wandern dann nach „Ab heute“.
+  - **N-06 nur als Vorschlag an Luis, nicht umgesetzt:** Die Kritik fand auf kurzen Artikeln (eine Minute Lesezeit) vier
+    Werbeflächen und schlug vor, die Anzeige im Text erst ab fünf Absätzen und bei kurzen Artikeln höchstens zwei
+    Flächen zu zeigen. Das ändert verkaufbare Plätze der von Luis bestätigten Festlegung F3
+    (`docs/vertrag/festlegung-werbung.md`: „Im Artikel: nach dem zweiten Absatz“, „Fuß: über dem Fuß jeder Seite“);
+    die freie Hand der Nacht deckt Gestaltung, keine Änderung einer Festlegung. Gebaut und wieder zurückgenommen
+    (Reverts f67445d, 76afb9a). Stand jetzt wörtlich nach F3: „Im Artikel“ nach dem zweiten Absatz ohne Mindestlänge
+    (die Mindestlänge „vier Absätze“ der ersten Theme-Fassung entfällt), Fuß auf jeder Seite; Test
+    `tests/wp/test_artikel_werbung.py` prüft das. · Hauptsitzung
+  - **Hausanzeigen-Regeln aus 3.9.0 gegen F3 geprüft:** „keine zwei Eigenanzeigen direkt hintereinander“ und „keine
+    Eigenanzeige für die eigene Seite“ betreffen nur Eigenanzeigen (bleiben). „Keine Anzeigen auf Impressum und
+    Datenschutz“ unterdrückte auch gebuchte Plätze und gilt jetzt nur noch für Eigenanzeigen; gebuchte Plätze stehen
+    dort wie auf jeder Seite (F3).
+  - **Teilen als Knopfzeile, Infokasten als Terminkasten (N-10, N-11).**
+  - **Leichterer Verlauf (N-12):** 66 % Schwarz am Beginn der Schrift (7,2 : 1 auf Weiß, schlechtester Titel 7,6 : 1).
+  - **Kuppel ohne Bodenschatten (N-13),** Alt-Text beim Laden unsichtbar (N-16), „Im Kino“ nicht zwischen zwei
+    Kinokarten (N-17), Skizze je Werbeplatz auf „Werben“ (N-07).
+  - **Ein Termin als Band (K-13):** Bild in Dateigröße, Text mittig daneben (Entscheidung statt schmaler Karte, weil
+    die schmale Karte zwei Drittel der Zeile leer ließe).
+  - **Nicht umgesetzt:** N-09 (Anschnitt der nächsten Karte am Handy) widerspricht dem Scrollweg des Aufmachers und
+    gehört mit N-15 (tote Strecke) und K-07 (Splitter) in eine Überarbeitung von `wow.js` mit neuer Bildratenmessung;
+    N-14 (eine linke Kante für Textseiten) braucht eine Entscheidung über die Spaltenbreiten (Artikel 560 px, Seiten
+    720 px, Kontakt volle Breite).
+- **Theme 3.11.1 (P0 aus dem Live-Stand 3.11.0):** „Weitere Meldungen“ haftet nur noch innerhalb der Aufmacher-Zeile
+  (N-01, vorher in 8 von 8 gemessenen Fenstern über der nächsten Zeile, danach 0; Messung `wordpress/dev/ueberdeckung.mjs`);
+  Titel im Aufmacher und H1 werden nie gekürzt oder getrennt, lange Titel bekommen kleinere Stufen (N-02). · Hauptsitzung
+  im Auftrag von Luis, umgesetzt vom Theme-Bauer
+
+- **Startseite im Wechsel: Reihe und Bühne (Theme 3.11.0, K-06):** Die Rubrikblöcke unter dem Aufmacher wechseln
+  zwischen der Reihe aus vier Karten und der Bühne (die erste Karte groß, die übrigen klein gestapelt daneben, gebaut
+  wie die Küche). Warum: Die unabhängige Kritik fand fünf gleich gebaute Reihen nacheinander (das „gleichförmige
+  Kartenraster“ der Verbotsliste); Luis will „was komplett Spezielles“. Kartenart, Titel im Bild und Punktbogen bleiben,
+  die Seite bekommt weitere Höhepunkte. Rückweg: in `front-page.php` beim Rubrik-Block `buehne` auf `false` setzen.
+
+  · Hauptsitzung im Auftrag von Luis, umgesetzt vom Theme-Bauer
+- **Wow-Aufmacher überarbeitet (Theme 3.11.0, K-01 bis K-05):** Kuppel größer und am Anfang halb geöffnet (Foto sofort
+  erkennbar), Titel 26/38 px und höchstens 84 Zeichen sichtbar, Weg halbiert, Punkte und Titelfeld zugleich, am Desktop
+  steht „Weitere Meldungen“ mit, am Tablet hängt der Weg an der Rahmenhöhe. Warum: Kritik-Note 6/10, Anfang fast nur
+  Titan, fünf Titelzeilen, Leere neben und unter dem Aufmacher. Rückweg: Werte in `assets/js/wow.js` (T0, Größe) und
+  `assets/css/theme.css` (Abschnitt Wow-Aufmacher).
+
+  · Hauptsitzung im Auftrag von Luis, umgesetzt vom Theme-Bauer
+
+- **Wow-Aufmacher „Punkt für Punkt zum Bild“ (Theme 3.10.0):** Der Aufmacher der Startseite bekommt, wenn er ein
+  eigenes Foto ab 960 px Breite hat, eine Decke in Titan mit den 238 Punkten des Masters als Fenster aufs Foto; beim
+  Scrollen wachsen die Punkte, bis das volle Foto steht (Vorlage `design/richtungen/klar2/wow/punkt-zum-bild/`,
+  Variante A). Warum: Luis wollte ausdrücklich einen Wow-Effekt mit den Tamil Dots; das Signet tut hier etwas, statt
+  nur Dekor zu sein, und es kann nur tamil.de zeigen. Begrenzt auf eine Stelle, nur mit echtem Foto, der erste
+  Bildschirm bewegt sich nicht von selbst, Titel von Anfang an sichtbar. Gemessen: Lighthouse mobil Start (5 Läufe,
+  Median) 84 → 83, LCP 4,22 → 4,29 s, CLS 0. **Abschalten:** Customizer → Tamil.de → Startseite → „Wow-Aufmacher“
+  oder Filter `add_filter( 'tamil_wow_aufmacher', '__return_false' );`. Ohne Skript und mit „Bewegung reduzieren“
+  steht sofort das fertige Foto.
+
+  · Hauptsitzung im Auftrag von Luis (freie Hand bis 8 Uhr), umgesetzt vom Theme-Bauer
+- **Logo-Fläche im Band mit 3 px Impact unten** wie unter der aktiven Rubrik. Umkehren: `box-shadow` an
+  `.band__logo` entfernen. · Theme-Bauer im Auftrag von Luis
+
+Luis, 00:45 Uhr: Die Nacht wird ohne Rückfragen gearbeitet („entscheide selber … komplett automatisch“). Die folgenden
+Gestaltungsentscheidungen zu seinem Auftrag „tamil logo beim runterscrollen in der leitse theme ausarbeiten spezial
+mehr rein bilder nicht alle eckig also die karten auf einer höhe alles“ hat der Theme-Bauer getroffen; jede lässt sich
+einzeln umkehren.
+
+- **Logo im stehenden Band (Theme 3.9.0):** Sobald der Kopf mit dem großen Logo aus dem Bild ist, zeigt das Rubrikband
+  links das ganze Logo klein (30 px hoch, ab 1024 px 34 px) auf einer weißen Fläche bündig am linken Rand in voller
+  Bandhöhe. Warum: Das Logo ist dunkelrot und auf Titan unsichtbar; eine weiße Fassung gibt es nicht, Umfärben oder
+  Zuschneiden wäre ein Eingriff ins Logo. Die weiße Fläche wiederholt Rot auf Weiß wie im Kopf. Die Rubriken rücken
+  per transform zur Seite (kein Springen), Einblenden 0,2 s nur ohne reduzierte Bewegung. Umkehren: `.band__logo`
+  in `template-parts/header/kopf.php` entfernen.
+
+  · Theme-Bauer im Auftrag von Luis
+- **Abgerundete Ecken (Theme 3.9.0):** Ein Radius für Karten und Bilder, `--radius` 10 px, für kleine Kacheln und die
+  Bilder der Kinotabelle `--radius-klein` 6 px. Warum: deutlich weicher, aber noch ruhig und redaktionell; größere
+  Radien wirken bei Titel im Bild wie App-Kacheln. Punktbogen und Schild „Symbolbild“ werden von der Rundung
+  angeschnitten, nichts steht über. Gerade bleiben Bänder, Kopf, Fuß und Bilder, die am Handy von Rand zu Rand laufen
+  (Aufmacher, Artikelbild unter 600 px), weil eine Rundung am Bildschirmrand wie ein Fehler aussieht. Umkehren:
+  `--radius` und `--radius-klein` in `assets/css/theme.css` auf 0.
+
+  · Theme-Bauer im Auftrag von Luis
+- **Karten auf einer Höhe (Theme 3.9.0):** Der Vorspann unter Karten hält immer drei Zeilen Platz, die Kinokarte in
+  „Diese Woche“ ist neben den Terminen so hoch wie diese. Warum: Unterkanten einer Reihe fluchten, ohne Text zu kürzen
+  oder Karten zu beschneiden. Messung `wordpress/dev/kartenhoehe.mjs`. Umkehren: die Regel mit `min-height:
+  calc(3 * 1.45em)` entfernen.
+
+  · Theme-Bauer im Auftrag von Luis
+
+- **Punktbogen bleibt weiß auf dunklen, rot auf hellen Bildecken:** Luis fragte zuerst „warum sind die tamil dots nicht
+  in rot ??“ und wollte den Bogen überall in Titan/Impact. Nach Rückfrage bestätigte er die bestehende Regel aus
+  3.7.x (Wahl über den Ton der Bildecke, `tamil_signatur_ecke_ton`). Wortlaut: „Die weißen Punkte in den Bildecken
+  bleiben, weil diese Ecken meist dunkel sind; rot wäre dort kaum zu sehen, außer auf hellen Bildern. genau so
+  umsetzen“. Keine rote Fassung mit weißer Eckfläche.
+
+  · Luis
+
+## 20.11.2026
+
+- **Jede Meldung als Karte (Theme 3.7.0):** Was auf der Startseite gilt, gilt jetzt überall, wo Beiträge angerissen
+  werden: jeder Beitrags-Anreißer ist eine Bildkarte mit Dachzeile „Rubrik | Datum“ und Titel im Foto, Punktbogen unten
+  rechts, Schild „Symbolbild“ oben rechts – Rubrikseiten („Neu in der Rubrik“, „Weitere Beiträge“), Suche, Archive,
+  404, Production, „Weiterlesen“, Termine („Ab heute“, „Kommende Termine“, „Das Jahr“) und Kino („Im Programm“, „Aus
+  dem Kinojahr“). Es bleiben: Top-News im Kopf, Navigation, Fußlisten, Rubrikkacheln, Verzeichnis, Anzeigen,
+  Formulare, reine Textseiten und die Kinotabelle (Spielorte; ihre Zeilen verlinken auf Kinos, nicht auf Beiträge).
+  Wortlaut Luis: „auf jeder meldung tamil dots und schrift auf der karte tamil dots auchh auf der akrte“.
+
+  · Luis (`docs/abnahme/2026-11-20-logo-startseite.md`, Nachtrag 3.7.0)
+- **Neues Logo, genau so übernommen:** Das Logo aus `design/inhalte/logo-2026-11.webp` („tamil“ in Rot, „.de“ in
+  Dunkelgrau, darunter „portal • lifestyle • entertainment“ und „& KOMMUNITYPLATTFORM DER COMMUNITY“) ersetzt das
+  bisherige Logo in Kopf, Fuß, Teilenbild, Theme-Vorschau und Social-Vorlagen – in genau dieser Form und
+  Schreibweise, ohne Neuzeichnen oder Vektor-Nachbau, nur vom weißen Grund freigestellt. Das hebt die Regel
+  „Logo bleibt unverändert“ aus dem Branding-Handoff v1.1 für dieses Logo auf; alle anderen Logo-Regeln gelten weiter
+  (Signet nie am, im oder hinter dem Logo). Favicon und App-Icon „t.“ bleiben, bis Luis anders entscheidet.
+
+  · Luis (`docs/abnahme/2026-11-20-logo-startseite.md`)
+- **Startseite „Text auf Bild“:** Alle Beiträge der Startseite stehen als Bildkarten mit Dachzeile „Rubrik | Datum“ und
+  Titel im Foto (auf dem Verlauf nach Schwarz) – Nebenstücke, „Weitere Meldungen“, Küche, Rubrikblöcke und „Diese
+  Woche“. Die Rubrikkacheln (Navigation) bleiben. Bewegung D und die Bilderpflicht bleiben.
+
+  · Luis (`docs/abnahme/2026-11-20-logo-startseite.md`)
+- **Punktbogen an jedem Beitrag:** Das Signet steht klein und dezent an jedem einzelnen Beitrag, als Bogen unten rechts
+  im Bild (Anreißer, Listen, Kacheln, Kino, Termine, Suche, Artikelbild). Ausgenommen: Rubrikkacheln (Navigation),
+  Leerzustände, Seiten, Verzeichnis, Anzeigen, Logo. Das ergänzt die Regel „nicht über Fotos, nicht in Anreißern“ aus
+  dem Theme 3.5.0 um diese eine Ausnahme.
+
+  · Luis (19./20.11., `docs/abnahme/2026-11-20-logo-startseite.md`)
+
+## 19.11.2026
+
+- **Freigaben vom 19.11.:**
+  - Die Farben des Themes 3.4.0 kommen aufs Testsystem.
+  - Die Form des Signets Tamil Dots 04A (`design/signature/master.svg`) ist freigegeben.
+  - Die Richtung der Social-Karten (`design/social/`) stimmt und geht als Vorgabe ans Backend.
+  - Als Nächstes kommt das Signet als Hintergrund-Element in die Website. Gezeigt wird es vor dem Einbau aufs
+    Testsystem.
+
+  · Luis (`docs/abnahme/2026-11-19-signature.md`)
+- **Markenfarben und Signature-System:**
+  - **Farben:** Hintergrund Weiß #FFFFFF, Hauptfarbe Titan Red #660000, Akzentfarbe Impact Red #B30000,
+    Farbgewichtung „Red Dominance / Power“.
+  - **Signet:** „Tamil Dots 04A“, Haupt-Element Tamil Dots A, unabhängig vom Logo.
+    - Animation: Punkte bauen die Form auf.
+    - Variante C nur als abgeleitetes Bewegungselement, Spatial nur an Sonderstellen.
+    - Richtung: einheitliches Kartensystem für News, Social und Website.
+  - **Was das ändert:** Die Farbwerte von klar2 (kühles Off-White, Logo-Rot) gelten nicht mehr. Ebenso die Regel „Rot nur
+    als Akzent“.
+  - **Was bleibt:** Bewegung D, die Bilderpflicht und die Gestaltung von klar2.
+
+  · Luis (`docs/abnahme/2026-11-19-signature.md`)
+
+## 17.11.2026
+
+- **Kopfzeile mit Top-News in Rot:** Zwischen Datum und Suche steht wieder eine Zeile mit Direktlinks, jetzt als
+  „Neu“ mit den Überschriften der neuesten Beiträge in Rot (ab 1024 px zwei, darunter einer, einzeilig mit
+  Auslassung, am Handy ohne Datum), ohne den Aufmacher der Startseite und ohne den offenen Artikel. Kein Laufband,
+  keine Bewegung. Die Zeile ist Navigation und deshalb von der Bilderpflicht ausgenommen. Ersetzt den Wegfall der
+  Hinweise „Diese Woche“ vom selben Tag. · Luis
+- **Aufteilung:** Luis' Sitzung macht nur noch Website, Design und Fulfillment. Dazu gehören das Theme, die
+  Frontend-Teile von `tamil-site` und das Testsystem der Website. Nick macht das Backend: News-Radar, Cockpit, Agenten,
+  Publisher, Social-Automatik und `tamil-radar`. Die Übergabe an Nick steht in `docs/uebergabe/backend-nick.md`. · Luis
+- **Website-Ergebnisse direkt auf `main`, nur Website-Dateien.**
+  - Was auf `main` kommt: `wordpress/themes/tamil`, `wordpress/plugins/tamil-site`, `wordpress/dev`,
+    `wordpress/docker`, `wordpress/Dockerfile`, `design/`, `DESIGN.md` und `tests/wp`, als eigener Commit je
+    Ergebnis. Ohne Radar und Backend.
+  - Das Testsystem baut weiter aus `claude/radar-multiagent`. Dorthin wird jedes Ergebnis zuerst gemergt.
+  - Weicht für diese Pfade bewusst von „nie direkt auf main“ ab (`CLAUDE.md`). · Luis
+- **Bilderpflicht auf der Website:** Jeder sichtbare Anreißer, jede Listenzeile, Kachel, jedes Suchergebnis,
+  „Weiterlesen“ und jeder Kino- und Termineintrag zeigt ein echtes Bild. Ausnahmen: Rubrikband, Fußlisten, Formulare,
+  reine Textseiten (Impressum, Datenschutz). Das Theme nimmt das eigene Foto, sonst ein Bild aus dem Text, sonst ein
+  gekennzeichnetes Symbolbild aus einem Commons-Pool je Rubrik (`docs/spezifikation/bilder-und-lizenzen.md` 2.7).
+  Kehrt die frühere Regel um, Beiträge ohne Foto als reine Textzeile zu zeigen. · Luis
+- **„Diese Woche“ nur mit Aktuellem:** Filme mit Spieltagen ab heute, Termine der nächsten 14 Tage (sonst die nächsten
+  drei), nie Beiträge älter als 30 Tage ohne kommenden Termin; die Hinweise „Diese Woche“ in der Kopfzeile entfallen.
+  · Luis
+- **Rubrikband rot mit weißer Schrift** statt dunkel (Tinte). Aktive Rubrik mit 3 px Weiß darunter, Leselinie der
+  Bewegung D hell, Fokusring weiß. Damit ist „Diese Woche“ die einzige dunkle Fläche; Rot ist als Fläche nur im Band
+  erlaubt. Kehrt §10.1 von `design/brief.md` („Dunkle Flächen, genau zwei“, „Rot nie als Fläche“) für das Band um. ·
+  Luis
+
+## 16.11.2026
+
+- **Bewegung D, Theme direkt in klar2, ohne Probeseite und Tor G3, direkt aufs Testsystem.**
+  - Luis wählt aus der Vorschau die Variante D: Kopf faltet ins Band, rote Leselinie, Tiefe am Aufmacher, dunkle
+    Fläche zieht auf, große Bilder decken auf, Listen steigen.
+  - Statt Probeseite und Tor G3 wird das WordPress-Theme sofort umgebaut und über `claude/radar-multiagent` auf
+    das Testsystem gebracht. Die Abnahme geschieht dort mit echten Beiträgen.
+  - Das Cockpit folgt im zweiten Schritt.
+
+  · Luis (`docs/abnahme/2026-11-16-G2-klar2.md`, Nachtrag)
+- **Design: `klar2` statt „Tageskalender“, auf allen Seiten von Website und Cockpit.** Das kehrt zwei frühere
+  Entscheidungen um:
+  - das Urteil vom 13.11. („komplett generisch“, gilt für klar2);
+  - die Wahl vom 14.11. (Mischung A + B, „Tageskalender“).
+
+  Was daraus folgt:
+  - Die Verbote aus „Runden 5–7“ in `abgelehnt.md` sind für die Bestandteile von klar2 aufgehoben. Das betrifft
+    Dachzeilen, Bildkacheln mit Verlauf und Titel im Bild, den dunklen „Diese Woche“-Bereich, Rubrikkacheln und
+    Metazeilen mit „·“.
+  - Für die Gestaltung gelten wieder `design/brief.md` §10 (klar2) und diese Wahl. `design/brief-v3.md` und der
+    Hallmark-Floor gelten nicht mehr, wo sie klar2 widersprechen.
+  - Neu ist **Bewegung beim Scrollen**: ruhig, nicht hyperrealistisch, nur unter
+    `prefers-reduced-motion: no-preference`. Luis wählt die Art aus einer Vorschau. Damit ist §10.1 („kein
+    Einblenden beim Scrollen“) aufgehoben.
+  - Tageskalender bleibt in der Git-Historie (`claude/mache-weiter-i23fs9`, Theme 2.0.0) und wird nicht weitergebaut.
+
+  Weg: Vorschau Bewegung → `/design-ausbau klar2` für Website und Cockpit → Tor G3 → `/design-umsetzung`. · Luis
+  (`docs/abnahme/2026-11-16-G2-klar2.md`)
+
 ## 14.11.2026
 
 - **Theme „Tageskalender“: Wortdichte (Hallmark Gate 58) bewusst über der Grenze.** Die Dichte entsteht aus der
