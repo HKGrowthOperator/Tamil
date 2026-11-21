@@ -191,14 +191,16 @@ JS_1 = """<script>
   var decke = document.querySelector('.wow-decke');
   var ctx = decke.getContext('2d');
   var ZOOM = 3.2, mx = 0, my = 0;
-  var B = 0, H = 0, dpr = 1, f = 1, ox = 0, oy = 0, rmax = 0, ende = 1, letzter = -1, wartet = false;
+  var B = 0, H = 0, dpr = 0, scharf = 1, grob = 1, f = 1, ox = 0, oy = 0, rmax = 0, ende = 1, letzter = -1, wartet = false;
 
   function messen() {
     var r = rahmen.getBoundingClientRect();
     B = r.width; H = r.height;
-    // Die Decke braucht nicht die volle Pixeldichte: höchstens 2-fach und höchstens rund 500 000 Bildpunkte.
-    dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 2, Math.sqrt(500000 / (B * H))));
-    decke.width = Math.round(B * dpr); decke.height = Math.round(H * dpr);
+    // Ruhend (Anfang) zeichnet die Decke scharf, höchstens 2-fach. In Bewegung reichen rund 250 000 Bildpunkte,
+    // das hält jedes Bild auch auf schwachen Handys kurz.
+    scharf = Math.min(window.devicePixelRatio || 1, 2);
+    grob = Math.max(1, Math.min(scharf, Math.sqrt(250000 / (B * H))));
+    dpr = 0;
     // Die Form steht mittig im Bild, mit Luft zum Rand; ihre Proportion bleibt unverändert.
     f = Math.min(B * (B < 600 ? 0.86 : 0.74), H * 0.74 / SEITE);
     ox = (B - f) / 2; oy = (H - f * SEITE) / 2;
@@ -229,6 +231,8 @@ JS_1 = """<script>
     // p 0..1 über den Scrollweg. Bis 0,84 wachsen die Punkte, danach kommt der Titel.
     var t = Math.min(1, p / 0.84), titel = Math.max(0, Math.min(1, (p - 0.84) / 0.13));
     rahmen.style.setProperty('--titel', titel.toFixed(3));
+    var soll = p === 0 ? scharf : grob;
+    if (soll !== dpr) { dpr = soll; decke.width = Math.round(B * dpr); decke.height = Math.round(H * dpr); }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.globalCompositeOperation = 'source-over';
     ctx.clearRect(0, 0, B, H);
@@ -353,8 +357,238 @@ def seite_1(P, seite):
             + js + "</body>\n</html>\n")
 
 
+# ---------------------------------------------------------------------------------------------------------------------
+# Vorschau 2: 2026 in 238 Punkten
+# ---------------------------------------------------------------------------------------------------------------------
+
+CSS_2 = """
+.kopfzeile__suche { margin-left: auto; }
+.vorschau-hinweis { background: #F2F2F2; border-bottom: 1px solid #D9D9D9; font-size: 13px; color: #555; }
+.vorschau-hinweis p { max-width: var(--breite); margin: 0 auto; padding: 10px var(--rand); }
+
+.jahr { padding-block: 28px 56px; }
+.jahr h1 { margin: 0; font-size: 28px; line-height: 1.15; font-weight: 700; letter-spacing: -0.012em; }
+.jahr__vorspann { margin: 10px 0 0; max-width: 40em; font-size: 18px; line-height: 1.5; }
+.jahr__zurliste { display: inline-flex; align-items: center; min-height: 44px; margin-top: 4px; color: #B30000; font-weight: 600; }
+.jahr__filter { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.jahr__filter button {
+  font: inherit; font-size: 15px; font-weight: 600; min-height: 44px; padding: 0 14px; cursor: pointer;
+  color: #660000; background: #FFFFFF; border: 1px solid #660000; border-radius: 0;
+}
+.jahr__filter button span { font-weight: 400; }
+.jahr__filter button:hover { color: #B30000; border-color: #B30000; }
+.jahr__filter button[aria-pressed="true"] { color: #FFFFFF; background: #660000; border-color: #660000; }
+.jahr__filter button:focus-visible { outline: 3px solid #660000; outline-offset: 2px; }
+.jahr__stand { margin: 12px 0 0; font-size: 15px; color: #555; min-height: 1.5em; }
+
+.jahr__kuppel { position: relative; margin: 16px 0 0; }
+.jahr__kuppel svg { display: block; width: 100%; height: auto; overflow: visible; }
+.jahr__kuppel .leer { fill: #660000; opacity: 0.13; }
+.jahr__kuppel a { outline: none; cursor: pointer; }
+.jahr__kuppel .p { fill: var(--f); transform-box: fill-box; transform-origin: center; }
+.jahr__kuppel .griff { fill: transparent; }
+.jahr[data-filter] .jahr__kuppel a .p { fill: #660000; opacity: 0.13; }
+.jahr[data-filter] .jahr__kuppel a.an .p { fill: #B30000; opacity: 1; }
+.jahr[data-filter] .jahr__kuppel a:not(.an) { pointer-events: none; }
+.jahr__kuppel a:hover .p, .jahr__kuppel a:focus-visible .p, .jahr__kuppel a.zeigt .p {
+  fill: #B30000; opacity: 1; scale: 1.45; stroke: #000000; stroke-width: 2.5; vector-effect: non-scaling-stroke;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .jahr__kuppel .p { transition: scale 0.16s ease-out, fill 0.2s ease-out, opacity 0.2s ease-out; }
+}
+.jahr__achse { display: flex; justify-content: space-between; margin: 6px 0 0; font-size: 13px; color: #555; }
+.jahr__wahl { margin-top: 20px; }
+.jahr__tipp {
+  position: absolute; z-index: 5; left: 0; top: 0; width: max-content; max-width: min(300px, 80vw); padding: 9px 12px 10px;
+  background: #000000; color: #FFFFFF; font-size: 15px; line-height: 1.3; font-weight: 600; pointer-events: none;
+}
+.jahr__tipp span { display: block; margin-top: 4px; font-size: 13px; font-weight: 400; color: #CCCCCC; }
+.jahr__tipp[hidden] { display: none; }
+
+.jahr__listen { margin-top: 44px; max-width: 46em; }
+.jahr__listen > h2 { margin: 0; padding-top: 10px; border-top: 2px solid #660000; font-size: 19px; font-weight: 700; }
+.jahr__listen h3 { margin: 26px 0 0; font-size: 15px; font-weight: 600; color: #555; }
+.jahr__liste { margin: 4px 0 0; padding: 0; list-style: none; }
+.jahr__liste li { border-top: 1px solid #D9D9D9; }
+.jahr__liste a { display: block; padding: 11px 0 12px; color: #000000; text-decoration: none; }
+.jahr__liste a strong { display: block; font-size: 18px; line-height: 1.3; font-weight: 600; }
+.jahr__liste a span { display: block; margin-top: 3px; font-size: 13px; color: #555; }
+.jahr__liste a b { font-weight: 600; color: #B30000; }
+.jahr__liste a:hover strong { text-decoration: underline; text-underline-offset: 3px; }
+.jahr__liste a:focus-visible { outline: 3px solid #660000; outline-offset: 2px; }
+@media (min-width: 1024px) {
+  .jahr { padding-top: 36px; display: grid; grid-template-columns: 330px minmax(0, 1fr); column-gap: 48px; align-items: start; }
+  .jahr__kopf { grid-column: 1; grid-row: 1; }
+  .jahr__wahl { grid-column: 1; grid-row: 2; }
+  .jahr__kuppel { grid-column: 2; grid-row: 1 / span 2; margin-top: 0; }
+  .jahr__listen { grid-column: 1 / -1; }
+  .jahr h1 { font-size: 34px; }
+  .jahr__vorspann { font-size: 19px; }
+  .jahr__liste a strong { font-size: 19px; }
+}
+"""
+
+JS_2 = """<script>
+(function () {
+  'use strict';
+  var jahr = document.querySelector('.jahr'), kuppel = document.querySelector('.jahr__kuppel');
+  var tipp = document.querySelector('.jahr__tipp'), stand = document.querySelector('.jahr__stand');
+  var punkte = Array.prototype.slice.call(kuppel.querySelectorAll('a'));
+  var zeilen = Array.prototype.slice.call(document.querySelectorAll('.jahr__liste li'));
+  var GESAMT = punkte.length;
+
+  // Schild am Punkt: Titel, Rubrik und Datum; steht über dem Punkt, bei wenig Platz darunter.
+  function zeigen(a) {
+    var k = kuppel.getBoundingClientRect(), r = a.querySelector('.p').getBoundingClientRect();
+    tipp.textContent = a.dataset.titel;
+    var s = document.createElement('span'); s.textContent = a.dataset.rubrik + ' | ' + a.dataset.datum; tipp.appendChild(s);
+    tipp.hidden = false;
+    var b = tipp.offsetWidth, h = tipp.offsetHeight;
+    var x = r.left + r.width / 2 - k.left - b / 2, y = r.top - k.top - h - 12;
+    if (r.top - h - 12 < 60) y = r.bottom - k.top + 12;
+    tipp.style.left = Math.max(0, Math.min(k.width - b, x)) + 'px'; tipp.style.top = y + 'px';
+  }
+  function weg() { tipp.hidden = true; }
+  punkte.forEach(function (a) {
+    a.addEventListener('pointerenter', function () { zeigen(a); });
+    a.addEventListener('pointerleave', weg);
+    a.addEventListener('focus', function () { zeigen(a); });
+    a.addEventListener('blur', weg);
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') weg(); });
+
+  // Zeile der Liste hebt ihren Punkt hervor.
+  zeilen.forEach(function (li) {
+    var a = document.getElementById('p' + li.dataset.id);
+    function an() { a.classList.add('zeigt'); } function aus() { a.classList.remove('zeigt'); }
+    li.addEventListener('pointerenter', an); li.addEventListener('pointerleave', aus);
+    li.addEventListener('focusin', an); li.addEventListener('focusout', aus);
+  });
+
+  // Filter nach Rubrik: zugehörige Punkte in Impact, die übrigen blass; die Liste zeigt dieselbe Auswahl.
+  var knoepfe = Array.prototype.slice.call(document.querySelectorAll('.jahr__filter button'));
+  knoepfe.forEach(function (k) {
+    k.addEventListener('click', function () {
+      var r = k.dataset.rubrik, n = 0;
+      knoepfe.forEach(function (o) { o.setAttribute('aria-pressed', String(o === k)); });
+      if (r) jahr.dataset.filter = r; else delete jahr.dataset.filter;
+      punkte.forEach(function (a) {
+        var ja = !r || a.dataset.rubrik === r;
+        a.classList.toggle('an', !!r && ja);
+        if (ja) { a.removeAttribute('tabindex'); a.removeAttribute('aria-hidden'); n++; }
+        else { a.setAttribute('tabindex', '-1'); a.setAttribute('aria-hidden', 'true'); }
+      });
+      zeilen.forEach(function (li) { li.hidden = !!r && li.dataset.rubrik !== r; });
+      document.querySelectorAll('.jahr__monat').forEach(function (m) {
+        m.hidden = !m.querySelector('li:not([hidden])');
+      });
+      stand.textContent = r ? n + (n === 1 ? ' Meldung' : ' Meldungen') + ' in ' + r + ', in der Kuppel rot.'
+                            : GESAMT + ' von 238 Punkten sind Meldungen. Die blassen Punkte sind noch frei.';
+    });
+  });
+})();
+</script>
+"""
+
+
+def datum_lang(iso):
+    j, m, t = iso.split("-")
+    return f"{int(t)}. {MONATE[int(m) - 1]} {j}"
+
+
+def mischen(ton):
+    """Farbe eines Punkts wie im Master: Titan #660000 bis Impact #B30000 in 7 Stufen."""
+    stufe = min(int(ton * 7), 6) / 6
+    return "#{:02X}0000".format(round(0x66 + (0xB3 - 0x66) * stufe))
+
+
+def seite_2(P, seite):
+    M = json.loads((HIER / "daten/meldungen-2026.json").read_text())["meldungen"]
+    n = len(M)
+    assert 0 < n <= 238
+    # Die Meldungen laufen zeitlich vom Fuß (Januar) zum Auslauf (neueste). Je Abschnitt des Bogens bekommt die
+    # Meldung den größten Punkt, damit er sich gut treffen lässt. Die Punktgröße sagt nichts über die Bedeutung.
+    belegt = {}
+    for i, m in enumerate(M):
+        a, b = i * 238 // n, (i + 1) * 238 // n
+        belegt[max(range(a, b), key=lambda k: P[k][2] * P[k][3])] = m
+    H = 1000 * seite
+    leer, voll = [], []
+    for k, (x, y, ra, rb, rot, lauf, ton) in enumerate(P):
+        lage = f'cx="{x * 1000:.1f}" cy="{y * 1000:.1f}" rx="{ra * 1000:.1f}" ry="{rb * 1000:.1f}"'
+        dreh = f'transform="rotate({math.degrees(rot):.1f} {x * 1000:.1f} {y * 1000:.1f})"'
+        geo = f"{lage} {dreh}"
+        if k not in belegt:
+            leer.append(f'<ellipse class="leer" {geo}/>')
+            continue
+        m = belegt[k]
+        griff = max(ra * 1000 + 5, 11)
+        voll.append(
+            f'<a id="p{m["id"]}" href="{e(m["link"])}" aria-label="{e(m["titel"])}, {e(m["rubrik"])}, '
+            f'{datum_lang(m["datum"])}" data-titel="{e(m["titel"])}" data-rubrik="{e(m["rubrik"])}" '
+            f'data-datum="{datum_lang(m["datum"])}"><circle class="griff" cx="{x * 1000:.1f}" cy="{y * 1000:.1f}" '
+            f'r="{griff:.1f}"/><g {dreh}><ellipse class="p" style="--f:{mischen(ton)}" {lage}/></g></a>')
+    rubriken = {}
+    for m in M:
+        rubriken[m["rubrik"]] = rubriken.get(m["rubrik"], 0) + 1
+    filter_html = ('<li><button type="button" data-rubrik="" aria-pressed="true">Alle <span>' + str(n)
+                   + "</span></button></li>"
+                   + "".join(f'<li><button type="button" data-rubrik="{e(r)}" aria-pressed="false">{e(r)} '
+                             f"<span>{z}</span></button></li>"
+                             for r, z in sorted(rubriken.items(), key=lambda t: (-t[1], t[0]))))
+    monate = {}
+    for m in reversed(M):
+        monate.setdefault(m["datum"][:7], []).append(m)
+    liste = ""
+    for ym, ms in monate.items():
+        liste += (f'<div class="jahr__monat"><h3>{MONATE[int(ym[5:]) - 1]} {ym[:4]}</h3><ul class="jahr__liste">'
+                  + "".join(f'<li data-id="{m["id"]}" data-rubrik="{e(m["rubrik"])}"><a href="{e(m["link"])}">'
+                            f'<strong>{e(m["titel"])}</strong><span><b>{e(m["rubrik"])}</b> | '
+                            f'<time datetime="{m["datum"]}">{datum_lang(m["datum"])}</time></span></a></li>'
+                            for m in ms) + "</ul></div>")
+    erster, letzter = M[0]["datum"], M[-1]["datum"]
+    return (kopf("Vorschau: 2026 in 238 Punkten – tamil.de",
+                 "Vorschau einer Sonderseite für tamil.de: Die Punkte des Signets sind die Meldungen des Jahres 2026.",
+                 CSS_2)
+            + "</head>\n<body>\n"
+            + '<div class="vorschau-hinweis"><p>Vorschau für Luis, 21.11.2026, nicht Teil des Entwurfs: '
+              f"Auf dem Testsystem stehen {n} Meldungen mit Datum 2026. Darum sind {n} von 238 Punkten belegt, "
+              "die übrigen bleiben frei.</p></div>\n"
+            + seitenkopf()
+            + f"""<main id="inhalt" tabindex="-1">
+<div class="innen jahr">
+	<div class="jahr__kopf">
+	<h1>2026 in 238 Punkten</h1>
+	<p class="jahr__vorspann">Jeder rote Punkt ist eine Meldung aus diesem Jahr, von {MONATE[int(erster[5:7]) - 1]} am großen Fuß links bis {MONATE[int(letzter[5:7]) - 1]} im feinen Auslauf rechts. Ein Klick öffnet die Meldung.</p>
+	<a class="jahr__zurliste" href="#liste">Alle {n} Meldungen als Liste lesen</a>
+	</div>
+	<div class="jahr__kuppel">
+		<svg viewBox="0 0 1000 {H:.1f}" role="group" aria-label="Die Meldungen des Jahres 2026 als Punkte des Signets Tamil Dots, {n} Punkte führen zu einer Meldung">
+			<g aria-hidden="true">{"".join(leer)}</g>
+			{"".join(voll)}
+		</svg>
+		<div class="jahr__tipp" aria-hidden="true" hidden></div>
+		<p class="jahr__achse" aria-hidden="true"><span>{MONATE[int(erster[5:7]) - 1]} 2026</span><span>{MONATE[int(letzter[5:7]) - 1]} 2026</span></p>
+	</div>
+	<div class="jahr__wahl">
+		<ul class="jahr__filter" aria-label="Nach Rubrik zeigen">{filter_html}</ul>
+		<p class="jahr__stand" role="status">{n} von 238 Punkten sind Meldungen. Die blassen Punkte sind noch frei.</p>
+	</div>
+	<section class="jahr__listen" id="liste" aria-labelledby="t-liste" tabindex="-1">
+		<h2 id="t-liste">Alle {n} Meldungen des Jahres</h2>
+		{liste}
+	</section>
+</div>
+</main>
+"""
+            + seitenfuss([], "Vorschau für Luis, 21.11.2026. Titel, Daten und Rubriken vom Testsystem.")
+            + JS_2 + "</body>\n</html>\n")
+
+
 if __name__ == "__main__":
     P, SEITE = punkte()
     assert len(P) == 238, len(P)
     (HIER / "punkt-zum-bild/index.html").write_text(seite_1(P, SEITE))
     print("punkt-zum-bild/index.html", (HIER / "punkt-zum-bild/index.html").stat().st_size, "Bytes")
+    (HIER / "jahr-in-punkten/index.html").write_text(seite_2(P, SEITE))
+    print("jahr-in-punkten/index.html", (HIER / "jahr-in-punkten/index.html").stat().st_size, "Bytes")

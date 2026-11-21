@@ -163,14 +163,16 @@
   var decke = document.querySelector('.wow-decke');
   var ctx = decke.getContext('2d');
   var ZOOM = 3.2, mx = 0, my = 0;
-  var B = 0, H = 0, dpr = 1, f = 1, ox = 0, oy = 0, rmax = 0, ende = 1, letzter = -1, wartet = false;
+  var B = 0, H = 0, dpr = 0, scharf = 1, grob = 1, f = 1, ox = 0, oy = 0, rmax = 0, ende = 1, letzter = -1, wartet = false;
 
   function messen() {
     var r = rahmen.getBoundingClientRect();
     B = r.width; H = r.height;
-    // Die Decke braucht nicht die volle Pixeldichte: höchstens 2-fach und höchstens rund 500 000 Bildpunkte.
-    dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 2, Math.sqrt(500000 / (B * H))));
-    decke.width = Math.round(B * dpr); decke.height = Math.round(H * dpr);
+    // Ruhend (Anfang) zeichnet die Decke scharf, höchstens 2-fach. In Bewegung reichen rund 250 000 Bildpunkte,
+    // das hält jedes Bild auch auf schwachen Handys kurz.
+    scharf = Math.min(window.devicePixelRatio || 1, 2);
+    grob = Math.max(1, Math.min(scharf, Math.sqrt(250000 / (B * H))));
+    dpr = 0;
     // Die Form steht mittig im Bild, mit Luft zum Rand; ihre Proportion bleibt unverändert.
     f = Math.min(B * (B < 600 ? 0.86 : 0.74), H * 0.74 / SEITE);
     ox = (B - f) / 2; oy = (H - f * SEITE) / 2;
@@ -201,6 +203,8 @@
     // p 0..1 über den Scrollweg. Bis 0,84 wachsen die Punkte, danach kommt der Titel.
     var t = Math.min(1, p / 0.84), titel = Math.max(0, Math.min(1, (p - 0.84) / 0.13));
     rahmen.style.setProperty('--titel', titel.toFixed(3));
+    var soll = p === 0 ? scharf : grob;
+    if (soll !== dpr) { dpr = soll; decke.width = Math.round(B * dpr); decke.height = Math.round(H * dpr); }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.globalCompositeOperation = 'source-over';
     ctx.clearRect(0, 0, B, H);
