@@ -1576,7 +1576,7 @@ body .ad.ad-bild .anzeige--bild .anzeige__bild { border-radius: 0; }
    Bildschirmhöhe scrollt (mindestens 420 px); die Decke in Titan liegt darüber, Dachzeile und Titel unten auf ihr.
    Ohne wow-an ist es der normale Aufmacher in dieser Höhe. Am Desktop die Rundung des Aufmachers (der Rahmen
    schneidet die Decke), am Handy von Rand zu Rand. */
-.aufmacher.wow { --wow-hoch: 122vw; --wow-weg: max(35vh, 260px); } /* K-16: Vorspann über der festen Handy-Anzeige */ /* K-05: halber Weg, Punkte und Titelfeld zugleich */
+.aufmacher.wow { --wow-hoch: 116vw; --wow-weg: max(35vh, 260px); } /* K-16: Vorspann über der festen Handy-Anzeige (Unterkante 751 px, Anzeige ab 769 px bei 390 × 844) */ /* K-05: halber Weg, Punkte und Titelfeld zugleich */
 .aufmacher.wow .rahmen.wow-rahmen { aspect-ratio: auto; height: min(var(--wow-hoch), calc(100vh - var(--band-hoehe) - 20px)); }
 @supports (height: 100svh) {
   .aufmacher.wow .rahmen.wow-rahmen { height: min(var(--wow-hoch), calc(100svh - var(--band-hoehe) - 20px)); }
