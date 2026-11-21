@@ -973,11 +973,16 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .schlagworte__titel { color: var(--leise); font-size: 13px; font-weight: 600; }
 .schlagworte a { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; min-width: 44px; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
 .schlagworte a:hover { color: var(--rot); }
-/* Teilen: der WhatsApp-Knopf in einer eigenen Zeile, darunter die übrigen Wege in einer ruhigen Zeile */
+/* Teilen (N-10): eine Knopfzeile, WhatsApp gefüllt, die übrigen Wege als leise Knöpfe gleicher Höhe; bricht am Handy
+   in Zeilen um, die Knöpfe füllen jede Zeile (keine ungleichen Lücken) */
 .teilen { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--linie-stark); }
-/* gleich breite Spalten (Handy zwei, Desktop vier), jeder Weg links bündig: keine ungleichen Lücken um „X“ */
-.teilen__links { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); align-items: center; gap: 0 16px; margin-top: 8px; }
-.teilen .textlink { min-width: 44px; justify-content: flex-start; }
+.teilen__zeile { display: flex; flex-wrap: wrap; gap: 8px; }
+.teilen__zeile .knopf { flex: 1 1 auto; min-height: 44px; padding: 0 16px; font-size: 15px; }
+@media (min-width: 600px) {
+  /* alle sechs Wege in einer Zeile der 560 px breiten Textspalte */
+  .teilen__zeile { gap: 6px; }
+  .teilen__zeile .knopf { flex: 0 0 auto; padding: 0 12px; font-size: 14px; }
+}
 .knopf-text { padding: 0; border: 0; background: none; cursor: pointer; }
 .autor { margin-top: 24px; font-size: 15px; line-height: 1.5; color: var(--leise); }
 .autor strong { color: var(--tinte); font-weight: 600; }

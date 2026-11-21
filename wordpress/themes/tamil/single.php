@@ -119,13 +119,14 @@ while ( have_posts() ) :
 					</p>
 				<?php endif; ?>
 				<div class="teilen" role="group" aria-label="<?php esc_attr_e( 'Teilen', 'tamil' ); ?>">
-					<a class="knopf" href="<?php echo esc_url( tamil_wa_teilen( $tamil_titel, $tamil_url ) ); ?>"><?php esc_html_e( 'Per WhatsApp schicken', 'tamil' ); ?></a>
-					<div class="teilen__links">
+					<?php // N-10: eine Knopfzeile; WhatsApp gefüllt (meistgenutzt), die anderen als leise Knöpfe gleicher Höhe ?>
+					<div class="teilen__zeile">
+						<a class="knopf" href="<?php echo esc_url( tamil_wa_teilen( $tamil_titel, $tamil_url ) ); ?>"><?php esc_html_e( 'WhatsApp', 'tamil' ); ?></a>
 						<?php foreach ( $tamil_teilen as [ $tamil_name, $tamil_href ] ) : ?>
-							<a class="textlink" href="<?php echo esc_url( $tamil_href ); ?>" target="_blank" rel="noopener"><?php echo esc_html( $tamil_name ); ?></a>
+							<a class="knopf knopf-leise" href="<?php echo esc_url( $tamil_href ); ?>" target="_blank" rel="noopener"><?php echo esc_html( $tamil_name ); ?></a>
 						<?php endforeach; ?>
-						<a class="textlink" href="<?php echo esc_url( 'mailto:?subject=' . rawurlencode( $tamil_titel ) . '&body=' . rawurlencode( $tamil_url ), array( 'mailto' ) ); ?>"><?php esc_html_e( 'E-Mail', 'tamil' ); ?></a>
-						<button type="button" class="textlink knopf-text" data-copy="<?php echo esc_attr( $tamil_url ); ?>"><?php esc_html_e( 'Link kopieren', 'tamil' ); ?></button>
+						<a class="knopf knopf-leise" href="<?php echo esc_url( 'mailto:?subject=' . rawurlencode( $tamil_titel ) . '&body=' . rawurlencode( $tamil_url ), array( 'mailto' ) ); ?>"><?php esc_html_e( 'E-Mail', 'tamil' ); ?></a>
+						<button type="button" class="knopf knopf-leise" data-copy="<?php echo esc_attr( $tamil_url ); ?>"><?php esc_html_e( 'Link kopieren', 'tamil' ); ?></button>
 					</div>
 				</div>
 				<p class="autor"><strong><?php echo esc_html( tamil_opt( 'autor_name' ) ); ?></strong> <?php echo esc_html( tamil_opt( 'autor_text' ) ); ?></p>
