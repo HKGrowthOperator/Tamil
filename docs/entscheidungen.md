@@ -5,6 +5,25 @@ Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
 ## 21.11.2026
 
+- **KI-Symbolbilder als Ersatzbilder im Rubrik-Pool erlaubt (Theme 3.13.0).** Auftrag von Luis am 21.11.: „suche
+  außerdem täglich beiträge und wenn keine bilder vorhanden oder sonst was gebe mir bitte ein generiertes bild das
+  aussieht wie echt hyperrealistisch nicht nach ki“ und „gehe mit higgsfield und skills noch mal über die bestehende
+  seite komplett rüber“. Das kehrt den Eintrag vom 11.11. („keine KI-Bilder“) für genau diesen Fall um: nur
+  Symbolbilder ohne erkennbare Personen, Marken, Schrift oder nachgestellte Ereignisse, immer mit Schild „Symbolbild“
+  und dem Nachweis genau „Symbolbild: KI-generiert · Tamil.de“ (Spezifikation 4.8; nachgezogen in
+  `docs/spezifikation/bilder-und-lizenzen.md` 4.1). Alles andere aus dem 11.11. bleibt. · Luis, umgesetzt vom
+  Theme-Bauer im Auftrag der Hauptsitzung
+  - **Heikle Themen ohne KI-Bild (Spezifikation 4.2 bleibt):** Das Theme kennt die Einstufung nicht. Darum kommen die
+    vier Nachrichten-Bilder `news-4` bis `news-7` nicht in den Pool (Dateien nur unter `design/inhalte/bilder-lauf/`),
+    und für Beiträge der Rubrik Nachrichten wählt die Bildkette nie ein Poolbild mit `'ki' => true`, auch nicht über
+    den allgemeinen Ausweich-Pool und auch nicht, wenn die Hauptrubrik eine andere ist (Test
+    `tests/wp/test_bildpool_ki.py`).
+  - **Vorbehalte:** `community-4` (Ganesha-Relief am Tempeleingang) bleibt draußen; `events-10` und `events-12` sind
+    drin. Im Pool stehen 27 KI-Bilder (Entertainment 4, Events 4, Community 3, Küche 4, Kino 4, Sport 4, Kultur 4),
+    je Rubrik abwechselnd mit den Commons-Fotos. Quelle, Prompt und Modell je Bild: `design/inhalte/bilder-lauf/pool/`;
+    erzeugt wird die Liste mit `design/inhalte/bildpool/holen.py --text`. Rückweg: in `holen.py` die Einträge über
+    `KI_AUS` ausschließen oder `KI_JSON` leeren und neu schreiben.
+
 - **Theme 3.12.0 / Plugin tamil-site 1.2.0 (Kritik-Bogen 3.11.0, Stufe 2):** · Hauptsitzung im Auftrag von Luis,
   umgesetzt vom Theme-Bauer
   - **Einzelne letzte Karte in normaler Breite (N-04):** Bleibt in einem Raster eine Karte allein in der letzten Zeile,

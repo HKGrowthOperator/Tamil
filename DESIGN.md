@@ -126,9 +126,12 @@ gemeinsamer Kante für Kopf, Bild und Text), höchstens 70 Zeichen je Zeile.
   Kopf, Fußlisten, Formulare und reine Textseiten. Bildkette an einer Stelle (`inc/bildkette.php`): eigenes Foto (Titelkarten nie;
   Bänder über 2,5:1 werden beschnitten, Nachweis „zugeschnitten“) → erstes Bild aus dem Text ab 600 px → bei Kino und
   Terminen das Foto eines anderen Beitrags zum selben Film bzw. zur selben Veranstaltung (ohne Schild) → Symbolbild
-  aus dem Rubrik-Pool (Commons; je Seite reihum vergeben, damit kein Ersatzbild auf einer Seite doppelt erscheint;
-  Kino und Events mit eigenen Pools, nie Kirchen oder Rathäuser für Kino und Entertainment; Schild „Symbolbild“
-  oben rechts ab 150 px Rahmenbreite, darunter ein „S“; „Symbolbild,“ vor dem Nachweis). Nachweise entstehen an
+  aus dem Rubrik-Pool (Commons-Fotos und seit 3.13.0 KI-Symbolbilder, je Rubrik abwechselnd; je Seite reihum
+  vergeben, damit kein Ersatzbild auf einer Seite doppelt erscheint; Kino und Events mit eigenen Pools, nie Kirchen
+  oder Rathäuser für Kino und Entertainment; Nachrichten nie mit KI-Bild; Schild „Symbolbild“ oben rechts ab 150 px
+  Rahmenbreite, darunter ein „S“; „Symbolbild,“ vor dem Commons-Nachweis, KI-Bilder genau „Symbolbild: KI-generiert ·
+  Tamil.de“, auch im Fuß). Die KI-Bilder haben das Motiv oben links der Mitte und unten eine ruhige, dunkle Fläche:
+  der Punktbogen ist auf allen weiß (Ecke gemessen 0,001 bis 0,135, Grenze 0,3). Nachweise entstehen an
   einer Stelle (`tamil_nachweis_bauen()`): Urheber verlinkt auf die Dateiseite, Lizenz auf den Lizenztext,
   „zugeschnitten“ bei freien Lizenzen und Bändern. Prüfung: `node wordpress/dev/bilder_pflicht.mjs`.
 - **Bild mit Titel im Bild:** Aufmacher, große Kacheln und seit 3.6.0 **jede Bildkarte der Startseite** („Text auf
