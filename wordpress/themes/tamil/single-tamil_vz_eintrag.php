@@ -10,6 +10,15 @@ defined( 'ABSPATH' ) || exit;
 
 get_header();
 
+// Art und Ort stehen hier schon über dem Titel: im Profil des Plugins nicht noch einmal als Zeile „Art“ (Q2-17)
+add_filter(
+	'tamil_site_vz_profil_zeilen',
+	static function ( array $zeilen ): array {
+		unset( $zeilen['art'] );
+		return $zeilen;
+	}
+);
+
 while ( have_posts() ) :
 	the_post();
 	$tamil_id    = (int) get_the_ID();
