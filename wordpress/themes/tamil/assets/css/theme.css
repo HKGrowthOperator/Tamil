@@ -628,10 +628,8 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 /* Termine ohne Vorspann sind niedriger (gemessen 223 / 246 px) */
 .kalender .karten--raster > li:nth-child(n+3), .monat .karten--raster > li:nth-child(n+3) { contain-intrinsic-size: auto 240px; }
 @media (min-width: 600px) and (max-width: 1023px) {
-  /* Tablet, zwei Spalten: eine übrig bleibende letzte Karte steht nicht allein neben einer Lücke, sondern über beide
-     Spalten in flacherem Format (21:9) */
-  .karten--raster > li:last-child:nth-child(odd) { grid-column: 1 / -1; }
-  .karten--raster > li:last-child:nth-child(odd) .rahmen { aspect-ratio: 21 / 9; }
+  /* N-04 (21.11.2026): eine übrig bleibende letzte Karte bleibt in normaler Breite linksbündig; über die ganze Breite
+     gezogen wirkte sie übergroß, ihr Bild wurde weich und der Titel blieb klein (ersetzt QA-04 und K-19) */
   /* Tablet: „Weitere Meldungen“ bleibt eine wischbare Reihe (nicht das Zweierraster der Meldungszeilen) */
   .meldungen ul.karten--reihe { display: flex; column-gap: 12px; }
   /* „Im Kino“ über die volle Breite (ohne kleine Kachel daneben): Bild mit Titel links, Städte rechts */
@@ -1534,11 +1532,6 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
 }
 /* Verzeichnis: Schild „Symbolbild“ oben rechts wie auf allen Karten (K-18) */
 .vz-bild .vz-symbolbild { top: 0; right: 0; bottom: auto; left: auto; border-radius: 0 var(--radius) 0 0; }
-/* Raster mit drei Spalten: eine allein stehende letzte Karte über die volle Breite in flachem Format (K-19) */
-@media (min-width: 1024px) {
-  .karten--raster > li:last-child:nth-child(3n+1) { grid-column: 1 / -1; }
-  .karten--raster > li:last-child:nth-child(3n+1) .rahmen { aspect-ratio: 21 / 9; }
-}
 
 /* ---------- Abgerundete Ecken (Theme 3.9.0) ----------
    Ein Radius für Karten und Bilder (--radius), kleiner für kleine Kacheln (--radius-klein). Der Punktbogen und das Schild
