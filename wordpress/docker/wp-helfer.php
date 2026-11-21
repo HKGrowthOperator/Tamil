@@ -411,6 +411,13 @@ function tamil_c_testsystem(): void {
 		$merker['schalter'] = gmdate( 'c' );
 		WP_CLI::log( 'Bausteine eingeschaltet: Einreichungen, Verzeichnis, Werbebuchung (nur Testsystem).' );
 	}
+	// Startseiten-Proben (Theme 3.16.0, /?probe=cover|news|community): einmalig an, damit Luis vergleichen kann.
+	// Nur hier, nie im Echtbetrieb; wer den Schalter im Customizer wieder ausschaltet, behält das.
+	if ( empty( $merker['proben'] ) ) {
+		set_theme_mod( 'tamil_startseiten_proben', '1' );
+		$merker['proben'] = gmdate( 'c' );
+		WP_CLI::log( 'Startseiten-Proben eingeschaltet (nur Testsystem).' );
+	}
 	if ( empty( $merker['beispiele'] ) && function_exists( 'tamil_site_vz_eintrag_schreiben' ) ) {
 		$vorhanden = get_posts(
 			array(
