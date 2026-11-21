@@ -566,8 +566,11 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .woche__gruppe--termine ul { grid-auto-flow: column; grid-template-columns: none; grid-auto-columns: minmax(0, 1fr); gap: 24px; }
   .termine-3 .woche__gruppe--termine li:last-child { grid-column: auto; }
   /* ein Termin: Bild links, Text rechts über die volle Breite, kein leeres Viertel */
-  .termine-1 .woche__gruppe--termine .anr { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-content: start; }
-  .termine-1 .woche__gruppe--termine .grafik__inhalt { padding: 20px 28px 24px; }
+  /* K-13: ein Termin über die ganze Breite als Band: Bild in Dateigröße (höchstens 380 px, nicht hochgezogen und weich),
+     daneben Orte und Vorspann mittig in lesbarer Zeilenlänge statt zwei Zeilen oben in einer 700 px breiten Fläche */
+  .termine-1 .woche__gruppe--termine .anr { display: grid; grid-template-columns: minmax(0, 380px) minmax(0, 1fr); align-items: center; }
+  .termine-1 .woche__gruppe--termine .grafik__inhalt { padding: 20px 32px; max-width: calc(64ch + 64px); }
+  .termine-1 .woche__gruppe--termine .grafik__text { font-size: 18px; line-height: 1.5; }
   .ohne-gross.ohne-klein.termine-1 .woche__gruppe--termine .anr { display: block; }
 
   .kueche { margin-top: 64px; }
