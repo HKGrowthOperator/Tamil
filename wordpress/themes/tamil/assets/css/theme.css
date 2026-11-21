@@ -224,6 +224,8 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   background: var(--hell); opacity: 0; visibility: hidden; transform: translateX(-12px);
 }
 .band__logo img { height: 30px; width: auto; }
+/* unten 3 px Impact wie unter der aktiven Rubrik: die weiße Fläche gehört sichtbar zum Band und steht für „Start“ */
+.band__logo { box-shadow: inset 0 -3px 0 var(--rot); }
 .band__logo:focus-visible { outline: 3px solid var(--fokus); outline-offset: -3px; }
 .band--steht { --band-logo-platz: var(--band-logo-breite); }
 .band--steht .band__logo { opacity: 1; visibility: visible; transform: none; }
