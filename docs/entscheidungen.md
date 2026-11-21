@@ -5,6 +5,29 @@ Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
 ## 21.11.2026
 
+- **Grundlage reparieren (Theme 3.15.0; Masterplan von Luis vom 21.11., Teil A, Tickets TML-W02, TML-W03, TML-W05).**
+  · Luis, umgesetzt vom Theme-Bauer im Auftrag der Hauptsitzung
+  - **Cover mit Ablauf (TML-W02):** Ein abgelaufenes Cover bleibt nie stehen. Ein im Customizer gesetzter Aufmacher
+    gilt bis zum Ende des Tages „Aufmacher gilt bis“ (neues Datumsfeld, Zeitzone der Website). Ohne Datum gilt er
+    höchstens sieben Tage ab dem Eintragen der Beitrags-ID (Zeitpunkt in der Option `tamil_aufmacher_seit`,
+    geschrieben bei jeder Änderung der ID). **Altbestand** ohne Zeitpunkt (Cover vor 3.15.0 gesetzt): Es zählt die
+    Veröffentlichung des Beitrags plus sieben Tage, nicht das Änderungsdatum, damit eine Tippfehlerkorrektur kein
+    altes Cover verlängert. Folge beim Ausrollen: Ein heute gesetzter Aufmacher, dessen Beitrag älter als sieben Tage
+    ist, fällt sofort weg; wer ihn halten will, trägt das Datum ein. Ein markierter Beitrag („oben halten“) ist nur
+    sieben Tage nach Veröffentlichung Cover. Danach greift die bisherige Kette (neuestes Foto). Der Customizer sagt
+    am Feld, bis wann das Cover gilt oder seit wann es abgelaufen ist. Der Zwischenspeicher der Startseite trägt
+    das Tagesdatum im Schlüssel und zusätzlich die Frist des Covers. Code: `inc/queries.php`
+    (`tamil_cover_manuell()`), `inc/customizer.php`; Test `tests/wp/test_cover_ablauf.py`.
+  - **„Diese Woche“ nur mit kommenden Vorstellungen (TML-W03):** Die Bildkacheln zeigen nur noch Beiträge, deren
+    Film laut Kinoliste (`kino_fakten`, `tamil_kino_filme()`) mindestens einen Spieltag ab heute hat: Beiträge der
+    Rubrik Kino mit genau demselben Filmschlüssel (Film aus der Kinoliste oder Titel in Anführungszeichen), dann die
+    Kinolisten selbst. Die Regel „Kino-Beiträge der letzten 30 Tage“ (17.11.) entfällt; ein neuer Beitrag über einen
+    Film ohne kommende Vorstellung steht dort nicht mehr. Gibt es keine, bleiben die Plätze leer und das Raster
+    rückt zusammen. Die Datenquelle (Plugin, Radar) ist unverändert. Test `tests/wp/test_woche_spieltage.py`.
+  - **Ein Radius (TML-W05):** `design/tokens.css` führt jetzt wie das Theme `--radius: 10px` und
+    `--radius-klein: 6px` (dort stand noch 0 aus der Zeit vor 3.9.0). `tests/test_tokens_radius.py` vergleicht beide
+    Dateien.
+
 - **Rubriken im Band mit Tamil-Dots-Bewegung (Theme 3.14.0).** Luis am 21.11.: bei den Rubriken im Kopf „mehr
   Animation“; beim Darübergehen „gehen da Tamil Dots rein“ und die Fläche wird „von Rot auf Weiß“. Umgesetzt in
   `assets/css/theme.css` (Abschnitt Band): Punkte wachsen im Raster bis zur weißen Fläche, Schrift auf Titan; auch

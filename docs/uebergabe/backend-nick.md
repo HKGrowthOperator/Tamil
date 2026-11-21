@@ -1,6 +1,6 @@
 # Übergabe Backend an Nick: tamil.de
 
-Stand: 20.11.2026 (Theme 3.6.0: neues Logo, Startseite „Text auf Bild“, Punktbogen an jedem Beitrag; seit 19.11.
+Stand: 20.11.2026, Nachtrag 21.11. in Abschnitt 6d (Theme 3.6.0: neues Logo, Startseite „Text auf Bild“, Punktbogen an jedem Beitrag; seit 19.11.
 Markenfarben, Signet und Social-Kartensystem freigegeben). Kommen weitere Punkte von Luis,
 wird diese Datei ergänzt.
 
@@ -262,6 +262,23 @@ Einzelheiten stehen in `docs/abnahme/2026-11-20-feinschliff.md`.
 - **Tägliche Bildvorschläge:** Zweimal täglich entsteht eine Liste von Beiträgen ohne geeignetes Bild mit je einem
   Symbolbild-Vorschlag (Nachweis „Symbolbild, KI-generiert (Tamil.de)“). Eingesetzt wird über Radar oder WordPress,
   das entscheidet Luis.
+
+## 6d. Nachtrag 21.11.: Masterplan von Luis (TML-W09, TML-W10)
+
+Nur Hinweise, auf der Website-Seite wurde dafür kein Backend-Code geändert.
+
+- **Social-Bildgenerator an `design/social/` anbinden (TML-W10):** Laut Masterplan nutzt
+  `news_radar/social/bild.py` noch das alte Sand-Design. Bitte auf das freigegebene Social-Kartensystem umstellen:
+  Vorlage `design/social/vorlagen/karte.html`, Muster in `design/social/muster/`, Schriften in
+  `design/social/schriften/`, Regeln in `design/social/README.md` (siehe auch Abschnitt 0 und 0a). Zu Abschnitt 5:
+  Der Radius ist seit Theme 3.9.0 nicht mehr 0, sondern 10 px (`--radius`) und 6 px (`--radius-klein`); seit 3.15.0
+  steht das auch in `design/tokens.css`.
+- **Event- und Kinodaten mit Gültigkeitszeiten (TML-W09):** Die Website zeigt seit Theme 3.15.0 in „Diese Woche“ nur
+  noch Filme und Kino-Beiträge mit einem Spieltag ab heute und lässt ein Cover nach Ablauf fallen. Dafür braucht jeder
+  Kino- und Termin-Beitrag verlässliche Zeiten: bei Kino je Kino die Spieltage (`termine`) oder `von`/`bis` in
+  `kino_fakten`, bei Terminen Beginn und Ende (`event_datum`, Ende). Fehlen sie, kann das Theme nur schätzen (Kinowoche
+  plus sechs Tage) oder zeigt den Beitrag dort nicht. Beiträge über einen Film findet das Theme über den Filmtitel:
+  derselbe Titel wie im Feld `film` der Kinoliste, im Beitragstitel in Anführungszeichen („…“).
 
 ## 7. Cockpit im klar2-Look
 

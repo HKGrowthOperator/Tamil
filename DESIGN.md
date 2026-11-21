@@ -177,8 +177,10 @@ gemeinsamer Kante für Kopf, Bild und Text), höchstens 70 Zeichen je Zeile.
   Datum des Termins in der Dachzeile und Ort und Eintritt darunter, alle mit Titel im Bild), „Küche“ (groß 16:9, klein
   8:3 mit Titel im Bild, am Tablet die kleinen 16:9 nebeneinander), Billboard, Rubrikblöcke mit je vier Karten (Handy
   wischbar, Tablet 2 × 2, Desktop zu viert). „Diese Woche“ zeigt nur Aktuelles: Filme mit Spieltagen
-  ab heute, Kino-Beiträge der letzten 30 Tage, Termine der nächsten 14 Tage (sonst die nächsten drei); was dort
-  steht, kommt oben nicht noch einmal. Ein einzelner Termin über die ganze Breite steht als Band: Bild in
+  ab heute, als Bildkacheln nur Beiträge zu Filmen mit Spieltag ab heute (3.15.0; fehlen sie, rückt das Raster
+  zusammen), Termine der nächsten 14 Tage (sonst die nächsten drei); was dort steht, kommt oben nicht noch einmal.
+  Der Aufmacher verfällt (3.15.0): gesetzt bis „Aufmacher gilt bis“, sonst nach sieben Tagen; markierte Beiträge
+  sieben Tage nach Veröffentlichung; danach das neueste Foto. Ein einzelner Termin über die ganze Breite steht als Band: Bild in
   Dateigröße (höchstens 380 px), Orte und Vorspann mittig daneben (3.12.0, K-13).
 - **Artikel:** Dachzeile, Titel, Vorspann, Leiste mit Lesezeit und „Per WhatsApp teilen“, Bild (randlos am Handy) mit
   Nachweis, Text, Termin als Angaben (auch der Infokasten aus dem Import erscheint als Terminkasten, Datum im
@@ -299,6 +301,7 @@ mit `requestAnimationFrame`. Auftritte über IntersectionObserver (Auslöser 10 
   Bildern der Kinotabelle und (seit 3.11.0) an Bedienelementen: Felder, Knöpfe, Filter, Seitenzahlen. Ein Rahmen setzt seinen Radius über `--rahmen-r`. Punktbogen und Schild „Symbolbild“
   schließen mit der Rundung ab (angeschnitten, kein Überstand). Gerade bleiben Bänder, Kopf, Fuß und Bilder, die am
   Handy von Rand zu Rand laufen (Aufmacher, Artikelbild unter 600 px). Nur Ecken, keine runden Bildformen.
+  Dieselben zwei Werte stehen in `design/tokens.css`; `tests/test_tokens_radius.py` hält beide Dateien gleich (3.15.0).
 - **Rhythmus (3.11.0):** Die Rubrikblöcke der Startseite wechseln zwischen der Reihe aus vier Karten und der Bühne
   (eine große Kachel, die übrigen klein gestapelt daneben, gebaut wie die Küche); Titel auf kleinen Karten höchstens drei
   Zeilen. Kacheln einer Bühne füllen ihre Rasterzelle, das Bild wächst mit. Seit 3.12.0 (N-03, N-08) sind alle Bühnen
