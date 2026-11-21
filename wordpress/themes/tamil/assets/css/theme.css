@@ -394,7 +394,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .oben { padding-top: 0; }
 .aufmacher .rahmen { margin-inline: calc(-1 * var(--rand)); }
 .aufmacher .rahmen img { object-position: 50% 30%; }
-.aufmacher .titel { font-size: 30px; line-height: 1.12; letter-spacing: -0.012em; }
+.aufmacher .titel { font-size: 26px; line-height: 1.14; letter-spacing: -0.01em; } /* K-02: höchstens vier Zeilen am Handy */
 .aufmacher .vorspann { margin-top: 12px; font-size: 17px; line-height: 1.5; }
 
 .kacheln { margin-top: 32px; }
@@ -520,7 +520,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 
   .aufmacher .rahmen { margin-inline: 0; }
   .aufmacher .imbild { padding: 120px 32px 26px; }
-  .aufmacher .titel { font-size: 40px; line-height: 1.1; letter-spacing: -0.015em; max-width: 17em; }
+  .aufmacher .titel { font-size: 38px; line-height: 1.1; letter-spacing: -0.015em; max-width: 18em; } /* K-02: Brief höchstens 38 px */
   .aufmacher .vorspann { margin-top: 14px; max-width: 40em; }
 
   .kacheln ul { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 16px; overflow: visible; margin: 0; padding: 0; }
@@ -1557,7 +1557,7 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
    Bildschirmhöhe scrollt (mindestens 420 px); die Decke in Titan liegt darüber, Dachzeile und Titel unten auf ihr.
    Ohne wow-an ist es der normale Aufmacher in dieser Höhe. Am Desktop die Rundung des Aufmachers (der Rahmen
    schneidet die Decke), am Handy von Rand zu Rand. */
-.aufmacher.wow { --wow-hoch: 148vw; --wow-weg: max(70vh, 420px); }
+.aufmacher.wow { --wow-hoch: 148vw; --wow-weg: max(35vh, 260px); } /* K-05: halber Weg, Punkte und Titelfeld zugleich */
 .aufmacher.wow .rahmen.wow-rahmen { aspect-ratio: auto; height: min(var(--wow-hoch), calc(100vh - var(--band-hoehe) - 20px)); }
 @supports (height: 100svh) {
   .aufmacher.wow .rahmen.wow-rahmen { height: min(var(--wow-hoch), calc(100svh - var(--band-hoehe) - 20px)); }

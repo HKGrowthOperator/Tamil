@@ -21,6 +21,9 @@
   var ctx = decke && decke.getContext && decke.getContext("2d");
   if (!bahn || !halter || !ctx) { html.classList.remove("wow-an"); return; }
   var ZOOM = 3.2, mx = 0, my = 0, HO = 0;
+  // Anfang schon geöffnet (K-01): die Punkte starten auf dem Stand, der früher nach einem Viertel des Wegs erreicht war,
+  // damit das Motiv sofort erkennbar ist
+  var T0 = 0.5;
   var B = 0, H = 0, dpr = 0, scharf = 1, grob = 1, f = 1, ox = 0, oy = 0, rmax = 0, start = 0, ende = 1, letzter = -1, wartet = false;
   var FARBE = "#660000";
 
@@ -38,7 +41,7 @@
     // Unten das Titelfeld; die Form steht mittig in der Zone darüber und berührt den Titel nie
     var meta = rahmen.querySelector(".imbild .meta") || rahmen.querySelector(".imbild");
     HO = Math.round(Math.max(H * 0.4, meta.getBoundingClientRect().top - r.top - 20)); // ganze Pixel: keine Naht zum Titelfeld
-    f = Math.min(B * (B < 600 ? 0.86 : 0.74), HO * 0.78 / SEITE);
+    f = Math.min(B * (B < 600 ? 0.98 : 0.9), HO * 0.96 / SEITE); // größer als in der Vorschau (K-01)
     ox = (B - f) / 2; oy = (HO - f * SEITE) / 2;
     // so weit müssen die Punkte wachsen, bis keine Titan-Stelle mehr bleibt
     rmax = 0;
@@ -55,13 +58,15 @@
     var top = bahn.getBoundingClientRect().top + window.scrollY;
     var klebt = parseFloat(getComputedStyle(halter).top) || 0;
     start = 0;
-    ende = Math.max(1, top - klebt + bahn.offsetHeight - halter.offsetHeight);
+    // Steht das Bild nicht fest (Tablet, K-04), hängt der Weg an der Rahmenhöhe: fertig, wenn 60 % davon gescrollt sind
+    ende = getComputedStyle(halter).position === "sticky" ? Math.max(1, top - klebt + bahn.offsetHeight - halter.offsetHeight) : Math.max(1, H * 0.6);
     letzter = -1;
   }
 
   function zeichnen(p) {
-    // p 0..1: bis 0,8 wachsen die Punkte, danach löst sich das Titelfeld in das Foto auf (Schrift bleibt weiß)
-    var t = Math.min(1, p / 0.8), titel = Math.max(0, Math.min(1, (p - 0.8) / 0.17));
+    // p 0..1: Punkte und Titelfeld lösen sich über denselben Weg auf, ohne zweiten Abschnitt (K-05); die Schrift bleibt
+    // weiß, das Titelfeld wird mit dem Foto zugleich durchsichtig
+    var t = T0 + (1 - T0) * p, titel = p * p * (3 - 2 * p);
     rahmen.style.setProperty("--titel", titel.toFixed(3));
     rahmen.classList.toggle("wow-foto", titel >= 0.5);
     var soll = p === 0 ? scharf : grob;

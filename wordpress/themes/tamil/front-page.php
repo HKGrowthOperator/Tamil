@@ -48,6 +48,7 @@ $tamil_aufmacher = tamil_anr_imbild(
 		'eager'    => true,
 		'sizes'    => '(min-width: 1024px) 780px, (min-width: 600px) calc(100vw - 48px), 100vw',
 		'wow'      => tamil_wow_auf_seite(),
+		'titel_max' => 84, // K-02: am Handy höchstens vier, am Desktop höchstens drei Zeilen
 	)
 );
 ?>
