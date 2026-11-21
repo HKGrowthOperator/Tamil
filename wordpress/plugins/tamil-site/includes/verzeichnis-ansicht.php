@@ -408,6 +408,14 @@ function tamil_site_vz_profil( int $id ): string {
 		'website'         => __( 'Website', 'tamil-site' ),
 		'oeffnungszeiten' => __( 'Öffnungszeiten', 'tamil-site' ),
 	);
+	/**
+	 * Zeilen der Angaben im Profil. Ein Theme, das Art und Ort schon über dem Titel zeigt, nimmt „art“ heraus
+	 * (sonst steht dieselbe Zeile zweimal, Q2-17).
+	 *
+	 * @param array<string,string> $zeilen Schlüssel => Beschriftung.
+	 * @param int                  $id     Eintrag.
+	 */
+	$zeilen = (array) apply_filters( 'tamil_site_vz_profil_zeilen', $zeilen, $id );
 	ob_start();
 	?>
 	<div class="vz-profil<?php echo $premium ? ' vz-premium' : ''; ?>">

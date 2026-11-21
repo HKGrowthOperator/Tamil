@@ -28,6 +28,9 @@
 > **Logo im stehenden Band** (Abschnitt „Bausteine“), **abgerundete Ecken** und **Karten einer Reihe gleich hoch**
 > (Abschnitt „Ecken und Reihen“).
 
+> **Stand 21.11.2026 (Theme 3.10.0):** **Wow-Aufmacher „Punkt für Punkt zum Bild“** auf der Startseite (Abschnitt
+> „Wow-Aufmacher“), Logo-Fläche im Band mit 3 px Impact unten, Terminkarten mit gleich hohen Bildflächen.
+
 **Idee:** eine ruhige Nachrichtenseite mit mehr Bild und mehr Bühne. Vorbild BBC News für Kopf und Ordnung,
 tagesschau für den Titel im Bild, Spiegel für die Bildblöcke. Das Wow kommt aus Fotos, Fläche und dem Wechsel von
 Weiß und Titan Red, nicht aus Schriftgröße oder Effekten.
@@ -287,6 +290,24 @@ mit `requestAnimationFrame`. Auftritte über IntersectionObserver (Auslöser 10 
 - **Reihen:** Karten einer Reihe sind gleich hoch und schließen unten bündig: gleiches Bildformat je Reihe, Titel unten
   im Bild, der Vorspann darunter hält immer drei Zeilen Platz; in „Diese Woche“ ist die Kinokarte neben den Terminen so
   hoch wie diese. Prüfung: `node wordpress/dev/kartenhoehe.mjs <basis-url>` (je Reihe Ober- und Unterkante ≤ 1 px).
+
+## Wow-Aufmacher „Punkt für Punkt zum Bild“ (Theme 3.10.0)
+
+- **Wo:** nur der Aufmacher der Startseite, nur mit eigenem Foto (kein Symbol-, Pool- oder Filmbild, keine
+  Titelkarte, kein Band) ab 960 px Breite (`inc/wow.php`). Sonst der normale Aufmacher.
+- **Was:** Über dem Foto (`<img>`, `fetchpriority="high"`) liegt ein `<canvas>` in Titan mit den 238 Punkten des
+  Masters „Tamil Dots 04A“ als Fenster aufs echte Foto. Die Form steht mittig über dem Titelfeld und berührt den Titel
+  nie; Dachzeile und Titel stehen von Anfang an unten auf der Decke (weiß auf Titan 13,4 : 1). Beim Scrollen bleibt
+  das Bild unter dem Band stehen (70 % einer Bildschirmhöhe, mindestens 420 px), die Punkte wachsen vom Fuß links zum
+  Auslauf rechts, der Blick fährt 3,2-fach hinein; am Ende löst sich das Titelfeld auf, der Titel liegt auf dem
+  Verlauf des Fotos, der Punktbogen erscheint. Zurückscrollen spielt es rückwärts.
+- **Rahmen:** am Handy hochkant (bis 148 vw, höchstens Bildschirm minus Band), von Rand zu Rand; ab 600 px 60 vw, ab
+  1024 px 420 bis 620 px hoch, mit dem Radius des Aufmachers.
+- **Ruhe:** Ohne Skript, ohne Canvas und mit „Bewegung reduzieren“ steht sofort das fertige Foto mit Titel. Bewegung D
+  ist für diesen Aufmacher aus. Der erste Bildschirm bewegt sich nie von selbst.
+- **Abschalten:** Customizer (Tamil.de → Startseite → „Wow-Aufmacher“, Standard an) oder Filter `tamil_wow_aufmacher`.
+- **Technik:** `assets/js/wow.js` (17 KB, 6,9 KB gepackt, Punktdaten darin), nur auf der Startseite, `defer`; ein
+  Skript im Kopf setzt `wow-an`. Die Decke zeichnet ruhend höchstens zweifach, in Bewegung mit rund 250 000 Bildpunkten.
 
 ## Raster
 

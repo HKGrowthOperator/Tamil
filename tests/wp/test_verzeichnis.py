@@ -466,3 +466,19 @@ def test_dubletten_bei_tamilischen_namen(wp, wp_cli, seite):
     assert {"eintrag_id": eintrag["id"], "grund": "name+plz"} in _einsendung(wp, nochmal)["regeln"]["dubletten"]
     ohne_namen = _vorgang(absenden(wp_cli, seite, {**tamil, "name": "★★★", "plz": "45999"}))
     assert {"eintrag_id": eintrag["id"], "grund": "telefon"} in _einsendung(wp, ohne_namen)["regeln"]["dubletten"]
+
+
+# --- Prüfdurchgang 2 (Q2-17): Art und Ort nicht doppelt im Eintrag ------------------------------------------------
+
+
+def test_profil_ohne_doppelte_zeile_art(wp, wp_cli):
+    """Das Theme zeigt Art und Ort über dem Titel und nimmt die Zeile „Art“ aus dem Profil; ohne den Filter bleibt sie."""
+    pid = int(wp_cli("$p = get_posts( array( 'post_type' => 'tamil_vz_eintrag', 'numberposts' => 1, 'post_status' => 'publish' ) );"
+                     " echo $p ? $p[0]->ID : 0;") or 0)
+    if not pid:
+        pytest.skip("kein veröffentlichter Verzeichniseintrag")
+    pfad = wp_cli(f"echo wp_parse_url( get_permalink( {pid} ), PHP_URL_PATH );").strip()
+    seite = wp.get(pfad).text
+    assert 'class="vz-art"' not in seite, "Art steht schon über dem Titel"
+    ohne_theme = wp_cli(f"remove_all_filters( 'tamil_site_vz_profil_zeilen' ); echo tamil_site_vz_profil( {pid} );")
+    assert 'class="vz-art"' in ohne_theme, "ohne Theme-Filter bleibt die Zeile"

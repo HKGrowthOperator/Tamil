@@ -89,9 +89,12 @@ function tamil_anr_imbild( int $post_id, array $opt = array() ): string {
 	$ebene = tamil_ebene( (string) ( $opt['ebene'] ?? 'h3' ) );
 	$dach  = isset( $opt['dach'] ) ? (string) $opt['dach'] : tamil_meta( $post_id, $meta );
 	$text  = $dach . sprintf( '<%1$s class="titel">%2$s</%1$s>', $ebene, tamil_markiere( tamil_titel( $post_id ), $wort ) );
-	$html  = '<article class="' . esc_attr( (string) ( $opt['klasse'] ?? 'kachel' ) ) . '">';
+	$wow   = ! empty( $opt['wow'] ); // Wow-Aufmacher (inc/wow.php): Bahn und Halter um Bild und Vorspann, Decke über dem Foto
+	$html  = '<article class="' . esc_attr( (string) ( $opt['klasse'] ?? 'kachel' ) . ( $wow ? ' wow' : '' ) ) . '">';
 	$html .= '<a class="anr imbild-anr" href="' . esc_url( get_permalink( $post_id ) ) . '">';
-	$html .= '<div class="rahmen' . ( ! empty( $opt['rahmen'] ) ? ' ' . esc_attr( (string) $opt['rahmen'] ) : '' ) . '">' . $img;
+	$html .= $wow ? '<div class="wow-bahn"><div class="wow-halter">' : '';
+	$html .= '<div class="rahmen' . ( ! empty( $opt['rahmen'] ) ? ' ' . esc_attr( (string) $opt['rahmen'] ) : '' ) . ( $wow ? ' wow-rahmen' : '' ) . '">' . $img;
+	$html .= $wow ? '<canvas class="wow-decke" aria-hidden="true"></canvas>' : '';
 	$html .= '<div class="imbild">' . $text . '</div></div>';
 	$html .= (string) ( $opt['zusatz'] ?? '' );
 	if ( 'kurz' === ( $opt['vorspann'] ?? false ) ) {
@@ -103,7 +106,7 @@ function tamil_anr_imbild( int $post_id, array $opt = array() ): string {
 	} elseif ( ! empty( $opt['vorspann'] ) ) {
 		$html .= '<p class="vorspann">' . tamil_markiere( tamil_text( tamil_ganze_saetze( tamil_saetze_bis( tamil_standfirst( $post_id ), 260 ) ) ), $wort ) . '</p>';
 	}
-	return $html . '</a></article>';
+	return $html . ( $wow ? '</div></div>' : '' ) . '</a></article>';
 }
 
 /**

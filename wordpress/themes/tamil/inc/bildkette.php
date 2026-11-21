@@ -599,7 +599,9 @@ function tamil_anhang_frei( int $anhang, int $post_id ): bool {
  * @param array<string,mixed> $opt { @type int $n bevorzugte Nummer im Pool, @type bool $schild, @type bool $sofort, @type bool $alt, @type string $sizes, @type bool $signet (Standard nein). }
  */
 function tamil_pool_img( string $slug, array $opt = array() ): string {
-	$p = tamil_pool_seite( $slug, (int) ( $opt['n'] ?? 0 ) );
+	// Kleine Bilder der Kinotabelle (zaehlt = false) wechseln nur nach Zeile und verbrauchen den Pool der Seite nicht,
+	// sonst blieben bei vielen Spielorten für die Karten nur Wiederholungen (CODE-06, live /category/kino/)
+	$p = ( $opt['zaehlt'] ?? true ) ? tamil_pool_seite( $slug, (int) ( $opt['n'] ?? 0 ) ) : tamil_pool_bild( $slug, (int) ( $opt['n'] ?? 0 ) );
 	tamil_nachweise( tamil_pool_nachweis( $p ) );
 	$img = tamil_pool_tag(
 		$p,
