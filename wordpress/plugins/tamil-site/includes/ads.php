@@ -507,7 +507,7 @@ function tamil_site_ist_aktuelle_seite( string $url ): bool {
 }
 
 /**
- * Seiten ohne jede Anzeige: Impressum und Datenschutz (Q2-10).
+ * Seiten ohne Eigenanzeigen: Impressum und Datenschutz (Q2-10). Gebuchte Anzeigen stehen dort wie auf jeder Seite (F3).
  */
 function tamil_site_seite_ohne_anzeigen(): bool {
 	if ( ! is_page() ) {
@@ -550,15 +550,20 @@ function tamil_site_anzeige_gezeigt( string $platz = '' ): array {
 /**
  * Fertiger Werbeplatz mit Label „Anzeige“; leer, wenn der Platz nichts zeigt. Eigenanzeigen tragen zusätzlich die
  * Klassen ad-anzeige und ad-bild; ihr Bildnachweis landet im Fuß der Seite. Auf Impressum und Datenschutz gibt es
- * keine Anzeigen. Mit $direkt_nach nennt das Theme den Platz, der unmittelbar davor steht: war dort schon eine
+ * keine Eigenanzeigen (gebuchte Plätze stehen dort wie überall, F3). Mit $direkt_nach nennt das Theme den Platz, der unmittelbar davor steht: war dort schon eine
  * Eigenanzeige, folgt keine zweite direkt darauf.
  */
 function tamil_site_anzeige( string $platz, bool $ausgeben = true, string $direkt_nach = '' ): string {
 	$platz = sanitize_key( $platz );
-	if ( ! array_key_exists( $platz, tamil_site_werbeplaetze() ) || tamil_site_seite_ohne_anzeigen() ) {
+	if ( ! array_key_exists( $platz, tamil_site_werbeplaetze() ) ) {
 		return '';
 	}
 	[ $inhalt, $eigen, $vorlage ] = tamil_site_anzeige_inhalt( $platz );
+	// Impressum und Datenschutz: keine Eigenanzeige; ein gebuchter Platz steht dort wie überall (Festlegung F3: Leaderboard
+	// und Fuß „jeder Seite“).
+	if ( $eigen && tamil_site_seite_ohne_anzeigen() ) {
+		return '';
+	}
 	if ( $eigen && '' !== $direkt_nach && ! empty( tamil_site_eigenanzeige_gezeigt()[ sanitize_key( $direkt_nach ) ] ) ) {
 		return '';
 	}

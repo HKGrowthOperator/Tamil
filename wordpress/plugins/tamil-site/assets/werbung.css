@@ -24,3 +24,6 @@
 	.wb-tabelle th, .wb-tabelle td { padding: .15em 0; }
 	.wb-tabelle td[data-label]::before { content: attr(data-label) ": "; font-weight: bold; }
 }
+
+/* N-07: Skizze je Platz (Seitenumriss, markierte Fläche in Titan) über der Beschreibung in „Wo“ */
+.wb-skizze { display: block; width: 48px; height: 64px; margin: 0 0 .4em; color: currentColor; }

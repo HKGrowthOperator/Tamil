@@ -36,6 +36,7 @@ $tamil_laender = array(
 $tamil_zeilen  = array();
 $tamil_staedte = array();
 $tamil_land_da = array();
+$tamil_attr    = array(); // Filterwerte je Termin (für „Ab heute“, wenn dort alles steht)
 foreach ( $tamil_kommend as $tamil_id ) {
 	$tamil_e = tamil_site_event( $tamil_id );
 	if ( ! $tamil_e ) {
@@ -50,6 +51,7 @@ foreach ( $tamil_kommend as $tamil_id ) {
 	if ( '' !== $tamil_land ) {
 		$tamil_land_da[ $tamil_land ] = true;
 	}
+	$tamil_attr[ $tamil_id ]                           = ' data-land="' . esc_attr( $tamil_land ) . '" data-stadt="' . esc_attr( '' !== $tamil_stadt ? sanitize_title( $tamil_stadt ) : '' ) . '"';
 	$tamil_zusatz                                      = array_filter( array( $tamil_a['orte'], $tamil_a['eintritt'] ) );
 	$tamil_zeilen[ substr( $tamil_a['iso'], 0, 7 ) ][] = tamil_anr_zeile(
 		$tamil_id,
@@ -63,6 +65,36 @@ foreach ( $tamil_kommend as $tamil_id ) {
 	);
 }
 asort( $tamil_staedte, SORT_LOCALE_STRING );
+
+// N-05: Stehen alle kommenden Termine schon unter „Ab heute“, entfällt der Abschnitt „Kommende Termine“ (er hätte nur
+// Filterknöpfe und einen Verweissatz); die Filter stehen dann in „Ab heute“.
+$tamil_nur_oben = $tamil_kommend && ! array_diff( $tamil_kommend, $tamil_bald );
+ob_start();
+if ( count( $tamil_land_da ) > 1 || count( $tamil_staedte ) > 1 ) :
+	?>
+				<div class="filter" hidden>
+					<?php if ( count( $tamil_land_da ) > 1 ) : ?>
+						<div class="chips" role="group" aria-label="<?php esc_attr_e( 'Land', 'tamil' ); ?>" data-filter-art="land">
+							<button type="button" class="chip" data-wert="" aria-pressed="true"><?php esc_html_e( 'Alle Länder', 'tamil' ); ?></button>
+							<?php foreach ( $tamil_laender as $tamil_k => $tamil_name ) : ?>
+								<?php if ( isset( $tamil_land_da[ $tamil_k ] ) ) : ?>
+									<button type="button" class="chip" data-wert="<?php echo esc_attr( $tamil_k ); ?>" aria-pressed="false"><?php echo esc_html( $tamil_name ); ?></button>
+								<?php endif; ?>
+							<?php endforeach; ?>
+						</div>
+					<?php endif; ?>
+					<?php if ( count( $tamil_staedte ) > 1 ) : ?>
+						<div class="chips" role="group" aria-label="<?php esc_attr_e( 'Stadt', 'tamil' ); ?>" data-filter-art="stadt">
+							<button type="button" class="chip" data-wert="" aria-pressed="true"><?php esc_html_e( 'Alle Städte', 'tamil' ); ?></button>
+							<?php foreach ( $tamil_staedte as $tamil_k => $tamil_name ) : ?>
+								<button type="button" class="chip" data-wert="<?php echo esc_attr( (string) $tamil_k ); ?>" aria-pressed="false"><?php echo esc_html( $tamil_name ); ?></button>
+							<?php endforeach; ?>
+						</div>
+					<?php endif; ?>
+				</div>
+	<?php
+endif;
+$tamil_filter = (string) ob_get_clean();
 
 // Das Jahr: vergangene Termine dieses Jahres nach Monaten
 $tamil_vorbei = function_exists( 'tamil_site_upcoming_events' ) ? tamil_ids(
@@ -96,16 +128,24 @@ foreach ( $tamil_vorbei as $tamil_id ) {
 	</header>
 </div>
 
-<section class="woche woche--seite" aria-labelledby="ab-heute">
+<section class="woche woche--seite" aria-labelledby="ab-heute"<?php echo $tamil_nur_oben && '' !== $tamil_filter ? ' data-filter' : ''; ?>>
 	<?php tamil_signatur( 'flaeche' ); ?>
 	<div class="innen">
 		<h2 class="woche__titel" id="ab-heute"><?php esc_html_e( 'Ab heute', 'tamil' ); ?></h2>
 		<p class="woche__art"><time datetime="<?php echo esc_attr( $tamil_heute ); ?>"><?php echo esc_html( tamil_stand( time() ) ); ?></time></p>
+		<?php if ( $tamil_nur_oben ) : ?>
+			<?php echo $tamil_filter; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- oben escapt ?>
+		<?php endif; ?>
 		<ul class="termine-raster<?php echo 1 === count( $tamil_bald ) ? ' termine-raster--eins' : ( 2 === count( $tamil_bald ) ? ' termine-raster--zwei' : '' ); ?>">
 			<?php
 			foreach ( $tamil_bald as $tamil_i => $tamil_id ) {
 				// die erste Karte ist das größte Bild im ersten Bildschirm: sofort und vorrangig laden
-				echo tamil_grafik_termin( $tamil_id, 'h3', true, 0 === $tamil_i ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_grafik_termin()
+				$tamil_karte = tamil_grafik_termin( $tamil_id, 'h3', true, 0 === $tamil_i );
+				if ( $tamil_nur_oben && isset( $tamil_attr[ $tamil_id ] ) ) {
+					// Filterwerte an die Karte, damit die Filter hier oben wirken (N-05)
+					$tamil_karte = (string) preg_replace( '/^<li\b/', '<li' . $tamil_attr[ $tamil_id ], $tamil_karte, 1 );
+				}
+				echo $tamil_karte; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_grafik_termin(), Werte oben escapt
 			}
 			if ( ! $tamil_bald ) {
 				echo tamil_grafik_leer( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_grafik_leer()
@@ -117,37 +157,19 @@ foreach ( $tamil_vorbei as $tamil_id ) {
 			}
 			?>
 		</ul>
+		<?php if ( $tamil_nur_oben && '' !== $tamil_filter ) : ?>
+			<p class="leer__satz" data-filter-leer hidden><?php esc_html_e( 'Für diese Auswahl steht gerade kein Termin im Kalender.', 'tamil' ); ?> <a class="textlink" href="<?php echo esc_url( tamil_einreichen_url() ); ?>"><?php esc_html_e( 'Termin einreichen', 'tamil' ); ?></a></p>
+		<?php endif; ?>
 	</div>
 </section>
 
 <div class="innen">
-	<?php if ( $tamil_zeilen ) : ?>
+	<?php if ( $tamil_zeilen && ! $tamil_nur_oben ) : ?>
 		<section class="block kalender" aria-labelledby="kommend" data-filter>
 			<h2 class="block-titel" id="kommend"><?php esc_html_e( 'Kommende Termine', 'tamil' ); ?></h2>
 			<?php /* translators: %d: Anzahl */ ?>
 			<p class="block__zeile" aria-live="polite"><span data-filter-zahl><?php echo esc_html( sprintf( _n( '%d Termin', '%d Termine', count( $tamil_kommend ), 'tamil' ), count( $tamil_kommend ) ) ); ?></span><?php esc_html_e( ', nach Monaten.', 'tamil' ); ?></p>
-			<?php if ( count( $tamil_land_da ) > 1 || count( $tamil_staedte ) > 1 ) : ?>
-				<div class="filter" hidden>
-					<?php if ( count( $tamil_land_da ) > 1 ) : ?>
-						<div class="chips" role="group" aria-label="<?php esc_attr_e( 'Land', 'tamil' ); ?>" data-filter-art="land">
-							<button type="button" class="chip" data-wert="" aria-pressed="true"><?php esc_html_e( 'Alle Länder', 'tamil' ); ?></button>
-							<?php foreach ( $tamil_laender as $tamil_k => $tamil_name ) : ?>
-								<?php if ( isset( $tamil_land_da[ $tamil_k ] ) ) : ?>
-									<button type="button" class="chip" data-wert="<?php echo esc_attr( $tamil_k ); ?>" aria-pressed="false"><?php echo esc_html( $tamil_name ); ?></button>
-								<?php endif; ?>
-							<?php endforeach; ?>
-						</div>
-					<?php endif; ?>
-					<?php if ( count( $tamil_staedte ) > 1 ) : ?>
-						<div class="chips" role="group" aria-label="<?php esc_attr_e( 'Stadt', 'tamil' ); ?>" data-filter-art="stadt">
-							<button type="button" class="chip" data-wert="" aria-pressed="true"><?php esc_html_e( 'Alle Städte', 'tamil' ); ?></button>
-							<?php foreach ( $tamil_staedte as $tamil_k => $tamil_name ) : ?>
-								<button type="button" class="chip" data-wert="<?php echo esc_attr( (string) $tamil_k ); ?>" aria-pressed="false"><?php echo esc_html( $tamil_name ); ?></button>
-							<?php endforeach; ?>
-						</div>
-					<?php endif; ?>
-				</div>
-			<?php endif; ?>
+			<?php echo $tamil_filter; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- oben escapt ?>
 			<?php foreach ( $tamil_zeilen as $tamil_monat => $tamil_liste ) : ?>
 				<section class="kalender__monat" aria-labelledby="<?php echo esc_attr( 'monat-' . $tamil_monat ); ?>">
 					<h3 class="kalender__titel" id="<?php echo esc_attr( 'monat-' . $tamil_monat ); ?>"><?php echo esc_html( wp_date( 'F Y', (int) strtotime( $tamil_monat . '-01' ) ) ); ?></h3>

@@ -99,7 +99,7 @@ def alle():
     d["hell.svg"] = "".join([kopf(rm)] + gruppen(td, pm, IMPACT, deckkraft(0.17, 0.08, n)) + ["</svg>\n"])
 
     # 03 Spatial, dekorativ (ohne Titel); Farben wie im Entwurf spatial.svg
-    d["raum.svg"] = td.svg_raeumlich(pm, rm, None)
+    d["raum.svg"] = td.svg_raeumlich(pm, rm, None, schatten=False)  # ohne Bodenschatten (N-13)
 
     # Ecke „an jedem Post“: Small-Geometrie als Mini (Stauchung 0,9, Abstand 1,05), rechts 10 % und unten 5 %
     # abgeschnitten. Weiß von 95 % (Fuß) bis 72 % Deckkraft (Auslauf); für helle Bildecken Titan und Impact.

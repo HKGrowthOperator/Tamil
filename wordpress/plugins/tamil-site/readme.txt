@@ -4,7 +4,7 @@ Tags: events, kino, werbung, weiterleitungen
 Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.1.0
+Stable tag: 1.2.0
 License: MIT
 
 Website-Funktionen für Tamil.de – unabhängig vom Theme und vom News-Radar.
@@ -29,6 +29,9 @@ und Terminlisten). Der News-Radar ist ein eigenes Plugin („Tamil.de News-Radar
 2. Einstellungen → Tamil.de Website: Werbeplätze und die Weiterleitungs-CSV hinterlegen.
 
 == Changelog ==
+
+= 1.2.0 =
+* Skizze je Werbeplatz auf „Werben“. Gebuchte Plätze stehen auch auf Impressum und Datenschutz (nur Eigenanzeigen entfallen dort, Festlegung F3).
 
 = 1.1.0 =
 * Eigenanzeigen im neuen Look; „Event melden“ und „WhatsApp-Kanal (kurz)“ statt Newsletter. Gespeicherte Werbeplätze mit einer entfernten Vorlage fallen auf den Standard zurück.

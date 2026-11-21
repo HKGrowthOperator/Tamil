@@ -53,10 +53,12 @@
   --linie-stark: var(--titan);         /* Linien über Blöcken, Tabellenköpfe, Kästen: Titan statt Schwarz */
   --linie-titan: var(--rot);           /* feine Linien auf Titan (Band, „Diese Woche“) */
   --fokus: var(--titan);               /* Fokusrahmen auf Weiß; auf Titan und Impact weiß */
-  /* Schrift im Bild: der einzige Verlauf, von durchsichtig nach Schwarz; auf Titan-Flächen nach Titan (.woche) */
-  --verlauf: linear-gradient(to bottom, rgb(0 0 0 / 0) 0, rgb(0 0 0 / 0.72) 52px, rgb(0 0 0 / 0.88) 100%);
-  --verlauf-kurz: linear-gradient(to bottom, rgb(0 0 0 / 0) 0, rgb(0 0 0 / 0.78) 22px, rgb(0 0 0 / 0.9) 100%);
-  --verlauf-karte: linear-gradient(to bottom, rgb(0 0 0 / 0) 0, rgb(0 0 0 / 0.72) 40px, rgb(0 0 0 / 0.86) 100%);
+  /* Schrift im Bild: der einzige Verlauf, von durchsichtig nach Schwarz; auf Titan-Flächen nach Titan (.woche).
+     N-12: wo die Schrift beginnt 66 % Schwarz – auf reinem Weiß 7,2 : 1 für weiße Schrift (vorher 72–88 %, mindestens
+     10,5 : 1 gemessen); helle Fotos bleiben sichtbar */
+  --verlauf: linear-gradient(to bottom, rgb(0 0 0 / 0) 0, rgb(0 0 0 / 0.66) 52px, rgb(0 0 0 / 0.74) 100%);
+  --verlauf-kurz: linear-gradient(to bottom, rgb(0 0 0 / 0) 0, rgb(0 0 0 / 0.68) 22px, rgb(0 0 0 / 0.76) 100%);
+  --verlauf-karte: linear-gradient(to bottom, rgb(0 0 0 / 0) 0, rgb(0 0 0 / 0.66) 40px, rgb(0 0 0 / 0.72) 100%);
   --verlauf-karte-titan: linear-gradient(to bottom, rgb(102 0 0 / 0) 0, rgb(102 0 0 / 0.86) 40px, rgb(102 0 0 / 0.95) 100%);
   --verlauf-titan: linear-gradient(to bottom, rgb(102 0 0 / 0) 0, rgb(102 0 0 / 0.8) 52px, rgb(102 0 0 / 0.94) 100%);
   --verlauf-titan-kurz: linear-gradient(to bottom, rgb(102 0 0 / 0) 0, rgb(102 0 0 / 0.84) 22px, rgb(102 0 0 / 0.95) 100%);
@@ -319,7 +321,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 
 /* Bildrahmen: Format per Klasse, Bild füllt (object-fit), schneidet den leichten Zoom beim Überfahren ab */
 .rahmen { position: relative; overflow: hidden; border-radius: var(--rahmen-r, var(--radius)); background: var(--flaeche); }
-.rahmen img { width: 100%; height: 100%; object-fit: cover; transition: var(--zoom); }
+.rahmen img { width: 100%; height: 100%; object-fit: cover; transition: var(--zoom); color: transparent; } /* N-16: Alt-Text beim Nachladen nicht als Fließtext in der Fläche */
 .anr:hover .rahmen img { transform: scale(1.03); }
 .r169 { aspect-ratio: 16 / 9; }
 .r43 { aspect-ratio: 4 / 3; }
@@ -463,8 +465,8 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 
 /* ---------- Küche (hell) und Rubrikblöcke: jede Kachel behält ihr Format auf allen Breiten ---------- */
 .kueche { margin-top: 44px; }
-/* Rubrik-Bühne (K-06): wie die Küche gebaut; Titel auf kleinen Karten höchstens drei Zeilen */
-.rubrikblock .kachel--klein .titel { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; }
+/* Bühne (Küche und Rubrik-Bühnen, K-06, N-08): eine Bauart, ein Maß, eine Typografie */
+/* N-03: ganze Titel in den Seitenkarten der Bühnen, nie mit „…“; die Karte wächst, die Reihe richtet sich danach */
 /* Kacheln einer Bühne (Küche und Rubrik-Bühne) füllen ab 600 px ihre Rasterzelle, das Bild wächst mit: die große Kachel
    schließt unten mit dem Stapel daneben ab, kleine Kacheln einer Reihe sind gleich hoch */
 @media (min-width: 600px) {
@@ -473,11 +475,11 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .kueche__raster > .kachel > .anr > .rahmen { flex: 1 1 auto; }
 }
 .kueche__raster { display: grid; gap: 12px; padding-top: 14px; }
-.kueche .kachel--klein .imbild { padding: 30px var(--rand) 10px; background-image: var(--verlauf-kurz); }
-.kueche .kachel--klein .meta { margin-bottom: 2px; }
+.kueche__raster .kachel--klein .imbild { padding: 30px var(--rand) 10px; background-image: var(--verlauf-kurz); }
+.kueche__raster .kachel--klein .meta { margin-bottom: 2px; }
 /* Kleine Küche-Kacheln: Titel im Bild auf allen Breiten (Text auf Bild, 20.11.2026); am Handy 8:3 über die volle
    Breite, am Tablet 16:9 nebeneinander, am Desktop 8:3 gestapelt neben der großen */
-.kueche .kachel--klein .titel { font-size: 19px; line-height: 1.2; }
+.kueche__raster .kachel--klein .titel { font-size: 19px; line-height: 1.2; }
 .rubrikblock { margin-top: 44px; }
 .rubrikblock .neben { margin-top: 0; }
 
@@ -494,13 +496,13 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
      auf derselben Linie enden (bei 1200 px Inhalt 803 : 373, wie klar2). */
   .kueche__raster { column-gap: 24px; row-gap: 16px; padding-top: 16px; }
   .kueche__raster--4 { grid-template-columns: minmax(0, 1fr) calc((100% - 24px) / 3 - 18.963px); }
-  .kueche__raster--3 { grid-template-columns: minmax(0, 1fr) calc((100% - 24px) * 0.428571 - 12.19px); }
+  .kueche__raster--3 { grid-template-columns: minmax(0, 1fr) calc((100% - 24px) / 3 - 18.963px); } /* N-08: gleiche Spalten wie mit vier Beiträgen */
   .kueche__raster--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .kueche__raster--4 .kachel--gross { grid-row: 1 / 4; }
   .kueche__raster--3 .kachel--gross { grid-row: 1 / 3; }
   .kueche__raster--2 .kachel--klein .rahmen { aspect-ratio: 16 / 9; }
   .kueche__raster--1 .kachel--gross { max-width: 803px; }
-  .kueche .kachel--klein .titel { font-size: 17px; line-height: 1.2; }
+  .kueche__raster .kachel--klein .titel { font-size: 17px; line-height: 1.2; }
 }
 @media (min-width: 600px) and (max-width: 1023px) {
   .aufmacher .rahmen { margin-inline: 0; }
@@ -558,6 +560,9 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .woche__gruppe--kino { grid-area: kino; align-self: start; }
   .woche__gruppe--termine { grid-area: termin; }
   .woche__raster.ohne-klein .woche__gruppe--kino { grid-column: auto; }
+  /* N-17: mit kleiner Kachel darüber stünde „Im Kino“ zwischen zwei Kinokarten derselben Spalte; die Zeile bleibt nur
+     für Vorleseprogramme (die Liste ist weiter danach benannt), die Karte trägt „Kino“ selbst */
+  .woche__raster:not(.ohne-klein) .woche__gruppe--kino > .woche__art { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .kachel--gross .imbild { padding: 120px 28px 24px; }
   .kachel .titel { font-size: 20px; }
   .kachel--gross .titel { font-size: 26px; line-height: 1.16; max-width: 22em; }
@@ -566,12 +571,15 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .woche__gruppe--termine ul { grid-auto-flow: column; grid-template-columns: none; grid-auto-columns: minmax(0, 1fr); gap: 24px; }
   .termine-3 .woche__gruppe--termine li:last-child { grid-column: auto; }
   /* ein Termin: Bild links, Text rechts über die volle Breite, kein leeres Viertel */
-  .termine-1 .woche__gruppe--termine .anr { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-content: start; }
-  .termine-1 .woche__gruppe--termine .grafik__inhalt { padding: 20px 28px 24px; }
+  /* K-13: ein Termin über die ganze Breite als Band: Bild in Dateigröße (höchstens 380 px, nicht hochgezogen und weich),
+     daneben Orte und Vorspann mittig in lesbarer Zeilenlänge statt zwei Zeilen oben in einer 700 px breiten Fläche */
+  .termine-1 .woche__gruppe--termine .anr { display: grid; grid-template-columns: minmax(0, 380px) minmax(0, 1fr); align-items: center; }
+  .termine-1 .woche__gruppe--termine .grafik__inhalt { padding: 20px 32px; max-width: calc(64ch + 64px); }
+  .termine-1 .woche__gruppe--termine .grafik__text { font-size: 18px; line-height: 1.5; }
   .ohne-gross.ohne-klein.termine-1 .woche__gruppe--termine .anr { display: block; }
 
   .kueche { margin-top: 64px; }
-  .kueche .kachel--klein .imbild { padding: 30px 16px 10px; }
+  .kueche__raster .kachel--klein .imbild { padding: 30px 16px 10px; }
   .rubrikblock { margin-top: 64px; }
 }
 
@@ -628,10 +636,8 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 /* Termine ohne Vorspann sind niedriger (gemessen 223 / 246 px) */
 .kalender .karten--raster > li:nth-child(n+3), .monat .karten--raster > li:nth-child(n+3) { contain-intrinsic-size: auto 240px; }
 @media (min-width: 600px) and (max-width: 1023px) {
-  /* Tablet, zwei Spalten: eine übrig bleibende letzte Karte steht nicht allein neben einer Lücke, sondern über beide
-     Spalten in flacherem Format (21:9) */
-  .karten--raster > li:last-child:nth-child(odd) { grid-column: 1 / -1; }
-  .karten--raster > li:last-child:nth-child(odd) .rahmen { aspect-ratio: 21 / 9; }
+  /* N-04 (21.11.2026): eine übrig bleibende letzte Karte bleibt in normaler Breite linksbündig; über die ganze Breite
+     gezogen wirkte sie übergroß, ihr Bild wurde weich und der Titel blieb klein (ersetzt QA-04 und K-19) */
   /* Tablet: „Weitere Meldungen“ bleibt eine wischbare Reihe (nicht das Zweierraster der Meldungszeilen) */
   .meldungen ul.karten--reihe { display: flex; column-gap: 12px; }
   /* „Im Kino“ über die volle Breite (ohne kleine Kachel daneben): Bild mit Titel links, Städte rechts */
@@ -782,6 +788,13 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 }
 .chip:hover { border-color: var(--titan); background: var(--flaeche); color: var(--titan); box-shadow: inset 0 0 0 1px var(--titan); } /* Q2-14: Fläche und doppelte Kante */
 .chip[aria-pressed="true"] { background: var(--titan); border-color: var(--titan); color: var(--hell); font-weight: 600; }
+/* Filter in „Ab heute“ auf Titan (N-05): weiß umrandet, gewählt weiß gefüllt */
+.woche--seite .filter { margin: 4px 0 16px; }
+.woche--seite .chip { border-color: var(--hell-leise); background: transparent; color: var(--hell); }
+.woche--seite .chip:hover { border-color: var(--hell); background: var(--titan-tief); color: var(--hell); box-shadow: inset 0 0 0 1px var(--hell); }
+.woche--seite .chip[aria-pressed="true"] { background: var(--hell); border-color: var(--hell); color: var(--titan); }
+.woche--seite .leer__satz { color: var(--hell); }
+.woche--seite .leer__satz .textlink { color: var(--hell); }
 .kalender__titel { margin-top: 28px; padding-bottom: 8px; border-bottom: 1px solid var(--linie); font-size: 19px; line-height: 1.25; font-weight: 650; }
 .zeile__angaben { font-size: 15px; line-height: 1.45; color: var(--leise); }
 /* Kommende Termine: was schon unter „Ab heute“ steht, erscheint hier nicht noch einmal – außer ein Filter ist gewählt
@@ -907,6 +920,13 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .inhalt .kino-liste li:first-child { border-top: 0; }
 .inhalt .hinweis { font-size: 15px; color: var(--leise); }
 .hinweis-box, .tipp { padding: 12px 16px; background: var(--flaeche); border-top: 1px solid var(--linie-stark); font-size: 17px; line-height: 1.5; }
+/* Infokasten aus dem Import als Terminkasten (N-11, tamil_event_box_wie_termin()) */
+.inhalt > .termin-box--im-text { margin: 32px 0 0; }
+.inhalt .termin-box--im-text .termin-box__titel { margin: 0; font-size: 19px; line-height: 1.3; }
+.inhalt .termin-box--im-text p { margin: 0; }
+.inhalt .termin-box--im-text .aktionen { margin-top: 8px; }
+.inhalt .termin-box--im-text .termin-box__hinweis { margin-top: 8px; }
+.inhalt > .termin-box--im-text + .quelle, .inhalt:has(> .termin-box--im-text:last-child) ~ .quelle { margin-top: 16px; padding-top: 0; border-top: 0; }
 .event-box { padding: 12px 0 4px; border-top: 1px solid var(--linie-stark); border-bottom: 1px solid var(--linie); font-size: 17px; line-height: 1.5; }
 .event-box > * + * { margin-top: 0.4em; }
 .inhalt .rezept-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; align-items: start; }
@@ -961,11 +981,16 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .schlagworte__titel { color: var(--leise); font-size: 13px; font-weight: 600; }
 .schlagworte a { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; min-width: 44px; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
 .schlagworte a:hover { color: var(--rot); }
-/* Teilen: der WhatsApp-Knopf in einer eigenen Zeile, darunter die übrigen Wege in einer ruhigen Zeile */
+/* Teilen (N-10): eine Knopfzeile, WhatsApp gefüllt, die übrigen Wege als leise Knöpfe gleicher Höhe; bricht am Handy
+   in Zeilen um, die Knöpfe füllen jede Zeile (keine ungleichen Lücken) */
 .teilen { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--linie-stark); }
-/* gleich breite Spalten (Handy zwei, Desktop vier), jeder Weg links bündig: keine ungleichen Lücken um „X“ */
-.teilen__links { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); align-items: center; gap: 0 16px; margin-top: 8px; }
-.teilen .textlink { min-width: 44px; justify-content: flex-start; }
+.teilen__zeile { display: flex; flex-wrap: wrap; gap: 8px; }
+.teilen__zeile .knopf { flex: 1 1 auto; min-height: 44px; padding: 0 16px; font-size: 15px; }
+@media (min-width: 600px) {
+  /* alle sechs Wege in einer Zeile der 560 px breiten Textspalte */
+  .teilen__zeile { gap: 6px; }
+  .teilen__zeile .knopf { flex: 0 0 auto; padding: 0 12px; font-size: 14px; }
+}
 .knopf-text { padding: 0; border: 0; background: none; cursor: pointer; }
 .autor { margin-top: 24px; font-size: 15px; line-height: 1.5; color: var(--leise); }
 .autor strong { color: var(--tinte); font-weight: 600; }
@@ -1352,7 +1377,7 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
    1024 px rechts daneben */
 .signatur--raum {
   width: min(100%, 340px); aspect-ratio: 1000 / 712; margin: 24px auto 0;
-  background-image: url("../img/signatur/raum.svg?ver=3.5.0"); background-size: 100% 100%;
+  background-image: url("../img/signatur/raum.svg?ver=3.12.0"); background-size: 100% 100%;
 }
 @media (min-width: 1024px) {
   .seitenkopf--raum { position: relative; min-height: 380px; padding-right: 44%; }
@@ -1534,11 +1559,6 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
 }
 /* Verzeichnis: Schild „Symbolbild“ oben rechts wie auf allen Karten (K-18) */
 .vz-bild .vz-symbolbild { top: 0; right: 0; bottom: auto; left: auto; border-radius: 0 var(--radius) 0 0; }
-/* Raster mit drei Spalten: eine allein stehende letzte Karte über die volle Breite in flachem Format (K-19) */
-@media (min-width: 1024px) {
-  .karten--raster > li:last-child:nth-child(3n+1) { grid-column: 1 / -1; }
-  .karten--raster > li:last-child:nth-child(3n+1) .rahmen { aspect-ratio: 21 / 9; }
-}
 
 /* ---------- Abgerundete Ecken (Theme 3.9.0) ----------
    Ein Radius für Karten und Bilder (--radius), kleiner für kleine Kacheln (--radius-klein). Der Punktbogen und das Schild

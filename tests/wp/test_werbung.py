@@ -217,6 +217,20 @@ def test_tabellen_und_eindeutiger_tag_je_platz(wb):
     assert r == [1, 0, True]
 
 
+def test_gebuchter_platz_auch_auf_datenschutz(wb, wp_cli):
+    """Festlegung F3: Leaderboard und Fuß „jeder Seite“. Die Regel „keine Anzeigen auf Impressum und Datenschutz“ (Q2-10)
+    gilt nur für Eigenanzeigen; ein gebuchter Platz erscheint dort."""
+    bid = wb.anlegen("leaderboard", 0, 1)
+    pid = int(wp_cli("echo (int) wp_insert_post( array( 'post_type' => 'page', 'post_status' => 'publish',"
+                     " 'post_name' => 'datenschutzerklaerung', 'post_title' => 'Datenschutz (Test)', 'post_content' => '<p>Text.</p>' ) );"))
+    try:
+        seite = requests.get(URL + "/datenschutzerklaerung/", timeout=30).text
+        assert f'data-wb-buchung="{bid}"' in seite, "gebuchter Platz fehlt auf Datenschutz"
+        assert 'ad-anzeige' not in seite, "keine Eigenanzeige auf Datenschutz"
+    finally:
+        wp_cli(f"wp_delete_post( {pid}, true );")
+
+
 def test_schalter_aus_nichts_oeffentlich(wb):
     bid = wb.anlegen("leaderboard", 0, 1)
     _php("$f = (array) get_option( 'tamil_site_funktionen' ); $f['werbung'] = false; update_option( 'tamil_site_funktionen', $f );")
