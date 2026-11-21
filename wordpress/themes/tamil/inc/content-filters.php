@@ -6,15 +6,14 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Werbeplatz 03 nach dem zweiten Absatz – nur im Hauptinhalt eines langen Beitrags und nur, wenn die Redaktion den
- * Platz nicht selbst per [tamil_anzeige] gesetzt hat. Ob der Beitrag lang genug ist (ab fünf Absätzen), entscheidet
- * das Plugin (tamil_site_artikel_plaetze(), N-06); dann liefert tamil_site_anzeige() hier nichts.
+ * Werbeplatz 03 nach dem zweiten Absatz – nur im Hauptinhalt eines Beitrags mit mindestens vier Absätzen und nur,
+ * wenn die Redaktion den Platz nicht selbst per [tamil_anzeige] gesetzt hat.
  */
 function tamil_inarticle_anzeige( string $content ): string {
 	if ( ! is_singular( 'post' ) || ! in_the_loop() || ! is_main_query() || ! function_exists( 'tamil_site_anzeige' ) ) {
 		return $content;
 	}
-	if ( str_contains( $content, 'class="ad ' ) || substr_count( $content, '</p>' ) < 3 ) {
+	if ( str_contains( $content, 'class="ad ' ) || substr_count( $content, '</p>' ) < 4 ) {
 		return $content;
 	}
 	$anzeige = tamil_site_anzeige( 'inarticle', false );

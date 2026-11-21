@@ -548,74 +548,14 @@ function tamil_site_anzeige_gezeigt( string $platz = '' ): array {
 }
 
 /**
- * Ab so vielen Absätzen gilt ein Beitrag als lang: Erst dann steht eine Anzeige im Text (Prüfung 21.11., N-06).
- */
-define( 'TAMIL_SITE_ARTIKEL_LANG_AB', 5 );
-
-/**
- * Absätze mit Text in einem Beitragsinhalt (leere Absätze und die Quellenzeile zählen nicht).
- */
-function tamil_site_artikel_absaetze( string $inhalt ): int {
-	if ( ! str_contains( $inhalt, '</p>' ) ) {
-		$inhalt = wpautop( $inhalt );
-	}
-	preg_match_all( '#<p\b([^>]*)>(.*?)</p>#is', $inhalt, $treffer, PREG_SET_ORDER );
-	$zahl = 0;
-	foreach ( $treffer as $p ) {
-		if ( ! str_contains( $p[1], 'quelle' ) && '' !== trim( html_entity_decode( wp_strip_all_tags( $p[2] ) ), " \t\n\r\0\x0B\u{a0}" ) ) {
-			++$zahl;
-		}
-	}
-	return $zahl;
-}
-
-/**
- * Welche automatisch gesetzten Werbeplätze ein Beitrag mit so vielen Absätzen zeigt (N-06). Lange Beiträge: alle,
- * die Anzeige im Text nach dem zweiten Absatz eingeschlossen. Kurze Beiträge: keine Anzeige im Text und kein Fuß-Platz,
- * also in jeder Breite höchstens zwei Flächen (am Handy Leaderboard und Handy-Leiste, ab 768 px nur das Leaderboard,
- * ab 1024 px Half Page und Leaderboard).
- *
- * @return string[]
- */
-function tamil_site_artikel_plaetze( int $absaetze ): array {
-	$alle = array_keys( tamil_site_werbung_formate() );
-	if ( $absaetze >= TAMIL_SITE_ARTIKEL_LANG_AB ) {
-		return $alle;
-	}
-	return array_values( array_diff( $alle, array( 'inarticle', 'footer' ) ) );
-}
-
-/**
- * Darf der Platz auf dieser Seite automatisch stehen? Nur Beiträge sind eingeschränkt.
- */
-function tamil_site_artikel_platz_erlaubt( string $platz ): bool {
-	if ( ! is_singular( 'post' ) ) {
-		return true;
-	}
-	$post = get_queried_object();
-	if ( ! $post instanceof WP_Post ) {
-		return true;
-	}
-	static $absaetze = array();
-	if ( ! isset( $absaetze[ $post->ID ] ) ) {
-		$absaetze[ $post->ID ] = tamil_site_artikel_absaetze( (string) $post->post_content );
-	}
-	return in_array( $platz, tamil_site_artikel_plaetze( $absaetze[ $post->ID ] ), true );
-}
-
-/**
  * Fertiger Werbeplatz mit Label „Anzeige“; leer, wenn der Platz nichts zeigt. Eigenanzeigen tragen zusätzlich die
  * Klassen ad-anzeige und ad-bild; ihr Bildnachweis landet im Fuß der Seite. Auf Impressum und Datenschutz gibt es
  * keine Anzeigen. Mit $direkt_nach nennt das Theme den Platz, der unmittelbar davor steht: war dort schon eine
- * Eigenanzeige, folgt keine zweite direkt darauf. Auf Beiträgen gilt die Regel aus tamil_site_artikel_plaetze(); ein
- * von der Redaktion per [tamil_anzeige] gesetzter Platz ($redaktion) ist davon ausgenommen.
+ * Eigenanzeige, folgt keine zweite direkt darauf.
  */
-function tamil_site_anzeige( string $platz, bool $ausgeben = true, string $direkt_nach = '', bool $redaktion = false ): string {
+function tamil_site_anzeige( string $platz, bool $ausgeben = true, string $direkt_nach = '' ): string {
 	$platz = sanitize_key( $platz );
 	if ( ! array_key_exists( $platz, tamil_site_werbeplaetze() ) || tamil_site_seite_ohne_anzeigen() ) {
-		return '';
-	}
-	if ( ! $redaktion && ! tamil_site_artikel_platz_erlaubt( $platz ) ) {
 		return '';
 	}
 	[ $inhalt, $eigen, $vorlage ] = tamil_site_anzeige_inhalt( $platz );
@@ -694,5 +634,5 @@ add_action( 'wp_enqueue_scripts', 'tamil_site_anzeigen_css', 20 );
  */
 function tamil_site_shortcode_anzeige( $atts ): string {
 	$atts = shortcode_atts( array( 'platz' => 'inarticle' ), $atts, 'tamil_anzeige' );
-	return tamil_site_anzeige( (string) $atts['platz'], false, '', true );
+	return tamil_site_anzeige( (string) $atts['platz'], false );
 }
