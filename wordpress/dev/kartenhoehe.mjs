@@ -9,7 +9,8 @@ import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
 const { chromium } = require("playwright");
 
-const LISTEN = ".karten, .neben, .woche__raster, .woche__gruppe ul, .kueche__raster";
+// .stadt__karten und .beistuecke gibt es nur auf den Startseiten-Proben (/?probe=cover|news|community als weiterer Pfad)
+const LISTEN = ".karten, .neben, .woche__raster, .woche__gruppe ul, .kueche__raster, .stadt__karten, .beistuecke";
 const KARTE = ":scope > li, :scope > article, :scope > .woche__gruppe";
 const PFADE = ["/", "/category/kultur/", "/category/kino/", "/events/", "/?s=tamil", "/production/", "/2026/10/"];
 

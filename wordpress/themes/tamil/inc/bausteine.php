@@ -261,6 +261,28 @@ function tamil_kino_film( int $id ): array {
 }
 
 /**
+ * Termin eines Kinos aus einer Kinoliste als Text: „3 Vorstellungen ab 21.11.“, „19.11. bis 25.11.“ oder „ab 19.11.“
+ * (Tafel „Nach Stadt“ und „Tamil in meiner Stadt“). Leer ohne Angaben.
+ *
+ * @param array<string,mixed> $k Ein Eintrag aus kino_fakten['kinos'].
+ */
+function tamil_kino_termin_text( array $k ): string {
+	$fmt = static fn( string $d ): string => wp_date( 'j.n.', (int) strtotime( $d ) );
+	if ( ! empty( $k['termine'] ) ) {
+		/* translators: 1: Anzahl, 2: Datum */
+		$termin = sprintf( _n( '%1$d Vorstellung ab %2$s', '%1$d Vorstellungen ab %2$s', count( $k['termine'] ), 'tamil' ), count( $k['termine'] ), $fmt( (string) $k['termine'][0] ) );
+	} elseif ( ! empty( $k['von'] ) && ! empty( $k['bis'] ) && (string) $k['bis'] >= (string) $k['von'] ) {
+		/* translators: 1: Beginn, 2: Ende */
+		$termin = sprintf( __( '%1$s bis %2$s', 'tamil' ), $fmt( (string) $k['von'] ), $fmt( (string) $k['bis'] ) );
+	} else {
+		/* translators: %s: Datum */
+		$termin = ! empty( $k['von'] ) ? sprintf( __( 'ab %s', 'tamil' ), $fmt( (string) $k['von'] ) ) : '';
+	}
+	// Zahl und Wort nicht trennen („1 Vorstellung“), auch „ab“ nicht vom Datum (QA-11)
+	return (string) preg_replace( '/(^\d+|\bab) /u', "\$1\u{00A0}", $termin );
+}
+
+/**
  * Tafel „Nach Stadt“: Land, Stadt, Film, Kino, Termin und Link zu Tickets und Zeiten aus den Kinolisten. Auf der
  * Kinoseite trägt jede Zeile das Bild des Films (im Artikel steht es schon darüber).
  *
@@ -273,7 +295,6 @@ function tamil_kino_orte_tafel( array $filme, bool $bilder = false ): void {
 		'AT' => __( 'Österreich', 'tamil' ),
 		'CH' => __( 'Schweiz', 'tamil' ),
 	);
-	$fmt     = static fn( string $d ): string => wp_date( 'j.n.', (int) strtotime( $d ) );
 	$orte    = array();
 	$namen   = array(); // Schreibweise je Stadt: die erste, die vorkommt
 	foreach ( $filme as $f ) {
@@ -289,23 +310,11 @@ function tamil_kino_orte_tafel( array $filme, bool $bilder = false ): void {
 				$namen[ $schluessel ] = $stadt;
 			}
 			$stadt = $namen[ $schluessel ];
-			if ( ! empty( $k['termine'] ) ) {
-				/* translators: 1: Anzahl, 2: Datum */
-				$termin = sprintf( _n( '%1$d Vorstellung ab %2$s', '%1$d Vorstellungen ab %2$s', count( $k['termine'] ), 'tamil' ), count( $k['termine'] ), $fmt( (string) $k['termine'][0] ) );
-			} elseif ( ! empty( $k['von'] ) && ! empty( $k['bis'] ) && (string) $k['bis'] >= (string) $k['von'] ) {
-				/* translators: 1: Beginn, 2: Ende */
-				$termin = sprintf( __( '%1$s bis %2$s', 'tamil' ), $fmt( (string) $k['von'] ), $fmt( (string) $k['bis'] ) );
-			} else {
-				/* translators: %s: Datum */
-				$termin = ! empty( $k['von'] ) ? sprintf( __( 'ab %s', 'tamil' ), $fmt( (string) $k['von'] ) ) : '';
-			}
-			// Zahl und Wort nicht trennen („1 Vorstellung“), auch „ab“ nicht vom Datum (QA-11)
-			$termin = (string) preg_replace( '/(^\d+|\bab) /u', "\$1\u{00A0}", $termin );
 			$orte[ (string) ( $k['land'] ?? '' ) ][ $stadt ][] = array(
 				'post'   => (int) $f['post'],
 				'film'   => $f['film'],
 				'kino'   => trim( (string) ( $k['kino'] ?? '' ) ),
-				'termin' => $termin,
+				'termin' => tamil_kino_termin_text( (array) $k ),
 				'url'    => (string) ( $k['url'] ?? '' ),
 			);
 		}
