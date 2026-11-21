@@ -5,6 +5,34 @@ Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
 ## 21.11.2026
 
+Luis, 00:45 Uhr: Die Nacht wird ohne Rückfragen gearbeitet („entscheide selber … komplett automatisch“). Die folgenden
+Gestaltungsentscheidungen zu seinem Auftrag „tamil logo beim runterscrollen in der leitse theme ausarbeiten spezial
+mehr rein bilder nicht alle eckig also die karten auf einer höhe alles“ hat der Theme-Bauer getroffen; jede lässt sich
+einzeln umkehren.
+
+- **Logo im stehenden Band (Theme 3.9.0):** Sobald der Kopf mit dem großen Logo aus dem Bild ist, zeigt das Rubrikband
+  links das ganze Logo klein (30 px hoch, ab 1024 px 34 px) auf einer weißen Fläche bündig am linken Rand in voller
+  Bandhöhe. Warum: Das Logo ist dunkelrot und auf Titan unsichtbar; eine weiße Fassung gibt es nicht, Umfärben oder
+  Zuschneiden wäre ein Eingriff ins Logo. Die weiße Fläche wiederholt Rot auf Weiß wie im Kopf. Die Rubriken rücken
+  per transform zur Seite (kein Springen), Einblenden 0,2 s nur ohne reduzierte Bewegung. Umkehren: `.band__logo`
+  in `template-parts/header/kopf.php` entfernen.
+
+  · Theme-Bauer im Auftrag von Luis
+- **Abgerundete Ecken (Theme 3.9.0):** Ein Radius für Karten und Bilder, `--radius` 10 px, für kleine Kacheln und die
+  Bilder der Kinotabelle `--radius-klein` 6 px. Warum: deutlich weicher, aber noch ruhig und redaktionell; größere
+  Radien wirken bei Titel im Bild wie App-Kacheln. Punktbogen und Schild „Symbolbild“ werden von der Rundung
+  angeschnitten, nichts steht über. Gerade bleiben Bänder, Kopf, Fuß und Bilder, die am Handy von Rand zu Rand laufen
+  (Aufmacher, Artikelbild unter 600 px), weil eine Rundung am Bildschirmrand wie ein Fehler aussieht. Umkehren:
+  `--radius` und `--radius-klein` in `assets/css/theme.css` auf 0.
+
+  · Theme-Bauer im Auftrag von Luis
+- **Karten auf einer Höhe (Theme 3.9.0):** Der Vorspann unter Karten hält immer drei Zeilen Platz, die Kinokarte in
+  „Diese Woche“ ist neben den Terminen so hoch wie diese. Warum: Unterkanten einer Reihe fluchten, ohne Text zu kürzen
+  oder Karten zu beschneiden. Messung `wordpress/dev/kartenhoehe.mjs`. Umkehren: die Regel mit `min-height:
+  calc(3 * 1.45em)` entfernen.
+
+  · Theme-Bauer im Auftrag von Luis
+
 - **Punktbogen bleibt weiß auf dunklen, rot auf hellen Bildecken:** Luis fragte zuerst „warum sind die tamil dots nicht
   in rot ??“ und wollte den Bogen überall in Titan/Impact. Nach Rückfrage bestätigte er die bestehende Regel aus
   3.7.x (Wahl über den Ton der Bildecke, `tamil_signatur_ecke_ton`). Wortlaut: „Die weißen Punkte in den Bildecken

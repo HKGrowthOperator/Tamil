@@ -23,6 +23,11 @@
 > schrift auf der karte“): Jeder Beitrags-Anreißer der Website ist eine Bildkarte mit Titel im Foto und Punktbogen –
 > nicht nur auf der Startseite (Abschnitt „Bausteine“, „Seiten“). Freigabe ausstehend.
 
+> **Stand 21.11.2026 (Theme 3.9.0):** Auftrag von Luis „tamil logo beim runterscrollen in der leitse … bilder nicht
+> alle eckig also die karten auf einer höhe“, in der Nacht ohne Rückfrage umgesetzt (`docs/entscheidungen.md`, 21.11.):
+> **Logo im stehenden Band** (Abschnitt „Bausteine“), **abgerundete Ecken** und **Karten einer Reihe gleich hoch**
+> (Abschnitt „Ecken und Reihen“).
+
 **Idee:** eine ruhige Nachrichtenseite mit mehr Bild und mehr Bühne. Vorbild BBC News für Kopf und Ordnung,
 tagesschau für den Titel im Bild, Spiegel für die Bildblöcke. Das Wow kommt aus Fotos, Fläche und dem Wechsel von
 Weiß und Titan Red, nicht aus Schriftgröße oder Effekten.
@@ -101,7 +106,10 @@ gemeinsamer Kante für Kopf, Bild und Text), höchstens 70 Zeichen je Zeile.
   feiner Linie, darunter einer, einzeilig mit Auslassung, am Handy ohne Datum; Suche), Logo 56/64/72 px auf
   weißem Grund (Abschnitt „Logo“), Rubrikband in Titan mit weißer Schrift (`nav`, 46/48 px, steht beim Scrollen), aktive Rubrik in
   Impact mit Gewicht 600 und 3 px Weiß darunter, beim Überfahren Impact, Fokusring weiß, am Handy seitlich mit
-  Einrasten; „Mehr“ am Ende mit Suche, Diensten und Social.
+  Einrasten; „Mehr“ am Ende mit Suche, Diensten und Social. Seit 3.9.0: Ist der Kopf aus dem Bild, zeigt das stehende
+  Band links das ganze Logo klein (30/34 px hoch) auf einer weißen Fläche bündig am Rand in voller Bandhöhe (104/120 px
+  breit), als Link zur Startseite; die Rubriken rücken zur Seite (transform, kein Springen), Einblenden 0,2 s nur ohne
+  reduzierte Bewegung; oben auf der Seite ist es weg und nicht fokussierbar.
 - **Anreißer:** ein Link um Bild und Text; Dachzeile „Rubrik | Datum“; Bild füllt seinen Rahmen. Formate: 4:3
   (Aufmacher, große Kachel in „Diese Woche“, Viererreihen am Desktop), 16:9 (Bildkarten, Rubrikkacheln, Küche groß),
   8:3 (kleine Kacheln). Beim Überfahren Zoom 1,03 in 0,35 s, Titel unterstrichen.
@@ -268,6 +276,17 @@ nie von selbst; was einmal erschienen ist, bleibt.
 Am Scrollweg per CSS-Scroll-Timeline (`@supports (animation-timeline: scroll())`), sonst ein passiver Scroll-Handler
 mit `requestAnimationFrame`. Auftritte über IntersectionObserver (Auslöser 10 % über der Unterkante). Code:
 `assets/js/app.js` (Abschnitt „Bewegung“) und `theme.css` (Abschnitt „Bewegung beim Scrollen“).
+
+## Ecken und Reihen (Theme 3.9.0)
+
+- **Radius:** `--radius` 10 px an Karten und Bildern (Aufmacher, Bildkarten, Kino- und Terminkarten als Ganzes,
+  Anzeigenflächen, Artikelbild, Bilder im Text, Verzeichnisbilder); `--radius-klein` 6 px an Rubrikkacheln und den
+  Bildern der Kinotabelle. Ein Rahmen setzt seinen Radius über `--rahmen-r`. Punktbogen und Schild „Symbolbild“
+  schließen mit der Rundung ab (angeschnitten, kein Überstand). Gerade bleiben Bänder, Kopf, Fuß und Bilder, die am
+  Handy von Rand zu Rand laufen (Aufmacher, Artikelbild unter 600 px). Nur Ecken, keine runden Bildformen.
+- **Reihen:** Karten einer Reihe sind gleich hoch und schließen unten bündig: gleiches Bildformat je Reihe, Titel unten
+  im Bild, der Vorspann darunter hält immer drei Zeilen Platz; in „Diese Woche“ ist die Kinokarte neben den Terminen so
+  hoch wie diese. Prüfung: `node wordpress/dev/kartenhoehe.mjs <basis-url>` (je Reihe Ober- und Unterkante ≤ 1 px).
 
 ## Raster
 
