@@ -1467,8 +1467,8 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
     html.sda.bewegt .band::after { animation: k2-fortschritt linear both; animation-timeline: scroll(root block); }
     /* Aufmacherbild: läuft beim Hinausscrollen bis zu 40 px langsamer als die Seite; der Weg beginnt, wenn die
        Bildoberkante unter dem Band ist, der freie Streifen oben bleibt verdeckt */
-    html.sda.bewegt .aufmacher .rahmen { view-timeline: --aufmacher block; view-timeline-inset: var(--band-hoehe) 0px; }
-    html.sda.bewegt .aufmacher .rahmen img { animation: k2-tiefe linear both; animation-timeline: --aufmacher; animation-range: exit 0% exit 100%; }
+    html.sda.bewegt .aufmacher:not(.wow) .rahmen { view-timeline: --aufmacher block; view-timeline-inset: var(--band-hoehe) 0px; }
+    html.sda.bewegt .aufmacher:not(.wow) .rahmen img { animation: k2-tiefe linear both; animation-timeline: --aufmacher; animation-range: exit 0% exit 100%; }
   }
 
   /* Weg 2: ohne Scroll-Timelines rechnet ein passiver Scroll-Handler (rAF) dieselben Werte als Variablen */
@@ -1479,7 +1479,7 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
     opacity: clamp(0, (0.9 - var(--kopf, 0)) / 0.4, 1);
   }
   html.bewegt:not(.sda) .band::after { scale: var(--fortschritt, 0) 1; }
-  html.bewegt:not(.sda) .aufmacher .rahmen img { translate: 0 var(--tiefe, 0px); }
+  html.bewegt:not(.sda) .aufmacher:not(.wow) .rahmen img { translate: 0 var(--tiefe, 0px); }
 }
 @keyframes k2-kopfzeile { to { opacity: 0; } }
 @keyframes k2-logo {
@@ -1523,6 +1523,34 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
 @media (max-width: 599px) {
   .imbild .titel, .aufmacher .titel, .kachel--gross .titel, .vz-name { hyphens: auto; -webkit-hyphens: auto; }
 }
+
+/* ---------- Wow-Aufmacher „Punkt für Punkt zum Bild“ (Theme 3.10.0, inc/wow.php, assets/js/wow.js) ----------
+   Der Rahmen ist so hoch, dass Bild und Titel in den ersten Bildschirm passen (am Handy hochkant). Nur mit wow-an
+   (Skript im Kopf, Canvas, keine reduzierte Bewegung): Das Bild steht unter dem Band, solange der Leser 70 % einer
+   Bildschirmhöhe scrollt (mindestens 420 px); die Decke in Titan liegt darüber, Dachzeile und Titel unten auf ihr.
+   Ohne wow-an ist es der normale Aufmacher in dieser Höhe. Am Desktop die Rundung des Aufmachers (der Rahmen
+   schneidet die Decke), am Handy von Rand zu Rand. */
+.aufmacher.wow { --wow-hoch: 148vw; --wow-weg: max(70vh, 420px); }
+.aufmacher.wow .rahmen.wow-rahmen { aspect-ratio: auto; height: min(var(--wow-hoch), calc(100vh - var(--band-hoehe) - 20px)); }
+@supports (height: 100svh) {
+  .aufmacher.wow .rahmen.wow-rahmen { height: min(var(--wow-hoch), calc(100svh - var(--band-hoehe) - 20px)); }
+}
+.aufmacher.wow .rahmen.wow-rahmen img { object-position: 50% 42%; }
+.wow-decke { display: none; position: absolute; inset: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; }
+.aufmacher.wow .imbild, .aufmacher.wow .signatur-ecke, .aufmacher.wow .symbolbild { z-index: 3; }
+@media (min-width: 600px) { .aufmacher.wow { --wow-hoch: 60vw; } }
+@media (min-width: 1024px) { .aufmacher.wow { --wow-hoch: clamp(420px, calc(100vh - 250px), 620px); } }
+.wow-an .aufmacher.wow .wow-bahn::after { content: ""; display: block; height: var(--wow-weg); }
+.wow-an .aufmacher.wow .wow-halter { position: sticky; top: var(--band-hoehe); }
+.admin-bar.wow-an .aufmacher.wow .wow-halter, .wow-an .admin-bar .aufmacher.wow .wow-halter { top: calc(var(--band-hoehe) + var(--wp-admin--admin-bar--height, 0px)); }
+.wow-an .wow-decke { display: block; background: var(--titan); }
+.wow-an .wow-decke.gezeichnet { background: none; }
+.wow-an .aufmacher.wow .imbild { background-image: none; }
+.wow-an .aufmacher.wow .wow-verlauf { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; background-image: var(--verlauf); }
+.wow-an .aufmacher.wow .wow-verlauf > * { visibility: hidden; }
+.wow-an .aufmacher.wow .rahmen > .signatur-ecke { opacity: var(--titel, 0); }
+/* Fokus auf dem Aufmacher-Link: der Rahmen nach innen (wie bei jeder Bildkarte) liegt über der Decke */
+.aufmacher.wow .anr:focus-visible .rahmen::after { z-index: 4; }
 
 @media print {
   .kopfzeile, .band, .fuss, .ad, .anzeige-zwischen, .anzeige-unten, .teilen, .mehr, .kacheln, .signatur, .signatur-ecke { display: none !important; }
