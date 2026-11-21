@@ -157,6 +157,18 @@ function tamil_pool_seite( string $slug, int $n ): array {
 			break;
 		}
 	}
+	// Pool der Rubrik erschöpft: erst ein freies Bild des allgemeinen Pools, bevor sich eines wiederholt (CODE-06)
+	if ( ! empty( $gezeigt[ $wahl['datei'] ] ) ) {
+		$allgemein = tamil_pool_liste( 'allgemein' );
+		$anzahl    = count( $allgemein );
+		for ( $i = 0; $i < $anzahl; $i++ ) {
+			$p = $allgemein[ ( abs( $n ) + $i ) % $anzahl ];
+			if ( empty( $gezeigt[ $p['datei'] ] ) ) {
+				$wahl = $p;
+				break;
+			}
+		}
+	}
 	$gezeigt[ $wahl['datei'] ] = ( $gezeigt[ $wahl['datei'] ] ?? 0 ) + 1;
 	return $wahl;
 }
@@ -488,7 +500,10 @@ function tamil_bild( int $post_id, array $opt = array() ): string {
 	$ton    = 'dunkel';
 	// Ein geliehenes Filmbild, das ein anderer Beitrag auf dieser Seite schon als Kartenbild zeigt, weicht einem
 	// Symbolbild aus dem Pool (CODE-06). Eigene Bilder werden nie ersetzt; Rubrikkacheln (ohne Signet) zählen nicht.
-	if ( $signet && 'film' === $w['art'] && ! tamil_anhang_frei( (int) $w['id'], $post_id ) ) {
+	// Steht der Beitrag, dem das Bild gehört, in der Liste der Seite, weicht das geliehene Bild auch dann aus, wenn der
+	// Besitzer erst weiter unten kommt.
+	$besitzer = (int) ( $w['quelle'] ?? 0 );
+	if ( $signet && 'film' === $w['art'] && ( ! tamil_anhang_frei( (int) $w['id'], $post_id ) || ( $besitzer && $besitzer !== $post_id && tamil_auf_seite( $besitzer ) ) ) ) {
 		$w = array_merge(
 			$w,
 			array(
@@ -530,6 +545,35 @@ function tamil_bild( int $post_id, array $opt = array() ): string {
 		tamil_nachweise( $w['nachweis'] );
 	}
 	return $img;
+}
+
+/**
+ * Beiträge, die diese Seite zeigt: die Hauptabfrage (Rubrik, Suche, Archiv, der Artikel selbst) und die Auswahl der
+ * Startseite. Mit $ids werden weitere vermerkt.
+ *
+ * @param int[] $ids Beiträge.
+ */
+function tamil_seite_beitraege( array $ids = array() ): array {
+	static $liste = null;
+	if ( null === $liste ) {
+		$liste = array();
+		if ( isset( $GLOBALS['wp_query'] ) && is_array( $GLOBALS['wp_query']->posts ) ) {
+			foreach ( $GLOBALS['wp_query']->posts as $p ) {
+				$liste[ (int) ( is_object( $p ) ? $p->ID : $p ) ] = true;
+			}
+		}
+	}
+	foreach ( $ids as $id ) {
+		$liste[ (int) $id ] = true;
+	}
+	return $liste;
+}
+
+/**
+ * Zeigt diese Seite den Beitrag?
+ */
+function tamil_auf_seite( int $post_id ): bool {
+	return isset( tamil_seite_beitraege()[ $post_id ] );
 }
 
 /**

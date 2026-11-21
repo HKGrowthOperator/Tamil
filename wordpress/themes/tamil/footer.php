@@ -11,10 +11,12 @@ defined( 'ABSPATH' ) || exit;
 $tamil_social    = tamil_social();
 $tamil_unterzeil = '' !== tamil_opt( 'tagline' ) ? tamil_opt( 'tagline' ) : tamil_opt( 'ueber_uns' );
 ?>
-<?php tamil_leaderboard(); ?>
+<?php $tamil_lb_unten = tamil_leaderboard(); ?>
 </main>
 <?php
-$tamil_footer_ad = function_exists( 'tamil_site_anzeige' ) ? tamil_site_anzeige( 'footer', false ) : '';
+// Steht das Leaderboard hier direkt über dem Fuß-Platz, nennt das Theme es dem Plugin: keine zweite Eigenanzeige
+// unmittelbar danach (Q2-10)
+$tamil_footer_ad = function_exists( 'tamil_site_anzeige' ) ? tamil_site_anzeige( 'footer', false, $tamil_lb_unten ? 'leaderboard' : '' ) : '';
 if ( '' !== $tamil_footer_ad ) :
 	?>
 	<div class="innen anzeige-unten"><?php echo $tamil_footer_ad; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Werbeplatz aus dem Plugin (benannter Bereich „Anzeige: Fuß“), dort escapt ?></div>

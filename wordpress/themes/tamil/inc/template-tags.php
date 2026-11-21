@@ -147,14 +147,23 @@ function tamil_alte_uploads( string $html ): string {
  * Vorspann: Meta „standfirst“, sonst der Textauszug, sonst der Anfang des Texts – ohne Reste der alten Seite.
  */
 function tamil_standfirst( int $post_id ): string {
-	$text = tamil_text_bereinigen( (string) get_post_meta( $post_id, 'standfirst', true ) );
+	$text = tamil_ohne_adressen( tamil_text_bereinigen( (string) get_post_meta( $post_id, 'standfirst', true ) ) );
 	if ( '' === $text && has_excerpt( $post_id ) ) {
-		$text = tamil_text_bereinigen( (string) get_the_excerpt( $post_id ) );
+		$text = tamil_ohne_adressen( tamil_text_bereinigen( (string) get_the_excerpt( $post_id ) ) );
 	}
 	if ( '' === $text ) {
-		$text = wp_trim_words( tamil_text_bereinigen( strip_shortcodes( (string) get_post_field( 'post_content', $post_id ) ) ), 34, ' …' );
+		$text = wp_trim_words( tamil_ohne_adressen( tamil_text_bereinigen( strip_shortcodes( (string) get_post_field( 'post_content', $post_id ) ) ) ), 34, ' …' );
 	}
 	return $text;
+}
+
+/**
+ * Rohe Adressen („https://www.youtube.com/watch?v=…“, „www.…“) aus einem Vorspann entfernen; bleibt nichts übrig,
+ * gibt es keinen Vorspann (Q2-04).
+ */
+function tamil_ohne_adressen( string $text ): string {
+	$text = (string) preg_replace( '#(?:\bhttps?://|\bwww\.)\S+#iu', ' ', $text );
+	return trim( (string) preg_replace( '/\s+/u', ' ', $text ), " \t\n-–—:|·•" );
 }
 
 /**
@@ -162,14 +171,14 @@ function tamil_standfirst( int $post_id ): string {
  * (höchstens zwei und etwa 260 Zeichen), damit kein Satz mitten im Wort endet.
  */
 function tamil_vorspann_artikel( int $post_id ): string {
-	$text = tamil_text_bereinigen( (string) get_post_meta( $post_id, 'standfirst', true ) );
+	$text = tamil_ohne_adressen( tamil_text_bereinigen( (string) get_post_meta( $post_id, 'standfirst', true ) ) );
 	if ( '' === $text && has_excerpt( $post_id ) ) {
-		$text = tamil_text_bereinigen( (string) get_the_excerpt( $post_id ) );
+		$text = tamil_ohne_adressen( tamil_text_bereinigen( (string) get_the_excerpt( $post_id ) ) );
 	}
 	if ( '' !== $text ) {
 		return tamil_ganze_saetze( $text );
 	}
-	$roh   = tamil_text_bereinigen( strip_shortcodes( (string) get_post_field( 'post_content', $post_id ) ) );
+	$roh   = tamil_ohne_adressen( tamil_text_bereinigen( strip_shortcodes( (string) get_post_field( 'post_content', $post_id ) ) ) );
 	$saetz = tamil_saetze( $roh, 2 );
 	if ( mb_strlen( $saetz ) > 260 ) {
 		$saetz = tamil_saetze( $roh, 1 );
@@ -240,16 +249,17 @@ function tamil_anzeige( string $platz ): void {
  *
  * @param string $klasse Klasse des umgebenden Elements („innen anzeige-zwischen“ oder ein Rasterbereich).
  */
-function tamil_leaderboard( string $klasse = 'innen anzeige-zwischen' ): void {
+function tamil_leaderboard( string $klasse = 'innen anzeige-zwischen' ): bool {
 	static $gezeigt = false;
 	if ( $gezeigt || ! function_exists( 'tamil_site_anzeige' ) ) {
-		return;
+		return false;
 	}
 	$gezeigt = true;
 	$html    = tamil_site_anzeige( 'leaderboard', false );
 	if ( '' !== $html ) {
 		echo '<div class="' . esc_attr( $klasse ) . '">' . $html . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Werbeplatz aus dem Plugin, dort escapt
 	}
+	return '' !== $html;
 }
 
 /**

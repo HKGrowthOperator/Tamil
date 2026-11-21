@@ -49,7 +49,7 @@ while ( have_posts() ) :
 		$tamil_leiste[] = $tamil_film['stand'] . ( $tamil_film['bis'] < current_time( 'Y-m-d' ) ? ', ' . __( 'Spielzeit vorbei', 'tamil' ) : '' );
 	}
 	?>
-	<article <?php post_class( 'artikel' . ( '' !== $tamil_rand ? ' artikel--mit-rand' : '' ) ); ?>>
+	<article <?php post_class( 'artikel' . ( '' !== $tamil_rand ? ' artikel--mit-rand' : '' ) ); ?> data-url="<?php echo esc_url( get_permalink() ); ?>">
 		<header class="artikel__kopf">
 			<p class="meta">
 				<?php if ( $tamil_kat ) : ?>
