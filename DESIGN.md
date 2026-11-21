@@ -180,8 +180,8 @@ gemeinsamer Kante für Kopf, Bild und Text), höchstens 70 Zeichen je Zeile.
 - **Artikel:** Dachzeile, Titel, Vorspann, Leiste mit Lesezeit und „Per WhatsApp teilen“, Bild (randlos am Handy) mit
   Nachweis, Text, Termin als Angaben (auch der Infokasten aus dem Import erscheint als Terminkasten, Datum im
   Hausformat, 3.12.0), Quelle, Schlagworte, Teilen als eine Knopfzeile (WhatsApp gefüllt, Facebook, X, Telegram,
-  E-Mail, Link kopieren leise; ab 600 px in einer Zeile), Redaktion; Werbung im Text erst ab fünf Absätzen, kurze
-  Artikel höchstens zwei Werbeflächen je Breite (Regel im Plugin); Textspalte mittig wie im Entwurf; Werbeplatz 02 ab 1280 px rechts daneben, darunter nach dem Bild;
+  E-Mail, Link kopieren leise; ab 600 px in einer Zeile), Redaktion; Werbeplatz „Im Artikel“ nach dem zweiten Absatz
+  (Festlegung F3); Textspalte mittig wie im Entwurf; Werbeplatz 02 ab 1280 px rechts daneben, darunter nach dem Bild;
   „Weiterlesen“ mit vier Bildkarten (Desktop zu viert in 4:3, Tablet 2 × 2, Handy wischbar).
 - **Rubrik:** Seitenkopf, Aufmacher mit „Neu in der Rubrik“ daneben (drei Karten 16:9 als Stapel, Handy wischbar),
   „Weitere Beiträge“ als Kartenraster mit Vorspann, Seiten, Kacheln.

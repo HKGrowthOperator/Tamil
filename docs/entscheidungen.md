@@ -15,10 +15,18 @@ Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
   - **Bühnen einheitlich (N-03, N-08):** Küche und Rubrik-Bühnen nutzen dieselben Regeln (`.kueche__raster`), Titel der
     kleinen Karten ganz. Rückweg: Commit 52bb761.
   - **„Kommende Termine“ entfällt, wenn alles unter „Ab heute“ steht (N-05):** die Filter wandern dann nach „Ab heute“.
-  - **Werbung nach Artikellänge (N-06):** Anzeige im Text ab fünf Absätzen; kurze Artikel ohne Anzeige im Text und ohne
-    Fuß-Platz (höchstens zwei Flächen je Breite). Regel im Plugin (`tamil_site_artikel_plaetze()`), Text auf „Werben“
-    angepasst. **Offen:** Die bestätigte Festlegung F3 nennt für den Fuß „über dem Fuß jeder Seite“; die Abweichung
-    braucht das Ja von Luis. Rückweg: in `tamil_site_artikel_plaetze()` `'footer'` aus der Ausschlussliste nehmen.
+  - **N-06 nur als Vorschlag an Luis, nicht umgesetzt:** Die Kritik fand auf kurzen Artikeln (eine Minute Lesezeit) vier
+    Werbeflächen und schlug vor, die Anzeige im Text erst ab fünf Absätzen und bei kurzen Artikeln höchstens zwei
+    Flächen zu zeigen. Das ändert verkaufbare Plätze der von Luis bestätigten Festlegung F3
+    (`docs/vertrag/festlegung-werbung.md`: „Im Artikel: nach dem zweiten Absatz“, „Fuß: über dem Fuß jeder Seite“);
+    die freie Hand der Nacht deckt Gestaltung, keine Änderung einer Festlegung. Gebaut und wieder zurückgenommen
+    (Reverts f67445d, 76afb9a). Stand jetzt wörtlich nach F3: „Im Artikel“ nach dem zweiten Absatz ohne Mindestlänge
+    (die Mindestlänge „vier Absätze“ der ersten Theme-Fassung entfällt), Fuß auf jeder Seite; Test
+    `tests/wp/test_artikel_werbung.py` prüft das. · Hauptsitzung
+  - **Hausanzeigen-Regeln aus 3.9.0 gegen F3 geprüft:** „keine zwei Eigenanzeigen direkt hintereinander“ und „keine
+    Eigenanzeige für die eigene Seite“ betreffen nur Eigenanzeigen (bleiben). „Keine Anzeigen auf Impressum und
+    Datenschutz“ unterdrückte auch gebuchte Plätze und gilt jetzt nur noch für Eigenanzeigen; gebuchte Plätze stehen
+    dort wie auf jeder Seite (F3).
   - **Teilen als Knopfzeile, Infokasten als Terminkasten (N-10, N-11).**
   - **Leichterer Verlauf (N-12):** 66 % Schwarz am Beginn der Schrift (7,2 : 1 auf Weiß, schlechtester Titel 7,6 : 1).
   - **Kuppel ohne Bodenschatten (N-13),** Alt-Text beim Laden unsichtbar (N-16), „Im Kino“ nicht zwischen zwei
