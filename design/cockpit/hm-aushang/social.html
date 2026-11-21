@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Social, Redaktion tamil.de</title>
+<meta name="description" content="Social-Beiträge in Karenz, von Hand zu entscheiden, WhatsApp-Entwurf, Historie je Kanal.">
+<meta name="robots" content="noindex">
+<link rel="preload" href="schriften/epilogue-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="cockpit.css">
+<script src="app.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#inhalt">Zum Inhalt</a>
+<header class="kopf">
+  <div class="kopf-innen">
+    <a class="marke" href="uebersicht.html" aria-label="Redaktion tamil.de, zur Übersicht"><img src="../../inhalte/logo.png" alt="tamil.de" width="300" height="121"><span>Redaktion</span></a>
+    <nav aria-label="Cockpit"><ul class="reiter"><li><a href="uebersicht.html">Übersicht</a></li><li><a href="entwurf.html">Entwürfe <span class="n">64</span></a></li><li><a href="eingang.html">Eingang <span class="n">5</span></a></li><li><a href="social.html" aria-current="page">Social <span class="n">3</span></a></li><li><a href="verzeichnis.html">Verzeichnis <span class="n">2</span></a></li><li><a href="buchungen.html">Buchungen <span class="n">1</span></a></li></ul></nav>
+    <div class="rechts">
+      <details class="aufklapp"><summary>Betrieb</summary><div class="aufklapp-liste"><p class="klein leise wer">Angemeldet als redaktion1</p><ul class="menue-ziele"><li><a href="uebersicht.html#schalter">Stopp-Schalter</a></li><li><a href="/kosten">Kosten</a></li><li><a href="/quellen">Quellen</a></li><li><a href="/protokoll">Protokoll</a></li><li><a href="/zeitplan">Zeitplan</a></li><li><a href="/nutzer">Benutzer</a></li></ul></div></details>
+      <form action="/logout" method="post"><button type="submit" class="knopf still" title="Angemeldet als redaktion1">Abmelden</button></form>
+    </div>
+    <details class="aufklapp menue"><summary>Menü</summary><nav aria-label="Cockpit, Menü"><div class="aufklapp-liste"><p class="menue-kopf">Arbeit</p><ul class="menue-ziele"><li><a href="uebersicht.html">Übersicht</a></li><li><a href="entwurf.html">Entwürfe <span class="n">64</span></a></li><li><a href="eingang.html">Eingang <span class="n">5</span></a></li><li><a href="social.html" aria-current="page">Social <span class="n">3</span></a></li><li><a href="verzeichnis.html">Verzeichnis <span class="n">2</span></a></li><li><a href="buchungen.html">Buchungen <span class="n">1</span></a></li></ul><p class="menue-kopf">Betrieb</p><ul class="menue-ziele"><li><a href="uebersicht.html#schalter">Stopp-Schalter</a></li><li><a href="/kosten">Kosten</a></li><li><a href="/quellen">Quellen</a></li><li><a href="/protokoll">Protokoll</a></li><li><a href="/zeitplan">Zeitplan</a></li><li><a href="/nutzer">Benutzer</a></li></ul><form action="/logout" method="post"><p class="klein leise">Angemeldet als redaktion1</p><button type="submit" class="knopf still">Abmelden</button></form></div></nav></details>
+  </div>
+</header>
+<div class="aushang" role="status">
+  <div class="aushang-innen">
+    <time class="zeit" datetime="2026-11-13T14:20">14:20</time>
+    <p><b>Als Nächstes geht hinaus:</b> Instagram, „Berlin: Sri Ganesha Hindu Temple an der Hasenheide geweiht“, Karenz endet in 8 Minuten. Trockenmodus: nichts geht an Meta.</p>
+    <form action="/social/1/stoppen" method="post"><a class="knopf still" href="social.html#karenz">Ansehen</a> <button type="submit" class="knopf halt">Stoppen</button></form>
+  </div>
+</div>
+<main id="inhalt" class="seite">
+
+<div class="seitenkopf"><div><h1>Social</h1><p>Regelwerk Fassung 1 vom 13. November 2026. Trockenmodus, bis KBS die Fassung freigibt: alles läuft bis vor den letzten Aufruf an Meta.</p></div>
+<p class="klein"><a href="/social/regelwerk">Regelwerk lesen</a></p></div>
+
+<section class="abschnitt" id="karenz" aria-labelledby="h-karenz">
+  <div class="kopfzeile"><h2 id="h-karenz">In der Karenz</h2><p class="klein">zehn Minuten änderbar und stoppbar</p></div>
+  <div class="karenz">
+    <div>
+      <ol class="brett"><li><div class="frist naechst"><time class="zeit" datetime="2026-11-13T14:20">14:20</time><span class="rel">noch 8 Min.</span></div><div class="zeile"><h3>Instagram, danach Facebook: Entwurf 17</h3><p>Berlin: Sri Ganesha Hindu Temple an der Hasenheide geweiht. Erkannt 14:10 Uhr nach der Freigabe.</p></div></li></ol>
+      <form action="/social/17/text" method="post">
+        <div class="feld"><label for="s-text">Text für Instagram und Facebook</label><textarea id="s-text" name="text" rows="6">Berlin: Sri Ganesha Hindu Temple an der Hasenheide geweiht
+
+Mit Wasser aus Spree und Ganges wurde der Turm des neuen Tempels in Neukölln übergossen. Gebaut wurde seit 2010, bezahlt aus Spenden.
+
+Mehr auf tamil.de: https://tamil.de/berlin-sri-ganesha-hindu-temple-geweiht/</textarea>
+        <p class="hilfe">Hashtags je Rubrik liefert KBS; bis dahin keine.</p></div>
+        <div class="knoepfe"><button type="submit" class="knopf">Text speichern</button><button type="submit" formaction="/social/17/stoppen" class="knopf halt">Stoppen</button></div>
+      </form>
+      <details class="mehrteil"><summary>Regelprüfung R1 bis R9: alle erfüllt</summary><ul class="regeln"><li><b>R1</b><span>erfüllt: Rubrik Community, nicht heikel</span></li><li><b>R2</b><span>erfüllt: kein heikles Thema</span></li><li><b>R3</b><span>erfüllt: veröffentlicht heute 14:10 Uhr, jünger als 48 Stunden</span></li><li><b>R4</b><span>erfüllt: Bild CC BY-SA, Recht für soziale Netze im Datensatz: ja</span></li><li><b>R5</b><span>erfüllt: zweiter Beitrag heute, letzter um 12:50 Uhr</span></li><li><b>R6</b><span>erfüllt: außerhalb der Ruhezeit</span></li><li><b>R7</b><span>erfüllt: noch nie auf Instagram</span></li><li><b>R8</b><span>erfüllt: kein KI-Bild</span></li><li><b>R9</b><span>erfüllt: kein Altbestand</span></li></ul></details>
+    </div>
+    <figure class="vorschau"><div class="flaeche"><img class="foto" src="../../inhalte/rueckblick/bilder/rb-49.jpg" alt="Der Sri-Ganesha-Hindutempel an der Hasenheide in Berlin mit Turm und Festzelt, aufgenommen im Juni 2026" width="960" height="1280"><div class="leiste-logo"><img src="../../inhalte/logo.png" alt="tamil.de" width="300" height="121"></div></div>
+      <figcaption>Vorschau 1080 × 1350, Foto mit schmaler Logo-Leiste. Foto: 18quirl08 / Wikimedia Commons, CC BY-SA 4.0</figcaption></figure>
+  </div>
+</section>
+
+<section class="abschnitt" aria-labelledby="h-hand">
+  <div class="kopfzeile"><h2 id="h-hand">Von Hand entscheiden</h2><p class="klein">Eine Regel ist verletzt oder unklar</p></div>
+  <form id="vh-34" action="/social/34/freigeben" method="post"></form><form id="vh-31" action="/social/31/freigeben" method="post"></form>
+  <ol class="brett"><li><div class="frist"><time class="zeit" datetime="2026-11-13T13:05">13:05</time><span class="rel">seit 1 Std.</span></div><div class="zeile"><h3>Entwurf 34: Steinmeier beim Tempelfest in Hamm-Uentrop: Dank an die tamilische Minderheit</h3><p><span class="wort halt">R2 verletzt:</span> Politik, heikles Thema, geht nie automatisch.</p></div><div class="tun"><button type="submit" class="knopf still" form="vh-34">Freigeben</button><button type="submit" class="knopf still" form="vh-34" formaction="/social/34/verwerfen">Verwerfen</button></div></li><li><div class="frist"><time class="zeit" datetime="2026-11-13T11:40">11:40</time><span class="rel">seit 2 Std.</span></div><div class="zeile"><h3>Entwurf 31: Zürich: Restaurant AiYA bringt Küche aus dem Norden Sri Lankas an die Langstrasse</h3><p><span class="wort halt">R2 unklar:</span> im Bericht als „sensibel, zweite Person lesen“ markiert.</p></div><div class="tun"><button type="submit" class="knopf still" form="vh-31">Freigeben</button><button type="submit" class="knopf still" form="vh-31" formaction="/social/31/verwerfen">Verwerfen</button></div></li></ol>
+</section>
+
+<section class="abschnitt" id="whatsapp" aria-labelledby="h-wa">
+  <div class="kopfzeile"><h2 id="h-wa">WhatsApp-Entwurf: Entwurf 17</h2><p class="klein">gepostet wird von Hand</p></div>
+  <pre class="wa-text" id="wa-17">Berlin: Sri Ganesha Hindu Temple an der Hasenheide geweiht
+
+Mit Wasser aus Spree und Ganges wurde der Turm des neuen Tempels in Neukölln übergossen. Gebaut wurde seit 2010, bezahlt aus Spenden.
+
+Mehr auf tamil.de: https://tamil.de/berlin-sri-ganesha-hindu-temple-geweiht/</pre>
+  <div class="knoepfe" style="margin-top: var(--space-md)">
+    <button type="button" class="knopf" data-kopieren="wa-17">Text kopieren</button>
+    <a class="knopf still" href="../../inhalte/rueckblick/bilder/rb-49.jpg" download="tamil-de-entwurf-17.jpg">Bild herunterladen</a>
+    <form action="/social/17/whatsapp-gepostet" method="post"><button type="submit" class="knopf still">Als gepostet markieren</button></form>
+  </div>
+  <p class="klein" id="wa-meldung" role="status" style="margin-top: var(--space-xs)">Ohne Skript den Text markieren und kopieren.</p>
+</section>
+
+<section class="abschnitt" aria-labelledby="h-hist">
+  <h2 id="h-hist">Historie heute je Kanal</h2>
+  <div class="abschnitt hist" style="margin-top: var(--space-xl)"><table class="tabelle stapel"><caption>Instagram</caption><thead><tr><th scope="col">Zeit</th><th scope="col">Beitrag</th><th scope="col">Stand</th><th scope="col">Grund</th></tr></thead><tbody><tr><td data-l="Zeit">14:10</td><td data-l="Beitrag">Entwurf 17, Sri Ganesha Hindu Temple</td><td data-l="Stand">Karenz bis 14:20 Uhr</td><td data-l="Grund">Trockenmodus</td></tr><tr><td data-l="Zeit">13:05</td><td data-l="Beitrag">Entwurf 34, Steinmeier in Hamm-Uentrop</td><td data-l="Stand">von Hand</td><td data-l="Grund">R2</td></tr><tr><td data-l="Zeit">12:50</td><td data-l="Beitrag">Entwurf 12, Ceylon Palace Bremen</td><td data-l="Stand">trocken gesendet</td><td data-l="Grund">wäre an Meta gegangen</td></tr><tr><td data-l="Zeit">11:40</td><td data-l="Beitrag">Entwurf 31, Restaurant AiYA</td><td data-l="Stand">von Hand</td><td data-l="Grund">R2 unklar</td></tr></tbody></table></div><div class="abschnitt hist" style="margin-top: var(--space-xl)"><table class="tabelle stapel"><caption>Facebook</caption><thead><tr><th scope="col">Zeit</th><th scope="col">Beitrag</th><th scope="col">Stand</th><th scope="col">Grund</th></tr></thead><tbody><tr><td data-l="Zeit">12:51</td><td data-l="Beitrag">Entwurf 12, Ceylon Palace Bremen</td><td data-l="Stand">trocken gesendet</td><td data-l="Grund">folgt Instagram</td></tr></tbody></table></div><div class="abschnitt hist" style="margin-top: var(--space-xl)"><table class="tabelle stapel"><caption>WhatsApp</caption><thead><tr><th scope="col">Zeit</th><th scope="col">Beitrag</th><th scope="col">Stand</th><th scope="col">Grund</th></tr></thead><tbody><tr><td data-l="Zeit">12:02</td><td data-l="Beitrag">Entwurf 12, Ceylon Palace Bremen</td><td data-l="Stand">gepostet</td><td data-l="Grund">von redaktion1 markiert</td></tr></tbody></table></div>
+</section>
+
+</main>
+<footer class="fuss"><p>Probe der Linie Aushang, Stand Freitag, 13. November 2026, 14:12 Uhr. Titel, Texte, Hinweise und Bildnachweise der Entwürfe sind echt. Personen, Firmen, Adressen, Telefonnummern, Uhrzeiten des Tages, Beträge und Zählwerte sind Beispieldaten; E-Mail-Adressen enden auf example.org.</p></footer>
+</body>
+</html>

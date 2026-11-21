@@ -1,0 +1,41 @@
+# Regelwerk Social, Fassung 1 vom 13.11.2026 (docs/regeln-social.md, Festlegung F4, Ja von Luis am 13.11.2026).
+# Freigabe durch KBS steht aus; bis dahin läuft der Baustein nur im Trockenmodus.
+# Jede Änderung ist eine neue Fassung: im Cockpit (nur Rolle admin) oder als neue Datei mit neuer Fassung.
+
+fassung = 1
+datum = "2026-11-13"
+
+# R1: alle acht Rubriken (Slugs der WordPress-Kategorien); „news“ nur, wenn der Beitrag nicht heikel ist (R2)
+rubriken = ["news", "kino", "events", "community", "kueche", "kultur", "sport", "entertainment"]
+
+# R2: Heikle Themen gehen nie automatisch (Story als sensibel markiert oder Wort in Titel, Rubrik, Schlagwort).
+# Ein Eintrag trifft das ganze Wort; mit „*“ am Ende auch Wörter, die so beginnen („Tod*“ trifft „Todesfall“).
+# Bewusst nicht „Gericht*“ (Gerichte in der Küche) und nicht „Prozess*“ (Prozession am Tempel).
+heikel = ["Politik*", "Politiker*", "politisch*", "Wahl", "Wahlen", "Regierung*", "Minister*", "Partei*", "Justiz*",
+          "Gericht", "Gerichts*", "Prozess", "Urteil*", "Anklage*", "Polizei*", "Festnahme*", "Abschiebung*",
+          "Unglück*", "Unfall*", "Katastrophe*", "Anschlag*", "Tod", "Todes*", "Tote", "Toten", "tot", "getötet",
+          "gestorben", "verstorben", "Trauer*", "Nachruf*", "Medizin*", "Krankheit*", "Krankenhaus*", "Klinik*",
+          "Gesundheit*", "Impf*"]
+
+max_alter_stunden = 48   # R3, Termine zusätzlich nur in der Zukunft
+max_je_tag = 6           # R5 je Kanal und Tag (Europe/Berlin)
+abstand_min = 60         # R5 je Kanal
+ruhe_von = 22            # R6, Europe/Berlin
+ruhe_bis = 7
+karenz_min = 10          # Ablauf Schritt 4
+
+# R8: Kennzeichnung von Bildern aus der KI, wie auf der Website (im Text und im Bild)
+ki_hinweis = "Symbolbild: KI-generiert"
+
+# Hashtags je Rubrik liefert KBS (Zuarbeit). Bis dahin Platzhalter; das Cockpit zeigt sie als solche an.
+hashtags_platzhalter = true
+
+[hashtags]
+news = ["#TamilDE", "#Tamil", "#Nachrichten"]
+kino = ["#TamilDE", "#Kollywood", "#TamilKino"]
+events = ["#TamilDE", "#Tamil", "#Termine"]
+community = ["#TamilDE", "#TamilCommunity", "#Diaspora"]
+kueche = ["#TamilDE", "#TamilKüche"]
+kultur = ["#TamilDE", "#TamilKultur"]
+sport = ["#TamilDE", "#TamilSport"]
+entertainment = ["#TamilDE", "#TamilEntertainment"]

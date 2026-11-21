@@ -1,0 +1,234 @@
+{
+  "slug": "klar2",
+  "stand": "2026-11-10T15:14",
+  "groesster_massstab": 1.03,
+  "handy": {
+    "kopfleiste_hoehe": 147,
+    "erste_schlagzeile_ab": 323,
+    "schlagzeilen_ganz_sichtbar": 2,
+    "schlagzeilen_seite": 20,
+    "max_zeilen_schlagzeile": 4,
+    "groesste_schrift": {
+      "px": 30,
+      "text": "Uma Kumaran, Londons erste tamilische Ab"
+    },
+    "groesste_rote_schrift": {
+      "px": 13,
+      "text": "Nachrichten"
+    },
+    "schriftgroessen_seite": [
+      {
+        "px": 30,
+        "anzahl": 1,
+        "text": "Uma Kumaran, Londons erste tamilische Ab"
+      },
+      {
+        "px": 22,
+        "anzahl": 5,
+        "text": "Diese Woche"
+      },
+      {
+        "px": 20,
+        "anzahl": 3,
+        "text": "Scene"
+      },
+      {
+        "px": 19,
+        "anzahl": 11,
+        "text": "Sri Lanka schafft Visum für Deutsche ab"
+      },
+      {
+        "px": 18,
+        "anzahl": 3,
+        "text": "11 Kinos in Deutschland"
+      },
+      {
+        "px": 17,
+        "anzahl": 7,
+        "text": "In einem Erdrutschsieg für die Labour Pa"
+      }
+    ],
+    "versalien_ueber_14px": 0,
+    "schriftfamilien": [
+      "Libre Franklin"
+    ],
+    "groesster_radius": {
+      "px": 0,
+      "element": ""
+    },
+    "schatten": 0,
+    "gedreht": 0,
+    "schriftbreite_verstellt": 0,
+    "bilder_ueber_natuerlicher_breite": [],
+    "bilder_ueber_dateibreite": [],
+    "anreisser": 20,
+    "anreisser_ohne_bild": [],
+    "anreisser_mit_grafik": [
+      "Scene",
+      "Ramayana: Rise of a Legend",
+      "Diwali in Basel"
+    ],
+    "dunkle_flaechen": [
+      {
+        "element": "nav.band",
+        "breite": 390,
+        "hoehe": 46,
+        "oben": 101
+      },
+      {
+        "element": "section#diese-woche.woche",
+        "breite": 390,
+        "hoehe": 1208,
+        "oben": 2025
+      }
+    ],
+    "fest_stehend": [
+      {
+        "element": "nav.band",
+        "art": "sticky",
+        "hoehe": 46
+      }
+    ],
+    "bewegung": {
+      "uebergaenge": 24,
+      "laengster_uebergang_s": 0.35,
+      "animationen": 0,
+      "endlos": 0
+    },
+    "seitenhoehe": 4095,
+    "ueberlauf": 0,
+    "bewegung_bei_reduziert": {
+      "uebergaenge": 0,
+      "laengster_uebergang_s": 0,
+      "animationen": 0,
+      "endlos": 0
+    },
+    "helle_schrift": {
+      "anzahl": 43,
+      "kleinster_kontrast": 5.98,
+      "unter_4_5": []
+    },
+    "farbanteil_ohne_bilder": {
+      "bunt": 0.0013,
+      "rot": 0.0013,
+      "dunkel": 0.0644
+    },
+    "seitenfehler": []
+  },
+  "desktop": {
+    "kopfleiste_hoehe": 167,
+    "erste_schlagzeile_ab": 264,
+    "schlagzeilen_ganz_sichtbar": 6,
+    "schlagzeilen_seite": 20,
+    "max_zeilen_schlagzeile": 4,
+    "groesste_schrift": {
+      "px": 40,
+      "text": "Uma Kumaran, Londons erste tamilische Ab"
+    },
+    "groesste_rote_schrift": {
+      "px": 13,
+      "text": "Kultur"
+    },
+    "schriftgroessen_seite": [
+      {
+        "px": 40,
+        "anzahl": 1,
+        "text": "Uma Kumaran, Londons erste tamilische Ab"
+      },
+      {
+        "px": 26,
+        "anzahl": 4,
+        "text": "Kanguva – Ein tamilisches"
+      },
+      {
+        "px": 24,
+        "anzahl": 1,
+        "text": "Diese Woche"
+      },
+      {
+        "px": 20,
+        "anzahl": 12,
+        "text": "Sri Lanka schafft Visum für Deutsche ab"
+      },
+      {
+        "px": 19,
+        "anzahl": 2,
+        "text": "Weitere Meldungen"
+      },
+      {
+        "px": 18,
+        "anzahl": 3,
+        "text": "11 Kinos in Deutschland"
+      }
+    ],
+    "versalien_ueber_14px": 0,
+    "schriftfamilien": [
+      "Libre Franklin"
+    ],
+    "groesster_radius": {
+      "px": 0,
+      "element": ""
+    },
+    "schatten": 0,
+    "gedreht": 0,
+    "schriftbreite_verstellt": 0,
+    "bilder_ueber_natuerlicher_breite": [
+      "../../inhalte/bilder/p9631.jpg (780 px gezeigt, 1382 px vorhanden)",
+      "../../inhalte/bilder/p9600.jpg (803 px gezeigt, 1558 px vorhanden)"
+    ],
+    "bilder_ueber_dateibreite": [],
+    "anreisser": 20,
+    "anreisser_ohne_bild": [],
+    "anreisser_mit_grafik": [
+      "Scene",
+      "Ramayana: Rise of a Legend",
+      "Diwali in Basel"
+    ],
+    "dunkle_flaechen": [
+      {
+        "element": "nav.band",
+        "breite": 1280,
+        "hoehe": 48,
+        "oben": 119
+      },
+      {
+        "element": "section#diese-woche.woche",
+        "breite": 1280,
+        "hoehe": 921,
+        "oben": 1600
+      }
+    ],
+    "fest_stehend": [
+      {
+        "element": "nav.band",
+        "art": "sticky",
+        "hoehe": 48
+      }
+    ],
+    "bewegung": {
+      "uebergaenge": 24,
+      "laengster_uebergang_s": 0.35,
+      "animationen": 0,
+      "endlos": 0
+    },
+    "seitenhoehe": 3182,
+    "ueberlauf": 0,
+    "bewegung_bei_reduziert": {
+      "uebergaenge": 0,
+      "laengster_uebergang_s": 0,
+      "animationen": 0,
+      "endlos": 0
+    },
+    "helle_schrift": {
+      "anzahl": 52,
+      "kleinster_kontrast": 5.9,
+      "unter_4_5": []
+    },
+    "farbanteil_ohne_bilder": {
+      "bunt": 0.0009,
+      "rot": 0.0009,
+      "dunkel": 0.0578
+    },
+    "seitenfehler": []
+  }
+}

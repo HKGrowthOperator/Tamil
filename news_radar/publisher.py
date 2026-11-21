@@ -1,10 +1,20 @@
-"""Veröffentlichen freigegebener Entwürfe in WordPress („Direkt posten“ und Timer-Lauf)."""
+"""Veröffentlichen freigegebener Entwürfe in WordPress („Direkt posten“ und Timer-Lauf).
+
+Stopp-Schalter „website“ (oder „alles“): `publish_draft` prüft ihn unmittelbar vor dem ersten Aufruf an WordPress;
+der Timer-Lauf überträgt dann nichts, Freigegebenes wartet und geht beim ersten Lauf nach dem Einschalten hinaus.
+Jede Übertragung im Lauf steht mit Auslöser „dienst“ und Kanal im Protokoll der Aktionen.
+
+Lizenz-Gate (Spezifikation Bilder 3.3): unmittelbar vor dem Senden prüft `publish_draft` den Lizenz-Datensatz des
+Bildes und den Alt-Text; fehlt etwas, wird nichts gesendet („Lizenz unvollständig: …“, Status „Fehler“, Protokoll).
+"""
 
 from __future__ import annotations
 
 import base64
 import logging
+from datetime import datetime, timezone
 
+from . import lizenz, schalter
 from .config import Settings
 from .images import load_image
 from .render import render_content
@@ -19,18 +29,42 @@ META_FIELDS = (
     ("quelle_datum", "quelle_datum"), ("quelle_sprache", "quelle_sprache"), ("bild_credit", "bild_credit"),
     ("bild_origin", "bild_origin"), ("ort", "ort"), ("event_datum", "event_datum"), ("event_ort", "event_ort"),
     ("ticket_url", "ticket_url"),
+    # aus dem Lizenz-Datensatz (lizenz_meta): Kürzel, Lizenz-Adresse und Seite der Bildquelle für Links im Theme
+    ("bild_lizenz", "bild_lizenz"), ("bild_lizenz_url", "bild_lizenz_url"), ("bild_quelle_url", "bild_quelle_url"),
 )
+
+TERMIN_FAKTEN = ("event_ende", "event_veranstalter", "event_preis", "event_land")
+
+
+def _http(url: str | None) -> str:
+    url = (url or "").strip()
+    return url if url.startswith(("https://", "http://")) and len(url) <= 2000 else ""
+
+
+def lizenz_meta(asset: dict | None) -> dict:
+    """Felder aus dem Lizenz-Datensatz, die mit dem Beitrag nach WordPress gehen (L19)."""
+    if not asset:
+        return {}
+    return {"bild_lizenz": asset.get("lizenz_kuerzel") or "", "bild_lizenz_url": _http(asset.get("lizenz_url")),
+            "bild_quelle_url": _http(asset.get("quelle_url"))}
 
 
 def radar_meta(row: dict) -> dict:
     """Meta für das Plugin: Herkunft, Bildnachweis, Ort, Event- und Kinodaten."""
     meta = {"radar_uid": row["uid"]}
+    if row.get("story_id"):
+        meta["radar_story_id"] = int(row["story_id"])  # Redaktion v2: Verweis auf Story, Belege und Kosten im Radar
     for column, key in META_FIELDS:
         value = row.get(column)
         if value not in (None, "", 0):
             meta[key] = value
     if row.get("typ") == "kino_termine" and row.get("fakten"):
         meta["kino_fakten"] = row["fakten"]
+    if row.get("typ") == "event":  # Termin aus einer Einsendung (F1): Ende, Veranstalter, Eintritt, Land für den Kalender
+        for key in TERMIN_FAKTEN:
+            value = (row.get("fakten") or {}).get(key)
+            if value not in (None, ""):
+                meta[key] = value
     if row.get("typ") != "event":
         for key in ("event_datum", "event_ort", "ticket_url"):
             meta.pop(key, None)
@@ -44,16 +78,62 @@ def bild_payload(row: dict, settings: Settings) -> dict:
     return {
         "daten": base64.b64encode(path.read_bytes()).decode("ascii"),
         "dateiname": path.name,
-        "alt": row.get("bild_alt") or row["titel"],
+        "alt": row.get("bild_alt") or "",  # Pflicht nach dem Lizenz-Gate, kein Rückfall auf den Titel (5.5)
         "credit": row.get("bild_credit") or "",
     }
 
 
-def plugin_payload(row: dict, settings: Settings, status: str) -> dict:
+MONATE = ("Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November",
+          "Dezember")
+
+
+def ist_nachtrag(row: dict) -> bool:
+    return row.get("herkunft") == "nachtrag" and bool(row.get("ereignis_datum"))
+
+
+def nachtrag_vermerk(row: dict, jetzt: datetime | None = None) -> str:
+    """Sichtbarer Vermerk am Ende eines Nachtrags (eigener Absatz, kein Beleg-Absatz: er entsteht erst beim
+    Veröffentlichen, nach Gate und Freigabe). Monat und Jahr der tatsächlichen Veröffentlichung."""
+    try:
+        from zoneinfo import ZoneInfo
+
+        jetzt = (jetzt or datetime.now(timezone.utc)).astimezone(ZoneInfo("Europe/Berlin"))
+    except Exception:  # noqa: BLE001 – ohne Zeitzonendaten gilt UTC
+        jetzt = jetzt or datetime.now(timezone.utc)
+    jahr = str(row.get("ereignis_datum") or "")[:4]
+    return (f"<p><em>Nachtrag der Redaktion: Dieser Beitrag wurde im {MONATE[jetzt.month - 1]} {jetzt.year} für den "
+            f"Rückblick auf das Jahr {jahr} geschrieben.</em></p>")
+
+
+RUECKBLICK_AB_TAGEN = 14  # jüngere oder kommende Ereignisse sind aktuell, kein Rückblick
+
+
+def ist_rueckblick(row: dict, jetzt: datetime | None = None) -> bool:
+    """Nachtrag zu einem Ereignis, das bei der Veröffentlichung mehr als 14 Tage zurückliegt."""
+    if not ist_nachtrag(row):
+        return False
+    try:
+        tag = datetime.strptime(str(row.get("ereignis_datum"))[:10], "%Y-%m-%d").date()
+    except ValueError:
+        return True  # unlesbares Datum: lieber kennzeichnen als still weglassen
+    heute = (jetzt or datetime.now(timezone.utc)).date()
+    return (heute - tag).days > RUECKBLICK_AB_TAGEN
+
+
+def inhalt_fuer_wp(row: dict, jetzt: datetime | None = None) -> str:
+    inhalt = render_content(row)
+    if ist_rueckblick(row, jetzt):
+        inhalt = inhalt.rstrip() + "\n" + nachtrag_vermerk(row, jetzt)
+    return inhalt
+
+
+def plugin_payload(row: dict, settings: Settings, status: str, jetzt: datetime | None = None) -> dict:
+    """Nachtrag: `datum` = Ereignisdatum (12 Uhr Ortszeit), damit WordPress den Beitrag am Tag des Ereignisses
+    einsortiert; dazu der Vermerk am Ende. Normale Entwürfe bleiben unverändert."""
     schlagworte = [s for s in (row.get("schlagworte") or []) if str(s).strip()]
-    return {
+    payload = {
         "titel": row["titel"],
-        "inhalt": render_content(row),
+        "inhalt": inhalt_fuer_wp(row, jetzt),
         "teaser": row.get("teaser") or "",
         "status": status,
         "slug": slugify(row["titel"]),
@@ -67,6 +147,9 @@ def plugin_payload(row: dict, settings: Settings, status: str) -> dict:
         },
         "bild": bild_payload(row, settings),
     }
+    if ist_nachtrag(row):
+        payload["datum"] = f"{str(row['ereignis_datum'])[:10]} 12:00:00"
+    return payload
 
 
 def seo_meta(settings: Settings, row: dict) -> dict | None:
@@ -120,13 +203,20 @@ def publish_draft(row: dict, settings: Settings, wp: WordPress | TamilRadarClien
     Wirft bei WordPress-Fehlern; der Aufrufer markiert dann `fehler`.
     """
     status = status or settings.wp_post_status
+    schalter.pruefen(store, "website")  # unmittelbar vor dem ersten Aufruf an WordPress
+    asset = lizenz.pruefen_fuer_wp(store, row, settings)  # LizenzFehlt: nichts gesendet
+    row = {**row, **lizenz_meta(asset)}
     if isinstance(wp, TamilRadarClient):
         return publish_via_plugin(row, settings, wp, store, status)
+    if ist_nachtrag(row):
+        # Der alte REST-Weg kennt kein Ereignisdatum: der Beitrag stünde mit heutigem Datum auf der Website
+        raise RuntimeError("Nachtrag nur über das Plugin tamil-radar veröffentlichen (Ereignisdatum) – ohne Plugin "
+                           "nicht gesendet")
     media_id = None
     if row.get("bild_datei"):
         path = settings.bilder_dir / row["bild_datei"]
         if path.exists():
-            media_id = wp.upload_media(load_image(path, row.get("bild_credit") or ""), row.get("bild_alt") or row["titel"])
+            media_id = wp.upload_media(load_image(path, row.get("bild_credit") or ""), row.get("bild_alt") or "")
     post = wp.create_post(
         title=row["titel"],
         content=render_content(row),
@@ -141,22 +231,60 @@ def publish_draft(row: dict, settings: Settings, wp: WordPress | TamilRadarClien
     return _finish(row, store, post, status, wp.edit_link(post))
 
 
+KANAL = "website"
+
+
+def zurueckhalten_protokollieren(store: Store) -> int:
+    """Website angehalten: je freigegebenem Entwurf einmal je Stopp eine Zeile „zurueckgehalten“ (mit dem Schalter als
+    Grund) – nicht bei jedem Lauf alle drei Minuten erneut."""
+    from .workflow import repo
+
+    sperre = schalter.sperre(store, KANAL)
+    if sperre is None:
+        return 0
+    n = 0
+    for row in store.db.execute(
+            "SELECT d.id, d.story_id FROM drafts d WHERE d.status = 'freigegeben' AND NOT EXISTS (SELECT 1 FROM "
+            "editorial_actions a WHERE a.draft_id = d.id AND a.aktion = 'zurueckgehalten' AND a.ts >= ?)",
+            (sperre["seit"],)).fetchall():
+        repo.aktion(store, wer="dienst", aktion="zurueckgehalten", draft_id=row["id"], story_id=row["story_id"],
+                    kanal=KANAL, ausloeser="dienst", notiz=f"Schalter „{sperre['kanal']}“ angehalten seit {sperre['seit']}")
+        n += 1
+    return n
+
+
 def publish_approved(settings: Settings, store: Store, wp: WordPress | None = None, limit: int = 10) -> list:
-    """Timer-Lauf: alles Freigegebene veröffentlichen, das noch nicht gepostet ist."""
+    """Timer-Lauf: alles Freigegebene veröffentlichen, das noch nicht gepostet ist – außer der Schalter hält an."""
     from .pipeline import Result  # zirkulärer Import vermeiden
+    from .workflow import repo
 
     results: list[Result] = []
+    if schalter.gestoppt(store, KANAL):
+        zurueckhalten_protokollieren(store)
+        return results
     claimed = store.claim_for_publish(limit)
     if not claimed:
         return results
     wp = wp or make_wordpress(settings)
-    for row in claimed:
+    for i, row in enumerate(claimed):
         try:
             info = publish_draft(row, settings, wp, store)
-            results.append(Result(row["titel"], "veroeffentlicht", row.get("kategorie") or "", info["link"], draft_id=row["id"]))
+        except schalter.Gestoppt:
+            for rest in claimed[i:]:  # mitten im Lauf angehalten: der Rest wartet wieder als „freigegeben“
+                store.release_claim(rest["id"])
+            zurueckhalten_protokollieren(store)
+            break
         except Exception as exc:  # noqa: BLE001 - ein fehlerhafter Beitrag stoppt den Lauf nicht
             log.exception("Veröffentlichen fehlgeschlagen: %s", row["titel"])
             store.mark_publish_failed(row["id"], str(exc))
+            if isinstance(exc, lizenz.LizenzFehlt):
+                repo.aktion(store, wer="dienst", aktion="lizenz_fehlt", draft_id=row["id"], story_id=row.get("story_id"),
+                            kanal=KANAL, ausloeser="dienst", notiz=str(exc)[:200])
             store.event("fehler", id=row["id"], titel=row["titel"], fehler=str(exc)[:300], schritt="veroeffentlichen")
             results.append(Result(row["titel"], "fehler", row.get("kategorie") or "", note=str(exc)[:200], draft_id=row["id"]))
+            continue
+        repo.aktion(store, wer="dienst", aktion="veroeffentlicht" if info["status"] == "publish" else "in_wordpress",
+                    draft_id=row["id"], story_id=row.get("story_id"), fassung=repo.fassung_hash(row),
+                    wp_post_id=info.get("post_id"), kanal=KANAL, ausloeser="dienst")
+        results.append(Result(row["titel"], "veroeffentlicht", row.get("kategorie") or "", info["link"], draft_id=row["id"]))
     return results

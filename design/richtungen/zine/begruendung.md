@@ -1,0 +1,152 @@
+# Richtung `zine`: Heft der Woche
+
+Skizze, Runde 1. Dateien: `index.html` (Cover + „Diese Woche“), `artikel.html` (Kopf bis erster Absatz),
+`zine.css`, Schriften selbst gehostet in `fonts/` mit Lizenzdateien.
+
+## 1. Vorbild
+
+- **Burnt Roti** (https://burntroti.com, `design/referenzen/img/burntroti.png`). Übernommen: das Cover als
+  Einstieg mit Haltung, das jede Woche neu gebaut wird; das Heft ist das Format, nicht der Blog darunter. Nicht
+  übernommen: die Tropfschrift, der schwarze Feuer-Hintergrund und der gewöhnliche Blog-Teil darunter (genau die
+  Schwäche, die der Scout benennt).
+- **WEIRDO zine** (https://southasianbritain.org/organizations/weirdo-zine/, `weirdo.png`), bewertet über sein
+  Cover. Übernommen: ein Foto, das nur in einer Farbe gedruckt ist, und eine einzige Akzentfarbe als Haltung. Bei
+  uns wird das Foto in Logo-Rot gedruckt, die Schrift in fast schwarzer Tinte auf Papier.
+
+## 2. Idee in einem Satz
+
+tamil.de ist das Heft, das in der Diaspora sonst am Vereinsabend kopiert, gefaltet und am Tempeleingang ausgelegt
+wird: jede Woche ein Cover im Zweifarbdruck mit der Kalenderwoche als Heftnummer, und darunter das Schwarze Brett
+aus dem Asia-Laden, an dem Kino und Feste als Aushänge mit Abreißzetteln hängen.
+
+## 3. Drei Stimmwörter (als Gegenstände)
+
+**Copyshop-Kopie** (zwei Tinten, etwas schief aufgeklebt) · **Abreißzettel** (Aushang mit Streifen zum Mitnehmen)
+· **Gummistempel** (Rubrik, Datum, ein Abdruck, nicht zehn).
+
+## 4. Schrift
+
+Verfahren nach `impeccable/reference/brand.md`.
+
+- **Reflex-Schriften und warum nicht:** *Bebas Neue* (jedes Plakat-Template seit 2012, keine Breitenachse, nur
+  Versalien), *Space Mono* bzw. Schreibmaschine (steht auf der Ausschlussliste; Mono wäre hier Kostüm),
+  *Permanent Marker* (Handschrift-Imitat, wirkt nach Bastelvorlage und ist für Ältere schlecht lesbar). Dazu tabu:
+  Inter, DM Sans, Space Grotesk, Fraunces, Playfair sowie Catamaran, Literata, Anek, Schibsted Grotesk, Noto Serif
+  Tamil.
+- **Auszeichnung: Anybody** (Etcetera Type Co., Google Fonts, SIL OFL). Eine Grotesk mit Breitenachse von 50 bis
+  150 und Gewichtsachse 100 bis 900. Das ist die Zine-Technik ohne Kitsch: Beim Kleben eines Covers wird Schrift
+  gestaucht und gestreckt, bis sie die Fläche füllt. Anybody tut das sauber. Das Coverwort steht am Handy
+  schmal und hoch (Breite 50), am Desktop breit (Breite 100 bis 130); die Rubrik-Stempel und Abreißzettel nutzen
+  schmale halbfette Schnitte. Eine Familie, viele Stimmen.
+- **Text: Atkinson Hyperlegible Next** (Braille Institute, Google Fonts, SIL OFL). Gezeichnet für Menschen mit
+  Sehschwäche, eindeutige Formen bei I/l/1 und 0/O. Das ist die ehrliche Antwort auf „Eltern und Großeltern lesen
+  mit“: keine Serife (altbacken), aber auch keine anonyme Grotesk, sondern eine Schrift mit Haltung zur
+  Lesbarkeit. Fließtext 19 px am Handy, 20 px am Desktop, Zeilen höchstens 64 Zeichen.
+- **Tamil im Inhalt:** Ersatzschrift **Noto Sans Tamil** (SIL OFL, nur Tamil-Teilmenge, selbst gehostet) im
+  Stapel und über `:lang(ta)`. Tamilische Schrift kommt als Gestaltungsmittel nirgends vor.
+- Lizenzen: `fonts/OFL-anybody.txt`, `fonts/OFL-atkinsonhyperlegiblenext.txt`, `fonts/OFL-notosanstamil.txt`.
+
+## 5. Farbstrategie: Committed, als Zweifarbdruck
+
+Gedacht wie eine Riso-Kopie: zwei Tinten auf einem Papier. Rot trägt die Fläche über die Fotos und das Schwarze
+Brett, nicht über Platten hinter Text.
+
+| Token | Wert | Rolle |
+|---|---|---|
+| `--papier` | `oklch(97.6% 0.006 25)` | Grund, kühles Weiß mit einem Hauch Rot, kein Creme |
+| `--tinte` | `oklch(21% 0.018 25)` | Schrift, Linien |
+| `--rot` | `oklch(50.8% 0.177 25.6)` | Logo-Rot #B5282A: Fotodruck, Stempel, Schwarzes Brett |
+| `--rot-tief` | `oklch(43% 0.16 25.6)` | rote Schrift auf Papier in kleinen Größen |
+| `--grau` | `oklch(42% 0.012 25)` | Nebeninfos, nur ab 16 px |
+
+- Fotos auf dem Cover werden einfarbig in Rot gedruckt (Graustufen, im Modus „screen“ über Rot gelegt, dazu ein
+  sehr feines Raster). Dunkles wird Rot, Helles wird Papier. Das Bild ist rot, aber es ist ein Bild, keine Platte.
+- „Diese Woche“ steht auf rotem Karton (das Schwarze Brett); die Aushänge darauf sind Papier mit schwarzer Tinte.
+  Text auf Rot ist nur die große Abschnittsüberschrift in Papierweiß (Kontrast etwa 5,9:1).
+- Kein reines Schwarz oder Weiß, kein Gold, kein Gelb, kein Nachtblau.
+- Im Artikel bleibt das Foto in Farbe: Nachrichten sind belegt und ruhig; der Zweifarbdruck gehört dem Cover.
+
+## 6. Signatur-Element
+
+**Das Wochen-Cover im Zweifarbdruck:** ein Coverwort in riesiger gestauchter Anybody, ein in Rot gedrucktes Foto,
+leicht schief eingeklebt und das Coverwort anschneidend, ein roter Gummistempel mit der Rubrik und die
+Heftzeile „Heft KW 45“ (die Kalenderwoche des Originaldatums, siehe Runde 2; keine erfundene Ausgabennummer).
+Darunter, als zweites Erkennungszeichen: **Aushänge mit Abreißzetteln**, bei denen jeder Spielort ein Streifen
+ist. 11 Kinos ergeben eine lange gestrichelte Reihe, 2 Kinos eine kurze.
+
+## 7. Abgrenzung zu den abgelehnten Runden
+
+1. **Runde 1 (Nachtblau, Gold, Laufband):** heller Papiergrund, nur zwei Tinten (Rot und fast Schwarz), keine
+   tamilischen Wörter, kein Laufband, keine Bewegung außer einem leisen Zurechtrücken beim Zeigen mit der Maus.
+2. **Runde 2 (Creme, Serife, Braungrau, Mosaik):** kühles Papierweiß statt Sand, Grotesk statt Serife im Text,
+   fast schwarze Tinte statt Braungrau, statt Mosaik ein einziges Cover und dann ein Aushangbrett mit eigenem
+   Rhythmus.
+3. **Runde 3 (App-Vorlage, rote Platte, Pillen, runde Karten):** keine Rundungen, keine Pillen, keine
+   Story-Kreise, keine Knopfreihen. Die Überschrift steht auf Papier, nicht auf einer roten Platte; Rot ist
+   Druckfarbe des Fotos. Die Aushänge sind verschieden groß, verschieden schief und tragen Abreißzettel, kein
+   gleichförmiges Kartenraster.
+
+## 8. Zustände aus dem Brief
+
+- **Kleines Bild:** Das Cover trägt über das Coverwort und die Heftzeile. Das Foto wird nie größer als seine
+  Pixelbreite gezeigt (`.druck` ist höchstens so breit wie das Bild; am Desktop belegt Kanguva rund 760 von 1024
+  px). Ein Bild mit 692 px bleibt 692 px breit, das Coverwort darunter füllt die Breite trotzdem; das
+  Zweifarbraster kaschiert leichte Unschärfe besser als ein Farbfoto. Im Theme setzt die Vorlage die Bildbreite
+  als Obergrenze.
+- **Eintrag ohne Foto:** Die Aushänge sind gebaut, um ohne Foto zu bestehen: Titel, Art (Im Kino, Fest), Ort als
+  Abreißzettel, Datum als roter Stempel, wenn es eines gibt. Kein Platzhalterbild.
+- **Lange und kurze Überschrift:** Das Coverwort ist der Teil vor Gedankenstrich oder Doppelpunkt („Kanguva“), der
+  Rest steht als Coverzeile darunter. Ein kurzer Titel wie „Dosa“ ist komplett Coverwort. Ein Titel mit 78 Zeichen
+  ohne Trenner bekommt die Coverzeilen-Größe als Ganzes (Klasse `cover--lang`), damit er am Handy im ersten
+  Bildschirm bleibt. Auf dem Brett zeigen „Scene“ (5 Zeichen) und „Ramayana: Rise of a Legend“ den Unterschied.
+- **Viele und wenige Spielorte:** Die Zahl der Abreißzettel folgt der Zahl der Orte: ab drei Orten drei Spalten
+  in mehreren Reihen, bei zwei Orten zwei, bei einem einer. „Scene“: fünf benannte Städte und ein roter Zettel
+  „+ 6 weitere Städte“ (die anderen sechs sind im Entwurf nicht benannt, also werden sie nicht erfunden).
+  „Ramayana“: zwei Zettel. Die Ortsnamen stehen waagerecht, nicht hochkant wie auf echten Zetteln, weil Eltern
+  den Ort ohne Kopfdrehen lesen sollen.
+- **Fokus:** 3 px Tintenrahmen mit Abstand auf Papier, Papierrahmen auf Rot. **Bewegung:** nur das Zurechtrücken
+  des Covers beim Zeigen; bei `prefers-reduced-motion` ausgeschaltet.
+
+## 9. Bedienung
+
+- Das ganze Cover ist ein Link zum Artikel.
+- Am Handy liegt die Rubrikleiste unten in Daumenreichweite (Kino, Events, Nachrichten, Inhalt), eckig, durch
+  Linien getrennt, jede Fläche mindestens 48 px hoch. „Inhalt“ springt zum Inhaltsverzeichnis am Seitenende, das
+  wie die letzte Heftseite alle Rubriken groß aufführt. Am Desktop steht die Rubrikzeile oben.
+- Teilen im Artikel: ein normaler Link zu WhatsApp (`wa.me`), kein Skript.
+- Kein JavaScript.
+
+## Runde 2 (nach `design/kritik/zine-r1.md`)
+
+- **P1-1a, Heft am Handy:** Auf der Startseite ist der Kopf am Handy der Heftkopf des Covers: Logo links,
+  „HEFT KW 45“ rechts in Rot und groß (56 px, gestauchte Anybody), darunter das Wochendatum in 18 px. Keine Linie
+  zwischen Kopf und Cover; die erste Linie trennt erst Heftkopf und Coverzeile. Marke, Ausgabe und Coverwort stehen
+  so im ersten Bildschirm als Einheit. Ab 760 px bleibt das große „KW 45“ links im Cover.
+- **P1-1b, Haltung:** Das Cover hat ein eigenes Feld **Coverzeile der Redaktion** (`.cover-ruf`): eine kurze
+  Zeile in Anführungszeichen, die die Redaktion jede Woche schreibt (Richtwert bis 40 Zeichen). Sie steht am Handy
+  zwischen Heftkopf und Foto, am Desktop links unter „KW 45“. In der Skizze stehen dort nur Worte aus dem echten
+  Vorspann von Beitrag 9711: „Mit Spannung erwartet“. Nichts erfunden; im Quelltext als Platzhalter kommentiert.
+- **P2-4, Heftdatum:** Die Heftkennung folgt dem Originaldatum des Beitrags. Kanguva ist vom 6. November 2024, also
+  „Heft KW 45, 4. bis 10. November 2024“. Damit liest niemand einen Kinostart in der laufenden Woche. Der Artikel
+  zeigt im Kopf „Aus Heft KW 35, 26. Aug. bis 1. Sep. 2024“ (Beitrag vom 26. August 2024). Regel fürs Theme: Ein
+  Cover trägt immer die Woche seines Beitrags, nie die laufende Woche.
+- **P2-2 und P2-3, Foto und „rote Platte“:** Am Handy wird das Foto auf 4:3 um das Gesicht geschnitten, heller
+  gedruckt (mehr Papier, weniger Vollton) und ohne Raster gezeigt; das Raster kommt erst ab 560 px. Auch am Desktop
+  ist der Druck heller. „KANGUVA“ greift jetzt rund die halbe Buchstabenhöhe ins Bild und wird als Überdruck
+  (`mix-blend-mode: multiply`) gedruckt, nicht bündig an die Bildkante gestellt.
+- **P2-1, das Tamil-Eigene sichtbar:** Der Diwali-Aushang hat den Verein als Absender („Aushang von“ und ein
+  Tintenstempel „Basel Tamil Sangam“) statt der allgemeinen Marke „Fest“. Jeder Aushang endet mit „Per WhatsApp
+  weiterschicken“: das ist der Abreißzettel von heute, so wie Termine in der Community wirklich weiterwandern
+  (Familiengruppen). Die Unterzeile des Bretts sagt das: „Zum Weiterschicken an die Familie.“ Keine tamilische
+  Schrift, nichts von der Verbotsliste.
+- **P2-1 und P3-4, weniger Baukasten:** Gedreht sind nur noch das Cover-Foto und der Stempel „Kino“. Aushänge und
+  Datumstempel stehen gerade, Text ist nie gedreht.
+- **P2-5, zweite Tonlage:** Klasse `.cover--nachricht` für Nachrichten-Cover: Foto in Graustufen auf Papier, nicht
+  gedreht, Rot nur im Rubrikstempel. Der Rotdruck bleibt Kino, Kultur und Community vorbehalten.
+- **P2-6, Linkname:** Der Cover-Link trägt `aria-labelledby` auf die Überschrift; das Bild im Link hat `alt=""`
+  (die Beschreibung gehört in den Artikel).
+- **P3-2:** „und 6 weitere Städte“ sieht aus wie die anderen Zettel, nicht wie ein Knopf.
+- **P3-3:** Heftzeile 18 px, Breite 75 %. **P3-6:** Coverwort am Desktop breiter geschnitten und kleiner (Breite
+  120, 15,4 cqi), damit Coverwort und Titel bei 1280 × 900 gemeinsam im ersten Bildschirm stehen.
+- Offen: P3-1 (Grundton bleibt unverändert kühl), P3-5 (doppelte Navigationsziele) erst im Theme.
+

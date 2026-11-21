@@ -1,0 +1,227 @@
+/* tamil.de – Schnellprobe „blatt“. Serife nur in Schlagzeilen, alles andere Grotesk. Feste Farbwerte aus dem Brief. */
+
+@font-face {
+  font-family: "Source Serif 4";
+  src: url("schriften/SourceSerif4-Variable-latin.woff2") format("woff2");
+  font-weight: 200 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Source Sans 3";
+  src: url("schriften/SourceSans3-Variable-latin.woff2") format("woff2");
+  font-weight: 200 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --grund: oklch(0.985 0.002 250);
+  --flaeche: oklch(0.962 0.003 250);
+  --tinte: oklch(0.21 0.012 255);
+  --leise: oklch(0.45 0.012 255);
+  --linie: oklch(0.88 0.004 250);
+  --rot: oklch(0.508 0.177 25.6);
+
+  --serif: "Source Serif 4", Georgia, "Noto Serif Tamil", serif;
+  --sans: "Source Sans 3", "Segoe UI", Roboto, "Noto Sans Tamil", Arial, sans-serif;
+
+  --rand: 16px;
+  --abstand: 16px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--grund);
+  color: var(--tinte);
+  font-family: var(--sans);
+  font-size: 17px;
+  line-height: 1.45;
+  font-kerning: normal;
+}
+img { display: block; max-width: 100%; height: auto; }
+ul { list-style: none; margin: 0; padding: 0; }
+h1, h2, h3, p { margin: 0; }
+a { color: inherit; text-decoration: none; }
+a:focus-visible { outline: 2px solid var(--tinte); outline-offset: 3px; }
+:lang(ta) { font-family: "Noto Sans Tamil", "Latha", var(--sans); }
+
+.nur-vorlesen {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; font-size: 16px;
+}
+
+/* ---------- Kopf ---------- */
+.kopf { border-bottom: 1px solid var(--linie); background: var(--grund); }
+.kopf__innen { padding: 9px var(--rand) 3px; }
+.kopf__logo { display: inline-block; }
+.kopf__logo img { width: 120px; height: auto; }
+
+.rubriken { overflow-x: auto; scrollbar-width: none; }
+.rubriken::-webkit-scrollbar { display: none; }
+.rubriken__liste { display: flex; padding: 0 calc(var(--rand) - 10px); white-space: nowrap; }
+.rubriken__liste a {
+  display: flex; align-items: center; min-height: 44px; padding: 0 10px;
+  font-size: 16px; font-weight: 600; letter-spacing: 0.005em;
+}
+.rubriken__liste a:hover { color: var(--rot); }
+
+/* ---------- Seite ---------- */
+.seite { padding: 16px var(--rand) 48px; }
+
+/* ---------- Anreißer (gemeinsam) ---------- */
+.anr > a { display: block; }
+.anr__bild {
+  width: 100%; aspect-ratio: 2 / 1; object-fit: cover; border-radius: 0;
+  background: var(--flaeche);
+}
+.meta {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 9px;
+  font-size: 14px; line-height: 1.3; color: var(--leise);
+}
+.meta__dach { color: var(--rot); font-weight: 600; }
+.meta time { display: inline-flex; align-items: baseline; gap: 9px; }
+.meta time::before {
+  content: ""; align-self: center; width: 1px; height: 0.85em; background: var(--linie);
+}
+.anr__titel {
+  font-family: var(--serif); font-weight: 600; font-optical-sizing: auto;
+  color: var(--tinte); hyphens: manual; text-wrap: balance;
+}
+.anr__vorspann { color: var(--tinte); max-width: 68ch; }
+.anr > a:hover .anr__titel { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.14em; }
+
+/* Aufmacher */
+.anr--aufmacher .anr__bild { margin-bottom: 12px; }
+.anr--aufmacher .meta { margin-bottom: 6px; }
+.anr--aufmacher .anr__titel { font-size: 27px; line-height: 1.14; letter-spacing: -0.005em; }
+.anr--aufmacher .anr__vorspann { display: none; margin-top: 10px; font-size: 17px; line-height: 1.45; } /* am Handy aus (wie Guardian): Platz für die zweite Schlagzeile und den Dienstblock */
+
+/* Nebenstück mit Bild */
+.anr--neben { border-top: 1px solid var(--linie); padding-top: var(--abstand); margin-top: var(--abstand); }
+.anr--neben .anr__bild { margin-bottom: 10px; aspect-ratio: 12 / 5; } /* am Handy flacher: zweites Bildformat */
+.anr--neben .meta { margin-bottom: 4px; }
+.anr--neben .anr__titel { font-size: 20px; line-height: 1.2; }
+
+/* Meldung ohne Bild */
+.anr--meldung { border-top: 1px solid var(--linie); }
+.anr--meldung > a { padding: 10px 0 11px; }
+.anr--meldung .meta { margin-bottom: 3px; }
+.anr--meldung .anr__titel { font-size: 17px; line-height: 1.25; }
+.meldungen .anr--meldung:first-child { border-top: 0; }
+
+/* Rubrikblock */
+.rubrik { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 14px; }
+.anr--klein .anr__bild { margin-bottom: 8px; }
+.anr--klein .meta { margin-bottom: 2px; }
+.anr--klein .anr__titel { font-size: 19px; line-height: 1.2; }
+
+/* ---------- Blöcke ---------- */
+.block { margin-top: 28px; border-top: 1px solid var(--tinte); padding-top: 10px; }
+.block__titel {
+  font-family: var(--sans); font-size: 18px; font-weight: 700; line-height: 1.3; margin-bottom: 4px;
+}
+.block--rubrik .block__titel { margin-bottom: 12px; }
+
+/* ---------- Dienstblock „Diese Woche“ ---------- */
+.dienst {
+  background: var(--flaeche); border-top-color: var(--tinte);
+  margin-left: calc(-1 * var(--rand)); margin-right: calc(-1 * var(--rand));
+  padding: 12px var(--rand) 20px;
+}
+.dienst__gruppe + .dienst__gruppe { margin-top: 18px; }
+.dienst__art {
+  font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--leise);
+  padding: 8px 0 6px;
+}
+.eintrag { border-top: 1px solid var(--linie); }
+.eintrag > a { display: block; padding: 12px 0 14px; }
+.eintrag__titel { font-family: var(--serif); font-weight: 600; font-size: 19px; line-height: 1.2; text-wrap: balance; }
+.eintrag > a:hover .eintrag__titel { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.14em; }
+.eintrag__zahl { margin-top: 4px; font-size: 16px; font-weight: 600; }
+.ziffer { font-variant-numeric: tabular-nums; }
+.eintrag__orte { font-size: 16px; color: var(--tinte); }
+.eintrag__datum { font-size: 14px; font-weight: 600; color: var(--tinte); margin-bottom: 3px; }
+.eintrag__text { margin-top: 6px; font-size: 16px; line-height: 1.45; color: var(--leise); max-width: 60ch; }
+
+/* ---------- Tablet (nur: kein Überlauf, Bilder nie über natürlicher Breite) ---------- */
+@media (min-width: 600px) {
+  :root { --rand: 32px; }
+  .seite, .kopf__innen, .rubriken__liste { max-width: 754px; margin-left: auto; margin-right: auto; }
+  .oben { display: grid; grid-template-columns: 1fr 1fr; column-gap: 24px; }
+  .anr--aufmacher { grid-column: 1 / -1; }
+  .anr--neben .anr__bild { aspect-ratio: 2 / 1; }
+  .anr--aufmacher .anr__vorspann { display: block; }
+  .oben__spalte .anr--neben:first-child { margin-top: var(--abstand); }
+  .meldungen { display: grid; grid-template-columns: 1fr 1fr; column-gap: 24px; }
+  .meldungen .anr--meldung:nth-child(2) { border-top: 0; }
+  .dienst { margin-left: 0; margin-right: 0; }
+  .dienst__spalten { display: grid; grid-template-columns: 1fr 1fr; column-gap: 32px; }
+  .dienst__gruppe + .dienst__gruppe { margin-top: 0; }
+}
+
+/* ---------- Desktop ---------- */
+@media (min-width: 1024px) {
+  :root { --rand: 40px; --abstand: 22px; }
+  .seite, .kopf__innen, .rubriken__liste { max-width: 1280px; }
+  .kopf { border-bottom: 0; }
+  .kopf__innen { padding: 20px var(--rand) 14px; }
+  .kopf__logo img { width: 150px; }
+  .rubriken { overflow: visible; }
+  .rubriken__liste {
+    padding: 0 var(--rand); position: relative;
+  }
+  .rubriken__liste::before, .rubriken__liste::after {
+    content: ""; position: absolute; left: var(--rand); right: var(--rand); height: 1px; background: var(--linie);
+  }
+  .rubriken__liste::before { top: 0; }
+  .rubriken__liste::after { bottom: 0; }
+  .rubriken__liste li:first-child a { padding-left: 0; }
+  .rubriken__liste a { min-height: 46px; padding: 0 14px; font-size: 16px; }
+
+  .seite { padding-top: 24px; }
+
+  /* Oberer Block: Aufmacher | zwei Spalten mit je zwei Nebenstücken, getrennt durch feine senkrechte Linien */
+  .oben { grid-template-columns: minmax(0, 560fr) minmax(0, 284fr) minmax(0, 284fr); column-gap: 49px; align-items: start; }
+  .anr--aufmacher { grid-column: auto; }
+  .oben__spalte { position: relative; align-self: stretch; }
+  .oben__spalte::before { content: ""; position: absolute; top: 0; bottom: 0; left: -25px; width: 1px; background: var(--linie); }
+  .oben__spalte .anr--neben:first-child { border-top: 0; padding-top: 0; margin-top: 0; }
+  .anr--aufmacher .anr__bild { margin-bottom: 14px; }
+  .anr--aufmacher .anr__titel { font-size: 36px; line-height: 1.1; }
+  .anr--aufmacher .anr__vorspann { font-size: 18px; margin-top: 12px; }
+  .anr--neben .anr__titel { font-size: 20px; }
+
+  .block { margin-top: 44px; }
+  .block__titel { margin-bottom: 8px; }
+
+  /* Meldungen: drei Spalten mit Linien */
+  .meldungen { grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 49px; }
+  .meldungen .anr--meldung { position: relative; border-top: 0; }
+  .meldungen .anr--meldung:not(:nth-child(3n + 1))::before,
+  .anr--klein:not(:first-child)::before {
+    content: ""; position: absolute; top: 0; bottom: 0; left: -25px; width: 1px; background: var(--linie);
+  }
+  .meldungen .anr--meldung:nth-child(n + 4) > a { border-top: 1px solid var(--linie); }
+  .anr--meldung > a { padding: 12px 0 16px; }
+  .anr--meldung .anr__titel { font-size: 18px; }
+
+  /* Rubrikblock: vier Spalten mit Linien */
+  .rubrik { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 49px; }
+  .anr--klein { position: relative; }
+  .anr--klein .anr__bild { margin-bottom: 10px; }
+  .anr--klein .meta { font-size: 14px; }
+  .anr--klein .anr__titel { font-size: 20px; }
+
+  /* Dienstblock */
+  .dienst { padding: 12px 32px 24px; }
+  .dienst__spalten { grid-template-columns: 2fr 1fr; column-gap: 48px; }
+  .dienst__gruppe:first-child .dienst__liste { display: grid; grid-template-columns: 1fr 1fr; column-gap: 32px; }
+  .eintrag__titel { font-size: 20px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}

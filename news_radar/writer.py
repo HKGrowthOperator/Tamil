@@ -43,8 +43,8 @@ Harte Regeln:
 - Schreibe einen EIGENEN Text. Übernimm keine Sätze aus der Quelle, nur Fakten.
 - Verwende nur Fakten aus dem Quellmaterial. Was unklar ist, lässt du weg. Datum, Ort und \
 Ticket-Link eines Events nur angeben, wenn sie in der Quelle stehen.
-- Länge des Haupttextes: 250-450 Wörter, 3-6 Absätze als <p>, optional eine <h2>-Zwischenüberschrift. \
-Bei typ=kino_termine nur 120-200 Wörter über den Film und den Kinostart – die Liste der Kinos und \
+- Länge des Haupttextes nach Stoff, nie gestreckt: wenig Stoff 80-150 Wörter, sonst 250-400 Wörter in 3-6 <p>, \
+optional eine <h2>-Zwischenüberschrift. Bei typ=kino_termine 250-400 Wörter über den Film und den Kinostart – die Liste der Kinos und \
 Termine wird automatisch unter den Text gesetzt, also KEINE Kinos im Text aufzählen.
 - Der letzte Absatz nennt die Quelle: <p class="quelle">Quelle: NAME</p>.
 - typ: "event" nur für eine konkrete Veranstaltung mit Datum; "kino_termine" nur, wenn das \
@@ -61,7 +61,8 @@ SCHEMA_RULES = """\
 Technische Regeln für die Antwort (JSON nach Schema):
 - Du schreibst IMMER auf Deutsch, auch wenn die Quelle Englisch oder Tamil ist.
 - Schreibe einen EIGENEN Text; übernimm keine Sätze aus der Quelle, nur Fakten. Was unklar ist, lässt du weg.
-- Länge: 180-350 Wörter in 3-6 <p>-Absätzen, optional eine <h2>. Bei typ=kino_termine nur 120-200 Wörter über Film \
+- Länge: 250-400 Wörter in 3-6 <p>-Absätzen, optional eine <h2>; wenig Stoff ergibt 80-150 Wörter, nie strecken. \
+Bei typ=kino_termine 250-400 Wörter über Film \
 und Kinostart – die Kinoliste wird automatisch angehängt, also KEINE Kinos im Text aufzählen.
 - Der letzte Absatz nennt die Quelle: <p class="quelle">Quelle: NAME</p>.
 - typ: "event" nur für eine konkrete Veranstaltung mit Datum; "kino_termine" nur, wenn das Quellmaterial ein \
@@ -186,13 +187,39 @@ def build_rewrite_message(row: dict, anweisung: str) -> str:
 
 
 class Writer:
-    def __init__(self, settings: Settings, client: anthropic.Anthropic | None = None):
+    """v1: ein Aufruf je Beitrag. Mit `store` (oder `messen=True`) läuft der Aufruf über workflow.providers.Claude:
+    Kosten je Aufruf in agent_usage und Budget-Reservierung; ohne Messung direkt über das SDK (nur für Altfälle)."""
+
+    def __init__(self, settings: Settings, client: anthropic.Anthropic | None = None, store=None, budget=None,
+                 messen: bool = True):
         self.settings = settings
         self.client = client or anthropic.Anthropic(max_retries=2, timeout=120)
         self.system = build_system(settings)
         self.schema = _schema(settings.category_slugs())
+        self.store = store
+        self.budget = budget
+        self.messen = messen
 
-    def _create(self, client: anthropic.Anthropic, user_message: str) -> Draft | None:
+    def _gemessen(self, user_message: str, timeout: float | None, retries: int | None) -> Draft | None:
+        from .store import Store
+        from .workflow.providers import Claude, budget_fuer
+
+        def aufruf(store, budget) -> Draft | None:
+            antwort = Claude(self.settings, store, client=self.client, budget=budget).call(
+                "text", self.system[0]["text"], user_message, Draft, modell=self.settings.anthropic_model,
+                max_tokens=16000, effort="medium", schema=self.schema, timeout=timeout, retries=retries,
+            )
+            return antwort.daten if antwort.ok else None
+
+        if self.store is not None:
+            return aufruf(self.store, self.budget)
+        with Store(self.settings.db_path) as store:  # z. B. „Neu schreiben“ aus der Freigabe-App
+            return aufruf(store, budget_fuer(self.settings, store))
+
+    def _create(self, client: anthropic.Anthropic, user_message: str, timeout: float | None = None,
+                retries: int | None = None) -> Draft | None:
+        if self.messen:
+            return self._gemessen(user_message, timeout, retries)
         response = client.beta.messages.create(
             model=self.settings.anthropic_model,
             max_tokens=16000,
@@ -218,7 +245,7 @@ class Writer:
     def rewrite(self, row: dict, anweisung: str, timeout: float = 80.0) -> Draft | None:
         """Umschreiben nach Anweisung – ohne Retries, damit ein Web-Request nie minutenlang hängt."""
         client = self.client.with_options(timeout=timeout, max_retries=0)
-        return self._create(client, build_rewrite_message(row, anweisung))
+        return self._create(client, build_rewrite_message(row, anweisung), timeout=timeout, retries=0)
 
 
 # ---- Rohfassung ohne Sprachmodell ----------------------------------------------------------------

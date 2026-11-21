@@ -1,0 +1,109 @@
+{
+ "_fixture": "Gekürzt aus /wp-json/tribe/events/v1/events?per_page=20&start_date=2026-01-01 (Abruf 12.11.2026). Eintrag 99001 ist künstlich ergänzt: die Inventur nennt «Maaveerar Poojai» im gleichen Kalenderformat (Sivan Kovil Glattbrugg), der Abruf dort scheiterte.",
+ "events": [
+  {
+   "id": 3628,
+   "url": "https://hindutempel-wuppertal.de/event/neujahr-spezial-puja-2026/",
+   "title": "Neujahr-Spezial Puja 2026",
+   "all_day": true,
+   "start_date": "2026-01-01 00:00:00",
+   "end_date": "2026-01-01 23:59:59",
+   "timezone": "UTC+0",
+   "description": "<p>Wir laden Sie herzlich ein zu unserem Neujahr-Spezial Puja (Kalashabisheka), um gemeinsam das Jahr 2026 mit spiritueller Energie, Segnungen und positiver Ausrichtung zu beginnen.</p>",
+   "venue": {
+    "venue": "Sri Navathurgadevi Tempel",
+    "address": "Hünefeldstraße 63B",
+    "city": "Wuppertal",
+    "zip": "42285",
+    "country": "Deutschland"
+   }
+  },
+  {
+   "id": 3652,
+   "url": "https://hindutempel-wuppertal.de/event/mesha-sankranti-tamilisches-neujahr/",
+   "title": "Mesha Sankranti (Tamilisches Neujahr)",
+   "all_day": false,
+   "start_date": "2026-04-14 10:00:00",
+   "end_date": "2026-04-14 20:00:00",
+   "timezone": "Europe/Berlin",
+   "description": "<p>Mesha Sankranti, im tamilischen Kulturkreis auch als Tamilisches Neujahr gefeiert, markiert den Beginn des neuen Sonnenjahres, wenn die Sonne in das Tierkreiszeichen Mesha (Widder) eintritt. Dieser Tag symbolisiert Neuanfang, Hoffnung und s</p>",
+   "venue": {
+    "venue": "Sri Navathurgadevi Tempel",
+    "address": "Hünefeldstraße 63B",
+    "city": "Wuppertal",
+    "zip": "42285",
+    "country": "Deutschland"
+   }
+  },
+  {
+   "id": 3655,
+   "url": "https://hindutempel-wuppertal.de/event/santhi-vorlaeufige-aktivitaeten-des-jaehrlichen-tempelfests/",
+   "title": "Santhi (vorläufige Aktivitäten des jährlichen Tempelfests)",
+   "all_day": true,
+   "start_date": "2026-05-21 00:00:00",
+   "end_date": "2026-05-21 23:59:59",
+   "timezone": "Europe/Berlin",
+   "description": "<p>Santhi bezeichnet die einleitenden Segens‑ und Friedensrituale, die im Rahmen des Jahres‑Tempelfests stattfinden. Diese vorläufigen Aktivitäten bereiten die Gemeinschaft und den Tempel geistig und energetisch auf das bevorstehende Fest vor.</p>",
+   "venue": {
+    "venue": "Sri Navathurgadevi Tempel",
+    "address": "Hünefeldstraße 63B",
+    "city": "Wuppertal",
+    "zip": "42285",
+    "country": "Deutschland"
+   }
+  },
+  {
+   "id": 3664,
+   "url": "https://hindutempel-wuppertal.de/event/prozessionsumzug-theer-thiruvila-2026/",
+   "title": "Prozessionsumzug Theer Thiruvila",
+   "all_day": false,
+   "start_date": "2026-05-30 10:00:00",
+   "end_date": "2026-05-30 19:00:00",
+   "timezone": "Europe/Berlin",
+   "description": "<p>Am 30. Mai 2026 findet der öffentliche Prozessionsumzug, auch “Theer-Thiruvila” genannt, statt, wobei die Göttin Sri Navathurgadevi aus dem Tempel getragen und im heiligen, blumengeschmückten Wagen („Theer“), begleitet mit Kavadi-Tänzen und</p>",
+   "venue": {
+    "venue": "Sri Navathurgadevi Tempel",
+    "address": "Hünefeldstraße 63B",
+    "city": "Wuppertal",
+    "zip": "42285",
+    "country": "Deutschland"
+   }
+  },
+  {
+   "id": 3667,
+   "url": "https://hindutempel-wuppertal.de/event/12-tag-des-tempelfestes/",
+   "title": "12. Tag des Tempelfestes",
+   "all_day": true,
+   "start_date": "2026-06-02 00:00:00",
+   "end_date": "2026-06-02 23:59:59",
+   "timezone": "Europe/Berlin",
+   "description": "<p>12. Tag des Tempelfestes (Bhairav Pooja)</p>",
+   "venue": {
+    "venue": "Sri Navathurgadevi Tempel",
+    "address": "Hünefeldstraße 63B",
+    "city": "Wuppertal",
+    "zip": "42285",
+    "country": "Deutschland"
+   }
+  },
+  {
+   "id": 99001,
+   "url": "https://hindutempel-wuppertal.de/event/maaveerar-poojai/",
+   "title": "Maaveerar Poojai",
+   "all_day": true,
+   "start_date": "2026-11-27 00:00:00",
+   "end_date": "2026-11-27 23:59:59",
+   "timezone": "Europe/Berlin",
+   "description": "<p>Gedenk-Puja</p>",
+   "venue": {
+    "venue": "Sri Navathurgadevi Tempel",
+    "address": "Hünefeldstraße 63B",
+    "city": "Wuppertal",
+    "zip": "42285",
+    "country": "Deutschland"
+   }
+  }
+ ],
+ "total": 6,
+ "total_pages": 1
+}

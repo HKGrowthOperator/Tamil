@@ -29,6 +29,15 @@ _VERSION_RE = re.compile(
 )
 
 
+class Teilausfall(Exception):
+    """Der Anbieter hat geliefert, aber nicht vollständig (ein Haus ohne Antwort, Trefferliste an der Obergrenze).
+    Die Vorstellungen gelten, die Quelle zählt aber nicht als „gelaufen“: sie zieht keine Spielorte ab."""
+
+    def __init__(self, shows: list, grund: str):
+        super().__init__(grund)
+        self.shows = shows
+
+
 @dataclass
 class Show:
     film: str
@@ -46,16 +55,63 @@ def is_tamil(*texts: str) -> bool:
     return any(TAMIL_RE.search(t or "") for t in texts)
 
 
+# Kino-HTML: „Tamil“ als Sprachangabe, nicht als Ortsname („Tamil Nadu“) oder beiläufige Nennung in einer Beschreibung
+_TAMIL = r"tamil(?:isch(?:e[nr]?)?)?\b(?!\s*-?\s*nadu)(?![-‐])"
+_FASSUNG = r"(?:om(?:e)?u|ov|omdu|original\w*|version|fassung|subs?|ut)"
+_TAMIL_FASSUNG_RE = re.compile(
+    rf"[\(\[]\s*{_TAMIL}(?:[\s,/]+{_FASSUNG})*\s*\\?[\)\]]"  # (Tamil), [Tamil], (Tamil OmeU), \[Tamil\]
+    rf"|\b{_TAMIL}\s+{_FASSUNG}\b"  # Tamil version, Tamil OmU, tamil Original
+    rf"|\b(?:ov|om(?:e)?u|original(?:fassung|version)?|sprache|language)\s*[:\-–]?\s*{_TAMIL}",  # OV Tamil, Sprache: Tamil
+    re.I,
+)
+_NUR_TAMIL_RE = re.compile(rf"\W*{_TAMIL}\W*", re.I)
+_SPRACHEN = {"tamil", "tamilisch", "telugu", "hindi", "malayalam", "kannada", "bengali", "bengalisch", "marathi",
+             "punjabi", "gujarati", "urdu", "englisch", "english", "deutsch", "sinhala", "singhalesisch"}
+_KLAMMER_RE = re.compile(r"[\(\[]\s*([a-zäöü]+)[^\)\]]*[\)\]]", re.I)
+
+
+def _klammer_sprachen(text: str) -> set[str]:
+    """Sprachen, die in Klammern stehen: „(OmeU) [Telugu]“ → {"telugu"} („OmeU“ ist keine Sprache)."""
+    return {m.group(1).lower() for m in _KLAMMER_RE.finditer(text or "")} & _SPRACHEN
+
+
+def ist_tamil_fassung(titel: str, sprache: str = "") -> bool:
+    """Tamilische Vorstellung laut Titel oder Sprachangabe (Selektor `sprache`), nie über die Beschreibung."""
+    sprache = (sprache or "").strip()
+    if sprache and _NUR_TAMIL_RE.fullmatch(sprache):  # Sprachfeld enthält nur „Tamil“
+        return True
+    for text in (titel, sprache):
+        if klammer := _klammer_sprachen(text):  # eine Sprachmarke in Klammern entscheidet allein
+            if any(s.startswith("tamil") for s in klammer):
+                return True
+            continue
+        if _TAMIL_FASSUNG_RE.search(text or ""):
+            return True
+    return False
+
+
+# Zusätze der Kinoprogramme, die keinen eigenen Film bezeichnen: „SCENE , FSK folgt“, „… /engl. Untertitel“, „(3D)“
+_ZUSATZ_RE = re.compile(
+    r"\s*[,/\-–(\[]*\s*(?:fsk\s*(?:folgt|ab\s*\d+|\d+)|(?:mit\s+)?(?:engl(?:isch(?:en?)?)?\.?|dt\.?|deutsch(?:en?)?)\s*"
+    r"(?:untertitel\w*|ut|subtitles?)|untertitelt|engl\.?\s*subs?|[23]d)\s*[)\]]?",
+    re.I,
+)
+
+
 def clean_film_title(title: str) -> str:
-    """„Jailer 2 (Tamil OmeU)“, „(tamil) Jailer 2“, „*Jailer 2“ → „Jailer 2“."""
+    """„Jailer 2 (Tamil OmeU)“, „(tamil) Jailer 2“, „*Jailer 2“, „SCENE , FSK folgt“ → „Jailer 2“ bzw. „Scene“."""
     t = (title or "").split(" | ")[0]
     t = _VERSION_RE.sub(" ", t)
+    t = _ZUSATZ_RE.sub(" ", t)
     t = re.sub(r"^\W+|\W+$", "", t)
-    return re.sub(r"\s+", " ", t).strip()
+    t = re.sub(r"\s+", " ", t).strip()
+    if t.isupper() and len(t) > 3:  # „SCENE“ → „Scene“ (Kinos schreiben Titel oft in Großbuchstaben)
+        t = t.title()
+    return t
 
 
 def film_key(title: str) -> str:
-    return slugify(clean_film_title(title), 60)
+    return slugify(clean_film_title(title).lower(), 60)
 
 
 def kino_week(d: date) -> tuple[int, int]:
@@ -81,12 +137,14 @@ def fetch_cinestar(source: Source, settings: Settings, http=requests) -> list[Sh
     if wanted:
         cinemas = [c for c in cinemas if c["id"] in wanted]
     shows: list[Show] = []
+    ausgefallen: list[str] = []
 
     def one(cinema: dict) -> list[Show]:
         try:
             data = http.get(f"{base}/api/cinema/{cinema['id']}/show/", headers=headers, timeout=6).json()
         except Exception as exc:  # noqa: BLE001 - ein Kino fällt aus, die anderen laufen weiter
             log.debug("CineStar %s: %s", cinema.get("name"), exc)
+            ausgefallen.append(str(cinema.get("name") or cinema.get("id")))
             return []
         out = []
         for s in data:
@@ -107,11 +165,14 @@ def fetch_cinestar(source: Source, settings: Settings, http=requests) -> list[Sh
     with ThreadPoolExecutor(max_workers=6) as pool:
         for batch in pool.map(one, cinemas):
             shows += batch
+    if ausgefallen:
+        raise Teilausfall(shows, "ohne Antwort: " + ", ".join(sorted(ausgefallen)))
     return shows
 
 
-KINOHELD_QUERY = """{ search(query: "tamil", limit: 100) { __typename ... on Show { id name beginning
-  cinema { id name city { name } } movie { id title } } } }"""
+KINOHELD_LIMIT = 100  # ob die Schnittstelle mehr liefert, ist ungeprüft; an der Grenze Teilausfall (im Takt dank last_try)
+KINOHELD_QUERY = """{ search(query: "tamil", limit: %d) { __typename ... on Show { id name beginning
+  cinema { id name city { name } } movie { id title } } } }""" % KINOHELD_LIMIT
 
 
 def fetch_kinoheld(source: Source, settings: Settings, http=requests) -> list[Show]:
@@ -119,7 +180,8 @@ def fetch_kinoheld(source: Source, settings: Settings, http=requests) -> list[Sh
     resp = http.post(url, json={"query": KINOHELD_QUERY}, headers={"User-Agent": USER_AGENT}, timeout=15)
     resp.raise_for_status()
     shows = []
-    for r in resp.json().get("data", {}).get("search", []) or []:
+    treffer = resp.json().get("data", {}).get("search", []) or []
+    for r in treffer:
         if r.get("__typename") != "Show" or not is_tamil(r.get("name")):
             continue
         try:
@@ -129,6 +191,8 @@ def fetch_kinoheld(source: Source, settings: Settings, http=requests) -> list[Sh
         cinema = r.get("cinema") or {}
         shows.append(Show(clean_film_title(r["name"]), cinema.get("name", "?"), (cinema.get("city") or {}).get("name", ""),
                           "DE", start=start, url="https://www.kinoheld.de/", provider="kinoheld"))
+    if len(treffer) >= KINOHELD_LIMIT:  # Liste womöglich abgeschnitten → nichts abziehen
+        raise Teilausfall(shows, f"{len(treffer)} Treffer = Obergrenze")
     return shows
 
 
@@ -165,7 +229,45 @@ def fetch_cineplexx(source: Source, settings: Settings, http=requests) -> list[S
     return shows
 
 
-PROVIDERS = {"cinestar": fetch_cinestar, "kinoheld": fetch_kinoheld, "cineplexx": fetch_cineplexx}
+def fetch_html_kino(source: Source, settings: Settings, http=None, now: datetime | None = None) -> list[Show]:
+    """Kinoseite oder Filmreihe mit CSS-Selektoren (wie Quellentyp html): eine Vorstellung je Eintrag, nur Einträge,
+    deren Titel oder Sprachangabe (Selektor `sprache`) eine tamilische Fassung nennt (`ist_tamil_fassung`).
+    `params.kino`/`params.stadt` benennen das Haus, sonst der Ort-Selektor. Nennt die Seite nur den Tag, wird daraus
+    eine Laufzeit ab diesem Tag (`von`), keine Vorstellung um 00:00."""
+    from urllib.parse import urljoin
+
+    from bs4 import BeautifulSoup
+
+    from . import sources as quellen
+    from .dates import parse_de_termin
+
+    soup = BeautifulSoup(quellen._get(source.url).text, "html.parser")
+    sel, now = source.selectors, now or datetime.now(TZ)
+    shows = []
+    knoten = soup.select(sel.get("item", "article"))
+    behaelter = soup.select_one(sel["behaelter"]) if not knoten and sel.get("behaelter") else None
+    if behaelter is not None and not behaelter.select_one("a[href]") and len(behaelter.get_text(" ", strip=True)) < 40:
+        return []  # Behälter da und wirklich leer (kein Link, kaum Text): die Reihe hat gerade keine Vorstellungen
+    if not knoten:  # Seite umgebaut: Fehler statt [] – sonst fielen alle Spielorte der Quelle still weg
+        raise ValueError(f"Selektor {sel.get('item', 'article')!r} findet keinen Eintrag auf {source.url}")
+    for node in knoten:
+        film = quellen._select_text(node, sel.get("title", "h2"))
+        if not film or not ist_tamil_fassung(film, quellen._select_text(node, sel.get("sprache", ""))):
+            continue
+        link = quellen._select_text(node, sel.get("link", "a::attr(href)"))
+        datum = quellen._select_text(node, sel.get("date", ""))
+        ort = quellen._select_text(node, sel.get("ort", ""))
+        termin, hat_zeit = parse_de_termin(datum, now)
+        shows.append(Show(clean_film_title(film), source.params.get("kino") or ort or source.name,
+                          source.params.get("stadt") or ort, source.country or "DE",
+                          start=termin if hat_zeit else None,  # ohne Uhrzeit: Laufzeit „ab Datum“, nie 00:00
+                          von=termin.date() if termin and not hat_zeit else None,
+                          url=urljoin(source.url, link) if link else source.url, provider="html"))
+    return shows
+
+
+PROVIDERS = {"cinestar": fetch_cinestar, "kinoheld": fetch_kinoheld, "cineplexx": fetch_cineplexx,
+             "html": fetch_html_kino}
 
 
 # ---- Aggregation --------------------------------------------------------------
@@ -186,12 +288,14 @@ def _week_overlaps(week: tuple[int, int], von: date, bis: date) -> bool:
 
 
 def _fingerprint(kinos: list[dict]) -> str:
-    parts = sorted(f"{k['kino']}/{k['stadt']}/" + ",".join(t[:10] for t in k.get("termine") or []) for k in kinos)
+    parts = sorted(f"{k.get('kino')}/{k.get('stadt')}/" + ",".join(t[:10] for t in k.get("termine") or [])
+                   + (f"/ab {k['von']}" if k.get("von") else "") for k in kinos)
     return hashlib.sha1("|".join(parts).encode()).hexdigest()
 
 
-def aggregate_shows(shows: list[Show], now: datetime | None = None) -> list[NewsItem]:
-    """Ein NewsItem je Film und Kinowoche (diese und nächste Woche)."""
+def aggregate_shows(shows: list[Show], now: datetime | None = None, quelle: str = "") -> list[NewsItem]:
+    """Ein NewsItem je Film und Kinowoche (diese und nächste Woche). `quelle` (Name in sources.toml) steht an jedem
+    Spielort, damit ein späterer Scan weiß, welche Quelle ihn abziehen darf."""
     now = now or datetime.now(timezone.utc)
     this_week = kino_week(now.astimezone(TZ).date())
     next_week = kino_week(date.fromisocalendar(this_week[0], this_week[1], 4) + timedelta(days=7))
@@ -204,10 +308,12 @@ def aggregate_shows(shows: list[Show], now: datetime | None = None) -> list[News
         for week in _weeks_of(s, weeks):
             g = groups.setdefault((key, week), {"film": clean_film_title(s.film), "kinos": {}})
             k = g["kinos"].setdefault((s.kino, s.stadt), {"kino": s.kino, "stadt": s.stadt, "land": s.land, "termine": [], "url": s.url})
+            if quelle:
+                k["quelle"] = quelle
             if s.start:
                 k["termine"].append(s.start.isoformat(timespec="minutes"))
             elif s.von:
-                k["von"] = s.von.isoformat()
+                k["von"] = min(k.get("von") or s.von.isoformat(), s.von.isoformat())
     items = []
     for (key, (year, week)), g in groups.items():
         kinos = sorted(g["kinos"].values(), key=lambda k: (k["stadt"], k["kino"]))
@@ -249,8 +355,65 @@ def merge_kino_items(items: list[NewsItem]) -> list[NewsItem]:
     return others + list(merged.values())
 
 
+def _wochen_ende(woche: str) -> str:
+    """„2026-W47“ (Kinowoche, Donnerstag bis Mittwoch) → letzter Tag als „JJJJ-MM-TT“; sonst ""."""
+    try:
+        jahr, nummer = woche.split("-W")
+        return (date.fromisocalendar(int(jahr), int(nummer), 4) + timedelta(days=6)).isoformat()
+    except (AttributeError, ValueError):
+        return ""
+
+
+def _noch_aktuell(k: dict, now: datetime, aktiv, bis: str = "") -> dict | None:
+    """Ein bleibender Spielort nur mit aktiver Quelle und künftigem Termin (bzw. Laufzeit ab heute oder später)."""
+    if aktiv is not None and k.get("quelle") not in aktiv:
+        return None
+    termine = []
+    for t in k.get("termine") or []:
+        try:
+            zeit = datetime.fromisoformat(t)
+        except ValueError:
+            continue
+        if (zeit if zeit.tzinfo else zeit.replace(tzinfo=TZ)) >= now:
+            termine.append(t)
+    if termine:
+        return {**k, "termine": termine}
+    heute = now.astimezone(TZ).date().isoformat()
+    if not k.get("termine") and k.get("von") and (k["von"] >= heute or bis >= heute):
+        return k  # Laufzeit „ab“: bleibt, solange die Kinowoche des Entwurfs läuft
+    return None
+
+
+def vereinige_fakten(alt: dict, item: NewsItem, now: datetime | None = None) -> tuple[dict, str]:
+    """Spielorte eines offenen Entwurfs mit einem neuen Scan vereinigen (Prüfung 11.11.2026, P1).
+
+    Ein bisheriger Spielort bleibt, solange seine Quelle in diesem Scan nicht gelaufen ist (nicht fällig, pausiert,
+    ausgefallen) und der Scan ihn nicht selbst neu meldet – aber nur mit aktiver Quelle und künftigem Termin. Spielorte ohne Quelle (ältere Entwürfe) und Scans ohne
+    Angabe der gelaufenen Quellen ersetzen wie bisher."""
+    neu, fingerprint = item.facts or {}, item.fingerprint
+    gelaufen = getattr(item, "quellen_gelaufen", None)
+    if gelaufen is None:
+        return neu, fingerprint
+    gemeldet = {(k.get("kino"), k.get("stadt")) for k in neu.get("kinos") or []}
+    now, aktiv = now or datetime.now(TZ), getattr(item, "quellen_aktiv", None)
+    bleiben = [k for k in (alt or {}).get("kinos") or []
+               if k.get("quelle") and k["quelle"] not in gelaufen and (k.get("kino"), k.get("stadt")) not in gemeldet]
+    bis = _wochen_ende(str((alt or {}).get("woche") or neu.get("woche") or ""))
+    bleiben = [k for k in (_noch_aktuell(k, now, aktiv, bis) for k in bleiben) if k]
+    if not bleiben:
+        return neu, fingerprint
+    kinos = sorted((neu.get("kinos") or []) + bleiben, key=lambda k: (k.get("stadt") or "", k.get("kino") or ""))
+    return {**neu, "kinos": kinos}, _fingerprint(kinos)
+
+
 def fetch_kino(source: Source, settings: Settings) -> list[NewsItem]:
     provider = PROVIDERS.get(source.provider)
     if provider is None:
         raise ValueError(f"Unbekannter Kino-Anbieter: {source.provider}")
-    return aggregate_shows(provider(source, settings))
+    try:
+        shows = provider(source, settings)
+    except Teilausfall as teil:
+        from .sources import Teilausfall as QuellenTeilausfall
+
+        raise QuellenTeilausfall(aggregate_shows(teil.shows, quelle=source.name), str(teil)) from teil
+    return aggregate_shows(shows, quelle=source.name)

@@ -1,0 +1,226 @@
+/* Hallmark · shape: app screen · genre: editorial · theme: Terrazzo (by request), Farbweg Zement der Website-Linie hm-terrazzo, Signal ist das Logo-Rot, eine Familie (Onest) statt Syne und JetBrains Mono
+ * nav: top bar, Logo über der 2px Tintenfuge, eine Zeile Arbeit links und Betrieb rechts hinter einer Haarlinie, unter 60rem ein Menü · signature: die Fuge zwischen Vorgang und Prüfung; links steht, was vorliegt, rechts hinter 2px Tinte, was der Radar dazu geprüft hat, und darunter die eine Entscheidungskarte mit hartem Versatz · states: leer, Fehler, voll (Server rendert, kein Ladezustand), Lizenz fehlt, Karenz, angehalten, Trockenmodus · terrazzo: cement, ink controls, cards only for decisions
+ * axes: light/grotesk-sans/warm · posture: restrained · contrast: pass · v2.0.0 */
+/* Hallmark · pre-emit critique: P4 H4 E4 S4 R4 V3 · weakest: V, das Cockpit teilt Fuge, Spezifikationstabelle und Anfragekarte mit der Website; gewollt (eine Marke), variiert durch Dichte und die feste Teilung Vorgang gegen Prüfung */
+/* Hallmark · waive 49b · Titel von Entwürfen, Einsendungen und Buchungen in Tabellen umbrechen bei 390 auf zwei bis drei Zeilen · der Titel ist der Name des Vorgangs aus Radar oder Einsendung und wird im Cockpit nicht gekürzt */
+@import url("./tokens.css");
+@import url("./base.css");
+
+@font-face { font-family: "Onest"; src: url("schriften/onest-latin-wght-normal.woff2") format("woff2-variations"); font-weight: 100 900; font-display: swap; unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Onest"; src: url("schriften/onest-latin-ext-wght-normal.woff2") format("woff2-variations"); font-weight: 100 900; font-display: swap; unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1E9F, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+A720-A7FF; }
+
+/* ------------------------------------------------ Grundlage */
+body { font-size: var(--text-body); line-height: 1.5; font-synthesis: none; }
+h1, h2 { font-family: var(--font-body); font-weight: 600; letter-spacing: -0.01em; }
+h1 { font-size: var(--text-display); line-height: 1.15; max-width: 34ch; }
+h2 { font-size: var(--text-xl); line-height: 1.2; max-width: 40ch; }
+h3 { font-family: var(--font-body); font-weight: 600; font-size: var(--text-lg); line-height: 1.3; letter-spacing: 0; }
+a { text-underline-offset: 0.18em; }
+a:hover { text-decoration-color: var(--color-accent); }
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, summary:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.code { font-weight: 500; font-variant-numeric: tabular-nums; letter-spacing: 0; white-space: nowrap; }
+.leise { color: var(--color-muted); }
+.klein { font-size: var(--text-sm); }
+.skip { position: absolute; left: var(--space-md); top: calc(-1 * var(--space-3xl)); z-index: var(--z-toast); padding: var(--space-xs) var(--space-md); background: var(--color-ink); color: var(--color-paper); }
+.skip:focus-visible { top: var(--space-md); }
+.wort-fehler { color: var(--color-error); font-weight: 600; }
+.wort-gut { color: var(--color-success); font-weight: 600; }
+.wort { font-weight: 600; }
+.container { padding-inline: var(--gutter); }
+
+/* ------------------------------------------------ Kopfleiste */
+.kopf { background: var(--color-paper); border-bottom: var(--rule-hair) solid var(--color-rule); }
+.kopf__zeile { display: flex; align-items: center; justify-content: space-between; gap: var(--space-md); padding-block: var(--space-sm); flex-wrap: wrap; }
+.kopf__marke { display: flex; align-items: center; gap: var(--space-sm); text-decoration: none; min-height: var(--control-touch); }
+.kopf__marke img { width: 96px; height: auto; }
+.kopf__marke span { font-weight: 500; color: var(--color-ink-2); }
+.kopf__stand { display: flex; align-items: center; gap: var(--space-md); flex-wrap: wrap; font-size: var(--text-sm); color: var(--color-ink-2); }
+.kopf__fuge { height: var(--rule-bar); background: var(--color-ink); }
+.nav { display: flex; justify-content: space-between; gap: var(--space-lg); }
+.nav ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0 var(--space-lg); }
+.nav__betrieb { border-left: var(--rule-hair) solid var(--color-rule); padding-left: var(--space-lg); }
+.nav a { display: inline-flex; align-items: center; gap: var(--space-xs); min-height: var(--control-touch); text-decoration: none; color: var(--color-ink-2); border-bottom: var(--rule-bar) solid transparent; }
+.nav a:hover { color: var(--color-ink); border-bottom-color: var(--color-rule); }
+.nav a[aria-current="page"] { color: var(--color-ink); font-weight: 600; border-bottom-color: var(--color-accent); }
+.nav .code { color: var(--color-muted); font-weight: 400; }
+.menue { display: none; }
+.menue > summary { list-style: none; cursor: pointer; display: inline-flex; align-items: center; min-height: var(--control-touch); padding-inline: var(--space-md); box-shadow: inset 0 0 0 var(--rule-bar) var(--color-ink); font-weight: 500; }
+.menue > summary::-webkit-details-marker { display: none; }
+
+/* Banner für angehaltene Kanäle: ein ruhiges Feld, das Wort trägt den Zustand */
+.banner { background: var(--color-paper-2); border-bottom: var(--rule-hair) solid var(--color-rule); }
+.banner p { padding-block: var(--space-sm); max-width: none; }
+
+/* ------------------------------------------------ Seitenkopf */
+main { padding-block: var(--space-xl) var(--space-2xl); }
+.seitenkopf { display: flex; justify-content: space-between; align-items: end; gap: var(--space-lg); flex-wrap: wrap; padding-bottom: var(--space-lg); }
+.seitenkopf p { color: var(--color-ink-2); margin-top: var(--space-xs); }
+.pfad { font-size: var(--text-sm); color: var(--color-muted); margin-bottom: var(--space-xs); }
+.pfad a { color: var(--color-ink-2); }
+
+/* ------------------------------------------------ Die Fuge: Felder ungleicher Breite, 2px Tinte dazwischen */
+.felder { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); border-top: var(--rule-bar) solid var(--color-ink); }
+.felder--8-4 { grid-template-columns: minmax(0, 8fr) minmax(0, 4fr); }
+.felder--5-7 { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
+.felder--voll { grid-template-columns: minmax(0, 1fr); }
+.feld { padding-block: var(--space-lg); min-width: 0; }
+.feld + .feld { border-left: var(--rule-bar) solid var(--color-ink); padding-left: var(--space-xl); }
+.feld:first-child { padding-right: var(--space-xl); }
+.felder--voll .feld { padding-right: 0; }
+.felder + .felder { margin-top: var(--space-xl); }
+.block { margin-top: var(--space-xl); }
+.feld > .block:first-child, .feld > h2 + .block, .feld > .block__kopf + .block { margin-top: 0; }
+.feld > h2 { margin-bottom: var(--space-md); }
+.block > h2, .block > h3 { margin-bottom: var(--space-sm); }
+.block__kopf { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-md); flex-wrap: wrap; margin-bottom: var(--space-sm); }
+.block__kopf h2 { margin: 0; }
+
+/* ------------------------------------------------ Spezifikationstabelle */
+.spec { width: 100%; border-collapse: collapse; font-size: var(--text-body); }
+.spec th { text-align: left; font-weight: 500; font-size: var(--text-sm); color: var(--color-muted); padding: var(--space-xs) var(--space-sm) var(--space-xs) 0; border-bottom: var(--rule-hair) solid var(--color-ink); vertical-align: bottom; }
+.spec td { padding: var(--space-sm) var(--space-sm) var(--space-sm) 0; border-bottom: var(--rule-hair) solid var(--color-rule); vertical-align: top; }
+.spec td.zahl, .spec th.zahl { text-align: right; font-variant-numeric: tabular-nums; }
+.spec tbody tr:hover { background: var(--color-paper-2); }
+.spec tr[aria-current="true"] { background: var(--color-paper-3); }
+.spec tr[aria-current="true"] .code { color: var(--color-accent); }
+.spec a { color: var(--color-ink); }
+.spec .unter { display: block; font-size: var(--text-sm); color: var(--color-muted); margin-top: var(--space-3xs); }
+.spec--knapp td { padding-block: var(--space-xs); }
+.spec caption { text-align: left; }
+
+/* Datensatz als Liste: Feld links, Wert rechts */
+.satz { display: grid; grid-template-columns: minmax(0, 11rem) minmax(0, 1fr); margin: 0; border-top: var(--rule-hair) solid var(--color-ink); }
+.satz dt, .satz dd { margin: 0; padding: var(--space-xs) 0; border-bottom: var(--rule-hair) solid var(--color-rule); }
+.satz dt { color: var(--color-muted); font-size: var(--text-sm); padding-right: var(--space-sm); }
+.satz dd { overflow-wrap: anywhere; }
+
+/* Meldung im Fluss: Feld paper-2 mit Linie oben, das Wort trägt den Zustand */
+.meldung { background: var(--color-paper-2); border-top: var(--rule-bar) solid var(--color-ink); padding: var(--space-md); }
+.meldung p + p { margin-top: var(--space-xs); }
+.meldung--fehler { border-top-color: var(--color-error); }
+.hinweise { list-style: none; margin: 0; padding: 0; }
+.hinweise li { padding: var(--space-xs) 0; border-bottom: var(--rule-hair) solid var(--color-rule); }
+.hinweise li:first-child { border-top: var(--rule-hair) solid var(--color-ink); }
+
+/* ------------------------------------------------ Bedienung */
+.knopf { white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; min-height: var(--control); padding: 0 var(--space-md); border: 0; border-radius: var(--radius-pill); background: var(--color-ink); color: var(--color-paper); font-weight: 500; text-decoration: none; cursor: pointer; transition: background-color var(--dur-micro) var(--ease-out), color var(--dur-micro) var(--ease-out); }
+.knopf:hover { background: var(--color-ink-2); }
+.knopf:active { background: var(--color-ink); transform: translateY(1px); }
+.knopf--zweit:active, .knopf--leise:active { background: var(--color-paper-3); }
+.zellen label:active, .zellen--filter a:active { background: var(--color-paper-3); }
+b, strong { font-weight: 600; }
+.knopf--zweit { background: transparent; color: var(--color-ink); box-shadow: inset 0 0 0 var(--rule-bar) var(--color-ink); }
+.knopf--zweit:hover { background: var(--color-paper-2); }
+.knopf--leise { background: transparent; color: var(--color-ink); text-decoration: underline; text-decoration-thickness: 1px; padding-inline: var(--space-xs); }
+.knopf--leise:hover { background: transparent; text-decoration-color: var(--color-accent); }
+.knopf:disabled, .knopf[aria-disabled="true"] { background: var(--color-paper-3); color: var(--color-muted); box-shadow: none; cursor: not-allowed; }
+.knoepfe { display: flex; flex-wrap: wrap; gap: var(--space-sm); align-items: center; margin-top: var(--space-md); }
+.feldname { display: block; font-weight: 500; margin-bottom: var(--space-2xs); }
+.feldname small { font-weight: 400; color: var(--color-muted); font-size: var(--text-sm); }
+.eingabe, select.eingabe, textarea.eingabe { width: 100%; min-height: var(--control); padding: var(--space-xs) var(--space-sm); border: var(--rule-hair) solid var(--color-ink); border-radius: var(--radius-card); background: var(--color-plate); color: var(--color-ink); }
+textarea.eingabe { min-height: 7.5rem; line-height: 1.5; resize: vertical; }
+.reihe + .reihe { margin-top: var(--space-md); }
+.reihe--zwei { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-md); }
+.pflicht { color: var(--color-accent); }
+fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+legend { padding: 0; font-weight: 500; margin-bottom: var(--space-2xs); }
+.haken { display: flex; gap: var(--space-sm); align-items: flex-start; min-height: var(--control-touch); padding-block: var(--space-xs); }
+.haken input { width: 20px; height: 20px; margin: var(--space-3xs) 0 0; accent-color: var(--color-ink); flex: none; }
+
+/* Auswahl als randscharfe Zellen, aneinanderstoßend; die gewählte Zelle ist Tinte */
+.zellen { display: inline-flex; flex-wrap: wrap; }
+.zellen input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.zellen label { display: inline-flex; align-items: center; min-height: var(--control); padding: 0 var(--space-md); border: var(--rule-hair) solid var(--color-ink); margin-left: -1px; background: var(--color-plate); cursor: pointer; }
+.zellen label:first-of-type { margin-left: 0; }
+.zellen input:checked + label { background: var(--color-ink); color: var(--color-paper); }
+.zellen input:focus-visible + label { outline: 2px solid var(--color-focus); outline-offset: 2px; position: relative; z-index: var(--z-raised); }
+.zellen--filter a { display: inline-flex; align-items: center; gap: var(--space-xs); min-height: var(--control); padding: 0 var(--space-md); border: var(--rule-hair) solid var(--color-ink); margin-left: -1px; background: var(--color-plate); text-decoration: none; color: var(--color-ink); }
+.zellen--filter a:first-child { margin-left: 0; }
+.zellen--filter a[aria-current="page"] { background: var(--color-ink); color: var(--color-paper); }
+.zellen--filter a[aria-current="page"] .code { color: var(--color-paper); }
+
+/* Die Entscheidungskarte: die eine weiße Karte je Vorgang, harte Kante, harter Versatz */
+.feld > .karte:first-child { margin-top: 0; }
+.karte { background: var(--color-plate); border: var(--rule-bar) solid var(--color-ink); box-shadow: var(--shadow-card); padding: var(--space-lg); margin: var(--space-lg) var(--space-md) var(--space-md) 0; }
+.karte > h2, .karte > h3 { margin-bottom: var(--space-xs); }
+.karte .grund { margin-top: var(--space-xs); color: var(--color-ink-2); font-size: var(--text-sm); }
+
+details.auf { border-top: var(--rule-hair) solid var(--color-ink); }
+details.auf + details.auf { border-top-color: var(--color-rule); }
+details.auf > summary { cursor: pointer; display: flex; align-items: center; min-height: var(--control-touch); font-weight: 500; }
+details.auf[open] > summary { margin-bottom: var(--space-sm); }
+details.auf > div { padding-bottom: var(--space-md); }
+
+/* ------------------------------------------------ Entwurf: Absatz links, seine Aussagen rechts */
+.absatz { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); border-bottom: var(--rule-hair) solid var(--color-rule); }
+.absatz > p { font-size: var(--text-reading); line-height: 1.6; max-width: 62ch; padding: var(--space-md) var(--space-xl) var(--space-md) 0; }
+.absatz > ul { list-style: none; margin: 0; padding: var(--space-md) 0; font-size: var(--text-sm); }
+.absatz > ul li + li { margin-top: var(--space-sm); }
+.absatz__kopf { font-size: var(--text-sm); color: var(--color-muted); }
+.entwurf__titel { font-size: var(--text-xl); font-family: var(--font-body); font-weight: 600; letter-spacing: 0; max-width: 46ch; line-height: 1.3; }
+.entwurf__teaser { font-size: var(--text-reading); color: var(--color-ink-2); max-width: 62ch; margin-top: var(--space-xs); }
+.bild { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--space-lg); align-items: start; }
+.bild figure { margin: 0; }
+.bild img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; }
+.bild figcaption { font-size: var(--text-sm); color: var(--color-muted); margin-top: var(--space-xs); }
+.bild--fehlt img { filter: grayscale(1); opacity: 0.55; }
+
+/* Werbemittel maßstabsgetreu: ein Rahmen in der gebuchten Größe, kein Bild */
+.mass { display: grid; place-items: center; border: var(--rule-hair) dashed var(--color-ink); background: var(--color-paper-2); color: var(--color-ink-2); font-size: var(--text-sm); text-align: center; padding: var(--space-xs); max-width: 100%; }
+.massreihe { display: flex; flex-wrap: wrap; gap: var(--space-lg); align-items: end; }
+.massreihe figure { margin: 0; max-width: 100%; }
+.massreihe figcaption { font-size: var(--text-sm); margin-top: var(--space-xs); }
+
+/* WhatsApp-Entwurf: der Text, wie er hinausgeht */
+.wa-text { background: var(--color-plate); border: var(--rule-hair) solid var(--color-ink); padding: var(--space-md); white-space: pre-line; font-size: var(--text-reading); line-height: 1.5; max-width: 52ch; }
+
+.fuss { border-top: var(--rule-bar) solid var(--color-ink); margin-top: var(--space-2xl); padding-block: var(--space-md) var(--space-xl); font-size: var(--text-sm); color: var(--color-ink-2); }
+.fuss p { max-width: 75ch; }
+
+/* ------------------------------------------------ Schmal */
+@media (max-width: 60rem) {
+  :root { --control: 44px; --gutter: 24px; }
+  .nav { display: none; }
+  .menue { display: block; }
+  .menue[open] .nav { display: flex; flex-direction: column; gap: var(--space-sm); padding-block: var(--space-sm); }
+  .menue .nav__betrieb { border-left: 0; padding-left: 0; border-top: var(--rule-hair) solid var(--color-rule); padding-top: var(--space-sm); }
+  .felder, .felder--8-4, .felder--5-7 { grid-template-columns: minmax(0, 1fr); }
+  .feld:first-child { padding-right: 0; }
+  .feld + .feld { border-left: 0; padding-left: 0; border-top: var(--rule-bar) solid var(--color-ink); }
+  .absatz { grid-template-columns: minmax(0, 1fr); }
+  .absatz > p { padding-right: 0; padding-bottom: var(--space-sm); }
+  .absatz > ul { border-top: var(--rule-hair) solid var(--color-rule); padding: var(--space-sm) 0 var(--space-md); }
+  .bild { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 40rem) {
+  html { font-size: 112.5%; }
+  :root { --gutter: 16px; }
+  .kopf__marke img { width: 84px; }
+  .reihe--zwei { grid-template-columns: minmax(0, 1fr); }
+  .satz { grid-template-columns: minmax(0, 1fr); }
+  .satz dt { border-bottom: 0; padding-bottom: 0; }
+  .karte { padding: var(--space-md); margin-right: var(--space-sm); box-shadow: 8px 8px 0 var(--color-paper-3); }
+  .spec thead { display: none; }
+  .spec tr { display: block; padding-block: var(--space-sm); border-bottom: var(--rule-hair) solid var(--color-rule); }
+  .spec td { display: block; border: 0; padding: var(--space-3xs) 0; }
+  .spec td.zahl { text-align: left; }
+  .spec td[data-l]::before { content: attr(data-l) ": "; color: var(--color-muted); }
+  .spec td[data-l="Code"]::before { content: none; }
+  .kopf__wer { display: none; }
+  .zellen label, .zellen--filter a { padding-inline: var(--space-sm); }
+}
+
+/* Abstände als Klassen, kein Stil im HTML */
+.nach-xs { margin-top: var(--space-xs); }
+.nach-sm { margin-top: var(--space-sm); }
+.nach-md { margin-top: var(--space-md); }
+.nach-lg { margin-top: var(--space-lg); }
+.ohne-rand { margin: 0; }
+.fuge-oben { border-top: var(--rule-bar) solid var(--color-ink); }
+.mass--728 { width: 728px; aspect-ratio: 728 / 90; }
+.mass--300 { width: 300px; aspect-ratio: 300 / 250; }
+
+/* Tippflächen unter 60rem: jeder Link im Inhalt trägt 44 px Höhe */
+@media (max-width: 60rem) {
+  .spec a, .satz a, .hinweise a, .meldung a, .block__kopf a, .pfad a, .banner a { display: inline-flex; align-items: center; min-height: var(--control-touch); max-width: 100%; overflow-wrap: anywhere; }
+}

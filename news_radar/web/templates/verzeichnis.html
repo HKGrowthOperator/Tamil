@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Verzeichnis{% endblock %}
+{% block content %}
+<header class="topline">
+  <div><h1>Verzeichnis</h1><p class="unter">Vorschläge und Änderungen für das Verzeichnis der Website. Der Agent prüft Pflichtfelder, Form und Dubletten und schlägt eine Kategorie vor; entscheiden tut die Redaktion. Erst die Freigabe schreibt auf die Website. Premium setzt nur ein Administrator in WordPress.</p></div>
+  <nav class="tabs" aria-label="Ansicht">
+    {% for slug, label in ansichten %}
+    <a href="/verzeichnis?ansicht={{ slug }}" class="{{ 'aktiv' if slug == ansicht }}">{{ label }} <b>{{ summen[slug] }}</b></a>
+    {% endfor %}
+  </nav>
+</header>
+{% for e in eintraege %}
+{% set p = e.pruefung or {} %}
+<section class="karte">
+  <div class="meta">
+    <span class="badge typ">{{ typen[e.typ] }}</span>
+    <span class="badge status {{ 's-neu' if e.status in ('abgeholt', 'geprueft') else ('s-veroeffentlicht' if e.status == 'freigegeben' else 's-abgelehnt') }}">{{ status_label[e.status] }}</span>
+    {% if p.hinweise %}<span class="badge hinweis">{{ p.hinweise|length }} Hinweis{{ 'e' if p.hinweise|length != 1 }}</span>{% endif %}
+    {% if p.dubletten %}<span class="badge roh">mögliche Dublette</span>{% endif %}
+    <span class="leise">{{ e.vorgangsnummer }} · eingegangen {{ fmt_dt(e.eingang_at) }}{% if e.eintrag_id %} · Eintrag {{ e.eintrag_id }}{% endif %}</span>
+  </div>
+  {% set name = (e.felder.name.wert if e.felder.name else '') or ((e.alt or {}).get('name', '') if e.alt else '') %}
+  <h2><a href="/verzeichnis/{{ e.vorgangsnummer }}">{{ name or typen[e.typ] }}</a></h2>
+  {% if e.status == 'abgeholt' %}<p class="leise">Noch nicht geprüft.</p>
+  {% elif p.hinweise %}<ul class="hinweise">{% for h in p.hinweise %}<li>{{ h }}</li>{% endfor %}</ul>{% endif %}
+</section>
+{% else %}
+<div class="leer"><strong>Keine Einsendungen für das Verzeichnis.</strong><span>Neue Vorschläge holt der Radar alle drei Minuten bei der Website ab (Funktion RADAR_VERZEICHNIS, Schalter „Verzeichnis“).</span></div>
+{% endfor %}
+{% endblock %}

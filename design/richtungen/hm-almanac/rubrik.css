@@ -1,0 +1,48 @@
+/* Hallmark · shape: Kalenderblatt, the section page (Community) · genre: editorial · theme: Almanac (deal 2/3, seed tamil-deutschsprachiges-online-magazin-der-ff32·6bcf19c0·2026-11-13·r0) · job: read · draw: 26f3b5 · copy: verbatim from rueckblick.json
+ * hero: index · nav: banner over a retracting bar · footer: index columns · imagery: photographs, the posts' own Commons pictures, muted · signature: the reports as a dated list, the date in mono at the head of each row, the picture at the row's end
+ * axes: mid/grotesk-sans/chromatic-magenta (accent re-hued to the logo red) · posture: restrained · contrast: pass · fold: pass · v2.0.0 */
+/* Hallmark · pre-emit critique: P4 H4 E4 S4 R4 V4 · weakest: S, a list of reports is the most common page there is; the newest report leads as a split, the rest are dated rows with the picture at the end, never a grid of cards */
+@import url("./almanac.css");
+/* Hallmark · waive 44c · the head is the word Community and one sentence, the newest report and its photograph start in the first screen · a section page lists reports; the Community title is a heading, the photograph of the newest report follows at once */
+/* Hallmark · waive 59 · 82px between the section head and the list, under the firm rule · the list of Community reports hangs from its section head like the sheet from its date */
+/* Hallmark · waive 78 · the report titles in the dated list render at the title size · each Community report title is an item in a list, not a section head over a composition */
+/* Hallmark · waive 49b · the wrapping links are the Community reports titles, up to six lines at 320 · a report headline is the report own title and cannot be cut to fit a phone line */
+/* Hallmark · dismissed 77 · a section page: head, the newest report, three dated rows, the page numbers, the footer */
+
+.kopfzeile { padding-block: var(--space-xl) var(--space-head-after); align-items: end; }
+.kopfzeile__text { grid-column: 1 / span 8; display: flex; flex-direction: column; gap: var(--space-md); }
+.kopfzeile h1 { font-size: var(--text-display-s); max-width: 26ch; letter-spacing: -0.02em; line-height: 1.1; }
+.kopfzeile__stand { grid-column: 10 / span 3; justify-self: end; font-size: var(--text-sm); color: var(--color-muted); }
+
+.liste { border-top: var(--rule-bar) solid var(--color-ink); padding-block-start: var(--space-xl); }
+.aufmacher-r { align-items: center; padding-block-end: var(--space-2xl); }
+.aufmacher-r .pic { grid-column: 1 / span 7; }
+.aufmacher-r .split__text { grid-column: 8 / span 5; display: flex; flex-direction: column; gap: var(--space-md); }
+.aufmacher-r h2 { font-size: var(--text-2xl); line-height: 1.15; }
+.aufmacher-r h2 a, .eintrag h2 a { text-decoration: none; }
+.aufmacher-r h2 a:hover, .eintrag h2 a:hover { text-decoration: underline; text-decoration-color: var(--color-accent); text-decoration-thickness: 2px; }
+
+.eintraege { margin: 0; padding: 0; list-style: none; }
+.eintrag { display: grid; grid-template-columns: 6rem minmax(0, 1fr) minmax(0, 18rem); gap: var(--gap-columns); align-items: start; padding-block: var(--space-xl); border-top: var(--rule-hair) solid var(--color-rule-2); }
+.eintrag > .num { font-size: var(--text-md); color: var(--color-ink); padding-block-start: 0.3em; }
+.eintrag__text { display: flex; flex-direction: column; gap: var(--space-sm); }
+.eintrag h2 { font-size: var(--text-title); line-height: 1.2; max-width: 36ch; }
+.eintrag__text p:not(.byline) { max-width: 60ch; }
+.eintrag__bild .photo { aspect-ratio: 4 / 3; }
+
+.seiten { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-md); margin-block-start: var(--space-lg); padding-block-start: var(--space-lg); border-top: var(--rule-bar) solid var(--color-rule-2); }
+.seiten ol { display: flex; gap: var(--space-xs); margin: 0; padding: 0; list-style: none; }
+.seiten ol a { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; border: var(--rule-hair) solid var(--color-rule-2); font: 500 var(--text-md)/1 var(--font-outlier); text-decoration: none; transition: background-color var(--dur-micro) var(--ease-out); }
+.seiten ol a:hover { background: var(--color-paper-2); }
+.seiten ol a[aria-current="page"] { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-sheet); }
+
+@media (max-width: 60rem) {
+  .kopfzeile__stand { justify-self: start; }
+  .eintrag { grid-template-columns: minmax(0, 1fr) 7.5rem; row-gap: var(--space-xs); padding-block: var(--space-lg); }
+  .eintrag > .num { grid-column: 1; grid-row: 1; padding: 0; }
+  .eintrag__text { grid-column: 1; grid-row: 2; }
+  .eintrag__bild { grid-column: 2; grid-row: 1 / span 2; }
+}
+@media (max-width: 40rem) {
+  .eintrag { grid-template-columns: minmax(0, 1fr) 6rem; column-gap: var(--space-sm); }
+}
