@@ -169,7 +169,16 @@ async function pruefen(page, sel) {
       if (titel && r.height > 0 && r.top >= rahmen.top - 1 && r.bottom <= rahmen.bottom + 1) kartenOk++;
       else kartenFehler.push({ element: kennung(el), text: kurz(el), grund: titel ? "Titel ragt aus dem Bild" : "Titel nicht im Bild (Zeile statt Karte)" });
     }
-    return { anreisser: einzeln.length, fehlend, werbung: werbung.length, werbungOhne, signetSoll: mitBild.length, signetOk, signetFehler, kartenSoll, kartenOk, kartenFehler, ausnahmen };
+    // doppelte Kartenbilder: dasselbe Bild (ohne Größenzusatz) an mehr als einer Beitragskarte; Ausnahmen (Rubrikkacheln,
+    // Kinotabelle, Verzeichnis, Leerzustände, Artikelbild) zählen nicht
+    const bildname = (img) => (img.currentSrc || img.src).split("?")[0].split("/").pop().replace(/-(\d+x\d+|320|480)(?=\.\w+$)/, "");
+    const zaehler = {};
+    for (const el of einzeln.filter((x) => geladen(x) && !AUSNAHMEN_KARTE.some(([, s]) => x.matches(s) || x.closest(s)))) {
+      const img = [...el.querySelectorAll("img")].find((i) => i.complete && i.naturalWidth > 0);
+      if (img) (zaehler[bildname(img)] = zaehler[bildname(img)] || []).push(kurz(el));
+    }
+    const doppelt = Object.entries(zaehler).filter(([, v]) => v.length > 1).map(([bild, karten]) => ({ bild, karten }));
+    return { doppelt, anreisser: einzeln.length, fehlend, werbung: werbung.length, werbungOhne, signetSoll: mitBild.length, signetOk, signetFehler, kartenSoll, kartenOk, kartenFehler, ausnahmen };
   }, sel);
 }
 
@@ -221,7 +230,9 @@ async function main() {
       const aus = Object.entries(e.ausnahmen).map(([k, n]) => `${k} ${n}`).join(", ");
       console.log(`${zeichen} ${String(w).padStart(4)}  ${pfad}  ${e.anreisser} Anreißer, ${e.fehlend.length} ohne Bild` +
         `, Signet ${e.signetOk}/${e.signetSoll}, Titel im Bild ${e.kartenOk}/${e.kartenSoll}` + (aus ? ` (Ausnahmen: ${aus})` : "") +
-        (e.werbung ? `, Werbung ${e.werbung} (${e.werbungOhne.length} ohne Bild)` : ""));
+        (e.werbung ? `, Werbung ${e.werbung} (${e.werbungOhne.length} ohne Bild)` : "") +
+        (e.doppelt.length ? `, Hinweis: ${e.doppelt.length} Bild(er) doppelt` : ""));
+      for (const d of e.doppelt) console.log(`          doppelt (Hinweis): ${d.bild}  ${d.karten.map((t) => "„" + t + "“").join(", ")}`);
       for (const f of e.fehlend) console.log(`          ohne Bild: ${f.element}  „${f.text}“`);
       for (const f of e.signetFehler) console.log(`          Signet: ${f.grund}  ${f.element}  „${f.text}“`);
       for (const f of e.kartenFehler) console.log(`          Karte: ${f.grund}  ${f.element}  „${f.text}“`);
@@ -249,6 +260,9 @@ async function main() {
   for (const b of bericht) for (const [k, v] of Object.entries(b.ausnahmen || {})) aus[k] = (aus[k] || 0) + v;
   console.log(`\n${bericht.length} Aufnahmen, ${n} Anreißer geprüft, ${ohne} ohne Bild; Signet an ${ok} von ${soll} Bildern (${anteil} %); ` +
     `Titel im Bild bei ${kOk} von ${kSoll} Beitrags-Anreißern (${kAnteil} %)` + (a.out ? ` → ${path.join(a.out, "bilder-pflicht.json")}` : ""));
+  const dop = bericht.reduce((s, b) => s + ((b.doppelt || []).length), 0);
+  const dopSeiten = bericht.filter((b) => (b.doppelt || []).length).length;
+  console.log(`Hinweis (kein Fehler): doppelte Kartenbilder ${dop} in ${dopSeiten} von ${bericht.length} Aufnahmen`);
   if (Object.keys(aus).length) console.log("Ausnahmen (ohne Titel im Bild, gewollt): " + Object.entries(aus).map(([k, v]) => `${k} ${v}`).join(", "));
   process.exit(fehler ? 1 : 0);
 }
