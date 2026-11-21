@@ -282,33 +282,19 @@ function tamil_start_auswahl(): array {
 /**
  * „Diese Woche“: nur, was diese Woche zählt.
  * - Im Kino: Filme mit Spieltagen ab heute (aus kino_fakten), höchstens zwei.
- * - Bildkacheln groß und klein: Kino-Beiträge der letzten 30 Tage, sonst weitere Filme mit Spieltagen ab heute; nie
- *   ältere Beiträge ohne kommenden Termin.
+ * - Bildkacheln groß und klein: nur Beiträge, deren Film einen Spieltag ab heute hat (tamil_woche_bilder()). Gibt es
+ *   keine, bleiben die Plätze leer; das Raster rückt zusammen (ohne-gross, ohne-klein). Nie ein alter Film
+ *   (TML-W03, 3.15.0; bis 3.14.0 reichte ein Kino-Beitrag der letzten 30 Tage).
  * - Termine: die kommenden der nächsten 14 Tage (höchstens drei), sonst die nächsten drei.
  *
  * @param int[] $ohne Schon auf der Seite verwendete Beiträge.
  * @return array{bilder:int[],filme:array<int,array<string,mixed>>,termine:int[]}
  */
 function tamil_woche_auswahl( array $ohne = array() ): array {
-	$heute  = current_time( 'Y-m-d' );
-	$alle   = tamil_kino_filme( 6 );
-	$filme  = array_slice( $alle, 0, 2 );
-	$bilder = array();
-	if ( get_category_by_slug( 'kino' ) ) {
-		$bilder = tamil_ids(
-			array(
-				'posts_per_page' => 2,
-				'category_name'  => 'kino',
-				'date_query'     => array( array( 'after' => wp_date( 'Y-m-d', (int) strtotime( $heute . ' -30 days' ) ) ) ),
-			),
-			array_merge( $ohne, wp_list_pluck( $filme, 'post' ) )
-		);
-	}
-	foreach ( array_slice( $alle, 2 ) as $f ) {
-		if ( count( $bilder ) < 2 && ! in_array( (int) $f['post'], $bilder, true ) && ! in_array( (int) $f['post'], $ohne, true ) ) {
-			$bilder[] = (int) $f['post'];
-		}
-	}
+	$heute   = current_time( 'Y-m-d' );
+	$alle    = tamil_kino_filme( 20 );
+	$filme   = array_slice( $alle, 0, 2 );
+	$bilder  = tamil_woche_bilder( $alle, array_merge( $ohne, wp_list_pluck( $filme, 'post' ) ) );
 	$termine = array();
 	if ( function_exists( 'tamil_site_upcoming_events' ) ) {
 		$kommend = array_values( array_diff( array_map( 'intval', tamil_site_upcoming_events( 12, array( 'fields' => 'ids' ) )->posts ), $ohne ) );
@@ -322,6 +308,46 @@ function tamil_woche_auswahl( array $ohne = array() ): array {
 		'filme'   => $filme,
 		'termine' => $termine,
 	);
+}
+
+/**
+ * Bildkacheln von „Diese Woche“: Beiträge zu Filmen, die ab heute noch laufen. Zuerst Beiträge der Rubrik Kino, die
+ * von einem dieser Filme handeln (gleicher Filmschlüssel wie in inc/filmbilder.php: Film aus der Kinoliste oder
+ * Titel in Anführungszeichen, genau gleich, kein ungefährer Treffer), neueste zuerst; dann die Kinolisten der Filme
+ * selbst. Die Quelle der Spieltage bleibt tamil_kino_filme() (Plugin tamil-site, Meta kino_fakten).
+ *
+ * @param array<int,array<string,mixed>> $laufend Ergebnis von tamil_kino_filme(): Filme mit Spieltag ab heute.
+ * @param int[]                          $ohne    Schon verwendete Beiträge (auch die Filme unter „Im Kino“).
+ * @return int[]
+ */
+function tamil_woche_bilder( array $laufend, array $ohne = array(), int $anzahl = 2 ): array {
+	if ( ! $laufend ) {
+		return array();
+	}
+	$ohne       = array_map( 'intval', $ohne );
+	$posts      = array_map( 'intval', wp_list_pluck( $laufend, 'post' ) );
+	$schluessel = array_filter( array_map( static fn( $f ) => tamil_film_norm( (string) $f['film'] ), $laufend ) );
+	$bilder     = array();
+	if ( get_category_by_slug( 'kino' ) ) {
+		$kandidaten = tamil_ids(
+			array(
+				'posts_per_page' => 40,
+				'category_name'  => 'kino',
+			),
+			$ohne
+		);
+		foreach ( $kandidaten as $id ) {
+			if ( in_array( $id, $posts, true ) || array_intersect( tamil_film_schluessel( $id ), $schluessel ) ) {
+				$bilder[] = $id;
+			}
+		}
+	}
+	foreach ( $posts as $id ) {
+		if ( ! in_array( $id, $bilder, true ) && ! in_array( $id, $ohne, true ) ) {
+			$bilder[] = $id;
+		}
+	}
+	return array_slice( $bilder, 0, $anzahl );
 }
 
 /**

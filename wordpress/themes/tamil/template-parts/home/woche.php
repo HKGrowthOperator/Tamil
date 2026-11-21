@@ -1,8 +1,9 @@
 <?php
 /**
- * „Diese Woche“ (dunkel, volle Breite): Kino-Beiträge der letzten 30 Tage als Bildkacheln (die erste groß 4:3, die
- * zweite 8:3), „Im Kino“ mit den Filmen, die ab heute laufen, und „Termine“ mit den nächsten Terminen, alle als
- * Bildkarten mit Titel im Bild (Text auf Bild, 20.11.2026). Fehlt etwas, sagt eine Bildkachel, wo es weitergeht.
+ * „Diese Woche“ (dunkel, volle Breite): Bildkacheln nur zu Filmen mit Spieltag ab heute (die erste groß 4:3, die
+ * zweite 8:3; gibt es keine, rückt das Raster über ohne-gross und ohne-klein zusammen, es bleibt kein leerer Platz),
+ * „Im Kino“ mit den Filmen, die ab heute laufen, und „Termine“ mit den nächsten Terminen, alle als Bildkarten mit
+ * Titel im Bild (Text auf Bild, 20.11.2026). Fehlt etwas, sagt eine Bildkachel, wo es weitergeht.
  *
  * @var array $args { @type array $woche Ergebnis von tamil_woche_auswahl(). }
  */
