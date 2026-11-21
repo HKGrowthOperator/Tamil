@@ -329,7 +329,7 @@ mit `requestAnimationFrame`. Auftritte über IntersectionObserver (Auslöser 10 
   Anzeige), von Rand zu Rand; ab 600 px 60 vw, ab 1024 px 420 bis 620 px hoch, mit dem Radius des Aufmachers.
 - **Ruhe:** Ohne Skript, ohne Canvas und mit „Bewegung reduzieren“ steht sofort das fertige Foto mit Titel. Bewegung D
   ist für diesen Aufmacher aus. Der erste Bildschirm bewegt sich nie von selbst.
-- **Abschalten:** Customizer (Tamil.de → Startseite → „Wow-Aufmacher“, Standard an) oder Filter `tamil_wow_aufmacher`.
+- **Abschalten:** Customizer (Tamil.de → Startseite → „Wow-Aufmacher“, **seit 3.13.1 Standard aus**, Entscheidung von Luis vom 21.11.) oder Filter `tamil_wow_aufmacher`.
 - **Technik:** `assets/js/wow.js` (17 KB, 6,9 KB gepackt, Punktdaten darin), nur auf der Startseite, `defer`; ein
   Skript im Kopf setzt `wow-an`. Die Decke zeichnet ruhend höchstens zweifach, in Bewegung mit rund 250 000 Bildpunkten.
 
