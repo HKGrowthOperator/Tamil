@@ -742,14 +742,14 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .woche__raster > .woche__gruppe--kino > ul { flex: 1 1 auto; }
   .woche__raster > .woche__gruppe--kino > ul > li:last-child { flex: 1 1 auto; }
 }
-/* Terminkarten einer Reihe: Bildflächen gleich hoch, die Textfelder darunter beginnen auf einer Linie (Subgrid über
-   Karte und Link; ohne Subgrid wie bisher). Nicht bei einem einzelnen Termin (Bild links, Text rechts). */
-@supports (grid-template-rows: subgrid) {
-  @media (min-width: 600px) {
-    :is(.woche__raster:not(.termine-1) .woche__gruppe--termine ul, .termine-raster:not(.termine-raster--eins)) > li.grafik--karte,
-    :is(.woche__raster:not(.termine-1) .woche__gruppe--termine ul, .termine-raster:not(.termine-raster--eins)) > li.grafik--karte > .anr {
-      display: grid; grid-template-rows: subgrid; grid-row: span 2; row-gap: 0;
-    }
+/* Terminkarten einer Reihe: Bildflächen gleich hoch, die Textfelder darunter beginnen auf einer Linie. Die Bildfläche
+   hält mindestens 16:9 der Kartenbreite und so viel Höhe, wie Dachzeile (zwei Zeilen) und Titel (höchstens vier Zeilen)
+   brauchen; damit sind alle Bildflächen einer Reihe gleich hoch, wie lang der Titel auch ist. Nicht bei einem einzelnen
+   Termin (Bild links, Text rechts). */
+@media (min-width: 600px) {
+  :is(.woche__raster:not(.termine-1) .woche__gruppe--termine ul, .termine-raster:not(.termine-raster--eins)) > li.grafik--karte { container-type: inline-size; }
+  :is(.woche__raster:not(.termine-1) .woche__gruppe--termine ul, .termine-raster:not(.termine-raster--eins)) > li.grafik--karte > .anr > .rahmen {
+    aspect-ratio: auto; min-height: max(calc(100cqi * 9 / 16), 12.5rem);
   }
 }
 .termine-raster .grafik .anr { display: block; }
