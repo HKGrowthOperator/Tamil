@@ -27,3 +27,5 @@ Je Zeile: Datum des Laufs, Link, Datei. Ein Beitrag wird nicht doppelt bearbeite
 - 2026-11-21 12:05 | https://tamil-web.167.233.76.202.sslip.io/zuerich-restaurant-aiya-bringt-kueche-aus-dem-norden-sri-lankas-an-die/
 - 2026-11-21 12:05 | https://tamil-web.167.233.76.202.sslip.io/kalaiththiran-2026-tamilische-jugend-tanzt-in-goettingen-moenchengladb/
 - 2026-11-21 12:05 | https://tamil-web.167.233.76.202.sslip.io/om-im-kino-12-spielorte-in-deutschland/
+- 2026-11-21 12:12 | https://tamil-web.167.233.76.202.sslip.io/jana-nayagan-vijays-moeglicher-abschiedsfilm-kam-nach-verschiebung-im/
+- 2026-11-21 12:12 | https://tamil-web.167.233.76.202.sslip.io/oesterreich-asylbehoerde-bfa-legt-laenderinformation-zu-sri-lanka-vor/
