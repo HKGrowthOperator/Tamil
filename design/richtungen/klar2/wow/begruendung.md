@@ -30,12 +30,19 @@ Beides kann nur tamil.de zeigen, weil die Form aus den eigenen Punktdaten kommt
   (`assets/css/theme.css`), dazu rund 50 Zeilen eigenes CSS.
 - **Anfang:** Über dem Foto liegt eine Decke in Titan. Sie hat 238 Löcher, genau die Punkte des Masters, in
   unveränderter Form und Lage. Durch die Löcher sieht man das echte Farbfoto. Nichts bewegt sich.
+- **Titel von Anfang an (Nacharbeit 21.11.):** Dachzeile und Titel stehen schon am Anfang unten auf der Decke, weiß
+  auf Titan (13,4 : 1), in Variante B schwarz auf Weiß. Lage und Größe sind dieselben wie später im Bild, beim
+  Aufdecken springt nichts. Die Form steht in der Zone darüber. Gemessen berührt sie den Titel nie: Abstand am Anfang
+  110 px bei 390, 61 px bei 820, 65 px bei 1280, und an 79 Stellen des Scrollwegs liegt kein Loch im Titelfeld.
+  Im ersten Bildschirm ist der ganze Titel zu sehen (1280 × 800 und 390 × 844).
 - **Scrollen:** Das Bild bleibt unter dem Rubrikband stehen (`position: sticky`), solange der Leser 70 % einer
   Bildschirmhöhe scrollt (mindestens 420 px). Auf diesem Weg wachsen die Punkte vom großen Fuß links zum feinen
   Auslauf rechts. Gleichzeitig fährt der Blick 3,2-fach in die Form hinein. So bleiben die Punkte lange einzelne
   Fenster, statt früh zu einem Fleck zu verlaufen.
-- **Ende:** Die Decke ist weg, das volle Farbfoto steht. Erst dann kommen Dachzeile und Titel im Bild auf dem
-  Verlauf des Themes und der kleine Punktbogen in der Ecke. Zurückscrollen spielt alles rückwärts.
+- **Ende:** Erst steht das Foto über dem Titelfeld, dann löst sich das Titelfeld auf. Derselbe Titel liegt jetzt auf
+  dem Verlauf des Themes, dazu kommt der kleine Punktbogen in der Ecke. Zurückscrollen spielt alles rückwärts.
+- **Variante B, Einschränkung:** Dort wechselt die Schrift von Schwarz zu Weiß. Während der kurzen Auflösung (5 % des
+  Scrollwegs) ist der Kontrast nicht für jede Zwischenstellung gesichert. In Variante A bleibt die Schrift weiß.
 - **Technik:** ein `<canvas>` über dem normalen `<img>`. Je Bild eine Titan-Fläche und ein einziger Pfad aus 238
   Ellipsen, mit `destination-out` ausgestanzt. Kein WebGL, kein Framework, kein fremdes Skript. Skript und
   Punktdaten stehen in der Seite: zusammen 16,1 KB roh, 6,6 KB gepackt.
@@ -53,7 +60,8 @@ Entscheidungen, die ich getroffen habe:
 2. **Variante A (Titan) ist die Empfehlung.** Titan ist die dominante Markenfarbe, die Decke schließt bündig an das
    Rubrikband an, und das Foto leuchtet in den Punkten. Variante B (Weiß) ist feiner, wirkt im ersten Bildschirm aber
    wie eine leere Fläche mit einem Muster.
-3. **Die Form steht mittig im Bild** mit Luft zum Rand (74 % der Bildbreite, am Handy 86 %). Die freie Fläche unter
+3. **Die Form steht mittig in der Zone über dem Titel** mit Luft zum Rand (höchstens 74 % der Bildbreite, am Handy
+   86 %). Die freie Fläche unter
    dem Bogen bleibt frei.
 4. **Der Vorspann bleibt mit stehen.** Sonst stünde am Handy während des Wachsens eine leere weiße Fläche unter
    dem Bild.
@@ -97,10 +105,13 @@ Scrollweg. Ziel sind 16,7 ms je Bild.
 
 | Fassung | Median | längstes Bild | Bilder über 33,4 ms |
 |---|---|---|---|
-| Vorschau 1, A (Titan), 9 Läufe | 16,7 ms | 33,4 ms in sieben Läufen, je einmal 50,0 ms und 333 ms | 0 bis 5 von 149 |
+| Vorschau 1, A (Titan), 9 Läufe vor der Nacharbeit | 16,7 ms | 33,4 ms in sieben Läufen, je einmal 50,0 ms und 333 ms | 0 bis 5 von 149 |
 | Vorschau 1, B (Weiß), 3 Läufe | 16,7 ms | 33,3 bis 33,5 ms | 0 bis 2 von 149 |
 | Vorschau 1, C (aus), 6 Läufe | 16,7 ms | 16,8 ms | 0 |
 | Vorschau 2, 3 Läufe | 16,7 ms | 16,8 ms | 0 |
+
+Nach der Nacharbeit (Titel von Anfang an) drei weitere Läufe je Variante A und B: Median 16,7 ms, längstes Bild
+16,8 bis 33,3 ms, kein Bild über 33,4 ms.
 
 Einordnung: Mit der Decke fällt gelegentlich ein Bild aus (33 ms statt 17 ms). Der eine Wert von 333 ms kam in
 neun Läufen einmal vor und ließ sich nicht wiederholen. Ob er von der Seite oder vom Prüfrechner kam, ist offen.
@@ -124,13 +135,11 @@ unveränderte Verlauf des Themes (laut `DESIGN.md` mindestens 5,9 : 1), axe meld
 | R1 „technische Radar-Spielerei auf der Leserseite“ | Vorschau 2 ist eine eigene Sonderseite, nicht die Startseite. Sie zeigt nur Titel, Datum und Rubrik und hat die Liste als gleichwertigen Weg. |
 | R5 bis R7 „Versal-Labels“ | Keine Versalien. Dachzeilen und Verlauf-Bildkarten sind klar2-Bestand und für klar2 erlaubt. |
 | Kreise als Schmuck außerhalb des Signets | Alle Punkte sind die Ellipsen des Masters, an ihrer Stelle. Es gibt keine zusätzlichen Kreise. |
-| Regel „Die freie Fläche unter dem Bogen bleibt frei“ | Eingehalten. Titel und Schild stehen nie unter dem Bogen, der Titel kommt erst, wenn die Form weg ist. |
+| Regel „Die freie Fläche unter dem Bogen bleibt frei“ | Eingehalten. Titel und Schild stehen nie unter dem Bogen: Der Titel steht in einem eigenen Feld unterhalb der Form. |
 | Regel „Der erste Bildschirm bewegt sich nie von selbst“ | Eingehalten. Ohne Scrollen ändert sich kein Bildpunkt. |
 
-Offen bleibt eine Schwäche von Vorschau 1: **Im ersten Bildschirm steht keine Schlagzeile des Aufmachers.** Sie
-kommt erst nach dem Scrollweg. Für Vorlesehilfen steht sie von Anfang an im Dokument. Wer nicht scrollt, sieht
-aber nur Form und Vorspann (am Handy erst ab der Unterkante). Ausweg für den Einbau: den Titel von Anfang an in
-Weiß unten auf der Titan-Decke zeigen, außerhalb der Form.
+Die erste Fassung zeigte die Schlagzeile erst nach dem Scrollweg. Das ist behoben: Sie steht von Anfang an auf der
+Decke (siehe oben). Der Vorspann beginnt am Handy weiter erst an der Unterkante des ersten Bildschirms.
 
 ## Einbau ins WordPress-Theme
 
@@ -164,7 +173,6 @@ Risiken für Tempo und LCP:
   ersten Abschnitt) und die Messung der Sichtbarkeit von Anzeigen müssen damit getestet werden.
 - **Zusammenspiel mit Bewegung D:** Das langsamer laufende Aufmacherbild und das Aufdecken von unten müssen für
   diesen Aufmacher aus sein, sonst laufen zwei Effekte übereinander.
-- **Titel fehlt im ersten Bildschirm** (siehe oben). Das kann Klicks auf den Aufmacher kosten.
 - **CLS:** keines erwartet, die Höhen stehen im CSS fest. Nicht gemessen.
 
 ### Vorschau 2
@@ -183,9 +191,8 @@ Offene Fragen sind redaktionell: Was passiert bei mehr als 238 Meldungen im Jahr
 ## Empfehlung
 
 - **Vorschau 1: ja, in Variante A (Titan), zuerst begrenzt.** Sie ist der stärkste Moment, den die Marke hergibt,
-  und kostet wenig Gewicht. Vor dem Einbau braucht es drei Dinge: eine Messung am echten Handy, eine
-  Lighthouse-Messung am Testsystem und die Entscheidung von Luis zum Titel im ersten Bildschirm. Mein Vorschlag
-  ist, den Titel von Anfang an weiß auf der Decke zu zeigen. Einsatz nur am Aufmacher der Startseite und nur, wenn
+  und kostet wenig Gewicht. Vor dem Einbau braucht es zwei Dinge: eine Messung am echten Handy und eine
+  Lighthouse-Messung am Testsystem. Einsatz nur am Aufmacher der Startseite und nur, wenn
   der Beitrag ein eigenes, farbiges Foto hat. Bei Symbolbildern bleibt der normale Aufmacher.
 - **Vorschau 2: ja, als Sonderseite für den Jahresrückblick im Dezember**, nicht für die Startseite. Vorher muss
   die Redaktion festlegen, welche Meldungen hineinkommen.
