@@ -1665,6 +1665,227 @@ body .ad.ad-bild .anzeige--bild .anzeige__bild { border-radius: 0; }
 /* Fokus auf dem Aufmacher-Link: der Rahmen nach innen (wie bei jeder Bildkarte) liegt über der Decke */
 .aufmacher.wow .anr:focus-visible .rahmen::after { z-index: 4; }
 
+/* ---------- Startseiten-Proben (Theme 3.16.0, inc/proben.php, template-parts/home/probe-*.php und stadt.php) ----------
+   Drei Entwürfe für den ersten Bildschirm zum Vergleichen (Masterplan von Luis, 21.11.2026, TML-W06), Bauvorgabe
+   design/richtungen/klar2/proben-start/entwurf.md. Es gibt sie nur mit dem Schalter im Customizer und ?probe=cover,
+   news oder community; die normale Startseite benutzt keine dieser Klassen. Nur vorhandene Farben, Radien und
+   Verläufe; jeder Beitrag bleibt eine Bildkarte mit Titel im Bild und Punktbogen, der Text daneben oder darunter
+   (.kontext) steht im selben Link. Bewegung nur als Antwort auf eine Handlung (Überfahren, Stadtwahl). */
+
+/* Umschalter über dem Inhalt (nur Probenseiten): eine schmale Zeile mit Links, 44 px tippbar */
+.probe-wahl { display: flex; align-items: center; gap: 0 12px; border-bottom: 1px solid var(--linie); font-size: 14px; line-height: 1.3; color: var(--leise); }
+.probe-wahl ul { display: flex; flex-wrap: wrap; gap: 0 14px; min-width: 0; }
+.probe-wahl a { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; color: var(--tinte); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+.probe-wahl a:hover { color: var(--rot); }
+.probe-wahl a[aria-current] { font-weight: 700; text-decoration: none; }
+.probe-wahl__lang { display: none; }
+@media (min-width: 600px) { .probe-wahl__lang { display: inline; white-space: pre; } }
+
+/* Formate des Covers ab 1024 px (Handy 4:3, Tablet 16:10) */
+.r1610 { aspect-ratio: 16 / 10; }
+.r32 { aspect-ratio: 3 / 2; }
+
+/* Text neben oder unter der Karte: Angaben (Ort, Termin, Quelle) 14 px, Satz 18 px am Handy */
+.kontext { margin-top: 8px; }
+.kontext__titel { display: none; }
+.kontext__angaben { display: flex; flex-wrap: wrap; gap: 0 16px; font-size: 14px; line-height: 1.45; }
+.kontext__angabe { display: flex; gap: 0.3em; min-width: 0; }
+.kontext__angabe dt { font-weight: 600; }
+.kontext__angabe dt::after { content: ":"; }
+.kontext__angabe--datum { display: none; }
+.kontext__ort { font-size: 14px; line-height: 1.45; font-weight: 600; }
+.kontext__quelle { margin-top: 4px; font-size: 14px; line-height: 1.45; color: var(--leise); }
+.kontext__satz { margin-top: 2px; font-size: 18px; line-height: 1.45; text-wrap: pretty; }
+.imbild-anr:focus-visible .kontext__satz { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+
+/* Cover First: Cover mit Kontextfeld, drei Beistücke in drei Formaten, darunter „Weitere Meldungen“ */
+.aufmacher--cover { --cover-titel: clamp(28px, 22px + 1.52vw, 44px); }
+.aufmacher--klein { --cover-titel: clamp(24px, 21px + 0.5vw, 28px); }
+.aufmacher.aufmacher--cover .titel, .aufmacher.aufmacher--klein .titel { font-size: var(--cover-titel); line-height: 1.1; letter-spacing: -0.015em; max-width: 18em; }
+.aufmacher.aufmacher--cover .titel.titel--mittel, .aufmacher.aufmacher--klein .titel.titel--mittel { font-size: calc(var(--cover-titel) * 0.9); }
+.aufmacher.aufmacher--cover .titel.titel--klein, .aufmacher.aufmacher--klein .titel.titel--klein { font-size: calc(var(--cover-titel) * 0.8); }
+.aufmacher--cover .rahmen { aspect-ratio: 4 / 3; }
+/* Der Text im Bild hält rechts überall den Platz für den Punktbogen frei (wie .imbild-anr .rahmen > .imbild) */
+.beistuecke { display: grid; gap: 16px; margin-top: 8px; }
+.beistueck .rahmen img { object-position: 50% 28%; }
+.beistueck .imbild { padding: 44px calc(var(--ecke) + 10px) 12px 14px; background-image: var(--verlauf-karte); }
+.beistueck--flach .imbild { padding: 30px calc(var(--ecke) + 10px) 10px 14px; background-image: var(--verlauf-kurz); }
+.beistueck .meta { margin-bottom: 4px; }
+.beistueck .titel { font-size: 19px; line-height: 1.2; text-wrap: balance; hyphenate-limit-chars: 18 7 7; }
+.beistueck--gross .titel { font-size: 22px; line-height: 1.18; }
+.beistueck .kontext { margin-top: 8px; }
+.weitere { margin-top: 28px; }
+.weitere .block-titel { margin-bottom: 0; }
+.weitere .neben.karten { margin-top: 0; padding-top: 14px; }
+@media (max-width: 599px) {
+  /* zwei Zeilen Vorspann unter dem Cover und ein Satz unter dem ersten Beistück: dessen Titel bleibt im ersten Bildschirm */
+  .aufmacher--cover .kontext { margin-top: 6px; }
+  .aufmacher--cover .kontext__satz, .beistueck .kontext__satz { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
+}
+@media (min-width: 600px) {
+  .kontext__titel { display: block; font-size: 19px; line-height: 1.25; font-weight: 700; }
+  .beistueck .kontext { display: none; }
+}
+@media (min-width: 600px) and (max-width: 1023px) {
+  .aufmacher--cover .rahmen { aspect-ratio: 16 / 10; }
+  .aufmacher--cover .kontext { margin-top: 14px; }
+  .aufmacher--cover .kontext__titel { border-top: 2px solid var(--linie-stark); padding-top: 11px; margin-bottom: 4px; }
+  .aufmacher--cover .kontext__satz { margin-top: 8px; max-width: 34em; }
+  /* Beistücke in einer Reihe: gleich hoch, verschieden breit */
+  .beistuecke { grid-template-columns: 2fr 1.5fr 1.5fr; align-items: stretch; margin-top: 20px; }
+  .titelseite--2 .beistuecke { grid-template-columns: 2fr 1.5fr; }
+  .titelseite--1 .beistuecke { grid-template-columns: minmax(0, 1fr); }
+  .beistuecke > .beistueck > .anr { display: flex; flex-direction: column; height: 100%; }
+  .beistuecke > .beistueck .rahmen { flex: 1 1 auto; aspect-ratio: auto; min-height: 220px; }
+  .titelseite--1 .beistuecke > .beistueck .rahmen { aspect-ratio: 8 / 3; min-height: 0; }
+}
+@media (min-width: 1024px) {
+  .oben--probe.titelseite { grid-template-areas: "auf bei" "rest rest" "kach kach"; }
+  .oben--probe.titelseite--0 { grid-template-areas: "auf auf" "rest rest" "kach kach"; }
+  .titelseite .beistuecke { grid-area: bei; margin-top: 0; }
+  .titelseite .weitere { grid-area: rest; margin-top: 40px; }
+  .oben .weitere .neben.karten { margin-top: 0; padding-top: 16px; }
+  .aufmacher--cover .rahmen.r1610 { aspect-ratio: 16 / 10; }
+  .aufmacher--cover .rahmen.r32 { aspect-ratio: 3 / 2; }
+  .aufmacher--cover .kontext { display: grid; grid-template-columns: 280px minmax(0, 1fr); column-gap: 32px; align-items: start; margin-top: 16px; }
+  .aufmacher--cover .kontext__kopf { border-top: 2px solid var(--linie-stark); padding-top: 11px; }
+  .aufmacher--cover .kontext__titel { font-size: 20px; margin-bottom: 6px; }
+  .aufmacher--cover .kontext__angaben { flex-direction: column; gap: 2px; }
+  .aufmacher--cover .kontext__angabe--datum { display: flex; }
+  .aufmacher--cover .kontext__satz { margin-top: 0; padding-top: 11px; font-size: 19px; line-height: 1.5; max-width: 29em; }
+  .beistueck .imbild { padding: 48px calc(var(--ecke) + 10px) 14px 16px; }
+  .beistueck--flach .imbild { padding: 30px calc(var(--ecke) + 10px) 10px 16px; }
+  .beistueck--gross .titel { font-size: 24px; }
+  .beistueck--mittel .titel { font-size: 20px; }
+  .beistueck--flach .titel { font-size: 18px; }
+}
+
+/* News First: Zeitfolge (Zeit, Bildkarte, Ort mit Satz und Quelle), daneben das Cover kleiner und zwei ältere Stücke */
+.nachrichten__folge { padding-top: 14px; }
+.nachrichten__folge .block-titel { margin-bottom: 0; }
+.zeitfolge { margin: 0; padding: 0; list-style: none; }
+.zeitfolge__eintrag { padding: 12px 0 18px; border-top: 1px solid var(--linie); }
+.zeitfolge__eintrag:first-child { border-top-color: transparent; padding-top: 8px; }
+.zeitfolge__eintrag:not(:first-child):hover { border-top-color: var(--titan); }
+.zeitfolge__zeit { margin-bottom: 6px; font-size: 15px; line-height: 1.35; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--tinte); }
+.zeitfolge__rubrik { font-size: 13px; color: var(--rot); }
+.zeitfolge__rubrik::before {
+  content: ""; display: inline-block; width: 1px; height: 0.95em; margin: 0 8px 0 4px;
+  background: currentColor; opacity: 0.7; vertical-align: -0.12em;
+}
+.zeitkarte .rahmen img { object-position: 50% 28%; }
+.zeitkarte .imbild { padding: 30px calc(var(--ecke) + 10px) 10px 14px; background-image: var(--verlauf-kurz); }
+.zeitkarte .titel { font-size: 19px; line-height: 1.2; text-wrap: balance; hyphenate-limit-chars: 18 7 7; }
+.zeitfolge__eintrag--erste .zeitkarte .imbild { padding: 44px calc(var(--ecke) + 10px) 12px 14px; background-image: var(--verlauf-karte); }
+.zeitfolge__eintrag--erste .zeitkarte .titel { font-size: 22px; line-height: 1.18; }
+.zeitkarte .kontext { margin-top: 8px; }
+.zeitkarte .kontext__satz { margin-top: 2px; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
+.nachrichten__seite { margin-top: 12px; }
+.nachrichten__seite .beistueck { margin-top: 16px; }
+@media (prefers-reduced-motion: no-preference) { .zeitfolge__eintrag { transition: border-color 0.2s; } }
+@media (min-width: 600px) {
+  .zeitfolge__eintrag { display: grid; grid-template-columns: 100px minmax(0, 1fr); column-gap: 16px; align-items: start; }
+  .zeitfolge__zeit { margin: 0; font-size: 14px; }
+  .zeitfolge__rubrik { display: block; margin-top: 2px; }
+  .zeitfolge__rubrik::before { content: none; }
+  .zeitkarte > .anr { display: grid; grid-template-columns: 300px minmax(0, 1fr); column-gap: 16px; align-items: start; }
+  .zeitkarte .rahmen { aspect-ratio: 16 / 9; }
+  .zeitkarte .kontext { margin-top: 0; }
+  .zeitkarte .kontext__satz { font-size: 16px; -webkit-line-clamp: 4; line-clamp: 4; }
+  .nachrichten__seite { margin-top: 24px; }
+}
+@media (min-width: 600px) and (max-width: 1023px) {
+  .aufmacher--klein .kontext__satz { max-width: 34em; }
+  /* die zwei älteren Stücke nebeneinander unter dem Cover, gleich hoch */
+  .nachrichten__seite { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .nachrichten__seite .aufmacher--klein { grid-column: 1 / -1; }
+  .nachrichten__seite .beistueck { margin-top: 0; }
+  .nachrichten__seite .beistueck > .anr { height: 100%; }
+  .nachrichten__seite .beistueck .rahmen { aspect-ratio: 16 / 9; height: 100%; }
+}
+@media (min-width: 1024px) {
+  .oben--probe.nachrichten { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); grid-template-areas: "folge seite" "kach kach"; }
+  .nachrichten__folge { grid-area: folge; padding-top: 0; }
+  .nachrichten__seite { grid-area: seite; margin-top: 0; }
+  .zeitfolge__eintrag { grid-template-columns: 104px minmax(0, 1fr); padding: 14px 0 20px; }
+  .zeitfolge__eintrag:first-child { padding-top: 14px; }
+  .zeitkarte > .anr { grid-template-columns: 280px minmax(0, 1fr); }
+  .zeitfolge__eintrag--erste .zeitkarte > .anr { grid-template-columns: 380px minmax(0, 1fr); }
+  .zeitkarte .titel { font-size: 18px; }
+  .aufmacher--klein .rahmen { aspect-ratio: 4 / 3; }
+  .aufmacher.aufmacher--klein .imbild { padding: 64px calc(var(--ecke) + 10px) 18px 20px; }
+  .aufmacher--klein .kontext__satz { font-size: 17px; line-height: 1.5; }
+}
+
+/* „Tamil in meiner Stadt“: auf Weiß mit der Linie in Titan; Kino und Termine in einer Reihe, darunter die Bühne
+   „Aus der Stadt“ (gebaut wie die Küche). Ein leeres Fach belegt keine Kartenfläche, dafür steht ein Satz. */
+.stadt { margin-top: 44px; }
+.stadt--oben { margin-top: 0; padding-top: 14px; margin-bottom: 32px; }
+.stadt__kopf { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 10px 24px; border-top: 2px solid var(--linie-stark); padding-top: 11px; }
+.stadt__titel { font-size: 24px; line-height: 1.2; font-weight: 700; }
+.stadt__wahl { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 4px 12px; width: 100%; }
+.stadt__wahl label { font-size: 15px; font-weight: 600; }
+.stadt__wahl select { width: 100%; height: 48px; }
+.stadt__hinweis { grid-column: 1 / -1; font-size: 14px; line-height: 1.4; color: var(--leise); }
+.stadt__art { margin: 18px 0 8px; font-size: 17px; line-height: 1.3; font-weight: 700; }
+.stadt__karten { display: grid; gap: 14px; }
+.stadt .grafik { background: none; border-radius: 0; overflow: visible; }
+.stadt .grafik .anr { height: auto; }
+.stadt .grafik .rahmen { --rahmen-r: var(--radius); background: var(--flaeche); }
+.stadt .grafik--karte .grafik__inhalt { padding: 8px 0 0; }
+.stadt .grafik__orte { font-size: 16px; line-height: 1.45; color: var(--leise); }
+.stadt__fach--kino .grafik--karte .titel { font-size: 22px; line-height: 1.18; }
+.stadt__fach--termine .grafik--karte .titel { font-size: 19px; }
+.stadt__fach--termine .rahmen { aspect-ratio: 8 / 3; }
+.stadt__fach--termine .grafik--karte .imbild { padding: 30px calc(var(--ecke) + 10px) 10px 14px; background-image: var(--verlauf-kurz); }
+.stadt--gewaehlt .stadt__fach--kino .grafik__inhalt { display: none; }
+.stadt__spielorte { margin-top: 6px; font-size: 16px; line-height: 1.45; }
+.stadt__spielorte li { display: flex; flex-wrap: wrap; align-items: center; gap: 0 14px; }
+.stadt__leer { margin-top: 14px; max-width: 40em; font-size: 18px; line-height: 1.5; }
+.stadt__leer a { padding-block: 12px; font-weight: 600; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+.stadt__leer a:hover { color: var(--rot); }
+.stadt__fort { margin-top: 12px; }
+.stadt .kueche__raster { padding-top: 0; }
+.stadt .kachel .kontext { margin-top: 6px; }
+.stadt .kachel--klein .kontext__satz { display: none; }
+.stadt__weiter { display: flex; flex-wrap: wrap; gap: 0 24px; margin-top: 12px; }
+.stadt__inhalt.ist-wechsel { opacity: 0; }
+@media (prefers-reduced-motion: no-preference) { .stadt__inhalt { transition: opacity 160ms var(--sanft); } }
+@media (min-width: 600px) {
+  .stadt__kopf { flex-wrap: nowrap; align-items: flex-start; }
+  .stadt__titel { padding-block: 8px; }
+  .stadt__wahl { width: auto; flex: 0 1 420px; }
+  /* zwei Geschichten stehen gleich groß nebeneinander: beide mit Satz, gleiche Titelgröße */
+  .stadt .kueche__raster--2 .kachel--klein .kontext__satz { display: block; }
+  .stadt .kueche__raster--2 .kachel--klein .titel { font-size: 22px; line-height: 1.18; }
+  .stadt .kueche__raster--2 .kachel--klein .imbild { padding: 60px calc(var(--ecke) + 10px) 14px var(--rand); background-image: var(--verlauf); }
+  .stadt__reihe { display: flex; flex-wrap: wrap; align-items: stretch; gap: 0 16px; }
+  .stadt__reihe > .stadt__fach { display: flex; flex-direction: column; flex-basis: 0; flex-shrink: 1; min-width: 0; }
+  .stadt__fach--kino { flex-grow: calc(var(--n, 1) * 1.43); }
+  .stadt__fach--termine { flex-grow: var(--n, 1); }
+  .stadt__leerzeilen { flex: 1 1 100%; min-width: 0; }
+  .stadt__karten { flex: 1 1 auto; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 16px; }
+  /* gleiche Bildhöhe in der Reihe (Kino breit, Termine schmaler); der Text darunter hält seine Zeilen frei */
+  .stadt__karten .rahmen, .stadt__fach--termine .rahmen { aspect-ratio: auto; min-height: 206px; }
+  .stadt__karten .grafik__orte { min-height: calc(3 * 1.45em); }
+  .stadt__fach--kino .grafik--karte .titel { font-size: 20px; line-height: 1.2; }
+  /* eine einzige Karte in der Reihe: halbe Breite, der Satz zum leeren Fach steht daneben statt in einem Loch darunter */
+  .stadt__reihe[data-karten="1"] > .stadt__fach { flex: 0 1 calc(50% - 8px); max-width: 516px; }
+  .stadt__reihe[data-karten="1"] > .stadt__leerzeilen { flex: 1 1 0; align-self: center; }
+  .stadt__reihe[data-karten="1"] .stadt__karten .grafik__orte { min-height: 0; }
+}
+@media (min-width: 1024px) {
+  .stadt { margin-top: 56px; }
+  .stadt--oben { margin-top: 0; padding-top: 24px; margin-bottom: 16px; }
+  .stadt__titel { font-size: 28px; }
+  .stadt__reihe { column-gap: 24px; }
+  .stadt__karten { gap: 24px; }
+  .stadt__karten .grafik__orte { min-height: calc(2 * 1.45em); }
+  .stadt__fach--kino .grafik--karte .imbild, .stadt__fach--termine .grafik--karte .imbild { padding: 48px calc(var(--ecke) + 10px) 14px 16px; background-image: var(--verlauf-karte); }
+  .stadt__fach--termine .grafik--karte .titel { font-size: 20px; }
+  .stadt__reihe[data-karten="1"] > .stadt__leerzeilen { padding-left: 8px; }
+}
+
 @media print {
   .kopfzeile, .band, .fuss, .ad, .anzeige-zwischen, .anzeige-unten, .teilen, .mehr, .kacheln, .signatur, .signatur-ecke { display: none !important; }
   /* Q2-08: Teilen und „Weiterlesen“ nicht mitdrucken; Linkziele der Quellen und im Text als Adresse ausgeben */

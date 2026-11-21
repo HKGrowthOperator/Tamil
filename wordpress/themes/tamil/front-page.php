@@ -27,6 +27,13 @@ array_walk_recursive(
 );
 tamil_seite_beitraege( $tamil_alle );
 
+// Startseiten-Proben (inc/proben.php): nur mit dem Schalter im Customizer und ?probe=cover|news|community. Ohne Probe
+// bleibt diese Vorlage, wie sie ist; die Probe ersetzt nur den ersten Abschnitt und fügt „Tamil in meiner Stadt“ ein.
+$tamil_probe = $tamil_a['lead'] ? tamil_probe() : '';
+if ( '' !== $tamil_probe ) {
+	tamil_seite_beitraege( tamil_stadt_daten()['ids'] );
+}
+
 if ( ! $tamil_a['lead'] ) :
 	?>
 	<div class="innen seitenkopf">
@@ -38,7 +45,8 @@ if ( ! $tamil_a['lead'] ) :
 	return;
 endif;
 
-$tamil_aufmacher = tamil_anr_imbild(
+// Cover First und News First bauen ihren ersten Abschnitt selbst (der Aufmacher wird dort nicht ein zweites Mal gerechnet)
+$tamil_aufmacher = in_array( $tamil_probe, array( 'cover', 'news' ), true ) ? '' : tamil_anr_imbild(
 	$tamil_a['lead'],
 	array(
 		'klasse'       => 'aufmacher',
@@ -53,6 +61,17 @@ $tamil_aufmacher = tamil_anr_imbild(
 );
 ?>
 <h1 class="nur-vorlesen"><?php echo esc_html( get_bloginfo( 'name' ) . ', ' . __( 'Startseite', 'tamil' ) ); ?></h1>
+<?php
+if ( '' !== $tamil_probe ) {
+	tamil_probe_umschalter();
+}
+if ( 'community' === $tamil_probe ) {
+	get_template_part( 'template-parts/home/probe-community' );
+}
+if ( 'cover' === $tamil_probe || 'news' === $tamil_probe ) :
+	get_template_part( 'template-parts/home/probe-' . $tamil_probe, null, array( 'kacheln' => $tamil_a['kacheln'] ) );
+else :
+	?>
 
 <div class="innen oben">
 	<?php echo $tamil_aufmacher; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_anr_imbild() ?>
@@ -101,10 +120,16 @@ $tamil_aufmacher = tamil_anr_imbild(
 
 	<?php echo tamil_kacheln( $tamil_a['kacheln'], __( 'Rubriken mit Bild', 'tamil' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_kacheln() ?>
 </div>
+<?php endif; ?>
 
 <?php
 // Werbeplatz 01 unter dem ersten Abschnitt (nicht über dem Aufmacher).
 tamil_leaderboard( 'innen anzeige-zwischen' );
+
+// Cover First und News First: „Tamil in meiner Stadt“ nach dem Werbeplatz, vor „Diese Woche“ (Community First: ganz oben)
+if ( 'cover' === $tamil_probe || 'news' === $tamil_probe ) {
+	get_template_part( 'template-parts/home/stadt' );
+}
 
 get_template_part( 'template-parts/home/woche', null, array( 'woche' => $tamil_a['woche'] ) );
 

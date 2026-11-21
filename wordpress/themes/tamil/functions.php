@@ -25,6 +25,7 @@ require_once TAMIL_THEME_DIR . '/inc/anreisser.php';
 require_once TAMIL_THEME_DIR . '/inc/wow.php';
 require_once TAMIL_THEME_DIR . '/inc/navigation.php';
 require_once TAMIL_THEME_DIR . '/inc/queries.php';
+require_once TAMIL_THEME_DIR . '/inc/proben.php';
 require_once TAMIL_THEME_DIR . '/inc/content-filters.php';
 require_once TAMIL_THEME_DIR . '/inc/enqueue.php';
 require_once TAMIL_THEME_DIR . '/inc/patterns.php';
