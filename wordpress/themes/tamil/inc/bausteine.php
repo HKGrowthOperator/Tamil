@@ -23,7 +23,7 @@ function tamil_nachweise( string $nachweis = '', string $seite = '', string $liz
 	static $liste = array();
 	$schluessel   = trim( $nachweis );
 	if ( '' !== $schluessel ) {
-		$html = str_contains( $schluessel, '<' ) ? $schluessel : tamil_nachweis_bauen(
+		$html = str_contains( $schluessel, '<' ) || tamil_ki_nachweis() === $schluessel ? $schluessel : tamil_nachweis_bauen(
 			html_entity_decode( $schluessel, ENT_QUOTES, 'UTF-8' ),
 			array(
 				'seite'      => $seite,

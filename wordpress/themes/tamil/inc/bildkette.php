@@ -9,9 +9,10 @@
  *      (mit seinen Größen, srcset und Nachweis).
  *   c) sonst, bei Kino- und Terminbeiträgen, das Foto des neuesten anderen Beitrags zum selben Film bzw. zur selben
  *      Veranstaltung (inc/filmbilder.php), mit dessen Nachweis und ohne Schild, weil es den Film zeigt;
- *   d) sonst ein Symbolbild aus dem Rubrik-Pool (inc/bildpool.php): echte Fotos je Rubrik, bevorzugt nach Beitrags-ID
- *      gewählt; auf einer Seite reihum vergeben, damit kein Ersatzbild doppelt erscheint (tamil_pool_seite()); sichtbar
- *      als „Symbolbild“ gekennzeichnet, mit Nachweis.
+ *   d) sonst ein Symbolbild aus dem Rubrik-Pool (inc/bildpool.php): echte Fotos von Commons und seit 21.11.2026
+ *      KI-generierte Symbolbilder je Rubrik, bevorzugt nach Beitrags-ID gewählt; auf einer Seite reihum vergeben, damit
+ *      kein Ersatzbild doppelt erscheint (tamil_pool_seite()); sichtbar als „Symbolbild“ gekennzeichnet, mit Nachweis.
+ *      Beiträge der Rubrik Nachrichten bekommen nie ein KI-Bild, auch nicht über den allgemeinen Pool.
  *
  * Nachweise entstehen an einer Stelle (tamil_nachweis_bauen()): Urheber mit Link auf die Dateiseite, Lizenz mit Link
  * auf den Lizenztext, „zugeschnitten“ bei Fotos unter freier Lizenz (die Rahmen schneiden per object-fit) und bei
@@ -124,12 +125,14 @@ function tamil_bildwahl( int $post_id ): array {
  * Symbolbild aus dem Pool für einen Beitrag ohne eigenes Bild: einmal je Seite gewählt (tamil_pool_seite()), danach
  * für denselben Beitrag immer dasselbe.
  *
- * @return array{datei:string,w:int,h:int,alt:string,urheber:string,lizenz:string,lizenz_url:string,seite:string,fokus:string}
+ * @return array{datei:string,w:int,h:int,alt:string,urheber:string,lizenz:string,lizenz_url:string,seite:string,fokus:string,ki?:bool}
  */
 function tamil_pool_fuer( int $post_id ): array {
 	static $gewaehlt = array();
 	if ( ! isset( $gewaehlt[ $post_id ] ) ) {
-		$gewaehlt[ $post_id ] = tamil_pool_seite( tamil_rubrik_slug( $post_id ), $post_id );
+		// Nachrichten nie mit KI-Bild: auch wenn die Hauptrubrik eine andere ist, der Beitrag aber in Nachrichten steht
+		$ohne_ki              = has_category( 'news', $post_id );
+		$gewaehlt[ $post_id ] = tamil_pool_seite( tamil_rubrik_slug( $post_id ), $post_id, $ohne_ki );
 	}
 	return $gewaehlt[ $post_id ];
 }
@@ -137,13 +140,15 @@ function tamil_pool_fuer( int $post_id ): array {
 /**
  * Pool-Bild für einen Rahmen dieser Seite: bevorzugt das zur Nummer gehörende (Beitrags-ID, damit ein Beitrag auf
  * allen Seiten möglichst dasselbe Bild zeigt); ist es auf der Seite schon vergeben, das nächste freie desselben Pools.
- * Erst wenn alle vergeben sind, kommt das am seltensten gezeigte wieder.
+ * Erst wenn alle vergeben sind, kommt das am seltensten gezeigte wieder. Mit $ohne_ki (und immer für Nachrichten)
+ * kommen nur Bilder ohne 'ki' in Frage, auch im allgemeinen Pool.
  *
- * @return array{datei:string,w:int,h:int,alt:string,urheber:string,lizenz:string,lizenz_url:string,seite:string,fokus:string}
+ * @return array{datei:string,w:int,h:int,alt:string,urheber:string,lizenz:string,lizenz_url:string,seite:string,fokus:string,ki?:bool}
  */
-function tamil_pool_seite( string $slug, int $n ): array {
+function tamil_pool_seite( string $slug, int $n, bool $ohne_ki = false ): array {
 	static $gezeigt = array();
-	$liste          = tamil_pool_liste( $slug );
+	$ohne_ki        = $ohne_ki || 'news' === $slug;
+	$liste          = $ohne_ki ? tamil_pool_ohne_ki( $slug ) : tamil_pool_liste( $slug );
 	$anzahl         = count( $liste );
 	$start          = abs( $n ) % $anzahl;
 	$wahl           = $liste[ $start ];
@@ -159,7 +164,7 @@ function tamil_pool_seite( string $slug, int $n ): array {
 	}
 	// Pool der Rubrik erschöpft: erst ein freies Bild des allgemeinen Pools, bevor sich eines wiederholt (CODE-06)
 	if ( ! empty( $gezeigt[ $wahl['datei'] ] ) ) {
-		$allgemein = tamil_pool_liste( 'allgemein' );
+		$allgemein = $ohne_ki ? tamil_pool_ohne_ki( 'allgemein' ) : tamil_pool_liste( 'allgemein' );
 		$anzahl    = count( $allgemein );
 		for ( $i = 0; $i < $anzahl; $i++ ) {
 			$p = $allgemein[ ( abs( $n ) + $i ) % $anzahl ];
@@ -383,11 +388,16 @@ function tamil_anhang_aus_url( string $url ): int {
 
 /**
  * Nachweis eines Pool-Bilds als HTML: „Symbolbild, Foto: Urheber / Wikimedia Commons, CC BY-SA 4.0, zugeschnitten“,
- * Urheber verlinkt auf die Dateiseite, Lizenz auf den Lizenztext.
+ * Urheber verlinkt auf die Dateiseite, Lizenz auf den Lizenztext. KI-Bilder: genau „Symbolbild: KI-generiert ·
+ * Tamil.de“ (Spezifikation 4.8), nicht über tamil_nachweis_bauen() (das setzte „Symbolbild,“ davor und hängte
+ * „zugeschnitten“ an).
  *
  * @param array<string,mixed> $pool Eintrag aus tamil_bildpool().
  */
 function tamil_pool_nachweis( array $pool ): string {
+	if ( ! empty( $pool['ki'] ) ) {
+		return tamil_ki_nachweis();
+	}
 	return tamil_nachweis_bauen(
 		'Foto: ' . $pool['urheber'] . ' / Wikimedia Commons, ' . $pool['lizenz'],
 		array(
@@ -397,6 +407,14 @@ function tamil_pool_nachweis( array $pool ): string {
 			'symbol'     => true,
 		)
 	);
+}
+
+/**
+ * Nachweis eines KI-Symbolbilds, überall genau dieser Wortlaut (Spezifikation 4.8, Entscheidung 21.11.2026). Der Fuß
+ * übernimmt ihn unverändert (tamil_nachweise()); sonst machte die Hausregel aus „ · “ ein Komma.
+ */
+function tamil_ki_nachweis(): string {
+	return esc_html__( 'Symbolbild: KI-generiert · Tamil.de', 'tamil' );
 }
 
 /**

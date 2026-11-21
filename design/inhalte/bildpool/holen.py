@@ -12,6 +12,12 @@ Original aus `design/inhalte/rueckblick/bilder/`). Das Skript
    `wordpress/themes/tamil/assets/img/rubrik/<rubrik>-<n>.webp`;
 3. schreibt `bildpool.json` (mit Beleg: Abrufzeit der API), `inc/bildpool.php` und `assets/img/rubrik/NACHWEIS.md`.
 
+Dritter Weg seit 21.11.2026 (Luis: KI-Symbolbilder als Ersatzbilder erlaubt, `docs/entscheidungen.md`): Die Einträge
+mit `"ki": true` aus `design/inhalte/bilder-lauf/pool-theme/pool-neu.json` kommen unverändert dazu, ohne Commons und
+ohne Zuschnitt (die drei WebP-Dateien je Bild sind fertig und werden nur kopiert). Ausgenommen sind die Bilder in
+`KI_AUS` (heikle Themen, Vorbehalt). Im Pool stehen sie abwechselnd mit den Commons-Fotos derselben Rubrik. Nachweis
+fest „Symbolbild: KI-generiert · Tamil.de“ (Spezifikation 4.8); `LIZENZ_OK` gilt für sie nicht.
+
 Langsam und höflich: höchstens eine Anfrage alle 2,2 Sekunden, User-Agent mit Projekt, jede Antwort im
 Zwischenspeicher (ein Abbruch wiederholt beim nächsten Lauf nichts). Sperrt die API (429), liest das Skript die
 Angaben aus der Dateiseite selbst (HTML: Informationstabelle und die maschinenlesbaren Felder der Lizenzvorlage) und
@@ -23,6 +29,8 @@ Neben jedem Bild entsteht eine kleine Fassung `<rubrik>-<n>-320.webp` (320 px) f
     python design/inhalte/bildpool/holen.py --html     # API auslassen: neue Dateien aus der Dateiseite, Archivbilder
                                                        # wie --archiv
     python design/inhalte/bildpool/holen.py --offline  # nur aus vorhandenem bildpool.json neu schreiben
+    python design/inhalte/bildpool/holen.py --text     # ohne Netz und ohne Bilddateien anzufassen: nur bildpool.php
+                                                       # und NACHWEIS.md aus bildpool.json und den KI-Einträgen
     python design/inhalte/bildpool/holen.py --archiv   # Commons gesperrt: nur Archivbilder, Angaben aus
                                                        # rueckblick.json (dort aus der Commons-API übernommen)
 """
@@ -55,6 +63,16 @@ RUBRIKEN = ["news", "entertainment", "events", "community", "kueche", "kino", "s
 NAMEN = {
     "news": "Nachrichten", "entertainment": "Entertainment", "events": "Events", "community": "Community",
     "kueche": "Küche", "kino": "Kino", "sport": "Sport", "kultur": "Kultur", "allgemein": "alle übrigen",
+}
+KI_JSON = REPO / "design" / "inhalte" / "bilder-lauf" / "pool-theme" / "pool-neu.json"
+KI_NACHWEIS = "Symbolbild: KI-generiert · Tamil.de"
+# KI-Bilder, die nicht in den Pool kommen (Entscheidung 21.11.2026, docs/entscheidungen.md)
+KI_AUS = {
+    "news-4.webp": "Nachrichten: heikle Themen bekommen kein KI-Bild (Spezifikation 4.2), das Theme kennt die Einstufung nicht",
+    "news-5.webp": "Nachrichten: wie news-4",
+    "news-6.webp": "Nachrichten: wie news-4",
+    "news-7.webp": "Nachrichten: wie news-4",
+    "community-4.webp": "Vorbehalt: Ganesha-Relief am Tempeleingang",
 }
 LIZENZ_OK = re.compile(r"^https?://creativecommons\.org/(licenses/(by|by-sa)/[\d.]+(/[a-z-]+)?|publicdomain/zero/1\.0)/?$")
 BREITE = 960
@@ -299,6 +317,37 @@ def klein_schreiben(datei: str) -> None:
             ZIEL / klein_datei(datei), "WEBP", quality=78, method=6)
 
 
+def ki_eintraege() -> list[dict]:
+    """KI-Symbolbilder aus pool-neu.json (ohne KI_AUS); kopiert die fertigen drei Dateien je Bild ins Theme."""
+    if not KI_JSON.exists():
+        return []
+    bilder = []
+    for e in json.loads(KI_JSON.read_text(encoding="utf-8")):
+        if not e.get("ki") or e["datei"] in KI_AUS:
+            continue
+        for name in (e["datei"], klein_datei(e["datei"]), e["datei"].replace(".webp", "-480.webp")):
+            quelle, ziel = KI_JSON.parent / name, ZIEL / name
+            if not ziel.exists() or ziel.read_bytes() != quelle.read_bytes():
+                ziel.write_bytes(quelle.read_bytes())
+        bilder.append({
+            "rubrik": e["rubrik"], "datei": e["datei"], "w": int(e["w"]), "h": int(e["h"]), "alt": e["alt"],
+            "fokus": e["fokus"], "ki": True, "quelle": e.get("quelle", ""),
+            "urheber": "", "lizenz": "", "lizenz_url": "", "seite": "",
+        })
+    return bilder
+
+
+def mischen(bilder: list[dict], ki: list[dict]) -> list[dict]:
+    """Je Rubrik abwechselnd Commons-Foto und KI-Bild (ähnliche Säle und Festwagen stehen nicht nebeneinander)."""
+    aus = []
+    for r in RUBRIKEN:
+        a = [b for b in bilder if b["rubrik"] == r]
+        k = [b for b in ki if b["rubrik"] == r]
+        for i in range(max(len(a), len(k))):
+            aus += a[i:i + 1] + k[i:i + 1]
+    return aus
+
+
 def php_schreiben(bilder: list[dict]) -> None:
     def q(s: str) -> str:
         return "'" + str(s).replace("\\", "\\\\").replace("'", "\\'") + "'"
@@ -313,14 +362,17 @@ def php_schreiben(bilder: list[dict]) -> None:
         for b in eintraege:
             felder = ", ".join(f"{q(x)} => {q(b[x]) if x not in ('w', 'h') else int(b[x])}" for x in (
                 "datei", "w", "h", "alt", "urheber", "lizenz", "lizenz_url", "seite", "fokus"))
+            if b.get("ki"):
+                felder += ", 'ki' => true"
             zeilen.append(f"\t\t\tarray( {felder} ),")
         zeilen.append("\t\t),")
     php = f"""<?php
 /**
- * Rubrik-Pool: je Rubrik bis zu vier echte Fotos von Wikimedia Commons (CC0, CC BY, CC BY-SA) als Symbolbilder für
- * Beiträge ohne eigenes Foto (inc/bildkette.php, Stufe d). Urheber, Lizenz und Lizenz-Adresse stammen aus Commons
- * (API oder Dateiseite; Beleg je Bild in design/inhalte/bildpool/bildpool.json). Zu jedem Bild gibt es eine kleine
- * Fassung „<datei>-320.webp“ für kleine Rahmen.
+ * Rubrik-Pool: Symbolbilder für Beiträge ohne eigenes Foto (inc/bildkette.php, Stufe d): echte Fotos von Wikimedia
+ * Commons (CC0, CC BY, CC BY-SA; Urheber, Lizenz und Lizenz-Adresse aus Commons, Beleg je Bild in
+ * design/inhalte/bildpool/bildpool.json) und seit 21.11.2026 KI-generierte Symbolbilder ('ki' => true; Entscheidung
+ * in docs/entscheidungen.md, Quelle design/inhalte/bilder-lauf/). Je Rubrik abwechselnd. Zu jedem Bild gibt es die
+ * Fassungen „<datei>-480.webp“ und „<datei>-320.webp“ für kleinere Rahmen.
  * Erzeugt von design/inhalte/bildpool/holen.py aus kandidaten.json – nicht von Hand ändern; Nachweise auch in
  * assets/img/rubrik/NACHWEIS.md.
  */
@@ -330,7 +382,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Alle Pool-Bilder je Rubrik.
  *
- * @return array<string,array<int,array{{datei:string,w:int,h:int,alt:string,urheber:string,lizenz:string,lizenz_url:string,seite:string,fokus:string}}>>
+ * @return array<string,array<int,array{{datei:string,w:int,h:int,alt:string,urheber:string,lizenz:string,lizenz_url:string,seite:string,fokus:string,ki?:bool}}>>
  */
 function tamil_bildpool(): array {{
 	// phpcs:disable WordPress.Arrays.ArrayDeclarationSpacing.AssociativeArrayFound -- Tabelle, eine Zeile je Bild
@@ -345,9 +397,12 @@ function tamil_bildpool(): array {{
  * „kino“ bzw. „events“, nie den allgemeinen (Stadtansichten, Kirchen, Rathäuser passen nicht zu Filmen und Bühnen);
  * alle übrigen den allgemeinen Pool.
  *
- * @return array<int,array{{datei:string,w:int,h:int,alt:string,urheber:string,lizenz:string,lizenz_url:string,seite:string,fokus:string}}>
+ * @return array<int,array{{datei:string,w:int,h:int,alt:string,urheber:string,lizenz:string,lizenz_url:string,seite:string,fokus:string,ki?:bool}}>
  */
 function tamil_pool_liste( string $slug ): array {{
+	if ( 'news' === $slug ) {{
+		return tamil_pool_ohne_ki( 'news' );
+	}}
 	$pool   = tamil_bildpool();
 	$ersatz = array(
 		'kino'          => array( 'kino', 'entertainment', 'events' ),
@@ -362,10 +417,27 @@ function tamil_pool_liste( string $slug ): array {{
 }}
 
 /**
+ * Nachrichten bekommen nie ein KI-Bild (heikle Themen, Spezifikation 4.2; das Theme kennt die Einstufung nicht): der
+ * Pool der Rubrik ohne KI-Bilder, sonst der allgemeine ohne KI-Bilder.
+ *
+ * @return array<int,array{{datei:string,w:int,h:int,alt:string,urheber:string,lizenz:string,lizenz_url:string,seite:string,fokus:string,ki?:bool}}>
+ */
+function tamil_pool_ohne_ki( string $slug ): array {{
+	$pool = tamil_bildpool();
+	foreach ( array( $slug, 'allgemein' ) as $versuch ) {{
+		$liste = array_values( array_filter( $pool[ $versuch ] ?? array(), static fn( array $p ): bool => empty( $p['ki'] ) ) );
+		if ( $liste ) {{
+			return $liste;
+		}}
+	}}
+	return array();
+}}
+
+/**
  * Ein Bild aus dem Pool einer Rubrik, fest nach Nummer gewählt. Auf einer Seite vergibt tamil_pool_seite() die Bilder
  * reihum, damit keines doppelt erscheint.
  *
- * @return array{{datei:string,w:int,h:int,alt:string,urheber:string,lizenz:string,lizenz_url:string,seite:string,fokus:string}}
+ * @return array{{datei:string,w:int,h:int,alt:string,urheber:string,lizenz:string,lizenz_url:string,seite:string,fokus:string,ki?:bool}}
  */
 function tamil_pool_bild( string $slug, int $n = 0 ): array {{
 	$liste = tamil_pool_liste( $slug );
@@ -376,30 +448,38 @@ function tamil_pool_bild( string $slug, int $n = 0 ): array {{
 
 
 def nachweis_schreiben(bilder: list[dict]) -> None:
+    commons = [b for b in bilder if not b.get("ki")]
+
     def tage(art: str) -> str:
-        return ", ".join(sorted({b["beleg"].split()[-1][:10] for b in bilder if b["beleg"].startswith(art)}))
+        return ", ".join(sorted({b["beleg"].split()[-1][:10] for b in commons if b["beleg"].startswith(art)}))
 
     teile = []
     if tage("commons-api"):
         teile.append(f"aus der Commons-API gelesen (Abruf {tage('commons-api')})")
     if tage("commons-dateiseite"):
         teile.append(f"aus der Dateiseite auf Commons gelesen (Abruf {tage('commons-dateiseite')})")
-    if any(not b["beleg"].startswith("commons-") for b in bilder):
+    if any(not b["beleg"].startswith("commons-") for b in commons):
         teile.append("aus `design/inhalte/rueckblick/rueckblick.json` übernommen (dort beim Rückblick aus der Commons-API)")
     herkunft = " bzw. ".join(teile)
     zeilen = [
         "# Rubrik-Pool (Symbolbilder für Beiträge ohne eigenes Foto)",
         "",
-        "Je Rubrik bis zu vier echte Fotos von Wikimedia Commons, nur CC0, CC BY und CC BY-SA; eine Rubrik ohne eigene",
-        "Bilder nimmt den allgemeinen Pool. Urheber, Lizenz und Lizenz-Adresse hat `design/inhalte/bildpool/holen.py`",
-        f"{herkunft}; Beleg je Bild in `design/inhalte/bildpool/bildpool.json`. Auf 960 px Breite verkleinert, höchstens",
-        "auf 4:3 zugeschnitten (WebP, Qualität 78). Am Bild steht „Symbolbild“, im Fuß der volle Nachweis mit Links und",
-        "„zugeschnitten“.",
+        "Je Rubrik echte Fotos von Wikimedia Commons (nur CC0, CC BY und CC BY-SA) und seit 21.11.2026 KI-generierte",
+        "Symbolbilder (Entscheidung in `docs/entscheidungen.md`); eine Rubrik ohne eigene Bilder nimmt den allgemeinen",
+        "Pool, Nachrichten nie ein KI-Bild. Commons: Urheber, Lizenz und Lizenz-Adresse hat",
+        f"`design/inhalte/bildpool/holen.py` {herkunft}; Beleg je Bild in `design/inhalte/bildpool/bildpool.json`. Auf",
+        "960 px Breite verkleinert, höchstens auf 4:3 zugeschnitten (WebP, Qualität 78). Am Bild steht „Symbolbild“, im",
+        "Fuß der volle Nachweis mit Links und „zugeschnitten“. KI-Bilder: ohne erkennbare Personen, Marken, Schrift oder",
+        f"nachgestellte Ereignisse, Nachweis „{KI_NACHWEIS}“; Prompt und Modell je Bild in",
+        "`design/inhalte/bilder-lauf/pool/liste.md`.",
         "",
-        "| Datei | Rubrik | Nachweis | Lizenz | Dateiseite |",
+        "| Datei | Rubrik | Nachweis | Lizenz | Dateiseite bzw. Quelle im Repo |",
         "|---|---|---|---|---|",
     ]
     for b in bilder:
+        if b.get("ki"):
+            zeilen.append(f"| `{b['datei']}` | {NAMEN[b['rubrik']]} | {KI_NACHWEIS} | – | `{b['quelle']}` |")
+            continue
         zeilen.append(
             f"| `{b['datei']}` | {NAMEN[b['rubrik']]} | Foto: {b['urheber']} / Wikimedia Commons, zugeschnitten | "
             f"[{b['lizenz']}]({b['lizenz_url']}) | {b['seite']} |"
@@ -412,7 +492,15 @@ def main() -> None:
     ap.add_argument("--offline", action="store_true", help="nur aus bildpool.json neu schreiben, ohne Netz")
     ap.add_argument("--archiv", action="store_true", help="nur Archivbilder, Angaben aus rueckblick.json")
     ap.add_argument("--html", action="store_true", help="API auslassen: Angaben aus den Dateiseiten (HTML)")
+    ap.add_argument("--text", action="store_true", help="nur bildpool.php und NACHWEIS.md schreiben (kein Netz, keine Bilder)")
     args = ap.parse_args()
+    if args.text:
+        bilder = json.loads((HIER / "bildpool.json").read_text(encoding="utf-8"))["bilder"]
+        alle = mischen(bilder, ki_eintraege())
+        php_schreiben(alle)
+        nachweis_schreiben(alle)
+        print(f"{len(bilder)} Commons-Bilder, {len(alle) - len(bilder)} KI-Bilder geschrieben")
+        return
     kandidaten = json.loads((HIER / "kandidaten.json").read_text(encoding="utf-8"))["kandidaten"]
     bilder = bauen(kandidaten, args.offline, args.archiv, args.html)
     fehlt = [r for r in RUBRIKEN if sum(b["rubrik"] == r for b in bilder) < 4]
@@ -423,8 +511,9 @@ def main() -> None:
     (HIER / "bildpool.json").write_text(json.dumps(
         {"hinweis": "Erzeugt von holen.py; Lizenzangaben aus der Commons-API (Beleg je Bild).", "bilder": bilder},
         ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
-    php_schreiben(bilder)
-    nachweis_schreiben(bilder)
+    alle = mischen(bilder, ki_eintraege())  # bildpool.json bleibt nur Commons; KI-Einträge kommen aus pool-neu.json
+    php_schreiben(alle)
+    nachweis_schreiben(alle)
     groesse = sum((ZIEL / b["datei"]).stat().st_size + (ZIEL / klein_datei(b["datei"])).stat().st_size for b in bilder)
     print(f"{len(bilder)} Bilder, {groesse / 1e6:.2f} MB")
 
