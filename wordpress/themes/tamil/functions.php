@@ -8,7 +8,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'TAMIL_THEME_VERSION', '3.9.0' );
+define( 'TAMIL_THEME_VERSION', '3.10.0' );
 define( 'TAMIL_THEME_DIR', get_template_directory() );
 define( 'TAMIL_THEME_URI', get_template_directory_uri() );
 
@@ -22,6 +22,7 @@ require_once TAMIL_THEME_DIR . '/inc/signatur.php';
 require_once TAMIL_THEME_DIR . '/inc/bildkette.php';
 require_once TAMIL_THEME_DIR . '/inc/filmbilder.php';
 require_once TAMIL_THEME_DIR . '/inc/anreisser.php';
+require_once TAMIL_THEME_DIR . '/inc/wow.php';
 require_once TAMIL_THEME_DIR . '/inc/navigation.php';
 require_once TAMIL_THEME_DIR . '/inc/queries.php';
 require_once TAMIL_THEME_DIR . '/inc/content-filters.php';

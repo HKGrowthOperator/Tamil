@@ -258,7 +258,7 @@
   const uhren = new Set();
   const kopf = document.querySelector(".kopf");
   const band = document.querySelector(".band");
-  const aufRahmen = document.querySelector(".aufmacher .rahmen");
+  const aufRahmen = document.querySelector(".aufmacher:not(.wow) .rahmen"); // der Wow-Aufmacher hat seine eigene Bewegung
   const aufBild = aufRahmen && aufRahmen.querySelector("img");
 
   const warte = (ms) => new Promise((ok) => setTimeout(ok, ms));

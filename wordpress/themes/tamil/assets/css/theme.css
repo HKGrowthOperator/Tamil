@@ -224,6 +224,8 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   background: var(--hell); opacity: 0; visibility: hidden; transform: translateX(-12px);
 }
 .band__logo img { height: 30px; width: auto; }
+/* unten 3 px Impact wie unter der aktiven Rubrik: die weiße Fläche gehört sichtbar zum Band und steht für „Start“ */
+.band__logo { box-shadow: inset 0 -3px 0 var(--rot); }
 .band__logo:focus-visible { outline: 3px solid var(--fokus); outline-offset: -3px; }
 .band--steht { --band-logo-platz: var(--band-logo-breite); }
 .band--steht .band__logo { opacity: 1; visibility: visible; transform: none; }
@@ -730,6 +732,26 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .programm__fakten p:last-child { margin-top: 12px; }
 .programm .kachel--gross .rahmen { aspect-ratio: 4 / 3; }
 .termine-raster { display: grid; gap: 12px; }
+/* „Diese Woche“ ab 600 px: Kacheln und Kinokarte füllen die Höhe ihrer Zeile, das Bild wächst mit (kein leerer Rest);
+   so schließen große Kachel, kleine Kachel und Kinokarte unten bündig */
+@media (min-width: 600px) {
+  .woche__raster > .kachel, .woche__raster > .woche__gruppe--kino { align-self: stretch; }
+  .woche__raster > .kachel > .anr, .woche__raster > .woche__gruppe--kino li.grafik > .anr { display: flex; flex-direction: column; height: 100%; }
+  .woche__raster > .kachel > .anr > .rahmen, .woche__raster > .woche__gruppe--kino li.grafik > .anr > .rahmen { flex: 1 1 auto; }
+  .woche__raster > .woche__gruppe--kino { display: flex; flex-direction: column; }
+  .woche__raster > .woche__gruppe--kino > ul { flex: 1 1 auto; }
+  .woche__raster > .woche__gruppe--kino > ul > li:last-child { flex: 1 1 auto; }
+}
+/* Terminkarten einer Reihe: Bildflächen gleich hoch, die Textfelder darunter beginnen auf einer Linie. Die Bildfläche
+   hält mindestens 16:9 der Kartenbreite und so viel Höhe, wie Dachzeile (zwei Zeilen) und Titel (höchstens vier Zeilen)
+   brauchen; damit sind alle Bildflächen einer Reihe gleich hoch, wie lang der Titel auch ist. Nicht bei einem einzelnen
+   Termin (Bild links, Text rechts). */
+@media (min-width: 600px) {
+  :is(.woche__raster:not(.termine-1) .woche__gruppe--termine ul, .termine-raster:not(.termine-raster--eins)) > li.grafik--karte { container-type: inline-size; }
+  :is(.woche__raster:not(.termine-1) .woche__gruppe--termine ul, .termine-raster:not(.termine-raster--eins)) > li.grafik--karte > .anr > .rahmen {
+    aspect-ratio: auto; min-height: max(calc(100cqi * 9 / 16), 12.5rem);
+  }
+}
 .termine-raster .grafik .anr { display: block; }
 .monat { border-top: 1px solid var(--linie); }
 .monat:last-of-type { border-bottom: 1px solid var(--linie); }
@@ -1300,6 +1322,11 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
   margin: -2px calc(-1 * var(--rand)) 6px 12px;
   background-image: url("../img/signatur/hell.svg?ver=3.5.0"); background-size: var(--b) auto; background-position: 0 50%;
 }
+/* Seiten mit kurzem Kopf (Werben, Verzeichnis, Einreichen) unter 600 px: die Kuppel kleiner und ohne Abstand nach
+   unten, damit unter der H1 keine Lücke bleibt (Q2-17) */
+@media (max-width: 599px) {
+  .artikel__kopf .signatur--kopf { --b: 72px; margin-bottom: 0; }
+}
 /* das Suchfeld (Suche) bekommt die volle Breite unter der Kuppel */
 .seitenkopf--signet .suchfeld { clear: right; }
 @media (min-width: 1024px) {
@@ -1467,8 +1494,8 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
     html.sda.bewegt .band::after { animation: k2-fortschritt linear both; animation-timeline: scroll(root block); }
     /* Aufmacherbild: läuft beim Hinausscrollen bis zu 40 px langsamer als die Seite; der Weg beginnt, wenn die
        Bildoberkante unter dem Band ist, der freie Streifen oben bleibt verdeckt */
-    html.sda.bewegt .aufmacher .rahmen { view-timeline: --aufmacher block; view-timeline-inset: var(--band-hoehe) 0px; }
-    html.sda.bewegt .aufmacher .rahmen img { animation: k2-tiefe linear both; animation-timeline: --aufmacher; animation-range: exit 0% exit 100%; }
+    html.sda.bewegt .aufmacher:not(.wow) .rahmen { view-timeline: --aufmacher block; view-timeline-inset: var(--band-hoehe) 0px; }
+    html.sda.bewegt .aufmacher:not(.wow) .rahmen img { animation: k2-tiefe linear both; animation-timeline: --aufmacher; animation-range: exit 0% exit 100%; }
   }
 
   /* Weg 2: ohne Scroll-Timelines rechnet ein passiver Scroll-Handler (rAF) dieselben Werte als Variablen */
@@ -1479,7 +1506,7 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
     opacity: clamp(0, (0.9 - var(--kopf, 0)) / 0.4, 1);
   }
   html.bewegt:not(.sda) .band::after { scale: var(--fortschritt, 0) 1; }
-  html.bewegt:not(.sda) .aufmacher .rahmen img { translate: 0 var(--tiefe, 0px); }
+  html.bewegt:not(.sda) .aufmacher:not(.wow) .rahmen img { translate: 0 var(--tiefe, 0px); }
 }
 @keyframes k2-kopfzeile { to { opacity: 0; } }
 @keyframes k2-logo {
@@ -1523,6 +1550,35 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
 @media (max-width: 599px) {
   .imbild .titel, .aufmacher .titel, .kachel--gross .titel, .vz-name { hyphens: auto; -webkit-hyphens: auto; }
 }
+
+/* ---------- Wow-Aufmacher „Punkt für Punkt zum Bild“ (Theme 3.10.0, inc/wow.php, assets/js/wow.js) ----------
+   Der Rahmen ist so hoch, dass Bild und Titel in den ersten Bildschirm passen (am Handy hochkant). Nur mit wow-an
+   (Skript im Kopf, Canvas, keine reduzierte Bewegung): Das Bild steht unter dem Band, solange der Leser 70 % einer
+   Bildschirmhöhe scrollt (mindestens 420 px); die Decke in Titan liegt darüber, Dachzeile und Titel unten auf ihr.
+   Ohne wow-an ist es der normale Aufmacher in dieser Höhe. Am Desktop die Rundung des Aufmachers (der Rahmen
+   schneidet die Decke), am Handy von Rand zu Rand. */
+.aufmacher.wow { --wow-hoch: 148vw; --wow-weg: max(70vh, 420px); }
+.aufmacher.wow .rahmen.wow-rahmen { aspect-ratio: auto; height: min(var(--wow-hoch), calc(100vh - var(--band-hoehe) - 20px)); }
+@supports (height: 100svh) {
+  .aufmacher.wow .rahmen.wow-rahmen { height: min(var(--wow-hoch), calc(100svh - var(--band-hoehe) - 20px)); }
+}
+.aufmacher.wow .rahmen.wow-rahmen img { object-position: 50% 42%; }
+.wow-decke { display: none; position: absolute; inset: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; }
+.aufmacher.wow .imbild, .aufmacher.wow .symbolbild { z-index: 3; }
+.aufmacher.wow .rahmen > .signatur-ecke { z-index: 4; } /* über dem Titelblock, wie bei jeder Bildkarte */
+@media (min-width: 600px) { .aufmacher.wow { --wow-hoch: 60vw; } }
+@media (min-width: 1024px) { .aufmacher.wow { --wow-hoch: clamp(420px, calc(100vh - 250px), 620px); } }
+.wow-an .aufmacher.wow .wow-bahn::after { content: ""; display: block; height: var(--wow-weg); }
+.wow-an .aufmacher.wow .wow-halter { position: sticky; top: var(--band-hoehe); }
+.admin-bar.wow-an .aufmacher.wow .wow-halter, .wow-an .admin-bar .aufmacher.wow .wow-halter { top: calc(var(--band-hoehe) + var(--wp-admin--admin-bar--height, 0px)); }
+.wow-an .wow-decke { display: block; background: var(--titan); }
+.wow-an .wow-decke.gezeichnet { background: none; }
+.wow-an .aufmacher.wow .imbild { background-image: none; }
+.wow-an .aufmacher.wow .wow-verlauf { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; background-image: var(--verlauf); }
+.wow-an .aufmacher.wow .wow-verlauf > * { visibility: hidden; }
+.wow-an .aufmacher.wow .rahmen > .signatur-ecke { opacity: var(--titel, 0); }
+/* Fokus auf dem Aufmacher-Link: der Rahmen nach innen (wie bei jeder Bildkarte) liegt über der Decke */
+.aufmacher.wow .anr:focus-visible .rahmen::after { z-index: 4; }
 
 @media print {
   .kopfzeile, .band, .fuss, .ad, .anzeige-zwischen, .anzeige-unten, .teilen, .mehr, .kacheln, .signatur, .signatur-ecke { display: none !important; }
