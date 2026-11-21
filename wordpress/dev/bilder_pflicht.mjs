@@ -35,6 +35,7 @@ const { chromium } = require("playwright");
 // Anreißer-Elemente des Themes (inc/anreisser.php, template-parts/*) und des Plugins (Verzeichnis)
 const ANREISSER = [
   ".aufmacher", ".karte", ".kachel", ".stueck", ".meldung", ".zeile", "li.grafik", ".kacheln li", ".vz-eintrag",
+  ".beistueck", ".zeitkarte", // Startseiten-Proben (/?probe=cover|news|community als weiterer Pfad)
   ".tafel--bilder tbody tr:not(.land)", "article.artikel:not(.seite)",
 ].join(", ");
 const WERBUNG = ".ad, .anzeige, .tz-anzeige, .wb-anzeige";
