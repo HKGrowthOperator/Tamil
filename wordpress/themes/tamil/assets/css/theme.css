@@ -732,6 +732,26 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .programm__fakten p:last-child { margin-top: 12px; }
 .programm .kachel--gross .rahmen { aspect-ratio: 4 / 3; }
 .termine-raster { display: grid; gap: 12px; }
+/* „Diese Woche“ ab 600 px: Kacheln und Kinokarte füllen die Höhe ihrer Zeile, das Bild wächst mit (kein leerer Rest);
+   so schließen große Kachel, kleine Kachel und Kinokarte unten bündig */
+@media (min-width: 600px) {
+  .woche__raster > .kachel, .woche__raster > .woche__gruppe--kino { align-self: stretch; }
+  .woche__raster > .kachel > .anr, .woche__raster > .woche__gruppe--kino li.grafik > .anr { display: flex; flex-direction: column; height: 100%; }
+  .woche__raster > .kachel > .anr > .rahmen, .woche__raster > .woche__gruppe--kino li.grafik > .anr > .rahmen { flex: 1 1 auto; }
+  .woche__raster > .woche__gruppe--kino { display: flex; flex-direction: column; }
+  .woche__raster > .woche__gruppe--kino > ul { flex: 1 1 auto; }
+  .woche__raster > .woche__gruppe--kino > ul > li:last-child { flex: 1 1 auto; }
+}
+/* Terminkarten einer Reihe: Bildflächen gleich hoch, die Textfelder darunter beginnen auf einer Linie (Subgrid über
+   Karte und Link; ohne Subgrid wie bisher). Nicht bei einem einzelnen Termin (Bild links, Text rechts). */
+@supports (grid-template-rows: subgrid) {
+  @media (min-width: 600px) {
+    :is(.woche__raster:not(.termine-1) .woche__gruppe--termine ul, .termine-raster:not(.termine-raster--eins)) > li.grafik--karte,
+    :is(.woche__raster:not(.termine-1) .woche__gruppe--termine ul, .termine-raster:not(.termine-raster--eins)) > li.grafik--karte > .anr {
+      display: grid; grid-template-rows: subgrid; grid-row: span 2; row-gap: 0;
+    }
+  }
+}
 .termine-raster .grafik .anr { display: block; }
 .monat { border-top: 1px solid var(--linie); }
 .monat:last-of-type { border-bottom: 1px solid var(--linie); }

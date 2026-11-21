@@ -41,13 +41,29 @@ async function messen(page) {
       const karten = [...liste.querySelectorAll(KARTE)].filter(sichtbar);
       if (karten.length < 2) continue;
       const boxen = karten.map((k) => ({ k, b: flaeche(k), r: k.getBoundingClientRect() })).sort((x, y) => x.r.top - y.r.top);
-      let reihe = [];
-      const fertig = () => { if (reihe.length > 1) reihen.push({ liste: liste.className, n: reihe.length, oben: Math.max(...reihe.map((x) => x.b.top)) - Math.min(...reihe.map((x) => x.b.top)), unten: Math.max(...reihe.map((x) => x.b.bottom)) - Math.min(...reihe.map((x) => x.b.bottom)), text: (reihe[0].k.textContent || "").trim().replace(/\s+/g, " ").slice(0, 40) }); };
+      // zweite Messung: Unterkante der Bildfläche (nur wo jede Spalte genau eine Karte mit einer Bildfläche hat)
+      const bildUnten = (k) => { const r = k.querySelectorAll(".rahmen"); return r.length === 1 ? r[0].getBoundingClientRect().bottom : null; };
+      // Reihen: Karten, deren senkrechte Spannen sich überlappen. Steht eine große Kachel über zwei Zeilen neben zwei
+      // gestapelten, ist das eine Reihe aus zwei Spalten: verglichen werden je Spalte die oberste Ober- und die
+      // unterste Unterkante.
+      const reihenHier = [];
       for (const x of boxen) {
-        if (reihe.length && x.r.top >= Math.min(...reihe.map((y) => y.r.bottom)) - 1) { fertig(); reihe = []; }
-        reihe.push(x);
+        const g = reihenHier.find((g) => g.some((y) => x.r.top < y.r.bottom - 1 && y.r.top < x.r.bottom - 1));
+        if (g) g.push(x); else reihenHier.push([x]);
       }
-      fertig();
+      for (const reihe of reihenHier) {
+        const spalten = new Map();
+        for (const x of reihe) { const s = Math.round(x.r.left / 4); (spalten.get(s) || spalten.set(s, []).get(s)).push(x); }
+        if (spalten.size < 2) continue;
+        const sp = [...spalten.values()];
+        const oben = sp.map((c) => Math.min(...c.map((x) => x.b.top)));
+        const unten = sp.map((c) => Math.max(...c.map((x) => x.b.bottom)));
+        const bu = sp.map((c) => (c.length === 1 ? bildUnten(c[0].k) : null));
+        // nur gleichartige Karten (gleiche Klasse): eine Bildkachel neben einer Kinokarte mit Text darunter zählt nicht
+        const gleich = new Set(reihe.map((x) => x.k.className)).size === 1;
+        const bild = gleich && bu.every((v) => v !== null) ? Math.max(...bu) - Math.min(...bu) : 0;
+        reihen.push({ liste: liste.className, n: reihe.length, oben: Math.max(...oben) - Math.min(...oben), unten: Math.max(...unten) - Math.min(...unten), bild, text: (reihe[0].k.textContent || "").trim().replace(/\s+/g, " ").slice(0, 40) });
+      }
     }
     return reihen;
   }, { LISTEN, KARTE });
@@ -69,10 +85,10 @@ async function main() {
       if (!antwort || antwort.status() >= 400) { console.log(`fehlt   ${w}  ${pfad}`); continue; }
       await page.evaluate(async () => { document.querySelectorAll("[style*=content-visibility], li").forEach((e) => (e.style.contentVisibility = "visible")); await Promise.all([...document.images].map((i) => { i.loading = "eager"; return i.decode().catch(() => {}); })); });
       const reihen = await messen(page);
-      const schief = reihen.filter((r) => r.oben > 1 || r.unten > 1);
+      const schief = reihen.filter((r) => r.oben > 1 || r.unten > 1 || r.bild > 1);
       reihenAlle += reihen.length; fehler += schief.length;
       console.log(`${schief.length ? "FEHLER" : "ok    "} ${String(w).padStart(4)}  ${pfad}  ${reihen.length} Reihen, ${schief.length} uneben`);
-      for (const r of schief) console.log(`          ${r.liste}: ${r.n} Karten, oben Δ${r.oben.toFixed(1)} px, unten Δ${r.unten.toFixed(1)} px  „${r.text}“`);
+      for (const r of schief) console.log(`          ${r.liste}: ${r.n} Karten, oben Δ${r.oben.toFixed(1)} px, unten Δ${r.unten.toFixed(1)} px, Bildfläche Δ${r.bild.toFixed(1)} px  „${r.text}“`);
     }
   }
   await browser.close();
