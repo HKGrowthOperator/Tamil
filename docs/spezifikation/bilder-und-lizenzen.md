@@ -264,6 +264,13 @@ Eingeschaltet wird die Stufe nur mit einem neuen Eintrag im Entscheidungslog **u
 Kosten durch KBS (§3 Abs. 2) **und** dem Schlüssel `GEMINI_API_KEY`. Bis dahin endet die Kette nach Stock bei der
 Bildkarte, und der Bildpool wird nicht benutzt.
 
+**Nachtrag 21.11.2026:** Für die **Ersatzbilder des Rubrik-Pools im Theme** (Bildkette Stufe d, `inc/bildpool.php`)
+sind KI-Symbolbilder seit dem Auftrag von Luis vom 21.11. erlaubt (Eintrag in `docs/entscheidungen.md`, 21.11.2026,
+Theme 3.13.0): nur Symbolbilder ohne erkennbare Personen, Marken, Schrift oder nachgestellte Ereignisse, immer mit
+Schild „Symbolbild“ und dem Nachweis „Symbolbild: KI-generiert · Tamil.de“ (4.8); bei heiklen Themen keines (4.2,
+Punkt 3), im Theme umgesetzt als Sperre für die Rubrik Nachrichten. Das Erzeugen eines KI-Bilds je Story im Radar
+(Stufe 5) bleibt wie oben beschrieben ausgeschaltet.
+
 ### 4.2 Wann ein KI-Bild entsteht
 
 Alle Bedingungen müssen erfüllt sein:
