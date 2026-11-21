@@ -31,7 +31,7 @@ und Terminlisten). Der News-Radar ist ein eigenes Plugin („Tamil.de News-Radar
 == Changelog ==
 
 = 1.2.0 =
-* Werbeflächen auf Beiträgen nach Länge: Anzeige im Text ab fünf Absätzen, kurze Beiträge ohne Anzeige im Text und ohne Fuß-Platz. Skizze je Werbeplatz auf „Werben“.
+* Skizze je Werbeplatz auf „Werben“. Gebuchte Plätze stehen auch auf Impressum und Datenschutz (nur Eigenanzeigen entfallen dort, Festlegung F3).
 
 = 1.1.0 =
 * Eigenanzeigen im neuen Look; „Event melden“ und „WhatsApp-Kanal (kurz)“ statt Newsletter. Gespeicherte Werbeplätze mit einer entfernten Vorlage fallen auf den Standard zurück.
