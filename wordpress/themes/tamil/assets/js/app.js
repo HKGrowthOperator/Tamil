@@ -37,6 +37,15 @@
     window.addEventListener("resize", rand);
   }
 
+  // Logo im stehenden Band: sobald der Kopf mit dem großen Logo aus dem Bild ist, zeigt das Band links das Logo
+  var band = $(".band"), kopf = $(".kopf");
+  if (band && kopf && "IntersectionObserver" in window) {
+    new IntersectionObserver(function (eintraege) {
+      var e = eintraege[0];
+      band.classList.toggle("band--steht", !e.isIntersecting && e.boundingClientRect.top < 0);
+    }).observe(kopf);
+  }
+
   // Rubrikkacheln und wischbare Kartenreihen laden „lazy“; am Handy laufen sie seitlich, dort lädt der Browser Bilder
   // außerhalb des Streifens sonst erst beim Wischen: kommt der Streifen in die Nähe, laden alle auf einmal (Kartenreihen
   // erst kurz vor dem Bild, damit sie dem ersten Bildschirm nichts wegnehmen)
@@ -109,6 +118,13 @@
       $$(".kalender__monat", block).forEach(function (m) { m.hidden = !$("li[data-land]:not([hidden])", m); });
       if (zahl) zahl.textContent = n === 1 ? "1 Termin" : n + " Termine";
       if (leer) leer.hidden = n > 0;
+      // Der Filter gilt auch für „Ab heute“ darüber (Q2-12): eine Karte dort bleibt, wenn ihr Termin in der Liste passt
+      var aktiv = !!(wahl.land || wahl.stadt);
+      $$(".woche--seite .termine-raster > li").forEach(function (karte) {
+        var link = $("a[href]", karte), zeile = null;
+        if (link) zeilen.forEach(function (z) { var a = $("a[href]", z); if (a && a.href === link.href) zeile = z; });
+        karte.hidden = aktiv && !!zeile && zeile.hidden;
+      });
     });
   });
 
@@ -130,6 +146,29 @@
   $$(".video-embed").forEach(function (box) {
     var btn = $(".video-load", box); if (!btn) return;
     btn.addEventListener("click", function () { ladeVideo(box, true); });
+  });
+
+  // Wischbare Kartenreihen: eine Karte, die per Tastatur den Fokus bekommt, ganz ins Bild holen (sonst bleibt beim
+  // Einrasten jede zweite fast außerhalb, Q2-02); nur der Streifen rollt, die Seite höchstens so weit wie nötig
+  $$(".karten--reihe").forEach(function (reihe) {
+    reihe.addEventListener("focusin", function (e) {
+      var karte = e.target.closest(".karten--reihe > *");
+      if (!karte || karte.parentNode !== reihe) return;
+      var r = karte.getBoundingClientRect(), s = reihe.getBoundingClientRect();
+      if (r.left < s.left || r.right > s.right) karte.scrollIntoView({ inline: "start", block: "nearest", behavior: "auto" });
+    });
+  });
+
+  // Bilder im Text, die nicht laden (Altbestand mit Bildern fremder Server per http://, Q2-05): ausblenden statt eines
+  // leeren Rahmens mit Alternativtext als Link; der Inhalt selbst bleibt unverändert
+  var bildWeg = function (img) {
+    var huelle = img.closest(".blocks-gallery-item, .gallery-item, figure, .bild-ecke") || img;
+    var link = img.parentNode && img.parentNode.tagName === "A" && img.parentNode.textContent.trim() === "" ? img.parentNode : null;
+    (huelle !== img ? huelle : (link || img)).hidden = true;
+  };
+  $$(".inhalt img").forEach(function (img) {
+    if (!img.getAttribute("src") || (img.complete && img.naturalWidth === 0 && !/\.svg(\?|$)/i.test(img.src))) bildWeg(img);
+    else img.addEventListener("error", function () { bildWeg(img); }, { once: true });
   });
 
   // Link kopieren
