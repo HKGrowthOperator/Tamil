@@ -53,10 +53,12 @@
   --linie-stark: var(--titan);         /* Linien über Blöcken, Tabellenköpfe, Kästen: Titan statt Schwarz */
   --linie-titan: var(--rot);           /* feine Linien auf Titan (Band, „Diese Woche“) */
   --fokus: var(--titan);               /* Fokusrahmen auf Weiß; auf Titan und Impact weiß */
-  /* Schrift im Bild: der einzige Verlauf, von durchsichtig nach Schwarz; auf Titan-Flächen nach Titan (.woche) */
-  --verlauf: linear-gradient(to bottom, rgb(0 0 0 / 0) 0, rgb(0 0 0 / 0.72) 52px, rgb(0 0 0 / 0.88) 100%);
-  --verlauf-kurz: linear-gradient(to bottom, rgb(0 0 0 / 0) 0, rgb(0 0 0 / 0.78) 22px, rgb(0 0 0 / 0.9) 100%);
-  --verlauf-karte: linear-gradient(to bottom, rgb(0 0 0 / 0) 0, rgb(0 0 0 / 0.72) 40px, rgb(0 0 0 / 0.86) 100%);
+  /* Schrift im Bild: der einzige Verlauf, von durchsichtig nach Schwarz; auf Titan-Flächen nach Titan (.woche).
+     N-12: wo die Schrift beginnt 66 % Schwarz – auf reinem Weiß 7,2 : 1 für weiße Schrift (vorher 72–88 %, mindestens
+     10,5 : 1 gemessen); helle Fotos bleiben sichtbar */
+  --verlauf: linear-gradient(to bottom, rgb(0 0 0 / 0) 0, rgb(0 0 0 / 0.66) 52px, rgb(0 0 0 / 0.74) 100%);
+  --verlauf-kurz: linear-gradient(to bottom, rgb(0 0 0 / 0) 0, rgb(0 0 0 / 0.68) 22px, rgb(0 0 0 / 0.76) 100%);
+  --verlauf-karte: linear-gradient(to bottom, rgb(0 0 0 / 0) 0, rgb(0 0 0 / 0.66) 40px, rgb(0 0 0 / 0.72) 100%);
   --verlauf-karte-titan: linear-gradient(to bottom, rgb(102 0 0 / 0) 0, rgb(102 0 0 / 0.86) 40px, rgb(102 0 0 / 0.95) 100%);
   --verlauf-titan: linear-gradient(to bottom, rgb(102 0 0 / 0) 0, rgb(102 0 0 / 0.8) 52px, rgb(102 0 0 / 0.94) 100%);
   --verlauf-titan-kurz: linear-gradient(to bottom, rgb(102 0 0 / 0) 0, rgb(102 0 0 / 0.84) 22px, rgb(102 0 0 / 0.95) 100%);

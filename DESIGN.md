@@ -137,7 +137,7 @@ gemeinsamer Kante für Kopf, Bild und Text), höchstens 70 Zeichen je Zeile.
 - **Bildkarte „Text auf Bild“** (Luis 20.11.2026; seit 3.7.0 **jeder Beitrags-Anreißer der Website**, nicht nur die
   Startseite): Foto 16:9 (am Desktop in Viererreihen 4:3), darauf auf
   dem Verlauf nach Schwarz die Dachzeile „Rubrik | Datum“ und der Titel, weiß, ausgeglichen umbrochen
-  (`text-wrap: balance`). Der Verlauf erreicht 72 % Schwarz (auf Titan 86 % Titan), bevor die Schrift beginnt; gemessen
+  (`text-wrap: balance`). Der Verlauf erreicht 66 % Schwarz (auf Titan 86 % Titan), bevor die Schrift beginnt (N-12, 21.11.: auf reinem Weiß 7,2 : 1, schlechtester Titel der Startseite 7,6 : 1); gemessen
   hält jede Textzeile im 5-%-Quantil mindestens 5,9 : 1 (Ziel 4,5 : 1). Das Foto sitzt höher im Rahmen (Position
   50 % 28 %), damit Gesichter über dem Verlauf bleiben; Pool-Bilder behalten ihren Fokus. Vorspann unter dem Bild
   (drei Zeilen): in Listen und „Weiterlesen“ immer, auf der Startseite nur am Desktop.
