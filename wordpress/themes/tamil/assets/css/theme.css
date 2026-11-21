@@ -1599,7 +1599,10 @@ body .ad.ad-bild .anzeige--bild .anzeige__bild { border-radius: 0; }
 }
 /* Desktop (K-03): „Weitere Meldungen“ steht mit dem Aufmacher unter dem Band, rechts bleibt kein Loch */
 @media (min-width: 1024px) {
-  .wow-an .oben:has(.aufmacher.wow) .meldungen { position: sticky; top: var(--band-hoehe); align-self: start; }
+  /* N-01: Die Haftung endet mit der des Aufmachers. Der Abschnitt füllt die Höhe der Zeile neben dem Aufmacher (samt
+     Weg); nur sein Inhalt steht fest, und zwar höchstens bis zur Unterkante dieser Zeile, nie über der Reihe darunter. */
+  .wow-an .oben:has(.aufmacher.wow) .meldungen { align-self: stretch; }
+  .wow-an .oben:has(.aufmacher.wow) .meldungen__halter { position: sticky; top: var(--band-hoehe); }
 }
 .admin-bar.wow-an .aufmacher.wow .wow-halter, .wow-an .admin-bar .aufmacher.wow .wow-halter { top: calc(var(--band-hoehe) + var(--wp-admin--admin-bar--height, 0px)); }
 .wow-an .wow-decke { display: block; background: var(--titan); }

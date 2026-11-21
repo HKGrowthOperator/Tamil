@@ -78,6 +78,7 @@ $tamil_aufmacher = tamil_anr_imbild(
 
 	<?php if ( $tamil_a['meldungen'] ) : ?>
 		<section class="meldungen" aria-labelledby="t-meldungen">
+			<div class="meldungen__halter">
 			<h2 class="block-titel" id="t-meldungen"><?php esc_html_e( 'Weitere Meldungen', 'tamil' ); ?></h2>
 			<ul class="karten karten--reihe">
 				<?php
@@ -94,6 +95,7 @@ $tamil_aufmacher = tamil_anr_imbild(
 				}
 				?>
 			</ul>
+			</div>
 		</section>
 	<?php endif; ?>
 
