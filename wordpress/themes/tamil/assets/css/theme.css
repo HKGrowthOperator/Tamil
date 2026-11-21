@@ -217,15 +217,15 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 /* Logo im stehenden Band (Luis 21.11.2026): weiße Fläche bündig am linken Rand, volle Bandhöhe, das ganze Logo klein
    (dunkelrot, darum auf Weiß; nicht umgefärbt). Die Rubriken rücken per transform zur Seite (kein Layout-Sprung, CLS 0)
    und bekommen rechts gleich viel Innenabstand, damit alle erreichbar bleiben. */
-:root { --band-logo-breite: 104px; --band-logo-platz: 0px; }
+:root { --band-logo-breite: 80px; --band-logo-platz: 0px; } /* K-08: am Handy schmaler */
 .band__logo {
   position: absolute; left: 0; top: 0; bottom: 0; z-index: 2;
   display: flex; align-items: center; justify-content: center; width: var(--band-logo-breite);
   background: var(--hell); opacity: 0; visibility: hidden; transform: translateX(-12px);
 }
-.band__logo img { height: 30px; width: auto; }
+.band__logo img { height: 24px; width: auto; }
 /* unten 3 px Impact wie unter der aktiven Rubrik: die weiße Fläche gehört sichtbar zum Band und steht für „Start“ */
-.band__logo { box-shadow: inset 0 -3px 0 var(--rot); }
+.band__logo { box-shadow: inset 0 -2px 0 var(--rot); } /* K-10: 2 px wie die Leselinie */
 .band__logo:focus-visible { outline: 3px solid var(--fokus); outline-offset: -3px; }
 .band--steht { --band-logo-platz: var(--band-logo-breite); }
 .band--steht .band__logo { opacity: 1; visibility: visible; transform: none; }
@@ -233,7 +233,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .band--steht .band__liste { padding-right: var(--band-logo-breite); }
 @media (prefers-reduced-motion: no-preference) {
   .band__logo { transition: opacity 0.2s ease-out, transform 0.2s ease-out, visibility 0s linear 0.2s; }
-  .band--steht .band__logo { transition: opacity 0.2s ease-out, transform 0.2s ease-out, visibility 0s; }
+  .band--steht .band__logo { transition: opacity 0.16s ease-out 0.12s, transform 0.16s ease-out 0.12s, visibility 0s; } /* K-09: erst rücken die Rubriken */
   .band__liste, .band__signet { transition: transform 0.2s ease-out; }
 }
 .band__liste {
