@@ -148,7 +148,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .knopf {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   min-height: 48px; padding: 0 20px;
-  border: 1px solid var(--titan); border-radius: 0;
+  border: 1px solid var(--titan); border-radius: var(--radius-klein);
   background: var(--titan); color: var(--hell);
   font-size: 16px; font-weight: 600; line-height: 1.2; white-space: nowrap;
   cursor: pointer;
@@ -159,7 +159,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 input[type="search"], input[type="text"], input[type="email"], input[type="tel"], input[type="url"],
 input[type="number"], input[type="date"], input[type="password"], textarea, select {
   min-height: 48px; padding: 8px 14px;
-  border: 1px solid var(--leise); border-radius: 0;
+  border: 1px solid var(--leise); border-radius: var(--radius-klein);
   background: var(--grund); color: var(--tinte);
   font-size: 17px; line-height: 1.4;
 }
@@ -217,15 +217,15 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 /* Logo im stehenden Band (Luis 21.11.2026): weiße Fläche bündig am linken Rand, volle Bandhöhe, das ganze Logo klein
    (dunkelrot, darum auf Weiß; nicht umgefärbt). Die Rubriken rücken per transform zur Seite (kein Layout-Sprung, CLS 0)
    und bekommen rechts gleich viel Innenabstand, damit alle erreichbar bleiben. */
-:root { --band-logo-breite: 104px; --band-logo-platz: 0px; }
+:root { --band-logo-breite: 80px; --band-logo-platz: 0px; } /* K-08: am Handy schmaler */
 .band__logo {
   position: absolute; left: 0; top: 0; bottom: 0; z-index: 2;
   display: flex; align-items: center; justify-content: center; width: var(--band-logo-breite);
   background: var(--hell); opacity: 0; visibility: hidden; transform: translateX(-12px);
 }
-.band__logo img { height: 30px; width: auto; }
+.band__logo img { height: 24px; width: auto; }
 /* unten 3 px Impact wie unter der aktiven Rubrik: die weiße Fläche gehört sichtbar zum Band und steht für „Start“ */
-.band__logo { box-shadow: inset 0 -3px 0 var(--rot); }
+.band__logo { box-shadow: inset 0 -2px 0 var(--rot); } /* K-10: 2 px wie die Leselinie */
 .band__logo:focus-visible { outline: 3px solid var(--fokus); outline-offset: -3px; }
 .band--steht { --band-logo-platz: var(--band-logo-breite); }
 .band--steht .band__logo { opacity: 1; visibility: visible; transform: none; }
@@ -233,7 +233,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .band--steht .band__liste { padding-right: var(--band-logo-breite); }
 @media (prefers-reduced-motion: no-preference) {
   .band__logo { transition: opacity 0.2s ease-out, transform 0.2s ease-out, visibility 0s linear 0.2s; }
-  .band--steht .band__logo { transition: opacity 0.2s ease-out, transform 0.2s ease-out, visibility 0s; }
+  .band--steht .band__logo { transition: opacity 0.16s ease-out 0.12s, transform 0.16s ease-out 0.12s, visibility 0s; } /* K-09: erst rücken die Rubriken */
   .band__liste, .band__signet { transition: transform 0.2s ease-out; }
 }
 .band__liste {
@@ -394,7 +394,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .oben { padding-top: 0; }
 .aufmacher .rahmen { margin-inline: calc(-1 * var(--rand)); }
 .aufmacher .rahmen img { object-position: 50% 30%; }
-.aufmacher .titel { font-size: 30px; line-height: 1.12; letter-spacing: -0.012em; }
+.aufmacher .titel { font-size: 26px; line-height: 1.14; letter-spacing: -0.01em; } /* K-02: höchstens vier Zeilen am Handy */
 .aufmacher .vorspann { margin-top: 12px; font-size: 17px; line-height: 1.5; }
 
 .kacheln { margin-top: 32px; }
@@ -463,6 +463,15 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 
 /* ---------- Küche (hell) und Rubrikblöcke: jede Kachel behält ihr Format auf allen Breiten ---------- */
 .kueche { margin-top: 44px; }
+/* Rubrik-Bühne (K-06): wie die Küche gebaut; Titel auf kleinen Karten höchstens drei Zeilen */
+.rubrikblock .kachel--klein .titel { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; }
+/* Kacheln einer Bühne (Küche und Rubrik-Bühne) füllen ab 600 px ihre Rasterzelle, das Bild wächst mit: die große Kachel
+   schließt unten mit dem Stapel daneben ab, kleine Kacheln einer Reihe sind gleich hoch */
+@media (min-width: 600px) {
+  .kueche__raster > .kachel { align-self: stretch; }
+  .kueche__raster > .kachel > .anr { display: flex; flex-direction: column; height: 100%; }
+  .kueche__raster > .kachel > .anr > .rahmen { flex: 1 1 auto; }
+}
 .kueche__raster { display: grid; gap: 12px; padding-top: 14px; }
 .kueche .kachel--klein .imbild { padding: 30px var(--rand) 10px; background-image: var(--verlauf-kurz); }
 .kueche .kachel--klein .meta { margin-bottom: 2px; }
@@ -520,7 +529,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 
   .aufmacher .rahmen { margin-inline: 0; }
   .aufmacher .imbild { padding: 120px 32px 26px; }
-  .aufmacher .titel { font-size: 40px; line-height: 1.1; letter-spacing: -0.015em; max-width: 17em; }
+  .aufmacher .titel { font-size: 38px; line-height: 1.1; letter-spacing: -0.015em; max-width: 18em; } /* K-02: Brief höchstens 38 px */
   .aufmacher .vorspann { margin-top: 14px; max-width: 40em; }
 
   .kacheln ul { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 16px; overflow: visible; margin: 0; padding: 0; }
@@ -688,7 +697,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .seiten-zeile { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 24px; border-top: 1px solid var(--linie-stark); padding-top: 8px; }
 .seiten p { margin: 0; font-size: 15px; color: var(--leise); }
 .seiten .seiten-links { margin-top: 0; gap: 0 4px; }
-.seiten .seiten-links a, .seiten .seiten-links > span { padding: 0 8px; }
+.seiten .seiten-links a, .seiten .seiten-links > span { padding: 0 8px; border-radius: var(--radius-klein); }
 .seiten .seiten-links a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
 .seiten .seiten-links a:hover { color: var(--rot); }
 .seiten .seiten-links .current { background: var(--titan); color: var(--hell); font-weight: 700; }
@@ -768,7 +777,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .filter { display: grid; gap: 10px; margin-top: 16px; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .chip {
-  min-height: 44px; padding: 0 14px; border: 1px solid var(--leise); border-radius: 0;
+  min-height: 44px; padding: 0 14px; border: 1px solid var(--leise); border-radius: var(--radius-klein);
   background: var(--grund); color: var(--tinte); font: inherit; font-size: 15px; font-weight: 500; cursor: pointer;
 }
 .chip:hover { border-color: var(--titan); background: var(--flaeche); color: var(--titan); box-shadow: inset 0 0 0 1px var(--titan); } /* Q2-14: Fläche und doppelte Kante */
@@ -921,7 +930,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   aspect-ratio: 16 / 9; display: grid; place-content: center; justify-items: center; gap: 12px;
   padding: 24px; text-align: center; background: var(--titan); color: var(--hell);
 }
-.video-embed .video-load { min-height: 48px; padding: 0 20px; border: 1px solid var(--hell); border-radius: 0; background: var(--hell); color: var(--titan); font-weight: 600; cursor: pointer; }
+.video-embed .video-load { min-height: 48px; padding: 0 20px; border: 1px solid var(--hell); border-radius: var(--radius-klein); background: var(--hell); color: var(--titan); font-weight: 600; cursor: pointer; }
 .video-embed .video-load:hover { background: var(--hell-leise); }
 .video-embed .video-hint { font-size: 14px; color: var(--hell-leise); }
 .video-embed .video-hint a { display: inline-flex; min-height: 44px; align-items: center; color: var(--hell); }
@@ -1056,7 +1065,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .tf-feld input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), .tf-feld select, .tf-feld textarea,
 .vz-feld input:not([type="checkbox"]):not([type="radio"]), .vz-feld select, .vz-feld textarea,
 .wb-formular input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), .wb-formular select, .wb-formular textarea { width: 100%; max-width: 100%; }
-input[type="datetime-local"], input[type="file"] { min-height: 48px; padding: 8px 14px; border: 1px solid var(--leise); border-radius: 0; background: var(--grund); color: var(--tinte); font-size: 17px; }
+input[type="datetime-local"], input[type="file"] { min-height: 48px; padding: 8px 14px; border: 1px solid var(--leise); border-radius: var(--radius-klein); background: var(--grund); color: var(--tinte); font-size: 17px; }
 input[type="file"] { padding: 10px; font-size: 15px; }
 .tf-pflicht, .vz-pflicht { font-weight: 400; font-size: 13px; color: var(--leise); }
 .tf-hilfe, .vz-hilfe, .wb-feldhinweis { display: block; margin-top: 4px; font-size: 14px; line-height: 1.4; color: var(--leise); }
@@ -1090,7 +1099,7 @@ input[type="file"] { padding: 10px; font-size: 15px; }
 .tf-einwilligung label { font-size: 14px; line-height: 1.45; }
 .tf-senden, .vz-aktion button, .vz-suche button, .vz-form button[type="submit"], .wb-formular button, .wb-knopf, .wb-buchen a, .wb-aktion button, .wb-aktion a {
   display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 20px;
-  border: 1px solid var(--titan); border-radius: 0; background: var(--titan); color: var(--hell);
+  border: 1px solid var(--titan); border-radius: var(--radius-klein); background: var(--titan); color: var(--hell);
   font-size: 16px; font-weight: 600; line-height: 1.2; text-decoration: none; cursor: pointer;
 }
 .tf-senden:hover, .vz-aktion button:hover, .vz-suche button:hover, .vz-form button[type="submit"]:hover, .wb-formular button:hover, .wb-knopf:hover, .wb-buchen a:hover, .wb-aktion button:hover, .wb-aktion a:hover { background: var(--rot); border-color: var(--rot); color: var(--hell); }
@@ -1162,7 +1171,7 @@ body .tz-hinweis, body .tz-dialog {
 }
 body .tz-hinweis { border-top-width: 3px; }
 body .tz-titel { font-size: 19px; font-weight: 700; line-height: 1.25; }
-body .tz-knopf { border-radius: 0; border-color: var(--titan); background: var(--grund); color: var(--titan); font-weight: 600; }
+body .tz-knopf { border-radius: var(--radius-klein); border-color: var(--titan); background: var(--grund); color: var(--titan); font-weight: 600; }
 body .tz-knopf:hover { background: var(--flaeche); }
 body .tz-knopf-haupt { background: var(--titan); color: var(--hell); }
 body .tz-knopf-haupt:hover { background: var(--rot); border-color: var(--rot); }
@@ -1407,7 +1416,7 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
 .aligncenter { margin-left: auto; margin-right: auto; }
 .wp-block-image img { border-radius: var(--radius); }
 .wp-block-separator { border: 0; border-top: 1px solid var(--linie); }
-.wp-block-button__link { border-radius: 0; }
+.wp-block-button__link { border-radius: var(--radius-klein); }
 
 /* ---------- Bewegung beim Scrollen: Variante D (Wahl von Luis am 16.11.2026) ----------
    Quelle: design/richtungen/klar2/bewegung/ (#d). Kopf und Fläche hängen am Scrollweg, große Bilder und Blocktitel
@@ -1523,6 +1532,14 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
   .anr:hover .rahmen img, .kacheln a:hover .rahmen img { transform: none; }
 }
+/* Verzeichnis: Schild „Symbolbild“ oben rechts wie auf allen Karten (K-18) */
+.vz-bild .vz-symbolbild { top: 0; right: 0; bottom: auto; left: auto; border-radius: 0 var(--radius) 0 0; }
+/* Raster mit drei Spalten: eine allein stehende letzte Karte über die volle Breite in flachem Format (K-19) */
+@media (min-width: 1024px) {
+  .karten--raster > li:last-child:nth-child(3n+1) { grid-column: 1 / -1; }
+  .karten--raster > li:last-child:nth-child(3n+1) .rahmen { aspect-ratio: 21 / 9; }
+}
+
 /* ---------- Abgerundete Ecken (Theme 3.9.0) ----------
    Ein Radius für Karten und Bilder (--radius), kleiner für kleine Kacheln (--radius-klein). Der Punktbogen und das Schild
    „Symbolbild“ schließen mit der Rundung ab: der Rahmen schneidet sie an; wo kein Rahmen schneidet (Artikelbild, Bild im
@@ -1537,6 +1554,8 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
 .grafik { border-radius: var(--radius); overflow: clip; }
 .grafik .rahmen { --rahmen-r: 0px; }
 .ad img, body .ad.ad-bild .anzeige-wrap.flaeche { border-radius: var(--radius); }
+body .ad.ad-bild .anzeige-wrap.flaeche, body .ad.ad-bild .anzeige--bild { overflow: hidden; } /* K-12: Bild in der runden Fläche angeschnitten */
+body .ad.ad-bild .anzeige--bild .anzeige__bild { border-radius: 0; }
 .ad-mobile .flaeche, .ad-mobile img, body .ad-mobile.ad-bild .anzeige-wrap.flaeche { border-radius: var(--radius-klein); }
 .vz a.vz-bild, .vz-profil .vz-bild { border-radius: var(--radius); }
 @media (max-width: 599px) {
@@ -1557,7 +1576,7 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
    Bildschirmhöhe scrollt (mindestens 420 px); die Decke in Titan liegt darüber, Dachzeile und Titel unten auf ihr.
    Ohne wow-an ist es der normale Aufmacher in dieser Höhe. Am Desktop die Rundung des Aufmachers (der Rahmen
    schneidet die Decke), am Handy von Rand zu Rand. */
-.aufmacher.wow { --wow-hoch: 148vw; --wow-weg: max(70vh, 420px); }
+.aufmacher.wow { --wow-hoch: 116vw; --wow-weg: max(35vh, 260px); } /* K-16: Vorspann über der festen Handy-Anzeige (Unterkante 751 px, Anzeige ab 769 px bei 390 × 844) */ /* K-05: halber Weg, Punkte und Titelfeld zugleich */
 .aufmacher.wow .rahmen.wow-rahmen { aspect-ratio: auto; height: min(var(--wow-hoch), calc(100vh - var(--band-hoehe) - 20px)); }
 @supports (height: 100svh) {
   .aufmacher.wow .rahmen.wow-rahmen { height: min(var(--wow-hoch), calc(100svh - var(--band-hoehe) - 20px)); }
@@ -1569,7 +1588,19 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
 @media (min-width: 600px) { .aufmacher.wow { --wow-hoch: 60vw; } }
 @media (min-width: 1024px) { .aufmacher.wow { --wow-hoch: clamp(420px, calc(100vh - 250px), 620px); } }
 .wow-an .aufmacher.wow .wow-bahn::after { content: ""; display: block; height: var(--wow-weg); }
+/* K-15: die leere Fläche des Wegs ist nicht Teil des Links; klickbar bleiben Bild, Titel und Vorspann */
+.wow-an .aufmacher.wow .anr { pointer-events: none; }
+.wow-an .aufmacher.wow .wow-halter { pointer-events: auto; }
 .wow-an .aufmacher.wow .wow-halter { position: sticky; top: var(--band-hoehe); }
+/* Tablet (K-04): das Bild steht nicht fest; der Weg hängt an der Rahmenhöhe (assets/js/wow.js), keine Leere darunter */
+@media (min-width: 600px) and (max-width: 1023px) {
+  .wow-an .aufmacher.wow .wow-bahn::after { content: none; }
+  .wow-an .aufmacher.wow .wow-halter { position: static; }
+}
+/* Desktop (K-03): „Weitere Meldungen“ steht mit dem Aufmacher unter dem Band, rechts bleibt kein Loch */
+@media (min-width: 1024px) {
+  .wow-an .oben:has(.aufmacher.wow) .meldungen { position: sticky; top: var(--band-hoehe); align-self: start; }
+}
 .admin-bar.wow-an .aufmacher.wow .wow-halter, .wow-an .admin-bar .aufmacher.wow .wow-halter { top: calc(var(--band-hoehe) + var(--wp-admin--admin-bar--height, 0px)); }
 .wow-an .wow-decke { display: block; background: var(--titan); }
 .wow-an .wow-decke.gezeichnet { background: none; }

@@ -9,7 +9,7 @@ import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
 const { chromium } = require("playwright");
 
-const LISTEN = ".karten, .neben, .woche__raster, .woche__gruppe ul";
+const LISTEN = ".karten, .neben, .woche__raster, .woche__gruppe ul, .kueche__raster";
 const KARTE = ":scope > li, :scope > article, :scope > .woche__gruppe";
 const PFADE = ["/", "/category/kultur/", "/category/kino/", "/events/", "/?s=tamil", "/production/", "/2026/10/"];
 
