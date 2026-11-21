@@ -40,7 +40,7 @@ def _an(wp_cli, pid: int, vorher: str = "") -> bool:
 
 
 def test_nur_mit_eigenem_foto_ab_960_px(wp_cli, beitraege):
-    # Standard (kein theme_mod gesetzt) ist an; nichts wird dauerhaft gespeichert
+    # eingeschaltet über den Filter auf den theme_mod; nichts wird dauerhaft gespeichert
     an = "add_filter( 'theme_mod_tamil_wow_aufmacher', static fn() => '1' );"
     assert _an(wp_cli, beitraege["gross"], an) is True
     assert _an(wp_cli, beitraege["klein"], an) is False, "kleines Foto: normaler Aufmacher"
@@ -53,7 +53,7 @@ def test_abschalten_ueber_customizer_und_filter(wp_cli, beitraege):
         assert _an(wp_cli, beitraege["gross"], "set_theme_mod( 'tamil_wow_aufmacher', '' );") is False, "Customizer aus"
         assert _an(wp_cli, beitraege["gross"], "set_theme_mod( 'tamil_wow_aufmacher', '1' );"
                    " add_filter( 'tamil_wow_aufmacher', '__return_false' );") is False, "Filter aus"
-        assert _an(wp_cli, beitraege["gross"], "remove_theme_mod( 'tamil_wow_aufmacher' );") is True, "Standard: an"
+        assert _an(wp_cli, beitraege["gross"], "remove_theme_mod( 'tamil_wow_aufmacher' );") is False, "Standard: aus (seit 3.13.1)"
     finally:
         wp_cli(f"$a = json_decode( '{alt}' ); if ( null === $a ) {{ remove_theme_mod( 'tamil_wow_aufmacher' ); }}"
                " else { set_theme_mod( 'tamil_wow_aufmacher', $a ); }")
