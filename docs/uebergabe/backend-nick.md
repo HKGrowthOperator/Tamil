@@ -248,6 +248,21 @@ Einzelheiten stehen in `docs/abnahme/2026-11-20-feinschliff.md`.
 - **Meta-Beschreibungen:** Verzeichnis, Werben und Impressum haben noch keine eigene Beschreibung, sondern die
   allgemeine. Das ist Redaktion oder Einstellung.
 
+**Nachtrag 21.11. (Nachtschicht, `docs/abnahme/2026-11-21-nacht.md`):**
+
+- **Kino, Karlsruhe ohne Zahl:** Für „Filmpalast am ZKM“ liefert der Radar nur `von`, keine `termine`. Die
+  Stadtliste zeigt deshalb keine Zahl der Vorstellungen.
+- **Kinonamen mit Stadt:** Namen wie „CineStar Kristall-Palast - Bremen“ enthalten die Stadt mit Bindestrich-Minus.
+  Das Theme normalisiert das nicht, weil es nicht eindeutig ist. Bitte Name und Stadt getrennt liefern.
+- **Neu im Theme, zur Kenntnis:**
+  - Wow-Aufmacher auf der Startseite (3.10.0). Er greift nur, wenn der Aufmacher-Beitrag ein eigenes Foto ab 960 px
+    Breite hat. Titelkarten, Poolbilder und geliehene Filmbilder bekommen den normalen Aufmacher.
+  - Abgerundete Ecken und ein stehendes Rubrikband mit Logo. Für Cockpit-Vorschau und Bildkarte gilt das nicht
+    automatisch.
+- **Tägliche Bildvorschläge:** Zweimal täglich entsteht eine Liste von Beiträgen ohne geeignetes Bild mit je einem
+  Symbolbild-Vorschlag (Nachweis „Symbolbild, KI-generiert (Tamil.de)“). Eingesetzt wird über Radar oder WordPress,
+  das entscheidet Luis.
+
 ## 7. Cockpit im klar2-Look
 
 **Ursprünglich geplant:** Website und Cockpit bekommen dasselbe Design (Entscheidung vom 16.11.). Seit 17.11. liegt das
