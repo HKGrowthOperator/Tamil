@@ -41,13 +41,14 @@ endif;
 $tamil_aufmacher = tamil_anr_imbild(
 	$tamil_a['lead'],
 	array(
-		'klasse'   => 'aufmacher',
-		'rahmen'   => 'r43',
-		'ebene'    => 'h2',
-		'vorspann' => true,
-		'eager'    => true,
-		'sizes'    => '(min-width: 1024px) 780px, (min-width: 600px) calc(100vw - 48px), 100vw',
-		'wow'      => tamil_wow_auf_seite(),
+		'klasse'    => 'aufmacher',
+		'rahmen'    => 'r43',
+		'ebene'     => 'h2',
+		'vorspann'  => true,
+		'eager'     => true,
+		'sizes'     => '(min-width: 1024px) 780px, (min-width: 600px) calc(100vw - 48px), 100vw',
+		'wow'       => tamil_wow_auf_seite(),
+		'titel_max' => 84, // K-02: am Handy höchstens vier, am Desktop höchstens drei Zeilen
 	)
 );
 ?>
@@ -116,15 +117,20 @@ if ( '' !== $tamil_billboard ) :
 	<?php
 endif;
 
+// Rhythmus (K-06): die Rubrikblöcke wechseln zwischen der Reihe aus vier Karten und der Bühne (eine große Kachel, die
+// übrigen klein gestapelt daneben), damit nicht fünf gleich gebaute Reihen aufeinander folgen
+$tamil_nr = 0;
 foreach ( $tamil_a['rubriken'] as $tamil_slug => $tamil_ids ) {
 	get_template_part(
 		'template-parts/home/rubrik',
 		null,
 		array(
-			'slug' => $tamil_slug,
-			'ids'  => $tamil_ids,
+			'slug'   => $tamil_slug,
+			'ids'    => $tamil_ids,
+			'buehne' => 1 === $tamil_nr % 2 && count( $tamil_ids ) >= 3,
 		)
 	);
+	++$tamil_nr;
 }
 
 get_footer();
