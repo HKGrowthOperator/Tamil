@@ -29,3 +29,4 @@ Je Zeile: Datum des Laufs, Link, Datei. Ein Beitrag wird nicht doppelt bearbeite
 - 2026-11-21 12:05 | https://tamil-web.167.233.76.202.sslip.io/om-im-kino-12-spielorte-in-deutschland/
 - 2026-11-21 12:12 | https://tamil-web.167.233.76.202.sslip.io/jana-nayagan-vijays-moeglicher-abschiedsfilm-kam-nach-verschiebung-im/
 - 2026-11-21 12:12 | https://tamil-web.167.233.76.202.sslip.io/oesterreich-asylbehoerde-bfa-legt-laenderinformation-zu-sri-lanka-vor/
+- 2026-11-21 16:44 | https://tamil-web.167.233.76.202.sslip.io/schweizerische-fluechtlingshilfe-bericht-zu-personen-mit-ltte-bezug-in/ | kein KI-Bild (Asyl, Politik): braucht ein echtes Foto oder die Bildkarte
