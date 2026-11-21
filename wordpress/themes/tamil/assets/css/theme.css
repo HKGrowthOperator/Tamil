@@ -749,7 +749,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   min-height: 44px; padding: 0 14px; border: 1px solid var(--leise); border-radius: 0;
   background: var(--grund); color: var(--tinte); font: inherit; font-size: 15px; font-weight: 500; cursor: pointer;
 }
-.chip:hover { border-color: var(--titan); }
+.chip:hover { border-color: var(--titan); background: var(--flaeche); color: var(--titan); box-shadow: inset 0 0 0 1px var(--titan); } /* Q2-14: Fläche und doppelte Kante */
 .chip[aria-pressed="true"] { background: var(--titan); border-color: var(--titan); color: var(--hell); font-weight: 600; }
 .kalender__titel { margin-top: 28px; padding-bottom: 8px; border-bottom: 1px solid var(--linie); font-size: 19px; line-height: 1.25; font-weight: 650; }
 .zeile__angaben { font-size: 15px; line-height: 1.45; color: var(--leise); }
