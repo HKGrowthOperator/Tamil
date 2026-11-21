@@ -33,6 +33,11 @@ $tamil_lupe    = '<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
 </header>
 <nav class="band" aria-label="<?php esc_attr_e( 'Rubriken', 'tamil' ); ?>">
 	<div class="band__innen">
+		<?php
+		// Logo im stehenden Band: erscheint erst, wenn der Kopf mit dem großen Logo aus dem Bild ist (app.js setzt
+		// .band--steht); vorher unsichtbar und nicht fokussierbar. Auf weißer Fläche, weil das Logo dunkelrot ist.
+		get_template_part( 'template-parts/header/logo', null, array( 'class' => 'band__logo' ) );
+		?>
 		<ul class="band__liste">
 			<?php foreach ( $tamil_items as $tamil_item ) : ?>
 				<li><a href="<?php echo esc_url( $tamil_item['url'] ); ?>"<?php echo $tamil_item['aktiv'] ? ' aria-current="page"' : ''; ?>><?php echo esc_html( $tamil_item['label'] ); ?></a></li>

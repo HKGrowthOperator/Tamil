@@ -209,7 +209,27 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
    offenem „Mehr“ Impact Red (weiß darauf 7,2 : 1); die aktive Rubrik ist in Impact markiert und trägt 3 px Weiß darunter
    (weiß auf Titan 13,4 : 1, auf Impact 7,2 : 1), damit der Zustand nicht nur am Rotton hängt. */
 .band { position: sticky; top: 0; z-index: 20; background: var(--titan); color: var(--hell); }
-.band__innen { display: flex; align-items: stretch; max-width: var(--breite); margin: 0 auto; padding: 0 4px; }
+.band__innen { position: relative; display: flex; align-items: stretch; max-width: var(--breite); margin: 0 auto; padding: 0 4px; }
+/* Logo im stehenden Band (Luis 21.11.2026): weiße Fläche bündig am linken Rand, volle Bandhöhe, das ganze Logo klein
+   (dunkelrot, darum auf Weiß; nicht umgefärbt). Die Rubriken rücken per transform zur Seite (kein Layout-Sprung, CLS 0)
+   und bekommen rechts gleich viel Innenabstand, damit alle erreichbar bleiben. */
+:root { --band-logo-breite: 104px; --band-logo-platz: 0px; }
+.band__logo {
+  position: absolute; left: 0; top: 0; bottom: 0; z-index: 2;
+  display: flex; align-items: center; justify-content: center; width: var(--band-logo-breite);
+  background: var(--hell); opacity: 0; visibility: hidden; transform: translateX(-12px);
+}
+.band__logo img { height: 30px; width: auto; }
+.band__logo:focus-visible { outline: 3px solid var(--fokus); outline-offset: -3px; }
+.band--steht { --band-logo-platz: var(--band-logo-breite); }
+.band--steht .band__logo { opacity: 1; visibility: visible; transform: none; }
+.band--steht .band__liste, .band--steht .band__signet { transform: translateX(var(--band-logo-breite)); }
+.band--steht .band__liste { padding-right: var(--band-logo-breite); }
+@media (prefers-reduced-motion: no-preference) {
+  .band__logo { transition: opacity 0.2s ease-out, transform 0.2s ease-out, visibility 0s linear 0.2s; }
+  .band--steht .band__logo { transition: opacity 0.2s ease-out, transform 0.2s ease-out, visibility 0s; }
+  .band__liste, .band__signet { transition: transform 0.2s ease-out; }
+}
 .band__liste {
   display: flex; flex: 1 1 auto; min-width: 0;
   overflow-x: auto; scrollbar-width: none;
@@ -217,7 +237,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 }
 .band__liste::-webkit-scrollbar { display: none; }
 /* folgen rechts noch Rubriken, läuft die letzte sichtbar aus (statt hart an „Mehr“ abgeschnitten zu wirken) */
-.band__liste.mehr-rechts { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent); }
+.band__liste.mehr-rechts { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 32px - var(--band-logo-platz)), transparent calc(100% - var(--band-logo-platz))); mask-image: linear-gradient(to right, #000 calc(100% - 32px - var(--band-logo-platz)), transparent calc(100% - var(--band-logo-platz))); }
 /* ist die Reihe gewischt, läuft auch der linke Rand aus statt einen Wortrest hart abzuschneiden (QA-16) */
 .band__liste.mehr-links { -webkit-mask-image: linear-gradient(to right, transparent, #000 32px); mask-image: linear-gradient(to right, transparent, #000 32px); }
 .band__liste.mehr-links.mehr-rechts {
@@ -242,6 +262,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 
 /* „Mehr“: Dienste, Suche und Social; ohne Skript ein einfaches <details> */
 .mehr { flex: none; border-left: 1px solid var(--linie-titan); }
+.mehr summary { position: relative; z-index: 1; background: var(--titan); } /* die zur Seite gerückten Rubriken laufen darunter */
 .mehr summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 6px; }
 .mehr summary::-webkit-details-marker { display: none; }
 .mehr summary::after { content: "+"; font-weight: 400; font-size: 18px; line-height: 1; }
@@ -271,7 +292,8 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .band__liste a[aria-current]::after { left: 10px; right: 10px; }
 }
 @media (min-width: 1024px) {
-  :root { --rand: 40px; --band-hoehe: 48px; }
+  :root { --rand: 40px; --band-hoehe: 48px; --band-logo-breite: 120px; }
+  .band__logo img { height: 34px; }
   .kopfzeile__innen { min-height: 38px; }
   .kopfzeile a, .kopfzeile .kopfzeile__neu a { min-height: 38px; line-height: 38px; }
   .kopfzeile .kopfzeile__neu a + a { display: block; }

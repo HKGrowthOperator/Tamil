@@ -37,6 +37,15 @@
     window.addEventListener("resize", rand);
   }
 
+  // Logo im stehenden Band: sobald der Kopf mit dem großen Logo aus dem Bild ist, zeigt das Band links das Logo
+  var band = $(".band"), kopf = $(".kopf");
+  if (band && kopf && "IntersectionObserver" in window) {
+    new IntersectionObserver(function (eintraege) {
+      var e = eintraege[0];
+      band.classList.toggle("band--steht", !e.isIntersecting && e.boundingClientRect.top < 0);
+    }).observe(kopf);
+  }
+
   // Rubrikkacheln und wischbare Kartenreihen laden „lazy“; am Handy laufen sie seitlich, dort lädt der Browser Bilder
   // außerhalb des Streifens sonst erst beim Wischen: kommt der Streifen in die Nähe, laden alle auf einmal (Kartenreihen
   // erst kurz vor dem Bild, damit sie dem ersten Bildschirm nichts wegnehmen)
