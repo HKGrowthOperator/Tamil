@@ -13,7 +13,7 @@ Für den Theme-Agenten. In diesem Lauf wurde am Theme nichts geändert; alles li
    KI-Bild. Das Theme kennt diese Einstufung heute nicht; die vier neuen Nachrichten-Bilder (`news-4` bis `news-7`)
    würden also auch bei Asyl- und Gerichtsmeldungen erscheinen. Entweder die `news`-Bilder vorerst weglassen oder
    eine Sperre bauen (z. B. Beitrags-Meta vom Radar, bei „heikel“ nur die drei Commons-Fotos).
-3. **Wortlaut des Nachweises.** Vorgabe für diesen Lauf: „Symbolbild, KI-generiert (Tamil.de)“. Die Spezifikation
+3. **Wortlaut des Nachweises.** Vorgabe für diesen Lauf: „Symbolbild: KI-generiert · Tamil.de“. Die Spezifikation
    (4.8 und Tabelle der Bildarten) nennt „Symbolbild: KI-generiert · Tamil.de“. Einen Wortlaut wählen und überall
    gleich setzen.
 
@@ -105,7 +105,7 @@ Heute baut die Funktion immer „Foto: Urheber / Wikimedia Commons, Lizenz“ ü
 ```php
 function tamil_pool_nachweis( array $pool ): string {
 	if ( ! empty( $pool['ki'] ) ) {
-		return esc_html__( 'Symbolbild, KI-generiert (Tamil.de)', 'tamil' );
+		return esc_html__( 'Symbolbild: KI-generiert · Tamil.de', 'tamil' );
 	}
 	// … bisheriger Aufruf von tamil_nachweis_bauen() …
 }
@@ -127,38 +127,38 @@ Einleitung anpassen (nicht mehr nur Commons) und diese Zeilen anhängen:
 
 | Datei | Rubrik | Nachweis | Lizenz | Quelle im Repo |
 |---|---|---|---|---|
-| `news-4.webp` | Nachrichten | Symbolbild, KI-generiert (Tamil.de) | – | `design/inhalte/bilder-lauf/pool/news/bahnsteig-morgen.jpg` |
-| `news-5.webp` | Nachrichten | Symbolbild, KI-generiert (Tamil.de) | – | `design/inhalte/bilder-lauf/pool/news/abflughalle.jpg` |
-| `news-6.webp` | Nachrichten | Symbolbild, KI-generiert (Tamil.de) | – | `design/inhalte/bilder-lauf/pool/news/amtsflur.jpg` |
-| `news-7.webp` | Nachrichten | Symbolbild, KI-generiert (Tamil.de) | – | `design/inhalte/bilder-lauf/pool/news/mikrofone-podium.jpg` |
-| `entertainment-1.webp` | Entertainment | Symbolbild, KI-generiert (Tamil.de) | – | `design/inhalte/bilder-lauf/pool/entertainment/konzert-publikum.jpg` |
-| `entertainment-2.webp` | Entertainment | Symbolbild, KI-generiert (Tamil.de) | – | `design/inhalte/bilder-lauf/pool/entertainment/mikrofon-buehne.jpg` |
-| `entertainment-3.webp` | Entertainment | Symbolbild, KI-generiert (Tamil.de) | – | `design/inhalte/bilder-lauf/pool/entertainment/mischpult.jpg` |
-| `entertainment-4.webp` | Entertainment | Symbolbild, KI-generiert (Tamil.de) | – | `design/inhalte/bilder-lauf/pool/entertainment/mridangam-haende.jpg` |
-| `events-9.webp` | Events | Symbolbild, KI-generiert (Tamil.de) | – | `design/inhalte/bilder-lauf/pool/events/kolam-haustuer.jpg` |
-| `events-10.webp` | Events | Symbolbild, KI-generiert (Tamil.de) | – | `design/inhalte/bilder-lauf/pool/events/oellampen-reihe.jpg` |
-| `events-11.webp` | Events | Symbolbild, KI-generiert (Tamil.de) | – | `design/inhalte/bilder-lauf/pool/events/festsaal-vorbereitet.jpg` |
-| `events-12.webp` | Events | Symbolbild, KI-generiert (Tamil.de) | – | `design/inhalte/bilder-lauf/pool/events/blumengirlanden.jpg` |
-| `community-3.webp` | Community | Symbolbild, KI-generiert (Tamil.de) | – | `design/inhalte/bilder-lauf/pool/community/gopuram-grauer-himmel.jpg` |
-| `community-4.webp` | Community | Symbolbild, KI-generiert (Tamil.de) | – | `design/inhalte/bilder-lauf/pool/community/schuhe-tempeleingang.jpg` |
-| `community-5.webp` | Community | Symbolbild, KI-generiert (Tamil.de) | – | `design/inhalte/bilder-lauf/pool/community/klassenzimmer-tamilschule.jpg` |
-| `community-6.webp` | Community | Symbolbild, KI-generiert (Tamil.de) | – | `design/inhalte/bilder-lauf/pool/community/tee-vereinsheim.jpg` |
-| `kueche-4.webp` | Küche | Symbolbild, KI-generiert (Tamil.de) | – | `design/inhalte/bilder-lauf/pool/kueche/dosa-pfanne.jpg` |
-| `kueche-5.webp` | Küche | Symbolbild, KI-generiert (Tamil.de) | – | `design/inhalte/bilder-lauf/pool/kueche/idli-sambar.jpg` |
-| `kueche-6.webp` | Küche | Symbolbild, KI-generiert (Tamil.de) | – | `design/inhalte/bilder-lauf/pool/kueche/gewuerzdose.jpg` |
-| `kueche-7.webp` | Küche | Symbolbild, KI-generiert (Tamil.de) | – | `design/inhalte/bilder-lauf/pool/kueche/filterkaffee.jpg` |
-| `kino-9.webp` | Kino | Symbolbild, KI-generiert (Tamil.de) | – | `design/inhalte/bilder-lauf/pool/kino/publikum-leinwandlicht.jpg` |
-| `kino-10.webp` | Kino | Symbolbild, KI-generiert (Tamil.de) | – | `design/inhalte/bilder-lauf/pool/kino/projektorstrahl.jpg` |
-| `kino-11.webp` | Kino | Symbolbild, KI-generiert (Tamil.de) | – | `design/inhalte/bilder-lauf/pool/kino/popcorn-foyer.jpg` |
-| `kino-12.webp` | Kino | Symbolbild, KI-generiert (Tamil.de) | – | `design/inhalte/bilder-lauf/pool/kino/kinoeingang-abend.jpg` |
-| `sport-2.webp` | Sport | Symbolbild, KI-generiert (Tamil.de) | – | `design/inhalte/bilder-lauf/pool/sport/kricket-ausruestung.jpg` |
-| `sport-3.webp` | Sport | Symbolbild, KI-generiert (Tamil.de) | – | `design/inhalte/bilder-lauf/pool/sport/fussball-vereinsplatz.jpg` |
-| `sport-4.webp` | Sport | Symbolbild, KI-generiert (Tamil.de) | – | `design/inhalte/bilder-lauf/pool/sport/sporthalle-hallenfussball.jpg` |
-| `sport-5.webp` | Sport | Symbolbild, KI-generiert (Tamil.de) | – | `design/inhalte/bilder-lauf/pool/sport/karate-guertel.jpg` |
-| `kultur-2.webp` | Kultur | Symbolbild, KI-generiert (Tamil.de) | – | `design/inhalte/bilder-lauf/pool/kultur/bharatanatyam-fuesse.jpg` |
-| `kultur-3.webp` | Kultur | Symbolbild, KI-generiert (Tamil.de) | – | `design/inhalte/bilder-lauf/pool/kultur/mudra-haende.jpg` |
-| `kultur-4.webp` | Kultur | Symbolbild, KI-generiert (Tamil.de) | – | `design/inhalte/bilder-lauf/pool/kultur/parai-trommel.jpg` |
-| `kultur-5.webp` | Kultur | Symbolbild, KI-generiert (Tamil.de) | – | `design/inhalte/bilder-lauf/pool/kultur/buecher-messinglampe.jpg` |
+| `news-4.webp` | Nachrichten | Symbolbild: KI-generiert · Tamil.de | – | `design/inhalte/bilder-lauf/pool/news/bahnsteig-morgen.jpg` |
+| `news-5.webp` | Nachrichten | Symbolbild: KI-generiert · Tamil.de | – | `design/inhalte/bilder-lauf/pool/news/abflughalle.jpg` |
+| `news-6.webp` | Nachrichten | Symbolbild: KI-generiert · Tamil.de | – | `design/inhalte/bilder-lauf/pool/news/amtsflur.jpg` |
+| `news-7.webp` | Nachrichten | Symbolbild: KI-generiert · Tamil.de | – | `design/inhalte/bilder-lauf/pool/news/mikrofone-podium.jpg` |
+| `entertainment-1.webp` | Entertainment | Symbolbild: KI-generiert · Tamil.de | – | `design/inhalte/bilder-lauf/pool/entertainment/konzert-publikum.jpg` |
+| `entertainment-2.webp` | Entertainment | Symbolbild: KI-generiert · Tamil.de | – | `design/inhalte/bilder-lauf/pool/entertainment/mikrofon-buehne.jpg` |
+| `entertainment-3.webp` | Entertainment | Symbolbild: KI-generiert · Tamil.de | – | `design/inhalte/bilder-lauf/pool/entertainment/mischpult.jpg` |
+| `entertainment-4.webp` | Entertainment | Symbolbild: KI-generiert · Tamil.de | – | `design/inhalte/bilder-lauf/pool/entertainment/mridangam-haende.jpg` |
+| `events-9.webp` | Events | Symbolbild: KI-generiert · Tamil.de | – | `design/inhalte/bilder-lauf/pool/events/kolam-haustuer.jpg` |
+| `events-10.webp` | Events | Symbolbild: KI-generiert · Tamil.de | – | `design/inhalte/bilder-lauf/pool/events/oellampen-reihe.jpg` |
+| `events-11.webp` | Events | Symbolbild: KI-generiert · Tamil.de | – | `design/inhalte/bilder-lauf/pool/events/festsaal-vorbereitet.jpg` |
+| `events-12.webp` | Events | Symbolbild: KI-generiert · Tamil.de | – | `design/inhalte/bilder-lauf/pool/events/blumengirlanden.jpg` |
+| `community-3.webp` | Community | Symbolbild: KI-generiert · Tamil.de | – | `design/inhalte/bilder-lauf/pool/community/gopuram-grauer-himmel.jpg` |
+| `community-4.webp` | Community | Symbolbild: KI-generiert · Tamil.de | – | `design/inhalte/bilder-lauf/pool/community/schuhe-tempeleingang.jpg` |
+| `community-5.webp` | Community | Symbolbild: KI-generiert · Tamil.de | – | `design/inhalte/bilder-lauf/pool/community/klassenzimmer-tamilschule.jpg` |
+| `community-6.webp` | Community | Symbolbild: KI-generiert · Tamil.de | – | `design/inhalte/bilder-lauf/pool/community/tee-vereinsheim.jpg` |
+| `kueche-4.webp` | Küche | Symbolbild: KI-generiert · Tamil.de | – | `design/inhalte/bilder-lauf/pool/kueche/dosa-pfanne.jpg` |
+| `kueche-5.webp` | Küche | Symbolbild: KI-generiert · Tamil.de | – | `design/inhalte/bilder-lauf/pool/kueche/idli-sambar.jpg` |
+| `kueche-6.webp` | Küche | Symbolbild: KI-generiert · Tamil.de | – | `design/inhalte/bilder-lauf/pool/kueche/gewuerzdose.jpg` |
+| `kueche-7.webp` | Küche | Symbolbild: KI-generiert · Tamil.de | – | `design/inhalte/bilder-lauf/pool/kueche/filterkaffee.jpg` |
+| `kino-9.webp` | Kino | Symbolbild: KI-generiert · Tamil.de | – | `design/inhalte/bilder-lauf/pool/kino/publikum-leinwandlicht.jpg` |
+| `kino-10.webp` | Kino | Symbolbild: KI-generiert · Tamil.de | – | `design/inhalte/bilder-lauf/pool/kino/projektorstrahl.jpg` |
+| `kino-11.webp` | Kino | Symbolbild: KI-generiert · Tamil.de | – | `design/inhalte/bilder-lauf/pool/kino/popcorn-foyer.jpg` |
+| `kino-12.webp` | Kino | Symbolbild: KI-generiert · Tamil.de | – | `design/inhalte/bilder-lauf/pool/kino/kinoeingang-abend.jpg` |
+| `sport-2.webp` | Sport | Symbolbild: KI-generiert · Tamil.de | – | `design/inhalte/bilder-lauf/pool/sport/kricket-ausruestung.jpg` |
+| `sport-3.webp` | Sport | Symbolbild: KI-generiert · Tamil.de | – | `design/inhalte/bilder-lauf/pool/sport/fussball-vereinsplatz.jpg` |
+| `sport-4.webp` | Sport | Symbolbild: KI-generiert · Tamil.de | – | `design/inhalte/bilder-lauf/pool/sport/sporthalle-hallenfussball.jpg` |
+| `sport-5.webp` | Sport | Symbolbild: KI-generiert · Tamil.de | – | `design/inhalte/bilder-lauf/pool/sport/karate-guertel.jpg` |
+| `kultur-2.webp` | Kultur | Symbolbild: KI-generiert · Tamil.de | – | `design/inhalte/bilder-lauf/pool/kultur/bharatanatyam-fuesse.jpg` |
+| `kultur-3.webp` | Kultur | Symbolbild: KI-generiert · Tamil.de | – | `design/inhalte/bilder-lauf/pool/kultur/mudra-haende.jpg` |
+| `kultur-4.webp` | Kultur | Symbolbild: KI-generiert · Tamil.de | – | `design/inhalte/bilder-lauf/pool/kultur/parai-trommel.jpg` |
+| `kultur-5.webp` | Kultur | Symbolbild: KI-generiert · Tamil.de | – | `design/inhalte/bilder-lauf/pool/kultur/buecher-messinglampe.jpg` |
 
 Prompt und Modell je Bild stehen in `design/inhalte/bilder-lauf/pool/liste.md`.
 
@@ -178,7 +178,7 @@ Prompt und Modell je Bild stehen in `design/inhalte/bilder-lauf/pool/liste.md`.
 
 `bash wordpress/dev/lint.sh`, `python -m pytest -q` (u. a. `tests/test_bilder.py`, `tests/test_lizenz.py`),
 `node tools/shots.mjs` für Startseite und eine Rubrik bei 390/820/1280. Sichtprüfung: Schild „Symbolbild“ an jeder
-Karte mit Pool-Bild, im Fuß genau eine Zeile „Symbolbild, KI-generiert (Tamil.de)“, kein leerer Link, kein
+Karte mit Pool-Bild, im Fuß genau eine Zeile „Symbolbild: KI-generiert · Tamil.de“, kein leerer Link, kein
 „Wikimedia Commons“ ohne Urheber.
 
 ## Bilder mit Vorbehalt

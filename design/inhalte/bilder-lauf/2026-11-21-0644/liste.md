@@ -1,7 +1,7 @@
 # Bilder-Lauf 21.11.2026, 6:44 Uhr
 
 Symbolbilder für Beiträge ohne geeignetes eigenes Foto. Erzeugt mit Higgsfield (Modell `gpt_image_2_6`, 16:9,
-1344 × 752 px, 0,75 Credits je Bild). Bildnachweis für alle: **Symbolbild, KI-generiert (Tamil.de)**.
+1344 × 752 px, 0,75 Credits je Bild). Bildnachweis für alle: **Symbolbild: KI-generiert · Tamil.de**.
 Eingesetzt wird über Radar oder WordPress durch Luis oder Nick, immer mit dem Schild „Symbolbild“.
 
 | Datei | Beitrag | Grund | Alt-Text |

@@ -1,7 +1,7 @@
 # Bilder-Lauf 21.11.2026, 12:05 Uhr (Nachzug: alle übrigen Beiträge mit Ersatzbild)
 
 Erzeugt mit Higgsfield (Modell `gpt_image_2_6`, 16:9, 1344 × 752 px, 0,75 Credits je Bild).
-Bildnachweis für alle: **Symbolbild, KI-generiert (Tamil.de)**. Eingesetzt wird über Radar oder WordPress durch
+Bildnachweis für alle: **Symbolbild: KI-generiert · Tamil.de**. Eingesetzt wird über Radar oder WordPress durch
 Luis oder Nick, immer mit dem Schild „Symbolbild“. Übersicht: `uebersicht-1.jpg`, `uebersicht-2.jpg`.
 
 | Datei | Beitrag | Bisher | Alt-Text |
