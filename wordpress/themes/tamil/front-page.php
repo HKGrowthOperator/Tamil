@@ -12,6 +12,20 @@ defined( 'ABSPATH' ) || exit;
 get_header();
 
 $tamil_a = tamil_start_auswahl();
+// Beiträge der Startseite vermerken (ohne Rubrikkacheln), damit geliehene Filmbilder ihrem Besitzer ausweichen (CODE-06)
+$tamil_ohne = $tamil_a;
+unset( $tamil_ohne['kacheln'] );
+$tamil_alle = array();
+array_walk_recursive(
+	$tamil_ohne,
+	static function ( $wert, $schluessel ) use ( &$tamil_alle ) {
+		// Beitrags-IDs stehen in Listen (Zahl als Schlüssel) oder unter „lead“ bzw. „post“, nicht unter Zählern wie „kinos“
+		if ( is_int( $wert ) && $wert > 0 && ( is_int( $schluessel ) || in_array( $schluessel, array( 'lead', 'post' ), true ) ) ) {
+			$tamil_alle[] = $wert;
+		}
+	}
+);
+tamil_seite_beitraege( $tamil_alle );
 
 if ( ! $tamil_a['lead'] ) :
 	?>
