@@ -75,8 +75,12 @@
     ctx.globalCompositeOperation = "source-over";
     ctx.clearRect(0, 0, B, H);
     if (t < 1) {
+      // K-07: wo die wachsenden Fenster zusammenstoßen, blieben spitze Reste; die Decke wird nach gut der Hälfte des
+      // Wachsens (ab 58 %) langsam durchsichtig, die Reste verblassen statt als Splitter stehen zu bleiben
+      ctx.globalAlpha = t < 0.58 ? 1 : Math.max(0, 1 - (t - 0.58) / 0.42);
       ctx.fillStyle = FARBE;
       ctx.fillRect(0, 0, B, HO);
+      ctx.globalAlpha = 1;
       ctx.globalCompositeOperation = "destination-out";
       ctx.beginPath();
       var g = t * t * (3 - 2 * t), zoom = 1 + (ZOOM - 1) * g, fz = f * zoom;
