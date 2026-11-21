@@ -1,8 +1,8 @@
 <?php
 /**
- * „Diese Woche“ (dunkel, volle Breite): Kino-Beiträge der letzten 30 Tage als Bildkacheln (die erste groß 4:3 mit
- * Titel im Bild, die zweite 8:3 mit Titel darunter), „Im Kino“ mit den Filmen, die ab heute laufen, und „Termine“ mit
- * den nächsten Terminen, alle als Bildkacheln. Fehlt etwas, sagt eine Bildkachel, wo es weitergeht.
+ * „Diese Woche“ (dunkel, volle Breite): Kino-Beiträge der letzten 30 Tage als Bildkacheln (die erste groß 4:3, die
+ * zweite 8:3), „Im Kino“ mit den Filmen, die ab heute laufen, und „Termine“ mit den nächsten Terminen, alle als
+ * Bildkarten mit Titel im Bild (Text auf Bild, 20.11.2026). Fehlt etwas, sagt eine Bildkachel, wo es weitergeht.
  *
  * @var array $args { @type array $woche Ergebnis von tamil_woche_auswahl(). }
  */
@@ -27,7 +27,6 @@ $tamil_klein   = isset( $tamil_ids[1] ) ? tamil_anr_imbild(
 		'klasse' => 'kachel kachel--klein',
 		'rahmen' => 'r83',
 		'ebene'  => 'h3',
-		'unter'  => true,
 		'sizes'  => '(min-width: 1024px) 380px, (min-width: 600px) 50vw, 100vw',
 	)
 ) : '';
@@ -54,7 +53,7 @@ $tamil_klassen[] = 'termine-' . max( 1, count( $tamil_termine ) );
 				<ul aria-labelledby="t-kino">
 					<?php
 					foreach ( $tamil_filme as $tamil_f ) {
-						echo tamil_grafik_kino( $tamil_f ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_grafik_kino()
+						echo tamil_grafik_kino( $tamil_f, 'h3' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_grafik_kino()
 					}
 					if ( ! $tamil_filme ) {
 						echo tamil_grafik_leer( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_grafik_leer()

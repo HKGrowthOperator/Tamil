@@ -3,6 +3,47 @@
 Neueste oben. Format: Datum · Entscheidung · wer · warum. Was hier steht, gilt, bis ein neuerer Eintrag es ändert.
 Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
+## 21.11.2026
+
+- **Punktbogen bleibt weiß auf dunklen, rot auf hellen Bildecken:** Luis fragte zuerst „warum sind die tamil dots nicht
+  in rot ??“ und wollte den Bogen überall in Titan/Impact. Nach Rückfrage bestätigte er die bestehende Regel aus
+  3.7.x (Wahl über den Ton der Bildecke, `tamil_signatur_ecke_ton`). Wortlaut: „Die weißen Punkte in den Bildecken
+  bleiben, weil diese Ecken meist dunkel sind; rot wäre dort kaum zu sehen, außer auf hellen Bildern. genau so
+  umsetzen“. Keine rote Fassung mit weißer Eckfläche.
+
+  · Luis
+
+## 20.11.2026
+
+- **Jede Meldung als Karte (Theme 3.7.0):** Was auf der Startseite gilt, gilt jetzt überall, wo Beiträge angerissen
+  werden: jeder Beitrags-Anreißer ist eine Bildkarte mit Dachzeile „Rubrik | Datum“ und Titel im Foto, Punktbogen unten
+  rechts, Schild „Symbolbild“ oben rechts – Rubrikseiten („Neu in der Rubrik“, „Weitere Beiträge“), Suche, Archive,
+  404, Production, „Weiterlesen“, Termine („Ab heute“, „Kommende Termine“, „Das Jahr“) und Kino („Im Programm“, „Aus
+  dem Kinojahr“). Es bleiben: Top-News im Kopf, Navigation, Fußlisten, Rubrikkacheln, Verzeichnis, Anzeigen,
+  Formulare, reine Textseiten und die Kinotabelle (Spielorte; ihre Zeilen verlinken auf Kinos, nicht auf Beiträge).
+  Wortlaut Luis: „auf jeder meldung tamil dots und schrift auf der karte tamil dots auchh auf der akrte“.
+
+  · Luis (`docs/abnahme/2026-11-20-logo-startseite.md`, Nachtrag 3.7.0)
+- **Neues Logo, genau so übernommen:** Das Logo aus `design/inhalte/logo-2026-11.webp` („tamil“ in Rot, „.de“ in
+  Dunkelgrau, darunter „portal • lifestyle • entertainment“ und „& KOMMUNITYPLATTFORM DER COMMUNITY“) ersetzt das
+  bisherige Logo in Kopf, Fuß, Teilenbild, Theme-Vorschau und Social-Vorlagen – in genau dieser Form und
+  Schreibweise, ohne Neuzeichnen oder Vektor-Nachbau, nur vom weißen Grund freigestellt. Das hebt die Regel
+  „Logo bleibt unverändert“ aus dem Branding-Handoff v1.1 für dieses Logo auf; alle anderen Logo-Regeln gelten weiter
+  (Signet nie am, im oder hinter dem Logo). Favicon und App-Icon „t.“ bleiben, bis Luis anders entscheidet.
+
+  · Luis (`docs/abnahme/2026-11-20-logo-startseite.md`)
+- **Startseite „Text auf Bild“:** Alle Beiträge der Startseite stehen als Bildkarten mit Dachzeile „Rubrik | Datum“ und
+  Titel im Foto (auf dem Verlauf nach Schwarz) – Nebenstücke, „Weitere Meldungen“, Küche, Rubrikblöcke und „Diese
+  Woche“. Die Rubrikkacheln (Navigation) bleiben. Bewegung D und die Bilderpflicht bleiben.
+
+  · Luis (`docs/abnahme/2026-11-20-logo-startseite.md`)
+- **Punktbogen an jedem Beitrag:** Das Signet steht klein und dezent an jedem einzelnen Beitrag, als Bogen unten rechts
+  im Bild (Anreißer, Listen, Kacheln, Kino, Termine, Suche, Artikelbild). Ausgenommen: Rubrikkacheln (Navigation),
+  Leerzustände, Seiten, Verzeichnis, Anzeigen, Logo. Das ergänzt die Regel „nicht über Fotos, nicht in Anreißern“ aus
+  dem Theme 3.5.0 um diese eine Ausnahme.
+
+  · Luis (19./20.11., `docs/abnahme/2026-11-20-logo-startseite.md`)
+
 ## 19.11.2026
 
 - **Freigaben vom 19.11.:**

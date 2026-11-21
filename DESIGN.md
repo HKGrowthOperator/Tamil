@@ -11,8 +11,17 @@
 > Power“. Sie ersetzen die Farbwerte von klar2 und die Regel „Rot nur als Akzent“. Das Logo bleibt unverändert.
 >
 > **Stand 19.11.2026 (Theme 3.5.0):** Das Signet „Tamil Dots 04A“ steht als Hintergrund im Theme (Abschnitt „Signet“).
-> Freigegeben ist die Form (Luis, 19.11.); die Platzierungen im Theme 3.5.0 sind noch nicht freigegeben, Freigabe vor
-> dem Testsystem ausstehend.
+> Freigegeben ist die Form (Luis, 19.11.) und die Platzierungen im Theme 3.5.0 (Luis, 19.11.,
+> `docs/abnahme/2026-11-19-signature.md`).
+>
+> **Stand 20.11.2026 (Theme 3.6.0):** Entscheidungen von Luis (`docs/abnahme/2026-11-20-logo-startseite.md`,
+> `docs/entscheidungen.md`): **neues Logo** genau so übernommen (Abschnitt „Logo“; hebt für dieses Logo „das Logo bleibt
+> unverändert“ aus dem Branding-Handoff auf), **Startseite „Text auf Bild“** (jeder Beitrag als Bildkarte mit Titel im
+> Foto) und der **Punktbogen an jedem Beitrag** (Abschnitt „Signet“). Freigegeben von Luis am 20.11.
+>
+> **Stand 20.11.2026 (Theme 3.7.0):** **Jede Meldung als Karte** (Luis, 20.11.: „auf jeder meldung tamil dots und
+> schrift auf der karte“): Jeder Beitrags-Anreißer der Website ist eine Bildkarte mit Titel im Foto und Punktbogen –
+> nicht nur auf der Startseite (Abschnitt „Bausteine“, „Seiten“). Freigabe ausstehend.
 
 **Idee:** eine ruhige Nachrichtenseite mit mehr Bild und mehr Bühne. Vorbild BBC News für Kopf und Ordnung,
 tagesschau für den Titel im Bild, Spiegel für die Bildblöcke. Das Wow kommt aus Fotos, Fläche und dem Wechsel von
@@ -46,6 +55,25 @@ unter Schrift im Bild: durchsichtig nach Schwarz, auf Titan-Flächen nach Titan.
 gedreht. Rot als Schrift nie über 20 px; im Bild und auf Titan ist die Dachzeile weiß. Anzeigen bleiben neutral
 (Schwarz), damit sie sich vom redaktionellen Teil abheben.
 
+## Logo (seit 20.11.2026)
+
+Das neue Logo von Luis, **genau so übernommen**, auch die Schreibweise: „tamil“ in Rot, „.de“ in Dunkelgrau, darunter
+„portal • lifestyle • entertainment“ und „& KOMMUNITYPLATTFORM DER COMMUNITY“. Kein Neuzeichnen, kein Vektor-Nachbau,
+Farben aus der Vorlage.
+
+- **Quelle:** `design/inhalte/logo-2026-11.webp` (1969 × 799, weißer Grund). `design/inhalte/logo_freistellen.py`
+  stellt den Grund je Bildpunkt frei (Lage zwischen Weiß und der Druckfarbe = Deckkraft; voll deckende Punkte behalten
+  ihre Farbe) und schneidet ohne Rand zu. Auf Weiß weicht das Ergebnis im Mittel um 1 von 255 von der Quelle ab.
+- **Dateien:** `design/inhalte/logo.png` (1920 × 695, Social und Druck), im Theme `assets/img/logo.webp` (199 × 72),
+  `logo-2x.webp` (398 × 144, unter 30 KB) per `srcset`, `logo.png` (398 × 144) für Schema und als Rückfall.
+- **Kopf:** 56 / 64 / 72 px hoch (Handy / Tablet / Desktop), damit „portal • lifestyle • entertainment“ lesbar bleibt
+  (die Zeile ist rund ein Sechstel der Logohöhe); die Zeile „& KOMMUNITYPLATTFORM …“ ist im Kopf nur angedeutet, so
+  ist sie in der Vorlage angelegt. **Fuß:** 56 px. `alt="tamil.de"`, Breite und Höhe aus der Datei.
+- **Teilenbild** `assets/img/teilen.jpg` (1200 × 630, `design/inhalte/teilen_bauen.mjs`) und `screenshot.jpg` zeigen
+  das neue Logo; die Social-Muster (`design/social/`) ebenso.
+- **Favicon und App-Icon „t.“** bleiben vorerst (offene Frage an Luis).
+- Signet und Logo bleiben getrennt: der Punktbogen steht nie am, im oder hinter dem Logo.
+
 ## Schrift
 
 Eine Familie: **Libre Franklin** (variabel 100–900, OFL, selbst gehostet, nur der lateinische Teil wird vorgeladen).
@@ -57,6 +85,7 @@ Tamil fällt über `unicode-range` und `:lang(ta)` auf die Tamil-Untermenge von 
 | Artikeltitel | 28 / 38 px | 650 |
 | Seitenkopf | 28 / 34 px | 700 |
 | Titel große Kachel | 22 / 26 px | 650 |
+| Titel Bildkarte | 19–21 / 17–20 px, ausgeglichen, höchstens 4 Zeilen | 650 |
 | Nebenstück, Blocktitel | 19 / 20 px | 650 / 700 |
 | Meldung, Listenzeile | 17 / 19 px | 600 |
 | Fließtext im Artikel | 18 / 19 px, Zeilenhöhe 1,6 | 400 |
@@ -69,13 +98,13 @@ gemeinsamer Kante für Kopf, Bild und Text), höchstens 70 Zeichen je Zeile.
 ## Bausteine
 
 - **Kopf:** Kopfzeile (Datum, Top-News: Schild „Neu“ in Impact, die Überschriften der neuesten Beiträge in Impact, ab 1024 px zwei mit
-  feiner Linie, darunter einer, einzeilig mit Auslassung, am Handy ohne Datum; Suche), Logo 44/52/58 px auf
-  weißem Grund, Rubrikband in Titan mit weißer Schrift (`nav`, 46/48 px, steht beim Scrollen), aktive Rubrik in
+  feiner Linie, darunter einer, einzeilig mit Auslassung, am Handy ohne Datum; Suche), Logo 56/64/72 px auf
+  weißem Grund (Abschnitt „Logo“), Rubrikband in Titan mit weißer Schrift (`nav`, 46/48 px, steht beim Scrollen), aktive Rubrik in
   Impact mit Gewicht 600 und 3 px Weiß darunter, beim Überfahren Impact, Fokusring weiß, am Handy seitlich mit
   Einrasten; „Mehr“ am Ende mit Suche, Diensten und Social.
 - **Anreißer:** ein Link um Bild und Text; Dachzeile „Rubrik | Datum“; Bild füllt seinen Rahmen. Formate: 4:3
-  (Aufmacher, große Kachel in „Diese Woche“), 16:9 (Nebenstücke, Meldungen, Rubrikkacheln, Küche groß), 8:3 (kleine
-  Kacheln). Beim Überfahren Zoom 1,03 in 0,35 s, Titel unterstrichen.
+  (Aufmacher, große Kachel in „Diese Woche“, Viererreihen am Desktop), 16:9 (Bildkarten, Rubrikkacheln, Küche groß),
+  8:3 (kleine Kacheln). Beim Überfahren Zoom 1,03 in 0,35 s, Titel unterstrichen.
 - **Bilderpflicht** (Luis, 17.11.): Jeder Anreißer, jede Listenzeile, Kachel, jedes Suchergebnis, „Weiterlesen“ und
   jeder Kino- und Termineintrag zeigt ein echtes Bild; nichts nur als Text. Ausgenommen sind Rubrikband, Top-News im
   Kopf, Fußlisten, Formulare und reine Textseiten. Bildkette an einer Stelle (`inc/bildkette.php`): eigenes Foto (Titelkarten nie;
@@ -86,8 +115,24 @@ gemeinsamer Kante für Kopf, Bild und Text), höchstens 70 Zeichen je Zeile.
   oben rechts ab 150 px Rahmenbreite, darunter ein „S“; „Symbolbild,“ vor dem Nachweis). Nachweise entstehen an
   einer Stelle (`tamil_nachweis_bauen()`): Urheber verlinkt auf die Dateiseite, Lizenz auf den Lizenztext,
   „zugeschnitten“ bei freien Lizenzen und Bändern. Prüfung: `node wordpress/dev/bilder_pflicht.mjs`.
-- **Bild mit Titel im Bild:** Aufmacher und große Kacheln; das Format ist nur Mindesthöhe, längere Titel machen die
-  Kachel höher statt abzuschneiden; Fokus als Rahmen nach innen.
+- **Bild mit Titel im Bild:** Aufmacher, große Kacheln und seit 3.6.0 **jede Bildkarte der Startseite** („Text auf
+  Bild“, unten); das Format ist nur Mindesthöhe, längere Titel machen die Kachel höher statt abzuschneiden (Bildkarten:
+  höchstens vier Zeilen); Fokus als Rahmen nach innen. Rechts unten hält der Text den Platz für den Punktbogen frei.
+- **Bildkarte „Text auf Bild“** (Luis 20.11.2026; seit 3.7.0 **jeder Beitrags-Anreißer der Website**, nicht nur die
+  Startseite): Foto 16:9 (am Desktop in Viererreihen 4:3), darauf auf
+  dem Verlauf nach Schwarz die Dachzeile „Rubrik | Datum“ und der Titel, weiß, ausgeglichen umbrochen
+  (`text-wrap: balance`). Der Verlauf erreicht 72 % Schwarz (auf Titan 86 % Titan), bevor die Schrift beginnt; gemessen
+  hält jede Textzeile im 5-%-Quantil mindestens 5,9 : 1 (Ziel 4,5 : 1). Das Foto sitzt höher im Rahmen (Position
+  50 % 28 %), damit Gesichter über dem Verlauf bleiben; Pool-Bilder behalten ihren Fokus. Vorspann unter dem Bild
+  (drei Zeilen): in Listen und „Weiterlesen“ immer, auf der Startseite nur am Desktop.
+- **Kartenraster** (`tamil_zeilen()`, seit 3.7.0 jede Liste von Beiträgen: Rubrik, Suche, Archive, 404, Production,
+  Termine, „Aus dem Kinojahr“): Handy eine Spalte, Tablet zwei, Desktop drei; Vorspann und Angaben (Ort, Eintritt)
+  unter dem Bild; Suchwort fett in Titel und Vorspann. Die erste Karte im ersten Bildschirm lädt sofort, alle anderen
+  mit geringem Vorrang; Karten ab der dritten mit `content-visibility: auto`, wischbare Reihen laden kurz vor dem Bild.
+- **Keine Karten** (gewollt, so gezählt): Top-News im Kopf, Rubrikband, Fußlisten, Rubrikkacheln (Navigation),
+  Kinotabelle „Nach Stadt“ (ihre Zeilen verlinken auf Kinos, nicht auf Beiträge), Verzeichnis, Anzeigen, Formulare,
+  reine Textseiten, der Artikel selbst (Titel über dem Bild). Prüfung: `bilder_pflicht.mjs`, Wert „Titel im Bild“
+  (Soll 100 %, Ausnahmen mit Namen).
 - **Rubrikkacheln:** Navigation mit Bild (Foto des neuesten Beitrags der Rubrik, sonst das erste Bild ihres Pools),
   Name im Bild.
 - **Bildkacheln auf Titan** (`data-grafik`, Grund `titan-tief`): Kino mit Bild 4:3 links (Film, Zahl der Kinos, Städte) und Termine mit
@@ -105,20 +150,27 @@ gemeinsamer Kante für Kopf, Bild und Text), höchstens 70 Zeichen je Zeile.
 
 ## Seiten
 
-- **Startseite:** Aufmacher 4:3 (am Desktop daneben „Weitere Meldungen“), vier Nebenstücke, Rubrikkacheln,
-  Werbeplatz 01, „Diese Woche“ (Kino groß und klein, „Im Kino“, „Termine“), „Küche“ (groß 16:9, klein 8:3 auf einer
-  Kante; unter 1024 px Titel unter dem Bild, am Tablet die große Kachel oben), Billboard, Rubrikblöcke mit je vier Nebenstücken. „Diese Woche“ zeigt nur Aktuelles: Filme mit Spieltagen
+- **Startseite („Text auf Bild“ seit 3.6.0):** jeder Beitrag als Bildkarte mit Titel im Foto. Aufmacher 4:3, am
+  Desktop daneben „Weitere Meldungen“ als Stapel von drei Karten 16:9 (so hoch wie der Aufmacher; Handy und Tablet:
+  wischbare Reihe, die nächste Karte schaut an), vier Nebenstücke als Karten (Handy untereinander, Tablet 2 × 2,
+  Desktop zu viert in 4:3 mit Vorspann), Rubrikkacheln (Navigation, unverändert), Werbeplatz 01, „Diese Woche“ (Kino
+  groß 4:3 und klein 8:3, „Im Kino“ mit Zahl der Kinos in der Dachzeile und den Städten darunter, „Termine“ mit dem
+  Datum des Termins in der Dachzeile und Ort und Eintritt darunter, alle mit Titel im Bild), „Küche“ (groß 16:9, klein
+  8:3 mit Titel im Bild, am Tablet die kleinen 16:9 nebeneinander), Billboard, Rubrikblöcke mit je vier Karten (Handy
+  wischbar, Tablet 2 × 2, Desktop zu viert). „Diese Woche“ zeigt nur Aktuelles: Filme mit Spieltagen
   ab heute, Kino-Beiträge der letzten 30 Tage, Termine der nächsten 14 Tage (sonst die nächsten drei); was dort
   steht, kommt oben nicht noch einmal.
 - **Artikel:** Dachzeile, Titel, Vorspann, Leiste mit Lesezeit und „Per WhatsApp teilen“, Bild (randlos am Handy) mit
   Nachweis, Text, Termin als Angaben, Quelle, Schlagworte, Teilen, Redaktion; Textspalte mittig wie im Entwurf; Werbeplatz 02 ab 1280 px rechts daneben, darunter nach dem Bild;
-  „Weiterlesen“ mit vier Nebenstücken.
-- **Rubrik:** Seitenkopf, Aufmacher mit „Neu in der Rubrik“ daneben, Liste mit Bild und Vorspann, Seiten, Kacheln.
-- **Kino:** Seitenkopf, Bereich „Im Programm“ in Titan, „Nach Stadt“ (Tabelle, jede Zeile mit dem Bild des Films),
-  „Aus dem Kinojahr“ (Liste mit Bild).
-- **Termine:** Seitenkopf, Bereich „Ab heute“ in Titan (Termine der nächsten 14 Tage, sonst die nächsten drei),
-  „Kommende Termine“ nach Monaten (Zeilen mit Bild, Datum mit Uhrzeit, Ort, Veranstalter, Eintritt; Filter nach Land
-  und Stadt als Knöpfe mit `aria-pressed`, nur mit Skript), „Das Jahr“ (vergangene Termine, Monate zum Aufklappen).
+  „Weiterlesen“ mit vier Bildkarten (Desktop zu viert in 4:3, Tablet 2 × 2, Handy wischbar).
+- **Rubrik:** Seitenkopf, Aufmacher mit „Neu in der Rubrik“ daneben (drei Karten 16:9 als Stapel, Handy wischbar),
+  „Weitere Beiträge“ als Kartenraster mit Vorspann, Seiten, Kacheln.
+- **Kino:** Seitenkopf, Bereich „Im Programm“ in Titan (Filme als Karten mit Titel im Bild), „Nach Stadt“ (Tabelle,
+  jede Zeile mit dem Bild des Films), „Aus dem Kinojahr“ (Kartenraster).
+- **Termine:** Seitenkopf, Bereich „Ab heute“ in Titan (Termine der nächsten 14 Tage, sonst die nächsten drei; Karten
+  mit dem Datum des Termins in der Dachzeile, Ort und Eintritt darunter), „Kommende Termine“ nach Monaten (Kartenraster:
+  Datum mit Uhrzeit in der Dachzeile, Ort, Veranstalter, Eintritt unter dem Bild; Filter nach Land und Stadt als Knöpfe
+  mit `aria-pressed`, nur mit Skript), „Das Jahr“ (vergangene Termine als Karten, Monate zum Aufklappen).
 - **Kontakt:** Formulare des Plugins (Nachricht, Termin, Kooperation, mit Danke-Anzeige), daneben Redaktionsdaten nur
   aus dem Customizer und „Andere Wege“; darunter die Werbeplätze aus dem Plugin mit „Preis: auf Anfrage“. Kein alter
   Seiteninhalt.
@@ -126,21 +178,21 @@ gemeinsamer Kante für Kopf, Bild und Text), höchstens 70 Zeichen je Zeile.
 - **Verzeichnisprofil** (`single-tamil_vz_eintrag.php`): Dachzeile, Name, Bild mit Nachweis, Profil des Plugins,
   Link zur Karte (OpenStreetMap, nicht eingebettet); ohne Lesezeit und Teilen-Leiste.
 - **Impressum, Datenschutz:** außerhalb des Echtbetriebs der Hinweis „Entwurf: Der Text von KBS folgt.“
-- **Suche, 404, Seiten, Archive:** Seitenkopf, Blöcke mit Blocktitel, Listen mit Bild; Seiten in der Artikelspalte,
+- **Suche, 404, Seiten, Archive:** Seitenkopf, Blöcke mit Blocktitel, Kartenraster; Seiten in der Artikelspalte,
   Plugin-Inhalte bis 720 px. Bildnachweise im Fuß eingeklappt („Bildnachweise dieser Seite (n)“).
 
-## Signet „Tamil Dots 04A“ (Theme 3.5.0)
+## Signet „Tamil Dots 04A“ (Theme 3.5.0, an jedem Post seit 3.6.0)
 
 Die Form hat Luis am 19.11.2026 freigegeben (`docs/abnahme/2026-11-19-signature.md`, `design/signature/master.svg`,
 238 elliptische Punkte); der Abgleich mit Feld A der Originalreferenz ist nicht erfolgt. Die Platzierungen unten sind
-im Theme 3.5.0 gebaut und **vor dem Testsystem noch freizugeben**. Das Signet ist das wiedererkennbare Merkmal der
+im Theme 3.5.0 gebaut und am 19.11. freigegeben; der Bogen an jedem Post (3.6.0) ist zur Freigabe vorgelegt. Das Signet ist das wiedererkennbare Merkmal der
 Marke und wird vor allem als Hintergrund eingesetzt.
 
 **Regeln**
 
 - **Nicht das Logo.** Nie am, im, hinter oder verschmolzen mit dem Logo; das Logo bleibt unverändert.
-- **Nur in freier Fläche.** Nie hinter Überschriften, Text oder Gesichtern; nicht im Artikeltext, nicht über Fotos,
-  nicht in Anreißern oder Kacheln, nicht im Logobereich. Es rahmt, hinterlegt und gliedert und ist von der Kante seines
+- **Nur in freier Fläche.** Nie hinter Überschriften, Text oder Gesichtern; nicht im Artikeltext, nicht im
+  Logobereich. Über Fotos nur als kleiner Bogen in der Bildecke jedes Beitrags („An jedem Post“, unten). Es rahmt, hinterlegt und gliedert und ist von der Kante seines
   Bereichs angeschnitten (rechts, unten, am Fensterrand). Die freie Fläche unter dem Bogen bleibt frei.
 - **Form unverändert:** nicht drehen, spiegeln, stauchen; großer Fuß links, Auslauf rechts. Keine Pfeile oder anderen
   Zeichen dazu. Variante C nur als abgeleitete Bewegung (im Theme nicht eingesetzt), Spatial nur an Sonderstellen.
@@ -162,7 +214,28 @@ Marke und wird vor allem als Hintergrund eingesetzt.
 
 Nicht eingesetzt: ein kleiner Punktbogen über Blocktiteln (die Linie in Titan gliedert schon; er hätte unruhig gewirkt).
 
-**Technik.** `inc/signatur.php`: `tamil_signatur( $variante, $args )` gibt `<span class="signatur signatur--…"
+**An jedem Post (seit 3.6.0; Luis 19./20.11.: „klein und dezent, aber auf jeden einzelnen Beitrag“).** Ein kleiner
+Punktbogen unten rechts im Bild jedes Beitrags, bündig in der Ecke; die Bildkante schneidet rechts den Auslauf und unten
+ein Stück vom Fuß ab.
+
+| | |
+|---|---|
+| Wo | jedes Beitragsbild in einem Rahmen: Aufmacher, Bildkarten, Kacheln, Listen der Rubriken, Suche, 404, Archive, „Weiterlesen“, Kino- und Termineinträge, Zeilen der Kinotabelle (auch mit Symbolbild), Production; das Bild im Artikel (steht es nur im Text, dieses Bild) |
+| Nicht | Rubrikkacheln (Navigation), Leerzustände ohne Beitrag, Seiten (Impressum, Werben …), Verzeichniseinträge, Anzeigen, Logo |
+| Form | `ecke.svg`: Small-Geometrie als Mini (47 Punkte, Größen leicht gestaucht, damit sie bei 20–56 px einzeln bleiben), unter 4 KB; als CSS-Hintergrund, einmal geladen |
+| Größe | 13 % der Rahmenbreite, 20 bis 56 px (Listenzeile 96 px → 20 px, Karte 340 px → 44 px, Aufmacher → 56 px) |
+| Farbe | weiß, Deckkraft 95 % am Fuß bis 72 % am Auslauf, mit leisem dunklem Schein (nur Schwarz mit Deckkraft); auf hellen Bildecken `ecke-rot.svg` in Titan (Fuß) und Impact (Bogen). Die Ecke wird einmal gemessen (relative Helligkeit über 0,3) und am Anhang gemerkt |
+| Titel im Bild | weiß auf dem Verlauf, ohne Schein; der Text hält rechts die Breite des Bogens + 10 px frei, so liegt der Bogen nie unter Schrift |
+| Schild „Symbolbild“ | bleibt oben rechts (in kleinen Rahmen „S“); der Bogen sitzt unten rechts, beide berühren sich nie |
+| Bewegung | statisch; er erscheint mit seinem Bild (Aufdecken, Steigen), mit „Bewegung reduzieren“ steht er einfach da |
+
+Prüfung: `node wordpress/dev/bilder_pflicht.mjs` zählt je Seite und Breite, ob jedes Beitragsbild den Bogen trägt
+(sichtbar, bündig unten rechts im Bild, zuoberst, ohne Text im Bild oder das Schild zu überdecken); Soll 100 %.
+
+**Technik.** Bogen an jedem Post: `tamil_bild()` (`inc/bildkette.php`) hängt `tamil_signatur_ecke_html()`
+(`<span class="signatur-ecke" aria-hidden="true">`) an jedes Beitragsbild; Option `signet => false` für die Ausnahmen,
+`tamil_signatur_ecke_im_text()` für Bilder nur im Text, CSS im Abschnitt „Signet an jedem Post“.
+`inc/signatur.php`: `tamil_signatur( $variante, $args )` gibt `<span class="signatur signatur--…"
 aria-hidden="true">` aus, inline mit SVG nur für `flaeche` (Animation), sonst leer mit CSS-Hintergrund (zwischengespeichert,
 `?ver=` im CSS bei Änderungen erhöhen). Dateien in `assets/img/signatur/` (je unter 30 KB), gebaut mit
 `assets/img/signatur/bauen.py` aus `design/signature/daten/punkte.json` über den Generator
@@ -189,7 +262,7 @@ nie von selbst; was einmal erschienen ist, bleibt.
 | „Diese Woche“ | Titan-Fläche zieht von links auf, danach steigt der Inhalt | 800 ms, Inhalt ab 55 % |
 | Große Kacheln | Bild deckt sich von unten auf, Maßstab 1,06 → 1, Titel zeilenweise | 750 / 1100 / 700 ms |
 | Blocktitel | steigen aus ihrer Linie | 700 ms |
-| Kacheln, Nebenstücke, Meldungen, Listen | 16 px nach oben, einblenden, gestaffelt 60 ms je Spalte, 100 ms je Reihe | 560 ms |
+| Kacheln, Bildkarten, Nebenstücke, Meldungen, Listen | 16 px nach oben, einblenden, gestaffelt 60 ms je Spalte, 100 ms je Reihe; wischbare Reihen erscheinen gemeinsam | 560 ms |
 | Signet auf Titan-Flächen | Punkte bauen die Form auf (vom Fuß zum Auslauf, `scale` 0 → 1) | 1500 ms |
 
 Am Scrollweg per CSS-Scroll-Timeline (`@supports (animation-timeline: scroll())`), sonst ein passiver Scroll-Handler

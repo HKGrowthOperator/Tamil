@@ -1,6 +1,6 @@
 <?php
 /**
- * Suche in klar2: Seitenkopf mit Suchfeld und Zahl der Treffer, Treffer als Liste mit Bild (Suchwort hervorgehoben),
+ * Suche in klar2: Seitenkopf mit Suchfeld und Zahl der Treffer, Treffer als Bildkarten (Suchwort hervorgehoben),
  * Seitennavigation. Ohne Suchbegriff (Link „Suche“ in der Kopfzeile) nur das Suchfeld und die Rubriken.
  */
 
@@ -36,8 +36,9 @@ tamil_cache_fuellen( $tamil_ids );
 			echo tamil_zeilen( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_zeilen()
 				$tamil_ids,
 				array(
-					'ebene'    => 'h2',
-					'markiere' => $tamil_q,
+					'ebene'       => 'h2',
+					'markiere'    => $tamil_q,
+					'erste_eager' => true,
 				)
 			);
 			?>

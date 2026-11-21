@@ -418,16 +418,18 @@ function tamil_symbolbild_schild(): string {
 }
 
 /**
- * <img> eines Pool-Bilds mit kleiner Fassung (320 px) im srcset.
+ * <img> eines Pool-Bilds mit kleinen Fassungen (320 und 480 px) im srcset. Die 480er braucht die 160 px breite
+ * Rubrikkachel am Handy mit doppelter bis dreifacher Pixeldichte; sonst lädt es das ganze Bild (QA-19).
  *
  * @param array<string,mixed> $p    Eintrag aus tamil_bildpool().
  * @param array<string,string> $attr alt, loading, sizes, class, fetchpriority.
  */
 function tamil_pool_tag( array $p, array $attr ): string {
-	$basis = TAMIL_THEME_URI . '/assets/img/rubrik/';
-	$klein = str_replace( '.webp', '-320.webp', (string) $p['datei'] );
+	$basis  = TAMIL_THEME_URI . '/assets/img/rubrik/';
+	$klein  = str_replace( '.webp', '-320.webp', (string) $p['datei'] );
+	$mittel = str_replace( '.webp', '-480.webp', (string) $p['datei'] );
 	return sprintf(
-		'<img src="%1$s" srcset="%2$s 320w, %1$s %3$dw" sizes="%4$s" width="%3$d" height="%5$d" alt="%6$s" decoding="async" loading="%7$s"%8$s%9$s style="object-position: %10$s">',
+		'<img src="%1$s" srcset="%2$s 320w, %11$s 480w, %1$s %3$dw" sizes="%4$s" width="%3$d" height="%5$d" alt="%6$s" decoding="async" loading="%7$s"%8$s%9$s style="object-position: %10$s">',
 		esc_url( $basis . $p['datei'] ),
 		esc_url( $basis . $klein ),
 		(int) $p['w'],
@@ -435,9 +437,10 @@ function tamil_pool_tag( array $p, array $attr ): string {
 		(int) $p['h'],
 		esc_attr( (string) ( $attr['alt'] ?? '' ) ),
 		esc_attr( (string) ( $attr['loading'] ?? 'lazy' ) ),
-		! empty( $attr['fetchpriority'] ) ? ' fetchpriority="high"' : '',
+		! empty( $attr['fetchpriority'] ) ? ' fetchpriority="' . ( 'low' === $attr['fetchpriority'] ? 'low' : 'high' ) . '"' : '',
 		! empty( $attr['class'] ) ? ' class="' . esc_attr( $attr['class'] ) . '"' : '',
-		esc_attr( (string) $p['fokus'] )
+		esc_attr( (string) $p['fokus'] ),
+		esc_url( $basis . $mittel )
 	);
 }
 
@@ -450,8 +453,11 @@ function tamil_pool_tag( array $p, array $attr ): string {
  *     @type string $sizes     sizes-Angabe für srcset.
  *     @type bool   $eager     Sofort und vorrangig laden (erster Bildschirm).
  *     @type bool   $sofort    Sofort laden, ohne Vorrang (kleine Bilder im seitlichen Streifen).
+ *     @type bool   $niedrig   Mit geringem Vorrang laden (Bildkarten unter dem Aufmacher, damit dessen Bild zuerst kommt).
  *     @type string $klasse    Klasse des Bilds.
  *     @type bool   $schild    Schild „Symbolbild“ im Rahmen (Standard ja).
+ *     @type bool   $signet    Signet unten rechts im Bild (Standard ja: jeder Beitrag trägt es; nein bei Rubrikkacheln,
+ *                             Seiten und Verzeichniseinträgen, siehe inc/signatur.php).
  *     @type bool   $nur_eigen Nur das eigene Beitragsbild (Seiten wie Impressum), sonst nichts.
  * }
  */
@@ -470,13 +476,33 @@ function tamil_bild( int $post_id, array $opt = array() ): string {
 	} else {
 		// Bilder in seitlich laufenden Streifen lädt der Browser bei „lazy“ erst, wenn sie hineingewischt werden.
 		$attr['loading'] = ! empty( $opt['sofort'] ) ? 'eager' : 'lazy';
+		if ( ! empty( $opt['niedrig'] ) ) {
+			$attr['fetchpriority'] = 'low'; // Bildkarten nahe dem Aufmacher: nicht vor dessen Bild laden
+		}
 	}
 	$klassen = array_filter( array( (string) ( $opt['klasse'] ?? '' ), $w['breit'] ? 'bild--breit' : '' ) );
 	if ( $klassen ) {
 		$attr['class'] = implode( ' ', $klassen );
 	}
+	$signet = (bool) ( $opt['signet'] ?? true );
+	$ton    = 'dunkel';
+	// Ein geliehenes Filmbild, das ein anderer Beitrag auf dieser Seite schon als Kartenbild zeigt, weicht einem
+	// Symbolbild aus dem Pool (CODE-06). Eigene Bilder werden nie ersetzt; Rubrikkacheln (ohne Signet) zählen nicht.
+	if ( $signet && 'film' === $w['art'] && ! tamil_anhang_frei( (int) $w['id'], $post_id ) ) {
+		$w = array_merge(
+			$w,
+			array(
+				'art'      => 'pool',
+				'id'       => 0,
+				'breit'    => false,
+				'symbol'   => true,
+				'nachweis' => '',
+			)
+		);
+	}
 	if ( 'pool' === $w['art'] ) {
 		$p             = tamil_pool_fuer( $post_id );
+		$ton           = $signet ? tamil_signatur_ecke_ton_pool( (string) $p['datei'] ) : $ton;
 		$w['nachweis'] = tamil_pool_nachweis( $p );
 		/* translators: %s: Bildbeschreibung */
 		$attr['alt']   = sprintf( __( 'Symbolbild: %s', 'tamil' ), $p['alt'] );
@@ -486,10 +512,19 @@ function tamil_bild( int $post_id, array $opt = array() ): string {
 		if ( ! empty( $opt['sizes'] ) ) {
 			$attr['sizes'] = (string) $opt['sizes'];
 		}
+		if ( $signet ) {
+			tamil_anhang_frei( (int) $w['id'], $post_id ); // merken, damit spätere Filmbilder ausweichen
+		}
 		$img = (string) wp_get_attachment_image( $w['id'], (string) ( $opt['size'] ?? 'large' ), false, $attr );
+		if ( '' !== $img && $signet ) {
+			$ton = tamil_signatur_ecke_ton( (int) $w['id'] );
+		}
 	}
 	if ( '' !== $img && $w['symbol'] && ( $opt['schild'] ?? true ) ) {
 		$img .= tamil_symbolbild_schild();
+	}
+	if ( '' !== $img && $signet ) {
+		$img .= tamil_signatur_ecke_html( $ton );
 	}
 	if ( '' !== $img ) {
 		tamil_nachweise( $w['nachweis'] );
@@ -498,10 +533,26 @@ function tamil_bild( int $post_id, array $opt = array() ): string {
 }
 
 /**
+ * Darf ein Beitrag diesen Anhang als Kartenbild zeigen? Ja, wenn ihn auf dieser Seite noch kein anderer Beitrag gezeigt
+ * hat; der erste Beitrag wird gemerkt. Die Seite wird immer in derselben Reihenfolge gebaut, die Wahl ist also bei
+ * gleichem Inhalt gleich (kein Flackern zwischen Aufrufen oder im Seiten-Cache).
+ */
+function tamil_anhang_frei( int $anhang, int $post_id ): bool {
+	static $gezeigt = array();
+	if ( $anhang <= 0 ) {
+		return true;
+	}
+	if ( ! isset( $gezeigt[ $anhang ] ) ) {
+		$gezeigt[ $anhang ] = $post_id;
+	}
+	return $gezeigt[ $anhang ] === $post_id;
+}
+
+/**
  * Ein Bild aus dem Rubrik-Pool als <img> (Rubrikkacheln ohne Beitrag mit Foto, Leerzustände), reihum auf der Seite;
- * merkt den Nachweis.
+ * merkt den Nachweis. Das Signet nur, wenn das Bild für einen Beitrag steht (Zeilen der Kinotabelle).
  *
- * @param array<string,mixed> $opt { @type int $n bevorzugte Nummer im Pool, @type bool $schild, @type bool $sofort, @type bool $alt, @type string $sizes. }
+ * @param array<string,mixed> $opt { @type int $n bevorzugte Nummer im Pool, @type bool $schild, @type bool $sofort, @type bool $alt, @type string $sizes, @type bool $signet (Standard nein). }
  */
 function tamil_pool_img( string $slug, array $opt = array() ): string {
 	$p = tamil_pool_seite( $slug, (int) ( $opt['n'] ?? 0 ) );
@@ -517,6 +568,9 @@ function tamil_pool_img( string $slug, array $opt = array() ): string {
 	);
 	if ( $opt['schild'] ?? true ) {
 		$img .= tamil_symbolbild_schild();
+	}
+	if ( ! empty( $opt['signet'] ) ) {
+		$img .= tamil_signatur_ecke_html( tamil_signatur_ecke_ton_pool( (string) $p['datei'] ) );
 	}
 	return $img;
 }

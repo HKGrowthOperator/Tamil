@@ -164,6 +164,13 @@ def test_altlasten_aus_echtem_text_entfernt(wp, wp_cli):
         wp_cli(f"wp_delete_post( {pid}, true );")
 
 
+def test_beschreibung_trennt_bloecke(wp_cli):
+    """Überschriften und Absätze kleben in der Beschreibung nicht zusammen (QA-03: „Die Konzerte im ArchivIlaiyaraaja …“)."""
+    php = ("echo tamil_site_seo_text_bereinigen( '<h2>Die Konzerte im Archiv</h2><ul><li><a href=\"/x/\">Ilaiyaraaja Live mit dir!</a></li>"
+           "<li>A.R.Rahman Live</li></ul><h3>Fragen?</h3><p>Schreibt uns.</p>' );")
+    assert wp_cli(php).strip() == "Die Konzerte im Archiv. Ilaiyaraaja Live mit dir! A.R.Rahman Live Fragen? Schreibt uns."
+
+
 def test_startseite_website_mit_suche(wp):
     seite = wp.get("/").text
     website = [d for d in _jsonld(seite) if d.get("@type") == "WebSite"]
@@ -266,6 +273,32 @@ def test_seo_titel_wird_escaped(wp, wp_cli):
         assert "<script>alert(1)</script>" not in seite
         titel = re.search(r"<title>(.*?)</title>", seite, re.DOTALL).group(1)
         assert "<" not in titel and "alert(1)" in html.unescape(titel)
+    finally:
+        wp_cli(f"wp_delete_post( {pid}, true );")
+
+
+def test_seo_titel_mit_marke_und_laengenregel(wp, wp_cli):
+    """QA-14: Ein eigener SEO-Titel trägt wie alle anderen Seiten „| Marke“, solange er damit höchstens 60 Zeichen hat
+    und die Marke nicht schon enthält; ein langer Titel bleibt ohne Zusatz stehen."""
+    marke = wp_cli("echo get_bloginfo( 'name', 'display' );").strip()
+    pid = int(wp_cli(
+        "echo wp_insert_post( array( 'post_title' => 'Markentest', 'post_status' => 'publish', 'post_name' => 'seo-test-marke',"
+        " 'post_content' => '<p>x</p>' ) );"))
+
+    def titel(seo: str) -> str:
+        wp_cli(f"update_post_meta( {pid}, '_tamil_seo_title', {json.dumps(seo, ensure_ascii=False)} );")
+        seite = wp.get("/seo-test-marke/").text
+        return html.unescape(re.search(r"<title>(.*?)</title>", seite, re.DOTALL).group(1)).strip()
+
+    try:
+        kurz = "„Jailer 2“ in Kloten am 15.11."
+        assert titel(kurz) == f"{kurz} | {marke}"
+        lang = "x" * (61 - len(f" | {marke}"))
+        assert titel(lang) == lang
+        grenze = "y" * (60 - len(f" | {marke}"))
+        assert titel(grenze) == f"{grenze} | {marke}"
+        mit_marke = f"Neu auf {marke}: Termine"
+        assert titel(mit_marke) == mit_marke
     finally:
         wp_cli(f"wp_delete_post( {pid}, true );")
 

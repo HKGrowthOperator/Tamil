@@ -10,7 +10,8 @@
  * Artikel → Seitenkopf und Listen → Rubrik, Kino, Termine → Seiten und Formulare → Plugin-Bausteine → Anzeigen →
  * Fuß → Signet → Gutenberg → Bewegung → reduzierte Bewegung und Druck.
  *
- * Signet seit 3.5.0: „Tamil Dots 04A“ als Hintergrund in Band, Seitenköpfen, Titan-Flächen, Fuß und an Sonderstellen.
+ * Signet seit 3.5.0: „Tamil Dots 04A“ als Hintergrund in Band, Seitenköpfen, Titan-Flächen, Fuß und an Sonderstellen;
+ * seit 3.6.0 zusätzlich klein in der Bildecke jedes Beitrags.
  */
 
 /* ---------- Tokens ---------- */
@@ -55,6 +56,8 @@
   /* Schrift im Bild: der einzige Verlauf, von durchsichtig nach Schwarz; auf Titan-Flächen nach Titan (.woche) */
   --verlauf: linear-gradient(to bottom, rgb(0 0 0 / 0) 0, rgb(0 0 0 / 0.72) 52px, rgb(0 0 0 / 0.88) 100%);
   --verlauf-kurz: linear-gradient(to bottom, rgb(0 0 0 / 0) 0, rgb(0 0 0 / 0.78) 22px, rgb(0 0 0 / 0.9) 100%);
+  --verlauf-karte: linear-gradient(to bottom, rgb(0 0 0 / 0) 0, rgb(0 0 0 / 0.72) 40px, rgb(0 0 0 / 0.86) 100%);
+  --verlauf-karte-titan: linear-gradient(to bottom, rgb(102 0 0 / 0) 0, rgb(102 0 0 / 0.86) 40px, rgb(102 0 0 / 0.95) 100%);
   --verlauf-titan: linear-gradient(to bottom, rgb(102 0 0 / 0) 0, rgb(102 0 0 / 0.8) 52px, rgb(102 0 0 / 0.94) 100%);
   --verlauf-titan-kurz: linear-gradient(to bottom, rgb(102 0 0 / 0) 0, rgb(102 0 0 / 0.84) 22px, rgb(102 0 0 / 0.95) 100%);
   --symbolbild-grund: rgb(102 0 0 / 0.86);   /* Schild „Symbolbild“: Titan, Weiß darauf mindestens 9,5 : 1 */
@@ -186,6 +189,9 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 }
 .kopfzeile__neu a:focus-visible { outline-offset: -2px; } /* innen, sonst schneidet die einzeilige Zeile den Rahmen */
 .kopfzeile .kopfzeile__neu a + a { display: none; }
+/* bis 819 px die kurze, ab 820 px die längere am Wortende gekürzte Fassung; die Ellipse oben bleibt nur Sicherung (QA-06) */
+.kopfzeile__neu .neu__lang { display: none; }
+@media (min-width: 820px) { .kopfzeile__neu .neu__kurz { display: none; } .kopfzeile__neu .neu__lang { display: inline; } }
 .kopfzeile__neu a + a::before {
   content: ""; display: inline-block; width: 1px; height: 0.95em; margin-right: 12px;
   vertical-align: -0.12em; background: var(--linie);
@@ -195,7 +201,9 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 }
 .kopfzeile__suche svg { width: 16px; height: 16px; flex: none; }
 .kopf__logo { display: block; width: max-content; padding: 6px 0; }
-.kopf__logo img { height: 44px; width: auto; }
+/* Logo (neu seit 3.6.0, Luis 20.11.2026): so hoch, dass „portal • lifestyle • entertainment“ lesbar bleibt (die Zeile
+   ist rund ein Sechstel der Logohöhe: 9,5 / 11 / 12 px) */
+.kopf__logo img { height: 56px; width: auto; }
 
 /* Rubrikband in Titan Red mit weißer Schrift (Luis, 19.11.2026): weiß auf Titan 13,4 : 1. Beim Überfahren und bei
    offenem „Mehr“ Impact Red (weiß darauf 7,2 : 1); die aktive Rubrik ist in Impact markiert und trägt 3 px Weiß darunter
@@ -205,11 +213,17 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .band__liste {
   display: flex; flex: 1 1 auto; min-width: 0;
   overflow-x: auto; scrollbar-width: none;
-  scroll-snap-type: x proximity; scroll-padding-inline: 4px 50%;
+  scroll-snap-type: x proximity; scroll-padding-inline: 32px 50%;
 }
 .band__liste::-webkit-scrollbar { display: none; }
 /* folgen rechts noch Rubriken, läuft die letzte sichtbar aus (statt hart an „Mehr“ abgeschnitten zu wirken) */
 .band__liste.mehr-rechts { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent); }
+/* ist die Reihe gewischt, läuft auch der linke Rand aus statt einen Wortrest hart abzuschneiden (QA-16) */
+.band__liste.mehr-links { -webkit-mask-image: linear-gradient(to right, transparent, #000 32px); mask-image: linear-gradient(to right, transparent, #000 32px); }
+.band__liste.mehr-links.mehr-rechts {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 32px, #000 calc(100% - 32px), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 32px, #000 calc(100% - 32px), transparent);
+}
 .band__liste li { scroll-snap-align: start; }
 .band__liste a, .mehr summary {
   position: relative; display: block;
@@ -249,7 +263,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 @media (min-width: 600px) {
   :root { --rand: 24px; }
   .kopfzeile__datum { flex: none; }
-  .kopf__logo img { height: 52px; }
+  .kopf__logo img { height: 64px; }
 }
 /* Tablet: etwas engere Abstände, damit alle Rubriken samt „Kontakt“ ab etwa 800 px neben „Mehr“ passen */
 @media (min-width: 600px) and (max-width: 1023px) {
@@ -261,8 +275,8 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .kopfzeile__innen { min-height: 38px; }
   .kopfzeile a, .kopfzeile .kopfzeile__neu a { min-height: 38px; line-height: 38px; }
   .kopfzeile .kopfzeile__neu a + a { display: block; }
-  .kopf__logo { padding: 11px 0; }
-  .kopf__logo img { height: 58px; }
+  .kopf__logo { padding: 10px 0; }
+  .kopf__logo img { height: 72px; }
   .band__innen { position: relative; padding: 0 calc(var(--rand) - 14px); }
   .band__liste { overflow: visible; }
   .band__liste a, .mehr summary { padding: 0 14px; font-size: 16px; }
@@ -376,23 +390,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .kacheln a:hover .kachel__name { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.14em; }
 
 .neben { margin-top: 20px; }
-.stueck { border-top: 1px solid var(--linie); }
-.stueck .anr {
-  display: grid; grid-template-columns: 112px minmax(0, 1fr); column-gap: 12px; align-items: start;
-  padding: 16px 0;
-}
-.stueck .rahmen { margin-top: 3px; }
-.stueck .titel { font-size: 19px; line-height: 1.22; letter-spacing: -0.005em; }
-.stueck .vorspann { display: none; font-size: 16px; line-height: 1.5; }
-
 .meldungen { margin-top: 28px; }
-.meldung + .meldung { border-top: 1px solid var(--linie); }
-.meldung .anr {
-  display: grid; grid-template-columns: minmax(0, 1fr) 96px; column-gap: 14px; align-items: start;
-  padding: 14px 0;
-}
-.meldung .rahmen { margin-top: 3px; }
-.meldung .titel { font-size: 17px; line-height: 1.3; font-weight: 600; }
 
 /* ---------- Bildkacheln mit Titel im Bild (Diese Woche, Küche) ---------- */
 .kachel { align-self: start; }
@@ -400,7 +398,6 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .kachel .titel { font-size: 19px; line-height: 1.2; }
 .kachel--gross .titel { font-size: 22px; line-height: 1.18; }
 .kachel .imbild { padding-bottom: 14px; }
-.kachel__unter { padding-top: 12px; }
 
 /* ---------- Diese Woche: Fläche in Titan Red ----------
    Weiß darauf 13,4 : 1, Nebeninfos 8,4 : 1. Schrift im Bild läuft hier auf einem Verlauf nach Titan, die Linie unter
@@ -416,8 +413,6 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 }
 .woche__raster { display: grid; gap: 16px; }
 .woche .kachel--gross .rahmen { aspect-ratio: 4 / 3; }
-.woche .kachel__unter .meta { color: var(--hell-leise); }
-.woche .kachel__unter .meta__rubrik { color: var(--hell); }
 .woche__gruppe { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
 .woche__art { font-size: 13px; line-height: 1.35; font-weight: 600; color: var(--hell-leise); padding-top: 6px; }
 .woche__gruppe ul { display: flex; flex-direction: column; gap: 10px; }
@@ -429,9 +424,6 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .grafik .anr { height: 100%; }
 .grafik .rahmen { background: var(--titan); }
 .grafik__inhalt { padding: 14px 16px 18px; }
-.grafik--quer .anr { display: grid; grid-template-columns: 112px minmax(0, 1fr); }
-.grafik--quer .rahmen { aspect-ratio: 4 / 3; align-self: start; }
-.grafik--quer .grafik__inhalt { padding: 12px 14px 14px; }
 .grafik .titel { font-size: 20px; line-height: 1.2; }
 .grafik__zahl { margin-top: 6px; font-size: 18px; line-height: 1.3; font-weight: 600; font-variant-numeric: tabular-nums; }
 .grafik__orte { margin-top: 6px; font-size: 15px; line-height: 1.45; color: var(--hell-leise); }
@@ -446,26 +438,14 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .kueche__raster { display: grid; gap: 12px; padding-top: 14px; }
 .kueche .kachel--klein .imbild { padding: 30px var(--rand) 10px; background-image: var(--verlauf-kurz); }
 .kueche .kachel--klein .meta { margin-bottom: 2px; }
-/* Unter 1024 px sind die kleinen Küche-Kacheln zu niedrig für den Titel im Bild: Bild oben, Titel darunter */
-@media (max-width: 1023px) {
-  .kueche .kachel--klein .rahmen { aspect-ratio: auto; display: block; overflow: visible; background: none; }
-  .kueche .kachel--klein .rahmen > img { position: static; display: block; height: auto; aspect-ratio: 8 / 3; background: var(--flaeche); }
-  .kueche .kachel--klein .anr:hover .rahmen img { transform: none; }
-  .kueche .kachel--klein .imbild { padding: 10px 0 0; background: none; color: var(--tinte); }
-  .kueche .kachel--klein .imbild .meta { display: block; color: var(--leise); }
-  .kueche .kachel--klein .imbild .meta__rubrik { color: var(--rot); }
-  .kueche .kachel--klein .titel { font-size: 17px; line-height: 1.25; }
-}
+/* Kleine Küche-Kacheln: Titel im Bild auf allen Breiten (Text auf Bild, 20.11.2026); am Handy 8:3 über die volle
+   Breite, am Tablet 16:9 nebeneinander, am Desktop 8:3 gestapelt neben der großen */
+.kueche .kachel--klein .titel { font-size: 19px; line-height: 1.2; }
 .rubrikblock { margin-top: 44px; }
 .rubrikblock .neben { margin-top: 0; }
-.rubrikblock .stueck:first-child { border-top: 0; }
 
 /* ---------- Tablet ---------- */
 @media (min-width: 600px) {
-  .stueck .anr { grid-template-columns: 200px minmax(0, 1fr); column-gap: 20px; }
-  .stueck .rahmen { margin-top: 0; }
-  .stueck .vorspann { display: block; }
-  .meldung .anr { grid-template-columns: minmax(0, 1fr) 120px; }
   .kacheln li { flex-basis: 160px; }
   .woche__raster { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .woche__raster .kachel--gross, .woche__gruppe--termine { grid-column: 1 / -1; }
@@ -485,19 +465,15 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .kueche__raster--1 .kachel--gross { max-width: 803px; }
   .kueche .kachel--klein .titel { font-size: 17px; line-height: 1.2; }
 }
-/* Die Meldungen zweispaltig, solange sie unter dem Aufmacher stehen */
 @media (min-width: 600px) and (max-width: 1023px) {
   .aufmacher .rahmen { margin-inline: 0; }
   .aufmacher .titel { font-size: 34px; line-height: 1.1; }
   .aufmacher .imbild { padding: 90px 28px 22px; }
-  .meldungen ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 24px; }
-  .meldung { border-top: 1px solid var(--linie); }
-  .meldung:nth-child(-n+2) { border-top: 0; }
   /* Küche am Tablet: große Kachel über die volle Breite, die kleinen nebeneinander darunter (Bild 16:9, Titel darunter) */
   .kueche__raster--4 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .kueche__raster--3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .kueche__raster--4 .kachel--gross, .kueche__raster--3 .kachel--gross { grid-column: 1 / -1; grid-row: auto; }
-  .kueche__raster .kachel--klein .rahmen > img { aspect-ratio: 16 / 9; }
+  .kueche__raster .kachel--klein .rahmen { aspect-ratio: 16 / 9; }
 }
 
 /* ---------- Desktop ---------- */
@@ -519,17 +495,10 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .aufmacher .titel { font-size: 40px; line-height: 1.1; letter-spacing: -0.015em; max-width: 17em; }
   .aufmacher .vorspann { margin-top: 14px; max-width: 40em; }
 
-  .meldung .anr { grid-template-columns: minmax(0, 1fr) 120px; column-gap: 16px; padding: 13px 0 14px; }
-
   .kacheln ul { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 16px; overflow: visible; margin: 0; padding: 0; }
   .kachel__name { font-size: 16px; padding: 26px 12px 9px; }
 
   .neben { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); column-gap: 24px; }
-  .neben .stueck { border-top: 0; }
-  .neben .stueck .anr { display: block; padding: 0 0 8px; }
-  .neben .stueck .rahmen { margin: 0 0 12px; }
-  .neben .stueck .titel { font-size: 20px; line-height: 1.22; }
-  .neben .stueck .vorspann { margin-top: 8px; font-size: 16px; }
   .rubrikblock .neben { padding-top: 16px; }
 
   .woche { margin-top: 64px; padding: 36px 0 48px; }
@@ -553,8 +522,6 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .kachel--gross .titel { font-size: 26px; line-height: 1.16; max-width: 22em; }
   .kachel .imbild { padding-inline: 20px; }
   .grafik__inhalt { padding: 16px 20px 20px; }
-  .grafik--quer .anr { grid-template-columns: 136px minmax(0, 1fr); }
-  .grafik--quer .grafik__inhalt { padding: 12px 16px 14px; }
   .woche__gruppe--termine ul { grid-auto-flow: column; grid-template-columns: none; grid-auto-columns: minmax(0, 1fr); gap: 24px; }
   .termine-3 .woche__gruppe--termine li:last-child { grid-column: auto; }
   /* ein Termin: Bild links, Text rechts über die volle Breite, kein leeres Viertel */
@@ -565,6 +532,102 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .kueche { margin-top: 64px; }
   .kueche .kachel--klein .imbild { padding: 30px 16px 10px; }
   .rubrikblock { margin-top: 64px; }
+}
+
+/* ---------- Bildkarten „Text auf Bild“ (Startseite, Theme 3.6.0; Luis, 20.11.2026) ----------
+   Jeder Beitrag der Startseite steht als Bildkarte: Foto 16:9, darauf auf dem Verlauf nach Schwarz die Dachzeile
+   „Rubrik | Datum“ und der Titel, weiß, mindestens 19 px, ausgeglichen umbrochen. Das Format ist Mindestmaß: Ein langer
+   Titel macht die Karte höher, statt abgeschnitten zu werden. Der Verlauf erreicht 72 % Schwarz, bevor die Schrift
+   beginnt; Weiß darauf hält auch über hellem Foto mindestens 4,5 : 1. Das Foto sitzt in der Karte höher (Gesichter
+   bleiben über dem Verlauf), rechts unten hält der Text den Platz für den Bogen frei (Abschnitt „Signet“).
+   Handy: Nebenstücke untereinander über die volle Breite, „Weitere Meldungen“ und Rubrikblöcke als wischbare Reihe.
+   Tablet: Nebenstücke und Rubrikblöcke zwei mal zwei. Desktop: Meldungen als Stapel neben dem Aufmacher, Nebenstücke
+   und Rubrikblöcke zu viert im Format 4:3 (mehr Foto über dem Titel), mit drei Zeilen Vorspann unter dem Bild. */
+.karte .rahmen img { object-position: 50% 28%; }
+.karte .imbild, .grafik--karte .imbild { padding: 44px 14px 12px; background-image: var(--verlauf-karte); }
+.karte .meta, .grafik--karte .meta { margin-bottom: 4px; }
+.karte .titel, .grafik--karte .titel, .kachel .imbild .titel { text-wrap: balance; }
+/* Silbentrennung: große Bildtitel (Aufmacher, große Kacheln) trennen nicht, Karten nur sehr lange Wörter (ab 18
+   Zeichen, Teile mindestens 7), damit „Geschichtenstunde“ ganz bleibt, „Bundesverwaltungsgericht“ aber passt */
+.aufmacher .titel, .kachel--gross .titel { -webkit-hyphens: manual; hyphens: manual; }
+.karte .titel, .grafik--karte .titel, .kachel--klein .titel { hyphenate-limit-chars: 18 7 7; }
+.karte .titel { font-size: 19px; line-height: 1.2; }
+/* höchstens vier Zeilen: Sicherung für ungewöhnlich lange Titel (der volle Titel bleibt der Name des Links) */
+.karte .titel, .grafik--karte .titel {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; line-clamp: 4; overflow: hidden;
+}
+.karte .vorspann { display: none; }
+.neben.karten { display: grid; gap: 12px; margin-top: 16px; }
+.neben.karten .titel { font-size: 21px; line-height: 1.18; }
+.karten--reihe, .neben.karten--reihe {
+  display: flex; align-items: start; gap: 12px;
+  overflow-x: auto; scrollbar-width: none; scroll-snap-type: x mandatory;
+  margin: 0 calc(-1 * var(--rand)); padding: 4px var(--rand) 6px; scroll-padding-inline: var(--rand);
+}
+.karten--reihe::-webkit-scrollbar { display: none; }
+.karten--reihe > * { flex: 0 0 min(86%, 340px); scroll-snap-align: start; min-width: 0; }
+.neben.karten--reihe .titel { font-size: 19px; line-height: 1.2; }
+.meldungen .karten--reihe { margin-top: 10px; }
+/* Kartenraster (seit 3.7.0 jede Liste von Beiträgen: Rubrik, Suche, Archive, Termine, Production, 404, Kinojahr):
+   Handy eine Spalte, Tablet zwei, Desktop drei; Vorspann (drei Zeilen) und Angaben unter dem Bild */
+.karten--raster { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px 16px; margin-top: 14px; }
+.karten--raster .karte .titel { font-size: 21px; line-height: 1.18; }
+.karten--raster .karte .vorspann, .neben.karten--reihe .vorspann {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden;
+  margin-top: 10px; font-size: 16px; line-height: 1.45;
+}
+.karte__zusatz { margin-top: 8px; }
+.karte__zusatz + .vorspann { margin-top: 4px; }
+/* Lange Listen: Karten ab der dritten erst rechnen, malen und ihre Bilder laden, wenn sie in die Nähe kommen
+   (content-visibility); die gemerkte Höhe hält die Seite ruhig. Spart am Handy die Bilder unter dem ersten Bildschirm. */
+.karten--raster > li:nth-child(n+3) { content-visibility: auto; contain-intrinsic-size: auto 290px; }
+/* Termine ohne Vorspann sind niedriger (gemessen 223 / 246 px) */
+.kalender .karten--raster > li:nth-child(n+3), .monat .karten--raster > li:nth-child(n+3) { contain-intrinsic-size: auto 240px; }
+@media (min-width: 600px) and (max-width: 1023px) {
+  /* Tablet, zwei Spalten: eine übrig bleibende letzte Karte steht nicht allein neben einer Lücke, sondern über beide
+     Spalten in flacherem Format (21:9) */
+  .karten--raster > li:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .karten--raster > li:last-child:nth-child(odd) .rahmen { aspect-ratio: 21 / 9; }
+  /* Tablet: „Weitere Meldungen“ bleibt eine wischbare Reihe (nicht das Zweierraster der Meldungszeilen) */
+  .meldungen ul.karten--reihe { display: flex; column-gap: 12px; }
+  /* „Im Kino“ über die volle Breite (ohne kleine Kachel daneben): Bild mit Titel links, Städte rechts */
+  .woche__raster.ohne-klein .woche__gruppe--kino .grafik--karte .anr { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+  .woche__raster.ohne-klein .woche__gruppe--kino .grafik--karte .grafik__inhalt { padding: 16px 20px; }
+}
+.rubrikblock .karten--reihe { padding-top: 14px; }
+/* „Diese Woche“: Kino und Termine als Karten mit Titel im Bild, darunter Städte bzw. Ort und Eintritt auf Titan */
+.woche { --verlauf-karte: var(--verlauf-karte-titan); }
+.grafik--karte .titel { font-size: 20px; line-height: 1.2; }
+.grafik--karte .grafik__inhalt { padding: 10px 14px 14px; }
+.grafik--karte .grafik__orte { margin-top: 0; }
+.woche .kachel--klein .imbild { padding: 30px 14px 10px; background-image: var(--verlauf-titan-kurz); }
+.woche .kachel--klein .titel { font-size: 19px; }
+@media (min-width: 600px) {
+  .karten--raster { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 20px; }
+  .karten--raster .karte .titel { font-size: 20px; line-height: 1.2; }
+  .neben.karten, .rubrikblock .karten--reihe {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px;
+    overflow: visible; margin-inline: 0; padding-inline: 0;
+  }
+  .neben.karten .titel, .rubrikblock .karte .titel { font-size: 20px; line-height: 1.2; }
+}
+@media (min-width: 1024px) {
+  .oben .neben.karten { margin-top: 40px; }
+  .neben.karten, .rubrikblock .karten--reihe { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 24px; }
+  .rubrikblock .karten--reihe { padding-top: 16px; }
+  .neben.karten .rahmen, .rubrikblock .karten--reihe .rahmen { aspect-ratio: 4 / 3; }
+  .neben.karten .titel, .rubrikblock .karte .titel { font-size: 17px; line-height: 1.22; }
+  .karte .imbild { padding: 48px 14px 14px; }
+  .neben.karten .vorspann {
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden;
+    margin-top: 10px; font-size: 16px; line-height: 1.45;
+  }
+  .karten--raster { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px 24px; margin-top: 16px; }
+  .karten--raster .karte .titel { font-size: 19px; }
+  /* „Weitere Meldungen“ (Startseite) und „Neu in der Rubrik“: drei Karten untereinander, so hoch wie der Aufmacher */
+  .meldungen .karten--reihe { display: grid; gap: 16px; overflow: visible; margin: 12px 0 0; padding: 0; }
+  .karte--meldung .titel { font-size: 20px; }
+  .grafik--karte .grafik__inhalt { padding: 12px 16px 16px; }
 }
 
 /* ---------- Seitenkopf, Blöcke und Listen (Rubrik, Suche, Archive, Termine, Seiten) ---------- */
@@ -578,15 +641,8 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .block__notiz { margin-top: 12px; }
 .leer__satz { margin-top: 8px; max-width: 40em; }
 
-/* Liste: Zeilen mit Dachzeile, Titel, Vorspann; Bild 16:9 rechts (Handy), links (ab 600 px) */
-.liste { border-top: 0; }
-.zeile + .zeile { border-top: 1px solid var(--linie); }
-.zeile .anr { display: grid; grid-template-columns: minmax(0, 1fr) 96px; column-gap: 14px; align-items: start; padding: 14px 0; }
-.zeile .rahmen { grid-column: 2; grid-row: 1; margin-top: 3px; }
-.zeile__text { grid-column: 1; grid-row: 1; }
-.zeile .titel { font-size: 17px; line-height: 1.3; font-weight: 600; }
-.zeile .vorspann { display: none; font-size: 16px; line-height: 1.5; color: var(--tinte); }
-.zeile mark, .treffer mark { background: none; color: inherit; font-weight: 750; }
+/* Suchwort in Titel und Vorspann: fetter statt farbig (Titel im Bild bleibt weiß) */
+.karte mark { background: none; color: inherit; font-weight: 750; }
 
 /* Bühne der Rubrik: Aufmacher und die nächsten vier daneben (Desktop) */
 .buehne .aufmacher .rahmen { margin-inline: calc(-1 * var(--rand)); }
@@ -650,7 +706,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .monat__zahl { display: inline-flex; align-items: center; gap: 12px; font-size: 15px; color: var(--leise); }
 .monat__zahl::after { content: "+"; font-size: 20px; color: var(--tinte); }
 .monat[open] .monat__zahl::after { content: "\2212"; }
-.monat .liste { margin-bottom: 16px; }
+.monat .karten { margin-bottom: 20px; }
 .block > .monat:first-of-type { margin-top: 16px; }
 
 /* Kommende Termine nach Monaten mit Filtern nach Land und Stadt (Knöpfe erst mit Skript sichtbar) */
@@ -663,7 +719,13 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .chip:hover { border-color: var(--titan); }
 .chip[aria-pressed="true"] { background: var(--titan); border-color: var(--titan); color: var(--hell); font-weight: 600; }
 .kalender__titel { margin-top: 28px; padding-bottom: 8px; border-bottom: 1px solid var(--linie); font-size: 19px; line-height: 1.25; font-weight: 650; }
-.zeile__angaben { margin-top: 4px; font-size: 15px; line-height: 1.45; color: var(--leise); }
+.zeile__angaben { font-size: 15px; line-height: 1.45; color: var(--leise); }
+/* Kommende Termine: was schon unter „Ab heute“ steht, erscheint hier nicht noch einmal – außer ein Filter ist gewählt
+   (app.js setzt .gefiltert). Bleibt ohne Filter nichts übrig, sagt ein Satz, wo die Termine stehen. */
+.kalender:not(.gefiltert) li[data-ab-heute] { display: none; }
+.kalender:not(.gefiltert) .kalender__monat:not(:has(li[data-land]:not([data-ab-heute]))) { display: none; }
+.kalender__alle-oben { display: none; }
+.kalender:not(.gefiltert):not(:has(li[data-land]:not([data-ab-heute]))) .kalender__alle-oben { display: block; }
 
 /* Kino „Nach Stadt“: Bild des Films in jeder Zeile */
 .tafel--bilder .was { display: grid; grid-template-columns: 96px minmax(0, 1fr); column-gap: 12px; align-items: start; }
@@ -672,12 +734,6 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 @media (min-width: 600px) {
   .seitenkopf { padding-top: 32px; }
   .seitenkopf__titel { font-size: 32px; }
-  .zeile .anr { grid-template-columns: 240px minmax(0, 1fr); column-gap: 20px; }
-  .zeile .rahmen { grid-column: 1; margin-top: 0; }
-  .zeile__text { grid-column: 2; }
-  .zeile .titel { font-size: 19px; line-height: 1.25; }
-  .zeile .vorspann { display: block; }
-  .monat .zeile .anr { grid-template-columns: 160px minmax(0, 1fr); }
   .termine-raster { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
   .termine-raster--eins { grid-template-columns: minmax(0, 1fr); }
   .termine-raster--eins .grafik .anr { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
@@ -695,7 +751,6 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .buehne .aufmacher .imbild { padding: 120px 32px 26px; }
   .buehne .aufmacher .titel { font-size: 38px; }
   .block { margin-top: 56px; }
-  .liste { max-width: 900px; }
   .programm { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 24px; }
   .programm.ohne-gross { grid-template-columns: minmax(0, 1fr); }
   .programm.ohne-gross .woche__gruppe ul { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
@@ -747,11 +802,11 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .inhalt ul, .inhalt ol { padding-left: 1.3em; }
 .inhalt ul { list-style: disc; }
 .inhalt li + li { margin-top: 0.4em; }
-/* Beitragslisten im Seiteninhalt (tamil_beitragslisten_mit_bild()) wie die Listen der Rubriken */
-.inhalt ul.liste { padding-left: 0; list-style: none; max-width: 900px; }
-.inhalt .liste li + li { margin-top: 0; }
-.inhalt .liste a { text-decoration: none; }
-.inhalt .liste .rahmen img { height: 100%; }
+/* Beitragslisten im Seiteninhalt (tamil_beitragslisten_mit_bild()) wie die Listen der Rubriken: Bildkarten */
+.inhalt ul.karten { padding-left: 0; list-style: none; }
+.inhalt .karten li + li { margin-top: 0; }
+.inhalt .karten a { text-decoration: none; color: inherit; }
+.inhalt .karten .rahmen img { height: 100%; }
 .inhalt blockquote, .inhalt .wp-block-quote { margin-inline: 0; padding: 2px 0 2px 20px; border-left: 2px solid var(--linie-stark); }
 .inhalt blockquote cite { display: block; margin-top: 8px; font-style: normal; font-size: 14px; color: var(--leise); }
 .inhalt .wp-block-pullquote { padding: 16px 0; text-align: left; font-size: 21px; font-weight: 650; line-height: 1.35; }
@@ -819,6 +874,9 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .kino-orte__stand, .kino-orte__notiz { font-size: 14px; color: var(--leise); }
 .kino-orte__notiz { margin-top: 8px; }
 .quelle { margin-top: 32px; padding-top: 10px; border-top: 1px solid var(--linie); font-size: 15px; color: var(--leise); }
+/* Endet der Text mit dem Terminkasten (eigene Linie unten), braucht die Quelle darunter keine zweite Linie (QA-09) */
+.inhalt:has(> .event-box:last-child) ~ .quelle { margin-top: 16px; padding-top: 0; border-top: 0; }
+.inhalt > .event-box:last-child + .quelle, .inhalt > .event-box + .quelle { border-top: 0; padding-top: 0; }
 .quelle a { color: var(--rot); font-weight: 600; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
 .schlagworte { display: flex; flex-wrap: wrap; align-items: center; gap: 0 16px; margin-top: 16px; font-size: 15px; }
 .schlagworte__titel { color: var(--leise); font-size: 13px; font-weight: 600; }
@@ -826,8 +884,9 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .schlagworte a:hover { color: var(--rot); }
 /* Teilen: der WhatsApp-Knopf in einer eigenen Zeile, darunter die übrigen Wege in einer ruhigen Zeile */
 .teilen { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--linie-stark); }
-.teilen__links { display: flex; flex-wrap: wrap; align-items: center; gap: 0 20px; margin-top: 8px; }
-.teilen .textlink { min-width: 44px; justify-content: center; }
+/* gleich breite Spalten (Handy zwei, Desktop vier), jeder Weg links bündig: keine ungleichen Lücken um „X“ */
+.teilen__links { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); align-items: center; gap: 0 16px; margin-top: 8px; }
+.teilen .textlink { min-width: 44px; justify-content: flex-start; }
 .knopf-text { padding: 0; border: 0; background: none; cursor: pointer; }
 .autor { margin-top: 24px; font-size: 15px; line-height: 1.5; color: var(--leise); }
 .autor strong { color: var(--tinte); font-weight: 600; }
@@ -835,7 +894,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .seiten-links a, .seiten-links > span { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; min-width: 44px; }
 .weiterlesen { margin-top: 48px; }
 .weiterlesen .neben { margin-top: 0; }
-.weiterlesen .stueck:first-child { border-top: 0; }
+.weiterlesen .karten--reihe { padding-top: 14px; }
 
 /* Tablet: Kopf, Bild und Text auf einer gemeinsamen Spalte von 600 px, alle Kanten gleich */
 @media (min-width: 600px) {
@@ -892,8 +951,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .tv-pause { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 48px; align-items: center; padding-top: 40px; }
 }
 .kontakt__formulare > .block__notiz { margin-top: 24px; }
-.block--treffer .liste { margin-top: 0; }
-.seite__text .inhalt > p, .seite__text .inhalt > ul:not(.liste), .seite__text .inhalt > ol, .seite__text .inhalt > h2, .seite__text .inhalt > h3 { max-width: 34em; }
+.seite__text .inhalt > p, .seite__text .inhalt > ul:not(.karten), .seite__text .inhalt > ol, .seite__text .inhalt > h2, .seite__text .inhalt > h3 { max-width: 34em; }
 
 /* Seiten nutzen die Artikelspalte; Fließtext bleibt auf Lesebreite, Plugin-Inhalte (Formulare, Tabellen, Listen) dürfen breiter */
 .seite .artikel__titel { font-size: 28px; }
@@ -937,6 +995,9 @@ input[type="file"] { padding: 10px; font-size: 15px; }
 .tf-auswahl, .vz-auswahl label, .vz-oeffentlich { display: grid; grid-template-columns: 24px minmax(0, 1fr); column-gap: 10px; align-items: start; }
 .tf-auswahl label, .vz-auswahl label { margin: 0; font-size: 15px; font-weight: 400; }
 .tf-auswahl input, .vz-auswahl input { margin: 2px 0 0; }
+/* Kontrollkästchen in Formularen mit 24 × 24 px Tippfläche (WCAG 2.2, 2.5.8); das Label daneben schaltet mit (QA-19) */
+.tf-auswahl input[type="checkbox"], .vz-auswahl input[type="checkbox"] { width: 24px; height: 24px; margin: 0; }
+.tf-auswahl label { min-height: 24px; padding-top: 2px; }
 .tf-auswahl .tf-fehler { grid-column: 2; }
 /* Link zur Datenschutzerklärung unter der Einwilligung: in der Textspalte, 44 px tippbar */
 .tf-auswahl .tf-datenschutz {
@@ -1068,6 +1129,13 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
   .ad-mobile { display: none !important; }
   .has-sticky-ad { padding-bottom: 0; }
 }
+/* Der Platz für die feste Leiste liegt im roten Fußband, nicht als weiße Fläche unter ihm */
+@media (max-width: 767px) and (min-height: 500px) {
+  .site.has-sticky-ad, .site.has-sticky-ad:has(#ad-mobile), .site.has-sticky-ad:has(.ad-mobile.ad-bild) { padding-bottom: 0; }
+  .has-sticky-ad .fuss__recht { padding-bottom: calc(6px + 84px + env(safe-area-inset-bottom, 0px)); }
+  /* Fokus und Sprungziele landen über der festen Leiste, nicht darunter (WCAG 2.2, 2.4.11; QA-18) */
+  html:has(.ad-mobile.ist-sichtbar) { scroll-padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
+}
 
 /* ---------- Fuß: weißer Grund mit Linie in Titan oben; die Zeile mit Rechtlichem als Band in Titan über die volle
    Breite (Schatten-Trick ohne zusätzliches Markup, html und body schneiden seitlich ab) ---------- */
@@ -1078,8 +1146,10 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
 }
 .fuss__innen { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 24px; }
 .fuss__marke { grid-column: 1 / -1; }
+/* bis 1023 px zwei Spalten: „Rubriken“ links über zwei Zeilen, „Dienste“ und „Folgen“ rechts untereinander (QA-17) */
+@media (max-width: 1023px) { .fuss__innen > .fuss__spalte:nth-child(2) { grid-row: span 2; } }
 .fuss__logo { display: inline-flex; align-items: center; min-height: 48px; }
-.fuss__logo img { height: 40px; width: auto; }
+.fuss__logo img { height: 56px; width: auto; }
 .fuss__satz { margin-top: 10px; max-width: 34em; color: var(--tinte); }
 .fuss h2 {
   padding-bottom: 6px; margin-bottom: 2px; border-bottom: 1px solid var(--linie);
@@ -1099,6 +1169,7 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
 .nachweise { font-size: 13px; line-height: 1.4; color: var(--leise); }
 .nachweise li { padding: 6px 0; border-bottom: 1px solid var(--linie); overflow-wrap: anywhere; }
 .nachweise a, .artikel__nachweis a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
+.artikel__nachweis a { display: inline-block; padding-block: 4px; margin-block: -4px; } /* 24 px hoch tippbar */
 .nachweise a:hover, .artikel__nachweis a:hover { color: var(--tinte); }
 .fuss__recht {
   display: flex; flex-wrap: wrap; align-items: center; gap: 0 20px;
@@ -1122,8 +1193,9 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
 /* ---------- Signet „Tamil Dots 04A“ als Hintergrund (Theme 3.5.0) ----------
    Form freigegeben von Luis am 19.11.2026 (docs/abnahme/2026-11-19-signature.md); Einbau inc/signatur.php, Dateien
    assets/img/signatur/ (bauen.py), Regeln DESIGN.md „Signet“. Das Signet ist nicht das Logo: nie am, im oder hinter dem
-   Logo, nie hinter Überschriften, Text oder Gesichtern, nicht im Artikeltext, über Fotos oder in Kacheln. Es sitzt in
-   freier Fläche, von der Kante seines Bereichs angeschnitten, und ist immer dekorativ (aria-hidden). Farben: nur Titan,
+   Logo, nie hinter Überschriften, Text oder Gesichtern, nicht im Artikeltext; über Fotos nur als kleiner Bogen in der
+   Bildecke jedes Beitrags (seit 3.6.0, unten). Es sitzt in freier Fläche, von der Kante seines Bereichs angeschnitten,
+   und ist immer dekorativ (aria-hidden). Farben: nur Titan,
    Impact und Weiß, abgestuft über Deckkraft. Statisch als CSS-Hintergrund (zwischengespeichert); inline nur auf den
    Titan-Flächen, wo die Punkte beim Hineinscrollen die Form aufbauen (Abschnitt „Bewegung“). */
 .signatur { display: block; pointer-events: none; background-repeat: no-repeat; }
@@ -1202,6 +1274,39 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
   .signatur--flaeche { width: min(780px, 62vw); translate: 14% 66%; }
   .signatur--flaeche.signatur--hoch { width: min(820px, 66vw); translate: 16% 40%; }
 }
+
+/* Signet an jedem Post (Theme 3.6.0; Luis, 19.11.2026: „klein und dezent, aber auf jeden einzelnen Post“): ein kleiner
+   Bogen unten rechts im Bild jedes Beitrags – Anreißer, Kacheln, Listen, Kino- und Termineinträge, Suche, 404,
+   „Weiterlesen“ und das Bild des Artikels. Er sitzt bündig in der Ecke, die Bildkante schneidet rechts den Auslauf und
+   unten ein Stück vom Fuß ab (ecke.svg, Small-Geometrie als Mini, damit die Punkte klein einzeln bleiben). Breite 13 %
+   des Rahmens, 20 bis 56 px; das Prozent bezieht sich auf den Rahmen, in dem die Spanne absolut steht. Weiß auf dunklen
+   und mittleren Bildecken mit einem weichen dunklen Schein (nur Schwarz mit Deckkraft), Titan und Impact auf hellen
+   (inc/signatur.php misst die Ecke). Im Bild mit Titel liegt er auf dem Verlauf, ohne Schein, und der Text hält rechts
+   den Platz frei, damit er nie unter Schrift liegt; das Schild „Symbolbild“ steht oben rechts. Statisch: er erscheint
+   mit seinem Bild (Aufdecken, Steigen). Nicht an Rubrikkacheln, Leerzuständen, Seiten, Anzeigen und nie am Logo. */
+.rahmen, .artikel__figur, .bild-ecke { --ecke: clamp(20px, 13%, 56px); }
+.signatur-ecke {
+  position: absolute; right: 0; bottom: 0; z-index: 1;
+  width: var(--ecke); aspect-ratio: 1000 / 658; pointer-events: none;
+}
+.signatur-ecke::before, .signatur-ecke::after { content: ""; position: absolute; right: 0; bottom: 0; }
+.signatur-ecke::before {
+  width: 190%; height: 200%;
+  background: radial-gradient(farthest-side at 100% 100%, rgb(0 0 0 / 0.36), rgb(0 0 0 / 0.16) 52%, rgb(0 0 0 / 0));
+}
+.signatur-ecke::after { inset: 0; background: url("../img/signatur/ecke.svg?ver=3.6.0") 0 0 / 100% 100% no-repeat; }
+.signatur-ecke--rot::before { content: none; }
+.signatur-ecke--rot::after { background-image: url("../img/signatur/ecke-rot.svg?ver=3.6.0"); }
+/* Titel im Bild: weiß auf dem Verlauf; der Text lässt rechts die Breite des Bogens und 10 px frei */
+.imbild-anr .rahmen > .signatur-ecke::before { content: none; }
+.imbild-anr .rahmen > .signatur-ecke::after { background-image: url("../img/signatur/ecke.svg?ver=3.6.0"); }
+.imbild-anr .rahmen > .imbild { padding-right: calc(var(--ecke) + 10px); }
+/* Artikel (Bild mit Nachweis darunter): der Bogen an der Unterkante des Bilds, nicht der Abbildung – aus seiner Lage
+   direkt nach dem Bild um die eigene Höhe nach oben */
+.artikel__figur:has(> .signatur-ecke) { position: relative; }
+.artikel__figur > .signatur-ecke { bottom: auto; translate: 0 -100%; }
+.bild-ecke { position: relative; display: block; width: fit-content; max-width: 100%; }
+.bild-ecke > img { display: block; }
 
 /* ---------- Gutenberg ---------- */
 .alignleft { float: left; margin: 0.3em 1.4em 1em 0; }
@@ -1326,7 +1431,7 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
   .anr:hover .rahmen img, .kacheln a:hover .rahmen img { transform: none; }
 }
 @media print {
-  .kopfzeile, .band, .fuss, .ad, .anzeige-zwischen, .anzeige-unten, .teilen, .mehr, .kacheln, .signatur { display: none !important; }
+  .kopfzeile, .band, .fuss, .ad, .anzeige-zwischen, .anzeige-unten, .teilen, .mehr, .kacheln, .signatur, .signatur-ecke { display: none !important; }
   body { background: #fff; }
   .woche { background: none; color: var(--tinte); }
 }

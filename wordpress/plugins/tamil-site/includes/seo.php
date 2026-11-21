@@ -102,7 +102,12 @@ function tamil_site_seo_text_bereinigen( string $text ): string {
 		' ',
 		$text
 	);
+	// Blockgrenzen nicht verkleben („Die Konzerte im ArchivIlaiyaraaja …“): Überschriften enden mit einem Punkt, andere
+	// Blöcke und Zeilenumbrüche mit einem Leerzeichen; ein Punkt hinter schon vorhandenem Satzzeichen entfällt.
+	$text = (string) preg_replace( '#</h[1-6]\s*>#i', '. ', $text );
+	$text = (string) preg_replace( '#</(?:p|div|li|ul|ol|dt|dd|figcaption|blockquote|td|th|tr|section|figure)\s*>|<br\s*/?>#i', ' ', $text );
 	$text = html_entity_decode( wp_strip_all_tags( $text ), ENT_QUOTES, 'UTF-8' );
+	$text = (string) preg_replace( '/([.:!?…])\s*\.(?=\s|$)/u', '$1', $text );
 	$text = (string) preg_replace(
 		array(
 			'/To view this video please enable JavaScript,?\s*and consider upgrading to a\s*web browser that\s*supports HTML5 video\.?/iu',
@@ -172,7 +177,14 @@ function tamil_site_seo_titel_feld( int $post_id ): string {
 }
 
 /**
- * <title> aus dem Feld _tamil_seo_title, wenn gesetzt.
+ * Längster <title> mit Markenzusatz; Suchmaschinen kürzen ab etwa 60 Zeichen.
+ */
+const TAMIL_SITE_SEO_TITEL_MAX = 60;
+
+/**
+ * <title> aus dem Feld _tamil_seo_title, wenn gesetzt. Wie bei allen anderen Seiten folgt „| Tamil.de“, solange der
+ * Titel damit höchstens TAMIL_SITE_SEO_TITEL_MAX Zeichen hat und die Marke nicht schon enthält; sonst bleibt der
+ * SEO-Titel allein stehen (er ist wichtiger als der Zusatz).
  *
  * @param string $titel Bisheriger Titel (leer = WordPress bildet ihn).
  */
@@ -180,6 +192,11 @@ function tamil_site_seo_document_title( $titel ) {
 	if ( tamil_site_seo_aktiv() && is_singular() ) {
 		$eigen = tamil_site_seo_titel_feld( (int) get_queried_object_id() );
 		if ( '' !== $eigen ) {
+			$marke  = trim( wp_strip_all_tags( (string) get_bloginfo( 'name', 'display' ) ) );
+			$zusatz = ' ' . apply_filters( 'document_title_separator', '-' ) . ' ' . $marke; // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Hook von WordPress.
+			if ( '' !== $marke && false === mb_stripos( $eigen, $marke ) && mb_strlen( $eigen . $zusatz ) <= TAMIL_SITE_SEO_TITEL_MAX ) {
+				$eigen .= $zusatz;
+			}
 			// WordPress gibt den Rückgabewert ungefiltert in <title> aus.
 			return esc_html( $eigen );
 		}

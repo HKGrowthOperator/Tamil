@@ -30,21 +30,31 @@
     }
     var rand = function () {
       streifen.classList.toggle("mehr-rechts", streifen.scrollLeft + streifen.clientWidth < streifen.scrollWidth - 2);
+      streifen.classList.toggle("mehr-links", streifen.scrollLeft > 2);
     };
     rand();
     streifen.addEventListener("scroll", rand, { passive: true });
     window.addEventListener("resize", rand);
   }
 
-  // Rubrikkacheln laden „lazy“ (sie liegen weit unten); am Handy laufen sie seitlich, dort lädt der Browser Bilder
-  // außerhalb des Streifens sonst erst beim Wischen: kommt der Streifen in die Nähe, laden alle auf einmal
+  // Rubrikkacheln und wischbare Kartenreihen laden „lazy“; am Handy laufen sie seitlich, dort lädt der Browser Bilder
+  // außerhalb des Streifens sonst erst beim Wischen: kommt der Streifen in die Nähe, laden alle auf einmal (Kartenreihen
+  // erst kurz vor dem Bild, damit sie dem ersten Bildschirm nichts wegnehmen)
   if ("IntersectionObserver" in window) {
-    $$(".kacheln").forEach(function (k) {
-      new IntersectionObserver(function (e, beob) {
-        if (!e[0].isIntersecting) return;
-        $$("img[loading=lazy]", k).forEach(function (i) { i.loading = "eager"; });
-        beob.disconnect();
-      }, { rootMargin: "800px 0px" }).observe(k);
+    [[".kacheln", "800px 0px"], [".karten--reihe", "200px 0px"]].forEach(function (art) {
+      $$(art[0]).forEach(function (k) {
+        new IntersectionObserver(function (e, beob) {
+          if (!e[0].isIntersecting) return;
+          $$("img[loading=lazy]", k).forEach(function (i) {
+            // „sizes=auto“ gilt nur für lazy-Bilder. Fiele es beim Umschalten weg, wählte der Browser ein größeres
+            // Bild und bräche das schon laufende kleine ab. Darum die gerenderte Breite fest eintragen.
+            var breite = Math.ceil(i.getBoundingClientRect().width);
+            if (breite > 0 && /^\s*auto\b/i.test(i.getAttribute("sizes") || "")) { i.sizes = breite + "px"; }
+            i.loading = "eager";
+          });
+          beob.disconnect();
+        }, { rootMargin: art[1] }).observe(k);
+      });
     });
   }
 
@@ -94,6 +104,8 @@
         var ok = (!wahl.land || z.getAttribute("data-land") === wahl.land) && (!wahl.stadt || z.getAttribute("data-stadt") === wahl.stadt);
         z.hidden = !ok; if (ok) n++;
       });
+      // Mit Filter zeigt die Liste auch die Termine aus „Ab heute“ (ohne Filter blendet das CSS sie hier aus)
+      block.classList.toggle("gefiltert", !!(wahl.land || wahl.stadt));
       $$(".kalender__monat", block).forEach(function (m) { m.hidden = !$("li[data-land]:not([hidden])", m); });
       if (zahl) zahl.textContent = n === 1 ? "1 Termin" : n + " Termine";
       if (leer) leer.hidden = n > 0;
@@ -185,10 +197,11 @@
   const REIHEN_MAX = 3;       // höchstens 300 ms
   const REIHE_TOLERANZ = 24;  // gleiche Reihe: Oberkanten weniger als 24 px auseinander
   const NACH_VORHANG = 0.55;  // Inhalt der dunklen Fläche beginnt nach 55 % des Vorhangs
-  const GRUPPE = ".kacheln";  // Rubrikkacheln erscheinen gemeinsam, auch die rechts angeschnittenen
+  // Rubrikkacheln und wischbare Kartenreihen erscheinen gemeinsam, auch die rechts angeschnittenen
+  const GRUPPE = ".kacheln, .karten--reihe";
   const TIEFE = 40;           // Aufmacherbild höchstens 40 px langsamer
   const REGELN = [
-    [".kacheln li, .neben .stueck, .meldung, .zeile, .woche .kachel--klein, .woche__art, .grafik, .kueche .kachel--klein", "steigen"],
+    [".kacheln li, .karte, .woche .kachel--klein, .woche__art, .grafik, .kueche .kachel--klein", "steigen"],
     [".block-titel, .woche__titel", "zeilen"],
     [".woche", "vorhang"],
     [".kachel--gross", "aufdecken zeilen"],

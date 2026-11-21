@@ -20,7 +20,7 @@ $tamil_lupe    = '<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
 				<nav class="kopfzeile__neu" aria-label="<?php esc_attr_e( 'Neueste Beiträge', 'tamil' ); ?>">
 					<strong><?php esc_html_e( 'Neu', 'tamil' ); ?></strong>
 					<?php foreach ( $tamil_neu as $tamil_n ) : ?>
-						<a href="<?php echo esc_url( get_permalink( $tamil_n ) ); ?>"><?php echo tamil_titel( $tamil_n ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_titel() ?></a>
+						<a href="<?php echo esc_url( get_permalink( $tamil_n ) ); ?>"><?php $tamil_t = html_entity_decode( get_the_title( $tamil_n ), ENT_QUOTES, 'UTF-8' ); ?><span class="neu__kurz"><?php echo tamil_text( tamil_titel_kurz( $tamil_t, 26 ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_text() ?></span><span class="neu__lang"><?php echo tamil_text( tamil_titel_kurz( $tamil_t, 44 ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_text() ?></span></a>
 					<?php endforeach; ?>
 				</nav>
 			<?php endif; ?>
@@ -49,8 +49,8 @@ $tamil_lupe    = '<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
 				</form>
 				<div class="mehr__spalten">
 					<div>
-						<h2 class="mehr__titel"><?php esc_html_e( 'Dienste', 'tamil' ); ?></h2>
-						<ul>
+						<p class="mehr__titel" id="mehr-dienste"><?php esc_html_e( 'Dienste', 'tamil' ); ?></p>
+						<ul aria-labelledby="mehr-dienste">
 							<?php foreach ( $tamil_dienste as $tamil_d ) : ?>
 								<li><a href="<?php echo esc_url( $tamil_d['url'] ); ?>"<?php echo $tamil_d['aktiv'] ? ' aria-current="page"' : ''; ?>><?php echo esc_html( $tamil_d['label'] ); ?></a></li>
 							<?php endforeach; ?>
@@ -58,8 +58,8 @@ $tamil_lupe    = '<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
 					</div>
 					<?php if ( $tamil_social ) : ?>
 						<div>
-							<h2 class="mehr__titel"><?php esc_html_e( 'Folgen', 'tamil' ); ?></h2>
-							<ul>
+							<p class="mehr__titel" id="mehr-folgen"><?php esc_html_e( 'Folgen', 'tamil' ); ?></p>
+							<ul aria-labelledby="mehr-folgen">
 								<?php foreach ( $tamil_social as $tamil_s ) : ?>
 									<li><a href="<?php echo esc_url( $tamil_s['url'] ); ?>" target="_blank" rel="noopener"><?php echo esc_html( $tamil_s['name'] ); ?></a></li>
 								<?php endforeach; ?>

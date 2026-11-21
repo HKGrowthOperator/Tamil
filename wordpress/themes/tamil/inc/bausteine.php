@@ -275,12 +275,20 @@ function tamil_kino_orte_tafel( array $filme, bool $bilder = false ): void {
 	);
 	$fmt     = static fn( string $d ): string => wp_date( 'j.n.', (int) strtotime( $d ) );
 	$orte    = array();
+	$namen   = array(); // Schreibweise je Stadt: die erste, die vorkommt
 	foreach ( $filme as $f ) {
 		foreach ( (array) ( $f['fakten']['kinos'] ?? array() ) as $k ) {
-			$stadt = trim( (string) ( $k['stadt'] ?? '' ) );
+			// Städte nur eindeutig zusammenführen: Leerraum und Groß-/Kleinschreibung (QA-11); andere Schreibweisen
+			// („Duesseldorf“) bleiben getrennt, das ist ein Datenbefund für den Radar
+			$stadt = trim( (string) preg_replace( '/\s+/u', ' ', (string) ( $k['stadt'] ?? '' ) ) );
 			if ( '' === $stadt ) {
 				continue;
 			}
+			$schluessel = mb_strtolower( $stadt );
+			if ( ! isset( $namen[ $schluessel ] ) ) {
+				$namen[ $schluessel ] = $stadt;
+			}
+			$stadt = $namen[ $schluessel ];
 			if ( ! empty( $k['termine'] ) ) {
 				/* translators: 1: Anzahl, 2: Datum */
 				$termin = sprintf( _n( '%1$d Vorstellung ab %2$s', '%1$d Vorstellungen ab %2$s', count( $k['termine'] ), 'tamil' ), count( $k['termine'] ), $fmt( (string) $k['termine'][0] ) );
@@ -291,6 +299,8 @@ function tamil_kino_orte_tafel( array $filme, bool $bilder = false ): void {
 				/* translators: %s: Datum */
 				$termin = ! empty( $k['von'] ) ? sprintf( __( 'ab %s', 'tamil' ), $fmt( (string) $k['von'] ) ) : '';
 			}
+			// Zahl und Wort nicht trennen („1 Vorstellung“), auch „ab“ nicht vom Datum (QA-11)
+			$termin = (string) preg_replace( '/(^\d+|\bab) /u', "\$1\u{00A0}", $termin );
 			$orte[ (string) ( $k['land'] ?? '' ) ][ $stadt ][] = array(
 				'post'   => (int) $f['post'],
 				'film'   => $f['film'],
@@ -316,16 +326,18 @@ function tamil_kino_orte_tafel( array $filme, bool $bilder = false ): void {
 		ksort( $staedte, SORT_LOCALE_STRING );
 		echo '<tbody><tr class="land"><th scope="rowgroup" colspan="2">' . esc_html( $laender[ $land ] ?? $land ) . '</th></tr>';
 		foreach ( $staedte as $stadt => $eintraege ) {
-			foreach ( $eintraege as $e ) {
-				echo '<tr><th scope="row" class="stadt">' . esc_html( $stadt ) . '</th><td class="was">';
+			foreach ( $eintraege as $i => $e ) {
+				// mehrere Kinos einer Stadt stehen unter einer Stadt-Zelle (rowspan), statt die Stadt zu wiederholen (QA-11)
+				echo '<tr>' . ( 0 === $i ? '<th scope="row" class="stadt"' . ( count( $eintraege ) > 1 ? ' rowspan="' . (int) count( $eintraege ) . '"' : '' ) . '>' . esc_html( (string) $stadt ) . '</th>' : '' ) . '<td class="was">';
 				if ( $bilder ) {
 					// Zeigt der Film ein eigenes Bild, steht es in jeder seiner Zeilen; ein Symbolbild wechselt je Zeile (reihum
 					// aus dem Kino-Pool), damit nicht dasselbe Ersatzbild untereinander steht
 					$bild = 'pool' === tamil_bildwahl( $e['post'] )['art'] ? tamil_pool_img(
 						'kino',
 						array(
-							'n'     => $e['post'] + ( ++$zeile ),
-							'sizes' => '96px',
+							'n'      => $e['post'] + ( ++$zeile ),
+							'sizes'  => '96px',
+							'signet' => true, // das Bild steht für den Kino-Beitrag
 						)
 					) : tamil_bild( $e['post'], array( 'sizes' => '96px' ) );
 					echo '<span class="tafel__bild rahmen r169">' . $bild . '</span><span class="tafel__text">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_bild() bzw. tamil_pool_img()

@@ -1,6 +1,7 @@
 # Übergabe Backend an Nick: tamil.de
 
-Stand: 19.11.2026 (Theme 3.4.0 mit Markenfarben; Signet und Social-Kartensystem freigegeben). Kommen weitere Punkte von Luis,
+Stand: 20.11.2026 (Theme 3.6.0: neues Logo, Startseite „Text auf Bild“, Punktbogen an jedem Beitrag; seit 19.11.
+Markenfarben, Signet und Social-Kartensystem freigegeben). Kommen weitere Punkte von Luis,
 wird diese Datei ergänzt.
 
 **Website heute:** Testsystem `https://tamil-web.167.233.76.202.sslip.io`, gebaut aus `claude/radar-multiagent`.
@@ -21,6 +22,24 @@ lässt. Erst `CLAUDE.md`, `docs/architektur.md`, `docs/betrieb.md` und `docs/ent
 - **Nick:** das Backend. Das umfasst den News-Radar (`news_radar/`, `sources.toml`), das Redaktions-Cockpit
   (`news_radar/web/`), Agenten, Publisher, Bilderzeugung, Social-Automatik und das Plugin `tamil-radar` (REST zum
   WordPress).
+
+## 0a. Neu seit 20.11.: neues Logo (verbindlich)
+
+**Luis, 20.11.:** Das neue Logo wird **genau so** übernommen, auch die Schreibweise der Zeilen „portal • lifestyle •
+entertainment“ und „& KOMMUNITYPLATTFORM DER COMMUNITY“. Kein Neuzeichnen, kein Vektor-Nachbau. Das hebt „Das Logo
+bleibt unverändert“ unten für dieses Logo auf (`docs/entscheidungen.md`, 20.11.).
+
+- **Dateien:** `design/inhalte/logo.png` (1920 × 695, freigestellt, durchsichtiger Grund, ohne Rand) für Bildkarte und
+  Social-Bilder; Quelle `design/inhalte/logo-2026-11.webp`, Freistellung `design/inhalte/logo_freistellen.py`. Im Theme
+  `assets/img/logo.webp`, `logo-2x.webp` und `logo.png` (398 × 144).
+- **Bitte umstellen:** Cockpit (Kopf, Vorschau), die Bildkarte des Radars und die Social-Bilder nutzen ab jetzt dieses
+  Logo, nicht mehr das alte `logo.png` (300 × 121). Die Social-Vorlage `design/social/vorlagen/karte.html` und alle
+  Muster in `design/social/muster/` zeigen es schon. Auf Foto oder Titan steht es weiter auf weißer Platte (eine weiße
+  Fassung gibt es nicht).
+- **Website:** Seit Theme 3.6.0 zusätzlich „Text auf Bild“ auf der Startseite und der Punktbogen unten rechts in jedem
+  Beitragsbild (DESIGN.md). Für das Backend ändert sich dadurch nichts; Beitragsbilder sollten wie bisher Fotos ohne
+  eingebrannten Text sein, damit Titel und Bogen darauf gut stehen.
+- **Unverändert:** Favicon und App-Icon „t.“ (offene Frage an Luis).
 
 ## 0. Neu seit 19.11.: Markenfarben, Signet und Social-Kartensystem (verbindlich)
 
@@ -44,14 +63,14 @@ Tokens: `--tamil-color-background`, `--tamil-color-primary`, `--tamil-color-acce
 - Generator: `design/signature/tamil_dots.py`.
 - Weitere Dateien: Small und Mini als Entwurf, Spatial nur für Sonderstellen, Animation `animiert.svg`.
 - Regeln stehen in `design/signature/README.md`.
-- Es ist **kein Logo**. Das Logo bleibt unverändert.
+- Es ist **kein Logo**. Das Signet steht nie am, im oder hinter dem Logo (Logo seit 20.11. neu, Abschnitt 0a).
 
 **Social-Kartensystem:** Die Richtung ist freigegeben, pixelgenaue Exportstandards noch nicht.
 - Die Spezifikation in `design/social/README.md` ist die Vorgabe für das automatische Posten nach Instagram (Feed,
   Karussell, Story), Facebook (Link-Post, Story) und WhatsApp. Sie enthält Datenfelder, Maße, sichere Zonen,
   Schriftgrößen, Farbgewichtung, Regeln für das Signet, Bildnachweis und Einzelbild oder Karussell nach Länge.
 - Vorlage: `design/social/vorlagen/karte.html?format=…`, Muster in `design/social/muster/`.
-- **Aufbau:** Das Logo steht unverändert auf weißer Platte oben links, die Überschrift auf Titan. Der Punktbogen liegt
+- **Aufbau:** Das Logo (seit 20.11. das neue, Abschnitt 0a) steht auf weißer Platte oben links, die Überschrift auf Titan. Der Punktbogen liegt
   auf Titan, nie auf Foto, Überschrift oder Gesichtern. Jede Karte trägt den Bildnachweis.
 - Das ersetzt die Vorgaben zum Social-Bild in Punkt 1 und 5 unten: dort statt klar2-Look die neuen Farben und das
   Signet.
@@ -213,6 +232,21 @@ dem Testsystem.
 - **OM:** Es gibt nur einen Beitrag, und der hat eine Titelkarte. Ein echtes Film- oder Plakatfoto mit Lizenz würde das
   Symbolbild ersetzen.
 - **Seite „TAMIL TV CHANNEL“:** in den Daten auf „Tamil TV“ umbenennen. Das Theme gleicht den Titel bereits an.
+
+## 6c. Datenbefunde aus dem Feinschliff (20.11.)
+
+Ein frischer Prüfdurchgang hat Fehler in den Radar-Inhalten gefunden. Das Theme kann sie nicht sauber beheben,
+Einzelheiten stehen in `docs/abnahme/2026-11-20-feinschliff.md`.
+
+- **Falsches Bild bei „Jailer 2“ (P0):**
+  - Ein Jailer-2-Beitrag hat das Firmenlogo „KINOPOLIS – Mehr Kino geht nicht“ als Bild, mit dem Nachweis
+    „Filmplakat: via Kinopolis“.
+  - Über die Bildkette (Schritt „film“) erscheint es auch beim Beitrag über das Kino Claudia in Kloten (Beitrag 2620).
+  - Bitte: echtes Plakat mit korrektem Nachweis oder kein Bild. Logos von Kinoketten nie als Beitragsbild übernehmen.
+- **Quelle doppelt:** Radar-Beiträge schreiben zwei Links gleichen Namens („Eventfrog CH, Eventfrog CH“) mit
+  verschiedenen Zielen. Das Theme hängt jetzt „(2)“ an. Besser ist, die Quelle beim Schreiben eindeutig zu benennen.
+- **Meta-Beschreibungen:** Verzeichnis, Werben und Impressum haben noch keine eigene Beschreibung, sondern die
+  allgemeine. Das ist Redaktion oder Einstellung.
 
 ## 7. Cockpit im klar2-Look
 
