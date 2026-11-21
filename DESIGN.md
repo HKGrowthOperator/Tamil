@@ -175,9 +175,13 @@ gemeinsamer Kante für Kopf, Bild und Text), höchstens 70 Zeichen je Zeile.
   8:3 mit Titel im Bild, am Tablet die kleinen 16:9 nebeneinander), Billboard, Rubrikblöcke mit je vier Karten (Handy
   wischbar, Tablet 2 × 2, Desktop zu viert). „Diese Woche“ zeigt nur Aktuelles: Filme mit Spieltagen
   ab heute, Kino-Beiträge der letzten 30 Tage, Termine der nächsten 14 Tage (sonst die nächsten drei); was dort
-  steht, kommt oben nicht noch einmal.
+  steht, kommt oben nicht noch einmal. Ein einzelner Termin über die ganze Breite steht als Band: Bild in
+  Dateigröße (höchstens 380 px), Orte und Vorspann mittig daneben (3.12.0, K-13).
 - **Artikel:** Dachzeile, Titel, Vorspann, Leiste mit Lesezeit und „Per WhatsApp teilen“, Bild (randlos am Handy) mit
-  Nachweis, Text, Termin als Angaben, Quelle, Schlagworte, Teilen, Redaktion; Textspalte mittig wie im Entwurf; Werbeplatz 02 ab 1280 px rechts daneben, darunter nach dem Bild;
+  Nachweis, Text, Termin als Angaben (auch der Infokasten aus dem Import erscheint als Terminkasten, Datum im
+  Hausformat, 3.12.0), Quelle, Schlagworte, Teilen als eine Knopfzeile (WhatsApp gefüllt, Facebook, X, Telegram,
+  E-Mail, Link kopieren leise; ab 600 px in einer Zeile), Redaktion; Werbung im Text erst ab fünf Absätzen, kurze
+  Artikel höchstens zwei Werbeflächen je Breite (Regel im Plugin); Textspalte mittig wie im Entwurf; Werbeplatz 02 ab 1280 px rechts daneben, darunter nach dem Bild;
   „Weiterlesen“ mit vier Bildkarten (Desktop zu viert in 4:3, Tablet 2 × 2, Handy wischbar).
 - **Rubrik:** Seitenkopf, Aufmacher mit „Neu in der Rubrik“ daneben (drei Karten 16:9 als Stapel, Handy wischbar),
   „Weitere Beiträge“ als Kartenraster mit Vorspann, Seiten, Kacheln.
@@ -226,7 +230,7 @@ Marke und wird vor allem als Hintergrund eingesetzt.
 | Kino „Im Programm“ | wie oben, `signatur--hoch` | Desktop höher, in der freien Fläche rechts neben dem großen Bild |
 | Seitenköpfe: Rubrik, Kino, Termine, Kontakt, Suche, Archive; Werben, Verzeichnis, Einreichen | `hell.svg`: leise Tönung auf Weiß | rechts vom Fensterrand angeschnitten; unter 1024 px schwimmt sie rechts oben und Titel und Zeile fließen herum, ab 1024 px rechts neben der Kopfzeile (Kopf mindestens 152 px hoch). Seiten mit mittiger Spalte (Werben …) ab 1200 px. Rechtstexte ohne |
 | Fuß | `band.svg` | ab 1024 px rechts in der Zeile mit Rechtlichem (Titan), am Fensterrand angeschnitten, nur bei freiem Platz |
-| 404, Production („Live mit dir!“) | `raum.svg` (03 Spatial) | ganz, ohne Anschnitt; am Handy unter dem Kopf (höchstens 340 px), ab 1024 px rechts daneben (42 %) |
+| 404, Production („Live mit dir!“) | `raum.svg` (03 Spatial) | ganz, ohne Anschnitt und ohne Bodenschatten (3.12.0, N-13); am Handy unter dem Kopf (höchstens 340 px), ab 1024 px rechts daneben (42 %) |
 
 Nicht eingesetzt: ein kleiner Punktbogen über Blocktiteln (die Linie in Titan gliedert schon; er hätte unruhig gewirkt).
 
@@ -294,7 +298,9 @@ mit `requestAnimationFrame`. Auftritte über IntersectionObserver (Auslöser 10 
   Handy von Rand zu Rand laufen (Aufmacher, Artikelbild unter 600 px). Nur Ecken, keine runden Bildformen.
 - **Rhythmus (3.11.0):** Die Rubrikblöcke der Startseite wechseln zwischen der Reihe aus vier Karten und der Bühne
   (eine große Kachel, die übrigen klein gestapelt daneben, gebaut wie die Küche); Titel auf kleinen Karten höchstens drei
-  Zeilen. Kacheln einer Bühne füllen ihre Rasterzelle, das Bild wächst mit.
+  Zeilen. Kacheln einer Bühne füllen ihre Rasterzelle, das Bild wächst mit. Seit 3.12.0 (N-03, N-08) sind alle Bühnen
+  gleich gebaut (Küche und Rubriken: eine Größe, eine Schrift), Titel der kleinen Karten ganz ohne Kürzung. Eine
+  einzelne letzte Karte steht in normaler Breite, nie über die ganze Zeile aufgezogen (N-04).
 - **Reihen:** Karten einer Reihe sind gleich hoch und schließen unten bündig: gleiches Bildformat je Reihe, Titel unten
   im Bild, der Vorspann darunter hält immer drei Zeilen Platz; in „Diese Woche“ ist die Kinokarte neben den Terminen so
   hoch wie diese; Terminkarten einer Reihe haben gleich hohe Bildflächen. Prüfung: `node wordpress/dev/kartenhoehe.mjs
@@ -314,8 +320,8 @@ mit `requestAnimationFrame`. Auftritte über IntersectionObserver (Auslöser 10 
   „Weitere Meldungen“ mit; am Tablet steht nichts fest, der Weg ist 60 % der Rahmenhöhe. Punkte und Titelfeld lösen
   sich über denselben Weg auf, der Titel liegt danach auf dem Verlauf des Fotos, der Punktbogen erscheint.
   Zurückscrollen spielt es rückwärts. Nur Bild, Titel und Vorspann sind Link, nicht die leere Fläche des Wegs.
-- **Titel:** 26 px am Handy, 38 px am Desktop; länger als 84 Zeichen sichtbar am Wortende gekürzt, der volle Titel für
-  Vorleser im Link.
+- **Titel:** nie gekürzt und nie getrennt (seit 3.11.1, N-02; `hyphens: manual`): bis 60 Zeichen 26 px am Handy und
+  38 px am Desktop, darüber zwei kleinere Stufen (über 60 und über 90 Zeichen, `titel--mittel`, `titel--klein`).
 - **Rahmen:** am Handy hochkant (bis 116 vw, höchstens Bildschirm minus Band; der Vorspann steht über der festen
   Anzeige), von Rand zu Rand; ab 600 px 60 vw, ab 1024 px 420 bis 620 px hoch, mit dem Radius des Aufmachers.
 - **Ruhe:** Ohne Skript, ohne Canvas und mit „Bewegung reduzieren“ steht sofort das fertige Foto mit Titel. Bewegung D
