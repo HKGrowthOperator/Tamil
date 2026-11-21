@@ -40,7 +40,8 @@ def _an(wp_cli, pid: int, vorher: str = "") -> bool:
 
 
 def test_nur_mit_eigenem_foto_ab_960_px(wp_cli, beitraege):
-    an = "set_theme_mod( 'tamil_wow_aufmacher', '1' );"
+    # Standard (kein theme_mod gesetzt) ist an; nichts wird dauerhaft gespeichert
+    an = "add_filter( 'theme_mod_tamil_wow_aufmacher', static fn() => '1' );"
     assert _an(wp_cli, beitraege["gross"], an) is True
     assert _an(wp_cli, beitraege["klein"], an) is False, "kleines Foto: normaler Aufmacher"
     assert _an(wp_cli, beitraege["ohne"], an) is False, "ohne eigenes Foto (Symbolbild aus dem Pool): normaler Aufmacher"
