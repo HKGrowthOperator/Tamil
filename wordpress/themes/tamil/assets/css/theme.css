@@ -148,7 +148,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .knopf {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   min-height: 48px; padding: 0 20px;
-  border: 1px solid var(--titan); border-radius: 0;
+  border: 1px solid var(--titan); border-radius: var(--radius-klein);
   background: var(--titan); color: var(--hell);
   font-size: 16px; font-weight: 600; line-height: 1.2; white-space: nowrap;
   cursor: pointer;
@@ -159,7 +159,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 input[type="search"], input[type="text"], input[type="email"], input[type="tel"], input[type="url"],
 input[type="number"], input[type="date"], input[type="password"], textarea, select {
   min-height: 48px; padding: 8px 14px;
-  border: 1px solid var(--leise); border-radius: 0;
+  border: 1px solid var(--leise); border-radius: var(--radius-klein);
   background: var(--grund); color: var(--tinte);
   font-size: 17px; line-height: 1.4;
 }
@@ -697,7 +697,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .seiten-zeile { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 24px; border-top: 1px solid var(--linie-stark); padding-top: 8px; }
 .seiten p { margin: 0; font-size: 15px; color: var(--leise); }
 .seiten .seiten-links { margin-top: 0; gap: 0 4px; }
-.seiten .seiten-links a, .seiten .seiten-links > span { padding: 0 8px; }
+.seiten .seiten-links a, .seiten .seiten-links > span { padding: 0 8px; border-radius: var(--radius-klein); }
 .seiten .seiten-links a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
 .seiten .seiten-links a:hover { color: var(--rot); }
 .seiten .seiten-links .current { background: var(--titan); color: var(--hell); font-weight: 700; }
@@ -777,7 +777,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .filter { display: grid; gap: 10px; margin-top: 16px; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .chip {
-  min-height: 44px; padding: 0 14px; border: 1px solid var(--leise); border-radius: 0;
+  min-height: 44px; padding: 0 14px; border: 1px solid var(--leise); border-radius: var(--radius-klein);
   background: var(--grund); color: var(--tinte); font: inherit; font-size: 15px; font-weight: 500; cursor: pointer;
 }
 .chip:hover { border-color: var(--titan); background: var(--flaeche); color: var(--titan); box-shadow: inset 0 0 0 1px var(--titan); } /* Q2-14: Fläche und doppelte Kante */
@@ -930,7 +930,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   aspect-ratio: 16 / 9; display: grid; place-content: center; justify-items: center; gap: 12px;
   padding: 24px; text-align: center; background: var(--titan); color: var(--hell);
 }
-.video-embed .video-load { min-height: 48px; padding: 0 20px; border: 1px solid var(--hell); border-radius: 0; background: var(--hell); color: var(--titan); font-weight: 600; cursor: pointer; }
+.video-embed .video-load { min-height: 48px; padding: 0 20px; border: 1px solid var(--hell); border-radius: var(--radius-klein); background: var(--hell); color: var(--titan); font-weight: 600; cursor: pointer; }
 .video-embed .video-load:hover { background: var(--hell-leise); }
 .video-embed .video-hint { font-size: 14px; color: var(--hell-leise); }
 .video-embed .video-hint a { display: inline-flex; min-height: 44px; align-items: center; color: var(--hell); }
@@ -1065,7 +1065,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .tf-feld input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), .tf-feld select, .tf-feld textarea,
 .vz-feld input:not([type="checkbox"]):not([type="radio"]), .vz-feld select, .vz-feld textarea,
 .wb-formular input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), .wb-formular select, .wb-formular textarea { width: 100%; max-width: 100%; }
-input[type="datetime-local"], input[type="file"] { min-height: 48px; padding: 8px 14px; border: 1px solid var(--leise); border-radius: 0; background: var(--grund); color: var(--tinte); font-size: 17px; }
+input[type="datetime-local"], input[type="file"] { min-height: 48px; padding: 8px 14px; border: 1px solid var(--leise); border-radius: var(--radius-klein); background: var(--grund); color: var(--tinte); font-size: 17px; }
 input[type="file"] { padding: 10px; font-size: 15px; }
 .tf-pflicht, .vz-pflicht { font-weight: 400; font-size: 13px; color: var(--leise); }
 .tf-hilfe, .vz-hilfe, .wb-feldhinweis { display: block; margin-top: 4px; font-size: 14px; line-height: 1.4; color: var(--leise); }
@@ -1099,7 +1099,7 @@ input[type="file"] { padding: 10px; font-size: 15px; }
 .tf-einwilligung label { font-size: 14px; line-height: 1.45; }
 .tf-senden, .vz-aktion button, .vz-suche button, .vz-form button[type="submit"], .wb-formular button, .wb-knopf, .wb-buchen a, .wb-aktion button, .wb-aktion a {
   display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 20px;
-  border: 1px solid var(--titan); border-radius: 0; background: var(--titan); color: var(--hell);
+  border: 1px solid var(--titan); border-radius: var(--radius-klein); background: var(--titan); color: var(--hell);
   font-size: 16px; font-weight: 600; line-height: 1.2; text-decoration: none; cursor: pointer;
 }
 .tf-senden:hover, .vz-aktion button:hover, .vz-suche button:hover, .vz-form button[type="submit"]:hover, .wb-formular button:hover, .wb-knopf:hover, .wb-buchen a:hover, .wb-aktion button:hover, .wb-aktion a:hover { background: var(--rot); border-color: var(--rot); color: var(--hell); }
@@ -1171,7 +1171,7 @@ body .tz-hinweis, body .tz-dialog {
 }
 body .tz-hinweis { border-top-width: 3px; }
 body .tz-titel { font-size: 19px; font-weight: 700; line-height: 1.25; }
-body .tz-knopf { border-radius: 0; border-color: var(--titan); background: var(--grund); color: var(--titan); font-weight: 600; }
+body .tz-knopf { border-radius: var(--radius-klein); border-color: var(--titan); background: var(--grund); color: var(--titan); font-weight: 600; }
 body .tz-knopf:hover { background: var(--flaeche); }
 body .tz-knopf-haupt { background: var(--titan); color: var(--hell); }
 body .tz-knopf-haupt:hover { background: var(--rot); border-color: var(--rot); }
@@ -1416,7 +1416,7 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
 .aligncenter { margin-left: auto; margin-right: auto; }
 .wp-block-image img { border-radius: var(--radius); }
 .wp-block-separator { border: 0; border-top: 1px solid var(--linie); }
-.wp-block-button__link { border-radius: 0; }
+.wp-block-button__link { border-radius: var(--radius-klein); }
 
 /* ---------- Bewegung beim Scrollen: Variante D (Wahl von Luis am 16.11.2026) ----------
    Quelle: design/richtungen/klar2/bewegung/ (#d). Kopf und Fläche hängen am Scrollweg, große Bilder und Blocktitel
@@ -1546,6 +1546,8 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
 .grafik { border-radius: var(--radius); overflow: clip; }
 .grafik .rahmen { --rahmen-r: 0px; }
 .ad img, body .ad.ad-bild .anzeige-wrap.flaeche { border-radius: var(--radius); }
+body .ad.ad-bild .anzeige-wrap.flaeche, body .ad.ad-bild .anzeige--bild { overflow: hidden; } /* K-12: Bild in der runden Fläche angeschnitten */
+body .ad.ad-bild .anzeige--bild .anzeige__bild { border-radius: 0; }
 .ad-mobile .flaeche, .ad-mobile img, body .ad-mobile.ad-bild .anzeige-wrap.flaeche { border-radius: var(--radius-klein); }
 .vz a.vz-bild, .vz-profil .vz-bild { border-radius: var(--radius); }
 @media (max-width: 599px) {
