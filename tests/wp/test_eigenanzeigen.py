@@ -249,12 +249,12 @@ def test_keine_zweite_eigenanzeige_direkt_danach(wp_cli):
     assert frei is True, "ohne Nachbarn erscheint sie"
 
 
-def test_impressum_und_datenschutz_ohne_anzeigen(wp, wp_cli):
+def test_impressum_und_datenschutz_ohne_eigenanzeigen(wp, wp_cli):
     pid = int(wp_cli("echo (int) wp_insert_post( array( 'post_type' => 'page', 'post_status' => 'publish',"
                      " 'post_name' => 'datenschutzerklaerung', 'post_title' => 'Datenschutz (Test)', 'post_content' => '<p>Text.</p>' ) );"))
     try:
         seite = wp.get("/datenschutzerklaerung/").text
-        assert '<aside class="ad ' not in seite, "auf Datenschutz keine Anzeigen"
+        assert '<aside class="ad ' not in seite, "auf Datenschutz keine Eigenanzeigen (ungebuchte Plätze bleiben leer)"
         assert '<aside class="ad ' in wp.get("/kontakt/").text, "Gegenprobe: andere Seiten behalten ihre Plätze"
     finally:
         wp_cli(f"wp_delete_post( {pid}, true );")

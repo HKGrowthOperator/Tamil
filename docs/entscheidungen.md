@@ -5,6 +5,43 @@ Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
 ## 21.11.2026
 
+- **Theme 3.12.0 / Plugin tamil-site 1.2.0 (Kritik-Bogen 3.11.0, Stufe 2):** · Hauptsitzung im Auftrag von Luis,
+  umgesetzt vom Theme-Bauer
+  - **Einzelne letzte Karte in normaler Breite (N-04):** Bleibt in einem Raster eine Karte allein in der letzten Zeile,
+    steht sie in normaler Spaltenbreite linksbündig, nie über die ganze Zeile (Rubrik, Suche, Events-Archiv, Production
+    einheitlich). Warum: aufgezogen wurde ihr Bild weit über die Dateibreite vergrößert und weich (Production 1280:
+    1200 statt 384 px). Rückweg: die
+    entfernten Regeln QA-04 und K-19 in `theme.css` (siehe Kommentar dort).
+  - **Bühnen einheitlich (N-03, N-08):** Küche und Rubrik-Bühnen nutzen dieselben Regeln (`.kueche__raster`), Titel der
+    kleinen Karten ganz. Rückweg: Commit 52bb761.
+  - **„Kommende Termine“ entfällt, wenn alles unter „Ab heute“ steht (N-05):** die Filter wandern dann nach „Ab heute“.
+  - **N-06 nur als Vorschlag an Luis, nicht umgesetzt:** Die Kritik fand auf kurzen Artikeln (eine Minute Lesezeit) vier
+    Werbeflächen und schlug vor, die Anzeige im Text erst ab fünf Absätzen und bei kurzen Artikeln höchstens zwei
+    Flächen zu zeigen. Das ändert verkaufbare Plätze der von Luis bestätigten Festlegung F3
+    (`docs/vertrag/festlegung-werbung.md`: „Im Artikel: nach dem zweiten Absatz“, „Fuß: über dem Fuß jeder Seite“);
+    die freie Hand der Nacht deckt Gestaltung, keine Änderung einer Festlegung. Gebaut und wieder zurückgenommen
+    (Reverts f67445d, 76afb9a). Stand jetzt wörtlich nach F3: „Im Artikel“ nach dem zweiten Absatz ohne Mindestlänge
+    (die Mindestlänge „vier Absätze“ der ersten Theme-Fassung entfällt), Fuß auf jeder Seite; Test
+    `tests/wp/test_artikel_werbung.py` prüft das. · Hauptsitzung
+  - **Hausanzeigen-Regeln aus 3.9.0 gegen F3 geprüft:** „keine zwei Eigenanzeigen direkt hintereinander“ und „keine
+    Eigenanzeige für die eigene Seite“ betreffen nur Eigenanzeigen (bleiben). „Keine Anzeigen auf Impressum und
+    Datenschutz“ unterdrückte auch gebuchte Plätze und gilt jetzt nur noch für Eigenanzeigen; gebuchte Plätze stehen
+    dort wie auf jeder Seite (F3).
+  - **Teilen als Knopfzeile, Infokasten als Terminkasten (N-10, N-11).**
+  - **Leichterer Verlauf (N-12):** 66 % Schwarz am Beginn der Schrift (7,2 : 1 auf Weiß, schlechtester Titel 7,6 : 1).
+  - **Kuppel ohne Bodenschatten (N-13),** Alt-Text beim Laden unsichtbar (N-16), „Im Kino“ nicht zwischen zwei
+    Kinokarten (N-17), Skizze je Werbeplatz auf „Werben“ (N-07).
+  - **Ein Termin als Band (K-13):** Bild in Dateigröße, Text mittig daneben (Entscheidung statt schmaler Karte, weil
+    die schmale Karte zwei Drittel der Zeile leer ließe).
+  - **Nicht umgesetzt:** N-09 (Anschnitt der nächsten Karte am Handy) widerspricht dem Scrollweg des Aufmachers und
+    gehört mit N-15 (tote Strecke) und K-07 (Splitter) in eine Überarbeitung von `wow.js` mit neuer Bildratenmessung;
+    N-14 (eine linke Kante für Textseiten) braucht eine Entscheidung über die Spaltenbreiten (Artikel 560 px, Seiten
+    720 px, Kontakt volle Breite).
+- **Theme 3.11.1 (P0 aus dem Live-Stand 3.11.0):** „Weitere Meldungen“ haftet nur noch innerhalb der Aufmacher-Zeile
+  (N-01, vorher in 8 von 8 gemessenen Fenstern über der nächsten Zeile, danach 0; Messung `wordpress/dev/ueberdeckung.mjs`);
+  Titel im Aufmacher und H1 werden nie gekürzt oder getrennt, lange Titel bekommen kleinere Stufen (N-02). · Hauptsitzung
+  im Auftrag von Luis, umgesetzt vom Theme-Bauer
+
 - **Startseite im Wechsel: Reihe und Bühne (Theme 3.11.0, K-06):** Die Rubrikblöcke unter dem Aufmacher wechseln
   zwischen der Reihe aus vier Karten und der Bühne (die erste Karte groß, die übrigen klein gestapelt daneben, gebaut
   wie die Küche). Warum: Die unabhängige Kritik fand fünf gleich gebaute Reihen nacheinander (das „gleichförmige

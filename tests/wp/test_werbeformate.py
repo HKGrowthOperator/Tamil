@@ -128,3 +128,13 @@ def test_darstellung_hat_die_angegebenen_formate(wp, wp_cli, artikel):
     for erwartet in ((390, "leaderboard"), (1280, "leaderboard"), (390, "billboard"), (1280, "billboard"), (390, "inarticle"),
                      (1280, "sidebar"), (390, "mobile"), (390, "footer"), (820, "footer")):
         assert erwartet in gemessen, erwartet
+
+
+def test_werben_zeigt_je_platz_eine_skizze(wp, wp_cli, seite_production):
+    """N-07: Jede Zeile der Tabelle zeigt eine Skizze mit der markierten Fläche des Platzes (dekorativ)."""
+    html = requests.get(f"{URL}/werben/", timeout=30).text
+    plaetze = list(_formate(wp_cli))
+    skizzen = re.findall(r'<svg class="wb-skizze" data-platz="([a-z]+)"[^>]*aria-hidden="true"', html)
+    assert skizzen == plaetze
+    assert html.count('class="wb-skizze__flaeche"') == len(plaetze)
+    assert wp_cli("echo tamil_site_werbung_skizze( 'gibt-es-nicht' );") == ""

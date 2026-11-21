@@ -6,14 +6,15 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Werbeplatz 03 nach dem zweiten Absatz – nur im Hauptinhalt eines Beitrags mit mindestens vier Absätzen und nur,
- * wenn die Redaktion den Platz nicht selbst per [tamil_anzeige] gesetzt hat.
+ * Werbeplatz 03 („Im Artikel“) nach dem zweiten Absatz, wie in Festlegung F3: im Hauptinhalt jedes Beitrags mit einem
+ * zweiten Absatz, ohne weitere Mindestlänge, und nur, wenn die Redaktion den Platz nicht selbst per [tamil_anzeige]
+ * gesetzt hat. (Bis 3.12.0 galt zusätzlich „mindestens vier Absätze“; das steht nicht in der Festlegung.)
  */
 function tamil_inarticle_anzeige( string $content ): string {
 	if ( ! is_singular( 'post' ) || ! in_the_loop() || ! is_main_query() || ! function_exists( 'tamil_site_anzeige' ) ) {
 		return $content;
 	}
-	if ( str_contains( $content, 'class="ad ' ) || substr_count( $content, '</p>' ) < 4 ) {
+	if ( str_contains( $content, 'class="ad ' ) || substr_count( $content, '</p>' ) < 2 ) {
 		return $content;
 	}
 	$anzeige = tamil_site_anzeige( 'inarticle', false );
@@ -165,6 +166,47 @@ function tamil_inhalt_altreste( string $content ): string {
 	return tamil_alte_uploads( tamil_altreste_entfernen( $content ) );
 }
 add_filter( 'the_content', 'tamil_inhalt_altreste', 1 );
+
+/**
+ * Infokasten aus dem Import (<div class="event-box"> mit „Wann:“, „Wo:“ und Ticket-Link) wie der Terminkasten des
+ * Themes ausgeben (N-11): Überschrift „Termin“, Angaben als Liste, Datum im Hausformat („Do, 5. November 2026“), Links
+ * als Textlinks. Was nicht dem Muster folgt, bleibt unverändert. Der gespeicherte Inhalt bleibt unverändert.
+ */
+function tamil_event_box_wie_termin( string $content ): string {
+	if ( ! str_contains( $content, 'event-box' ) ) {
+		return $content;
+	}
+	return (string) preg_replace_callback(
+		'#<div class="(?:[^"]* )?event-box(?: [^"]*)?">(.*?)</div>#s', // Import und Muster „Termin-Kasten (im Text)“
+		static function ( array $m ): string {
+			preg_match_all( '#<p\b[^>]*>(.*?)</p>#s', $m[1], $absaetze );
+			$angaben = '';
+			$links   = '';
+			foreach ( $absaetze[1] as $p ) {
+				if ( preg_match( '#^\s*<strong>([^<:]+):</strong>\s*(.+)$#s', $p, $a ) ) {
+					$wert = trim( $a[2] );
+					if ( preg_match( '#^(\d{1,2})\.(\d{1,2})\.(\d{4})$#', wp_strip_all_tags( $wert ), $d ) ) {
+						$wert = esc_html( tamil_termin_text( sprintf( '%04d-%02d-%02d', $d[3], $d[2], $d[1] ) ) );
+					}
+					$angaben .= '<div><dt>' . esc_html( trim( $a[1] ) ) . '</dt><dd>' . $wert . '</dd></div>';
+				} elseif ( preg_match( '#^\s*(<a\s[^>]*>[^<]*</a>\s*)+$#', $p ) ) {
+					$links .= str_replace( '<a ', '<a class="textlink" ', trim( $p ) ) . ' ';
+				} else {
+					return $m[0];
+				}
+			}
+			if ( '' === $angaben ) {
+				return $m[0];
+			}
+			return '<section class="termin-box termin-box--im-text" aria-labelledby="termin-titel"><h2 class="termin-box__titel" id="termin-titel">'
+				. esc_html__( 'Termin', 'tamil' ) . '</h2><dl class="angaben">' . $angaben . '</dl>'
+				. ( '' !== $links ? '<p class="aktionen">' . trim( $links ) . '</p>' : '' )
+				. '<p class="termin-box__hinweis">' . esc_html__( 'Angaben ohne Gewähr, bitte beim Veranstalter prüfen.', 'tamil' ) . '</p></section>';
+		},
+		$content
+	);
+}
+add_filter( 'the_content', 'tamil_event_box_wie_termin', 16 );
 
 /**
  * Tamilische Wörter im Beitragstext mit lang="ta" auszeichnen (Altbestand hat Namen und Zitate auf Tamil).

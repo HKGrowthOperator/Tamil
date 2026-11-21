@@ -250,8 +250,10 @@ def svg_variante_c(punkte, r, titel):
     return "".join(out)
 
 
-def svg_raeumlich(punkte, r, titel, dicke=0.15):
+def svg_raeumlich(punkte, r, titel, dicke=0.15, schatten=True):
     """03 Spatial: Scheiben mit sichtbarer Kante und weichem Bodenschatten (nur für besondere Orte).
+
+    schatten=False lässt den Bodenschatten weg (Theme, raum.svg: Prüfung 21.11., N-13); die Höhe bleibt gleich.
 
     Kante = dieselbe Ellipse nach links unten versetzt, in abgedunkeltem Titan; der Versatz wächst mit der
     Schräglage (flache Punkte am Umriss zeigen mehr Kante). Schatten = Radialverlauf in Schwarz, kein Filter.
@@ -263,8 +265,9 @@ def svg_raeumlich(punkte, r, titel, dicke=0.15):
     ymax = max(p.y + p.rb for p in punkte)
     extra = r.hoehe * 0.14
     r2 = replace(r, hoehe=r.hoehe + extra)
-    out = [kopf(r2, titel),
-           '<defs><radialGradient id="s" fx=".22" fr=".02"><stop offset="0" stop-opacity=".3"/>'
+    out = [kopf(r2, titel)]
+    if schatten:
+        out += ['<defs><radialGradient id="s" fx=".22" fr=".02"><stop offset="0" stop-opacity=".3"/>'
            '<stop offset=".45" stop-opacity=".1"/><stop offset="1" stop-opacity="0"/></radialGradient></defs>\n',
            f'<ellipse cx="{z(xs0 + (xs1 - xs0) * 0.42, 0)}" cy="{z(ymax + extra * 0.02, 0)}" '
            f'rx="{z((xs1 - xs0) * 0.5, 0)}" ry="{z(extra * 0.42, 0)}" fill="url(#s)"/>\n']
