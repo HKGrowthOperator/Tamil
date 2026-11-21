@@ -463,8 +463,8 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 
 /* ---------- Küche (hell) und Rubrikblöcke: jede Kachel behält ihr Format auf allen Breiten ---------- */
 .kueche { margin-top: 44px; }
-/* Rubrik-Bühne (K-06): wie die Küche gebaut; Titel auf kleinen Karten höchstens drei Zeilen */
-.rubrikblock .kachel--klein .titel { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; }
+/* Bühne (Küche und Rubrik-Bühnen, K-06, N-08): eine Bauart, ein Maß, eine Typografie */
+/* N-03: ganze Titel in den Seitenkarten der Bühnen, nie mit „…“; die Karte wächst, die Reihe richtet sich danach */
 /* Kacheln einer Bühne (Küche und Rubrik-Bühne) füllen ab 600 px ihre Rasterzelle, das Bild wächst mit: die große Kachel
    schließt unten mit dem Stapel daneben ab, kleine Kacheln einer Reihe sind gleich hoch */
 @media (min-width: 600px) {
@@ -473,11 +473,11 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .kueche__raster > .kachel > .anr > .rahmen { flex: 1 1 auto; }
 }
 .kueche__raster { display: grid; gap: 12px; padding-top: 14px; }
-.kueche .kachel--klein .imbild { padding: 30px var(--rand) 10px; background-image: var(--verlauf-kurz); }
-.kueche .kachel--klein .meta { margin-bottom: 2px; }
+.kueche__raster .kachel--klein .imbild { padding: 30px var(--rand) 10px; background-image: var(--verlauf-kurz); }
+.kueche__raster .kachel--klein .meta { margin-bottom: 2px; }
 /* Kleine Küche-Kacheln: Titel im Bild auf allen Breiten (Text auf Bild, 20.11.2026); am Handy 8:3 über die volle
    Breite, am Tablet 16:9 nebeneinander, am Desktop 8:3 gestapelt neben der großen */
-.kueche .kachel--klein .titel { font-size: 19px; line-height: 1.2; }
+.kueche__raster .kachel--klein .titel { font-size: 19px; line-height: 1.2; }
 .rubrikblock { margin-top: 44px; }
 .rubrikblock .neben { margin-top: 0; }
 
@@ -494,13 +494,13 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
      auf derselben Linie enden (bei 1200 px Inhalt 803 : 373, wie klar2). */
   .kueche__raster { column-gap: 24px; row-gap: 16px; padding-top: 16px; }
   .kueche__raster--4 { grid-template-columns: minmax(0, 1fr) calc((100% - 24px) / 3 - 18.963px); }
-  .kueche__raster--3 { grid-template-columns: minmax(0, 1fr) calc((100% - 24px) * 0.428571 - 12.19px); }
+  .kueche__raster--3 { grid-template-columns: minmax(0, 1fr) calc((100% - 24px) / 3 - 18.963px); } /* N-08: gleiche Spalten wie mit vier Beiträgen */
   .kueche__raster--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .kueche__raster--4 .kachel--gross { grid-row: 1 / 4; }
   .kueche__raster--3 .kachel--gross { grid-row: 1 / 3; }
   .kueche__raster--2 .kachel--klein .rahmen { aspect-ratio: 16 / 9; }
   .kueche__raster--1 .kachel--gross { max-width: 803px; }
-  .kueche .kachel--klein .titel { font-size: 17px; line-height: 1.2; }
+  .kueche__raster .kachel--klein .titel { font-size: 17px; line-height: 1.2; }
 }
 @media (min-width: 600px) and (max-width: 1023px) {
   .aufmacher .rahmen { margin-inline: 0; }
@@ -571,7 +571,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   .ohne-gross.ohne-klein.termine-1 .woche__gruppe--termine .anr { display: block; }
 
   .kueche { margin-top: 64px; }
-  .kueche .kachel--klein .imbild { padding: 30px 16px 10px; }
+  .kueche__raster .kachel--klein .imbild { padding: 30px 16px 10px; }
   .rubrikblock { margin-top: 64px; }
 }
 
