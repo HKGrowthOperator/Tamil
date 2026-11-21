@@ -1,0 +1,121 @@
+{
+  "audited_at": "2026-11-11",
+  "scope": "Repository-inhaltliche Prüfung; keine Installation oder Laufzeitprüfung der Skills",
+  "records": [
+    {
+      "repository": "HKGrowthOperator/HKGrowthOperator-Agent-Playbook",
+      "ref": "main",
+      "commit": "52483b65417ae33282db19c126232744b8f67b24",
+      "commit_date": "2026-09-20T17:11:57Z",
+      "tree_truncated": false,
+      "read_paths": [
+        "ARBEITSREGELN.md"
+      ],
+      "installation_verified": false
+    },
+    {
+      "repository": "HKGrowthOperator/impeccable",
+      "ref": "main",
+      "commit": "e587004ee42883dad40d14cd0f5e1b21ae1933df",
+      "commit_date": "2026-05-04T23:38:03Z",
+      "tree_truncated": false,
+      "read_paths": [
+        "README.md",
+        ".claude/skills/impeccable/SKILL.md",
+        "LICENSE"
+      ],
+      "installation_verified": false
+    },
+    {
+      "repository": "HKGrowthOperator/taste-skill",
+      "ref": "main",
+      "commit": "12af471f627f866411b4bd785b19646d3672784c",
+      "commit_date": "2026-10-24T23:42:19Z",
+      "tree_truncated": false,
+      "read_paths": [
+        "README.md",
+        "skills/taste-skill/SKILL.md",
+        "LICENSE"
+      ],
+      "installation_verified": false
+    },
+    {
+      "repository": "HKGrowthOperator/skill",
+      "ref": "main",
+      "commit": "ecf66bbd1fb33c25332b6b0e454d08049978284c",
+      "commit_date": "2026-03-25T14:59:35Z",
+      "tree_truncated": false,
+      "read_paths": [
+        "README.md",
+        "skills/emil-design-eng/SKILL.md"
+      ],
+      "installation_verified": false
+    },
+    {
+      "repository": "HKGrowthOperator/superpowers",
+      "ref": "main",
+      "commit": "fe78c2abf375d56d0aa64f892568347de102bc84",
+      "commit_date": "2026-07-29T01:50:39Z",
+      "tree_truncated": false,
+      "read_paths": [
+        "README.md",
+        "skills/verification-before-completion/SKILL.md",
+        "skills/dispatching-parallel-agents/SKILL.md",
+        "LICENSE"
+      ],
+      "installation_verified": false
+    },
+    {
+      "repository": "HKGrowthOperator/gstack",
+      "ref": "main",
+      "commit": "a5833c413f98b13f105beac96262e8098b628461",
+      "commit_date": "2026-06-11T04:14:58Z",
+      "tree_truncated": false,
+      "read_paths": [
+        "README.md",
+        "SKILL.md",
+        "LICENSE"
+      ],
+      "installation_verified": false
+    },
+    {
+      "repository": "HKGrowthOperator/unlazy",
+      "ref": "main",
+      "commit": "16671491f6679ad9378f52604d3bc2415b4120c7",
+      "commit_date": "2026-09-03T09:31:08Z",
+      "tree_truncated": false,
+      "read_paths": [
+        "README.md",
+        "SKILL.md",
+        "LICENSE"
+      ],
+      "installation_verified": false
+    },
+    {
+      "repository": "HKGrowthOperator/transitions.dev",
+      "ref": "main",
+      "commit": "04825e98af89d2bc72c24d19addf9d9a37ea05fe",
+      "commit_date": "2026-05-25T21:07:51Z",
+      "tree_truncated": false,
+      "read_paths": [
+        "README.md",
+        "skills/transitions-dev/SKILL.md"
+      ],
+      "installation_verified": false
+    }
+  ],
+  "unresolved": {
+    "literal": "Amazon Agent Bridge",
+    "searches": [
+      {
+        "query": "user:HKGrowthOperator agent bridge",
+        "matches": 0
+      },
+      {
+        "query": "\"Amazon Agent Bridge\"",
+        "matches": 0
+      }
+    ],
+    "conclusion": "Kein eindeutig zuordenbares Repository in diesen Suchergebnissen. awesome-claude-code ist vorhanden, Identität nicht bestätigt."
+  }
+}
