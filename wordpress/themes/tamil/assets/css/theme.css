@@ -1570,6 +1570,15 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
 @media (min-width: 1024px) { .aufmacher.wow { --wow-hoch: clamp(420px, calc(100vh - 250px), 620px); } }
 .wow-an .aufmacher.wow .wow-bahn::after { content: ""; display: block; height: var(--wow-weg); }
 .wow-an .aufmacher.wow .wow-halter { position: sticky; top: var(--band-hoehe); }
+/* Tablet (K-04): das Bild steht nicht fest; der Weg hängt an der Rahmenhöhe (assets/js/wow.js), keine Leere darunter */
+@media (min-width: 600px) and (max-width: 1023px) {
+  .wow-an .aufmacher.wow .wow-bahn::after { content: none; }
+  .wow-an .aufmacher.wow .wow-halter { position: static; }
+}
+/* Desktop (K-03): „Weitere Meldungen“ steht mit dem Aufmacher unter dem Band, rechts bleibt kein Loch */
+@media (min-width: 1024px) {
+  .wow-an .oben:has(.aufmacher.wow) .meldungen { position: sticky; top: var(--band-hoehe); align-self: start; }
+}
 .admin-bar.wow-an .aufmacher.wow .wow-halter, .wow-an .admin-bar .aufmacher.wow .wow-halter { top: calc(var(--band-hoehe) + var(--wp-admin--admin-bar--height, 0px)); }
 .wow-an .wow-decke { display: block; background: var(--titan); }
 .wow-an .wow-decke.gezeichnet { background: none; }
