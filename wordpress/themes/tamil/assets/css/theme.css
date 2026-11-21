@@ -780,6 +780,13 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 }
 .chip:hover { border-color: var(--titan); background: var(--flaeche); color: var(--titan); box-shadow: inset 0 0 0 1px var(--titan); } /* Q2-14: Fläche und doppelte Kante */
 .chip[aria-pressed="true"] { background: var(--titan); border-color: var(--titan); color: var(--hell); font-weight: 600; }
+/* Filter in „Ab heute“ auf Titan (N-05): weiß umrandet, gewählt weiß gefüllt */
+.woche--seite .filter { margin: 4px 0 16px; }
+.woche--seite .chip { border-color: var(--hell-leise); background: transparent; color: var(--hell); }
+.woche--seite .chip:hover { border-color: var(--hell); background: var(--titan-tief); color: var(--hell); box-shadow: inset 0 0 0 1px var(--hell); }
+.woche--seite .chip[aria-pressed="true"] { background: var(--hell); border-color: var(--hell); color: var(--titan); }
+.woche--seite .leer__satz { color: var(--hell); }
+.woche--seite .leer__satz .textlink { color: var(--hell); }
 .kalender__titel { margin-top: 28px; padding-bottom: 8px; border-bottom: 1px solid var(--linie); font-size: 19px; line-height: 1.25; font-weight: 650; }
 .zeile__angaben { font-size: 15px; line-height: 1.45; color: var(--leise); }
 /* Kommende Termine: was schon unter „Ab heute“ steht, erscheint hier nicht noch einmal – außer ein Filter ist gewählt
