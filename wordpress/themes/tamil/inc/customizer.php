@@ -39,7 +39,7 @@ function tamil_customizer_felder(): array {
 		'production_text'         => array( 'production', __( 'Text', 'tamil' ), 'textarea', 'A.R. Rahman, Ilaiyaraaja, Anirudh und Santhosh Narayanan standen oder stehen mit Tamil.de Production auf deutschen Bühnen. Hier stehen alle Konzerte, Tickets, Saalpläne und Antworten auf die häufigsten Fragen rund um den Konzertbesuch.' ),
 		'production_ticket_label' => array( 'production', __( 'Ticket-Knopf: Beschriftung', 'tamil' ), 'text', 'Tickets' ),
 		'production_ticket_url'   => array( 'production', __( 'Ticket-Knopf: Link', 'tamil' ), 'url', '' ),
-		'wow_aufmacher'           => array( 'start', __( 'Wow-Aufmacher „Punkt für Punkt zum Bild“ (Decke mit Tamil Dots über dem Aufmacherfoto)', 'tamil' ), 'checkbox', '1' ),
+		'wow_aufmacher'           => array( 'start', __( 'Wow-Aufmacher „Punkt für Punkt zum Bild“ (Decke mit Tamil Dots über dem Aufmacherfoto)', 'tamil' ), 'checkbox', '' ),
 		'tv_text'                 => array( 'tv', __( 'Einleitung', 'tamil' ), 'textarea', 'Tamilisches Fernsehen im Browser. Die Streams starten erst nach Klick.' ),
 		'tv_sender'               => array( 'tv', __( 'Sender (eine Zeile pro Sender: Name | Stream-Adresse .m3u8)', 'tamil' ), 'textarea', '' ),
 	);

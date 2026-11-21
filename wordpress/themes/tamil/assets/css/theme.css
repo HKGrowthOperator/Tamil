@@ -258,12 +258,29 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
   padding: 0 12px; line-height: var(--band-hoehe);
   font-size: 15px; font-weight: 500; color: var(--hell); white-space: nowrap;
 }
-.band__liste a:hover, .mehr summary:hover { background: var(--rot); color: var(--hell); }
+/* Rubriken im Band (Luis 21.11.2026): beim Überfahren und im Tastaturfokus wachsen Tamil Dots aus dem Raster, bis
+   die Fläche weiß ist; die Schrift wechselt von Weiß auf Titan (auf Weiß 12,6 : 1). Ein Verlauf im Punktraster,
+   der Radius läuft über die angemeldete Eigenschaft --punkt. Ohne @property und mit „Bewegung reduzieren“ steht die
+   weiße Fläche sofort. Nur der Hintergrund wird gezeichnet, kein Layout bewegt sich. */
+@property --punkt { syntax: "<number>"; inherits: false; initial-value: 0; }
+.band__liste a, .mehr summary { isolation: isolate; }
+.band__liste a::before, .mehr summary::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; --punkt: 0;
+  background-image: radial-gradient(circle at 50% 50%, var(--hell) calc(var(--punkt) * 5.8px), transparent calc(var(--punkt) * 5.8px + 0.6px));
+  background-size: 8px 8px; background-position: 50% 100%;
+}
+.band__liste a:hover, .mehr summary:hover, .band__liste a:focus-visible, .mehr summary:focus-visible { color: var(--titan); }
+.band__liste a:hover::before, .mehr summary:hover::before, .band__liste a:focus-visible::before, .mehr summary:focus-visible::before { --punkt: 1; }
+.band__liste a:focus-visible, .mehr summary:focus-visible { outline-color: var(--titan); }
+@media (prefers-reduced-motion: no-preference) {
+  .band__liste a, .mehr summary { transition: color 0.12s linear 0.13s; }
+  .band__liste a::before, .mehr summary::before { transition: --punkt 0.5s cubic-bezier(0.3, 0, 0.2, 1); }
+}
 .band__liste a[aria-current] { background: var(--rot); color: var(--hell); font-weight: 600; }
 .band__liste a[aria-current]::after {
   content: ""; position: absolute; left: 12px; right: 12px; bottom: 0; height: 3px; background: var(--hell);
 }
-.band__liste :focus-visible, .mehr summary:focus-visible { outline-color: var(--hell); outline-offset: -4px; }
+.band__liste :focus-visible, .mehr summary:focus-visible { outline-color: var(--titan); outline-offset: -4px; }
 .mehr__paneel :focus-visible { outline-color: var(--fokus); outline-offset: 2px; }
 .admin-bar .band { top: 0; }
 @media (min-width: 601px) { .admin-bar .band { top: var(--wp-admin--admin-bar--height, 32px); } }

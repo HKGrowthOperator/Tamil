@@ -5,6 +5,16 @@ Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
 ## 21.11.2026
 
+- **Rubriken im Band mit Tamil-Dots-Bewegung (Theme 3.14.0).** Luis am 21.11.: bei den Rubriken im Kopf „mehr
+  Animation“; beim Darübergehen „gehen da Tamil Dots rein“ und die Fläche wird „von Rot auf Weiß“. Umgesetzt in
+  `assets/css/theme.css` (Abschnitt Band): Punkte wachsen im Raster bis zur weißen Fläche, Schrift auf Titan; auch
+  im Tastaturfokus, ohne Bewegung bei „Bewegung reduzieren“. · Luis
+- **Wow-Aufmacher abgeschaltet (Theme 3.13.1).** Luis am 21.11.: Die Tamil Dots liegen im Aufmacher „über die ganze
+  Seite“ und sehen „ganz rot“ aus; sie sollen „klein, minimiert rechts unten in der Ecke nur, wie bei den anderen
+  Beiträgen“ sitzen, weil die Decke „den ganzen Aufmacher kaputt“ macht. Der Schalter im Customizer steht jetzt
+  standardmäßig auf aus; der Aufmacher ist die normale Bildkarte mit Punktbogen unten rechts. Der Code bleibt
+  liegen, bis der neue Aufmacher mit Luis entschieden ist. · Luis
+
 - **KI-Symbolbilder als Ersatzbilder im Rubrik-Pool erlaubt (Theme 3.13.0).** Auftrag von Luis am 21.11.: „suche
   außerdem täglich beiträge und wenn keine bilder vorhanden oder sonst was gebe mir bitte ein generiertes bild das
   aussieht wie echt hyperrealistisch nicht nach ki“ und „gehe mit higgsfield und skills noch mal über die bestehende
