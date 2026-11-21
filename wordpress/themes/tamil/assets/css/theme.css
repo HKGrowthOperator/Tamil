@@ -1054,6 +1054,16 @@ input[type="file"] { padding: 10px; font-size: 15px; }
 }
 .vz-auswahl { border: 0; padding: 0; margin: 0; }
 .vz-auswahl label { min-height: 44px; align-items: center; }
+/* Verzeichnis-Formular: „im Verzeichnis zeigen“ und die Einwilligung wie im Formular tf, Kästchen und Text in einer
+   Zeile (Q2-07); die allgemeine Regel für Feld-Labels (display: block) würde das Kästchen darüber stellen */
+.vz-feld > label.vz-oeffentlich {
+  display: grid; grid-template-columns: 24px minmax(0, 1fr); column-gap: 10px; align-items: center;
+  min-height: 44px; margin: 6px 0 0; font-size: 15px; font-weight: 400;
+}
+.vz-oeffentlich input[type="checkbox"], .vz-einwilligung input[type="checkbox"] { width: 24px; height: 24px; margin: 0; }
+.vz-feld.vz-einwilligung { display: grid; grid-template-columns: 24px minmax(0, 1fr); column-gap: 10px; align-items: start; }
+.vz-feld.vz-einwilligung > label { grid-column: 2; margin: 0; font-size: 14px; font-weight: 400; line-height: 1.45; }
+.vz-feld.vz-einwilligung > :not(input):not(label) { grid-column: 2; }
 .tf-hinweis, .vz-hinweis, .wb-hinweis { font-size: 14px; line-height: 1.45; color: var(--leise); }
 .tf-einwilligung label { font-size: 14px; line-height: 1.45; }
 .tf-senden, .vz-aktion button, .vz-suche button, .vz-form button[type="submit"], .wb-formular button, .wb-knopf, .wb-buchen a, .wb-aktion button, .wb-aktion a {
