@@ -67,6 +67,10 @@
   --rand: 16px;
   --breite: 1280px;
   --band-hoehe: 46px;
+  /* Abgerundete Ecken an Karten und Bildern (Luis 21.11.2026: „bilder nicht alle eckig“); kleine Kacheln kleiner.
+     Nur Ecken, keine runden Bildformen (Verbotsliste); Bänder, Kopf und Fuß bleiben gerade. */
+  --radius: 10px;
+  --radius-klein: 6px;
   --zoom: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
 
   /* Bewegung D (assets/js/app.js) */
@@ -312,7 +316,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
 .anr:hover .titel { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.14em; }
 
 /* Bildrahmen: Format per Klasse, Bild füllt (object-fit), schneidet den leichten Zoom beim Überfahren ab */
-.rahmen { position: relative; overflow: hidden; background: var(--flaeche); }
+.rahmen { position: relative; overflow: hidden; border-radius: var(--rahmen-r, var(--radius)); background: var(--flaeche); }
 .rahmen img { width: 100%; height: 100%; object-fit: cover; transition: var(--zoom); }
 .anr:hover .rahmen img { transform: scale(1.03); }
 .r169 { aspect-ratio: 16 / 9; }
@@ -1334,7 +1338,7 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
 .alignleft { float: left; margin: 0.3em 1.4em 1em 0; }
 .alignright { float: right; margin: 0.3em 0 1em 1.4em; }
 .aligncenter { margin-left: auto; margin-right: auto; }
-.wp-block-image img { border-radius: 0; }
+.wp-block-image img { border-radius: var(--radius); }
 .wp-block-separator { border: 0; border-top: 1px solid var(--linie); }
 .wp-block-button__link { border-radius: 0; }
 
@@ -1355,10 +1359,10 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
 
   /* Aufdecken: Bild von unten freigeben, dabei von 1,06 auf 1 */
   .bewegt [data-art~="aufdecken"] .rahmen { transition: clip-path var(--t-bild) var(--expo) var(--verz, 0ms); }
-  .bewegt [data-art~="aufdecken"]:not(.da) .rahmen { clip-path: inset(100% 0 0 0); }
+  .bewegt [data-art~="aufdecken"]:not(.da) .rahmen { clip-path: inset(100% 0 0 0 round var(--rahmen-r, var(--radius))); }
   /* Ziel ausdrücklich inset(0) (nach „none“ gäbe es keinen Übergang); nach dem Auftritt wieder none, damit
      Fokusrahmen außerhalb der Kachel nicht beschnitten werden */
-  .bewegt .laeuft[data-art~="aufdecken"] .rahmen { clip-path: inset(0 0 0 0); }
+  .bewegt .laeuft[data-art~="aufdecken"] .rahmen { clip-path: inset(0 0 0 0 round var(--rahmen-r, var(--radius))); }
   .bewegt [data-art~="aufdecken"] .rahmen img { transition: var(--zoom), scale var(--t-zoom) var(--expo) var(--verz, 0ms); }
   .bewegt [data-art~="aufdecken"]:not(.da) .rahmen img { scale: 1.06; }
   .bewegt [data-art~="aufdecken"] .meta { --nach: 100ms; }
@@ -1452,6 +1456,28 @@ body .tz-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
   .anr:hover .rahmen img, .kacheln a:hover .rahmen img { transform: none; }
 }
+/* ---------- Abgerundete Ecken (Theme 3.9.0) ----------
+   Ein Radius für Karten und Bilder (--radius), kleiner für kleine Kacheln (--radius-klein). Der Punktbogen und das Schild
+   „Symbolbild“ schließen mit der Rundung ab: der Rahmen schneidet sie an; wo kein Rahmen schneidet (Artikelbild, Bild im
+   Text), rundet der Bogen seine eigene Ecke unten rechts und das Schild seine oben rechts. Bilder, die am Handy von
+   Rand zu Rand laufen (Aufmacher, Artikelbild unter 600 px), bleiben gerade wie die Bänder. */
+.signatur-ecke { clip-path: inset(-200% 0 0 -200% round 0 0 var(--rahmen-r, var(--radius)) 0); }
+.symbolbild { border-top-right-radius: var(--rahmen-r, var(--radius)); }
+.artikel__figur > img, .artikel__bild { border-radius: var(--rahmen-r, var(--radius)); }
+.bild-ecke { overflow: clip; border-radius: var(--radius); }
+.inhalt img:not(.emoji):not(.wp-smiley) { border-radius: var(--radius); }
+.kacheln .rahmen, .tafel__bild.rahmen { --rahmen-r: var(--radius-klein); }
+.grafik { border-radius: var(--radius); overflow: clip; }
+.grafik .rahmen { --rahmen-r: 0px; }
+.ad img, body .ad.ad-bild .anzeige-wrap.flaeche { border-radius: var(--radius); }
+.ad-mobile .flaeche, .ad-mobile img, body .ad-mobile.ad-bild .anzeige-wrap.flaeche { border-radius: var(--radius-klein); }
+.vz a.vz-bild, .vz-profil .vz-bild { border-radius: var(--radius); }
+@media (max-width: 599px) {
+  .aufmacher .rahmen { --rahmen-r: 0px; }
+  .artikel__figur { --rahmen-r: 0px; }
+  .artikel__figur > img, .artikel__bild { border-radius: 0; }
+}
+
 @media print {
   .kopfzeile, .band, .fuss, .ad, .anzeige-zwischen, .anzeige-unten, .teilen, .mehr, .kacheln, .signatur, .signatur-ecke { display: none !important; }
   body { background: #fff; }
