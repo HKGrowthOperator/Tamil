@@ -299,9 +299,10 @@ function tamil_kacheln( array $kacheln, string $label ): string {
  * Karte „Im Kino“ (auf Titan): Film und Zahl der Kinos im Bild, die Städte darunter (Startseite „Diese Woche“, Kino
  * „Im Programm“).
  *
- * @param array<string,mixed> $f Ergebnis von tamil_kino_film().
+ * @param array<string,mixed> $f      Ergebnis von tamil_kino_film().
+ * @param bool                $sofort Bild sofort und vorrangig laden (erste Karte im ersten Bildschirm).
  */
-function tamil_grafik_kino( array $f, string $ebene = 'h3' ): string {
+function tamil_grafik_kino( array $f, string $ebene = 'h3', bool $sofort = false ): string {
 	$laender = array_unique( array_filter( array_map( static fn( $k ) => (string) ( $k['land'] ?? '' ), (array) ( $f['fakten']['kinos'] ?? array() ) ) ) );
 	$namen   = array(
 		'DE' => __( 'in Deutschland', 'tamil' ),
@@ -320,7 +321,13 @@ function tamil_grafik_kino( array $f, string $ebene = 'h3' ): string {
 		esc_html( $f['film'] ),
 		esc_html( $zahl ),
 		$kat ? '<span class="meta__rubrik">' . esc_html( $kat->name ) . '</span>' : '',
-		tamil_bild( (int) $f['post'], array( 'sizes' => '(min-width: 1024px) 380px, (min-width: 600px) 50vw, 100vw' ) ),
+		tamil_bild(
+			(int) $f['post'],
+			array(
+				'sizes' => '(min-width: 1024px) 380px, (min-width: 600px) 50vw, 100vw',
+				'eager' => $sofort,
+			)
+		),
 		$f['staedte'] ? '<div class="grafik__inhalt"><p class="grafik__orte">' . esc_html( tamil_staedte_kurz( $f['staedte'] ) ) . '</p></div>' : ''
 	);
 }
