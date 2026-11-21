@@ -5,6 +5,30 @@ Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
 ## 21.11.2026
 
+- **Drei Startseiten-Proben zum Vergleichen (Theme 3.16.0; Masterplan von Luis vom 21.11., Teil B, Ticket TML-W06).**
+  · Luis, umgesetzt vom Theme-Bauer im Auftrag der Hauptsitzung
+  - **Das ist keine Entscheidung über die Startseite.** Gebaut sind drei Proben für den ersten Bildschirm, damit Luis
+    vergleichen und wählen kann: „Cover First“ (`/?probe=cover`), „News First“ (`/?probe=news`), „Community First“
+    (`/?probe=community`). Bauvorgabe und Begründung: `design/richtungen/klar2/proben-start/`.
+  - **Nur mit Schalter:** Customizer „Tamil.de → Startseite → Startseiten-Proben“ (`tamil_startseiten_proben`,
+    Standard aus). Ist er aus oder der Wert unbekannt, steht exakt die normale Startseite da (geprüft: gleiche
+    Ausgabe wie vor dem Einbau). Probenseiten tragen `noindex`, werden nicht zwischengespeichert, sind nirgends
+    verlinkt und zeigen oben einen kleinen Umschalter zwischen den Proben und der normalen Startseite.
+  - **Gleiche Beiträge, kein eigener Zwischenspeicher:** Die Proben ordnen die acht Beiträge neu, die
+    `tamil_start_auswahl()` für den ersten Abschnitt schon reserviert (Aufmacher, Nebenstücke, Meldungen). Alles
+    darunter bleibt die bestehende Seite; die Werbeplätze nach F3 stehen an ihrem Ort (Leaderboard nach den
+    Rubrikkacheln, Billboard nach „Küche“, Fuß, Handy-Leiste).
+  - **Neu in allen Proben: „Tamil in meiner Stadt“** (Kino, Termine, Geschichten mit Ort, Stadtwahl). Die Wahl bleibt
+    nur im `localStorage` des Browsers; kein Cookie, keine Anfrage an den Server, keine Standortabfrage. Ohne Skript
+    steht der Zustand „Alle Städte“. Städte kommen aus `kino_fakten`, den Termin-Feldern und dem Freitext „Ort der
+    Meldung“; ein eigenes Stadt-Feld gibt es nicht.
+  - **Nichts erfunden:** kein Etikett „Warum das wichtig ist“ (das Feld gibt es nicht), „Heute wichtig“ nur mit einem
+    Beitrag von heute, sonst „Zuletzt erschienen“; Uhrzeit nur bei Beiträgen von heute oder gestern.
+  - **Offen bei Luis** (Fragen 1 bis 5 der Bauvorgabe): eigenes Feld für den Kontextsatz, Dopplung mit „Diese
+    Woche“, tägliche Beiträge, Stadt und Land als eigene Felder, Abweichungen vom Brief §10 bei Cover First.
+  - Code: `inc/proben.php`, `template-parts/home/probe-*.php`, `template-parts/home/stadt.php`,
+    `assets/js/stadt-start.js`, `assets/js/stadt.js`, Abschnitt „Startseiten-Proben“ in `assets/css/theme.css`;
+    Test `tests/wp/test_startseiten_proben.py`.
 - **Grundlage reparieren (Theme 3.15.0; Masterplan von Luis vom 21.11., Teil A, Tickets TML-W02, TML-W03, TML-W05).**
   · Luis, umgesetzt vom Theme-Bauer im Auftrag der Hauptsitzung
   - **Cover mit Ablauf (TML-W02):** Ein abgelaufenes Cover bleibt nie stehen. Ein im Customizer gesetzter Aufmacher

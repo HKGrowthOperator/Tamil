@@ -206,6 +206,27 @@ gemeinsamer Kante für Kopf, Bild und Text), höchstens 70 Zeichen je Zeile.
 - **Suche, 404, Seiten, Archive:** Seitenkopf, Blöcke mit Blocktitel, Kartenraster; Seiten in der Artikelspalte,
   Plugin-Inhalte bis 720 px. Bildnachweise im Fuß eingeklappt („Bildnachweise dieser Seite (n)“).
 
+## Startseiten-Proben, nur mit Option (Theme 3.16.0)
+
+Drei Entwürfe für den ersten Bildschirm zum Vergleichen, keine Entscheidung (Luis wählt). Es gibt sie nur mit dem
+Schalter „Tamil.de → Startseite → Startseiten-Proben“ im Customizer (Standard aus) und über `/?probe=cover`,
+`/?probe=news`, `/?probe=community`; sonst steht die normale Startseite unverändert da. Probenseiten tragen `noindex`
+und oben einen kleinen Umschalter. Bauvorgabe und Begründung: `design/richtungen/klar2/proben-start/`.
+
+- **Cover First:** Cover (Handy 4:3, Tablet 16:10, Desktop 16:10 oder 3:2 nach Bild und Titellänge) mit Kontextfeld
+  („Titelgeschichte“, Ort, Quelle, Datum, Vorspann), daneben drei Beistücke in drei Formaten (4:3, 16:9, 8:3),
+  darunter „Weitere Meldungen“ als Reihe. Covertitel `clamp(28px, 22px + 1.52vw, 44px)`, in Stufen nach Länge.
+- **News First:** Zeitfolge der fünf neuesten Beiträge (Zeit, Bildkarte, Ort mit einem Satz und Quelle), daneben das
+  Cover kleiner und zwei ältere Stücke. Blocktitel „Heute wichtig“ nur mit einem Beitrag von heute, sonst „Zuletzt
+  erschienen“; Uhrzeit nur bei heute und gestern.
+- **Community First:** „Tamil in meiner Stadt“ ganz oben, danach der erste Abschnitt der Startseite unverändert.
+- **„Tamil in meiner Stadt“** (in allen Proben; bei Cover und News nach dem Leaderboard): Auswahlfeld „Stadt“
+  (48 px hoch, Radius 6 px), Fächer „Im Kino“, „Termine“, „Aus der Stadt“ (Bühne wie die Küche) auf Weiß mit der
+  Linie in Titan. Ein leeres Fach ist ein Satz mit Link, keine leere Bildkachel. Wahl nur im `localStorage`.
+- Es gelten alle Regeln dieser Datei: nur die vorhandenen Farben, Radien 10 px und 6 px, jeder Beitrag eine Bildkarte
+  mit Titel im Bild und Punktbogen; der Text neben der Karte (`.kontext`) steht im selben Link. Bewegung nur als
+  Antwort auf eine Handlung (Überfahren, Stadtwahl 160 ms), nie von selbst. Werbeplätze nach F3 unverändert.
+
 ## Signet „Tamil Dots 04A“ (Theme 3.5.0, an jedem Post seit 3.6.0)
 
 Die Form hat Luis am 19.11.2026 freigegeben (`docs/abnahme/2026-11-19-signature.md`, `design/signature/master.svg`,
