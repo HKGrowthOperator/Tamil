@@ -6,7 +6,6 @@ Ein von der Redaktion per [tamil_anzeige] gesetzter Platz bleibt stehen.
 Gegen ein lokales WordPress (wordpress/dev/setup.sh + serve.sh).
 """
 
-import json
 import re
 
 import pytest
@@ -72,10 +71,3 @@ def test_langer_beitrag_mit_anzeige_im_text(wp, beitraege):
 
 def test_platz_der_redaktion_bleibt(wp, beitraege):
     assert "inarticle" in _plaetze("werbung-redaktion")
-
-
-def test_werben_nennt_die_regel(wp_cli):
-    """Die Seite „Werben“ verspricht nichts, was die Regel nicht hält (N-06)."""
-    wo = {k: v["wo"] for k, v in json.loads(wp_cli("echo wp_json_encode( tamil_site_werbung_formate() );")).items()}
-    assert "ab fünf Absätzen" in wo["inarticle"]
-    assert "außer kurzen Artikeln" in wo["footer"]

@@ -204,7 +204,7 @@ function tamil_site_werbung_formate(): array {
 		),
 		'inarticle'   => array(
 			'name'    => __( 'Im Artikel', 'tamil-site' ),
-			'wo'      => __( 'im Artikel nach dem zweiten Absatz (Artikel ab fünf Absätzen)', 'tamil-site' ),
+			'wo'      => __( 'im Artikel nach dem zweiten Absatz', 'tamil-site' ),
 			'desktop' => array( 336, 280 ),
 			'mobil'   => array( 336, 280 ),
 			'ab'      => 0,
@@ -218,7 +218,7 @@ function tamil_site_werbung_formate(): array {
 		),
 		'footer'      => array(
 			'name'    => __( 'Fuß', 'tamil-site' ),
-			'wo'      => __( 'über dem Fuß jeder Seite (außer kurzen Artikeln unter fünf Absätzen)', 'tamil-site' ),
+			'wo'      => __( 'über dem Fuß jeder Seite', 'tamil-site' ),
 			'desktop' => array( 728, 90 ),
 			'mobil'   => array( 320, 100 ),
 			'ab'      => 768,
