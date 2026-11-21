@@ -1123,6 +1123,14 @@ input[type="file"] { padding: 10px; font-size: 15px; }
   .wb-tabelle tr { padding: 10px 0; border-bottom: 1px solid var(--linie); }
   .wb-tabelle td, .wb-tabelle tbody th { border-top: 0; padding: 2px 0; }
   .wb-tabelle td[data-label]::before { font-weight: 600; color: var(--leise); }
+  /* Preis wie die anderen Angaben hinter der Beschriftung in derselben Zeile (Q2-11) */
+  .wb-tabelle td[data-label] .wb-preise { display: inline; }
+  .wb-tabelle td[data-label] .wb-preise li { display: inline; }
+  .wb-tabelle td[data-label] .wb-preise li + li::before { content: ", "; }
+}
+/* breite Tabelle: die letzte Spalte („auf Anfrage“, Termin) bricht nicht um (Q2-11) */
+@media (min-width: 641px) {
+  .wb-tabelle td:last-child { white-space: nowrap; }
 }
 
 /* Cookie-Zustimmung: Hinweis unten und Dialog, ohne Radius und Schatten */
