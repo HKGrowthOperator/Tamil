@@ -11,17 +11,34 @@
   var hat = function (el, slug) { return (" " + (el.getAttribute("data-stadt") || "") + " ").indexOf(" " + slug + " ") > -1; };
   var GROSS = "(min-width: 1024px) 800px, (min-width: 600px) calc(66vw - 32px), calc(100vw - 32px)";
 
-  // Zustand herstellen: slug leer = „Alle Städte“. Gibt die Zahl der sichtbaren Karten je Fach zurück.
+  // Zustand herstellen: slug leer = „Alle Städte“ (nur Karten mit data-alle). Hat die gewählte Stadt in einem Fach
+  // nichts, zeigt das Fach den Bestand aus „Alle Städte“ und sagt es in der Zeile darüber ([data-ersatz]).
+  // Gibt die Zahl der Karten der Stadt selbst je Fach zurück (für die Ansage), bei „Alle Städte“ die gezeigten.
   function zeige(slug, name) {
-    var zahl = {};
+    var zahl = {}, sicht = {};
     alle("[data-fach]").forEach(function (fach) {
-      var max = parseInt(fach.getAttribute("data-max"), 10) || 2, n = 0;
-      alle("[data-stadt-karte]", fach).forEach(function (k) {
-        var ok = (!slug || hat(k, slug)) && n < max;
+      var max = parseInt(fach.getAttribute("data-max"), 10) || 2, n = 0, eigen = 0;
+      var karten = alle("[data-stadt-karte]", fach), art = fach.getAttribute("data-fach");
+      if (slug) karten.forEach(function (k) {
+        var ok = hat(k, slug) && eigen < max;
+        k.hidden = !ok;
+        if (ok) eigen++;
+      });
+      n = eigen;
+      if (!eigen) karten.forEach(function (k) {
+        var ok = k.hasAttribute("data-alle") && n < max;
         k.hidden = !ok;
         if (ok) n++;
       });
-      zahl[fach.getAttribute("data-fach")] = n;
+      var ersatz = !!slug && !eigen && n > 0, zeile = eins("[data-ersatz]", fach), kopf = eins("[data-art]", fach);
+      if (zeile) {
+        zeile.textContent = ersatz ? (zeile.getAttribute("data-text") || "").replace("{stadt}", name || "") : "";
+        zeile.hidden = !ersatz;
+      }
+      if (kopf) kopf.textContent = kopf.getAttribute(slug && eigen ? "data-text-stadt" : "data-text-alle");
+      fach.classList.toggle("ist-ersatz", ersatz);
+      zahl[art] = slug ? eigen : n;
+      sicht[art] = n;
       fach.hidden = n === 0;
       fach.style.setProperty("--n", String(Math.max(1, n)));
     });
@@ -44,9 +61,9 @@
       });
       buehne.className = buehne.className.replace(/kueche__raster--\d/, "kueche__raster--" + Math.max(1, i));
     }
-    // Leerzustände als Satz: je leerem Fach der Wortlaut für die Stadt bzw. für „Alle Städte“
+    // Leerzustände als Satz, nur wenn das Fach auch mit dem Bestand aus allen Städten leer bleibt
     alle("[data-leer]").forEach(function (p) {
-      var leer = !zahl[p.getAttribute("data-leer")], art = slug ? "data-text-stadt" : "data-text-alle", da = false;
+      var leer = !sicht[p.getAttribute("data-leer")], art = slug ? "data-text-stadt" : "data-text-alle", da = false;
       alle("[data-leer-satz], [data-leer-link]", p).forEach(function (t) {
         var text = (t.getAttribute(art) || "").replace("{stadt}", name || "");
         t.textContent = text; if (text) da = true;
@@ -54,7 +71,7 @@
       p.hidden = !leer || !da;
     });
     var reihe = eins(".stadt__reihe");
-    if (reihe) reihe.setAttribute("data-karten", String((zahl.kino || 0) + (zahl.termine || 0)));
+    if (reihe) reihe.setAttribute("data-karten", String((sicht.kino || 0) + (sicht.termine || 0)));
     var titel = eins("[data-stadt-name]");
     if (titel) titel.textContent = slug ? name : titel.getAttribute("data-ohne");
     b.classList.toggle("stadt--gewaehlt", !!slug);

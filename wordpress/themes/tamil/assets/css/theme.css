@@ -1764,6 +1764,7 @@ body .ad.ad-bild .anzeige--bild .anzeige__bild { border-radius: 0; }
 .nachrichten__folge { padding-top: 14px; }
 .nachrichten__folge .block-titel { margin-bottom: 0; }
 .zeitfolge { margin: 0; padding: 0; list-style: none; }
+.zeitfolge__hinweis { display: flex; flex-wrap: wrap; align-items: center; gap: 0 12px; margin-top: 2px; font-size: 14px; line-height: 1.45; color: var(--leise); }
 .zeitfolge__eintrag { padding: 12px 0 18px; border-top: 1px solid var(--linie); }
 .zeitfolge__eintrag:first-child { border-top-color: transparent; padding-top: 8px; }
 .zeitfolge__eintrag:not(:first-child):hover { border-top-color: var(--titan); }
@@ -1838,11 +1839,13 @@ body .ad.ad-bild .anzeige--bild .anzeige__bild { border-radius: 0; }
 .stadt__fach--termine .grafik--karte .titel { font-size: 19px; }
 .stadt__fach--termine .rahmen { aspect-ratio: 8 / 3; }
 .stadt__fach--termine .grafik--karte .imbild { padding: 30px calc(var(--ecke) + 10px) 10px 14px; background-image: var(--verlauf-kurz); }
-.stadt--gewaehlt .stadt__fach--kino .grafik__inhalt { display: none; }
+.stadt--gewaehlt .stadt__fach--kino:not(.ist-ersatz) .grafik__inhalt { display: none; }
 .stadt__spielorte { margin-top: 6px; font-size: 16px; line-height: 1.45; }
 .stadt__spielorte li { display: flex; flex-wrap: wrap; align-items: center; gap: 0 14px; }
-.stadt__leer { margin-top: 14px; max-width: 40em; font-size: 18px; line-height: 1.5; }
-.stadt__leer a { padding-block: 12px; font-weight: 600; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+/* Leersätze leise (3.16.1): normaler Text, der Link am Ende, nicht fett; die Zeile über einem aufgefüllten Fach ebenso */
+.stadt__leer { margin-top: 10px; max-width: 40em; font-size: 16px; line-height: 1.5; color: var(--leise); }
+.stadt__leer a { padding-block: 12px; color: var(--tinte); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; white-space: nowrap; }
+.stadt__ersatz { margin: -4px 0 8px; font-size: 16px; line-height: 1.45; color: var(--leise); }
 .stadt__leer a:hover { color: var(--rot); }
 .stadt__fort { margin-top: 12px; }
 .stadt .kueche__raster { padding-top: 0; }
@@ -1865,6 +1868,8 @@ body .ad.ad-bild .anzeige--bild .anzeige__bild { border-radius: 0; }
   .stadt__fach--termine { flex-grow: var(--n, 1); }
   .stadt__leerzeilen { flex: 1 1 100%; min-width: 0; }
   .stadt__karten { flex: 1 1 auto; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 16px; }
+  /* Steht über einem Fach die Zeile „… anderswo:“, bleiben die Karten beider Fächer auf einer Höhe (unten bündig) */
+  .stadt__reihe:has(> .ist-ersatz) > .stadt__fach > .stadt__karten { flex: 0 0 auto; margin-top: auto; }
   /* gleiche Bildhöhe in der Reihe (Kino breit, Termine schmaler); der Text darunter hält seine Zeilen frei */
   .stadt__karten .rahmen, .stadt__fach--termine .rahmen { aspect-ratio: auto; min-height: 206px; }
   .stadt__karten .grafik__orte { min-height: calc(3 * 1.45em); }

@@ -3,6 +3,27 @@
 Neueste oben. Format: Datum · Entscheidung · wer · warum. Was hier steht, gilt, bis ein neuerer Eintrag es ändert.
 Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
+## 22.11.2026
+
+- **Startseiten-Proben: Wahrheits- und Datenfehler behoben (Theme 3.16.1).** · Korrekturen aus der unabhängigen
+  Kritik vom 22.11., umgesetzt vom Theme-Bauer im Auftrag der Hauptsitzung
+  - **Das ist keine Gestaltungsentscheidung.** Die drei Proben bleiben, wie sie sind; welche Richtung gilt, entscheidet
+    Luis. Die Dopplung „Stadtbereich zeigt dieselben Karten wie Diese Woche“ ist bewusst nicht angefasst.
+  - **Eine erklärte Kinozahl:** „Diese Woche“ nennt alle Kinos der Kinoliste, „Tamil in meiner Stadt“ nur die mit
+    Vorstellung ab heute. Weichen die Zahlen ab, steht im Stadtbereich „ab heute noch N von M Kinos“.
+  - **Vergangene Termine:** Das Kontextfeld der Titelgeschichte schreibt einen Termin vor heute als „war am …“.
+  - **„Zuletzt erschienen“ (News First):** Fehlt die Titelgeschichte in der Liste, obwohl sie nach ihrem Datum
+    hineingehört, sagt eine Zeile unter der Überschrift das und führt zu ihr. Die Auswahl bleibt unverändert.
+  - **Dünne Stadt:** Hat die gewählte Stadt in einem Fach nichts, zeigt das Fach den Bestand aus allen Städten mit
+    einer Zeile darüber („In Bern gerade kein Film. Im Kino anderswo:“). Leersätze stehen nur noch, wenn es nirgends
+    etwas gibt; sie sind kurz und nicht mehr fett.
+  - **Stadtauswahl:** Gezählt werden die 200 neuesten Beiträge mit Ort (vorher 24). Wählbar ist jede Stadt mit Kino
+    ab heute, kommendem Termin oder zwei Beiträgen. Unter „Alle Städte“ stehen nur Geschichten der letzten 60 Tage,
+    neueste zuerst (vorher Rubrik Community zuerst, ohne Altersgrenze); das Fach heißt dort „Aus den Städten“ und
+    entfällt ohne junge Geschichte.
+  - Code: `inc/proben.php`, `inc/anreisser.php` (`zahl_text`), `template-parts/home/stadt.php`, `probe-news.php`,
+    `assets/js/stadt-start.js`; Tests in `tests/wp/test_startseiten_proben.py`.
+
 ## 21.11.2026
 
 - **Drei Startseiten-Proben zum Vergleichen (Theme 3.16.0; Masterplan von Luis vom 21.11., Teil B, Ticket TML-W06).**

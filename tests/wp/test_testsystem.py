@@ -7,6 +7,7 @@ Danach wird alles auf den Stand vor dem Test zurückgesetzt. Die Prüfungen von 
 """
 
 import base64
+import contextlib
 import json
 import os
 import re
@@ -35,14 +36,15 @@ def _php(wp_cli, code: str):
     return json.loads(wp_cli(code))
 
 
-@pytest.fixture
-def testsystem(wp_cli):
-    """Stand der Seiten, Schalter, Merker und Einträge sichern; nach dem Test genau so zurück."""
+@contextlib.contextmanager
+def _gesichert(wp_cli):
+    """Stand der Seiten, Schalter, Merker und Einträge sichern; nach dem Test genau so zurück. Dazu gehört der Schalter
+    „Startseiten-Proben“ (theme_mod), den der Helfer einmalig einschaltet: Er bliebe sonst lokal an."""
     sicher = wp_cli(
         "global $wpdb; $seiten = array(); foreach ( array( 'production', 'einreichen', 'werben', 'verzeichnis' ) as $slug ) {"
         " $p = get_page_by_path( $slug, OBJECT, 'page' ); $seiten[ $slug ] = $p ? array( $p->ID, $p->post_status ) : null; }"
         " echo base64_encode( wp_json_encode( array( 'seiten' => $seiten, 'funktionen' => get_option( 'tamil_site_funktionen', null ),"
-        " 'merker' => get_option( 'tamil_c_testsystem', null ), 'max' => (int) $wpdb->get_var( \"SELECT MAX(ID) FROM {$wpdb->posts}\" ),"
+        " 'merker' => get_option( 'tamil_c_testsystem', null ), 'proben' => get_theme_mod( 'tamil_startseiten_proben', null ), 'max' => (int) $wpdb->get_var( \"SELECT MAX(ID) FROM {$wpdb->posts}\" ),"
         " 'beispiele' => get_posts( array( 'post_type' => TAMIL_SITE_VZ_TYP, 'post_status' => 'any', 'numberposts' => -1, 'fields' => 'ids',"
         " 'meta_key' => '_tamil_vz_beispiel' ) ) ) ) );")
     # Schon vorhandene Beispiel-Einträge (etwa auf einem eingerichteten Testbett) vorübergehend ohne Kennzeichen: Der
@@ -58,7 +60,14 @@ def testsystem(wp_cli):
            " foreach ( $alt['seiten'] as $slug => $s ) { if ( $s ) { wp_update_post( array( 'ID' => $s[0], 'post_status' => $s[1] ) ); } }"
            " foreach ( array( 'funktionen' => 'tamil_site_funktionen', 'merker' => 'tamil_c_testsystem' ) as $k => $o ) {"
            " if ( null === $alt[ $k ] ) { delete_option( $o ); } else { update_option( $o, $alt[ $k ] ); } }"
+           " if ( null === $alt['proben'] ) { remove_theme_mod( 'tamil_startseiten_proben' ); } else { set_theme_mod( 'tamil_startseiten_proben', $alt['proben'] ); }"
            " foreach ( $alt['beispiele'] as $id ) { update_post_meta( (int) $id, '_tamil_vz_beispiel', '1' ); }")
+
+
+@pytest.fixture
+def testsystem(wp_cli):
+    with _gesichert(wp_cli) as stand:
+        yield stand
 
 
 def _stand(wp_cli) -> dict:
@@ -82,6 +91,7 @@ def test_testsystem_einrichten_zweimal_gleich(wp, wp_cli, testsystem):
     assert _stand(wp_cli) == stand, "zweiter Lauf ändert nichts"
     assert "angelegt" not in zweite and "eingeschaltet" not in zweite and "veröffentlicht" not in zweite, zweite
     assert "Bausteine eingeschaltet" in erste
+    assert "Startseiten-Proben eingeschaltet" in erste and wp_cli("echo get_theme_mod( 'tamil_startseiten_proben', '' );").strip() == "1"
 
     seiten = stand["seiten"]
     for slug in SEITEN:
@@ -165,3 +175,20 @@ def test_helfer_prueft_echtbetrieb_zuerst():
     rumpf = text[text.index("function tamil_c_testsystem(): void {"):]
     assert rumpf.index("'production' === wp_get_environment_type()") < rumpf.index("tamil_c_seite(")
     assert "example.org" in text and "Musterstadt" in text and "wp_mail" not in text
+
+
+def test_sicherung_laesst_die_startseiten_proben_wie_sie_waren(wp_cli):
+    """Der Helfer schaltet die Startseiten-Proben ein; nach einem Test mit der Fixture `testsystem` (hier ihre Sicherung
+    direkt) steht der Schalter wieder wie vorher (bis 3.16.0 blieb er lokal an)."""
+    lesen = "echo wp_json_encode( get_theme_mod( 'tamil_startseiten_proben', null ) );"
+    alt = wp_cli(lesen).strip()
+    try:
+        for stand, setzen in (("null", "remove_theme_mod( 'tamil_startseiten_proben' );"), ('""', "set_theme_mod( 'tamil_startseiten_proben', '' );")):
+            wp_cli(setzen)
+            with _gesichert(wp_cli):
+                _helfer("testsystem")
+                assert wp_cli(lesen).strip() == '"1"'
+            assert wp_cli(lesen).strip() == stand
+    finally:
+        wp_cli(f"$a = json_decode( '{alt}' ); if ( null === $a ) {{ remove_theme_mod( 'tamil_startseiten_proben' ); }}"
+               " else { set_theme_mod( 'tamil_startseiten_proben', $a ); }")

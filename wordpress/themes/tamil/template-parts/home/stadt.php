@@ -3,15 +3,20 @@
  * „Tamil in meiner Stadt“ (Startseiten-Proben, inc/proben.php): Stadt wählen, darunter Kino, Termine und Geschichten
  * von dort. Auf Weiß mit der Linie in Titan; alle Beiträge als Bildkarten mit Titel im Bild und Punktbogen.
  *
- * Alle Karten aller Städte stehen im HTML und tragen data-stadt (Schlüssel ihrer Städte). Ohne Skript ist der
- * vollständige Zustand „Alle Städte“ zu sehen (nächste Vorstellungen, nächste Termine, die drei neuesten Geschichten
- * mit Ort), das Auswahlfeld bleibt verborgen, und am Ende stehen die Links „Kino nach Stadt“ und „Alle Termine“. Mit
+ * Alle Karten aller Städte stehen im HTML und tragen data-stadt (Schlüssel ihrer Städte); was unter „Alle Städte“
+ * stehen darf, trägt data-alle (jede Vorstellung ab heute, jeder kommende Termin, Geschichten der letzten
+ * TAMIL_STADT_TAGE Tage). Ohne Skript ist der vollständige Zustand „Alle Städte“ zu sehen (nächste Vorstellungen,
+ * nächste Termine, die drei neuesten Geschichten mit Ort; ohne junge Geschichte entfällt das Fach), das Auswahlfeld
+ * bleibt verborgen, und am Ende stehen die Links „Kino nach Stadt“ und „Alle Termine“. Mit
  * Skript filtert assets/js/stadt-start.js (direkt hinter dem Abschnitt eingebettet, vor dem ersten Malen) nach der in
  * diesem Browser gespeicherten Stadt; assets/js/stadt.js bedient das Auswahlfeld. Gespeichert wird nur im
  * localStorage (Schlüssel tamil_stadt); kein Cookie, keine Anfrage an den Server, keine Standortabfrage.
  *
- * Ein Fach ohne Inhalt belegt keine Kartenfläche; an seiner Stelle steht ein Satz (.stadt__leer), nie eine leere
- * Bildkachel. Gibt es gar nichts (kein Film, kein Termin, keine Geschichte mit Ort), entfällt der Abschnitt.
+ * Hat die gewählte Stadt in einem Fach nichts, füllt das Skript das Fach mit dem Bestand aus „Alle Städte“ und sagt
+ * es darüber (.stadt__ersatz: „In Bern gerade kein Film. Im Kino anderswo:“); der erste Bildschirm besteht so nie nur
+ * aus Leersätzen (Kritik vom 22.11.2026). Erst wenn es auch anderswo nichts gibt, steht ein kurzer Satz
+ * (.stadt__leer), nie eine leere Bildkachel. Gibt es gar nichts (kein Film, kein Termin, keine Geschichte mit Ort),
+ * entfällt der Abschnitt.
  *
  * @var array $args { @type bool $oben Abschnitt steht ganz oben (Community First): erste Bilder sofort laden. }
  */
@@ -25,8 +30,8 @@ if ( ! $tamil_d['filme'] && ! $tamil_d['termine'] && ! $tamil_d['geschichten'] )
 }
 
 // Attribute in das äußere Element einer fertigen Karte setzen (data-stadt, hidden) und HTML vor ihrem Ende anhängen
-$tamil_karte = static function ( string $html, array $staedte, bool $sichtbar, string $anhang = '' ): string {
-	$attr = ' data-stadt-karte data-stadt="' . esc_attr( implode( ' ', $staedte ) ) . '"' . ( $sichtbar ? '' : ' hidden' );
+$tamil_karte = static function ( string $html, array $staedte, bool $sichtbar, string $anhang = '', bool $alle = true ): string {
+	$attr = ' data-stadt-karte data-stadt="' . esc_attr( implode( ' ', $staedte ) ) . '"' . ( $alle ? ' data-alle' : '' ) . ( $sichtbar ? '' : ' hidden' );
 	$html = (string) preg_replace( '/^<(li|article)\b/', '<$1' . $attr, $html, 1 );
 	if ( '' !== $anhang ) {
 		$ende = strrpos( $html, '</' );
@@ -50,10 +55,15 @@ $tamil_leer = static function ( string $fach, array $alle, array $stadt, string 
 	);
 };
 
+// Zeile über einem Fach, das für die gewählte Stadt leer wäre und deshalb zeigt, was es anderswo gibt ({stadt})
+$tamil_ersatz = static function ( string $text ): void {
+	echo '<p class="stadt__ersatz" data-ersatz data-text="' . esc_attr( $text ) . '" hidden></p>';
+};
+
 $tamil_kino    = tamil_rubrik( 'kino' );
 $tamil_n_kino  = min( 2, count( $tamil_d['filme'] ) );
 $tamil_n_term  = min( 2, count( $tamil_d['termine'] ) );
-$tamil_n_gesch = min( 3, count( $tamil_d['geschichten'] ) );
+$tamil_n_gesch = count( array_filter( $tamil_d['geschichten'], static fn( array $g ): bool => $g['alle'] ) ); // höchstens drei
 ?>
 <section class="stadt innen<?php echo $tamil_oben ? ' stadt--oben' : ''; ?>" id="meine-stadt" aria-labelledby="t-stadt" data-stadt-bereich>
 	<div class="stadt__kopf">
@@ -79,6 +89,8 @@ $tamil_n_gesch = min( 3, count( $tamil_d['geschichten'] ) );
 		<div class="stadt__reihe" data-karten="<?php echo (int) ( $tamil_n_kino + $tamil_n_term ); ?>">
 			<div class="stadt__fach stadt__fach--kino" data-fach="kino" data-max="2" style="--n: <?php echo (int) max( 1, $tamil_n_kino ); ?>"<?php echo $tamil_d['filme'] ? '' : ' hidden'; ?>>
 				<h3 class="stadt__art" id="t-stadt-kino"><?php esc_html_e( 'Im Kino', 'tamil' ); ?></h3>
+				<?php /* translators: {stadt} bleibt stehen und wird im Browser durch den Namen der Stadt ersetzt */ ?>
+				<?php $tamil_ersatz( __( 'In {stadt} gerade kein Film. Im Kino anderswo:', 'tamil' ) ); ?>
 				<ul class="stadt__karten" aria-labelledby="t-stadt-kino">
 					<?php
 					foreach ( $tamil_d['filme'] as $tamil_i => $tamil_f ) {
@@ -108,6 +120,8 @@ $tamil_n_gesch = min( 3, count( $tamil_d['geschichten'] ) );
 			</div>
 			<div class="stadt__fach stadt__fach--termine" data-fach="termine" data-max="2" style="--n: <?php echo (int) max( 1, $tamil_n_term ); ?>"<?php echo $tamil_d['termine'] ? '' : ' hidden'; ?>>
 				<h3 class="stadt__art" id="t-stadt-termine"><?php esc_html_e( 'Termine', 'tamil' ); ?></h3>
+				<?php /* translators: {stadt} bleibt stehen und wird im Browser durch den Namen der Stadt ersetzt */ ?>
+				<?php $tamil_ersatz( __( 'Für {stadt} steht kein Termin im Kalender. Termine anderswo:', 'tamil' ) ); ?>
 				<ul class="stadt__karten" aria-labelledby="t-stadt-termine">
 					<?php
 					foreach ( $tamil_d['termine'] as $tamil_i => $tamil_t ) {
@@ -124,15 +138,16 @@ $tamil_n_gesch = min( 3, count( $tamil_d['geschichten'] ) );
 			</div>
 			<div class="stadt__leerzeilen">
 				<?php
+				// Leersätze stehen nur, wenn es auch in allen Städten nichts gibt: ein kurzer Satz, der Link am Ende
 				$tamil_leer(
 					'kino',
 					array(
-						__( 'Für diese Woche kennen wir keine tamilische Vorstellung.', 'tamil' ),
-						__( 'Kinostarts, Kritiken und frühere Spielorte stehen in der Rubrik Kino.', 'tamil' ),
+						__( 'Diese Woche kennen wir keine tamilische Vorstellung.', 'tamil' ),
+						__( 'Zur Rubrik Kino', 'tamil' ),
 					),
 					array(
-						__( 'In {stadt} läuft gerade kein tamilischer Film, von dem wir wissen.', 'tamil' ),
-						__( 'Alle Spielorte stehen unter Kino nach Stadt.', 'tamil' ),
+						__( 'In {stadt} läuft gerade kein tamilischer Film.', 'tamil' ),
+						__( 'Kino nach Stadt', 'tamil' ),
 					),
 					$tamil_kino['url'],
 					! $tamil_d['filme']
@@ -140,12 +155,12 @@ $tamil_n_gesch = min( 3, count( $tamil_d['geschichten'] ) );
 				$tamil_leer(
 					'termine',
 					array(
-						__( 'Gerade steht kein kommender Termin im Kalender.', 'tamil' ),
-						__( 'Kennt ihr einen? Schickt ihn der Redaktion, kostenlos für Vereine, Tempel und Schulen.', 'tamil' ),
+						__( 'Gerade steht kein Termin im Kalender.', 'tamil' ),
+						__( 'Termin einreichen', 'tamil' ),
 					),
 					array(
 						__( 'Für {stadt} steht kein Termin im Kalender.', 'tamil' ),
-						__( 'Kennt ihr einen? Schickt ihn der Redaktion, kostenlos für Vereine, Tempel und Schulen.', 'tamil' ),
+						__( 'Termin einreichen', 'tamil' ),
 					),
 					tamil_einreichen_url(),
 					! $tamil_d['termine']
@@ -155,7 +170,7 @@ $tamil_n_gesch = min( 3, count( $tamil_d['geschichten'] ) );
 					array(),
 					array(
 						__( 'Aus {stadt} haben wir noch keine Geschichte.', 'tamil' ),
-						__( 'Die neuesten stehen in der Rubrik Community.', 'tamil' ),
+						__( 'Zur Rubrik Community', 'tamil' ),
 					),
 					tamil_rubrik( 'community' )['url'],
 					false
@@ -164,20 +179,26 @@ $tamil_n_gesch = min( 3, count( $tamil_d['geschichten'] ) );
 			</div>
 		</div>
 
-		<div class="stadt__fach stadt__fach--geschichten" data-fach="geschichten" data-max="3"<?php echo $tamil_d['geschichten'] ? '' : ' hidden'; ?>>
-			<h3 class="stadt__art" id="t-stadt-geschichten"><?php esc_html_e( 'Aus der Stadt', 'tamil' ); ?></h3>
+		<div class="stadt__fach stadt__fach--geschichten" data-fach="geschichten" data-max="3"<?php echo $tamil_n_gesch ? '' : ' hidden'; ?>>
+			<?php // Unter „Alle Städte“ (und wenn das Fach mit Geschichten von anderswo gefüllt ist) heißt es „Aus den Städten“ ?>
+			<h3 class="stadt__art" id="t-stadt-geschichten" data-art data-text-alle="<?php esc_attr_e( 'Aus den Städten', 'tamil' ); ?>" data-text-stadt="<?php esc_attr_e( 'Aus der Stadt', 'tamil' ); ?>"><?php esc_html_e( 'Aus den Städten', 'tamil' ); ?></h3>
+			<?php /* translators: {stadt} bleibt stehen und wird im Browser durch den Namen der Stadt ersetzt */ ?>
+			<?php $tamil_ersatz( __( 'Aus {stadt} haben wir noch keine Geschichte. Aus anderen Städten:', 'tamil' ) ); ?>
 			<div class="kueche__raster rubrikblock__buehne kueche__raster--<?php echo (int) max( 1, $tamil_n_gesch ); ?>" data-buehne>
 				<?php
-				foreach ( $tamil_d['geschichten'] as $tamil_i => $tamil_g ) {
+				$tamil_platz = 0; // Platz unter „Alle Städte“: der erste groß (16:9), die übrigen klein (8:3)
+				foreach ( $tamil_d['geschichten'] as $tamil_g ) {
+					$tamil_gross  = $tamil_g['alle'] && 0 === $tamil_platz;
+					$tamil_platz += $tamil_g['alle'] ? 1 : 0;
 					// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_anr_imbild()
 					echo $tamil_karte(
 						tamil_anr_imbild(
 							$tamil_g['id'],
 							array(
-								'klasse' => 0 === $tamil_i ? 'kachel kachel--gross' : 'kachel kachel--klein',
-								'rahmen' => 0 === $tamil_i ? 'r169' : 'r83',
+								'klasse' => $tamil_gross ? 'kachel kachel--gross' : 'kachel kachel--klein',
+								'rahmen' => $tamil_gross ? 'r169' : 'r83',
 								'ebene'  => 'h4',
-								'sizes'  => 0 === $tamil_i ? '(min-width: 1024px) 800px, (min-width: 600px) calc(66vw - 32px), calc(100vw - 32px)' : '(min-width: 1024px) 380px, (min-width: 600px) 33vw, calc(100vw - 32px)',
+								'sizes'  => $tamil_gross ? '(min-width: 1024px) 800px, (min-width: 600px) calc(66vw - 32px), calc(100vw - 32px)' : '(min-width: 1024px) 380px, (min-width: 600px) 33vw, calc(100vw - 32px)',
 								'zusatz' => tamil_kontext(
 									$tamil_g['id'],
 									array(
@@ -189,7 +210,9 @@ $tamil_n_gesch = min( 3, count( $tamil_d['geschichten'] ) );
 							)
 						),
 						$tamil_g['staedte'],
-						$tamil_i < 3
+						$tamil_g['alle'],
+						'',
+						$tamil_g['alle']
 					);
 					// phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped
 				}
