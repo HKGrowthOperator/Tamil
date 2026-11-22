@@ -181,7 +181,7 @@ $tamil_n_gesch = count( array_filter( $tamil_d['geschichten'], static fn( array 
 
 		<div class="stadt__fach stadt__fach--geschichten" data-fach="geschichten" data-max="3"<?php echo $tamil_n_gesch ? '' : ' hidden'; ?>>
 			<?php // Unter „Alle Städte“ (und wenn das Fach mit Geschichten von anderswo gefüllt ist) heißt es „Aus den Städten“ ?>
-			<h3 class="stadt__art" id="t-stadt-geschichten" data-art data-text-alle="<?php esc_attr_e( 'Aus den Städten', 'tamil' ); ?>" data-text-stadt="<?php esc_attr_e( 'Aus der Stadt', 'tamil' ); ?>"><?php esc_html_e( 'Aus den Städten', 'tamil' ); ?></h3>
+			<h3 class="stadt__art" id="t-stadt-geschichten" data-fach-kopf data-text-alle="<?php esc_attr_e( 'Aus den Städten', 'tamil' ); ?>" data-text-stadt="<?php esc_attr_e( 'Aus der Stadt', 'tamil' ); ?>"><?php esc_html_e( 'Aus den Städten', 'tamil' ); ?></h3>
 			<?php /* translators: {stadt} bleibt stehen und wird im Browser durch den Namen der Stadt ersetzt */ ?>
 			<?php $tamil_ersatz( __( 'Aus {stadt} haben wir noch keine Geschichte. Aus anderen Städten:', 'tamil' ) ); ?>
 			<div class="kueche__raster rubrikblock__buehne kueche__raster--<?php echo (int) max( 1, $tamil_n_gesch ); ?>" data-buehne>

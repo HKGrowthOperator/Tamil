@@ -9,11 +9,31 @@
   var bahn = s.querySelector("[data-bahn]"), lage = s.querySelector("[data-lage]");
   if (!bahn || !lage) return;
   var zurueck = lage.querySelector("[data-zurueck]"), weiter = lage.querySelector("[data-weiter]"), balken = lage.querySelector("[data-balken]");
+  var oben = s.querySelector("[data-ersatz-oben]"), ort = s.querySelector("[data-stadt-name]");
   var ruhig = !window.matchMedia || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var wartet = false;
 
+  // Zahl der sichtbaren Karten an die Reihe (das CSS macht bei weniger als drei die Karten breiter) und die
+  // Ersatzzeilen der Fächer als ein Satz über die Reihe (am Handy zu sehen, siehe theme.css)
+  function zaehle() {
+    var n = 0, saetze = [];
+    Array.prototype.forEach.call(bahn.querySelectorAll("[data-fach]"), function (fach) {
+      if (fach.hidden) return;
+      n += fach.querySelectorAll("[data-stadt-karte]:not([hidden])").length;
+      var z = fach.querySelector("[data-ersatz]");
+      if (z && !z.hidden && z.getAttribute("data-text-oben")) saetze.push(z.getAttribute("data-text-oben").replace("{stadt}", ort ? ort.textContent : ""));
+    });
+    if (bahn.getAttribute("data-karten") !== String(n)) bahn.setAttribute("data-karten", String(n));
+    if (oben) {
+      var text = saetze.join(" ");
+      if (oben.textContent !== text) oben.textContent = text;
+      oben.hidden = !text;
+    }
+  }
+
   function stand() {
     wartet = false;
+    zaehle();
     var weg = bahn.scrollWidth - bahn.clientWidth, zuviel = weg > 4;
     lage.hidden = !zuviel;
     if (!zuviel) return;
@@ -41,9 +61,13 @@
   if (weiter) weiter.addEventListener("click", function () { schritt(1); });
   bahn.addEventListener("scroll", gleich, { passive: true });
   window.addEventListener("resize", gleich);
-  // Stadtwechsel blendet Karten ein und aus: Reihe an den Anfang, Balken neu rechnen
+  // Stadtwechsel blendet Karten ein und aus: Reihe an den Anfang, Balken neu rechnen. Wechselt nur der Text einer
+  // Ersatzzeile (andere Stadt, gleiche Karten), wird neu gezählt, die Reihe bleibt stehen.
   if ("MutationObserver" in window) {
-    new MutationObserver(function () { bahn.scrollLeft = 0; gleich(); }).observe(bahn, { subtree: true, attributes: true, attributeFilter: ["hidden"] });
+    new MutationObserver(function (aenderungen) {
+      if (aenderungen.some(function (a) { return a.type === "attributes"; })) bahn.scrollLeft = 0;
+      gleich();
+    }).observe(bahn, { subtree: true, attributes: true, attributeFilter: ["hidden"], childList: true });
   }
   stand();
 })();
