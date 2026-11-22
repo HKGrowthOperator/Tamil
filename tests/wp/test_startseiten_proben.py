@@ -18,10 +18,15 @@ Rubriknamen. Die normale Startseite und die drei ersten Proben bleiben unveränd
 Karten nicht mehr (geprüft MIT Bewegung, in allen vier Proben), ein vergangener Termin ist in der Ausgabe nie das
 Cover, der Ersatzhinweis im Streifen bleibt am Handy im Bild, das Titelbild lädt am Handy die größte passende Fassung,
 die Titel der Beistücke stehen am Handy klar unter dem Covertitel, weniger als drei Karten füllen den Streifen.
+Dazu die Regel von Luis (22.11.2026): Bildkanten mehrspaltiger Blöcke liegen auf gemeinsamen Linien, auf der normalen
+Startseite und in der Ausgabe (Messung: wordpress/dev/kantenlinie.mjs).
 """
 
 import json
+import pathlib
 import re
+import shutil
+import subprocess
 
 import pytest
 
@@ -923,3 +928,25 @@ def test_ausgabe_korrekturen_im_browser(wp, wp_cli, proben, streifen_bestand):
                 assert m["weiten"][0] >= 0.45 * m["platz"], f"eine einzelne Karte ist so breit wie bei zweien: {m}"
         kontext.close()
         browser.close()
+
+
+def test_bildkanten_auf_gemeinsamen_linien(wp, proben):
+    """P1-G (Luis, 22.11.2026: „Das muss alles auf einer Höhe sein“): In jedem mehrspaltigen Block der Startseite und
+    der Probe „Ausgabe“ beginnen die Bilder aller Spalten auf einer Linie, das letzte Bild jeder Spalte endet auf einer
+    Linie, und alle Blöcke teilen die linke und rechte Kante. Gemessen bei 820, 1280 und 1440 px von
+    wordpress/dev/kantenlinie.mjs (Abweichung höchstens 1 px)."""
+    skript = pathlib.Path(__file__).resolve().parents[2] / "wordpress" / "dev" / "kantenlinie.mjs"
+    if not shutil.which("node"):
+        pytest.skip("node fehlt")
+    proben(True)
+    lauf = subprocess.run(["node", str(skript), wp.url, "--alles"], capture_output=True, text=True, timeout=600, cwd=skript.parents[2])
+    if lauf.returncode == 2 and "Cannot find module" in lauf.stderr:
+        pytest.skip("Playwright für Node fehlt")
+    zeilen = lauf.stdout.splitlines()
+    assert lauf.returncode == 0, "Bildkanten nicht auf Linie:\n" + "\n".join(z for z in zeilen if z.startswith(("SCHIEF", "fehlt"))) + lauf.stderr[-500:]
+    # die Messung hat die Blöcke wirklich gesehen (sonst wäre „0 Abweichungen“ leer)
+    for pfad, block, breiten in (("/", "Aufmacher und Weitere Meldungen", (1280, 1440)), ("/", "Diese Woche", (1280, 1440)),
+                                 ("/?probe=ausgabe", "Ausgabe: Beistücke", (1280, 1440)), ("/?probe=ausgabe", "Ausgabe: Weitere Meldungen", (1280, 1440))):
+        for breite in breiten:
+            treffer = [z for z in zeilen if re.match(rf"ok\s+{breite}\s+{re.escape(pfad)}\s+{re.escape(block)}:", z)]
+            assert treffer and " | " in treffer[0], f"{block} bei {breite} px ist als mehrspaltiger Block gemessen: {treffer}"
