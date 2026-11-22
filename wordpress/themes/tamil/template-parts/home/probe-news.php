@@ -7,6 +7,10 @@
  * Keine erfundene Aktualität: „Heute wichtig“ steht nur, wenn mindestens ein Beitrag der Zeitfolge von heute ist,
  * sonst „Zuletzt erschienen“. Uhrzeit nur bei Beiträgen von heute oder gestern (tamil_zeit_text()).
  *
+ * Die Zeitfolge lässt die Titelgeschichte aus (sie steht als Cover daneben, am Handy darunter). Wäre sie nach ihrem
+ * Datum Teil der Liste (neuer als der letzte Eintrag, meist der neueste Beitrag überhaupt), sagt eine Zeile unter der
+ * Überschrift das und führt zu ihr (3.16.1): „Zuletzt erschienen“ lässt nie stillschweigend den neuesten Beitrag aus.
+ *
  * @var array $args { @type array $kacheln Rubrikkacheln aus tamil_start_auswahl(). }
  */
 
@@ -16,12 +20,24 @@ $tamil_vorrat = tamil_probe_vorrat();
 $tamil_folge  = array_slice( $tamil_vorrat['p'], 0, 5 );
 $tamil_alt    = array_slice( $tamil_vorrat['p'], 5, 2 );
 $tamil_heute  = current_time( 'Y-m-d' );
-$tamil_neu    = (bool) array_filter( $tamil_folge, static fn( int $id ): bool => wp_date( 'Y-m-d', (int) get_post_timestamp( $id ) ) === $tamil_heute );
+// Gehört die Titelgeschichte nach ihrem Datum in die Liste? Dann fehlt sie dort sichtbar und wird genannt.
+$tamil_lead_ts = (int) get_post_timestamp( $tamil_vorrat['lead'] );
+$tamil_fehlt   = $tamil_folge && $tamil_vorrat['lead'] && $tamil_lead_ts > (int) get_post_timestamp( (int) end( $tamil_folge ) );
+$tamil_neu     = (bool) array_filter( $tamil_folge, static fn( int $id ): bool => wp_date( 'Y-m-d', (int) get_post_timestamp( $id ) ) === $tamil_heute );
 ?>
 <div class="innen oben oben--probe nachrichten">
 	<?php if ( $tamil_folge ) : ?>
 		<section class="nachrichten__folge" aria-labelledby="t-zeitfolge">
 			<h2 class="block-titel" id="t-zeitfolge"><?php echo esc_html( $tamil_neu ? __( 'Heute wichtig', 'tamil' ) : __( 'Zuletzt erschienen', 'tamil' ) ); ?></h2>
+			<?php if ( $tamil_fehlt ) : ?>
+				<p class="zeitfolge__hinweis">
+					<?php
+					/* translators: %s: Datum der Titelgeschichte */
+					echo esc_html( sprintf( __( 'Nicht in dieser Liste: die Titelgeschichte (%s).', 'tamil' ), tamil_zeit_text( $tamil_lead_ts ) ) );
+					?>
+					<a class="textlink" href="#titelgeschichte"><?php esc_html_e( 'Zur Titelgeschichte', 'tamil' ); ?></a>
+				</p>
+			<?php endif; ?>
 			<ol class="zeitfolge">
 				<?php
 				foreach ( $tamil_folge as $tamil_i => $tamil_id ) :
@@ -60,7 +76,7 @@ $tamil_neu    = (bool) array_filter( $tamil_folge, static fn( int $id ): bool =>
 		</section>
 	<?php endif; ?>
 
-	<div class="nachrichten__seite">
+	<div class="nachrichten__seite" id="titelgeschichte">
 		<?php
 		echo tamil_anr_imbild( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_anr_imbild()
 			$tamil_vorrat['lead'],

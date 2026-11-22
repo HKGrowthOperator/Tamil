@@ -1764,6 +1764,7 @@ body .ad.ad-bild .anzeige--bild .anzeige__bild { border-radius: 0; }
 .nachrichten__folge { padding-top: 14px; }
 .nachrichten__folge .block-titel { margin-bottom: 0; }
 .zeitfolge { margin: 0; padding: 0; list-style: none; }
+.zeitfolge__hinweis { display: flex; flex-wrap: wrap; align-items: center; gap: 0 12px; margin-top: 2px; font-size: 14px; line-height: 1.45; color: var(--leise); }
 .zeitfolge__eintrag { padding: 12px 0 18px; border-top: 1px solid var(--linie); }
 .zeitfolge__eintrag:first-child { border-top-color: transparent; padding-top: 8px; }
 .zeitfolge__eintrag:not(:first-child):hover { border-top-color: var(--titan); }
