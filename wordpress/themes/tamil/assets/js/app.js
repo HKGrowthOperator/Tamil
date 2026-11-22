@@ -237,7 +237,8 @@
   const REIHE_TOLERANZ = 24;  // gleiche Reihe: Oberkanten weniger als 24 px auseinander
   const NACH_VORHANG = 0.55;  // Inhalt der dunklen Fläche beginnt nach 55 % des Vorhangs
   // Rubrikkacheln und wischbare Kartenreihen erscheinen gemeinsam, auch die rechts angeschnittenen
-  const GRUPPE = ".kacheln, .karten--reihe";
+  // (dazu die wischbaren Reihen der Probe „Ausgabe“)
+  const GRUPPE = ".kacheln, .karten--reihe, .streifen__bahn, .ausgabe__stapel--reihe";
   const TIEFE = 40;           // Aufmacherbild höchstens 40 px langsamer
   const REGELN = [
     [".kacheln li, .karte, .woche .kachel--klein, .woche__art, .grafik, .kueche .kachel--klein", "steigen"],
