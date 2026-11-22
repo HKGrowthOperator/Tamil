@@ -1968,7 +1968,14 @@ body .ad.ad-bild .anzeige--bild .anzeige__bild { border-radius: 0; }
 }
 .streifen__bahn::-webkit-scrollbar { display: none; }
 .streifen__fach { display: grid; grid-template-rows: subgrid; grid-row: span 2; min-width: 0; }
-.streifen__art { align-self: end; width: 0; min-width: 100%; font-size: 14px; line-height: 1.35; color: var(--hell-leise); }
+/* Spaltentitel stehen immer auf einer Höhe (oben); die Ersatzzeile („… Anderswo:“) steht darunter und bricht in der
+   Breite ihrer Karten um. Am Handy ragt die zweite Spalte aus dem Bild: Dort steht der Hinweis als ganzer Satz über
+   der Reihe (.streifen__ersatz, gefüllt von streifen.js), in der Spalte entfällt er. */
+.streifen__art { align-self: start; width: 0; min-width: 100%; font-size: 14px; line-height: 1.35; color: var(--hell-leise); }
+.streifen__art [data-ersatz] { overflow-wrap: break-word; }
+.streifen__ersatz { margin-bottom: 8px; font-size: 14px; line-height: 1.45; color: var(--hell-leise); overflow-wrap: break-word; }
+@media (max-width: 599px) { .streifen__art [data-ersatz] { display: none; } }
+@media (min-width: 600px) { .streifen__ersatz { display: none; } }
 .streifen__art h3 { font-size: 14px; line-height: 1.35; font-weight: 600; color: var(--hell); }
 .streifen__karten { display: flex; gap: 20px; }
 .streifen__karten > li { flex: 0 0 var(--karte); width: var(--karte); min-width: 0; display: flex; flex-direction: column; scroll-snap-align: start; }
@@ -2007,6 +2014,8 @@ body .ad.ad-bild .anzeige--bild .anzeige__bild { border-radius: 0; }
   .streifen__titel { font-size: 26px; padding-top: 8px; }
   .streifen__wahl { flex: 0 1 380px; margin-top: 0; }
   .streifen__bahn { --karte: calc((100cqw - 40px) / 2.35); }
+  /* weniger als drei Karten: Sie füllen die Reihe, statt Fläche leer zu lassen (eine einzelne wird so breit wie bei zweien) */
+  .streifen__bahn[data-karten="1"], .streifen__bahn[data-karten="2"] { --karte: calc((100cqw - 20px) / 2); }
 }
 @media (min-width: 1024px) {
   .streifen { margin-top: 36px; padding: 30px 0 32px; }
@@ -2018,6 +2027,7 @@ body .ad.ad-bild .anzeige--bild .anzeige__bild { border-radius: 0; }
   .streifen__inhalt { grid-area: inhalt; margin-top: 0; }
   .streifen__weiter { grid-area: weiter; align-self: end; flex-direction: column; margin-top: 12px; }
   .streifen__bahn { --karte: calc((100cqw - 40px) / 3); margin: -4px; padding: 4px; scroll-padding-inline: 4px; }
+  .streifen__bahn[data-karten="1"], .streifen__bahn[data-karten="2"] { --karte: calc((100cqw - 20px) / 2); }
   .streifen .grafik--karte .titel { font-size: 19px; }
   .streifen .grafik--karte .imbild { padding: 44px calc(var(--ecke) + 10px) 12px 14px; }
 }
