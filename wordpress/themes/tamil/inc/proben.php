@@ -199,6 +199,14 @@ function tamil_probe_aehnlich( int $a, int $b ): bool {
 }
 
 /**
+ * Hat der Beitrag einen Termin (event_datum), der vorbei ist? Ohne Termin: nein.
+ */
+function tamil_probe_termin_vorbei( int $post_id ): bool {
+	$e = function_exists( 'tamil_site_event' ) ? (array) tamil_site_event( $post_id ) : array();
+	return ! empty( $e['datum'] ) && tamil_termin_vorbei( (string) $e['datum'], (string) ( $e['ende'] ?? '' ) );
+}
+
+/**
  * Cover First: wer aufs Cover kommt, wer die drei Beistücke bekommt und was in die Reihe darunter rückt.
  *
  * - Cover = Aufmacher der Startseite. Hat er nur ein Symbolbild aus dem Pool und gibt es im Vorrat einen Beitrag mit
@@ -208,14 +216,35 @@ function tamil_probe_aehnlich( int $a, int $b ): bool {
  * - Zwei Beiträge mit gleicher Rubrik und gleichem ersten Titelwort stehen nicht nebeneinander: der zweite rückt in
  *   die Reihe darunter.
  *
+ * Nur für die Probe „Ausgabe“ ($ohne_vergangen, Theme 3.17.1): Ein Beitrag, dessen Termin vorbei ist, wird nicht das
+ * Cover. An seine Stelle rückt aus dem Vorrat der erste Beitrag mit eigenem Foto und ohne vergangenen Termin, sonst
+ * der neueste ohne vergangenen Termin; der verdrängte Beitrag wird ein Beistück. Gibt es keinen solchen Beitrag,
+ * bleibt das Cover. Cover First und die normale Startseite kennen diese Regel nicht.
+ *
  * @return array{cover:int,bei:int[],rest:int[]}
  */
-function tamil_probe_cover_auswahl(): array {
-	$v     = tamil_probe_vorrat();
-	$cover = $v['lead'];
-	$p     = $v['p'];
+function tamil_probe_cover_auswahl( bool $ohne_vergangen = false ): array {
+	$v       = tamil_probe_vorrat();
+	$cover   = $v['lead'];
+	$p       = $v['p'];
+	$vorbei  = 0;
+	$kommend = $ohne_vergangen ? array_values( array_filter( $p, static fn( int $id ): bool => ! tamil_probe_termin_vorbei( $id ) ) ) : array();
+	if ( $cover && $kommend && tamil_probe_termin_vorbei( $cover ) ) {
+		$neu = $kommend[0];
+		foreach ( $kommend as $id ) {
+			if ( tamil_ist_foto( $id ) ) {
+				$neu = $id;
+				break;
+			}
+		}
+		$vorbei = $cover;
+		$p      = array_values( array_diff( $p, array( $neu ) ) );
+		$p[]    = $cover;
+		$cover  = $neu;
+		usort( $p, 'tamil_probe_neuer_zuerst' );
+	}
 	if ( $cover && 'pool' === tamil_bildwahl( $cover )['art'] ) {
-		$foto = tamil_leitbild( $p );
+		$foto = tamil_leitbild( $ohne_vergangen ? array_values( array_diff( array_intersect( $p, $kommend ), array( $cover ) ) ) : $p );
 		if ( $foto ) {
 			$p     = array_values( array_diff( $p, array( $foto ) ) );
 			$p[]   = $cover;
@@ -263,6 +292,10 @@ function tamil_probe_cover_auswahl(): array {
 		}
 		$bei[] = $best;
 	}
+	// der vom Cover verdrängte Beitrag bleibt oben: Er nimmt den letzten Platz der Beistücke, wenn er keinen bekam
+	if ( $vorbei && $bei && ! in_array( $vorbei, $bei, true ) ) {
+		$bei[ count( $bei ) - 1 ] = $vorbei;
+	}
 	return array(
 		'cover' => (int) $cover,
 		'bei'   => $bei,
@@ -272,13 +305,13 @@ function tamil_probe_cover_auswahl(): array {
 
 /**
  * Ausgabe: das Cover, ein großes Beistück mit zwei kleineren und „Weitere Meldungen“ mit einer großen Karte und drei
- * flachen. Vorrat und Regeln wie Cover First (tamil_probe_cover_auswahl()); aus den vier übrigen Beiträgen wird der
- * erste mit eigenem Foto die große Karte, sonst der neueste.
+ * flachen. Vorrat und Regeln wie Cover First (tamil_probe_cover_auswahl()), dazu: kein vergangener Termin als Cover.
+ * Aus den vier übrigen Beiträgen wird der erste mit eigenem Foto die große Karte, sonst der neueste.
  *
  * @return array{cover:int,gross:int,klein:int[],haupt:int,flach:int[]}
  */
 function tamil_probe_ausgabe_auswahl(): array {
-	$w     = tamil_probe_cover_auswahl();
+	$w     = tamil_probe_cover_auswahl( true );
 	$rest  = array_values( $w['rest'] );
 	$haupt = (int) ( $rest[0] ?? 0 );
 	foreach ( $rest as $id ) {
