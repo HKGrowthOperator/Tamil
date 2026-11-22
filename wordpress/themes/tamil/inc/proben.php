@@ -330,6 +330,20 @@ function tamil_probe_ausgabe_auswahl(): array {
 }
 
 /**
+ * „sizes“ für das Titelbild der Ausgabe. Am Handy ist die Bildfläche höher als breit (bis 125 % der Fensterbreite,
+ * siehe .aufmacher--ausgabe .rahmen); das Bild füllt sie in der Höhe und ist dann breiter als das Fenster. Die
+ * Angabe nennt diese wirkliche Breite (Höhe mal Seitenverhältnis), damit der Browser bei doppelter Pixeldichte die
+ * größte passende Fassung lädt und nicht eine für 100vw. Ohne bekannte Maße (Symbolbild aus dem Pool) gilt 16:9.
+ */
+function tamil_probe_cover_sizes( int $post_id ): string {
+	$w    = tamil_bildwahl( $post_id );
+	$meta = ! empty( $w['id'] ) ? wp_get_attachment_metadata( (int) $w['id'] ) : array();
+	$form = is_array( $meta ) && ! empty( $meta['width'] ) && ! empty( $meta['height'] ) ? (int) $meta['width'] / (int) $meta['height'] : 16 / 9;
+	$vw   = (int) min( 300, max( 100, ceil( 125 * $form ) ) );
+	return sprintf( '(min-width: 1280px) 1200px, (min-width: 600px) calc(100vw - 48px), %dvw', $vw );
+}
+
+/**
  * Tamilischer Name der Rubrik eines Beitrags neben dem deutschen (Ausgabe, am Kontextfeld der Titelgeschichte). Nur
  * der gepflegte Name aus tamil_rubrik() (inc/rubriken.php oder Feld „tamil“ der Kategorie); ohne ihn leer. Es wird
  * nichts übersetzt.
