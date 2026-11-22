@@ -42,6 +42,7 @@ function tamil_customizer_felder(): array {
 		'production_ticket_label' => array( 'production', __( 'Ticket-Knopf: Beschriftung', 'tamil' ), 'text', 'Tickets' ),
 		'production_ticket_url'   => array( 'production', __( 'Ticket-Knopf: Link', 'tamil' ), 'url', '' ),
 		'wow_aufmacher'           => array( 'start', __( 'Wow-Aufmacher „Punkt für Punkt zum Bild“ (Decke mit Tamil Dots über dem Aufmacherfoto)', 'tamil' ), 'checkbox', '' ),
+		'startseiten_proben'      => array( 'start', __( 'Startseiten-Proben (drei Entwürfe zum Vergleichen, nur über /?probe=cover, /?probe=news und /?probe=community; nirgends verlinkt, nicht für Suchmaschinen)', 'tamil' ), 'checkbox', '' ),
 		'tv_text'                 => array( 'tv', __( 'Einleitung', 'tamil' ), 'textarea', 'Tamilisches Fernsehen im Browser. Die Streams starten erst nach Klick.' ),
 		'tv_sender'               => array( 'tv', __( 'Sender (eine Zeile pro Sender: Name | Stream-Adresse .m3u8)', 'tamil' ), 'textarea', '' ),
 	);
