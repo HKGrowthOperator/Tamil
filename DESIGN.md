@@ -344,6 +344,13 @@ mit `requestAnimationFrame`. Auftritte über IntersectionObserver (Auslöser 10 
   im Bild, der Vorspann darunter hält immer drei Zeilen Platz; in „Diese Woche“ ist die Kinokarte neben den Terminen so
   hoch wie diese; Terminkarten einer Reihe haben gleich hohe Bildflächen. Prüfung: `node wordpress/dev/kartenhoehe.mjs
   <basis-url>` (je Reihe Ober- und Unterkante und Unterkante der Bildfläche ≤ 1 px; Bühnen je Spalte).
+- **Bildkanten auf gemeinsamen Linien (3.17.1; Luis, 22.11.2026: „Das muss alles auf einer Höhe sein“):** In jedem
+  mehrspaltigen Block der Startseite beginnen die Bilder aller Spalten auf einer Linie, und das letzte Bild jeder Spalte
+  endet auf einer Linie. Text unter einem Bild (Vorspann, Ort, Städte) steht unter dieser Linie und verschiebt keine
+  Bildkante; Überschriften stehen über der gemeinsamen Oberkante. Alle Blöcke teilen die linke und rechte Kante der
+  Inhaltsbreite. Prüfung: `node wordpress/dev/kantenlinie.mjs <basis-url>` (Startseite und `/?probe=ausgabe` bei 820,
+  1280 und 1440 px, Abweichung ≤ 1 px). Geht hier vor „Karte schließt unten bündig“: Bündig ist das Bild, nicht das
+  Textfeld darunter.
 
 ## Wow-Aufmacher „Punkt für Punkt zum Bild“ (Theme 3.10.0, überarbeitet 3.11.0)
 
