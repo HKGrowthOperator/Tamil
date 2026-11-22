@@ -293,9 +293,19 @@ function tamil_probe_satz( int $post_id ): string {
 }
 
 /**
+ * Ist ein Termin vorbei? Maßgeblich ist sein letzter Tag (das Ende, wenn es nach dem Beginn liegt, sonst der Beginn):
+ * vor heute = vorbei; ein Termin von heute gilt den ganzen Tag als kommend (wie tamil_site_upcoming_events()).
+ */
+function tamil_termin_vorbei( string $datum, string $ende = '' ): bool {
+	$tag = max( substr( $datum, 0, 10 ), substr( $ende, 0, 10 ) );
+	return (bool) preg_match( '/^\d{4}-\d{2}-\d{2}$/', $tag ) && $tag < current_time( 'Y-m-d' );
+}
+
+/**
  * Text neben oder unter einer Bildkarte (im selben Link, Option „zusatz“ von tamil_anr_imbild()): Ort, Termin, Quelle
  * und ein Satz oder der Vorspann. Nur gepflegte Felder; ein leeres Feld entfällt samt Bezeichnung. Ein eigenes Feld
- * „Warum das wichtig ist“ gibt es nicht, also auch kein solches Etikett.
+ * „Warum das wichtig ist“ gibt es nicht, also auch kein solches Etikett. Ein Termin vor heute steht als „war am …“
+ * da (tamil_termin_vorbei()); je Beitrag gibt es genau einen Termin (event_datum), also keinen „nächsten“ zur Wahl.
  *
  * @param array<string,mixed> $opt {
  *     @type string $form  „cover“ (Angaben als Liste mit Bezeichnung, daneben der Vorspann) oder „zeile“ (Ort, Satz, Quelle).
@@ -314,8 +324,14 @@ function tamil_kontext( int $post_id, array $opt = array() ): string {
 	$termin = '';
 	if ( ! empty( $e['datum'] ) ) {
 		$termin = tamil_termin_text( (string) $e['datum'], (string) ( $e['ende'] ?? '' ) );
-		$ort    = tamil_ort_kurz( (string) ( $e['ort'] ?? '' ) );
-		$ort    = __( 'Ort folgt', 'tamil' ) === $ort ? '' : $ort;
+		if ( tamil_termin_vorbei( (string) $e['datum'], (string) ( $e['ende'] ?? '' ) ) ) {
+			// Ein Termin vor heute steht nie da wie eine Ankündigung (Kritik vom 22.11.2026). Ein Zeitraum beginnt mit dem
+			// Tag („20. November bis …“), ein einzelner Tag mit dem Wochentag („Sa, 21. November 2026“).
+			/* translators: %s: Datum oder Zeitraum eines vergangenen Termins */
+			$termin = sprintf( preg_match( '/^\d/', $termin ) ? __( 'war vom %s', 'tamil' ) : __( 'war am %s', 'tamil' ), $termin );
+		}
+		$ort = tamil_ort_kurz( (string) ( $e['ort'] ?? '' ) );
+		$ort = __( 'Ort folgt', 'tamil' ) === $ort ? '' : $ort;
 	}
 	if ( '' === $ort ) {
 		$ort = trim( (string) get_post_meta( $post_id, 'ort', true ) );
@@ -390,6 +406,16 @@ function tamil_stadt_namen( string $ort ): array {
 }
 
 /**
+ * „Tamil in meiner Stadt“: so viele der neuesten Beiträge mit Ort zählen für die Auswahl der Städte.
+ */
+const TAMIL_STADT_VORRAT = 200;
+
+/**
+ * „Tamil in meiner Stadt“ unter „Alle Städte“: Geschichten sind höchstens so viele Tage alt.
+ */
+const TAMIL_STADT_TAGE = 60;
+
+/**
  * Hat dieses Kino einer Kinoliste noch eine Vorstellung ab heute? Mit einzelnen Spieltagen zählen nur die kommenden,
  * mit Zeitraum das Ende; ein Kino ohne beides läuft, solange die Liste selbst gilt (tamil_kino_filme()).
  *
@@ -412,14 +438,19 @@ function tamil_stadt_kino_laeuft( array $k, string $heute ): array {
  * Daten für „Tamil in meiner Stadt“: Städte der Auswahl und alles, was der Abschnitt zeigen kann (je Beitrag mit den
  * Schlüsseln seiner Städte). Einmal je Seitenaufruf gerechnet, ohne eigenen Zwischenspeicher.
  *
- * - Kino: tamil_kino_filme( 6 ), je Kino nur mit Vorstellung ab heute.
+ * - Kino: tamil_kino_filme( 6 ), je Kino nur mit Vorstellung ab heute. Zählt die Kinoliste mehr Kinos, als ab heute
+ *   noch spielen, trägt der Film „zahl_text“ („ab heute noch 1 von 13 Kinos“), damit die Karte hier nicht ohne
+ *   Erklärung eine andere Zahl nennt als „Diese Woche“ (dort stehen alle Kinos der Liste).
  * - Termine: die nächsten zwölf (Plugin tamil-site), Stadt aus tamil_termin_angaben(); „Ort folgt“ hat keine Stadt.
- * - Geschichten: die 24 neuesten Beiträge mit „Ort der Meldung“, ohne die Beiträge des ersten Abschnitts, von „Diese
- *   Woche“ und ohne die Filme und Termine dieses Abschnitts; Rubrik Community zuerst, dann nach Datum.
- * - In die Auswahl kommt eine Stadt mit mindestens einer kommenden Vorstellung, einem kommenden Termin oder zwei
+ * - Geschichten: Beiträge mit „Ort der Meldung“, aus dem eine Stadt lesbar ist, neueste zuerst; ohne die Beiträge des
+ *   ersten Abschnitts, von „Diese Woche“ und ohne die Filme und Termine dieses Abschnitts. Gezählt werden die
+ *   TAMIL_STADT_VORRAT neuesten (bis 3.16.0 nur 24: Städte mit zwei älteren Beiträgen fehlten in der Auswahl). Unter
+ *   „Alle Städte“ stehen nur die drei neuesten der letzten TAMIL_STADT_TAGE Tage („alle“); gibt es keine, entfällt das
+ *   Fach dort. Für eine gewählte Stadt stehen ihre drei neuesten da, ohne Altersgrenze.
+ * - In die Auswahl kommt jede Stadt mit mindestens einer Vorstellung ab heute, einem kommenden Termin oder zwei
  *   Geschichten; alphabetisch. Einträge des Verzeichnisses werden nicht verwendet.
  *
- * @return array{staedte:array<string,string>,filme:array<int,array<string,mixed>>,termine:array<int,array{id:int,stadt:string}>,geschichten:array<int,array{id:int,staedte:string[]}>,ids:int[]}
+ * @return array{staedte:array<string,string>,filme:array<int,array<string,mixed>>,termine:array<int,array{id:int,stadt:string}>,geschichten:array<int,array{id:int,staedte:string[],alle:bool}>,ids:int[]}
  */
 function tamil_stadt_daten(): array {
 	static $daten = null;
@@ -449,8 +480,9 @@ function tamil_stadt_daten(): array {
 
 	$filme = array();
 	foreach ( tamil_kino_filme( 6 ) as $f ) {
-		$kinos = array_values( array_filter( array_map( static fn( $k ) => tamil_stadt_kino_laeuft( (array) $k, $heute ), (array) ( $f['fakten']['kinos'] ?? array() ) ) ) );
-		$orte  = array();
+		$gesamt = count( (array) ( $f['fakten']['kinos'] ?? array() ) );
+		$kinos  = array_values( array_filter( array_map( static fn( $k ) => tamil_stadt_kino_laeuft( (array) $k, $heute ), (array) ( $f['fakten']['kinos'] ?? array() ) ) ) );
+		$orte   = array();
 		foreach ( $kinos as $k ) {
 			$stadt = trim( (string) preg_replace( '/\s+/u', ' ', (string) ( $k['stadt'] ?? '' ) ) );
 			if ( '' === $stadt ) {
@@ -471,8 +503,14 @@ function tamil_stadt_daten(): array {
 		}
 		$f['fakten']['kinos'] = $kinos;
 		$f['kinos']           = count( $kinos );
-		$f['staedte']         = array_values( array_map( static fn( $s ) => $namen[ $s ], array_keys( $orte ) ) );
-		$filme[]              = array(
+		if ( count( $kinos ) < $gesamt ) {
+			// Dieser Abschnitt zählt nur Kinos mit Vorstellung ab heute, „Diese Woche“ alle Kinos der Liste. Stehen beide
+			// Zahlen auf derselben Seite, sagt die Karte hier, was sie zählt (Kritik vom 22.11.2026: „1 Kino“ neben „13 Kinos“).
+			/* translators: 1: Kinos mit Vorstellung ab heute, 2: alle Kinos der Kinoliste */
+			$f['zahl_text'] = sprintf( __( 'ab heute noch %1$d von %2$d Kinos', 'tamil' ), count( $kinos ), $gesamt );
+		}
+		$f['staedte'] = array_values( array_map( static fn( $s ) => $namen[ $s ], array_keys( $orte ) ) );
+		$filme[]      = array(
 			'film' => $f,
 			'orte' => $orte,
 		);
@@ -495,7 +533,7 @@ function tamil_stadt_daten(): array {
 		}
 	}
 
-	$belegt      = array_merge(
+	$belegt  = array_merge(
 		array( (int) $a['lead'] ),
 		array_map( 'intval', (array) $a['neben'] ),
 		array_map( 'intval', (array) $a['meldungen'] ),
@@ -505,10 +543,10 @@ function tamil_stadt_daten(): array {
 		array_map( static fn( $f ) => (int) $f['film']['post'], $filme ),
 		wp_list_pluck( $termine, 'id' )
 	);
-	$mit_ort     = tamil_ids(
+	$mit_ort = tamil_ids(
 		array(
-			'posts_per_page' => 24,
-			'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- 24 Beiträge, nur auf Probenseiten
+			'posts_per_page' => TAMIL_STADT_VORRAT,
+			'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- nur auf Probenseiten
 				array(
 					'key'     => 'ort',
 					'value'   => '',
@@ -518,27 +556,21 @@ function tamil_stadt_daten(): array {
 		),
 		$belegt
 	);
-	$community   = static fn( int $id ): int => 'community' === tamil_rubrik_slug( $id ) ? 0 : 1;
-	usort(
-		$mit_ort,
-		static function ( int $x, int $y ) use ( $community ): int {
-			$nach_rubrik = $community( $x ) <=> $community( $y );
-			return 0 !== $nach_rubrik ? $nach_rubrik : tamil_probe_neuer_zuerst( $x, $y );
-		}
-	);
-	$geschichten = array();
+	usort( $mit_ort, 'tamil_probe_neuer_zuerst' );
+	$grenze = (int) strtotime( $heute . ' 00:00:00 ' . wp_timezone_string() ) - TAMIL_STADT_TAGE * DAY_IN_SECONDS;
+	$vorrat = array();
 	foreach ( $mit_ort as $id ) {
-		$staedte = array();
+		$orte = array();
 		foreach ( tamil_stadt_namen( (string) get_post_meta( $id, 'ort', true ) ) as $name ) {
-			$staedte[] = $merke( $name, 'geschichten' );
+			$orte[] = $merke( $name, 'geschichten' );
 		}
-		$geschichten[] = array(
-			'id'      => $id,
-			'staedte' => array_values( array_filter( $staedte ) ),
-		);
+		$orte = array_values( array_filter( $orte ) );
+		if ( $orte ) {
+			$vorrat[ $id ] = $orte;
+		}
 	}
 
-	// Auswahl: mindestens eine Vorstellung, ein Termin oder zwei Geschichten
+	// Auswahl: mindestens eine Vorstellung ab heute, ein kommender Termin oder zwei Geschichten
 	$staedte = array();
 	foreach ( $namen as $schluessel => $name ) {
 		if ( $zahl[ $schluessel ]['kino'] || $zahl[ $schluessel ]['termine'] || $zahl[ $schluessel ]['geschichten'] >= 2 ) {
@@ -547,12 +579,35 @@ function tamil_stadt_daten(): array {
 	}
 	asort( $staedte, SORT_LOCALE_STRING | SORT_FLAG_CASE );
 
+	// Ins HTML kommen nur Geschichten, die jemand sehen kann: die drei neuesten je wählbarer Stadt und, für „Alle
+	// Städte“, die drei neuesten der letzten TAMIL_STADT_TAGE Tage (Schlüssel „alle“).
+	$geschichten = array();
+	$je_stadt    = array();
+	$alle        = 0;
+	foreach ( $vorrat as $id => $orte ) {
+		$orte   = array_values( array_filter( $orte, static fn( string $s ): bool => isset( $staedte[ $s ] ) ) );
+		$frisch = $alle < 3 && (int) get_post_timestamp( $id ) >= $grenze;
+		$zeigen = array_filter( $orte, static fn( string $s ): bool => ( $je_stadt[ $s ] ?? 0 ) < 3 );
+		if ( ! $frisch && ! $zeigen ) {
+			continue;
+		}
+		foreach ( $orte as $s ) {
+			$je_stadt[ $s ] = ( $je_stadt[ $s ] ?? 0 ) + 1;
+		}
+		$alle         += $frisch ? 1 : 0;
+		$geschichten[] = array(
+			'id'      => (int) $id,
+			'staedte' => $orte,
+			'alle'    => $frisch,
+		);
+	}
+
 	$daten = array(
 		'staedte'     => $staedte,
 		'filme'       => $filme,
 		'termine'     => $termine,
 		'geschichten' => $geschichten,
-		'ids'         => array_values( array_unique( array_merge( array_map( static fn( $f ) => (int) $f['film']['post'], $filme ), wp_list_pluck( $termine, 'id' ), $mit_ort ) ) ),
+		'ids'         => array_values( array_unique( array_merge( array_map( static fn( $f ) => (int) $f['film']['post'], $filme ), wp_list_pluck( $termine, 'id' ), wp_list_pluck( $geschichten, 'id' ) ) ) ),
 	);
 	return $daten;
 }

@@ -299,7 +299,7 @@ function tamil_kacheln( array $kacheln, string $label ): string {
  * Karte „Im Kino“ (auf Titan): Film und Zahl der Kinos im Bild, die Städte darunter (Startseite „Diese Woche“, Kino
  * „Im Programm“).
  *
- * @param array<string,mixed> $f      Ergebnis von tamil_kino_film().
+ * @param array<string,mixed> $f      Ergebnis von tamil_kino_film(); mit „zahl_text“ steht dieser Text statt „N Kinos“.
  * @param bool                $sofort Bild sofort und vorrangig laden (erste Karte im ersten Bildschirm).
  */
 function tamil_grafik_kino( array $f, string $ebene = 'h3', bool $sofort = false ): string {
@@ -311,7 +311,9 @@ function tamil_grafik_kino( array $f, string $ebene = 'h3', bool $sofort = false
 	);
 	$wo      = 1 === count( $laender ) && isset( $namen[ reset( $laender ) ] ) ? ' ' . $namen[ reset( $laender ) ] : '';
 	/* translators: %d: Anzahl der Kinos */
-	$zahl  = sprintf( _n( '%d Kino', '%d Kinos', (int) $f['kinos'], 'tamil' ), (int) $f['kinos'] ) . $wo;
+	$zahl = sprintf( _n( '%d Kino', '%d Kinos', (int) $f['kinos'], 'tamil' ), (int) $f['kinos'] ) . $wo;
+	// „Tamil in meiner Stadt“ zählt nur Kinos mit Vorstellung ab heute und sagt das selbst (inc/proben.php)
+	$zahl  = '' !== trim( (string) ( $f['zahl_text'] ?? '' ) ) ? (string) $f['zahl_text'] : $zahl;
 	$ebene = tamil_ebene( $ebene );
 	$kat   = tamil_hauptkategorie( (int) $f['post'] );
 	return sprintf(
