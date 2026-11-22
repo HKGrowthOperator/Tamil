@@ -4,7 +4,7 @@
  * Slug: tamil/hinweis
  * Categories: tamil
  * Keywords: hinweis, info, kasten
- * Description: Gelb hinterlegter Hinweis (Korrektur, Stand, Service-Info).
+ * Description: Hinweis auf heller Fläche mit Linie oben (Korrektur, Stand, Service-Info).
  */
 ?>
 <!-- wp:paragraph {"className":"hinweis-box"} -->

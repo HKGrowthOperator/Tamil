@@ -1,42 +1,59 @@
 <?php
 /**
- * Suchergebnisse: Seitenkopf mit Suchbegriff, Zahl der Treffer und Suchfeld, dann die Treffer als Strom.
+ * Suche in klar2: Seitenkopf mit Suchfeld und Zahl der Treffer, Treffer als Bildkarten (Suchwort hervorgehoben),
+ * Seitennavigation. Ohne Suchbegriff (Link „Suche“ in der Kopfzeile) nur das Suchfeld und die Rubriken.
  */
 
 defined( 'ABSPATH' ) || exit;
 
 get_header();
 global $wp_query;
-$ids = array_map( 'intval', wp_list_pluck( $wp_query->posts, 'ID' ) );
+$tamil_q   = trim( get_search_query( false ) );
+$tamil_ids = '' !== $tamil_q ? array_map( 'intval', wp_list_pluck( $wp_query->posts, 'ID' ) ) : array();
+$tamil_n   = '' !== $tamil_q ? (int) $wp_query->found_posts : 0;
+tamil_cache_fuellen( $tamil_ids );
 ?>
-<header class="seitenkopf">
-	<div class="wrap">
-		<?php /* translators: %s: Suchbegriff */ ?>
-		<h1><?php echo esc_html( sprintf( __( 'Suche: „%s“', 'tamil' ), get_search_query() ) ); ?></h1>
-		<?php /* translators: %d: Anzahl */ ?>
-		<p class="satz"><?php echo esc_html( sprintf( _n( '%d Treffer', '%d Treffer', (int) $wp_query->found_posts, 'tamil' ), (int) $wp_query->found_posts ) ); ?></p>
+<div class="innen">
+	<header class="seitenkopf seitenkopf--signet">
+		<?php tamil_signatur( 'kopf' ); ?>
+		<h1 class="seitenkopf__titel"><?php esc_html_e( 'Suche', 'tamil' ); ?></h1>
 		<?php get_search_form(); ?>
-	</div>
-</header>
-<section class="abschnitt" aria-label="<?php esc_attr_e( 'Treffer', 'tamil' ); ?>">
-	<div class="wrap">
-		<?php if ( $ids ) : ?>
+		<p class="seitenkopf__zeile">
 			<?php
-			tamil_strom(
-				$ids,
+			if ( '' === $tamil_q ) {
+				esc_html_e( 'Sucht nach einem Film, einer Stadt, einem Fest oder einem Namen.', 'tamil' );
+			} else {
+				/* translators: 1: Anzahl, 2: Suchbegriff */
+				echo tamil_text( sprintf( _n( '%1$d Beitrag zu „%2$s“, die neuesten zuerst', '%1$d Beiträge zu „%2$s“, die neuesten zuerst', $tamil_n, 'tamil' ), $tamil_n, $tamil_q ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_text(), tamilische Wörter mit lang="ta"
+			}
+			?>
+		</p>
+	</header>
+
+	<?php if ( $tamil_ids ) : ?>
+		<section class="block block--treffer" aria-label="<?php esc_attr_e( 'Treffer', 'tamil' ); ?>">
+			<?php
+			echo tamil_zeilen( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_zeilen()
+				$tamil_ids,
 				array(
-					'monat'  => 'h2',
-					'titel'  => 'h3',
-					'teaser' => 'immer',
+					'ebene'       => 'h2',
+					'markiere'    => $tamil_q,
+					'erste_eager' => true,
 				)
 			);
 			?>
-			<?php get_template_part( 'template-parts/pagination' ); ?>
-		<?php else : ?>
-			<h2 class="strom-kopf"><?php esc_html_e( 'Nichts gefunden', 'tamil' ); ?></h2>
-			<p class="satz"><?php esc_html_e( 'Versucht es mit einem anderen Wort, zum Beispiel einem Filmtitel, einer Stadt oder einem Fest.', 'tamil' ); ?></p>
-		<?php endif; ?>
-	</div>
-</section>
+		</section>
+		<?php get_template_part( 'template-parts/pagination' ); ?>
+	<?php elseif ( '' !== $tamil_q ) : ?>
+		<section class="block leer">
+			<h2 class="block-titel"><?php esc_html_e( 'Nichts gefunden', 'tamil' ); ?></h2>
+			<p class="leer__satz"><?php esc_html_e( 'Versucht es mit einem anderen Wort, zum Beispiel einem Filmtitel, einer Stadt oder einem Fest. Oder stöbert in den Rubriken.', 'tamil' ); ?></p>
+		</section>
+	<?php endif; ?>
+
+	<?php if ( ! $tamil_ids ) : ?>
+		<?php echo tamil_kacheln( tamil_kacheln_ohne(), __( 'Rubriken mit Bild', 'tamil' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_kacheln() ?>
+	<?php endif; ?>
+</div>
 <?php
 get_footer();

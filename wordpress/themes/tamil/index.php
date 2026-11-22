@@ -1,43 +1,45 @@
 <?php
 /**
- * Listen ohne eigene Vorlage (Schlagwort, Autor, Datum, Beitragsseite): Seitenkopf, Strom nach Monaten, Seiten.
+ * Listen ohne eigene Vorlage (Schlagwort, Autor, Datum, Beitragsseite): Seitenkopf, Bildkarten mit Vorspann,
+ * Seitennavigation.
  */
 
 defined( 'ABSPATH' ) || exit;
 
 get_header();
 
-$titel = is_home() ? __( 'Neueste Beiträge', 'tamil' ) : wp_strip_all_tags( get_the_archive_title() );
-$ids   = array_map( 'intval', wp_list_pluck( $GLOBALS['wp_query']->posts, 'ID' ) );
+$tamil_titel = is_home() ? __( 'Neueste Beiträge', 'tamil' ) : wp_strip_all_tags( get_the_archive_title() );
+$tamil_ids   = array_map( 'intval', wp_list_pluck( $GLOBALS['wp_query']->posts, 'ID' ) );
+tamil_cache_fuellen( $tamil_ids );
 ?>
-<header class="seitenkopf">
-	<div class="wrap">
-		<h1><?php echo esc_html( $titel ); ?></h1>
+<div class="innen">
+	<header class="seitenkopf seitenkopf--signet">
+		<?php tamil_signatur( 'kopf' ); ?>
+		<h1 class="seitenkopf__titel"><?php echo esc_html( $tamil_titel ); ?></h1>
 		<?php
 		if ( get_the_archive_description() ) :
 			?>
-			<div class="satz"><?php echo wp_kses_post( get_the_archive_description() ); ?></div><?php endif; ?>
-	</div>
-</header>
-<section class="abschnitt" aria-label="<?php esc_attr_e( 'Beiträge', 'tamil' ); ?>">
-	<div class="wrap">
-		<?php if ( $ids ) : ?>
+			<div class="seitenkopf__zeile"><?php echo wp_kses_post( get_the_archive_description() ); ?></div><?php endif; ?>
+	</header>
+	<?php if ( $tamil_ids ) : ?>
+		<section class="block" aria-label="<?php esc_attr_e( 'Beiträge', 'tamil' ); ?>">
 			<?php
-			tamil_strom(
-				$ids,
+			echo tamil_zeilen( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_zeilen()
+				$tamil_ids,
 				array(
-					'monat'  => 'h2',
-					'titel'  => 'h3',
-					'teaser' => 'immer',
+					'ebene'       => 'h2',
+					'erste_eager' => true,
 				)
 			);
 			?>
-			<?php get_template_part( 'template-parts/pagination' ); ?>
-		<?php else : ?>
-			<h2 class="strom-kopf"><?php esc_html_e( 'Keine Beiträge gefunden', 'tamil' ); ?></h2>
+		</section>
+		<?php get_template_part( 'template-parts/pagination' ); ?>
+	<?php else : ?>
+		<section class="block leer">
+			<h2 class="block-titel"><?php esc_html_e( 'Keine Beiträge gefunden', 'tamil' ); ?></h2>
 			<?php get_search_form(); ?>
-		<?php endif; ?>
-	</div>
-</section>
+		</section>
+	<?php endif; ?>
+</div>
 <?php
 get_footer();

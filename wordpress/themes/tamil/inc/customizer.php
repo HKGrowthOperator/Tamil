@@ -8,7 +8,8 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Felder: Schlüssel → [Bereich, Beschriftung, Typ, Standard].
+ * Felder: Schlüssel → [Bereich, Beschriftung, Typ, Standard]. Typen: text, textarea, email, url, number, checkbox,
+ * date (JJJJ-MM-TT, tamil_sanitize_datum()).
  *
  * @return array<string,array{0:string,1:string,2:string,3:string}>
  */
@@ -30,7 +31,8 @@ function tamil_customizer_felder(): array {
 		'social_instagram'        => array( 'social', __( 'Instagram', 'tamil' ), 'url', 'https://www.instagram.com/tamil_de/' ),
 		'social_facebook'         => array( 'social', __( 'Facebook', 'tamil' ), 'url', '' ),
 		'social_youtube'          => array( 'social', __( 'YouTube', 'tamil' ), 'url', '' ),
-		'aufmacher_id'            => array( 'start', __( 'Aufmacher (Beitrags-ID, leer = neuester markierter Beitrag mit Bild)', 'tamil' ), 'number', '' ),
+		'aufmacher_id'            => array( 'start', __( 'Aufmacher (Beitrags-ID, leer = neuester markierter Beitrag mit Bild aus den letzten sieben Tagen, sonst neuestes Foto)', 'tamil' ), 'number', '' ),
+		'aufmacher_bis'           => array( 'start', __( 'Aufmacher gilt bis (einschließlich dieses Tages)', 'tamil' ), 'date', '' ),
 		'rezept_id'               => array( 'start', __( 'Rezept der Woche (Beitrags-ID, leer = neuestes aus „Küche“)', 'tamil' ), 'number', '' ),
 		'rezept_kicker'           => array( 'start', __( 'Rezept: Überschrift des Bands', 'tamil' ), 'text', 'Rezept der Woche' ),
 		'production_tag'          => array( 'production', __( 'Schlagwort der Konzertbeiträge', 'tamil' ), 'text', 'production' ),
@@ -39,6 +41,8 @@ function tamil_customizer_felder(): array {
 		'production_text'         => array( 'production', __( 'Text', 'tamil' ), 'textarea', 'A.R. Rahman, Ilaiyaraaja, Anirudh und Santhosh Narayanan standen oder stehen mit Tamil.de Production auf deutschen Bühnen. Hier stehen alle Konzerte, Tickets, Saalpläne und Antworten auf die häufigsten Fragen rund um den Konzertbesuch.' ),
 		'production_ticket_label' => array( 'production', __( 'Ticket-Knopf: Beschriftung', 'tamil' ), 'text', 'Tickets' ),
 		'production_ticket_url'   => array( 'production', __( 'Ticket-Knopf: Link', 'tamil' ), 'url', '' ),
+		'wow_aufmacher'           => array( 'start', __( 'Wow-Aufmacher „Punkt für Punkt zum Bild“ (Decke mit Tamil Dots über dem Aufmacherfoto)', 'tamil' ), 'checkbox', '' ),
+		'startseiten_proben'      => array( 'start', __( 'Startseiten-Proben (vier Entwürfe zum Vergleichen, nur über /?probe=cover, /?probe=news, /?probe=community und /?probe=ausgabe; nirgends verlinkt, nicht für Suchmaschinen)', 'tamil' ), 'checkbox', '' ),
 		'tv_text'                 => array( 'tv', __( 'Einleitung', 'tamil' ), 'textarea', 'Tamilisches Fernsehen im Browser. Die Streams starten erst nach Klick.' ),
 		'tv_sender'               => array( 'tv', __( 'Sender (eine Zeile pro Sender: Name | Stream-Adresse .m3u8)', 'tamil' ), 'textarea', '' ),
 	);
@@ -51,6 +55,51 @@ function tamil_opt( string $key ): string {
 	$felder   = tamil_customizer_felder();
 	$standard = $felder[ $key ][3] ?? '';
 	return (string) get_theme_mod( 'tamil_' . $key, $standard );
+}
+
+/**
+ * Schalter im Customizer: „1“ oder leer.
+ *
+ * @param mixed $wert Eingabe.
+ */
+function tamil_sanitize_schalter( $wert ): string {
+	return ! empty( $wert ) && 'false' !== $wert ? '1' : '';
+}
+
+/**
+ * Datum im Customizer: „JJJJ-MM-TT“ (so liefert es das Datumsfeld) oder leer.
+ *
+ * @param mixed $wert Eingabe.
+ */
+function tamil_sanitize_datum( $wert ): string {
+	$wert = is_scalar( $wert ) ? trim( (string) $wert ) : '';
+	if ( ! preg_match( '/^(\d{4})-(\d{2})-(\d{2})$/', $wert, $m ) || ! wp_checkdate( (int) $m[2], (int) $m[3], (int) $m[1], $wert ) ) {
+		return '';
+	}
+	return $wert;
+}
+
+/**
+ * Hinweistext unter einem Feld (leer = keiner). Am Aufmacher steht die Verfallsregel und, wenn das gesetzte Cover
+ * abgelaufen ist, seit wann die Startseite wieder selbst wählt (tamil_cover_manuell(), inc/queries.php).
+ */
+function tamil_customizer_hinweis( string $key ): string {
+	if ( 'aufmacher_bis' === $key ) {
+		/* translators: %d: Tage */
+		return sprintf( __( 'Leer: Der Aufmacher gilt höchstens %d Tage ab dem Eintragen der Beitrags-ID. Danach wählt die Startseite wieder selbst den neuesten Beitrag mit Foto.', 'tamil' ), TAMIL_COVER_TAGE );
+	}
+	if ( 'aufmacher_id' === $key ) {
+		$cover = tamil_cover_manuell();
+		if ( $cover['id'] && $cover['abgelaufen'] ) {
+			/* translators: %s: Datum und Uhrzeit */
+			return sprintf( __( 'Achtung: Dieser Aufmacher ist seit %s abgelaufen und steht nicht mehr auf der Startseite. Neues Datum unter „Aufmacher gilt bis“ setzen oder einen anderen Beitrag eintragen.', 'tamil' ), wp_date( 'j. F Y, H:i', $cover['ende'] ) );
+		}
+		if ( $cover['id'] ) {
+			/* translators: %s: Datum und Uhrzeit */
+			return sprintf( __( 'Gilt bis %s.', 'tamil' ), wp_date( 'j. F Y, H:i', $cover['ende'] ) );
+		}
+	}
+	return '';
 }
 
 function tamil_customize_register( WP_Customize_Manager $wp_customize ): void {
@@ -84,6 +133,8 @@ function tamil_customize_register( WP_Customize_Manager $wp_customize ): void {
 			'email'    => 'sanitize_email',
 			'number'   => 'absint',
 			'textarea' => 'sanitize_textarea_field',
+			'checkbox' => 'tamil_sanitize_schalter',
+			'date'     => 'tamil_sanitize_datum',
 			default    => 'sanitize_text_field',
 		};
 		$wp_customize->add_setting(
@@ -96,9 +147,10 @@ function tamil_customize_register( WP_Customize_Manager $wp_customize ): void {
 		$wp_customize->add_control(
 			'tamil_' . $key,
 			array(
-				'label'   => $label,
-				'section' => 'tamil_' . $bereich,
-				'type'    => $typ,
+				'label'       => $label,
+				'description' => tamil_customizer_hinweis( $key ),
+				'section'     => 'tamil_' . $bereich,
+				'type'        => $typ,
 			)
 		);
 	}

@@ -178,9 +178,9 @@ python -m pytest -q
 ## Website-Relaunch (Teil A)
 
 WordPress-Pakete in [`wordpress/`](wordpress/README.md): Theme **Tamil.de** (Startseite, Rubriken, Artikel, Termine,
-Kontakt, Production, TV – Look „modernes Community-Magazin“, beschrieben in [`DESIGN.md`](DESIGN.md) und
-[`PRODUCT.md`](PRODUCT.md)) und Plugin **Tamil.de Website** (Werbeplätze mit Eigenanzeigen, 301-Weiterleitungen,
-Termin-Felder). Lokales Testbett mit PHP + SQLite, Importer, Screenshots und PHPCS: `wordpress/dev/`. Der frühere
+Kontakt, Production, TV – Gestaltung „klar2“ mit Bewegung beim Scrollen, Variante D, beschrieben in
+[`DESIGN.md`](DESIGN.md) und [`PRODUCT.md`](PRODUCT.md)) und Plugin **Tamil.de Website** (Werbeplätze mit
+Eigenanzeigen, 301-Weiterleitungen, Termin-Felder). Lokales Testbett mit PHP + SQLite, Importer, Screenshots und PHPCS: `wordpress/dev/`. Der frühere
 klickbare Prototyp in [`prototyp/`](prototyp/README.md) zeigt den abgelösten Entwurf v3 und dient nur noch als Archiv.
 
 `tools/export_site.py` exportiert alle öffentlichen Inhalte der alten tamil.de über die REST-API

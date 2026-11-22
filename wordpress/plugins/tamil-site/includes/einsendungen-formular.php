@@ -753,7 +753,8 @@ function tamil_site_einsendung_formular( string $art ): void {
 	$felder       = tamil_site_einsendung_felder( $art ) + tamil_site_einsendung_felder_person();
 	?>
 	<div class="tf tf-<?php echo esc_attr( $art ); ?>" id="<?php echo esc_attr( $id ); ?>">
-		<form class="tf-formular" method="post" action="<?php echo esc_url( $ziel . '#' . $id ); ?>" aria-label="<?php echo esc_attr( tamil_site_einsendung_arten()[ $art ] ); ?>"<?php echo $mit_bild ? ' enctype="multipart/form-data"' : ''; ?>>
+		<?php // novalidate: Die Prüfung macht die Website mit eigenen deutschen Texten, aria-invalid und aria-describedby (Prüfung 17.11., P2). ?>
+		<form class="tf-formular" method="post" action="<?php echo esc_url( $ziel . '#' . $id ); ?>" aria-label="<?php echo esc_attr( tamil_site_einsendung_arten()[ $art ] ); ?>" novalidate<?php echo $mit_bild ? ' enctype="multipart/form-data"' : ''; ?>>
 			<?php if ( '' !== $meldung ) : ?>
 			<div class="tf-meldung" role="alert">
 				<p><?php echo esc_html( $meldung ); ?></p>
@@ -800,7 +801,7 @@ function tamil_site_einsendung_formular( string $art ): void {
 				<span class="tf-fehler" id="<?php echo esc_attr( $id . '-einwilligung-fehler' ); ?>"><?php echo esc_html( $fehler['einwilligung'] ); ?></span>
 				<?php endif; ?>
 			</p>
-			<p class="tf-falle" aria-hidden="true">
+			<p class="tf-falle" aria-hidden="true" inert>
 				<label for="<?php echo esc_attr( $id . '-webseite' ); ?>"><?php esc_html_e( 'Dieses Feld bitte leer lassen', 'tamil-site' ); ?></label>
 				<input type="text" id="<?php echo esc_attr( $id . '-webseite' ); ?>" name="tf_webseite" value="" tabindex="-1" autocomplete="off">
 			</p>

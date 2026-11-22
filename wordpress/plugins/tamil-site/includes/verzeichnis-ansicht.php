@@ -4,7 +4,8 @@
  * Profil je Eintrag unter /verzeichnis/<name>/ mit Schema-Auszeichnung, Formulare über ?vz_formular=neu|aenderung.
  *
  * Markup schlicht mit Klassen vz-*; die Gestaltung macht das Theme nach Tor G3. Schalter „verzeichnis“ aus: neutraler
- * Hinweis statt Liste, Profile 404, keine Einträge in der Sitemap.
+ * Hinweis statt Liste, Profile 404, keine Einträge in der Sitemap. Jeder Eintrag hat ein Bild (Auftraggeber 17.11.):
+ * sein Beitragsbild oder ein Symbolbild seiner Art.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -20,6 +21,132 @@ add_action( 'init', 'tamil_site_vz_shortcode_anmelden' );
 function tamil_site_vz_css(): void {
 	$css = 'assets/verzeichnis.css';
 	wp_enqueue_style( 'tamil-site-verzeichnis', TAMIL_SITE_URL . $css, array(), TAMIL_SITE_VERSION . '.' . filemtime( TAMIL_SITE_DIR . $css ) );
+}
+
+/**
+ * CSS schon im Kopf laden, wenn die Seite das Verzeichnis oder ein Profil zeigt (sonst springen die Bilder der Liste,
+ * weil das CSS erst im Fuß käme). Mit ausgeschaltetem Baustein nie.
+ */
+function tamil_site_vz_css_frueh(): void {
+	if ( ! tamil_site_funktion_an( 'verzeichnis' ) ) {
+		return;
+	}
+	$post = is_singular() ? get_queried_object() : null;
+	if ( is_singular( TAMIL_SITE_VZ_TYP ) || ( $post instanceof WP_Post && has_shortcode( $post->post_content, 'tamil_verzeichnis' ) ) ) {
+		tamil_site_vz_css();
+	}
+}
+add_action( 'wp_enqueue_scripts', 'tamil_site_vz_css_frueh' );
+
+/**
+ * Ersatzbilder je Art, wenn ein Eintrag kein eigenes Bild hat (assets/img/verzeichnis/, Herkunft und Lizenz in
+ * NACHWEIS.md). Sie zeigen nie den Eintrag selbst und tragen darum immer „Symbolbild“.
+ *
+ * @return array<string,array{datei:string,klein:string,w:int,h:int,alt:string,nachweis:string,quelle:string,lizenz:string}>
+ */
+function tamil_site_vz_ersatzbilder(): array {
+	$firma = array(
+		'datei'    => 'firma.webp',
+		'klein'    => 'firma-600.webp',
+		'w'        => 820,
+		'h'        => 461,
+		'alt'      => __( 'Symbolbild: Gewürze in Schalen an einem Marktstand', 'tamil-site' ),
+		'nachweis' => __( 'Foto: Markusurlaub / Wikimedia Commons, CC BY-SA 4.0, zugeschnitten', 'tamil-site' ),
+		'quelle'   => 'https://commons.wikimedia.org/wiki/File:Carmel_Markt_Sep_2018.jpg',
+		'lizenz'   => 'https://creativecommons.org/licenses/by-sa/4.0/',
+	);
+	return array(
+		'business'      => $firma,
+		'dienstleister' => $firma,
+		'verein'        => array(
+			'datei'    => 'verein.webp',
+			'klein'    => 'verein-600.webp',
+			'w'        => 1200,
+			'h'        => 800,
+			'alt'      => __( 'Symbolbild: eine Gruppe tanzt Bharatanatyam auf einer Bühne', 'tamil-site' ),
+			'nachweis' => __( 'Foto: Mohd Zishan / Wikimedia Commons, CC BY-SA 4.0, zugeschnitten', 'tamil-site' ),
+			'quelle'   => 'https://commons.wikimedia.org/wiki/File:A_Vibrant_Bharatanatyam_Group_Interpretation.jpg',
+			'lizenz'   => 'https://creativecommons.org/licenses/by-sa/4.0/',
+		),
+		'tempel'        => array(
+			'datei'    => 'tempel.webp',
+			'klein'    => 'tempel-600.webp',
+			'w'        => 1200,
+			'h'        => 900,
+			'alt'      => __( 'Symbolbild: der Sri-Mayurapathy-Murugan-Tempel in Berlin-Britz mit seinem bunten Turm', 'tamil-site' ),
+			'nachweis' => __( 'Foto: Fridolin freudenfett / Wikimedia Commons, CC BY-SA 4.0, zugeschnitten', 'tamil-site' ),
+			'quelle'   => 'https://commons.wikimedia.org/wiki/File:Britz_Blaschkoallee_Sri-Mayurapathy-Murugan-Tempel.JPG',
+			'lizenz'   => 'https://creativecommons.org/licenses/by-sa/4.0/',
+		),
+	);
+}
+
+/**
+ * Bild eines Eintrags: das Beitragsbild, sonst das Ersatzbild seiner Art (gekennzeichnet als Symbolbild). Merkt den
+ * Bildnachweis für den Fuß der Seite (Theme: tamil_nachweise()).
+ *
+ * @param string $wo „liste“ (kleines Bild neben dem Namen) oder „profil“ (großes Bild über den Angaben).
+ * @return array{html:string,symbol:bool,nachweis:string} html leer, wenn es weder Beitragsbild noch Ersatzbild gibt.
+ */
+function tamil_site_vz_bild( int $id, string $wo = 'liste' ): array {
+	$sizes  = 'profil' === $wo ? '(min-width: 760px) 720px, 100vw' : '(min-width: 600px) 160px, 112px';
+	$thumb  = (int) get_post_thumbnail_id( $id );
+	$quelle = '';
+	$lizenz = '';
+	$aus    = array(
+		'html'     => '',
+		'symbol'   => false,
+		'nachweis' => '',
+	);
+	if ( $thumb && wp_attachment_is_image( $thumb ) ) {
+		$alt             = trim( (string) get_post_meta( $thumb, '_wp_attachment_image_alt', true ) );
+		$aus['html']     = (string) wp_get_attachment_image(
+			$thumb,
+			'profil' === $wo ? 'large' : 'medium_large',
+			false,
+			array(
+				'class'    => 'vz-bild__img',
+				'alt'      => '' !== $alt ? $alt : sprintf( /* translators: %s: Name des Eintrags */ __( 'Bild: %s', 'tamil-site' ), get_the_title( $id ) ),
+				'sizes'    => $sizes,
+				'loading'  => 'lazy',
+				'decoding' => 'async',
+			)
+		);
+		$aus['nachweis'] = trim( (string) wp_get_attachment_caption( $thumb ) );
+	}
+	if ( '' === $aus['html'] ) {
+		$art = (string) ( tamil_site_vz_eintrag_werte( $id )['art'] ?? '' );
+		$e   = tamil_site_vz_ersatzbilder()[ $art ] ?? tamil_site_vz_ersatzbilder()['business'];
+		if ( ! is_readable( TAMIL_SITE_DIR . 'assets/img/verzeichnis/' . $e['datei'] ) ) {
+			return $aus;
+		}
+		$url           = TAMIL_SITE_URL . 'assets/img/verzeichnis/';
+		$srcset        = ( is_readable( TAMIL_SITE_DIR . 'assets/img/verzeichnis/' . $e['klein'] ) ? $url . $e['klein'] . ' 600w, ' : '' ) . $url . $e['datei'] . ' ' . (int) $e['w'] . 'w';
+		$aus['html']   = sprintf(
+			'<img class="vz-bild__img" src="%1$s" srcset="%2$s" sizes="%3$s" width="%4$d" height="%5$d" alt="%6$s" loading="lazy" decoding="async">',
+			esc_url( $url . $e['datei'] ),
+			esc_attr( $srcset ),
+			esc_attr( $sizes ),
+			(int) $e['w'],
+			(int) $e['h'],
+			esc_attr( $e['alt'] )
+		);
+		$aus['symbol'] = true;
+		// „Symbolbild, Foto: …“: in dieser Form erkennt das Theme Präfix, Urheber und Lizenz und verlinkt nur den Urheber.
+		$aus['nachweis'] = trim( __( 'Symbolbild,', 'tamil-site' ) . ' ' . $e['nachweis'] );
+		$quelle          = (string) ( $e['quelle'] ?? '' );
+		$lizenz          = (string) ( $e['lizenz'] ?? '' );
+	}
+	tamil_site_nachweis_melden( $aus['nachweis'], $quelle, $lizenz );
+	return $aus;
+}
+
+/**
+ * Zeigt das Theme das Beitragsbild des Profils schon selbst (Theme Tamil.de, single.php)? Dann steht im Profil kein
+ * zweites; sonst zeigt das Profil Beitragsbild oder Symbolbild.
+ */
+function tamil_site_vz_theme_zeigt_bild( int $id ): bool {
+	return function_exists( 'tamil_bild_zeigbar' ) && tamil_bild_zeigbar( $id );
 }
 
 /**
@@ -151,6 +278,9 @@ function tamil_site_vz_shortcode(): string {
 				'stadt'     => array( __( 'Stadt', 'tamil-site' ), array_combine( tamil_site_vz_vorhandene_werte( 'stadt' ), tamil_site_vz_vorhandene_werte( 'stadt' ) ) ),
 			);
 			foreach ( $auswahl as $k => $def ) :
+				if ( ! $def[1] ) {
+					continue; // leere Auswahl (z. B. noch kein Eintrag mit Bundesland) nicht zeigen (Prüfung 17.11., P2)
+				}
 				?>
 			<p class="vz-feld">
 				<label for="vz-filter-<?php echo esc_attr( $k ); ?>"><?php echo esc_html( $def[0] ); ?></label>
@@ -173,8 +303,17 @@ function tamil_site_vz_shortcode(): string {
 			foreach ( $query->posts as $post ) :
 				$id      = (int) $post->ID;
 				$premium = tamil_site_vz_premium( $id );
+				$bild    = tamil_site_vz_bild( $id );
 				?>
-			<li class="vz-eintrag<?php echo $premium ? ' vz-premium' : ''; ?>">
+			<li class="vz-eintrag<?php echo $premium ? ' vz-premium' : ''; ?><?php echo '' !== $bild['html'] ? ' vz-mit-bild' : ''; ?>">
+				<?php if ( '' !== $bild['html'] ) : ?>
+				<a class="vz-bild" href="<?php echo esc_url( (string) get_permalink( $id ) ); ?>" tabindex="-1" aria-hidden="true">
+					<?php echo $bild['html']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- in tamil_site_vz_bild() escapt ?>
+					<?php if ( $bild['symbol'] ) : ?>
+					<span class="vz-symbolbild"><?php esc_html_e( 'Symbolbild', 'tamil-site' ); ?></span>
+					<?php endif; ?>
+				</a>
+				<?php endif; ?>
 				<a class="vz-name" href="<?php echo esc_url( (string) get_permalink( $id ) ); ?>"><?php echo esc_html( get_the_title( $id ) ); ?></a>
 				<?php if ( $premium ) : ?>
 				<span class="vz-premium-marke"><?php esc_html_e( 'Premium', 'tamil-site' ); ?></span>
@@ -269,9 +408,28 @@ function tamil_site_vz_profil( int $id ): string {
 		'website'         => __( 'Website', 'tamil-site' ),
 		'oeffnungszeiten' => __( 'Öffnungszeiten', 'tamil-site' ),
 	);
+	/**
+	 * Zeilen der Angaben im Profil. Ein Theme, das Art und Ort schon über dem Titel zeigt, nimmt „art“ heraus
+	 * (sonst steht dieselbe Zeile zweimal, Q2-17).
+	 *
+	 * @param array<string,string> $zeilen Schlüssel => Beschriftung.
+	 * @param int                  $id     Eintrag.
+	 */
+	$zeilen = (array) apply_filters( 'tamil_site_vz_profil_zeilen', $zeilen, $id );
 	ob_start();
 	?>
 	<div class="vz-profil<?php echo $premium ? ' vz-premium' : ''; ?>">
+		<?php
+		$bild = tamil_site_vz_theme_zeigt_bild( $id ) ? null : tamil_site_vz_bild( $id, 'profil' );
+		if ( $bild && '' !== $bild['html'] ) :
+			?>
+		<figure class="vz-bild vz-bild--profil">
+			<?php echo $bild['html']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- in tamil_site_vz_bild() escapt ?>
+			<?php if ( '' !== $bild['nachweis'] ) : ?>
+			<figcaption class="vz-nachweis"><?php echo esc_html( $bild['nachweis'] ); ?></figcaption>
+			<?php endif; ?>
+		</figure>
+		<?php endif; ?>
 		<?php if ( $premium ) : ?>
 		<p class="vz-premium-marke"><?php esc_html_e( 'Premium', 'tamil-site' ); ?></p>
 		<?php endif; ?>

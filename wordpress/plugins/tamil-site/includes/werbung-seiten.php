@@ -18,10 +18,11 @@ defined( 'ABSPATH' ) || exit;
  */
 function tamil_site_werbung_zustand( ?array $neu = null ): array {
 	static $zustand = array(
-		'fehler'  => array(),
-		'alt'     => array(),
-		'meldung' => '',
-		'nummer'  => '',
+		'fehler'     => array(),
+		'feldfehler' => array(),
+		'alt'        => array(),
+		'meldung'    => '',
+		'nummer'     => '',
 	);
 	if ( null !== $neu ) {
 		$zustand = array_merge( $zustand, $neu );
@@ -360,6 +361,11 @@ function tamil_site_werbung_post_bezahlen(): void {
 		tamil_site_werbung_zustand( array( 'fehler' => array( __( 'Bitte die Verkaufsbedingungen annehmen.', 'tamil-site' ) ) ) );
 		return;
 	}
+	if ( ! tamil_site_werbung_zahlung_bereit() ) {
+		tamil_site_werbung_protokoll( (int) $b['id'], 'website', 'Zahlung nicht gestartet: Online-Zahlung nicht eingerichtet' );
+		tamil_site_werbung_zustand( array( 'fehler' => array( __( 'Online-Zahlung noch nicht eingerichtet. Die Buchung kann gerade nicht bezahlt werden; die Tage werden nach Ablauf der Reservierung wieder frei.', 'tamil-site' ) ) ) );
+		return;
+	}
 	global $wpdb;
 	$fassung = tamil_site_werbung_angebote()['bedingungen_fassung'];
 	$fehler  = __( 'Die Zahlung kann gerade nicht gestartet werden. Bitte in einigen Minuten erneut versuchen.', 'tamil-site' );
@@ -422,6 +428,24 @@ function tamil_site_werbung_stripe_host( array $hosts ): array {
 function tamil_site_werbung_post_wiederfinden(): void {
 	$nummer = strtoupper( preg_replace( '/[^A-Za-z0-9]/', '', tamil_site_werbung_post( 'nummer' ) ) );
 	$email  = sanitize_email( tamil_site_werbung_post( 'email' ) );
+	// Fehlende oder ungültige Angaben: eigene Texte am Feld (das Formular prüft nicht im Browser), kein Versuch gezählt.
+	$feld = array();
+	if ( '' === $nummer ) {
+		$feld['nummer'] = __( 'Bitte die Buchungsnummer angeben.', 'tamil-site' );
+	}
+	if ( '' === $email || ! is_email( $email ) ) {
+		$feld['email'] = __( 'Bitte die E-Mail-Adresse der Buchung angeben, z. B. name@firma.de.', 'tamil-site' );
+	}
+	if ( $feld ) {
+		tamil_site_werbung_zustand(
+			array(
+				'fehler'     => array_values( $feld ),
+				'feldfehler' => $feld,
+				'alt'        => array( 'nummer' => $nummer ),
+			)
+		);
+		return;
+	}
 	$sperre = 'tamil_wb_suche_' . md5( $nummer );
 	$zahl   = (int) get_transient( $sperre );
 	$fehler = __( 'Zu diesen Angaben gibt es keine Buchung.', 'tamil-site' );

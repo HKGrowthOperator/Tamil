@@ -344,7 +344,8 @@ function tamil_site_vz_formular( string $typ, int $eintrag_id = 0 ): string {
 	$titel        = 'neu' === $typ ? __( 'Eintrag vorschlagen', 'tamil-site' ) : __( 'Änderung melden', 'tamil-site' );
 	?>
 	<div class="vz-formular" id="vz-formular">
-		<form class="vz-form" method="post" action="<?php echo esc_url( $ziel . '#vz-formular' ); ?>" aria-label="<?php echo esc_attr( $titel ); ?>">
+		<?php // novalidate: eigene deutsche Fehlertexte mit aria-invalid und aria-describedby statt der Meldungen des Browsers (Prüfung 17.11., P2). ?>
+		<form class="vz-form" method="post" action="<?php echo esc_url( $ziel . '#vz-formular' ); ?>" aria-label="<?php echo esc_attr( $titel ); ?>" novalidate>
 			<?php if ( '' !== $meldung ) : ?>
 			<div class="vz-meldung" role="alert">
 				<p><?php echo esc_html( $meldung ); ?></p>
@@ -390,36 +391,39 @@ function tamil_site_vz_formular( string $typ, int $eintrag_id = 0 ): string {
 				?>
 			<p class="vz-feld">
 				<label for="<?php echo esc_attr( $fid ); ?>"><?php echo esc_html( $def[0] ); ?> <span class="vz-pflicht"><?php esc_html_e( '(Pflicht)', 'tamil-site' ); ?></span></label>
-				<input type="<?php echo esc_attr( $def[1] ); ?>" id="<?php echo esc_attr( $fid ); ?>" name="vz_<?php echo esc_attr( $key ); ?>" value="<?php echo esc_attr( (string) ( $person[ substr( $key, 10 ) ] ?? '' ) ); ?>" autocomplete="<?php echo esc_attr( $def[2] ); ?>" required<?php echo isset( $fehler[ $key ] ) ? ' aria-invalid="true"' : ''; ?>>
+				<input type="<?php echo esc_attr( $def[1] ); ?>" id="<?php echo esc_attr( $fid ); ?>" name="vz_<?php echo esc_attr( $key ); ?>" value="<?php echo esc_attr( (string) ( $person[ substr( $key, 10 ) ] ?? '' ) ); ?>" autocomplete="<?php echo esc_attr( $def[2] ); ?>" required<?php echo isset( $fehler[ $key ] ) ? ' aria-invalid="true" aria-describedby="' . esc_attr( $fid . '-fehler' ) . '"' : ''; ?>>
 				<?php if ( isset( $fehler[ $key ] ) ) : ?>
-				<span class="vz-fehler"><?php echo esc_html( $fehler[ $key ] ); ?></span>
+				<span class="vz-fehler" id="<?php echo esc_attr( $fid . '-fehler' ); ?>"><?php echo esc_html( $fehler[ $key ] ); ?></span>
 				<?php endif; ?>
 			</p>
 			<?php endforeach; ?>
 			<fieldset class="vz-feld vz-auswahl" id="vz-berechtigung">
 				<legend><?php esc_html_e( 'Wer sendet? (Pflicht)', 'tamil-site' ); ?></legend>
-				<?php $b = (string) ( $person['berechtigung'] ?? '' ); ?>
-				<label><input type="radio" name="vz_berechtigung" value="inhaber" required<?php checked( 'inhaber' === $b ); ?>> <?php esc_html_e( 'Ich bin Inhaber oder berechtigt', 'tamil-site' ); ?></label>
-				<label><input type="radio" name="vz_berechtigung" value="hinweis"<?php checked( 'hinweis' === $b ); ?>> <?php esc_html_e( 'Ich weise nur darauf hin', 'tamil-site' ); ?></label>
+				<?php
+				$b     = (string) ( $person['berechtigung'] ?? '' );
+				$b_err = isset( $fehler['berechtigung'] ) ? ' aria-invalid="true" aria-describedby="vz-berechtigung-fehler"' : '';
+				?>
+				<label><input type="radio" name="vz_berechtigung" value="inhaber" required<?php checked( 'inhaber' === $b ); ?><?php echo $b_err; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- feste Attribute ?>> <?php esc_html_e( 'Ich bin Inhaber oder berechtigt', 'tamil-site' ); ?></label>
+				<label><input type="radio" name="vz_berechtigung" value="hinweis"<?php checked( 'hinweis' === $b ); ?><?php echo $b_err; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- feste Attribute ?>> <?php esc_html_e( 'Ich weise nur darauf hin', 'tamil-site' ); ?></label>
 				<?php if ( isset( $fehler['berechtigung'] ) ) : ?>
-				<span class="vz-fehler"><?php echo esc_html( $fehler['berechtigung'] ); ?></span>
+				<span class="vz-fehler" id="vz-berechtigung-fehler"><?php echo esc_html( $fehler['berechtigung'] ); ?></span>
 				<?php endif; ?>
 			</fieldset>
 			<p class="vz-feld">
 				<label for="vz-anmerkung"><?php esc_html_e( 'Anmerkung an die Redaktion (freiwillig, wird nicht veröffentlicht)', 'tamil-site' ); ?></label>
-				<textarea id="vz-anmerkung" name="vz_anmerkung" rows="3" maxlength="600"><?php echo esc_textarea( (string) ( $person['anmerkung'] ?? '' ) ); ?></textarea>
+				<textarea id="vz-anmerkung" name="vz_anmerkung" rows="3" maxlength="600"<?php echo isset( $fehler['anmerkung'] ) ? ' aria-invalid="true" aria-describedby="vz-anmerkung-fehler"' : ''; ?>><?php echo esc_textarea( (string) ( $person['anmerkung'] ?? '' ) ); ?></textarea>
 				<?php if ( isset( $fehler['anmerkung'] ) ) : ?>
-				<span class="vz-fehler"><?php echo esc_html( $fehler['anmerkung'] ); ?></span>
+				<span class="vz-fehler" id="vz-anmerkung-fehler"><?php echo esc_html( $fehler['anmerkung'] ); ?></span>
 				<?php endif; ?>
 			</p>
 			<p class="vz-feld vz-einwilligung" id="vz-einwilligung">
-				<input type="checkbox" id="vz-einwilligung-feld" name="vz_einwilligung" value="1" required>
+				<input type="checkbox" id="vz-einwilligung-feld" name="vz_einwilligung" value="1" required<?php echo isset( $fehler['einwilligung'] ) ? ' aria-invalid="true" aria-describedby="vz-einwilligung-fehler"' : ''; ?>>
 				<label for="vz-einwilligung-feld"><?php echo esc_html( $einwilligung['text'] ); ?> <span class="vz-pflicht"><?php esc_html_e( '(Pflicht)', 'tamil-site' ); ?></span></label>
 				<?php if ( isset( $fehler['einwilligung'] ) ) : ?>
-				<span class="vz-fehler"><?php echo esc_html( $fehler['einwilligung'] ); ?></span>
+				<span class="vz-fehler" id="vz-einwilligung-fehler"><?php echo esc_html( $fehler['einwilligung'] ); ?></span>
 				<?php endif; ?>
 			</p>
-			<p class="vz-falle" aria-hidden="true">
+			<p class="vz-falle" aria-hidden="true" inert>
 				<label for="vz-webseite"><?php esc_html_e( 'Dieses Feld bitte leer lassen', 'tamil-site' ); ?></label>
 				<input type="text" id="vz-webseite" name="vz_webseite" value="" tabindex="-1" autocomplete="off">
 			</p>

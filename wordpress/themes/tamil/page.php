@@ -1,6 +1,12 @@
 <?php
 /**
- * Seite (Impressum, Datenschutz, Über uns …): Seitenkopf, optional Foto, Text in Lesebreite.
+ * Seite (Impressum, Datenschutz, Über uns, Verzeichnis, Werben …): Kopf und Text wie im Artikel; Fließtext auf
+ * Lesebreite, Formulare, Tabellen und Listen aus den Plugins dürfen die breitere Spalte nutzen.
+ *
+ * Werben, Verzeichnis und Einreichen tragen das Signet im Kopf (tamil_signatur_im_seitenkopf()); Rechtstexte nicht.
+ *
+ * Impressum und Datenschutz außerhalb des Echtbetriebs: nur der Hinweis „Entwurf: Der Text von KBS folgt.“ Der alte
+ * Inhalt (nennt Dienste, die nicht genutzt werden, und tote Links) wird nicht gezeigt; den Text liefert KBS.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -9,28 +15,44 @@ get_header();
 
 while ( have_posts() ) :
 	the_post();
-	$figur = tamil_figur(
-		get_the_ID(),
+	$tamil_entwurf = tamil_ist_rechtstext_entwurf( (int) get_the_ID() );
+	$tamil_signet  = ! $tamil_entwurf && tamil_signatur_im_seitenkopf( (int) get_the_ID() );
+	$tamil_bild    = $tamil_entwurf ? '' : tamil_bild(
+		(int) get_the_ID(),
 		array(
-			'klasse' => 'bild',
-			'size'   => 'tamil-lead',
-			'link'   => false,
-			'eager'  => true,
-			'alt'    => true,
+			'eager'     => true,
+			'nur_eigen' => true, // Seiten (Impressum, Datenschutz …) bekommen kein Symbolbild
+			'signet'    => false, // das Signet trägt jeder Beitrag, keine Seite
+			'klasse'    => 'artikel__bild',
+			'sizes'     => '(min-width: 1024px) 1040px, (min-width: 600px) 720px, 100vw',
 		)
 	);
 	?>
-	<article <?php post_class( 'seite' ); ?>>
-		<header class="seitenkopf">
-			<div class="wrap"><h1><?php the_title(); ?></h1></div>
-		</header>
-		<?php
-		if ( '' !== $figur ) :
+	<article <?php post_class( 'artikel seite' ); ?>>
+		<header class="artikel__kopf<?php echo $tamil_signet ? ' seitenkopf--signet' : ''; ?>">
+			<?php
+			if ( $tamil_signet ) {
+				tamil_signatur( 'kopf' );
+			}
 			?>
-			<div class="artikel-bild seite-bild"><div class="wrap"><?php echo $figur; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_figur() ?></div></div><?php endif; ?>
-		<section class="abschnitt">
-			<div class="wrap schmal"><div class="inhalt"><?php the_content(); ?></div></div>
-		</section>
+			<h1 class="artikel__titel"><?php the_title(); ?></h1>
+			<?php if ( $tamil_entwurf ) : ?>
+				<p class="hinweis-box seite__entwurf" role="note"><strong><?php esc_html_e( 'Entwurf:', 'tamil' ); ?></strong> <?php esc_html_e( 'Der Text von KBS folgt.', 'tamil' ); ?></p>
+			<?php endif; ?>
+		</header>
+		<?php if ( '' !== $tamil_bild ) : ?>
+			<figure class="artikel__figur">
+				<?php echo $tamil_bild; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escapt in tamil_bild() ?>
+				<figcaption class="artikel__nachweis"><?php echo wp_kses( tamil_bild_nachweis_html( (int) get_the_ID() ), tamil_nachweis_kses() ); ?></figcaption>
+			</figure>
+		<?php endif; ?>
+		<?php if ( ! $tamil_entwurf ) : ?>
+			<div class="artikel__haupt">
+				<div class="artikel__text">
+					<div class="inhalt"><?php the_content(); ?></div>
+				</div>
+			</div>
+		<?php endif; ?>
 	</article>
 	<?php
 endwhile;

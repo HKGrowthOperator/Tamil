@@ -1,0 +1,264 @@
+/* tamil.de – klar2, Bewegung beim Scrollen (Vorschau mit vier Varianten)
+   Ergänzt ../klar2.css und ändert nichts an Raster, Farben, Schrift oder Inhalt.
+   Bewegt werden nur transform (als Einzeleigenschaften translate und scale), opacity und clip-path.
+   translate/scale statt transform, damit der Bildzoom von klar2 beim Überfahren (transform: scale(1.03)) erhalten bleibt.
+   Versteckt wird nur unter html.bewegt und nur, wo das Skript data-art gesetzt hat: ohne Skript, vor dem Skript und
+   mit „Bewegung reduzieren“ ist alles sichtbar. */
+
+:root {
+  --expo: cubic-bezier(0.16, 1, 0.3, 1);      /* ease-out-expo */
+  --sanft: cubic-bezier(0.33, 1, 0.68, 1);    /* ease-out-cubic, für reines Einblenden */
+  --vorhang: cubic-bezier(0.3, 0.1, 0.1, 1);  /* kurz anlaufen, lang und weich auslaufen: für die dunkle Fläche */
+}
+
+/* ---------- Umschalter (Werkzeug der Vorschau, nicht Teil der Gestaltung) ---------- */
+
+.wahl {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 30;
+  background: var(--grund);
+  border-top: 1px solid var(--tinte);
+  color: var(--tinte);
+  padding: 0 var(--rand) env(safe-area-inset-bottom, 0px);
+}
+.wahl[hidden] { display: none; }
+.wahl__innen {
+  max-width: var(--breite);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+.wahl__text {
+  padding-top: 8px;
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--leise);
+}
+.wahl__text strong { color: var(--tinte); font-weight: 600; }
+.wahl__knoepfe { display: flex; margin-inline: -8px; }
+.wahl button {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 44px;
+  min-height: 44px;
+  margin: 0;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--leise);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.wahl button:hover { color: var(--tinte); }
+.wahl button[aria-pressed="true"] { color: var(--tinte); }
+.wahl button[aria-pressed="true"]::after {
+  content: "";
+  position: absolute;
+  left: 8px; right: 8px; bottom: 5px;
+  height: 3px;
+  background: var(--rot);
+}
+.wahl button:focus-visible { outline: 2px solid var(--tinte); outline-offset: -2px; }
+
+/* Am Handy nur die Buchstaben; der Name steht im Text darüber und bleibt im Namen des Knopfs */
+@media (max-width: 599px) {
+  .wahl__lang {
+    position: absolute;
+    width: 1px; height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+@media (min-width: 600px) {
+  .wahl__knoepfe { margin-inline: -12px; }
+  .wahl button { flex: none; padding: 0 12px; font-size: 14px; }
+  .wahl button[aria-pressed="true"]::after { left: 12px; right: 12px; }
+}
+@media (min-width: 1024px) {
+  .wahl__innen { flex-direction: row; align-items: center; justify-content: space-between; column-gap: 24px; }
+  .wahl__text { padding-top: 0; }
+  .wahl__knoepfe { flex: none; margin-inline: 0 -12px; }
+}
+
+/* Platz am Ende der Seite, damit die Leiste nichts verdeckt (Höhe misst das Skript) */
+html.mit-wahl body { padding-bottom: var(--wahl-hoehe, 0px); }
+
+/* ---------- Bewegung ---------- */
+
+@media (prefers-reduced-motion: no-preference) {
+
+  /* Werte je Variante */
+  html[data-bewegung="a"] { --t-steigen: 500ms; --hub: 16px; }
+  html[data-bewegung="b"] {
+    --t-bild: 650ms; --t-zoom: 650ms; --t-blenden: 450ms;
+    --t-zeile: 650ms; --zeilen-takt: 80ms; --zeilen-start: 140ms;
+  }
+  html[data-bewegung="c"] { --t-steigen: 500ms; --hub: 16px; --t-vorhang: 800ms; }
+  html[data-bewegung="d"] {
+    --t-steigen: 560ms; --hub: 16px;
+    --t-bild: 750ms; --t-zoom: 1100ms; --t-blenden: 500ms;
+    --t-zeile: 700ms; --zeilen-takt: 90ms; --zeilen-start: 160ms;
+    --t-vorhang: 800ms;
+  }
+
+  /* Beim Umschalten springen alle Zustände ohne Übergang zurück */
+  html.zuruecksetzen *,
+  html.zuruecksetzen *::before,
+  html.zuruecksetzen *::after { transition: none !important; }
+
+  /* --- Steigen (A, C, D): 16 px nach oben und einblenden --- */
+  .bewegt [data-art~="steigen"] {
+    transition:
+      translate var(--t-steigen) var(--expo) var(--verz, 0ms),
+      opacity calc(var(--t-steigen) * 0.8) var(--sanft) var(--verz, 0ms);
+  }
+  .bewegt [data-art~="steigen"]:not(.da) { opacity: 0; translate: 0 var(--hub); }
+
+  /* --- Aufdecken (B, D): Bild von unten freigeben, dabei von 1,06 auf 1 --- */
+  .bewegt [data-art~="aufdecken"] .rahmen,
+  .bewegt .grafik[data-art~="aufdecken"] {
+    transition: clip-path var(--t-bild) var(--expo) var(--verz, 0ms);
+  }
+  .bewegt [data-art~="aufdecken"]:not(.da) .rahmen,
+  .bewegt .grafik[data-art~="aufdecken"]:not(.da) { clip-path: inset(100% 0 0 0); }
+  /* Ziel ausdrücklich inset(0): nach „none“ gäbe es keinen Übergang. Nach dem Auftritt (ohne .laeuft) wieder none,
+     unsichtbar, damit Fokusrahmen außerhalb der Kachel nicht beschnitten werden. */
+  .bewegt .laeuft[data-art~="aufdecken"] .rahmen,
+  .bewegt .grafik.laeuft[data-art~="aufdecken"] { clip-path: inset(0 0 0 0); }
+  .bewegt [data-art~="aufdecken"] .rahmen img {
+    transition: var(--zoom), scale var(--t-zoom) var(--expo) var(--verz, 0ms);
+  }
+  .bewegt [data-art~="aufdecken"]:not(.da) .rahmen img { scale: 1.06; }
+
+  /* Begleittext im aufgedeckten Stück: nur einblenden, Dachzeile vor dem Titel, Vorspann danach */
+  .bewegt [data-art~="aufdecken"] :is(.meta, .kachel__name) { --nach: 100ms; }
+  .bewegt [data-art~="aufdecken"] :is(.vorspann, .grafik__zahl, .grafik__orte, .grafik__text) { --nach: 320ms; }
+  .bewegt [data-art~="aufdecken"] :is(.meta, .kachel__name, .vorspann, .grafik__zahl, .grafik__orte, .grafik__text),
+  .bewegt [data-art~="blenden"] {
+    transition: opacity var(--t-blenden) var(--sanft) calc(var(--verz, 0ms) + var(--nach, 0ms));
+  }
+  .bewegt [data-art~="aufdecken"]:not(.da) :is(.meta, .kachel__name, .vorspann, .grafik__zahl, .grafik__orte, .grafik__text),
+  .bewegt [data-art~="blenden"]:not(.da) { opacity: 0; }
+
+  /* --- Zeilen (B, D): Überschrift steigt Zeile für Zeile aus einer Kante.
+     Das Skript legt die gemessenen Zeilen in Spannen; der Text bleibt echter Text und wird danach zurückgesetzt. --- */
+  .bewegt [data-zeilen] .zeile {
+    display: block;
+    /* oben und seitlich Luft für Akzente, unten knapp unter der Zeile: dort taucht der Text auf */
+    clip-path: inset(-0.4em -0.3em -0.08em -0.3em);
+  }
+  .bewegt [data-zeilen] .zeile__in {
+    display: inline-block;
+    vertical-align: top;
+    white-space: nowrap;
+    transition: translate var(--t-zeile) var(--expo)
+      calc(var(--verz, 0ms) + var(--zeilen-start, 0ms) + var(--zi, 0) * var(--zeilen-takt, 80ms));
+  }
+  .bewegt [data-art="zeilen"] { --zeilen-start: 0ms; }
+  .bewegt [data-art~="zeilen"]:not(.da) .zeile__in { translate: 0 115%; }
+
+  /* --- Vorhang (C, D): die dunkle Fläche „Diese Woche“ zieht von links auf.
+     Eine Deckfläche in der Farbe des Seitengrunds liegt über dem Bereich und schrumpft nach rechts weg (scale).
+     Kein clip-path am Bereich selbst: der IntersectionObserver meldet Inhalt unter beschnittenen Vorfahren zu spät. --- */
+  .bewegt [data-art~="vorhang"] { position: relative; }
+  .bewegt [data-art~="vorhang"]::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    background: var(--grund);
+    transform-origin: 100% 50%;
+    scale: 0 1;
+    pointer-events: none;
+    transition: scale var(--t-vorhang) var(--vorhang) var(--verz, 0ms);
+  }
+  .bewegt [data-art~="vorhang"]:not(.da)::after { scale: 1 1; }
+
+  /* will-change nur, solange es läuft (Klasse .laeuft setzt und entfernt das Skript) */
+  .bewegt .laeuft[data-art~="steigen"] { will-change: translate, opacity; }
+  .bewegt .laeuft[data-art~="aufdecken"] .rahmen,
+  .bewegt .grafik.laeuft[data-art~="aufdecken"] { will-change: clip-path; }
+  .bewegt .laeuft[data-art~="vorhang"]::after { will-change: scale; }
+  .bewegt .laeuft[data-art~="aufdecken"] .rahmen img { will-change: scale; }
+  .bewegt .laeuft .zeile__in { will-change: translate; }
+
+  /* --- Kopf & Band (C, D): an den Scrollweg gebunden, nicht an die Zeit --- */
+  html.bewegt:is([data-bewegung="c"], [data-bewegung="d"]) .kopf__logo { transform-origin: 0 100%; }
+  /* rote Leselinie, 2 px, an der Unterkante des Rubrikbands */
+  html.bewegt:is([data-bewegung="c"], [data-bewegung="d"]) .band::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 2px;
+    background: var(--rot);
+    transform-origin: 0 50%;
+    scale: 0 1;
+    pointer-events: none;
+  }
+
+  /* Weg 1: CSS-Scroll-Timelines (html.sda setzt das Skript, wenn der Browser sie kann) */
+  @supports (animation-timeline: scroll()) {
+    html.sda.bewegt:is([data-bewegung="c"], [data-bewegung="d"]) .kopf {
+      view-timeline: --kopf block;
+      view-timeline-inset: 0px; /* sonst gälte scroll-padding-top der Seite */
+    }
+    /* Kopfzeile verblasst auf den ersten 45 % des Wegs, bis das Band oben steht */
+    html.sda.bewegt:is([data-bewegung="c"], [data-bewegung="d"]) .kopfzeile {
+      animation: k2-kopfzeile linear both;
+      animation-timeline: --kopf;
+      animation-range: exit 0% exit 45%;
+    }
+    /* Logo wird kleiner, bleibt etwas zurück und schiebt sich unter das Band */
+    html.sda.bewegt:is([data-bewegung="c"], [data-bewegung="d"]) .kopf__logo {
+      animation: k2-logo linear both;
+      animation-timeline: --kopf;
+      animation-range: exit 0% exit 100%;
+    }
+    html.sda.bewegt:is([data-bewegung="c"], [data-bewegung="d"]) .band::after {
+      animation: k2-fortschritt linear both;
+      animation-timeline: scroll(root block);
+    }
+    /* Aufmacherbild: läuft beim Hinausscrollen bis zu 40 px langsamer als die Seite.
+       Der Weg beginnt erst, wenn die Bildoberkante unter dem Band ist; der freie Streifen oben bleibt verdeckt. */
+    html.sda.bewegt:is([data-bewegung="c"], [data-bewegung="d"]) .aufmacher .rahmen {
+      view-timeline: --aufmacher block;
+      view-timeline-inset: 48px 0px;
+    }
+    html.sda.bewegt:is([data-bewegung="c"], [data-bewegung="d"]) .aufmacher .rahmen img {
+      animation: k2-tiefe linear both;
+      animation-timeline: --aufmacher;
+      animation-range: exit 0% exit 100%;
+    }
+  }
+
+  /* Weg 2: ohne Scroll-Timelines rechnet ein passiver Scroll-Handler (rAF) dieselben Werte als Variablen */
+  html.bewegt:not(.sda):is([data-bewegung="c"], [data-bewegung="d"]) .kopfzeile {
+    opacity: clamp(0, 1 - var(--kopf, 0) / 0.45, 1);
+  }
+  html.bewegt:not(.sda):is([data-bewegung="c"], [data-bewegung="d"]) .kopf__logo {
+    translate: 0 calc(var(--kopf, 0) * 40px);
+    scale: calc(1 - var(--kopf, 0) * 0.2);
+    opacity: clamp(0, (0.9 - var(--kopf, 0)) / 0.4, 1);
+  }
+  html.bewegt:not(.sda):is([data-bewegung="c"], [data-bewegung="d"]) .band::after { scale: var(--fortschritt, 0) 1; }
+  html.bewegt:not(.sda):is([data-bewegung="c"], [data-bewegung="d"]) .aufmacher .rahmen img {
+    translate: 0 var(--tiefe, 0px);
+  }
+}
+
+@keyframes k2-kopfzeile { to { opacity: 0; } }
+@keyframes k2-logo {
+  from { translate: 0 0; scale: 1; opacity: 1; }
+  50% { opacity: 1; }
+  90% { opacity: 0; }
+  to { translate: 0 40px; scale: 0.8; opacity: 0; }
+}
+@keyframes k2-fortschritt { from { scale: 0 1; } to { scale: 1 1; } }
+@keyframes k2-tiefe { from { translate: 0 0; } to { translate: 0 40px; } }

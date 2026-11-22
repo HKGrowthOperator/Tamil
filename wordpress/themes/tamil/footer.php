@@ -1,70 +1,49 @@
 <?php
 /**
- * Fuß: Werbeplatz 04, Feld mit Logo und Selbstbeschreibung, Rubriken, Dienste, Rechtliches und den Bildnachweisen
- * der Seite; mobil Werbeplatz 05.
+ * Fuß jeder Seite (weißer Grund mit Linie in Titan Red oben): Werbeplatz „Footer“, Logo mit Unterzeile, Rubriken,
+ * Dienste, Social (nur mit Adresse), die Bildnachweise der Seite und die Zeile mit Rechtlichem (als Band in Titan Red,
+ * nur per CSS). Am Handy danach der feste Werbeplatz. Jeder Werbeplatz ist schon ein benannter Bereich des
+ * Plugins (<aside aria-label="Anzeige: …">); das Theme legt keinen zweiten darum.
  */
 
 defined( 'ABSPATH' ) || exit;
 
 $tamil_social    = tamil_social();
-$tamil_nachweise = tamil_nachweise();
+$tamil_unterzeil = '' !== tamil_opt( 'tagline' ) ? tamil_opt( 'tagline' ) : tamil_opt( 'ueber_uns' );
 ?>
-<?php tamil_leaderboard(); ?>
+<?php $tamil_lb_unten = tamil_leaderboard(); ?>
 </main>
 <?php
-$tamil_footer_ad = function_exists( 'tamil_site_anzeige' ) ? tamil_site_anzeige( 'footer', false ) : '';
+// Steht das Leaderboard hier direkt über dem Fuß-Platz, nennt das Theme es dem Plugin: keine zweite Eigenanzeige
+// unmittelbar danach (Q2-10)
+$tamil_footer_ad = function_exists( 'tamil_site_anzeige' ) ? tamil_site_anzeige( 'footer', false, $tamil_lb_unten ? 'leaderboard' : '' ) : '';
 if ( '' !== $tamil_footer_ad ) :
 	?>
-	<div class="wrap anzeige-unten"><?php echo $tamil_footer_ad; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Werbeplatz aus dem Plugin, dort escapt ?></div>
+	<div class="innen anzeige-unten"><?php echo $tamil_footer_ad; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Werbeplatz aus dem Plugin (benannter Bereich „Anzeige: Fuß“), dort escapt ?></div>
 <?php endif; ?>
 <footer class="fuss">
-	<div class="wrap">
-		<div class="fuss-marke">
-			<?php get_template_part( 'template-parts/header/logo', null, array( 'class' => 'fuss-logo' ) ); ?>
-			<p><?php echo esc_html( '' !== tamil_opt( 'tagline' ) ? tamil_opt( 'tagline' ) : tamil_opt( 'ueber_uns' ) ); // kurz wie in der Probe; der lange Text steht auf „Über uns“ ?></p>
-			<p class="fuss-recht">
-				<span>© <?php echo esc_html( wp_date( 'Y' ) ); ?> <?php bloginfo( 'name' ); ?><?php echo tamil_opt( 'org' ) ? ', ' . esc_html( tamil_opt( 'org' ) ) : ''; ?></span>
-				<?php
-				if ( has_nav_menu( 'footer_legal' ) ) {
-					wp_nav_menu(
-						array(
-							'theme_location' => 'footer_legal',
-							'container'      => false,
-							'depth'          => 1,
-							'items_wrap'     => '%3$s',
-							'fallback_cb'    => false,
-						)
-					);
-				} else {
-					if ( tamil_seite( 'impressum' ) ) {
-						echo '<a href="' . esc_url( tamil_seiten_url( 'impressum' ) ) . '">' . esc_html__( 'Impressum', 'tamil' ) . '</a>';
-					}
-					$datenschutz = (int) get_option( 'wp_page_for_privacy_policy' );
-					if ( $datenschutz && 'publish' === get_post_status( $datenschutz ) ) {
-						echo '<a href="' . esc_url( get_permalink( $datenschutz ) ) . '">' . esc_html__( 'Datenschutzerklärung', 'tamil' ) . '</a>';
-					} elseif ( tamil_seite( 'datenschutz' ) ) {
-						echo '<a href="' . esc_url( tamil_seiten_url( 'datenschutz' ) ) . '">' . esc_html__( 'Datenschutzerklärung', 'tamil' ) . '</a>';
-					}
-				}
-				/**
-				 * Platz für den Link „Cookie-Einstellungen“ eines Consent-Plugins.
-				 */
-				do_action( 'tamil_footer_legal' );
+	<div class="innen fuss__innen">
+		<div class="fuss__marke">
+			<?php get_template_part( 'template-parts/header/logo', null, array( 'class' => 'fuss__logo' ) ); ?>
+			<?php
+			if ( '' !== $tamil_unterzeil ) :
 				?>
-			</p>
+				<p class="fuss__satz"><?php echo esc_html( $tamil_unterzeil ); ?></p><?php endif; ?>
 		</div>
-		<div>
+		<nav class="fuss__spalte" aria-label="<?php esc_attr_e( 'Rubriken im Fuß', 'tamil' ); ?>">
 			<h2><?php esc_html_e( 'Rubriken', 'tamil' ); ?></h2>
 			<ul>
-				<?php foreach ( array_keys( tamil_rubriken_standard() ) as $slug ) : ?>
-					<?php $rubrik = tamil_rubrik( $slug ); ?>
-					<?php if ( $rubrik['term'] && 'events' !== $slug ) : ?>
-						<li><a href="<?php echo esc_url( $rubrik['url'] ); ?>"><?php echo esc_html( $rubrik['label'] ); ?></a></li>
-					<?php endif; ?>
+				<?php foreach ( tamil_nav_items() as $tamil_item ) : ?>
+					<?php
+					if ( '' === $tamil_item['slug'] ) {
+						continue; // Kontakt steht unter Dienste
+					}
+					?>
+					<li><a href="<?php echo esc_url( $tamil_item['url'] ); ?>"><?php echo esc_html( $tamil_item['label'] ); ?></a></li>
 				<?php endforeach; ?>
 			</ul>
-		</div>
-		<div>
+		</nav>
+		<nav class="fuss__spalte" aria-label="<?php esc_attr_e( 'Dienste im Fuß', 'tamil' ); ?>">
 			<h2><?php esc_html_e( 'Dienste', 'tamil' ); ?></h2>
 			<?php
 			if ( has_nav_menu( 'footer_service' ) ) {
@@ -77,37 +56,75 @@ if ( '' !== $tamil_footer_ad ) :
 				);
 			} else {
 				echo '<ul>';
-				foreach ( array_filter( tamil_kopf_ziele(), static fn( $z ) => $z['dienst'] ) as $z ) {
-					echo '<li><a href="' . esc_url( $z['url'] ) . '">' . esc_html( $z['label'] ) . '</a></li>';
-				}
-				foreach ( tamil_dienste() as $d ) {
-					echo '<li><a href="' . esc_url( $d['url'] ) . '">' . esc_html( $d['label'] ) . '</a></li>';
+				foreach ( tamil_dienste() as $tamil_d ) {
+					echo '<li><a href="' . esc_url( $tamil_d['url'] ) . '">' . esc_html( $tamil_d['label'] ) . '</a></li>';
 				}
 				echo '</ul>';
 			}
 			?>
-			<?php if ( $tamil_social ) : ?>
-				<h2 class="fuss-folgen"><?php esc_html_e( 'Folgen', 'tamil' ); ?></h2>
+		</nav>
+		<?php if ( $tamil_social ) : ?>
+			<div class="fuss__spalte">
+				<h2><?php esc_html_e( 'Folgen', 'tamil' ); ?></h2>
 				<ul>
-					<?php foreach ( $tamil_social as $s ) : ?>
-						<li><a href="<?php echo esc_url( $s['url'] ); ?>" target="_blank" rel="noopener"><?php echo esc_html( $s['name'] ); ?></a></li>
-					<?php endforeach; ?>
-				</ul>
-			<?php endif; ?>
-		</div>
-		<?php if ( $tamil_nachweise ) : ?>
-			<div>
-				<h2><?php esc_html_e( 'Bildnachweise', 'tamil' ); ?></h2>
-				<ul class="nachweise">
-					<?php foreach ( $tamil_nachweise as $n ) : ?>
-						<li><?php echo esc_html( $n ); ?></li>
+					<?php foreach ( $tamil_social as $tamil_s ) : ?>
+						<li><a href="<?php echo esc_url( $tamil_s['url'] ); ?>" target="_blank" rel="noopener"><?php echo esc_html( $tamil_s['name'] ); ?></a></li>
 					<?php endforeach; ?>
 				</ul>
 			</div>
 		<?php endif; ?>
 	</div>
+	<?php
+	// Erst hier auslesen: Werbeplätze und Bilder darüber haben ihre Nachweise dann gemerkt (die Handy-Leiste unter dem
+	// Fuß meldet ihren vorab über get_footer im Plugin).
+	$tamil_nachweise = tamil_nachweise();
+	?>
+	<?php if ( $tamil_nachweise ) : ?>
+		<details class="innen fuss__nachweise">
+			<?php /* translators: %d: Anzahl der Nachweise */ ?>
+			<summary><?php echo esc_html( sprintf( __( 'Bildnachweise dieser Seite (%d)', 'tamil' ), count( $tamil_nachweise ) ) ); ?></summary>
+			<ul class="nachweise">
+				<?php foreach ( $tamil_nachweise as $tamil_n ) : ?>
+					<li><?php echo wp_kses( $tamil_n, tamil_nachweis_kses() ); ?></li>
+				<?php endforeach; ?>
+			</ul>
+		</details>
+	<?php endif; ?>
+	<div class="innen">
+		<p class="fuss__recht">
+			<span>© <?php echo esc_html( wp_date( 'Y' ) ); ?> <?php bloginfo( 'name' ); ?><?php echo tamil_opt( 'org' ) ? ', ' . esc_html( tamil_opt( 'org' ) ) : ''; ?></span>
+			<?php
+			if ( has_nav_menu( 'footer_legal' ) ) {
+				wp_nav_menu(
+					array(
+						'theme_location' => 'footer_legal',
+						'container'      => false,
+						'depth'          => 1,
+						'items_wrap'     => '%3$s',
+						'fallback_cb'    => false,
+					)
+				);
+			} else {
+				if ( tamil_seite( 'impressum' ) ) {
+					echo '<a href="' . esc_url( tamil_seiten_url( 'impressum' ) ) . '">' . esc_html__( 'Impressum', 'tamil' ) . '</a>';
+				}
+				$tamil_datenschutz = (int) get_option( 'wp_page_for_privacy_policy' );
+				if ( $tamil_datenschutz && 'publish' === get_post_status( $tamil_datenschutz ) ) {
+					echo '<a href="' . esc_url( get_permalink( $tamil_datenschutz ) ) . '">' . esc_html__( 'Datenschutzerklärung', 'tamil' ) . '</a>';
+				} elseif ( tamil_seite( 'datenschutz' ) ) {
+					echo '<a href="' . esc_url( tamil_seiten_url( 'datenschutz' ) ) . '">' . esc_html__( 'Datenschutzerklärung', 'tamil' ) . '</a>';
+				}
+			}
+			/**
+			 * Platz für den Link „Cookie-Einstellungen“ eines Consent-Plugins.
+			 */
+			do_action( 'tamil_footer_legal' );
+			?>
+			<span class="fuss__signet" aria-hidden="true"><?php tamil_signatur( 'band' ); ?></span>
+		</p>
+	</div>
 </footer>
-<?php tamil_anzeige( 'mobile' ); ?>
+<?php tamil_anzeige( 'mobile' ); // Handy-Leiste: ein benannter Bereich des Plugins („Anzeige: Mobil“, id ad-mobile), ohne Rahmen ?>
 </div>
 <?php wp_footer(); ?>
 </body>

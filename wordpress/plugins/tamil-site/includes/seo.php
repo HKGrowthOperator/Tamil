@@ -8,7 +8,8 @@
  * aus WordPress.
  *
  * Beschreibung eines Beitrags: Feld _tamil_seo_description (schreibt der Radar), sonst Vorspann (standfirst), sonst
- * der gekürzte Auszug. Titel: Feld _tamil_seo_title, sonst der Titel von WordPress.
+ * der gekürzte Auszug, ohne Reste der alten Seite („Share on: WhatsApp“); ohne Text die Beschreibung der Website.
+ * Titel: Feld _tamil_seo_title, sonst der Titel von WordPress.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -85,21 +86,71 @@ function tamil_site_seo_oeffentlich( $post ): bool {
 }
 
 /**
- * Beschreibung eines Beitrags oder einer Seite (leer, wenn er nicht öffentlich ist).
+ * Reste der alten tamil.de und Bedienelemente aus einem Text entfernen, bevor er Beschreibung wird: der Teilen-Knopf
+ * des alten WhatsApp-Plugins („Share on: WhatsApp“, im Altbestand an fast jedem Auszug), der Hinweis des alten
+ * Video-Players („To view this video please enable JavaScript …“) und die Knöpfe des Video-Platzhalters. Gibt reinen
+ * Text zurück.
+ */
+function tamil_site_seo_text_bereinigen( string $text ): string {
+	// Ganze Elemente, deren Inhalt nie Beschreibung ist: Skripte, Stile, Knöpfe, Hinweise des Video-Platzhalters,
+	// das Teilen-Feld des alten Plugins und sein Link.
+	$text = (string) preg_replace(
+		array(
+			'#<(script|style|button|noscript)\b[^>]*>.*?</\1>#is',
+			'#<(\w+)\b[^>]*class=(["\'])[^"\']*\b(?:video-hint|vjs-no-js|share-on-whsp|whatsapp-button|whatsapp-share)\b[^"\']*\2[^>]*>.*?</\1>#is',
+		),
+		' ',
+		$text
+	);
+	// Blockgrenzen nicht verkleben („Die Konzerte im ArchivIlaiyaraaja …“): Überschriften enden mit einem Punkt, andere
+	// Blöcke und Zeilenumbrüche mit einem Leerzeichen; ein Punkt hinter schon vorhandenem Satzzeichen entfällt.
+	$text = (string) preg_replace( '#</h[1-6]\s*>#i', '. ', $text );
+	$text = (string) preg_replace( '#</(?:p|div|li|ul|ol|dt|dd|figcaption|blockquote|td|th|tr|section|figure)\s*>|<br\s*/?>#i', ' ', $text );
+	$text = html_entity_decode( wp_strip_all_tags( $text ), ENT_QUOTES, 'UTF-8' );
+	$text = (string) preg_replace( '/([.:!?…])\s*\.(?=\s|$)/u', '$1', $text );
+	$text = (string) preg_replace(
+		array(
+			'/To view this video please enable JavaScript,?\s*and consider upgrading to a\s*web browser that\s*supports HTML5 video\.?/iu',
+			'/\bShare on:\s*(?:WhatsApp|Facebook|Twitter|\[(?:…|\.\.\.)\])?/iu',
+			'/\b(?:Video laden|Beim Laden werden Daten an YouTube übertragen\.?|Bei YouTube ansehen)/u',
+		),
+		' ',
+		$text
+	);
+	return trim( (string) preg_replace( '/\s+/u', ' ', $text ) );
+}
+
+/**
+ * Taugt der bereinigte Text als Beschreibung? Mindestens zwei Wörter außerhalb von Adressen (sonst bleibt etwa nur
+ * „WhatsApp“ oder „www.santhora.tv“ übrig).
+ */
+function tamil_site_seo_text_brauchbar( string $text ): bool {
+	$ohne_adressen = (string) preg_replace( '~\S*(?:https?://|www\.|@)\S*|\S+\.[a-z]{2,6}(?:/\S*)?(?=\s|$)~iu', ' ', $text );
+	return preg_match_all( '/\p{L}{2,}/u', $ohne_adressen ) >= 2;
+}
+
+/**
+ * Beschreibung eines Beitrags oder einer Seite (leer, wenn er nicht öffentlich ist): Feld des Radars, Vorspann,
+ * Auszug, Text – jeweils ohne Reste der alten Seite. Bleibt kein Text, gilt die Beschreibung der Website.
  */
 function tamil_site_seo_beschreibung_beitrag( int $post_id ): string {
 	$post = get_post( $post_id );
 	if ( ! tamil_site_seo_oeffentlich( $post ) ) {
 		return '';
 	}
-	foreach ( array( '_tamil_seo_description', 'standfirst' ) as $feld ) {
-		$wert = trim( (string) get_post_meta( $post_id, $feld, true ) );
-		if ( '' !== $wert ) {
-			return tamil_site_seo_kuerzen( $wert );
+	$kandidaten = array(
+		(string) get_post_meta( $post_id, '_tamil_seo_description', true ),
+		(string) get_post_meta( $post_id, 'standfirst', true ),
+		has_excerpt( $post ) ? (string) $post->post_excerpt : '',
+		excerpt_remove_blocks( strip_shortcodes( (string) $post->post_content ) ),
+	);
+	foreach ( $kandidaten as $text ) {
+		$text = tamil_site_seo_text_bereinigen( $text );
+		if ( tamil_site_seo_text_brauchbar( $text ) ) {
+			return tamil_site_seo_kuerzen( $text );
 		}
 	}
-	$text = has_excerpt( $post ) ? $post->post_excerpt : strip_shortcodes( $post->post_content );
-	return tamil_site_seo_kuerzen( excerpt_remove_blocks( $text ) );
+	return tamil_site_seo_kuerzen( (string) get_bloginfo( 'description' ) );
 }
 
 /**
@@ -126,7 +177,14 @@ function tamil_site_seo_titel_feld( int $post_id ): string {
 }
 
 /**
- * <title> aus dem Feld _tamil_seo_title, wenn gesetzt.
+ * Längster <title> mit Markenzusatz; Suchmaschinen kürzen ab etwa 60 Zeichen.
+ */
+const TAMIL_SITE_SEO_TITEL_MAX = 60;
+
+/**
+ * <title> aus dem Feld _tamil_seo_title, wenn gesetzt. Wie bei allen anderen Seiten folgt „| Tamil.de“, solange der
+ * Titel damit höchstens TAMIL_SITE_SEO_TITEL_MAX Zeichen hat und die Marke nicht schon enthält; sonst bleibt der
+ * SEO-Titel allein stehen (er ist wichtiger als der Zusatz).
  *
  * @param string $titel Bisheriger Titel (leer = WordPress bildet ihn).
  */
@@ -134,6 +192,11 @@ function tamil_site_seo_document_title( $titel ) {
 	if ( tamil_site_seo_aktiv() && is_singular() ) {
 		$eigen = tamil_site_seo_titel_feld( (int) get_queried_object_id() );
 		if ( '' !== $eigen ) {
+			$marke  = trim( wp_strip_all_tags( (string) get_bloginfo( 'name', 'display' ) ) );
+			$zusatz = ' ' . apply_filters( 'document_title_separator', '-' ) . ' ' . $marke; // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Hook von WordPress.
+			if ( '' !== $marke && false === mb_stripos( $eigen, $marke ) && mb_strlen( $eigen . $zusatz ) <= TAMIL_SITE_SEO_TITEL_MAX ) {
+				$eigen .= $zusatz;
+			}
 			// WordPress gibt den Rückgabewert ungefiltert in <title> aus.
 			return esc_html( $eigen );
 		}
