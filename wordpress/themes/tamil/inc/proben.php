@@ -412,7 +412,9 @@ function tamil_stadt_kino_laeuft( array $k, string $heute ): array {
  * Daten für „Tamil in meiner Stadt“: Städte der Auswahl und alles, was der Abschnitt zeigen kann (je Beitrag mit den
  * Schlüsseln seiner Städte). Einmal je Seitenaufruf gerechnet, ohne eigenen Zwischenspeicher.
  *
- * - Kino: tamil_kino_filme( 6 ), je Kino nur mit Vorstellung ab heute.
+ * - Kino: tamil_kino_filme( 6 ), je Kino nur mit Vorstellung ab heute. Zählt die Kinoliste mehr Kinos, als ab heute
+ *   noch spielen, trägt der Film „zahl_text“ („ab heute noch 1 von 13 Kinos“), damit die Karte hier nicht ohne
+ *   Erklärung eine andere Zahl nennt als „Diese Woche“ (dort stehen alle Kinos der Liste).
  * - Termine: die nächsten zwölf (Plugin tamil-site), Stadt aus tamil_termin_angaben(); „Ort folgt“ hat keine Stadt.
  * - Geschichten: die 24 neuesten Beiträge mit „Ort der Meldung“, ohne die Beiträge des ersten Abschnitts, von „Diese
  *   Woche“ und ohne die Filme und Termine dieses Abschnitts; Rubrik Community zuerst, dann nach Datum.
@@ -449,8 +451,9 @@ function tamil_stadt_daten(): array {
 
 	$filme = array();
 	foreach ( tamil_kino_filme( 6 ) as $f ) {
-		$kinos = array_values( array_filter( array_map( static fn( $k ) => tamil_stadt_kino_laeuft( (array) $k, $heute ), (array) ( $f['fakten']['kinos'] ?? array() ) ) ) );
-		$orte  = array();
+		$gesamt = count( (array) ( $f['fakten']['kinos'] ?? array() ) );
+		$kinos  = array_values( array_filter( array_map( static fn( $k ) => tamil_stadt_kino_laeuft( (array) $k, $heute ), (array) ( $f['fakten']['kinos'] ?? array() ) ) ) );
+		$orte   = array();
 		foreach ( $kinos as $k ) {
 			$stadt = trim( (string) preg_replace( '/\s+/u', ' ', (string) ( $k['stadt'] ?? '' ) ) );
 			if ( '' === $stadt ) {
@@ -471,8 +474,14 @@ function tamil_stadt_daten(): array {
 		}
 		$f['fakten']['kinos'] = $kinos;
 		$f['kinos']           = count( $kinos );
-		$f['staedte']         = array_values( array_map( static fn( $s ) => $namen[ $s ], array_keys( $orte ) ) );
-		$filme[]              = array(
+		if ( count( $kinos ) < $gesamt ) {
+			// Dieser Abschnitt zählt nur Kinos mit Vorstellung ab heute, „Diese Woche“ alle Kinos der Liste. Stehen beide
+			// Zahlen auf derselben Seite, sagt die Karte hier, was sie zählt (Kritik vom 22.11.2026: „1 Kino“ neben „13 Kinos“).
+			/* translators: 1: Kinos mit Vorstellung ab heute, 2: alle Kinos der Kinoliste */
+			$f['zahl_text'] = sprintf( __( 'ab heute noch %1$d von %2$d Kinos', 'tamil' ), count( $kinos ), $gesamt );
+		}
+		$f['staedte'] = array_values( array_map( static fn( $s ) => $namen[ $s ], array_keys( $orte ) ) );
+		$filme[]      = array(
 			'film' => $f,
 			'orte' => $orte,
 		);
