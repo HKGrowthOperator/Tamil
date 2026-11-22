@@ -2091,6 +2091,102 @@ body .ad.ad-bild .anzeige--bild .anzeige__bild { border-radius: 0; }
   .ausgabe__weitere .block-titel { margin-bottom: 18px; }
 }
 
+/* ---------- Bildkanten auf gemeinsamen Linien (3.17.1; Luis, 22.11.2026: „Das muss alles auf einer Höhe sein“) ----------
+   In jedem mehrspaltigen Block beginnen die Bilder aller Spalten auf einer Linie, und das letzte Bild jeder Spalte endet
+   auf einer Linie. Text unter einem Bild (Vorspann, Ort, Städte) steht unter dieser Linie und verschiebt keine
+   Bildkante; eine Überschrift steht über der gemeinsamen Oberkante. Mittel: Der Block hat eine Zeile für die Bilder und
+   eine für den Text darunter; die Karte mit Text reicht über beide (subgrid), die Bilder daneben stehen nur in der
+   Bildzeile. Geprüft von wordpress/dev/kantenlinie.mjs. */
+@media (min-width: 1024px) {
+  /* Startseite: Aufmacher neben „Weitere Meldungen“. Zeilen: Überschrift, Bilder, Vorspann. Die drei Karten rechts
+     teilen sich genau die Höhe des Aufmacherbilds. Nicht beim Wow-Aufmacher (eigene Bahn mit festem Bild). */
+  .oben:not(.oben--probe):not(:has(.aufmacher.wow)) {
+    grid-template-areas: ". mel" "auf mel" "auf ." "neb neb" "kach kach"; grid-template-rows: repeat(5, auto); align-items: stretch;
+  }
+  .oben:not(.oben--probe):not(:has(.aufmacher.wow)) > :is(.aufmacher, .meldungen),
+  .oben:not(.oben--probe):not(:has(.aufmacher.wow)) > .aufmacher > .anr,
+  .oben:not(.oben--probe):not(:has(.aufmacher.wow)) > .meldungen > .meldungen__halter {
+    display: grid; grid-template-rows: subgrid; grid-template-columns: minmax(0, 1fr); row-gap: 0;
+  }
+  .oben:not(.oben--probe):not(:has(.aufmacher.wow)) > .aufmacher > .anr,
+  .oben:not(.oben--probe):not(:has(.aufmacher.wow)) > .meldungen > .meldungen__halter { grid-row: 1 / -1; }
+  .oben:not(.oben--probe):not(:has(.aufmacher.wow)) > .aufmacher .rahmen { grid-row: 1; align-self: stretch; justify-self: stretch; } /* beide Richtungen ausdrücklich: Mit Seitenverhältnis rechnete der Browser sonst die Breite aus der Höhe */
+  .oben:not(.oben--probe):not(:has(.aufmacher.wow)) > .aufmacher .vorspann { grid-row: 2; }
+  .oben:not(.oben--probe):not(:has(.aufmacher.wow)) > .meldungen .block-titel { grid-row: 1; margin-bottom: 12px; }
+  .oben:not(.oben--probe):not(:has(.aufmacher.wow)) > .meldungen .karten--reihe { grid-row: 2; margin-top: 0; grid-auto-rows: minmax(0, 1fr); align-items: stretch; }
+  .oben:not(.oben--probe):not(:has(.aufmacher.wow)) > .meldungen .karten--reihe > li { align-self: stretch; height: auto; }
+  .oben:not(.oben--probe):not(:has(.aufmacher.wow)) > .meldungen .karten--reihe > li,
+  .oben:not(.oben--probe):not(:has(.aufmacher.wow)) > .meldungen .karte--meldung,
+  .oben:not(.oben--probe):not(:has(.aufmacher.wow)) > .meldungen .karte--meldung > .anr { display: flex; flex-direction: column; flex: 1 1 auto; min-width: 0; }
+  .oben:not(.oben--probe):not(:has(.aufmacher.wow)) > .meldungen .karte--meldung .rahmen { flex: 1 1 auto; aspect-ratio: auto; min-height: 150px; }
+
+  /* Ausgabe, Beistücke: das große Stück hat Text unter dem Bild; der Stapel daneben endet mit dem Bild, nicht mit dem Text */
+  .ausgabe__rest > .ausgabe__stuecke { grid-template-rows: auto auto; row-gap: 0; }
+  .ausgabe__rest > .ausgabe__stuecke > .beistueck--gross { grid-row: 1 / span 2; }
+  .ausgabe__rest > .ausgabe__stuecke > .beistueck--gross,
+  .ausgabe__rest > .ausgabe__stuecke > .beistueck--gross > .anr { display: grid; grid-template-rows: subgrid; grid-template-columns: minmax(0, 1fr); }
+  .ausgabe__rest > .ausgabe__stuecke > .beistueck--gross > .anr { grid-row: 1 / -1; }
+  .ausgabe__rest > .ausgabe__stuecke > .beistueck--gross .rahmen { grid-row: 1; align-self: stretch; justify-self: stretch; }
+  .ausgabe__rest > .ausgabe__stuecke > .beistueck--gross .kontext { grid-row: 2; }
+  .ausgabe__rest > .ausgabe__stuecke > .ausgabe__stapel { grid-row: 1; }
+}
+
+/* „Diese Woche“ mit Bildkachel neben der Kinokarte (ein Film): Das Bild der Kinokarte steht in der Bildzeile, ihre
+   Städte in der Zeile darunter. „Im Kino“ bleibt dann nur für Vorleseprogramme (die Karte trägt „Kino“ selbst), sonst
+   stünde die Zeile neben einem Bild. Mehrere Filme untereinander behalten den bisherigen Aufbau. */
+@media (min-width: 600px) {
+  #diese-woche .woche__raster:not(.ohne-klein):has(.woche__gruppe--kino li:only-child) { row-gap: 0; }
+  #diese-woche .woche__raster:not(.ohne-gross.ohne-klein):has(.woche__gruppe--kino li:only-child) > .woche__gruppe--kino > .woche__art {
+    position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  }
+}
+@media (min-width: 600px) and (max-width: 1023px) {
+  #diese-woche .woche__raster:not(.ohne-klein):has(.woche__gruppe--kino li:only-child) { grid-template-areas: "gross gross" "klein kino" ". kino" "termin termin"; }
+  #diese-woche .woche__raster.ohne-gross:not(.ohne-klein):has(.woche__gruppe--kino li:only-child) { grid-template-areas: "klein kino" ". kino" "termin termin"; }
+  #diese-woche .woche__raster:not(.ohne-klein):has(.woche__gruppe--kino li:only-child) > .kachel--gross { grid-area: gross; margin-bottom: 16px; }
+  #diese-woche .woche__raster:not(.ohne-klein):has(.woche__gruppe--kino li:only-child) > .kachel--klein { grid-area: klein; }
+  #diese-woche .woche__raster:not(.ohne-klein):has(.woche__gruppe--kino li:only-child) > .woche__gruppe--termine { grid-area: termin; margin-top: 16px; }
+  #diese-woche .woche__raster:not(.ohne-klein):has(.woche__gruppe--kino li:only-child) > .woche__gruppe--kino { grid-area: kino; }
+  #diese-woche .woche__raster:not(.ohne-klein):has(.woche__gruppe--kino li:only-child) > .woche__gruppe--kino,
+  #diese-woche .woche__raster:not(.ohne-klein):has(.woche__gruppe--kino li:only-child) > .woche__gruppe--kino :is(ul, li.grafik, li.grafik > .anr) {
+    display: grid; grid-template-rows: subgrid; grid-template-columns: minmax(0, 1fr); gap: 0; height: auto;
+  }
+  #diese-woche .woche__raster:not(.ohne-klein):has(.woche__gruppe--kino li:only-child) > .woche__gruppe--kino :is(ul, li.grafik, li.grafik > .anr) { grid-row: 1 / -1; }
+  #diese-woche .woche__raster:not(.ohne-klein):has(.woche__gruppe--kino li:only-child) > .woche__gruppe--kino .rahmen { grid-row: 1; align-self: stretch; justify-self: stretch; aspect-ratio: auto; min-height: 12.5rem; }
+  #diese-woche .woche__raster:not(.ohne-klein):has(.woche__gruppe--kino li:only-child) > .woche__gruppe--kino .grafik__inhalt { grid-row: 2; }
+}
+@media (min-width: 1024px) {
+  #diese-woche .woche__raster:not(.ohne-gross.ohne-klein):has(.woche__gruppe--kino li:only-child) {
+    grid-template-areas: "gross gross klein" "gross gross kino" ". . kino" "termin termin termin"; grid-template-rows: auto 1fr auto auto;
+  }
+  #diese-woche .woche__raster.ohne-klein:not(.ohne-gross):has(.woche__gruppe--kino li:only-child) {
+    grid-template-areas: "gross gross kino" ". . kino" "termin termin termin"; grid-template-rows: auto auto auto; row-gap: 0;
+  }
+  #diese-woche .woche__raster.ohne-gross:not(.ohne-klein):has(.woche__gruppe--kino li:only-child) {
+    grid-template-areas: "klein klein kino" ". . kino" "termin termin termin"; grid-template-rows: auto auto auto;
+  }
+  #diese-woche .woche__raster:not(.ohne-gross.ohne-klein):has(.woche__gruppe--kino li:only-child) > .kachel--klein { margin-bottom: 24px; }
+  #diese-woche .woche__raster.ohne-gross:not(.ohne-klein):has(.woche__gruppe--kino li:only-child) > .kachel--klein { margin-bottom: 0; }
+  #diese-woche .woche__raster:not(.ohne-gross.ohne-klein):has(.woche__gruppe--kino li:only-child) > .woche__gruppe--termine { margin-top: 24px; }
+  #diese-woche .woche__raster:not(.ohne-gross.ohne-klein):has(.woche__gruppe--kino li:only-child) > .woche__gruppe--kino,
+  #diese-woche .woche__raster:not(.ohne-gross.ohne-klein):has(.woche__gruppe--kino li:only-child) > .woche__gruppe--kino :is(ul, li.grafik, li.grafik > .anr) {
+    display: grid; grid-template-rows: subgrid; grid-template-columns: minmax(0, 1fr); gap: 0; height: auto;
+  }
+  #diese-woche .woche__raster:not(.ohne-gross.ohne-klein):has(.woche__gruppe--kino li:only-child) > .woche__gruppe--kino :is(ul, li.grafik, li.grafik > .anr) { grid-row: 1 / -1; }
+  #diese-woche .woche__raster:not(.ohne-gross.ohne-klein):has(.woche__gruppe--kino li:only-child) > .woche__gruppe--kino .rahmen { grid-row: 1; align-self: stretch; justify-self: stretch; aspect-ratio: auto; min-height: 12.5rem; }
+  #diese-woche .woche__raster:not(.ohne-gross.ohne-klein):has(.woche__gruppe--kino li:only-child) > .woche__gruppe--kino .grafik__inhalt { grid-row: 2; }
+
+  /* Kino und Termine in einer Reihe (ohne Bildkacheln): gleich breite Spalten, also gleich hohe Bilder; unter dem Bild
+     füllt das Textfeld die Karte bis zur gemeinsamen Unterkante */
+  #diese-woche .woche__raster.ohne-gross.ohne-klein.termine-1 { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: "kino termin"; }
+  #diese-woche .woche__raster.ohne-gross.ohne-klein.termine-3 { grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-areas: "kino termin termin termin"; }
+  #diese-woche .woche__raster.ohne-gross.ohne-klein:not(.termine-1) li.grafik--karte { container-type: inline-size; }
+  #diese-woche .woche__raster.ohne-gross.ohne-klein li.grafik--karte > .anr { display: flex; flex-direction: column; align-items: stretch; height: 100%; }
+  #diese-woche .woche__raster.ohne-gross.ohne-klein li.grafik--karte > .anr > .rahmen { flex: 0 0 auto; aspect-ratio: 16 / 9; }
+  #diese-woche .woche__raster.ohne-gross.ohne-klein:not(.termine-1) li.grafik--karte > .anr > .rahmen { aspect-ratio: auto; min-height: max(calc(100cqi * 9 / 16), 12.5rem); }
+  #diese-woche .woche__raster.ohne-gross.ohne-klein li.grafik--karte > .anr > .grafik__inhalt { flex: 1 1 auto; }
+}
+
 /* Rubrikkacheln der Ausgabe: über dem deutschen Namen der tamilische Name der Rubrik; das Format ist dafür höher */
 .kacheln--ta .rahmen { aspect-ratio: 4 / 3; }
 .kacheln--ta .kachel__name { padding-top: 34px; }
