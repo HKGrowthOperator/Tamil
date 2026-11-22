@@ -1679,6 +1679,8 @@ body .ad.ad-bild .anzeige--bild .anzeige__bild { border-radius: 0; }
 .probe-wahl a:hover { color: var(--rot); }
 .probe-wahl a[aria-current] { font-weight: 700; text-decoration: none; }
 .probe-wahl__lang { display: none; }
+/* seit vier Proben (3.17.0): am Handy bleibt „Probe:“ nur für Vorleseprogramme, damit die Zeile einzeilig bleibt */
+@media (max-width: 599px) { .probe-wahl__titel { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; } .probe-wahl ul { gap: 0 10px; } }
 @media (min-width: 600px) { .probe-wahl__lang { display: inline; white-space: pre; } }
 
 /* Formate des Covers ab 1024 px (Handy 4:3, Tablet 16:10) */
@@ -1889,6 +1891,204 @@ body .ad.ad-bild .anzeige--bild .anzeige__bild { border-radius: 0; }
   .stadt__fach--kino .grafik--karte .imbild, .stadt__fach--termine .grafik--karte .imbild { padding: 48px calc(var(--ecke) + 10px) 14px 16px; background-image: var(--verlauf-karte); }
   .stadt__fach--termine .grafik--karte .titel { font-size: 20px; }
   .stadt__reihe[data-karten="1"] > .stadt__leerzeilen { padding-left: 8px; }
+}
+
+/* Probe „Ausgabe“ (Theme 3.17.0, /?probe=ausgabe; template-parts/home/probe-ausgabe.php und stadt-streifen.php): vierte
+   Probe nach der Empfehlung der unabhängigen Kritik vom 22.11.2026, Aufbau design/richtungen/klar2/proben-start/ausgabe.md.
+   Großes Cover, darunter „Tamil in meiner Stadt“ als Streifen auf Titan (ersetzt hier „Diese Woche“), Beistücke mit
+   Gewicht (ein großes, kleinere daneben), tamilische Rubriknamen. Nur vorhandene Farben, Radien und Verläufe. */
+
+/* Cover: Titel 32 px am Handy bis 60 px am Desktop, nach Länge in Stufen kleiner, nie gekürzt und nie getrennt. Am Handy
+   läuft der Titel über die volle Breite und endet über dem Punktbogen. Die Höhe richtet sich nach dem Bildschirm, damit
+   Bild und ganzer Titel im ersten Bildschirm stehen; braucht der Titel mehr Platz, wächst der Rahmen. */
+.aufmacher--ausgabe { --cover-titel: clamp(32px, 21.6px + 2.667vw, 60px); --stufe-mittel: 0.9; --stufe-klein: 0.82; }
+.aufmacher.aufmacher--ausgabe .titel { font-size: var(--cover-titel); line-height: 1.08; letter-spacing: -0.02em; font-weight: 700; max-width: 17em; text-wrap: balance; }
+.aufmacher.aufmacher--ausgabe .titel.titel--mittel { font-size: calc(var(--cover-titel) * var(--stufe-mittel)); }
+.aufmacher.aufmacher--ausgabe .titel.titel--klein { font-size: calc(var(--cover-titel) * var(--stufe-klein)); line-height: 1.1; }
+.aufmacher--ausgabe .rahmen { aspect-ratio: auto; min-height: clamp(407px, calc(100svh - 280px), 125vw); }
+.aufmacher.aufmacher--ausgabe .imbild { padding: 96px var(--rand) calc(var(--ecke) * 0.66 + 14px); }
+.aufmacher--ausgabe .meta { margin-bottom: 8px; }
+.ausgabe__unter { margin-top: 10px; }
+.ausgabe__unter .kontext { margin-top: 2px; }
+.ausgabe__unter .kontext__satz { margin-top: 6px; }
+/* Rubrik der Titelgeschichte auf Tamil und Deutsch (nur der gepflegte Rubrikname, lang="ta", Catamaran) */
+.rubrik-ta { display: flex; align-items: baseline; gap: 10px; }
+.rubrik-ta__ta { font-size: 24px; line-height: 1.35; font-weight: 700; color: var(--titan); }
+.rubrik-ta__de { font-size: 14px; line-height: 1.35; font-weight: 600; color: var(--leise); }
+@media (max-width: 599px) {
+  .aufmacher--langwort { --cover-titel: 28px; }
+}
+@media (min-width: 600px) and (max-width: 1023px) {
+  .aufmacher--ausgabe .rahmen { aspect-ratio: 16 / 10; min-height: 0; }
+  .aufmacher.aufmacher--ausgabe .imbild { padding: 120px calc(var(--ecke) + 10px) 26px 28px; }
+  .ausgabe__kopf { padding-top: 16px; }
+  .ausgabe__unter { margin-top: 14px; }
+  .ausgabe__unter .kontext__titel { margin-bottom: 2px; }
+  .ausgabe__unter .kontext__satz { font-size: 19px; line-height: 1.5; max-width: 34em; }
+  .rubrik-ta__ta { font-size: 28px; }
+}
+@media (min-width: 1024px) {
+  .aufmacher--ausgabe { --stufe-mittel: 0.87; --stufe-klein: 0.74; }
+  .ausgabe__kopf { padding-top: 24px; }
+  .aufmacher--ausgabe .rahmen { min-height: clamp(480px, calc(100svh - 250px), 640px); }
+  .aufmacher.aufmacher--ausgabe .imbild { padding: 170px calc(var(--ecke) + 20px) 34px 40px; }
+  .aufmacher--ausgabe .meta { font-size: 14px; margin-bottom: 10px; }
+  .ausgabe__unter { display: flex; align-items: flex-start; gap: 48px; margin-top: 22px; }
+  .rubrik-ta { flex: 0 0 auto; flex-direction: column; gap: 0; min-width: 132px; }
+  .rubrik-ta__ta { font-size: 34px; line-height: 1.25; }
+  .ausgabe__unter .kontext { flex: 1 1 0; min-width: 0; margin-top: 0; display: grid; grid-template-columns: 250px minmax(0, 1fr); column-gap: 48px; align-items: start; }
+  .ausgabe__unter .kontext__titel { font-size: 20px; margin-bottom: 6px; }
+  .ausgabe__unter .kontext__angaben { flex-direction: column; gap: 2px; }
+  .ausgabe__unter .kontext__angabe--datum { display: flex; }
+  .ausgabe__unter .kontext__satz { margin-top: 0; font-size: 20px; line-height: 1.5; max-width: 32em; }
+}
+
+/* Streifen „Tamil in meiner Stadt“: Fläche in Titan über die volle Breite, Karten wie in „Diese Woche“ (Titel im Bild
+   auf dem Verlauf nach Titan, Orte darunter). Kino und Termine stehen in einer Reihe; die Zeile über jedem Fach und die
+   Karten teilen sich zwei Rasterzeilen (subgrid), damit alle Bilder auf einer Höhe beginnen und alle Karten gleich hoch
+   sind. Die Reihe ist wischbar, sobald sie breiter ist als ihr Platz (assets/js/streifen.js zeigt dann Balken und Pfeile). */
+.streifen { --verlauf-karte: var(--verlauf-karte-titan); margin-top: 22px; padding: 18px 0 20px; background: var(--titan); color: var(--hell); }
+.streifen :focus-visible { outline-color: var(--hell); }
+/* Signet auf der Fläche wie in „Diese Woche“: nur ab 1024 px, unten rechts angeschnitten, unter Karten und Text */
+.streifen { position: relative; isolation: isolate; overflow: hidden; }
+.streifen > .innen { position: relative; z-index: 1; }
+.streifen .signatur--flaeche { display: none; }
+.streifen__titel { font-size: 24px; line-height: 1.15; font-weight: 700; }
+.streifen__wahl { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 4px 12px; margin-top: 10px; }
+.streifen__wahl label { font-size: 15px; font-weight: 600; }
+.streifen__wahl select { width: 100%; height: 48px; border-color: var(--hell); }
+.streifen__hinweis { grid-column: 1 / -1; font-size: 13px; line-height: 1.4; color: var(--hell-leise); }
+.streifen__inhalt { margin-top: 12px; min-width: 0; container-type: inline-size; }
+.streifen__fort { margin-bottom: 8px; font-size: 15px; line-height: 1.45; color: var(--hell-leise); }
+.streifen__bahn {
+  --karte: min(74cqw, 290px);
+  display: grid; grid-auto-flow: column; grid-auto-columns: max-content; grid-template-rows: auto auto; gap: 8px 20px;
+  overflow-x: auto; scrollbar-width: none; scroll-snap-type: x proximity; overscroll-behavior-x: contain;
+  margin-inline: calc(-1 * var(--rand)); padding: 2px var(--rand) 4px; scroll-padding-inline: var(--rand);
+}
+.streifen__bahn::-webkit-scrollbar { display: none; }
+.streifen__fach { display: grid; grid-template-rows: subgrid; grid-row: span 2; min-width: 0; }
+.streifen__art { align-self: end; width: 0; min-width: 100%; font-size: 14px; line-height: 1.35; color: var(--hell-leise); }
+.streifen__art h3 { font-size: 14px; line-height: 1.35; font-weight: 600; color: var(--hell); }
+.streifen__karten { display: flex; gap: 20px; }
+.streifen__karten > li { flex: 0 0 var(--karte); width: var(--karte); min-width: 0; display: flex; flex-direction: column; scroll-snap-align: start; }
+.streifen .grafik .anr { display: flex; flex-direction: column; flex: 1 1 auto; height: auto; }
+/* gleiche Bildhöhe in der Reihe (3:2); was unter dem Bild steht, füllt die Karte bis zur gemeinsamen Höhe */
+.streifen .grafik .rahmen { flex: 0 0 auto; aspect-ratio: 3 / 2; }
+.streifen .grafik--karte .titel { font-size: 18px; line-height: 1.2; }
+.streifen .grafik--karte .grafik__inhalt { padding: 8px 12px 10px; }
+.streifen .grafik__orte { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; min-height: calc(2 * 1.45em); font-size: 14px; line-height: 1.45; }
+/* mit gewählter Stadt: statt der Städteliste die Kinos dieser Stadt mit „Tickets und Zeiten“ */
+.stadt--gewaehlt .streifen__fach[data-fach="kino"]:not(.ist-ersatz) .grafik__inhalt { display: none; }
+.streifen .stadt__spielorte { margin-top: 0; padding: 6px 12px 4px; font-size: 14px; line-height: 1.45; }
+.streifen .textlink { color: var(--hell); font-size: 15px; }
+.streifen .textlink:hover { color: var(--hell-leise); }
+.streifen .stadt__leer { margin-top: 0; color: var(--hell-leise); }
+.streifen .stadt__leer a { color: var(--hell); }
+.streifen .stadt__leer a:hover { color: var(--hell-leise); }
+.streifen__lage { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+.streifen__spur { position: relative; flex: 1 1 auto; max-width: 240px; height: 3px; background: var(--rot); }
+.streifen__balken { position: absolute; top: 0; left: 0; height: 100%; min-width: 16px; background: var(--hell); }
+.streifen__pfeil {
+  display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0;
+  border: 1px solid var(--hell-leise); border-radius: var(--radius-klein); background: transparent; color: var(--hell); cursor: pointer;
+}
+.streifen__pfeil--zurueck svg { rotate: 180deg; }
+.streifen__pfeil:hover:not(:disabled) { background: var(--titan-tief); border-color: var(--hell); }
+.streifen__pfeil:disabled { opacity: 0.45; cursor: default; }
+.streifen__weiter { display: flex; flex-wrap: wrap; gap: 0 20px; margin-top: 6px; }
+@media (prefers-reduced-motion: no-preference) {
+  .streifen__balken { transition: left 140ms var(--sanft), width 140ms var(--sanft); }
+  .streifen__pfeil { transition: background-color 0.2s, border-color 0.2s; }
+}
+@media (min-width: 600px) {
+  .streifen { margin-top: 28px; padding: 22px 0 24px; }
+  .streifen__kopf { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px 32px; }
+  .streifen__titel { font-size: 26px; padding-top: 8px; }
+  .streifen__wahl { flex: 0 1 380px; margin-top: 0; }
+  .streifen__bahn { --karte: calc((100cqw - 40px) / 2.35); }
+}
+@media (min-width: 1024px) {
+  .streifen { margin-top: 36px; padding: 30px 0 32px; }
+  .streifen .signatur--flaeche { display: block; width: min(620px, 48vw); translate: 16% 58%; }
+  .streifen__innen { display: grid; grid-template-columns: 250px minmax(0, 1fr); grid-template-areas: "kopf inhalt" "weiter inhalt"; column-gap: 48px; }
+  .streifen__kopf { grid-area: kopf; display: block; }
+  .streifen__titel { font-size: 30px; line-height: 1.12; padding-top: 0; text-wrap: balance; }
+  .streifen__wahl { grid-template-columns: minmax(0, 1fr); margin-top: 18px; }
+  .streifen__inhalt { grid-area: inhalt; margin-top: 0; }
+  .streifen__weiter { grid-area: weiter; align-self: end; flex-direction: column; margin-top: 12px; }
+  .streifen__bahn { --karte: calc((100cqw - 40px) / 3); margin: -4px; padding: 4px; scroll-padding-inline: 4px; }
+  .streifen .grafik--karte .titel { font-size: 19px; }
+  .streifen .grafik--karte .imbild { padding: 44px calc(var(--ecke) + 10px) 12px 14px; }
+}
+
+/* Beistücke mit Gewicht: ein großes Stück und kleinere daneben (ab 1024 px so hoch wie das große); „Weitere Meldungen“
+   gespiegelt mit einer großen Karte und drei flachen. Am Handy stehen die flachen als wischbare Reihe. */
+.ausgabe__rest { padding-top: 24px; }
+.ausgabe__stuecke, .ausgabe__stapel { display: grid; gap: 16px; }
+.ausgabe .beistueck--gross .rahmen { aspect-ratio: 4 / 3; }
+.ausgabe .beistueck--mittel .rahmen, .ausgabe .beistueck--flach .rahmen { aspect-ratio: 16 / 9; }
+.ausgabe .beistueck--gross .titel { font-size: 24px; line-height: 1.15; }
+.ausgabe .beistueck--flach .imbild { padding: 44px calc(var(--ecke) + 10px) 12px 14px; background-image: var(--verlauf-karte); }
+.ausgabe .beistueck--gross .kontext { display: block; }
+.ausgabe .beistueck--gross .kontext__satz { display: block; overflow: visible; }
+.ausgabe__weitere { margin-top: 32px; }
+.ausgabe__weitere .block-titel { margin-bottom: 14px; }
+@media (max-width: 599px) {
+  .ausgabe__stapel--reihe {
+    display: flex; align-items: stretch; gap: 12px;
+    overflow-x: auto; scrollbar-width: none; scroll-snap-type: x mandatory;
+    margin: 0 calc(-1 * var(--rand)); padding: 4px var(--rand) 6px; scroll-padding-inline: var(--rand);
+  }
+  .ausgabe__stapel--reihe::-webkit-scrollbar { display: none; }
+  .ausgabe__stapel--reihe > * { flex: 0 0 min(82%, 310px); min-width: 0; scroll-snap-align: start; }
+  .ausgabe__stapel--reihe > .beistueck > .anr, .ausgabe__stapel--reihe > .beistueck .rahmen { height: 100%; }
+}
+@media (min-width: 600px) and (max-width: 1023px) {
+  .ausgabe__rest { padding-top: 28px; }
+  .ausgabe .beistueck--gross .rahmen { aspect-ratio: 16 / 9; }
+  .ausgabe .beistueck--gross .titel { font-size: 26px; }
+  .ausgabe .beistueck--gross .imbild { padding: 80px calc(var(--ecke) + 10px) 18px 22px; }
+  .ausgabe__stapel { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ausgabe__stapel--reihe { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .ausgabe__stapel > .beistueck > .anr, .ausgabe__stapel > .beistueck .rahmen { height: 100%; }
+  .ausgabe .beistueck--mittel .titel { font-size: 18px; }
+  .ausgabe__stapel--reihe .beistueck--flach .rahmen { aspect-ratio: 4 / 3; }
+  .ausgabe .beistueck--flach .titel { font-size: 17px; }
+}
+@media (min-width: 1024px) {
+  .ausgabe__rest { padding-top: 40px; }
+  .ausgabe__stuecke { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 24px; align-items: stretch; }
+  .ausgabe__stuecke--0 { grid-template-columns: minmax(0, 803px); }
+  .ausgabe__stuecke--gespiegelt { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); }
+  .ausgabe__stuecke--gespiegelt.ausgabe__stuecke--0 { grid-template-columns: minmax(0, 803px); }
+  .ausgabe__stuecke--gespiegelt > .beistueck--gross { order: 2; }
+  .ausgabe__stapel { grid-auto-rows: minmax(0, 1fr); gap: 24px; }
+  .ausgabe__stapel > .beistueck > .anr { display: flex; flex-direction: column; height: 100%; }
+  .ausgabe__stapel > .beistueck .rahmen { flex: 1 1 auto; aspect-ratio: auto; min-height: 150px; }
+  .ausgabe .beistueck--gross .rahmen { aspect-ratio: 16 / 9; }
+  .ausgabe__stuecke--gespiegelt > .beistueck--gross .rahmen { aspect-ratio: 4 / 3; }
+  .ausgabe .beistueck--gross .imbild { padding: 110px calc(var(--ecke) + 16px) 24px 28px; }
+  .ausgabe .beistueck--gross .titel { font-size: 30px; line-height: 1.12; letter-spacing: -0.01em; max-width: 20em; }
+  .ausgabe__stuecke--gespiegelt > .beistueck--gross .titel { font-size: 28px; }
+  .ausgabe .beistueck--gross .kontext { margin-top: 10px; }
+  .ausgabe .beistueck--gross .kontext__satz { font-size: 18px; max-width: 40em; }
+  .ausgabe .beistueck--mittel .titel { font-size: 19px; }
+  .ausgabe .beistueck--flach .titel { font-size: 18px; }
+  .ausgabe__weitere { margin-top: 48px; }
+  .ausgabe__weitere .block-titel { margin-bottom: 18px; }
+}
+
+/* Rubrikkacheln der Ausgabe: über dem deutschen Namen der tamilische Name der Rubrik; das Format ist dafür höher */
+.kacheln--ta .rahmen { aspect-ratio: 4 / 3; }
+.kacheln--ta .kachel__name { padding-top: 34px; }
+/* 14 px: der längste Name (பொழுதுபோக்கு) passt so in die schmalste Kachel (136 px) */
+.kacheln--ta .kachel__name { padding-inline: 8px; }
+.kachel__ta { display: block; font-size: 14px; line-height: 1.4; font-weight: 700; white-space: nowrap; }
+/* schmale Desktop-Fenster: zwei Reihen zu vier Kacheln, damit die Namen Platz haben */
+@media (min-width: 1024px) and (max-width: 1239px) {
+  .kacheln--ta ul { grid-auto-flow: row; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .kacheln--ta .rahmen { aspect-ratio: 16 / 9; }
 }
 
 @media print {

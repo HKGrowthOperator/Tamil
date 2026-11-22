@@ -18,11 +18,12 @@
 
   function melde(name, zahl) {
     if (!status) return;
-    status.textContent = name + ": " + [
-      wort(zahl.kino || 0, "Film im Kino", "Filme im Kino", "keine Vorstellung"),
-      wort(zahl.termine || 0, "Termin", "Termine", "kein Termin"),
-      wort(zahl.geschichten || 0, "Geschichte", "Geschichten", "keine Geschichte"),
-    ].join(", ") + ".";
+    // angesagt wird nur, was der Abschnitt führt (der Streifen der Probe „Ausgabe“ hat kein Fach für Geschichten)
+    var teile = [];
+    if ("kino" in zahl) teile.push(wort(zahl.kino || 0, "Film im Kino", "Filme im Kino", "keine Vorstellung"));
+    if ("termine" in zahl) teile.push(wort(zahl.termine || 0, "Termin", "Termine", "kein Termin"));
+    if ("geschichten" in zahl) teile.push(wort(zahl.geschichten || 0, "Geschichte", "Geschichten", "keine Geschichte"));
+    status.textContent = name + ": " + teile.join(", ") + ".";
   }
 
   function wechsle() {

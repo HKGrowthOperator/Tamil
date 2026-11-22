@@ -227,6 +227,18 @@ und oben einen kleinen Umschalter. Bauvorgabe und Begründung: `design/richtunge
   mit Titel im Bild und Punktbogen; der Text neben der Karte (`.kontext`) steht im selben Link. Bewegung nur als
   Antwort auf eine Handlung (Überfahren, Stadtwahl 160 ms), nie von selbst. Werbeplätze nach F3 unverändert.
 
+**Nachtrag 3.17.0, vierte Probe „Ausgabe“ (`/?probe=ausgabe`).** Nach der Empfehlung der unabhängigen Kritik vom
+22.11.2026, keine Entscheidung (Luis wählt). Aufbau: `design/richtungen/klar2/proben-start/ausgabe.md`.
+
+- **Cover** über die volle Breite, Titel `clamp(32px, 21.6px + 2.667vw, 60px)`, ab 61 und ab 91 Zeichen je eine Stufe
+  kleiner; Höhe am Handy mindestens 407 px (sonst Bildschirmhöhe minus 280 px, höchstens 4:5), am Desktop 480 bis
+  640 px nach Bildschirmhöhe. Darunter Rubrik auf Tamil und Deutsch, Kontextfeld, Vorspann in ganzen Sätzen.
+- **Streifen „Tamil in meiner Stadt“** auf Titan direkt unter dem Cover, ersetzt in dieser Probe „Diese Woche“: Filme
+  ab heute und Termine ab heute in einer wischbaren Reihe (Bild 3:2, Karten gleich hoch), Balken und Pfeile 44 px.
+- **Beistücke mit Gewicht:** groß (2/3) mit zwei kleineren (1/3); „Weitere Meldungen“ gespiegelt mit drei flachen.
+- **Tamilische Rubriknamen** (Bestand aus `inc/rubriken.php`, `lang="ta"`, Catamaran 700) nur in den Rubrikkacheln
+  und einmal am Cover; nie vor Überschriften, nie in Karten.
+
 ## Signet „Tamil Dots 04A“ (Theme 3.5.0, an jedem Post seit 3.6.0)
 
 Die Form hat Luis am 19.11.2026 freigegeben (`docs/abnahme/2026-11-19-signature.md`, `design/signature/master.svg`,
