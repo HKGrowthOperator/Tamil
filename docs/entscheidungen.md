@@ -5,6 +5,8 @@ Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
 ## 22.11.2026
 
+- **Unterlagen nachgezogen:** Übergabe an Nick bereinigt, Spalte „Stand“ im Leistungsverzeichnis aktualisiert (Ja von
+  Luis am 22.11.). Kein Leistungstext geändert. · Luis
 - **Startseiten-Proben: Wahrheits- und Datenfehler behoben (Theme 3.16.1).** · Korrekturen aus der unabhängigen
   Kritik vom 22.11., umgesetzt vom Theme-Bauer im Auftrag der Hauptsitzung
   - **Das ist keine Gestaltungsentscheidung.** Die drei Proben bleiben, wie sie sind; welche Richtung gilt, entscheidet
