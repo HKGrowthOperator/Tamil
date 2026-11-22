@@ -13,10 +13,20 @@ Geschichten der letzten 60 Tage.
 3.17.0 (am Ende der Datei): vierte Probe „Ausgabe“ (/?probe=ausgabe) nach der Empfehlung derselben Kritik: großes Cover,
 „Tamil in meiner Stadt“ als Streifen direkt darunter (ersetzt dort „Diese Woche“), Beistücke mit Gewicht, tamilische
 Rubriknamen. Die normale Startseite und die drei ersten Proben bleiben unverändert.
+
+3.17.1 (am Ende der Datei): Korrekturen aus der zweiten unabhängigen Kritik vom 22.11.2026. Die Stadtwahl leert die
+Karten nicht mehr (geprüft MIT Bewegung, in allen vier Proben), ein vergangener Termin ist in der Ausgabe nie das
+Cover, der Ersatzhinweis im Streifen bleibt am Handy im Bild, das Titelbild lädt am Handy die größte passende Fassung,
+die Titel der Beistücke stehen am Handy klar unter dem Covertitel, weniger als drei Karten füllen den Streifen.
+Dazu die Regel von Luis (22.11.2026): Bildkanten mehrspaltiger Blöcke liegen auf gemeinsamen Linien, auf der normalen
+Startseite und in der Ausgabe (Messung: wordpress/dev/kantenlinie.mjs).
 """
 
 import json
+import pathlib
 import re
+import shutil
+import subprocess
 
 import pytest
 
@@ -734,3 +744,209 @@ def test_ausgabe_streifen_im_browser(wp, wp_cli, proben, beitraege):
             assert seite.evaluate("localStorage.getItem('tamil_stadt')") is None
             kontext.close()
         browser.close()
+
+
+# --- 3.17.1: Korrekturen aus der zweiten unabhängigen Kritik vom 22.11.2026 ---------------------------------------------
+
+def _chromium(pw):
+    try:
+        return pw.chromium.launch()
+    except Exception as fehler:  # noqa: BLE001 – ohne Browser keine Messung
+        pytest.skip(f"Chromium nicht startbar: {fehler}")
+
+
+def _playwright():
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        pytest.skip("Playwright für Python fehlt")
+    return sync_playwright
+
+
+@pytest.fixture
+def streifen_bestand(wp_cli, beitraege):
+    """Zwei Städte mit je einem Film ab morgen (Kinohausen, Filmstadt) und ein Termin morgen in einer dritten Stadt."""
+    kino = lambda n, stadt: f"array( 'kino' => 'Probekino {n}', 'stadt' => '{stadt}', 'land' => 'DE', 'termine' => array( {_tag(1)} ) )"  # noqa: E731
+    for n, stadt in ((1, "Kinohausen"), (2, "Filmstadt")):
+        beitraege(f"Kinoliste Wahlfilm {n}", 0, {"kino_fakten": f"wp_json_encode( array( 'film' => 'Wahlfilm {n}', 'kinos' => array( {kino(n, stadt)} ) ) )"})
+    termin = beitraege("Terminprobe Streifen Morgen", 0, {"event_datum": _tag(1), "event_ort": "'Stadthalle, 12345 Terminstadt'"})
+    wp_cli(f"$k = get_category_by_slug( 'events' ); if ( $k ) {{ wp_set_post_categories( {termin}, array( $k->term_id ) ); }} tamil_flush_auswahl();")
+
+
+@pytest.mark.parametrize("probe", ALLE)
+def test_stadtwahl_mit_bewegung_laesst_die_karten_stehen(wp, proben, streifen_bestand, probe):
+    """P0-A: Ohne „Bewegung reduzieren“ setzt app.js an jede Karte data-art (Einblenden). Die Stadtwahl suchte den
+    umschaltbaren Kopf eines Fachs über [data-art], traf in Fächern ohne solchen Kopf die erste Karte und überschrieb
+    ihren Inhalt mit leerem Text. Der Test spielt die Wahl MIT Bewegung durch: Stadt, „Alle Städte“, zweite Stadt."""
+    sync_playwright = _playwright()
+    proben(True)
+    messen = """() => { const b = document.querySelector('[data-stadt-bereich]'); const da = e => !!e && e.getClientRects().length > 0;
+        return { status: b.querySelector('[data-stadt-status]').textContent,
+          karten: [...b.querySelectorAll('[data-stadt-karte]')].filter(da).map(k => ({ titel: ((k.querySelector('.titel') || {}).textContent || '').trim(),
+            hoch: Math.round(k.getBoundingClientRect().height), bild: !!k.querySelector('img') })),
+          leere: [...b.querySelectorAll('[data-stadt-karte]')].filter(k => !k.querySelector('.titel')).length,
+          deckend: getComputedStyle(b.querySelector('[data-stadt-inhalt]')).opacity }; }"""
+    with sync_playwright() as pw:
+        browser = _chromium(pw)
+        for breite, hoehe in ((390, 844), (1440, 900)):
+            kontext = browser.new_context(viewport={"width": breite, "height": hoehe}, reduced_motion="no-preference")
+            seite = kontext.new_page()
+            seite.goto(f"{wp.url}/?probe={probe}", wait_until="load")
+            assert seite.evaluate("matchMedia('(prefers-reduced-motion: no-preference)').matches"), "der Test läuft mit Bewegung"
+            # app.js hat das Einblenden vorbereitet (data-art an den Karten): genau dieser Zustand löste den Fehler aus
+            seite.wait_for_function("document.querySelectorAll('[data-stadt-karte][data-art]').length > 0", timeout=15000)
+            vorher = seite.evaluate(messen)
+            assert vorher["karten"] and vorher["leere"] == 0, (probe, breite, vorher)
+            for slug, name in (("kinohausen", "Kinohausen"), ("", "Alle Städte"), ("filmstadt", "Filmstadt")):
+                seite.select_option("#stadt-wahl", slug)
+                seite.wait_for_function(f"document.querySelector('[data-stadt-status]').textContent.startsWith('{name}')")
+                seite.wait_for_timeout(400)  # das Umblenden (160 ms) ist vorbei
+                m = seite.evaluate(messen)
+                assert m["leere"] == 0, (probe, breite, name, "keine Karte verliert ihren Inhalt", m)
+                assert m["karten"] and all(k["titel"] and k["bild"] and k["hoch"] > 80 for k in m["karten"]), (probe, breite, name, m)
+                assert m["deckend"] == "1", "nach dem Umblenden steht der Inhalt wieder da"
+                if slug:
+                    assert any(k["titel"] == f"Wahlfilm {1 if slug == 'kinohausen' else 2}" for k in m["karten"]), (probe, breite, name, m)
+            kontext.close()
+        browser.close()
+
+
+def test_ausgabe_vergangener_termin_ist_nie_das_cover(wp, wp_cli, proben, beitraege):
+    """P0-B: Ist der Aufmacher der Startseite ein Beitrag mit Termin von gestern, nimmt die Ausgabe einen anderen
+    Beitrag aufs Cover; der verdrängte steht unter den Beistücken. Startseite und Cover First bleiben, wie sie sind."""
+    proben(True)
+    alt = beitraege("Terminprobe Cover Gestern", 0, {"event_datum": _tag(-1), "event_ort": "'Stadtbibliothek, 5000 Aarau'"})
+    # als Aufmacher der Startseite setzen (die Auswahl steht im Transient; so bleibt alles andere, wie es ist)
+    setze = (f"tamil_flush_auswahl(); $a = tamil_start_auswahl(); $a['lead'] = {alt}; $a['frist'] = 0;"
+             f" $a['neben'] = array_values( array_diff( $a['neben'], array( {alt} ) ) ); $a['meldungen'] = array_values( array_diff( $a['meldungen'], array( {alt} ) ) );"
+             " set_transient( tamil_start_schluessel(), $a, 600 );")
+    d = json.loads(wp_cli(setze + " $w = tamil_probe_ausgabe_auswahl(); $c = tamil_probe_cover_auswahl();"
+                          " echo wp_json_encode( array( 'lead' => tamil_start_auswahl()['lead'], 'w' => $w, 'coverfirst' => $c['cover'],"
+                          " 'vorbei' => tamil_probe_termin_vorbei( $w['cover'] ), 'alt_vorbei' => tamil_probe_termin_vorbei( " + str(alt) + " ) ) );"))
+    w = d["w"]
+    assert d["lead"] == alt and d["alt_vorbei"], "Voraussetzung: der Aufmacher ist ein Termin von gestern"
+    assert w["cover"] and w["cover"] != alt and not d["vorbei"], f"das Cover der Ausgabe ist kein vergangener Termin: {w}"
+    assert alt in [w["gross"], *w["klein"]], f"der verdrängte Beitrag steht unter den Beistücken: {w}"
+    alle = [w["cover"], w["gross"], *w["klein"], w["haupt"], *w["flach"]]
+    assert len(alle) == len(set(alle)) and 0 not in alle, f"nichts doppelt, nichts verloren: {w}"
+    assert d["coverfirst"] == alt, "Cover First kennt die Regel nicht"
+    # dieselbe Lage im HTML
+    seite = _seite(wp, "/?probe=ausgabe")
+    cover = re.search(r'<article class="aufmacher aufmacher--ausgabe.*?</article>', seite, re.S).group(0)
+    assert "Terminprobe Cover Gestern" not in cover
+    assert _main(seite).count(">Terminprobe Cover Gestern<") == 1, "der Beitrag steht genau einmal auf der Seite"
+    normal = wp_cli(setze + " echo tamil_start_auswahl()['lead'];")
+    assert int(normal) == alt, "die Auswahl der normalen Startseite bleibt unverändert"
+    # ein Termin von heute oder morgen bleibt Cover
+    neu = beitraege("Terminprobe Cover Morgen", 0, {"event_datum": _tag(1), "event_ort": "'Stadtbibliothek, 5000 Aarau'"})
+    bleibt = json.loads(wp_cli(setze.replace(str(alt), str(neu)) + " echo wp_json_encode( tamil_probe_ausgabe_auswahl() );"))
+    assert bleibt["cover"] == neu, "ein kommender Termin bleibt die Titelgeschichte"
+    wp_cli("tamil_flush_auswahl();")
+
+
+def test_ausgabe_korrekturen_im_browser(wp, wp_cli, proben, streifen_bestand):
+    """P1-C: Ersatzhinweis am Handy ganz im Bild, Spaltentitel und Karten auf einer Höhe. P1-D: Das Titelbild lädt bei
+    Faktor 2 die Fassung, die seine wirkliche Breite verlangt (oder die größte, die es gibt). P1-E: Titelstufen am
+    Handy. P1-F: Weniger als drei Karten füllen die Reihe."""
+    sync_playwright = _playwright()
+    proben(True)
+    streifen = """() => { const s = document.querySelector('[data-streifen]'), bahn = s.querySelector('[data-bahn]'); const da = e => !!e && e.getClientRects().length > 0;
+        const r = e => e.getBoundingClientRect(), oben = s.querySelector('[data-ersatz-oben]');
+        const faecher = [...s.querySelectorAll('[data-fach]')].filter(da), karten = [...s.querySelectorAll('[data-stadt-karte]')].filter(da);
+        const stil = getComputedStyle(bahn), innenRechts = r(bahn).right - parseFloat(stil.paddingRight);
+        return { breit: innerWidth, seite: document.documentElement.scrollWidth - innerWidth,
+          oben: oben && da(oben) ? { text: oben.textContent, links: r(oben).left, rechts: r(oben).right, sw: oben.scrollWidth, cw: oben.clientWidth, zeilen: Math.round(r(oben).height / parseFloat(getComputedStyle(oben).lineHeight)) } : null,
+          inSpalte: [...s.querySelectorAll('[data-ersatz]')].filter(da).map(z => ({ text: z.textContent, links: r(z).left, rechts: (() => { const b = document.createRange(); b.selectNodeContents(z); return b.getBoundingClientRect().right; })(), sw: z.scrollWidth, cw: z.clientWidth, fach: r(z.closest('[data-fach]')).right })),
+          titel: faecher.map(f => Math.round(r(f.querySelector('h3')).top)), kartenOben: [...new Set(karten.map(k => Math.round(r(k).top)))],
+          zahl: karten.length, attr: bahn.getAttribute('data-karten'), weiten: [...new Set(karten.map(k => Math.round(r(k).width)))],
+          luecke: karten.length ? innenRechts - Math.max(...karten.map(k => r(k).right)) : null, platz: bahn.clientWidth, weg: bahn.scrollWidth - bahn.clientWidth }; }"""
+    titel = """() => { const px = sel => [...document.querySelectorAll(sel)].map(e => ({ px: parseFloat(getComputedStyle(e).fontSize), sw: e.scrollWidth, cw: e.clientWidth, sh: e.scrollHeight, ch: e.clientHeight, klemme: getComputedStyle(e).webkitLineClamp, ueber: getComputedStyle(e).overflowY }));
+        return { cover: px('.aufmacher--ausgabe .titel'), gross: px('.ausgabe .beistueck--gross .titel'), klein: px('.ausgabe .beistueck--mittel .titel, .ausgabe .beistueck--flach .titel') }; }"""
+    bild = """() => { const img = document.querySelector('.aufmacher--ausgabe .rahmen img'), box = img.closest('.rahmen').getBoundingClientRect();
+        const quellen = (img.getAttribute('srcset') || '').split(',').map(q => q.trim().split(/\\s+/)).filter(q => q.length === 2).map(q => ({ url: new URL(q[0], location.href).href, w: parseInt(q[1], 10) }));
+        const form = img.naturalWidth / img.naturalHeight, noetig = Math.max(box.width, box.height * form) * devicePixelRatio;
+        return { sizes: img.getAttribute('sizes'), quellen: quellen.map(q => q.w).sort((a, b) => a - b), gewaehlt: (quellen.find(q => q.url === img.currentSrc) || {}).w || 0, noetig, dpr: devicePixelRatio, form, hoch: box.height }; }"""
+    with sync_playwright() as pw:
+        browser = _chromium(pw)
+        # --- Handy, Faktor 2 ---
+        kontext = browser.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2, reduced_motion="no-preference")
+        seite = kontext.new_page()
+        seite.goto(f"{wp.url}/?probe=ausgabe", wait_until="load")
+        seite.wait_for_function("document.querySelector('.aufmacher--ausgabe .rahmen img').complete")
+        # P1-D: die Angabe „sizes“ nennt am Handy die wirkliche Bildbreite (mehr als 100vw), der Browser wählt danach
+        b = seite.evaluate(bild)
+        vw = int(re.search(r"(\d+)vw$", b["sizes"]).group(1))
+        assert vw > 100 and abs(vw - min(300, max(100, 125 * b["form"]))) <= 1.5, b
+        if b["quellen"]:
+            passend = [w for w in b["quellen"] if w >= b["noetig"] - 2]
+            assert b["gewaehlt"] == (min(passend) if passend else max(b["quellen"])), f"größte passende Fassung des Titelbilds: {b}"
+        # P1-E: klare Stufen, nichts abgeschnitten
+        t = seite.evaluate(titel)
+        cover, gross, klein = t["cover"][0]["px"], [x["px"] for x in t["gross"]], [x["px"] for x in t["klein"]]
+        assert gross and klein and max(gross) <= 21 and cover - max(gross) >= 4, f"Covertitel klar über dem großen Beistück: {t}"
+        assert max(klein) < min(gross), f"kleine Beistücke unter dem großen: {t}"
+        for x in (*t["cover"], *t["gross"], *t["klein"]):
+            assert x["sw"] <= x["cw"] and (x["ueber"] == "visible" or x["sh"] <= x["ch"] + 1) and x["klemme"] in ("none", ""), f"kein Titel abgeschnitten: {x}"
+        # P1-C: Stadt mit Film, ohne Termin. Der Hinweis steht über der Reihe, ganz im Bild und mit Umbruch.
+        seite.select_option("#stadt-wahl", "kinohausen")
+        seite.wait_for_function("document.querySelector('[data-stadt-status]').textContent.startsWith('Kinohausen')")
+        seite.wait_for_function("(document.querySelector('[data-ersatz-oben]') || {}).hidden === false")
+        m = seite.evaluate(streifen)
+        assert m["oben"] and m["oben"]["text"] == "Für Kinohausen kein Termin. In der Reihe stehen Termine aus anderen Städten.", m
+        assert m["oben"]["links"] >= 0 and m["oben"]["rechts"] <= m["breit"] and m["oben"]["sw"] <= m["oben"]["cw"] and m["oben"]["zeilen"] >= 2, f"Hinweis im Bild, umbrochen: {m}"
+        assert m["inSpalte"] == [], "am Handy steht der Hinweis nicht zusätzlich in der Spalte, die aus dem Bild ragt"
+        assert len(m["titel"]) == 2 and len(set(m["titel"])) == 1 and len(m["kartenOben"]) == 1 and m["seite"] <= 0, f"Spaltentitel und Karten auf einer Höhe: {m}"
+        seite.select_option("#stadt-wahl", "")
+        seite.wait_for_function("document.querySelector('[data-ersatz-oben]').hidden === true")
+        kontext.close()
+        # --- Desktop ---
+        kontext = browser.new_context(viewport={"width": 1440, "height": 900}, reduced_motion="no-preference")
+        seite = kontext.new_page()
+        seite.goto(f"{wp.url}/?probe=ausgabe", wait_until="load")
+        html_zahl = int(re.search(r'data-bahn data-karten="(\d+)"', _streifen(_seite(wp, "/?probe=ausgabe"))).group(1))
+        m = seite.evaluate(streifen)
+        assert html_zahl == m["zahl"] == int(m["attr"]), "die Zahl der Karten steht schon im HTML und stimmt im Browser"
+        seite.select_option("#stadt-wahl", "kinohausen")
+        seite.wait_for_function("document.querySelector('[data-stadt-status]').textContent.startsWith('Kinohausen')")
+        seite.wait_for_timeout(400)
+        m = seite.evaluate(streifen)
+        assert m["oben"] is None and [z["text"] for z in m["inSpalte"]] == ["Für Kinohausen kein Termin. Anderswo:"], m
+        z = m["inSpalte"][0]
+        assert z["rechts"] <= min(m["breit"], z["fach"]) + 1 and z["sw"] <= z["cw"], f"Hinweis in der Spalte, nicht abgeschnitten: {m}"
+        assert len(set(m["titel"])) == 1 and len(m["kartenOben"]) == 1, f"Spaltentitel und Karten auf einer Höhe: {m}"
+        # P1-F: nur zwei, dann nur eine Karte sichtbar (wie bei dünnem Bestand): Sie füllen die Reihe
+        for bleiben in (2, 1):
+            seite.evaluate("""n => { const s = document.querySelector('[data-streifen]'); let i = 0;
+                s.querySelectorAll('[data-stadt-karte]').forEach(k => { if (!k.hidden && ++i > n) k.hidden = true; });
+                s.querySelectorAll('[data-fach]').forEach(f => { f.hidden = !f.querySelector('[data-stadt-karte]:not([hidden])'); }); }""", bleiben)
+            seite.wait_for_function(f"document.querySelector('[data-bahn]').getAttribute('data-karten') === '{bleiben}'")
+            m = seite.evaluate(streifen)
+            assert m["zahl"] == bleiben and len(m["weiten"]) == 1 and m["weg"] <= 4, m
+            if bleiben == 2:
+                assert abs(m["luecke"]) <= 6, f"zwei Karten füllen die Reihe, rechts bleibt keine leere Fläche: {m}"
+            else:
+                assert m["weiten"][0] >= 0.45 * m["platz"], f"eine einzelne Karte ist so breit wie bei zweien: {m}"
+        kontext.close()
+        browser.close()
+
+
+def test_bildkanten_auf_gemeinsamen_linien(wp, proben):
+    """P1-G (Luis, 22.11.2026: „Das muss alles auf einer Höhe sein“): In jedem mehrspaltigen Block der Startseite und
+    der Probe „Ausgabe“ beginnen die Bilder aller Spalten auf einer Linie, das letzte Bild jeder Spalte endet auf einer
+    Linie, und alle Blöcke teilen die linke und rechte Kante. Gemessen bei 820, 1280 und 1440 px von
+    wordpress/dev/kantenlinie.mjs (Abweichung höchstens 1 px)."""
+    skript = pathlib.Path(__file__).resolve().parents[2] / "wordpress" / "dev" / "kantenlinie.mjs"
+    if not shutil.which("node"):
+        pytest.skip("node fehlt")
+    proben(True)
+    lauf = subprocess.run(["node", str(skript), wp.url, "--alles"], capture_output=True, text=True, timeout=600, cwd=skript.parents[2])
+    if lauf.returncode == 2 and "Cannot find module" in lauf.stderr:
+        pytest.skip("Playwright für Node fehlt")
+    zeilen = lauf.stdout.splitlines()
+    assert lauf.returncode == 0, "Bildkanten nicht auf Linie:\n" + "\n".join(z for z in zeilen if z.startswith(("SCHIEF", "fehlt"))) + lauf.stderr[-500:]
+    # die Messung hat die Blöcke wirklich gesehen (sonst wäre „0 Abweichungen“ leer)
+    for pfad, block, breiten in (("/", "Aufmacher und Weitere Meldungen", (1280, 1440)), ("/", "Diese Woche", (1280, 1440)),
+                                 ("/?probe=ausgabe", "Ausgabe: Beistücke", (1280, 1440)), ("/?probe=ausgabe", "Ausgabe: Weitere Meldungen", (1280, 1440))):
+        for breite in breiten:
+            treffer = [z for z in zeilen if re.match(rf"ok\s+{breite}\s+{re.escape(pfad)}\s+{re.escape(block)}:", z)]
+            assert treffer and " | " in treffer[0], f"{block} bei {breite} px ist als mehrspaltiger Block gemessen: {treffer}"

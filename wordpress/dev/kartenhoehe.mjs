@@ -3,7 +3,8 @@
 // vergleichen. Eine Reihe besteht, wenn alle Karten oben und unten höchstens 1 px auseinanderliegen.
 //   node wordpress/dev/kartenhoehe.mjs <basis-url> [--widths 390,820,1280] [weitere Pfade …]
 // Unterkante: bei Karten mit eigener Fläche (Hintergrund) die Karte selbst, sonst die Kästen ihres Inhalts
-// (Bild, Titel, Vorspann samt freigehaltener Zeilen), nicht die gestreckte Listenzelle.
+// (Bild, Titel, Vorspann samt freigehaltener Zeilen), nicht die gestreckte Listenzelle. Ausnahme „Diese Woche“ mit
+// Bildkachel neben Kinokarte: dort zählt die Unterkante des letzten Bilds (siehe kantenlinie.mjs).
 import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
@@ -59,7 +60,11 @@ async function messen(page) {
         if (spalten.size < 2) continue;
         const sp = [...spalten.values()];
         const oben = sp.map((c) => Math.min(...c.map((x) => x.b.top)));
-        const unten = sp.map((c) => Math.max(...c.map((x) => x.b.bottom)));
+        // „Diese Woche“, Bildkachel neben Kinokarte (seit 3.17.1, Regel „Bildkanten auf gemeinsamen Linien“): Bündig ist
+        // das letzte Bild jeder Spalte, das Textfeld der Kinokarte steht darunter. Verglichen wird dort die Bildkante.
+        const gemischt = liste.matches(".woche__raster") && new Set(reihe.map((x) => x.k.className)).size > 1;
+        const bildkante = (x) => { const r = [...x.k.querySelectorAll(".rahmen")].filter(sichtbar); return r.length ? Math.max(...r.map((q) => q.getBoundingClientRect().bottom)) : x.b.bottom; };
+        const unten = sp.map((c) => Math.max(...c.map((x) => (gemischt ? bildkante(x) : x.b.bottom))));
         const bu = sp.map((c) => (c.length === 1 ? bildUnten(c[0].k) : null));
         // nur gleichartige Karten (gleiche Klasse): eine Bildkachel neben einer Kinokarte mit Text darunter zählt nicht
         const gleich = new Set(reihe.map((x) => x.k.className)).size === 1;

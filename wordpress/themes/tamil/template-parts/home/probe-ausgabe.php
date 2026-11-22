@@ -27,7 +27,7 @@ $tamil_w = tamil_probe_ausgabe_auswahl();
 			'klasse'       => 'aufmacher aufmacher--ausgabe' . ( tamil_titel_langes_wort( $tamil_w['cover'] ) ? ' aufmacher--langwort' : '' ),
 			'ebene'        => 'h2',
 			'eager'        => true,
-			'sizes'        => '(min-width: 1280px) 1200px, (min-width: 600px) calc(100vw - 48px), 100vw',
+			'sizes'        => tamil_probe_cover_sizes( $tamil_w['cover'] ),
 			'titel_stufen' => true,
 			'zusatz'       => '<div class="ausgabe__unter">' . tamil_rubrik_zweisprachig( $tamil_w['cover'] ) . tamil_kontext(
 				$tamil_w['cover'],

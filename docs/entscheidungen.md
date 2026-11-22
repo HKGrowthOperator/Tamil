@@ -7,6 +7,34 @@ Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
 - **Unterlagen nachgezogen:** Übergabe an Nick bereinigt, Spalte „Stand“ im Leistungsverzeichnis aktualisiert (Ja von
   Luis am 22.11.). Kein Leistungstext geändert. · Luis
+- **Probe „Ausgabe“: Fehler aus der zweiten unabhängigen Kritik behoben (Theme 3.17.1).** · Korrekturen, umgesetzt
+  vom Theme-Bauer im Auftrag der Hauptsitzung. **Keine Gestaltungsentscheidung**; was die Kritik an Gestaltung und
+  Inhalt anmerkt (Kinozahlen, wählbare Städte, tamilische Schrift, Gewichtung, Symbolbilder), bleibt bei Luis.
+  - **Stadtwahl leerte die Karten** (alle vier Proben, nur ohne „Bewegung reduzieren“): Die Stadtwahl suchte den
+    umschaltbaren Kopf eines Fachs über `[data-art]`; dasselbe Attribut setzt `app.js` für das Einblenden an jede
+    Karte. In Fächern ohne solchen Kopf traf die Suche die erste Karte und überschrieb sie mit leerem Text. Der Kopf
+    hat jetzt ein eigenes Kennzeichen (`data-fach-kopf`). Die Browser-Tests der Stadtwahl laufen nun auch mit Bewegung.
+  - **Vergangener Termin nie als Cover der Ausgabe:** Ist der Aufmacher ein Beitrag, dessen Termin vorbei ist, rückt
+    der erste Beitrag mit eigenem Foto ohne vergangenen Termin aufs Cover, sonst der neueste ohne vergangenen Termin;
+    der verdrängte Beitrag wird ein Beistück. Gilt nur für diese Probe; `tamil_start_auswahl()` und Cover First
+    bleiben unverändert.
+  - **Ersatzhinweis im Streifen:** am Handy als ganzer Satz über der Reihe („Für … kein Termin. In der Reihe stehen
+    Termine aus anderen Städten.“), ab 600 px wie bisher in der Spalte. Spaltentitel stehen immer auf einer Höhe.
+  - **Titelbild am Handy:** `sizes` nennt die wirkliche Bildbreite (Höhe mal Seitenverhältnis, bei 16:9 222vw statt
+    100vw), der Browser lädt damit die größte passende Fassung. Mehr als das Original gibt es nicht her: Viele Bilder
+    im Bestand sind nur 900 bis 1200 px breit und bleiben am Handy bei Faktor 2 weich (Datenbefund, nicht behoben).
+  - **Titelstufen am Handy:** großes Beistück 20 px (vorher 24), kleine 17 px (vorher 19); der Covertitel bleibt.
+  - **Bildkanten auf gemeinsamen Linien (Vorgabe von Luis, 22.11.: „Das muss alles auf einer Höhe sein“).** Gilt für
+    die normale Startseite und die Ausgabe ab 600 px: Oberkante der Bilder in allen Spalten gleich, Unterkante des
+    letzten Bilds jeder Spalte gleich; Text unter einem Bild steht unter dieser Linie. Geändert: Aufmacher neben
+    „Weitere Meldungen“ (die Überschrift steht über der Bildlinie, die drei Karten teilen sich die Höhe des
+    Aufmacherbilds; **das ändert die normale Startseite bewusst**), „Diese Woche“ (Kinokarte: Bild in der Bildzeile,
+    Städte darunter; Kino und Termine in einer Reihe mit gleich breiten Spalten), Beistücke der Ausgabe. Nicht
+    angeglichen: der Wow-Aufmacher (eigene Bahn, derzeit aus) und „Diese Woche“ mit mehreren Filmen untereinander.
+    Messung: `wordpress/dev/kantenlinie.mjs`, Regel in `DESIGN.md`.
+  - **Streifen mit weniger als drei Karten:** Die Karten werden breiter und füllen die Reihe (ab 600 px); eine
+    einzelne Karte wird so breit wie bei zweien, nicht bildschirmfüllend.
+
 - **Vierte Startseiten-Probe „Ausgabe“ (Theme 3.17.0, `/?probe=ausgabe`).** · Auftrag von Luis (Block 1) nach der
   Empfehlung der unabhängigen Kritik vom 22.11., gebaut vom Theme-Bauer im Auftrag der Hauptsitzung
   - **Das ist keine Entscheidung, Luis wählt.** Die normale Startseite und die drei Proben bleiben unverändert; die

@@ -81,12 +81,14 @@ $tamil_sofort = 0; // die ersten zwei Karten stehen am Handy nah am ersten Bilds
 			<p class="nur-vorlesen" aria-live="polite" data-stadt-status></p>
 			<?php /* translators: {stadt} bleibt stehen und wird im Browser durch den Namen der Stadt ersetzt */ ?>
 			<p class="streifen__fort" data-stadt-fort data-text="<?php esc_attr_e( 'Für {stadt} steht gerade nichts an. Hier steht, was in allen Städten kommt.', 'tamil' ); ?>" hidden></p>
-			<div class="streifen__bahn" data-bahn>
+			<?php // Handy: Die Ersatzzeile eines Fachs stünde in einer Spalte, die erst beim Wischen ganz ins Bild kommt. Dort sagt es diese Zeile über der Reihe (assets/js/streifen.js füllt sie), in voller Breite und mit Umbruch. ?>
+			<p class="streifen__ersatz" data-ersatz-oben hidden></p>
+			<div class="streifen__bahn" data-bahn data-karten="<?php echo (int) ( min( $tamil_max['kino'], count( $tamil_d['filme'] ) ) + min( $tamil_max['termine'], count( $tamil_d['termine'] ) ) ); ?>">
 				<div class="streifen__fach" data-fach="kino" data-max="<?php echo (int) $tamil_max['kino']; ?>"<?php echo $tamil_d['filme'] ? '' : ' hidden'; ?>>
 					<div class="streifen__art">
 						<h3 id="t-stadt-kino"><?php esc_html_e( 'Im Kino, ab heute', 'tamil' ); ?></h3>
 						<?php /* translators: {stadt} bleibt stehen und wird im Browser durch den Namen der Stadt ersetzt */ ?>
-						<p data-ersatz data-text="<?php esc_attr_e( 'In {stadt} gerade kein Film. Anderswo:', 'tamil' ); ?>" hidden></p>
+						<p data-ersatz data-text="<?php esc_attr_e( 'In {stadt} gerade kein Film. Anderswo:', 'tamil' ); ?>" data-text-oben="<?php esc_attr_e( 'In {stadt} gerade kein Film. In der Reihe stehen Filme aus anderen Städten.', 'tamil' ); ?>" hidden></p>
 					</div>
 					<ul class="streifen__karten" aria-labelledby="t-stadt-kino">
 						<?php
@@ -119,7 +121,7 @@ $tamil_sofort = 0; // die ersten zwei Karten stehen am Handy nah am ersten Bilds
 					<div class="streifen__art">
 						<h3 id="t-stadt-termine"><?php esc_html_e( 'Termine, ab heute', 'tamil' ); ?></h3>
 						<?php /* translators: {stadt} bleibt stehen und wird im Browser durch den Namen der Stadt ersetzt */ ?>
-						<p data-ersatz data-text="<?php esc_attr_e( 'Für {stadt} kein Termin. Anderswo:', 'tamil' ); ?>" hidden></p>
+						<p data-ersatz data-text="<?php esc_attr_e( 'Für {stadt} kein Termin. Anderswo:', 'tamil' ); ?>" data-text-oben="<?php esc_attr_e( 'Für {stadt} kein Termin. In der Reihe stehen Termine aus anderen Städten.', 'tamil' ); ?>" hidden></p>
 					</div>
 					<ul class="streifen__karten" aria-labelledby="t-stadt-termine">
 						<?php

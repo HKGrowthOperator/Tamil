@@ -30,11 +30,13 @@
         k.hidden = !ok;
         if (ok) n++;
       });
-      var ersatz = !!slug && !eigen && n > 0, zeile = eins("[data-ersatz]", fach), kopf = eins("[data-art]", fach);
+      var ersatz = !!slug && !eigen && n > 0, zeile = eins("[data-ersatz]", fach), kopf = eins("[data-fach-kopf]", fach);
       if (zeile) {
         zeile.textContent = ersatz ? (zeile.getAttribute("data-text") || "").replace("{stadt}", name || "") : "";
         zeile.hidden = !ersatz;
       }
+      // Der Kopf hat ein eigenes Kennzeichen: data-art gehört dem Einblenden (app.js setzt es auch an Karten); danach
+      // zu suchen traf in Fächern ohne umschaltbaren Kopf die erste Karte und leerte sie
       if (kopf) kopf.textContent = kopf.getAttribute(slug && eigen ? "data-text-stadt" : "data-text-alle");
       fach.classList.toggle("ist-ersatz", ersatz);
       zahl[art] = slug ? eigen : n;
