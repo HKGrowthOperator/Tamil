@@ -5,6 +5,27 @@ Eine Entscheidung nicht stillschweigend umkehren: neuen Eintrag schreiben.
 
 ## 22.11.2026
 
+- **Vierte Startseiten-Probe „Ausgabe“ (Theme 3.17.0, `/?probe=ausgabe`).** · Auftrag von Luis (Block 1) nach der
+  Empfehlung der unabhängigen Kritik vom 22.11., gebaut vom Theme-Bauer im Auftrag der Hauptsitzung
+  - **Das ist keine Entscheidung, Luis wählt.** Die normale Startseite und die drei Proben bleiben unverändert; die
+    Probe gibt es nur mit dem Schalter „Startseiten-Proben“, mit `noindex`, nirgends verlinkt.
+  - **Cover:** die Titelgeschichte über die volle Breite. Titel im Bild 32 px am Handy bis 60 px am Desktop, nach
+    Länge in Stufen kleiner, nie gekürzt. Die Bildhöhe richtet sich nach dem Bildschirm, damit Bild und ganzer Titel
+    im ersten Bildschirm stehen (Handy mindestens 407 px, Desktop 480 bis 640 px).
+  - **„Tamil in meiner Stadt“ als Streifen auf Titan** direkt unter dem Cover: Stadtwahl und eine Reihe mit Filmen ab
+    heute und Terminen ab heute, wischbar mit Balken und Pfeilen. Nur Kommendes, keine Geschichten; wählbar sind nur
+    Städte mit Vorstellung oder Termin. Der Streifen **ersetzt in dieser Probe „Diese Woche“**; damit gibt es dort
+    nur noch eine Kinozählung (Kinos mit Vorstellung ab heute, bei Abweichung „ab heute noch N von M Kinos“).
+  - **Beistücke mit Gewicht:** ein großes Stück mit zwei kleineren daneben, „Weitere Meldungen“ gespiegelt mit einer
+    großen Karte und drei flachen. Jeder Beitrag bleibt eine Bildkarte mit Titel im Bild und Punktbogen.
+  - **Tamilische Schrift, nur aus dem Bestand:** die tamilischen Rubriknamen aus `inc/rubriken.php` stehen in den
+    Rubrikkacheln über dem deutschen Namen und einmal am Kontextfeld der Titelgeschichte (`lang="ta"`, Catamaran).
+    Das weicht in dieser Probe von „Nur Deutsch“ (Luis, 09.11.) ab, weil der Auftrag es so vorgibt; es gilt nur
+    hier und ist keine neue Regel. Übersetzt oder erfunden wird nichts; tamilische Titel gibt es im Bestand nicht.
+  - Aufbau: `design/richtungen/klar2/proben-start/ausgabe.md`. Code: `inc/proben.php`,
+    `template-parts/home/probe-ausgabe.php`, `stadt-streifen.php`, `assets/js/streifen.js`, `inc/anreisser.php`
+    (`tamil_kacheln()` mit Schalter für den tamilischen Namen), Tests in `tests/wp/test_startseiten_proben.py`.
+
 - **Startseiten-Proben: Wahrheits- und Datenfehler behoben (Theme 3.16.1).** · Korrekturen aus der unabhängigen
   Kritik vom 22.11., umgesetzt vom Theme-Bauer im Auftrag der Hauptsitzung
   - **Das ist keine Gestaltungsentscheidung.** Die drei Proben bleiben, wie sie sind; welche Richtung gilt, entscheidet
