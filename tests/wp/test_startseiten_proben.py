@@ -1,9 +1,14 @@
-"""Theme tamil 3.16.0: Startseiten-Proben (inc/proben.php, template-parts/home/probe-*.php, stadt.php; TML-W06).
+"""Theme tamil 3.16.0/3.16.1: Startseiten-Proben (inc/proben.php, template-parts/home/probe-*.php, stadt.php; TML-W06).
 
 Drei Entwürfe für den ersten Bildschirm (/?probe=cover, news, community) und der Abschnitt „Tamil in meiner Stadt“.
 Es gibt sie nur mit dem Schalter im Customizer (theme_mod tamil_startseiten_proben, Standard aus). Ist er aus oder der
 Wert unbekannt, steht exakt die normale Startseite da. Probenseiten tragen noindex und den Umschalter; jeder
 Beitrags-Anreißer im neuen Bereich ist eine Bildkarte mit Titel im Bild und Punktbogen; die Werbeplätze nach F3 bleiben.
+
+3.16.1 (Korrekturen aus der unabhängigen Kritik vom 22.11.2026, am Ende der Datei): eine erklärte Kinozahl, vergangene
+Termine als „war am …“, „Zuletzt erschienen“ nennt die ausgelassene Titelgeschichte, ein für die Stadt leeres Fach
+zeigt den Bestand aus allen Städten, Städte mit zwei älteren Beiträgen sind wählbar, unter „Alle Städte“ nur
+Geschichten der letzten 60 Tage.
 """
 
 import json
@@ -258,3 +263,218 @@ def test_kino_nur_mit_vorstellung_ab_heute(wp_cli):
         "   foreach ( $d['geschichten'] as $g ) { $z += in_array( $s, $g['staedte'], true ) ? 1 : 0; } $voll[ $s ] = $z; }"
         " echo wp_json_encode( array( 'alt' => $alt, 'voll' => (object) $voll ) );"))
     assert d["alt"] == 0 and all(z >= 1 for z in d["voll"].values()), d
+
+
+# --- 3.16.1: Wahrheits- und Datenfehler aus der Kritik vom 22.11.2026 ---------------------------------------------------
+
+@pytest.fixture
+def beitraege(wp_cli):
+    """Legt Beiträge für einen Test an (Titel, Alter in Tagen, Meta) und löscht sie danach wieder."""
+    ids: list[int] = []
+
+    def lege(titel: str, tage: int = 0, meta: dict | None = None) -> int:
+        setzen = "".join(f" update_post_meta( $p, '{k}', {v} );" for k, v in (meta or {}).items())
+        pid = int(wp_cli(
+            f"$p = wp_insert_post( array( 'post_title' => '{titel}', 'post_status' => 'publish', 'post_content' => '<p>Ein Satz zum Test.</p>',"
+            f" 'post_date' => wp_date( 'Y-m-d H:i:s', time() - {tage} * DAY_IN_SECONDS - 60 ) ) );{setzen} echo $p;"))
+        ids.append(pid)
+        return pid
+
+    yield lege
+    if ids:
+        wp_cli(f"foreach ( array( {', '.join(map(str, ids))} ) as $id ) {{ wp_delete_post( $id, true ); }} tamil_flush_auswahl();")
+
+
+def _tag(tage: int) -> str:
+    """PHP-Ausdruck für heute plus `tage` als JJJJ-MM-TT (Zeitzone der Website)."""
+    return f"wp_date( 'Y-m-d', strtotime( current_time( 'Y-m-d' ) . ' {tage:+d} days' ) )"
+
+
+def test_kinozahl_im_stadtbereich_sagt_was_sie_zaehlt(wp, wp_cli, proben, beitraege):
+    """P0-1: „Diese Woche“ nennt alle Kinos der Kinoliste, der Stadtbereich nur die mit Vorstellung ab heute. Weichen
+    die Zahlen ab, steht im Stadtbereich „ab heute noch N von M Kinos“ und M ist die Zahl aus „Diese Woche“."""
+    proben(True)
+    kino = lambda stadt, tage: f"array( 'kino' => 'Probekino {stadt}', 'stadt' => '{stadt}', 'land' => 'DE', 'termine' => array( {_tag(tage)} ) )"  # noqa: E731
+    beitraege("Kinoliste Zahlenfilm Qwertz", 0, {"kino_fakten": "wp_json_encode( array( 'film' => 'Zahlenfilm Qwertz', 'kinos' => array( "
+                                                  f"{kino('Altdorf', -1)}, {kino('Altheim', -1)}, {kino('Neustadt', 1)} ) ) )"})
+    beitraege("Kinoliste Ganzfilm Asdfgh", 0, {"kino_fakten": "wp_json_encode( array( 'film' => 'Ganzfilm Asdfgh', 'kinos' => array( "
+                                                f"{kino('Neustadt', 0)}, {kino('Neuheim', 2)} ) ) )"})
+    wp_cli("tamil_flush_auswahl();")
+    seite = _seite(wp, "/?probe=cover")
+
+    def zahl(bereich: str, film: str) -> str:
+        karte = next(k for k in _karten(bereich) if f">{film}<" in k)
+        return re.sub(r"<[^>]+>", "", re.search(r'<p class="meta">.*?</p>', karte, re.S).group(0))
+
+    woche = seite[seite.index('id="diese-woche"'):]
+    assert "3 Kinos" in zahl(woche, "Zahlenfilm Qwertz"), "„Diese Woche“ zählt alle Kinos der Liste"
+    stadt = zahl(_stadt(seite), "Zahlenfilm Qwertz")
+    assert "ab heute noch 1 von 3 Kinos" in stadt, f"Stadtbereich nennt Zählweise und Gesamtzahl: {stadt}"
+    assert not re.search(r"\b1 Kino\b", stadt), "nicht „1 Kino“ ohne Erklärung neben „3 Kinos“"
+    # laufen noch alle Kinos, stehen überall dieselben Worte
+    assert "2 Kinos" in zahl(_stadt(seite), "Ganzfilm Asdfgh") and "ab heute" not in zahl(_stadt(seite), "Ganzfilm Asdfgh")
+    assert "2 Kinos" in zahl(woche, "Ganzfilm Asdfgh")
+    # die Städte ohne Vorstellung ab heute sind nicht wählbar, die mit Vorstellung schon
+    auswahl = re.findall(r"<option[^>]*>([^<]+)</option>", _stadt(seite))
+    assert "Neustadt" in auswahl and "Neuheim" in auswahl and "Altdorf" not in auswahl and "Altheim" not in auswahl
+
+
+def test_vergangener_termin_steht_als_vergangen_im_kontextfeld(wp_cli, beitraege):
+    """P0-2: Das Kontextfeld der Titelgeschichte nennt einen Termin vor heute nie wie eine Ankündigung."""
+    def feld(tage: int, ende: int | None = None) -> str:
+        meta = {"event_datum": _tag(tage), "event_ort": "'Stadtbibliothek, 5000 Aarau'"} | ({"event_ende": _tag(ende)} if ende is not None else {})
+        pid = beitraege(f"Terminprobe {tage} {ende}", 3, meta)
+        html = wp_cli(f"echo tamil_kontext( {pid}, array( 'form' => 'cover' ) );")
+        return re.sub(r"<[^>]+>", "", re.search(r'kontext__angabe--termin"><dt>Termin</dt><dd>(.*?)</dd>', html, re.S).group(1))
+
+    gestern, heute, morgen = feld(-1), feld(0), feld(1)
+    assert re.fullmatch(r"war am \S+, \d{1,2}\. \S+ \d{4}", gestern), gestern
+    assert "war" not in heute and "war" not in morgen, "heute und kommende Termine bleiben Ankündigung"
+    assert re.fullmatch(r"\S+, \d{1,2}\. \S+ \d{4}", morgen), morgen
+    assert feld(-3, -1).startswith("war vom "), "Zeitraum, der gestern endete"
+    assert "war" not in feld(-3, 0), "Zeitraum, der heute noch läuft"
+    assert json.loads(wp_cli(f"echo wp_json_encode( array( tamil_termin_vorbei( {_tag(-1)} ), tamil_termin_vorbei( {_tag(0)} ),"
+                             f" tamil_termin_vorbei( {_tag(-2)}, {_tag(0)} ), tamil_termin_vorbei( '' ) ) );")) == [True, False, False, False]
+
+
+def test_news_first_nennt_die_ausgelassene_titelgeschichte(wp, wp_cli, proben):
+    """P0-3: „Zuletzt erschienen“ lässt den neuesten Beitrag nicht stillschweigend aus. Ist er die Titelgeschichte
+    (steht daneben), sagt eine Zeile unter der Überschrift das und führt zu ihr."""
+    proben(True)
+    bild = int(wp_cli(
+        "$id = wp_insert_attachment( array( 'post_mime_type' => 'image/jpeg', 'post_title' => 'proben-test', 'post_status' => 'inherit' ), 'proben-test.jpg' );"
+        " wp_update_attachment_metadata( $id, array( 'width' => 1600, 'height' => 1200, 'file' => 'proben-test.jpg', 'sizes' => array() ) ); echo $id;"))
+    pid = int(wp_cli("$p = wp_insert_post( array( 'post_title' => 'Proben-Test neueste Titelgeschichte', 'post_status' => 'publish',"
+                     f" 'post_content' => '<p>Ein Satz zum Test.</p>' ) ); set_post_thumbnail( $p, {bild} ); echo $p;"))
+    try:
+        v = json.loads(wp_cli("$v = tamil_probe_vorrat(); echo wp_json_encode( array( 'lead' => $v['lead'], 'link' => get_permalink( $v['lead'] ),"
+                              " 'zeit' => tamil_zeit_text( (int) get_post_timestamp( $v['lead'] ) ) ) );"))
+        assert v["lead"] == pid, "der neueste Beitrag mit Foto ist der Aufmacher"
+        seite = _seite(wp, "/?probe=news")
+        abschnitt = re.search(r'<section class="nachrichten__folge".*?</section>', seite, re.S).group(0)
+        assert v["link"] not in abschnitt, "die Titelgeschichte steht nicht in der Liste"
+        hinweis = re.search(r'<p class="zeitfolge__hinweis">(.*?)</p>', abschnitt, re.S)
+        assert hinweis, "Liste ohne den neuesten Beitrag braucht den Hinweis"
+        assert f"Nicht in dieser Liste: die Titelgeschichte ({v['zeit']})." in hinweis.group(1) and 'href="#titelgeschichte"' in hinweis.group(1)
+        assert abschnitt.index("zeitfolge__hinweis") < abschnitt.index('<ol class="zeitfolge">'), "vor der Liste, unter der Überschrift"
+        ziel = re.search(r'<div class="nachrichten__seite" id="titelgeschichte">\s*<article[^>]*>.*?</article>', seite, re.S)
+        assert ziel and v["link"] in ziel.group(0), "der Link führt zur Titelgeschichte"
+    finally:
+        wp_cli(f"wp_delete_post( {pid}, true ); wp_delete_attachment( {bild}, true ); tamil_flush_auswahl();")
+
+
+@pytest.fixture
+def staedte_bestand(wp_cli, beitraege):
+    """Zwei alte Beiträge aus „Altenhausen“ (200 Tage), davor 26 neuere Beiträge mit Ort ohne Stadt, dazu ein frischer
+    aus „Frischdorf“ und einer aus „Altenhausen und Frischdorf“ von vor 70 Tagen."""
+    alt = [beitraege(f"Stadtprobe Altenhausen {n}", 200 + n, {"ort": "'Altenhausen, Deutschland'"}) for n in (1, 2)]
+    ids = wp_cli("$ids = array(); for ( $i = 0; $i < 26; $i++ ) { $p = wp_insert_post( array( 'post_title' => 'Stadtprobe Füller ' . $i,"
+                 " 'post_status' => 'publish', 'post_content' => '<p>x</p>', 'post_date' => wp_date( 'Y-m-d H:i:s', time() - ( 100 + $i ) * DAY_IN_SECONDS ) ) );"
+                 " update_post_meta( $p, 'ort', 'Deutschland' ); $ids[] = $p; } echo wp_json_encode( $ids );")
+    frisch = beitraege("Stadtprobe Frischdorf", 2, {"ort": "'Frischdorf'"})
+    mittel = beitraege("Stadtprobe beide Orte", 70, {"ort": "'Altenhausen und Frischdorf'"})
+    wp_cli("tamil_flush_auswahl();")
+    yield {"alt": alt, "frisch": frisch, "mittel": mittel}
+    wp_cli(f"foreach ( json_decode( '{ids.strip()}' ) as $id ) {{ wp_delete_post( (int) $id, true ); }} tamil_flush_auswahl();")
+
+
+def test_stadt_mit_zwei_aelteren_beitraegen_ist_waehlbar(wp, wp_cli, proben, staedte_bestand):
+    """P1-a: Jede Stadt mit Kino ab heute, kommendem Termin oder zwei Beiträgen ist wählbar, auch wenn ihre Beiträge
+    nicht unter den 24 neuesten mit Ort stehen (bis 3.16.0 wurden nur diese gezählt)."""
+    proben(True)
+    stadt = _stadt(_seite(wp, "/?probe=community"))
+    auswahl = re.findall(r'<option value="([^"]*)">', stadt)
+    assert "altenhausen" in auswahl, "drei Beiträge, zwei davon 200 Tage alt"
+    assert "frischdorf" in auswahl, "zwei Beiträge"
+    assert json.loads(wp_cli("echo wp_json_encode( TAMIL_STADT_VORRAT );")) >= 100
+    # die Karten der Stadt stehen im HTML (höchstens drei je Stadt), damit die Wahl etwas zeigt
+    karten = re.findall(r"<article[^>]*data-stadt-karte[^>]*>", stadt)
+    assert 2 <= sum("altenhausen" in re.search(r'data-stadt="([^"]*)"', k).group(1).split() for k in karten) <= 3
+
+
+def test_alle_staedte_zeigt_nur_geschichten_der_letzten_60_tage(wp, wp_cli, proben, staedte_bestand):
+    """P1-b: Unter „Alle Städte“ (so steht der Abschnitt ohne Skript im HTML) stehen nur die neuesten Geschichten mit
+    Ortsbezug, höchstens 60 Tage alt; ältere warten verborgen auf die Wahl ihrer Stadt."""
+    proben(True)
+    assert json.loads(wp_cli("echo wp_json_encode( TAMIL_STADT_TAGE );")) == 60
+    d = json.loads(wp_cli("$h = strtotime( current_time( 'Y-m-d' ) . ' 00:00:00 ' . wp_timezone_string() ); echo wp_json_encode( array_map( static fn( $g ) => array("
+                          " 'id' => $g['id'], 'alle' => $g['alle'], 'tage' => (int) floor( ( $h - get_post_timestamp( $g['id'] ) ) / DAY_IN_SECONDS ),"
+                          " 'link' => get_permalink( $g['id'] ) ), tamil_stadt_daten()['geschichten'] ) );"))
+    nach_id = {g["id"]: g for g in d}
+    assert nach_id[staedte_bestand["frisch"]]["alle"] is True
+    assert all(nach_id[i]["alle"] is False for i in (*staedte_bestand["alt"], staedte_bestand["mittel"])), "über 60 Tage: nicht unter „Alle Städte“"
+    assert all(g["tage"] < 60 for g in d if g["alle"]) and 1 <= sum(g["alle"] for g in d) <= 3
+    assert [g["tage"] for g in d] == sorted(g["tage"] for g in d), "neueste zuerst"
+
+    fach = re.search(r'<div class="stadt__fach stadt__fach--geschichten".*?</section>', _stadt(_seite(wp, "/?probe=community")), re.S).group(0)
+    assert not re.match(r"<div[^>]*\shidden", fach), "es gibt junge Geschichten: das Fach steht da"
+    assert ">Aus den Städten<" in fach, "unter „Alle Städte“ heißt das Fach nicht „Aus der Stadt“"
+    for karte in re.findall(r"<article[^>]*data-stadt-karte[^>]*>.*?</article>", fach, re.S):
+        g = next(x for x in d if x["link"] in karte)
+        kopf = re.match(r"<article[^>]*>", karte).group(0)
+        assert ("data-alle" in kopf) == g["alle"] and (" hidden" in kopf) == (not g["alle"]), (g, kopf)
+
+
+def test_duenne_stadt_fuellt_leere_faecher_mit_dem_bestand_aus_allen_staedten(wp, proben, staedte_bestand, beitraege):
+    """P0-4: Mit gespeicherter Stadt besteht der Abschnitt nie nur aus Leersätzen. Ein Fach ohne Inhalt für die Stadt
+    zeigt den Bestand aus „Alle Städte“ und sagt es darüber; ein Leersatz steht nur, wenn es nirgends etwas gibt."""
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        pytest.skip("Playwright für Python fehlt")
+    proben(True)
+    beitraege("Kinoliste Stadtfilm Yxcvb", 0, {"kino_fakten": "wp_json_encode( array( 'film' => 'Stadtfilm Yxcvb', 'kinos' => array( array("
+                                                f" 'kino' => 'Probekino', 'stadt' => 'Kinohausen', 'land' => 'DE', 'termine' => array( {_tag(1)} ) ) ) ) )"})
+    messen = """() => { const b = document.querySelector('[data-stadt-bereich]'); const sichtbar = e => !!e && e.getClientRects().length > 0;
+        return { titel: b.querySelector('[data-stadt-name]').textContent, status: b.querySelector('[data-stadt-status]').textContent,
+          faecher: Object.fromEntries([...b.querySelectorAll('[data-fach]')].map(f => [f.dataset.fach, {
+            sichtbar: sichtbar(f), karten: [...f.querySelectorAll('[data-stadt-karte]')].filter(sichtbar).map(k => k.dataset.stadt.split(' ')),
+            alle: f.querySelectorAll('[data-stadt-karte][data-alle]').length, max: +f.dataset.max,
+            ersatz: sichtbar(f.querySelector('[data-ersatz]')) ? f.querySelector('[data-ersatz]').textContent : '',
+            art: f.querySelector('.stadt__art').textContent,
+            orte: sichtbar(f.querySelector('.grafik__orte')) }])),
+          leer: [...b.querySelectorAll('[data-leer]')].filter(sichtbar).map(p => p.dataset.leer),
+          fett: [...b.querySelectorAll('.stadt__leer, .stadt__leer a')].map(e => +getComputedStyle(e).fontWeight) }; }"""
+    with sync_playwright() as pw:
+        try:
+            browser = pw.chromium.launch()
+        except Exception as fehler:  # noqa: BLE001 – ohne Browser keine Messung
+            pytest.skip(f"Chromium nicht startbar: {fehler}")
+        for breite in (390, 1440):
+            kontext = browser.new_context(viewport={"width": breite, "height": 844})
+            kontext.add_init_script("try { localStorage.setItem('tamil_stadt', JSON.stringify({ slug: 'altenhausen', name: 'Altenhausen' })); } catch (e) {}")
+            seite = kontext.new_page()
+            seite.goto(f"{wp.url}/?probe=community", wait_until="domcontentloaded")
+            m = seite.evaluate(messen)
+            assert m["titel"] == "Altenhausen", "die gespeicherte Stadt ist gewählt"
+            f = m["faecher"]
+            # Geschichten: die eigenen der Stadt, ohne Ersatzzeile
+            assert f["geschichten"]["sichtbar"] and f["geschichten"]["ersatz"] == "" and f["geschichten"]["art"] == "Aus der Stadt"
+            assert f["geschichten"]["karten"] and all("altenhausen" in k for k in f["geschichten"]["karten"])
+            # Kino und Termine: Altenhausen hat nichts, also der Bestand aus allen Städten mit Beschriftung
+            assert f["kino"]["alle"] >= 1 and f["kino"]["sichtbar"], (breite, f["kino"])
+            assert len(f["kino"]["karten"]) == min(f["kino"]["max"], f["kino"]["alle"])
+            assert f["kino"]["ersatz"] == "In Altenhausen gerade kein Film. Im Kino anderswo:"
+            assert f["kino"]["orte"], "im aufgefüllten Fach steht, in welchen Städten der Film läuft"
+            if f["termine"]["alle"]:
+                assert f["termine"]["sichtbar"] and f["termine"]["ersatz"] == "Für Altenhausen steht kein Termin im Kalender. Termine anderswo:"
+                assert "termine" not in m["leer"]
+            else:
+                assert m["leer"] == ["termine"], "Leersatz nur, wenn es auch anderswo nichts gibt"
+            assert "kino" not in m["leer"] and "geschichten" not in m["leer"]
+            assert max(m["fett"]) <= 400, "Leersätze und ihre Links sind nicht fett"
+            # eine Stadt mit Kino, aber ohne Geschichte: Geschichten von anderswo, beschriftet
+            seite.select_option("#stadt-wahl", "kinohausen")
+            seite.wait_for_function("document.querySelector('[data-stadt-status]').textContent.startsWith('Kinohausen')")
+            m = seite.evaluate(messen)
+            f = m["faecher"]
+            assert f["kino"]["ersatz"] == "" and all("kinohausen" in k for k in f["kino"]["karten"]) and not f["kino"]["orte"]
+            assert f["geschichten"]["sichtbar"] and f["geschichten"]["art"] == "Aus den Städten"
+            assert f["geschichten"]["ersatz"] == "Aus Kinohausen haben wir noch keine Geschichte. Aus anderen Städten:"
+            assert m["status"] == "Kinohausen: 1 Film im Kino, kein Termin, keine Geschichte.", "die Ansage zählt nur, was aus der Stadt selbst kommt"
+            # zurück zu „Alle Städte“: keine Ersatzzeilen
+            seite.select_option("#stadt-wahl", "")
+            seite.wait_for_function("document.querySelector('[data-stadt-status]').textContent.startsWith('Alle Städte')")
+            assert all(x["ersatz"] == "" for x in seite.evaluate(messen)["faecher"].values())
+            kontext.close()
+        browser.close()
