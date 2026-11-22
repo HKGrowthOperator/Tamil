@@ -27,8 +27,9 @@ array_walk_recursive(
 );
 tamil_seite_beitraege( $tamil_alle );
 
-// Startseiten-Proben (inc/proben.php): nur mit dem Schalter im Customizer und ?probe=cover|news|community. Ohne Probe
-// bleibt diese Vorlage, wie sie ist; die Probe ersetzt nur den ersten Abschnitt und fügt „Tamil in meiner Stadt“ ein.
+// Startseiten-Proben (inc/proben.php): nur mit dem Schalter im Customizer und ?probe=cover|news|community|ausgabe. Ohne
+// Probe bleibt diese Vorlage, wie sie ist; die Probe ersetzt nur den ersten Abschnitt und fügt „Tamil in meiner Stadt“
+// ein. In der Probe „Ausgabe“ steht „Tamil in meiner Stadt“ als Streifen im ersten Abschnitt und ersetzt „Diese Woche“.
 $tamil_probe = $tamil_a['lead'] ? tamil_probe() : '';
 if ( '' !== $tamil_probe ) {
 	tamil_seite_beitraege( tamil_stadt_daten()['ids'] );
@@ -45,8 +46,8 @@ if ( ! $tamil_a['lead'] ) :
 	return;
 endif;
 
-// Cover First und News First bauen ihren ersten Abschnitt selbst (der Aufmacher wird dort nicht ein zweites Mal gerechnet)
-$tamil_aufmacher = in_array( $tamil_probe, array( 'cover', 'news' ), true ) ? '' : tamil_anr_imbild(
+// Cover First, News First und Ausgabe bauen ihren ersten Abschnitt selbst (der Aufmacher wird dort nicht ein zweites Mal gerechnet)
+$tamil_aufmacher = in_array( $tamil_probe, array( 'cover', 'news', 'ausgabe' ), true ) ? '' : tamil_anr_imbild(
 	$tamil_a['lead'],
 	array(
 		'klasse'       => 'aufmacher',
@@ -68,7 +69,7 @@ if ( '' !== $tamil_probe ) {
 if ( 'community' === $tamil_probe ) {
 	get_template_part( 'template-parts/home/probe-community' );
 }
-if ( 'cover' === $tamil_probe || 'news' === $tamil_probe ) :
+if ( in_array( $tamil_probe, array( 'cover', 'news', 'ausgabe' ), true ) ) :
 	get_template_part( 'template-parts/home/probe-' . $tamil_probe, null, array( 'kacheln' => $tamil_a['kacheln'] ) );
 else :
 	?>
@@ -131,7 +132,10 @@ if ( 'cover' === $tamil_probe || 'news' === $tamil_probe ) {
 	get_template_part( 'template-parts/home/stadt' );
 }
 
-get_template_part( 'template-parts/home/woche', null, array( 'woche' => $tamil_a['woche'] ) );
+// Ausgabe: der Stadtstreifen unter dem Cover ersetzt „Diese Woche“ (kein doppelter Inhalt hintereinander)
+if ( 'ausgabe' !== $tamil_probe ) {
+	get_template_part( 'template-parts/home/woche', null, array( 'woche' => $tamil_a['woche'] ) );
+}
 
 if ( $tamil_a['kueche'] ) {
 	get_template_part( 'template-parts/home/kueche', null, array( 'ids' => $tamil_a['kueche'] ) );

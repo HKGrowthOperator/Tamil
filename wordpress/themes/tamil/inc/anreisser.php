@@ -255,12 +255,15 @@ function tamil_beitragslisten_mit_bild( string $html, array $ohne = array() ): s
  * Rubrikkacheln: kleine Bildkacheln mit dem Rubriknamen im Bild. Navigation, keine Schlagzeilen.
  *
  * @param array<int,array{label:string,url:string,slug:string,bild:int}> $kacheln Bild = Beitrag mit Foto oder 0.
+ * @param bool                                                           $tamil   Über dem deutschen Namen steht der
+ *                                                                               tamilische Name der Rubrik, wenn er
+ *                                                                               gepflegt ist (Probe „Ausgabe“).
  */
-function tamil_kacheln( array $kacheln, string $label ): string {
+function tamil_kacheln( array $kacheln, string $label, bool $tamil = false ): string {
 	if ( ! $kacheln ) {
 		return '';
 	}
-	$html = '<nav class="kacheln" aria-label="' . esc_attr( $label ) . '"><ul>';
+	$html = '<nav class="kacheln' . ( $tamil ? ' kacheln--ta' : '' ) . '" aria-label="' . esc_attr( $label ) . '"><ul>';
 	foreach ( $kacheln as $k ) {
 		// Der Name steht im Bild: kein Alternativtext, kein Schild und kein Signet (Navigation, kein Beitrag); ohne
 		// Beitrag mit Foto ein Bild des Pools. Die Bilder laden „lazy“, app.js lädt sie gesammelt, sobald der Streifen
@@ -285,11 +288,13 @@ function tamil_kacheln( array $kacheln, string $label ): string {
 				'sizes'  => '160px',
 			)
 		);
+		$ta    = $tamil ? trim( (string) tamil_rubrik( (string) $k['slug'] )['tamil'] ) : '';
 		$html .= sprintf(
-			'<li><a href="%1$s"><span class="rahmen">%2$s</span><span class="kachel__name">%3$s</span></a></li>',
+			'<li><a href="%1$s"><span class="rahmen">%2$s</span><span class="kachel__name">%4$s%3$s</span></a></li>',
 			esc_url( $k['url'] ),
 			$img,
-			esc_html( $k['label'] )
+			esc_html( $k['label'] ),
+			'' !== $ta ? '<span class="kachel__ta" lang="ta">' . esc_html( $ta ) . '</span> ' : ''
 		);
 	}
 	return $html . '</ul></nav>';

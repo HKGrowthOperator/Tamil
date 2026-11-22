@@ -4,7 +4,11 @@
  * Bildschirm der Startseite zum Vergleichen, dazu der Abschnitt „Tamil in meiner Stadt“. Bauvorgabe:
  * design/richtungen/klar2/proben-start/entwurf.md.
  *
- * Aufruf: /?probe=cover, /?probe=news, /?probe=community. Es gibt sie nur, wenn im Customizer „Tamil.de → Startseite →
+ * Seit 3.17.0 gibt es eine vierte Probe „Ausgabe“ (/?probe=ausgabe) nach der Empfehlung der unabhängigen Kritik vom
+ * 22.11.2026: großes Cover, direkt darunter „Tamil in meiner Stadt“ als Streifen (ersetzt dort „Diese Woche“),
+ * gewichtete Beistücke, tamilische Rubriknamen. Aufbau: design/richtungen/klar2/proben-start/ausgabe.md.
+ *
+ * Aufruf: /?probe=cover, /?probe=news, /?probe=community, /?probe=ausgabe. Es gibt sie nur, wenn im Customizer „Tamil.de → Startseite →
  * Startseiten-Proben“ an ist (Standard aus). Ist der Schalter aus oder der Wert unbekannt, liefert tamil_probe() leer
  * und front-page.php gibt die normale Startseite aus. Probenseiten tragen noindex, sind nirgends verlinkt und werden
  * nicht zwischengespeichert.
@@ -16,7 +20,7 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Die drei Proben: Schlüssel im Parameter „probe“ und Name im Umschalter.
+ * Die Proben: Schlüssel im Parameter „probe“ und Name im Umschalter.
  *
  * @return array<string,string>
  */
@@ -25,6 +29,7 @@ function tamil_proben(): array {
 		'cover'     => __( 'Cover First', 'tamil' ),
 		'news'      => __( 'News First', 'tamil' ),
 		'community' => __( 'Community First', 'tamil' ),
+		'ausgabe'   => __( 'Ausgabe', 'tamil' ),
 	);
 }
 
@@ -35,7 +40,7 @@ function tamil_probe(): string {
 	if ( '1' !== tamil_opt( 'startseiten_proben' ) || ! is_front_page() || is_paged() ) {
 		return '';
 	}
-	// Der Wert wird nur mit den drei festen Schlüsseln verglichen (genau, ohne Bereinigen: „cover'“ ist unbekannt) und
+	// Der Wert wird nur mit den festen Schlüsseln verglichen (genau, ohne Bereinigen: „cover'“ ist unbekannt) und
 	// nie ausgegeben; der Rückgabewert ist der Schlüssel aus der eigenen Liste.
 	// phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- nur Vergleich mit festen Werten
 	$wert = isset( $_GET['probe'] ) && is_string( $_GET['probe'] ) ? wp_unslash( $_GET['probe'] ) : '';
@@ -91,12 +96,12 @@ function tamil_probe_body_class( array $klassen ): array {
 add_filter( 'body_class', 'tamil_probe_body_class' );
 
 /**
- * Der Wow-Aufmacher bleibt in Cover First und News First aus (der erste Bildschirm bewegt sich dort nie von selbst).
+ * Der Wow-Aufmacher bleibt in Cover First, News First und Ausgabe aus (der erste Bildschirm bewegt sich dort nie von selbst).
  *
  * @param mixed $an Nach Einstellung und Foto.
  */
 function tamil_probe_ohne_wow( $an ): bool {
-	return (bool) $an && ! in_array( tamil_probe(), array( 'cover', 'news' ), true );
+	return (bool) $an && ! in_array( tamil_probe(), array( 'cover', 'news', 'ausgabe' ), true );
 }
 add_filter( 'tamil_wow_aufmacher', 'tamil_probe_ohne_wow' );
 
@@ -117,11 +122,24 @@ function tamil_probe_skript(): void {
 			'in_footer' => true,
 		)
 	);
+	if ( 'ausgabe' === tamil_probe() ) {
+		// Pfeile und Balken der wischbaren Reihe im Stadtstreifen
+		wp_enqueue_script(
+			'tamil-streifen',
+			TAMIL_THEME_URI . '/assets/js/streifen.js',
+			array(),
+			tamil_asset_version( 'assets/js/streifen.js' ),
+			array(
+				'strategy'  => 'defer',
+				'in_footer' => true,
+			)
+		);
+	}
 }
 add_action( 'wp_enqueue_scripts', 'tamil_probe_skript', 20 );
 
 /**
- * Umschalter über dem Inhalt, nur auf Probenseiten: die drei Proben und die normale Startseite als Links.
+ * Umschalter über dem Inhalt, nur auf Probenseiten: die Proben und die normale Startseite als Links.
  */
 function tamil_probe_umschalter(): void {
 	$probe = tamil_probe();
@@ -250,6 +268,65 @@ function tamil_probe_cover_auswahl(): array {
 		'bei'   => $bei,
 		'rest'  => array_slice( array_values( array_diff( $p, $bei ) ), 0, 4 ),
 	);
+}
+
+/**
+ * Ausgabe: das Cover, ein großes Beistück mit zwei kleineren und „Weitere Meldungen“ mit einer großen Karte und drei
+ * flachen. Vorrat und Regeln wie Cover First (tamil_probe_cover_auswahl()); aus den vier übrigen Beiträgen wird der
+ * erste mit eigenem Foto die große Karte, sonst der neueste.
+ *
+ * @return array{cover:int,gross:int,klein:int[],haupt:int,flach:int[]}
+ */
+function tamil_probe_ausgabe_auswahl(): array {
+	$w     = tamil_probe_cover_auswahl();
+	$rest  = array_values( $w['rest'] );
+	$haupt = (int) ( $rest[0] ?? 0 );
+	foreach ( $rest as $id ) {
+		if ( tamil_ist_foto( $id ) ) {
+			$haupt = (int) $id;
+			break;
+		}
+	}
+	return array(
+		'cover' => (int) $w['cover'],
+		'gross' => (int) ( $w['bei'][0] ?? 0 ),
+		'klein' => array_values( array_slice( $w['bei'], 1 ) ),
+		'haupt' => $haupt,
+		'flach' => array_values( array_diff( $rest, array( $haupt ) ) ),
+	);
+}
+
+/**
+ * Tamilischer Name der Rubrik eines Beitrags neben dem deutschen (Ausgabe, am Kontextfeld der Titelgeschichte). Nur
+ * der gepflegte Name aus tamil_rubrik() (inc/rubriken.php oder Feld „tamil“ der Kategorie); ohne ihn leer. Es wird
+ * nichts übersetzt.
+ *
+ * @return string Escaptes HTML, leer ohne tamilischen Namen.
+ */
+function tamil_rubrik_zweisprachig( int $post_id ): string {
+	$kat = tamil_hauptkategorie( $post_id );
+	if ( ! $kat ) {
+		return '';
+	}
+	$ta = trim( (string) tamil_rubrik( $kat->slug )['tamil'] );
+	if ( '' === $ta || ! preg_match( '/[\x{0B80}-\x{0BFF}]/u', $ta ) ) {
+		return '';
+	}
+	return '<p class="rubrik-ta"><span class="rubrik-ta__ta" lang="ta">' . esc_html( $ta ) . '</span> <span class="rubrik-ta__de">' . esc_html( $kat->name ) . '</span></p>';
+}
+
+/**
+ * Hat der Titel ein Wort ab 16 Zeichen? Das Cover der Ausgabe setzt ihn dann am Handy eine Stufe kleiner, damit kein
+ * Wort bricht.
+ */
+function tamil_titel_langes_wort( int $post_id ): bool {
+	$titel = html_entity_decode( wp_strip_all_tags( get_the_title( $post_id ) ), ENT_QUOTES, 'UTF-8' );
+	foreach ( (array) preg_split( '/[\s\-–]+/u', $titel ) as $wort ) {
+		if ( mb_strlen( (string) $wort ) >= 16 ) {
+			return true;
+		}
+	}
+	return false;
 }
 
 /**
