@@ -293,9 +293,19 @@ function tamil_probe_satz( int $post_id ): string {
 }
 
 /**
+ * Ist ein Termin vorbei? Maßgeblich ist sein letzter Tag (das Ende, wenn es nach dem Beginn liegt, sonst der Beginn):
+ * vor heute = vorbei; ein Termin von heute gilt den ganzen Tag als kommend (wie tamil_site_upcoming_events()).
+ */
+function tamil_termin_vorbei( string $datum, string $ende = '' ): bool {
+	$tag = max( substr( $datum, 0, 10 ), substr( $ende, 0, 10 ) );
+	return (bool) preg_match( '/^\d{4}-\d{2}-\d{2}$/', $tag ) && $tag < current_time( 'Y-m-d' );
+}
+
+/**
  * Text neben oder unter einer Bildkarte (im selben Link, Option „zusatz“ von tamil_anr_imbild()): Ort, Termin, Quelle
  * und ein Satz oder der Vorspann. Nur gepflegte Felder; ein leeres Feld entfällt samt Bezeichnung. Ein eigenes Feld
- * „Warum das wichtig ist“ gibt es nicht, also auch kein solches Etikett.
+ * „Warum das wichtig ist“ gibt es nicht, also auch kein solches Etikett. Ein Termin vor heute steht als „war am …“
+ * da (tamil_termin_vorbei()); je Beitrag gibt es genau einen Termin (event_datum), also keinen „nächsten“ zur Wahl.
  *
  * @param array<string,mixed> $opt {
  *     @type string $form  „cover“ (Angaben als Liste mit Bezeichnung, daneben der Vorspann) oder „zeile“ (Ort, Satz, Quelle).
@@ -314,8 +324,14 @@ function tamil_kontext( int $post_id, array $opt = array() ): string {
 	$termin = '';
 	if ( ! empty( $e['datum'] ) ) {
 		$termin = tamil_termin_text( (string) $e['datum'], (string) ( $e['ende'] ?? '' ) );
-		$ort    = tamil_ort_kurz( (string) ( $e['ort'] ?? '' ) );
-		$ort    = __( 'Ort folgt', 'tamil' ) === $ort ? '' : $ort;
+		if ( tamil_termin_vorbei( (string) $e['datum'], (string) ( $e['ende'] ?? '' ) ) ) {
+			// Ein Termin vor heute steht nie da wie eine Ankündigung (Kritik vom 22.11.2026). Ein Zeitraum beginnt mit dem
+			// Tag („20. November bis …“), ein einzelner Tag mit dem Wochentag („Sa, 21. November 2026“).
+			/* translators: %s: Datum oder Zeitraum eines vergangenen Termins */
+			$termin = sprintf( preg_match( '/^\d/', $termin ) ? __( 'war vom %s', 'tamil' ) : __( 'war am %s', 'tamil' ), $termin );
+		}
+		$ort = tamil_ort_kurz( (string) ( $e['ort'] ?? '' ) );
+		$ort = __( 'Ort folgt', 'tamil' ) === $ort ? '' : $ort;
 	}
 	if ( '' === $ort ) {
 		$ort = trim( (string) get_post_meta( $post_id, 'ort', true ) );
