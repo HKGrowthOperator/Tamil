@@ -1,6 +1,7 @@
 <?php
 /**
- * SEO-Felder für Rank Math oder Yoast setzen – nur, wenn das Plugin aktiv ist.
+ * SEO-Felder setzen: für Rank Math oder Yoast, wenn eines davon aktiv ist, sonst in die eigenen Felder
+ * _tamil_seo_title, _tamil_seo_description und _tamil_seo_focus, die das Plugin tamil-site ausgibt.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -18,7 +19,7 @@ function tamil_radar_seo_plugin(): string {
 /**
  * @param int   $post_id Beitrag.
  * @param array $seo     {title?, description?, focus?}.
- * @return string Welches Plugin bedient wurde (rankmath|yoast|none).
+ * @return string Wohin geschrieben wurde (rankmath|yoast|eigen).
  */
 function tamil_radar_write_seo( int $post_id, array $seo ): string {
 	$title       = sanitize_text_field( (string) ( $seo['title'] ?? '' ) );
@@ -45,6 +46,18 @@ function tamil_radar_write_seo( int $post_id, array $seo ): string {
 		if ( $focus ) {
 			update_post_meta( $post_id, '_yoast_wpseo_focuskw', $focus );
 		}
+	} else {
+		$felder = array(
+			'_tamil_seo_title'       => $title,
+			'_tamil_seo_description' => $description,
+			'_tamil_seo_focus'       => $focus,
+		);
+		foreach ( $felder as $key => $wert ) {
+			if ( $wert ) {
+				update_post_meta( $post_id, $key, $wert );
+			}
+		}
+		$plugin = 'eigen';
 	}
 	return $plugin;
 }

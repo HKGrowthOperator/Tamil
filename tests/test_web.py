@@ -1,5 +1,8 @@
 """Freigabe-App mit dem Flask-Test-Client: Login, CSRF, Feed, Aktionen, Bearbeiten, Bild, Direkt posten."""
 
+from stand_hilfe import stand_von
+from lizenz_hilfe import lizenz_setzen
+
 import io
 import json
 
@@ -53,9 +56,10 @@ def app(tmp_path, monkeypatch):
         for i, (titel, status) in enumerate([("Jailer 2 in Mainz", "neu"), ("Pongal in Hamburg", "neu"), ("Alt", "abgelehnt")], 1):
             name, _ = save_pair(branded_card(titel, "Kino", f"u{i}"), settings.bilder_dir, f"u{i}-x")
             store.insert_draft(dict(uid=f"u{i}", typ="artikel", titel=titel, teaser="T", inhalt_html="<p>Text</p>", kategorie="kino",
-                                    relevanz=8, dach_bezug=True, ort="Mainz", schlagworte=["Kino"], bild_datei=name, bild_alt="alt",
+                                    relevanz=8, dach_bezug=True, ort="Mainz", schlagworte=["Kino"], bild_datei=name, bild_alt="Kinosaal mit Leinwand",
                                     quelle_url="https://q.de/1", quelle_name="Q", original_json={"titel": titel, "inhalt_html": "<p>Text</p>",
                                     "teaser": "T", "schlagworte": ["Kino"]}))
+            lizenz_setzen(store, i, settings)  # Bildkarte mit vollständigem Lizenz-Datensatz
             if status == "abgelehnt":
                 store.set_status(i, "ablehnen")
     return app
@@ -84,7 +88,6 @@ def test_requires_login(client):
 
 
 def test_login_wrong_password_then_ok(client, monkeypatch):
-    monkeypatch.setattr("news_radar.web.time.sleep", lambda s: None)
     client.get("/login")
     with client.session_transaction() as s:
         token = s["csrf"]
@@ -107,9 +110,13 @@ def test_feed_tabs_and_counts(client):
 def test_status_action_requires_csrf_and_follows_transitions(client):
     token = login(client)
     assert client.post("/entwurf/1/status", data={"aktion": "freigeben"}).status_code == 400
-    resp = client.post("/entwurf/1/status", data={"aktion": "freigeben", "_csrf": token, "next": "/?status=neu"})
+    from stand_hilfe import stand_aus
+
+    stand = stand_aus(client.get("/entwurf/1").get_data(as_text=True))
+    resp = client.post("/entwurf/1/status", data={"aktion": "freigeben", "_csrf": token, "next": "/?status=neu",
+                                                  "stand": stand})
     assert resp.status_code == 302 and resp.headers["Location"].endswith("/?status=neu")
-    assert client.post("/entwurf/3/status", data={"aktion": "freigeben", "_csrf": token}).status_code == 409
+    assert client.post("/entwurf/3/status", data={"aktion": "freigeben", "_csrf": token, "stand": "0"}).status_code == 409
     assert client.post("/entwurf/1/status", data={"aktion": "explodieren", "_csrf": token}).status_code == 400
     html = client.get("/?status=freigegeben").get_data(as_text=True)
     assert "Jailer 2 in Mainz" in html and "Zurückziehen" in html
@@ -168,7 +175,7 @@ def test_image_actions_card_and_upload(client, app):
 
 def test_publish_without_wordpress_marks_freigegeben(client, app):
     token = login(client)
-    resp = client.post("/entwurf/1/veroeffentlichen", data={"_csrf": token}, follow_redirects=True)
+    resp = client.post("/entwurf/1/veroeffentlichen", data={"_csrf": token, "stand": stand_von(client, 1)}, follow_redirects=True)
     assert "noch nicht angebunden" in resp.get_data(as_text=True)
     with Store(app.extensions["settings"].db_path) as store:
         assert store.get_draft(1)["status"] == "freigegeben"
@@ -178,14 +185,14 @@ def test_direct_post_and_wordpress_draft(client, app):
     token = login(client)
     wp = app.extensions["wordpress"] = FakeWP()
     assert "Direkt posten" in client.get("/").get_data(as_text=True)
-    resp = client.post("/entwurf/1/veroeffentlichen", data={"_csrf": token}, follow_redirects=True)
+    resp = client.post("/entwurf/1/veroeffentlichen", data={"_csrf": token, "stand": stand_von(client, 1)}, follow_redirects=True)
     assert "Live auf tamil.de" in resp.get_data(as_text=True)
     assert wp.posts[0]["status"] == "publish" and wp.posts[0]["media_id"] == 9
-    resp = client.post("/entwurf/2/wp-entwurf", data={"_csrf": token}, follow_redirects=True)
+    resp = client.post("/entwurf/2/wp-entwurf", data={"_csrf": token, "stand": stand_von(client, 2)}, follow_redirects=True)
     assert "WordPress-Entwurf" in resp.get_data(as_text=True) and wp.posts[1]["status"] == "draft"
     with Store(app.extensions["settings"].db_path) as store:
         assert store.get_draft(1)["status"] == "veroeffentlicht" and store.get_draft(2)["status"] == "in_wordpress"
-    assert client.post("/entwurf/1/veroeffentlichen", data={"_csrf": token}).status_code == 409
+    assert client.post("/entwurf/1/veroeffentlichen", data={"_csrf": token, "stand": stand_von(client, 1)}).status_code == 409
     html = client.get("/?status=veroeffentlicht").get_data(as_text=True)
     assert "Jailer 2 in Mainz" in html and "Pongal in Hamburg" in html
 
@@ -240,7 +247,7 @@ def _ki_antwort() -> tuple[int, dict]:
 def test_image_ki_regenerate_and_pool(client, app):
     token = login(client)
     settings = app.extensions["settings"]
-    settings.gemini_key, settings.bild_retry_pause = "test-key", 0
+    settings.gemini_key, settings.bild_retry_pause, settings.bild_ki_freigabe = "test-key", 0, True
     gesendet = []
     app.extensions["bild_transport"] = lambda headers, body: (gesendet.append(body), _ki_antwort())[1]
     page = client.get("/entwurf/1").get_data(as_text=True)
@@ -274,6 +281,7 @@ def test_image_ki_without_key_keeps_image(client, app):
     settings = app.extensions["settings"]
     with Store(settings.db_path) as store:
         before = store.get_draft(1)["bild_datei"]
+    settings.bild_ki_freigabe = True  # freigegeben, aber ohne Schlüssel
     assert "GEMINI_API_KEY fehlt" in client.get("/entwurf/1").get_data(as_text=True)
     resp = client.post("/entwurf/1/bild", data={"_csrf": token, "aktion": "ki", "bild_prompt": "x"}, follow_redirects=True)
     assert "GEMINI_API_KEY" in resp.get_data(as_text=True)
@@ -291,9 +299,11 @@ def test_embedding_headers_allow_only_wordpress(tmp_path, monkeypatch):
     settings.wp_url = "https://www.tamil.de"
     app = create_app(settings, testing=True)
     resp = app.test_client().get("/login")
-    assert resp.headers["Content-Security-Policy"] == "frame-ancestors 'self' https://www.tamil.de"
+    csp = resp.headers["Content-Security-Policy"]
+    assert csp.endswith("frame-ancestors 'self' https://www.tamil.de")
+    assert "script-src 'self'" in csp and "object-src 'none'" in csp and "base-uri 'self'" in csp
     assert app.config["SESSION_COOKIE_SAMESITE"] == "None" and app.config["SESSION_COOKIE_SECURE"] is True
     settings.web_url, settings.wp_url = "http://127.0.0.1:8787", ""
     lokal = create_app(settings, testing=True)
     assert lokal.config["SESSION_COOKIE_SAMESITE"] == "Lax"
-    assert lokal.test_client().get("/login").headers["Content-Security-Policy"] == "frame-ancestors 'self'"
+    assert lokal.test_client().get("/login").headers["Content-Security-Policy"].endswith("frame-ancestors 'self'")

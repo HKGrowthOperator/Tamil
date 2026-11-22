@@ -1,6 +1,7 @@
 """Agent-Modus: Aufgabenmappe exportieren, fertige Beiträge importieren."""
 
 import json
+import re
 
 import pytest
 
@@ -89,7 +90,7 @@ def test_import_results_writes_rejects_and_reports(settings, tmp_path):
     assert stats["uebernommen"] == 2 and stats["verworfen"] == 1 and stats["bilder"] == {"karte": 2}
     assert len(stats["fehler"]) == 3 and any("999" in f for f in stats["fehler"]) and any("gibt-es-nicht" in f for f in stats["fehler"])
     assert fertig["status"] == "bearbeitet" and fertig["titel"] == "Chithrapowrnami-Fest in Hamm"
-    assert fertig["hinweise"] == [] and fertig["bild_datei"].endswith("-a1.jpg") and fertig["bild_origin"] == "karte"
+    assert fertig["hinweise"] == [] and re.search(r"-a1-[0-9a-f]{8}\.jpg$", fertig["bild_datei"]) and fertig["bild_origin"] == "karte"
     assert fertig["bild_prompt"].startswith("Colorful temple") and fertig["bild_thema"] == "tempelfest"
     assert fertig["bearbeitet_von"] == "Claude (Research)" and fertig["rewrite_count"] == 1
     assert (settings.bilder_dir / fertig["bild_datei"]).exists()

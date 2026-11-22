@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Verzeichnis {{ e.vorgangsnummer }}{% endblock %}
+{% block content %}
+{% set p = e.pruefung or {} %}
+{% set offen = e.status == 'geprueft' and darf('verzeichnis_entscheiden') %}
+<header class="topline">
+  <div><h1>{{ typen[e.typ] }} <small class="leise">{{ e.vorgangsnummer }}</small></h1>
+  <p class="unter"><a href="/verzeichnis">Zurück zum Verzeichnis</a> · Status: <b>{{ status_label[e.status] }}</b> · eingegangen {{ fmt_dt(e.eingang_at) }}{% if e.abgeschlossen_at %} · abgeschlossen {{ fmt_dt(e.abgeschlossen_at) }}{% endif %}{% if e.eintrag_id %} · Eintrag {{ e.eintrag_id }}{% endif %}</p></div>
+</header>
+
+<section class="karte">
+  <h2>Prüfung des Agenten</h2>
+  {% if e.status == 'abgeholt' %}<p class="leise">Noch nicht geprüft.</p>
+  {% elif p.hinweise %}<ul class="hinweise">{% for h in p.hinweise %}<li>{{ h }}</li>{% endfor %}</ul>
+  {% else %}<p class="leise">Keine Hinweise: Pflichtfelder vollständig, Form in Ordnung, keine Dublette gefunden.</p>{% endif %}
+  {% if e.hinweise %}<ul class="hinweise">{% for h in e.hinweise %}<li>{{ h }}</li>{% endfor %}</ul>{% endif %}
+  {% if p.dubletten %}<p class="leise">Mögliche Dublette von {% for d in p.dubletten %}{% if d.einsendung %}<a href="/verzeichnis/{{ d.einsendung }}">Einsendung {{ d.einsendung }}</a>{% else %}Eintrag {{ d.eintrag_id }}{% if d.name %} „{{ d.name }}“{% endif %}{% endif %} ({{ d.grund }}){{ ', ' if not loop.last }}{% endfor %}. Vor der Freigabe auf der Website vergleichen.</p>{% endif %}
+  {% if p.fassung %}<p class="leise">Regel: {{ p.fassung }}</p>{% endif %}
+</section>
+
+{% if e.typ == 'neu' %}
+<section class="karte">
+  <h2>Vorschlag <small class="leise">nur Angaben aus der Einsendung</small></h2>
+  {% if offen %}<form method="post" action="/verzeichnis/{{ e.vorgangsnummer }}/freigeben" data-confirm="Eintrag im Verzeichnis veröffentlichen?">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">{% endif %}
+  <table class="voll kompakt">
+    {% for feld, flabel, pflicht, maxlen in felder %}
+    {% set f = e.felder.get(feld) %}
+    <tr{% if feld in (p.formfehler or []) or (pflicht and vorschlag[feld] == fehlt_wert) %} class="warn"{% endif %}><th scope="row">{{ flabel }}{% if pflicht %}*{% endif %}</th><td>
+      {% if feld == 'kategorie' %}
+        {% if offen and kategorien %}
+        <label>Kategorie <select name="kategorie"><option value="">– keine –</option>{% for slug, klabel in kategorien %}<option value="{{ slug }}" {{ 'selected' if slug == vorschlag.kategorie }}>{{ klabel }}</option>{% endfor %}</select></label>
+        {% endif %}
+        <span class="leise">{% if p.kategorie_vorschlag %}Vorschlag des Agenten: {{ kategorie_text(p.kategorie_vorschlag) }}{% else %}kein Vorschlag{% endif %}</span>
+      {% elif not f or not f.wert %}
+        {% if vorschlag[feld] == fehlt_wert %}<span class="badge s-abgelehnt">{{ fehlt_wert }}</span>{% else %}<span class="leise">–</span>{% endif %}
+      {% elif feld in wahl and not f.oeffentlich %}
+        <span class="leise">nicht öffentlich – wird nicht übernommen</span>
+      {% elif offen %}
+        {% if feld in ('beschreibung', 'oeffnungszeiten') %}<textarea name="wert_{{ feld }}" rows="3" maxlength="{{ maxlen }}" aria-label="{{ flabel }}">{{ f.wert }}</textarea>
+        {% else %}<input name="wert_{{ feld }}" value="{{ f.wert }}" maxlength="{{ maxlen + 100 }}" aria-label="{{ flabel }}">{% endif %}
+      {% elif feld == 'website' and f.wert|safe_url %}<a href="{{ f.wert|safe_url }}" target="_blank" rel="nofollow noopener">{{ f.wert }}</a>
+      {% elif feld == 'art' %}{{ arten.get(f.wert, f.wert) }}
+      {% else %}{{ f.wert }}{% endif %}
+    </td></tr>
+    {% endfor %}
+  </table>
+  {% if offen %}
+    <p class="leise">Werte lassen sich vor der Freigabe ändern; ergänzen lässt sich nichts, was nicht eingesandt wurde. Premium setzt nur ein Administrator in WordPress.</p>
+    <button class="primaer"{% if gestoppt %} disabled{% endif %}>Freigeben und veröffentlichen</button>
+  </form>{% endif %}
+</section>
+{% elif e.typ == 'aenderung' %}
+<section class="karte">
+  <h2>Änderung an Eintrag {{ e.eintrag_id }} <small class="leise">alt neben neu, Feld für Feld</small></h2>
+  {% if not e.alt %}<p class="leise">Der Eintrag konnte nicht gelesen werden.</p>{% endif %}
+  {% if offen and e.alt %}<form method="post" action="/verzeichnis/{{ e.vorgangsnummer }}/freigeben" data-confirm="Die angehakten Felder im Eintrag ändern?">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">{% endif %}
+  <table class="voll kompakt">
+    <tr><th scope="col">{{ 'Feld annehmen' if offen and e.alt else 'Feld' }}</th><th scope="col">Alt</th><th scope="col">Neu</th></tr>
+    {% for z in vergleich %}
+    <tr{% if z.geaendert %} class="warn"{% endif %}><th scope="row">{% if offen and e.alt %}<label class="auswahl"><input type="checkbox" name="annehmen" value="{{ z.feld }}" {{ 'checked' if z.geaendert }}> {{ z.label }}</label>{% else %}{{ z.label }}{% endif %}</th>
+      <td>{% if z.alt %}{{ arten.get(z.alt, z.alt) if z.feld == 'art' else z.alt }}{% else %}<span class="leise">leer</span>{% endif %}</td>
+      <td>{% if z.neu %}{{ arten.get(z.neu, z.neu) if z.feld == 'art' else z.neu }}{% else %}<span class="leise">leer</span>{% endif %}{% if not z.oeffentlich and z.feld in wahl %} <span class="badge hinweis">nicht öffentlich</span>{% endif %}{% if z.feld in (p.formfehler or []) %} <span class="badge s-abgelehnt">Form prüfen</span>{% endif %}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="3" class="leise">Keine Felder eingesandt.</td></tr>
+    {% endfor %}
+  </table>
+  {% if offen and e.alt %}
+    {% if kategorien %}<label>Kategorie (nur bei Bedarf) <select name="kategorie"><option value="">– unverändert –</option><option value="-">– keine Kategorie –</option>{% for slug, klabel in kategorien %}<option value="{{ slug }}" {{ 'selected' if slug == p.kategorie_vorschlag }}>{{ klabel }}</option>{% endfor %}</select></label>{% endif %}
+    {% if 'art' in e.felder %}<p class="leise">Die Art ändert sich: bitte eine Kategorie der neuen Art wählen oder „keine Kategorie“.</p>{% endif %}
+    <p class="leise">Nur angehakte Felder werden geschrieben, und nur gegen den Stand, den diese Seite zeigt. Hat jemand den Eintrag seitdem geändert, weist die Website ab und alt/neu wird neu geladen.</p>
+    <button class="primaer"{% if gestoppt %} disabled{% endif %}>Angehakte Felder freigeben</button>
+  </form>{% endif %}
+</section>
+{% else %}
+<section class="karte">
+  <h2>Eintrag {{ e.eintrag_id }} entfernen</h2>
+  {% if e.alt %}
+  <table class="voll kompakt">
+    {% for feld, flabel, pflicht, maxlen in felder %}{% if e.alt.get(feld) %}<tr><th scope="row">{{ flabel }}</th><td>{{ kategorie_text(e.alt[feld]) if feld == 'kategorie' else (arten.get(e.alt[feld], e.alt[feld]) if feld == 'art' else e.alt[feld]) }}</td></tr>{% endif %}{% endfor %}
+  </table>
+  {% else %}<p class="leise">Der Eintrag konnte nicht gelesen werden.</p>{% endif %}
+  {% if offen and e.alt %}
+  <form method="post" action="/verzeichnis/{{ e.vorgangsnummer }}/freigeben" data-confirm="Eintrag {{ e.eintrag_id }} wirklich aus dem Verzeichnis nehmen? Er wird Entwurf, nicht gelöscht.">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <button class="gefahr"{% if gestoppt %} disabled{% endif %}>Eintrag entfernen</button>
+  </form>
+  {% endif %}
+</section>
+{% endif %}
+
+<section class="karte">
+  <h2>Einsender</h2>
+  {% if darf('verzeichnis_entscheiden') %}
+  <p>{{ e.einsender_name }}{% if e.einsender_email %} · {{ e.einsender_email }}{% endif %} · {{ 'Inhaber oder berechtigt' if e.berechtigung == 'inhaber' else 'weist nur darauf hin' }}</p>
+  {% if e.anmerkung %}<p><b>Anmerkung:</b> {{ e.anmerkung }}</p>{% endif %}
+  {% else %}<p class="leise">Angaben zum Einsender sieht nur die Redaktion.</p>{% endif %}
+  <p class="leise">Einwilligung: {{ 'ja' if e.einwilligung else 'nein' }}{% if e.einwilligung_fassung %} (Fassung {{ e.einwilligung_fassung }}){% endif %}. Name und E-Mail bleiben intern und werden 90 Tage nach Eingang gelöscht.</p>
+</section>
+
+{% if offen %}
+<section class="karte">
+  <h2>Ablehnen</h2>
+  {% if gestoppt %}<p class="leise">Der Kanal „Verzeichnis“ ist angehalten: Freigeben geht erst nach dem Einschalten.</p>{% endif %}
+  <form method="post" action="/verzeichnis/{{ e.vorgangsnummer }}/ablehnen" class="inline" data-confirm="Einsendung ablehnen? Am Eintrag ändert sich nichts.">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <button class="gefahr">Ablehnen</button>
+  </form>
+  <p class="leise">Ablehnen ändert nichts am Verzeichnis. Eine Antwort an den Einsender geht nur von Hand.</p>
+</section>
+{% endif %}
+{% endblock %}

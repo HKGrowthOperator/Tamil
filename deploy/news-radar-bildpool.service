@@ -1,0 +1,13 @@
+[Unit]
+Description=Tamil.de News-Radar – Bildpool auffüllen (nur fehlende Bilder, mit Budget)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=newsradar
+WorkingDirectory=/opt/tamil-news-radar
+EnvironmentFile=/opt/tamil-news-radar/.env
+ExecStart=/opt/tamil-news-radar/.venv/bin/python -m news_radar bildpool fuellen --anzahl 3 --mit-budget
+TimeoutStartSec=1800
+Nice=10

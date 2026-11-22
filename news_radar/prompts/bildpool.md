@@ -10,7 +10,7 @@ wenigsten genutzte. `python -m news_radar bildpool fuellen` erzeugt fehlende Bil
 | tempelfest | community | Exterior of a colorful South Indian style Hindu temple in a German town on a festival day, garlands of marigold and jasmine, oil lamps, visitors in saris seen from behind, soft overcast daylight |
 | tempel-innen | community | Inside a Tamil Hindu temple hall in Europe: brass oil lamps, flower offerings, patterned floor, warm light, worshippers out of focus in the background |
 | gemeindefest | community | A Tamil community hall in Germany decorated for a celebration, long tables with food, children's drawings on the wall, families seen from behind, friendly daylight |
-| tamilschule | community | Weekend Tamil language school classroom in a European community center, exercise books with Tamil script blurred, backpacks, chalkboard without readable text, morning light |
+| tamilschule | community | Weekend Tamil language school classroom in a European community center, exercise books with Tamil script blurred, backpacks, chalkboard without readable text, morning light, no children |
 | kolam | kultur | Close-up of hands drawing a white rice-flour kolam pattern on a doorstep at dawn, flower petals, warm low sunlight |
 | pongal | kultur | Pongal celebration table with a clay pot boiling over, sugarcane, bananas, turmeric plants, decorated with kolam, bright festive morning |
 | bharatanatyam | kultur | Bharatanatyam dancer silhouetted on a small stage, ankle bells, dramatic warm stage light, face not visible, dark background |
@@ -24,7 +24,6 @@ wenigsten genutzte. `python -m news_radar bildpool fuellen` erzeugt fehlende Bil
 | sri-lanka-stadt | news | Street scene in Colombo with buses, tuk-tuks and colonial facades at dusk, people as silhouettes, no readable signs |
 | tamil-nadu-tempel | news | Towering gopuram of a Tamil Nadu temple against a monsoon sky, pilgrims small in the frame, no faces |
 | chennai-stadt | news | Marina Beach in Chennai at sunrise with fishing boats and joggers in the distance |
-| politik-sri-lanka | news | Parliament-style white building with flagpoles without flags under a dramatic sky in Sri Lanka, empty forecourt |
 | behoerde-deutschland | news | Facade of a German administrative building with glass doors and a bicycle rack, grey morning light, no signage |
 | diaspora-stadt | news | Residential street in a German city with Tamil shop window with saris and spices, no readable text, autumn light |
 | bahnhof-ankunft | news | Travelers with suitcases on a German railway platform seen from behind, soft evening light |
@@ -34,6 +33,6 @@ wenigsten genutzte. `python -m news_radar bildpool fuellen` erzeugt fehlende Bil
 | cricket | sport | Cricket match on a village green in Europe, batsman from behind, overcast sky, green grass |
 | fussball | sport | Amateur football pitch in Germany at dusk, players blurred in motion, floodlights, no club logos |
 | event-halle | events | Event hall before the doors open: rows of chairs, stage with purple and gold lighting, balloons, no text |
-| hochzeit | events | Tamil wedding hall decorated with flowers and brass lamps, bride and groom out of focus in the distance |
+| hochzeit | events | Decorated Tamil wedding hall before the guests arrive, flowers and brass lamps, no people |
 | buch-literatur | kultur | Stack of old books with Tamil script blurred, reading glasses and a cup of tea on a windowsill, soft daylight |
-| tamil-sprache | kultur | Close-up of a child's hand writing Tamil letters in an exercise book, pencil, soft classroom light, letters not readable |
+| tamil-sprache | kultur | Adult hand writing Tamil letters in an exercise book, pencil, soft light, letters not readable |

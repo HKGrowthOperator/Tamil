@@ -1,0 +1,72 @@
+{
+  "slug": "raster",
+  "stand": "2026-11-09T22:14",
+  "handy": {
+    "kopf_hoehe": 275,
+    "schlagzeilen_ganz_sichtbar": 1,
+    "schlagzeilen_seite": 1,
+    "max_zeilen_schlagzeile": 3,
+    "groesste_schrift": {
+      "px": 98.3516,
+      "text": "Kanguva"
+    },
+    "groesste_rote_schrift": {
+      "px": 98.3516,
+      "text": "Kanguva"
+    },
+    "versalien_ueber_14px": 4,
+    "schriftfamilien": [
+      "Archivo",
+      "Atkinson Hyperlegible Next"
+    ],
+    "groesster_radius": {
+      "px": 0,
+      "element": ""
+    },
+    "schatten": 0,
+    "gedreht": 0,
+    "schriftbreite_verstellt": 51,
+    "bilder_ueber_natuerlicher_breite": [],
+    "ueberlauf": 0,
+    "farbanteil_ohne_bilder": {
+      "bunt": 0.06,
+      "rot": 0.06
+    },
+    "seitenfehler": []
+  },
+  "desktop": {
+    "kopf_hoehe": 504,
+    "schlagzeilen_ganz_sichtbar": 1,
+    "schlagzeilen_seite": 1,
+    "max_zeilen_schlagzeile": 3,
+    "groesste_schrift": {
+      "px": 335.121,
+      "text": "Kanguva"
+    },
+    "groesste_rote_schrift": {
+      "px": 335.121,
+      "text": "Kanguva"
+    },
+    "versalien_ueber_14px": 15,
+    "schriftfamilien": [
+      "Archivo",
+      "Atkinson Hyperlegible Next"
+    ],
+    "groesster_radius": {
+      "px": 0,
+      "element": ""
+    },
+    "schatten": 0,
+    "gedreht": 0,
+    "schriftbreite_verstellt": 47,
+    "bilder_ueber_natuerlicher_breite": [
+      "../../../prototyp/static/img/p9711.jpg (533 px gezeigt, 1024 px vorhanden)"
+    ],
+    "ueberlauf": 0,
+    "farbanteil_ohne_bilder": {
+      "bunt": 0.1805,
+      "rot": 0.1805
+    },
+    "seitenfehler": []
+  }
+}

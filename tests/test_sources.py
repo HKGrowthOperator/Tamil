@@ -27,6 +27,14 @@ class FakeResponse:
         if self.status_code >= 400:
             raise RuntimeError(f"HTTP {self.status_code}")
 
+    headers: dict = {}
+
+    def iter_content(self, size):
+        yield self.content
+
+    def close(self):
+        pass
+
 
 @pytest.fixture
 def settings(monkeypatch):
@@ -53,7 +61,8 @@ def test_extract_paragraphs_drops_theme_code_and_navigation():
 
 
 def test_registry_contains_all_types():
-    assert set(sources.FETCHERS) == {"rss", "newsapi", "gnews", "gnews_region", "wp_json", "html", "kino"}
+    assert set(sources.FETCHERS) == {"rss", "newsapi", "gnews", "gnews_region", "wp_json", "html", "kino", "tribe_events",
+                                     "jsonld_events"}
 
 
 def test_rss_uses_entry_source_as_publisher(monkeypatch):
@@ -71,6 +80,23 @@ def test_tamil_feed_keeps_tamil_title_and_event_kind(monkeypatch):
     assert "சுவிட்சர்லாந்தில்" in items[0].title
 
 
+def test_feed_keeps_real_date_for_event_sources():
+    """Fund 09.11.: Termin-Quellen bekamen als Datum den Abrufzeitpunkt – alte Berichte aus dem Archiv der Rubrik
+    sahen frisch aus. `published` bleibt der Abrufzeitpunkt (Sortierung), das echte Datum steht daneben."""
+    now = datetime(2026, 11, 9, 20, tzinfo=timezone.utc)
+    events = Source(name="Swiss Tamil Info · Events", type="rss", url="https://x", language="ta", kind="event")
+    items = sources._feed_items((FIX / "swisstamilinfo_events.xml").read_bytes(), events, now=now)
+    assert [i.url.rsplit("/", 2)[-2] for i in items] == ["22670", "27129", "22741", "22541", "22051"]
+    assert all(i.published == now for i in items)
+    assert items[0].source_published == datetime(2026, 7, 12, tzinfo=timezone.utc)
+    assert items[1].source_published == datetime(2026, 10, 11, tzinfo=timezone.utc)
+    assert items[2].source_published is None  # Feed ohne Datum: unbekannt, nicht der Abrufzeitpunkt
+
+    news = Source(name="Swiss Tamil Info · Schweiz", type="rss", url="https://x", language="ta")
+    meldung = sources._feed_items((FIX / "swisstamilinfo_schweiz.xml").read_bytes(), news, now=now)[0]
+    assert meldung.published == meldung.source_published == datetime(2026, 11, 9, 15, tzinfo=timezone.utc)
+
+
 def test_fetch_html_with_selectors(monkeypatch, settings):
     monkeypatch.setattr(sources.requests, "get", lambda url, **kw: FakeResponse(FIX / "eventfrog_search.html"))
     src = next(s for s in settings.sources if s.name == "Eventfrog CH")
@@ -84,7 +110,7 @@ def test_fetch_html_with_selectors(monkeypatch, settings):
 
 def test_fetch_html_json_attribute(monkeypatch, settings):
     monkeypatch.setattr(sources.requests, "get", lambda url, **kw: FakeResponse(FIX / "tamilswiss_events.html"))
-    src = next(s for s in settings.sources if s.name == "tamilswiss.ch Events")
+    src = next(s for s in settings.alle_quellen if s.name == "tamilswiss.ch Events")
     items = sources.fetch_html(src, settings)
     assert [i.title for i in items] == ["Vaango Pazhagalam 2.0", "Beat Your Heart 2026"]
     assert items[0].url == "https://tamilswiss.ch/event/vaango-pazhagalam-2-0-bs-f9c6"
@@ -104,6 +130,11 @@ def test_fetch_wp_json_maps_fields(monkeypatch, settings):
     assert calls[0][0].endswith("/wp-json/wp/v2/mec-events") and calls[0][1]["search"] == "Saivanerikoodam"
     assert len(items) == 2 and items[0].kind == "event" and items[0].title.startswith("Verein Saivanerikoodam")
     assert "Murugan" in items[0].summary and items[0].url.startswith("https://haus-der-religionen.ch/events/")
+    # Kalendereintrag (eigener Beitragstyp): date_gmt ist das Anlagedatum, kein Veröffentlichungsdatum eines Berichts
+    assert items[0].source_published is None
+    artikel = Source(name="Portal", type="wp_json", url="https://x", endpoint="posts", kind="event")
+    assert sources.fetch_wp_json(artikel, settings)[0].source_published == datetime(2026, 2, 12, 7, 24, 21,
+                                                                                   tzinfo=timezone.utc)
 
 
 def test_parse_de_date():
@@ -199,4 +230,138 @@ def test_fetch_all_respects_budget_and_records_status(monkeypatch, settings, tmp
     assert time.monotonic() - t0 < 2.5 and [i.source for i in items] == ["schnell"]
     status = {s["name"]: s for s in store.source_status_all()}
     assert status["schnell"]["last_count"] == 1 and "500" in status["kaputt"]["error_msg"]
+    store.close()
+
+
+# ---- extract_paragraphs: linear statt Regex über die ganze Seite (Fund aus der Code-Prüfung) --------------
+
+def _alt_extract(html_text: str, limit: int = 6000) -> str:
+    """Die bisherige Fassung (Regex über die Rohseite) – nur als Vergleich für normale Seiten."""
+    import re
+
+    rausch = re.compile(r"<(script|style|noscript|template|svg|nav|header|footer|aside|form)\b[^>]*>.*?</\1\s*>",
+                        re.S | re.I)
+    body = rausch.sub(" ", html_text)
+    m = re.search(r"<article\b[^>]*>(.*?)</article\s*>", body, flags=re.S | re.I)
+    if m and len(m.group(1)) > 400:
+        body = m.group(1)
+    out = []
+    for raw in re.findall(r"<p[^>]*>(.*?)</p>", body, flags=re.S | re.I):
+        p = sources.clean_text(raw)
+        if len(p) <= 60 or len(p) > 3000:
+            continue
+        if len(sources._CODE_HINT_RE.findall(p)) >= 2 or p.count("{") + p.count("}") >= 4:
+            continue
+        out.append(p)
+    return "\n".join(out)[:limit]
+
+
+def _echte_seiten() -> list[str]:
+    import json
+
+    ordner = Path(__file__).parent / "fixtures"
+    seiten = [(ordner / f).read_text(encoding="utf-8")
+              for f in ("tamil_home.html", "tamilswiss_events.html", "eventfrog_search.html")]
+    posts = json.loads((ordner / "alt_export" / "posts.json").read_text(encoding="utf-8"))
+    for post in posts:  # Beiträge der alten tamil.de, eingebettet in eine Seite mit typischem Rauschen
+        inhalt = post["content"]["rendered"]
+        seiten.append(inhalt)
+        seiten.append(
+            "<html><head><style>p{color:red}</style><script>var a='<p>kein Absatz</p>';</script>"
+            "<script type='application/ld+json'>{\"@context\":\"https://schema.org\"}</script></head><body>"
+            "<HEADER class=k><nav><ul><li><p>Menü mit einem ausreichend langen Text, der nicht zählen darf.</p></li>"
+            "</ul></nav></HEADER ><svg><path d='M0'/></svg >"
+            f"<article class='post'>{inhalt}<form><p>Kommentar schreiben und dabei einen langen Text eingeben, "
+            "der nicht in die Absätze gehört.</p></form ></article><aside><p>Weitere Beiträge aus der Rubrik mit "
+            "einem langen Teaser, der ebenfalls verschwinden muss.</p></aside><footer>© tamil.de</footer></body>"
+            "</html>")
+    return seiten
+
+
+def test_extract_paragraphs_gleich_wie_bisher_auf_echten_seiten():
+    seiten = _echte_seiten()
+    assert len(seiten) >= 6 and any(_alt_extract(s) for s in seiten)
+    for seite in seiten:
+        assert sources.extract_paragraphs(seite) == _alt_extract(seite)
+        assert sources.extract_paragraphs(seite, 300) == _alt_extract(seite, 300)
+
+
+_ABSATZ = "<p>Dies ist ein langer Absatz mit genug Text, damit er die Mindestlänge sicher überschreitet.</p>"
+_TUERKISCH = {  # „İ“.lower() hat zwei Zeichen: Positionen aus einer kleingeschriebenen Kopie verrutschen
+    "i-im-absatz": "<p>Präsident Erdoğan besuchte heute İstanbul und traf dort Vertreter der Gemeinde.</p>"
+                   "<p>Zweiter Absatz mit genügend Text, damit er sicher über der Mindestlänge liegt, heute.</p>",
+    "i-in-navigation": "<nav>" + "İzmir İstanbul " * 50 + "</nav>" + _ABSATZ * 3,
+    "i-vor-artikel": "İ" * 600 + "<article>" + _ABSATZ * 8 + "</article>",
+    "i-vor-skript": "İ" * 300 + "<script>var a='<p>kein Absatz, aber lang genug um zu zählen, falls er durchrutscht</p>';"
+                    "</script>" + _ABSATZ * 2,
+}
+
+
+_OHNE_SCHLUSS = {  # Rauschblöcke ohne passenden Schluss: wie bisher überspringen, der Rest der Seite bleibt
+    "custom-nav-element": "<nav-menu><a>x</a></nav-menu>" + _ABSATZ * 3,
+    "header-component": "<header-component>m</header-component><main>" + _ABSATZ * 3 + "</main>",
+    "form-field": "<form-field name=a></form-field>" + _ABSATZ * 3,
+    "aside-panel": "<aside-panel>x</aside-panel>" + _ABSATZ * 3,
+    "svg-icon": "<svg-icon name=x></svg-icon>" + _ABSATZ * 3,
+    "kommentar-nav": "<!-- <nav> alt --> " + _ABSATZ * 3,
+    "form-im-attribut": "<div data-t='<form'>x</div>" + _ABSATZ * 3,
+    "svg-selbstschliessend": "<svg/>" + _ABSATZ * 3,
+    "offenes-skript-dann-style": "<script>offen " + _ABSATZ + "<style>a{}</style>" + _ABSATZ * 2,
+    "nav-menu-dann-nav": "<nav-menu>" + _ABSATZ + "</nav>" + _ABSATZ * 2,
+    "verschachtelt": "<header><nav>a</nav>b</header>" + _ABSATZ * 2,
+    "leerraum-im-schluss": "<script >x</script >" + _ABSATZ,
+    "scriptx": "<scriptx>a</scriptx>" + _ABSATZ,
+    "gross": "<NAV>n</NAV><P>" + "Langer Text " * 10 + "</P>",
+    "offener-absatz": "<p>offen ohne Schluss " + _ABSATZ * 2,
+}
+
+
+@pytest.mark.parametrize("name", sorted(_OHNE_SCHLUSS))
+def test_extract_paragraphs_ohne_schluss_wie_bisher(name):
+    seite = _OHNE_SCHLUSS[name]
+    assert sources.extract_paragraphs(seite) == _alt_extract(seite)
+
+
+@pytest.mark.parametrize("name", sorted(_TUERKISCH))
+def test_extract_paragraphs_mit_tuerkischem_i_wie_bisher(name):
+    seite = _TUERKISCH[name]
+    assert _alt_extract(seite) and sources.extract_paragraphs(seite) == _alt_extract(seite)
+
+
+def test_extract_paragraphs_linear_bei_nicht_geschlossenen_tags():
+    import time
+
+    for roh in ('<script type="application/ld+json">{"a":1}' * 10000,  # ~420 KB, nie geschlossen
+                "<p>offen " * 50000, "<article>offen " * 30000, "<script " * 60000):
+        t = time.monotonic()
+        sources.extract_paragraphs(roh, 20000)
+        assert time.monotonic() - t < 1, roh[:30]
+    # ein nicht geschlossener Rauschblock wird wie bisher übersprungen, der Rest der Seite bleibt
+    seite = ("<p>" + "Echter Absatz mit genug Text für die Mindestlänge. " * 2 + "</p><script>var x = '<p>"
+             + "Absatz nach offenem Skript. " * 4 + "</p>'")
+    assert sources.extract_paragraphs(seite) == _alt_extract(seite) and "nach offenem Skript" in _alt_extract(seite)
+    for roh in ("<script x" * 60000 + ">", "<nav>" * 60000):  # „>“ erst am Ende bzw. nie ein Schluss
+        t = time.monotonic()
+        sources.extract_paragraphs(roh)
+        assert time.monotonic() - t < 1, roh[:20]
+
+
+def test_teilausfall_haelt_den_takt_ein(monkeypatch, settings, tmp_path):
+    """Nach einem Teilausfall ist die Quelle erst nach interval_minutes wieder fällig (sonst Dauerabruf)."""
+    from news_radar.store import Store
+
+    store = Store(tmp_path / "r.sqlite")
+    settings.sources = [Source(name="CineStar", type="rss", url="https://a", interval_minutes=60)]
+    aufrufe = []
+
+    def teil(source, s):
+        aufrufe.append(source.name)
+        raise sources.Teilausfall([], "Haus ohne Antwort")
+
+    monkeypatch.setitem(sources.FETCHERS, "rss", teil)
+    sources.fetch_all(settings, store)
+    sources.fetch_all(settings, store)
+    assert aufrufe == ["CineStar"]
+    status = {s["name"]: s for s in store.source_status_all()}["CineStar"]
+    assert status["last_try"] and not status["last_ok"] and "Teilausfall" in status["error_msg"]
     store.close()

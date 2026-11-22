@@ -69,7 +69,7 @@ bash wordpress/dev/serve.sh &                       # http://127.0.0.1:8085
 set -a; . "$WP_DIR/.env.local"; set +a              # Zugänge (nie ins Repo)
 python wordpress/dev/import_prototype.py --wp-cli "php $WP_DIR/wp-cli.phar --path=$WP_DIR --allow-root"
 python wordpress/dev/shots.py --out "$WP_DIR/shots" # Screenshots 390/820/1280 + Backend, prüft horizontales Scrollen
-python -m pytest tests/test_wp_plugin.py -v         # Integrationstests gegen das laufende WordPress
+python -m pytest tests/wp -v                        # Integrationstests gegen das laufende WordPress
 bash wordpress/dev/lint.sh                          # php -l + WordPress-Coding-Standards (PHPCS)
 bash wordpress/dev/package.sh                       # ZIPs nach wordpress/dist/
 ```
@@ -78,16 +78,22 @@ Zurücksetzen: `rm "$WP_DIR"/wp-content/database/tamil.sqlite && bash wordpress/
 
 ## Gestaltung
 
-Der Look „modernes Community-Magazin“ ist in [`DESIGN.md`](../DESIGN.md) beschrieben (Farben, Schriften, Bausteine),
-die Haltung dahinter in [`PRODUCT.md`](../PRODUCT.md).
+Das Theme (Version 3.0) folgt der Richtung **„klar2“ mit Bewegung D**, beschrieben in [`DESIGN.md`](../DESIGN.md);
+die Tokens stehen in [`design/tokens.css`](../design/tokens.css), die Haltung dahinter in
+[`PRODUCT.md`](../PRODUCT.md).
 
-- **Farben und Schriften** stehen in `themes/tamil/theme.json` (Palette `papier`, `sand`, `tinte`, `rot` …; Schriften
-  Catamaran für Titel, Literata für Text). `assets/css/theme.css` liest sie als Variablen – eine geänderte Palette
-  wirkt überall, auch im Editor.
-- **Layout** liegt in den Vorlagen (`front-page.php`, `template-parts/home/*`, `single.php` …) und in `theme.css`.
-  Die Daten (Auswahl der Startseite, Termine, Kinoliste, Werbeplätze) kommen aus Funktionen, die bleiben.
-- **Bildgrößen:** Aufmacher 16:10, Karten 4:3, Zeilen quadratisch. Nach dem Wechsel auf dieses Theme die
-  Vorschaubilder einmal neu erzeugen (Plugin „Regenerate Thumbnails“ oder `wp media regenerate`).
+- **Farben und Schrift:** `themes/tamil/theme.json` (Palette `grund`, `flaeche`, `tinte`, `leise`, `linie`, `rot`
+  und die Werte auf Dunkel, als Hex-Rückfall für den Editor); `assets/css/theme.css` führt sie als oklch. Eine
+  Schrift: Libre Franklin, Tamil über Catamaran. Beides selbst gehostet in `assets/fonts/` mit Lizenz.
+- **Layout:** Vorlagen (`front-page.php`, `template-parts/home/*`, `single.php`, `category.php` …) und `theme.css`.
+  Die Anreißer (Bild, Dachzeile, Titel) bauen die Funktionen in `inc/anreisser.php`, die Auswahl der Startseite
+  `tamil_start_auswahl()` in `inc/queries.php`. Werbeplätze, Termine, Kinolisten, Formulare, Verzeichnis und
+  Zustimmung kommen aus dem Plugin; das Theme gibt ihnen nur das Aussehen.
+- **Bewegung beim Scrollen** (Variante D) in `assets/js/app.js` und `theme.css`; ohne Skript und mit „Bewegung
+  reduzieren“ ist alles sichtbar und still.
+- **Bilder:** Das Theme lädt die ungeschnittenen Größen (`large` mit `srcset`) und schneidet per CSS auf 4:3, 16:9
+  und 8:3. Neu erzeugte Vorschaubilder sind dafür nicht nötig. Titelkarten (Nachweis „Grafik: Tamil.de“) und Banner
+  breiter als 2,5:1 zeigt es nicht als Beitragsbild; Bildnachweise stehen gesammelt im Fuß und unter dem Artikelbild.
 
 ## Secrets
 

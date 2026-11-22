@@ -1,5 +1,7 @@
 from datetime import datetime, timezone
 
+import re
+
 import pytest
 
 from news_radar import render
@@ -45,7 +47,7 @@ def test_prompts_helpers_parse_markdown():
     assert prompts.thema_fuer("sport", "") == "cricket"
     assert prompts.thema_fuer("unbekannt", "") == "diaspora-stadt"
     vorlage = prompts.bild_vorlage()
-    assert "{motiv}" in vorlage and "no text" in vorlage
+    assert "{motiv}" in vorlage and "no text" in vorlage.lower()
     prompt = prompts.bild_prompt_bauen("", "kolam")
     assert "rice-flour kolam" in prompt and "{motiv}" not in prompt
     assert prompts.bild_prompt_bauen("A quiet cinema foyer").startswith("Editorial photograph")
@@ -103,7 +105,45 @@ def test_render_kino_list_and_event_box():
 
 def test_sanitize_strips_scripts_and_handlers():
     dirty = '<p onclick="x()">Hi</p><script>alert(1)</script><a href="javascript:bad()">l</a><iframe src="x"></iframe><marquee>no</marquee>'
-    assert render.sanitize_html(dirty) == '<p>Hi</p><a href="#">l</a>no'
+    assert render.sanitize_html(dirty) == '<p>Hi</p><a>l</a>no'
+
+
+@pytest.mark.parametrize("payload", [
+    '<img src="x"/onerror="alert(1)">',                      # Handler ohne Leerzeichen davor
+    '<![CDATA[><img src="x"/onerror="alert(1)">]]>',         # CDATA-Trick durch links_bereinigen
+    '<a href="&#106;avascript:alert(1)">x</a>',               # Entity-kodiertes javascript:
+    '<a href="java\tscript:alert(1)">x</a>',
+    '<p style="background:url(javascript:alert(1))">x</p>',
+    '<svg><script>alert(1)</script></svg>',
+    '<math><mtext><table><mglyph><style><img src=x onerror=alert(1)>',
+    '<a href="data:text/html,<script>alert(1)</script>">x</a>',
+])
+def test_sanitize_blocks_review_payloads(payload):
+    from news_radar.agents.schreiben import links_bereinigen
+
+    from bs4 import BeautifulSoup
+
+    for html_in in (payload, links_bereinigen(payload, set())):
+        sauber = render.sanitize_html(html_in)
+        for tag in BeautifulSoup(sauber, "html.parser").find_all(True):  # so liest es auch der Browser: echte Elemente
+            assert tag.name not in ("script", "style", "svg", "math", "iframe"), sauber
+            for name, wert in tag.attrs.items():
+                assert not name.lower().startswith("on") and name != "style", sauber
+                if name in ("href", "src"):
+                    assert not re.sub(r"[\x00-\x20]", "", wert).lower().startswith(("javascript:", "data:")), sauber
+
+
+def test_safe_url_only_http_and_https():
+    assert render.safe_url("https://tamil.de/a?b=1#c") == "https://tamil.de/a?b=1#c"
+    assert render.safe_url("  http://x.de  ") == "http://x.de"
+    for bad in ("javascript:alert(1)", "JaVaScRiPt:alert(1)", "java\nscript:alert(1)", "data:text/html,x", "/relativ",
+                "//evil.example", "mailto:a@b.de", "", None, "https://", "http://[::1"):
+        assert render.safe_url(bad) == "", bad
+    row = {"inhalt_html": "<p>x</p>", "quelle_url": "javascript:alert(1)", "quelle_name": "Q", "typ": "event",
+           "ticket_url": "javascript:alert(2)", "event_datum": "2026-12-20",
+           "weitere_quellen": [{"name": "W", "url": "javascript:alert(3)"}]}
+    html_out = render.render_content(row)
+    assert "javascript:" not in html_out and "Tickets" in html_out and "Quelle: Q" in html_out
 
 
 def test_raw_writer_draft_matches_schema(settings):

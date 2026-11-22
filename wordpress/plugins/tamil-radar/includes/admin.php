@@ -22,7 +22,8 @@ add_action( 'admin_menu', 'tamil_radar_admin_menu' );
 
 function tamil_radar_admin_assets( string $hook ): void {
 	if ( str_contains( $hook, 'tamil-radar' ) || 'index.php' === $hook ) {
-		wp_enqueue_style( 'tamil-radar-admin', TAMIL_RADAR_URL . 'assets/admin.css', array(), TAMIL_RADAR_VERSION );
+		// Version mit Dateizeit: Dateien mit ?ver= liefert Apache ein Jahr als unveränderlich aus.
+		wp_enqueue_style( 'tamil-radar-admin', TAMIL_RADAR_URL . 'assets/admin.css', array(), TAMIL_RADAR_VERSION . '.' . filemtime( TAMIL_RADAR_DIR . 'assets/admin.css' ) );
 	}
 }
 add_action( 'admin_enqueue_scripts', 'tamil_radar_admin_assets' );

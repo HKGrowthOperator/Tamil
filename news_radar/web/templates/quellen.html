@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Quellen{% endblock %}
+{% block content %}
+<h1>Quellen</h1>
+<p class="leise">{{ quellen|selectattr('enabled')|list|length }} von {{ quellen|length }} Quellen aktiv. Ein- und ausschalten in <code>sources.toml</code> (<code>enabled</code>); Messwerte mit <code>python -m news_radar quellen pruefen</code>.</p>
+<section class="karte">
+<table class="voll kompakt">
+  <tr><th>Quelle</th><th>Prio</th><th>Art</th><th>Land</th><th>robots</th><th>zuletzt ok</th><th>Treffer</th><th>Ausfallquote</th><th>Hinweis</th></tr>
+  {% for q in quellen %}{% set st = status.get(q.name, {}) %}
+  <tr class="{{ '' if q.enabled else 'aus' }}">
+    <td><b>{{ q.name }}</b><br><span class="leise">{{ q.betreiber }}{% if not q.enabled %} · aus{% endif %}</span></td>
+    <td>{{ q.prioritaet }}</td><td>{{ q.kind }} · {{ q.type }}</td><td>{{ q.country or '–' }}</td>
+    <td>{% if q.robots == 'verboten' %}<span class="badge s-fehler">verboten</span>{% else %}{{ q.robots or '–' }}{% endif %}</td>
+    <td>{{ fmt_dt(st.last_ok) if st.last_ok else '–' }}</td><td class="zahl">{{ st.get('last_count') if st.get('last_count') is not none else '–' }}</td>
+    <td class="zahl">{{ ('%d %%'|format(st.get('ausfallquote') * 100)) if st.get('ausfallquote') is not none else '–' }}</td>
+    <td class="leise">{{ st.error_msg or q.notiz or '' }}</td>
+  </tr>
+  {% endfor %}
+</table>
+</section>
+{% endblock %}

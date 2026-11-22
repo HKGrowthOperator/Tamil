@@ -1,0 +1,18 @@
+[Unit]
+Description=Tamil.de News-Radar – Redaktion v2 (Worker: Recherche, Text, Faktencheck, Lektorat, SEO, Bild)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=newsradar
+WorkingDirectory=/opt/tamil-news-radar
+EnvironmentFile=/opt/tamil-news-radar/.env
+# Ohne ANTHROPIC_API_KEY beendet sich der Worker mit Hinweis; systemd versucht es nach 5 Minuten erneut.
+ExecStart=/opt/tamil-news-radar/.venv/bin/python -m news_radar worker
+Restart=on-failure
+RestartSec=300
+Nice=5
+MemoryMax=1G
+
+[Install]
+WantedBy=multi-user.target

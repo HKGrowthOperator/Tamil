@@ -1,0 +1,130 @@
+<!-- Erzeugt von design/vergleich/bauen.py (vorher-nachher: klar, klar2). Nicht von Hand ändern. -->
+<title>Richtungsvergleich tamil.de</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Rahmen der Vergleichsseite: ruhig, kühl, ohne Rot und in Systemschrift, damit nur die Proben Gestaltung tragen.
+   Je Probe eine Reihe Handy-Bildschirme, darunter Desktop, darunter die Messwerte. */
+:root {
+  --grund: oklch(0.965 0.005 250);
+  --flaeche: oklch(0.995 0.002 250);
+  --tinte: oklch(0.25 0.02 256);
+  --leise: oklch(0.47 0.02 256);
+  --linie: oklch(0.87 0.008 250);
+  --akzent: oklch(0.44 0.13 256);
+  --gut: oklch(0.42 0.1 155);
+  --schlecht: oklch(0.47 0.16 40);
+  --schrift: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --grund: oklch(0.2 0.012 256);
+    --flaeche: oklch(0.245 0.014 256);
+    --tinte: oklch(0.94 0.006 250);
+    --leise: oklch(0.73 0.012 250);
+    --linie: oklch(0.36 0.014 256);
+    --akzent: oklch(0.8 0.09 250);
+    --gut: oklch(0.8 0.12 155);
+    --schlecht: oklch(0.78 0.13 50);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --grund: oklch(0.2 0.012 256);
+  --flaeche: oklch(0.245 0.014 256);
+  --tinte: oklch(0.94 0.006 250);
+  --leise: oklch(0.73 0.012 250);
+  --linie: oklch(0.36 0.014 256);
+  --akzent: oklch(0.8 0.09 250);
+  --gut: oklch(0.8 0.12 155);
+  --schlecht: oklch(0.78 0.13 50);
+  color-scheme: dark;
+}
+body { background: var(--grund); color: var(--tinte); font-family: var(--schrift); font-size: 1.0625rem; line-height: 1.55; }
+.rahmen {
+  max-width: 76rem; margin-inline: auto; padding-block: 2.5rem 4rem;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 3.5rem;
+}
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+p, ul, figure { margin: 0; }
+a { color: var(--akzent); text-underline-offset: 0.18em; }
+a:focus-visible { outline: 2px solid var(--akzent); outline-offset: 3px; border-radius: 2px; }
+.etikett { font-weight: 700; font-size: 0.8125rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--leise); }
+.vermerk {
+  justify-self: start; font-weight: 700; font-size: 0.875rem; padding: 0.4rem 0.75rem;
+  border: 1px solid var(--schlecht); color: var(--schlecht); border-radius: 0.25rem;
+}
+.kopf { display: grid; gap: 1rem; }
+.kopf h1 { font-weight: 800; font-size: clamp(1.9rem, 1.2rem + 3vw, 3.25rem); line-height: 1.06; letter-spacing: -0.02em; max-width: 22ch; }
+.vorspann { font-size: 1.1875rem; max-width: 66ch; }
+.sprung { display: flex; flex-wrap: wrap; gap: 0.25rem 1.5rem; font-weight: 700; padding-top: 0.5rem; border-top: 1px solid var(--linie); }
+.sprung a, .oeffnen a { display: inline-block; padding-block: 0.6rem; }
+.probe { display: grid; gap: 1.5rem; scroll-margin-top: 1rem; }
+.probe-kopf { display: grid; gap: 0.5rem; }
+.probe-kopf h2 { font-weight: 800; font-size: clamp(1.6rem, 1.25rem + 1.6vw, 2.35rem); line-height: 1.1; letter-spacing: -0.015em; }
+.probe h3 { font-size: 1.0625rem; font-weight: 700; }
+.idee { font-size: 1.125rem; max-width: 64ch; }
+.reihe { display: grid; gap: 1.25rem; align-items: start; }
+.reihe.handys { grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); }
+.reihe.desktops { grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr)); }
+.aufnahme { display: grid; gap: 0.5rem; min-width: 0; }
+.aufnahme img { display: block; width: 100%; height: auto; background: var(--flaeche); border: 1px solid var(--linie); }
+.aufnahme.handy { max-width: 22rem; }
+.aufnahme.handy img { border-radius: 1.1rem; aspect-ratio: 390 / 844; object-fit: cover; object-position: top; }
+.aufnahme.desktop img { border-radius: 0.5rem; aspect-ratio: 1280 / 800; object-fit: cover; object-position: top; }
+.aufnahme figcaption { font-size: 0.9375rem; color: var(--leise); }
+.aufnahme.vergleich img { opacity: 0.92; }
+.aufnahme.vergleich figcaption { font-style: italic; }
+.tabellenrahmen { overflow-x: auto; border: 1px solid var(--linie); border-radius: 0.375rem; background: var(--flaeche); }
+table { border-collapse: collapse; width: 100%; min-width: 44rem; font-size: 0.9375rem; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 0.55rem 0.8rem; border-bottom: 1px solid var(--linie); vertical-align: top; }
+tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
+thead th { font-size: 0.8125rem; color: var(--leise); font-weight: 700; }
+tbody th { font-weight: 600; }
+td.gut { color: var(--gut); font-weight: 700; }
+td.schlecht { color: var(--schlecht); font-weight: 700; }
+.leise, .fuss { color: var(--leise); }
+.fuss { font-size: 0.9375rem; max-width: 72ch; }
+.oeffnen { font-weight: 700; display: flex; flex-wrap: wrap; gap: 0.25rem 1.75rem; }
+.trenner { border: 0; border-top: 1px solid var(--linie); margin: 0; }
+.abschluss { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); }
+.abschluss h2 { font-size: 1.25rem; font-weight: 800; margin-bottom: 0.5rem; }
+.abschluss ol, .abschluss ul { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.4rem; max-width: 52ch; }
+.punkte { margin: 0; display: grid; gap: 0; border-top: 1px solid var(--linie); max-width: 60rem; }
+.punkte div { display: grid; grid-template-columns: minmax(9rem, 14rem) 1fr; gap: 0.25rem 1.5rem; padding-block: 0.7rem; border-bottom: 1px solid var(--linie); }
+.punkte dt { font-weight: 700; }
+.punkte dd { margin: 0; }
+@media (max-width: 34rem) { .punkte div { grid-template-columns: 1fr; } }
+</style>
+<div class="rahmen">
+<header class="kopf">
+<p class="vermerk">Interne Vorschau · nicht für den Auftraggeber</p>
+<h1>Klar mit mehr Wow: vorher und nachher</h1>
+<p class="vorspann">Deine Rückmeldung zur ersten Fassung: gut vom Design, aber noch zu classic; mehr Wow, überall ein Bild, der Kopf zu schlicht. Die neue Fassung behält Schrift, Farben und die Ordnung der Nachrichten und legt Bild und Bühne dazu. Zu sehen ist jeweils zuerst der alte Stand, dann der neue.</p>
+<nav class="sprung" aria-label="Abschnitte"><a href="#start">Erster Blick</a><a href="#unten">Weiter unten</a><a href="#woche">Kino und Termine</a><a href="#kueche">Küche</a><a href="#artikel">Artikel</a><a href="#geaendert">Was neu ist</a><a href="#gemessen">Gemessen</a></nav>
+<p class="oeffnen"><a href="design/richtungen/klar2/index.html">Neue Startseite öffnen und selbst scrollen</a> <a href="design/richtungen/klar2/artikel.html">Neuen Artikel öffnen</a> <a href="design/richtungen/klar/index.html">Alte Startseite zum Vergleich</a></p>
+</header>
+<section class="probe" id="start" aria-labelledby="start-titel"><div class="probe-kopf"><p class="etikett">Erster Blick</p><h2 id="start-titel">Der erste Bildschirm, am Handy und am Desktop.</h2><p class="idee">Neu: eine Zeile mit Datum und Hinweisen über dem Logo, das dunkle Band mit den Rubriken und das große Foto mit der Schlagzeile im Bild.</p></div>
+<div class="reihe handys"><figure class="aufnahme handy vergleich"><img src="img/klar-start-handy.jpg" width="780" height="1688" alt="Vorher: Startseite am Handy"><figcaption>Vorher: Startseite am Handy</figcaption></figure><figure class="aufnahme handy"><img src="img/klar2-start-handy.jpg" width="780" height="1688" alt="Neu: Startseite am Handy"><figcaption>Neu: Startseite am Handy</figcaption></figure></div>
+<div class="reihe desktops"><figure class="aufnahme desktop vergleich"><img src="img/klar-start-desktop.jpg" width="2560" height="1600" alt="Vorher: Startseite am Desktop"><figcaption>Vorher: Startseite am Desktop</figcaption></figure><figure class="aufnahme desktop"><img src="img/klar2-start-desktop.jpg" width="2560" height="1600" alt="Neu: Startseite am Desktop"><figcaption>Neu: Startseite am Desktop</figcaption></figure></div></section>
+<hr class="trenner">
+<section class="probe" id="unten" aria-labelledby="unten-titel"><div class="probe-kopf"><p class="etikett">Weiter unten</p><h2 id="unten-titel">Jede Geschichte hat jetzt ein Bild.</h2><p class="idee">Vorher standen die Meldungen als reine Textliste. Das dunkle Band bleibt beim Scrollen oben stehen.</p></div>
+<div class="reihe handys"><figure class="aufnahme handy vergleich"><img src="img/klar-start-handy-2.jpg" width="780" height="1688" alt="Vorher: am Handy weiter unten"><figcaption>Vorher: am Handy weiter unten</figcaption></figure><figure class="aufnahme handy"><img src="img/klar2-start-handy-2.jpg" width="780" height="1688" alt="Neu: zweiter Bildschirm am Handy"><figcaption>Neu: zweiter Bildschirm am Handy</figcaption></figure><figure class="aufnahme handy"><img src="img/klar2-start-handy-3.jpg" width="780" height="1688" alt="Neu: dritter Bildschirm am Handy"><figcaption>Neu: dritter Bildschirm am Handy</figcaption></figure></div></section>
+<hr class="trenner">
+<section class="probe" id="woche" aria-labelledby="woche-titel"><div class="probe-kopf"><p class="etikett">Diese Woche</p><h2 id="woche-titel">Kino und Termine im dunklen Bereich.</h2><p class="idee">Die Kino-Beiträge sind große Bildkacheln. Spielorte und Termine kommen aus dem News-Radar und haben kein Foto; sie stehen als gestaltete Kacheln daneben, ohne erfundenes Bild.</p></div>
+<div class="reihe desktops"><figure class="aufnahme desktop"><img src="img/klar2-woche-desktop.jpg" width="2560" height="1600" alt="Neu: Diese Woche am Desktop"><figcaption>Neu: Diese Woche am Desktop</figcaption></figure></div>
+<div class="reihe handys"><figure class="aufnahme handy"><img src="img/klar2-woche-handy.jpg" width="780" height="1688" alt="Neu: Diese Woche am Handy"><figcaption>Neu: Diese Woche am Handy</figcaption></figure></div></section>
+<hr class="trenner">
+<section class="probe" id="kueche" aria-labelledby="kueche-titel"><div class="probe-kopf"><p class="etikett">Küche</p><h2 id="kueche-titel">Große Bildkacheln statt vier gleicher Karten.</h2></div>
+<div class="reihe desktops"><figure class="aufnahme desktop"><img src="img/klar2-kueche-desktop.jpg" width="2560" height="1600" alt="Neu: Küche am Desktop"><figcaption>Neu: Küche am Desktop</figcaption></figure></div></section>
+<hr class="trenner">
+<section class="probe" id="artikel" aria-labelledby="artikel-titel"><div class="probe-kopf"><p class="etikett">Artikel</p><h2 id="artikel-titel">Der Artikel: derselbe Kopf, das Bild groß, der Text ruhig.</h2></div>
+<div class="reihe handys"><figure class="aufnahme handy vergleich"><img src="img/klar-artikel-handy.jpg" width="780" height="1688" alt="Vorher: Artikel am Handy"><figcaption>Vorher: Artikel am Handy</figcaption></figure><figure class="aufnahme handy"><img src="img/klar2-artikel-handy.jpg" width="780" height="1688" alt="Neu: Artikel am Handy"><figcaption>Neu: Artikel am Handy</figcaption></figure></div></section>
+<hr class="trenner">
+<section class="probe" id="geaendert" aria-labelledby="geaendert-titel"><div class="probe-kopf"><p class="etikett">Was neu ist</p><h2 id="geaendert-titel">Deine Punkte, einer nach dem anderen.</h2></div><dl class="punkte"><div><dt>Überall ein Bild</dt><dd>Jede Meldung hat jetzt ein Foto. Zwei Beiträge, deren Bild eine Landkarte und eine Werbegrafik war, sind gegen Beiträge mit Foto getauscht.</dd></div><div><dt>Großes Aufmacherbild</dt><dd>Das Foto der wichtigsten Geschichte ist groß, Rubrik und Schlagzeile stehen im Bild.</dd></div><div><dt>Kräftiger Balken</dt><dd>Die Rubriken stehen in einem dunklen Band. Es bleibt beim Scrollen oben stehen.</dd></div><div><dt>Mehr Inhalt im Kopf</dt><dd>Über dem Logo steht eine schmale Zeile mit Datum, zwei Hinweisen auf diese Woche und der Suche.</dd></div><div><dt>Größer und klarer</dt><dd>Das Logo ist größer, die aktive Rubrik ist deutlich markiert.</dd></div><div><dt>Rubriken mit Bild</dt><dd>Unter dem Aufmacher führt eine Reihe kleiner Bildkacheln in die Rubriken; am Handy wischt man sie zur Seite.</dd></div><div><dt>Dunkler Kino-Bereich</dt><dd>„Diese Woche“ ist ein dunkles Band: Kino-Beiträge als große Bildkacheln, daneben Spielorte und Termine.</dd></div><div><dt>Bildstarke Blöcke</dt><dd>Die Küche zeigt große Bildkacheln mit dem Titel im Bild, eine davon größer.</dd></div><div><dt>Sanfte Bewegung</dt><dd>Bilder zoomen leicht, wenn man mit der Maus darüberfährt. Nichts bewegt sich von selbst.</dd></div></dl></section>
+<hr class="trenner">
+<section class="probe" id="gemessen" aria-labelledby="gemessen-titel"><div class="probe-kopf"><p class="etikett">Gemessen</p><h2 id="gemessen-titel">Alle Grenzen eingehalten.</h2><p class="idee">Mehr Wow darf nicht wieder laut werden. Deshalb hat jede Verstärkung eine Grenze, die das Skript nachmisst: Rot bleibt ein kleiner Akzent, die Schrift bleibt gedeckelt, dunkel sind nur zwei Flächen.</p></div><div class="tabellenrahmen"><table><thead><tr><th scope="col">Messwert</th><th scope="col">Neu (Handy / Desktop)</th><th scope="col">Ergebnis</th><th scope="col">Grenze</th><th scope="col">Vorher (Handy / Desktop)</th></tr></thead><tbody><tr><th scope="row">Schlagzeilen im ersten Bildschirm</th><td>2 / 6</td><td class="gut">eingehalten</td><td>Handy mind. 2, Desktop mind. 4</td><td>2 / 9</td></tr><tr><th scope="row">Geschichten ohne Bild</th><td>0 / 0</td><td class="gut">eingehalten</td><td>keine</td><td>9 / 9</td></tr><tr><th scope="row">Größte Schrift (Schlagzeile des Aufmachers)</th><td>30 / 40</td><td class="gut">eingehalten</td><td>höchstens 34 / 44 px</td><td>28 / 34</td></tr><tr><th scope="row">Zweitgrößte Schrift der Seite</th><td>22 / 26</td><td class="gut">eingehalten</td><td>höchstens 24 / 28 px</td><td>19 / 22</td></tr><tr><th scope="row">Rot in der Fläche (ohne Bilder)</th><td>0,1 / 0,1</td><td class="gut">eingehalten</td><td>höchstens 3 %</td><td>0,2 / 0,2</td></tr><tr><th scope="row">Größte rote Schrift</th><td>13 / 13</td><td class="gut">eingehalten</td><td>höchstens 20 px</td><td>13 / 13</td></tr><tr><th scope="row">Dunkle Flächen auf der Seite</th><td>2 / 2</td><td class="gut">eingehalten</td><td>genau 2 (Rubrikband, „Diese Woche“)</td><td>0 / 0</td></tr><tr><th scope="row">Dunkel im ersten Bildschirm (ohne Bilder)</th><td>6,4 / 5,8</td><td class="gut">eingehalten</td><td>höchstens 12 %</td><td>3,9 / 1,8</td></tr><tr><th scope="row">Helle Schrift auf Bild oder Dunkel, kleinster Kontrast</th><td>5,98 / 5,9</td><td class="gut">eingehalten</td><td>mindestens 4,5 : 1</td><td>– / –</td></tr><tr><th scope="row">Kopf bis Unterkante Rubrikband</th><td>147 / 167</td><td class="gut">eingehalten</td><td>am Handy höchstens 152 px</td><td>112 / 90</td></tr><tr><th scope="row">Zoom beim Überfahren</th><td>1,03 / 1,03</td><td class="gut">eingehalten</td><td>höchstens 1,04</td><td>1 / 1</td></tr><tr><th scope="row">Längster Übergang</th><td>0,35 / 0,35</td><td class="gut">eingehalten</td><td>höchstens 0,4 s</td><td>0 / 0</td></tr><tr><th scope="row">Übergänge bei „Bewegung reduzieren“, Animationen</th><td>0 / 0</td><td class="gut">eingehalten</td><td>keine</td><td>0 / 0</td></tr><tr><th scope="row">Größte Rundung</th><td>0 / 0</td><td class="gut">eingehalten</td><td>höchstens 2 px</td><td>0 / 0</td></tr><tr><th scope="row">Schatten, Drehungen, verstellte Schriftbreite</th><td>0 / 0</td><td class="gut">eingehalten</td><td>keine</td><td>0 / 0</td></tr><tr><th scope="row">Bilder über ihrer Dateibreite</th><td>0 / 0</td><td class="gut">eingehalten</td><td>keine</td><td>0 / 0</td></tr></tbody></table></div></section>
+<hr class="trenner">
+<section class="abschluss" aria-label="Rückmeldung"><div><h2>Was ich von dir brauche</h2><ol><li>Passt das Wow jetzt, oder ist es immer noch zu classic?</li><li>Ist etwas zu viel geworden?</li><li>Fehlt etwas?</li></ol></div><div><h2>Wie es weitergeht</h2><ul><li>Die neue Fassung wird unabhängig geprüft; was die Prüfung findet, wird eingearbeitet.</li><li>Der Auftraggeber bekommt sie erst, wenn du zustimmst und kein schwerer Befund offen ist.</li></ul></div></section>
+<p class="fuss">Stand vom 10. November 2026. Die Beiträge stammen aus dem Archiv der Seite, das im November 2024 endet; die Kino- und Termineinträge aus dem News-Radar. Das Logo liegt bisher nur als kleines Bild vor. Die klickbaren Seiten öffnen sich im selben Fenster; zurück geht es mit der Zurück-Taste.</p>
+</div>

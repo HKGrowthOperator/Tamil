@@ -10,27 +10,55 @@
 #
 # Je Quelle: kind = news|event|kino, country = DE|CH|AT, min_score (0 = vertrauenswürdig, immer prüfen),
 # max_items je Lauf, interval_minutes (0 = jeder Lauf).
+#
+# Register (Blueprint 19.10.): enabled (false = abgeschaltet, bleibt im Register), prioritaet A/B/C, betreiber,
+# robots (Ergebnis von `quellen pruefen`), paywall, bild_nutzen (Pressebilder nur mit dokumentierter Erlaubnis),
+# vertrag, rechtlich_geprueft (Datum), notiz. Auswahl 20 von 28 am 08.11.2026 nach `quellen pruefen`; 11.11.2026
+# elf Quellen aus der Quellen-Inventur dazu (Tempel, Vereine, Kinoreihen, Lokalpresse, SEM) → 27 von 39 aktiv (die vier Kino-Seiten zurückgestellt).
 
 # ---- Presse DACH über Google News (rotierend) ----
 [[source]]
 name = "Google News DACH"
+prioritaet = "C"
+betreiber = "Google"
+robots = "verboten"
+notiz = "Google-News-RSS widerspricht robots.txt (Disallow: /rss) – nur Hinweisquelle, Artikeltext immer von der Verlagsseite; Entscheidung Luis offen"
+rechtlich_geprueft = ""
 type = "gnews_region"
 query = "(Tamil OR tamilisch OR Tamilen)"
 params = { when = "2d", max_queries = 32, per_run = 6 }
 
 [[source]]
 name = "Google News · Tempel & Kino"
+enabled = false
+prioritaet = "C"
+betreiber = "Google"
+robots = "verboten"
+notiz = "aus: robots.txt verbietet /rss, nur 1 Treffer in 14 Tagen, deckt Google News DACH mit ab"
+rechtlich_geprueft = ""
 type = "rss"
 url = "https://news.google.com/rss/search?q=(Sri-Kamadchi-Ampal+OR+%22Hindu+Tempelfest%22+OR+%22tamilischer+Film%22+OR+Kollywood)+when:3d&hl=de&gl=DE&ceid=DE:de"
 
 [[source]]
 name = "Google News CH · Tamilen"
+enabled = false
+prioritaet = "C"
+betreiber = "Google"
+robots = "verboten"
+notiz = "aus: robots.txt verbietet /rss, doppelt zu Google News DACH (Schweiz-Abfragen)"
+rechtlich_geprueft = ""
 type = "rss"
 url = "https://news.google.com/rss/search?q=(Tamilen+OR+tamilisch)+when:3d&hl=de&gl=CH&ceid=CH:de"
 country = "CH"
 
 [[source]]
 name = "Google News AT · Sri Lanka"
+enabled = false
+prioritaet = "C"
+betreiber = "Google"
+robots = "verboten"
+notiz = "aus: robots.txt verbietet /rss, meist Sri-Lanka-Weltnachrichten ohne DACH-Bezug"
+rechtlich_geprueft = ""
 type = "rss"
 url = "https://news.google.com/rss/search?q=(Tamilen+OR+tamilisch+OR+%22Sri+Lanka%22)+when:3d&hl=de&gl=AT&ceid=AT:de"
 country = "AT"
@@ -38,6 +66,10 @@ country = "AT"
 # ---- Schweizer Tamil-Portale (tamilisch, vertrauenswürdig) ----
 [[source]]
 name = "SwissTamilMedia · Events"
+prioritaet = "A"
+betreiber = "Swiss Tamil Media"
+robots = "erlaubt"
+rechtlich_geprueft = ""
 type = "rss"
 url = "https://swisstamilmedia.com/category/swiss-tamil-events/feed/"
 language = "ta"
@@ -48,6 +80,10 @@ max_items = 3
 
 [[source]]
 name = "SwissTamilMedia · Community"
+prioritaet = "A"
+betreiber = "Swiss Tamil Media"
+robots = "erlaubt"
+rechtlich_geprueft = ""
 type = "rss"
 url = "https://swisstamilmedia.com/category/swiss-tamilar-news/feed/"
 language = "ta"
@@ -57,6 +93,10 @@ max_items = 2
 
 [[source]]
 name = "Swiss Tamil Info · Events"
+prioritaet = "A"
+betreiber = "Swiss Tamil Info"
+robots = "erlaubt"
+rechtlich_geprueft = ""
 type = "rss"
 url = "https://swisstamilinfo.ch/?cat=54&feed=rss2"
 language = "ta"
@@ -67,15 +107,26 @@ max_items = 3
 
 [[source]]
 name = "Swiss Tamil Info · Schweiz"
+prioritaet = "A"
+betreiber = "Swiss Tamil Info"
+robots = "erlaubt"
+rechtlich_geprueft = ""
 type = "rss"
 url = "https://swisstamilinfo.ch/category/swiss/feed/"
 language = "ta"
 country = "CH"
+# Allgemeine Schweizer Meldungen (Unfall, Polizei, Wahl) erscheinen nicht (Entscheidung Luis, 09.11.): ohne Stichwort-
+# Schwelle, aber jede Meldung braucht einen Begriff aus [bezug].
 min_score = 0
+bezug_noetig = true
 max_items = 2
 
 [[source]]
 name = "SwissNews7"
+prioritaet = "A"
+betreiber = "SwissNews7"
+robots = "erlaubt"
+rechtlich_geprueft = ""
 type = "rss"
 url = "https://swissnews7.com/?cat=26&feed=rss2"
 language = "ta"
@@ -85,6 +136,10 @@ max_items = 2
 
 [[source]]
 name = "Tamilschule Schweiz (TESS)"
+prioritaet = "B"
+betreiber = "Tamilschule Schweiz"
+robots = "erlaubt"
+rechtlich_geprueft = ""
 type = "rss"
 url = "https://www.tamilschool.ch/feed/"
 language = "ta"
@@ -96,6 +151,10 @@ interval_minutes = 180
 # ---- Events DACH ----
 [[source]]
 name = "Haus der Religionen Bern"
+prioritaet = "B"
+betreiber = "Haus der Religionen – Dialog der Kulturen"
+robots = "erlaubt"
+rechtlich_geprueft = ""
 type = "wp_json"
 url = "https://www.haus-der-religionen.ch"
 endpoint = "mec-events"
@@ -108,6 +167,10 @@ interval_minutes = 120
 
 [[source]]
 name = "Eventfrog CH"
+prioritaet = "A"
+betreiber = "Eventfrog AG"
+robots = "erlaubt"
+rechtlich_geprueft = ""
 type = "html"
 url = "https://eventfrog.ch/de/events.html?searchTerm=tamil"
 kind = "event"
@@ -119,6 +182,10 @@ selectors = { item = "a.event-list__events__tile", title = ".event-list__events_
 
 [[source]]
 name = "Eventfrog DE"
+prioritaet = "A"
+betreiber = "Eventfrog AG"
+robots = "erlaubt"
+rechtlich_geprueft = ""
 type = "html"
 url = "https://eventfrog.de/de/events.html?searchTerm=tamil"
 kind = "event"
@@ -130,6 +197,12 @@ selectors = { item = "a.event-list__events__tile", title = ".event-list__events_
 
 [[source]]
 name = "tamilswiss.ch Events"
+enabled = false
+prioritaet = "B"
+betreiber = "tamilswiss.ch"
+robots = "unbekannt"
+notiz = "aus: TLS-Zertifikat der Seite ungültig (11/2026), wieder einschalten, sobald es repariert ist"
+rechtlich_geprueft = ""
 type = "html"
 url = "https://tamilswiss.ch/events"
 kind = "event"
@@ -142,6 +215,11 @@ params = { json_pattern = 'openEventDetailsModal\((\{.*?\})\)', json_attr = "onc
 
 [[source]]
 name = "Hindu-Tempel Hamm"
+prioritaet = "B"
+betreiber = "Hinduistische Gemeinde Deutschland"
+robots = "erlaubt"
+notiz = "wenige, aber sehr relevante Termine"
+rechtlich_geprueft = ""
 type = "html"
 url = "https://www.hinduistische-gemeinde-deutschland.de/aktuelles/"
 kind = "event"
@@ -154,6 +232,11 @@ selectors = { item = "article, .entry, .post", title = "h2, h3, .entry-title", l
 # ---- Kinoprogramme (ein Beitrag je Film und Kinowoche) ----
 [[source]]
 name = "CineStar"
+prioritaet = "A"
+betreiber = "CineStar"
+robots = "unbekannt"
+notiz = "öffentliche Programm-API der Website"
+rechtlich_geprueft = ""
 type = "kino"
 provider = "cinestar"
 interval_minutes = 60
@@ -161,6 +244,11 @@ max_items = 3
 
 [[source]]
 name = "kinoheld"
+prioritaet = "A"
+betreiber = "kinoheld"
+robots = "unbekannt"
+notiz = "öffentliche Programm-API der Website"
+rechtlich_geprueft = ""
 type = "kino"
 provider = "kinoheld"
 interval_minutes = 60
@@ -168,6 +256,12 @@ max_items = 3
 
 [[source]]
 name = "Cineplexx AT"
+enabled = false
+prioritaet = "B"
+betreiber = "Cineplexx"
+robots = "unbekannt"
+notiz = "aus: in 14 Tagen kein tamilischer Film in Österreich; bei Bedarf einschalten"
+rechtlich_geprueft = ""
 type = "kino"
 provider = "cineplexx"
 interval_minutes = 60
@@ -176,6 +270,10 @@ max_items = 3
 # ---- Diaspora-Medien (Stichwortfilter DACH) ----
 [[source]]
 name = "Tamil Guardian"
+prioritaet = "B"
+betreiber = "Tamil Guardian"
+robots = "erlaubt"
+rechtlich_geprueft = ""
 type = "rss"
 url = "https://www.tamilguardian.com/rss.xml"
 language = "en"
@@ -183,6 +281,10 @@ max_items = 2
 
 [[source]]
 name = "Lankasri"
+prioritaet = "C"
+betreiber = "Lankasri"
+robots = "erlaubt"
+rechtlich_geprueft = ""
 type = "rss"
 url = "https://news.lankasri.com/googlesitemap.xml"
 language = "ta"
@@ -191,13 +293,23 @@ max_items = 2
 # ---- Überregional (Kollywood, Sri Lanka) – nur mit DACH-Bezug oder hoher Punktzahl ----
 [[source]]
 name = "Google News EN · Kollywood"
+prioritaet = "C"
+betreiber = "Google"
+robots = "verboten"
+notiz = "Google-News-RSS widerspricht robots.txt (Disallow: /rss) – nur Hinweisquelle, Artikeltext immer von der Verlagsseite; Entscheidung Luis offen; bisher ergiebigste Quelle für Kino/Entertainment"
+rechtlich_geprueft = ""
 type = "rss"
 url = "https://news.google.com/rss/search?q=(kollywood+OR+%22tamil+cinema%22)+when:2d&hl=en-IN&gl=IN&ceid=IN:en"
 language = "en"
 max_items = 2
+kollywood = true  # Ausland-Regel: Treffer gelten als Kino/Entertainment ([bezug] kollywood, Entscheidung 12.11.)
 
 [[source]]
 name = "The Hindu · Tamil Nadu"
+prioritaet = "C"
+betreiber = "The Hindu"
+robots = "erlaubt"
+rechtlich_geprueft = ""
 type = "rss"
 url = "https://www.thehindu.com/news/national/tamil-nadu/feeder/default.rss"
 language = "en"
@@ -206,6 +318,10 @@ max_items = 1
 # ---- Regionalpresse als Backup (nur per Stichwortfilter) ----
 [[source]]
 name = "Ruhr Nachrichten"
+prioritaet = "C"
+betreiber = "Lensing Media"
+robots = "erlaubt"
+rechtlich_geprueft = ""
 type = "rss"
 url = "https://www.ruhrnachrichten.de/feed/"
 country = "DE"
@@ -214,6 +330,12 @@ interval_minutes = 30
 
 [[source]]
 name = "WA Hamm"
+enabled = false
+prioritaet = "C"
+betreiber = "Westfälischer Anzeiger"
+robots = "verboten"
+notiz = "aus: robots.txt verbietet Abrufe durch Bots"
+rechtlich_geprueft = ""
 type = "rss"
 url = "https://www.wa.de/hamm/rssfeed.rdf"
 country = "DE"
@@ -222,6 +344,10 @@ interval_minutes = 30
 
 [[source]]
 name = "SRF Schweiz"
+prioritaet = "C"
+betreiber = "SRF"
+robots = "erlaubt"
+rechtlich_geprueft = ""
 type = "rss"
 url = "https://www.srf.ch/news/bnf/rss/1890"
 country = "CH"
@@ -230,6 +356,10 @@ interval_minutes = 30
 
 [[source]]
 name = "ORF"
+prioritaet = "C"
+betreiber = "ORF"
+robots = "erlaubt"
+rechtlich_geprueft = ""
 type = "rss"
 url = "https://rss.orf.at/news.xml"
 country = "AT"
@@ -239,6 +369,12 @@ interval_minutes = 30
 # ---- Token-APIs (optional) ----
 [[source]]
 name = "NewsAPI · Tamil DACH"
+enabled = false
+prioritaet = "C"
+betreiber = "NewsAPI.org"
+robots = "erlaubt"
+notiz = "aus: kein NEWSAPI_KEY; Alternative zu Google News, falls Luis einen Schlüssel bucht"
+rechtlich_geprueft = ""
 type = "newsapi"
 query = "(tamil OR tamilen OR tamilisch OR \"sri lanka\") AND (deutschland OR schweiz OR österreich OR diaspora OR kino)"
 language = "de"
@@ -246,10 +382,296 @@ max_items = 3
 
 [[source]]
 name = "GNews · Tamil"
+enabled = false
+prioritaet = "C"
+betreiber = "GNews.io"
+robots = "erlaubt"
+notiz = "aus: kein GNEWS_TOKEN; Alternative zu Google News, falls Luis einen Schlüssel bucht"
+rechtlich_geprueft = ""
 type = "gnews"
 query = "Tamilen OR tamilisch OR \"Tamil Germany\" OR \"Tamil Switzerland\""
 language = "de"
 max_items = 3
+
+# ---- Aus der Quellen-Inventur 11.11.2026 (live geprüft: erreichbar, robots erlaubt, Einträge mit Datum) ----
+# Tempel und Vereine: Ankündigungen als Termine (echtes Datum → Altersgrenze für Berichte aus dem Archiv gilt)
+[[source]]
+name = "Sri Navadurga Devi Tempel Wuppertal · Termine"
+prioritaet = "B"
+betreiber = "Hindu-Tempel Wuppertal (Sri Navathurgadevi Tempel), Hünefeldstraße 63B"
+robots = "erlaubt"
+paywall = false
+bild_nutzen = false
+notiz = "Inventur 11.11.2026: Terminkalender (The Events Calendar, /wp-json/tribe/events/v1/events), 20 Termine 2026 bis Tempelfest 31.5.–2.6.; nur kommende Termine; Gedenktermine aus [blocklist] termine werden nie automatisch zur Story"
+rechtlich_geprueft = ""
+type = "tribe_events"
+url = "https://hindutempel-wuppertal.de"
+language = "de"
+kind = "event"
+country = "DE"
+min_score = 0
+max_items = 1
+interval_minutes = 720
+
+[[source]]
+name = "Sivan Kovil Glattbrugg"
+prioritaet = "B"
+betreiber = "Saiva Tamil Sangam (Arulmigu Sivan Kovil), Glattbrugg"
+robots = "erlaubt"
+paywall = false
+bild_nutzen = false
+notiz = "Inventur 11.11.2026: Feed mit Festankündigungen (7 Beiträge 2026); Feed-XML endet ohne </rss>, feedparser liest es trotzdem. Kalender (/wp-json/tribe/events/v1) bewusst nicht: viele Fastentage und Gedenktermine (Maaveerar) – solche Termine redaktionell prüfen"
+rechtlich_geprueft = ""
+type = "rss"
+url = "https://sivankovil.ch/feed/"
+language = "ta"
+kind = "event"
+country = "CH"
+min_score = 0
+max_items = 1
+interval_minutes = 360
+
+[[source]]
+name = "Sri Kathirvelayutha Swamy Tempel St. Margrethen"
+prioritaet = "B"
+betreiber = "Arulmigu Sri Kathirvelayutha Swamy Alayam, St. Margrethen"
+robots = "erlaubt"
+paywall = false
+bild_nutzen = false
+notiz = "Inventur 11.11.2026: Feed mit 9 Beiträgen 2026, aktiv rund um das Jahresfest (Mai), sonst still"
+rechtlich_geprueft = ""
+type = "rss"
+url = "https://srikathirvel.com/feed/"
+language = "ta"
+kind = "event"
+country = "CH"
+min_score = 0
+max_items = 1
+interval_minutes = 360
+
+[[source]]
+name = "Düsseldorf Tamil Sangam"
+prioritaet = "B"
+betreiber = "Düsseldorf Tamil Sangam e.V."
+robots = "erlaubt"
+paywall = false
+bild_nutzen = false
+notiz = "Inventur 11.11.2026: Feed führt jede Veranstaltung als Beitrag (zwei bis vier im Jahr), den Tag nennt nur der Beitrag selbst. Nicht die Seite /events/: dort stehen alte Termine ohne Jahr, die als nächstes Jahr gelesen würden"
+rechtlich_geprueft = ""
+type = "rss"
+url = "https://duesseldorftamilsangam.com/feed/"
+language = "en"
+kind = "event"
+country = "DE"
+min_score = 0
+max_items = 1
+interval_minutes = 360
+
+[[source]]
+name = "Tamils.co · Termine Deutschland"
+prioritaet = "B"
+betreiber = "Tamils.co (Beta, Betreiber nicht genannt)"
+robots = "erlaubt"
+paywall = false
+bild_nutzen = false
+notiz = "Inventur 11.11.2026: Verzeichnis, in das Veranstalter selbst eintragen; Ortsangaben teils falsch (kanadischer Park unter Deutschland) – Ort immer gegenprüfen; kein Impressum"
+rechtlich_geprueft = ""
+type = "html"
+url = "https://tamils.co/countries/11-germany"
+language = "en"
+kind = "event"
+country = "DE"
+min_score = 0
+max_items = 2
+interval_minutes = 180
+selectors = { item = "article.event-card", title = "h3", link = "h3 a::attr(href)", date = ".card-meta .pill", ort = "p.muted" }
+
+# Rückblick-Recherche 12.11.2026 (live geprüft: erreichbar, robots erlaubt, keine Anmeldung, Termine mit Datum und Ort)
+[[source]]
+name = "München Tamil Sangam · Termine"
+prioritaet = "B"
+betreiber = "München Tamil Sangam e.V."
+robots = "erlaubt"
+paywall = false
+bild_nutzen = false
+notiz = "Rückblick 12.11.2026: Terminkalender (The Events Calendar, /wp-json/tribe/events/v1/events), 2026 zwei Termine (Kodai Vizha 16.5., Diwali 21.11. Bürgerhaus Neukeferloh); nur kommende Termine"
+rechtlich_geprueft = ""
+type = "tribe_events"
+url = "https://muenchentamilsangam.org"
+language = "en"
+kind = "event"
+country = "DE"
+min_score = 0
+max_items = 1
+interval_minutes = 720
+
+[[source]]
+name = "Vizha · Termine DACH"
+prioritaet = "B"
+betreiber = "Vizha (vizha.app), Veranstaltungskalender der tamilischen Diaspora"
+robots = "erlaubt"
+paywall = false
+bild_nutzen = false
+notiz = "Prüfung 12.11.2026: kein Feed/ICS; Länderseiten /de/events und /ch/events nennen die kommenden Termine (JSON-LD ItemList, auf der DE-Liste auch Schweden), je Terminseite JSON-LD Event mit startDate (UTC) und addressCountry; /at/events gibt 404 (AT-Termine nur, wenn sie auf einer der Listen stehen). Je Lauf höchstens 40 Terminseiten, nur DE/AT/CH, Gedenktermine aus [blocklist] termine nie automatisch (Sperrliste am 12.11. um Thamilselvan, Kiddu u. a. erweitert; Probe danach: 28 Termine ohne Gedenkbezug, 3 gesperrt). Dubletten mit Vereinskalendern (München Tamil Sangam) möglich."
+rechtlich_geprueft = ""
+type = "jsonld_events"
+url = "https://vizha.app"
+language = "en"
+kind = "event"
+country = ""
+min_score = 0
+max_items = 2
+interval_minutes = 360
+params = { listen = ["/de/events", "/ch/events"], laender = ["DE", "AT", "CH"], max_abrufe = 40 }
+
+[[source]]
+name = "Sri Meenadchi Ambal Tempel Backnang · Termine"
+enabled = true
+prioritaet = "B"
+betreiber = "Sri Lanka Cultural Forum (Sri Meenadchi Ambal Tempel), Sulzbacher Str. 56, Backnang"
+robots = "erlaubt"
+paywall = false
+bild_nutzen = false
+notiz = "Rückblick 12.11.2026: Seite „Zukünftige Veranstaltungen“ (Elementor-Liste, je Termin article.mel-card, Datum englisch „November 13, 2026 6:00 p.m.“); viele Pooja- und Fastentage (Kandasashti, Thiruvempavai); Ort ist immer der Tempel. An seit 13.11.2026 (Gedenk-Sperre gilt für alle Terminquellen, Entscheidung Luis) mit Festauswahl params.nur_titel: nur große Feste werden Story."
+rechtlich_geprueft = ""
+type = "html"
+url = "https://srimeenadchiambal.com/de/zukuenftige-veranstaltungen/"
+language = "de"
+kind = "event"
+country = "DE"
+min_score = 0
+max_items = 1
+interval_minutes = 720
+params = { ort = "Sri Meenadchi Ambal Tempel, Sulzbacher Str. 56, 71522 Backnang", nur_titel = ["Deepavali", "Diwali", "தீபாவளி", "Pongal", "பொங்கல்", "Navaratri", "நவராத்திரி", "Thaipusam", "தைப்பூசம்", "Mahotsav", "மகோற்சவ", "Thiruvizha", "திருவிழா", "Kumbabishekam", "Kumbabhishekam", "கும்பாபிஷேக", "Puthandu", "சித்திரைப் புத்தாண்டு", "தமிழ்ப் புத்தாண்டு", "Tamil New Year", "Tamilisches Neujahr", "Karthigai Deepam", "கார்த்திகை தீபம்", "திருக்கார்த்திகை", "Sarvalaya Deepam", "சர்வாலய தீபம்", "Shivaratri", "சிவராத்திரி", "Aadi Pooram", "ஆடிப்பூரம்", "Vinayagar Chaturthi", "Vinayaka Chaturthi", "Ganesh Chaturthi", "விநாயகர் சதுர்த்தி"] }
+selectors = { item = "article.mel-card", title = ".mel-title", link = ".mel-title a::attr(href)", date = ".mel-date" }
+
+# Kino: Reihen und Programme mit Selektoren (provider = "html"); Tamil nur über Titel oder Selektor `sprache`,
+# Spielorte bleiben über Scans erhalten, bis die eigene Quelle sie nicht mehr meldet (Prüfung 11.11.2026, behoben)
+[[source]]
+name = "Filmkunstkinos Düsseldorf · Kino aus Indien"
+enabled = true
+prioritaet = "B"
+betreiber = "Metropol Düsseldorfer Filmkunstkino GmbH"
+robots = "erlaubt"
+paywall = false
+bild_nutzen = false
+notiz = "Inventur 11.11.2026: eine Seite mit allen Vorstellungen der Reihe samt Sprache; Adresse trägt die Jahreszahl – im Januar auf …-2027 umstellen; antwortete einmal mit 429, deshalb langes Intervall; Plakate sind Verleihmaterial"
+rechtlich_geprueft = ""
+type = "kino"
+provider = "html"
+url = "https://filmkunstkinos.de/specials/filmreihe-kino-aus-indien-2026/"
+country = "DE"
+max_items = 1
+interval_minutes = 720
+params = { kino = "Filmkunstkinos Düsseldorf", stadt = "Düsseldorf" }
+selectors = { item = "#event-container article", title = ".event-small--title", link = "a::attr(href)", date = ".event-small--date", sprache = ".event-small--title span::attr(title)", behaelter = "#event-container" }
+
+[[source]]
+name = "dein-dein · Tamil Films in Germany"
+enabled = true
+prioritaet = "C"
+betreiber = "dein-dein.com"
+robots = "erlaubt"
+paywall = false
+bild_nutzen = false
+notiz = "an seit 13.11.2026 (Entscheidung Luis): robots.txt sperrt namentlich KI-Crawler (ClaudeBot, GPTBot u. a.) und erlaubt allgemeine Abrufe („*“); der Radar ruft mit eigener Kennung ab und nur die eine Programmseite. Inventur 11.11.2026: tamilische Filme mit Vorstellungen in deutschen Kinos; Spielzeiten beim Kino prüfen; Betreiber nicht geprüft"
+rechtlich_geprueft = ""
+type = "kino"
+provider = "html"
+url = "https://dein-dein.com/germany/tamil-films"
+country = "DE"
+max_items = 1
+interval_minutes = 360
+selectors = { item = "section[aria-label='Indian film snapshot'] article", title = "h3", link = "a::attr(href)", date = "time", ort = "p span:not([aria-hidden])", sprache = ".ui-kicker" }
+
+[[source]]
+name = "Mathäser Filmpalast München"
+enabled = true
+prioritaet = "C"
+betreiber = "Kinopolis Management Multiplex GmbH"
+robots = "erlaubt"
+paywall = false
+bild_nutzen = false
+notiz = "Inventur 11.11.2026: Programmseite nennt die Sprache im Titel („Scene (Tamil)“); große Seite (~900 KB); möglicherweise doppelt zu kinoheld"
+rechtlich_geprueft = ""
+type = "kino"
+provider = "html"
+url = "https://www.mathaeser.de/mm/programm"
+country = "DE"
+max_items = 1
+interval_minutes = 360
+params = { kino = "Mathäser Filmpalast", stadt = "München" }
+selectors = { item = "section.movie", title = "h2 a", link = "h2 a::attr(href)", date = ".prog-nav__day" }
+
+[[source]]
+name = "Babylon Berlin · IndoGerman Film"
+enabled = true
+prioritaet = "C"
+betreiber = "Neue Babylon Berlin GmbH"
+robots = "erlaubt"
+paywall = false
+bild_nutzen = false
+notiz = "Inventur 11.11.2026: Reihe indischer Filme in Originalsprache; Sprache je Film steht in der Beschreibung („[Telugu]“) – Selektor sprache liest dort nur die Sprachmarke, nur tamilische Fassungen kommen durch"
+rechtlich_geprueft = ""
+type = "kino"
+provider = "html"
+url = "https://babylonberlin.eu/programm/filmreihen/indogerman-film"
+country = "DE"
+max_items = 1
+interval_minutes = 360
+params = { kino = "Babylon", stadt = "Berlin" }
+selectors = { item = ".blog .items-leading > div, .blog .items-row .item", title = "h2", link = "h2 a::attr(href)", date = ".first_showtime", sprache = "p:not(.readmore)", behaelter = ".blog" }
+
+# Medien und Behörden: nur mit tamilischem Bezug
+[[source]]
+name = "Kevelaerer Blatt · Tamilen"
+prioritaet = "C"
+betreiber = "Kevelaerer Blatt"
+robots = "erlaubt"
+paywall = false
+bild_nutzen = false
+notiz = "Inventur 11.11.2026: Suchfeed „tamilen“ der Lokalzeitung am Wallfahrtsort (Tamilenwallfahrt im August); Suche trifft auch Fremdes, deshalb bezug_noetig; Bezahlschranke einzelner Artikel nicht geprüft"
+rechtlich_geprueft = ""
+type = "rss"
+url = "https://www.kevelaerer-blatt.de/?s=tamilen&feed=rss2"
+country = "DE"
+min_score = 0
+bezug_noetig = true
+max_items = 1
+interval_minutes = 360
+
+[[source]]
+name = "theinder.net"
+prioritaet = "C"
+betreiber = "theinder.net (Das Indernet)"
+robots = "erlaubt"
+paywall = false
+bild_nutzen = false
+notiz = "Inventur 11.11.2026: Magazin der indischen Diaspora in Deutschland; tamilische Themen selten – nur mit Stichwort und Bezug"
+rechtlich_geprueft = ""
+type = "rss"
+url = "https://www.theinder.net/feed/"
+country = "DE"
+min_score = 3
+bezug_noetig = true
+max_items = 1
+interval_minutes = 120
+
+[[source]]
+name = "SEM · Medienmitteilungen"
+prioritaet = "C"
+betreiber = "Staatssekretariat für Migration SEM (News Service Bund)"
+robots = "erlaubt"
+paywall = false
+bild_nutzen = false
+notiz = "Inventur 11.11.2026: amtlicher Feed (Asylstatistik, Rückkehr); Sri Lanka nur gelegentlich – volle Schwelle 4 (sonst gälte wegen country CH die DACH-Schwelle 2 und ein beiläufiges „Sri Lanka“ reichte); newsd.admin.ch ohne robots.txt"
+rechtlich_geprueft = ""
+type = "rss"
+url = "https://www.newsd.admin.ch/newsd/feeds/rss?lang=de&org-nr=405"
+country = "CH"
+min_score = 4
+max_items = 1
+interval_minutes = 120
 
 # ---- Regionen: DACH-Bezug und Orte (Reihenfolge = Priorität für Google-News-Abfragen) ----
 [regions.staedte]
@@ -259,7 +681,8 @@ at = ["Wien", "Graz", "Linz", "Salzburg"]
 
 [regions.laender]
 de = ["Deutschland", "Germany", "NRW", "Nordrhein-Westfalen", "Hessen", "Bayern", "Baden-Württemberg", "ஜெர்மனி"]
-ch = ["Schweiz", "Switzerland", "Swiss", "சுவிஸ்", "சுவிட்சர்லாந்து"]
+# „சுவிட்சர்லாந்த“ = Stamm für சுவிட்சர்லாந்தில்/-தை/-தின் (die Grundform endet auf -து und trifft die Beugungen nicht)
+ch = ["Schweiz", "Switzerland", "Swiss", "சுவிஸ்", "சுவிட்சர்லாந்து", "சுவிட்சர்லாந்த"]
 at = ["Österreich", "Austria", "ஆஸ்திரியா"]
 
 [regions.aliases]
@@ -275,6 +698,60 @@ at = ["Österreich", "Austria", "ஆஸ்திரியா"]
 
 [regions]
 exakt = ["Essen", "Hamm", "Bern", "Linz"]
+# Orte außerhalb von DACH: Nennt eine Meldung einen davon und keinen DACH-Ort, gilt das Land der Quelle nicht als
+# DACH-Bezug, und Termine fallen ganz heraus (z. B. Swiss Tamil Info über ein Fest in Markham, Kanada).
+ausland = ["Kanada", "Canada", "Canadian", "கனடா", "கனடிய", "Toronto", "டொரண்டோ", "ரொறன்ரோ", "Markham", "மார்க்கம்",
+           "Scarborough", "Montreal", "London", "லண்டன்", "England", "Frankreich", "France", "Paris", "பாரிஸ்",
+           "Norwegen", "Norway", "Oslo", "Dänemark", "Denmark", "Niederlande", "Netherlands", "Australien",
+           "Australia", "Sydney", "Melbourne", "Malaysia", "Singapur", "Singapore", "USA", "Jaffna", "யாழ்ப்பாணம்",
+           "Chennai", "சென்னை", "Colombo", "கொழும்பு",
+           # Orte in Sri Lanka (Fund 09.11.: alte Berichte aus Kilinochchi, Jaffna, Kataragama als „Termin“).
+           # Tamil-Schrift trifft als Teilstring: „யாழ்“ ohne Punkt träfe auch யாழினி (Vorname) und யாழிசை –
+           # deshalb nur die Kurzform mit Punkt („யாழ். பல்கலை“).
+           # Keine Länder- oder Volksnamen (Sri Lanka, இலங்கை, Indien, Tamil Nadu): Sie stehen in fast jedem Bericht
+           # der Diaspora und würden echte Schweizer Termine ohne bekannte Stadt still herauswerfen.
+           "Kilinochchi", "கிளிநொச்சி", "யாழ்.", "Kataragama", "கதிர்காமம்", "Mullaitivu", "முல்லைத்தீவு",
+           "Batticaloa", "மட்டக்களப்பு", "Trincomalee", "திருகோணமலை", "Vavuniya", "வவுனியா", "Mannar", "மன்னார்"]
+# Länder und Regionen der Herkunft – nur für Nachrichten aus Quellen ohne Land (Google News, Tamil Guardian, The Hindu,
+# Lankasri): ohne DACH-Bezug fallen sie heraus (Fund 12.11.: Wirtschaft in Tamil Nadu, Marine in Sri Lanka als Story).
+# Termine und DACH-Quellen bleiben unberührt (Entscheidung 09.11.), Kino und Entertainment ebenso (Rubrik Kollywood).
+herkunft = ["Sri Lanka", "Sri Lankan", "இலங்கை", "Tamil Nadu", "தமிழ்நாடு", "தமிழகம்", "Indien", "India", "Indian",
+            "இந்தியா"]
+# Hinweise auf DACH nur gegen diese Regel (nicht im Ranking, dafür [regions.laender]): Nennt eine Nachricht einen davon,
+# fällt sie nicht als „ausland“ oder „fremdes_kino“ heraus (Prüfung 12.11.: „German court halts deportation of Tamil to
+# Sri Lanka“, „ஜேர்மனியில் இலங்கை தமிழர் கைது“). Lateinisch am Wortanfang („deutsch“ trifft deutsche, Deutschland;
+# „schweiz“ trifft Schweizer), Tamil-Schrift als Teilstring („ஜேர்மன்“ trifft ஜேர்மனியில்). „ஆஸ்திரிய“ trifft nicht
+# ஆஸ்திரேலியா (Australien), „austria“ nicht Australia.
+dach_hinweise = ["deutsch", "german", "österreich", "oesterreich", "austria", "schweiz", "swiss", "switzerland",
+                 "ஜேர்மன்", "ஜெர்மன்", "யேர்மன்", "சுவிஸ்", "சுவிற்சர்லாந்", "சுவிட்சர்லாந்", "ஆஸ்திரிய",
+                 "ஒஸ்ரிய", "ஒஸ்திரிய",
+                 # Genf (UNHRC, Kundgebungen der Diaspora) – nicht in [regions.staedte], damit das Ranking gleich bleibt
+                 "genf", "geneva", "genève", "geneve", "ஜெனீவா",
+                 # Romandie mit großer tamilischer Community (Freiburg im Breisgau ist ohnehin DACH)
+                 "lausanne", "fribourg", "freiburg", "neuchâtel", "neuchatel", "yverdon", "bienne", "vevey",
+                 "montreux", "renens", "romandie", "suisse"]
+# Wie dach_hinweise, aber nur als ganzes Wort: „sion“ als Wortanfang träfe „Sionist“ und „Sionkowski“.
+dach_hinweise_wort = ["sion"]
+
+# ---- Bezug zur tamilischen Community (Quellen mit bezug_noetig = true) ----
+# Mindestens einer dieser Begriffe muss in Titel oder Text stehen. Keine Ortsnamen: „சுவிஸ்“, „Zürich“ oder
+# „Sri Lanka“ allein machen eine Schweizer Meldung nicht tamilisch. Lateinisch als ganzes Wort (+2 Buchstaben),
+# Tamil-Schrift als Teilstring (தமிழ் trifft தமிழர்கள்).
+[bezug]
+terms = ["tamil", "tamilisch", "tamilen", "tamilin", "eelam", "kollywood", "rajinikanth", "anirudh", "a.r. rahman",
+         "ilaiyaraaja", "pongal", "deepavali", "diwali", "thaipusam", "navaratri", "bharatanatyam", "kamadchi",
+         "murugan", "hindu", "தமிழ்", "ஈழ", "இந்து", "கோவில்", "கோயில்", "அம்மன்", "முருகன்", "பொங்கல்",
+         "தீபாவளி", "நவராத்திரி", "தைப்பூசம்", "பரதநாட்டியம்", "அரங்கேற்றம்"]
+# Anderes indisches Kino: Nennt eine Nachricht ohne DACH-Bezug mehr dieser Begriffe als Begriffe aus terms, fällt sie
+# heraus (Fund 12.11.: Tollywood-Kassenbilanz, die Kollywood nur zum Vergleich nennt).
+fremdkino = ["telugu", "tollywood", "bollywood", "malayalam", "mollywood", "kannada", "sandalwood"]
+# Kollywood und Stars (aus der vorhandenen Starliste in [keywords] und [categories]): Nennt eine Nachricht ohne
+# DACH-Bezug einen davon, gilt sie für die Ausland-Regel als Kino/Entertainment und bleibt (Entscheidung 12.11.:
+# „Rajinikanth meets Tamil Nadu Chief Minister“, „Ilaiyaraaja honoured by India“). Ebenso alles aus einer Quelle mit
+# kollywood = true. Nur ganze Wörter („vijay“ trifft nicht „Vijayan“), Ajith nur als „ajith kumar“: „Ajith“ ist auch
+# ein häufiger Vorname in Sri Lanka (Ajith Rohana, Ajith Nivard Cabraal; zweite Prüfung 12.11.).
+kollywood = ["kollywood", "tamil cinema", "rajinikanth", "vijay", "ajith kumar", "suriya", "anirudh", "a.r. rahman",
+             "ilaiyaraaja"]
 
 # ---- Stichwort-Gewichte (klein geschrieben; Treffer im Titel zählen doppelt) ----
 [keywords]
@@ -325,7 +802,23 @@ exakt = ["Essen", "Hamm", "Bern", "Linz"]
 
 # Ausschluss: Meldungen mit diesen Begriffen werden verworfen
 [blocklist]
+# Veranstalter, deren Termine nie automatisch zur Story werden (ganzes Wort; Entscheidung Luis 13.11.2026: STCC,
+# Redewettbewerbe „Pechu Potti“ über Vizha)
+veranstalter = ["STCC"]
 terms = ["horoskop", "casino", "betting", "wetten", "porn", "obituary", "todesanzeige", "sponsored", "anzeige:"]
+# Termine (kind = event) mit diesen Begriffen werden nie automatisch zur Story: Gedenken mit LTTE-Bezug
+termine = ["maaveerar", "maveerar", "mahaveerar", "mahaaveerar", "mavirar", "maavirar", "மாவீரர்", "heroes day",
+           "national heroes", "heroes remembrance", "heroes commemoration", "heldengedenktag", "helden-gedenktag",
+           "heldentag",
+           # Namen von LTTE-Gedenkanlässen (Entscheidung 12.11.2026: Vizha-Probe zeigte Gedenkturniere ohne die
+           # Begriffe oben, z. B. „BR.S.P. Thamilselvan Memorial Cup“)
+           "thamilselvan", "tamilselvan", "tamil selvan", "tamilchelvan", "thamil selvan", "தமிழ்ச்செல்வன்",
+           "brigadier", "பிரிகேடியர்", "thileepan", "திலீபன்", "annai poopathi", "annai poopathy", "அன்னை பூபதி",
+           "prabhakaran", "பிரபாகரன்",
+           # Kasusformen von கிட்டு (கிட்டுவின், கிட்டுவுக்கு); das Verb கிட்டும் trifft nicht (கிட்டு selbst: termine_wort)
+           "கிட்டுவ"]  # Wortanfang, ohne Formatzeichen, Apostrophe und Diakritika; „national heroes“ nicht bei „Museum“ im Titel
+# wie `termine`, aber nur als ganzes Wort: „Kittu“, nicht „Kittur“; „கிட்டு“, nicht „கிட்டும்“ (Verb „wird zuteil“)
+termine_wort = ["kittu", "kiddu", "கிட்டு"]
 
 # Ziel-Kategorien (Slug in WordPress) + Stichwörter für die Zuordnung. Die KI wählt final eine davon.
 [categories.news]
@@ -359,3 +852,179 @@ hints = ["cricket", "sport", "fußball", "football", "olympia", "turnier", "liga
 [categories.kultur]
 label = "Kultur"
 hints = ["pongal", "deepavali", "diwali", "thaipusam", "bharatanatyam", "sprache", "literatur", "kultur", "tradition", "murugan"]
+
+# Bildquellen: Seiten, deren eigenes Bildmaterial tamil.de mit Bildnachweis redaktionell verwenden darf.
+# Entscheidung vom 11.11.2026 (docs/entscheidungen.md): Material von Veranstaltern, Tempeln, Vereinen, Festivals,
+# Kinos (Plakate und Filmbilder vom Verleih) und Betrieben, über die berichtet wird. Keine Nachrichtenmedien, keine
+# Agenturen, keine sozialen Netzwerke, keine Behörden. Der Nachweis wird wörtlich übernommen.
+# Das Bild muss unter dem eingetragenen Host liegen (Subdomains zählen). Liegt das eigene Bildmaterial einer Quelle auf
+# einem eigenen CDN, wird dessen Host im Eintrag als bild_hosts = ["cdn.beispiel.ch"] ergänzt (vorerst bei keinem Eintrag).
+# Hosts sozialer Netzwerke und Bildagenturen sind fest gesperrt und dürfen hier nicht stehen.
+
+[[bildquellen]]
+host = "hindutempleberlin.de"
+betreiber = "Sri Ganesha Hindu Tempel Berlin e.V."
+art = "tempel"
+nachweis = "Foto: Sri Ganesha Hindu Tempel Berlin"
+
+[[bildquellen]]
+host = "ammankovil.ch"
+betreiber = "Tamilische Hindu Kultur-Gemeinschaft Luzern"
+art = "tempel"
+nachweis = "Foto: Amman Hindu Tempel Luzern"
+
+[[bildquellen]]
+host = "murugantemple.ch"
+betreiber = "Sri Sivasubramaniar Tempel Zürich"
+art = "tempel"
+nachweis = "Foto: Sri Sivasubramaniar Tempel Zürich"
+
+[[bildquellen]]
+host = "sivankovil.ch"
+betreiber = "Arulmigu Sivan Kovil Glattbrugg"
+art = "tempel"
+nachweis = "Foto: Arulmigu Sivan Kovil Glattbrugg"
+
+[[bildquellen]]
+host = "srikathirvel.com"
+betreiber = "Sri Kathirvelayutha Swamy Tempel St. Margrethen"
+art = "tempel"
+nachweis = "Foto: Sri Kathirvelayutha Swamy Tempel St. Margrethen"
+
+[[bildquellen]]
+host = "hindutempel-wuppertal.de"
+betreiber = "Hindu-Tempel Wuppertal"
+art = "tempel"
+nachweis = "Foto: Hindu-Tempel Wuppertal"
+
+[[bildquellen]]
+host = "haus-der-religionen.ch"
+betreiber = "Haus der Religionen – Dialog der Kulturen, Bern"
+art = "verein"
+nachweis = "Foto: Haus der Religionen Bern"
+
+[[bildquellen]]
+host = "wallfahrt-kevelaer.de"
+betreiber = "Wallfahrt Kevelaer / Pfarrei St. Marien"
+art = "veranstalter"
+nachweis = "Foto: Wallfahrt Kevelaer"
+
+[[bildquellen]]
+host = "duesseldorftamilsangam.com"
+betreiber = "Düsseldorf Tamil Sangam e.V."
+art = "verein"
+nachweis = "Foto: Düsseldorf Tamil Sangam"
+
+[[bildquellen]]
+host = "tbvgermany.com"
+betreiber = "Tamilische Bildungsvereinigung e.V. (TBV Germany)"
+art = "verein"
+nachweis = "Foto: Tamilische Bildungsvereinigung (TBV)"
+
+[[bildquellen]]
+host = "tamilschool.ch"
+betreiber = "Tamil Education Service Switzerland (TESS)"
+art = "verein"
+nachweis = "Foto: Tamil Education Service Switzerland"
+
+[[bildquellen]]
+host = "tamilmandram.ch"
+betreiber = "Tamilmandram Luzern"
+art = "verein"
+nachweis = "Foto: Tamilmandram Luzern"
+
+[[bildquellen]]
+host = "natyamandir.at"
+betreiber = "Natya Mandir, Wien"
+art = "verein"
+nachweis = "Foto: Natya Mandir Wien"
+
+[[bildquellen]]
+host = "karate.ch"
+betreiber = "Swiss Karate Federation"
+art = "sport"
+nachweis = "Foto: Swiss Karate Federation"
+
+[[bildquellen]]
+host = "tamilfest.ch"
+betreiber = "Tamil Fest"
+art = "veranstalter"
+nachweis = "Foto: Tamil Fest"
+
+[[bildquellen]]
+host = "indisches-filmfestival.de"
+betreiber = "Indisches Filmfestival Stuttgart (Filmbüro Baden-Württemberg e.V.)"
+art = "festival"
+nachweis = "Bild: via Indisches Filmfestival Stuttgart"
+
+[[bildquellen]]
+host = "frauenfilmfest.com"
+betreiber = "Internationales Frauen Film Fest Dortmund+Köln"
+art = "festival"
+nachweis = "Bild: via Internationales Frauen Film Fest Dortmund+Köln"
+
+[[bildquellen]]
+host = "arsenal-berlin.de"
+betreiber = "Arsenal – Institut für Film und Videokunst e.V."
+art = "festival"
+nachweis = "Bild: via Arsenal – Institut für Film und Videokunst"
+
+[[bildquellen]]
+host = "babylonberlin.eu"
+betreiber = "Babylon Berlin"
+art = "kino"
+nachweis = "Filmbild: via Babylon Berlin"
+
+[[bildquellen]]
+host = "filmkunstkinos.de"
+betreiber = "Düsseldorfer Filmkunstkinos"
+art = "kino"
+nachweis = "Filmbild: via Düsseldorfer Filmkunstkinos"
+
+[[bildquellen]]
+host = "cinestar.de"
+betreiber = "CineStar"
+art = "kino"
+nachweis = "Filmplakat: via CineStar"
+
+[[bildquellen]]
+host = "kinopolis.de"
+betreiber = "Kinopolis"
+art = "kino"
+nachweis = "Filmplakat: via Kinopolis"
+
+[[bildquellen]]
+host = "megaplex.at"
+betreiber = "Hollywood Megaplex"
+art = "kino"
+nachweis = "Filmplakat: via Hollywood Megaplex"
+
+[[bildquellen]]
+host = "ceylon-palace.de"
+betreiber = "Ceylon Palace, Bremen"
+art = "betrieb"
+nachweis = "Foto: Ceylon Palace"
+
+[[bildquellen]]
+host = "kamala-restaurant.de"
+betreiber = "Kamala Restaurant"
+art = "betrieb"
+nachweis = "Foto: Kamala Restaurant"
+
+[[bildquellen]]
+host = "thamarai.de"
+betreiber = "THAMARAI Restaurant Heilbronn"
+art = "betrieb"
+nachweis = "Foto: THAMARAI Restaurant"
+
+[[bildquellen]]
+host = "aiya.ch"
+betreiber = "AiYA Restaurant"
+art = "betrieb"
+nachweis = "Foto: AiYA Restaurant"
+
+[[bildquellen]]
+host = "rupan.ch"
+betreiber = "Rupan Sivaganesan"
+art = "person"
+nachweis = "Foto: rupan.ch"

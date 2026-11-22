@@ -49,7 +49,8 @@ h2 small, h1 small { font-weight: 500; font-size: 14px; letter-spacing: 0; margi
 .unter { margin: 4px 0 0; color: var(--tinte-2); font-family: var(--text); font-size: 16px; }
 .meldungen { margin: 0 0 16px; }
 .meldung { padding: 12px 16px; border-radius: var(--r); margin-bottom: 8px; background: var(--gruen-hell); color: #164E2F; font-weight: 600; word-break: break-word; }
-.meldung.fehler { background: var(--rot-hell); color: var(--rot-tief); }
+.meldung.fehler { background: var(--rot-hell); color: var(--rot-tief); border-left: 5px solid var(--rot-tief); }
+.wisch-hinweis { display: none; }
 .tabs { display: flex; gap: 4px; padding: 4px; background: var(--sand); border-radius: 999px; overflow-x: auto; scrollbar-width: none; }
 .tabs::-webkit-scrollbar { display: none; }
 .tabs a { white-space: nowrap; text-decoration: none; color: var(--tinte-2); padding: 7px 14px; border-radius: 999px; font-size: 15px; font-weight: 700; }
@@ -103,6 +104,10 @@ h2 small, h1 small { font-weight: 500; font-size: 14px; letter-spacing: 0; margi
 /* Knöpfe */
 .aktionen { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; }
 .aktionen.gross { margin-top: 14px; gap: 8px; }
+.sammelleiste { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-bottom: 12px; padding: 8px 12px; background: var(--sand); border-radius: 16px; }
+.sammelleiste button { margin-left: auto; }
+.auswahl { display: inline-flex; align-items: center; gap: 8px; min-height: 38px; padding: 0 6px; font-size: 15px; font-weight: 700; color: var(--tinte); cursor: pointer; }
+.auswahl input { width: 20px; height: 20px; margin: 0; accent-color: var(--tinte); cursor: pointer; }
 form.inline { display: inline; }
 button, .knopf { appearance: none; display: inline-flex; align-items: center; justify-content: center; min-height: 38px; padding: 0 16px; border: 0; border-radius: 999px; background: var(--weiss); color: var(--tinte); box-shadow: inset 0 0 0 1.5px var(--linie); font: inherit; font-size: 15px; font-weight: 700; line-height: 1.1; cursor: pointer; text-decoration: none; transition: background-color .2s var(--ease), box-shadow .2s var(--ease), color .2s var(--ease); }
 button:hover, .knopf:hover { background: var(--sand); color: var(--tinte); box-shadow: inset 0 0 0 1.5px var(--sand-2); }
@@ -223,6 +228,30 @@ table.kompakt td, table.kompakt th { padding: 6px; font-size: 14px; }
 .login button { width: 100%; margin-top: 12px; min-height: 46px; }
 
 /* ---- Brüche ---- */
+/* ---- Redaktion v2: Belege, Kosten, Warteschlange ---- */
+.banner { border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; font-size: 15px; }
+.banner.warnung { background: var(--gelb-hell); color: #6B4100; }
+.banner.stopp { background: var(--rot-hell); color: var(--rot-tief); }
+.belege h3 { font-size: 16px; margin: 18px 0 8px; }
+.quellen-liste { margin: 0; padding-left: 0; list-style: none; display: grid; gap: 6px; font-size: 15px; }
+.ampel { display: inline-block; width: 11px; height: 11px; border-radius: 50%; background: var(--linie); vertical-align: middle; }
+.a-bestaetigt { background: var(--gruen); } .a-einzelquelle { background: var(--safran); }
+.a-unbestaetigt, .a-offen { background: var(--linie); } .a-widerspruch { background: var(--rot); }
+table.claims td { vertical-align: top; }
+.urteile { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; font-size: 15px; font-family: var(--text); }
+.urteile .u-ungedeckt, .urteile .u-widerspruch { background: var(--rot-hell); border-radius: 8px; padding: 4px 8px; }
+.fassungen { list-style: none; padding: 0; margin: 0; font-size: 14px; display: grid; gap: 4px; }
+details.diff { margin-top: 8px; } details.diff summary { cursor: pointer; font-weight: 700; font-size: 14px; }
+details.diff pre { white-space: pre-wrap; font-size: 13px; background: var(--sand); border-radius: 10px; padding: 10px; overflow-x: auto; }
+details.diff .plus { color: #164E2F; } details.diff .minus { color: var(--rot-tief); text-decoration: line-through; }
+.kacheln { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 4px; }
+.kachel { display: grid; gap: 2px; margin: 0; } .kachel b { font-size: 26px; font-weight: 800; } .kachel span { color: var(--tinte-3); font-size: 14px; }
+.reiter { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.reiter a { padding: 6px 14px; border-radius: 999px; background: var(--sand); color: var(--tinte-2); text-decoration: none; font-weight: 700; font-size: 14px; }
+.reiter a.aktiv { background: var(--weiss); color: var(--tinte); box-shadow: inset 0 0 0 1.5px var(--linie); }
+tr.aus td { color: var(--tinte-3); }
+.leise-count { background: var(--sand-2); color: var(--tinte); }
+
 @media (min-width: 1100px) {
   .editor-grid { grid-template-columns: minmax(0, 1.25fr) minmax(360px, .75fr); }
 }
@@ -231,13 +260,23 @@ table.kompakt td, table.kompakt th { padding: 6px; font-size: 14px; }
   body { grid-template-columns: 1fr; }
   .rail { position: fixed; left: 0; right: 0; bottom: 0; top: auto; height: auto; flex-direction: row; align-items: center; gap: 8px; padding: 8px 12px calc(8px + env(safe-area-inset-bottom)); border-right: 0; border-top: 1px solid var(--sand-2); z-index: 20; }
   .rail .logo { display: none; }
-  .rail nav { display: flex; flex: 1; gap: 2px; justify-content: space-between; }
-  .rail nav a { min-height: 40px; padding: 0 10px; font-size: 15px; }
+  .rail { overflow-x: auto; overscroll-behavior-x: contain; scroll-padding-inline: 12px; }
+  .rail nav { display: flex; flex: 1 0 auto; gap: 2px; justify-content: space-between; }
+  .rail nav a { flex: 0 0 auto; white-space: nowrap; min-height: 44px; padding: 0 10px; font-size: 15px; }
+  .rail .abmelden { flex: 0 0 auto; }
+  button, .knopf, .auswahl { min-height: 44px; }
+  .banner a, .protokoll a { display: inline-flex; align-items: center; min-height: 44px; }
+  .wisch-hinweis { display: block; margin: 0 0 6px; }
   .rail .status, .rail .abmelden .nutzer { display: none; }
   .rail .abmelden { padding: 0; }
   .cockpit { padding: 18px 16px 96px; }
   .zwei-spalten, .zwei-spalten.vier, .radar-reihe { grid-template-columns: minmax(0, 1fr); }
-  table.voll { display: block; overflow-x: auto; }
+  table.voll { display: block; overflow-x: auto;
+    /* Schatten am Rand zeigt: hier geht es seitlich weiter (verschwindet am Ende des Scrollbereichs) */
+    background: linear-gradient(to right, var(--weiss) 30%, transparent) left / 40px 100% no-repeat local,
+      linear-gradient(to left, var(--weiss) 30%, transparent) right / 40px 100% no-repeat local,
+      radial-gradient(farthest-side at 0 50%, rgba(51, 41, 36, .22), transparent) left / 14px 100% no-repeat scroll,
+      radial-gradient(farthest-side at 100% 50%, rgba(51, 41, 36, .22), transparent) right / 14px 100% no-repeat scroll; }
   .entwurf-karte { grid-template-columns: 112px minmax(0, 1fr); gap: 10px 14px; }
   .entwurf-karte .inhalt { display: contents; }
   .entwurf-karte .inhalt > * { grid-column: 1 / -1; }
