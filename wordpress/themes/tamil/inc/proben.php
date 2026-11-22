@@ -406,6 +406,16 @@ function tamil_stadt_namen( string $ort ): array {
 }
 
 /**
+ * „Tamil in meiner Stadt“: so viele der neuesten Beiträge mit Ort zählen für die Auswahl der Städte.
+ */
+const TAMIL_STADT_VORRAT = 200;
+
+/**
+ * „Tamil in meiner Stadt“ unter „Alle Städte“: Geschichten sind höchstens so viele Tage alt.
+ */
+const TAMIL_STADT_TAGE = 60;
+
+/**
  * Hat dieses Kino einer Kinoliste noch eine Vorstellung ab heute? Mit einzelnen Spieltagen zählen nur die kommenden,
  * mit Zeitraum das Ende; ein Kino ohne beides läuft, solange die Liste selbst gilt (tamil_kino_filme()).
  *
@@ -432,12 +442,15 @@ function tamil_stadt_kino_laeuft( array $k, string $heute ): array {
  *   noch spielen, trägt der Film „zahl_text“ („ab heute noch 1 von 13 Kinos“), damit die Karte hier nicht ohne
  *   Erklärung eine andere Zahl nennt als „Diese Woche“ (dort stehen alle Kinos der Liste).
  * - Termine: die nächsten zwölf (Plugin tamil-site), Stadt aus tamil_termin_angaben(); „Ort folgt“ hat keine Stadt.
- * - Geschichten: die 24 neuesten Beiträge mit „Ort der Meldung“, ohne die Beiträge des ersten Abschnitts, von „Diese
- *   Woche“ und ohne die Filme und Termine dieses Abschnitts; Rubrik Community zuerst, dann nach Datum.
- * - In die Auswahl kommt eine Stadt mit mindestens einer kommenden Vorstellung, einem kommenden Termin oder zwei
+ * - Geschichten: Beiträge mit „Ort der Meldung“, aus dem eine Stadt lesbar ist, neueste zuerst; ohne die Beiträge des
+ *   ersten Abschnitts, von „Diese Woche“ und ohne die Filme und Termine dieses Abschnitts. Gezählt werden die
+ *   TAMIL_STADT_VORRAT neuesten (bis 3.16.0 nur 24: Städte mit zwei älteren Beiträgen fehlten in der Auswahl). Unter
+ *   „Alle Städte“ stehen nur die drei neuesten der letzten TAMIL_STADT_TAGE Tage („alle“); gibt es keine, entfällt das
+ *   Fach dort. Für eine gewählte Stadt stehen ihre drei neuesten da, ohne Altersgrenze.
+ * - In die Auswahl kommt jede Stadt mit mindestens einer Vorstellung ab heute, einem kommenden Termin oder zwei
  *   Geschichten; alphabetisch. Einträge des Verzeichnisses werden nicht verwendet.
  *
- * @return array{staedte:array<string,string>,filme:array<int,array<string,mixed>>,termine:array<int,array{id:int,stadt:string}>,geschichten:array<int,array{id:int,staedte:string[]}>,ids:int[]}
+ * @return array{staedte:array<string,string>,filme:array<int,array<string,mixed>>,termine:array<int,array{id:int,stadt:string}>,geschichten:array<int,array{id:int,staedte:string[],alle:bool}>,ids:int[]}
  */
 function tamil_stadt_daten(): array {
 	static $daten = null;
@@ -520,7 +533,7 @@ function tamil_stadt_daten(): array {
 		}
 	}
 
-	$belegt      = array_merge(
+	$belegt  = array_merge(
 		array( (int) $a['lead'] ),
 		array_map( 'intval', (array) $a['neben'] ),
 		array_map( 'intval', (array) $a['meldungen'] ),
@@ -530,10 +543,10 @@ function tamil_stadt_daten(): array {
 		array_map( static fn( $f ) => (int) $f['film']['post'], $filme ),
 		wp_list_pluck( $termine, 'id' )
 	);
-	$mit_ort     = tamil_ids(
+	$mit_ort = tamil_ids(
 		array(
-			'posts_per_page' => 24,
-			'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- 24 Beiträge, nur auf Probenseiten
+			'posts_per_page' => TAMIL_STADT_VORRAT,
+			'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- nur auf Probenseiten
 				array(
 					'key'     => 'ort',
 					'value'   => '',
@@ -543,27 +556,21 @@ function tamil_stadt_daten(): array {
 		),
 		$belegt
 	);
-	$community   = static fn( int $id ): int => 'community' === tamil_rubrik_slug( $id ) ? 0 : 1;
-	usort(
-		$mit_ort,
-		static function ( int $x, int $y ) use ( $community ): int {
-			$nach_rubrik = $community( $x ) <=> $community( $y );
-			return 0 !== $nach_rubrik ? $nach_rubrik : tamil_probe_neuer_zuerst( $x, $y );
-		}
-	);
-	$geschichten = array();
+	usort( $mit_ort, 'tamil_probe_neuer_zuerst' );
+	$grenze = (int) strtotime( $heute . ' 00:00:00 ' . wp_timezone_string() ) - TAMIL_STADT_TAGE * DAY_IN_SECONDS;
+	$vorrat = array();
 	foreach ( $mit_ort as $id ) {
-		$staedte = array();
+		$orte = array();
 		foreach ( tamil_stadt_namen( (string) get_post_meta( $id, 'ort', true ) ) as $name ) {
-			$staedte[] = $merke( $name, 'geschichten' );
+			$orte[] = $merke( $name, 'geschichten' );
 		}
-		$geschichten[] = array(
-			'id'      => $id,
-			'staedte' => array_values( array_filter( $staedte ) ),
-		);
+		$orte = array_values( array_filter( $orte ) );
+		if ( $orte ) {
+			$vorrat[ $id ] = $orte;
+		}
 	}
 
-	// Auswahl: mindestens eine Vorstellung, ein Termin oder zwei Geschichten
+	// Auswahl: mindestens eine Vorstellung ab heute, ein kommender Termin oder zwei Geschichten
 	$staedte = array();
 	foreach ( $namen as $schluessel => $name ) {
 		if ( $zahl[ $schluessel ]['kino'] || $zahl[ $schluessel ]['termine'] || $zahl[ $schluessel ]['geschichten'] >= 2 ) {
@@ -572,12 +579,35 @@ function tamil_stadt_daten(): array {
 	}
 	asort( $staedte, SORT_LOCALE_STRING | SORT_FLAG_CASE );
 
+	// Ins HTML kommen nur Geschichten, die jemand sehen kann: die drei neuesten je wählbarer Stadt und, für „Alle
+	// Städte“, die drei neuesten der letzten TAMIL_STADT_TAGE Tage (Schlüssel „alle“).
+	$geschichten = array();
+	$je_stadt    = array();
+	$alle        = 0;
+	foreach ( $vorrat as $id => $orte ) {
+		$orte   = array_values( array_filter( $orte, static fn( string $s ): bool => isset( $staedte[ $s ] ) ) );
+		$frisch = $alle < 3 && (int) get_post_timestamp( $id ) >= $grenze;
+		$zeigen = array_filter( $orte, static fn( string $s ): bool => ( $je_stadt[ $s ] ?? 0 ) < 3 );
+		if ( ! $frisch && ! $zeigen ) {
+			continue;
+		}
+		foreach ( $orte as $s ) {
+			$je_stadt[ $s ] = ( $je_stadt[ $s ] ?? 0 ) + 1;
+		}
+		$alle         += $frisch ? 1 : 0;
+		$geschichten[] = array(
+			'id'      => (int) $id,
+			'staedte' => $orte,
+			'alle'    => $frisch,
+		);
+	}
+
 	$daten = array(
 		'staedte'     => $staedte,
 		'filme'       => $filme,
 		'termine'     => $termine,
 		'geschichten' => $geschichten,
-		'ids'         => array_values( array_unique( array_merge( array_map( static fn( $f ) => (int) $f['film']['post'], $filme ), wp_list_pluck( $termine, 'id' ), $mit_ort ) ) ),
+		'ids'         => array_values( array_unique( array_merge( array_map( static fn( $f ) => (int) $f['film']['post'], $filme ), wp_list_pluck( $termine, 'id' ), wp_list_pluck( $geschichten, 'id' ) ) ) ),
 	);
 	return $daten;
 }
