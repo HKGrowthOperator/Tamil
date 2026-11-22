@@ -2038,7 +2038,9 @@ body .ad.ad-bild .anzeige--bild .anzeige__bild { border-radius: 0; }
 .ausgabe__stuecke, .ausgabe__stapel { display: grid; gap: 16px; }
 .ausgabe .beistueck--gross .rahmen { aspect-ratio: 4 / 3; }
 .ausgabe .beistueck--mittel .rahmen, .ausgabe .beistueck--flach .rahmen { aspect-ratio: 16 / 9; }
-.ausgabe .beistueck--gross .titel { font-size: 24px; line-height: 1.15; }
+/* Handy: klare Stufen unter dem Covertitel (dort mindestens 25 px): großes Beistück 20 px, kleine 17 px */
+.ausgabe .beistueck--gross .titel { font-size: 20px; line-height: 1.15; }
+.ausgabe .beistueck--mittel .titel, .ausgabe .beistueck--flach .titel { font-size: 17px; }
 .ausgabe .beistueck--flach .imbild { padding: 44px calc(var(--ecke) + 10px) 12px 14px; background-image: var(--verlauf-karte); }
 .ausgabe .beistueck--gross .kontext { display: block; }
 .ausgabe .beistueck--gross .kontext__satz { display: block; overflow: visible; }
